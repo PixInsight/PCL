@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+######################################################################
+# PixInsight Makefile Generator Script v1.77
+# Copyright (C) 2009-2013 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Sun, 31 Mar 2013 15:55:39 GMT
+# Project id ...... PixInsightINDI
+# Project type .... Module
+# Platform ........ Windows/vc11
+######################################################################
+-->
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E0B74AC4-B124-45FC-9975-674D9F6B5530}</ProjectGuid>
+    <RootNamespace>PixInsight</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v110_xp</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v110_xp</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(PCLBINDIR64)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(PCLBINDIR32)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(PCLBINDIR64)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(PCLBINDIR32)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PixInsightINDI-pxm</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PixInsightINDI-pxm</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PixInsightINDI-pxm</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PixInsightINDI-pxm</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>$(PCLINCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;__PCL_WINDOWS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat></DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(PCLBINDIR64)\PixInsightINDI-pxm.dll</OutputFile>
+      <AdditionalLibraryDirectories>$(PCLLIBDIR64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
+      <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
+      <SubSystem>Windows</SubSystem>
+      <LargeAddressAware>true</LargeAddressAware>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <SupportUnloadOfDelayLoadedDLL>true</SupportUnloadOfDelayLoadedDLL>
+      <ImportLibrary>$(Platform)\$(Configuration)\$(ProjectName).lib</ImportLibrary>
+      <TargetMachine>MachineX64</TargetMachine>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>$(PCLINCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;__PCL_WINDOWS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat></DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(PCLBINDIR32)\PixInsightINDI-pxm.dll</OutputFile>
+      <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
+      <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
+      <SubSystem>Windows</SubSystem>
+      <LargeAddressAware>true</LargeAddressAware>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <SupportUnloadOfDelayLoadedDLL>true</SupportUnloadOfDelayLoadedDLL>
+      <ImportLibrary>$(Platform)\$(Configuration)\$(ProjectName).lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(PCLINCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;__PCL_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(PCLBINDIR64)\PixInsightINDI-pxm.dll</OutputFile>
+      <AdditionalLibraryDirectories>$(PCLLIBDIR64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
+      <SubSystem>Windows</SubSystem>
+      <LargeAddressAware>true</LargeAddressAware>
+      <ImportLibrary>$(Platform)\$(Configuration)\$(ProjectName).lib</ImportLibrary>
+      <TargetMachine>MachineX64</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(PCLINCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;__PCL_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(PCLBINDIR32)\PixInsightINDI-pxm.dll</OutputFile>
+      <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
+      <SubSystem>Windows</SubSystem>
+      <LargeAddressAware>true</LargeAddressAware>
+      <ImportLibrary>$(Platform)\$(Configuration)\$(ProjectName).lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\ImageAcquisition\CameraData.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\CameraDialog.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\CameraItem.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\DeviceItem.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\ExposeImageInstance.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\ExposeImageInterface.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\ExposeImageParameters.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\ExposeImageProcess.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\FilterWheelData.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\FilterWheelItem.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisisitionSettingsParameters.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionModule.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSession.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSessionInstance.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSessionInterface.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSessionParameters.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSessionProcess.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSettingsInstance.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSettingsInterface.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSettingsProcess.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\parsers.cpp"/>
+    <ClCompile Include="..\..\ImageAcquisition\test\TestCameraItem.cpp"/>
+    <ClCompile Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\DllMain.cpp"/>
+    <ClCompile Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\PixInsightASCOMCameraDriver.cpp"/>
+    <ClCompile Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\XYDispDriver.cpp"/>
+    <ClCompile Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\DllMain.cpp"/>
+    <ClCompile Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\PixInsightASCOMFWDriver.cpp"/>
+    <ClCompile Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\XYDispDriver.cpp"/>
+    <ClCompile Include="..\..\PixInsightASCOMDrivers\windows\vc9\DllMain.cpp"/>
+    <ClCompile Include="..\..\PixInsightASCOMDrivers\windows\vc9\PixInsightASCOMDriver.cpp"/>
+    <ClCompile Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\CanonDSLRCameraDriver.cpp"/>
+    <ClCompile Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\dllmain.cpp"/>
+    <ClCompile Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\stdafx.cpp"/>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\ImageAcquisition\CameraData.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\CameraDialog.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\CameraItem.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\DeviceItem.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\ExposeImageInstance.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\ExposeImageInterface.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\ExposeImageParameters.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\ExposeImageProcess.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\FilterWheelData.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\FilterWheelItem.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\IPixInsightCamera.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\IPixInsightDevice.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\IPixInsightFilterWheel.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionModule.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSession.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSessionInstance.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSessionParameters.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSessionProcess.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSettingsInstance.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSettingsInterface.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSettingsParameters.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSettingsProcess.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\SerializableTraits.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\parsers.h"/>
+    <ClInclude Include="..\..\ImageAcquisition\test\TestCameraItem.h"/>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\DllExports.h"/>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\PixInsightASCOMCameraDriver.h"/>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\XYDispDriver.h"/>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\stdafx.h"/>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\DllExports.h"/>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\PixInsightASCOMFWDriver.h"/>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\XYDispDriver.h"/>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\stdafx.h"/>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\vc9\DllExports.h"/>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\vc9\PixInsightASCOMDriver.h"/>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\vc9\stdafx.h"/>
+    <ClInclude Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\CanonDSLRCameraDriver.h"/>
+    <ClInclude Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\DllExports.h"/>
+    <ClInclude Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\stdafx.h"/>
+    <ClInclude Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\targetver.h"/>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMCameraDriver\SetupDialogForm.resx"/>
+    <ResourceCompile Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMCameraDriver\Properties\Resources.resx"/>
+    <ResourceCompile Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\Debug\CanonDSLRCameraDriver_manifest.rc"/>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\ImageAcquisition\ExposeImageIcon.png"/>
+    <None Include="..\..\ImageAcquisition\ExposeImageIcon.svg"/>
+    <None Include="..\..\ImageAcquisition\ImageAcquisitionSettingsIcon.svg"/>
+    <None Include="..\..\ImageAcquisition\doc\basic_lrgb.png"/>
+    <None Include="..\..\ImageAcquisition\doc\sample.png"/>
+    <None Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMCameraDriver\ASCOM.png"/>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

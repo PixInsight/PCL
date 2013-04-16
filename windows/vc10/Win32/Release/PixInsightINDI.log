@@ -1,0 +1,31 @@
+﻿Build started 31.03.2013 18:13:50.
+     1>Project "C:\Users\klaus\Documents\GitHub\PixInsightINDI\windows\vc10\PixInsightINDI.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Win32\Release\PixInsightINDI.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         C:\Program Files\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"D:\PCL-02.00.02.0584-20130327\PCL\include" /nologo /W3 /WX- /MP /O2 /Ob2 /Oi /Ot /Oy /GL /D WIN32 /D _WINDOWS /D __PCL_WINDOWS /D _NDEBUG /D _WINDLL /D _UNICODE /D UNICODE /GF /Gm- /EHa /MD /GS- /Gy- /arch:SSE2 /fp:precise /Zc:wchar_t /Zc:forScope /GR /Fo"Win32\Release\\" /Fd"Win32\Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt "D:\PCL-02.00.02.0584-20130327\PCL\src\modules\processes\Sandbox\SandboxInstance.cpp" "D:\PCL-02.00.02.0584-20130327\PCL\src\modules\processes\Sandbox\SandboxInterface.cpp" "D:\PCL-02.00.02.0584-20130327\PCL\src\modules\processes\Sandbox\SandboxModule.cpp" "D:\PCL-02.00.02.0584-20130327\PCL\src\modules\processes\Sandbox\SandboxParameters.cpp" "D:\PCL-02.00.02.0584-20130327\PCL\src\modules\processes\Sandbox\SandboxProcess.cpp"
+         SandboxInstance.cpp
+         SandboxInterface.cpp
+         SandboxModule.cpp
+         SandboxParameters.cpp
+         SandboxProcess.cpp
+       Link:
+         C:\Program Files\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\PCL-02.00.02.0584-20130327\PCL\bin\PixInsightINDI-pxm.dll" /NOLOGO /LIBPATH:"D:\PCL-02.00.02.0584-20130327\PCL\lib\windows\vc10\x86" "PCL-pxi.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Win32\Release\PixInsightINDI-pxm.dll.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /PDB:"D:\PCL-02.00.02.0584-20130327\PCL\bin\PixInsightINDI-pxm.pdb" /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /DELAY:UNLOAD /IMPLIB:"Win32\Release\PixInsightINDI.lib" /MACHINE:X86 /DLL Win32\Release\SandboxInstance.obj
+         Win32\Release\SandboxInterface.obj
+         Win32\Release\SandboxModule.obj
+         Win32\Release\SandboxParameters.obj
+         Win32\Release\SandboxProcess.obj
+            Creating library Win32\Release\PixInsightINDI.lib and object Win32\Release\PixInsightINDI.exp
+         Generating code
+         Finished generating code
+         PixInsightINDI.vcxproj -> D:\PCL-02.00.02.0584-20130327\PCL\bin\PixInsightINDI-pxm.dll
+       Manifest:
+         C:\Program Files\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"D:\PCL-02.00.02.0584-20130327\PCL\bin\PixInsightINDI-pxm.dll;#2" /manifest "Win32\Release\PixInsightINDI-pxm.dll.intermediate.manifest"
+       FinalizeBuildStatus:
+         Deleting file "Win32\Release\PixInsightINDI.unsuccessfulbuild".
+         Touching "Win32\Release\PixInsightINDI.lastbuildstate".
+     1>Done Building Project "C:\Users\klaus\Documents\GitHub\PixInsightINDI\windows\vc10\PixInsightINDI.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:47.58

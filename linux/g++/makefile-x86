@@ -1,0 +1,170 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.77
+# Copyright (C) 2009-2013 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Sun, 31 Mar 2013 15:55:37 GMT
+# Project id ...... PixInsightINDI
+# Project type .... Module
+# Platform ........ Linux/g++
+# Configuration ... Release/x86
+######################################################################
+
+OBJ_DIR="C:/Users/klaus/Documents/GitHub/linux/g++/x86/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/PixInsightINDI-pxm.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../ImageAcquisition/CameraData.cpp \
+../../ImageAcquisition/CameraDialog.cpp \
+../../ImageAcquisition/CameraItem.cpp \
+../../ImageAcquisition/DeviceItem.cpp \
+../../ImageAcquisition/ExposeImageInstance.cpp \
+../../ImageAcquisition/ExposeImageInterface.cpp \
+../../ImageAcquisition/ExposeImageParameters.cpp \
+../../ImageAcquisition/ExposeImageProcess.cpp \
+../../ImageAcquisition/FilterWheelData.cpp \
+../../ImageAcquisition/FilterWheelItem.cpp \
+../../ImageAcquisition/ImageAcquisisitionSettingsParameters.cpp \
+../../ImageAcquisition/ImageAcquisitionModule.cpp \
+../../ImageAcquisition/ImageAcquisitionSession.cpp \
+../../ImageAcquisition/ImageAcquisitionSessionInstance.cpp \
+../../ImageAcquisition/ImageAcquisitionSessionInterface.cpp \
+../../ImageAcquisition/ImageAcquisitionSessionParameters.cpp \
+../../ImageAcquisition/ImageAcquisitionSessionProcess.cpp \
+../../ImageAcquisition/ImageAcquisitionSettingsInstance.cpp \
+../../ImageAcquisition/ImageAcquisitionSettingsInterface.cpp \
+../../ImageAcquisition/ImageAcquisitionSettingsProcess.cpp \
+../../ImageAcquisition/parsers.cpp \
+../../ImageAcquisition/test/TestCameraItem.cpp \
+../../PixInsightASCOMDrivers/PixInsightASCOMCameraDriver/DllMain.cpp \
+../../PixInsightASCOMDrivers/PixInsightASCOMCameraDriver/PixInsightASCOMCameraDriver.cpp \
+../../PixInsightASCOMDrivers/PixInsightASCOMCameraDriver/XYDispDriver.cpp \
+../../PixInsightASCOMDrivers/windows/PixInsightASCOMFWDriver/DllMain.cpp \
+../../PixInsightASCOMDrivers/windows/PixInsightASCOMFWDriver/PixInsightASCOMFWDriver.cpp \
+../../PixInsightASCOMDrivers/windows/PixInsightASCOMFWDriver/XYDispDriver.cpp \
+../../PixInsightASCOMDrivers/windows/vc9/DllMain.cpp \
+../../PixInsightASCOMDrivers/windows/vc9/PixInsightASCOMDriver.cpp \
+../../PixInsightCanonDSLRCameraDriver/CanonDSLRCameraDriver/CanonDSLRCameraDriver.cpp \
+../../PixInsightCanonDSLRCameraDriver/CanonDSLRCameraDriver/dllmain.cpp \
+../../PixInsightCanonDSLRCameraDriver/CanonDSLRCameraDriver/stdafx.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x86/Release/ImageAcquisition/CameraData.o \
+./x86/Release/ImageAcquisition/CameraDialog.o \
+./x86/Release/ImageAcquisition/CameraItem.o \
+./x86/Release/ImageAcquisition/DeviceItem.o \
+./x86/Release/ImageAcquisition/ExposeImageInstance.o \
+./x86/Release/ImageAcquisition/ExposeImageInterface.o \
+./x86/Release/ImageAcquisition/ExposeImageParameters.o \
+./x86/Release/ImageAcquisition/ExposeImageProcess.o \
+./x86/Release/ImageAcquisition/FilterWheelData.o \
+./x86/Release/ImageAcquisition/FilterWheelItem.o \
+./x86/Release/ImageAcquisition/ImageAcquisisitionSettingsParameters.o \
+./x86/Release/ImageAcquisition/ImageAcquisitionModule.o \
+./x86/Release/ImageAcquisition/ImageAcquisitionSession.o \
+./x86/Release/ImageAcquisition/ImageAcquisitionSessionInstance.o \
+./x86/Release/ImageAcquisition/ImageAcquisitionSessionInterface.o \
+./x86/Release/ImageAcquisition/ImageAcquisitionSessionParameters.o \
+./x86/Release/ImageAcquisition/ImageAcquisitionSessionProcess.o \
+./x86/Release/ImageAcquisition/ImageAcquisitionSettingsInstance.o \
+./x86/Release/ImageAcquisition/ImageAcquisitionSettingsInterface.o \
+./x86/Release/ImageAcquisition/ImageAcquisitionSettingsProcess.o \
+./x86/Release/ImageAcquisition/parsers.o \
+./x86/Release/ImageAcquisition/test/TestCameraItem.o \
+./x86/Release/PixInsightASCOMDrivers/PixInsightASCOMCameraDriver/DllMain.o \
+./x86/Release/PixInsightASCOMDrivers/PixInsightASCOMCameraDriver/PixInsightASCOMCameraDriver.o \
+./x86/Release/PixInsightASCOMDrivers/PixInsightASCOMCameraDriver/XYDispDriver.o \
+./x86/Release/PixInsightASCOMDrivers/windows/PixInsightASCOMFWDriver/DllMain.o \
+./x86/Release/PixInsightASCOMDrivers/windows/PixInsightASCOMFWDriver/PixInsightASCOMFWDriver.o \
+./x86/Release/PixInsightASCOMDrivers/windows/PixInsightASCOMFWDriver/XYDispDriver.o \
+./x86/Release/PixInsightASCOMDrivers/windows/vc9/DllMain.o \
+./x86/Release/PixInsightASCOMDrivers/windows/vc9/PixInsightASCOMDriver.o \
+./x86/Release/PixInsightCanonDSLRCameraDriver/CanonDSLRCameraDriver/CanonDSLRCameraDriver.o \
+./x86/Release/PixInsightCanonDSLRCameraDriver/CanonDSLRCameraDriver/dllmain.o \
+./x86/Release/PixInsightCanonDSLRCameraDriver/CanonDSLRCameraDriver/stdafx.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x86/Release/ImageAcquisition/CameraData.d \
+./x86/Release/ImageAcquisition/CameraDialog.d \
+./x86/Release/ImageAcquisition/CameraItem.d \
+./x86/Release/ImageAcquisition/DeviceItem.d \
+./x86/Release/ImageAcquisition/ExposeImageInstance.d \
+./x86/Release/ImageAcquisition/ExposeImageInterface.d \
+./x86/Release/ImageAcquisition/ExposeImageParameters.d \
+./x86/Release/ImageAcquisition/ExposeImageProcess.d \
+./x86/Release/ImageAcquisition/FilterWheelData.d \
+./x86/Release/ImageAcquisition/FilterWheelItem.d \
+./x86/Release/ImageAcquisition/ImageAcquisisitionSettingsParameters.d \
+./x86/Release/ImageAcquisition/ImageAcquisitionModule.d \
+./x86/Release/ImageAcquisition/ImageAcquisitionSession.d \
+./x86/Release/ImageAcquisition/ImageAcquisitionSessionInstance.d \
+./x86/Release/ImageAcquisition/ImageAcquisitionSessionInterface.d \
+./x86/Release/ImageAcquisition/ImageAcquisitionSessionParameters.d \
+./x86/Release/ImageAcquisition/ImageAcquisitionSessionProcess.d \
+./x86/Release/ImageAcquisition/ImageAcquisitionSettingsInstance.d \
+./x86/Release/ImageAcquisition/ImageAcquisitionSettingsInterface.d \
+./x86/Release/ImageAcquisition/ImageAcquisitionSettingsProcess.d \
+./x86/Release/ImageAcquisition/parsers.d \
+./x86/Release/ImageAcquisition/test/TestCameraItem.d \
+./x86/Release/PixInsightASCOMDrivers/PixInsightASCOMCameraDriver/DllMain.d \
+./x86/Release/PixInsightASCOMDrivers/PixInsightASCOMCameraDriver/PixInsightASCOMCameraDriver.d \
+./x86/Release/PixInsightASCOMDrivers/PixInsightASCOMCameraDriver/XYDispDriver.d \
+./x86/Release/PixInsightASCOMDrivers/windows/PixInsightASCOMFWDriver/DllMain.d \
+./x86/Release/PixInsightASCOMDrivers/windows/PixInsightASCOMFWDriver/PixInsightASCOMFWDriver.d \
+./x86/Release/PixInsightASCOMDrivers/windows/PixInsightASCOMFWDriver/XYDispDriver.d \
+./x86/Release/PixInsightASCOMDrivers/windows/vc9/DllMain.d \
+./x86/Release/PixInsightASCOMDrivers/windows/vc9/PixInsightASCOMDriver.d \
+./x86/Release/PixInsightCanonDSLRCameraDriver/CanonDSLRCameraDriver/CanonDSLRCameraDriver.d \
+./x86/Release/PixInsightCanonDSLRCameraDriver/CanonDSLRCameraDriver/dllmain.d \
+./x86/Release/PixInsightCanonDSLRCameraDriver/CanonDSLRCameraDriver/stdafx.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/PixInsightINDI-pxm.so: $(OBJ_FILES)
+	g++-4.7.2 -m32 -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR32)" -L"$(PCLBINDIR32)" -o $(OBJ_DIR)/PixInsightINDI-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x86 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/PixInsightINDI-pxm.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/PixInsightINDI-pxm.so $(PCLBINDIR32)
+
+./x86/Release/ImageAcquisition/%.o: ../../ImageAcquisition/%.cpp
+	g++-4.7.2 -c -pipe -m32 -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x86/Release/ImageAcquisition/test/%.o: ../../ImageAcquisition/test/%.cpp
+	g++-4.7.2 -c -pipe -m32 -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x86/Release/PixInsightASCOMDrivers/PixInsightASCOMCameraDriver/%.o: ../../PixInsightASCOMDrivers/PixInsightASCOMCameraDriver/%.cpp
+	g++-4.7.2 -c -pipe -m32 -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x86/Release/PixInsightASCOMDrivers/windows/PixInsightASCOMFWDriver/%.o: ../../PixInsightASCOMDrivers/windows/PixInsightASCOMFWDriver/%.cpp
+	g++-4.7.2 -c -pipe -m32 -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x86/Release/PixInsightASCOMDrivers/windows/vc9/%.o: ../../PixInsightASCOMDrivers/windows/vc9/%.cpp
+	g++-4.7.2 -c -pipe -m32 -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x86/Release/PixInsightCanonDSLRCameraDriver/CanonDSLRCameraDriver/%.o: ../../PixInsightCanonDSLRCameraDriver/CanonDSLRCameraDriver/%.cpp
+	g++-4.7.2 -c -pipe -m32 -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

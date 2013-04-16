@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+######################################################################
+# PixInsight Makefile Generator Script v1.77
+# Copyright (C) 2009-2013 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Sun, 31 Mar 2013 15:55:39 GMT
+# Project id ...... PixInsightINDI
+# Project type .... Module
+# Platform ........ Windows/vc11
+######################################################################
+-->
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{01b3abbc-eea6-470d-acaa-1ab70a4ab8f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{61114dbc-b961-4bb7-be8f-19901b89253d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{51976188-9de8-43cc-b7aa-83ab0a813575}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Image Files">
+      <UniqueIdentifier>{5f4b9cad-dcb5-426e-a182-4c299db01993}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\ImageAcquisition\CameraData.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\CameraDialog.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\CameraItem.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\DeviceItem.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\ExposeImageInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\ExposeImageInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\ExposeImageParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\ExposeImageProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\FilterWheelData.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\FilterWheelItem.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisisitionSettingsParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionModule.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSession.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSessionInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSessionInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSessionParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSessionProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSettingsInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSettingsInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSettingsProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\parsers.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ImageAcquisition\test\TestCameraItem.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\DllMain.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\PixInsightASCOMCameraDriver.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\XYDispDriver.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\DllMain.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\PixInsightASCOMFWDriver.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\XYDispDriver.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PixInsightASCOMDrivers\windows\vc9\DllMain.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PixInsightASCOMDrivers\windows\vc9\PixInsightASCOMDriver.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\CanonDSLRCameraDriver.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\dllmain.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\stdafx.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\ImageAcquisition\CameraData.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\CameraDialog.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\CameraItem.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\DeviceItem.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\ExposeImageInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\ExposeImageInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\ExposeImageParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\ExposeImageProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\FilterWheelData.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\FilterWheelItem.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\IPixInsightCamera.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\IPixInsightDevice.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\IPixInsightFilterWheel.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionModule.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSession.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSessionInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSessionParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSessionProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSettingsInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSettingsInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSettingsParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSettingsProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\SerializableTraits.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\parsers.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ImageAcquisition\test\TestCameraItem.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\DllExports.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\PixInsightASCOMCameraDriver.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\XYDispDriver.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\stdafx.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\DllExports.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\PixInsightASCOMFWDriver.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\XYDispDriver.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\stdafx.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\vc9\DllExports.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\vc9\PixInsightASCOMDriver.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\vc9\stdafx.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\CanonDSLRCameraDriver.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\DllExports.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\stdafx.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\targetver.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMCameraDriver\SetupDialogForm.resx">
+        <Filter>Resource Files</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMCameraDriver\Properties\Resources.resx">
+        <Filter>Resource Files</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\Debug\CanonDSLRCameraDriver_manifest.rc">
+        <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\ImageAcquisition\ExposeImageIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\ImageAcquisition\ExposeImageIcon.svg">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\ImageAcquisition\ImageAcquisitionSettingsIcon.svg">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\ImageAcquisition\doc\basic_lrgb.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\ImageAcquisition\doc\sample.png">
+        <Filter>Image Files</Filter>
+    </None>
+    <None Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMCameraDriver\ASCOM.png">
+        <Filter>Image Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,101 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.77
+# Copyright (C) 2009-2013 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Fri, 19 Apr 2013 21:32:33 GMT
+# Project id ...... PixInsightINDI
+# Project type .... Module
+# Platform ........ Linux/g++
+# Configuration ... Debug/x86_64
+######################################################################
+
+OBJ_DIR="C:/Users/klaus/Documents/GitHub/PixInsightINDI/linux/g++/x86_64/Debug"
+
+.PHONY: all
+all: $(OBJ_DIR)/PixInsightINDI-pxm.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../PixInsightINDIInstance.cpp \
+../../PixInsightINDIInterface.cpp \
+../../PixInsightINDIModule.cpp \
+../../PixInsightINDIParameters.cpp \
+../../PixInsightINDIProcess.cpp \
+../../PixInsightINDIclient.cpp \
+../../base64.c \
+../../baseclient.cpp \
+../../basedevice.cpp \
+../../indicom.c \
+../../indiproperty.cpp \
+../../lilxml.c \
+../../windows/vc10/PixInsightINDIclient.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x86_64/Debug/PixInsightINDIInstance.o \
+./x86_64/Debug/PixInsightINDIInterface.o \
+./x86_64/Debug/PixInsightINDIModule.o \
+./x86_64/Debug/PixInsightINDIParameters.o \
+./x86_64/Debug/PixInsightINDIProcess.o \
+./x86_64/Debug/PixInsightINDIclient.o \
+./x86_64/Debug/base64.o \
+./x86_64/Debug/baseclient.o \
+./x86_64/Debug/basedevice.o \
+./x86_64/Debug/indicom.o \
+./x86_64/Debug/indiproperty.o \
+./x86_64/Debug/lilxml.o \
+./x86_64/Debug/windows/vc10/PixInsightINDIclient.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x86_64/Debug/PixInsightINDIInstance.d \
+./x86_64/Debug/PixInsightINDIInterface.d \
+./x86_64/Debug/PixInsightINDIModule.d \
+./x86_64/Debug/PixInsightINDIParameters.d \
+./x86_64/Debug/PixInsightINDIProcess.d \
+./x86_64/Debug/PixInsightINDIclient.d \
+./x86_64/Debug/base64.d \
+./x86_64/Debug/baseclient.d \
+./x86_64/Debug/basedevice.d \
+./x86_64/Debug/indicom.d \
+./x86_64/Debug/indiproperty.d \
+./x86_64/Debug/lilxml.d \
+./x86_64/Debug/windows/vc10/PixInsightINDIclient.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/PixInsightINDI-pxm.so: $(OBJ_FILES)
+	g++-4.7.2 -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/PixInsightINDI-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x86_64-debug --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/PixInsightINDI-pxm.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/PixInsightINDI-pxm.so $(PCLBINDIR64)
+
+./x86_64/Debug/%.o: ../../%.cpp
+	g++-4.7.2 -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O0 -g -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x86_64/Debug/windows/vc10/%.o: ../../windows/vc10/%.cpp
+	g++-4.7.2 -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O0 -g -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x86_64/Debug/%.o: ../../%.c
+	gcc-4.7.2 -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O0 -g -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

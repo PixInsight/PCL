@@ -77,9 +77,12 @@ private:
 	VerticalSizer   Global_Sizer;
 		HorizontalSizer		INDIDeviceProperty_Sizer;
 			TreeBox				PropertyList_TreeBox;
+		 VerticalSizer			Buttons_Sizer;
+			PushButton			RefreshProperty_PushButton;
 			PushButton			EditProperty_PushButton;
 	
 	void Button_Click( Button& sender, bool checked );
+	
 };	
 
 

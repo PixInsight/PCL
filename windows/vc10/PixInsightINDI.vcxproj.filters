@@ -101,9 +101,4 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\..\..\..\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\StartMenu\Google Chrome.lnk">
-      <Filter>Source Files</Filter>
-    </None>
-  </ItemGroup>
 </Project>

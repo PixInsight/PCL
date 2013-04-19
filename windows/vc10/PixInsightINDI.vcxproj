@@ -59,9 +59,6 @@
     <ClCompile Include="..\..\PixInsightINDIParameters.cpp" />
     <ClCompile Include="..\..\PixInsightINDIProcess.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\..\..\..\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\StartMenu\Google Chrome.lnk" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1E7F3743-070F-4407-928E-2A4A7664F5BE}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>

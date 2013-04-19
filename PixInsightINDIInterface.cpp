@@ -50,6 +50,8 @@
 #include "PixInsightINDIParameters.h"
 #include "PixInsightINDIProcess.h"
 #include "basedevice.h"
+#include "indibase.h"
+#include "indiapi.h"
 #include <pcl/Console.h>
 
 namespace pcl
@@ -235,8 +237,10 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 
 					if (device)
 						if (!device->isConnected())
-						indiClient->connectDevice(deviceName.c_str());	
-						
+							indiClient->connectDevice(deviceName.c_str());	
+
+					if (device->isConnected())
+						(*it)->Check();
 				}
 				
 				GUI->DrvPropDlg.Execute();
@@ -334,6 +338,8 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    DeviceList_TreeBox.EnableAlternateRowColor();
    DeviceList_TreeBox.EnableMultipleSelections();
    DeviceList_TreeBox.SetNumberOfColumns(2);
+   DeviceList_TreeBox.SetHeaderText(0,"Status");
+   DeviceList_TreeBox.SetHeaderText(1,"Device");
 
    DeviceAction_Sizer.SetSpacing(4);
    ConnectDevice_PushButton.SetText("Connect");
@@ -390,17 +396,30 @@ void PixInsightINDIInterface::UpdateDeviceList(){
 // ----------------------------------------------------------------------------
 DevicePropertiesDialog::DevicePropertiesDialog():Dialog(){
 	pcl::Font fnt = Font();
+	int width = fnt.Width( String( '0',70 ) );
 
 	PropertyList_TreeBox.SetMinHeight( 16*fnt.Height() +2 );
+	PropertyList_TreeBox.SetMinWidth(width);
 	PropertyList_TreeBox.EnableAlternateRowColor();
-	PropertyList_TreeBox.SetNumberOfColumns(3);
+	PropertyList_TreeBox.SetNumberOfColumns(4);
+	PropertyList_TreeBox.SetHeaderText(0,String("Device"));
+	PropertyList_TreeBox.SetHeaderText(1,String("Property"));
+	PropertyList_TreeBox.SetHeaderText(2,String("Name"));
+	PropertyList_TreeBox.SetHeaderText(3,String("Value"));
 
-	EditProperty_PushButton.SetText("Refresh");
+	RefreshProperty_PushButton.SetText("Refresh");
+	RefreshProperty_PushButton.OnClick((Button::click_event_handler) &DevicePropertiesDialog::Button_Click, *this );
+	EditProperty_PushButton.SetText("Edit");
 	EditProperty_PushButton.OnClick((Button::click_event_handler) &DevicePropertiesDialog::Button_Click, *this );
 
 	INDIDeviceProperty_Sizer.Add(PropertyList_TreeBox);
-	INDIDeviceProperty_Sizer.Add(EditProperty_PushButton);
-	INDIDeviceProperty_Sizer.AddStretch();
+	INDIDeviceProperty_Sizer.Add(Buttons_Sizer);
+	
+	Buttons_Sizer.SetSpacing(4);
+	Buttons_Sizer.AddSpacing(10);
+	Buttons_Sizer.Add(RefreshProperty_PushButton);
+	Buttons_Sizer.Add(EditProperty_PushButton);
+	Buttons_Sizer.AddStretch();
 
 	Global_Sizer.Add(INDIDeviceProperty_Sizer);
 
@@ -419,17 +438,61 @@ void DevicePropertiesDialog::UpdatePropertyList(){
    vector<INDI::BaseDevice *> pDevices = indiClient.get()->getDevices();
    for (std::vector<INDI::BaseDevice *>::iterator it = pDevices.begin(); it!=pDevices.end(); ++it  )
    {
+	   TreeBox::Node* pnode = new TreeBox::Node( PropertyList_TreeBox );
+		   if ( pnode == 0 )
+			   return;
+	   
+       
+	   pnode->SetText( 0, (*it)->getDeviceName() );
+	   pnode->SetAlignment( 0, TextAlign::Left );
+		   
 	   vector<INDI::Property *>* pProperties = (*it)->getProperties();
 	   for (std::vector<INDI::Property*>::iterator propIt = pProperties->begin(); propIt!=pProperties->end(); ++propIt){
 
-		   TreeBox::Node* node = new TreeBox::Node( PropertyList_TreeBox );
+		   TreeBox::Node* node = new TreeBox::Node();
 		   if ( node == 0 )
 			   return;
+		   pnode->Add(node);
 		   
-		   node->SetText( 1, (*propIt)->getName() );
+		   switch((*propIt)->getType()){
+		   case INDI_TYPE::INDI_TEXT:
+		   {
+			   for (int i=0; i<(*propIt)->getText()->ntp;i++) {
+				   TreeBox::Node* cnode = new TreeBox::Node();
+				   node->Add(cnode);
+				   cnode->SetText( 3, (*propIt)->getText()->tp[i].text );
+				   cnode->SetText( 2, (*propIt)->getText()->tp[i].label );
+			   }
+				break;
+		   }
+		   case INDI_TYPE::INDI_SWITCH:
+		   {
+			   for (int i=0; i<(*propIt)->getSwitch()->nsp;i++) {
+				   TreeBox::Node* cnode = new TreeBox::Node();
+				   node->Add(cnode);
+				   cnode->SetText( 3, (*propIt)->getSwitch()->sp[i].s == ISState::ISS_ON  ? "ON" : "OFF"  );
+				   cnode->SetText( 2, (*propIt)->getSwitch()->sp[i].label  );
+			   }
+			   break;
+		   }
+		   case INDI_TYPE::INDI_NUMBER:
+		   {
+			   for (int i=0; i<(*propIt)->getNumber()->nnp;i++) {
+				   TreeBox::Node* cnode = new TreeBox::Node();
+				   node->Add(cnode);
+				   IsoString number((*propIt)->getNumber()->np[i].value);
+				   cnode->SetText(3, number.c_str());
+				   cnode->SetText( 2, (*propIt)->getNumber()->np[i].label  );
+			   }
+			   break;
+		   }
+		   default:
+			   node->SetText(2, "no value");
+		   }
+
+		   
+		   node->SetText( 1, (*propIt)->getLabel() );
 		   node->SetAlignment( 1, TextAlign::Left );
-		   node->SetText( 0, (*it)->getDeviceName() );
-		   node->SetAlignment( 0, TextAlign::Left );
 		   Console()<<"Detected property "<<(*propIt)->getName() <<"\n";
 	   }
    }
@@ -439,7 +502,7 @@ void DevicePropertiesDialog::UpdatePropertyList(){
 
 void DevicePropertiesDialog::Button_Click( Button& sender, bool checked ){
 	
-	if ( sender == EditProperty_PushButton )
+	if ( sender == RefreshProperty_PushButton )
 	{
 		UpdatePropertyList();
 	}

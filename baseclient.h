@@ -208,7 +208,9 @@ private:
     int m_sendFd;
 
     void sendCommand(char *fmt, ...);
+#if defined (WIN32)
     int socketpair(int af, int type, int proto, SOCKET sock[2]);
+#endif
 };
 
 #endif // INDIBASECLIENT_H

@@ -65,6 +65,10 @@
 
 #include "PixInsightINDIInstance.h"
 
+#if defined(__PCL_LINUX)
+#include <memory>
+#endif
+
 namespace pcl
 {
 

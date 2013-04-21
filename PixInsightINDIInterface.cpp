@@ -197,8 +197,8 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 
 				connected = indiClient->connectServer();
 
-				if (connected)
-					Console() <<"Successfully connected to server "<<ASCIIHost.c_str()<<":"<<instance.p_port<<"\n";
+				//if (connected)
+				  //Console() <<"Successfully connected to server "<<ASCIIHost.c_str()<<":"<<instance.p_port<<"\n";
 
 				Sleep(2);
 
@@ -217,8 +217,8 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 				if (indiClient->serverIsConnected())
 					indiClient->disconnectServer();
 
-				if (!indiClient->serverIsConnected())
-					Console() <<"Successfully disconnected from server \n";
+				//if (!indiClient->serverIsConnected())
+				//	Console() <<"Successfully disconnected from server \n";
 				GUI->DeviceList_TreeBox.Clear();
             }
             ERROR_HANDLER
@@ -386,7 +386,7 @@ void PixInsightINDIInterface::UpdateDeviceList(){
 
 	   node->SetText( 1, (*it)->getDeviceName() );
        node->SetAlignment( 1, TextAlign::Left );
-	   Console()<<"Detected device "<<(*it)->getDeviceName() <<"\n";
+       //Console()<<"Detected device "<<(*it)->getDeviceName() <<"\n";
    }
 
    GUI->DeviceList_TreeBox.EnableUpdates();
@@ -455,7 +455,7 @@ void DevicePropertiesDialog::UpdatePropertyList(){
 		   pnode->Add(node);
 		   
 		   switch((*propIt)->getType()){
-		   case INDI_TYPE::INDI_TEXT:
+		   case INDI_TEXT:
 		   {
 			   for (int i=0; i<(*propIt)->getText()->ntp;i++) {
 				   TreeBox::Node* cnode = new TreeBox::Node();
@@ -465,17 +465,17 @@ void DevicePropertiesDialog::UpdatePropertyList(){
 			   }
 				break;
 		   }
-		   case INDI_TYPE::INDI_SWITCH:
+		   case INDI_SWITCH:
 		   {
 			   for (int i=0; i<(*propIt)->getSwitch()->nsp;i++) {
 				   TreeBox::Node* cnode = new TreeBox::Node();
 				   node->Add(cnode);
-				   cnode->SetText( 3, (*propIt)->getSwitch()->sp[i].s == ISState::ISS_ON  ? "ON" : "OFF"  );
+				   cnode->SetText( 3, (*propIt)->getSwitch()->sp[i].s == ISS_ON  ? "ON" : "OFF"  );
 				   cnode->SetText( 2, (*propIt)->getSwitch()->sp[i].label  );
 			   }
 			   break;
 		   }
-		   case INDI_TYPE::INDI_NUMBER:
+		   case INDI_NUMBER:
 		   {
 			   for (int i=0; i<(*propIt)->getNumber()->nnp;i++) {
 				   TreeBox::Node* cnode = new TreeBox::Node();
@@ -493,7 +493,7 @@ void DevicePropertiesDialog::UpdatePropertyList(){
 		   
 		   node->SetText( 1, (*propIt)->getLabel() );
 		   node->SetAlignment( 1, TextAlign::Left );
-		   Console()<<"Detected property "<<(*propIt)->getName() <<"\n";
+		   //Console()<<"Detected property "<<(*propIt)->getName() <<"\n";
 	   }
    }
 

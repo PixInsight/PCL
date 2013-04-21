@@ -9,7 +9,7 @@
 # Configuration ... Release/x86_64
 ######################################################################
 
-OBJ_DIR="C:/Users/klaus/Documents/GitHub/PixInsightINDI/linux/g++/x86_64/Release"
+OBJ_DIR="/home/klaus/C++/PixInsight/PixInsightINDIclient/linux/g++/x86_64/Release"
 
 .PHONY: all
 all: $(OBJ_DIR)/PixInsightINDI-pxm.so
@@ -90,12 +90,12 @@ post-build:
 	cp $(OBJ_DIR)/PixInsightINDI-pxm.so $(PCLBINDIR64)
 
 ./x86_64/Release/%.o: ../../%.cpp
-	g++-4.7.2 -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	g++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 ./x86_64/Release/windows/vc10/%.o: ../../windows/vc10/%.cpp
-	g++-4.7.2 -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	g++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 ./x86_64/Release/%.o: ../../%.c
-	gcc-4.7.2 -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	gcc -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

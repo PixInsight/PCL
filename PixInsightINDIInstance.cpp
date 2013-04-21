@@ -55,7 +55,9 @@
 #include <pcl/Console.h>
 #include <pcl/StdStatus.h>
 #include <pcl/View.h>
-
+#if defined(__PCL_LINUX)
+#include <memory>
+#endif
 namespace pcl
 {
 
@@ -132,7 +134,7 @@ bool PixInsightINDIInstance::ExecuteGlobal()
    connected = indiClient->connectServer();
    
    if (connected)
-	   Console() <<"Successfully connected to server "<<ASCIIHost.c_str()<<":"<<p_port<<"\n";
+     //Console().WriteLn("Successfully connected to server %s: %i",ASCIIHost.c_str(),p_port);
 
    Console().Flush();
 
@@ -141,7 +143,7 @@ bool PixInsightINDIInstance::ExecuteGlobal()
    vector<INDI::BaseDevice *> pDevices = indiClient->getDevices();
    for (std::vector<INDI::BaseDevice *>::iterator it = pDevices.begin(); it!=pDevices.end(); ++it  )
    {
-	   Console()<<"Detected device "<<(*it)->getDeviceName() <<"\n";
+     //Console().WriteLn("Detected device %s",(*it)->getDeviceName());
    }
 
 

@@ -818,6 +818,7 @@ error:
 
 void INDI::BaseClient::sendCommand(char *fmt, ...)
 {
+#if defined(WIN32)
     va_list argList;
     va_start(argList, fmt);
 
@@ -831,4 +832,7 @@ void INDI::BaseClient::sendCommand(char *fmt, ...)
         int k=WSAGetLastError();
         //perror("send failed with error: %d\n", WSAGetLastError());
     }
+#else
+	fprintf(svrwfp,sendbuf);
+#endif
 }

@@ -9,7 +9,7 @@
 # Configuration ... Release/x86_64
 ######################################################################
 
-OBJ_DIR="/home/klaus/C++/PixInsight/PixInsightINDIclient/linux/g++/x86_64/Release"
+OBJ_DIR=/home/klaus/C++/PixInsightINDIclient/linux/g++/x86_64/Release
 
 .PHONY: all
 all: $(OBJ_DIR)/PixInsightINDI-pxm.so
@@ -30,8 +30,7 @@ SRC_FILES= \
 ../../basedevice.cpp \
 ../../indicom.c \
 ../../indiproperty.cpp \
-../../lilxml.c \
-../../windows/vc10/PixInsightINDIclient.cpp
+../../lilxml.c 
 
 #
 # Object files
@@ -49,8 +48,7 @@ OBJ_FILES= \
 ./x86_64/Release/basedevice.o \
 ./x86_64/Release/indicom.o \
 ./x86_64/Release/indiproperty.o \
-./x86_64/Release/lilxml.o \
-./x86_64/Release/windows/vc10/PixInsightINDIclient.o
+./x86_64/Release/lilxml.o 
 
 #
 # Dependency files
@@ -68,8 +66,7 @@ DEP_FILES= \
 ./x86_64/Release/basedevice.d \
 ./x86_64/Release/indicom.d \
 ./x86_64/Release/indiproperty.d \
-./x86_64/Release/lilxml.d \
-./x86_64/Release/windows/vc10/PixInsightINDIclient.d
+./x86_64/Release/lilxml.d 
 
 #
 # Rules
@@ -78,7 +75,7 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/PixInsightINDI-pxm.so: $(OBJ_FILES)
-	g++-4.7.2 -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/PixInsightINDI-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
+	g++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/PixInsightINDI-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
 	$(MAKE) -f ./makefile-x86_64 --no-print-directory post-build
 
 .PHONY: clean

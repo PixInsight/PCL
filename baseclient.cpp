@@ -1,5 +1,4 @@
 /*******************************************************************************
-  Copyright(c) 2011 Jasem Mutlaq. All rights reserved.
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Library General Public
@@ -23,6 +22,7 @@
 #include <stdio.h>
 #define snprintf _snprintf
 #else
+#include <cstdarg>
 #include <unistd.h>
 #endif
 #include <sys/types.h>
@@ -57,7 +57,7 @@ INDI::BaseClient::BaseClient()
     cPort   = 7624;
     svrwfp = NULL;    
     sConnected = false;
-
+#if defined(WIN32)
     WORD wVersionRequested;
     WSADATA wsaData;
     int err;
@@ -66,6 +66,7 @@ INDI::BaseClient::BaseClient()
     wVersionRequested = MAKEWORD(2, 2);
 
     err = WSAStartup(wVersionRequested, &wsaData);
+#endif
 }
 
 
@@ -129,9 +130,11 @@ bool INDI::BaseClient::connectServer()
 //        perror("fdopen");
 //        return false;
 //    }
-
+#if defined(WIN32)
     ret = socketpair(/*PF_UNIX*/2,SOCK_STREAM,/*0*/6,(SOCKET*)pipefd);
-
+#else
+    ret = socketpair(/*PF_UNIX*/2,SOCK_STREAM,/*0*/6,pipefd);
+#endif
     if (ret < 0)
     {
         IDLog("notify pipe: %s\n", strerror(errno));
@@ -163,8 +166,9 @@ bool INDI::BaseClient::disconnectServer()
 
     sConnected = false;
 
+#if defined(WIN32)
 #define SHUT_RDWR SD_BOTH
-
+#endif
     int s1=sockfd, s2=m_sendFd;
 
     shutdown(sockfd, SHUT_RDWR);
@@ -290,7 +294,9 @@ void INDI::BaseClient::listenINDI()
     /* read from server, exit if find all requested properties */
     while (sConnected)
     {
-		Sleep(500);
+#if defined(WIN32)
+	Sleep(500);
+#endif
         n = select (maxfd+1, &rs, NULL, NULL, NULL);
 
         if (n < 0)
@@ -818,7 +824,6 @@ error:
 
 void INDI::BaseClient::sendCommand(char *fmt, ...)
 {
-#if defined(WIN32)
     va_list argList;
     va_start(argList, fmt);
 
@@ -826,6 +831,7 @@ void INDI::BaseClient::sendCommand(char *fmt, ...)
     vsprintf(sendbuf, fmt, argList);
     va_end(argList);
 
+#if defined(WIN32)
     int iResult = send(sockfd , sendbuf, (int)strlen(sendbuf), 0 );
     if (iResult == SOCKET_ERROR)
     {

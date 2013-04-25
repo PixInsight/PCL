@@ -40,7 +40,7 @@
 #ifndef WIN32
 #include <sys/param.h>
 
-#include <config.h>
+//#include <config.h>
 #endif
 #ifdef HAVE_NOVA_H
 #include <libnova.h>

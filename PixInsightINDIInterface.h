@@ -62,6 +62,7 @@
 #include <pcl/PushButton.h>
 #include <pcl/TreeBox.h>
 #include <pcl/ErrorHandler.h>
+#include <pcl/Timer.h>
 
 #include "PixInsightINDIInstance.h"
 
@@ -78,14 +79,19 @@ public:
 	DevicePropertiesDialog();
 	void UpdatePropertyList();
 private:
-	VerticalSizer   Global_Sizer;
-		HorizontalSizer		INDIDeviceProperty_Sizer;
+	
+	IsoString m_serverMessage;
+	HorizontalSizer       Global_Sizer;
+		VerticalSizer		INDIDeviceProperty_Sizer;
 			TreeBox				PropertyList_TreeBox;
+			Label               DeviceMessage_Label;
 		 VerticalSizer			Buttons_Sizer;
 			PushButton			RefreshProperty_PushButton;
 			PushButton			EditProperty_PushButton;
 	
 	void Button_Click( Button& sender, bool checked );
+	
+	friend class PixInsightINDIMediator;
 	
 };	
 
@@ -115,13 +121,12 @@ public:
 
    virtual bool ImportProcess( const ProcessImplementation& );
 
-private:
 
-   PixInsightINDIInstance instance;
-
+   
    struct GUIData
    {
       GUIData( PixInsightINDIInterface& );
+	  Timer				 UpdateDeviceList_Timer;
 
       VerticalSizer      Global_Sizer;
 	   SectionBar         INDIServer_SectionBar;
@@ -137,6 +142,7 @@ private:
 		SectionBar         INDIDevices_SectionBar;
 		 HorizontalSizer	INDIDevice_Sizer;
 			TreeBox				DeviceList_TreeBox;
+			Label				DeviceMessage_Label;
 			VerticalSizer		DeviceAction_Sizer;
 				PushButton			ConnectDevice_PushButton;
 				PushButton			DisconnectDevice_PushButton;
@@ -145,12 +151,21 @@ private:
 		DevicePropertiesDialog DrvPropDlg;
    };
 
+   private:
+
+
+   PixInsightINDIInstance instance;
+
    GUIData* GUI;
    
-
-
+   void __UpdateDeviceList_Timer( Timer& sender );
+   
    void UpdateControls();
    void UpdateDeviceList();
+
+   int  m_numOfDevices;
+   bool m_PropertyListNeedsUpdate;
+   bool numOfDevicesChanged();
 
    // Event Handlers
    void __CameraListButtons_Click( Button& sender, bool checked );
@@ -163,6 +178,8 @@ private:
    void __EditCompleted( Edit& sender );
 
    friend struct GUIData;
+   friend class PixInsightINDIMediator;
+   
 };
 
 // ----------------------------------------------------------------------------
@@ -170,6 +187,7 @@ private:
 PCL_BEGIN_LOCAL
 extern PixInsightINDIInterface* ThePixInsightINDIInterface;
 extern auto_ptr<INDIClient> indiClient;
+extern auto_ptr<PixInsightINDIMediator> mediator;
 PCL_END_LOCAL
 
 // ----------------------------------------------------------------------------

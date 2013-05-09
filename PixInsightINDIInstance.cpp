@@ -49,6 +49,7 @@
 #include "PixInsightINDIInstance.h"
 #include "PixInsightINDIParameters.h"
 #include "basedevice.h"
+#include "PixInsightINDIMediator.h"
 //#include "PixInsightINDIclient.h"
 
 #include <pcl/AutoViewLock.h>
@@ -64,6 +65,8 @@ namespace pcl
 
 /* Our client auto pointer */
 auto_ptr<INDIClient> indiClient(0);
+auto_ptr<PixInsightINDIMediator> mediator(0);
+
 
 // ----------------------------------------------------------------------------
 

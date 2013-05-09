@@ -49,6 +49,7 @@
 #include "PixInsightINDIInterface.h"
 #include "PixInsightINDIParameters.h"
 #include "PixInsightINDIProcess.h"
+#include "PixInsightINDIMediator.h"
 #include "basedevice.h"
 #include "indibase.h"
 #include "indiapi.h"
@@ -68,7 +69,7 @@ PixInsightINDIInterface* ThePixInsightINDIInterface = 0;
 // ----------------------------------------------------------------------------
 
 PixInsightINDIInterface::PixInsightINDIInterface() :
-ProcessInterface(), instance( ThePixInsightINDIProcess ), GUI( 0 )
+ProcessInterface(), instance( ThePixInsightINDIProcess ), GUI( 0 ), m_PropertyListNeedsUpdate(false) ,m_numOfDevices(0)
 {
    ThePixInsightINDIInterface = this;
 }
@@ -198,12 +199,12 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 				connected = indiClient->connectServer();
 
 				//if (connected)
-				  //Console() <<"Successfully connected to server "<<ASCIIHost.c_str()<<":"<<instance.p_port<<"\n";
+				  
 
 				Sleep(2);
 
 				UpdateDeviceList();
-
+				GUI->UpdateDeviceList_Timer.Start();
             }
             ERROR_HANDLER
         }
@@ -219,6 +220,8 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 
 				//if (!indiClient->serverIsConnected())
 				//	Console() <<"Successfully disconnected from server \n";
+				GUI->UpdateDeviceList_Timer.Stop();
+			
 				GUI->DeviceList_TreeBox.Clear();
             }
             ERROR_HANDLER
@@ -241,10 +244,17 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 
 					if (device->isConnected())
 						(*it)->Check();
+					
+					if (mediator.get() == 0)
+						mediator.reset(new PixInsightINDIMediator(this));
+					
+					if (mediator.get() != 0)
+						device->setMediator(mediator.get());
+					
 				}
-				
-				GUI->DrvPropDlg.Execute();
 
+				GUI->DrvPropDlg.Execute();
+				
 			}
             ERROR_HANDLER
 		}
@@ -252,7 +262,7 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 		{
 			try
             {
-
+				
 			}
             ERROR_HANDLER
 		}
@@ -275,9 +285,8 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    pcl::Font fnt = w.Font();
    int labelWidth1 = fnt.Width( String( "Three:" ) ); // the longest label text
    int editWidth1 = fnt.Width( String( '0',14 ) );
+   int labelWidth2 = fnt.Width( String( '0',30 ) );
 
-
-   //
    INDIServer_SectionBar.SetTitle("INDI server connection");
    INDIServer_SectionBar.SetSection(INDIServerConnection_Control);
    INDIServerConnection_Control.SetSizer(ParameterHost_Sizer);
@@ -297,7 +306,6 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    ParameterHost_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
    ParameterHost_Edit.SetMinWidth( editWidth1 );
-   ParameterHost_Edit.SetToolTip( "<p>INDI server host.</p>" );
    ParameterHost_Edit.OnGetFocus( (Control::event_handler)&PixInsightINDIInterface::__EditGetFocus, w );
    ParameterHost_Edit.OnEditCompleted( (Edit::edit_event_handler)&PixInsightINDIInterface::__EditCompleted, w );
    
@@ -340,6 +348,8 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    DeviceList_TreeBox.SetNumberOfColumns(2);
    DeviceList_TreeBox.SetHeaderText(0,"Status");
    DeviceList_TreeBox.SetHeaderText(1,"Device");
+   DeviceMessage_Label.SetVariableWidth();
+
 
    DeviceAction_Sizer.SetSpacing(4);
    ConnectDevice_PushButton.SetText("Connect");
@@ -355,6 +365,7 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    DeviceAction_Sizer.AddStretch();
 
    INDIDevice_Sizer.Add(DeviceList_TreeBox);
+   INDIDevice_Sizer.Add(DeviceMessage_Label);
    INDIDevice_Sizer.Add(DeviceAction_Sizer);
    
    Global_Sizer.SetMargin( 8 );
@@ -364,10 +375,47 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    Global_Sizer.Add(INDIDevices_SectionBar);
    Global_Sizer.Add(INDIDevice_Sizer);
 
+   UpdateDeviceList_Timer.SetInterval( 0.5 );
+   UpdateDeviceList_Timer.SetPeriodic( true );
+   UpdateDeviceList_Timer.OnTimer( (Timer::timer_event_handler)&PixInsightINDIInterface::__UpdateDeviceList_Timer, w );
+
+
+
    w.SetSizer( Global_Sizer );
    w.AdjustToContents();
    w.SetFixedSize();
 }
+
+bool PixInsightINDIInterface::numOfDevicesChanged( ){
+	
+	if (indiClient.get() == 0)
+		return false;
+
+	if (m_numOfDevices!=indiClient.get()->getDevices().size()){
+		m_numOfDevices=indiClient.get()->getDevices().size();
+		return true;
+	}
+
+	return false;
+
+}
+
+
+void PixInsightINDIInterface::__UpdateDeviceList_Timer( Timer &sender )
+  {
+	  
+	  if( sender == GUI->UpdateDeviceList_Timer  ){
+		  if (numOfDevicesChanged()){
+			GUI->DrvPropDlg.UpdatePropertyList();
+			UpdateDeviceList();
+		  }else if (m_PropertyListNeedsUpdate){
+			  GUI->DrvPropDlg.UpdatePropertyList();
+			  m_PropertyListNeedsUpdate=false;
+		  }
+	  }
+	  
+  }
+
 
 void PixInsightINDIInterface::UpdateDeviceList(){
 	
@@ -406,14 +454,15 @@ DevicePropertiesDialog::DevicePropertiesDialog():Dialog(){
 	PropertyList_TreeBox.SetHeaderText(1,String("Property"));
 	PropertyList_TreeBox.SetHeaderText(2,String("Name"));
 	PropertyList_TreeBox.SetHeaderText(3,String("Value"));
-
+	DeviceMessage_Label.SetFixedWidth(width);
+	
 	RefreshProperty_PushButton.SetText("Refresh");
 	RefreshProperty_PushButton.OnClick((Button::click_event_handler) &DevicePropertiesDialog::Button_Click, *this );
 	EditProperty_PushButton.SetText("Edit");
 	EditProperty_PushButton.OnClick((Button::click_event_handler) &DevicePropertiesDialog::Button_Click, *this );
 
 	INDIDeviceProperty_Sizer.Add(PropertyList_TreeBox);
-	INDIDeviceProperty_Sizer.Add(Buttons_Sizer);
+	INDIDeviceProperty_Sizer.Add(DeviceMessage_Label);
 	
 	Buttons_Sizer.SetSpacing(4);
 	Buttons_Sizer.AddSpacing(10);
@@ -422,10 +471,14 @@ DevicePropertiesDialog::DevicePropertiesDialog():Dialog(){
 	Buttons_Sizer.AddStretch();
 
 	Global_Sizer.Add(INDIDeviceProperty_Sizer);
+	Global_Sizer.Add(Buttons_Sizer);
 
 	SetSizer(Global_Sizer);
 
+
+
 }
+
 
 void DevicePropertiesDialog::UpdatePropertyList(){
 	
@@ -435,6 +488,8 @@ void DevicePropertiesDialog::UpdatePropertyList(){
 	if (indiClient.get() == 0)
 		return;
 
+	DeviceMessage_Label.SetText(m_serverMessage);   
+
    vector<INDI::BaseDevice *> pDevices = indiClient.get()->getDevices();
    for (std::vector<INDI::BaseDevice *>::iterator it = pDevices.begin(); it!=pDevices.end(); ++it  )
    {
@@ -442,10 +497,10 @@ void DevicePropertiesDialog::UpdatePropertyList(){
 		   if ( pnode == 0 )
 			   return;
 	   
-       
+	   
 	   pnode->SetText( 0, (*it)->getDeviceName() );
 	   pnode->SetAlignment( 0, TextAlign::Left );
-		   
+	
 	   vector<INDI::Property *>* pProperties = (*it)->getProperties();
 	   for (std::vector<INDI::Property*>::iterator propIt = pProperties->begin(); propIt!=pProperties->end(); ++propIt){
 

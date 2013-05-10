@@ -73,7 +73,8 @@ auto_ptr<PixInsightINDIMediator> mediator(0);
 PixInsightINDIInstance::PixInsightINDIInstance( const MetaProcess* m ) :
 ProcessImplementation( m ),
 p_host( TheINDIServerHostname->DefaultValue() ),
-p_port( uint32( TheINDIServerPort->DefaultValue() ) )
+p_port( uint32( TheINDIServerPort->DefaultValue() ) ),
+p_propertyList()
 {
 }
 
@@ -91,6 +92,8 @@ void PixInsightINDIInstance::Assign( const ProcessImplementation& p )
    {
 	  p_host  = x->p_host;
 	  p_port  = x->p_port;
+	  p_propertyList = x->p_propertyList;
+
    }
 }
 
@@ -122,7 +125,77 @@ bool PixInsightINDIInstance::CanExecuteGlobal( pcl::String& whyNot ) const
    return true;
 }
 
+void PixInsightINDIInstance::getProperties(){
+	if (indiClient.get() == NULL){
+		Console() <<"INDI client not initialized\n";
+		return;
+	}
 
+	if (!indiClient.get()->serverIsConnected()){
+		Console() <<"INDI server not connected. Please connect to an INDI server\n";
+		return;
+	}
+
+	String sep=String("/");
+
+	vector<INDI::BaseDevice *> pDevices = indiClient.get()->getDevices();
+	for (std::vector<INDI::BaseDevice *>::iterator it = pDevices.begin(); it!=pDevices.end(); ++it  )
+	{
+
+		vector<INDI::Property *>* pProperties = (*it)->getProperties();
+		for (std::vector<INDI::Property*>::iterator propIt = pProperties->begin(); propIt!=pProperties->end(); ++propIt){
+
+			
+
+
+			switch((*propIt)->getType()){
+			case INDI_TEXT:
+				{
+					for (int i=0; i<(*propIt)->getText()->ntp;i++) {
+						INDIPropertyListItem propertyListItem;
+						propertyListItem.PropertyKey=sep + String((*it)->getDeviceName()) + sep + (*propIt)->getLabel() + sep + String((*propIt)->getText()->tp[i].label);
+						propertyListItem.PropertyValue=(*propIt)->getText()->tp[i].text;
+						p_propertyList.Add(propertyListItem);
+					}
+					break;
+				}
+			case INDI_SWITCH:
+				{
+					for (int i=0; i<(*propIt)->getSwitch()->nsp;i++) {
+						INDIPropertyListItem propertyListItem;
+						propertyListItem.PropertyKey=sep + String((*it)->getDeviceName()) + sep + (*propIt)->getLabel() + sep + (*propIt)->getSwitch()->sp[i].label;
+						propertyListItem.PropertyValue=(*propIt)->getSwitch()->sp[i].s == ISS_ON  ? "ON" : "OFF"  ;
+						p_propertyList.Add(propertyListItem);
+					}
+					break;
+				}
+			case INDI_NUMBER:
+				{
+					for (int i=0; i<(*propIt)->getNumber()->nnp;i++) {
+						INDIPropertyListItem propertyListItem;
+						IsoString number((*propIt)->getNumber()->np[i].value);
+						propertyListItem.PropertyKey=sep + String((*it)->getDeviceName()) + sep + (*propIt)->getLabel() + sep +(*propIt)->getNumber()->np[i].label;
+						propertyListItem.PropertyValue=number.c_str();
+						p_propertyList.Add(propertyListItem);
+					}
+					break;
+				}
+			default:
+				INDIPropertyListItem propertyListItem;
+				propertyListItem.PropertyKey=sep + String((*it)->getDeviceName()) + sep + (*propIt)->getLabel() + sep;
+				propertyListItem.PropertyValue=String("no value");
+				p_propertyList.Add(propertyListItem);
+
+			}
+
+			
+			
+			//Console()<<"Detected property "<<(*propIt)->getName() <<"\n";
+		}
+	}
+
+
+}
 
 bool PixInsightINDIInstance::ExecuteGlobal()
 {
@@ -132,33 +205,30 @@ bool PixInsightINDIInstance::ExecuteGlobal()
    IsoString ASCIIHost(p_host);
    indiClient->setServer(ASCIIHost.c_str() , p_port);
    
-   bool connected=false;
-	
-   connected = indiClient->connectServer();
+   if (!indiClient.get()->serverIsConnected())
+		indiClient->connectServer();
    
-   if (connected)
-     //Console().WriteLn("Successfully connected to server %s: %i",ASCIIHost.c_str(),p_port);
+   if (indiClient.get()->serverIsConnected())
+     Console()<<"Successfully connected to server "<<ASCIIHost.c_str()<<", port="<<p_port<<"\n";
 
    Console().Flush();
 
-   Sleep(1);
-
-   vector<INDI::BaseDevice *> pDevices = indiClient->getDevices();
-   for (std::vector<INDI::BaseDevice *>::iterator it = pDevices.begin(); it!=pDevices.end(); ++it  )
-   {
-     //Console().WriteLn("Detected device %s",(*it)->getDeviceName());
-   }
+   getProperties();
 
 
    return true;
 }
 
-void* PixInsightINDIInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/ )
+void* PixInsightINDIInstance::LockParameter( const MetaParameter* p, size_type tableRow )
 {
    if ( p == TheINDIServerHostname )
       return p_host.c_str();
    if ( p == TheINDIServerPort )
       return &p_port;
+   if (p == TheINDIPropertyNameParameter)
+	   return p_propertyList[tableRow].PropertyKey.c_str();
+   if (p == TheINDIPropertyValueParameter)
+	   return p_propertyList[tableRow].PropertyValue.c_str();
 
    return 0;
 }
@@ -172,6 +242,21 @@ bool PixInsightINDIInstance::AllocateParameter( size_type sizeOrLength, const Me
 		if ( sizeOrLength > 0 )
 			p_host.Reserve( sizeOrLength );
 	}
+	else if ( p == TheINDIPropertiesParameter){
+		p_propertyList.Clear();
+		if ( sizeOrLength > 0 )
+			p_propertyList.Add( INDIPropertyListItem(), sizeOrLength );
+	}
+	else if ( p == TheINDIPropertyNameParameter){
+		p_propertyList[tableRow].PropertyKey.Clear();
+		if ( sizeOrLength > 0 )
+			p_propertyList[tableRow].PropertyKey.Reserve( sizeOrLength );
+	}
+	else if ( p == TheINDIPropertyValueParameter){
+		p_propertyList[tableRow].PropertyValue.Clear();
+		if ( sizeOrLength > 0 )
+			p_propertyList[tableRow].PropertyValue.Reserve( sizeOrLength );
+	}
 	else
 		return false;
 
@@ -182,6 +267,13 @@ size_type PixInsightINDIInstance::ParameterLength( const MetaParameter* p, size_
 {
    if ( p == TheINDIServerHostname )
       return p_host.Length();
+   if (p == TheINDIPropertiesParameter)
+	   return p_propertyList.Length();
+   if ( p == TheINDIPropertyNameParameter )
+      return p_propertyList[tableRow].PropertyKey.Length();
+   if ( p == TheINDIPropertyValueParameter )
+      return p_propertyList[tableRow].PropertyValue.Length();
+
 
    return 0;
 }

@@ -53,10 +53,11 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-INDIServerHostname*            TheINDIServerHostname =0;
-INDIServerPort*                TheINDIServerPort =0;
-
-
+INDIServerHostname*			TheINDIServerHostname =0;
+INDIServerPort*				TheINDIServerPort =0;
+INDIProperties*				TheINDIPropertiesParameter = 0;
+INDIPropertyName*			TheINDIPropertyNameParameter = 0;
+INDIPropertyValue*			TheINDIPropertyValueParameter = 0;
 
 // ----------------------------------------------------------------------------
 // The INDI server hostname
@@ -104,6 +105,35 @@ double INDIServerPort::MaximumValue() const
 {
    return 65535;
 }
+
+INDIProperties::INDIProperties ( MetaProcess* P): MetaTable(P)
+{
+	TheINDIPropertiesParameter = this;
+}
+
+IsoString INDIProperties::Id() const
+{
+   return "INDI_Properties";
+}
+
+INDIPropertyName::INDIPropertyName(MetaTable* T):MetaString(T){
+	TheINDIPropertyNameParameter = this;
+}
+
+IsoString INDIPropertyName::Id() const
+{
+   return "INDI_PropertyName";
+}
+
+INDIPropertyValue::INDIPropertyValue(MetaTable* T):MetaString(T){
+	TheINDIPropertyValueParameter = this;
+}
+
+IsoString INDIPropertyValue::Id() const
+{
+   return "INDI_PropertyValue";
+}
+
 
 // ----------------------------------------------------------------------------
 

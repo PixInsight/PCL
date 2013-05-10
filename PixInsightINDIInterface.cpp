@@ -433,7 +433,7 @@ void PixInsightINDIInterface::UpdateDeviceList(){
 			return;
 
 	   node->SetText( 1, (*it)->getDeviceName() );
-       node->SetAlignment( 1, TextAlign::Left );
+	   node->SetAlignment( 1, TextAlign::Left );
        //Console()<<"Detected device "<<(*it)->getDeviceName() <<"\n";
    }
 
@@ -475,13 +475,11 @@ DevicePropertiesDialog::DevicePropertiesDialog():Dialog(){
 
 	SetSizer(Global_Sizer);
 
-
-
 }
 
 
 void DevicePropertiesDialog::UpdatePropertyList(){
-	
+
 	PropertyList_TreeBox.DisableUpdates();
 	PropertyList_TreeBox.Clear();
 
@@ -490,69 +488,67 @@ void DevicePropertiesDialog::UpdatePropertyList(){
 
 	DeviceMessage_Label.SetText(m_serverMessage);   
 
-   vector<INDI::BaseDevice *> pDevices = indiClient.get()->getDevices();
-   for (std::vector<INDI::BaseDevice *>::iterator it = pDevices.begin(); it!=pDevices.end(); ++it  )
-   {
-	   TreeBox::Node* pnode = new TreeBox::Node( PropertyList_TreeBox );
-		   if ( pnode == 0 )
-			   return;
-	   
-	   
-	   pnode->SetText( 0, (*it)->getDeviceName() );
-	   pnode->SetAlignment( 0, TextAlign::Left );
-	
-	   vector<INDI::Property *>* pProperties = (*it)->getProperties();
-	   for (std::vector<INDI::Property*>::iterator propIt = pProperties->begin(); propIt!=pProperties->end(); ++propIt){
+	vector<INDI::BaseDevice *> pDevices = indiClient.get()->getDevices();
+	for (std::vector<INDI::BaseDevice *>::iterator it = pDevices.begin(); it!=pDevices.end(); ++it  )
+	{
+		TreeBox::Node* pnode = new TreeBox::Node( PropertyList_TreeBox );
+		if ( pnode == 0 )
+			return;
 
-		   TreeBox::Node* node = new TreeBox::Node();
-		   if ( node == 0 )
-			   return;
-		   pnode->Add(node);
-		   
-		   switch((*propIt)->getType()){
-		   case INDI_TEXT:
-		   {
-			   for (int i=0; i<(*propIt)->getText()->ntp;i++) {
-				   TreeBox::Node* cnode = new TreeBox::Node();
-				   node->Add(cnode);
-				   cnode->SetText( 3, (*propIt)->getText()->tp[i].text );
-				   cnode->SetText( 2, (*propIt)->getText()->tp[i].label );
-			   }
-				break;
-		   }
-		   case INDI_SWITCH:
-		   {
-			   for (int i=0; i<(*propIt)->getSwitch()->nsp;i++) {
-				   TreeBox::Node* cnode = new TreeBox::Node();
-				   node->Add(cnode);
-				   cnode->SetText( 3, (*propIt)->getSwitch()->sp[i].s == ISS_ON  ? "ON" : "OFF"  );
-				   cnode->SetText( 2, (*propIt)->getSwitch()->sp[i].label  );
-			   }
-			   break;
-		   }
-		   case INDI_NUMBER:
-		   {
-			   for (int i=0; i<(*propIt)->getNumber()->nnp;i++) {
-				   TreeBox::Node* cnode = new TreeBox::Node();
-				   node->Add(cnode);
-				   IsoString number((*propIt)->getNumber()->np[i].value);
-				   cnode->SetText(3, number.c_str());
-				   cnode->SetText( 2, (*propIt)->getNumber()->np[i].label  );
-			   }
-			   break;
-		   }
-		   default:
-			   node->SetText(2, "no value");
-		   }
+		pnode->SetText( 0, (*it)->getDeviceName() );
+		pnode->SetAlignment( 0, TextAlign::Left );
 
-		   
-		   node->SetText( 1, (*propIt)->getLabel() );
-		   node->SetAlignment( 1, TextAlign::Left );
-		   //Console()<<"Detected property "<<(*propIt)->getName() <<"\n";
-	   }
-   }
+		vector<INDI::Property *>* pProperties = (*it)->getProperties();
+		for (std::vector<INDI::Property*>::iterator propIt = pProperties->begin(); propIt!=pProperties->end(); ++propIt){
 
-   PropertyList_TreeBox.EnableUpdates();
+			TreeBox::Node* node = new TreeBox::Node();
+			if ( node == 0 )
+				return;
+			pnode->Add(node);
+
+			switch((*propIt)->getType()){
+			case INDI_TEXT:
+				{
+					for (int i=0; i<(*propIt)->getText()->ntp;i++) {
+						TreeBox::Node* cnode = new TreeBox::Node();
+						node->Add(cnode);
+						cnode->SetText( 3, (*propIt)->getText()->tp[i].text );
+						cnode->SetText( 2, (*propIt)->getText()->tp[i].label );
+					}
+					break;
+				}
+			case INDI_SWITCH:
+				{
+					for (int i=0; i<(*propIt)->getSwitch()->nsp;i++) {
+						TreeBox::Node* cnode = new TreeBox::Node();
+						node->Add(cnode);
+						cnode->SetText( 3, (*propIt)->getSwitch()->sp[i].s == ISS_ON  ? "ON" : "OFF"  );
+						cnode->SetText( 2, (*propIt)->getSwitch()->sp[i].label  );
+					}
+					break;
+				}
+			case INDI_NUMBER:
+				{
+					for (int i=0; i<(*propIt)->getNumber()->nnp;i++) {
+						TreeBox::Node* cnode = new TreeBox::Node();
+						node->Add(cnode);
+						IsoString number((*propIt)->getNumber()->np[i].value);
+						cnode->SetText(3, number.c_str());
+						cnode->SetText( 2, (*propIt)->getNumber()->np[i].label  );
+					}
+					break;
+				}
+			default:
+				node->SetText(2, "no value");
+			}
+
+			node->SetText( 1, (*propIt)->getLabel() );
+			node->SetAlignment( 1, TextAlign::Left );
+			//Console()<<"Detected property "<<(*propIt)->getName() <<"\n";
+		}
+	}
+
+	PropertyList_TreeBox.EnableUpdates();
 }
 
 void DevicePropertiesDialog::Button_Click( Button& sender, bool checked ){

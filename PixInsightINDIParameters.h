@@ -56,6 +56,12 @@ namespace pcl
 
 PCL_BEGIN_LOCAL
 
+struct INDIPropertyListItem {
+	INDIPropertyListItem(){}
+	String PropertyKey;
+	String PropertyValue;
+};
+
 // ----------------------------------------------------------------------------
 // The hostname of the INDI server 
 
@@ -86,6 +92,30 @@ public:
 };
 
 extern INDIServerPort* TheINDIServerPort;
+
+class INDIProperties: public MetaTable
+{
+public:
+	INDIProperties ( MetaProcess* );
+	virtual IsoString Id() const;
+};
+extern INDIProperties* TheINDIPropertiesParameter ;
+
+class INDIPropertyName: public MetaString
+{
+public:
+	INDIPropertyName ( MetaTable* );
+	virtual IsoString Id() const;
+};
+extern INDIPropertyName* TheINDIPropertyNameParameter ;
+
+class INDIPropertyValue: public MetaString
+{
+public:
+	INDIPropertyValue ( MetaTable* );
+	virtual IsoString Id() const;
+};
+extern INDIPropertyValue* TheINDIPropertyValueParameter ;
 
 // ----------------------------------------------------------------------------
 

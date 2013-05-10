@@ -179,7 +179,7 @@ public:
 
    friend struct GUIData;
    friend class PixInsightINDIMediator;
-   
+   friend class DevicePropertiesDialog;
 };
 
 // ----------------------------------------------------------------------------

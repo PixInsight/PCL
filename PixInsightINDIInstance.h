@@ -52,6 +52,7 @@
 #include <pcl/MetaParameter.h> // for pcl_bool, pcl_enum
 #include <pcl/ProcessImplementation.h>
 #include "PixInsightINDIclient.h"
+#include "PixInsightINDIParameters.h"
 
 namespace pcl
 {
@@ -62,6 +63,8 @@ namespace pcl
 class PixInsightINDIInstance : public ProcessImplementation
 {
 public:
+
+   typedef Array<INDIPropertyListItem> PropertyListType;
 
    PixInsightINDIInstance( const MetaProcess* );
    PixInsightINDIInstance( const PixInsightINDIInstance& );
@@ -76,13 +79,13 @@ public:
    virtual void* LockParameter( const MetaParameter*, size_type tableRow );
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
-	
+   PropertyListType    p_propertyList;		
 private:
 
-   String	p_host; // String hostname of INDI server
-   uint32   p_port;	// uint32 port of INDI server  
+   String	           p_host; // String hostname of INDI server
+   uint32              p_port;	// uint32 port of INDI server  
    
-	
+   void getProperties();
 
    friend class PixInsightINDIEngine;
    friend class PixInsightINDIProcess;

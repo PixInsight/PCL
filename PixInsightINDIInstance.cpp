@@ -74,7 +74,8 @@ PixInsightINDIInstance::PixInsightINDIInstance( const MetaProcess* m ) :
 ProcessImplementation( m ),
 p_host( TheINDIServerHostname->DefaultValue() ),
 p_port( uint32( TheINDIServerPort->DefaultValue() ) ),
-p_propertyList()
+p_propertyList(),
+p_newPropertyList()
 {
 }
 
@@ -93,6 +94,7 @@ void PixInsightINDIInstance::Assign( const ProcessImplementation& p )
 	  p_host  = x->p_host;
 	  p_port  = x->p_port;
 	  p_propertyList = x->p_propertyList;
+	  p_newPropertyList = x->p_newPropertyList;
 
    }
 }
@@ -125,6 +127,69 @@ bool PixInsightINDIInstance::CanExecuteGlobal( pcl::String& whyNot ) const
    return true;
 }
 
+
+bool PixInsightINDIInstance::getPropertyFromKeyString(INDINewPropertyListItem& propertyKey, const String& keyString){
+
+	
+	size_type start=0;
+	size_type nextStart=keyString.FindFirst("/",start);
+	size_type count=0;
+	
+	while (nextStart !=String::notFound){
+		if (count==0){
+			start=nextStart+1;
+			count++;
+			nextStart = keyString.FindFirst("/",start);
+			continue;
+		}
+		if (count==1)
+			propertyKey.Device = keyString.SubString(start,nextStart-start);
+		else if (count==2)
+			propertyKey.Property = keyString.SubString(start,nextStart-start);
+		 else if (count==3)
+			break;
+		else
+			Console()<<"Assertion in getPropertyFromKeyString: Should not be here";
+
+		count++;
+		start=nextStart+1;
+		nextStart = keyString.FindFirst("/",start);
+	}
+
+	if (nextStart==String::notFound && count!=0)
+		propertyKey.Element = keyString.SubString(start,keyString.Length()-start);
+	else
+		return false;
+	
+	return true;
+
+}
+
+
+void PixInsightINDIInstance::setNewProperties(){
+	for (pcl::Array<INDINewPropertyListItem>::iterator iter=p_newPropertyList.Begin(); iter!=p_newPropertyList.End(); ++iter ){
+		if (!iter->NewPropertyValue.IsEmpty()){
+
+			Console()<<"Found new property value= "<<iter->NewPropertyValue<<" for property key= "<<iter->PropertyKey<<"\n";
+			if (getPropertyFromKeyString(*iter,iter->PropertyKey)){
+				Console()<<"DEVICE= "<<iter->Device<<", property="<<iter->Property<<", element="<<iter->Element<<"\n";
+			
+				if (iter->PropertyType == "INDI_SWITCH"){
+					indiClient.get()->sendNewSwitch(IsoString(iter->Device).c_str(),IsoString(iter->Property).c_str(),IsoString(iter->Element).c_str());
+				}
+				if (iter->PropertyType == "INDI_TEXT"){
+					indiClient.get()->sendNewText(IsoString(iter->Device).c_str(),IsoString(iter->Property).c_str(),IsoString(iter->Element).c_str(),IsoString(iter->NewPropertyValue).c_str());
+				}
+				if (iter->PropertyType == "INDI_NUMBER"){
+					indiClient.get()->sendNewNumber(IsoString(iter->Device).c_str(),IsoString(iter->Property).c_str(),IsoString(iter->Element).c_str(),iter->NewPropertyValue.ToDouble());
+				}
+			}
+
+		}
+	}
+	p_newPropertyList.Clear();
+}
+
 void PixInsightINDIInstance::getProperties(){
 	if (indiClient.get() == NULL){
 		Console() <<"INDI client not initialized\n";
@@ -145,15 +210,16 @@ void PixInsightINDIInstance::getProperties(){
 		vector<INDI::Property *>* pProperties = (*it)->getProperties();
 		for (std::vector<INDI::Property*>::iterator propIt = pProperties->begin(); propIt!=pProperties->end(); ++propIt){
 
-			
-
-
 			switch((*propIt)->getType()){
 			case INDI_TEXT:
 				{
 					for (int i=0; i<(*propIt)->getText()->ntp;i++) {
 						INDIPropertyListItem propertyListItem;
-						propertyListItem.PropertyKey=sep + String((*it)->getDeviceName()) + sep + (*propIt)->getLabel() + sep + String((*propIt)->getText()->tp[i].label);
+						propertyListItem.Device=String((*it)->getDeviceName());
+						propertyListItem.Property=String((*propIt)->getName());
+						propertyListItem.PropertyType=INDI_TEXT;
+						propertyListItem.Element = String((*propIt)->getText()->tp[i].name);
+						propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element ;
 						propertyListItem.PropertyValue=(*propIt)->getText()->tp[i].text;
 						p_propertyList.Add(propertyListItem);
 					}
@@ -163,7 +229,11 @@ void PixInsightINDIInstance::getProperties(){
 				{
 					for (int i=0; i<(*propIt)->getSwitch()->nsp;i++) {
 						INDIPropertyListItem propertyListItem;
-						propertyListItem.PropertyKey=sep + String((*it)->getDeviceName()) + sep + (*propIt)->getLabel() + sep + (*propIt)->getSwitch()->sp[i].label;
+						propertyListItem.Device=String((*it)->getDeviceName());
+						propertyListItem.Property=String((*propIt)->getName());
+						propertyListItem.PropertyType=INDI_SWITCH;
+						propertyListItem.Element=(*propIt)->getSwitch()->sp[i].name;
+						propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element;
 						propertyListItem.PropertyValue=(*propIt)->getSwitch()->sp[i].s == ISS_ON  ? "ON" : "OFF"  ;
 						p_propertyList.Add(propertyListItem);
 					}
@@ -173,8 +243,12 @@ void PixInsightINDIInstance::getProperties(){
 				{
 					for (int i=0; i<(*propIt)->getNumber()->nnp;i++) {
 						INDIPropertyListItem propertyListItem;
+						propertyListItem.Device=String((*it)->getDeviceName());
+						propertyListItem.Property=String((*propIt)->getName());
+						propertyListItem.PropertyType=INDI_NUMBER;
+						propertyListItem.Element=(*propIt)->getNumber()->np[i].name;
 						IsoString number((*propIt)->getNumber()->np[i].value);
-						propertyListItem.PropertyKey=sep + String((*it)->getDeviceName()) + sep + (*propIt)->getLabel() + sep +(*propIt)->getNumber()->np[i].label;
+						propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element;
 						propertyListItem.PropertyValue=number.c_str();
 						p_propertyList.Add(propertyListItem);
 					}
@@ -182,14 +256,16 @@ void PixInsightINDIInstance::getProperties(){
 				}
 			default:
 				INDIPropertyListItem propertyListItem;
-				propertyListItem.PropertyKey=sep + String((*it)->getDeviceName()) + sep + (*propIt)->getLabel() + sep;
+				propertyListItem.Device=String((*it)->getDeviceName());
+				propertyListItem.Property=String((*propIt)->getName());
+				propertyListItem.PropertyType=INDI_UNKNOWN;
+				propertyListItem.Element=String("no element");
+				propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element;
 				propertyListItem.PropertyValue=String("no value");
 				p_propertyList.Add(propertyListItem);
 
 			}
 
-			
-			
 			//Console()<<"Detected property "<<(*propIt)->getName() <<"\n";
 		}
 	}
@@ -213,8 +289,12 @@ bool PixInsightINDIInstance::ExecuteGlobal()
 
    Console().Flush();
 
+   setNewProperties();
+
    getProperties();
 
+
+   
 
    return true;
 }
@@ -229,6 +309,13 @@ void* PixInsightINDIInstance::LockParameter( const MetaParameter* p, size_type t
 	   return p_propertyList[tableRow].PropertyKey.c_str();
    if (p == TheINDIPropertyValueParameter)
 	   return p_propertyList[tableRow].PropertyValue.c_str();
+   if (p == TheINDINewPropertyValueParameter)
+	   return p_newPropertyList[tableRow].NewPropertyValue.c_str();
+   if (p == TheINDINewPropertyKeyParameter)
+	   return p_newPropertyList[tableRow].PropertyKey.c_str();
+   if (p == TheINDINewPropertyTypeParameter)
+	   return p_newPropertyList[tableRow].PropertyType.c_str();
+
 
    return 0;
 }
@@ -257,6 +344,26 @@ bool PixInsightINDIInstance::AllocateParameter( size_type sizeOrLength, const Me
 		if ( sizeOrLength > 0 )
 			p_propertyList[tableRow].PropertyValue.Reserve( sizeOrLength );
 	}
+	else if ( p == TheINDINewPropertiesParameter){
+		p_newPropertyList.Clear();
+		if ( sizeOrLength > 0 )
+			p_newPropertyList.Add( INDINewPropertyListItem(), sizeOrLength );
+	}
+	else if ( p == TheINDINewPropertyValueParameter){
+		p_newPropertyList[tableRow].NewPropertyValue.Clear();
+		if ( sizeOrLength > 0 )
+			p_newPropertyList[tableRow].NewPropertyValue.Reserve( sizeOrLength );
+	}
+	else if ( p == TheINDINewPropertyKeyParameter){
+		p_newPropertyList[tableRow].PropertyKey.Clear();
+		if ( sizeOrLength > 0 )
+			p_newPropertyList[tableRow].PropertyKey.Reserve( sizeOrLength );
+	}
+	else if ( p == TheINDINewPropertyTypeParameter){
+		p_newPropertyList[tableRow].PropertyType.Clear();
+		if ( sizeOrLength > 0 )
+			p_newPropertyList[tableRow].PropertyType.Reserve( sizeOrLength );
+	}
 	else
 		return false;
 
@@ -265,17 +372,25 @@ bool PixInsightINDIInstance::AllocateParameter( size_type sizeOrLength, const Me
 
 size_type PixInsightINDIInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
-   if ( p == TheINDIServerHostname )
-      return p_host.Length();
-   if (p == TheINDIPropertiesParameter)
-	   return p_propertyList.Length();
-   if ( p == TheINDIPropertyNameParameter )
-      return p_propertyList[tableRow].PropertyKey.Length();
-   if ( p == TheINDIPropertyValueParameter )
-      return p_propertyList[tableRow].PropertyValue.Length();
+	if ( p == TheINDIServerHostname )
+		return p_host.Length();
+	if (p == TheINDIPropertiesParameter)
+		return p_propertyList.Length();
+	if ( p == TheINDIPropertyNameParameter )
+		return p_propertyList[tableRow].PropertyKey.Length();
+	if ( p == TheINDIPropertyValueParameter )
+		return p_propertyList[tableRow].PropertyValue.Length();
+	if (p == TheINDINewPropertiesParameter)
+		return p_newPropertyList.Length();
+	if ( p == TheINDINewPropertyValueParameter )
+		return p_newPropertyList[tableRow].NewPropertyValue.Length();
+	if ( p == TheINDINewPropertyKeyParameter )
+		return p_newPropertyList[tableRow].PropertyKey.Length();
+	if ( p == TheINDINewPropertyTypeParameter )
+		return p_newPropertyList[tableRow].PropertyType.Length();
 
 
-   return 0;
+	return 0;
 }
 
 // ----------------------------------------------------------------------------

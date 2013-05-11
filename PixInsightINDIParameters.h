@@ -50,6 +50,7 @@
 #define __PixInsightINDIParameters_h
 
 #include <pcl/MetaParameter.h>
+#include "indibase.h"
 
 namespace pcl
 {
@@ -58,9 +59,26 @@ PCL_BEGIN_LOCAL
 
 struct INDIPropertyListItem {
 	INDIPropertyListItem(){}
+	String Device;
+	String Property;
+	INDI_TYPE PropertyType;
+	String Element;
 	String PropertyKey;
 	String PropertyValue;
+	String NewPropertyValue;
 };
+
+struct INDINewPropertyListItem {
+	INDINewPropertyListItem(){}
+	String Device;
+	String Property;
+	String PropertyType;
+	String Element;
+	String PropertyKey;
+	String NewPropertyValue;
+};
+
+
 
 // ----------------------------------------------------------------------------
 // The hostname of the INDI server 
@@ -116,6 +134,42 @@ public:
 	virtual IsoString Id() const;
 };
 extern INDIPropertyValue* TheINDIPropertyValueParameter ;
+
+class INDINewProperties: public MetaTable
+{
+public:
+	INDINewProperties ( MetaProcess* );
+	virtual IsoString Id() const;
+};
+extern INDINewProperties* TheINDINewPropertiesParameter ;
+
+class INDINewPropertyKey: public MetaString
+{
+public:
+	INDINewPropertyKey ( MetaTable* );
+	virtual IsoString Id() const;
+};
+extern INDINewPropertyKey* TheINDINewPropertyKeyParameter ;
+
+class INDINewPropertyType: public MetaString
+{
+public:
+	INDINewPropertyType ( MetaTable* );
+	virtual IsoString Id() const;
+};
+extern INDINewPropertyType* TheINDINewPropertyTypeParameter ;
+
+
+class INDINewPropertyValue: public MetaString
+{
+public:
+	INDINewPropertyValue ( MetaTable* );
+	virtual IsoString Id() const;
+};
+extern INDINewPropertyValue* TheINDINewPropertyValueParameter ;
+
+
+
 
 // ----------------------------------------------------------------------------
 

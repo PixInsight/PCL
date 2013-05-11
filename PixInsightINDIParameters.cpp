@@ -58,7 +58,10 @@ INDIServerPort*				TheINDIServerPort =0;
 INDIProperties*				TheINDIPropertiesParameter = 0;
 INDIPropertyName*			TheINDIPropertyNameParameter = 0;
 INDIPropertyValue*			TheINDIPropertyValueParameter = 0;
-
+INDINewProperties*			TheINDINewPropertiesParameter = 0;
+INDINewPropertyKey*         TheINDINewPropertyKeyParameter = 0;
+INDINewPropertyType*		TheINDINewPropertyTypeParameter = 0;
+INDINewPropertyValue*		TheINDINewPropertyValueParameter = 0;
 // ----------------------------------------------------------------------------
 // The INDI server hostname
 
@@ -133,6 +136,44 @@ IsoString INDIPropertyValue::Id() const
 {
    return "INDI_PropertyValue";
 }
+
+INDINewProperties::INDINewProperties ( MetaProcess* P): MetaTable(P)
+{
+	TheINDINewPropertiesParameter = this;
+}
+
+IsoString INDINewProperties::Id() const
+{
+   return "INDI_NewProperties";
+}
+
+INDINewPropertyKey::INDINewPropertyKey(MetaTable* T):MetaString(T){
+	TheINDINewPropertyKeyParameter = this;
+}
+
+IsoString INDINewPropertyKey::Id() const
+{
+   return "INDI_NewPropertyKey";
+}
+
+INDINewPropertyType::INDINewPropertyType(MetaTable* T):MetaString(T){
+	TheINDINewPropertyTypeParameter = this;
+}
+
+IsoString INDINewPropertyType::Id() const
+{
+   return "INDI_NewPropertyType";
+}
+
+INDINewPropertyValue::INDINewPropertyValue(MetaTable* T):MetaString(T){
+	TheINDINewPropertyValueParameter = this;
+}
+
+IsoString INDINewPropertyValue::Id() const
+{
+   return "INDI_NewPropertyValue";
+}
+
 
 
 // ----------------------------------------------------------------------------

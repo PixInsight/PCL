@@ -64,7 +64,9 @@ class PixInsightINDIInstance : public ProcessImplementation
 {
 public:
 
-   typedef Array<INDIPropertyListItem> PropertyListType;
+   typedef Array<INDIPropertyListItem>    PropertyListType;
+   typedef Array<INDINewPropertyListItem> NewPropertyListType;
+
 
    PixInsightINDIInstance( const MetaProcess* );
    PixInsightINDIInstance( const PixInsightINDIInstance& );
@@ -79,14 +81,17 @@ public:
    virtual void* LockParameter( const MetaParameter*, size_type tableRow );
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
-   PropertyListType    p_propertyList;		
+   		
 private:
-
+   PropertyListType    p_propertyList;
+   NewPropertyListType p_newPropertyList;
    String	           p_host; // String hostname of INDI server
    uint32              p_port;	// uint32 port of INDI server  
    
    void getProperties();
-
+   void setNewProperties();
+   bool getPropertyFromKeyString(INDINewPropertyListItem& newPropertyKey, const String& keyString);
+   
    friend class PixInsightINDIEngine;
    friend class PixInsightINDIProcess;
    friend class PixInsightINDIInterface;

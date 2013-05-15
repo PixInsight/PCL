@@ -206,7 +206,7 @@ void PixInsightINDIInstance::getProperties(){
 	vector<INDI::BaseDevice *> pDevices = indiClient.get()->getDevices();
 	for (std::vector<INDI::BaseDevice *>::iterator it = pDevices.begin(); it!=pDevices.end(); ++it  )
 	{
-
+		indiClient->setBLOBMode(B_ONLY,(*it)->getDeviceName());
 		vector<INDI::Property *>* pProperties = (*it)->getProperties();
 		for (std::vector<INDI::Property*>::iterator propIt = pProperties->begin(); propIt!=pProperties->end(); ++propIt){
 
@@ -283,6 +283,7 @@ bool PixInsightINDIInstance::ExecuteGlobal()
    
    if (!indiClient.get()->serverIsConnected())
 		indiClient->connectServer();
+		
    
    if (indiClient.get()->serverIsConnected())
      Console()<<"Successfully connected to server "<<ASCIIHost.c_str()<<", port="<<p_port<<"\n";

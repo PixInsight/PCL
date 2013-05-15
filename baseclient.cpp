@@ -295,7 +295,7 @@ void INDI::BaseClient::listenINDI()
     while (sConnected)
     {
 #if defined(WIN32)
-	Sleep(500);
+//	Sleep(500);
 #endif
         n = select (maxfd+1, &rs, NULL, NULL, NULL);
 

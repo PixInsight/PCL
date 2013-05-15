@@ -1,4 +1,4 @@
-
+#include <stdio.h>
 #include "PixInsightINDIMediator.h"
 #include <pcl/Console.h>
 
@@ -26,7 +26,6 @@ namespace pcl {
 	void PixInsightINDIMediator::newSwitch(ISwitchVectorProperty *svp){
 		//m_pixInterface->m_PropertyListNeedsUpdate=true;
 	}
-
 	void PixInsightINDIMediator::newNumber(INumberVectorProperty *nvp){
 		//m_pixInterface->m_PropertyListNeedsUpdate=true;
 	}
@@ -35,5 +34,13 @@ namespace pcl {
 	}
 	void PixInsightINDIMediator::newLight(ILightVectorProperty *lvp){
 		//m_pixInterface->m_PropertyListNeedsUpdate=true;
+	}
+	void PixInsightINDIMediator::newBLOB(IBLOB *bp){
+		IsoString fileName = IsoString("C:/Users/klaus/tmp/") + IsoString(bp->label) + IsoString(".fits"); 
+		FILE* f;
+		f = fopen(fileName.c_str(),"w+" );
+		fwrite(bp->blob,bp->bloblen,1,f);
+		fclose(f);
+		
 	}
 }

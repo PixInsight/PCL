@@ -22,6 +22,7 @@ namespace pcl {
 		void newNumber(INumberVectorProperty *nvp);
 		void newText(ITextVectorProperty *tvp);
 		void newLight(ILightVectorProperty *lvp);
+		void newBLOB(IBLOB *bp);
 		void newProperty(INDI::Property *property);
 	private:
 

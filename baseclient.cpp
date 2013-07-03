@@ -687,6 +687,7 @@ void INDI::BaseClient::sendNewSwitch (const char *deviceName, const char *proper
     if (sp == NULL)
         return;
 
+	IUResetSwitch(svp);
     sp->s = ISS_ON;
 
     sendNewSwitch(svp);

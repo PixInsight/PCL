@@ -53,17 +53,20 @@
 #include "indicom.h"
 #include "baseclient.h"
 
+
+namespace pcl {
+
 class INDIClient : public INDI::BaseClient
 {
  public:
 
-	 INDIClient(){}
+	 INDIClient():BaseClient(){}
 	 ~INDIClient(){}
 
 
 protected:
 
-	virtual void newDevice(INDI::BaseDevice *dp){}
+	virtual void newDevice(INDI::BaseDevice *dp);
 	virtual void newProperty(INDI::Property *property){}
     virtual void removeProperty(INDI::Property *property) {}
     virtual void newBLOB(IBLOB *bp) {}
@@ -86,5 +89,8 @@ private:
    ISwitchVectorProperty*   m_TransferFormat;
    IBLOBVectorProperty*     m_Pixels;
 };
+
+
+}
 
 #endif

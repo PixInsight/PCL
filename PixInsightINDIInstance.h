@@ -95,6 +95,7 @@ private:
    friend class PixInsightINDIEngine;
    friend class PixInsightINDIProcess;
    friend class PixInsightINDIInterface;
+   friend class PixInsightINDIMediator;
 };
 
 // ----------------------------------------------------------------------------

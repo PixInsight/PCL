@@ -47,5 +47,18 @@
 // ****************************************************************************
 
 #include "PixInsightINDIclient.h"
+#include "PixInsightINDIMediator.h"
 
+namespace pcl {
 
+PCL_BEGIN_LOCAL
+extern auto_ptr<PixInsightINDIMediator> mediator;
+PCL_END_LOCAL
+
+	void INDIClient::newDevice(INDI::BaseDevice *dp){
+		
+		if (mediator.get() != 0 && dp->getMediator() != NULL)
+			dp->setMediator(mediator.get());
+	}
+
+}

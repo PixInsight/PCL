@@ -13,10 +13,10 @@ namespace pcl {
 	class PixInsightINDIMediator : public INDI::BaseMediator{
 	public:
 
-		//PixInsightINDIMediator(DevicePropertiesDialog* pixInsightGUIData);
-		PixInsightINDIMediator(PixInsightINDIInterface* pixInterface);
+		
+		PixInsightINDIMediator(PixInsightINDIInstance* instance):m_Instance(instance),m_pixInterface(NULL){}
 
-			
+		void newDevice(INDI::BaseDevice *dp);	
 		void newMessage(INDI::BaseDevice *dp, int messageID);
 		void newSwitch(ISwitchVectorProperty *svp);
 		void newNumber(INumberVectorProperty *nvp);
@@ -24,10 +24,12 @@ namespace pcl {
 		void newLight(ILightVectorProperty *lvp);
 		void newBLOB(IBLOB *bp);
 		void newProperty(INDI::Property *property);
-	private:
 
-		//DevicePropertiesDialog* m_pixInsightGUIData;
-		PixInsightINDIInterface* m_pixInterface;
+		void setInterfaceInstance(PixInsightINDIInterface* pixInterface) { if (!m_pixInterface) {m_pixInterface = pixInterface;} }
+
+	private:
+		PixInsightINDIInstance*         m_Instance;
+		PixInsightINDIInterface*        m_pixInterface;
 
 	};
 

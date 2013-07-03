@@ -277,6 +277,10 @@ bool PixInsightINDIInstance::ExecuteGlobal()
 {
    if (indiClient.get() == 0)
         indiClient.reset(new INDIClient());
+
+   if (mediator.get() == 0){
+	   mediator.reset(new PixInsightINDIMediator(this));
+   }
    
    IsoString ASCIIHost(p_host);
    indiClient->setServer(ASCIIHost.c_str() , p_port);

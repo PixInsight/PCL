@@ -245,9 +245,10 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 					if (device->isConnected())
 						(*it)->Check();
 					
-					if (mediator.get() == 0)
-						mediator.reset(new PixInsightINDIMediator(this));
-					
+					if (mediator.get() == 0){
+						mediator.reset(new PixInsightINDIMediator(&this->instance));
+						mediator.get()->setInterfaceInstance(this);
+					}
 					if (mediator.get() != 0)
 						device->setMediator(mediator.get());
 					

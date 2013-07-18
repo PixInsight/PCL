@@ -59,6 +59,8 @@ PCL_END_LOCAL
 		
 		if (mediator.get() != 0 && dp->getMediator() != NULL)
 			dp->setMediator(mediator.get());
+
+
 	}
 
 }

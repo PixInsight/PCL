@@ -245,9 +245,10 @@ void INDI::BaseClient::setDriverConnection(bool status, const char *deviceName)
 INDI::BaseDevice * INDI::BaseClient::getDevice(const char * deviceName)
 {
     vector<INDI::BaseDevice *>::const_iterator devi;
-    for ( devi = cDevices.begin(); devi != cDevices.end(); devi++)
+    for ( devi = cDevices.begin(); devi != cDevices.end(); devi++){
         if (!strcmp(deviceName, (*devi)->getDeviceName()))
             return (*devi);
+	}
 
     return NULL;
 }

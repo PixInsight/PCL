@@ -56,6 +56,7 @@
 #include <pcl/Console.h>
 #include <pcl/StdStatus.h>
 #include <pcl/View.h>
+#include <pcl/Mutex.h>
 #if defined(__PCL_LINUX)
 #include <memory>
 #endif
@@ -74,7 +75,7 @@ PixInsightINDIInstance::PixInsightINDIInstance( const MetaProcess* m ) :
 ProcessImplementation( m ),
 p_host( TheINDIServerHostname->DefaultValue() ),
 p_port( uint32( TheINDIServerPort->DefaultValue() ) ),
-p_propertyList(),
+p_propertyList(200),
 p_newPropertyList()
 {
 }
@@ -176,12 +177,27 @@ void PixInsightINDIInstance::setNewProperties(){
 			
 				if (iter->PropertyType == "INDI_SWITCH"){
 					indiClient.get()->sendNewSwitch(IsoString(iter->Device).c_str(),IsoString(iter->Property).c_str(),IsoString(iter->Element).c_str());
+					INDI::BaseDevice* device = indiClient.get()->getDevice(IsoString(iter->Device).c_str());
+					if (device==NULL)
+						return;
+					ISwitchVectorProperty* prop = device->getSwitch(IsoString(iter->Property).c_str());
+					while (prop->s==2 ){
+						
+					}
 				}
 				if (iter->PropertyType == "INDI_TEXT"){
 					indiClient.get()->sendNewText(IsoString(iter->Device).c_str(),IsoString(iter->Property).c_str(),IsoString(iter->Element).c_str(),IsoString(iter->NewPropertyValue).c_str());
+					
 				}
 				if (iter->PropertyType == "INDI_NUMBER"){
 					indiClient.get()->sendNewNumber(IsoString(iter->Device).c_str(),IsoString(iter->Property).c_str(),IsoString(iter->Element).c_str(),iter->NewPropertyValue.ToDouble());
+					INDI::BaseDevice* device = indiClient.get()->getDevice(IsoString(iter->Device).c_str());
+					if (device==NULL)
+						return;
+					INumberVectorProperty* prop = device->getNumber(IsoString(iter->Property).c_str());
+					while (prop->s==2 ){
+						
+					}
 				}
 			}
 
@@ -202,11 +218,13 @@ void PixInsightINDIInstance::getProperties(){
 	}
 
 	String sep=String("/");
-
+	Mutex mutex;
+	mutex.Lock();
+	size_t count=0;
 	vector<INDI::BaseDevice *> pDevices = indiClient.get()->getDevices();
 	for (std::vector<INDI::BaseDevice *>::iterator it = pDevices.begin(); it!=pDevices.end(); ++it  )
 	{
-		indiClient->setBLOBMode(B_ONLY,(*it)->getDeviceName());
+		indiClient->setBLOBMode(B_ALSO,(*it)->getDeviceName());
 		vector<INDI::Property *>* pProperties = (*it)->getProperties();
 		for (std::vector<INDI::Property*>::iterator propIt = pProperties->begin(); propIt!=pProperties->end(); ++propIt){
 
@@ -219,9 +237,11 @@ void PixInsightINDIInstance::getProperties(){
 						propertyListItem.Property=String((*propIt)->getName());
 						propertyListItem.PropertyType=INDI_TEXT;
 						propertyListItem.Element = String((*propIt)->getText()->tp[i].name);
+						propertyListItem.PropertyState = (*propIt)->getState();
 						propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element ;
 						propertyListItem.PropertyValue=(*propIt)->getText()->tp[i].text;
-						p_propertyList.Add(propertyListItem);
+						p_propertyList[count]=propertyListItem;
+						count++;
 					}
 					break;
 				}
@@ -233,9 +253,11 @@ void PixInsightINDIInstance::getProperties(){
 						propertyListItem.Property=String((*propIt)->getName());
 						propertyListItem.PropertyType=INDI_SWITCH;
 						propertyListItem.Element=(*propIt)->getSwitch()->sp[i].name;
+						propertyListItem.PropertyState = (*propIt)->getState();
 						propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element;
 						propertyListItem.PropertyValue=(*propIt)->getSwitch()->sp[i].s == ISS_ON  ? "ON" : "OFF"  ;
-						p_propertyList.Add(propertyListItem);
+						p_propertyList[count]=propertyListItem;
+						count++;
 					}
 					break;
 				}
@@ -248,29 +270,34 @@ void PixInsightINDIInstance::getProperties(){
 						propertyListItem.PropertyType=INDI_NUMBER;
 						propertyListItem.Element=(*propIt)->getNumber()->np[i].name;
 						IsoString number((*propIt)->getNumber()->np[i].value);
+						propertyListItem.PropertyState = (*propIt)->getState();
 						propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element;
 						propertyListItem.PropertyValue=number.c_str();
-						p_propertyList.Add(propertyListItem);
+						p_propertyList[count]=propertyListItem;
+						count++;
 					}
 					break;
 				}
 			default:
+			  {
 				INDIPropertyListItem propertyListItem;
 				propertyListItem.Device=String((*it)->getDeviceName());
 				propertyListItem.Property=String((*propIt)->getName());
 				propertyListItem.PropertyType=INDI_UNKNOWN;
 				propertyListItem.Element=String("no element");
+				propertyListItem.PropertyState = (*propIt)->getState();
 				propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element;
 				propertyListItem.PropertyValue=String("no value");
-				p_propertyList.Add(propertyListItem);
-
+				p_propertyList[count]=propertyListItem;
+				count++;
+			  }
 			}
-
+			
 			//Console()<<"Detected property "<<(*propIt)->getName() <<"\n";
 		}
 	}
-
-
+	
+	mutex.Unlock();
 }
 
 bool PixInsightINDIInstance::ExecuteGlobal()
@@ -314,6 +341,8 @@ void* PixInsightINDIInstance::LockParameter( const MetaParameter* p, size_type t
 	   return p_propertyList[tableRow].PropertyKey.c_str();
    if (p == TheINDIPropertyValueParameter)
 	   return p_propertyList[tableRow].PropertyValue.c_str();
+   if (p == TheINDIPropertyStateParameter)
+	   return &p_propertyList[tableRow].PropertyState;
    if (p == TheINDINewPropertyValueParameter)
 	   return p_newPropertyList[tableRow].NewPropertyValue.c_str();
    if (p == TheINDINewPropertyKeyParameter)
@@ -324,6 +353,7 @@ void* PixInsightINDIInstance::LockParameter( const MetaParameter* p, size_type t
 
    return 0;
 }
+
 
 bool PixInsightINDIInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
 {

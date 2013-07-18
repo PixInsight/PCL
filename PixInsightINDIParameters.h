@@ -63,6 +63,7 @@ struct INDIPropertyListItem {
 	String Property;
 	INDI_TYPE PropertyType;
 	String Element;
+	unsigned int PropertyState;
 	String PropertyKey;
 	String PropertyValue;
 	String NewPropertyValue;
@@ -134,6 +135,20 @@ public:
 	virtual IsoString Id() const;
 };
 extern INDIPropertyValue* TheINDIPropertyValueParameter ;
+
+class INDIPropertyState: public MetaUInt32
+{
+public:
+
+   INDIPropertyState( MetaTable* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+extern INDIPropertyState* TheINDIPropertyStateParameter ;
+
 
 class INDINewProperties: public MetaTable
 {

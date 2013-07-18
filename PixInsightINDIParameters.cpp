@@ -58,6 +58,7 @@ INDIServerPort*				TheINDIServerPort =0;
 INDIProperties*				TheINDIPropertiesParameter = 0;
 INDIPropertyName*			TheINDIPropertyNameParameter = 0;
 INDIPropertyValue*			TheINDIPropertyValueParameter = 0;
+INDIPropertyState*          TheINDIPropertyStateParameter = 0 ;
 INDINewProperties*			TheINDINewPropertiesParameter = 0;
 INDINewPropertyKey*         TheINDINewPropertyKeyParameter = 0;
 INDINewPropertyType*		TheINDINewPropertyTypeParameter = 0;
@@ -119,6 +120,7 @@ IsoString INDIProperties::Id() const
    return "INDI_Properties";
 }
 
+
 INDIPropertyName::INDIPropertyName(MetaTable* T):MetaString(T){
 	TheINDIPropertyNameParameter = this;
 }
@@ -135,6 +137,32 @@ INDIPropertyValue::INDIPropertyValue(MetaTable* T):MetaString(T){
 IsoString INDIPropertyValue::Id() const
 {
    return "INDI_PropertyValue";
+}
+
+INDIPropertyState::INDIPropertyState( MetaTable* P ) : MetaUInt32( P )
+{
+   TheINDIPropertyStateParameter = this;
+}
+
+IsoString INDIPropertyState::Id() const
+{
+   return "INDI_PropertyState";
+}
+
+double INDIPropertyState::DefaultValue() const
+{
+   return 0;
+}
+
+
+double INDIPropertyState::MinimumValue() const
+{
+   return 0;
+}
+
+double INDIPropertyState::MaximumValue() const
+{
+   return 3;
 }
 
 INDINewProperties::INDINewProperties ( MetaProcess* P): MetaTable(P)

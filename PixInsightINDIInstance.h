@@ -63,7 +63,7 @@ namespace pcl
 class PixInsightINDIInstance : public ProcessImplementation
 {
 public:
-
+   
    typedef Array<INDIPropertyListItem>    PropertyListType;
    typedef Array<INDINewPropertyListItem> NewPropertyListType;
 
@@ -79,6 +79,7 @@ public:
    virtual bool ExecuteGlobal();
 
    virtual void* LockParameter( const MetaParameter*, size_type tableRow );
+
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
    		

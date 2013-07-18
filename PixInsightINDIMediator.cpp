@@ -25,16 +25,17 @@ namespace pcl {
 	}
 
 	void PixInsightINDIMediator::newSwitch(ISwitchVectorProperty *svp){
+		
 		//m_pixInterface->m_PropertyListNeedsUpdate=true;
 	}
 	void PixInsightINDIMediator::newNumber(INumberVectorProperty *nvp){
-		//m_pixInterface->m_PropertyListNeedsUpdate=true;
+				//m_pixInterface->m_PropertyListNeedsUpdate=true;
 	}
 	void PixInsightINDIMediator::newText(ITextVectorProperty *tvp){
-		//m_pixInterface->m_PropertyListNeedsUpdate=true;
+				//m_pixInterface->m_PropertyListNeedsUpdate=true;
 	}
 	void PixInsightINDIMediator::newLight(ILightVectorProperty *lvp){
-		//m_pixInterface->m_PropertyListNeedsUpdate=true;
+				//m_pixInterface->m_PropertyListNeedsUpdate=true;
 	}
 	void PixInsightINDIMediator::newBLOB(IBLOB *bp){
 		IsoString fileName = IsoString("C:/Users/klaus/tmp/") + IsoString(bp->label) + IsoString(".fits"); 

@@ -76,6 +76,7 @@ PixInsightINDIProcess::PixInsightINDIProcess() : MetaProcess()
    // Instantiate process parameters
    new INDIServerHostname(ThePixInsightINDIProcess);
    new INDIServerPort(ThePixInsightINDIProcess);
+   new INDIServerConnect(ThePixInsightINDIProcess);
    new INDIProperties(ThePixInsightINDIProcess);
    new INDIPropertyName(TheINDIPropertiesParameter);
    new INDIPropertyValue(TheINDIPropertiesParameter);

@@ -55,6 +55,7 @@ namespace pcl
 
 INDIServerHostname*			TheINDIServerHostname =0;
 INDIServerPort*				TheINDIServerPort =0;
+INDIServerConnect*			TheINDIServerConnect =0;
 INDIProperties*				TheINDIPropertiesParameter = 0;
 INDIPropertyName*			TheINDIPropertyNameParameter = 0;
 INDIPropertyValue*			TheINDIPropertyValueParameter = 0;
@@ -108,6 +109,32 @@ double INDIServerPort::MinimumValue() const
 double INDIServerPort::MaximumValue() const
 {
    return 65535;
+}
+
+INDIServerConnect::INDIServerConnect( MetaProcess* P ) : MetaUInt32( P )
+{
+   TheINDIServerConnect = this;
+}
+
+IsoString INDIServerConnect::Id() const
+{
+   return "INDI_ServerConnect";
+}
+
+double INDIServerConnect::DefaultValue() const
+{
+   return 1;
+}
+
+
+double INDIServerConnect::MinimumValue() const
+{
+   return 0;
+}
+
+double INDIServerConnect::MaximumValue() const
+{
+   return 1;
 }
 
 INDIProperties::INDIProperties ( MetaProcess* P): MetaTable(P)
@@ -206,7 +233,14 @@ IsoString INDINewPropertyValue::Id() const
 
 // ----------------------------------------------------------------------------
 
-
+bool INDINewPropertyListItem::operator==(const INDINewPropertyListItem& rhs) const{
+	return (this->Device == rhs.Device) &&
+		(this->Element == rhs.Element) &&
+		(this->Property == rhs.Property) &&
+		(this->PropertyKey == rhs.PropertyKey) &&
+		(this->PropertyType == rhs.PropertyType) &&
+		(this->NewPropertyValue == rhs.NewPropertyValue);
+}
 
 } // pcl
 

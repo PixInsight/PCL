@@ -22,6 +22,7 @@ namespace pcl {
 			m_pixInterface->GUI->DrvPropDlg.m_serverMessage = IsoString(dp->messageQueue(messageID));	
 			m_pixInterface->m_PropertyListNeedsUpdate=true;
 		}
+		//m_Instance->writeMessageToConsole(IsoString(dp->messageQueue(messageID)));
 	}
 
 	void PixInsightINDIMediator::newSwitch(ISwitchVectorProperty *svp){

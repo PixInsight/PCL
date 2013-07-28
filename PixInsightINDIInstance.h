@@ -66,11 +66,12 @@ public:
    
    typedef Array<INDIPropertyListItem>    PropertyListType;
    typedef Array<INDINewPropertyListItem> NewPropertyListType;
+   typedef Array<INDINewPropertyListItem> RemovePropertyListType;
 
 
    PixInsightINDIInstance( const MetaProcess* );
    PixInsightINDIInstance( const PixInsightINDIInstance& );
-
+  
    virtual void Assign( const ProcessImplementation& );
 
    virtual bool CanExecuteOn( const View&, pcl::String& whyNot ) const;
@@ -84,15 +85,19 @@ public:
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
    		
 private:
-   PropertyListType    p_propertyList;
-   NewPropertyListType p_newPropertyList;
-   String	           p_host; // String hostname of INDI server
-   uint32              p_port;	// uint32 port of INDI server  
+   PropertyListType       p_propertyList;
+   NewPropertyListType    p_newPropertyList;
+   RemovePropertyListType p_PropertiesToBeRemoved;
+   String	              p_host;       // String hostname of INDI server
+   uint32                 p_port;	    // uint32 port of INDI server  
+   uint32                 p_connect;	// uint32 port of INDI server  
    
    void getProperties();
    void setNewProperties();
    bool getPropertyFromKeyString(INDINewPropertyListItem& newPropertyKey, const String& keyString);
-   
+   void writeMessageToConsole(const String messageString); 
+   void removeNewPropertyListItems();
+
    friend class PixInsightINDIEngine;
    friend class PixInsightINDIProcess;
    friend class PixInsightINDIInterface;

@@ -22,6 +22,11 @@
 #include <vector>
 #include <string>
 
+#if defined (WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <pthread.h>
+#endif
+
 #include "indiapi.h"
 #include "indidevapi.h"
 #include "indibase.h"
@@ -97,6 +102,7 @@ public:
     /** \brief Return a list of all properties in the device.
     */
     std::vector<INDI::Property *> * getProperties() { return &pAll; }
+	std::vector<INDI::Property *>  getPropertiesSafe() { return pAll; }
 
     /** \brief Build driver properties from a skeleton file.
         \param filename full path name of the file.
@@ -169,6 +175,7 @@ private:
 
     char *deviceID;
 
+	pthread_mutex_t mutex1;
     std::vector<INDI::Property *> pAll;
 
     LilXML *lp;

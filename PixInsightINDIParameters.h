@@ -77,6 +77,7 @@ struct INDINewPropertyListItem {
 	String Element;
 	String PropertyKey;
 	String NewPropertyValue;
+	bool operator==(const INDINewPropertyListItem& rhs) const;
 };
 
 
@@ -95,6 +96,21 @@ public:
 };
 
 extern INDIServerHostname* TheINDIServerHostname;
+
+class INDIServerConnect: public MetaUInt32
+{
+public:
+
+   INDIServerConnect( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern INDIServerConnect* TheINDIServerConnect;
+
 
 // ----------------------------------------------------------------------------
 // The port of the INDI server

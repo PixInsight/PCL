@@ -35,6 +35,7 @@
 
 INDI::BaseDevice::BaseDevice()
 {
+	mutex1 = PTHREAD_MUTEX_INITIALIZER;
     mediator = NULL;
     lp = newLilXML();
     deviceID = new char[MAXINDIDEVICE];
@@ -110,6 +111,7 @@ IBLOBVectorProperty * INDI::BaseDevice::getBLOB(const char *name)
 
 void * INDI::BaseDevice::getRawProperty(const char *name, INDI_TYPE type)
 {
+	pthread_mutex_lock( &mutex1 );
     INDI_TYPE pType;
     void *pPtr;
     bool pRegistered = false;
@@ -138,16 +140,20 @@ void * INDI::BaseDevice::getRawProperty(const char *name, INDI_TYPE type)
             if (nvp == NULL)
                 continue;
 
-            if (!strcmp(name, nvp->name) && pRegistered)
-                return pPtr;
+            if (!strcmp(name, nvp->name) && pRegistered){
+                pthread_mutex_unlock( &mutex1 );
+				return pPtr;
+			}
              break;
         case INDI_TEXT:
              tvp = static_cast<ITextVectorProperty *>(pPtr);
              if (tvp == NULL)
                  continue;
 
-             if (!strcmp(name, tvp->name)  && pRegistered)
+             if (!strcmp(name, tvp->name)  && pRegistered){
+				pthread_mutex_unlock( &mutex1 );
                 return pPtr;
+			 }
              break;
         case INDI_SWITCH:
              svp = static_cast<ISwitchVectorProperty *>(pPtr);
@@ -155,24 +161,30 @@ void * INDI::BaseDevice::getRawProperty(const char *name, INDI_TYPE type)
                  continue;
 
              //IDLog("Switch %s and aux value is now %d\n", svp->name, regStatus );
-             if (!strcmp(name, svp->name) && pRegistered)
+             if (!strcmp(name, svp->name) && pRegistered){
+				 pthread_mutex_unlock( &mutex1 );
                  return pPtr;
+			 }
              break;
         case INDI_LIGHT:
              lvp = static_cast<ILightVectorProperty *>(pPtr);
              if (lvp == NULL)
                  continue;
 
-             if (!strcmp(name, lvp->name)  && pRegistered)
+             if (!strcmp(name, lvp->name)  && pRegistered){
+				 pthread_mutex_unlock( &mutex1 );
                  return pPtr;
+			 }
              break;
         case INDI_BLOB:
              bvp = static_cast<IBLOBVectorProperty *>(pPtr);
              if (bvp == NULL)
                  continue;
 
-             if (!strcmp(name, bvp->name) && pRegistered)
+             if (!strcmp(name, bvp->name) && pRegistered){
+				 pthread_mutex_unlock( &mutex1 );
                  return pPtr;
+			 }
              break;
 
         case INDI_UNKNOWN:
@@ -180,7 +192,7 @@ void * INDI::BaseDevice::getRawProperty(const char *name, INDI_TYPE type)
 
         }
     }
-
+	pthread_mutex_unlock( &mutex1 );
     return NULL;
 }
 
@@ -375,6 +387,8 @@ void INDI::BaseDevice::buildSkeleton(const char *filename)
 
 int INDI::BaseDevice::buildProp(XMLEle *root, char *errmsg)
 {
+	pthread_mutex_lock( &mutex1 );
+
     IPerm perm;
     IPState state;
     XMLEle *ep = NULL;
@@ -384,19 +398,24 @@ int INDI::BaseDevice::buildProp(XMLEle *root, char *errmsg)
     rtag = tagXMLEle(root);
 
     /* pull out device and name */
-    if (crackDN (root, &rdev, &rname, errmsg) < 0)
-        return -1;
+    if (crackDN (root, &rdev, &rname, errmsg) < 0){
+		pthread_mutex_unlock( &mutex1 );
+		return -1;
+	}
 
     if (!deviceID[0])
         strncpy(deviceID, rdev, MAXINDINAME);
 
     //if (getProperty(rname, type) != NULL)
-    if (getProperty(rname) != NULL)
+    if (getProperty(rname) != NULL){
+		pthread_mutex_unlock( &mutex1 );
         return INDI::BaseClient::INDI_PROPERTY_DUPLICATED;
+	}
 
     if (strcmp (rtag, "defLightVector") && crackIPerm(findXMLAttValu(root, "perm"), &perm) < 0)
     {
         IDLog("Error extracting %s permission (%s)\n", rname, findXMLAttValu(root, "perm"));
+		pthread_mutex_unlock( &mutex1 );
         return -1;
     }
 
@@ -405,6 +424,7 @@ int INDI::BaseDevice::buildProp(XMLEle *root, char *errmsg)
     if (crackIPState (findXMLAttValu(root, "state"), &state) < 0)
     {
         IDLog("Error extracting %s state (%s)\n", rname, findXMLAttValu(root, "state"));
+		pthread_mutex_unlock( &mutex1 );
         return -1;
     }
 
@@ -735,6 +755,8 @@ else if (!strcmp (rtag, "defBLOBVector"))
     else
         IDLog("%s: newBLOBVector with no valid members\n",rname);
  }
+ pthread_mutex_unlock( &mutex1 );
+
 
 return (0);
 
@@ -1090,6 +1112,8 @@ const char * INDI::BaseDevice::lastMessage()
 
 void INDI::BaseDevice::registerProperty(void *p, INDI_TYPE type)
 {
+	pthread_mutex_lock( &mutex1 );
+
     INDI::Property *pContainer;
 
     if (type == INDI_NUMBER)
@@ -1098,6 +1122,7 @@ void INDI::BaseDevice::registerProperty(void *p, INDI_TYPE type)
         if ( (pContainer = getProperty(nvp->name, INDI_NUMBER)) != NULL)
         {
             pContainer->setRegistered(true);
+			pthread_mutex_unlock( &mutex1 );
             return;
         }
 
@@ -1115,6 +1140,7 @@ void INDI::BaseDevice::registerProperty(void *p, INDI_TYPE type)
        if ( (pContainer = getProperty(tvp->name, INDI_TEXT)) != NULL)
        {
            pContainer->setRegistered(true);
+		   pthread_mutex_unlock( &mutex1 );
            return;
        }
 
@@ -1133,6 +1159,7 @@ void INDI::BaseDevice::registerProperty(void *p, INDI_TYPE type)
        if ( (pContainer = getProperty(svp->name, INDI_SWITCH)) != NULL)
        {
            pContainer->setRegistered(true);
+		   pthread_mutex_unlock( &mutex1 );
            return;
        }
 
@@ -1150,6 +1177,7 @@ void INDI::BaseDevice::registerProperty(void *p, INDI_TYPE type)
        if ( (pContainer = getProperty(lvp->name, INDI_LIGHT)) != NULL)
        {
            pContainer->setRegistered(true);
+		   pthread_mutex_unlock( &mutex1 );
            return;
        }
 
@@ -1166,6 +1194,7 @@ void INDI::BaseDevice::registerProperty(void *p, INDI_TYPE type)
        if ( (pContainer = getProperty(bvp->name, INDI_BLOB)) != NULL)
        {
            pContainer->setRegistered(true);
+		   pthread_mutex_unlock( &mutex1 );
            return;
        }
 
@@ -1176,7 +1205,7 @@ void INDI::BaseDevice::registerProperty(void *p, INDI_TYPE type)
        pAll.push_back(pContainer);
 
     }
-
+	pthread_mutex_unlock( &mutex1 );
 }
 
 const char *INDI::BaseDevice::getDriverName()

@@ -78,6 +78,7 @@ p_port( uint32( TheINDIServerPort->DefaultValue() ) ),
 p_connect( uint32( TheINDIServerConnect->DefaultValue() ) ),
 p_currentMessage(""),
 p_doAbort(false),
+p_Mediator(NULL),
 p_propertyList(200),
 p_newPropertyList(),
 p_PropertiesToBeRemoved()
@@ -383,10 +384,17 @@ bool PixInsightINDIInstance::ExecuteGlobal()
    if (indiClient.get() == 0)
         indiClient.reset(new INDIClient());
 
-   if (mediator.get() == 0){
+   /*if (mediator.get() == 0){
 	   mediator.reset(new PixInsightINDIMediator(this));
-   }
+   }*/
+   if (p_Mediator==NULL)
+	   p_Mediator = new PixInsightINDIMediator(this);
 
+   vector<INDI::BaseDevice *> pDevices = indiClient.get()->getDevices();
+   for (std::vector<INDI::BaseDevice *>::iterator it = pDevices.begin(); it!=pDevices.end(); ++it  )
+   {
+	   (*it)->setMediator(p_Mediator);
+   }
    
    IsoString ASCIIHost(p_host);
    indiClient->setServer(ASCIIHost.c_str() , p_port);
@@ -405,6 +413,17 @@ bool PixInsightINDIInstance::ExecuteGlobal()
    setNewProperties();
 
    getProperties();
+
+
+   if (p_Mediator!=NULL){
+	   delete p_Mediator;
+	   p_Mediator = NULL;
+   }
+
+   for (std::vector<INDI::BaseDevice *>::iterator it = pDevices.begin(); it!=pDevices.end(); ++it  )
+   {
+	   (*it)->setMediator(NULL);
+   }
 
    return true;
 }
@@ -511,6 +530,7 @@ size_type PixInsightINDIInstance::ParameterLength( const MetaParameter* p, size_
 }
 
 // ----------------------------------------------------------------------------
+
 
 } // pcl
 

@@ -52,14 +52,15 @@
 #include <pcl/MetaParameter.h> // for pcl_bool, pcl_enum
 #include <pcl/ProcessImplementation.h>
 #include <pcl/Timer.h>
+#include <pcl/Console.h>
 #include "PixInsightINDIclient.h"
 #include "PixInsightINDIParameters.h"
+//#include "PixInsightINDIMediator.h"
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-
 
 class PixInsightINDIInstance : public ProcessImplementation
 {
@@ -101,10 +102,13 @@ private:
    void writeCurrentMessageToConsole(); 
    void removeNewPropertyListItems();
 
+   friend class PixInsightINDIMediator;
+   PixInsightINDIMediator*  p_Mediator;
+
    friend class PixInsightINDIEngine;
    friend class PixInsightINDIProcess;
    friend class PixInsightINDIInterface;
-   friend class PixInsightINDIMediator;
+   
 };
 
 // ----------------------------------------------------------------------------

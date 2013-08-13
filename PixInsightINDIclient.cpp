@@ -57,8 +57,8 @@ PCL_END_LOCAL
 
 	void INDIClient::newDevice(INDI::BaseDevice *dp){
 		
-		if (mediator.get() != 0 && dp->getMediator() != NULL)
-			dp->setMediator(mediator.get());
+		//if (mediator.get() != 0 && dp->getMediator() != NULL)
+		//	dp->setMediator(mediator.get());
 
 
 	}

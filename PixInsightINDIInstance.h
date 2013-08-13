@@ -51,6 +51,7 @@
 
 #include <pcl/MetaParameter.h> // for pcl_bool, pcl_enum
 #include <pcl/ProcessImplementation.h>
+#include <pcl/Timer.h>
 #include "PixInsightINDIclient.h"
 #include "PixInsightINDIParameters.h"
 
@@ -90,12 +91,14 @@ private:
    RemovePropertyListType p_PropertiesToBeRemoved;
    String	              p_host;       // String hostname of INDI server
    uint32                 p_port;	    // uint32 port of INDI server  
-   uint32                 p_connect;	// uint32 port of INDI server  
+   uint32                 p_connect;	// uint32 port of INDI server
+   IsoString              p_currentMessage;
+   pcl_bool				  p_doAbort;
    
    void getProperties();
    void setNewProperties();
    bool getPropertyFromKeyString(INDINewPropertyListItem& newPropertyKey, const String& keyString);
-   void writeMessageToConsole(const String messageString); 
+   void writeCurrentMessageToConsole(); 
    void removeNewPropertyListItems();
 
    friend class PixInsightINDIEngine;

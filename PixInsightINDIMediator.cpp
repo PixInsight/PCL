@@ -14,7 +14,7 @@ namespace pcl {
 	}
 	
 	void PixInsightINDIMediator::newProperty(INDI::Property *property){
-		m_Instance->getProperties();
+		//m_Instance->getProperties();
 	}
 
 	void PixInsightINDIMediator::newMessage(INDI::BaseDevice *dp, int messageID){
@@ -22,7 +22,7 @@ namespace pcl {
 			m_pixInterface->GUI->DrvPropDlg.m_serverMessage = IsoString(dp->messageQueue(messageID));	
 			m_pixInterface->m_PropertyListNeedsUpdate=true;
 		}
-		//m_Instance->writeMessageToConsole(IsoString(dp->messageQueue(messageID)));
+		//m_Instance->p_currentMessage=IsoString(dp->messageQueue(messageID));
 	}
 
 	void PixInsightINDIMediator::newSwitch(ISwitchVectorProperty *svp){

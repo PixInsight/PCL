@@ -128,6 +128,15 @@ public:
 
 extern INDIServerPort* TheINDIServerPort;
 
+class INDIProcessFlagDoAbort: public MetaBoolean
+{
+public:
+	INDIProcessFlagDoAbort(MetaProcess*);
+	virtual IsoString Id() const;
+};
+
+extern INDIProcessFlagDoAbort* TheINDIProcessFlagDoAbort;
+
 class INDIProperties: public MetaTable
 {
 public:

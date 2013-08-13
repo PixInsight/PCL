@@ -64,6 +64,7 @@ INDINewProperties*			TheINDINewPropertiesParameter = 0;
 INDINewPropertyKey*         TheINDINewPropertyKeyParameter = 0;
 INDINewPropertyType*		TheINDINewPropertyTypeParameter = 0;
 INDINewPropertyValue*		TheINDINewPropertyValueParameter = 0;
+INDIProcessFlagDoAbort*     TheINDIProcessFlagDoAbort =0;
 // ----------------------------------------------------------------------------
 // The INDI server hostname
 
@@ -109,6 +110,15 @@ double INDIServerPort::MinimumValue() const
 double INDIServerPort::MaximumValue() const
 {
    return 65535;
+}
+
+INDIProcessFlagDoAbort::INDIProcessFlagDoAbort(MetaProcess* P):MetaBoolean(P){
+	TheINDIProcessFlagDoAbort = this;
+}
+
+IsoString INDIProcessFlagDoAbort::Id() const
+{
+	return "INDI_ProcessFlag_DoAbort";
 }
 
 INDIServerConnect::INDIServerConnect( MetaProcess* P ) : MetaUInt32( P )

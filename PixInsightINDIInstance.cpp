@@ -76,10 +76,13 @@ ProcessImplementation( m ),
 p_host( TheINDIServerHostname->DefaultValue() ),
 p_port( uint32( TheINDIServerPort->DefaultValue() ) ),
 p_connect( uint32( TheINDIServerConnect->DefaultValue() ) ),
+p_currentMessage(""),
+p_doAbort(false),
 p_propertyList(200),
 p_newPropertyList(),
 p_PropertiesToBeRemoved()
 {
+	
 }
 
 PixInsightINDIInstance::PixInsightINDIInstance( const PixInsightINDIInstance& x ) :
@@ -176,6 +179,7 @@ void PixInsightINDIInstance::setNewProperties(){
 		if (iter->NewPropertyValue.IsEmpty())
 			continue;
 		Console()<<"Found new property value= "<<iter->NewPropertyValue<<" for property key= "<<iter->PropertyKey<<"\n";
+		Console().Flush();
 		if (getPropertyFromKeyString(*iter,iter->PropertyKey)){
 			Console()<<"DEVICE= "<<iter->Device<<", property="<<iter->Property<<", element="<<iter->Element<<"\n";
 
@@ -195,7 +199,8 @@ void PixInsightINDIInstance::setNewProperties(){
 	}
 
 	// wait until property values are idle again
-	while (numOfRequests>0){
+	//bool doAbort=false;
+	while (numOfRequests>0 &&!p_doAbort){
 		for (pcl::Array<INDINewPropertyListItem>::iterator iter=p_newPropertyList.Begin(); iter!=p_newPropertyList.End(); ++iter ){
 			if (iter->NewPropertyValue.IsEmpty())
 				continue;
@@ -207,10 +212,13 @@ void PixInsightINDIInstance::setNewProperties(){
 					if (device==NULL)
 						return;
 					ISwitchVectorProperty* prop = device->getSwitch(IsoString(iter->Property).c_str());
-					if (prop!=NULL  ){
-						if (prop->s!=2){
+					if (prop!=NULL){
+						if (prop->s!=IPS_BUSY){
 							numOfRequests--;
 							p_PropertiesToBeRemoved.Append(*iter);
+							if (prop->s==IPS_ALERT){
+								writeCurrentMessageToConsole();
+							}
 							continue;
 						}
 					}
@@ -229,9 +237,12 @@ void PixInsightINDIInstance::setNewProperties(){
 						return;
 					INumberVectorProperty* prop = device->getNumber(IsoString(iter->Property).c_str());
 					if (prop!=NULL){
-						if (prop->s!=2){
+						if (prop->s!=IPS_BUSY){
 							numOfRequests--;
 							p_PropertiesToBeRemoved.Append(*iter);
+							if (prop->s==IPS_ALERT){
+								writeCurrentMessageToConsole();
+							}
 							continue;
 						}
 					}
@@ -245,8 +256,9 @@ void PixInsightINDIInstance::setNewProperties(){
 
 		// remove property list items 
 		removeNewPropertyListItems();
-
+		p_doAbort=Console().AbortRequested();
 	}
+	
 	p_newPropertyList.Clear();
 	p_PropertiesToBeRemoved.Clear();
 }
@@ -257,8 +269,8 @@ void PixInsightINDIInstance::removeNewPropertyListItems(){
 	}
 }
 
-void PixInsightINDIInstance::writeMessageToConsole(const String messageString){
-	Console()<<"Message from indi server: "<<messageString.c_str()<<"\n";
+void PixInsightINDIInstance::writeCurrentMessageToConsole(){
+	Console()<<"Message from INDI server: "<<p_currentMessage<<"\n";
 }
 
 void PixInsightINDIInstance::getProperties(){
@@ -357,7 +369,7 @@ void PixInsightINDIInstance::getProperties(){
 
 bool PixInsightINDIInstance::ExecuteGlobal()
 {
-
+   Console().EnableAbort();
    if (!p_connect){
 	  // disconnet from server
     if (indiClient.get()->serverIsConnected())
@@ -392,10 +404,8 @@ bool PixInsightINDIInstance::ExecuteGlobal()
 
    setNewProperties();
 
-   
+   getProperties();
 
-
-  
    return true;
 }
 
@@ -407,6 +417,8 @@ void* PixInsightINDIInstance::LockParameter( const MetaParameter* p, size_type t
       return &p_port;
    if ( p == TheINDIServerConnect )
       return &p_connect;
+    if ( p == TheINDIProcessFlagDoAbort )
+      return &p_doAbort;
    if (p == TheINDIPropertyNameParameter)
 	   return p_propertyList[tableRow].PropertyKey.c_str();
    if (p == TheINDIPropertyValueParameter)

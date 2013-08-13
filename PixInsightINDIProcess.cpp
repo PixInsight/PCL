@@ -78,6 +78,7 @@ PixInsightINDIProcess::PixInsightINDIProcess() : MetaProcess()
    new INDIServerPort(ThePixInsightINDIProcess);
    new INDIServerConnect(ThePixInsightINDIProcess);
    new INDIProperties(ThePixInsightINDIProcess);
+   new INDIProcessFlagDoAbort(ThePixInsightINDIProcess);
    new INDIPropertyName(TheINDIPropertiesParameter);
    new INDIPropertyValue(TheINDIPropertiesParameter);
    new INDIPropertyState(TheINDIPropertiesParameter);

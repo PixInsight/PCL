@@ -97,7 +97,8 @@ private:
    pcl_bool				  p_doAbort;
    
    void getProperties();
-   void setNewProperties();
+   void sendNewProperties();
+   void sendNewProperty2();
    bool getPropertyFromKeyString(INDINewPropertyListItem& newPropertyKey, const String& keyString);
    void writeCurrentMessageToConsole(); 
    void removeNewPropertyListItems();

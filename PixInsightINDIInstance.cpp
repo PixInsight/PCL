@@ -187,7 +187,10 @@ void PixInsightINDIInstance::sendNewProperty2() {
     ISwitchVectorProperty * switchVecProp=NULL;;
 //    ILightVectorProperty * lightVecProp=NULL;
 
-	for (pcl::Array<INDINewPropertyListItem>::iterator iter=p_newPropertyList.Begin(); iter!=p_newPropertyList.Begin(); ++iter){
+	if (p_newPropertyList.IsEmpty())
+		return; //Nothing to do
+
+	for (pcl::Array<INDINewPropertyListItem>::iterator iter=p_newPropertyList.Begin(); iter!=p_newPropertyList.End(); ++iter){
 		if (iter->NewPropertyValue.IsEmpty()){
 			Console()<<"Empty property value ... exiting.\n";
 			p_doAbort=true;
@@ -237,33 +240,39 @@ void PixInsightINDIInstance::sendNewProperty2() {
 				return;
 			}
 		}
-
-		if (switchVecProp){
-			// set new switch 
-			ISwitch * sp = IUFindSwitch(switchVecProp, IsoString(iter->Element).c_str());
-			if (!sp){
-				Console()<<"Could not find element '"<<iter->Element<<"' ... exiting\n";
+		if (getPropertyFromKeyString(*iter,iter->PropertyKey)){
+			if (switchVecProp){
+				// set new switch 
+				ISwitch * sp = IUFindSwitch(switchVecProp, IsoString(iter->Element).c_str());
+				if (!sp){
+					Console()<<"Could not find element '"<<iter->Element<<"' ... exiting\n";
+					p_doAbort=true;
+					return;
+				}
+				IUResetSwitch(switchVecProp);
+				sp->s = ISS_ON;
+			}
+			else if (numberVecProp){
+				// set new number value
+				INumber * np = IUFindNumber(numberVecProp, IsoString(iter->Element).c_str());
+				if (!np){
+					Console()<<"Could not find element '"<<iter->Element<<"' ... exiting\n";
+					p_doAbort=true;
+					return;
+				}
+				np->value = iter->NewPropertyValue.ToDouble();
+			}
+			else {
+				Console()<<"Should not be here "<<__LINE__<<" ... exiting.\n";
 				p_doAbort=true;
 				return;
 			}
-			IUResetSwitch(switchVecProp);
-			sp->s = ISS_ON;
 		}
-		else if (numberVecProp){
-			// set new number value
-			INumber * np = IUFindNumber(numberVecProp, IsoString(iter->Element).c_str());
-			if (!np){
-				Console()<<"Could not find element '"<<iter->Element<<"' ... exiting\n";
+		else{
+				Console()<<"Invalid property key' "<<iter->PropertyKey<<"' ... exiting.\n";
 				p_doAbort=true;
 				return;
 			}
-			np->value = iter->NewPropertyValue.ToDouble();
-		}
-		else {
-			Console()<<"Should not be here "<<__LINE__<<" ... exiting.\n";
-			p_doAbort=true;
-			return;
-		}
 	} // for 
 		
 
@@ -275,6 +284,7 @@ void PixInsightINDIInstance::sendNewProperty2() {
 		if (prop!=NULL){
 			while (prop->s==IPS_BUSY && !p_doAbort){
 				prop = device->getSwitch(IsoString(propertyStr).c_str());
+				p_doAbort=Console().AbortRequested();
 			}
 			if (prop->s==IPS_ALERT){
 				writeCurrentMessageToConsole();
@@ -295,6 +305,7 @@ void PixInsightINDIInstance::sendNewProperty2() {
 		if (prop!=NULL){
 			while (prop->s==IPS_BUSY && !p_doAbort){
 				prop = device->getNumber(IsoString(propertyStr).c_str());
+				p_doAbort=Console().AbortRequested();
 			}
 			if (prop->s==IPS_ALERT){
 				writeCurrentMessageToConsole();
@@ -555,7 +566,7 @@ bool PixInsightINDIInstance::ExecuteGlobal()
 
    getProperties();
 
-   sendNewProperties();
+   sendNewProperty2();
 
    getProperties();
 

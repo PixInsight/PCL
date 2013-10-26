@@ -27,6 +27,7 @@
 #include <math.h>
 #include <stdio.h>
 #if defined(WIN32)
+#include <winsock2.h>
 #define snprintf _snprintf
 #include <io.h>
 #endif
@@ -271,33 +272,36 @@ timestamp()
 
 int tty_timeout(int fd, int timeout)
 {
-/* if (fd == -1)
-        return TTY_ERRNO;
-
+ 
   struct timeval tv;
   fd_set readout;
   int retval;
 
+	
+  if (fd == -1)
+	return TTY_ERRNO;
+
+ 
   FD_ZERO(&readout);
   FD_SET(fd, &readout);
-*/
+
   /* wait for 'timeout' seconds */
-/*  tv.tv_sec = timeout;
+  tv.tv_sec = timeout;
   tv.tv_usec = 0;
-*/
+
   /* Wait till we have a change in the fd status */
-/*  retval = select (fd+1, &readout, NULL, NULL, &tv);
-*/
+  retval = select (fd+1, &readout, NULL, NULL, &tv);
+
   /* Return 0 on succ*essful fd change */
-/*  if (retval > 0)
-   return TTY_OK;*/
+  if (retval > 0)
+   return TTY_OK;
   /* Return -1 due to an error */
-//  else if (retval == -1)
- //  return TTY_SELECT_ERROR;
+  else if (retval == -1)
+   return TTY_SELECT_ERROR;
   /* Return -2 if time expires before anything interesting happens */
- // else
- //   return TTY_TIME_OUT;
-  return 0;
+  else
+    return TTY_TIME_OUT;
+ // return 0;
 }
 
 int tty_write(int fd, const char * buf, int nbytes, int *nbytes_written)

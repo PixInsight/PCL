@@ -279,18 +279,16 @@ void PixInsightINDIInstance::sendNewProperty2() {
 	// send new properties to server and wait for response
 	if (switchVecProp){
 		indiClient.get()->sendNewSwitch(switchVecProp);
-		// wait until completed or abort
-		ISwitchVectorProperty* prop = device->getSwitch(IsoString(propertyStr).c_str());
-		if (prop!=NULL){
-			while (prop->s==IPS_BUSY && !p_doAbort){
-				prop = device->getSwitch(IsoString(propertyStr).c_str());
+		if (switchVecProp!=NULL){
+			while (switchVecProp->s!=IPS_OK && !p_doAbort){
 				p_doAbort=Console().AbortRequested();
+				if (switchVecProp->s==IPS_ALERT){
+					writeCurrentMessageToConsole();
+					p_doAbort=true;
+					return;
+				}
 			}
-			if (prop->s==IPS_ALERT){
-				writeCurrentMessageToConsole();
-				p_doAbort=true;
-				return;
-			}
+			
 		}else{
 			Console()<<"Could not get property value from server. Please check that INDI device "<<IsoString(deviceStr).c_str()<<" is connected.\n";
 			p_doAbort=true;
@@ -301,17 +299,16 @@ void PixInsightINDIInstance::sendNewProperty2() {
 	else if (numberVecProp){
 		indiClient.get()->sendNewNumber(numberVecProp);
 		// wait until completed or abort
-		INumberVectorProperty* prop = device->getNumber(IsoString(propertyStr).c_str());
-		if (prop!=NULL){
-			while (prop->s==IPS_BUSY && !p_doAbort){
-				prop = device->getNumber(IsoString(propertyStr).c_str());
+		if (numberVecProp!=NULL){
+			while (numberVecProp->s!=IPS_OK && !p_doAbort){
 				p_doAbort=Console().AbortRequested();
+				if (numberVecProp->s==IPS_ALERT){
+					writeCurrentMessageToConsole();
+					p_doAbort=true;
+					return;
+				}
 			}
-			if (prop->s==IPS_ALERT){
-				writeCurrentMessageToConsole();
-				p_doAbort=true;
-				return;
-			}
+			
 		}else{
 			Console()<<"Could not get property value from server. Please check that INDI device "<<IsoString(deviceStr).c_str()<<" is connected.\n";
 			p_doAbort=true;
@@ -497,6 +494,35 @@ void PixInsightINDIInstance::getProperties(){
 						propertyListItem.PropertyState = (*propIt)->getState();
 						propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element;
 						propertyListItem.PropertyValue=number.c_str();
+						p_propertyList[count]=propertyListItem;
+						count++;
+					}
+					break;
+				}
+			case INDI_LIGHT:
+				{
+					for (int i=0; i<(*propIt)->getLight()->nlp;i++) {
+						INDIPropertyListItem propertyListItem;
+						propertyListItem.Device=String((*it)->getDeviceName());
+						propertyListItem.Property=String((*propIt)->getName());
+						propertyListItem.PropertyType=INDI_LIGHT;
+						propertyListItem.Element=(*propIt)->getLight()->lp[i].name;
+						propertyListItem.PropertyState = (*propIt)->getState();
+						propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element;
+						switch ((*propIt)->getLight()->lp[i].s){
+						case IPS_IDLE:
+							propertyListItem.PropertyValue="IDLE";
+						    break;
+						case IPS_OK:
+							propertyListItem.PropertyValue="OK";
+						    break;
+						case IPS_BUSY:
+							propertyListItem.PropertyValue="BUSY";
+						    break;
+						case IPS_ALERT:
+							propertyListItem.PropertyValue="ALERT";
+						    break;
+						}
 						p_propertyList[count]=propertyListItem;
 						count++;
 					}

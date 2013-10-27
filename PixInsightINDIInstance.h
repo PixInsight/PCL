@@ -60,6 +60,7 @@
 namespace pcl
 {
 
+  class PixInsightINDIMediator;
 // ----------------------------------------------------------------------------
 
 class PixInsightINDIInstance : public ProcessImplementation
@@ -97,8 +98,7 @@ private:
    pcl_bool				  p_doAbort;
    
    void getProperties();
-   void sendNewProperties();
-   void sendNewProperty2();
+   void sendNewProperty();
    bool getPropertyFromKeyString(INDINewPropertyListItem& newPropertyKey, const String& keyString);
    void writeCurrentMessageToConsole(); 
    void removeNewPropertyListItems();

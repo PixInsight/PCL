@@ -157,7 +157,7 @@ bool PixInsightINDIInstance::getPropertyFromKeyString(INDINewPropertyListItem& p
 		 else if (count==3)
 			break;
 		else
-			Console()<<"Assertion in getPropertyFromKeyString: Should not be here";
+		  Console().WriteLn("Assertion in getPropertyFromKeyString: Should not be here");
 
 		count++;
 		start=nextStart+1;
@@ -173,7 +173,7 @@ bool PixInsightINDIInstance::getPropertyFromKeyString(INDINewPropertyListItem& p
 
 }
 
-void PixInsightINDIInstance::sendNewProperty2() {
+void PixInsightINDIInstance::sendNewProperty() {
 	//Precondition: NewPropertyList contains ony elements of the same property
 
 	String deviceStr;
@@ -192,7 +192,7 @@ void PixInsightINDIInstance::sendNewProperty2() {
 
 	for (pcl::Array<INDINewPropertyListItem>::iterator iter=p_newPropertyList.Begin(); iter!=p_newPropertyList.End(); ++iter){
 		if (iter->NewPropertyValue.IsEmpty()){
-			Console()<<"Empty property value ... exiting.\n";
+		        Console().WriteLn("Empty property value ... exiting.");
 			p_doAbort=true;
 			return;
 		}
@@ -203,12 +203,12 @@ void PixInsightINDIInstance::sendNewProperty2() {
 				propertyStr = iter->Property;
 				propertyTypeStr = iter->PropertyType;
 				firstTime=false;
-				Console()<<"Found new property value '"<<iter->NewPropertyValue<<"' for property '"<<propertyStr<<"' of device '"<<deviceStr<<"\n";
+				Console().WriteLn(String().Format("Found new property value '%s' for property '%s' of device '%s'",iter->NewPropertyValue.c_str(),propertyStr.c_str(),deviceStr.c_str()));
 				Console().Flush();
 				// get device
 				device = indiClient.get()->getDevice(IsoString(deviceStr).c_str());
 				if (!device){
-					Console()<<"Device '"<<deviceStr<<"' not found ... exiting.\n";
+				  Console().WriteLn(String().Format("Device '%s' not found ... exiting.",deviceStr.c_str()));
 					p_doAbort=true;
 					return;
 				}
@@ -216,26 +216,27 @@ void PixInsightINDIInstance::sendNewProperty2() {
 				if (iter->PropertyType == "INDI_SWITCH"){
 					switchVecProp = device->getSwitch(IsoString(propertyStr).c_str());
 					if (!switchVecProp){
-						Console()<<"Could not get property '"<<propertyStr<<"' from server. Please check that INDI device "<<IsoString(deviceStr).c_str()<<" is connected.\n";
+					  Console().WriteLn(String().Format("Could not get property '%s' from server. Please check that INDI device is connected.",propertyStr.c_str(),deviceStr.c_str()));
 						p_doAbort=true;
 						return;
 					}
 				} else if (iter->PropertyType == "INDI_NUMBER"){
 					numberVecProp = device->getNumber(IsoString(propertyStr).c_str());
 					if (!numberVecProp){
-						Console()<<"Could not get property '"<<propertyStr<<"' from server. Please check that INDI device "<<IsoString(deviceStr).c_str()<<" is connected.\n";
+					  Console().WriteLn(String().Format("Could not get property '%s' from server. Please check that INDI device is connected.",propertyStr.c_str(),deviceStr.c_str()));
+						
 						p_doAbort=true;
 						return;
 					}
 				}
 				else {
-					Console()<<"Property '"<<propertyStr<<"' not supported.\n";
+				  Console().WriteLn(String().Format("Property '%s' not supported.",propertyStr.c_str()));
 					p_doAbort=true;
 					return;
 				}
 			}
 			else{
-				Console()<<"Invalid property key' "<<iter->PropertyKey<<"' ... exiting.\n";
+			  Console().WriteLn(String().Format("Invalid property key '%s' not supported. ",iter->PropertyKey.c_str()));
 				p_doAbort=true;
 				return;
 			}
@@ -245,7 +246,7 @@ void PixInsightINDIInstance::sendNewProperty2() {
 				// set new switch 
 				ISwitch * sp = IUFindSwitch(switchVecProp, IsoString(iter->Element).c_str());
 				if (!sp){
-					Console()<<"Could not find element '"<<iter->Element<<"' ... exiting\n";
+				  Console().WriteLn(String().Format("Could not find element '%s' ... exiting.",iter->Element.c_str()));
 					p_doAbort=true;
 					return;
 				}
@@ -256,20 +257,20 @@ void PixInsightINDIInstance::sendNewProperty2() {
 				// set new number value
 				INumber * np = IUFindNumber(numberVecProp, IsoString(iter->Element).c_str());
 				if (!np){
-					Console()<<"Could not find element '"<<iter->Element<<"' ... exiting\n";
+				  Console().WriteLn(String().Format("Could not find element '%s' ... exiting.",iter->Element.c_str()));
 					p_doAbort=true;
 					return;
 				}
 				np->value = iter->NewPropertyValue.ToDouble();
 			}
 			else {
-				Console()<<"Should not be here "<<__LINE__<<" ... exiting.\n";
+			  Console().WriteLn(String().Format("Should not be here %d ... exiting.",__LINE__));
 				p_doAbort=true;
 				return;
 			}
 		}
 		else{
-				Console()<<"Invalid property key' "<<iter->PropertyKey<<"' ... exiting.\n";
+		  Console().WriteLn(String().Format("Invalid property key '%s' ... exiting ",iter->PropertyKey.c_str()));
 				p_doAbort=true;
 				return;
 			}
@@ -290,7 +291,7 @@ void PixInsightINDIInstance::sendNewProperty2() {
 			}
 			
 		}else{
-			Console()<<"Could not get property value from server. Please check that INDI device "<<IsoString(deviceStr).c_str()<<" is connected.\n";
+		  Console().WriteLn(String().Format("Could not get property value from server. Please check that INDI device %s is connected.",deviceStr.c_str()));
 			p_doAbort=true;
 			return;
 		}
@@ -310,13 +311,13 @@ void PixInsightINDIInstance::sendNewProperty2() {
 			}
 			
 		}else{
-			Console()<<"Could not get property value from server. Please check that INDI device "<<IsoString(deviceStr).c_str()<<" is connected.\n";
+		  Console().WriteLn(String().Format("Could not get property value from server. Please check that INDI device %s is connected.",deviceStr.c_str()));
 			p_doAbort=true;
 			return;
 		}
 	}
 	else {
-		Console()<<"Should not be here "<<__LINE__<<" ... exiting.\n";
+	   Console().WriteLn(String().Format("Should not be here %d ... exiting.",__LINE__));
 		p_doAbort=true;
 		return;
 	}
@@ -324,98 +325,6 @@ void PixInsightINDIInstance::sendNewProperty2() {
 	p_newPropertyList.Clear();
 }
 
-void PixInsightINDIInstance::sendNewProperties(){
-	// send new property values
-	int numOfRequests=0;
-	for (pcl::Array<INDINewPropertyListItem>::iterator iter=p_newPropertyList.Begin(); iter!=p_newPropertyList.End(); ++iter ){
-		if (iter->NewPropertyValue.IsEmpty())
-			continue;
-		Console()<<"Found new property value= "<<iter->NewPropertyValue<<" for property key= "<<iter->PropertyKey<<"\n";
-		Console().Flush();
-		if (getPropertyFromKeyString(*iter,iter->PropertyKey)){
-			Console()<<"DEVICE= "<<iter->Device<<", property="<<iter->Property<<", element="<<iter->Element<<"\n";
-
-			if (iter->PropertyType == "INDI_SWITCH"){
-				indiClient.get()->sendNewSwitch(IsoString(iter->Device).c_str(),IsoString(iter->Property).c_str(),IsoString(iter->Element).c_str());
-				numOfRequests++;
-			}
-			if (iter->PropertyType == "INDI_TEXT"){
-				//indiClient.get()->sendNewText(IsoString(iter->Device).c_str(),IsoString(iter->Property).c_str(),IsoString(iter->Element).c_str(),IsoString(iter->NewPropertyValue).c_str());
-				//numOfRequests++;
-			}
-			if (iter->PropertyType == "INDI_NUMBER"){
-				indiClient.get()->sendNewNumber(IsoString(iter->Device).c_str(),IsoString(iter->Property).c_str(),IsoString(iter->Element).c_str(),iter->NewPropertyValue.ToDouble());
-				numOfRequests++;
-			}
-		}	
-	}
-
-	// wait until property values are idle again
-	//bool doAbort=false;
-	while (numOfRequests>0 &&!p_doAbort){
-		for (pcl::Array<INDINewPropertyListItem>::iterator iter=p_newPropertyList.Begin(); iter!=p_newPropertyList.End(); ++iter ){
-			if (iter->NewPropertyValue.IsEmpty())
-				continue;
-
-			if (getPropertyFromKeyString(*iter,iter->PropertyKey)){
-
-				if (iter->PropertyType == "INDI_SWITCH"){
-					INDI::BaseDevice* device = indiClient.get()->getDevice(IsoString(iter->Device).c_str());
-					if (device==NULL)
-						return;
-					ISwitchVectorProperty* prop = device->getSwitch(IsoString(iter->Property).c_str());
-					if (prop!=NULL){
-						if (prop->s!=IPS_BUSY){
-							numOfRequests--;
-							Console()<<"Property="<<prop->name<<", state="<<prop->s<<"\n";
-							p_PropertiesToBeRemoved.Append(*iter);
-							if (prop->s==IPS_ALERT){
-								writeCurrentMessageToConsole();
-							}
-							continue;
-						}
-					}
-					else{
-						Console()<<"Could not get property value from server. Please check that INDI device "<<IsoString(iter->Device).c_str()<<" is connected.\n";
-						numOfRequests--;
-					}
-				}
-				if (iter->PropertyType == "INDI_TEXT"){
-					// to be implemented
-				}
-				if (iter->PropertyType == "INDI_NUMBER"){
-
-					INDI::BaseDevice* device = indiClient.get()->getDevice(IsoString(iter->Device).c_str());
-					if (device==NULL)
-						return;
-					INumberVectorProperty* prop = device->getNumber(IsoString(iter->Property).c_str());
-					if (prop!=NULL){
-						if (prop->s!=IPS_BUSY){
-							numOfRequests--;
-							Console()<<"Property="<<prop->name<<", state="<<prop->s<<"\n";
-							p_PropertiesToBeRemoved.Append(*iter);
-							if (prop->s==IPS_ALERT){
-								writeCurrentMessageToConsole();
-							}
-							continue;
-						}
-					}
-					else{
-						Console()<<"Could not get property value from server. Please check that INDI device "<<IsoString(iter->Device).c_str()<<" is connected.\n"; 
-						numOfRequests--;
-					}
-				}
-			}
-		}
-
-		// remove property list items 
-		removeNewPropertyListItems();
-		p_doAbort=Console().AbortRequested();
-	}
-	
-	p_newPropertyList.Clear();
-	p_PropertiesToBeRemoved.Clear();
-}
 
 void PixInsightINDIInstance::removeNewPropertyListItems(){
 	for (pcl::Array<INDINewPropertyListItem>::iterator iter=p_PropertiesToBeRemoved.Begin(); iter!=p_PropertiesToBeRemoved.End(); ++iter ){
@@ -424,18 +333,18 @@ void PixInsightINDIInstance::removeNewPropertyListItems(){
 }
 
 void PixInsightINDIInstance::writeCurrentMessageToConsole(){
-	Console()<<"Message from INDI server: "<<p_currentMessage<<"\n";
+  Console().WriteLn(String().Format("Message from INDI server: %s",p_currentMessage.c_str()));
 }
 
 void PixInsightINDIInstance::getProperties(){
 	if (indiClient.get() == NULL){
-		Console() <<"INDI client not initialized\n";
+	  Console().WriteLn("INDI client not initialized.");
 		return;
 	}
 
 	if (!indiClient.get()->serverIsConnected()){
-		Console() <<"INDI server not connected. Please connect to an INDI server\n";
-		return;
+	  Console().WriteLn("INDI server not connected. Please connect to an INDI server.");
+	  return;
 	}
 
 	String sep=String("/");
@@ -542,8 +451,6 @@ void PixInsightINDIInstance::getProperties(){
 				count++;
 			  }
 			}
-			
-			//Console()<<"Detected property "<<(*propIt)->getName() <<"\n";
 		}
 	}
 	
@@ -586,13 +493,13 @@ bool PixInsightINDIInstance::ExecuteGlobal()
 		
    
    if (indiClient.get()->serverIsConnected())
-     Console()<<"Successfully connected to server "<<ASCIIHost.c_str()<<", port="<<p_port<<"\n";
+     Console().WriteLn(String().Format("Successfully connected to server %s , port=",ASCIIHost.c_str(),p_port));
 
    Console().Flush();
 
    getProperties();
 
-   sendNewProperty2();
+   sendNewProperty();
 
    getProperties();
 

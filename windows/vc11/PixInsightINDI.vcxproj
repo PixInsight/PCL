@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.77
+# PixInsight Makefile Generator Script v1.79
 # Copyright (C) 2009-2013 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Sun, 31 Mar 2013 15:55:39 GMT
+# Automatically generated on Sun, 27 Oct 2013 15:32:42 GMT
 # Project id ...... PixInsightINDI
 # Project type .... Module
 # Platform ........ Windows/vc11
@@ -224,94 +224,38 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\ImageAcquisition\CameraData.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\CameraDialog.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\CameraItem.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\DeviceItem.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\ExposeImageInstance.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\ExposeImageInterface.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\ExposeImageParameters.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\ExposeImageProcess.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\FilterWheelData.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\FilterWheelItem.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisisitionSettingsParameters.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionModule.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSession.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSessionInstance.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSessionInterface.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSessionParameters.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSessionProcess.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSettingsInstance.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSettingsInterface.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\ImageAcquisitionSettingsProcess.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\parsers.cpp"/>
-    <ClCompile Include="..\..\ImageAcquisition\test\TestCameraItem.cpp"/>
-    <ClCompile Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\DllMain.cpp"/>
-    <ClCompile Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\PixInsightASCOMCameraDriver.cpp"/>
-    <ClCompile Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\XYDispDriver.cpp"/>
-    <ClCompile Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\DllMain.cpp"/>
-    <ClCompile Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\PixInsightASCOMFWDriver.cpp"/>
-    <ClCompile Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\XYDispDriver.cpp"/>
-    <ClCompile Include="..\..\PixInsightASCOMDrivers\windows\vc9\DllMain.cpp"/>
-    <ClCompile Include="..\..\PixInsightASCOMDrivers\windows\vc9\PixInsightASCOMDriver.cpp"/>
-    <ClCompile Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\CanonDSLRCameraDriver.cpp"/>
-    <ClCompile Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\dllmain.cpp"/>
-    <ClCompile Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\stdafx.cpp"/>
+    <ClCompile Include="..\..\PixInsightINDIInstance.cpp"/>
+    <ClCompile Include="..\..\PixInsightINDIInterface.cpp"/>
+    <ClCompile Include="..\..\PixInsightINDIMediator.cpp"/>
+    <ClCompile Include="..\..\PixInsightINDIModule.cpp"/>
+    <ClCompile Include="..\..\PixInsightINDIParameters.cpp"/>
+    <ClCompile Include="..\..\PixInsightINDIProcess.cpp"/>
+    <ClCompile Include="..\..\PixInsightINDIclient.cpp"/>
+    <ClCompile Include="..\..\base64.c"/>
+    <ClCompile Include="..\..\baseclient.cpp"/>
+    <ClCompile Include="..\..\basedevice.cpp"/>
+    <ClCompile Include="..\..\indicom.c"/>
+    <ClCompile Include="..\..\indiproperty.cpp"/>
+    <ClCompile Include="..\..\lilxml.c"/>
+    <ClCompile Include="..\..\windows\vc10\PixInsightINDIclient.cpp"/>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\ImageAcquisition\CameraData.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\CameraDialog.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\CameraItem.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\DeviceItem.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\ExposeImageInstance.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\ExposeImageInterface.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\ExposeImageParameters.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\ExposeImageProcess.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\FilterWheelData.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\FilterWheelItem.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\IPixInsightCamera.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\IPixInsightDevice.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\IPixInsightFilterWheel.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionModule.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSession.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSessionInstance.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSessionParameters.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSessionProcess.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSettingsInstance.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSettingsInterface.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSettingsParameters.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\ImageAcquisitionSettingsProcess.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\SerializableTraits.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\parsers.h"/>
-    <ClInclude Include="..\..\ImageAcquisition\test\TestCameraItem.h"/>
-    <ClInclude Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\DllExports.h"/>
-    <ClInclude Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\PixInsightASCOMCameraDriver.h"/>
-    <ClInclude Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\XYDispDriver.h"/>
-    <ClInclude Include="..\..\PixInsightASCOMDrivers\PixInsightASCOMCameraDriver\stdafx.h"/>
-    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\DllExports.h"/>
-    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\PixInsightASCOMFWDriver.h"/>
-    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\XYDispDriver.h"/>
-    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMFWDriver\stdafx.h"/>
-    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\vc9\DllExports.h"/>
-    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\vc9\PixInsightASCOMDriver.h"/>
-    <ClInclude Include="..\..\PixInsightASCOMDrivers\windows\vc9\stdafx.h"/>
-    <ClInclude Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\CanonDSLRCameraDriver.h"/>
-    <ClInclude Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\DllExports.h"/>
-    <ClInclude Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\stdafx.h"/>
-    <ClInclude Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\targetver.h"/>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMCameraDriver\SetupDialogForm.resx"/>
-    <ResourceCompile Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMCameraDriver\Properties\Resources.resx"/>
-    <ResourceCompile Include="..\..\PixInsightCanonDSLRCameraDriver\CanonDSLRCameraDriver\Debug\CanonDSLRCameraDriver_manifest.rc"/>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\ImageAcquisition\ExposeImageIcon.png"/>
-    <None Include="..\..\ImageAcquisition\ExposeImageIcon.svg"/>
-    <None Include="..\..\ImageAcquisition\ImageAcquisitionSettingsIcon.svg"/>
-    <None Include="..\..\ImageAcquisition\doc\basic_lrgb.png"/>
-    <None Include="..\..\ImageAcquisition\doc\sample.png"/>
-    <None Include="..\..\PixInsightASCOMDrivers\windows\PixInsightASCOMCameraDriver\ASCOM.png"/>
+    <ClInclude Include="..\..\PixInsightINDIInstance.h"/>
+    <ClInclude Include="..\..\PixInsightINDIInterface.h"/>
+    <ClInclude Include="..\..\PixInsightINDIMediator.h"/>
+    <ClInclude Include="..\..\PixInsightINDIModule.h"/>
+    <ClInclude Include="..\..\PixInsightINDIParameters.h"/>
+    <ClInclude Include="..\..\PixInsightINDIProcess.h"/>
+    <ClInclude Include="..\..\PixInsightINDIclient.h"/>
+    <ClInclude Include="..\..\base64.h"/>
+    <ClInclude Include="..\..\baseclient.h"/>
+    <ClInclude Include="..\..\basedevice.h"/>
+    <ClInclude Include="..\..\indiapi.h"/>
+    <ClInclude Include="..\..\indibase.h"/>
+    <ClInclude Include="..\..\indicom.h"/>
+    <ClInclude Include="..\..\indidevapi.h"/>
+    <ClInclude Include="..\..\indiproperty.h"/>
+    <ClInclude Include="..\..\lilxml.h"/>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
   <ImportGroup Label="ExtensionTargets">

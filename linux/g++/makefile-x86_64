@@ -1,15 +1,15 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.77
+# PixInsight Makefile Generator Script v1.79
 # Copyright (C) 2009-2013 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Sat, 20 Apr 2013 17:26:32 GMT
+# Automatically generated on Sun, 27 Oct 2013 15:32:42 GMT
 # Project id ...... PixInsightINDI
 # Project type .... Module
 # Platform ........ Linux/g++
 # Configuration ... Release/x86_64
 ######################################################################
 
-OBJ_DIR=/home/klaus/C++/PixInsightINDIclient/linux/g++/x86_64/Release
+OBJ_DIR="C:/Users/klaus/Documents/GitHub/PixInsightINDI/linux/g++/x86_64/Release"
 
 .PHONY: all
 all: $(OBJ_DIR)/PixInsightINDI-pxm.so
@@ -21,6 +21,7 @@ all: $(OBJ_DIR)/PixInsightINDI-pxm.so
 SRC_FILES= \
 ../../PixInsightINDIInstance.cpp \
 ../../PixInsightINDIInterface.cpp \
+../../PixInsightINDIMediator.cpp \
 ../../PixInsightINDIModule.cpp \
 ../../PixInsightINDIParameters.cpp \
 ../../PixInsightINDIProcess.cpp \
@@ -30,7 +31,8 @@ SRC_FILES= \
 ../../basedevice.cpp \
 ../../indicom.c \
 ../../indiproperty.cpp \
-../../lilxml.c 
+../../lilxml.c \
+../../windows/vc10/PixInsightINDIclient.cpp
 
 #
 # Object files
@@ -39,6 +41,7 @@ SRC_FILES= \
 OBJ_FILES= \
 ./x86_64/Release/PixInsightINDIInstance.o \
 ./x86_64/Release/PixInsightINDIInterface.o \
+./x86_64/Release/PixInsightINDIMediator.o \
 ./x86_64/Release/PixInsightINDIModule.o \
 ./x86_64/Release/PixInsightINDIParameters.o \
 ./x86_64/Release/PixInsightINDIProcess.o \
@@ -48,7 +51,8 @@ OBJ_FILES= \
 ./x86_64/Release/basedevice.o \
 ./x86_64/Release/indicom.o \
 ./x86_64/Release/indiproperty.o \
-./x86_64/Release/lilxml.o 
+./x86_64/Release/lilxml.o \
+./x86_64/Release/windows/vc10/PixInsightINDIclient.o
 
 #
 # Dependency files
@@ -57,6 +61,7 @@ OBJ_FILES= \
 DEP_FILES= \
 ./x86_64/Release/PixInsightINDIInstance.d \
 ./x86_64/Release/PixInsightINDIInterface.d \
+./x86_64/Release/PixInsightINDIMediator.d \
 ./x86_64/Release/PixInsightINDIModule.d \
 ./x86_64/Release/PixInsightINDIParameters.d \
 ./x86_64/Release/PixInsightINDIProcess.d \
@@ -66,7 +71,8 @@ DEP_FILES= \
 ./x86_64/Release/basedevice.d \
 ./x86_64/Release/indicom.d \
 ./x86_64/Release/indiproperty.d \
-./x86_64/Release/lilxml.d 
+./x86_64/Release/lilxml.d \
+./x86_64/Release/windows/vc10/PixInsightINDIclient.d
 
 #
 # Rules
@@ -75,7 +81,7 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/PixInsightINDI-pxm.so: $(OBJ_FILES)
-	g++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/PixInsightINDI-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
+	g++-4.7.2 -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/PixInsightINDI-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
 	$(MAKE) -f ./makefile-x86_64 --no-print-directory post-build
 
 .PHONY: clean
@@ -87,12 +93,12 @@ post-build:
 	cp $(OBJ_DIR)/PixInsightINDI-pxm.so $(PCLBINDIR64)
 
 ./x86_64/Release/%.o: ../../%.cpp
-	g++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	g++-4.7.2 -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 ./x86_64/Release/windows/vc10/%.o: ../../windows/vc10/%.cpp
-	g++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	g++-4.7.2 -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 ./x86_64/Release/%.o: ../../%.c
-	gcc -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	gcc-4.7.2 -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

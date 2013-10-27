@@ -2,7 +2,7 @@
 # PixInsight Makefile Generator Script v1.79
 # Copyright (C) 2009-2013 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Sun, 27 Oct 2013 15:32:42 GMT
+# Automatically generated on Sun, 27 Oct 2013 19:32:14 GMT
 # Project id ...... PixInsightINDI
 # Project type .... Module
 # Platform ........ MacOSX/g++
@@ -31,8 +31,7 @@ SRC_FILES= \
 ../../basedevice.cpp \
 ../../indicom.c \
 ../../indiproperty.cpp \
-../../lilxml.c \
-../../windows/vc10/PixInsightINDIclient.cpp
+../../lilxml.c
 
 #
 # Object files
@@ -51,8 +50,7 @@ OBJ_FILES= \
 ./x86_64/Release/basedevice.o \
 ./x86_64/Release/indicom.o \
 ./x86_64/Release/indiproperty.o \
-./x86_64/Release/lilxml.o \
-./x86_64/Release/windows/vc10/PixInsightINDIclient.o
+./x86_64/Release/lilxml.o
 
 #
 # Dependency files
@@ -71,8 +69,7 @@ DEP_FILES= \
 ./x86_64/Release/basedevice.d \
 ./x86_64/Release/indicom.d \
 ./x86_64/Release/indiproperty.d \
-./x86_64/Release/lilxml.d \
-./x86_64/Release/windows/vc10/PixInsightINDIclient.d
+./x86_64/Release/lilxml.d
 
 #
 # Rules
@@ -93,9 +90,6 @@ post-build:
 	cp $(OBJ_DIR)/PixInsightINDI-pxm.dylib $(PCLBINDIR64)
 
 ./x86_64/Release/%.o: ../../%.cpp
-	g++ -c -pipe -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.6 -fPIC -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -mssse3 -minline-all-stringops -ffast-math -ftree-vectorize -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
-	@echo ' '
-./x86_64/Release/windows/vc10/%.o: ../../windows/vc10/%.cpp
 	g++ -c -pipe -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.6 -fPIC -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -mssse3 -minline-all-stringops -ffast-math -ftree-vectorize -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 ./x86_64/Release/%.o: ../../%.c

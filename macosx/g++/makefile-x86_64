@@ -9,7 +9,7 @@
 # Configuration ... Release/x86_64
 ######################################################################
 
-OBJ_DIR="C:/Users/klaus/Documents/GitHub/PixInsightINDI/macosx/g++/x86_64/Release"
+OBJ_DIR=/Users/klazinmed/C++/PixInsightINDIclient/macosx/g++/x86_64/Release
 
 .PHONY: all
 all: $(OBJ_DIR)/PixInsightINDI-pxm.dylib
@@ -78,7 +78,7 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/PixInsightINDI-pxm.dylib: $(OBJ_FILES)
-	g++ -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.6 -fPIC -headerpad_max_install_names -dynamiclib -install_name @executable_path/PixInsightINDI-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/PixInsightINDI-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lpthread -lPCL-pxi
+	g++ -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.6 -fPIC -headerpad_max_install_names -dynamiclib -install_name @executable_path/PixInsightINDI-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/PixInsightINDI-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lpthread -lPCL-pxi -lz
 	$(MAKE) -f ./makefile-x86_64 --no-print-directory post-build
 
 .PHONY: clean

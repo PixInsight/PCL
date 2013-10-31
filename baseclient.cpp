@@ -122,18 +122,19 @@ bool INDI::BaseClient::connectServer()
         return false;
     }
 
-    /* prepare for line-oriented i/o with client */
-//    svrwfp = fdopen (sockfd, "w");
 
-//    if (svrwfp == NULL)
-//    {
-//        perror("fdopen");
-//        return false;
-//    }
 #if defined(WIN32)
     ret = socketpair(/*PF_UNIX*/2,SOCK_STREAM,/*0*/6,(SOCKET*)pipefd);
 #else
-    ret = socketpair(/*PF_UNIX*/2,SOCK_STREAM,/*0*/6,pipefd);
+    /* prepare for line-oriented i/o with client */
+    svrwfp = fdopen (sockfd, "w");
+
+    if (svrwfp == NULL)
+    {
+        perror("fdopen");
+        return false;
+    }
+    ret = socketpair(PF_UNIX,SOCK_STREAM,0,pipefd);
 #endif
     if (ret < 0)
     {
@@ -165,7 +166,6 @@ bool INDI::BaseClient::disconnectServer()
         return true;
 
     sConnected = false;
-
 #if defined(WIN32)
 #define SHUT_RDWR SD_BOTH
 #endif
@@ -277,7 +277,9 @@ void INDI::BaseClient::listenINDI()
             sendCommand((char*)"<getProperties version='%g' device='%s'/>\n", INDIV, (*stri).c_str());
     }
 
-  //  fflush (svrwfp);
+#if !defined(WIN32)
+    fflush (svrwfp);
+#endif 
 
     FD_ZERO(&rs);
 
@@ -295,9 +297,6 @@ void INDI::BaseClient::listenINDI()
     /* read from server, exit if find all requested properties */
     while (sConnected)
     {
-#if defined(WIN32)
-//	Sleep(500);
-#endif
         n = select (maxfd+1, &rs, NULL, NULL, NULL);
 
         if (n < 0)
@@ -317,7 +316,12 @@ void INDI::BaseClient::listenINDI()
 
         if (n > 0 && FD_ISSET(sockfd, &rs))
         {
-            n = recv(sockfd, buffer, MAXINDIBUF, 0);//MSG_DONTWAIT);
+#if defined(WIN32)  
+          n = recv(sockfd, buffer, MAXINDIBUF, 0);//MSG_DONTWAIT);
+#else
+          n = recv(sockfd, buffer, MAXINDIBUF, MSG_DONTWAIT);
+#endif
+
             if (n<=0)
             {
 

@@ -16,7 +16,6 @@ namespace pcl {
 		
 		PixInsightINDIMediator(PixInsightINDIInstance* instance):m_Instance(instance),m_pixInterface(NULL){}
 
-		void newDevice(INDI::BaseDevice *dp);	
 		void newMessage(INDI::BaseDevice *dp, int messageID);
 		void newSwitch(ISwitchVectorProperty *svp);
 		void newNumber(INumberVectorProperty *nvp);

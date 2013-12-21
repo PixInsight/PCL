@@ -9,9 +9,6 @@
 
 namespace pcl {
 
-	void PixInsightINDIMediator::newDevice(INDI::BaseDevice *dp){
-		
-	}
 	
 	void PixInsightINDIMediator::newProperty(INDI::Property *property){
 		//m_Instance->getProperties();

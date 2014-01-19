@@ -183,7 +183,7 @@ void PixInsightINDIInstance::sendNewProperty() {
 	bool firstTime=true;
 	void* vectorProperty=NULL;
 	INumberVectorProperty * numberVecProp=NULL;
-//    ITextVectorProperty * textVecProp=NULL;
+    ITextVectorProperty * textVecProp=NULL;
     ISwitchVectorProperty * switchVecProp=NULL;;
 //    ILightVectorProperty * lightVecProp=NULL;
 
@@ -234,6 +234,15 @@ void PixInsightINDIInstance::sendNewProperty() {
 						p_doAbort=true;
 						return;
 					}
+				} else if (iter->PropertyType == "INDI_TEXT"){
+					textVecProp = device->getText(IsoString(propertyStr).c_str());
+					if (!textVecProp){
+					  Console().WriteLn(String().Format("Could not get property '%s' from server. Please check that INDI device is connected.",
+										IsoString(propertyStr).c_str(),
+										IsoString(deviceStr).c_str()));
+						p_doAbort=true;
+						return;
+					}
 				}
 				else {
 				  Console().WriteLn(String().Format("Property '%s' not supported.",IsoString(propertyStr).c_str()));
@@ -268,6 +277,16 @@ void PixInsightINDIInstance::sendNewProperty() {
 					return;
 				}
 				np->value = iter->NewPropertyValue.ToDouble();
+			}
+			else if (textVecProp){
+				// set new number value
+				IText * np = IUFindText(textVecProp, IsoString(iter->Element).c_str());
+				if (!np){
+					Console().WriteLn(String().Format("Could not find element '%s' ... exiting.",IsoString(iter->Element).c_str()));
+					p_doAbort=true;
+					return;
+				}
+				np->text = "/home/pi/images/"; //IsoString(iter->NewPropertyValue).c_str();
 			}
 			else {
 			  Console().WriteLn(String().Format("Should not be here %d ... exiting.",__LINE__));
@@ -315,9 +334,28 @@ void PixInsightINDIInstance::sendNewProperty() {
 					return;
 				}
 			}
-			
+
 		}else{
-		  Console().WriteLn(String().Format("Could not get property value from server. Please check that INDI device %s is connected.",IsoString(deviceStr).c_str()));
+			Console().WriteLn(String().Format("Could not get property value from server. Please check that INDI device %s is connected.",IsoString(deviceStr).c_str()));
+			p_doAbort=true;
+			return;
+		}
+	}
+	else if (textVecProp){
+		indiClient.get()->sendNewText(textVecProp);
+		// wait until completed or abort
+		if (textVecProp!=NULL){
+			while (textVecProp->s!=IPS_OK && !p_doAbort){
+				p_doAbort=Console().AbortRequested();
+				if (textVecProp->s==IPS_ALERT){
+					writeCurrentMessageToConsole();
+					p_doAbort=true;
+					return;
+				}
+			}
+
+		}else{
+			Console().WriteLn(String().Format("Could not get property value from server. Please check that INDI device %s is connected.",IsoString(deviceStr).c_str()));
 			p_doAbort=true;
 			return;
 		}

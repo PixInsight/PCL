@@ -266,7 +266,15 @@ void PixInsightINDIInstance::sendNewProperty() {
 					return;
 				}
 				IUResetSwitch(switchVecProp);
-				sp->s = ISS_ON;
+				if (iter->NewPropertyValue == String("ON")){
+					sp->s = ISS_ON;
+				}
+				else {
+					Console().WriteLn(String().Format("Invalid value for INDI switch: '%s' ... exiting.",IsoString(iter->NewPropertyValue).c_str()));
+					p_doAbort=true;
+					return;
+				}
+
 			}
 			else if (numberVecProp){
 				// set new number value
@@ -279,14 +287,14 @@ void PixInsightINDIInstance::sendNewProperty() {
 				np->value = iter->NewPropertyValue.ToDouble();
 			}
 			else if (textVecProp){
-				// set new number value
+				// set new text value
 				IText * np = IUFindText(textVecProp, IsoString(iter->Element).c_str());
 				if (!np){
 					Console().WriteLn(String().Format("Could not find element '%s' ... exiting.",IsoString(iter->Element).c_str()));
 					p_doAbort=true;
 					return;
 				}
-				np->text = "/home/pi/images/"; //IsoString(iter->NewPropertyValue).c_str();
+				IUSaveText(np,IsoString(iter->NewPropertyValue).c_str());
 			}
 			else {
 			  Console().WriteLn(String().Format("Should not be here %d ... exiting.",__LINE__));
@@ -306,7 +314,7 @@ void PixInsightINDIInstance::sendNewProperty() {
 	if (switchVecProp){
 		indiClient.get()->sendNewSwitch(switchVecProp);
 		if (switchVecProp!=NULL){
-			while (switchVecProp->s!=IPS_OK && !p_doAbort){
+			while (switchVecProp->s!=IPS_OK && switchVecProp->s!=IPS_IDLE &&  !p_doAbort){
 				p_doAbort=Console().AbortRequested();
 				if (switchVecProp->s==IPS_ALERT){
 					writeCurrentMessageToConsole();
@@ -326,7 +334,7 @@ void PixInsightINDIInstance::sendNewProperty() {
 		indiClient.get()->sendNewNumber(numberVecProp);
 		// wait until completed or abort
 		if (numberVecProp!=NULL){
-			while (numberVecProp->s!=IPS_OK && !p_doAbort){
+			while (numberVecProp->s!=IPS_OK && numberVecProp->s!=IPS_IDLE && !p_doAbort){
 				p_doAbort=Console().AbortRequested();
 				if (numberVecProp->s==IPS_ALERT){
 					writeCurrentMessageToConsole();
@@ -345,7 +353,7 @@ void PixInsightINDIInstance::sendNewProperty() {
 		indiClient.get()->sendNewText(textVecProp);
 		// wait until completed or abort
 		if (textVecProp!=NULL){
-			while (textVecProp->s!=IPS_OK && !p_doAbort){
+			while (textVecProp->s!=IPS_OK && textVecProp->s!=IPS_IDLE && !p_doAbort){
 				p_doAbort=Console().AbortRequested();
 				if (textVecProp->s==IPS_ALERT){
 					writeCurrentMessageToConsole();

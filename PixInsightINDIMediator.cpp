@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <iostream>
+#include <fstream>
 #include "PixInsightINDIMediator.h"
 #include <pcl/Console.h>
 
@@ -37,10 +39,9 @@ namespace pcl {
 	}
 	void PixInsightINDIMediator::newBLOB(IBLOB *bp){
 		IsoString fileName = IsoString("C:/Users/klaus/tmp/") + IsoString(bp->label) + IsoString(".fits"); 
-		FILE* f;
-		f = fopen(fileName.c_str(),"w+" );
-		fwrite(bp->blob,bp->bloblen,1,f);
-		fclose(f);
-		
+	    ofstream myfile;
+		myfile.open (fileName.c_str(),ios::out|ios::binary);
+		myfile.write((const char*) bp->blob,bp->bloblen);
+		myfile.close();		
 	}
 }

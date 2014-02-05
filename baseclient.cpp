@@ -124,7 +124,7 @@ bool INDI::BaseClient::connectServer()
 
 
 #if defined(WIN32)
-    ret = socketpair(/*PF_UNIX*/2,SOCK_STREAM,/*0*/6,(SOCKET*)pipefd);
+    ret = socketpair(AF_INET,SOCK_STREAM,IPPROTO_TCP,(SOCKET*)pipefd);
 #else
     /* prepare for line-oriented i/o with client */
     svrwfp = fdopen (sockfd, "w");
@@ -337,7 +337,7 @@ void INDI::BaseClient::listenINDI()
 
             for (int i=0; i < n; i++)
             {
-              // IDLog("Getting #%d bytes in for loop, calling readXMLEle for byte %d\n", n, i);
+                //IDLog("Getting #%d bytes in for loop, calling readXMLEle for byte %d\n", n, i);
                 XMLEle *root = readXMLEle (lillp, buffer[i], msg);
                 //IDLog("############# BLOCK # POST READ XML ELE #####################\n");
 

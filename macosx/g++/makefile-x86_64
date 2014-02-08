@@ -25,7 +25,6 @@ SRC_FILES= \
 ../../PixInsightINDIModule.cpp \
 ../../PixInsightINDIParameters.cpp \
 ../../PixInsightINDIProcess.cpp \
-../../PixInsightINDIclient.cpp \
 ../../base64.c \
 ../../baseclient.cpp \
 ../../basedevice.cpp \
@@ -44,7 +43,6 @@ OBJ_FILES= \
 ./x86_64/Release/PixInsightINDIModule.o \
 ./x86_64/Release/PixInsightINDIParameters.o \
 ./x86_64/Release/PixInsightINDIProcess.o \
-./x86_64/Release/PixInsightINDIclient.o \
 ./x86_64/Release/base64.o \
 ./x86_64/Release/baseclient.o \
 ./x86_64/Release/basedevice.o \
@@ -63,7 +61,6 @@ DEP_FILES= \
 ./x86_64/Release/PixInsightINDIModule.d \
 ./x86_64/Release/PixInsightINDIParameters.d \
 ./x86_64/Release/PixInsightINDIProcess.d \
-./x86_64/Release/PixInsightINDIclient.d \
 ./x86_64/Release/base64.d \
 ./x86_64/Release/baseclient.d \
 ./x86_64/Release/basedevice.d \

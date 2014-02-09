@@ -74,15 +74,15 @@ auto_ptr<PixInsightINDIMediator> mediator(0);
 
 PixInsightINDIInstance::PixInsightINDIInstance( const MetaProcess* m ) :
 ProcessImplementation( m ),
+p_propertyList(200),
+p_newPropertyList(),
 p_host( TheINDIServerHostname->DefaultValue() ),
 p_port( uint32( TheINDIServerPort->DefaultValue() ) ),
 p_connect( uint32( TheINDIServerConnect->DefaultValue() ) ),
 p_currentMessage(""),
 p_doAbort(false),
-p_Mediator(NULL),
-p_propertyList(200),
-p_newPropertyList(),
-p_PropertiesToBeRemoved()
+p_Mediator(NULL)
+
 {
 	
 }
@@ -377,12 +377,6 @@ void PixInsightINDIInstance::sendNewProperty() {
 	p_newPropertyList.Clear();
 }
 
-
-void PixInsightINDIInstance::removeNewPropertyListItems(){
-	for (pcl::Array<INDINewPropertyListItem>::iterator iter=p_PropertiesToBeRemoved.Begin(); iter!=p_PropertiesToBeRemoved.End(); ++iter ){
-			p_newPropertyList.Remove(*iter);
-	}
-}
 
 void PixInsightINDIInstance::writeCurrentMessageToConsole(){
   Console().WriteLn(String().Format("Message from INDI server: %s",IsoString(p_currentMessage).c_str()));

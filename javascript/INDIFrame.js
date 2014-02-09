@@ -76,9 +76,8 @@ function mainDialog()
    this.__base__ = Dialog;
    this.__base__();
 
-   this.timer = new Timer();
-   this.timer.singleShot=true;
-   this.timer.onTimeout=onTimerEvent;
+
+
 
    var ttStr = "";
    var selectedPropertyNode = TreeBoxNode;
@@ -113,14 +112,15 @@ function mainDialog()
    this.INDIConnect_PushButton.onClick = function()
    {
       indi.connectServer();
-      indi.connectServer();
-      this.dialog.INDICamera_Combo.update();
+      timer.start();
+      periodicTimer.start();
    }
 
    ttStr = "Disconnect from INDI server."
    this.INDIDisconnect_PushButton = new pushButton(this, "Disconnect", "", ttStr);
    this.INDIDisconnect_PushButton.onClick = function()
    {
+      timer.stop();
       indi.disconnectServer();
    }
 
@@ -197,7 +197,7 @@ function mainDialog()
    {
       indi.sendNewProperty("/" + currentTelescope + "/CONNECTION/CONNECT","INDI_SWITCH","ON");
       globTelescopeConnected=true;
-      this.dialog.curRA_Edit.update();
+
 
    }
 
@@ -205,8 +205,9 @@ function mainDialog()
    this.INDITelescopeDisconnect_PushButton = new pushButton(this, "Disconnect", "", ttStr);
    this.INDITelescopeDisconnect_PushButton.onClick = function()
    {
-      indi.sendNewProperty("/" + currentTelescope + "/CONNECTION/DISCONNECT","INDI_SWITCH","ON");
       globTelescopeConnected=false;
+      indi.sendNewProperty("/" + currentTelescope + "/CONNECTION/DISCONNECT","INDI_SWITCH","ON");
+
    }
 
    this.INDITelescope_HSizer = new HorizontalSizer;
@@ -339,17 +340,12 @@ function mainDialog()
    this.curRA_Label = new labelBox(this, "Telescope RA:", TextAlign_VertCenter, 120);
 
    var curRA=[0,0,0];
-   if (globTelescopeConnected===true){
-       curRA=convertToHMS(parseFloat(indi.getPropertyValue("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA")));
-   }
    this.curRA_Edit = new editBox(this,curRA[0]+":" +curRA[1]+":"+curRA[2], true, FrameStyle_Box, 50);
    this.curRA_Edit.setFixedWidth(80);
 
    this.curDEC_Label = new labelBox(this, "DEC:", TextAlign_VertCenter, 120);
 
    var curDEC=[0,0,0];
-   if (globTelescopeConnected===true)
-      curDEC=convertToHMS(parseFloat(indi.getPropertyValue("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC")));
    this.curDEC_Edit = new editBox(this,curDEC[0]+":" +curDEC[1]+":"+curDEC[2], true, FrameStyle_Box, 50);
    this.curDEC_Edit.setFixedWidth(80);
 
@@ -392,6 +388,7 @@ function mainDialog()
      var decInHours=this.dialog.solver.metadata.dec;
      var propertyArray=[["/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA","INDI_NUMBER",raInHours.toString()],
                         ["/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC","INDI_NUMBER",decInHours.toString()]];
+
 
      indi.sendNewPropertyArray(propertyArray);
      this.dialog.curRA_Edit.update();
@@ -616,6 +613,7 @@ mainDialog.prototype.stopTimer = function(interval){
 
 ComboBox.prototype.update = function(){
    this.dialog.INDICamera_Combo.clear();
+   this.dialog.INDITelescope_Combo.clear();
    var deviceList={};
    for (var i=0; i<indi.INDI.INDI_Properties.length; ++i){
       if (indi.INDI.INDI_Properties[i][0]!="")
@@ -623,7 +621,7 @@ ComboBox.prototype.update = function(){
          var splittedString = indi.INDI.INDI_Properties[i][0].split("/");
          var deviceString = splittedString[1];
          if (deviceString in deviceList){
-            continue
+            continue;
          }
          else {
             deviceList[deviceString]=true;
@@ -636,13 +634,13 @@ ComboBox.prototype.update = function(){
 
 Edit.prototype.update = function(){
    var curRA=[0,0,0];
-   if (globTelescopeConnected===true){
+   if (indi.CheckPropertyExists("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA")){
       curRA=convertToHMS(parseFloat(indi.getPropertyValue("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA")));
    }
    this.dialog.curRA_Edit.text=curRA[0]+":" +curRA[1]+":"+curRA[2];
 
    var curDEC=[0,0,0];
-   if (globTelescopeConnected===true){
+   if (indi.CheckPropertyExists("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC")){
      curDEC=convertToHMS(parseFloat(indi.getPropertyValue("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC")));
    }
    this.dialog.curDEC_Edit.text=curDEC[0]+":" +curDEC[1]+":"+curDEC[2];
@@ -650,6 +648,30 @@ Edit.prototype.update = function(){
 
 mainDialog.prototype = new Dialog;
 var maindlg = new mainDialog();
+
+
+function onUpdateTimerEvent (){
+ maindlg.INDICamera_Combo.update();
+}
+
+function onUpdatePeriodicTimerEvent (){
+ maindlg.curRA_Edit.update();
+}
+
+var timer = new Timer();
+timer.singleShot=true;
+timer.periodic=false;
+timer.interval=1;
+timer.onTimeout=onUpdateTimerEvent;
+
+var periodicTimer = new Timer();
+periodicTimer.singleShot=false;
+periodicTimer.periodic=true;
+periodicTimer.interval=1;
+periodicTimer.onTimeout=onUpdatePeriodicTimerEvent;
+
+
+
 var globNewProperty="";
 var globNewPropertyValue="";
 var globNewPropertyType="";
@@ -658,7 +680,6 @@ var globStarDetectionSensitivity=50;
 var globTelescopeConnected=false;
 var currentCamera="";
 var currentTelescope="";
-//var propdlg = new SetPropertyDialog("Hello","World");
 
 var indi = new INDIclient();
 var expDuration = "";

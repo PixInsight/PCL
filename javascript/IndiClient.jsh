@@ -44,7 +44,7 @@ INDIclient.prototype.execute = function() {
   this.INDI.executeGlobal();
   if (this.INDI.INDI_ProcessFlag_DoAbort){
      this.disconnectServer();
-     throw("Process aborted");
+     throw Error("Process aborted");
   }
 }
 
@@ -114,50 +114,52 @@ INDIclient.prototype.ParkToHome = function(){
 
 INDIclient.prototype.CheckPropertyValue = function(propertyKey,propertyType,Value) {
    var propertyKeyArray;
-   var propertyFound=false;
+   var propertyValueIsOK=false;
 
    for (var i=0;i<this.INDI.INDI_Properties.length; ++i){
       if (this.INDI.INDI_Properties[i][0] == propertyKey){
-         propertyFound=true;
          if (propertyType=="INDI_NUMBER"){
             var valueNumberActual   = new Number(Value);
             var valueNumberExpected = new Number(this.INDI.INDI_Properties[i][1]);
-            if (Math.abs(valueNumberExpected-valueNumberActual)>0.0001){
+            if (Math.abs(valueNumberExpected-valueNumberActual)<=0.0001){
+               propertyValueIsOK=true;
+               return propertyValueIsOK;
+            }
+            else {
                 console.writeln("Property ",propertyKey," has not expected value ",  this.INDI.INDI_Properties[i][1] , " but ", Value );
-               this.disconnectServer();
-               throw ("Property wrong value.");
+                return propertyValueIsOK;
             }
          }
          else {
-            if (this.INDI.INDI_Properties[i][1]!=Value){
+            if (this.INDI.INDI_Properties[i][1]==Value){
+               propertyValueIsOK=true;
+               return propertyValueIsOK;
+            } else {
                 console.writeln("Property ",propertyKey," has not expected value ", Value, " but ", this.INDI.INDI_Properties[i][1] );
-              this.disconnectServer();
-               throw ("Property wrong value.");
+                return propertyValueIsOK;
             }
          }
       }
    }
-   if (!propertyFound){
-      console.writeln("Property ",propertyKey," could not be found" );
-      this.disconnectServer();
-      throw ("Property not found.")
-   }
-
+   return propertyValueIsOK;
 }
+
 
 INDIclient.prototype.CheckPropertyExists = function(propertyKey) {
    var propertyKeyArray;
    var propertyFound=false;
+   if (this.INDI===null)
+      return propertyFound;
    for (var i=0;i<this.INDI.INDI_Properties.length; ++i){
       if (this.INDI.INDI_Properties[i][0] == propertyKey){
          propertyFound=true;
+         return propertyFound;
       }
    }
    if (!propertyFound){
       console.writeln("Property ",propertyKey," could not be found" );
-      this.disconnectServer();
-      throw ("Property not found.")
    }
+   return propertyFound;
 }
 
 
@@ -169,9 +171,7 @@ INDIclient.prototype.getPropertyValue = function(propertyKey) {
       }
    }
    console.writeln("Property ",propertyKey," could not be found" );
-   this.disconnectServer();
-   throw ("Property not found.")
-
+  return null;
 }
 
 

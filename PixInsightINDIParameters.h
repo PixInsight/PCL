@@ -67,6 +67,9 @@ struct INDIPropertyListItem {
 	String PropertyKey;
 	String PropertyValue;
 	String NewPropertyValue;
+	bool operator==(const INDIPropertyListItem& rhs) const {
+		return (PropertyKey == rhs.PropertyKey) ;
+	}
 };
 
 struct INDINewPropertyListItem {

@@ -1076,8 +1076,9 @@ function ImageSolver()
    // stored in the preferences instead the values obtained from the image.
    this.Init = function( w, prioritizeSettings )
    {
-      if( !w || !w.isWindow)
-         throw Error( "The script requires an image" );
+      //if( !w || !w.isWindow)
+        // throw Error( "The script requires an image" );
+
       this.activeWindow = w;
 
       this.solverCfg.LoadSettings();

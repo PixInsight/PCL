@@ -74,19 +74,12 @@ protected:
 	virtual void newMessage(INDI::BaseDevice *dp, int messageID){}
     virtual void newText(ITextVectorProperty *tvp) {}
     virtual void newLight(ILightVectorProperty *lvp) {}
-    virtual void serverConnected() {}
+	virtual void serverConnected() {}
     virtual void serverDisconnected(int exit_code) {}
 
 private:
    INDI::BaseDevice *driver;
 
-   ISwitchVectorProperty*	m_CamProps;
-   ITextVectorProperty*		m_ShutterPort;
-   INumberVectorProperty*   m_CcdExposure;
-   ISwitchVectorProperty*	m_Iso;
-   ISwitchVectorProperty*	m_CaptureFormat;
-   ISwitchVectorProperty*   m_TransferFormat;
-   IBLOBVectorProperty*     m_Pixels;
 };
 
 

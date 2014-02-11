@@ -41,11 +41,9 @@
     <ClInclude Include="..\..\lilxml.h" />
     <ClInclude Include="..\..\PixInsightINDIclient.h" />
     <ClInclude Include="..\..\PixInsightINDIInstance.h" />
-    <ClInclude Include="..\..\PixInsightINDIInterface.h" />
     <ClInclude Include="..\..\PixInsightINDIModule.h" />
     <ClInclude Include="..\..\PixInsightINDIParameters.h" />
     <ClInclude Include="..\..\PixInsightINDIProcess.h" />
-    <ClInclude Include="..\..\PixInsightINDIMediator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\base64.c" />
@@ -55,8 +53,7 @@
     <ClCompile Include="..\..\indiproperty.cpp" />
     <ClCompile Include="..\..\lilxml.c" />
     <ClCompile Include="..\..\PixInsightINDIInstance.cpp" />
-    <ClCompile Include="..\..\PixInsightINDIInterface.cpp" />
-    <ClCompile Include="..\..\PixInsightINDIMediator.cpp" />
+    <ClCompile Include="..\..\PixInsightINDIclient.cpp" />
     <ClCompile Include="..\..\PixInsightINDIModule.cpp" />
     <ClCompile Include="..\..\PixInsightINDIParameters.cpp" />
     <ClCompile Include="..\..\PixInsightINDIProcess.cpp" />

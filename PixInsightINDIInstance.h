@@ -53,14 +53,12 @@
 #include <pcl/ProcessImplementation.h>
 #include <pcl/Timer.h>
 #include <pcl/Console.h>
-#include "PixInsightINDIclient.h"
 #include "PixInsightINDIParameters.h"
-//#include "PixInsightINDIMediator.h"
+
 
 namespace pcl
 {
 
-  class PixInsightINDIMediator;
 // ----------------------------------------------------------------------------
 
 class PixInsightINDIInstance : public ProcessImplementation
@@ -93,14 +91,13 @@ private:
    uint32                  p_connect;	// uint32 port of INDI server
    IsoString               p_currentMessage;
    pcl_bool				   p_doAbort;
-   PixInsightINDIMediator* p_Mediator;
    
    void getProperties();
    void sendNewProperty();
    bool getPropertyFromKeyString(INDINewPropertyListItem& newPropertyKey, const String& keyString);
    void writeCurrentMessageToConsole(); 
 
-   friend class PixInsightINDIMediator;
+   friend class INDIClient;
    
 
    friend class PixInsightINDIEngine;

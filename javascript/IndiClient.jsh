@@ -54,16 +54,17 @@ INDIclient.prototype.connectServer = function(){
       this.INDI = new INDIClient;
    this.INDI.INDI_ServerHostname = this.INDIServer;
    this.INDI.INDI_ServerPort   = this.INDIPort;
-   this.INDI.executeGlobal();
    this.INDI.INDI_ServerConnect=1;
+   this.INDI.executeGlobal();
+
 }
 
 INDIclient.prototype.disconnectServer = function(){
 
    if (!this.INDI)
       this.INDI = new INDIClient;
-   this.INDI.executeGlobal();
    this.INDI.INDI_ServerConnect=0;
+   this.INDI.executeGlobal();
 }
 
 INDIclient.prototype.dumpProperties = function(){

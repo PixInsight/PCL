@@ -23,12 +23,6 @@
     <ClCompile Include="..\..\PixInsightINDIInstance.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\PixInsightINDIInterface.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\PixInsightINDIMediator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\PixInsightINDIModule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -56,15 +50,12 @@
     <ClCompile Include="..\..\lilxml.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\PixInsightINDIclient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\PixInsightINDIInstance.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\PixInsightINDIInterface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\PixInsightINDIMediator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\PixInsightINDIModule.h">

@@ -47,7 +47,6 @@
 // ****************************************************************************
 
 #include "PixInsightINDIInstance.h"
-#include "PixInsightINDIInterface.h"
 #include "PixInsightINDIParameters.h"
 #include "PixInsightINDIProcess.h"
 
@@ -131,7 +130,7 @@ const char** PixInsightINDIProcess::IconImageXPM() const
 
 ProcessInterface* PixInsightINDIProcess::DefaultInterface() const
 {
-   return ThePixInsightINDIInterface;
+   return NULL;
 }
 // ----------------------------------------------------------------------------
 
@@ -152,7 +151,7 @@ ProcessImplementation* PixInsightINDIProcess::Clone( const ProcessImplementation
 
 bool PixInsightINDIProcess::CanProcessCommandLines() const
 {
-   return true;
+   return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -161,87 +160,12 @@ static void ShowHelp()
 {
    Console().Write(
 "<raw>"
-"Usage: INDIclient [<arg_list>] [<view_list>]"
-"\n"
-"\n -host=<name>       hostname of the INDI server"
-"\n"
-"\n -port=<port>       port of the INDI server"
-"\n"
-"\n--interface"
-"\n"
-"\n      Launches the interface of this process."
-"\n"
-"\n--help"
-"\n"
-"\n      Displays this help and exits."
+"Nothing to show."
 "</raw>" );
 }
 
 int PixInsightINDIProcess::ProcessCommandLine( const StringList& argv ) const
 {
-   ArgumentList arguments =
-      ExtractArguments( argv, ArgumentItemMode::AsViews, ArgumentOption::AllowWildcards );
-
-   PixInsightINDIInstance instance( this );
-
-   bool launchInterface = false;
-   int count = 0;
-
-   for ( ArgumentList::const_iterator i = arguments.Begin(); i != arguments.End(); ++i )
-   {
-      const Argument& arg = *i;
-
-      if ( arg.IsNumeric() )
-      {
-		  if (arg.Id() == "port")
-			  instance.p_port = arg.NumericValue();
-	  }
-      else if ( arg.IsString() )
-      {
-		  if (arg.Id() == "host")
-			  instance.p_host = arg.StringValue();	
-      }
-      else if ( arg.IsSwitch() )
-      {
-         throw Error( "Unknown switch argument: " + arg.Token() );
-      }
-      else if ( arg.IsLiteral() )
-      {
-         // These are standard parameters that all processes should provide.
-         if ( arg.Id() == "-interface" )
-            launchInterface = true;
-         else if ( arg.Id() == "-help" )
-         {
-            ShowHelp();
-            return 0;
-         }
-         else
-            throw Error( "Unknown argument: " + arg.Token() );
-      }
-      else if ( arg.IsItemList() )
-      {
-         ++count;
-
-         if ( arg.Items().IsEmpty() )
-            throw Error( "No view(s) found: " + arg.Token() );
-
-         for ( StringList::const_iterator j = arg.Items().Begin(); j != arg.Items().End(); ++j )
-         {
-            View v = View::ViewById( *j );
-            if ( v.IsNull() )
-               throw Error( "No such view: " + *j );
-            instance.LaunchOn( v );
-         }
-      }
-   }
-
-   if ( launchInterface )
-      instance.LaunchInterface();
-   else if ( count == 0 )
-   {
-	   instance.LaunchGlobal();
-   }
-
    return 0;
 }
 

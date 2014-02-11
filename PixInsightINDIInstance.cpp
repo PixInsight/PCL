@@ -50,8 +50,7 @@
 #include "PixInsightINDIParameters.h"
 #include "basedevice.h"
 #include "indicom.h"
-#include "PixInsightINDIMediator.h"
-//#include "PixInsightINDIclient.h"
+#include "PixInsightINDIclient.h"
 
 #include <pcl/AutoViewLock.h>
 #include <pcl/Console.h>
@@ -67,7 +66,6 @@ namespace pcl
 
 /* Our client auto pointer */
 auto_ptr<INDIClient> indiClient(0);
-auto_ptr<PixInsightINDIMediator> mediator(0);
 
 
 // ----------------------------------------------------------------------------
@@ -80,8 +78,7 @@ p_host( TheINDIServerHostname->DefaultValue() ),
 p_port( uint32( TheINDIServerPort->DefaultValue() ) ),
 p_connect( uint32( TheINDIServerConnect->DefaultValue() ) ),
 p_currentMessage(""),
-p_doAbort(false),
-p_Mediator(NULL)
+p_doAbort(false)
 
 {
 	
@@ -508,8 +505,10 @@ bool PixInsightINDIInstance::ExecuteGlobal()
    Console().EnableAbort();
    if (!p_connect){
 	  // disconnet from server
-    if (indiClient.get()->serverIsConnected())
+    if (indiClient.get()->serverIsConnected()){
 	   indiClient.get()->disconnectServer();
+	   p_propertyList.Clear();
+	}
 
 	indiClient.release();
  
@@ -517,16 +516,7 @@ bool PixInsightINDIInstance::ExecuteGlobal()
    }
 
    if (indiClient.get() == 0)
-        indiClient.reset(new INDIClient());
-
-   if (p_Mediator==NULL)
-	   p_Mediator = new PixInsightINDIMediator(this);
-
-   vector<INDI::BaseDevice *> pDevices = indiClient.get()->getDevices();
-   for (std::vector<INDI::BaseDevice *>::iterator it = pDevices.begin(); it!=pDevices.end(); ++it  )
-   {
-	   (*it)->setMediator(p_Mediator);
-   }
+        indiClient.reset(new INDIClient(this));
    
    IsoString ASCIIHost(p_host);
    indiClient->setServer(ASCIIHost.c_str() , p_port);
@@ -540,22 +530,12 @@ bool PixInsightINDIInstance::ExecuteGlobal()
 
    Console().Flush();
 
-   getProperties();
+   //getProperties();
 
    sendNewProperty();
 
-   getProperties();
+   //getProperties();
 
-
-   if (p_Mediator!=NULL){
-	   delete p_Mediator;
-	   p_Mediator = NULL;
-   }
-
-   for (std::vector<INDI::BaseDevice *>::iterator it = pDevices.begin(); it!=pDevices.end(); ++it  )
-   {
-	   (*it)->setMediator(NULL);
-   }
 
    return true;
 }

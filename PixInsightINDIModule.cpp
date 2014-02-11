@@ -58,7 +58,6 @@
 
 #include "PixInsightINDIModule.h"
 #include "PixInsightINDIProcess.h"
-#include "PixInsightINDIInterface.h"
 
 namespace pcl
 {
@@ -164,7 +163,6 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
    if ( mode == pcl::InstallMode::FullInstall )
    {
       new pcl::PixInsightINDIProcess;
-      new pcl::PixInsightINDIInterface;
    }
 
    /*

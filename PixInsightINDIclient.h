@@ -49,36 +49,110 @@
 #ifndef INDI_CLIENT_H
 #define INDI_CLIENT_H
 
+#include "PixInsightINDIInstance.h"
+
 #include "indidevapi.h"
 #include "indicom.h"
 #include "baseclient.h"
-
+#include "basedevice.h"
 
 namespace pcl {
+
+class IProperty {
+protected:
+	INDI::Property* m_property;
+public:
+	IProperty(INDI::Property* property):m_property(property){}
+	virtual ~IProperty(){}
+	virtual String getDeviceName() {return String(m_property->getDeviceName());}
+	virtual String getName()       {return String(m_property->getName());}
+	virtual INDI_TYPE getType()    {return m_property->getType();}
+	virtual IPState getState()     {return m_property->getState();}
+
+	virtual size_t getNumOfElements()  {return 0;}
+	virtual String getElementName(size_t i)  {return String("unsupported element");}
+	virtual String getElementValue(size_t i) {return String("unsupported value");}
+};
+
+class NumberProperty : public IProperty
+{
+public:
+	NumberProperty(INDI::Property* property):IProperty(property){}
+	virtual size_t getNumOfElements() {return m_property->getNumber()->nnp;}
+	virtual String getElementName(size_t i) {return String(m_property->getNumber()->np[i].name);}
+	virtual String getElementValue(size_t i) {return String(m_property->getNumber()->np[i].value);};
+};
+
+class TextProperty : public IProperty
+{
+public:
+	TextProperty(INDI::Property* property):IProperty(property){}
+	virtual size_t getNumOfElements() {return m_property->getText()->ntp;}
+	virtual String getElementName(size_t i) {return String(m_property->getText()->tp[i].name);}
+	virtual String getElementValue(size_t i) {return String(m_property->getText()->tp[i].text);};
+};
+
+class SwitchProperty : public IProperty
+{
+public:
+	SwitchProperty(INDI::Property* property):IProperty(property){}
+	virtual size_t getNumOfElements() {return m_property->getSwitch()->nsp;}
+	virtual String getElementName(size_t i) {return String(m_property->getSwitch()->sp[i].name);}
+	virtual String getElementValue(size_t i) {return String(m_property->getSwitch()->sp[i].s == ISS_ON  ? "ON" : "OFF");};
+};
+
+class LightProperty : public IProperty
+{
+public:
+	LightProperty(INDI::Property* property):IProperty(property){}
+	virtual size_t getNumOfElements() {return m_property->getLight()->nlp;}
+	virtual String getElementName(size_t i) {return String(m_property->getLight()->lp[i].name);}
+	virtual String getElementValue(size_t i) {
+		switch (m_property->getLight()->lp[i].s){
+		case IPS_IDLE:
+			return String("IDLE");
+			break;
+		case IPS_OK:
+			return String("OK");
+			break;
+		case IPS_BUSY:
+			return String("BUSY");
+			break;
+		case IPS_ALERT:
+			return String("ALERT");
+			break;
+		default:
+			return String("UNSUPPORTED");
+		}
+	}
+};
+
+
+
+
+class PropertyFactory{
+public:
+	static IProperty* create(INDI::Property* property);
+};
+
 
 class INDIClient : public INDI::BaseClient
 {
  public:
-
-	 INDIClient():BaseClient(){}
+	 INDIClient(PixInsightINDIInstance* instance):BaseClient(),m_Instance(instance){}
 	 ~INDIClient(){}
-
-
 protected:
-
-	virtual void newProperty(INDI::Property *property){}
-    virtual void removeProperty(INDI::Property *property) {}
-    virtual void newBLOB(IBLOB *bp) {}
-    virtual void newSwitch(ISwitchVectorProperty *svp) {}
-	virtual void newNumber(INumberVectorProperty *nvp){}
-	virtual void newMessage(INDI::BaseDevice *dp, int messageID){}
-    virtual void newText(ITextVectorProperty *tvp) {}
-    virtual void newLight(ILightVectorProperty *lvp) {}
-	virtual void serverConnected() {}
-    virtual void serverDisconnected(int exit_code) {}
-
+	void newProperty(INDI::Property *property);
+    //void removeProperty(INDI::Property *property);
+    void newBLOB(IBLOB *bp);
+    void newSwitch(ISwitchVectorProperty *svp);
+	void newNumber(INumberVectorProperty *nvp);
+	void newMessage(INDI::BaseDevice *dp, int messageID);
+    void newText(ITextVectorProperty *tvp);
+    void newLight(ILightVectorProperty *lvp);
+	
 private:
-   INDI::BaseDevice *driver;
+   PixInsightINDIInstance*         m_Instance;
 
 };
 

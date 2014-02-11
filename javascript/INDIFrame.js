@@ -76,8 +76,15 @@ function mainDialog()
    this.__base__ = Dialog;
    this.__base__();
 
+   this.INDIAsynchActionEnum = {
+      None:0,
+      ServerConnect :1,
+      ServerDisconnect :2,
+      TelescopeConnect : 3,
+      TelescopeDisconnect : 4
+   }
 
-
+   this.INDIAsynchAction = this.INDIAsynchActionEnum.None;
 
    var ttStr = "";
    var selectedPropertyNode = TreeBoxNode;
@@ -112,15 +119,15 @@ function mainDialog()
    this.INDIConnect_PushButton.onClick = function()
    {
       indi.connectServer();
+      this.dialog.INDIAsynchAction =this.dialog.INDIAsynchActionEnum.ServerConnect;
       timer.start();
-      periodicTimer.start();
+
    }
 
    ttStr = "Disconnect from INDI server."
    this.INDIDisconnect_PushButton = new pushButton(this, "Disconnect", "", ttStr);
    this.INDIDisconnect_PushButton.onClick = function()
    {
-      timer.stop();
       indi.disconnectServer();
    }
 
@@ -196,18 +203,15 @@ function mainDialog()
    this.INDITelescopeConnect_PushButton.onClick = function()
    {
       indi.sendNewProperty("/" + currentTelescope + "/CONNECTION/CONNECT","INDI_SWITCH","ON");
-      globTelescopeConnected=true;
-
-
+      this.dialog.INDIAsynchAction =this.dialog.INDIAsynchActionEnum.TelescopeConnect;
+      timer.start();
    }
 
    ttStr = "Disconnect INDI telescope."
    this.INDITelescopeDisconnect_PushButton = new pushButton(this, "Disconnect", "", ttStr);
    this.INDITelescopeDisconnect_PushButton.onClick = function()
    {
-      globTelescopeConnected=false;
       indi.sendNewProperty("/" + currentTelescope + "/CONNECTION/DISCONNECT","INDI_SWITCH","ON");
-
    }
 
    this.INDITelescope_HSizer = new HorizontalSizer;
@@ -389,9 +393,9 @@ function mainDialog()
      var propertyArray=[["/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA","INDI_NUMBER",raInHours.toString()],
                         ["/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC","INDI_NUMBER",decInHours.toString()]];
 
-
+     periodicTimer.start();
      indi.sendNewPropertyArray(propertyArray);
-     this.dialog.curRA_Edit.update();
+     periodicTimer.stop();
 
    }
 
@@ -615,6 +619,7 @@ ComboBox.prototype.update = function(){
    this.dialog.INDICamera_Combo.clear();
    this.dialog.INDITelescope_Combo.clear();
    var deviceList={};
+   console.writeln(indi.INDI.INDI_Properties.length);
    for (var i=0; i<indi.INDI.INDI_Properties.length; ++i){
       if (indi.INDI.INDI_Properties[i][0]!="")
       {
@@ -651,7 +656,16 @@ var maindlg = new mainDialog();
 
 
 function onUpdateTimerEvent (){
- maindlg.INDICamera_Combo.update();
+ switch (maindlg.INDIAsynchAction)
+ {
+ case maindlg.INDIAsynchActionEnum.ServerConnect:
+      maindlg.INDICamera_Combo.update();
+      break;
+ case maindlg.INDIAsynchActionEnum.TelescopeConnect:
+      maindlg.curRA_Edit.update();
+      break;
+ default:
+ }
 }
 
 function onUpdatePeriodicTimerEvent (){
@@ -661,7 +675,7 @@ function onUpdatePeriodicTimerEvent (){
 var timer = new Timer();
 timer.singleShot=true;
 timer.periodic=false;
-timer.interval=1;
+timer.interval=2;
 timer.onTimeout=onUpdateTimerEvent;
 
 var periodicTimer = new Timer();
@@ -677,7 +691,6 @@ var globNewPropertyValue="";
 var globNewPropertyType="";
 var globMeasureStarSizes=false;
 var globStarDetectionSensitivity=50;
-var globTelescopeConnected=false;
 var currentCamera="";
 var currentTelescope="";
 

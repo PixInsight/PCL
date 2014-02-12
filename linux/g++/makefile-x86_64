@@ -20,8 +20,7 @@ all: $(OBJ_DIR)/PixInsightINDI-pxm.so
 
 SRC_FILES= \
 ../../PixInsightINDIInstance.cpp \
-../../PixInsightINDIInterface.cpp \
-../../PixInsightINDIMediator.cpp \
+../../PixInsightINDIclient.cpp \
 ../../PixInsightINDIModule.cpp \
 ../../PixInsightINDIParameters.cpp \
 ../../PixInsightINDIProcess.cpp \
@@ -38,8 +37,7 @@ SRC_FILES= \
 
 OBJ_FILES= \
 ./x86_64/Release/PixInsightINDIInstance.o \
-./x86_64/Release/PixInsightINDIInterface.o \
-./x86_64/Release/PixInsightINDIMediator.o \
+./x86_64/Release/PixInsightINDIclient.o \
 ./x86_64/Release/PixInsightINDIModule.o \
 ./x86_64/Release/PixInsightINDIParameters.o \
 ./x86_64/Release/PixInsightINDIProcess.o \
@@ -56,8 +54,7 @@ OBJ_FILES= \
 
 DEP_FILES= \
 ./x86_64/Release/PixInsightINDIInstance.d \
-./x86_64/Release/PixInsightINDIInterface.d \
-./x86_64/Release/PixInsightINDIMediator.d \
+./x86_64/Release/PixInsightINDIclient.d \
 ./x86_64/Release/PixInsightINDIModule.d \
 ./x86_64/Release/PixInsightINDIParameters.d \
 ./x86_64/Release/PixInsightINDIProcess.d \

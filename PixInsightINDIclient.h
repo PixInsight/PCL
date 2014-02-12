@@ -149,7 +149,7 @@ template<typename T>
 class ArrayDelete : public ArrayOperator<T> {
 public:
 	virtual void run (Array<T>& _array,T& _element) const  {
-		pcl::Array<T>::iterator iter = _array.Search(_element);
+		typename pcl::Array<T>::iterator iter = _array.Search(_element);
 		if (iter==_array.End()){
 			return;
 		}
@@ -161,7 +161,7 @@ template<typename T>
 class ArrayUpdate : public ArrayOperator<T> {
 public:
 	virtual void run (Array<T>& _array,T& _element) const  {
-		pcl::Array<T>::iterator iter = _array.Search(_element);
+		typename pcl::Array<T>::iterator iter = _array.Search(_element);
 		if (iter==_array.End()){
 			return;
 		}

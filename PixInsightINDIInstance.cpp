@@ -72,7 +72,7 @@ auto_ptr<INDIClient> indiClient(0);
 
 PixInsightINDIInstance::PixInsightINDIInstance( const MetaProcess* m ) :
 ProcessImplementation( m ),
-p_propertyList(200),
+p_propertyList(),
 p_newPropertyList(),
 p_host( TheINDIServerHostname->DefaultValue() ),
 p_port( uint32( TheINDIServerPort->DefaultValue() ) ),
@@ -379,126 +379,6 @@ void PixInsightINDIInstance::writeCurrentMessageToConsole(){
   Console().WriteLn(String().Format("Message from INDI server: %s",IsoString(p_currentMessage).c_str()));
 }
 
-void PixInsightINDIInstance::getProperties(){
-	if (indiClient.get() == NULL){
-	  Console().WriteLn("INDI client not initialized.");
-		return;
-	}
-
-	if (!indiClient.get()->serverIsConnected()){
-	  Console().WriteLn("INDI server not connected. Please connect to an INDI server.");
-	  return;
-	}
-
-	String sep=String("/");
-	Mutex mutex;
-	mutex.Lock();
-	size_t count=0;
-	vector<INDI::BaseDevice *> pDevices = indiClient.get()->getDevices();
-	for (std::vector<INDI::BaseDevice *>::iterator it = pDevices.begin(); it!=pDevices.end(); ++it  )
-	{
-		indiClient->setBLOBMode(B_ALSO,(*it)->getDeviceName());
-		vector<INDI::Property *> pProperties = (*it)->getPropertiesSafe();
-		for (std::vector<INDI::Property*>::iterator propIt = pProperties.begin(); propIt!=pProperties.end(); ++propIt){
-
-			switch((*propIt)->getType()){
-			case INDI_TEXT:
-				{
-					for (int i=0; i<(*propIt)->getText()->ntp;i++) {
-						INDIPropertyListItem propertyListItem;
-						propertyListItem.Device=String((*it)->getDeviceName());
-						propertyListItem.Property=String((*propIt)->getName());
-						propertyListItem.PropertyType=INDI_TEXT;
-						propertyListItem.Element = String((*propIt)->getText()->tp[i].name);
-						propertyListItem.PropertyState = (*propIt)->getState();
-						propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element ;
-						propertyListItem.PropertyValue=(*propIt)->getText()->tp[i].text;
-						p_propertyList[count]=propertyListItem;
-						count++;
-					}
-					break;
-				}
-			case INDI_SWITCH:
-				{
-					for (int i=0; i<(*propIt)->getSwitch()->nsp;i++) {
-						INDIPropertyListItem propertyListItem;
-						propertyListItem.Device=String((*it)->getDeviceName());
-						propertyListItem.Property=String((*propIt)->getName());
-						propertyListItem.PropertyType=INDI_SWITCH;
-						propertyListItem.Element=(*propIt)->getSwitch()->sp[i].name;
-						propertyListItem.PropertyState = (*propIt)->getState();
-						propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element;
-						propertyListItem.PropertyValue=(*propIt)->getSwitch()->sp[i].s == ISS_ON  ? "ON" : "OFF"  ;
-						p_propertyList[count]=propertyListItem;
-						count++;
-					}
-					break;
-				}
-			case INDI_NUMBER:
-				{
-					for (int i=0; i<(*propIt)->getNumber()->nnp;i++) {
-						INDIPropertyListItem propertyListItem;
-						propertyListItem.Device=String((*it)->getDeviceName());
-						propertyListItem.Property=String((*propIt)->getName());
-						propertyListItem.PropertyType=INDI_NUMBER;
-						propertyListItem.Element=(*propIt)->getNumber()->np[i].name;
-						IsoString number((*propIt)->getNumber()->np[i].value);
-						propertyListItem.PropertyState = (*propIt)->getState();
-						propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element;
-						propertyListItem.PropertyValue=number.c_str();
-						p_propertyList[count]=propertyListItem;
-						count++;
-					}
-					break;
-				}
-			case INDI_LIGHT:
-				{
-					for (int i=0; i<(*propIt)->getLight()->nlp;i++) {
-						INDIPropertyListItem propertyListItem;
-						propertyListItem.Device=String((*it)->getDeviceName());
-						propertyListItem.Property=String((*propIt)->getName());
-						propertyListItem.PropertyType=INDI_LIGHT;
-						propertyListItem.Element=(*propIt)->getLight()->lp[i].name;
-						propertyListItem.PropertyState = (*propIt)->getState();
-						propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element;
-						switch ((*propIt)->getLight()->lp[i].s){
-						case IPS_IDLE:
-							propertyListItem.PropertyValue="IDLE";
-						    break;
-						case IPS_OK:
-							propertyListItem.PropertyValue="OK";
-						    break;
-						case IPS_BUSY:
-							propertyListItem.PropertyValue="BUSY";
-						    break;
-						case IPS_ALERT:
-							propertyListItem.PropertyValue="ALERT";
-						    break;
-						}
-						p_propertyList[count]=propertyListItem;
-						count++;
-					}
-					break;
-				}
-			default:
-			  {
-				INDIPropertyListItem propertyListItem;
-				propertyListItem.Device=String((*it)->getDeviceName());
-				propertyListItem.Property=String((*propIt)->getName());
-				propertyListItem.PropertyType=INDI_UNKNOWN;
-				propertyListItem.Element=String("no element");
-				propertyListItem.PropertyState = (*propIt)->getState();
-				propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element;
-				propertyListItem.PropertyValue=String("no value");
-				p_propertyList[count]=propertyListItem;
-				count++;
-			  }
-			}
-		}
-	}
-	
-	mutex.Unlock();
-}
 
 bool PixInsightINDIInstance::ExecuteGlobal()
 {
@@ -530,12 +410,7 @@ bool PixInsightINDIInstance::ExecuteGlobal()
 
    Console().Flush();
 
-   //getProperties();
-
    sendNewProperty();
-
-   //getProperties();
-
 
    return true;
 }

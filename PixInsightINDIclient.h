@@ -128,11 +128,45 @@ public:
 };
 
 
-
-
 class PropertyFactory{
 public:
 	static IProperty* create(INDI::Property* property);
+};
+
+template<typename T>
+class ArrayOperator{
+public:
+	virtual void run(Array<T>& _array,T& _element) const {}
+};
+
+template<typename T>
+class ArrayAppend : public ArrayOperator<T> {
+public:
+	virtual void run (Array<T>& _array,T& _element) const  {_array.Append(_element);}
+};
+
+template<typename T>
+class ArrayDelete : public ArrayOperator<T> {
+public:
+	virtual void run (Array<T>& _array,T& _element) const  {
+		pcl::Array<T>::iterator iter = _array.Search(_element);
+		if (iter==_array.End()){
+			return;
+		}
+		_array.Remove(iter);
+	}
+};
+
+template<typename T>
+class ArrayUpdate : public ArrayOperator<T> {
+public:
+	virtual void run (Array<T>& _array,T& _element) const  {
+		pcl::Array<T>::iterator iter = _array.Search(_element);
+		if (iter==_array.End()){
+			return;
+		}
+		*iter=_element;
+	}
 };
 
 
@@ -143,7 +177,7 @@ class INDIClient : public INDI::BaseClient
 	 ~INDIClient(){}
 protected:
 	void newProperty(INDI::Property *property);
-    //void removeProperty(INDI::Property *property);
+    void removeProperty(INDI::Property *property);
     void newBLOB(IBLOB *bp);
     void newSwitch(ISwitchVectorProperty *svp);
 	void newNumber(INumberVectorProperty *nvp);
@@ -153,6 +187,8 @@ protected:
 	
 private:
    PixInsightINDIInstance*         m_Instance;
+
+   void runOnPropertyTable(IProperty* INDIProperty, const ArrayOperator<INDIPropertyListItem>* arrayOp);
 
 };
 

@@ -28,10 +28,9 @@ namespace pcl {
 		}
 	}
 
-	void INDIClient::newProperty(INDI::Property *property){
-		String sep("/");
-		IProperty* INDIProperty = PropertyFactory::create(property);
 
+	void INDIClient::runOnPropertyTable(IProperty* INDIProperty, const ArrayOperator<INDIPropertyListItem>* arrayOp){
+		String sep("/");
 		INDIPropertyListItem propertyListItem;
 		propertyListItem.Device=INDIProperty->getDeviceName();		
 		propertyListItem.Property=INDIProperty->getName();
@@ -41,9 +40,23 @@ namespace pcl {
 			propertyListItem.Element=INDIProperty->getElementName(i); 		
 			propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element;
 			propertyListItem.PropertyValue=INDIProperty->getElementValue(i);
-			m_Instance->p_propertyList.Append(propertyListItem);
+			arrayOp->run(m_Instance->p_propertyList,propertyListItem);
 		}
-		
+
+	}
+
+	void INDIClient::newProperty(INDI::Property *property){		
+		IProperty* INDIProperty = PropertyFactory::create(property);
+		ArrayOperator<INDIPropertyListItem>* append=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayAppend<INDIPropertyListItem>());
+
+		runOnPropertyTable(INDIProperty,append);		
+	}
+
+	void INDIClient::removeProperty(INDI::Property *property){
+		IProperty* INDIProperty = PropertyFactory::create(property);
+		ArrayOperator<INDIPropertyListItem>* _delete=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayDelete<INDIPropertyListItem>());
+
+		runOnPropertyTable(INDIProperty,_delete);
 	}
 
 	void INDIClient::newMessage(INDI::BaseDevice *dp, int messageID){
@@ -51,36 +64,49 @@ namespace pcl {
 	}
 
 	void INDIClient::newSwitch(ISwitchVectorProperty *svp){
-		
-		//m_pixInterface->m_PropertyListNeedsUpdate=true;
-	}
-	void INDIClient::newNumber(INumberVectorProperty *nvp){
-		String sep("/");
-		INDIPropertyListItem propertyListItem;
-		propertyListItem.Device=String(nvp->device);
-		propertyListItem.Property=String(nvp->name);
-		propertyListItem.PropertyType=INDI_NUMBER;
-		propertyListItem.PropertyState = nvp->s;
-		for (int i=0; i<nvp->nnp;i++) {
-			propertyListItem.Element=(nvp->np[i].name);
-			IsoString number(nvp->np[i].value);
-			propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element;
-			propertyListItem.PropertyValue=number.c_str();
+		INDI::Property* property = new INDI::Property();
+		property->setProperty(svp);
+		property->setType(INDI_SWITCH);
 
-			pcl::Array<INDIPropertyListItem>::iterator iter = m_Instance->p_propertyList.Search(propertyListItem);
-			if (iter==m_Instance->p_propertyList.End()){
-				m_Instance->p_currentMessage=IsoString("Warning: Property not found.");
-				return;
-			}
-			*iter=propertyListItem;
-		}	
+		IProperty* INDIProperty = PropertyFactory::create(property);
+		ArrayOperator<INDIPropertyListItem>* update=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayUpdate<INDIPropertyListItem>());
+
+		runOnPropertyTable(INDIProperty,update);
 	}
+
+	void INDIClient::newNumber(INumberVectorProperty *nvp){
+		INDI::Property* property = new INDI::Property();
+		property->setProperty(nvp);
+		property->setType(INDI_NUMBER);
+
+		IProperty* INDIProperty = PropertyFactory::create(property);
+		ArrayOperator<INDIPropertyListItem>* update=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayUpdate<INDIPropertyListItem>());
+
+		runOnPropertyTable(INDIProperty,update);	
+	}
+
 	void INDIClient::newText(ITextVectorProperty *tvp){
-				//m_pixInterface->m_PropertyListNeedsUpdate=true;
+		INDI::Property* property = new INDI::Property();
+		property->setProperty(tvp);
+		property->setType(INDI_TEXT);
+
+		IProperty* INDIProperty = PropertyFactory::create(property);
+		ArrayOperator<INDIPropertyListItem>* update=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayUpdate<INDIPropertyListItem>());
+
+		runOnPropertyTable(INDIProperty,update);
 	}
+
 	void INDIClient::newLight(ILightVectorProperty *lvp){
-				//m_pixInterface->m_PropertyListNeedsUpdate=true;
+		INDI::Property* property = new INDI::Property();
+		property->setProperty(lvp);
+		property->setType(INDI_LIGHT);
+
+		IProperty* INDIProperty = PropertyFactory::create(property);
+		ArrayOperator<INDIPropertyListItem>* update=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayUpdate<INDIPropertyListItem>());
+
+		runOnPropertyTable(INDIProperty,update);
 	}
+
 	void INDIClient::newBLOB(IBLOB *bp){
 		IsoString fileName = IsoString("C:/Users/klaus/tmp/") + IsoString(bp->label) + IsoString(".fits"); 
 	    ofstream myfile;

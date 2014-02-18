@@ -16,6 +16,7 @@
 #include "AstronomicalCatalogs.jsh"
 #include "SearchCoordinatesDialog.js"
 
+var indi = new INDIclient();
 
 
 
@@ -102,6 +103,9 @@ function mainDialog()
    {
       indi.setServerHost(text);
    }
+   // set server host to default value
+   indi.setServerHost(this.INDIServerHost_Edit.value);
+
 
    this.INDIServerPort_Label = new labelBox(this, "port:", TextAlign_VertCenter, 120);
    this.INDIServerPort_Edit = new spinBox(this, 7624, 0,9999, 1, true);
@@ -265,10 +269,10 @@ function mainDialog()
          var imgCount=1397;
          for (var i=0; i< numberOfExposures; i++){
             Console.write("Starting exposure #");Console.writeln(i);
-            //indi.sendNewProperty("/" + currentCamera + "/CCD_EXPOSURE/CCD_EXPOSURE_VALUE","INDI_NUMBER",expDuration);
+            indi.sendNewProperty("/" + currentCamera + "/CCD_EXPOSURE/CCD_EXPOSURE_VALUE","INDI_NUMBER",expDuration);
             // open image
-            var imgWindow=ImageWindow.open("C:/Users/klaus/tmp/2013_04_07_"+imgCount+".CR2");
-            //var imgWindow=ImageWindow.open("C:/Users/klaus/tmp/Image.fits");
+            //var imgWindow=ImageWindow.open("C:/Users/klaus/tmp/2013_04_07_"+imgCount+".CR2");
+            var imgWindow=ImageWindow.open("C:/Users/klaus/tmp/Image.fits");
             imgCount=imgCount+1;
             imgWindow[0].show();
 
@@ -480,6 +484,7 @@ function mainDialog()
 
    // Begin of INDI device properties:  ======================================================
    this.INDIProperties_TreeBox = new TreeBox(this);
+   this.PropertyTreeRootNode=null;
    with(this.INDIProperties_TreeBox)
    {
       alternateRowColor = true;
@@ -500,51 +505,7 @@ function mainDialog()
    this.showProperties_PushButton = new pushButton(this, "Properties", "", ttStr);
    this.showProperties_PushButton.onClick = function()
    {
-      this.dialog.INDIProperties_TreeBox.clear();
-      var deviceNodeMap={};
-      var propertyNodeMap={};
-      for (var i=0; i<indi.INDI.INDI_Properties.length; ++i){
-       if (indi.INDI.INDI_Properties[i][0]!="")
-       {
-          var splittedString = indi.INDI.INDI_Properties[i][0].split("/");
-
-          // device nodes
-          var deviceNode;
-          var deviceString = splittedString[1];
-          if ( deviceString in deviceNodeMap)
-          {
-            deviceNode = deviceNodeMap[deviceString];
-          }
-          else
-          {
-            var node = new TreeBoxNode(this.dialog.INDIProperties_TreeBox);
-            node.setText(0,splittedString[1]);
-            deviceNodeMap[deviceString]=node;
-            deviceNode=node;
-          }
-          // property nodes
-          var propertyNode;
-          var propertyString = splittedString[2];
-          var keyString = deviceString+propertyString;
-          if ( keyString in propertyNodeMap)
-          {
-            propertyNode = propertyNodeMap[keyString];
-          }
-          else
-          {
-            var node = new TreeBoxNode(deviceNode);
-            node.setText(0,splittedString[2]);
-            propertyNodeMap[keyString]=node;
-            propertyNode=node;
-          }
-          // property value nodes
-          var node = new TreeBoxNode(propertyNode);
-          node.setText(0,splittedString[3]);
-          node.setText(1,indi.INDI.INDI_Properties[i][1]);
-
-
-       }
-      }
+      this.dialog.PropertyTreeRootNode = createPropertyTree(this.dialog.INDIProperties_TreeBox);
    }
 
    ttStr = "Set new property value.";
@@ -555,11 +516,13 @@ function mainDialog()
          var setPropDialog = new SetPropertyDialog(propertyString,selectedPropertyNode.text(1));
          if (setPropDialog.execute())
          {
-
+            var visitorObj = new visitor();
+            var newValue = indi.getPropertyValue(propertyString);
+            this.dialog.PropertyTreeRootNode.accept(visitorObj,propertyString,newValue);
          }
          else {
              Console.writeln("Property dialog could not be executed");
-            }
+         }
 
 
    }
@@ -635,6 +598,12 @@ ComboBox.prototype.update = function(){
          }
       }
    }
+
+   // set default telescope
+   currentTelescope=this.dialog.INDITelescope_Combo.itemText(this.dialog.INDITelescope_Combo.currentItem);
+   // set default camera
+   currentCamera=this.dialog.INDICamera_Combo.itemText(this.dialog.INDICamera_Combo.currentItem);
+
 }
 
 Edit.prototype.update = function(){
@@ -694,7 +663,6 @@ var globStarDetectionSensitivity=50;
 var currentCamera="";
 var currentTelescope="";
 
-var indi = new INDIclient();
 var expDuration = "";
 var numberOfExposures;
 function main()

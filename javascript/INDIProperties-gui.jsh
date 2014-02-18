@@ -130,3 +130,104 @@ function SetPropertyDialog(propertyText,propertyValueText) {
    }
 
 }
+
+Object.prototype.getName = function() {
+   var funcNameRegex = /function (.{1,})\(/;
+   var results = (funcNameRegex).exec((this).constructor.toString());
+   return (results && results.length > 1) ? results[1] : "";
+};
+
+
+
+
+function PropertyNode(parent, property){
+
+   this.child=[];
+   this.numberOfChildren=0;
+   //this.parentNode=parent;
+   this.propertyStr=property;
+   this.treeBoxNode=null;
+   if (parent!=null){
+      parent.child.push(this);
+      parent.numberOfChildren++;
+      this.treeBoxNode=new TreeBoxNode(parent.treeBoxNode);
+   }
+
+   this.accept = function(visitorObj,property,value){
+      visitorObj.visit(this,property,value);
+      for (var i=0; i<this.numberOfChildren; ++i){
+         this.child[i].accept(visitorObj, property,value);
+      }
+   }
+
+  this.clear = function(){
+     if (this.treeBoxNode!=null){
+      this.treeBoxNode.clear();
+     }
+  }
+
+  this.setTreeBoxNode = function(treeBoxNode){
+      this.treeBoxNode=treeBoxNode;
+  }
+}
+
+function visitor(){
+   this.visit = function(propertyNode,property,value){
+      if (propertyNode.propertyStr===property){
+         var splittedString = propertyNode.propertyStr.split("/");
+         propertyNode.treeBoxNode.setText(0,splittedString[3]);
+         propertyNode.treeBoxNode.setText(1,value);
+      }
+   }
+}
+
+function createPropertyTree(node){
+  var rootNode=new PropertyNode(null,"");
+  rootNode.setTreeBoxNode(node);
+  rootNode.treeBoxNode.clear();
+  var deviceNodeMap={};
+  var propertyNodeMap={};
+  for (var i=0; i<indi.INDI.INDI_Properties.length; ++i){
+    if (indi.INDI.INDI_Properties[i][0]!="")
+    {
+       var splittedString = indi.INDI.INDI_Properties[i][0].split("/");
+
+       // device nodes
+       var deviceNode;
+       var deviceString = splittedString[1];
+       if ( deviceString in deviceNodeMap)
+       {
+         deviceNode = deviceNodeMap[deviceString];
+       }
+       else
+       {
+         var childNode = new PropertyNode(rootNode,"/"+deviceString);
+         childNode.treeBoxNode.setText(0,splittedString[1]);
+         deviceNodeMap[deviceString]=childNode;
+         deviceNode=childNode;
+       }
+       // property nodes
+       var propertyNode;
+       var propertyString = splittedString[2];
+       var keyString = deviceString+propertyString;
+       if ( keyString in propertyNodeMap)
+       {
+         propertyNode = propertyNodeMap[keyString];
+       }
+       else
+       {
+         var childNode = new PropertyNode(deviceNode,"/" +deviceString +"/" +propertyString);
+         childNode.treeBoxNode.setText(0,splittedString[2]);
+         propertyNodeMap[keyString]=childNode;
+         propertyNode=childNode;
+       }
+       // property value nodes
+       var childNode = new PropertyNode(propertyNode,"/" +deviceString +"/" +propertyString+"/"+splittedString[3]);
+       childNode.treeBoxNode.setText(0,splittedString[3]);
+       childNode.treeBoxNode.setText(1,indi.INDI.INDI_Properties[i][1]);
+     }
+    }
+    return rootNode;
+}
+
+

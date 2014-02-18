@@ -50,6 +50,7 @@ namespace pcl {
 		ArrayOperator<INDIPropertyListItem>* append=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayAppend<INDIPropertyListItem>());
 
 		runOnPropertyTable(INDIProperty,append);		
+		setBLOBMode(B_ALSO,property->getDeviceName());
 	}
 
 	void INDIClient::removeProperty(INDI::Property *property){

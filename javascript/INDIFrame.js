@@ -489,7 +489,7 @@ function mainDialog()
    {
       alternateRowColor = true;
       multipleSelection = false;
-      numberOfColumns = 2;
+      numberOfColumns = 3;
       showColumn(2, false);
       setMinSize(500, 200);
       setColumnWidth(0, 400);
@@ -512,8 +512,10 @@ function mainDialog()
    this.setPropertyValue_PushButton = new pushButton(this, "Set property", "", ttStr);
    this.setPropertyValue_PushButton.onClick = function()
    {
+         var propertyType=selectedPropertyNode.text(2);
+         var propertyValue=selectedPropertyNode.text(1);
          var propertyString= "/" + selectedPropertyNode.parent.parent.text(0) + "/" + selectedPropertyNode.parent.text(0) + "/" + selectedPropertyNode.text(0);
-         var setPropDialog = new SetPropertyDialog(propertyString,selectedPropertyNode.text(1));
+         var setPropDialog = new SetPropertyDialog(propertyString,propertyValue,propertyType);
          if (setPropDialog.execute())
          {
             var visitorObj = new visitor();

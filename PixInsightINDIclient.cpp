@@ -35,6 +35,7 @@ namespace pcl {
 		propertyListItem.Device=INDIProperty->getDeviceName();		
 		propertyListItem.Property=INDIProperty->getName();
 		propertyListItem.PropertyType=INDIProperty->getType();
+		propertyListItem.PropertyTypeStr=INDIProperty->getTypeStr();
 		propertyListItem.PropertyState =INDIProperty->getState();
 		for (size_t i=0; i<INDIProperty->getNumOfElements();i++) {
 			propertyListItem.Element=INDIProperty->getElementName(i); 		
@@ -46,6 +47,8 @@ namespace pcl {
 	}
 
 	void INDIClient::newProperty(INDI::Property *property){		
+		if (property==NULL)
+			return;
 		IProperty* INDIProperty = PropertyFactory::create(property);
 		ArrayOperator<INDIPropertyListItem>* append=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayAppend<INDIPropertyListItem>());
 
@@ -54,6 +57,8 @@ namespace pcl {
 	}
 
 	void INDIClient::removeProperty(INDI::Property *property){
+		if (property==NULL)
+			return;
 		IProperty* INDIProperty = PropertyFactory::create(property);
 		ArrayOperator<INDIPropertyListItem>* _delete=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayDelete<INDIPropertyListItem>());
 

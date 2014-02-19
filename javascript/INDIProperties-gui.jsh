@@ -48,7 +48,7 @@ function spinBox(parent, sbValue, sbMinVal, sbMaxVal, sbStep, sbCanEdit)
    return this.spinbox;
 }
 
-function SetPropertyDialog(propertyText,propertyValueText) {
+function SetPropertyDialog(propertyText,propertyValueText, propertyTypeText) {
    this.__base__ = Dialog;
    this.__base__();
 
@@ -56,7 +56,7 @@ function SetPropertyDialog(propertyText,propertyValueText) {
 
    globNewProperty=propertyText;
    globNewPropertyValue=propertyValueText;
-   globNewPropertyType="INDI_SWITCH";
+   globNewPropertyType=propertyTypeText;
 
    this.Property_Label = new labelBox(this, propertyText, TextAlign_VertCenter, 150);
 
@@ -70,7 +70,7 @@ function SetPropertyDialog(propertyText,propertyValueText) {
 
    }
 
-   this.PropertyType_Edit = new editBox(this, "INDI_SWITCH", false, FrameStyle_Box, 50);
+   this.PropertyType_Edit = new editBox(this, propertyTypeText, false, FrameStyle_Box, 50);
    this.PropertyType_Edit.setFixedWidth(80);
    ttStr = "INDI property type."
    this.PropertyType_Edit.toolTip = ttStr;
@@ -225,6 +225,7 @@ function createPropertyTree(node){
        var childNode = new PropertyNode(propertyNode,"/" +deviceString +"/" +propertyString+"/"+splittedString[3]);
        childNode.treeBoxNode.setText(0,splittedString[3]);
        childNode.treeBoxNode.setText(1,indi.INDI.INDI_Properties[i][1]);
+       childNode.treeBoxNode.setText(2,indi.INDI.INDI_Properties[i][3]);
      }
     }
     return rootNode;

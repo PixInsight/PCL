@@ -62,6 +62,7 @@ struct INDIPropertyListItem {
 	String Device;
 	String Property;
 	INDI_TYPE PropertyType;
+	String PropertyTypeStr;
 	String Element;
 	unsigned int PropertyState;
 	String PropertyKey;
@@ -163,6 +164,14 @@ public:
 	virtual IsoString Id() const;
 };
 extern INDIPropertyValue* TheINDIPropertyValueParameter ;
+
+class INDIPropertyType: public MetaString
+{
+public:
+	INDIPropertyType ( MetaTable* );
+	virtual IsoString Id() const;
+};
+extern INDIPropertyType* TheINDIPropertyTypeParameter ;
 
 class INDIPropertyState: public MetaUInt32
 {

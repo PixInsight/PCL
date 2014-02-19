@@ -431,6 +431,8 @@ void* PixInsightINDIInstance::LockParameter( const MetaParameter* p, size_type t
 	   return p_propertyList[tableRow].PropertyValue.c_str();
    if (p == TheINDIPropertyStateParameter)
 	   return &p_propertyList[tableRow].PropertyState;
+   if (p == TheINDIPropertyTypeParameter)
+	   return p_propertyList[tableRow].PropertyTypeStr.c_str();
    if (p == TheINDINewPropertyValueParameter)
 	   return p_newPropertyList[tableRow].NewPropertyValue.c_str();
    if (p == TheINDINewPropertyKeyParameter)
@@ -466,6 +468,11 @@ bool PixInsightINDIInstance::AllocateParameter( size_type sizeOrLength, const Me
 		p_propertyList[tableRow].PropertyValue.Clear();
 		if ( sizeOrLength > 0 )
 			p_propertyList[tableRow].PropertyValue.Reserve( sizeOrLength );
+	}
+	else if ( p == TheINDIPropertyTypeParameter){
+		p_propertyList[tableRow].PropertyTypeStr.Clear();
+		if ( sizeOrLength > 0 )
+			p_propertyList[tableRow].PropertyTypeStr.Reserve( sizeOrLength );
 	}
 	else if ( p == TheINDINewPropertiesParameter){
 		p_newPropertyList.Clear();
@@ -503,6 +510,8 @@ size_type PixInsightINDIInstance::ParameterLength( const MetaParameter* p, size_
 		return p_propertyList[tableRow].PropertyKey.Length();
 	if ( p == TheINDIPropertyValueParameter )
 		return p_propertyList[tableRow].PropertyValue.Length();
+	if ( p == TheINDIPropertyTypeParameter )
+		return p_propertyList[tableRow].PropertyTypeStr.Length();
 	if (p == TheINDINewPropertiesParameter)
 		return p_newPropertyList.Length();
 	if ( p == TheINDINewPropertyValueParameter )

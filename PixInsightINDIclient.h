@@ -67,6 +67,24 @@ public:
 	virtual String getDeviceName() {return String(m_property->getDeviceName());}
 	virtual String getName()       {return String(m_property->getName());}
 	virtual INDI_TYPE getType()    {return m_property->getType();}
+	virtual String getTypeStr()    {
+		switch(m_property->getType()){
+		case INDI_SWITCH:
+			return String("INDI_SWITCH");
+			break;
+		case INDI_NUMBER:
+			return String("INDI_NUMBER");
+			break;
+		case INDI_LIGHT:
+			return String("INDI_LIGHT");
+			break;
+		case INDI_TEXT:
+			return String("INDI_TEXT");
+			break;
+		default:
+			return String("INDI_UNKNOWN");
+		}
+	}
 	virtual IPState getState()     {return m_property->getState();}
 
 	virtual size_t getNumOfElements()  {return 0;}

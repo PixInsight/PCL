@@ -81,6 +81,7 @@ PixInsightINDIProcess::PixInsightINDIProcess() : MetaProcess()
    new INDIPropertyName(TheINDIPropertiesParameter);
    new INDIPropertyValue(TheINDIPropertiesParameter);
    new INDIPropertyState(TheINDIPropertiesParameter);
+   new INDIPropertyType(TheINDIPropertiesParameter);
    new INDINewProperties(ThePixInsightINDIProcess);
    new INDINewPropertyKey(TheINDINewPropertiesParameter);
    new INDINewPropertyType(TheINDINewPropertiesParameter);

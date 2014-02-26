@@ -41,6 +41,17 @@ function max(starArray){
 }
 
 
+function findStar(starArray,star, epsilon){
+   for (var i=0; i<starArray.length; ++i){
+      if (Math.sqrt((starArray[i].pos.x - star.x) * (starArray[i].pos.x - star.x) +
+                  (starArray[i].pos.y - star.y) * (starArray[i].pos.y - star.y)) < epsilon){
+         return starArray[i];
+      }
+   }
+   return null;
+
+}
+
 function dumpStarSizes(starSizeMeans){
    console.writeln( "Exposure#   Star size    Tendency       star pos         #stars" );
    console.writeln( "=========   =========    ========     =============      ======" );
@@ -266,6 +277,7 @@ function mainDialog()
 
          var starSizeMeans=[];
          var numberOfStars=[];
+         var maxStar=[];
          var imgCount=1397;
          for (var i=0; i< numberOfExposures; i++){
             Console.write("Starting exposure #");Console.writeln(i);
@@ -281,8 +293,17 @@ function mainDialog()
                var D = new StarDetector;
                D.sensitivity=globStarDetectionSensitivity;
                var starArray = D.stars(ImageWindow.activeWindow.mainView.image);
-               var maxStar=max(starArray);
-               starSizeMeans.push([maxStar[0],maxStar[1],starArray.length]);
+               if (i===0){
+                  maxStar=max(starArray);
+                  starSizeMeans.push([maxStar[0],maxStar[1],starArray.length]);
+               }
+               else {
+                  var star = findStar(starArray,maxStar[1],10);
+                  if (star!=null){
+                     starSizeMeans.push([star.size,star.pos,starArray.length]);
+                  }
+               }
+
                dumpStarSizes(starSizeMeans);
                indi.startTimer(10);
                while (timerIsBusy){console.flush();processEvents();}
@@ -529,6 +550,14 @@ function mainDialog()
 
    }
 
+   ttStr = "Send to back.";
+   this.sendToBack_PushButton = new pushButton(this, "Send to back", "", ttStr);
+   this.sendToBack_PushButton.onClick = function()
+   {
+         this.dialog.enabled=false;
+         this.dialog.sendToBack();
+   }
+
    this.INDIProperties_HSizer = new HorizontalSizer;
    this.INDIPropertiesButtons_VSizer = new VerticalSizer;
    with(this.INDIPropertiesButtons_VSizer)
@@ -537,6 +566,7 @@ function mainDialog()
       spacing = 6;
       add(this.showProperties_PushButton);
       add(this.setPropertyValue_PushButton);
+      add(this.sendToBack_PushButton);
       addStretch();
    }
    with(this.INDIProperties_HSizer)

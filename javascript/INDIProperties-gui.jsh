@@ -48,6 +48,8 @@ function spinBox(parent, sbValue, sbMinVal, sbMaxVal, sbStep, sbCanEdit)
    return this.spinbox;
 }
 
+
+
 function SetPropertyDialog(propertyText,propertyValueText, propertyTypeText) {
    this.__base__ = Dialog;
    this.__base__();
@@ -58,7 +60,7 @@ function SetPropertyDialog(propertyText,propertyValueText, propertyTypeText) {
    globNewPropertyValue=propertyValueText;
    globNewPropertyType=propertyTypeText;
 
-   this.Property_Label = new labelBox(this, propertyText, TextAlign_VertCenter, 150);
+   this.Property_Label = new labelBox(this, propertyText, TextAlign_VertCenter, 500);
 
    this.PropertyValue_Edit = new editBox(this, propertyValueText, false, FrameStyle_Box, 50);
    this.PropertyValue_Edit.setFixedWidth(80);
@@ -70,14 +72,6 @@ function SetPropertyDialog(propertyText,propertyValueText, propertyTypeText) {
 
    }
 
-   this.PropertyType_Edit = new editBox(this, propertyTypeText, false, FrameStyle_Box, 50);
-   this.PropertyType_Edit.setFixedWidth(80);
-   ttStr = "INDI property type."
-   this.PropertyType_Edit.toolTip = ttStr;
-   this.PropertyType_Edit.onTextUpdated = function(text)
-   {
-      globNewPropertyType=text;
-   }
 
    this.Prop_Hsizer = new HorizontalSizer;
    with(this.Prop_Hsizer)
@@ -86,7 +80,6 @@ function SetPropertyDialog(propertyText,propertyValueText, propertyTypeText) {
       spacing = 6;
       add(this.Property_Label);
       add(this.PropertyValue_Edit);
-      add(this.PropertyType_Edit);
    }
 
    this.ok_Button = new PushButton( this );

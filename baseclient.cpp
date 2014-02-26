@@ -302,7 +302,11 @@ void INDI::BaseClient::listenINDI()
         if (n < 0)
         {
             fprintf (stderr,"INDI server %s/%d disconnected.\n", cServer.c_str(), cPort);
+#if defined(WIN32)  
+			closesocket(sockfd);
+#else
             close(sockfd);
+#endif
             break;
         }
 
@@ -328,7 +332,11 @@ void INDI::BaseClient::listenINDI()
                 if (n==0)
                 {
                     fprintf (stderr,"INDI server %s/%d disconnected.\n", cServer.c_str(), cPort);
+#if defined(WIN32)  
+					closesocket(sockfd);
+#else
                     close(sockfd);
+#endif
                     break;
                 }
                 else

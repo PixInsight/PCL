@@ -332,7 +332,6 @@ int INDI::BaseDevice::removeProperty(const char *name, char *errmsg)
                  (*orderi)->setRegistered(false);
                  delete *orderi;
                  orderi = pAll.erase(orderi);
-                 *orderi = NULL;
                  return 0;
               }
              break;

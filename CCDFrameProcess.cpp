@@ -2,7 +2,7 @@
 // PixInsight Class Library - PCL 02.00.02.0584
 // Standard PixInsightINDI Process Module Version 01.00.02.0092
 // ****************************************************************************
-// PixInsightINDIInstance.h - Released 2013/03/24 18:42:27 UTC
+// PixInsightINDIProcess.cpp - Released 2013/03/24 18:42:27 UTC
 // ****************************************************************************
 // This file is part of the standard PixInsightINDI PixInsight module.
 //
@@ -46,75 +46,126 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ****************************************************************************
 
-#ifndef __PixInsightINDIInstance_h
-#define __PixInsightINDIInstance_h
+//#include "PixInsightINDIInstance.h"
+//#include "PixInsightINDIInterface.h"
+//#include "PixInsightINDIParameters.h"
+#include "CCDFrameProcess.h"
+#include "CCDFrameInterface.h"
+#include "CCDFrameInstance.h"
 
-#include <pcl/MetaParameter.h> // for pcl_bool, pcl_enum
-#include <pcl/ProcessImplementation.h>
-#include <pcl/Timer.h>
+#include <pcl/Arguments.h>
 #include <pcl/Console.h>
-#include "PixInsightINDIParameters.h"
-
+#include <pcl/Exception.h>
+#include <pcl/View.h>
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-class PixInsightINDIInstance : public ProcessImplementation
-{
-public:
-
-   typedef Array<INDIDeviceListItem>      DeviceListType;
-   typedef Array<INDIPropertyListItem>    PropertyListType;
-   typedef Array<INDINewPropertyListItem> NewPropertyListType;
- 
-   PixInsightINDIInstance( const MetaProcess* );
-   PixInsightINDIInstance( const PixInsightINDIInstance& );
-  
-   virtual void Assign( const ProcessImplementation& );
-
-   virtual bool CanExecuteOn( const View&, pcl::String& whyNot ) const;
-   virtual bool CanExecuteGlobal( pcl::String& whyNot ) const;
-
-   virtual bool ExecuteGlobal();
-
-   virtual void* LockParameter( const MetaParameter*, size_type tableRow );
-
-   virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
-   virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
-   	
-   void sendNewPropertyValue(INDINewPropertyListItem& propItem);
-private:
-   DeviceListType          p_deviceList;
-   PropertyListType        p_propertyList;
-   NewPropertyListType     p_newPropertyList;
-   String	               p_host;       // String hostname of INDI server
-   uint32                  p_port;	    // uint32 port of INDI server  
-   uint32                  p_connect;	// uint32 port of INDI server
-   IsoString               p_currentMessage;
-   pcl_bool				   p_doAbort;
-   
-   void getProperties();
-   void sendNewProperty();
-   bool getPropertyFromKeyString(INDINewPropertyListItem& newPropertyKey, const String& keyString);
-   void writeCurrentMessageToConsole(); 
-
-   friend class INDIClient;
-   
-
-   friend class PixInsightINDIEngine;
-   friend class PixInsightINDIProcess;
-   friend class PixInsightINDIInterface;
-   friend class CCDFrameInterface;  
-};
+//#include "PixInsightINDIIcon.xpm"
 
 // ----------------------------------------------------------------------------
 
+CCDFrameProcess* TheCCDFrameProcess = 0;
+
+// ----------------------------------------------------------------------------
+
+CCDFrameProcess::CCDFrameProcess() : MetaProcess()
+{
+   TheCCDFrameProcess = this;
+}
+
+// ----------------------------------------------------------------------------
+
+IsoString CCDFrameProcess::Id() const
+{
+   return "CCDFrame";
+}
+
+// ----------------------------------------------------------------------------
+
+IsoString CCDFrameProcess::Category() const
+{
+   return IsoString("INDI"); // No category
+}
+
+// ----------------------------------------------------------------------------
+
+uint32 CCDFrameProcess::Version() const
+{
+   return 0x100; // required
+}
+
+// ----------------------------------------------------------------------------
+
+String CCDFrameProcess::Description() const
+{
+   return
+   "<html>"
+   "<p>Aquire frames from INDI CCD devices./p>"
+   "</html>";
+}
+
+// ----------------------------------------------------------------------------
+
+const char** CCDFrameProcess::IconImageXPM() const
+{
+   return 0; // PixInsightINDIIcon_XPM; ---> put a nice icon here
+}
+
+// ----------------------------------------------------------------------------
+
+bool CCDFrameProcess::PrefersGlobalExecution() const
+{
+	return true;
+}
+// ----------------------------------------------------------------------------
+
+ProcessInterface* CCDFrameProcess::DefaultInterface() const
+{
+   return TheCCDFrameInterface;
+}
+// ----------------------------------------------------------------------------
+
+ProcessImplementation* CCDFrameProcess::Create() const
+{
+   return new PixInsightINDIInstance( this );
+}
+
+// ----------------------------------------------------------------------------
+
+ProcessImplementation* CCDFrameProcess::Clone( const ProcessImplementation& p ) const
+{
+   const CCDFrameInstance* instPtr = dynamic_cast<const CCDFrameInstance*>( &p );
+   return (instPtr != 0) ? new CCDFrameInstance( *instPtr ) : 0;
+}
+
+// ----------------------------------------------------------------------------
+
+bool CCDFrameProcess::CanProcessCommandLines() const
+{
+   return false;
+}
+
+// ----------------------------------------------------------------------------
+
+static void ShowHelp()
+{
+   Console().Write(
+"<raw>"
+"Nothing to show."
+"</raw>" );
+}
+
+int CCDFrameProcess::ProcessCommandLine( const StringList& argv ) const
+{
+   return 0;
+}
+
+// ----------------------------------------------------------------------------
 
 } // pcl
 
-#endif   // __PixInsightINDIInstance_h
-
 // ****************************************************************************
-// EOF PixInsightINDIInstance.h - Released 2013/03/24 18:42:27 UTC
+// EOF PixInsightINDIProcess.cpp - Released 2013/03/24 18:42:27 UTC

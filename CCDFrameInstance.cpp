@@ -1,8 +1,8 @@
-// ****************************************************************************
+/// ****************************************************************************
 // PixInsight Class Library - PCL 02.00.02.0584
 // Standard PixInsightINDI Process Module Version 01.00.02.0092
 // ****************************************************************************
-// PixInsightINDIInstance.h - Released 2013/03/24 18:42:27 UTC
+// PixInsightINDIInstance.cpp - Released 2013/03/24 18:42:27 UTC
 // ****************************************************************************
 // This file is part of the standard PixInsightINDI PixInsight module.
 //
@@ -46,75 +46,92 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ****************************************************************************
 
-#ifndef __PixInsightINDIInstance_h
-#define __PixInsightINDIInstance_h
+#include "CCDFrameInstance.h"
 
-#include <pcl/MetaParameter.h> // for pcl_bool, pcl_enum
-#include <pcl/ProcessImplementation.h>
-#include <pcl/Timer.h>
+
+#include <pcl/AutoViewLock.h>
 #include <pcl/Console.h>
-#include "PixInsightINDIParameters.h"
-
-
+#include <pcl/StdStatus.h>
+#include <pcl/View.h>
+#include <pcl/Mutex.h>
+#if defined(__PCL_LINUX)
+#include <memory>
+#endif
 namespace pcl
 {
 
+
+
+
+
 // ----------------------------------------------------------------------------
 
-class PixInsightINDIInstance : public ProcessImplementation
+CCDFrameInstance::CCDFrameInstance( const MetaProcess* m ) :
+ProcessImplementation( m )
+{
+	
+}
+
+CCDFrameInstance::CCDFrameInstance( const CCDFrameInstance& x ) :
+ProcessImplementation( x )
+{
+   Assign( x );
+}
+
+void CCDFrameInstance::Assign( const ProcessImplementation& p )
+{
+   const CCDFrameInstance* x = dynamic_cast<const CCDFrameInstance*>( &p );
+   if ( x != 0 )
+   {
+	  
+
+   }
+}
+
+
+class CCDFrameEngine
 {
 public:
 
-   typedef Array<INDIDeviceListItem>      DeviceListType;
-   typedef Array<INDIPropertyListItem>    PropertyListType;
-   typedef Array<INDINewPropertyListItem> NewPropertyListType;
- 
-   PixInsightINDIInstance( const MetaProcess* );
-   PixInsightINDIInstance( const PixInsightINDIInstance& );
-  
-   virtual void Assign( const ProcessImplementation& );
-
-   virtual bool CanExecuteOn( const View&, pcl::String& whyNot ) const;
-   virtual bool CanExecuteGlobal( pcl::String& whyNot ) const;
-
-   virtual bool ExecuteGlobal();
-
-   virtual void* LockParameter( const MetaParameter*, size_type tableRow );
-
-   virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
-   virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
-   	
-   void sendNewPropertyValue(INDINewPropertyListItem& propItem);
-private:
-   DeviceListType          p_deviceList;
-   PropertyListType        p_propertyList;
-   NewPropertyListType     p_newPropertyList;
-   String	               p_host;       // String hostname of INDI server
-   uint32                  p_port;	    // uint32 port of INDI server  
-   uint32                  p_connect;	// uint32 port of INDI server
-   IsoString               p_currentMessage;
-   pcl_bool				   p_doAbort;
-   
-   void getProperties();
-   void sendNewProperty();
-   bool getPropertyFromKeyString(INDINewPropertyListItem& newPropertyKey, const String& keyString);
-   void writeCurrentMessageToConsole(); 
-
-   friend class INDIClient;
-   
-
-   friend class PixInsightINDIEngine;
-   friend class PixInsightINDIProcess;
-   friend class PixInsightINDIInterface;
-   friend class CCDFrameInterface;  
+   template <class P>
+   static void Apply( GenericImage<P>& image, const CCDFrameInstance& instance )
+   {
+      /*
+       * Your magic comes here...
+       */
+      Console().WriteLn( "<end><cbr>Ah, did I mention that I do just _nothing_ at all? :D" );
+   }
 };
+
+
+bool CCDFrameInstance::CanExecuteOn( const View&, pcl::String& whyNot ) const
+{
+   whyNot = "INDI client can only be executed in the global context.";
+   return false;
+}
+
+bool CCDFrameInstance::CanExecuteGlobal( pcl::String& whyNot ) const
+{
+   whyNot.Clear();
+   return true;
+}
+
+
+
+
+
+bool CCDFrameInstance::ExecuteGlobal()
+{
+   
+   return true;
+}
+
+
 
 // ----------------------------------------------------------------------------
 
 
 } // pcl
 
-#endif   // __PixInsightINDIInstance_h
-
 // ****************************************************************************
-// EOF PixInsightINDIInstance.h - Released 2013/03/24 18:42:27 UTC
+// EOF PixInsightINDIInstance.cpp - Released 2013/03/24 18:42:27 UTC

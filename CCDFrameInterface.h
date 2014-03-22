@@ -46,8 +46,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ****************************************************************************
 
-#ifndef __PixInsightINDIInterface_h
-#define __PixInsightINDIInterface_h
+#ifndef __CCDFrameInterface_h
+#define __CCDFrameInterface_h
 
 #include <pcl/Dialog.h>
 #include <pcl/CheckBox.h>
@@ -65,8 +65,8 @@
 #include <pcl/Timer.h>
 #include <map>
 
-
-#include "PixInsightINDIInstance.h"
+#include "PixInsightINDIclient.h"
+#include "CCDFrameInstance.h"
 
 #if defined(__PCL_LINUX)
 #include <memory>
@@ -75,48 +75,17 @@
 namespace pcl
 {
 
-class PropertyNode;
 
-class SetPropertyDialog : public Dialog 
-{
-public:
-	SetPropertyDialog( );
-	
-	void setPropertyLabelString(String label){Property_Label.SetText(label);}
-	void setPropertyValueString(String value){Property_Edit.SetText(value);}
-	void setNewPropertyListItem(INDINewPropertyListItem& newPropItem) {m_newPropertyListItem=newPropItem;}
-	INDINewPropertyListItem getNewPropertyListItem(){return m_newPropertyListItem;}
-	void setInstance(PixInsightINDIInstance* instance){m_instance=instance;}
-private:
-	
-	PixInsightINDIInstance* m_instance;
-
-	INDINewPropertyListItem m_newPropertyListItem;
-
-	VerticalSizer       Global_Sizer;
-		HorizontalSizer		Property_Sizer;
-			Label               Property_Label;
-			Edit				Property_Edit;
-		 HorizontalSizer	Buttons_Sizer;
-			PushButton			OK_PushButton;
-			PushButton			Cancel_PushButton;
-	
-	void Button_Click( Button& sender, bool checked );
-	void EditCompleted( Edit& sender );
-
-	friend class INDIClient;
-	
-};	
 
 
 // ----------------------------------------------------------------------------
 
-class PixInsightINDIInterface : public ProcessInterface
+class CCDFrameInterface : public ProcessInterface
 {
 public:
 
-   PixInsightINDIInterface();
-   virtual ~PixInsightINDIInterface();
+   CCDFrameInterface();
+   virtual ~CCDFrameInterface();
 
    virtual IsoString Id() const;
    virtual MetaProcess* Process() const;
@@ -141,88 +110,56 @@ public:
    
    struct GUIData
    {
-      GUIData( PixInsightINDIInterface& );
-	  Timer				 UpdateDeviceList_Timer;
+	   GUIData(CCDFrameInterface& w);
 
-      VerticalSizer      Global_Sizer;
-	   SectionBar         INDIServer_SectionBar;
-	   Control			  INDIServerConnection_Control;
-		HorizontalSizer		ParameterHost_Sizer;
-            Label				ParameterHost_Label;
-            Edit				ParameterHost_Edit;
-            Label				ParameterPort_Label;
-            SpinBox				ParameterPort_SpinBox;
-			VerticalSizer		ConnectionServer_Sizer;
-				PushButton			ConnectServer_PushButton;
-				PushButton			DisconnectServer_PushButton;
-		SectionBar         INDIDevices_SectionBar;
-		Control			   INDIDevices_Control;
-		 HorizontalSizer	INDIDevice_Sizer;
-			TreeBox				DeviceList_TreeBox;
-			VerticalSizer		DeviceAction_Sizer;
-				PushButton			ConnectDevice_PushButton;
-				PushButton			DisconnectDevice_PushButton;
-				PushButton			RefreshDevice_PushButton;
-		SectionBar         INDIProperties_SectionBar;
-		Control			   INDIProperties_Control;
-		 HorizontalSizer    INDIDeviceProperty_Sizer;
-		 VerticalSizer		INDIDevicePropertyTreeBox_Sizer;
-			TreeBox				PropertyList_TreeBox;
-			Label               DeviceMessage_Label;
-		 VerticalSizer			Buttons_Sizer;
-			PushButton			RefreshProperty_PushButton;
-			PushButton			EditProperty_PushButton;
-		SetPropertyDialog SetPropDlg;
+	   Timer			  UpdateDeviceList_Timer;
+	   VerticalSizer      Global_Sizer;
+	   SectionBar         CCDDevice_SectionBar;
+	   Control			  CCDDevice_Control;
+		HorizontalSizer		CCDDevice_Sizer;
+		 Label				 CCDDevice_Label;
+		 ComboBox            CCDDevice_Combo;
+	   SectionBar         FrameExposure_SectionBar;
+	   Control			  FrameExposure_Control;
+		VerticalSizer		FrameExposure_Sizer;
+		 HorizontalSizer	 ExpTime_Sizer;
+		  Label		  		  ExpTime_Label;
+		  Edit                ExpTime_Edit;
+		HorizontalSizer	     ExpNum_Sizer;
+		  Label				  ExpNum_Label;
+		  Edit                ExpNum_Edit;
+		  PushButton		  StartExposure_PushButton;
    };
 
    private:
 
-   typedef std::map<IsoString,PropertyNode*> PropertyNodeMapType;
-
-   PixInsightINDIInstance instance;
+   CCDFrameInstance instance;
 
    GUIData* GUI;
 
    IsoString m_serverMessage;
 
-   void UpdatePropertyList();
-
-   void __UpdateDeviceList_Timer( Timer& sender );
+   INDINewPropertyListItem m_newPropertyListItem;
+   int                     m_NumOfExposures;
    
+   void UpdateDeviceList_Timer( Timer& sender );
+   void EditCompleted( Edit& sender );
+   void ComboItemSelected(ComboBox& sender, int itemIndex);
+   void StartExposureButton_Click(Button& sender, bool checked);
    void UpdateDeviceList();
-
-   int  m_numOfDevices;
-   bool m_PropertyListNeedsUpdate;
-   bool numOfDevicesChanged();
-
-   // Event Handlers
-   void __CameraListButtons_Click( Button& sender, bool checked );
-   void PropertyButton_Click( Button& sender, bool checked );
-
-   void __RealValueUpdated( NumericEdit& sender, double value );
-   void __IntegerValueUpdated( SpinBox& sender, int value );
-   void __ItemClicked( Button& sender, bool checked );
-   void __ItemSelected( ComboBox& sender, int itemIndex );
-   void __EditGetFocus( Control& sender );
-   void __EditCompleted( Edit& sender );
-
-   friend struct GUIData;
-   friend class DevicePropertiesDialog;
-   friend class INDIClient;
-   friend class CCDFrameInterface;
 };
 
 // ----------------------------------------------------------------------------
 
 PCL_BEGIN_LOCAL
-extern PixInsightINDIInterface* ThePixInsightINDIInterface; 
+extern CCDFrameInterface* TheCCDFrameInterface; 
 PCL_END_LOCAL
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-#endif   // __PixInsightINDIInterface_h
+#endif   // __CCDFrameInterface_h
 
 // ****************************************************************************
-// EOF PixInsightINDIInterface.h - Released 2013/03/24 18:42:27 UTC
+// EOF CCDFrameInterface.h - Released 2013/03/24 18:42:27 UTC

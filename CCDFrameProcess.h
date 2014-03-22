@@ -2,7 +2,7 @@
 // PixInsight Class Library - PCL 02.00.02.0584
 // Standard PixInsightINDI Process Module Version 01.00.02.0092
 // ****************************************************************************
-// PixInsightINDIInstance.h - Released 2013/03/24 18:42:27 UTC
+// PixInsightINDIProcess.h - Released 2013/03/24 18:42:27 UTC
 // ****************************************************************************
 // This file is part of the standard PixInsightINDI PixInsight module.
 //
@@ -46,75 +46,53 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ****************************************************************************
 
-#ifndef __PixInsightINDIInstance_h
-#define __PixInsightINDIInstance_h
+#ifndef __CCDFrameProcess_h
+#define __CCDFrameProcess_h
 
-#include <pcl/MetaParameter.h> // for pcl_bool, pcl_enum
-#include <pcl/ProcessImplementation.h>
-#include <pcl/Timer.h>
-#include <pcl/Console.h>
-#include "PixInsightINDIParameters.h"
-
+#include <pcl/MetaProcess.h>
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-class PixInsightINDIInstance : public ProcessImplementation
+class CCDFrameProcess : public MetaProcess
 {
 public:
 
-   typedef Array<INDIDeviceListItem>      DeviceListType;
-   typedef Array<INDIPropertyListItem>    PropertyListType;
-   typedef Array<INDINewPropertyListItem> NewPropertyListType;
- 
-   PixInsightINDIInstance( const MetaProcess* );
-   PixInsightINDIInstance( const PixInsightINDIInstance& );
-  
-   virtual void Assign( const ProcessImplementation& );
+   CCDFrameProcess();
 
-   virtual bool CanExecuteOn( const View&, pcl::String& whyNot ) const;
-   virtual bool CanExecuteGlobal( pcl::String& whyNot ) const;
+   virtual IsoString Id() const;
+   virtual IsoString Category() const;
 
-   virtual bool ExecuteGlobal();
+   virtual uint32 Version() const;
 
-   virtual void* LockParameter( const MetaParameter*, size_type tableRow );
+   virtual String Description() const;
 
-   virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
-   virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
-   	
-   void sendNewPropertyValue(INDINewPropertyListItem& propItem);
-private:
-   DeviceListType          p_deviceList;
-   PropertyListType        p_propertyList;
-   NewPropertyListType     p_newPropertyList;
-   String	               p_host;       // String hostname of INDI server
-   uint32                  p_port;	    // uint32 port of INDI server  
-   uint32                  p_connect;	// uint32 port of INDI server
-   IsoString               p_currentMessage;
-   pcl_bool				   p_doAbort;
-   
-   void getProperties();
-   void sendNewProperty();
-   bool getPropertyFromKeyString(INDINewPropertyListItem& newPropertyKey, const String& keyString);
-   void writeCurrentMessageToConsole(); 
+   virtual const char** IconImageXPM() const;
 
-   friend class INDIClient;
-   
+   virtual bool PrefersGlobalExecution() const;
 
-   friend class PixInsightINDIEngine;
-   friend class PixInsightINDIProcess;
-   friend class PixInsightINDIInterface;
-   friend class CCDFrameInterface;  
+   virtual ProcessInterface* DefaultInterface() const;
+
+   virtual ProcessImplementation* Create() const;
+   virtual ProcessImplementation* Clone( const ProcessImplementation& ) const;
+
+   virtual bool CanProcessCommandLines() const;
+   virtual int ProcessCommandLine( const StringList& ) const;
 };
 
 // ----------------------------------------------------------------------------
 
+PCL_BEGIN_LOCAL
+extern CCDFrameProcess* TheCCDFrameProcess;
+PCL_END_LOCAL
+
+// ----------------------------------------------------------------------------
 
 } // pcl
 
-#endif   // __PixInsightINDIInstance_h
+#endif   // __CCDFrameProcess_h
 
 // ****************************************************************************
-// EOF PixInsightINDIInstance.h - Released 2013/03/24 18:42:27 UTC
+// EOF PixInsightINDIProcess.h - Released 2013/03/24 18:42:27 UTC

@@ -46,14 +46,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ****************************************************************************
 
-#ifndef __PixInsightINDIInstance_h
-#define __PixInsightINDIInstance_h
+#ifndef __CCDFrameInstance_h
+#define __CCDFrameInstance_h
 
 #include <pcl/MetaParameter.h> // for pcl_bool, pcl_enum
 #include <pcl/ProcessImplementation.h>
 #include <pcl/Timer.h>
 #include <pcl/Console.h>
-#include "PixInsightINDIParameters.h"
+
 
 
 namespace pcl
@@ -61,16 +61,12 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-class PixInsightINDIInstance : public ProcessImplementation
+class CCDFrameInstance : public ProcessImplementation
 {
 public:
-
-   typedef Array<INDIDeviceListItem>      DeviceListType;
-   typedef Array<INDIPropertyListItem>    PropertyListType;
-   typedef Array<INDINewPropertyListItem> NewPropertyListType;
  
-   PixInsightINDIInstance( const MetaProcess* );
-   PixInsightINDIInstance( const PixInsightINDIInstance& );
+   CCDFrameInstance( const MetaProcess* );
+   CCDFrameInstance( const CCDFrameInstance& );
   
    virtual void Assign( const ProcessImplementation& );
 
@@ -79,34 +75,15 @@ public:
 
    virtual bool ExecuteGlobal();
 
-   virtual void* LockParameter( const MetaParameter*, size_type tableRow );
+   //virtual void* LockParameter( const MetaParameter*, size_type tableRow );
 
-   virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
-   virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
+   //virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
+   //virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
    	
-   void sendNewPropertyValue(INDINewPropertyListItem& propItem);
+   
 private:
-   DeviceListType          p_deviceList;
-   PropertyListType        p_propertyList;
-   NewPropertyListType     p_newPropertyList;
-   String	               p_host;       // String hostname of INDI server
-   uint32                  p_port;	    // uint32 port of INDI server  
-   uint32                  p_connect;	// uint32 port of INDI server
-   IsoString               p_currentMessage;
-   pcl_bool				   p_doAbort;
    
-   void getProperties();
-   void sendNewProperty();
-   bool getPropertyFromKeyString(INDINewPropertyListItem& newPropertyKey, const String& keyString);
-   void writeCurrentMessageToConsole(); 
-
-   friend class INDIClient;
    
-
-   friend class PixInsightINDIEngine;
-   friend class PixInsightINDIProcess;
-   friend class PixInsightINDIInterface;
-   friend class CCDFrameInterface;  
 };
 
 // ----------------------------------------------------------------------------
@@ -114,7 +91,7 @@ private:
 
 } // pcl
 
-#endif   // __PixInsightINDIInstance_h
+#endif   // __CCDFrameInstance_h
 
 // ****************************************************************************
-// EOF PixInsightINDIInstance.h - Released 2013/03/24 18:42:27 UTC
+// EOF CCDFrameInstance.h - Released 2013/03/24 18:42:27 UTC

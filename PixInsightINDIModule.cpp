@@ -59,6 +59,8 @@
 #include "PixInsightINDIModule.h"
 #include "PixInsightINDIProcess.h"
 #include "PixInsightINDIInterface.h"
+#include "CCDFrameProcess.h"
+#include "CCDFrameInterface.h"
 
 namespace pcl
 {
@@ -165,6 +167,8 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
    {
       new pcl::PixInsightINDIProcess;
 	  new pcl::PixInsightINDIInterface;
+	  new pcl::CCDFrameProcess;
+	  new pcl::CCDFrameInterface;
    }
 
    /*

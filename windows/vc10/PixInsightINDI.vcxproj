@@ -33,6 +33,9 @@
     <ClInclude Include="..\..\base64.h" />
     <ClInclude Include="..\..\baseclient.h" />
     <ClInclude Include="..\..\basedevice.h" />
+    <ClInclude Include="..\..\CCDFrameInstance.h" />
+    <ClInclude Include="..\..\CCDFrameInterface.h" />
+    <ClInclude Include="..\..\CCDFrameProcess.h" />
     <ClInclude Include="..\..\indiapi.h" />
     <ClInclude Include="..\..\indibase.h" />
     <ClInclude Include="..\..\indicom.h" />
@@ -51,6 +54,9 @@
     <ClCompile Include="..\..\base64.c" />
     <ClCompile Include="..\..\baseclient.cpp" />
     <ClCompile Include="..\..\basedevice.cpp" />
+    <ClCompile Include="..\..\CCDFrameInstance.cpp" />
+    <ClCompile Include="..\..\CCDFrameInterface.cpp" />
+    <ClCompile Include="..\..\CCDFrameProcess.cpp" />
     <ClCompile Include="..\..\indicom.c" />
     <ClCompile Include="..\..\indiproperty.cpp" />
     <ClCompile Include="..\..\lilxml.c" />

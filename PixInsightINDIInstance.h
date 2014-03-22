@@ -64,7 +64,8 @@ namespace pcl
 class PixInsightINDIInstance : public ProcessImplementation
 {
 public:
-   
+
+   typedef Array<INDIDeviceListItem>      DeviceListType;
    typedef Array<INDIPropertyListItem>    PropertyListType;
    typedef Array<INDINewPropertyListItem> NewPropertyListType;
  
@@ -82,8 +83,10 @@ public:
 
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
-   		
+   	
+   void sendNewPropertyValue(INDINewPropertyListItem& propItem);
 private:
+   DeviceListType          p_deviceList;
    PropertyListType        p_propertyList;
    NewPropertyListType     p_newPropertyList;
    String	               p_host;       // String hostname of INDI server

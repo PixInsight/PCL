@@ -72,6 +72,7 @@ auto_ptr<INDIClient> indiClient(0);
 
 PixInsightINDIInstance::PixInsightINDIInstance( const MetaProcess* m ) :
 ProcessImplementation( m ),
+p_deviceList(0),
 p_propertyList(),
 p_newPropertyList(),
 p_host( TheINDIServerHostname->DefaultValue() ),
@@ -170,6 +171,12 @@ bool PixInsightINDIInstance::getPropertyFromKeyString(INDINewPropertyListItem& p
 
 }
 
+void PixInsightINDIInstance::sendNewPropertyValue(INDINewPropertyListItem& propItem){
+
+	p_newPropertyList.Append(propItem);
+	sendNewProperty();
+}
+
 void PixInsightINDIInstance::sendNewProperty() {
 	//Precondition: NewPropertyList contains ony elements of the same property
 
@@ -194,7 +201,7 @@ void PixInsightINDIInstance::sendNewProperty() {
 		}
 		// initialize
 		if (firstTime){
-			if (getPropertyFromKeyString(*iter,iter->PropertyKey)){
+			if (getPropertyFromKeyString(*iter,iter->PropertyKey) || (!iter->Device.IsEmpty() && !iter->Property.IsEmpty() && !iter->PropertyType.IsEmpty())){
 				deviceStr=iter->Device;
 				propertyStr = iter->Property;
 				propertyTypeStr = iter->PropertyType;
@@ -240,7 +247,7 @@ void PixInsightINDIInstance::sendNewProperty() {
 			  Console().WriteLn(String().Format("Invalid property key '%s' not supported. ",IsoString(iter->PropertyKey).c_str()));
 			}
 		}
-		if (getPropertyFromKeyString(*iter,iter->PropertyKey)){
+		if (getPropertyFromKeyString(*iter,iter->PropertyKey) || (!iter->Device.IsEmpty() && !iter->Property.IsEmpty() && !iter->PropertyType.IsEmpty())){
 			if (switchVecProp){
 				// set new switch 
 				ISwitch * sp = IUFindSwitch(switchVecProp, IsoString(iter->Element).c_str());
@@ -346,6 +353,7 @@ void PixInsightINDIInstance::writeCurrentMessageToConsole(){
 
 bool PixInsightINDIInstance::ExecuteGlobal()
 {
+   Console().WriteLn("INDI control client --- (c) Klaus Kretzchmar, 2014");
    Console().EnableAbort();
    if (!p_connect){
 	  // disconnet from server
@@ -387,8 +395,10 @@ void* PixInsightINDIInstance::LockParameter( const MetaParameter* p, size_type t
       return &p_port;
    if ( p == TheINDIServerConnect )
       return &p_connect;
-    if ( p == TheINDIProcessFlagDoAbort )
+   if ( p == TheINDIProcessFlagDoAbort )
       return &p_doAbort;
+   if (p == TheINDIDeviceNameParameter)
+	   return p_deviceList[tableRow].DeviceName.c_str();
    if (p == TheINDIPropertyNameParameter)
 	   return p_propertyList[tableRow].PropertyKey.c_str();
    if (p == TheINDIPropertyValueParameter)
@@ -422,6 +432,11 @@ bool PixInsightINDIInstance::AllocateParameter( size_type sizeOrLength, const Me
 		p_propertyList.Clear();
 		if ( sizeOrLength > 0 )
 			p_propertyList.Add( INDIPropertyListItem(), sizeOrLength );
+	} 
+	else if ( p == TheINDIDeviceNameParameter){
+		p_deviceList[tableRow].DeviceName.Clear();
+		if ( sizeOrLength > 0 )
+			p_deviceList[tableRow].DeviceName.Reserve( sizeOrLength );
 	}
 	else if ( p == TheINDIPropertyNameParameter){
 		p_propertyList[tableRow].PropertyKey.Clear();
@@ -470,6 +485,8 @@ size_type PixInsightINDIInstance::ParameterLength( const MetaParameter* p, size_
 		return p_host.Length();
 	if (p == TheINDIPropertiesParameter)
 		return p_propertyList.Length();
+	if ( p == TheINDIDeviceNameParameter )
+		return p_deviceList[tableRow].DeviceName.Length();
 	if ( p == TheINDIPropertyNameParameter )
 		return p_propertyList[tableRow].PropertyKey.Length();
 	if ( p == TheINDIPropertyValueParameter )

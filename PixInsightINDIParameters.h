@@ -57,6 +57,15 @@ namespace pcl
 
 PCL_BEGIN_LOCAL
 
+struct INDIDeviceListItem {
+	INDIDeviceListItem(){}
+	String DeviceName;
+	String DeviceLabel;
+	bool operator==(const INDIDeviceListItem& rhs ) const {
+		return (DeviceName == rhs.DeviceName);
+	}
+};
+
 struct INDIPropertyListItem {
 	INDIPropertyListItem(){}
 	String Device;
@@ -140,6 +149,24 @@ public:
 };
 
 extern INDIProcessFlagDoAbort* TheINDIProcessFlagDoAbort;
+
+
+class INDIDevices: public MetaTable
+{
+public:
+	INDIDevices ( MetaProcess* );
+	virtual IsoString Id() const;
+};
+extern INDIDevices* TheINDIDevicesParameter ;
+
+class INDIDeviceName: public MetaString
+{
+public:
+	INDIDeviceName ( MetaTable* );
+	virtual IsoString Id() const;
+};
+extern INDIDeviceName* TheINDIDeviceNameParameter ;
+
 
 class INDIProperties: public MetaTable
 {

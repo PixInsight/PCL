@@ -2,7 +2,7 @@
 // PixInsight Class Library - PCL 02.00.02.0584
 // Standard PixInsightINDI Process Module Version 01.00.02.0092
 // ****************************************************************************
-// PixInsightINDIProcess.h - Released 2013/03/24 18:42:27 UTC
+// PixInsightINDIInterface.h - Released 2013/03/24 18:42:27 UTC
 // ****************************************************************************
 // This file is part of the standard PixInsightINDI PixInsight module.
 //
@@ -46,53 +46,62 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ****************************************************************************
 
-#ifndef __PixInsightINDIProcess_h
-#define __PixInsightINDIProcess_h
+#ifndef PROPERTY_NODE_H
+#define PROPERTY_NODE_H
 
-#include <pcl/MetaProcess.h>
+#include <vector>
+#include <map>
+#include <pcl/TreeBox.h>
+#include "PixInsightINDIclient.h"
 
-namespace pcl
-{
+namespace pcl {
 
-// ----------------------------------------------------------------------------
+	// forward declaration
+	class IPropertyVisitor;
 
-class PixInsightINDIProcess : public MetaProcess
-{
-public:
+	static const IsoString c_sep = IsoString("/"); 
 
-   PixInsightINDIProcess();
+	// Utiliy functions
+	class PropertyUtils{
+	public:
+		static IsoString getDevice(IsoString keyString);
+		static IsoString getProperty(IsoString keyString);
+		static IsoString getElement(IsoString keyString);
+		static IsoString getKey(IsoString INDI_device) {return c_sep+INDI_device;}
+		static IsoString getKey(IsoString INDI_device, IsoString INDI_property) { return c_sep+INDI_device+c_sep+INDI_property;}
+		static IsoString getKey(IsoString INDI_device, IsoString INDI_property,IsoString INDI_propertyElement){return c_sep+INDI_device+c_sep+INDI_property+c_sep+INDI_propertyElement; }
+	};
 
-   virtual IsoString Id() const;
-   virtual IsoString Category() const;
+	class PropertyNode {
+	private:
+		std::vector<PropertyNode*>  m_childs;
+		IsoString                   m_keyStr;
+		TreeBox::Node*              m_thisTreeBoxNode;
+	public:
+		PropertyNode(TreeBox& parent);
+		PropertyNode(PropertyNode* parent,IsoString INDI_device);
+		PropertyNode(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property);
+		PropertyNode(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property,IsoString INDI_propertyElement);
 
-   virtual uint32 Version() const;
+		TreeBox::Node* getTreeBoxNode() {return m_thisTreeBoxNode;}
 
-   virtual String Description() const;
+		~PropertyNode() {}
 
-   virtual const char** IconImageXPM() const;
+		void accept(IPropertyVisitor* visitor, IProperty* INDIProperty);
+	};
 
-   virtual bool PrefersGlobalExecution() const;
+	class IPropertyVisitor {
+	public:
+		virtual void visit(PropertyNode* pNode,  IProperty* INDIProperty) = 0;
+	};
 
-   virtual ProcessInterface* DefaultInterface() const;
+	class CreateVisitor : public IPropertyVisitor  {
+	
+	public:
+		CreateVisitor(){}
+		void visit(PropertyNode* pNode,  IProperty* INDIProperty);
+	};
 
-   virtual ProcessImplementation* Create() const;
-   virtual ProcessImplementation* Clone( const ProcessImplementation& ) const;
+}
 
-   virtual bool CanProcessCommandLines() const;
-   virtual int ProcessCommandLine( const StringList& ) const;
-};
-
-// ----------------------------------------------------------------------------
-
-PCL_BEGIN_LOCAL
-extern PixInsightINDIProcess* ThePixInsightINDIProcess;
-PCL_END_LOCAL
-
-// ----------------------------------------------------------------------------
-
-} // pcl
-
-#endif   // __PixInsightINDIProcess_h
-
-// ****************************************************************************
-// EOF PixInsightINDIProcess.h - Released 2013/03/24 18:42:27 UTC
+#endif //PROPERTY_NODE_H

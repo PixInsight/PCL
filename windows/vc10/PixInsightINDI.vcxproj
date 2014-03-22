@@ -41,9 +41,11 @@
     <ClInclude Include="..\..\lilxml.h" />
     <ClInclude Include="..\..\PixInsightINDIclient.h" />
     <ClInclude Include="..\..\PixInsightINDIInstance.h" />
+    <ClInclude Include="..\..\PixInsightINDIInterface.h" />
     <ClInclude Include="..\..\PixInsightINDIModule.h" />
     <ClInclude Include="..\..\PixInsightINDIParameters.h" />
     <ClInclude Include="..\..\PixInsightINDIProcess.h" />
+    <ClInclude Include="..\..\PropertyNode.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\base64.c" />
@@ -54,9 +56,11 @@
     <ClCompile Include="..\..\lilxml.c" />
     <ClCompile Include="..\..\PixInsightINDIInstance.cpp" />
     <ClCompile Include="..\..\PixInsightINDIclient.cpp" />
+    <ClCompile Include="..\..\PixInsightINDIInterface.cpp" />
     <ClCompile Include="..\..\PixInsightINDIModule.cpp" />
     <ClCompile Include="..\..\PixInsightINDIParameters.cpp" />
     <ClCompile Include="..\..\PixInsightINDIProcess.cpp" />
+    <ClCompile Include="..\..\PropertyNode.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1E7F3743-070F-4407-928E-2A4A7664F5BE}</ProjectGuid>

@@ -47,6 +47,7 @@
 // ****************************************************************************
 
 #include "PixInsightINDIInstance.h"
+#include "PixInsightINDIInterface.h"
 #include "PixInsightINDIParameters.h"
 #include "PixInsightINDIProcess.h"
 
@@ -86,6 +87,8 @@ PixInsightINDIProcess::PixInsightINDIProcess() : MetaProcess()
    new INDINewPropertyKey(TheINDINewPropertiesParameter);
    new INDINewPropertyType(TheINDINewPropertiesParameter);
    new INDINewPropertyValue(TheINDINewPropertiesParameter);
+   new INDIDevices(ThePixInsightINDIProcess);
+   new INDIDeviceName(TheINDIDevicesParameter);
    
 
 }
@@ -101,7 +104,7 @@ IsoString PixInsightINDIProcess::Id() const
 
 IsoString PixInsightINDIProcess::Category() const
 {
-   return IsoString(); // No category
+   return IsoString("INDI"); // No category
 }
 
 // ----------------------------------------------------------------------------
@@ -117,7 +120,7 @@ String PixInsightINDIProcess::Description() const
 {
    return
    "<html>"
-   "<p>INDIclient is an INDI client for use in PixInsight.</p>"
+   "<p>INDI control is a client for controlling INDI device./p>"
    "</html>";
 }
 
@@ -127,11 +130,18 @@ const char** PixInsightINDIProcess::IconImageXPM() const
 {
    return 0; // PixInsightINDIIcon_XPM; ---> put a nice icon here
 }
+
+// ----------------------------------------------------------------------------
+
+bool PixInsightINDIProcess::PrefersGlobalExecution() const
+{
+	return true;
+}
 // ----------------------------------------------------------------------------
 
 ProcessInterface* PixInsightINDIProcess::DefaultInterface() const
 {
-   return NULL;
+   return ThePixInsightINDIInterface;
 }
 // ----------------------------------------------------------------------------
 

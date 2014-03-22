@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
+#include <assert.h>
 #include "PixInsightINDIclient.h"
+#include "PropertyNode.h"
 #include <pcl/Console.h>
 
 
@@ -46,23 +48,39 @@ namespace pcl {
 
 	}
 
+	void INDIClient::newDevice(INDI::BaseDevice *dp){
+		assert(dp!=NULL);
+		if (m_Interface!=NULL){
+			INDIDeviceListItem deviceListItem;
+			deviceListItem.DeviceName=String(dp->getDeviceName());
+			deviceListItem.DeviceLabel=String(dp->getDriverName());
+			m_Instance->p_deviceList.Append(deviceListItem);
+		}
+
+	}
+
 	void INDIClient::newProperty(INDI::Property *property){		
-		if (property==NULL)
-			return;
+		assert(property!=NULL);
 		IProperty* INDIProperty = PropertyFactory::create(property);
 		ArrayOperator<INDIPropertyListItem>* append=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayAppend<INDIPropertyListItem>());
 
-		runOnPropertyTable(INDIProperty,append);		
+		// add property to the property process parameter table
+		runOnPropertyTable(INDIProperty,append);
+		
+		// add property to Interface TreeBox
+		if (m_Interface!=NULL){
+			
+		}
 		setBLOBMode(B_ALSO,property->getDeviceName());
 	}
 
 	void INDIClient::removeProperty(INDI::Property *property){
-		if (property==NULL)
-			return;
-		IProperty* INDIProperty = PropertyFactory::create(property);
-		ArrayOperator<INDIPropertyListItem>* _delete=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayDelete<INDIPropertyListItem>());
+		if (property!=NULL){
+			IProperty* INDIProperty = PropertyFactory::create(property);
+			ArrayOperator<INDIPropertyListItem>* _delete=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayDelete<INDIPropertyListItem>());
 
-		runOnPropertyTable(INDIProperty,_delete);
+			runOnPropertyTable(INDIProperty,_delete);
+		}
 	}
 
 	void INDIClient::newMessage(INDI::BaseDevice *dp, int messageID){

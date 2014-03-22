@@ -63,6 +63,8 @@
 #include <pcl/TreeBox.h>
 #include <pcl/ErrorHandler.h>
 #include <pcl/Timer.h>
+#include <map>
+
 
 #include "PixInsightINDIInstance.h"
 
@@ -73,25 +75,36 @@
 namespace pcl
 {
 
-class DevicePropertiesDialog : public Dialog 
+class PropertyNode;
+
+class SetPropertyDialog : public Dialog 
 {
 public:
-	DevicePropertiesDialog();
-	void UpdatePropertyList();
+	SetPropertyDialog( );
+	
+	void setPropertyLabelString(String label){Property_Label.SetText(label);}
+	void setPropertyValueString(String value){Property_Edit.SetText(value);}
+	void setNewPropertyListItem(INDINewPropertyListItem& newPropItem) {m_newPropertyListItem=newPropItem;}
+	INDINewPropertyListItem getNewPropertyListItem(){return m_newPropertyListItem;}
+	void setInstance(PixInsightINDIInstance* instance){m_instance=instance;}
 private:
 	
-	IsoString m_serverMessage;
-	HorizontalSizer       Global_Sizer;
-		VerticalSizer		INDIDeviceProperty_Sizer;
-			TreeBox				PropertyList_TreeBox;
-			Label               DeviceMessage_Label;
-		 VerticalSizer			Buttons_Sizer;
-			PushButton			RefreshProperty_PushButton;
-			PushButton			EditProperty_PushButton;
+	PixInsightINDIInstance* m_instance;
+
+	INDINewPropertyListItem m_newPropertyListItem;
+
+	VerticalSizer       Global_Sizer;
+		HorizontalSizer		Property_Sizer;
+			Label               Property_Label;
+			Edit				Property_Edit;
+		 HorizontalSizer	Buttons_Sizer;
+			PushButton			OK_PushButton;
+			PushButton			Cancel_PushButton;
 	
 	void Button_Click( Button& sender, bool checked );
-	
-	friend class PixInsightINDIMediator;
+	void EditCompleted( Edit& sender );
+
+	friend class INDIClient;
 	
 };	
 
@@ -110,6 +123,7 @@ public:
    virtual const char** IconImageXPM() const;
 
    virtual void ApplyInstance() const;
+   virtual void ApplyInstanceGlobal() const;
    virtual void ResetInstance();
 
    virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ );
@@ -121,7 +135,9 @@ public:
 
    virtual bool ImportProcess( const ProcessImplementation& );
 
+   virtual InterfaceFeatures Features() const;
 
+   void UpdateControls();
    
    struct GUIData
    {
@@ -140,27 +156,39 @@ public:
 				PushButton			ConnectServer_PushButton;
 				PushButton			DisconnectServer_PushButton;
 		SectionBar         INDIDevices_SectionBar;
+		Control			   INDIDevices_Control;
 		 HorizontalSizer	INDIDevice_Sizer;
 			TreeBox				DeviceList_TreeBox;
-			Label				DeviceMessage_Label;
 			VerticalSizer		DeviceAction_Sizer;
 				PushButton			ConnectDevice_PushButton;
 				PushButton			DisconnectDevice_PushButton;
 				PushButton			RefreshDevice_PushButton;
-
-		DevicePropertiesDialog DrvPropDlg;
+		SectionBar         INDIProperties_SectionBar;
+		Control			   INDIProperties_Control;
+		 HorizontalSizer    INDIDeviceProperty_Sizer;
+		 VerticalSizer		INDIDevicePropertyTreeBox_Sizer;
+			TreeBox				PropertyList_TreeBox;
+			Label               DeviceMessage_Label;
+		 VerticalSizer			Buttons_Sizer;
+			PushButton			RefreshProperty_PushButton;
+			PushButton			EditProperty_PushButton;
+		SetPropertyDialog SetPropDlg;
    };
 
    private:
 
+   typedef std::map<IsoString,PropertyNode*> PropertyNodeMapType;
 
    PixInsightINDIInstance instance;
 
    GUIData* GUI;
-   
+
+   IsoString m_serverMessage;
+
+   void UpdatePropertyList();
+
    void __UpdateDeviceList_Timer( Timer& sender );
    
-   void UpdateControls();
    void UpdateDeviceList();
 
    int  m_numOfDevices;
@@ -169,6 +197,7 @@ public:
 
    // Event Handlers
    void __CameraListButtons_Click( Button& sender, bool checked );
+   void PropertyButton_Click( Button& sender, bool checked );
 
    void __RealValueUpdated( NumericEdit& sender, double value );
    void __IntegerValueUpdated( SpinBox& sender, int value );
@@ -178,16 +207,14 @@ public:
    void __EditCompleted( Edit& sender );
 
    friend struct GUIData;
-   friend class PixInsightINDIMediator;
    friend class DevicePropertiesDialog;
+   friend class INDIClient;
 };
 
 // ----------------------------------------------------------------------------
 
 PCL_BEGIN_LOCAL
-extern PixInsightINDIInterface* ThePixInsightINDIInterface;
-extern auto_ptr<INDIClient> indiClient;
-extern auto_ptr<PixInsightINDIMediator> mediator;
+extern PixInsightINDIInterface* ThePixInsightINDIInterface; 
 PCL_END_LOCAL
 
 // ----------------------------------------------------------------------------

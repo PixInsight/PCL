@@ -66,6 +66,9 @@ INDINewPropertyKey*         TheINDINewPropertyKeyParameter = 0;
 INDINewPropertyType*		TheINDINewPropertyTypeParameter = 0;
 INDINewPropertyValue*		TheINDINewPropertyValueParameter = 0;
 INDIProcessFlagDoAbort*     TheINDIProcessFlagDoAbort =0;
+INDIDevices*                TheINDIDevicesParameter=0;
+INDIDeviceName*             TheINDIDeviceNameParameter=0;
+
 // ----------------------------------------------------------------------------
 // The INDI server hostname
 
@@ -147,6 +150,26 @@ double INDIServerConnect::MaximumValue() const
 {
    return 1;
 }
+
+INDIDevices::INDIDevices ( MetaProcess* P): MetaTable(P)
+{
+	TheINDIDevicesParameter = this;
+}
+
+IsoString INDIDevices::Id() const
+{
+   return "INDI_Devices";
+}
+
+INDIDeviceName::INDIDeviceName(MetaTable* T):MetaString(T){
+	TheINDIDeviceNameParameter = this;
+}
+
+IsoString INDIDeviceName::Id() const
+{
+   return "INDI_DeviceName";
+}
+
 
 INDIProperties::INDIProperties ( MetaProcess* P): MetaTable(P)
 {

@@ -210,6 +210,8 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
 	ExpTime_Sizer.SetMargin(10);
 	ExpTime_Sizer.Add(ExpTime_Label);
 	ExpTime_Sizer.Add(ExpTime_Edit);
+	ExpTime_Sizer.Add(ExpNum_Label);
+	ExpTime_Sizer.Add(ExpNum_Edit);
 
 	ExpNum_Label.SetText( "Number of frames:" );
 	ExpNum_Label.SetToolTip( "<p>Number of frames to be taken.</p>" );
@@ -220,8 +222,7 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
 
 	ExpNum_Sizer.SetSpacing(10);
 	ExpNum_Sizer.SetMargin(10);
-	ExpNum_Sizer.Add(ExpNum_Label);
-	ExpNum_Sizer.Add(ExpNum_Edit);
+	
 	ExpNum_Sizer.Add(StartExposure_PushButton);
 
 	FrameExposure_Sizer.Add(ExpTime_Sizer);

@@ -132,10 +132,17 @@ namespace pcl {
 	}
 
 	void INDIClient::newBLOB(IBLOB *bp){
-		IsoString fileName = IsoString("C:/Users/klaus/tmp/") + IsoString(bp->label) + IsoString(".fits"); 
+	  const char* tmpFolder = getenv("TMPDIR");
+          if (tmpFolder!=NULL)
+	    {
+		IsoString fileName = IsoString(tmpFolder) + IsoString(bp->label) + IsoString(".fits"); 
 	    ofstream myfile;
 		myfile.open (fileName.c_str(),ios::out|ios::binary);
 		myfile.write((const char*) bp->blob,bp->bloblen);
-		myfile.close();		
+		myfile.close();
+	    }
+	  else {
+	    m_Instance->p_currentMessage=IsoString("TMPDIR environment variable not set.");
+	  }
 	}
 }

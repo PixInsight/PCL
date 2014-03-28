@@ -171,7 +171,7 @@ bool PixInsightINDIInstance::getPropertyFromKeyString(INDINewPropertyListItem& p
 
 }
 
-void PixInsightINDIInstance::sendNewPropertyValue(INDINewPropertyListItem& propItem){
+void PixInsightINDIInstance::sendNewPropertyValue(const INDINewPropertyListItem& propItem){
 
 	p_newPropertyList.Append(propItem);
 	sendNewProperty();

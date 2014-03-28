@@ -20,10 +20,15 @@ all: $(OBJ_DIR)/PixInsightINDI-pxm.dylib
 
 SRC_FILES= \
 ../../PixInsightINDIInstance.cpp \
+../../PixInsightINDIInterface.cpp \
 ../../PixInsightINDIclient.cpp \
 ../../PixInsightINDIModule.cpp \
 ../../PixInsightINDIParameters.cpp \
 ../../PixInsightINDIProcess.cpp \
+../../PropertyNode.cpp \
+../../CCDFrameProcess.cpp \
+../../CCDFrameInstance.cpp \
+../../CCDFrameInterface.cpp \
 ../../base64.c \
 ../../baseclient.cpp \
 ../../basedevice.cpp \
@@ -37,10 +42,15 @@ SRC_FILES= \
 
 OBJ_FILES= \
 ./x86_64/Release/PixInsightINDIInstance.o \
+./x86_64/Release/PixInsightINDIInterface.o \
 ./x86_64/Release/PixInsightINDIclient.o \
 ./x86_64/Release/PixInsightINDIModule.o \
 ./x86_64/Release/PixInsightINDIParameters.o \
 ./x86_64/Release/PixInsightINDIProcess.o \
+./x86_64/Release/PropertyNode.o \
+./x86_64/Release/CCDFrameProcess.o \
+./x86_64/Release/CCDFrameInstance.o \
+./x86_64/Release/CCDFrameInterface.o \
 ./x86_64/Release/base64.o \
 ./x86_64/Release/baseclient.o \
 ./x86_64/Release/basedevice.o \
@@ -54,10 +64,15 @@ OBJ_FILES= \
 
 DEP_FILES= \
 ./x86_64/Release/PixInsightINDIInstance.d \
+./x86_64/Release/PixInsightINDIInterface.d \
 ./x86_64/Release/PixInsightINDIclient.d \
 ./x86_64/Release/PixInsightINDIModule.d \
 ./x86_64/Release/PixInsightINDIParameters.d \
 ./x86_64/Release/PixInsightINDIProcess.d \
+./x86_64/Release/PropertyNode.d \
+./x86_64/Release/CCDFrameProcess.d \
+./x86_64/Release/CCDFrameInstance.d \
+./x86_64/Release/CCDFrameInterface.d \
 ./x86_64/Release/base64.d \
 ./x86_64/Release/baseclient.d \
 ./x86_64/Release/basedevice.d \

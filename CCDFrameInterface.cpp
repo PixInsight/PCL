@@ -278,16 +278,19 @@ void CCDFrameInterface::ComboItemSelected(ComboBox& sender, int itemIndex) {
 
  void CCDFrameInterface::StartExposureButton_Click(Button& sender, bool checked){
 	 if (ThePixInsightINDIInterface!=0){
+	   const char * tmpDir = getenv("TMPDIR");
+	   if (tmpDir!=NULL) {
 		PixInsightINDIInstance* pInstance=&ThePixInsightINDIInterface->instance;
 
 		for (int num=0; num<m_NumOfExposures;++num){
 			pInstance->sendNewPropertyValue(m_newPropertyListItem);
 
-			Array<ImageWindow> imgArray = ImageWindow::Open(String("C:/Users/klaus/tmp/Image.fits"), IsoString("image"));
+			Array<ImageWindow> imgArray = ImageWindow::Open(String(tmpDir)+ String("Image.fits"), IsoString("image"));
 
 			imgArray[0].ZoomToFit( false ); // don't allow zoom > 1
 			imgArray[0].Show();
 		}
+	   } 
 
 	 }
  }
@@ -295,7 +298,7 @@ void CCDFrameInterface::ComboItemSelected(ComboBox& sender, int itemIndex) {
  void CCDFrameInterface::EditCompleted(Edit& sender){
 	 if (sender == GUI->ExpTime_Edit){
 		 m_newPropertyListItem.NewPropertyValue = sender.Text();
-	 }else if (sender == GUI->ExpTime_Edit){
+	 }else if (sender == GUI->ExpNum_Edit){
 		 m_NumOfExposures = sender.Text().ToInt();
 	 }
  }

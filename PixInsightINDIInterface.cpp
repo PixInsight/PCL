@@ -100,7 +100,7 @@ const char** PixInsightINDIInterface::IconImageXPM() const
 
 InterfaceFeatures PixInsightINDIInterface::Features() const
 {
-	return  InterfaceFeature::ApplyGlobalButton | InterfaceFeature::ApplyToViewButton | InterfaceFeature::BrowseDocumentationButton | InterfaceFeature::ResetButton;
+	return   InterfaceFeature::DragObject | InterfaceFeature::ApplyGlobalButton | InterfaceFeature::ApplyToViewButton | InterfaceFeature::BrowseDocumentationButton | InterfaceFeature::ResetButton;
 }
 
 void PixInsightINDIInterface::ApplyInstance() const

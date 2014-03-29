@@ -106,6 +106,8 @@ function mainDialog()
    this.INDITelescope_Combo.onItemSelected = function ()
    {
       currentTelescope=this.dialog.INDITelescope_Combo.itemText(this.dialog.INDITelescope_Combo.currentItem);
+      this.dialog.INDIAsynchAction =this.dialog.INDIAsynchActionEnum.TelescopeConnect;
+      timer.start();
    }
 
    this.INDITelescope_HSizer = new HorizontalSizer;

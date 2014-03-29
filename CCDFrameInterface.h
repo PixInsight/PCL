@@ -113,6 +113,8 @@ public:
 	   GUIData(CCDFrameInterface& w);
 
 	   Timer			  UpdateDeviceList_Timer;
+	   Timer              ExposureDuration_Timer;
+
 	   VerticalSizer      Global_Sizer;
 	   SectionBar         CCDDevice_SectionBar;
 	   Control			  CCDDevice_Control;
@@ -128,7 +130,12 @@ public:
 		HorizontalSizer	     ExpNum_Sizer;
 		  Label				  ExpNum_Label;
 		  Edit                ExpNum_Edit;
-		  PushButton		  StartExposure_PushButton;
+		HorizontalSizer	     ExpDur_Sizer;
+		  Label				  ExpDur_Label;
+		  Edit                ExpDur_Edit;
+		  Label 			  ExpFrame_Label;
+		  Edit                ExpFrame_Edit;
+		PushButton		  StartExposure_PushButton;
    };
 
    private:
@@ -143,6 +150,7 @@ public:
    int                     m_NumOfExposures;
    
    void UpdateDeviceList_Timer( Timer& sender );
+   void ExposureDuration_Timer( Timer &sender );
    void EditCompleted( Edit& sender );
    void ComboItemSelected(ComboBox& sender, int itemIndex);
    void StartExposureButton_Click(Button& sender, bool checked);

@@ -132,10 +132,14 @@ namespace pcl {
 	}
 
 	void INDIClient::newBLOB(IBLOB *bp){
+#if defined(WIN32) 
+	  const char* tmpFolder = getenv("TMP");
+#else
 	  const char* tmpFolder = getenv("TMPDIR");
+#endif
           if (tmpFolder!=NULL)
 	    {
-		IsoString fileName = IsoString(tmpFolder) + IsoString(bp->label) + IsoString(".fits"); 
+		IsoString fileName = IsoString(tmpFolder) + IsoString("/") + IsoString(bp->label) + IsoString(".fits"); 
 	    ofstream myfile;
 		myfile.open (fileName.c_str(),ios::out|ios::binary);
 		myfile.write((const char*) bp->blob,bp->bloblen);

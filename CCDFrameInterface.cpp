@@ -225,8 +225,33 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
 	
 	ExpNum_Sizer.Add(StartExposure_PushButton);
 
+	ExpDur_Label.SetText( "Timer:" );
+	ExpDur_Label.SetToolTip( "<p>Exposure time.</p>" );
+	ExpDur_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+
+	ExpDur_Edit.SetMinWidth(15);
+	ExpDur_Edit.SetText(String("0"));
+	ExpDur_Edit.SetReadOnly();
+
+	ExpFrame_Label.SetText( "Frame:" );
+	ExpFrame_Label.SetToolTip( "<p>Frame number.</p>" );
+	ExpFrame_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+
+	ExpFrame_Edit.SetMinWidth( 15);
+	ExpFrame_Edit.SetText(String("0"));
+	ExpFrame_Edit.SetReadOnly();
+	
+	ExpDur_Sizer.SetSpacing(10);
+	ExpDur_Sizer.SetMargin(10);
+	ExpDur_Sizer.Add(ExpDur_Label);
+	ExpDur_Sizer.Add(ExpDur_Edit);
+	ExpDur_Sizer.Add(ExpFrame_Label);
+	ExpDur_Sizer.Add(ExpFrame_Edit);
+	ExpDur_Sizer.AddStretch();
+
 	FrameExposure_Sizer.Add(ExpTime_Sizer);
 	FrameExposure_Sizer.Add(ExpNum_Sizer);
+	FrameExposure_Sizer.Add(ExpDur_Sizer);
 
 	Global_Sizer.SetMargin( 8 );
 	Global_Sizer.SetSpacing( 6 );
@@ -242,6 +267,14 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
     UpdateDeviceList_Timer.OnTimer( (Timer::timer_event_handler)&CCDFrameInterface::UpdateDeviceList_Timer, w );
 
 	UpdateDeviceList_Timer.Start();
+
+
+	ExposureDuration_Timer.SetInterval( 1 );
+    ExposureDuration_Timer.SetPeriodic( true );
+    ExposureDuration_Timer.OnTimer( (Timer::timer_event_handler)&CCDFrameInterface::ExposureDuration_Timer, w );
+
+
+	
 
 }
 
@@ -267,7 +300,16 @@ void CCDFrameInterface::UpdateDeviceList_Timer( Timer &sender )
 	if( sender == GUI->UpdateDeviceList_Timer  ){
 		UpdateDeviceList();
 	}
+}
 
+void CCDFrameInterface::ExposureDuration_Timer( Timer &sender )
+{
+	if( sender == GUI->ExposureDuration_Timer  ){
+		GUI->ExpDur_Edit.SetText(String(sender.Count()));
+		if (sender.Count()>=GUI->ExpTime_Edit.Text().ToInt()){
+			GUI->ExposureDuration_Timer.Stop();
+		}
+	}
 }
 
 void CCDFrameInterface::ComboItemSelected(ComboBox& sender, int itemIndex) {
@@ -278,17 +320,24 @@ void CCDFrameInterface::ComboItemSelected(ComboBox& sender, int itemIndex) {
 
  void CCDFrameInterface::StartExposureButton_Click(Button& sender, bool checked){
 	 if (ThePixInsightINDIInterface!=0){
-	   const char * tmpDir = getenv("TMPDIR");
+#if defined(WIN32) 
+	  const char* tmpDir = getenv("TMP");
+#else
+	  const char* tmpDir = getenv("TMPDIR");
+#endif
 	   if (tmpDir!=NULL) {
 		PixInsightINDIInstance* pInstance=&ThePixInsightINDIInterface->instance;
 
 		for (int num=0; num<m_NumOfExposures;++num){
+			GUI->ExpFrame_Edit.SetText(String(num));
+			GUI->ExposureDuration_Timer.Start();
 			pInstance->sendNewPropertyValue(m_newPropertyListItem);
+			Array<ImageWindow> imgArray = ImageWindow::Open(String(tmpDir)+ String("/Image.fits"), IsoString("image"));
 
-			Array<ImageWindow> imgArray = ImageWindow::Open(String(tmpDir)+ String("Image.fits"), IsoString("image"));
-
-			imgArray[0].ZoomToFit( false ); // don't allow zoom > 1
-			imgArray[0].Show();
+			if (imgArray.Length()!=0){
+				imgArray[0].ZoomToFit( false ); // don't allow zoom > 1
+				imgArray[0].Show();
+			}
 		}
 	   } 
 

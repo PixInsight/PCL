@@ -323,6 +323,7 @@ void PixInsightINDIInterface::UpdateDeviceList(){
 PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
 {
    SetPropDlg.setInstance(&w.instance);
+   SetPropDlg.setInterface(&w);
    pcl::Font fnt = w.Font();
    int labelWidth1 = fnt.Width( String( "Three:" ) ); // the longest label text
    int editWidth1 = fnt.Width( String( '0',14 ) );
@@ -571,8 +572,8 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 			deviceNode=deviceIter->second;
 		} else
 		{	// create root node
-			PropertyNode* rootNode = new PropertyNode(GUI->PropertyList_TreeBox);
-			PropertyNode* child = new PropertyNode(rootNode,iter->Device);
+			m_rootNode = new PropertyNode(GUI->PropertyList_TreeBox);
+			PropertyNode* child = new PropertyNode(m_rootNode,iter->Device);
 			deviceNode = child;
 			deviceNode->getTreeBoxNode()->SetText(0,iter->Device);
 			deviceNode->getTreeBoxNode()->SetAlignment(0, TextAlign::Left);
@@ -592,7 +593,7 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 			propertyNodeMap[iter->Device+iter->Property]=propertyNode;
 		}
 		// create element nodes
-		PropertyNode* elementNode = new PropertyNode(propertyNode,iter->Device,iter->Property,iter->Element);
+		PropertyNode* elementNode =  PropertyNode::create(propertyNode,iter->Device,iter->Property,iter->Element, iter->PropertyTypeStr);
 		assert(elementNode!=NULL);
 		elementNode->getTreeBoxNode()->SetText(0,iter->Element);
 		elementNode->getTreeBoxNode()->SetAlignment(0, TextAlign::Left);
@@ -609,14 +610,16 @@ void SetPropertyDialog::Button_Click( Button& sender, bool checked ){
 	
 	if ( sender == OK_PushButton )
 	{
-		
-
 		if (indiClient.get() == 0)
 			return;
 
 		assert(m_instance!=NULL);
 
-		m_instance->sendNewPropertyValue(getNewPropertyListItem());
+		INDINewPropertyListItem newPropertyListItem=getNewPropertyListItem();
+		m_instance->sendNewPropertyValue(newPropertyListItem);
+		IPropertyVisitor* pVisitor = UpdateVisitor::create();
+		PropertyNode* rootNode=m_interface->getPropertyTreeRootNode();
+		rootNode->accept(pVisitor, newPropertyListItem.PropertyKey, newPropertyListItem.NewPropertyValue);
 		Ok();
 	}
 	else if (sender == Cancel_PushButton){
@@ -639,6 +642,7 @@ void PixInsightINDIInterface::PropertyButton_Click( Button& sender, bool checked
 			propItem.Element=(*it)->Text(0);
 			propItem.NewPropertyValue=(*it)->Text(1);
 			propItem.PropertyType=(*it)->Text(2);
+			propItem.PropertyKey=PropertyUtils::getKey(propItem.Device,propItem.Property,propItem.Element);
 			GUI->SetPropDlg.setNewPropertyListItem(propItem);
 		}
 		GUI->SetPropDlg.Execute();

@@ -77,31 +77,63 @@ namespace pcl {
 		std::vector<PropertyNode*>  m_childs;
 		IsoString                   m_keyStr;
 		TreeBox::Node*              m_thisTreeBoxNode;
+	protected:
+		PropertyNode(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property,IsoString INDI_propertyElement);
 	public:
 		PropertyNode(TreeBox& parent);
 		PropertyNode(PropertyNode* parent,IsoString INDI_device);
 		PropertyNode(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property);
-		PropertyNode(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property,IsoString INDI_propertyElement);
 
-		TreeBox::Node* getTreeBoxNode() {return m_thisTreeBoxNode;}
+		IsoString getPropertyKeyString() {return m_keyStr;}
 
-		~PropertyNode() {}
+		virtual TreeBox::Node* getTreeBoxNode() {return m_thisTreeBoxNode;}
 
-		void accept(IPropertyVisitor* visitor, IProperty* INDIProperty);
+		virtual ~PropertyNode() {}
+
+		virtual bool accept(IPropertyVisitor* visitor, IsoString propertyKeyStr, IsoString newValue);
+
+		static PropertyNode* create(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property,IsoString INDI_propertyElement, IsoString INDI_propertyType);
 	};
+
+	class SwitchPropertyNode : public PropertyNode {
+	public:
+		SwitchPropertyNode(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property,IsoString INDI_propertyElement):PropertyNode(parent,INDI_device,INDI_property,INDI_propertyElement){}
+	};
+
+	class NumberPropertyNode : public PropertyNode {
+	public:
+		NumberPropertyNode(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property,IsoString INDI_propertyElement):PropertyNode(parent,INDI_device,INDI_property,INDI_propertyElement){}
+	};
+
+	class TextPropertyNode : public PropertyNode {
+	public:
+		TextPropertyNode(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property,IsoString INDI_propertyElement):PropertyNode(parent,INDI_device,INDI_property,INDI_propertyElement){}
+	};
+
+	class LightPropertyNode : public PropertyNode {
+	public:
+		LightPropertyNode(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property,IsoString INDI_propertyElement):PropertyNode(parent,INDI_device,INDI_property,INDI_propertyElement){}
+	};
+
+
 
 	class IPropertyVisitor {
 	public:
-		virtual void visit(PropertyNode* pNode,  IProperty* INDIProperty) = 0;
+		virtual bool visit(PropertyNode* pNode,  IsoString propertyKeyStr, IsoString newPropertyValue) = 0;
+		virtual void postVisit(PropertyNode* pNode,  IsoString propertyKeyStr, IsoString newPropertyValue) = 0;
 	};
 
-	class CreateVisitor : public IPropertyVisitor  {
-	
+
+
+	class UpdateVisitor : public IPropertyVisitor {
+	protected:
+		UpdateVisitor(){}
 	public:
-		CreateVisitor(){}
-		void visit(PropertyNode* pNode,  IProperty* INDIProperty);
+		static IPropertyVisitor* create(){return new UpdateVisitor();}
+		bool visit(PropertyNode* pNode, IsoString propertyKeyString, IsoString newPropertyValue);
+		void postVisit(PropertyNode* pNode, IsoString propertyKeyString, IsoString newPropertyValue);
+	
 	};
-
 }
 
 #endif //PROPERTY_NODE_H

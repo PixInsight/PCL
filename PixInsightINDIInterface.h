@@ -86,10 +86,12 @@ public:
 	void setPropertyValueString(String value){Property_Edit.SetText(value);}
 	void setNewPropertyListItem(INDINewPropertyListItem& newPropItem) {m_newPropertyListItem=newPropItem;}
 	INDINewPropertyListItem getNewPropertyListItem(){return m_newPropertyListItem;}
-	void setInstance(PixInsightINDIInstance* instance){m_instance=instance;}
+	void setInstance(PixInsightINDIInstance* indiInstance){m_instance=indiInstance;}
+	void setInterface(PixInsightINDIInterface* indiInterface){m_interface=indiInterface;}
 private:
 	
-	PixInsightINDIInstance* m_instance;
+	PixInsightINDIInstance*  m_instance;
+	PixInsightINDIInterface* m_interface;
 
 	INDINewPropertyListItem m_newPropertyListItem;
 
@@ -137,6 +139,8 @@ public:
 
    virtual InterfaceFeatures Features() const;
 
+   PropertyNode* getPropertyTreeRootNode(){return m_rootNode;}
+
    void UpdateControls();
    
    struct GUIData
@@ -183,6 +187,7 @@ public:
 
    GUIData* GUI;
 
+   PropertyNode* m_rootNode;
    IsoString m_serverMessage;
 
    void UpdatePropertyList();

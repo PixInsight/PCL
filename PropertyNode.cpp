@@ -1,4 +1,5 @@
 #include "PropertyNode.h"
+#include <assert.h>
 
 namespace pcl {
 
@@ -44,21 +45,64 @@ namespace pcl {
 		}
 	}
 
-	void PropertyNode::accept(IPropertyVisitor* visitor, IProperty* INDI_property){
-		visitor->visit(this,INDI_property);
-		for (size_t i=0; i<this->m_childs.size(); ++i){
-			m_childs[i]->accept(visitor,INDI_property);
+	PropertyNode* PropertyNode::create(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property,IsoString INDI_propertyElement, IsoString INDI_propertyType){
+		if (INDI_propertyType == "INDI_SWITCH"){
+			return new SwitchPropertyNode(parent,INDI_device,INDI_property,INDI_propertyElement);
+		} else if (INDI_propertyType == "INDI_NUMBER"){
+			return new NumberPropertyNode(parent,INDI_device,INDI_property,INDI_propertyElement);
+		} else if (INDI_propertyType == "INDI_TEXT"){
+			return new TextPropertyNode(parent,INDI_device,INDI_property,INDI_propertyElement);
+		} else if (INDI_propertyType == "INDI_LIGHT"){
+			return new LightPropertyNode(parent,INDI_device,INDI_property,INDI_propertyElement);
+		} else {
+			return new PropertyNode(parent,INDI_device,INDI_property,INDI_propertyElement);
 		}
 	}
 
-	void CreateVisitor::visit(PropertyNode* pNode, IProperty* INDI_property){
-		/*DeviceNodeMapType::iterator keyIter = m_deviceNodeMap.find(INDI_property->getDeviceName());
-		IsoString keyStr=PropertyUtils::getKey(INDI_property->getDeviceName());
-		if (keyIter == m_deviceNodeMap.end()){
-			m_deviceNodeMap[keyStr]=pNode;
+
+
+	bool PropertyNode::accept(IPropertyVisitor* visitor, IsoString propertyKeyStr, IsoString newValue){
+		bool requiresPostVisit = visitor->visit(this,propertyKeyStr, newValue);
+		for (size_t i=0; i<this->m_childs.size(); ++i){
+			requiresPostVisit = requiresPostVisit || m_childs[i]->accept(visitor,propertyKeyStr, newValue);
 		}
-		else {
-			
-		}*/
+		if (requiresPostVisit){
+			for (size_t i=0; i<m_childs.size(); ++i){
+				visitor->postVisit(m_childs[i],propertyKeyStr, IsoString("OFF"));
+			}
+		}
+		return requiresPostVisit;
 	}
+
+	bool UpdateVisitor::visit(PropertyNode* pNode, IsoString propertyKeyString, IsoString newValue){
+		assert(pNode!=NULL && "property node is NULL");
+		bool requiresPostVisit=false;
+		if (pNode->getPropertyKeyString() == propertyKeyString){
+			TreeBox::Node* currentTreeNode = pNode->getTreeBoxNode();
+			currentTreeNode->SetText(1,newValue);
+
+			SwitchPropertyNode* switchNode=dynamic_cast<SwitchPropertyNode*>(pNode);
+			if (switchNode!=NULL){
+				requiresPostVisit=true;
+			}
+
+		}
+
+		return requiresPostVisit;
+	}
+
+	void UpdateVisitor::postVisit(PropertyNode* pNode, IsoString propertyKeyString, IsoString newValue){
+		assert(pNode!=NULL && "property node is NULL");
+
+		SwitchPropertyNode* switchNode=dynamic_cast<SwitchPropertyNode*>(pNode);
+		if (switchNode!=NULL){
+			if (pNode->getPropertyKeyString() != propertyKeyString){
+				TreeBox::Node* currentTreeNode = pNode->getTreeBoxNode();
+				currentTreeNode->SetText(1,newValue);
+			}	
+		}
+
+	}
+
+
 }

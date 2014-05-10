@@ -72,7 +72,7 @@ PixInsightINDIInterface* ThePixInsightINDIInterface = 0;
 // ----------------------------------------------------------------------------
 
 PixInsightINDIInterface::PixInsightINDIInterface() :
-ProcessInterface(), instance( ThePixInsightINDIProcess ), GUI( 0 ), m_rootNode(NULL), m_PropertyListNeedsUpdate(false) ,m_numOfDevices(0)
+ProcessInterface(), instance( ThePixInsightINDIProcess ), GUI( 0 ), m_treeBoxDeviceNodes(), m_serverMessage(""),m_numOfDevices(0), m_PropertyListNeedsUpdate(false)
 {
    ThePixInsightINDIInterface = this;
 }
@@ -327,7 +327,6 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    pcl::Font fnt = w.Font();
    int labelWidth1 = fnt.Width( String( "Three:" ) ); // the longest label text
    int editWidth1 = fnt.Width( String( '0',14 ) );
-   int labelWidth2 = fnt.Width( String( '0',30 ) );
 
    INDIServer_SectionBar.SetTitle("INDI Server Connection");
    INDIServer_SectionBar.SetSection(INDIServerConnection_Control);
@@ -462,37 +461,15 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    w.SetFixedSize();
 }
 
-bool PixInsightINDIInterface::numOfDevicesChanged( ){
-	
-	if (indiClient.get() == 0)
-		return false;
-
-	if (m_numOfDevices!=indiClient.get()->getDevices().size()){
-		m_numOfDevices=indiClient.get()->getDevices().size();
-		return true;
-	}
-
-	return false;
-
-}
-
 
 void PixInsightINDIInterface::__UpdateDeviceList_Timer( Timer &sender )
   {
 	  
 	  if( sender == GUI->UpdateDeviceList_Timer  ){
 		  UpdateDeviceList();
-		  /*if (numOfDevicesChanged()){
-			GUI->DrvPropDlg.UpdatePropertyList();
-		  }else if (m_PropertyListNeedsUpdate){
-			  GUI->DrvPropDlg.UpdatePropertyList();
-			  m_PropertyListNeedsUpdate=false;
-		  }*/
 	  }
 	  
   }
-
-
 
 
 // ----------------------------------------------------------------------------
@@ -562,8 +539,6 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 	PropertyNodeMapType deviceNodeMap;
 	PropertyNodeMapType propertyNodeMap;
 	
-
-
 	for (PixInsightINDIInstance::PropertyListType::iterator iter=instance.p_propertyList.Begin() ; iter!=instance.p_propertyList.End(); ++iter){
 
 		// create device nodes
@@ -573,8 +548,9 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 			deviceNode=deviceIter->second;
 		} else
 		{	// create root node
-			m_rootNode = new PropertyNode(GUI->PropertyList_TreeBox);
-			PropertyNode* child = new PropertyNode(m_rootNode,iter->Device);
+			PropertyNode* rootNode=new PropertyNode(GUI->PropertyList_TreeBox);
+			this->m_treeBoxDeviceNodes.push_back(rootNode);
+			PropertyNode* child = new PropertyNode(rootNode,iter->Device);
 			deviceNode = child;
 			deviceNode->getTreeBoxNode()->SetText(0,iter->Device);
 			deviceNode->getTreeBoxNode()->SetAlignment(0, TextAlign::Left);
@@ -603,7 +579,6 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 		elementNode->getTreeBoxNode()->SetText(2,iter->PropertyTypeStr);
 	}
 	
-
 	GUI->PropertyList_TreeBox.EnableUpdates();
 }
 
@@ -619,8 +594,10 @@ void SetPropertyDialog::Button_Click( Button& sender, bool checked ){
 		INDINewPropertyListItem newPropertyListItem=getNewPropertyListItem();
 		m_instance->sendNewPropertyValue(newPropertyListItem);
 		IPropertyVisitor* pVisitor = UpdateVisitor::create();
-		PropertyNode* rootNode=m_interface->getPropertyTreeRootNode();
-		rootNode->accept(pVisitor, newPropertyListItem.PropertyKey, newPropertyListItem.NewPropertyValue);
+		std::vector<PropertyNode*>* rootNodes=m_interface->getPropertyTreeRootNodes();
+		for (std::vector<PropertyNode*>::iterator it=rootNodes->begin(); it!=rootNodes->end(); ++it){
+			(*it)->accept(pVisitor, newPropertyListItem.PropertyKey, newPropertyListItem.NewPropertyValue);
+		}
 		Ok();
 	}
 	else if (sender == Cancel_PushButton){

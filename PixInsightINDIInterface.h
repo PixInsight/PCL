@@ -64,6 +64,7 @@
 #include <pcl/ErrorHandler.h>
 #include <pcl/Timer.h>
 #include <map>
+#include <vector>
 
 
 #include "PixInsightINDIInstance.h"
@@ -140,7 +141,7 @@ public:
 
    virtual InterfaceFeatures Features() const;
 
-   PropertyNode* getPropertyTreeRootNode(){return m_rootNode;}
+   std::vector<PropertyNode*>* getPropertyTreeRootNodes(){return &m_treeBoxDeviceNodes;}
 
    void UpdateControls();
    
@@ -183,23 +184,24 @@ public:
    private:
 
    typedef std::map<IsoString,PropertyNode*> PropertyNodeMapType;
-
+   typedef std::vector<PropertyNode*>        PropertyNodeVectorType;
    PixInsightINDIInstance instance;
 
    GUIData* GUI;
 
-   PropertyNode* m_rootNode;
+   PropertyNodeVectorType m_treeBoxDeviceNodes;
+
    IsoString m_serverMessage;
+
+   size_t  m_numOfDevices;
+
+   bool m_PropertyListNeedsUpdate;
 
    void UpdatePropertyList();
 
    void __UpdateDeviceList_Timer( Timer& sender );
-   
-   void UpdateDeviceList();
 
-   int  m_numOfDevices;
-   bool m_PropertyListNeedsUpdate;
-   bool numOfDevicesChanged();
+   void UpdateDeviceList();
 
    // Event Handlers
    void __CameraListButtons_Click( Button& sender, bool checked );
@@ -213,9 +215,9 @@ public:
    void __EditCompleted( Edit& sender );
 
    friend struct GUIData;
-   friend class DevicePropertiesDialog;
-   friend class INDIClient;
-   friend class CCDFrameInterface;
+   friend class  DevicePropertiesDialog;
+   friend class  INDIClient;
+   friend class  CCDFrameInterface;
 };
 
 // ----------------------------------------------------------------------------

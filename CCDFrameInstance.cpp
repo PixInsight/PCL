@@ -69,7 +69,7 @@ namespace pcl
 CCDFrameInstance::CCDFrameInstance( const MetaProcess* m ) :
 ProcessImplementation( m )
 {
-	
+
 }
 
 CCDFrameInstance::CCDFrameInstance( const CCDFrameInstance& x ) :
@@ -122,7 +122,6 @@ bool CCDFrameInstance::CanExecuteGlobal( pcl::String& whyNot ) const
 
 bool CCDFrameInstance::ExecuteGlobal()
 {
-   
    return true;
 }
 

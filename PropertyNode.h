@@ -80,7 +80,7 @@ namespace pcl {
 	protected:
 		PropertyNode(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property,IsoString INDI_propertyElement);
 	public:
-		PropertyNode(TreeBox& parent);
+		PropertyNode(TreeBox& parentTreeBox);
 		PropertyNode(PropertyNode* parent,IsoString INDI_device);
 		PropertyNode(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property);
 

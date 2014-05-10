@@ -85,14 +85,19 @@ public:
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
    	
    void sendNewPropertyValue(const INDINewPropertyListItem& propItem);
+
+   bool getINDIPropertyItem(String device, String property, String element, INDIPropertyListItem& result );
 private:
    DeviceListType          p_deviceList;
    PropertyListType        p_propertyList;
    NewPropertyListType     p_newPropertyList;
    String	               p_host;       // String hostname of INDI server
-   uint32                  p_port;	    // uint32 port of INDI server  
-   uint32                  p_connect;	// uint32 port of INDI server
+   uint32                  p_port;	     // uint32 port of INDI server
+   uint32                  p_connect;	 // uint32 port of INDI server
    IsoString               p_currentMessage;
+   String                  p_command;
+   String                  p_getPropertyReturnValue;
+   String                  p_getPropertyParam;
    pcl_bool				   p_doAbort;
    
    void getProperties();

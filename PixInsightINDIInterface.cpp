@@ -72,7 +72,7 @@ PixInsightINDIInterface* ThePixInsightINDIInterface = 0;
 // ----------------------------------------------------------------------------
 
 PixInsightINDIInterface::PixInsightINDIInterface() :
-ProcessInterface(), instance( ThePixInsightINDIProcess ), GUI( 0 ), m_PropertyListNeedsUpdate(false) ,m_numOfDevices(0)
+ProcessInterface(), instance( ThePixInsightINDIProcess ), GUI( 0 ), m_rootNode(NULL), m_PropertyListNeedsUpdate(false) ,m_numOfDevices(0)
 {
    ThePixInsightINDIInterface = this;
 }
@@ -561,8 +561,9 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 
 	PropertyNodeMapType deviceNodeMap;
 	PropertyNodeMapType propertyNodeMap;
-
 	
+
+
 	for (PixInsightINDIInstance::PropertyListType::iterator iter=instance.p_propertyList.Begin() ; iter!=instance.p_propertyList.End(); ++iter){
 
 		// create device nodes

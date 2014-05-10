@@ -51,6 +51,7 @@
 #include "basedevice.h"
 #include "indicom.h"
 #include "PixInsightINDIclient.h"
+#include "PropertyNode.h"
 
 #include <pcl/AutoViewLock.h>
 #include <pcl/Console.h>
@@ -72,13 +73,16 @@ auto_ptr<INDIClient> indiClient(0);
 
 PixInsightINDIInstance::PixInsightINDIInstance( const MetaProcess* m ) :
 ProcessImplementation( m ),
-p_deviceList(0),
+p_deviceList(),
 p_propertyList(),
 p_newPropertyList(),
 p_host( TheINDIServerHostname->DefaultValue() ),
 p_port( uint32( TheINDIServerPort->DefaultValue() ) ),
 p_connect( uint32( TheINDIServerConnect->DefaultValue() ) ),
 p_currentMessage(""),
+p_command(""),
+p_getPropertyReturnValue(""),
+p_getPropertyParam(""),
 p_doAbort(false)
 
 {
@@ -101,6 +105,7 @@ void PixInsightINDIInstance::Assign( const ProcessImplementation& p )
 	  p_connect = x->p_connect;
 	  p_propertyList = x->p_propertyList;
 	  p_newPropertyList = x->p_newPropertyList;
+	  p_deviceList = x->p_deviceList;
 
    }
 }
@@ -179,13 +184,11 @@ void PixInsightINDIInstance::sendNewPropertyValue(const INDINewPropertyListItem&
 
 void PixInsightINDIInstance::sendNewProperty() {
 	//Precondition: NewPropertyList contains ony elements of the same property
-
 	String deviceStr;
 	String propertyStr;
 	String propertyTypeStr;
 	INDI::BaseDevice* device = NULL;
 	bool firstTime=true;
-	void* vectorProperty=NULL;
 	INumberVectorProperty * numberVecProp=NULL;
     ITextVectorProperty * textVecProp=NULL;
     ISwitchVectorProperty * switchVecProp=NULL;;
@@ -345,6 +348,21 @@ void PixInsightINDIInstance::sendNewProperty() {
 	p_newPropertyList.Clear();
 }
 
+ bool PixInsightINDIInstance::getINDIPropertyItem(String device, String property, String element,INDIPropertyListItem& result ){
+
+	for (pcl::Array<INDIPropertyListItem>::iterator iter=p_propertyList.Begin(); iter!=p_propertyList.End(); ++iter){
+
+		if ((iter->Device==device) && (iter->Property==property) && (iter->Element==element) ){
+			result.Device=device;
+			result.Property=property;
+			result.Element=element;
+			result.PropertyValue=iter->PropertyValue;
+			return true;
+		}
+
+	}
+	return false;
+}
 
 void PixInsightINDIInstance::writeCurrentMessageToConsole(){
   Console().WriteLn(String().Format("Message from INDI server: %s",IsoString(p_currentMessage).c_str()));
@@ -382,7 +400,22 @@ bool PixInsightINDIInstance::ExecuteGlobal()
 
    Console().Flush();
 
-   sendNewProperty();
+   if (p_command == String("GET")){
+	   INDIPropertyListItem propItem;
+	   String device=String(PropertyUtils::getDevice(p_getPropertyParam));
+	   String property=String(PropertyUtils::getProperty(p_getPropertyParam));
+	   String element=String(PropertyUtils::getElement(p_getPropertyParam));
+	   Console().WriteLn(String().Format("Device=%s, Property=%s, Element=%s",IsoString(device).c_str(),IsoString(property).c_str(),IsoString(element).c_str()));
+	   if (getINDIPropertyItem(device,property,element, propItem)){
+		   p_getPropertyReturnValue=propItem.PropertyValue;
+		   Console().WriteLn(String().Format("Vaule=%s",IsoString(p_getPropertyReturnValue).c_str()));
+	   }
+	   else{
+		   Console().WriteLn(String().Format("Error: Could not get value for property %s.",IsoString(p_getPropertyParam).c_str()));
+	   }
+   }
+   else
+	   sendNewProperty();
 
    return true;
 }
@@ -413,7 +446,12 @@ void* PixInsightINDIInstance::LockParameter( const MetaParameter* p, size_type t
 	   return p_newPropertyList[tableRow].PropertyKey.c_str();
    if (p == TheINDINewPropertyTypeParameter)
 	   return p_newPropertyList[tableRow].PropertyType.c_str();
-
+   if (p == TheINDIServerCommand)
+	   return p_command.c_str();
+   if (p == TheINDIServerGetPropertyReturnValue)
+	   return p_getPropertyReturnValue.c_str();
+   if (p == TheINDIServerGetPropertyPropertyParam)
+	   return p_getPropertyParam.c_str();
 
    return 0;
 }
@@ -428,15 +466,20 @@ bool PixInsightINDIInstance::AllocateParameter( size_type sizeOrLength, const Me
 		if ( sizeOrLength > 0 )
 			p_host.Reserve( sizeOrLength );
 	}
-	else if ( p == TheINDIPropertiesParameter){
-		p_propertyList.Clear();
+	else if ( p == TheINDIDevicesParameter){
+		p_deviceList.Clear();
 		if ( sizeOrLength > 0 )
-			p_propertyList.Add( INDIPropertyListItem(), sizeOrLength );
-	} 
+			p_deviceList.Add( INDIDeviceListItem(), sizeOrLength );
+	}
 	else if ( p == TheINDIDeviceNameParameter){
 		p_deviceList[tableRow].DeviceName.Clear();
 		if ( sizeOrLength > 0 )
 			p_deviceList[tableRow].DeviceName.Reserve( sizeOrLength );
+	}
+	else if ( p == TheINDIPropertiesParameter){
+		p_propertyList.Clear();
+		if ( sizeOrLength > 0 )
+			p_propertyList.Add( INDIPropertyListItem(), sizeOrLength );
 	}
 	else if ( p == TheINDIPropertyNameParameter){
 		p_propertyList[tableRow].PropertyKey.Clear();
@@ -473,6 +516,21 @@ bool PixInsightINDIInstance::AllocateParameter( size_type sizeOrLength, const Me
 		if ( sizeOrLength > 0 )
 			p_newPropertyList[tableRow].PropertyType.Reserve( sizeOrLength );
 	}
+	else if ( p == TheINDIServerCommand ) {
+		p_command.Clear();
+		if ( sizeOrLength > 0 )
+			p_command.Reserve( sizeOrLength );
+	}
+	else if ( p == TheINDIServerGetPropertyReturnValue ) {
+		p_getPropertyReturnValue.Clear();
+		if ( sizeOrLength > 0 )
+			p_getPropertyReturnValue.Reserve( sizeOrLength );
+	}
+	else if ( p == TheINDIServerGetPropertyPropertyParam ) {
+		p_getPropertyParam.Clear();
+		if ( sizeOrLength > 0 )
+			p_getPropertyParam.Reserve( sizeOrLength );
+	}
 	else
 		return false;
 
@@ -483,10 +541,12 @@ size_type PixInsightINDIInstance::ParameterLength( const MetaParameter* p, size_
 {
 	if ( p == TheINDIServerHostname )
 		return p_host.Length();
-	if (p == TheINDIPropertiesParameter)
-		return p_propertyList.Length();
+	if (p == TheINDIDevicesParameter)
+		return p_deviceList.Length();
 	if ( p == TheINDIDeviceNameParameter )
 		return p_deviceList[tableRow].DeviceName.Length();
+	if (p == TheINDIPropertiesParameter)
+		return p_propertyList.Length();
 	if ( p == TheINDIPropertyNameParameter )
 		return p_propertyList[tableRow].PropertyKey.Length();
 	if ( p == TheINDIPropertyValueParameter )
@@ -501,7 +561,12 @@ size_type PixInsightINDIInstance::ParameterLength( const MetaParameter* p, size_
 		return p_newPropertyList[tableRow].PropertyKey.Length();
 	if ( p == TheINDINewPropertyTypeParameter )
 		return p_newPropertyList[tableRow].PropertyType.Length();
-
+	if (p == TheINDIServerCommand)
+		return p_command.Length();
+	if (p == TheINDIServerGetPropertyReturnValue)
+		return p_getPropertyReturnValue.Length();
+	if (p == TheINDIServerGetPropertyPropertyParam)
+		return p_getPropertyParam.Length();
 
 	return 0;
 }

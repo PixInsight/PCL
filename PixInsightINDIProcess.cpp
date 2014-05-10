@@ -89,7 +89,9 @@ PixInsightINDIProcess::PixInsightINDIProcess() : MetaProcess()
    new INDINewPropertyValue(TheINDINewPropertiesParameter);
    new INDIDevices(ThePixInsightINDIProcess);
    new INDIDeviceName(TheINDIDevicesParameter);
-   
+   new INDIServerCommand(ThePixInsightINDIProcess);
+   new INDIServerGetPropertyReturnValue(ThePixInsightINDIProcess);
+   new INDIServerGetPropertyPropertyParam(ThePixInsightINDIProcess);
 
 }
 

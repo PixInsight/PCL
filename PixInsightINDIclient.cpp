@@ -50,7 +50,7 @@ namespace pcl {
 
 	void INDIClient::newDevice(INDI::BaseDevice *dp){
 		assert(dp!=NULL);
-		if (m_Interface!=NULL){
+		if (m_Instance!=NULL){
 			INDIDeviceListItem deviceListItem;
 			deviceListItem.DeviceName=String(dp->getDeviceName());
 			deviceListItem.DeviceLabel=String(dp->getDriverName());
@@ -67,10 +67,7 @@ namespace pcl {
 		// add property to the property process parameter table
 		runOnPropertyTable(INDIProperty,append);
 		
-		// add property to Interface TreeBox
-		if (m_Interface!=NULL){
-			
-		}
+
 		setBLOBMode(B_ALSO,property->getDeviceName());
 	}
 
@@ -84,7 +81,10 @@ namespace pcl {
 	}
 
 	void INDIClient::newMessage(INDI::BaseDevice *dp, int messageID){
-		m_Instance->p_currentMessage=IsoString(dp->messageQueue(messageID));
+		const char* message = dp->messageQueue(messageID);
+		if (message!=NULL){
+			m_Instance->p_currentMessage=IsoString();
+		}
 	}
 
 	void INDIClient::newSwitch(ISwitchVectorProperty *svp){

@@ -6,18 +6,26 @@ namespace pcl {
 	IsoString PropertyUtils::getDevice(IsoString keyString){
 		int startpos = keyString.Find("/");
 		int endpos   = keyString.Find("/",1);
-		return keyString.SubString(startpos,endpos-startpos);
+		return keyString.SubString(startpos+1,endpos-startpos-1);
 	}
 
 	IsoString PropertyUtils::getProperty(IsoString keyString){
 		int startpos = keyString.Find("/",1);
 		int endpos = keyString.Find("/",startpos+1);
-		return keyString.SubString(startpos,endpos-startpos);
+		return keyString.SubString(startpos+1,endpos-startpos-1);
 	}
 
-	PropertyNode::PropertyNode(TreeBox& parent):m_keyStr(IsoString("/")) {
-			m_thisTreeBoxNode = new TreeBox::Node(parent);
+	IsoString PropertyUtils::getElement(IsoString keyString){
+		int startpos1 = keyString.Find("/",1);
+		int startpos2 = keyString.Find("/",startpos1+1);
+		int endpos = keyString.Find("/",startpos2+1);
+		return keyString.SubString(startpos2+1,endpos-startpos2);
 	}
+
+	PropertyNode::PropertyNode(TreeBox& parentTreeBox):m_keyStr(IsoString("/")) {
+			m_thisTreeBoxNode = new TreeBox::Node(parentTreeBox);
+	}
+
 
 	PropertyNode::PropertyNode(PropertyNode* parent,IsoString INDI_device):m_keyStr(IsoString("")), m_thisTreeBoxNode(NULL) {
 		m_keyStr = PropertyUtils::getKey(INDI_device);

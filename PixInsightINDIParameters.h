@@ -124,6 +124,44 @@ public:
 
 extern INDIServerConnect* TheINDIServerConnect;
 
+class INDIServerCommand: public MetaString
+{
+public:
+
+   INDIServerCommand( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual size_type MinLength() const;
+
+};
+
+extern INDIServerCommand* TheINDIServerCommand;
+
+class INDIServerGetPropertyReturnValue: public MetaString
+{
+public:
+
+	INDIServerGetPropertyReturnValue( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual size_type MinLength() const;
+   virtual bool IsReadOnly();
+};
+
+extern INDIServerGetPropertyReturnValue* TheINDIServerGetPropertyReturnValue;
+
+class INDIServerGetPropertyPropertyParam: public MetaString
+{
+public:
+
+	INDIServerGetPropertyPropertyParam( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual size_type MinLength() const;
+};
+
+extern INDIServerGetPropertyPropertyParam* TheINDIServerGetPropertyPropertyParam;
+
 
 // ----------------------------------------------------------------------------
 // The port of the INDI server

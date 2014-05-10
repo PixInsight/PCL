@@ -327,16 +327,23 @@ void CCDFrameInterface::ComboItemSelected(ComboBox& sender, int itemIndex) {
 #endif
 	   if (tmpDir!=NULL) {
 		PixInsightINDIInstance* pInstance=&ThePixInsightINDIInterface->instance;
-
+		INDIPropertyListItem imageTransfer;
+		bool serverSendsImage=true;
+		if (pInstance->getINDIPropertyItem(m_newPropertyListItem.Device,"TRANSFER_FORMAT","NONE",imageTransfer)){
+			serverSendsImage=!(imageTransfer.PropertyValue==String("ON"));
+		}
 		for (int num=0; num<m_NumOfExposures;++num){
 			GUI->ExpFrame_Edit.SetText(String(num));
 			GUI->ExposureDuration_Timer.Start();
 			pInstance->sendNewPropertyValue(m_newPropertyListItem);
-			Array<ImageWindow> imgArray = ImageWindow::Open(String(tmpDir)+ String("/Image.fits"), IsoString("image"));
 
-			if (imgArray.Length()!=0){
-				imgArray[0].ZoomToFit( false ); // don't allow zoom > 1
-				imgArray[0].Show();
+			if (serverSendsImage) {
+				Array<ImageWindow> imgArray = ImageWindow::Open(String(tmpDir)+ String("/Image.fits"), IsoString("image"));
+
+				if (imgArray.Length()!=0){
+					imgArray[0].ZoomToFit( false ); // don't allow zoom > 1
+					imgArray[0].Show();
+				}
 			}
 		}
 	   } 

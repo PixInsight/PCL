@@ -53,21 +53,24 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-INDIServerHostname*			TheINDIServerHostname =0;
-INDIServerPort*				TheINDIServerPort =0;
-INDIServerConnect*			TheINDIServerConnect =0;
-INDIProperties*				TheINDIPropertiesParameter = 0;
-INDIPropertyName*			TheINDIPropertyNameParameter = 0;
-INDIPropertyValue*			TheINDIPropertyValueParameter = 0;
-INDIPropertyState*          TheINDIPropertyStateParameter = 0 ;
-INDIPropertyType*		    TheINDIPropertyTypeParameter = 0;
-INDINewProperties*			TheINDINewPropertiesParameter = 0;
-INDINewPropertyKey*         TheINDINewPropertyKeyParameter = 0;
-INDINewPropertyType*		TheINDINewPropertyTypeParameter = 0;
-INDINewPropertyValue*		TheINDINewPropertyValueParameter = 0;
-INDIProcessFlagDoAbort*     TheINDIProcessFlagDoAbort =0;
-INDIDevices*                TheINDIDevicesParameter=0;
-INDIDeviceName*             TheINDIDeviceNameParameter=0;
+INDIServerHostname*			        TheINDIServerHostname =0;
+INDIServerPort*				        TheINDIServerPort =0;
+INDIServerConnect*			        TheINDIServerConnect =0;
+INDIProperties*				        TheINDIPropertiesParameter = 0;
+INDIPropertyName*			        TheINDIPropertyNameParameter = 0;
+INDIPropertyValue*			        TheINDIPropertyValueParameter = 0;
+INDIPropertyState*                  TheINDIPropertyStateParameter = 0 ;
+INDIPropertyType*		            TheINDIPropertyTypeParameter = 0;
+INDINewProperties*			        TheINDINewPropertiesParameter = 0;
+INDINewPropertyKey*                 TheINDINewPropertyKeyParameter = 0;
+INDINewPropertyType*		        TheINDINewPropertyTypeParameter = 0;
+INDINewPropertyValue*		        TheINDINewPropertyValueParameter = 0;
+INDIProcessFlagDoAbort*             TheINDIProcessFlagDoAbort =0;
+INDIDevices*                        TheINDIDevicesParameter=0;
+INDIDeviceName*             	    TheINDIDeviceNameParameter=0;
+INDIServerCommand*                  TheINDIServerCommand=0;
+INDIServerGetPropertyReturnValue*   TheINDIServerGetPropertyReturnValue=0;
+INDIServerGetPropertyPropertyParam* TheINDIServerGetPropertyPropertyParam=0;
 
 // ----------------------------------------------------------------------------
 // The INDI server hostname
@@ -151,6 +154,62 @@ double INDIServerConnect::MaximumValue() const
    return 1;
 }
 
+// --------------------------------------------------------------------------
+// The INDI server command parameter
+
+INDIServerCommand::INDIServerCommand( MetaProcess* P ) : MetaString( P )
+{
+	TheINDIServerCommand = this;
+}
+
+IsoString INDIServerCommand::Id() const
+{
+   return "INDI_ServerCommand";
+}
+
+size_type INDIServerCommand::MinLength() const
+{
+   return 0;
+}
+
+// --------------------------------------------------------------------------
+// Parameters of the INDI GetProperty function
+
+INDIServerGetPropertyReturnValue::INDIServerGetPropertyReturnValue( MetaProcess* P ) : MetaString( P )
+{
+	TheINDIServerGetPropertyReturnValue = this;
+}
+
+IsoString INDIServerGetPropertyReturnValue::Id() const
+{
+   return "INDI_GetPropertyReturnValue";
+}
+
+bool INDIServerGetPropertyReturnValue::IsReadOnly(){
+	return true;
+}
+
+size_type INDIServerGetPropertyReturnValue::MinLength() const
+{
+   return 0;
+}
+
+INDIServerGetPropertyPropertyParam::INDIServerGetPropertyPropertyParam( MetaProcess* P ) : MetaString( P )
+{
+	TheINDIServerGetPropertyPropertyParam = this;
+}
+
+IsoString INDIServerGetPropertyPropertyParam::Id() const
+{
+   return "INDI_GetPropertyPropertyParam";
+}
+
+size_type INDIServerGetPropertyPropertyParam::MinLength() const
+{
+   return 0;
+}
+
+// Meta tables =====================================
 INDIDevices::INDIDevices ( MetaProcess* P): MetaTable(P)
 {
 	TheINDIDevicesParameter = this;

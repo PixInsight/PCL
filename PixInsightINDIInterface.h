@@ -76,6 +76,7 @@ namespace pcl
 {
 
 class PropertyNode;
+class PixInsightINDIInterface;
 
 class SetPropertyDialog : public Dialog 
 {

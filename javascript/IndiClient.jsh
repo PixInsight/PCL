@@ -90,7 +90,6 @@ INDIclient.prototype.sendNewProperty = function(Property,PropertyType,Value){
 INDIclient.prototype.sendNewPropertyArray = function(newPropertyArray){
 
    this.INDI.INDI_NewProperties = newPropertyArray;
-
    this.execute();
 
 
@@ -175,4 +174,11 @@ INDIclient.prototype.getPropertyValue = function(propertyKey) {
   return null;
 }
 
+INDIclient.prototype.getPropertyValue2 = function(propertyKey) {
+   this.INDI.INDI_ServerCommand="GET";
+   this.INDI.INDI_GetPropertyPropertyParam=propertyKey;
+   this.INDI.executeGlobal();
+   this.INDI.INDI_ServerCommand="";
+   return this.INDI.INDI_GetPropertyReturnValue;
+}
 

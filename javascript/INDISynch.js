@@ -18,18 +18,12 @@
 
 var indi = new INDIclient();
 
-
-
-
-
 function convertToHMS(floatNum){
    var H=Math.trunc(floatNum);
    var M=Math.trunc((floatNum-H)*60);
    var S=Math.trunc(((floatNum-H)*60 - M)*60);
    return [H,M,S];
 }
-
-
 
 
 SetPropertyDialog.prototype = new Dialog;
@@ -39,15 +33,6 @@ function mainDialog()
    this.__base__ = Dialog;
    this.__base__();
 
-   this.INDIAsynchActionEnum = {
-      None:0,
-      ServerConnect :1,
-      ServerDisconnect :2,
-      TelescopeConnect : 3,
-      TelescopeDisconnect : 4
-   }
-
-   this.INDIAsynchAction = this.INDIAsynchActionEnum.None;
 
    var ttStr = "";
 
@@ -75,8 +60,7 @@ function mainDialog()
       if (indi.INDI!=null)
         indi.INDI.readIcon(this.dialog.INDIProcess_Combo.itemText(this.dialog.INDIProcess_Combo.currentItem));
 
-      this.dialog.INDIAsynchAction =this.dialog.INDIAsynchActionEnum.ServerConnect;
-      timer.start();
+      this.dialog.INDITelescope_Combo.update();
 
    }
 
@@ -106,8 +90,7 @@ function mainDialog()
    this.INDITelescope_Combo.onItemSelected = function ()
    {
       currentTelescope=this.dialog.INDITelescope_Combo.itemText(this.dialog.INDITelescope_Combo.currentItem);
-      this.dialog.INDIAsynchAction =this.dialog.INDIAsynchActionEnum.TelescopeConnect;
-      timer.start();
+      this.dialog.curRA_Edit.update();
    }
 
    this.INDITelescope_HSizer = new HorizontalSizer;
@@ -121,12 +104,6 @@ function mainDialog()
 
 
    }
-
-
-
-
-
-
 
    // BEGIN of plate solving:  ========================================================
 
@@ -182,9 +159,12 @@ function mainDialog()
      var propertyArray=[["/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA","INDI_NUMBER",raInHours.toString()],
                         ["/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC","INDI_NUMBER",decInHours.toString()]];
 
-     periodicTimer.start();
+  //   periodicTimer.start();
+     console.writeln("sendNewProperty");
      indi.sendNewPropertyArray(propertyArray);
-     periodicTimer.stop();
+     console.writeln("...done")
+     this.dialog.curRA_Edit.update();
+ //    periodicTimer.stop();
 
    }
 
@@ -237,8 +217,8 @@ function mainDialog()
    this.synch_Button.toolTip = "<p>Synchronize telescope coordinates with image coordinates.</p>";
    this.synch_Button.onClick = function (){
 
-     var curRa =parseFloat(indi.getPropertyValue("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA"));
-     var curDec =parseFloat(indi.getPropertyValue("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC"));
+     var curRa =parseFloat(indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA"));
+     var curDec =parseFloat(indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC"));
      var raCor=2*curRa - this.dialog.solver.metadata.ra*24/360;
      var decCor=2*curDec -this.dialog.solver.metadata.dec;
      var propertyArray=[["/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA","INDI_NUMBER",raCor.toString()],
@@ -267,10 +247,6 @@ function mainDialog()
 
    // END of plate solving:  ========================================================
 
-
-
-
-
    this.sizer = new VerticalSizer;
    with(this.sizer)
    {
@@ -286,55 +262,32 @@ function mainDialog()
    }
 }
 
-mainDialog.prototype.startTimer = function(interval){
-   this.timer.interval=interval;
-   this.timer.start();
-   timerIsBusy=true;
-}
-
-mainDialog.prototype.stopTimer = function(interval){
-   this.timer.stop();
-   timerIsBusy=false;
-}
-
-
-
 ComboBox.prototype.update = function(){
    this.dialog.INDITelescope_Combo.clear();
-   var deviceList={};
    if (indi.INDI!=null){
-   console.writeln(indi.INDI.INDI_Properties.length);
-   for (var i=0; i<indi.INDI.INDI_Properties.length; ++i){
-      if (indi.INDI.INDI_Properties[i][0]!="")
-      {
-         var splittedString = indi.INDI.INDI_Properties[i][0].split("/");
-         var deviceString = splittedString[1];
-         if (deviceString in deviceList){
-            continue;
-         }
-         else {
-            deviceList[deviceString]=true;
-            this.dialog.INDITelescope_Combo.addItem(deviceString);
-         }
-      }
-   }
 
-   // set default telescope
-   currentTelescope=this.dialog.INDITelescope_Combo.itemText(this.dialog.INDITelescope_Combo.currentItem);
-   timer.stop();
+      for (var i=0; i<indi.INDI.INDI_Devices.length; ++i){
+         this.dialog.INDITelescope_Combo.addItem(String(indi.INDI.INDI_Devices[i]));
+      }
+
+      // set default telescope
+      currentTelescope=this.dialog.INDITelescope_Combo.itemText(this.dialog.INDITelescope_Combo.currentItem);
+
    }
 }
 
 Edit.prototype.update = function(){
    var curRA=[0,0,0];
-   if (indi.CheckPropertyExists("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA")){
-      curRA=convertToHMS(parseFloat(indi.getPropertyValue("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA")));
+   var propRAValue=indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA")
+   if (propRAValue!=""){
+      curRA=convertToHMS(parseFloat(propRAValue));
    }
    this.dialog.curRA_Edit.text=curRA[0]+":" +curRA[1]+":"+curRA[2];
 
    var curDEC=[0,0,0];
-   if (indi.CheckPropertyExists("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC")){
-     curDEC=convertToHMS(parseFloat(indi.getPropertyValue("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC")));
+   var propDECValue=indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC")
+   if (propDECValue!=""){
+     curDEC=convertToHMS(parseFloat(propDECValue));
    }
    this.dialog.curDEC_Edit.text=curDEC[0]+":" +curDEC[1]+":"+curDEC[2];
 }
@@ -343,28 +296,12 @@ mainDialog.prototype = new Dialog;
 var maindlg = new mainDialog();
 
 
-function onUpdateTimerEvent (){
- switch (maindlg.INDIAsynchAction)
- {
- case maindlg.INDIAsynchActionEnum.ServerConnect:
-      maindlg.INDITelescope_Combo.update();
-      break;
- case maindlg.INDIAsynchActionEnum.TelescopeConnect:
-      maindlg.curRA_Edit.update();
-      break;
- default:
- }
-}
+
 
 function onUpdatePeriodicTimerEvent (){
  maindlg.curRA_Edit.update();
 }
 
-var timer = new Timer();
-timer.singleShot=true;
-timer.periodic=true;
-timer.interval=2;
-timer.onTimeout=onUpdateTimerEvent;
 
 var periodicTimer = new Timer();
 periodicTimer.singleShot=false;
@@ -387,7 +324,7 @@ function main()
 {
    //console.hide();
    // Show our dialog box, quit if cancelled.
-
+   console.abortEnabed=true;
 
    if (maindlg.execute())
    {

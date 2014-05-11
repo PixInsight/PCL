@@ -114,6 +114,8 @@ public:
 
 	   Timer			  UpdateDeviceList_Timer;
 	   Timer              ExposureDuration_Timer;
+	   Timer              Temperature_Timer;
+
 
 	   VerticalSizer      Global_Sizer;
 	   SectionBar         CCDDevice_SectionBar;
@@ -121,6 +123,18 @@ public:
 		HorizontalSizer		CCDDevice_Sizer;
 		 Label				 CCDDevice_Label;
 		 ComboBox            CCDDevice_Combo;
+	   SectionBar         CCDParam_SectionBar;
+	   Control			  CCDParam_Control;
+	   	VerticalSizer		CCDParam_Sizer;
+	   	 HorizontalSizer      CCDTemp_Sizer;
+	   	  Label                CCDTemp_Label;
+	   	  Edit                 CCDTemp_Edit;
+	   	 HorizontalSizer      CCDBinning_Sizer;
+	   	  Label                CCDBin_Label;
+	      Label                CCDBinX_Label;
+	  	  Edit                 CCDBinX_Edit;
+	  	  Label                CCDBinY_Label;
+	      Edit                 CCDBinY_Edit;
 	   SectionBar         FrameExposure_SectionBar;
 	   Control			  FrameExposure_Control;
 		VerticalSizer		FrameExposure_Sizer;
@@ -148,9 +162,11 @@ public:
 
    INDINewPropertyListItem m_newPropertyListItem;
    int                     m_NumOfExposures;
+   double                  m_Temperature;
    
    void UpdateDeviceList_Timer( Timer& sender );
    void ExposureDuration_Timer( Timer &sender );
+   void Temperature_Timer( Timer &sender );
    void EditCompleted( Edit& sender );
    void ComboItemSelected(ComboBox& sender, int itemIndex);
    void StartExposureButton_Click(Button& sender, bool checked);

@@ -137,13 +137,13 @@ namespace pcl {
 #else
 	  const char* tmpFolder = getenv("TMPDIR");
 #endif
-          if (tmpFolder!=NULL)
+        if (tmpFolder!=NULL)
 	    {
-		IsoString fileName = IsoString(tmpFolder) + IsoString("/") + IsoString(bp->label) + IsoString(".fits"); 
-	    ofstream myfile;
-		myfile.open (fileName.c_str(),ios::out|ios::binary);
-		myfile.write((const char*) bp->blob,bp->bloblen);
-		myfile.close();
+        	IsoString fileName = IsoString(tmpFolder) + IsoString("/") + IsoString(bp->label) + IsoString(".fits");
+        	ofstream myfile;
+        	myfile.open (fileName.c_str(),ios::out|ios::binary);
+        	myfile.write((const char*) bp->blob,bp->bloblen);
+        	myfile.close();
 	    }
 	  else {
 	    m_Instance->p_currentMessage=IsoString("TMPDIR environment variable not set.");

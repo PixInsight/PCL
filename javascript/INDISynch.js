@@ -160,9 +160,7 @@ function mainDialog()
                         ["/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC","INDI_NUMBER",decInHours.toString()]];
 
   //   periodicTimer.start();
-     console.writeln("sendNewProperty");
      indi.sendNewPropertyArray(propertyArray);
-     console.writeln("...done")
      this.dialog.curRA_Edit.update();
  //    periodicTimer.stop();
 

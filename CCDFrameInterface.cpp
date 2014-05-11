@@ -74,10 +74,8 @@ CCDFrameInterface::CCDFrameInterface() :
 ProcessInterface(), instance( TheCCDFrameProcess),GUI( 0 )
 {
    TheCCDFrameInterface = this;
-   m_newPropertyListItem.Property=String("CCD_EXPOSURE");
-   m_newPropertyListItem.Element=String("CCD_EXPOSURE_VALUE");
-   m_newPropertyListItem.PropertyType=String("INDI_NUMBER");
    m_NumOfExposures=1;
+   m_Temperature=0;
 }
 
 CCDFrameInterface::~CCDFrameInterface()
@@ -192,6 +190,55 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
 	CCDDevice_Sizer.AddSpacing(10);
 	CCDDevice_Sizer.Add(CCDDevice_Combo);
 
+	CCDParam_SectionBar.SetTitle("CCD Parameters");
+	CCDParam_SectionBar.SetSection(CCDParam_Control);
+	CCDParam_Control.SetSizer(CCDParam_Sizer);
+
+	CCDTemp_Label.SetText( "Temperature:" );
+	CCDTemp_Label.SetToolTip( "<p>Current chip temperature in Celsius.</p>" );
+	CCDTemp_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+
+	CCDTemp_Edit.SetMinWidth( 10);
+	CCDTemp_Edit.Disable();
+
+	CCDTemp_Sizer.SetSpacing(10);
+	CCDTemp_Sizer.SetMargin(10);
+	CCDTemp_Sizer.Add(CCDTemp_Label);
+	CCDTemp_Sizer.AddStretch();
+	CCDTemp_Sizer.Add(CCDTemp_Edit);
+	CCDParam_Sizer.Add(CCDTemp_Sizer);
+
+	CCDBin_Label.SetText( "Binning: " );
+	CCDBin_Label.SetToolTip( "<p>Binning X (horizontal) and Y (vertical)</p>" );
+	CCDBin_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+
+
+	CCDBinX_Label.SetText( "X: " );
+	CCDBinX_Label.SetToolTip( "<p>Binning X (horizontal)</p>" );
+	CCDBinX_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+
+	CCDBinX_Edit.SetMinWidth( 5);
+	CCDBinX_Edit.Disable();
+
+	CCDBinY_Label.SetText( "Y: " );
+	CCDBinY_Label.SetToolTip( "<p>Binning Y (vertical)</p>" );
+	CCDBinY_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+
+	CCDBinY_Edit.SetMinWidth( 5);
+	CCDBinY_Edit.Disable();
+
+	CCDBinning_Sizer.SetSpacing(10);
+	CCDBinning_Sizer.SetMargin(10);
+	CCDBinning_Sizer.Add(CCDBin_Label);
+	CCDBinning_Sizer.AddStretch();
+	CCDBinning_Sizer.Add(CCDBinX_Label);
+	CCDBinning_Sizer.Add(CCDBinX_Edit);
+	CCDBinning_Sizer.Add(CCDBinY_Label);
+	CCDBinning_Sizer.Add(CCDBinY_Edit);
+
+	CCDParam_Sizer.Add(CCDBinning_Sizer);
+
+
 	FrameExposure_SectionBar.SetTitle("Frame Shooting");
 	FrameExposure_SectionBar.SetSection(FrameExposure_Control);
 	FrameExposure_Control.SetSizer(FrameExposure_Sizer);
@@ -257,6 +304,8 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
 	Global_Sizer.SetSpacing( 6 );
 	Global_Sizer.Add(CCDDevice_SectionBar);
 	Global_Sizer.Add(CCDDevice_Control);
+	Global_Sizer.Add(CCDParam_SectionBar);
+	Global_Sizer.Add(CCDParam_Control);
 	Global_Sizer.Add(FrameExposure_SectionBar);
 	Global_Sizer.Add(FrameExposure_Control);
 
@@ -272,6 +321,10 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
 	ExposureDuration_Timer.SetInterval( 1 );
     ExposureDuration_Timer.SetPeriodic( true );
     ExposureDuration_Timer.OnTimer( (Timer::timer_event_handler)&CCDFrameInterface::ExposureDuration_Timer, w );
+
+    Temperature_Timer.SetInterval( 1 );
+    Temperature_Timer.SetPeriodic( true );
+    Temperature_Timer.OnTimer( (Timer::timer_event_handler)&CCDFrameInterface::Temperature_Timer, w );
 
 
 	
@@ -312,11 +365,68 @@ void CCDFrameInterface::ExposureDuration_Timer( Timer &sender )
 	}
 }
 
+void CCDFrameInterface::Temperature_Timer( Timer &sender )
+{
+	if (ThePixInsightINDIInterface != 0) {
+		if (sender == GUI->Temperature_Timer) {
+			// get temperature value
+			m_newPropertyListItem.Property = String("CCD_TEMPERATURE");
+			m_newPropertyListItem.Element = String("CCD_TEMPERATURE_VALUE");
+			m_newPropertyListItem.PropertyType = String("INDI_NUMBER");
+
+			PixInsightINDIInstance* pInstance =
+					&ThePixInsightINDIInterface->instance;
+
+			if (pInstance==NULL)
+				return;
+
+			INDIPropertyListItem CCDProp;
+			// get temperature value
+			if (pInstance->getINDIPropertyItem(m_newPropertyListItem.Device,
+					"CCD_TEMPERATURE", "CCD_TEMPERATURE_VALUE", CCDProp)) {
+				GUI->CCDTemp_Edit.SetText(CCDProp.PropertyValue);
+			}
+			// get X binning value
+			if (pInstance->getINDIPropertyItem(m_newPropertyListItem.Device,
+								"CCD_BINNING", "HOR_BIN", CCDProp)) {
+				GUI->CCDBinX_Edit.SetText(CCDProp.PropertyValue);
+			}
+			// get X binning value
+			if (pInstance->getINDIPropertyItem(m_newPropertyListItem.Device,
+											"CCD_BINNING", "VER_BIN", CCDProp)) {
+				GUI->CCDBinY_Edit.SetText(CCDProp.PropertyValue);
+			}
+		}
+	}
+}
+
 void CCDFrameInterface::ComboItemSelected(ComboBox& sender, int itemIndex) {
 	if (sender == GUI->CCDDevice_Combo){
 		m_newPropertyListItem.Device = sender.ItemText(itemIndex);
+		if (ThePixInsightINDIInterface != 0) {
+			m_newPropertyListItem.Property = String("COOLER_CONNECTION");
+			m_newPropertyListItem.Element = String("CONNECT_COOLER");
+			m_newPropertyListItem.PropertyType = String("INDI_SWITCH");
+
+			PixInsightINDIInstance* pInstance = &ThePixInsightINDIInterface->instance;
+
+			if (pInstance==NULL)
+				return;
+
+			INDIPropertyListItem CCDProp;
+			// check for cooler connection (e.g. Atik cameras)
+			if (pInstance->getINDIPropertyItem(m_newPropertyListItem.Device,
+					"COOLER_CONNECTION", "CONNECT_COOLER", CCDProp)) {
+				if(CCDProp.PropertyValue==String("OFF")){
+					m_newPropertyListItem.NewPropertyValue = String("ON");
+					pInstance->sendNewPropertyValue(m_newPropertyListItem);
+				}
+			}
+			GUI->Temperature_Timer.Start();
+		}
 	}
 }
+
 
  void CCDFrameInterface::StartExposureButton_Click(Button& sender, bool checked){
 	 if (ThePixInsightINDIInterface!=0){
@@ -327,11 +437,16 @@ void CCDFrameInterface::ComboItemSelected(ComboBox& sender, int itemIndex) {
 #endif
 	   if (tmpDir!=NULL) {
 		PixInsightINDIInstance* pInstance=&ThePixInsightINDIInterface->instance;
+		if (pInstance==NULL)
+			return;
 		INDIPropertyListItem imageTransfer;
 		bool serverSendsImage=true;
 		if (pInstance->getINDIPropertyItem(m_newPropertyListItem.Device,"TRANSFER_FORMAT","NONE",imageTransfer)){
 			serverSendsImage=!(imageTransfer.PropertyValue==String("ON"));
 		}
+		m_newPropertyListItem.Property=String("CCD_EXPOSURE");
+		m_newPropertyListItem.Element=String("CCD_EXPOSURE_VALUE");
+		m_newPropertyListItem.PropertyType=String("INDI_NUMBER");
 		for (int num=0; num<m_NumOfExposures;++num){
 			GUI->ExpFrame_Edit.SetText(String(num));
 			GUI->ExposureDuration_Timer.Start();

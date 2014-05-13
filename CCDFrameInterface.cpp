@@ -238,7 +238,6 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
 
 	CCDParam_Sizer.Add(CCDBinning_Sizer);
 
-
 	FrameExposure_SectionBar.SetTitle("Frame Shooting");
 	FrameExposure_SectionBar.SetSection(FrameExposure_Control);
 	FrameExposure_Control.SetSizer(FrameExposure_Sizer);
@@ -250,9 +249,6 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
 	ExpTime_Edit.SetMinWidth( 30);
 	ExpTime_Edit.OnEditCompleted( (Edit::edit_event_handler)&CCDFrameInterface::EditCompleted, w );
    
-	StartExposure_PushButton.SetText( "Start Exposure" );
-	StartExposure_PushButton.OnClick( (Button::click_event_handler) &CCDFrameInterface::StartExposureButton_Click, w );
-
 	ExpTime_Sizer.SetSpacing(10);
 	ExpTime_Sizer.SetMargin(10);
 	ExpTime_Sizer.Add(ExpTime_Label);
@@ -270,7 +266,17 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
 	ExpNum_Sizer.SetSpacing(10);
 	ExpNum_Sizer.SetMargin(10);
 	
-	ExpNum_Sizer.Add(StartExposure_PushButton);
+	StartExposure_PushButton.SetText( "Start Exposure" );
+    StartExposure_PushButton.OnClick( (Button::click_event_handler) &CCDFrameInterface::StartExposureButton_Click, w );
+    CancelExposure_PushButton.SetText( "Cancel" );
+    CancelExposure_PushButton.OnClick( (Button::click_event_handler) &CCDFrameInterface::CancelButton_Click, w );
+
+
+
+	ExpButton_Sizer.SetSpacing(10);
+	ExpButton_Sizer.SetMargin(10);
+	ExpButton_Sizer.Add(StartExposure_PushButton);
+	ExpButton_Sizer.Add(CancelExposure_PushButton);
 
 	ExpDur_Label.SetText( "Timer:" );
 	ExpDur_Label.SetToolTip( "<p>Exposure time.</p>" );
@@ -298,6 +304,7 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
 
 	FrameExposure_Sizer.Add(ExpTime_Sizer);
 	FrameExposure_Sizer.Add(ExpNum_Sizer);
+	FrameExposure_Sizer.Add(ExpButton_Sizer);
 	FrameExposure_Sizer.Add(ExpDur_Sizer);
 
 	Global_Sizer.SetMargin( 8 );
@@ -359,7 +366,7 @@ void CCDFrameInterface::ExposureDuration_Timer( Timer &sender )
 {
 	if( sender == GUI->ExposureDuration_Timer  ){
 		GUI->ExpDur_Edit.SetText(String(sender.Count()));
-		if (sender.Count()>=GUI->ExpTime_Edit.Text().ToInt()){
+		if (sender.Count()>=GUI->ExpTime_Edit.Text().ToDouble()){
 			GUI->ExposureDuration_Timer.Stop();
 		}
 	}
@@ -385,6 +392,10 @@ void CCDFrameInterface::Temperature_Timer( Timer &sender )
 			if (pInstance->getINDIPropertyItem(m_newPropertyListItem.Device,
 					"CCD_TEMPERATURE", "CCD_TEMPERATURE_VALUE", CCDProp)) {
 				GUI->CCDTemp_Edit.SetText(CCDProp.PropertyValue);
+			}
+			else{
+				sender.Stop();
+				return;
 			}
 			// get X binning value
 			if (pInstance->getINDIPropertyItem(m_newPropertyListItem.Device,
@@ -427,6 +438,15 @@ void CCDFrameInterface::ComboItemSelected(ComboBox& sender, int itemIndex) {
 	}
 }
 
+void CCDFrameInterface::CancelButton_Click(Button& sender, bool checked){
+	PixInsightINDIInstance* pInstance=&ThePixInsightINDIInterface->instance;
+
+	if (pInstance==NULL)
+		return;
+
+	pInstance->doInternalAbort();
+
+}
 
  void CCDFrameInterface::StartExposureButton_Click(Button& sender, bool checked){
 	 if (ThePixInsightINDIInterface!=0){
@@ -439,6 +459,7 @@ void CCDFrameInterface::ComboItemSelected(ComboBox& sender, int itemIndex) {
 		PixInsightINDIInstance* pInstance=&ThePixInsightINDIInterface->instance;
 		if (pInstance==NULL)
 			return;
+		GUI->StartExposure_PushButton.Disable();
 		INDIPropertyListItem imageTransfer;
 		bool serverSendsImage=true;
 		if (pInstance->getINDIPropertyItem(m_newPropertyListItem.Device,"TRANSFER_FORMAT","NONE",imageTransfer)){
@@ -452,7 +473,7 @@ void CCDFrameInterface::ComboItemSelected(ComboBox& sender, int itemIndex) {
 			GUI->ExposureDuration_Timer.Start();
 			pInstance->sendNewPropertyValue(m_newPropertyListItem);
 
-			if (serverSendsImage) {
+			if (serverSendsImage && !pInstance->getInternalAbortFlag()) {
 				Array<ImageWindow> imgArray = ImageWindow::Open(String(tmpDir)+ String("/Image.fits"), IsoString("image"));
 
 				if (imgArray.Length()!=0){
@@ -461,6 +482,8 @@ void CCDFrameInterface::ComboItemSelected(ComboBox& sender, int itemIndex) {
 				}
 			}
 		}
+		pInstance->setInternalAbortFlag(false);
+		GUI->StartExposure_PushButton.Enable();
 	   } 
 
 	 }

@@ -149,7 +149,9 @@ public:
 		  Edit                ExpDur_Edit;
 		  Label 			  ExpFrame_Label;
 		  Edit                ExpFrame_Edit;
-		PushButton		  StartExposure_PushButton;
+		HorizontalSizer	     ExpButton_Sizer;
+		  PushButton		  StartExposure_PushButton;
+		  PushButton		  CancelExposure_PushButton;
    };
 
    private:
@@ -170,6 +172,8 @@ public:
    void EditCompleted( Edit& sender );
    void ComboItemSelected(ComboBox& sender, int itemIndex);
    void StartExposureButton_Click(Button& sender, bool checked);
+   void CancelButton_Click(Button& sender, bool checked);
+
    void UpdateDeviceList();
 };
 

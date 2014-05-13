@@ -149,6 +149,7 @@ public:
    {
       GUIData( PixInsightINDIInterface& );
 	  Timer				 UpdateDeviceList_Timer;
+	  Timer              UpdateServerMessage_Timer;
 
       VerticalSizer      Global_Sizer;
 	   SectionBar         INDIServer_SectionBar;
@@ -174,10 +175,12 @@ public:
 		 HorizontalSizer    INDIDeviceProperty_Sizer;
 		 VerticalSizer		INDIDevicePropertyTreeBox_Sizer;
 			TreeBox				PropertyList_TreeBox;
-			Label               DeviceMessage_Label;
 		 VerticalSizer			Buttons_Sizer;
 			PushButton			RefreshProperty_PushButton;
 			PushButton			EditProperty_PushButton;
+		 HorizontalSizer      ServerMessage_Sizer;
+		    Label               ServerMessageLabel_Label;
+		    Label               ServerMessage_Label;
 		SetPropertyDialog SetPropDlg;
    };
 
@@ -200,6 +203,7 @@ public:
    void UpdatePropertyList();
 
    void __UpdateDeviceList_Timer( Timer& sender );
+   void __UpdateServerMessage_Timer( Timer& sender );
 
    void UpdateDeviceList();
 

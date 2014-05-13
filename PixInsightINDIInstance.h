@@ -87,6 +87,10 @@ public:
    void sendNewPropertyValue(const INDINewPropertyListItem& propItem);
 
    bool getINDIPropertyItem(String device, String property, String element, INDIPropertyListItem& result );
+
+   void doInternalAbort() {m_internalAbortFlag=true;}
+   bool getInternalAbortFlag() {return m_internalAbortFlag;}
+   void setInternalAbortFlag(bool doAbort) {m_internalAbortFlag=doAbort;}
 private:
    DeviceListType          p_deviceList;
    PropertyListType        p_propertyList;
@@ -100,6 +104,8 @@ private:
    String                  p_getPropertyParam;
    pcl_bool				   p_doAbort;
    
+   bool                    m_internalAbortFlag;
+
    void getProperties();
    void sendNewProperty();
    bool getPropertyFromKeyString(INDINewPropertyListItem& newPropertyKey, const String& keyString);

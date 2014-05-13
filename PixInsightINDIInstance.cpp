@@ -83,7 +83,8 @@ p_currentMessage(""),
 p_command(""),
 p_getPropertyReturnValue(""),
 p_getPropertyParam(""),
-p_doAbort(false)
+p_doAbort(false),
+m_internalAbortFlag(false)
 
 {
 	
@@ -296,8 +297,8 @@ void PixInsightINDIInstance::sendNewProperty() {
 	if (switchVecProp){
 		indiClient.get()->sendNewSwitch(switchVecProp);
 		if (switchVecProp!=NULL){
-			while (switchVecProp->s!=IPS_OK && switchVecProp->s!=IPS_IDLE &&  !p_doAbort){
-				p_doAbort=Console().AbortRequested();
+			while (switchVecProp->s!=IPS_OK && switchVecProp->s!=IPS_IDLE &&  !p_doAbort && !m_internalAbortFlag){
+				p_doAbort=p_doAbort||Console().AbortRequested();
 				if (switchVecProp->s==IPS_ALERT){
 					writeCurrentMessageToConsole();
 					break;
@@ -313,8 +314,8 @@ void PixInsightINDIInstance::sendNewProperty() {
 		indiClient.get()->sendNewNumber(numberVecProp);
 		// wait until completed or abort
 		if (numberVecProp!=NULL){
-			while (numberVecProp->s!=IPS_OK && numberVecProp->s!=IPS_IDLE && !p_doAbort){
-				p_doAbort=Console().AbortRequested();
+			while (numberVecProp->s!=IPS_OK && numberVecProp->s!=IPS_IDLE && !p_doAbort && !m_internalAbortFlag){
+				p_doAbort=p_doAbort||Console().AbortRequested();
 				if (numberVecProp->s==IPS_ALERT){
 					writeCurrentMessageToConsole();
 					break;
@@ -329,8 +330,8 @@ void PixInsightINDIInstance::sendNewProperty() {
 		indiClient.get()->sendNewText(textVecProp);
 		// wait until completed or abort
 		if (textVecProp!=NULL){
-			while (textVecProp->s!=IPS_OK && textVecProp->s!=IPS_IDLE && !p_doAbort){
-				p_doAbort=Console().AbortRequested();
+			while (textVecProp->s!=IPS_OK && textVecProp->s!=IPS_IDLE && !p_doAbort && !m_internalAbortFlag){
+				p_doAbort=p_doAbort||Console().AbortRequested();
 				if (textVecProp->s==IPS_ALERT){
 					writeCurrentMessageToConsole();
 					break;
@@ -365,7 +366,9 @@ void PixInsightINDIInstance::sendNewProperty() {
 }
 
 void PixInsightINDIInstance::writeCurrentMessageToConsole(){
-  Console().WriteLn(String().Format("Message from INDI server: %s",IsoString(p_currentMessage).c_str()));
+	if (Console().IsCurrentThreadConsole()){
+		Console().WriteLn(String().Format("Message from INDI server: %s",IsoString(p_currentMessage).c_str()));
+	}
 }
 
 
@@ -416,6 +419,11 @@ bool PixInsightINDIInstance::ExecuteGlobal()
    }
    else
 	   sendNewProperty();
+
+
+   // disable abort to continue running
+   this->p_doAbort=false;
+   m_internalAbortFlag=false;
 
    return true;
 }

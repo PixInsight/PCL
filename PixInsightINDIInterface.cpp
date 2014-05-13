@@ -211,8 +211,10 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 
 				connected = indiClient->connectServer();
 
-				if (connected)
+				if (connected){
 					GUI->UpdateDeviceList_Timer.Start();
+					GUI->UpdateServerMessage_Timer.Start();
+				}
             }
             ERROR_HANDLER
         }
@@ -230,6 +232,8 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 				//	Console() <<"Successfully disconnected from server \n";
 				GUI->UpdateDeviceList_Timer.Stop();
 			
+				GUI->UpdateServerMessage_Timer.Stop();
+
 				GUI->DeviceList_TreeBox.Clear();
 				// clear property list
 				GUI->PropertyList_TreeBox.Clear();
@@ -422,7 +426,14 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    PropertyList_TreeBox.SetColumnWidth(0,300);
    PropertyList_TreeBox.SetHeaderText(0,String("Property"));
    PropertyList_TreeBox.SetHeaderText(1,String("Value"));
-   DeviceMessage_Label.SetVariableWidth();
+
+   ServerMessage_Label.SetVariableWidth();
+   ServerMessage_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+   ServerMessageLabel_Label.SetText("Last server message:");
+   ServerMessageLabel_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+
+   ServerMessage_Sizer.Add(ServerMessageLabel_Label);
+   ServerMessage_Sizer.Add(ServerMessage_Label);
 
    RefreshProperty_PushButton.SetText("Refresh");
    RefreshProperty_PushButton.OnClick((Button::click_event_handler) &PixInsightINDIInterface::PropertyButton_Click, w );
@@ -439,7 +450,7 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    Buttons_Sizer.AddStretch();
 
    INDIDeviceProperty_Sizer.Add(Buttons_Sizer);
-   INDIDeviceProperty_Sizer.Add(DeviceMessage_Label);
+   //INDIDeviceProperty_Sizer.Add(DeviceMessage_Label);
 
    Global_Sizer.SetMargin( 8 );
    Global_Sizer.SetSpacing( 6 );
@@ -449,10 +460,15 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    Global_Sizer.Add(INDIDevices_Control);
    Global_Sizer.Add(INDIProperties_SectionBar);
    Global_Sizer.Add(INDIProperties_Control);
+   Global_Sizer.Add(ServerMessage_Sizer);
 
    UpdateDeviceList_Timer.SetInterval( 0.5 );
    UpdateDeviceList_Timer.SetPeriodic( true );
    UpdateDeviceList_Timer.OnTimer( (Timer::timer_event_handler)&PixInsightINDIInterface::__UpdateDeviceList_Timer, w );
+
+   UpdateServerMessage_Timer.SetInterval( 0.5 );
+   UpdateServerMessage_Timer.SetPeriodic( true );
+   UpdateServerMessage_Timer.OnTimer( (Timer::timer_event_handler)&PixInsightINDIInterface::__UpdateServerMessage_Timer, w );
 
    
 
@@ -471,6 +487,14 @@ void PixInsightINDIInterface::__UpdateDeviceList_Timer( Timer &sender )
 	  
   }
 
+void PixInsightINDIInterface::__UpdateServerMessage_Timer( Timer &sender )
+  {
+
+	  if( sender == GUI->UpdateServerMessage_Timer  ){
+		  //GUI->ServerMessage_Label.SetText(instance.p_currentMessage);
+	  }
+
+  }
 
 // ----------------------------------------------------------------------------
 
@@ -531,7 +555,7 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 	if (indiClient.get() == 0)
 		return;
 
-	GUI->DeviceMessage_Label.SetText(m_serverMessage);  
+	GUI->ServerMessage_Label.SetText(m_serverMessage);
 
 	if (instance.p_propertyList.Begin()==instance.p_propertyList.End())
 		return;
@@ -583,13 +607,14 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 }
 
 void SetPropertyDialog::Button_Click( Button& sender, bool checked ){
-	
+
+	if (indiClient.get() == 0)
+		return;
+
+	assert(m_instance!=NULL);
+
 	if ( sender == OK_PushButton )
 	{
-		if (indiClient.get() == 0)
-			return;
-
-		assert(m_instance!=NULL);
 
 		INDINewPropertyListItem newPropertyListItem=getNewPropertyListItem();
 		m_instance->sendNewPropertyValue(newPropertyListItem);

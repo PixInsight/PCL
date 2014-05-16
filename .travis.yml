@@ -5,7 +5,7 @@ before_script:
   - wget https://pixinsight.com/download/PCL/PCL-02.00.11.0663-20140416.tar.gz
   - tar --warning=no-unknown-keyword -xzf PCL-02.00.11.0663-20140416.tar.gz
 env:
-  - PCLINCDIR=./PCL/include PCLLIBDIR64=./PCL/lib PCLBINDIR64=./PCL/bin
+  - PCLINCDIR=../../PCL/include PCLLIBDIR64=../../PCL/lib PCLBINDIR64=../../PCL/bin
 script: 
   - cd linux/g++/ && make -f makefile-x86_64
 

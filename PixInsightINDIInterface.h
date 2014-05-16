@@ -145,6 +145,7 @@ public:
 
    void UpdateControls();
    
+   // PixInsight client GUI
    struct GUIData
    {
       GUIData( PixInsightINDIInterface& );

@@ -3,7 +3,7 @@ compiler: gcc
 os: linux
 before_script:
   - wget https://pixinsight.com/download/PCL/PCL-02.00.11.0663-20140416.tar.gz
-  - tar -xzf PCL-02.00.11.0663-20140416.tar.gz
+  - tar --warning=no-unknown-keyword -xzf PCL-02.00.11.0663-20140416.tar.gz
 env:
   - PCLINCDIR=./PCL/include PCLLIBDIR64=./PCL/lib PCLBINDIR64=./PCL/bin
 script: 

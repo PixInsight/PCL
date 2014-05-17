@@ -9,7 +9,7 @@
 # Configuration ... Release/x86_64
 ######################################################################
 
-OBJ_DIR=/home/klaus/C++/PixInsightINDIclient/linux/g++/x86_64/Release
+OBJ_DIR=./x86_64/Release
 
 .PHONY: all
 all: $(OBJ_DIR)/PixInsightINDI-pxm.so

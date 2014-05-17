@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
-if [$(TRAVIS_OS_NAME) -eq "linux"] 
+if [$TRAVIS_OS_NAME -eq "linux"] 
 then
  OS_PATH="linux"
-elif [$(TRAVIS_OS_NAME) -eq "osx"]
+elif [$TRAVIS_OS_NAME -eq "osx"]
 then
  OS_PATH="macosx"
 fi

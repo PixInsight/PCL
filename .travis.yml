@@ -7,5 +7,5 @@ before_script:
 env:
   - PCLINCDIR=../../PCL/include PCLLIBDIR64=../../PCL/lib/linux/x86_64 PCLBINDIR64=../../PCL/bin
 script: 
-  - cd linux/g++/ && mkdir -p x86_64/Release && ls -l ../../PCL/lib/linux/x86_64 && make -f makefile-x86_64
+  - cd linux/g++/ && mkdir -p x86_64/Release && ls -l ../../PCL/lib && ls -l ../../linux && ls -l ../../ && make -f makefile-x86_64
 

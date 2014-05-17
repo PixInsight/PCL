@@ -1,6 +1,8 @@
 language: cpp
 compiler: gcc
-os: linux
+os: 
+  - linux
+  - osx
 before_script:
   - wget https://pixinsight.com/download/PCL/PCL-02.00.11.0663-20140416.tar.gz
   - tar --warning=no-unknown-keyword -xzf PCL-02.00.11.0663-20140416.tar.gz

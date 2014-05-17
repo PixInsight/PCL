@@ -9,7 +9,7 @@
 # Configuration ... Release/x86_64
 ######################################################################
 
-OBJ_DIR=/Users/klazinmed/C++/PixInsightINDIclient/macosx/g++/x86_64/Release
+OBJ_DIR=./x86_64/Release
 
 .PHONY: all
 all: $(OBJ_DIR)/PixInsightINDI-pxm.dylib

@@ -7,7 +7,7 @@ then
 elif [ "$TRAVIS_OS_NAME" = "osx" ];
 then
  export OS_PATH="macosx"
- gunzip  -xzf PCL-02.00.11.0663-20140416.tar.gz
+ gunzip PCL-02.00.11.0663-20140416.tar.gz
  tar -xf PCL-02.00.11.0663-20140416.tar
 fi
 echo $OS_PATH

@@ -149,6 +149,13 @@ public:
 		  Edit                ExpDur_Edit;
 		  Label 			  ExpFrame_Label;
 		  Edit                ExpFrame_Edit;
+		HorizontalSizer	     Image_Sizer;
+		  Label				  SaveImage_CheckBoxLabel;
+		  CheckBox            SaveImage_CheckBox;
+		  Label				  ImagePath_Label;
+		  Edit                ImagePath_Edit;
+		  Label 			  ImagePrefix_Label;
+		  Edit                ImagePrefix_Edit;
 		HorizontalSizer	     ExpButton_Sizer;
 		  PushButton		  StartExposure_PushButton;
 		  PushButton		  CancelExposure_PushButton;
@@ -163,8 +170,12 @@ public:
    IsoString m_serverMessage;
 
    INDINewPropertyListItem m_newPropertyListItem;
+   double                  m_ExposureDuration;
    int                     m_NumOfExposures;
    double                  m_Temperature;
+   bool                    m_saveFrame;
+   String                  m_FrameFolder;
+   String                  m_FramePrefix;
    
    void UpdateDeviceList_Timer( Timer& sender );
    void ExposureDuration_Timer( Timer &sender );
@@ -173,6 +184,7 @@ public:
    void ComboItemSelected(ComboBox& sender, int itemIndex);
    void StartExposureButton_Click(Button& sender, bool checked);
    void CancelButton_Click(Button& sender, bool checked);
+   void CheckBoxChecked(Button& sender, Button::check_state state);
 
    void UpdateDeviceList();
 };

@@ -53,6 +53,7 @@
 #include "indiapi.h"
 #include <pcl/Console.h>
 #include <assert.h>
+#include <fstream>
 
 #include "CCDFrameProcess.h"
 #include "PixInsightINDIInterface.h"
@@ -76,6 +77,9 @@ ProcessInterface(), instance( TheCCDFrameProcess),GUI( 0 )
    TheCCDFrameInterface = this;
    m_NumOfExposures=1;
    m_Temperature=0;
+   m_saveFrame=false;
+   m_FrameFolder=String("./");
+   m_FramePrefix=String("Image");
 }
 
 CCDFrameInterface::~CCDFrameInterface()
@@ -302,8 +306,40 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
 	ExpDur_Sizer.Add(ExpFrame_Edit);
 	ExpDur_Sizer.AddStretch();
 
+	SaveImage_CheckBoxLabel.SetText("Save Frames:");
+	SaveImage_CheckBoxLabel.SetToolTip("<p>Enable saving the frames to disk.</p>");
+	SaveImage_CheckBoxLabel.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+
+	SaveImage_CheckBox.OnCheck((CheckBox::check_event_handler )&CCDFrameInterface::CheckBoxChecked,w);
+
+	ImagePath_Label.SetText("Frame Folder:");
+	ImagePath_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+	ImagePath_Label.SetToolTip("<p>Specify the directory where to save the frames.</p>");
+
+	ImagePath_Edit.SetText("./");
+	ImagePath_Edit.OnEditCompleted( (Edit::edit_event_handler)&CCDFrameInterface::EditCompleted, w );
+
+	ImagePrefix_Label.SetText("Image Prefix:");
+	ImagePrefix_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+	ImagePrefix_Label.SetToolTip("<p>Specify a prefix for the frame file name.</p>");
+
+	ImagePrefix_Edit.SetText("Image");
+	ImagePrefix_Edit.OnEditCompleted( (Edit::edit_event_handler)&CCDFrameInterface::EditCompleted, w );
+
+	Image_Sizer.SetSpacing(10);
+	Image_Sizer.SetMargin(10);
+	Image_Sizer.Add(SaveImage_CheckBoxLabel);
+	Image_Sizer.Add(SaveImage_CheckBox);
+	Image_Sizer.Add(ImagePath_Label);
+	Image_Sizer.Add(ImagePath_Edit);
+	Image_Sizer.Add(ImagePrefix_Label);
+	Image_Sizer.Add(ImagePrefix_Edit);
+	Image_Sizer.AddStretch();
+
+
 	FrameExposure_Sizer.Add(ExpTime_Sizer);
 	FrameExposure_Sizer.Add(ExpNum_Sizer);
+	FrameExposure_Sizer.Add(Image_Sizer);
 	FrameExposure_Sizer.Add(ExpButton_Sizer);
 	FrameExposure_Sizer.Add(ExpDur_Sizer);
 
@@ -480,6 +516,35 @@ void CCDFrameInterface::CancelButton_Click(Button& sender, bool checked){
 					imgArray[0].ZoomToFit( false ); // don't allow zoom > 1
 					imgArray[0].Show();
 				}
+
+				if (m_saveFrame) {
+					IsoString source = IsoString(String(tmpDir)+ String("/Image.fits"));
+					IsoString dest   = IsoString(m_FrameFolder) + IsoString(this->m_FramePrefix) + IsoString("_") +  IsoString(num) + IsoString(".fits");
+
+					std::ifstream infile(source.c_str(), std::ifstream::binary);
+					std::ofstream outfile(dest.c_str(), std::ofstream::binary);
+
+					// get size of file
+					infile.seekg(0, infile.end);
+					long size = infile.tellg();
+					infile.seekg(0);
+
+					// allocate memory for file content
+					char* buffer = new char[size];
+
+					// read content of infile
+					infile.read(buffer, size);
+
+					// write to outfile
+					outfile.write(buffer, size);
+
+					// release dynamically-allocated memory
+					delete[] buffer;
+
+					outfile.close();
+					infile.close();
+				}
+
 			}
 		}
 		pInstance->setInternalAbortFlag(false);
@@ -494,6 +559,21 @@ void CCDFrameInterface::CancelButton_Click(Button& sender, bool checked){
 		 m_newPropertyListItem.NewPropertyValue = sender.Text();
 	 }else if (sender == GUI->ExpNum_Edit){
 		 m_NumOfExposures = sender.Text().ToInt();
+	 }else if (sender == GUI->ImagePath_Edit){
+		 m_FrameFolder = sender.Text();
+	 } else if (sender == GUI->ImagePrefix_Edit){
+	     m_FramePrefix = sender.Text();
+	 }
+ }
+
+ void CCDFrameInterface::CheckBoxChecked(Button& sender, Button::check_state state){
+	 if (sender == GUI->SaveImage_CheckBox){
+		 if (state == CheckState::Checked){
+			 m_saveFrame=true;
+		 }
+		 else {
+			 m_saveFrame=false;
+		 }
 	 }
  }
 

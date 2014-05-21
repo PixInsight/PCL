@@ -412,11 +412,8 @@ void CCDFrameInterface::Temperature_Timer( Timer &sender )
 {
 	if (ThePixInsightINDIInterface != 0) {
 		if (sender == GUI->Temperature_Timer) {
+			INDINewPropertyListItem newPropertyListItem;
 			// get temperature value
-			m_newPropertyListItem.Property = String("CCD_TEMPERATURE");
-			m_newPropertyListItem.Element = String("CCD_TEMPERATURE_VALUE");
-			m_newPropertyListItem.PropertyType = String("INDI_NUMBER");
-
 			PixInsightINDIInstance* pInstance =
 					&ThePixInsightINDIInterface->instance;
 
@@ -425,7 +422,7 @@ void CCDFrameInterface::Temperature_Timer( Timer &sender )
 
 			INDIPropertyListItem CCDProp;
 			// get temperature value
-			if (pInstance->getINDIPropertyItem(m_newPropertyListItem.Device,
+			if (pInstance->getINDIPropertyItem(m_Device,
 					"CCD_TEMPERATURE", "CCD_TEMPERATURE_VALUE", CCDProp)) {
 				GUI->CCDTemp_Edit.SetText(CCDProp.PropertyValue);
 			}
@@ -434,12 +431,12 @@ void CCDFrameInterface::Temperature_Timer( Timer &sender )
 				return;
 			}
 			// get X binning value
-			if (pInstance->getINDIPropertyItem(m_newPropertyListItem.Device,
+			if (pInstance->getINDIPropertyItem(m_Device,
 								"CCD_BINNING", "HOR_BIN", CCDProp)) {
 				GUI->CCDBinX_Edit.SetText(CCDProp.PropertyValue);
 			}
 			// get X binning value
-			if (pInstance->getINDIPropertyItem(m_newPropertyListItem.Device,
+			if (pInstance->getINDIPropertyItem(m_Device,
 											"CCD_BINNING", "VER_BIN", CCDProp)) {
 				GUI->CCDBinY_Edit.SetText(CCDProp.PropertyValue);
 			}
@@ -449,11 +446,8 @@ void CCDFrameInterface::Temperature_Timer( Timer &sender )
 
 void CCDFrameInterface::ComboItemSelected(ComboBox& sender, int itemIndex) {
 	if (sender == GUI->CCDDevice_Combo){
-		m_newPropertyListItem.Device = sender.ItemText(itemIndex);
+		m_Device = sender.ItemText(itemIndex);
 		if (ThePixInsightINDIInterface != 0) {
-			m_newPropertyListItem.Property = String("COOLER_CONNECTION");
-			m_newPropertyListItem.Element = String("CONNECT_COOLER");
-			m_newPropertyListItem.PropertyType = String("INDI_SWITCH");
 
 			PixInsightINDIInstance* pInstance = &ThePixInsightINDIInterface->instance;
 
@@ -462,11 +456,17 @@ void CCDFrameInterface::ComboItemSelected(ComboBox& sender, int itemIndex) {
 
 			INDIPropertyListItem CCDProp;
 			// check for cooler connection (e.g. Atik cameras)
-			if (pInstance->getINDIPropertyItem(m_newPropertyListItem.Device,
+			if (pInstance->getINDIPropertyItem(m_Device,
 					"COOLER_CONNECTION", "CONNECT_COOLER", CCDProp)) {
 				if(CCDProp.PropertyValue==String("OFF")){
-					m_newPropertyListItem.NewPropertyValue = String("ON");
-					pInstance->sendNewPropertyValue(m_newPropertyListItem);
+					INDINewPropertyListItem newPropertyListItem;
+					newPropertyListItem.Device=m_Device;
+					newPropertyListItem.Property = String("COOLER_CONNECTION");
+					newPropertyListItem.Element = String("CONNECT_COOLER");
+					newPropertyListItem.PropertyType = String("INDI_SWITCH");
+
+					newPropertyListItem.NewPropertyValue = String("ON");
+					pInstance->sendNewPropertyValue(newPropertyListItem);
 				}
 			}
 			GUI->Temperature_Timer.Start();
@@ -498,16 +498,21 @@ void CCDFrameInterface::CancelButton_Click(Button& sender, bool checked){
 		GUI->StartExposure_PushButton.Disable();
 		INDIPropertyListItem imageTransfer;
 		bool serverSendsImage=true;
-		if (pInstance->getINDIPropertyItem(m_newPropertyListItem.Device,"TRANSFER_FORMAT","NONE",imageTransfer)){
+		if (pInstance->getINDIPropertyItem(m_Device,"TRANSFER_FORMAT","NONE",imageTransfer)){
 			serverSendsImage=!(imageTransfer.PropertyValue==String("ON"));
 		}
-		m_newPropertyListItem.Property=String("CCD_EXPOSURE");
-		m_newPropertyListItem.Element=String("CCD_EXPOSURE_VALUE");
-		m_newPropertyListItem.PropertyType=String("INDI_NUMBER");
+
 		for (int num=0; num<m_NumOfExposures;++num){
 			GUI->ExpFrame_Edit.SetText(String(num));
 			GUI->ExposureDuration_Timer.Start();
-			pInstance->sendNewPropertyValue(m_newPropertyListItem);
+			INDINewPropertyListItem newPropertyListItem;
+			newPropertyListItem.Device=m_Device;
+			newPropertyListItem.Property=String("CCD_EXPOSURE");
+			newPropertyListItem.Element=String("CCD_EXPOSURE_VALUE");
+			newPropertyListItem.PropertyType=String("INDI_NUMBER");
+			newPropertyListItem.NewPropertyValue=String(m_ExposureDuration);
+
+			pInstance->sendNewPropertyValue(newPropertyListItem);
 
 			if (serverSendsImage && !pInstance->getInternalAbortFlag()) {
 				Array<ImageWindow> imgArray = ImageWindow::Open(String(tmpDir)+ String("/Image.fits"), IsoString("image"));
@@ -556,7 +561,7 @@ void CCDFrameInterface::CancelButton_Click(Button& sender, bool checked){
 
  void CCDFrameInterface::EditCompleted(Edit& sender){
 	 if (sender == GUI->ExpTime_Edit){
-		 m_newPropertyListItem.NewPropertyValue = sender.Text();
+		 m_ExposureDuration = sender.Text().ToDouble();
 	 }else if (sender == GUI->ExpNum_Edit){
 		 m_NumOfExposures = sender.Text().ToInt();
 	 }else if (sender == GUI->ImagePath_Edit){

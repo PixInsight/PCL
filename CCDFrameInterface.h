@@ -169,7 +169,8 @@ public:
 
    IsoString m_serverMessage;
 
-   INDINewPropertyListItem m_newPropertyListItem;
+   //INDINewPropertyListItem m_newPropertyListItem;
+   String                  m_Device;
    double                  m_ExposureDuration;
    int                     m_NumOfExposures;
    double                  m_Temperature;

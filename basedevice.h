@@ -184,7 +184,7 @@ private:
 
     INDI::BaseMediator *mediator;
 
-    friend class INDI::BaseClient;
+    friend class INDI::BaseClientImpl;
     friend class INDI::DefaultDevice;
 
 };

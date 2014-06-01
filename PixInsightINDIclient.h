@@ -49,117 +49,22 @@
 #ifndef INDI_CLIENT_H
 #define INDI_CLIENT_H
 
-
+#include <pcl/Exception.h>
 #include "PixInsightINDIInstance.h"
 #include "PixInsightINDIInterface.h"
+#include "IINDIProperty.h"
 
 #include "indidevapi.h"
 #include "indicom.h"
-#include "baseclient.h"
+#include "BaseClientImpl.h"
 #include "basedevice.h"
+
+#include "error.h"
 
 namespace pcl {
 
 class PropertyNode;
 
-class IProperty {
-protected:
-	INDI::Property* m_property;
-public:
-	IProperty(INDI::Property* property):m_property(property){}
-	virtual ~IProperty(){}
-	virtual String getDeviceName() {return String(m_property->getDeviceName());}
-	virtual String getName()       {return String(m_property->getName());}
-	virtual String getLabel()      {return String(m_property->getLabel());}
-	virtual INDI_TYPE getType()    {return m_property->getType();}
-	virtual String getTypeStr()    {
-		switch(m_property->getType()){
-		case INDI_SWITCH:
-			return String("INDI_SWITCH");
-			break;
-		case INDI_NUMBER:
-			return String("INDI_NUMBER");
-			break;
-		case INDI_LIGHT:
-			return String("INDI_LIGHT");
-			break;
-		case INDI_TEXT:
-			return String("INDI_TEXT");
-			break;
-		default:
-			return String("INDI_UNKNOWN");
-		}
-	}
-	virtual IPState getState()     {return m_property->getState();}
-
-	virtual size_t getNumOfElements()  {return 0;}
-	virtual String getElementName(size_t i)  {return String("unsupported element");}
-	virtual String getElementLabel(size_t i)  {return String("unsupported element");}
-	virtual String getElementValue(size_t i) {return String("unsupported value");}
-};
-
-class NumberProperty : public IProperty
-{
-public:
-	NumberProperty(INDI::Property* property):IProperty(property){}
-	virtual size_t getNumOfElements() {return m_property->getNumber()->nnp;}
-	virtual String getElementName(size_t i) {return String(m_property->getNumber()->np[i].name);}
-	virtual String getElementLabel(size_t i)  {return String(m_property->getNumber()->np[i].label);}
-	virtual String getElementValue(size_t i) {return String(m_property->getNumber()->np[i].value);};
-};
-
-class TextProperty : public IProperty
-{
-public:
-	TextProperty(INDI::Property* property):IProperty(property){}
-	virtual size_t getNumOfElements() {return m_property->getText()->ntp;}
-	virtual String getElementName(size_t i) {return String(m_property->getText()->tp[i].name);}
-	virtual String getElementLabel(size_t i)  {return String(m_property->getText()->tp[i].label);}
-	virtual String getElementValue(size_t i) {return String(m_property->getText()->tp[i].text);};
-};
-
-class SwitchProperty : public IProperty
-{
-public:
-	SwitchProperty(INDI::Property* property):IProperty(property){}
-	virtual size_t getNumOfElements() {return m_property->getSwitch()->nsp;}
-	virtual String getElementName(size_t i) {return String(m_property->getSwitch()->sp[i].name);}
-	virtual String getElementLabel(size_t i) {return String(m_property->getSwitch()->sp[i].label);}
-	virtual String getElementValue(size_t i) {return String(m_property->getSwitch()->sp[i].s == ISS_ON  ? "ON" : "OFF");};
-};
-
-class LightProperty : public IProperty
-{
-public:
-	LightProperty(INDI::Property* property):IProperty(property){}
-	virtual size_t getNumOfElements() {return m_property->getLight()->nlp;}
-	virtual String getElementName(size_t i) {return String(m_property->getLight()->lp[i].name);}
-	virtual String getElementLabel(size_t i) {return String(m_property->getLight()->lp[i].label);}
-	virtual String getElementValue(size_t i) {
-		switch (m_property->getLight()->lp[i].s){
-		case IPS_IDLE:
-			return String("IDLE");
-			break;
-		case IPS_OK:
-			return String("OK");
-			break;
-		case IPS_BUSY:
-			return String("BUSY");
-			break;
-		case IPS_ALERT:
-			return String("ALERT");
-			break;
-		default:
-			return String("UNSUPPORTED");
-		}
-	}
-};
-
-
-class PropertyFactory{
-public:
-	static IProperty* create(INDI::Property* property);
-};
 
 template<typename T>
 class ArrayOperator{
@@ -198,16 +103,19 @@ public:
 };
 
 
-class INDIClient : public INDI::BaseClient
+class INDIClient : public INDI::BaseClientImpl
 {
  public:
-	 INDIClient(PixInsightINDIInstance* instance):BaseClient(),m_Instance(instance),m_Interface(NULL)
+
+	 INDIClient(IPixInsightINDIInstance* instance):BaseClientImpl(),m_Instance(instance)
 	 {
-		 if (m_Instance!=NULL){
-			 m_Interface = dynamic_cast<PixInsightINDIInterface* >(m_Instance->meta->DefaultInterface());
+		 if (m_Instance==NULL){
+			 throw FatalError(ERR_MSG("Invalid instance pointer."));
 		 }
 	 }
 	 ~INDIClient(){}
+
+
 protected:
 	void newDevice(INDI::BaseDevice *dp);
 	void newProperty(INDI::Property *property);
@@ -221,8 +129,7 @@ protected:
 	
 private:
    
-   PixInsightINDIInstance*         m_Instance;
-   PixInsightINDIInterface*        m_Interface;
+   IPixInsightINDIInstance*         m_Instance;
 
    void runOnPropertyTable(IProperty* INDIProperty, const ArrayOperator<INDIPropertyListItem>* arrayOp);
 

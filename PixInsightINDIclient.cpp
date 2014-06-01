@@ -11,25 +11,6 @@
 
 namespace pcl {
 
-	IProperty* PropertyFactory::create(INDI::Property* property){
-		switch(property->getType()){
-		case INDI_NUMBER:
-			return new NumberProperty(property);
-			break;
-		case INDI_TEXT:
-			return new TextProperty(property);
-			break;
-		case INDI_SWITCH:
-			return new SwitchProperty(property);
-			break;
-		case INDI_LIGHT:
-			return new LightProperty(property);
-			break;
-		default:
-			return new IProperty(property);
-		}
-	}
-
 
 	void INDIClient::runOnPropertyTable(IProperty* INDIProperty, const ArrayOperator<INDIPropertyListItem>* arrayOp){
 		String sep("/");
@@ -39,12 +20,14 @@ namespace pcl {
 		propertyListItem.PropertyType=INDIProperty->getType();
 		propertyListItem.PropertyTypeStr=INDIProperty->getTypeStr();
 		propertyListItem.PropertyState =INDIProperty->getState();
+
 		for (size_t i=0; i<INDIProperty->getNumOfElements();i++) {
-			propertyListItem.Element=INDIProperty->getElementName(i); 		
+			propertyListItem.Element=INDIProperty->getElementName(i);
 			propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element;
 			propertyListItem.PropertyValue=INDIProperty->getElementValue(i);
-			arrayOp->run(m_Instance->p_propertyList,propertyListItem);
+			arrayOp->run(m_Instance->getPropertyList(),propertyListItem);
 		}
+
 
 	}
 
@@ -54,19 +37,16 @@ namespace pcl {
 			INDIDeviceListItem deviceListItem;
 			deviceListItem.DeviceName=String(dp->getDeviceName());
 			deviceListItem.DeviceLabel=String(dp->getDriverName());
-			m_Instance->p_deviceList.Append(deviceListItem);
+			m_Instance->getDeviceList().Append(deviceListItem);
 		}
 
 	}
-
-	void INDIClient::newProperty(INDI::Property *property){		
+	void INDIClient::newProperty(INDI::Property *property){
 		assert(property!=NULL);
 		IProperty* INDIProperty = PropertyFactory::create(property);
 		ArrayOperator<INDIPropertyListItem>* append=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayAppend<INDIPropertyListItem>());
-
 		// add property to the property process parameter table
 		runOnPropertyTable(INDIProperty,append);
-		
 
 		setBLOBMode(B_ALSO,property->getDeviceName());
 	}
@@ -83,7 +63,7 @@ namespace pcl {
 	void INDIClient::newMessage(INDI::BaseDevice *dp, int messageID){
 		const char* message = dp->messageQueue(messageID);
 		if (message!=NULL){
-			m_Instance->p_currentMessage=IsoString();
+			m_Instance->getCurrentMessage()=IsoString();
 		}
 	}
 
@@ -94,8 +74,8 @@ namespace pcl {
 
 		IProperty* INDIProperty = PropertyFactory::create(property);
 		ArrayOperator<INDIPropertyListItem>* update=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayUpdate<INDIPropertyListItem>());
-
 		runOnPropertyTable(INDIProperty,update);
+
 	}
 
 	void INDIClient::newNumber(INumberVectorProperty *nvp){
@@ -146,7 +126,7 @@ namespace pcl {
         	myfile.close();
 	    }
 	  else {
-	    m_Instance->p_currentMessage=IsoString("TMPDIR environment variable not set.");
+	    m_Instance->getCurrentMessage() =IsoString("TMPDIR environment variable not set.");
 	  }
 	}
 }

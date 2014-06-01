@@ -28,7 +28,7 @@
 #endif
 
 #include "basedevice.h"
-#include "baseclient.h"
+#include "BaseClientImpl.h"
 #include "indicom.h"
 #include "base64.h"
 #include "indiproperty.h"
@@ -396,7 +396,7 @@ int INDI::BaseDevice::buildProp(XMLEle *root, char *errmsg)
 
     //if (getProperty(rname, type) != NULL)
     if (getProperty(rname) != NULL){
-        return INDI::BaseClient::INDI_PROPERTY_DUPLICATED;
+        return INDI::BaseClientImpl::INDI_PROPERTY_DUPLICATED;
 	}
 
     if (strcmp (rtag, "defLightVector") && crackIPerm(findXMLAttValu(root, "perm"), &perm) < 0)

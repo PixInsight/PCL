@@ -1,5 +1,5 @@
 #include "basedevice.h"
-#include "baseclient.h"
+#include "BaseClientImpl.h"
 #include "indicom.h"
 #include "base64.h"
 #include "indiproperty.h"

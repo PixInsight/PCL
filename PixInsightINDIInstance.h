@@ -54,14 +54,14 @@
 #include <pcl/Timer.h>
 #include <pcl/Console.h>
 #include "PixInsightINDIParameters.h"
-
+#include "IPixInsightINDIInstance.h"
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-class PixInsightINDIInstance : public ProcessImplementation
+class PixInsightINDIInstance : public ProcessImplementation, IPixInsightINDIInstance
 {
 public:
 
@@ -84,6 +84,10 @@ public:
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
    	
+	virtual Array<INDIPropertyListItem>& getPropertyList() {return p_propertyList;}
+	virtual Array<INDIDeviceListItem>& getDeviceList(){return p_deviceList; }
+	virtual IsoString& getCurrentMessage() {return p_currentMessage;}
+
    void sendNewPropertyValue(const INDINewPropertyListItem& propItem);
 
    bool getINDIPropertyItem(String device, String property, String element, INDIPropertyListItem& result );

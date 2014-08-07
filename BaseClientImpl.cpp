@@ -169,10 +169,10 @@ bool INDI::BaseClientImpl::disconnectServer()
 #if defined(WIN32)
 #define SHUT_RDWR SD_BOTH
 #endif
-    int s1=sockfd, s2=m_sendFd;
 
     shutdown(sockfd, SHUT_RDWR);
-    //write(m_sendFd,"1",1);
+    while (write(m_sendFd,"1",1) <= 0)
+
 
 
     if (svrwfp != NULL)

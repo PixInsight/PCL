@@ -63,7 +63,7 @@ namespace pcl {
 	void INDIClient::newMessage(INDI::BaseDevice *dp, int messageID){
 		const char* message = dp->messageQueue(messageID);
 		if (message!=NULL){
-			m_Instance->getCurrentMessage()=IsoString();
+			m_Instance->getCurrentMessage()=IsoString(message);
 		}
 	}
 

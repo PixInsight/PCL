@@ -215,6 +215,9 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 					GUI->UpdateDeviceList_Timer.Start();
 					GUI->UpdateServerMessage_Timer.Start();
 				}
+				else{
+					GUI->ServerMessage_Label.SetText("Connection to INDI server failed. Please check server host and port.");
+				}
             }
             ERROR_HANDLER
         }
@@ -455,6 +458,7 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
 
    ServerMessage_Sizer.Add(ServerMessageLabel_Label);
    ServerMessage_Sizer.Add(ServerMessage_Label);
+   ServerMessage_Label.SetTextAlignment(TextAlign::Left|TextAlign::VertCenter);
 
    RefreshProperty_PushButton.SetText("Refresh");
    RefreshProperty_PushButton.OnClick((Button::click_event_handler) &PixInsightINDIInterface::PropertyButton_Click, w );
@@ -512,7 +516,7 @@ void PixInsightINDIInterface::__UpdateServerMessage_Timer( Timer &sender )
   {
 
 	  if( sender == GUI->UpdateServerMessage_Timer  ){
-		  //GUI->ServerMessage_Label.SetText(instance.p_currentMessage);
+		  GUI->ServerMessage_Label.SetText(instance.p_currentMessage);
 	  }
 
   }

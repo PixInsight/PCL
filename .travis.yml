@@ -11,4 +11,9 @@ env:
   - PCLINCDIR=../../PCL/include  PCLBINDIR64=../../PCL/bin
 script: 
   - ./run_build.sh
-
+notifications:
+  email:
+    recipients:
+      - kkretzschmar@gmail.com
+    on_success: change
+    on_failure: always

@@ -231,8 +231,9 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 				if (indiClient->serverIsConnected())
 					indiClient->disconnectServer();
 
-				//if (!indiClient->serverIsConnected())
-				//	Console() <<"Successfully disconnected from server \n";
+				if (!indiClient->serverIsConnected()){
+					GUI->ServerMessage_Label.SetText("Successfully disconnected from server");
+				}
 				GUI->UpdateDeviceList_Timer.Stop();
 			
 				GUI->UpdateServerMessage_Timer.Stop();
@@ -261,7 +262,10 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 
 					if (device->isConnected()){
 						(*it)->SetCheckable(true);
-						(*it)->Check();
+						(*it)->Check(true);
+					}
+					else {
+						(*it)->Check(false);
 					}
 					(*it)->SetCheckable(false);
 
@@ -455,10 +459,13 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    ServerMessage_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
    ServerMessageLabel_Label.SetText("Last server message:");
    ServerMessageLabel_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+   ServerMessage_Label.SetTextAlignment(TextAlign::Left|TextAlign::VertCenter);
+   ServerMessage_Label.SetMinWidth(fnt.Width(String("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")));
+   ServerMessage_Label.EnableWordWrapping();
 
    ServerMessage_Sizer.Add(ServerMessageLabel_Label);
    ServerMessage_Sizer.Add(ServerMessage_Label);
-   ServerMessage_Label.SetTextAlignment(TextAlign::Left|TextAlign::VertCenter);
+   ServerMessage_Sizer.AddStretch();
 
    RefreshProperty_PushButton.SetText("Refresh");
    RefreshProperty_PushButton.OnClick((Button::click_event_handler) &PixInsightINDIInterface::PropertyButton_Click, w );
@@ -519,8 +526,8 @@ void PixInsightINDIInterface::__UpdateServerMessage_Timer( Timer &sender )
 		  GUI->ServerMessage_Label.SetText(instance.p_currentMessage);
 	  }
 
-  }
 
+  }
 // ----------------------------------------------------------------------------
 
 void SetPropertyDialog::EditCompleted( Edit& sender )

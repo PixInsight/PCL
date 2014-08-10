@@ -256,9 +256,14 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 						if (!device->isConnected())
 							indiClient->connectDevice(deviceName.c_str());	
 
-					if (device->isConnected())
+					if (device->isConnected()){
+						(*it)->SetCheckable(true);
 						(*it)->Check();
+					}
+					(*it)->SetCheckable(false);
+
 					
+
 				}
 				
 			}
@@ -280,9 +285,14 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 						if (device->isConnected())
 							indiClient->disconnectDevice(deviceName.c_str());	
 
+					(*it)->Enable();
 					// uncheck 
-					if (!device->isConnected())
+					if (!device->isConnected()){
+						(*it)->SetCheckable(true);
 						(*it)->Check(false);
+					}
+
+					(*it)->SetCheckable(false);
 				}
 			}
             ERROR_HANDLER
@@ -316,8 +326,19 @@ void PixInsightINDIInterface::UpdateDeviceList(){
 		PropertyNode* deviceNode = new PropertyNode(rootNode,IsoString(iter->DeviceName));
 		deviceNode->getTreeBoxNode()->SetText( 1, iter->DeviceName );
 		deviceNode->getTreeBoxNode()->SetAlignment( 1, TextAlign::Left );
-		deviceNode->getTreeBoxNode()->Check(false);
+
+		INDI::BaseDevice* device = indiClient->getDevice(IsoString(iter->DeviceName).c_str());
+		if (device && device->isConnected()){
+			deviceNode->getTreeBoxNode()->SetCheckable(true);
+			deviceNode->getTreeBoxNode()->Check(true);
+		}
+		else {
+			deviceNode->getTreeBoxNode()->SetCheckable(true);
+			deviceNode->getTreeBoxNode()->Check(false);
+		}
 		deviceNode->getTreeBoxNode()->SetAlignment( 0, TextAlign::Left );
+		deviceNode->getTreeBoxNode()->SetCheckable(false);
+
 	}
 	GUI->UpdateDeviceList_Timer.Stop();
 	GUI->DeviceList_TreeBox.EnableUpdates();

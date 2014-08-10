@@ -71,6 +71,7 @@ public:
 
    virtual IsoString Id() const;
    virtual size_type MinLength() const;
+   virtual String DefaultValue() const;
 };
 
 extern INDIServerHostname* TheINDIServerHostname;

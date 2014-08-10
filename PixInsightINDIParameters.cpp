@@ -90,6 +90,9 @@ size_type INDIServerHostname::MinLength() const
    return 0;
 }
 
+String INDIServerHostname::DefaultValue() const {
+	return String("localhost");
+}
 // ----------------------------------------------------------------------------
 // The INDI server port
 
@@ -105,7 +108,7 @@ IsoString INDIServerPort::Id() const
 
 double INDIServerPort::DefaultValue() const
 {
-   return 0;
+   return 7624;
 }
 
 

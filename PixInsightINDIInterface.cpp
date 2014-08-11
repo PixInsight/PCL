@@ -72,7 +72,7 @@ PixInsightINDIInterface* ThePixInsightINDIInterface = 0;
 // ----------------------------------------------------------------------------
 
 PixInsightINDIInterface::PixInsightINDIInterface() :
-ProcessInterface(), instance( ThePixInsightINDIProcess ), GUI( 0 ), m_treeBoxDeviceNodes(), m_serverMessage(""),m_numOfDevices(0), m_PropertyListNeedsUpdate(false)
+ProcessInterface(), instance( ThePixInsightINDIProcess ), GUI( 0 ), m_treeBoxDeviceNodes(), m_serverMessage(""),m_numOfDevices(0), m_createPropertyTreeBox(true)
 {
    ThePixInsightINDIInterface = this;
 }
@@ -214,6 +214,7 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 				if (connected){
 					GUI->UpdateDeviceList_Timer.Start();
 					GUI->UpdateServerMessage_Timer.Start();
+					GUI->UpdatePropertyList_Timer.Start();
 				}
 				else{
 					GUI->ServerMessage_Label.SetText("Connection to INDI server failed. Please check server host and port.");
@@ -235,7 +236,7 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 					GUI->ServerMessage_Label.SetText("Successfully disconnected from server");
 				}
 				GUI->UpdateDeviceList_Timer.Stop();
-			
+				GUI->UpdatePropertyList_Timer.Stop();
 				GUI->UpdateServerMessage_Timer.Stop();
 
 				GUI->DeviceList_TreeBox.Clear();
@@ -454,6 +455,7 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    PropertyList_TreeBox.SetColumnWidth(0,300);
    PropertyList_TreeBox.SetHeaderText(0,String("Property"));
    PropertyList_TreeBox.SetHeaderText(1,String("Value"));
+   PropertyList_TreeBox.OnClose((Control::close_event_handler) &PixInsightINDIInterface::__Close,w);
 
    ServerMessage_Label.SetVariableWidth();
    ServerMessage_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
@@ -498,6 +500,11 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    UpdateDeviceList_Timer.SetPeriodic( true );
    UpdateDeviceList_Timer.OnTimer( (Timer::timer_event_handler)&PixInsightINDIInterface::__UpdateDeviceList_Timer, w );
 
+   UpdatePropertyList_Timer.SetInterval( 0.5 );
+   UpdatePropertyList_Timer.SetPeriodic( true );
+   UpdatePropertyList_Timer.OnTimer( (Timer::timer_event_handler)&PixInsightINDIInterface::__UpdatePropertyList_Timer, w );
+
+
    UpdateServerMessage_Timer.SetInterval( 0.5 );
    UpdateServerMessage_Timer.SetPeriodic( true );
    UpdateServerMessage_Timer.OnTimer( (Timer::timer_event_handler)&PixInsightINDIInterface::__UpdateServerMessage_Timer, w );
@@ -517,6 +524,15 @@ void PixInsightINDIInterface::__UpdateDeviceList_Timer( Timer &sender )
 		  UpdateDeviceList();
 	  }
 	  
+  }
+
+void PixInsightINDIInterface::__UpdatePropertyList_Timer( Timer &sender )
+  {
+
+	  if( sender == GUI->UpdatePropertyList_Timer  ){
+		  UpdatePropertyList();
+	  }
+
   }
 
 void PixInsightINDIInterface::__UpdateServerMessage_Timer( Timer &sender )
@@ -582,25 +598,21 @@ SetPropertyDialog::SetPropertyDialog():Dialog(),m_instance(NULL){
 void PixInsightINDIInterface::UpdatePropertyList(){
 
 	GUI->PropertyList_TreeBox.DisableUpdates();
-	GUI->PropertyList_TreeBox.Clear();
 
 	if (indiClient.get() == 0)
 		return;
 
-	GUI->ServerMessage_Label.SetText(m_serverMessage);
-
 	if (instance.p_propertyList.Begin()==instance.p_propertyList.End())
 		return;
 
-	PropertyNodeMapType deviceNodeMap;
-	PropertyNodeMapType propertyNodeMap;
-	
+	bool createDeviceTreeBox  =m_createPropertyTreeBox;
+	bool createPropertyTreeBox=m_createPropertyTreeBox;
 	for (PixInsightINDIInstance::PropertyListType::iterator iter=instance.p_propertyList.Begin() ; iter!=instance.p_propertyList.End(); ++iter){
 
-		// create device nodes
-		PropertyNodeMapType::iterator deviceIter = deviceNodeMap.find(iter->Device);
+		// lazy create device nodes
+		PropertyNodeMapType::iterator deviceIter = m_deviceNodeMap.find(iter->Device);
 		PropertyNode* deviceNode;
-		if (deviceIter!= deviceNodeMap.end()){
+		if (deviceIter!= m_deviceNodeMap.end()&&!createDeviceTreeBox){
 			deviceNode=deviceIter->second;
 		} else
 		{	// create root node
@@ -610,12 +622,13 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 			deviceNode = child;
 			deviceNode->getTreeBoxNode()->SetText(0,iter->Device);
 			deviceNode->getTreeBoxNode()->SetAlignment(0, TextAlign::Left);
-			deviceNodeMap[iter->Device]=deviceNode;
+			m_deviceNodeMap[iter->Device]=deviceNode;
+			createDeviceTreeBox=false;
 		}
-		// create property nodes
-		PropertyNodeMapType::iterator propertyIter = propertyNodeMap.find(iter->Device+iter->Property);
+		// lazy create property nodes
+		PropertyNodeMapType::iterator propertyIter = m_propertyNodeMap.find(iter->Device+iter->Property);
 		PropertyNode* propertyNode;
-		if (propertyIter!= propertyNodeMap.end()){
+		if (propertyIter!= m_propertyNodeMap.end()&&!createPropertyTreeBox){
 			propertyNode=propertyIter->second;
 		} else
 		{
@@ -623,18 +636,27 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 			propertyNode = child;
 			propertyNode->getTreeBoxNode()->SetText(0,iter->Property);
 			propertyNode->getTreeBoxNode()->SetAlignment(0, TextAlign::Left);
-			propertyNodeMap[iter->Device+iter->Property]=propertyNode;
+			m_propertyNodeMap[iter->Device+iter->Property]=propertyNode;
+			createPropertyTreeBox=false;
 		}
-		// create element nodes
-		PropertyNode* elementNode =  PropertyNode::create(propertyNode,iter->Device,iter->Property,iter->Element, iter->PropertyTypeStr);
-		assert(elementNode!=NULL);
-		elementNode->getTreeBoxNode()->SetText(0,iter->Element);
-		elementNode->getTreeBoxNode()->SetAlignment(0, TextAlign::Left);
-		elementNode->getTreeBoxNode()->SetText(1,iter->PropertyValue);
-		elementNode->getTreeBoxNode()->SetAlignment(1, TextAlign::Left);
-		elementNode->getTreeBoxNode()->SetText(2,iter->PropertyTypeStr);
+		// lazy create element nodes
+		PropertyNodeMapType::iterator elementIter = m_elementNodeMap.find(iter->Device+iter->Property+iter->Element);
+		PropertyNode* elementNode;
+		if (elementIter != m_elementNodeMap.end()&&!m_createPropertyTreeBox) {
+			elementNode = elementIter->second;
+		} else {
+			// create Element node
+			elementNode = PropertyNode::create(propertyNode,iter->Device, iter->Property, iter->Element,iter->PropertyTypeStr);
+			assert(elementNode!=NULL);
+			elementNode->getTreeBoxNode()->SetText(0, iter->Element);
+			elementNode->getTreeBoxNode()->SetAlignment(0, TextAlign::Left);
+			elementNode->getTreeBoxNode()->SetText(1, iter->PropertyValue);
+			elementNode->getTreeBoxNode()->SetAlignment(1, TextAlign::Left);
+			elementNode->getTreeBoxNode()->SetText(2, iter->PropertyTypeStr);
+			m_elementNodeMap[iter->Device+iter->Property+iter->Element]=elementNode;
+		}
 	}
-	
+	m_createPropertyTreeBox=false;
 	GUI->PropertyList_TreeBox.EnableUpdates();
 }
 
@@ -659,6 +681,12 @@ void SetPropertyDialog::Button_Click( Button& sender, bool checked ){
 	}
 	else if (sender == Cancel_PushButton){
 		Cancel();
+	}
+}
+
+void PixInsightINDIInterface::__Close( Control& sender, bool& allowClose){
+	if (sender==GUI->PropertyList_TreeBox){
+		m_createPropertyTreeBox=true;
 	}
 }
 

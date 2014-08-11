@@ -150,6 +150,7 @@ public:
    {
       GUIData( PixInsightINDIInterface& );
 	  Timer				 UpdateDeviceList_Timer;
+	  Timer              UpdatePropertyList_Timer;
 	  Timer              UpdateServerMessage_Timer;
 
       VerticalSizer      Global_Sizer;
@@ -199,11 +200,17 @@ public:
 
    size_t  m_numOfDevices;
 
-   bool m_PropertyListNeedsUpdate;
+   bool m_createPropertyTreeBox;
+
+   PropertyNodeMapType m_deviceNodeMap;
+   PropertyNodeMapType m_propertyNodeMap;
+   PropertyNodeMapType m_elementNodeMap;
+
 
    void UpdatePropertyList();
 
    void __UpdateDeviceList_Timer( Timer& sender );
+   void __UpdatePropertyList_Timer( Timer& sender );
    void __UpdateServerMessage_Timer( Timer& sender );
 
    void UpdateDeviceList();
@@ -218,6 +225,7 @@ public:
    void __ItemSelected( ComboBox& sender, int itemIndex );
    void __EditGetFocus( Control& sender );
    void __EditCompleted( Edit& sender );
+   void __Close(Control& sender, bool& allowClose);
 
    friend struct GUIData;
    friend class  DevicePropertiesDialog;

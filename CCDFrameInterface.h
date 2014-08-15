@@ -114,8 +114,8 @@ public:
 
 	   Timer			  UpdateDeviceList_Timer;
 	   Timer              ExposureDuration_Timer;
+	   Timer              ExposureDelay_Timer;
 	   Timer              Temperature_Timer;
-
 
 	   VerticalSizer      Global_Sizer;
 	   SectionBar         CCDDevice_SectionBar;
@@ -141,12 +141,16 @@ public:
 		 HorizontalSizer	 ExpTime_Sizer;
 		  Label		  		  ExpTime_Label;
 		  Edit                ExpTime_Edit;
+		  Label		  		  ExpDelayTime_Label;
+		  Edit                ExpDelayTime_Edit;
 		HorizontalSizer	     ExpNum_Sizer;
 		  Label				  ExpNum_Label;
 		  Edit                ExpNum_Edit;
 		HorizontalSizer	     ExpDur_Sizer;
 		  Label				  ExpDur_Label;
 		  Edit                ExpDur_Edit;
+		  Label				  ExpDelay_Label;
+		  Edit                ExpDelay_Edit;
 		  Label 			  ExpFrame_Label;
 		  Edit                ExpFrame_Edit;
 		HorizontalSizer	     Image_Sizer;
@@ -177,9 +181,11 @@ public:
    bool                    m_saveFrame;
    String                  m_FrameFolder;
    String                  m_FramePrefix;
+   bool                    m_isWaiting;
    
    void UpdateDeviceList_Timer( Timer& sender );
    void ExposureDuration_Timer( Timer &sender );
+   void ExposureDelay_Timer( Timer &sender );
    void Temperature_Timer( Timer &sender );
    void EditCompleted( Edit& sender );
    void ComboItemSelected(ComboBox& sender, int itemIndex);

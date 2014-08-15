@@ -80,6 +80,7 @@ ProcessInterface(), instance( TheCCDFrameProcess),GUI( 0 )
    m_saveFrame=false;
    m_FrameFolder=String("./");
    m_FramePrefix=String("Image");
+   m_isWaiting=false;
 }
 
 CCDFrameInterface::~CCDFrameInterface()
@@ -250,13 +251,25 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
 	ExpTime_Label.SetToolTip( "<p>Specify exposure time in seconds.</p>" );
 	ExpTime_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
 
+	ExpTime_Edit.SetText("0");
 	ExpTime_Edit.SetMinWidth( 30);
 	ExpTime_Edit.OnEditCompleted( (Edit::edit_event_handler)&CCDFrameInterface::EditCompleted, w );
-   
+
+	ExpDelayTime_Label.SetText( "Delay:" );
+	ExpDelayTime_Label.SetToolTip( "<p>Specify waiting time between exposures in seconds.</p>" );
+	ExpDelayTime_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+
+	ExpDelayTime_Edit.SetText("0");
+	ExpDelayTime_Edit.SetMinWidth( 30);
+	ExpDelayTime_Edit.OnEditCompleted( (Edit::edit_event_handler)&CCDFrameInterface::EditCompleted, w );
+
+
 	ExpTime_Sizer.SetSpacing(10);
 	ExpTime_Sizer.SetMargin(10);
 	ExpTime_Sizer.Add(ExpTime_Label);
 	ExpTime_Sizer.Add(ExpTime_Edit);
+	ExpTime_Sizer.Add(ExpDelayTime_Label);
+	ExpTime_Sizer.Add(ExpDelayTime_Edit);
 	ExpTime_Sizer.Add(ExpNum_Label);
 	ExpTime_Sizer.Add(ExpNum_Edit);
 
@@ -264,6 +277,7 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
 	ExpNum_Label.SetToolTip( "<p>Number of frames to be taken.</p>" );
 	ExpNum_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
 
+	ExpNum_Edit.SetText("0");
 	ExpNum_Edit.SetMinWidth( 30);
 	ExpNum_Edit.OnEditCompleted( (Edit::edit_event_handler)&CCDFrameInterface::EditCompleted, w );
 
@@ -283,12 +297,21 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
 	ExpButton_Sizer.Add(CancelExposure_PushButton);
 
 	ExpDur_Label.SetText( "Timer:" );
-	ExpDur_Label.SetToolTip( "<p>Exposure time.</p>" );
+	ExpDur_Label.SetToolTip( "<p>Exposure time in seconds.</p>" );
 	ExpDur_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
 
 	ExpDur_Edit.SetMinWidth(15);
 	ExpDur_Edit.SetText(String("0"));
 	ExpDur_Edit.SetReadOnly();
+
+	ExpDelay_Label.SetText("Delay:");
+	ExpDelay_Label.SetToolTip("<p>Waiting time before next exposure in seconds.</p>");
+	ExpDelay_Label.SetTextAlignment(TextAlign::Left | TextAlign::VertCenter);
+
+	ExpDelay_Edit.SetMinWidth(15);
+	ExpDelay_Edit.SetText(String("0"));
+	ExpDelay_Edit.SetReadOnly();
+
 
 	ExpFrame_Label.SetText( "Frame:" );
 	ExpFrame_Label.SetToolTip( "<p>Frame number.</p>" );
@@ -302,6 +325,8 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
 	ExpDur_Sizer.SetMargin(10);
 	ExpDur_Sizer.Add(ExpDur_Label);
 	ExpDur_Sizer.Add(ExpDur_Edit);
+	ExpDur_Sizer.Add(ExpDelay_Label);
+	ExpDur_Sizer.Add(ExpDelay_Edit);
 	ExpDur_Sizer.Add(ExpFrame_Label);
 	ExpDur_Sizer.Add(ExpFrame_Edit);
 	ExpDur_Sizer.AddStretch();
@@ -365,6 +390,11 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
     ExposureDuration_Timer.SetPeriodic( true );
     ExposureDuration_Timer.OnTimer( (Timer::timer_event_handler)&CCDFrameInterface::ExposureDuration_Timer, w );
 
+	ExposureDelay_Timer.SetInterval(1);
+	ExposureDelay_Timer.SetPeriodic(true);
+	ExposureDelay_Timer.OnTimer((Timer::timer_event_handler) &CCDFrameInterface::ExposureDelay_Timer, w);
+
+
     Temperature_Timer.SetInterval( 1 );
     Temperature_Timer.SetPeriodic( true );
     Temperature_Timer.OnTimer( (Timer::timer_event_handler)&CCDFrameInterface::Temperature_Timer, w );
@@ -404,6 +434,17 @@ void CCDFrameInterface::ExposureDuration_Timer( Timer &sender )
 		GUI->ExpDur_Edit.SetText(String(sender.Count()));
 		if (sender.Count()>=GUI->ExpTime_Edit.Text().ToDouble()){
 			GUI->ExposureDuration_Timer.Stop();
+		}
+	}
+}
+
+void CCDFrameInterface::ExposureDelay_Timer( Timer &sender )
+{
+	if( sender == GUI->ExposureDelay_Timer  ){
+		GUI->ExpDelay_Edit.SetText(String(sender.Count()+GUI->ExpDur_Edit.Text().ToDouble()));
+		if (sender.Count()>=GUI->ExpDelayTime_Edit.Text().ToDouble()){
+			GUI->ExposureDelay_Timer.Stop();
+			m_isWaiting=false;
 		}
 	}
 }
@@ -504,7 +545,7 @@ void CCDFrameInterface::CancelButton_Click(Button& sender, bool checked){
 
 		for (int num=0; num<m_NumOfExposures;++num){
 			GUI->ExpFrame_Edit.SetText(String(num));
-			GUI->ExposureDuration_Timer.Start();
+
 			INDINewPropertyListItem newPropertyListItem;
 			newPropertyListItem.Device=m_Device;
 			newPropertyListItem.Property=String("CCD_EXPOSURE");
@@ -512,6 +553,7 @@ void CCDFrameInterface::CancelButton_Click(Button& sender, bool checked){
 			newPropertyListItem.PropertyType=String("INDI_NUMBER");
 			newPropertyListItem.NewPropertyValue=String(m_ExposureDuration);
 
+			GUI->ExposureDuration_Timer.Start();
 			pInstance->sendNewPropertyValue(newPropertyListItem);
 
 			if (serverSendsImage && !pInstance->getInternalAbortFlag()) {
@@ -549,8 +591,13 @@ void CCDFrameInterface::CancelButton_Click(Button& sender, bool checked){
 					outfile.close();
 					infile.close();
 				}
-
 			}
+			// wait until next exposure
+			if (GUI->ExpDelayTime_Edit.Text().ToInt()!=0){
+				GUI->ExposureDelay_Timer.Start();
+				m_isWaiting=true;
+			}
+			while (m_isWaiting){ProcessEvents();}
 		}
 		pInstance->setInternalAbortFlag(false);
 		GUI->StartExposure_PushButton.Enable();

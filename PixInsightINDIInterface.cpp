@@ -617,7 +617,7 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 		} else
 		{	// create root node
 			PropertyNode* rootNode=new PropertyNode(GUI->PropertyList_TreeBox);
-			this->m_treeBoxDeviceNodes.push_back(rootNode);
+			m_treeBoxDeviceNodes.push_back(rootNode);
 			PropertyNode* child = new PropertyNode(rootNode,iter->Device);
 			deviceNode = child;
 			deviceNode->getTreeBoxNode()->SetText(0,iter->Device);

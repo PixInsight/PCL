@@ -521,6 +521,19 @@ void CCDFrameInterface::CancelButton_Click(Button& sender, bool checked){
 	if (pInstance==NULL)
 		return;
 
+	INDINewPropertyListItem newPropertyListItem;
+	newPropertyListItem.Device = m_Device;
+	newPropertyListItem.Property = String("CCD_ABORT_EXPOSURE");
+	newPropertyListItem.Element = String("ABORT");
+	newPropertyListItem.PropertyType = String("INDI_SWITCH");
+
+	newPropertyListItem.NewPropertyValue = String("ON");
+	pInstance->sendNewPropertyValue(newPropertyListItem);
+
+
+	// stop timer
+	GUI->ExposureDuration_Timer.Stop();
+
 	pInstance->doInternalAbort();
 
 }
@@ -554,9 +567,13 @@ void CCDFrameInterface::CancelButton_Click(Button& sender, bool checked){
 			newPropertyListItem.NewPropertyValue=String(m_ExposureDuration);
 
 			GUI->ExposureDuration_Timer.Start();
-			pInstance->sendNewPropertyValue(newPropertyListItem);
+			bool send_ok = pInstance->sendNewPropertyValue(newPropertyListItem);
 
-			if (serverSendsImage && !pInstance->getInternalAbortFlag()) {
+			if (!send_ok){
+				break;
+			}
+
+			if (serverSendsImage) {
 				Array<ImageWindow> imgArray = ImageWindow::Open(String(tmpDir)+ String("/Image.fits"), IsoString("image"));
 
 				if (imgArray.Length()!=0){

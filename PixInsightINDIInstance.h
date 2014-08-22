@@ -88,7 +88,7 @@ public:
 	virtual Array<INDIDeviceListItem>& getDeviceList(){return p_deviceList; }
 	virtual IsoString& getCurrentMessage() {return p_currentMessage;}
 
-   void sendNewPropertyValue(const INDINewPropertyListItem& propItem);
+   bool sendNewPropertyValue(const INDINewPropertyListItem& propItem);
 
    bool getINDIPropertyItem(String device, String property, String element, INDIPropertyListItem& result );
 
@@ -111,7 +111,7 @@ private:
    bool                    m_internalAbortFlag;
 
    void getProperties();
-   void sendNewProperty();
+   bool sendNewProperty();
    bool getPropertyFromKeyString(INDINewPropertyListItem& newPropertyKey, const String& keyString);
    void writeCurrentMessageToConsole(); 
 

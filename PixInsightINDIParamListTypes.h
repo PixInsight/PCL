@@ -30,6 +30,7 @@ struct INDIPropertyListItem {
 	String PropertyTypeStr;
 	String Element;
 	unsigned int PropertyState;
+	bool   PropertyRemovalFlag;
 	String PropertyKey;
 	String PropertyValue;
 	String NewPropertyValue;

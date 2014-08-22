@@ -671,11 +671,16 @@ void SetPropertyDialog::Button_Click( Button& sender, bool checked ){
 	{
 
 		INDINewPropertyListItem newPropertyListItem=getNewPropertyListItem();
-		m_instance->sendNewPropertyValue(newPropertyListItem);
-		IPropertyVisitor* pVisitor = UpdateVisitor::create();
-		std::vector<PropertyNode*>* rootNodes=m_interface->getPropertyTreeRootNodes();
-		for (std::vector<PropertyNode*>::iterator it=rootNodes->begin(); it!=rootNodes->end(); ++it){
-			(*it)->accept(pVisitor, newPropertyListItem.PropertyKey, newPropertyListItem.NewPropertyValue);
+		bool send_ok = m_instance->sendNewPropertyValue(newPropertyListItem);
+		if (send_ok) {
+			IPropertyVisitor* pVisitor = UpdateVisitor::create();
+			std::vector<PropertyNode*>* rootNodes =
+					m_interface->getPropertyTreeRootNodes();
+			for (std::vector<PropertyNode*>::iterator it = rootNodes->begin();
+					it != rootNodes->end(); ++it) {
+				(*it)->accept(pVisitor, newPropertyListItem.PropertyKey,
+						newPropertyListItem.NewPropertyValue);
+			}
 		}
 		Ok();
 	}

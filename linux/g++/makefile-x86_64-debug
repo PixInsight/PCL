@@ -1,18 +1,26 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.77
+# PixInsight Makefile Generator Script v1.79
 # Copyright (C) 2009-2013 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Sat, 20 Apr 2013 17:26:32 GMT
+# Automatically generated on Sun, 27 Oct 2013 19:31:40 GMT
 # Project id ...... PixInsightINDI
 # Project type .... Module
 # Platform ........ Linux/g++
-# Configuration ... Debug/x86_64
+# Configuration ... Release/x86_64
 ######################################################################
 
-OBJ_DIR="C:/Users/klaus/Documents/GitHub/PixInsightINDI/linux/g++/x86_64/Debug"
+OBJ_DIR=./x86_64/Release
+
+TEST_EXE= \
+PixInsightINDIclientGTest\
+INDIPropertyBuilderGTest
 
 .PHONY: all
 all: $(OBJ_DIR)/PixInsightINDI-pxm.so
+
+
+.PHONY: test
+test: $(OBJ_DIR)/PixInsightINDI-pxm.so libgtest.a libgmock.a $(TEST_EXE)
 
 #
 # Source files
@@ -21,55 +29,99 @@ all: $(OBJ_DIR)/PixInsightINDI-pxm.so
 SRC_FILES= \
 ../../PixInsightINDIInstance.cpp \
 ../../PixInsightINDIInterface.cpp \
+../../PixInsightINDIclient.cpp \
 ../../PixInsightINDIModule.cpp \
 ../../PixInsightINDIParameters.cpp \
 ../../PixInsightINDIProcess.cpp \
-../../PixInsightINDIclient.cpp \
+../../IINDIProperty.cpp \
+../../PropertyNode.cpp \
+../../CCDFrameProcess.cpp \
+../../CCDFrameInstance.cpp \
+../../CCDFrameInterface.cpp \
 ../../base64.c \
-../../baseclient.cpp \
+../../BaseClientImpl.cpp \
 ../../basedevice.cpp \
 ../../indicom.c \
 ../../indiproperty.cpp \
-../../lilxml.c \
-../../windows/vc10/PixInsightINDIclient.cpp
+../../lilxml.c 
+
+TEST_FILES= \
+../../test/PixInsightINDIclientTest.cpp \
+../../fakes/FakePixInsightINDIInstance.cpp \
+../../fakes/FakeINDIClient.cpp
+
 
 #
 # Object files
 #
-
 OBJ_FILES= \
-./x86_64/Debug/PixInsightINDIInstance.o \
-./x86_64/Debug/PixInsightINDIInterface.o \
-./x86_64/Debug/PixInsightINDIModule.o \
-./x86_64/Debug/PixInsightINDIParameters.o \
-./x86_64/Debug/PixInsightINDIProcess.o \
-./x86_64/Debug/PixInsightINDIclient.o \
-./x86_64/Debug/base64.o \
-./x86_64/Debug/baseclient.o \
-./x86_64/Debug/basedevice.o \
-./x86_64/Debug/indicom.o \
-./x86_64/Debug/indiproperty.o \
-./x86_64/Debug/lilxml.o \
-./x86_64/Debug/windows/vc10/PixInsightINDIclient.o
+./x86_64/Release/PixInsightINDIInstance.o \
+./x86_64/Release/PixInsightINDIInterface.o \
+./x86_64/Release/PixInsightINDIclient.o \
+./x86_64/Release/PixInsightINDIModule.o \
+./x86_64/Release/PixInsightINDIParameters.o \
+./x86_64/Release/PixInsightINDIProcess.o \
+./x86_64/Release/PropertyNode.o \
+./x86_64/Release/IINDIProperty.o \
+./x86_64/Release/CCDFrameProcess.o \
+./x86_64/Release/CCDFrameInstance.o \
+./x86_64/Release/CCDFrameInterface.o \
+./x86_64/Release/base64.o \
+./x86_64/Release/BaseClientImpl.o \
+./x86_64/Release/basedevice.o \
+./x86_64/Release/indicom.o \
+./x86_64/Release/indiproperty.o \
+./x86_64/Release/lilxml.o
+
+#
+# Test object files
+#
+CLIENT_TEST_OBJ_FILES=\
+./x86_64/Release/PixInsightINDIclientTest.o\
+./x86_64/Release/FakePixInsightINDIInstance.o\
+./x86_64/Release/FakeINDIClient.o\
+./x86_64/Release/INDIPropertyBuilder.o
+
+
+PROPBUILDER_TEST_OBJ_FILES=\
+./x86_64/Release/INDIPropertyBuilderTest.o\
+./x86_64/Release/INDIPropertyBuilder.o
+
 
 #
 # Dependency files
 #
 
 DEP_FILES= \
-./x86_64/Debug/PixInsightINDIInstance.d \
-./x86_64/Debug/PixInsightINDIInterface.d \
-./x86_64/Debug/PixInsightINDIModule.d \
-./x86_64/Debug/PixInsightINDIParameters.d \
-./x86_64/Debug/PixInsightINDIProcess.d \
-./x86_64/Debug/PixInsightINDIclient.d \
-./x86_64/Debug/base64.d \
-./x86_64/Debug/baseclient.d \
-./x86_64/Debug/basedevice.d \
-./x86_64/Debug/indicom.d \
-./x86_64/Debug/indiproperty.d \
-./x86_64/Debug/lilxml.d \
-./x86_64/Debug/windows/vc10/PixInsightINDIclient.d
+./x86_64/Release/PixInsightINDIInstance.d \
+./x86_64/Release/PixInsightINDIInterface.d \
+./x86_64/Release/PixInsightINDIclient.d \
+./x86_64/Release/PixInsightINDIModule.d \
+./x86_64/Release/PixInsightINDIParameters.d \
+./x86_64/Release/PixInsightINDIProcess.d \
+./x86_64/Release/PropertyNode.d \
+./x86_64/Release/IINDIProperty.d \
+./x86_64/Release/CCDFrameProcess.d \
+./x86_64/Release/CCDFrameInstance.d \
+./x86_64/Release/CCDFrameInterface.d \
+./x86_64/Release/base64.d \
+./x86_64/Release/BaseClientImpl.d \
+./x86_64/Release/basedevice.d \
+./x86_64/Release/indicom.d \
+./x86_64/Release/indiproperty.d \
+./x86_64/Release/lilxml.d \
+./x86_64/Release/PixInsightINDIclientTest.d \
+./x86_64/Release/FakePixInsightINDIInstance.d\
+./x86_64/Release/FakeINDIClient.d\
+./x86_64/Release/INDIPropertyBuilder.d
+
+GTEST_OBJ_FILES=\
+ gtest-all.o \
+ gtest_main.o
+
+GMOCK_OBJ_FILES=\
+ gmock-all.o \
+ gmock_main.o
 
 #
 # Rules
@@ -78,24 +130,64 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/PixInsightINDI-pxm.so: $(OBJ_FILES)
-	g++-4.7.2 -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/PixInsightINDI-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
-	$(MAKE) -f ./makefile-x86_64-debug --no-print-directory post-build
+	g++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/PixInsightINDI-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi -lz
+	$(MAKE) -f ./makefile-x86_64 --no-print-directory post-build
+
+libgtest.a:  $(GTEST_OBJ_FILES)
+	ar -rv libgtest.a $(GTEST_OBJ_FILES)
+	
+gtest-all.o : ${GTEST_DIR}/src/gtest-all.cc 
+	g++ -isystem ${GTEST_DIR}/include -I${GTEST_DIR} -pthread -c "$<"
+
+gtest_main.o : ${GTEST_DIR}/src/gtest_main.cc
+	g++ -isystem ${GTEST_DIR}/include -I${GTEST_DIR} -pthread -c "$<"
+	
+libgmock.a:  $(GMOCK_OBJ_FILES)
+	ar -rv libgmock.a $(GMOCK_OBJ_FILES)
+	
+gmock-all.o : ${GMOCK_DIR}/src/gmock-all.cc 
+	g++ -isystem ${GMOCK_DIR}/include -I${GMOCK_DIR} \
+	    -isystem ${GTEST_DIR}/include -I${GTEST_DIR}  -pthread -c "$<"
+
+gmock_main.o : ${GMOCK_DIR}/src/gmock_main.cc
+	g++ -isystem ${GMOCK_DIR}/include -I${GMOCK_DIR} \
+	    -isystem ${GTEST_DIR}/include -I${GTEST_DIR}  -pthread -c "$<"
+
+
+PixInsightINDIclientGTest: $(OBJ_DIR)/PixInsightINDI-pxm.so $(CLIENT_TEST_OBJ_FILES)
+	g++ -I ${GTEST_DIR}/include -L"${GTEST_DIR}/lib" -I ${GMOCK_DIR}/include -L"${GMOCK_DIR}/lib"  -L"$(PCLLIBDIR64)" -pthread  -o PixInsightINDIclientGTest $(OBJ_FILES)  ${CLIENT_TEST_OBJ_FILES} libgtest.a libgmock.a  -lPCL-pxi -lz
+
+INDIPropertyBuilderGTest: $(OBJ_DIR)/PixInsightINDI-pxm.so $(PROPBUILDER_TEST_OBJ_FILES)
+	g++ -I ${GTEST_DIR}/include -L"${GTEST_DIR}/lib" -I ${GMOCK_DIR}/include -L"${GMOCK_DIR}/lib"  -L"$(PCLLIBDIR64)" -pthread  -o INDIPropertyBuilderGTest $(OBJ_FILES)  ${PROPBUILDER_TEST_OBJ_FILES} libgtest.a libgmock.a  -lPCL-pxi -lz
+
 
 .PHONY: clean
 clean:
-	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/PixInsightINDI-pxm.so
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(TEST_OBJ_FILES) $(OBJ_DIR)/PixInsightINDI-pxm.so ./x86_64/PixInsightINDIclientGTest
 
 .PHONY: post-build
 post-build:
 	cp $(OBJ_DIR)/PixInsightINDI-pxm.so $(PCLBINDIR64)
 
-./x86_64/Debug/%.o: ../../%.cpp
-	g++-4.7.2 -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O0 -g -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+./x86_64/Release/%.o: ../../%.cpp 
+	g++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O0 -g -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
-./x86_64/Debug/windows/vc10/%.o: ../../windows/vc10/%.cpp
-	g++-4.7.2 -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O0 -g -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+./x86_64/Release/%.o: ../../%.c
+	gcc -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O0 -g -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
-./x86_64/Debug/%.o: ../../%.c
-	gcc-4.7.2 -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O0 -g -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+
+./x86_64/Release/%.o: ../../test/%.cpp 
+	g++ -c -pipe -m64 -fPIC  -D__PCL_LINUX -I"$(PCLINCDIR)" -I ${GTEST_DIR}/include -I ${GMOCK_DIR}/include -pthread -O0 -g -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
+./x86_64/Release/%.o: ../../test/%.c
+	gcc -c -pipe -m64 -fPIC  -D__PCL_LINUX -I"$(PCLINCDIR)" -I ${GTEST_DIR}/include -I ${GMOCK_DIR}/include -pthread -O0 -g -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+
+./x86_64/Release/%.o: ../../fakes/%.cpp 
+	g++ -c -pipe -m64 -fPIC  -D__PCL_LINUX -I"$(PCLINCDIR)" -I ${GTEST_DIR}/include -I ${GMOCK_DIR}/include -pthread -O0 -g -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x86_64/Release/%.o: ../../fakes/%.c
+	gcc -c -pipe -m64 -fPIC  -D__PCL_LINUX -I"$(PCLINCDIR)" -I ${GTEST_DIR}/include -I ${GMOCK_DIR}/include -pthread -O0 -g -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffast-math -ftree-vectorize -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+
 

@@ -63,6 +63,7 @@
 #include <pcl/TreeBox.h>
 #include <pcl/ErrorHandler.h>
 #include <pcl/Timer.h>
+#include<pcl/Mutex.h>
 #include <map>
 #include <vector>
 
@@ -206,6 +207,7 @@ public:
    PropertyNodeMapType m_propertyNodeMap;
    PropertyNodeMapType m_elementNodeMap;
 
+   Mutex m_mutex;
 
    void UpdatePropertyList();
 

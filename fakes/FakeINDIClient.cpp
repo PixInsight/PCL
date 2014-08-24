@@ -83,4 +83,37 @@ void FakeINDIClient::sendNewText (const char * deviceName, const char *propertyN
 	newText((ITextVectorProperty*) prop->getProperty());
 }
 
+void FakeINDIClient::removeText(const char * deviceName, const char *propertyName, const char *elementName, const char* text){
+	INDIPropertyBuilder builder(INDI_TEXT);
+	builder.device("TestDevice").property("TestTextProperty").addElement(
+			"TestElement", IsoString(text));
+
+	INDI::Property* prop = builder.getProperty()->getProperty();
+	CHECK_POINTER(prop);
+
+	removeProperty( prop );
+}
+
+void FakeINDIClient::removeNumber (const char * deviceName, const char *propertyName, const char *elementName, double value){
+
+	INDIPropertyBuilder builder(INDI_NUMBER);
+	builder.device("TestDevice").property("TestNumberProperty").addElement("TestElement",IsoString(value));
+
+	INDI::Property* prop = builder.getProperty()->getProperty();
+	CHECK_POINTER(prop);
+
+	removeProperty( prop );
+}
+
+void FakeINDIClient::removeSwitch (const char * deviceName, const char *propertyName, const char *elementName){
+
+	INDIPropertyBuilder builder(INDI_SWITCH);
+	builder.device("TestDevice").property("TestSwitchProperty").addElement("TestElement","ON");
+
+	INDI::Property* prop = builder.getProperty()->getProperty();
+	CHECK_POINTER(prop);
+
+	removeProperty( prop);
+}
+
 } /* namespace pcl */

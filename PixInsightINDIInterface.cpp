@@ -596,8 +596,9 @@ SetPropertyDialog::SetPropertyDialog():Dialog(),m_instance(NULL){
 
 
 void PixInsightINDIInterface::UpdatePropertyList(){
-
+	m_mutex.Lock();
 	GUI->PropertyList_TreeBox.DisableUpdates();
+	std::vector<INDIPropertyListItem> itemsToBeRemoved;
 
 	if (indiClient.get() == 0)
 		return;
@@ -629,8 +630,18 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 		PropertyNodeMapType::iterator propertyIter = m_propertyNodeMap.find(iter->Device+iter->Property);
 		PropertyNode* propertyNode;
 		if (propertyIter!= m_propertyNodeMap.end()&&!createPropertyTreeBox){
-			propertyNode=propertyIter->second;
-		} else
+			if (!iter->PropertyRemovalFlag){
+				propertyNode=propertyIter->second;
+			}
+			else {
+				// remove Property fome childs vector of device (parent) node
+				deviceNode->RemoveChild(propertyIter->second);
+				// delete property
+				delete propertyIter->second;
+				// remove map entry
+				m_propertyNodeMap.erase(propertyIter);
+			}
+		} else if (!iter->PropertyRemovalFlag)
 		{
 			PropertyNode* child = new PropertyNode(deviceNode,iter->Device,iter->Property);
 			propertyNode = child;
@@ -643,8 +654,15 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 		PropertyNodeMapType::iterator elementIter = m_elementNodeMap.find(iter->Device+iter->Property+iter->Element);
 		PropertyNode* elementNode;
 		if (elementIter != m_elementNodeMap.end()&&!m_createPropertyTreeBox) {
-			elementNode = elementIter->second;
-		} else {
+			if (!iter->PropertyRemovalFlag){
+				elementNode = elementIter->second;
+			}
+			else {
+				delete elementIter->second;
+				m_elementNodeMap.erase(elementIter);
+				itemsToBeRemoved.push_back(*iter);
+			}
+		} else if (!iter->PropertyRemovalFlag){
 			// create Element node
 			elementNode = PropertyNode::create(propertyNode,iter->Device, iter->Property, iter->Element,iter->PropertyTypeStr);
 			assert(elementNode!=NULL);
@@ -655,9 +673,17 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 			elementNode->getTreeBoxNode()->SetText(2, iter->PropertyTypeStr);
 			m_elementNodeMap[iter->Device+iter->Property+iter->Element]=elementNode;
 		}
+
 	}
 	m_createPropertyTreeBox=false;
 	GUI->PropertyList_TreeBox.EnableUpdates();
+
+	// remove properties from property list
+	for (size_t i=0; i<itemsToBeRemoved.size(); i++){
+		instance.p_propertyList.Remove(itemsToBeRemoved[i]);
+	}
+
+	m_mutex.Unlock();
 }
 
 void SetPropertyDialog::Button_Click( Button& sender, bool checked ){

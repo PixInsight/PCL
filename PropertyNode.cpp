@@ -1,5 +1,6 @@
 #include "PropertyNode.h"
 #include <assert.h>
+#include <algorithm>
 
 namespace pcl {
 
@@ -80,6 +81,10 @@ namespace pcl {
 			}
 		}
 		return requiresPostVisit;
+	}
+
+	void PropertyNode::RemoveChild(PropertyNode* child){
+		m_childs.erase(std::remove(m_childs.begin(),m_childs.end(),child),m_childs.end());
 	}
 
 	bool UpdateVisitor::visit(PropertyNode* pNode, IsoString propertyKeyString, IsoString newValue){

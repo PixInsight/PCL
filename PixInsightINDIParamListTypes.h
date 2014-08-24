@@ -23,7 +23,7 @@ struct INDIDeviceListItem {
 };
 
 struct INDIPropertyListItem {
-	INDIPropertyListItem(){}
+	INDIPropertyListItem():PropertyRemovalFlag(false){}
 	String Device;
 	String Property;
 	INDI_TYPE PropertyType;

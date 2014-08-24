@@ -86,9 +86,15 @@ namespace pcl {
 
 		IsoString getPropertyKeyString() {return m_keyStr;}
 
+		void RemoveChild(PropertyNode* child);
+
 		virtual TreeBox::Node* getTreeBoxNode() {return m_thisTreeBoxNode;}
 
-		virtual ~PropertyNode() {}
+		virtual ~PropertyNode() {
+			if (m_thisTreeBoxNode!=NULL){
+				delete m_thisTreeBoxNode;
+			}
+		}
 
 		virtual bool accept(IPropertyVisitor* visitor, IsoString propertyKeyStr, IsoString newValue);
 
@@ -121,6 +127,7 @@ namespace pcl {
 	public:
 		virtual bool visit(PropertyNode* pNode,  IsoString propertyKeyStr, IsoString newPropertyValue) = 0;
 		virtual void postVisit(PropertyNode* pNode,  IsoString propertyKeyStr, IsoString newPropertyValue) = 0;
+		virtual ~IPropertyVisitor(){}
 	};
 
 
@@ -132,6 +139,7 @@ namespace pcl {
 		static IPropertyVisitor* create(){return new UpdateVisitor();}
 		bool visit(PropertyNode* pNode, IsoString propertyKeyString, IsoString newPropertyValue);
 		void postVisit(PropertyNode* pNode, IsoString propertyKeyString, IsoString newPropertyValue);
+		virtual ~UpdateVisitor(){}
 	
 	};
 }

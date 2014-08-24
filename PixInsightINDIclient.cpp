@@ -53,10 +53,27 @@ namespace pcl {
 
 	void INDIClient::removeProperty(INDI::Property *property){
 		if (property!=NULL){
-			IProperty* INDIProperty = PropertyFactory::create(property);
-			ArrayOperator<INDIPropertyListItem>* _delete=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayDelete<INDIPropertyListItem>());
+			ArrayOperator<INDIPropertyListItem>* update=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayUpdate<INDIPropertyListItem>());
 
-			runOnPropertyTable(INDIProperty,_delete);
+			IProperty* INDIProperty = PropertyFactory::create(property);
+
+			String sep("/");
+			INDIPropertyListItem propertyListItem;
+			propertyListItem.Device = INDIProperty->getDeviceName();
+			propertyListItem.Property = INDIProperty->getName();
+			propertyListItem.PropertyType = INDIProperty->getType();
+			propertyListItem.PropertyTypeStr = INDIProperty->getTypeStr();
+			propertyListItem.PropertyState = INDIProperty->getState();
+
+			for (size_t i = 0; i < INDIProperty->getNumOfElements(); i++) {
+				propertyListItem.Element = INDIProperty->getElementName(i);
+				propertyListItem.PropertyKey = sep + propertyListItem.Device + sep
+						+ propertyListItem.Property + sep
+						+ propertyListItem.Element;
+				propertyListItem.PropertyValue = INDIProperty->getElementValue(i);
+				propertyListItem.PropertyRemovalFlag=true;
+				update->run(m_Instance->getPropertyList(), propertyListItem);
+			}
 		}
 	}
 

@@ -111,7 +111,7 @@ private:
    bool                    m_internalAbortFlag;
 
    void getProperties();
-   bool sendNewProperty();
+   bool sendNewProperty(bool isAsyncCall=false);
    bool getPropertyFromKeyString(INDINewPropertyListItem& newPropertyKey, const String& keyString);
    void writeCurrentMessageToConsole(); 
 

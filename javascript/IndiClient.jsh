@@ -91,9 +91,16 @@ INDIclient.prototype.sendNewPropertyArray = function(newPropertyArray){
 
    this.INDI.INDI_NewProperties = newPropertyArray;
    this.execute();
-
-
 }
+
+INDIclient.prototype.sendNewPropertyArrayAsynch = function(newPropertyArray){
+   this.INDI.INDI_ServerCommand="SET_ASYNCH";
+   this.INDI.INDI_NewProperties = newPropertyArray;
+   this.execute();
+}
+
+
+
 
 INDIclient.prototype.Goto = function(RA,DEC){
    var numRA=RA[0]+RA[1]/60 + RA[2]/3600;

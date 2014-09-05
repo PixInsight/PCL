@@ -16,6 +16,15 @@
 #include "AstronomicalCatalogs.jsh"
 #include "SearchCoordinatesDialog.js"
 
+#feature-id INDI > INDI Telescope
+
+#feature-info INDI Telescope Control. \
+   <br><br/>\
+   <br/>\
+   Copyright &copy; 2014 Klaus Kretzschmar
+
+#feature-icon INDISynch.xpm
+
 var indi = new INDIclient();
 
 function convertToHMS(floatNum){
@@ -195,9 +204,25 @@ function mainDialog()
    this.solve_Button = new PushButton(this);
    this.solve_Button.text = "Solve";
    this.solve_Button.toolTip = "<p>Start plate solving for current image.</p>";
+   this.solve_Button.onPress = function (){
+      console.writeln("Event on Press" );
+      var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_NS/MOTION_NORTH","INDI_SWITCH","ON"]]
+      indi.sendNewPropertyArrayAsynch(propertyArray);
+   }
+   this.solve_Button.onRelease = function (){
+      console.writeln("Event on Release" );
+      var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_NS/MOTION_NORTH","INDI_SWITCH","ON"]]
+      indi.sendNewPropertyArrayAsynch(propertyArray);
+   }
    this.solve_Button.onClick = function (){
 
-      this.dialog.solver.SolveImage();
+     var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_NS/MOTION_NORTH","INDI_SWITCH","ON"]]
+  //   periodicTimer.start();
+       console.writeln("Event on Click" );
+
+      //indi.sendNewPropertyArrayAsynch(propertyArray);
+
+      /*this.dialog.solver.SolveImage();
 
       var raInHours=this.dialog.solver.metadata.ra*24/360;
       var RA=convertToHMS(raInHours);
@@ -207,7 +232,7 @@ function mainDialog()
       var decInHours=this.dialog.solver.metadata.dec;
       var DEC=convertToHMS(decInHours);
 
-      this.dialog.ImgDEC_Edit.text=DEC[0]+":" +DEC[1]+":"+DEC[2];
+      this.dialog.ImgDEC_Edit.text=DEC[0]+":" +DEC[1]+":"+DEC[2];*/
    }
 
    this.synch_Button = new PushButton(this);

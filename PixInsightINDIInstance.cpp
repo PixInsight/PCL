@@ -183,7 +183,7 @@ bool PixInsightINDIInstance::sendNewPropertyValue(const INDINewPropertyListItem&
 	return sendNewProperty();
 }
 
-bool PixInsightINDIInstance::sendNewProperty() {
+bool PixInsightINDIInstance::sendNewProperty(bool isAsynchCall) {
 	//Precondition: NewPropertyList contains ony elements of the same property
 	String deviceStr;
 	String propertyStr;
@@ -307,13 +307,14 @@ bool PixInsightINDIInstance::sendNewProperty() {
 	if (switchVecProp){
 		indiClient.get()->sendNewSwitch(switchVecProp);
 		if (switchVecProp!=NULL){
-			while (switchVecProp->s!=IPS_OK && switchVecProp->s!=IPS_IDLE &&  !p_doAbort && !m_internalAbortFlag){
+			while (switchVecProp->s!=IPS_OK && switchVecProp->s!=IPS_IDLE &&  !p_doAbort && !m_internalAbortFlag && !isAsynchCall){
 				p_doAbort=p_doAbort||Console().AbortRequested();
 				if (switchVecProp->s==IPS_ALERT){
 					writeCurrentMessageToConsole();
 					m_internalAbortFlag=false;
 					return false;
 				}
+
 			}
 			
 		}else{
@@ -326,7 +327,7 @@ bool PixInsightINDIInstance::sendNewProperty() {
 		indiClient.get()->sendNewNumber(numberVecProp);
 		// wait until completed or abort
 		if (numberVecProp!=NULL){
-			while (numberVecProp->s!=IPS_OK && numberVecProp->s!=IPS_IDLE && !p_doAbort && !m_internalAbortFlag){
+			while (numberVecProp->s!=IPS_OK && numberVecProp->s!=IPS_IDLE && !p_doAbort && !m_internalAbortFlag && !isAsynchCall){
 				p_doAbort=p_doAbort||Console().AbortRequested();
 				if (numberVecProp->s==IPS_ALERT){
 					writeCurrentMessageToConsole();
@@ -344,7 +345,7 @@ bool PixInsightINDIInstance::sendNewProperty() {
 		indiClient.get()->sendNewText(textVecProp);
 		// wait until completed or abort
 		if (textVecProp!=NULL){
-			while (textVecProp->s!=IPS_OK && textVecProp->s!=IPS_IDLE && !p_doAbort && !m_internalAbortFlag){
+			while (textVecProp->s!=IPS_OK && textVecProp->s!=IPS_IDLE && !p_doAbort && !m_internalAbortFlag && !isAsynchCall){
 				p_doAbort=p_doAbort||Console().AbortRequested();
 				if (textVecProp->s==IPS_ALERT){
 					writeCurrentMessageToConsole();
@@ -396,7 +397,7 @@ void PixInsightINDIInstance::writeCurrentMessageToConsole(){
 
 bool PixInsightINDIInstance::ExecuteGlobal()
 {
-   Console().WriteLn("INDI control client --- (c) Klaus Kretzchmar, 2014");
+   Console().WriteLn("INDI control client --- (c) Klaus Kretzschmar, 2014");
    Console().EnableAbort();
    if (!p_connect){
 	  // disconnet from server
@@ -435,10 +436,14 @@ bool PixInsightINDIInstance::ExecuteGlobal()
 		   p_getPropertyReturnValue=propItem.PropertyValue;
 		   Console().WriteLn(String().Format("Vaule=%s",IsoString(p_getPropertyReturnValue).c_str()));
 	   }
-	   else{
+	   else  {
 		   Console().WriteLn(String().Format("Error: Could not get value for property %s.",IsoString(p_getPropertyParam).c_str()));
 	   }
+   } else if (p_command == String("SET_ASYNCH")){
+	   bool isAsynchCall=true;
+	   sendNewProperty(isAsynchCall);
    }
+
    else
 	   sendNewProperty();
 

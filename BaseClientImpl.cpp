@@ -482,7 +482,7 @@ INDI::BaseDevice * INDI::BaseClientImpl::findDev( const char * devName, char * e
 
     for (devicei = cDevices.begin(); devicei != cDevices.end(); devicei++)
     {
-        if (!strcmp(devName, (*devicei)->getDeviceName()))
+        if ((*devicei)!=NULL && !strcmp(devName, (*devicei)->getDeviceName()))
          return (*devicei);
 
     }

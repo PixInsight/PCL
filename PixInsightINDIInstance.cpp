@@ -442,8 +442,12 @@ bool PixInsightINDIInstance::ExecuteGlobal()
    } else if (p_command == String("SET_ASYNCH")){
 	   bool isAsynchCall=true;
 	   sendNewProperty(isAsynchCall);
+   } else if (p_command == String("REGISTER_INSTANCE")){
+	   indiClient.get()->registerScriptInstance(this);
    }
-
+   else if (p_command == String("RELEASE_INSTANCE")){
+   	   indiClient.get()->registerScriptInstance(NULL);
+   }
    else
 	   sendNewProperty();
 

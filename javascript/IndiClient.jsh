@@ -93,6 +93,16 @@ INDIclient.prototype.sendNewPropertyArray = function(newPropertyArray){
    this.execute();
 }
 
+INDIclient.prototype.registerInstance = function(){
+   this.INDI.INDI_ServerCommand="REGISTER_INSTANCE";
+   this.execute();
+}
+
+INDIclient.prototype.releaseInstance = function(){
+   this.INDI.INDI_ServerCommand="RELEASE_INSTANCE";
+   this.execute();
+}
+
 INDIclient.prototype.sendNewPropertyArrayAsynch = function(newPropertyArray){
    this.INDI.INDI_ServerCommand="SET_ASYNCH";
    this.INDI.INDI_NewProperties = newPropertyArray;

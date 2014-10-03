@@ -26,6 +26,9 @@ namespace pcl {
 			propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element;
 			propertyListItem.PropertyValue=INDIProperty->getElementValue(i);
 			arrayOp->run(m_Instance->getPropertyList(),propertyListItem);
+		    if (m_ScriptInstance) {
+			  arrayOp->run(m_ScriptInstance->getPropertyList(), propertyListItem);
+		    }
 		}
 
 
@@ -38,6 +41,9 @@ namespace pcl {
 			deviceListItem.DeviceName=String(dp->getDeviceName());
 			deviceListItem.DeviceLabel=String(dp->getDriverName());
 			m_Instance->getDeviceList().Append(deviceListItem);
+			if (m_ScriptInstance) {
+				m_ScriptInstance->getDeviceList().Append(deviceListItem);
+			}
 		}
 
 	}
@@ -73,6 +79,9 @@ namespace pcl {
 				propertyListItem.PropertyValue = INDIProperty->getElementValue(i);
 				propertyListItem.PropertyRemovalFlag=true;
 				update->run(m_Instance->getPropertyList(), propertyListItem);
+				if (m_ScriptInstance) {
+					update->run(m_ScriptInstance->getPropertyList(), propertyListItem);
+				}
 			}
 		}
 	}
@@ -81,6 +90,9 @@ namespace pcl {
 		const char* message = dp->messageQueue(messageID);
 		if (message!=NULL){
 			m_Instance->getCurrentMessage()=IsoString(message);
+			if (m_ScriptInstance) {
+				m_ScriptInstance->getCurrentMessage()=IsoString(message);
+			}
 		}
 	}
 
@@ -144,6 +156,9 @@ namespace pcl {
 	    }
 	  else {
 	    m_Instance->getCurrentMessage() =IsoString("TMPDIR environment variable not set.");
+	    if (m_ScriptInstance) {
+	    	m_ScriptInstance->getCurrentMessage() =IsoString("TMPDIR environment variable not set.");
+	    }
 	  }
 	}
 }

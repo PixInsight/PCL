@@ -107,13 +107,17 @@ class INDIClient : public INDI::BaseClientImpl
 {
  public:
 
-	 INDIClient(IPixInsightINDIInstance* instance):BaseClientImpl(),m_Instance(instance)
+	 INDIClient(IPixInsightINDIInstance* instance):BaseClientImpl(),m_Instance(instance),m_ScriptInstance(NULL)
 	 {
 		 if (m_Instance==NULL){
 			 throw FatalError(ERR_MSG("Invalid instance pointer."));
 		 }
 	 }
 	 ~INDIClient(){}
+
+	 void registerScriptInstance(IPixInsightINDIInstance* scriptInstance){
+		m_ScriptInstance=scriptInstance;
+	 }
 
 
 protected:
@@ -130,6 +134,7 @@ protected:
 private:
    
    IPixInsightINDIInstance*         m_Instance;
+   IPixInsightINDIInstance*         m_ScriptInstance;
 
    void runOnPropertyTable(IProperty* INDIProperty, const ArrayOperator<INDIPropertyListItem>* arrayOp);
 

@@ -45,6 +45,15 @@ function mainDialog()
 
    var ttStr = "";
 
+    // BEGIN of INDI Client Process  ========================================================
+
+
+   this.INDIClientProcess_Section       = new SectionBar(this,"INDI Client Process");
+   this.INDIClientProcess_Control       = new Control(this);
+   this.INDIClientProcess_Control.sizer = new VerticalSizer;
+   this.INDIClientProcess_Control.sizer.spacing = 4;
+
+   this.INDIClientProcess_Section.setSection(this.INDIClientProcess_Control);
 
 
    this.INDIProcess_Label = new labelBox(this, "INDI Client Process", TextAlign_VertCenter, 120);
@@ -75,22 +84,6 @@ function mainDialog()
 
    }
 
-   this.INDIProcess_HSizer = new HorizontalSizer;
-   with(this.INDIProcess_HSizer)
-   {
-      margin = 4;
-      spacing = 6;
-      add(this.INDIProcess_Label);
-      add(this.INDIProcess_Combo);
-
-      addStretch();
-
-   }
-   // End of INDI server connection:  ========================================================
-
-
-
-
    this.INDITelescope_Label = new labelBox(this, "Telescope:", TextAlign_VertCenter, 120);
    this.INDITelescope_Label.setFixedWidth(100);
    this.INDITelescope_Combo = new ComboBox(this);
@@ -104,17 +97,29 @@ function mainDialog()
       this.dialog.curRA_Edit.update();
    }
 
-   this.INDITelescope_HSizer = new HorizontalSizer;
-   with(this.INDITelescope_HSizer)
+   this.INDIProcess_HSizer = new HorizontalSizer;
+   with(this.INDIProcess_HSizer)
    {
       margin = 4;
       spacing = 6;
+      add(this.INDIProcess_Label);
+      add(this.INDIProcess_Combo);
+      addStretch();
       add(this.INDITelescope_Label);
       add(this.INDITelescope_Combo);
       addStretch();
 
-
    }
+   this.INDIClientProcess_Control.sizer.add(this.INDIProcess_HSizer);
+
+   // BEGIN of Telescope Position Section:  ===========================================
+   this.TelescopePosition_Section       = new SectionBar(this,"Telescope Position");
+   this.TelescopePosition_Control       = new Control(this);
+   this.TelescopePosition_Control.sizer = new VerticalSizer;
+   this.TelescopePosition_Control.sizer.spacing = 4;
+
+   this.TelescopePosition_Section.setSection(this.TelescopePosition_Control);
+
 
    // BEGIN of plate solving:  ========================================================
 
@@ -133,7 +138,7 @@ function mainDialog()
    this.solver = new ImageSolver();
 
    this.configSolver_Button = new PushButton(this);
-   this.configSolver_Button.text = "Configure solver";
+   this.configSolver_Button.text = "Choose Object";
    this.configSolver_Button.toolTip = "<p>Opens the configuration dialog for the script ImageSolver</p>";
    this.configSolver_Button.onClick = function ()
    {
@@ -191,6 +196,157 @@ function mainDialog()
       add(this.goto_Button);
    }
 
+
+   this.TelescopePosition_Control.sizer.add(this.ImageSolver_HSizer);
+
+   this.Motion_Label = new labelBox(this, "Telescope Motion:", TextAlign_VertCenter, 120);
+
+   this.moveNorth_Button = new PushButton(this);
+   this.moveNorth_Button.text = "North";
+   this.moveNorth_Button.toolTip = "<p>Move telescope towards North</p>";
+   this.moveNorth_Button.onPress = function (){
+     var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_NS/MOTION_NORTH","INDI_SWITCH","ON"]]
+     indi.sendNewPropertyArrayAsynch(propertyArray);
+   }
+
+   this.moveNorth_Button.onRelease = function (){
+     var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_NS/MOTION_NORTH","INDI_SWITCH","ON"]]
+     indi.sendNewPropertyArrayAsynch(propertyArray);
+     this.dialog.curDEC_Edit.update();
+   }
+
+   this.MotionControl_HSizer = new HorizontalSizer;
+   with(this.MotionControl_HSizer)
+   {
+      margin = 4;
+      spacing = 6;
+      addStretch();
+      add(this.moveNorth_Button);
+   }
+
+   this.moveSouth_Button = new PushButton(this);
+   this.moveSouth_Button.text = "South";
+   this.moveSouth_Button.toolTip = "<p>Move telescope towards South</p>";
+   this.moveSouth_Button.onPress = function (){
+     var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_NS/MOTION_SOUTH","INDI_SWITCH","ON"]]
+     indi.sendNewPropertyArrayAsynch(propertyArray);
+   }
+
+   this.moveSouth_Button.onRelease = function (){
+     var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_NS/MOTION_SOUTH","INDI_SWITCH","ON"]]
+     indi.sendNewPropertyArrayAsynch(propertyArray);
+     this.dialog.curDEC_Edit.update();
+   }
+
+   this.moveWest_Button = new PushButton(this);
+   this.moveWest_Button.text = "West";
+   this.moveWest_Button.toolTip = "<p>Move telescope towards West</p>";
+   this.moveWest_Button.onPress = function (){
+     var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_WE/MOTION_WEST","INDI_SWITCH","ON"]]
+     indi.sendNewPropertyArrayAsynch(propertyArray);
+   }
+
+   this.moveWest_Button.onRelease = function (){
+     var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_WE/MOTION_WEST","INDI_SWITCH","ON"]]
+     indi.sendNewPropertyArrayAsynch(propertyArray);
+      this.dialog.curRA_Edit.update();
+   }
+
+   this.moveEast_Button = new PushButton(this);
+   this.moveEast_Button.text = "East";
+   this.moveEast_Button.toolTip = "<p>Move telescope towards East</p>";
+   this.moveEast_Button.onPress = function (){
+     var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_WE/MOTION_EAST","INDI_SWITCH","ON"]]
+     indi.sendNewPropertyArrayAsynch(propertyArray);
+   }
+
+   this.moveEast_Button.onRelease = function (){
+     var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_WE/MOTION_EAST","INDI_SWITCH","ON"]]
+     indi.sendNewPropertyArrayAsynch(propertyArray);
+     this.dialog.curRA_Edit.update();
+   }
+
+   this.MotionControlNS_VSizer = new VerticalSizer;
+   with( this.MotionControlNS_VSizer)
+   {
+      margin = 4;
+      spacing = 6;
+      add(this.moveNorth_Button);
+      addStretch();
+      add(this.moveSouth_Button);
+   }
+
+   this.MotionControlW_VSizer = new VerticalSizer;
+   with( this.MotionControlW_VSizer)
+   {
+      margin = 4;
+      spacing = 6;
+      add(this.moveWest_Button);
+   }
+
+   this.MotionControlE_VSizer = new VerticalSizer;
+   with( this.MotionControlE_VSizer)
+   {
+      margin = 4;
+      spacing = 6;
+      add(this.moveEast_Button);
+   }
+
+   this.MotionControl_HSizer = new HorizontalSizer;
+   with(this.MotionControl_HSizer)
+   {
+      margin = 4;
+      spacing = 6;
+      add(this.Motion_Label);
+      addStretch();
+      add(this.MotionControlW_VSizer);
+      add(this.MotionControlNS_VSizer);
+      add(this.MotionControlE_VSizer);
+      addStretch();
+   }
+
+
+   this.TelescopePosition_Control.sizer.add(this.MotionControl_HSizer);
+
+   this.Park_Label = new labelBox(this, "Parking Telescope:", TextAlign_VertCenter, 120);
+
+   this.Park_Button = new PushButton(this);
+   this.Park_Button.text = "Park";
+   this.Park_Button.toolTip = "<p>Move telescope towards the parking position.</p>";
+   this.Park_Button.onPress = function (){
+     var propertyArray=[["/" + currentTelescope + "/TELESCOPE_PARK/PARK","INDI_SWITCH","ON"]]
+     indi.sendNewPropertyArray(propertyArray);
+   }
+
+   this.Unpark_Button = new PushButton(this);
+   this.Unpark_Button.text = "Unpark";
+   this.Unpark_Button.toolTip = "<p>Unpark telescope.</p>";
+   this.Unpark_Button.onPress = function (){
+     var propertyArray=[["/" + currentTelescope + "/TELESCOPE_PARK/PARK","INDI_SWITCH","ON"]]
+     indi.sendNewPropertyArray(propertyArray);
+   }
+
+   this.Park_HSizer = new HorizontalSizer;
+   with(this.Park_HSizer)
+   {
+      margin = 4;
+      spacing = 6;
+      add(this.Park_Label);
+      add(this.Unpark_Button);
+      add(this.Park_Button);
+      addStretch();
+   }
+
+   this.TelescopePosition_Control.sizer.add(this.Park_HSizer);
+
+   // BEGIN of Image Centralization Section:  ===========================================
+   this.ImageCentralization_Section       = new SectionBar(this,"Image Centralization");
+   this.ImageCentralization_Control       = new Control(this);
+   this.ImageCentralization_Control.sizer = new VerticalSizer;
+   this.ImageCentralization_Control.sizer.spacing = 4;
+
+   this.ImageCentralization_Section.setSection(this.ImageCentralization_Control);
+
    this.ImgRA_Label = new labelBox(this, "Image       RA:", TextAlign_VertCenter, 120);
 
    var ImgRA=[0,0,0];
@@ -206,25 +362,10 @@ function mainDialog()
    this.solve_Button = new PushButton(this);
    this.solve_Button.text = "Solve";
    this.solve_Button.toolTip = "<p>Start plate solving for current image.</p>";
-   this.solve_Button.onPress = function (){
-      console.writeln("Event on Press" );
-      var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_NS/MOTION_NORTH","INDI_SWITCH","ON"]]
-      indi.sendNewPropertyArrayAsynch(propertyArray);
-   }
-   this.solve_Button.onRelease = function (){
-      console.writeln("Event on Release" );
-      var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_NS/MOTION_NORTH","INDI_SWITCH","ON"]]
-      indi.sendNewPropertyArrayAsynch(propertyArray);
-   }
+
    this.solve_Button.onClick = function (){
 
-     var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_NS/MOTION_NORTH","INDI_SWITCH","ON"]]
-  //   periodicTimer.start();
-       console.writeln("Event on Click" );
-
-      //indi.sendNewPropertyArrayAsynch(propertyArray);
-
-      /*this.dialog.solver.SolveImage();
+      this.dialog.solver.SolveImage();
 
       var raInHours=this.dialog.solver.metadata.ra*24/360;
       var RA=convertToHMS(raInHours);
@@ -234,13 +375,13 @@ function mainDialog()
       var decInHours=this.dialog.solver.metadata.dec;
       var DEC=convertToHMS(decInHours);
 
-      this.dialog.ImgDEC_Edit.text=DEC[0]+":" +DEC[1]+":"+DEC[2];*/
+      this.dialog.ImgDEC_Edit.text=DEC[0]+":" +DEC[1]+":"+DEC[2];
    }
 
-   this.synch_Button = new PushButton(this);
-   this.synch_Button.text = "Synch";
-   this.synch_Button.toolTip = "<p>Synchronize telescope coordinates with image coordinates.</p>";
-   this.synch_Button.onClick = function (){
+   this.center_Button = new PushButton(this);
+   this.center_Button.text = "Center";
+   this.center_Button.toolTip = "<p>Center the object with based on the given image coordinates.</p>";
+   this.center_Button.onClick = function (){
 
      var curRa =parseFloat(indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA"));
      var curDec =parseFloat(indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC"));
@@ -253,9 +394,30 @@ function mainDialog()
      this.dialog.curRA_Edit.update();
    }
 
+   this.synch_Button = new PushButton(this);
+   this.synch_Button.text = "Sync";
+   this.synch_Button.toolTip = "<p>Synchronize the image coordinates with the motor positions.</p>";
+   this.synch_Button.onClick = function (){
 
-   this.ImageSolver_HSizer2 = new HorizontalSizer;
-   with(this.ImageSolver_HSizer2)
+
+     var propertyArray=[["/" + currentTelescope + "/ON_COORD_SET/SYNC","INDI_SWITCH","ON"]]
+     indi.sendNewPropertyArray(propertyArray);
+
+     var curRa =parseFloat(indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA"));
+     var curDec =parseFloat(indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC"));
+     propertyArray=[["/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA","INDI_NUMBER",curRa.toString()],
+                    ["/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC","INDI_NUMBER",curDec.toString()]];
+
+     indi.sendNewPropertyArray(propertyArray);
+     this.dialog.curRA_Edit.update();
+
+     var propertyArray=[["/" + currentTelescope + "/ON_COORD_SET/TRACK","INDI_SWITCH","ON"]]
+     indi.sendNewPropertyArray(propertyArray);
+
+   }
+
+   this.ImageSolver_HSizer = new HorizontalSizer;
+   with(this.ImageSolver_HSizer)
    {
       margin = 4;
       spacing = 6;
@@ -265,9 +427,11 @@ function mainDialog()
       add(this.ImgDEC_Edit);
       addStretch();
       add(this.solve_Button);
+      add(this.center_Button);
       add(this.synch_Button);
    }
 
+   this.ImageCentralization_Control.sizer.add(this.ImageSolver_HSizer);
 
 
    // END of plate solving:  ========================================================
@@ -277,12 +441,14 @@ function mainDialog()
    {
       margin = 4;
       spacing = 6;
-      add(this.INDIProcess_HSizer);
+      add(this.INDIClientProcess_Section);
+      add(this.INDIClientProcess_Control);
 
-      add(this.INDITelescope_HSizer);
+      add(this.TelescopePosition_Section);
+      add(this.TelescopePosition_Control);
 
-      add(this.ImageSolver_HSizer);
-      add(this.ImageSolver_HSizer2);
+      add(this.ImageCentralization_Section);
+      add(this.ImageCentralization_Control);
 
    }
 }
@@ -322,7 +488,6 @@ var maindlg = new mainDialog();
 
 
 maindlg.onClose = function () {
-  periodicTimer.stop();
   indi.releaseInstance();
 }
 

@@ -16,7 +16,4 @@ In essence, PCLL is a liberal BSD-like license that allows you to develop open-s
 
 Copyright (C) 2003-2014 Pleiades Astrophoto
 
-Pleiades Astrophoto, S.L.
-Apartado Postal 204
-46185 Pobla de Vallbona (Valencia)
-Spain
+Pleiades Astrophoto, S.L. / Apartado Postal 204 / 46185 Pobla de Vallbona (Valencia) / Spain

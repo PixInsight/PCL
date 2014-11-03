@@ -1,0 +1,329 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// ****************************************************************************
+// pcl/SurfaceSpline.h - Released 2014/10/29 07:34:13 UTC
+// ****************************************************************************
+// This file is part of the PixInsight Class Library (PCL).
+// PCL is a multiplatform C++ framework for development of PixInsight modules.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+#ifndef __PCL_SurfaceSpline_h
+#define __PCL_SurfaceSpline_h
+
+/// \file pcl/SurfaceSpline.h
+
+#ifndef __PCL_Defs_h
+#include <pcl/Defs.h>
+#endif
+
+#ifndef __PCL_Diagnostics_h
+#include <pcl/Diagnostics.h>
+#endif
+
+#ifndef __PCL_Vector_h
+#include <pcl/Vector.h>
+#endif
+
+namespace pcl
+{
+
+// ----------------------------------------------------------------------------
+
+class SurfaceSplineBase
+{
+protected:
+
+   SurfaceSplineBase()
+   {
+   }
+
+   SurfaceSplineBase( const SurfaceSplineBase& )
+   {
+   }
+
+   virtual ~SurfaceSplineBase()
+   {
+   }
+
+   static void Generate( float*, float*, const float*, int,
+                         int, float, const float*, float*, double&, double&, double& );
+
+   static void Generate( double*, double*, const double*, int,
+                         int, float, const float*, double*, double&, double&, double& );
+
+   static float Interpolate( const float*, const float*, int, const float*, int, double, double );
+
+   static double Interpolate( const double*, const double*, int, const double*, int, double, double );
+};
+
+/*!
+ * \class SurfaceSpline
+ * \brief Two-dimensional interpolating surface spline (thin plate).
+ *
+ * %SurfaceSpline implements interpolating or smoothing surface splines (also
+ * known as <em>thin plates</em>) for arbitrarily distributed input nodes in
+ * two dimensions.
+ */
+template <typename T>
+class PCL_CLASS SurfaceSpline : private SurfaceSplineBase
+{
+public:
+
+   typedef GenericVector<T>   vector_type;
+
+   /*!
+    * Constructs a %SurfaceSpline instance.
+    */
+   SurfaceSpline() : SurfaceSplineBase(), m_order( 2 ), m_smoothing( 0 )
+   {
+   }
+
+   /*!
+    * Copy constructor.
+    */
+   SurfaceSpline( const SurfaceSpline& S ) : SurfaceSplineBase( S )
+   {
+      Assign( S );
+   }
+
+   /*!
+    * Destroys a %SurfaceSpline instance.
+    */
+   virtual ~SurfaceSpline()
+   {
+      Clear();
+   }
+
+   /*!
+    * Assigns a copy of the specified object \a S to this object.
+    */
+   void Assign( const SurfaceSpline& S )
+   {
+      m_x = S.m_x;
+      m_y = S.m_y;
+      m_r0 = S.m_r0;
+      m_x0 = S.m_x0;
+      m_y0 = S.m_y0;
+      m_order = S.m_order;
+      m_smoothing = S.m_smoothing;
+      m_weights = S.m_weights;
+      m_spline = S.m_spline;
+   }
+
+   /*!
+    * Assignment operator. Returns a reference to this object.
+    */
+   SurfaceSpline& operator =( const SurfaceSpline& S )
+   {
+      Assign( S );
+      return *this;
+   }
+
+   /*!
+    * Returns true if this surface spline is valid. A valid surface spline has
+    * been initialized with three or more nodes.
+    */
+   bool IsValid() const
+   {
+      return m_x.Length() == m_y.Length() && m_x.Length() >= 3;
+   }
+
+   /*!
+    * Returns the number of nodes used by this surface spline interpolation.
+    */
+   int Length() const
+   {
+      return m_x.Length();
+   }
+
+   /*!
+    * Returns the derivative order of this surface spline.
+    */
+   int Order() const
+   {
+      return m_order;
+   }
+
+   /*!
+    * Sets the derivative order of this surface spline.
+    *
+    * \param order   Derivative order. Must be >= 1.
+    *
+    * Calling this member function implicitly resets this %SurfaceSpline
+    * object and destroys all internal working structures.
+    *
+    * The surface spline will be continuously differentiable up to the
+    * specified order \a m. If this order is too high, an ill-conditioned
+    * linear system may result.
+    *
+    * The default order is 2. Recommended values are 2 and 3.
+    */
+   void SetOrder( int order )
+   {
+      PCL_PRECONDITION( order >= 1 )
+      Clear();
+      m_order = pcl::Max( 1, order );
+   }
+
+   /*!
+    * Returns the <em>smoothing factor</em> of this surface spline.
+    */
+   float Smoothing() const
+   {
+      return m_smoothing;
+   }
+
+   /*!
+    * Sets the <em>smoothing factor</em> of this surface spline.
+    *
+    * \param s    Smoothing factor. Must be >= 0.
+    *
+    * For \a s = 0, an <em>interpolating spline</em> is generated: all node
+    * values will be included at their respective node coordinates.
+    *
+    * For \a s > 0, a <em>smoothing spline</em> is generated: increasing \a s
+    * values will generate splines closer to the reference plane of the input
+    * node set.
+    */
+   void SetSmoothing( float s )
+   {
+      PCL_PRECONDITION( s >= 0 )
+      Clear();
+      m_smoothing = pcl::Max( 0.0F, s );
+   }
+
+   /*!
+    * Generation of a two-dimensional surface spline (thin plate).
+    *
+    * \param x       X node coordinates.
+    *
+    * \param y       Y node coordinates.
+    *
+    * \param z       %Node values.
+    *
+    * \param n       Number of nodes. Must be >= 3
+    *                (3 nodes * 2 coordinates = six degrees of freedom).
+    *
+    * \param weights    When the smoothing factor of this spline is > 0, this
+    *                is a vector of \e weights corresponding to the input
+    *                nodes. If this parameter is zero, equal weights are
+    *                assumed for all nodes. When the smoothing factor is zero
+    *                (interpolating spline), this parameter is ignored.
+    *
+    * The input nodes can be arbitrarily distributed, and they don't need to
+    * follow any specific order. However, all nodes must be distinct with
+    * respect to the machine error number for the floating point type T.
+    */
+   void Initialize( const T* x, const T* y, const T* z, int n, const float* weights = 0 )
+   {
+      PCL_PRECONDITION( x != 0 && y != 0 && && z != 0 )
+      PCL_PRECONDITION( n > 2 )
+
+      if ( n < 3 )
+         throw Error( "At least three input nodes are required in SurfaceSpline::Initialize()" );
+
+      Clear();
+
+      try
+      {
+         m_x = vector_type( x, n );
+         m_y = vector_type( y, n );
+
+         if ( m_smoothing > 0 && weights != 0 )
+            m_weights = FVector( weights, n );
+
+         m_spline = vector_type( T( 0 ), n + ((m_order*(m_order + 1)) >> 1) );
+
+         Generate( m_x.Begin(), m_y.Begin(), z, n, m_order, m_smoothing, m_weights.Begin(), m_spline.Begin(), m_r0, m_x0, m_y0 );
+      }
+      catch ( ... )
+      {
+         Clear();
+         throw;
+      }
+   }
+
+   /*!
+    * Two-dimensional surface spline interpolation. Returns an interpolated
+    * value at the specified \a x and \a y coordinates.
+    */
+   T operator ()( double x, double y ) const
+   {
+      PCL_PRECONDITION( !m_x.IsEmpty() && !m_y.IsEmpty() )
+      PCL_PRECONDITION( m_order >= 1 )
+      PCL_PRECONDITION( !m_spline.IsEmpty() )
+      return Interpolate( m_x.Begin(), m_y.Begin(), m_x.Length(), m_spline.Begin(), m_order, m_r0*(x - m_x0), m_r0*(y - m_y0) );
+   }
+
+   /*!
+    * Resets this surface spline interpolation, deallocating all internal
+    * working structures.
+    */
+   void Clear()
+   {
+      m_x.Clear();
+      m_y.Clear();
+      m_weights.Clear();
+      m_spline.Clear();
+   }
+
+protected:
+
+   vector_type m_x;         // vector of normalized X node coordinates
+   vector_type m_y;         // vector of normalized Y node coordinates
+   double      m_r0;        // scaling factor for normalization of node coordinates
+   double      m_x0;        // zero offset for normalization of X node coordinates
+   double      m_y0;        // zero offset for normalization of Y node coordinates
+   int         m_order;     // derivative order > 0
+   float       m_smoothing; // smoothing factor, or interpolating 2-D spline if m_smoothing == 0
+   FVector     m_weights;   // vector of node weights if m_smoothing != 0, otherwise ignored (empty)
+   vector_type m_spline;    // coefficients of the 2-D surface spline
+};
+
+// ----------------------------------------------------------------------------
+
+}  // pcl
+
+#endif   // __PCL_SurfaceSpline_h
+
+// ****************************************************************************
+// EOF pcl/SurfaceSpline.h - Released 2014/10/29 07:34:13 UTC

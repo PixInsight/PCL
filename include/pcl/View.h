@@ -1,0 +1,903 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// ****************************************************************************
+// pcl/View.h - Released 2014/10/29 07:34:06 UTC
+// ****************************************************************************
+// This file is part of the PixInsight Class Library (PCL).
+// PCL is a multiplatform C++ framework for development of PixInsight modules.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+#ifndef __PCL_View_h
+#define __PCL_View_h
+
+/// \file pcl/View.h
+
+#ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
+
+#ifndef __PCL_Defs_h
+#include <pcl/Defs.h>
+#endif
+
+#ifndef __PCL_UIObject_h
+#include <pcl/UIObject.h>
+#endif
+
+#ifndef __PCL_ImageVariant_h
+#include <pcl/ImageVariant.h>
+#endif
+
+#ifndef __PCL_Histogram_h
+#include <pcl/Histogram.h>
+#endif
+
+#ifndef __PCL_ImageStatistics_h
+#include <pcl/ImageStatistics.h>
+#endif
+
+#ifndef __PCL_HistogramTransformation_h
+#include <pcl/HistogramTransformation.h>
+#endif
+
+#ifndef __PCL_Array_h
+#include <pcl/Array.h>
+#endif
+
+#ifndef __PCL_Variant_h
+#include <pcl/Variant.h>
+#endif
+
+namespace pcl
+{
+
+// ----------------------------------------------------------------------------
+
+class PCL_CLASS ImageWindow;
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \defgroup view_properties Module-defined view properties.
+ */
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \namespace ViewPropertyAttribute
+ * \brief     Attributes of view properties.
+ *
+ * <table border="1" cellpadding="4" cellspacing="0">
+ * <tr><td>ViewPropertyAttribute::WriteProtected</td>  <td>Only the module that has created the property can modify it (e.g. change its value, or delete it).</td></tr>
+ * <tr><td>ViewPropertyAttribute::ReadProtected</td>   <td>Only the module that has created the property can read its value. Implies write protection.</td></tr>
+ * <tr><td>ViewPropertyAttribute::Volatile</td>        <td>Volatile properties are not stored in processing histories, so they get lost across undo/redo operations.</td></tr>
+ * <tr><td>ViewPropertyAttribute::Permanent</td>       <td>Permanent properties are not stored in processing histories, but unlike volatile properties, they are preserved across undo/redo operations.</td></tr>
+ * <tr><td>ViewPropertyAttribute::NotSerializable</td> <td>The property will not be stored in projects.</td></tr>
+ * <tr><td>ViewPropertyAttribute::Storable</td>        <td>The property can be stored in image files (when using image formats able to store data properties).</td></tr>
+ * <tr><td>ViewPropertyAttribute::Reserved</td>        <td>The property has been reserved by the PixInsight Core application. It can only be generated by calling the View::ComputeProperty() member function. This attribute cannot be set explicitly by a modue.</td></tr>
+ * <tr><td>ViewPropertyAttribute::NoChange</td>        <td>This is a special flag used to preserve the existing property attributes. For internal PCL use only.</td></tr>
+ * </table>
+ *
+ * \ingroup view_properties
+ */
+namespace ViewPropertyAttribute
+{
+   enum mask_type
+   {
+      WriteProtected  = 0x00000001,
+      ReadProtected   = 0x00000002,
+      Volatile        = 0x00000010,
+      Permanent       = 0x00000020,
+      NotSerializable = 0x00000040,
+      Storable        = 0x00000080,
+      Reserved        = 0x10000000,
+      NoChange        = 0x80000000
+   };
+}
+
+/*!
+ * A combination of ViewPropertyAttribute flags.
+ * \ingroup view_properties
+ */
+typedef Flags<ViewPropertyAttribute::mask_type>  ViewPropertyAttributes;
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \class View
+ * \brief High-level interface to a PixInsight view object.
+ *
+ * Instances of %View are managed aliases of actual view objects in the
+ * PixInsight core application. Views are the main image holders in the
+ * PixInsight platform.
+ *
+ * Views can be <em>main views</em> or \e previews. A main view holds the
+ * entire image of an image window. A preview is a volatile subimage defined on
+ * an image window. In all respects, both types of views can be manipulated
+ * transparently with the abstract interface provided by the %View class.
+ * The View::IsPreview() and View::IsMainView() members inform you about the
+ * particular type of a given %View object.
+ *
+ * Each view has a unique identifier, which you can get and set through the
+ * View::Id(), View::FullId(), and View::Rename() member functions.
+ *
+ * View::Image() gives you full access to the image in a view as an
+ * ImageVariant object.
+ *
+ * Each view in PixInsight holds a set of histograms and statistical data as
+ * shared resources that can be accessed by all installed processes and
+ * interfaces. The View::CalculateHistograms() and View::CalculateStatistics()
+ * families of member functions give full access to these shared resources.
+ *
+ * In a similar way, each view maintains a set of histogram transformations
+ * used as <em>screen transfer functions</em> (STF). A STF is applied to modify
+ * the screen representation of an image, without altering actual image data.
+ * The View::GetScreenTransferFunctions() / View::SetScreenTransferFunctions()
+ * family of functions allow you to acquire and modify the STF of any view.
+ *
+ * The View::Lock() / View::Unlock() family of functions allow you to write
+ * thread-safe processing routines in current and future PixInsight
+ * multithreaded environments.
+ *
+ * Finally, the static functions View::ViewById(), View::AllViews() and
+ * View::AllPreviews() provide for global searching and listing of existing
+ * view objects.
+ *
+ * \sa ImageWindow
+ */
+class PCL_CLASS View : public UIObject
+{
+public:
+
+   /*!
+    * A container of Histogram instances, used to represent the managed
+    * histograms of a view object in the PixInsight core application.
+    */
+   typedef IndirectArray<Histogram>                histogram_list;
+
+   /*!
+    * A container of ImageStatistics instances, used to represent the managed
+    * statistics of a view object in the PixInsight core application.
+    */
+   typedef IndirectArray<ImageStatistics>          statistics_list;
+
+   /*!
+    * A container of HistogramTransformation instances, used to represent the
+    * managed Screen Transfer Functions (STF) of a view object in the core
+    * PixInsight application.
+    */
+   typedef IndirectArray<HistogramTransformation>  stf_list;
+
+   /*!
+    * Constructs a null view. A null view does not correspond to an existing
+    * view in the PixInsight core application.
+    */
+   View();
+
+   /*!
+    * Constructs a %View instance as an alias of an existing %View object.
+    *
+    * \note It cannot be overemphasized that this constructor <em>does not
+    * create a new view</em>. It only creates an \e alias object for an
+    * existing view <em>in your module</em>. In all respects, the alias and
+    * aliased objects are completely interchangeable; they behave exactly in
+    * the same way because both refer to the same server-side object living in
+    * the PixInsight core application.
+    */
+   View( const View& v ) : UIObject( v )
+   {
+   }
+
+   /*!
+    * Destroys this %View object.
+    *
+    * Note that this destructor does not destroy the actual view object, which
+    * is part of the PixInsight core application. Only the managed alias object
+    * living in the user-defined module is destroyed.
+    */
+   virtual ~View()
+   {
+   }
+
+   /*!
+    * Returns a reference to a null %View instance. A null %View does not
+    * correspond to an existing view in the PixInsight core application.
+    */
+   static View& Null();
+
+   /*!
+    * Returns true if this is a main view. A main view holds the entire image
+    * in an image window.
+    */
+   bool IsMainView() const;
+
+   /*!
+    * Returns true if this view corresponds to a preview object. A preview is
+    * a volatile subimage defined in an image window.
+    */
+   bool IsPreview() const;
+
+   /*!
+    * Returns true if this view is a preview and is in volatile state. A
+    * volatile preview contains a temporary image that can be undone/redone
+    * with the <em>Preview > Undo</em> and <em>Preview > Redo</em> core
+    * application commands.
+    */
+   bool IsVolatilePreview() const;
+
+   /*!
+    * Returns true if this view is a preview and has one or more stored states.
+    * When a preview has been stored, it behaves as an independent image with
+    * its own processing history. A stored preview does not rely on its mother
+    * image to return to a 'base' state.
+    */
+   bool IsStoredPreview() const;
+
+   /*!
+    * Returns a managed alias for the image window this view pertains to.
+    */
+   ImageWindow Window() const;
+
+   /*!
+    * Returns the identifier of this view.
+    *
+    * %View identifiers are unique within their naming context. Identifiers of
+    * main views are unique in the global context, since each main view holds
+    * an image in the core application. The identifier of a preview is unique
+    * in the context of its parent image window.
+    */
+   IsoString Id() const;
+
+   /*!
+    * Returns the full identifier of this view.
+    *
+    * If this is a main view, this function returns its identifier, which is
+    * the same string returned by the Id() member function.
+    *
+    * If this view corresponds to a preview, this function returns a unique
+    * identifier of the form:
+    *
+    * <tt>\<image_id\>-\>\<id\></tt>
+    *
+    * where \<image_id\> is the identifier of the preview's parent image, and
+    * \<id\> is the identifier of the preview. The "->" sequence is the
+    * <em>scope resolution</em> operator, used to specify pertenence of a
+    * preview to its parent image in the PixInsight environment.
+    */
+   IsoString FullId() const;
+
+   /*!
+    * Changes the identifier of this view to \a newId.
+    *
+    * If \a newId is not unique in the naming context of this view, a unique
+    * identifier is obtained automatically by appending a suffix string to the
+    * specified \a newId string.
+    *
+    * After calling this function, a ImageRenamed() notification message will
+    * be sent to all process interfaces.
+    */
+   void Rename( const IsoString& newId );
+
+   /*!
+    * Returns true if this view is not locked for reading.
+    */
+   bool CanRead() const;
+
+   /*!
+    * Returns true if this view is not locked for writing.
+    */
+   bool CanWrite() const;
+
+   /*!
+    * Locks this view for read and write operations.
+    *
+    * Processes usually call this function to make sure that a target view's
+    * image cannot be modified by another thread while they are processing it.
+    * This is necessary because PixInsight is a multithreaded environment. If a
+    * process modifies an image without locking it, other processing threads
+    * could try to read or write the same pixels concurrently, with
+    * unpredictable results.
+    *
+    * If the view is not currently locked by other processing thread, this
+    * function locks it and returns immediately. If the view is already
+    * locked, this function waits until it becomes unlocked by other threads.
+    *
+    * If the \a notify argument is false, this function will not send
+    * ViewLocked() notifications to process interfaces.
+    *
+    * \warning Always make sure that you unlock a view that you have previously
+    * locked. If your processing routines leave views locked incorrectly,
+    * they'll cause serious problems. A locked view is inaccessible to other
+    * processes, and even the user may be unable to recover locked image data.
+    */
+   void Lock( bool notify = true ) const;
+
+   /*!
+    * Unlocks this view for read and write operations.
+    *
+    * Please read the \e important information given for the Lock() function
+    * member.
+    *
+    * You shouldn't call this function if your routines have not called the
+    * Lock() function before. In other words, call Unlock() just once for each
+    * previous call lo Lock().
+    *
+    * \warning Be aware that \e just after this function returns, your
+    * processing routine \e must \e not try to modify this view or its
+    * associated image, since other thread might have locked it. If you need
+    * to gain exclusive read/write rights over this view, call Lock() again.
+    */
+   void Unlock( bool notify = true ) const;
+
+   /*!
+    * Locks this view for write operations only.
+    *
+    * Call this function if you need to make sure that a view's image will not
+    * be modified by other threads, but your processing routines will not
+    * modify it.
+    *
+    * For example, if your routines need reading this view's image as source
+    * data for your processing tasks, but not writing to it, you should call
+    * this function instead of Lock(). In this way you allow other processes
+    * (including the core application's GUI) to access this view and its image
+    * for read-only operations. This improves efficiency and useability of the
+    * whole PixInsight environment.
+    */
+   void LockForWrite( bool notify = true ) const;
+
+   /*
+    * Unlocks this view for write operations only.
+    * ### Undocumented (i.e., harmful) function.
+    */
+   void UnlockForWrite( bool notify = true ) const;
+
+   /*!
+    * Temporarily unlocks a view for reading.
+    *
+    * If your code has successfully called Lock() for this view, then its
+    * screen rendition cannot be updated, because the core application will
+    * never try to read pixel data from a view that is read-locked. This can be
+    * a problem if, for example, you need to refresh this view's screen
+    * rendition to provide feedback to the user at a given stage of your
+    * processing.
+    *
+    * The solution for such situations is calling this function to temporarily
+    * permit read-only accesses to this view and its image. When you no longer
+    * want to allow read-only operations for this view, call RelockForRead()
+    * and continue your processing work.
+    *
+    * Your code may call Unlock() safely after this function; you should not
+    * call RelockForRead() if your processing task has finished, or if this
+    * view is no longer needed for it.
+    *
+    * \warning Do not use this function if your code has not called Lock()
+    * previously.
+    */
+   void UnlockForRead( bool notify = true ) const;
+
+   /*!
+    * Relocks a view for reading (after UnlockForRead()).
+    *
+    * Call this function after UnlockForRead(), if necessary. Please read the
+    * information given for that function.
+    */
+   void RelockForRead( bool notify = true ) const;
+
+   /*!
+    * Returns true if this view has been selected as a target of an active
+    * dynamic interface.
+    */
+   bool IsDynamicTarget() const;
+
+   /*!
+    * Adds this view to the list of targets of the current active dynamic
+    * interface.
+    *
+    * Dynamic interfaces call this function for views that get involved in
+    * active dynamic procedures. For example, the DynamicCrop interface calls
+    * this function when you select a view by defining an initial cropping
+    * rectangle with the mouse.
+    *
+    * Any images selected as dynamic targets cannot be closed or modified in
+    * any way while an active dynamic interface depends on them.
+    *
+    * If you implement a dynamic interface, always call this function for a
+    * view if your dynamic interface depends on it. Failing to do so will lead
+    * to unstable and incoherent behavior of the core application's GUI.
+    *
+    * \warning Once your dynamic interface ceases depending on this view, call
+    * the RemoveFromDynamicTargets() function for it.
+    */
+   void AddToDynamicTargets();
+
+   /*!
+    * Removes this view from the list of targets of the current active
+    * dynamic interface.
+    *
+    * Call this function when your dynamic interface no longer depends on this
+    * view. Please read the important information given for
+    * AddToDynamicTargets().
+    */
+   void RemoveFromDynamicTargets();
+
+   /*!
+    * Returns an ImageVariant instance that transports the image in this view.
+    *
+    * The returned ImageVariant object transports a <em>shared image</em>. A
+    * shared image is a managed alias for an actual image living in the core
+    * PixInsight application. This is because a view is also a managed object.
+    *
+    * With this function you gain access to the image in a view, which is
+    * crucial to perform any kind of processing in the PixInsight/PCL
+    * framework.
+    *
+    * Before calling this function, however, you must make sure that your
+    * processing thread has the appropriate access rights to the view, since
+    * PixInsight is a multithreaded environment. This is done by calling the
+    * Lock() member function of %View.
+    */
+   ImageVariant Image() const;
+
+   /*!
+    * Returns an ImageVariant instance that transports the image in this view.
+    *
+    * \deprecated Use View::Image() in newly produced code.
+    */
+   ImageVariant GetImage() const
+   {
+      return this->Image();
+   }
+
+   /*!
+    * Returns true if this view holds a color image, false if it is a
+    * grayscale image.
+    */
+   bool IsColor() const;
+
+   /*!
+    * Copies the width and height in pixels of the image in this view to the
+    * specified variables.
+    */
+   void GetSize( int& width, int& height ) const;
+
+   /*!
+    * Returns the width in pixels of the image in this view.
+    */
+   int Width() const
+   {
+      int w, dum; GetSize( w, dum ); return w;
+   }
+
+   /*!
+    * Returns the height in pixels of the image in this view.
+    */
+   int Height() const
+   {
+      int dum, h; GetSize( dum, h ); return h;
+   }
+
+   /*!
+    * Returns the bounding rectangle of the image in this view. The upper left
+    * corner of the returned rectangle (x0, y0) is always (0,0). The lower
+    * right corner coordinates (x1, y1) correspond to the width and height of
+    * the image.
+    */
+   Rect Bounds() const
+   {
+      int w, h; GetSize( w, h ); return Rect( w, h );
+   }
+
+   /*!
+    * Returns true if the histogram functions have already been calculated for
+    * this view and are available.
+    *
+    * \deprecated This member function has been deprecated - do not use it in
+    * newly produced code. To generate, read and manage view histograms, use
+    * view properties. See HasProperty().
+    */
+   bool AreHistogramsAvailable() const;
+
+   /*!
+    * Retrieves the histogram functions of this view, if they are available, in
+    * the specified container.
+    *
+    * Before calling this function, make sure that the histogram functions are
+    * available by calling AreHistogramsAvailable() and, if necessary,
+    * CalculateHistograms().
+    *
+    * \deprecated This member function has been deprecated - do not use it in
+    * newly produced code. To generate, read and manage view histograms, use
+    * view properties. See ComputeProperty() and PropertyValue().
+    */
+   void GetHistograms( histogram_list& ) const;
+
+   /*!
+    * Calculates the histogram functions for this view. After calling this
+    * function, the histograms will be available for retrieval by the
+    * GetHistograms() function.
+    *
+    * Histograms are recalculated even if they were already available before
+    * calling this function. In general, call AreHistogramsAvailable() to
+    * avoid using this function if the histograms are already available for
+    * your routine.
+    *
+    * \deprecated This member function has been deprecated - do not use it in
+    * newly produced code. To generate, read and manage view histograms, use
+    * view properties. See ComputeProperty() and PropertyValue().
+    */
+   void CalculateHistograms( bool notify = true );
+
+   /*!
+    * Destroys the existing histogram functions for this view.
+    *
+    * \deprecated This member function has been deprecated - do not use it in
+    * newly produced code. To generate, read and manage view histograms, use
+    * view properties. See DeleteProperty().
+    */
+   void DestroyHistograms( bool notify = true );
+
+   /*!
+    * Returns true if statistical data have already been calculated for this
+    * view and are available.
+    *
+    * \deprecated This member function has been deprecated - do not use it in
+    * newly produced code. To generate, read and manage view statistics, use
+    * view properties. See HasProperty().
+    */
+   bool AreStatisticsAvailable() const;
+
+   /*!
+    * Retrieves the statistical data for this view, if they are available, in
+    * the specified container.
+    *
+    * Before calling this function, make sure that the statistical data are
+    * available by calling AreStatisticsAvailable() and, if necessary,
+    * CalculateStatistics().
+    *
+    * \deprecated This member function has been deprecated - do not use it in
+    * newly produced code. To generate, read and manage view statistics, use
+    * view properties. See ComputeProperty() and PropertyValue().
+    */
+   void GetStatistics( statistics_list& ) const;
+
+   /*!
+    * Calculates the statistical data for this view. After calling this
+    * function, the statistical data will be available for retrieval by the
+    * GetStatistics() function.
+    *
+    * Statistical data are recalculated even if they were already available
+    * before calling this function. In general, call AreStatisticsAvailable()
+    * to avoid using this function if the statistics are already available for
+    * your routine.
+    *
+    * \deprecated This member function has been deprecated - do not use it in
+    * newly produced code. To generate, read and manage view statistics, use
+    * view properties. See ComputeProperty() and PropertyValue().
+    */
+   void CalculateStatistics( bool notify = true );
+
+   /*!
+    * Destroys the existing statistical data for this view.
+    *
+    * \deprecated This member function has been deprecated - do not use it in
+    * newly produced code. To generate, read and manage view statistics, use
+    * view properties. See DeleteProperty().
+    */
+   void DestroyStatistics( bool notify = true );
+
+   /*!
+    * Retrieves the set of screen transfer functions (STF) for this view in the
+    * specified container.
+    *
+    * The STF container is a dynamic array. Each array element is a
+    * HistogramTransformation object corresponding to the STF for an image channel:
+    *
+    * %Array element #0 = STF for red/gray channels \n
+    * %Array element #1 = STF for the green channel \n
+    * %Array element #2 = STF for the blue channel \n
+    * %Array element #3 = STF for the CIE L* (lightness) or CIE Y (luminance) components
+    */
+   void GetScreenTransferFunctions( stf_list& ) const;
+
+   /*!
+    * Sets the screen transfer functions (STF) for this view.
+    *
+    * The specified container is a dynamic array. Each array element is a
+    * HistogramTransformation object corresponding to the STF for an image channel:
+    *
+    * %Array element #0 = STF for red/gray channels \n
+    * %Array element #1 = STF for the green channel \n
+    * %Array element #2 = STF for the blue channel \n
+    * %Array element #3 = STF for the CIE L* (lightness) or CIE Y (luminance) components
+    */
+   void SetScreenTransferFunctions( const stf_list&, bool notify = true );
+
+   /*!
+    * Destroys the screen transfer functions (STF) for this view.
+    */
+   void DestroyScreenTransferFunctions( bool notify = true );
+
+   /*!
+    * Returns true if screen transfer functions (STF) are enabled for this
+    * view. If STFs are disabled, they are not used for screen renditions.
+    */
+   bool AreScreenTransferFunctionsEnabled() const;
+
+   /*!
+    * Enables or disables screen transfer functions (STF) for this view. If
+    * STFs are enabled, each non-identity STF is used to modify screen
+    * renditions of the corresponding image channel.
+    */
+   void EnableScreenTransferFunctions( bool = true, bool notify = true );
+
+   /*!
+    * Disables or enables screen transfer functions (STF) for this view. If
+    * STFs are enabled, each non-identity STF is used to modify screen
+    * renditions of the corresponding image channel.
+    */
+   void DisableScreenTransferFunctions( bool disable = true, bool notify = true )
+   {
+      EnableScreenTransferFunctions( !disable, notify );
+   }
+
+   /*!
+    * Returns the value of the specified \a property in this view.
+    *
+    * If the requested property has not been defined for this view, the
+    * returned Variant object will be invalid (that is, Variant::IsValid() will
+    * return false).
+    *
+    * If the property exists but the calling module has no read access to it
+    * (see ViewPropertyAttributes::ReadProtected), an Error exception will be
+    * thrown.
+    *
+    * This function is thread-safe.
+    *
+    * \ingroup view_properties
+    */
+   Variant PropertyValue( const IsoString& property ) const;
+
+   /*!
+    * Computes a reserved view property and returns its value.
+    *
+    * The PixInsight Core application reserves a set of view property
+    * identifiers for standard use by all modules. These special properties
+    * can only be generated by calling this member function; they cannot be
+    * created or modified by other means (for example, by calling the
+    * SetPropertyValue() and SetPropertyAttributes() functions). This includes
+    * a number of statistical properties that are generated and computed on
+    * demand in a highly optimized way.
+    *
+    * The set of reserved view property identifiers includes at least the
+    * following list:
+    *
+    * Mean, Modulus, SumOfSquares, Median, Variance, StdDev, AvgDev, MAD, BWMV,
+    * PBMV, Sn, Qn, Minimum, MinimumPos, Maximum, MaximumPos, Histogram16,
+    * Histogram20.
+    *
+    * If the requested property is not recognized as a reserved view property,
+    * this member function returns an invalid %Variant object.
+    *
+    * This function is thread-safe.
+    *
+    * \ingroup view_properties
+    */
+   Variant ComputeProperty( const IsoString& property, bool notify = true );
+
+   /*!
+    * Returns the value of a reserved view property if it is already available,
+    * or computes it otherwise and returns its newly calculated value.
+    *
+    * This member function is equivalent to the following sequence:
+    *
+    * \code
+    * if ( HasProperty( property ) )
+    *    return PropertyValue( property );
+    * return ComputeProperty( property, notify );\endcode
+    *
+    * See ComputeProperty() for information on reserved view properties.
+    */
+   Variant ComputeOrFetchProperty( const IsoString& property, bool notify = true )
+   {
+      if ( HasProperty( property ) )
+         return PropertyValue( property );
+      return ComputeProperty( property, notify );
+   }
+
+   /*!
+    * Sets the value and attributes of a property in this view.
+    *
+    * \param property   Identifier of the view property.
+    *
+    * \param value      A valid Variant object transporting the new property
+    *                   value.
+    *
+    * \param attributes Optional attribute properties. If not specified, the
+    *                   current property attributes will be preserved. If not
+    *                   specified and the property is newly created, a default
+    *                   set of properties will be applied.
+    *
+    * If the requested property does not exist in this view, a new one will be
+    * created with the specified identifier, value and attributes.
+    *
+    * If the property exists but the calling module has no write access to it
+    * (see ViewPropertyAttribute::WriteProtected), an Error exception will be
+    * thrown.
+    *
+    * This function is thread-safe.
+    *
+    * \ingroup view_properties
+    */
+   void SetPropertyValue( const IsoString& property, const Variant& value, bool notify = true,
+                          ViewPropertyAttributes attributes = ViewPropertyAttribute::NoChange );
+
+   /*!
+    * Returns the data type of an existing \a property in this view.
+    *
+    * If the requested \a property has not been defined for this view, an Error
+    * exception is thrown.
+    *
+    * For a list of available view property types, see the VariantType
+    * namespace.
+    *
+    * This function is thread-safe.
+    *
+    * \ingroup view_properties
+    */
+   Variant::data_type PropertyType( const IsoString& property ) const;
+
+   /*!
+    * Returns the set of attributes currently associated with an existing
+    * \a property in this view.
+    *
+    * If the requested \a property has not been defined for this view, an Error
+    * exception is thrown.
+    *
+    * For a list of available view property attributes, see the
+    * ViewPropertyAttribute namespace.
+    *
+    * This function is thread-safe.
+    *
+    * \ingroup view_properties
+    */
+   ViewPropertyAttributes PropertyAttributes( const IsoString& property ) const;
+
+   /*!
+    * Sets new \a attributes for an existing \a property in this view.
+    *
+    * If the requested \a property is not currently defined for this view, or
+    * if the calling module has no write access to it (see
+    * ViewPropertyAttribute::WriteProtected), an Error exception will be
+    * thrown.
+    *
+    * Note that property attributes can be set for a newly created property
+    * with the View::SetPropertyValue() member function. For read-only
+    * properties, this is safer because the property never exists as a publicly
+    * writable object.
+    *
+    * This function is thread-safe.
+    *
+    * \ingroup view_properties
+    */
+   void SetPropertyAttributes( const IsoString& property, ViewPropertyAttributes attributes, bool notify = true );
+
+   /*!
+    * Returns true if the specified \a property exists in this view.
+    *
+    * This function is thread-safe.
+    *
+    * \ingroup view_properties
+    */
+   bool HasProperty( const IsoString& property ) const;
+
+   /*!
+    * Deletes the specified \a property and its associated value in this view.
+    *
+    * If the requested \a property is not currently defined for this view, or
+    * if the calling module has no write access to it (see
+    * ViewPropertyAttribute::WriteProtected), an Error exception will be
+    * thrown.
+    *
+    * This function is thread-safe.
+    *
+    * \ingroup view_properties
+    */
+   void DeleteProperty( const IsoString& property, bool notify = true );
+
+   /*!
+    * Returns true if the specified \a id string is a valid view identifier.
+    *
+    * A valid view identifier can include a preview separator (the sequence
+    * "->") to separate between a main view identifier and a preview
+    * identifier.
+    */
+   template <typename S>
+   static bool IsValidViewId( const S& id )
+   {
+      size_type p = id.Find( "->" );
+      if ( p == String::notFound )
+         return id.IsValidIdentifier();
+      return id.Left( p ).IsValidIdentifier() && id.SubString( p+2 ).IsValidIdentifier();
+   }
+
+   /*!
+    * Returns a view with the specified full identifier. If no view exists with
+    * the specified identifier, this function returns View::Null().
+    */
+   static View ViewById( const IsoString& fullId );
+
+   /*!
+    * Returns a container with all the existing views. This includes all main
+    * views and previews.
+    */
+   static Array<View> AllViews( bool excludePreviews = false );
+
+   /*!
+    * Returns a container with the existing previews. Main views are excluded.
+    */
+   static Array<View> AllPreviews();
+
+protected:
+
+   View( void* );
+   View( const void* );
+
+   friend class ImageWindow;
+   friend class ProcessImplementation; // for LaunchOn()
+   friend class ProcessInterface;      // for event broadcasting functions
+   friend class ProcessInstance;       // for ExecuteOn() and related functions
+   friend class ViewList;
+   friend class ViewListEventDispatcher;
+   friend class ProcessContextDispatcher;
+   friend class InterfaceDispatcher;
+   friend class InternalViewEnumerator;
+   friend class InternalPreviewEnumerator;
+};
+
+// ----------------------------------------------------------------------------
+
+} // pcl
+
+#endif   // __PCL_BUILDING_PIXINSIGHT_APPLICATION
+
+#endif   // __PCL_View_h
+
+// ****************************************************************************
+// EOF pcl/View.h - Released 2014/10/29 07:34:06 UTC

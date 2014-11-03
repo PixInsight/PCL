@@ -1,0 +1,112 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard IntensityTransformations Process Module Version 01.07.00.0285
+// ****************************************************************************
+// c_channel.xpm - Released 2014/10/29 07:35:23 UTC
+// ****************************************************************************
+// This file is part of the standard IntensityTransformations PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char* c_channel_XPM[] = {
+/* columns rows colors chars-per-pixel */
+"9 9 46 1",
+"  c Black",
+"& c #19DB19",
+"w c #EA038C",
+"# c #214B21",
+"> c #1B1BD4",
+"t c #545422",
+"6 c #00AEEF",
+"; c #252571",
+": c #2424A5",
+"r c #36361D",
+"q c #D91489",
+". c #542222",
+"u c #B8B821",
+"+ c #FA0606",
+"1 c #1E323A",
+"2 c #245263",
+", c #0D0DF3",
+"X c #852525",
+"4 c #1E93C0",
+"a c #FFFF00",
+"0 c #B62079",
+"y c #858526",
+"3 c #257694",
+"$ c #257B25",
+"h c #8B8B8A",
+"@ c #FF0000",
+"d c #393939",
+"f c #575757",
+"g c #757575",
+"< c #0000FF",
+"i c #E2E216",
+"5 c #10A8E0",
+"- c #201F44",
+"s c #2B2B2B",
+"j c #949494",
+"p c #FAFA06",
+"7 c #341D2B",
+"% c #23AF23",
+"= c #00FF00",
+"8 c #582343",
+"* c #09F709",
+"o c #B82121",
+"O c #E31616",
+"k c #959595",
+"9 c #882560",
+"e c #EC008C",
+/* pixels */
+"         ",
+" .XoO+@@ ",
+" #$%&*== ",
+" -;:>,<< ",
+" 1234566 ",
+" 7890qwe ",
+" rtyuipa ",
+" sdfghjk ",
+"         "
+};
+
+// ****************************************************************************
+// EOF c_channel.xpm - Released 2014/10/29 07:35:23 UTC

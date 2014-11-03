@@ -1,0 +1,152 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.93
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Tue, 28 Oct 2014 18:16:56 GMT
+# Project id ...... Geometry
+# Project type .... Module
+# Platform ........ MacOSX/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/Geometry/macosx/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/Geometry-pxm.dylib
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../ChannelMatchInstance.cpp \
+../../ChannelMatchInterface.cpp \
+../../ChannelMatchParameters.cpp \
+../../ChannelMatchProcess.cpp \
+../../CommonParameters.cpp \
+../../CropInstance.cpp \
+../../CropInterface.cpp \
+../../CropParameters.cpp \
+../../CropProcess.cpp \
+../../DynamicCropInstance.cpp \
+../../DynamicCropInterface.cpp \
+../../DynamicCropParameters.cpp \
+../../DynamicCropPreferencesDialog.cpp \
+../../DynamicCropProcess.cpp \
+../../FastRotationActions.cpp \
+../../FastRotationInstance.cpp \
+../../FastRotationInterface.cpp \
+../../FastRotationParameters.cpp \
+../../FastRotationProcess.cpp \
+../../GeometryModule.cpp \
+../../IntegerResampleInstance.cpp \
+../../IntegerResampleInterface.cpp \
+../../IntegerResampleParameters.cpp \
+../../IntegerResampleProcess.cpp \
+../../ResampleInstance.cpp \
+../../ResampleInterface.cpp \
+../../ResampleParameters.cpp \
+../../ResampleProcess.cpp \
+../../RotationInstance.cpp \
+../../RotationInterface.cpp \
+../../RotationParameters.cpp \
+../../RotationProcess.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/ChannelMatchInstance.o \
+./x64/Release/ChannelMatchInterface.o \
+./x64/Release/ChannelMatchParameters.o \
+./x64/Release/ChannelMatchProcess.o \
+./x64/Release/CommonParameters.o \
+./x64/Release/CropInstance.o \
+./x64/Release/CropInterface.o \
+./x64/Release/CropParameters.o \
+./x64/Release/CropProcess.o \
+./x64/Release/DynamicCropInstance.o \
+./x64/Release/DynamicCropInterface.o \
+./x64/Release/DynamicCropParameters.o \
+./x64/Release/DynamicCropPreferencesDialog.o \
+./x64/Release/DynamicCropProcess.o \
+./x64/Release/FastRotationActions.o \
+./x64/Release/FastRotationInstance.o \
+./x64/Release/FastRotationInterface.o \
+./x64/Release/FastRotationParameters.o \
+./x64/Release/FastRotationProcess.o \
+./x64/Release/GeometryModule.o \
+./x64/Release/IntegerResampleInstance.o \
+./x64/Release/IntegerResampleInterface.o \
+./x64/Release/IntegerResampleParameters.o \
+./x64/Release/IntegerResampleProcess.o \
+./x64/Release/ResampleInstance.o \
+./x64/Release/ResampleInterface.o \
+./x64/Release/ResampleParameters.o \
+./x64/Release/ResampleProcess.o \
+./x64/Release/RotationInstance.o \
+./x64/Release/RotationInterface.o \
+./x64/Release/RotationParameters.o \
+./x64/Release/RotationProcess.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/ChannelMatchInstance.d \
+./x64/Release/ChannelMatchInterface.d \
+./x64/Release/ChannelMatchParameters.d \
+./x64/Release/ChannelMatchProcess.d \
+./x64/Release/CommonParameters.d \
+./x64/Release/CropInstance.d \
+./x64/Release/CropInterface.d \
+./x64/Release/CropParameters.d \
+./x64/Release/CropProcess.d \
+./x64/Release/DynamicCropInstance.d \
+./x64/Release/DynamicCropInterface.d \
+./x64/Release/DynamicCropParameters.d \
+./x64/Release/DynamicCropPreferencesDialog.d \
+./x64/Release/DynamicCropProcess.d \
+./x64/Release/FastRotationActions.d \
+./x64/Release/FastRotationInstance.d \
+./x64/Release/FastRotationInterface.d \
+./x64/Release/FastRotationParameters.d \
+./x64/Release/FastRotationProcess.d \
+./x64/Release/GeometryModule.d \
+./x64/Release/IntegerResampleInstance.d \
+./x64/Release/IntegerResampleInterface.d \
+./x64/Release/IntegerResampleParameters.d \
+./x64/Release/IntegerResampleProcess.d \
+./x64/Release/ResampleInstance.d \
+./x64/Release/ResampleInterface.d \
+./x64/Release/ResampleParameters.d \
+./x64/Release/ResampleProcess.d \
+./x64/Release/RotationInstance.d \
+./x64/Release/RotationInterface.d \
+./x64/Release/RotationParameters.d \
+./x64/Release/RotationProcess.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/Geometry-pxm.dylib: $(OBJ_FILES)
+	clang++ -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.8 -fPIC -headerpad_max_install_names -dynamiclib -install_name @executable_path/Geometry-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/Geometry-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/Geometry-pxm.dylib
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/Geometry-pxm.dylib $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	clang++ -c -pipe -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.8 -fPIC -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -O3 -mtune=generic -mssse3 -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

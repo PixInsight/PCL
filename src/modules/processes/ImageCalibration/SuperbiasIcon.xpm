@@ -1,0 +1,240 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard ImageCalibration Process Module Version 01.03.00.0194
+// ****************************************************************************
+// SuperbiasIcon.xpm - Released 2014/10/29 07:35:22 UTC
+// ****************************************************************************
+// This file is part of the standard ImageCalibration PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char* SuperbiasIcon_XPM[]={
+"24 24 162 2",
+"Qt c None",
+".# c #000000",
+".h c #93710a",
+".o c #a7955e",
+".r c #ab8d30",
+".b c #dba80c",
+".f c #e0c05f",
+".k c #e3be4e",
+".p c #e5b112",
+"aA c #f3f55b",
+"av c #f3f55d",
+"ao c #f3f55f",
+"aB c #f3f560",
+"ad c #f3f564",
+"aj c #f3f662",
+"aw c #f3f664",
+"aD c #f4f564",
+"#9 c #f4f566",
+"aq c #f4f569",
+"aC c #f4f662",
+"ap c #f4f664",
+"ak c #f4f667",
+"#6 c #f4f668",
+"ae c #f4f669",
+"#1 c #f4f66a",
+"#T c #f4f66b",
+"af c #f4f66c",
+"aE c #f4f66e",
+"#L c #f4f76d",
+"ar c #f4f76e",
+"#2 c #f4f770",
+"al c #f5f669",
+"a. c #f5f66b",
+"ag c #f5f66e",
+"ax c #f5f66f",
+"#C c #f5f670",
+"#U c #f5f671",
+"#3 c #f5f672",
+"ah c #f5f673",
+"as c #f5f674",
+".T c #f5f675",
+"am c #f5f76b",
+"a# c #f5f76d",
+"#G c #f5f76e",
+"aa c #f5f770",
+"aF c #f5f771",
+"#w c #f5f772",
+"#l c #f5f773",
+"#b c #f5f774",
+"ay c #f5f775",
+".G c #f5f776",
+".u c #f5f777",
+"az c #f5f778",
+"#D c #f5f779",
+"at c #f5f77b",
+"#m c #f5f879",
+"#M c #f6f773",
+"#V c #f6f774",
+"#4 c #f6f775",
+"#N c #f6f776",
+".a c #f6f777",
+"#x c #f6f778",
+"#O c #f6f779",
+"#c c #f6f77a",
+"#H c #f6f77b",
+".U c #f6f77c",
+".c c #f6f77e",
+".V c #f6f77f",
+".I c #f6f780",
+".4 c #f6f87b",
+".H c #f6f87c",
+".v c #f6f87d",
+".5 c #f6f87e",
+"#n c #f6f87f",
+"#d c #f6f880",
+".d c #f6f881",
+"ab c #f6f882",
+".J c #f6f883",
+"#X c #f6f884",
+"#o c #f6f885",
+"an c #f7f77e",
+"#W c #f7f781",
+"#5 c #f7f87f",
+"au c #f7f880",
+".w c #f7f881",
+"#E c #f7f882",
+".W c #f7f883",
+".x c #f7f884",
+".e c #f7f885",
+"#P c #f7f886",
+"ai c #f7f887",
+".6 c #f7f888",
+"#Y c #f7f88a",
+"#7 c #f7f88b",
+"#I c #f7f985",
+"#e c #f7f987",
+"#F c #f7f988",
+"ac c #f7f989",
+".y c #f7f98a",
+"#p c #f7f98c",
+"#f c #f7f98d",
+"#J c #f7f990",
+"#8 c #f8f88e",
+".K c #f8f989",
+".g c #f8f98b",
+"#Q c #f8f98d",
+".7 c #f8f98e",
+".X c #f8f98f",
+"#g c #f8f990",
+"#Z c #f8f991",
+".z c #f8f992",
+".M c #f8f993",
+"#q c #f8f994",
+".j c #f8f996",
+".9 c #f8f99b",
+".L c #f8fa90",
+".i c #f8fa92",
+".Y c #f8fa93",
+".A c #f8fa95",
+".8 c #f8fa97",
+"#S c #f8fa98",
+".Z c #f8fa99",
+"#y c #f9f995",
+"#h c #f9f999",
+"#s c #f9f99a",
+"#R c #f9fa94",
+"#0 c #f9fa95",
+"#r c #f9fa97",
+"#K c #f9fa98",
+".N c #f9fa9a",
+".B c #f9fa9b",
+".l c #f9fa9c",
+"#. c #f9fa9d",
+"#z c #f9fa9e",
+".0 c #f9faa0",
+"#A c #f9faa1",
+"#i c #f9faa2",
+".O c #f9fb9e",
+".m c #f9fb9f",
+"#t c #f9fba1",
+".C c #f9fba2",
+".n c #f9fba3",
+"#u c #fafaa3",
+"#v c #fafaa5",
+"## c #fafaa6",
+".P c #fafba1",
+"#B c #fafba2",
+"#j c #fafba7",
+".1 c #fafba8",
+".Q c #fafbaa",
+".D c #fafbab",
+".2 c #fafbad",
+".3 c #fafcae",
+"#k c #fbfba8",
+"#a c #fbfbab",
+".q c #fbfbad",
+".R c #fbfbaf",
+".E c #fbfbb2",
+".S c #fbfcb2",
+".s c #fbfcb3",
+".F c #fbfcb4",
+".t c #fcfcb6",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt",
+"Qt.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#Qt",
+"Qt.#.a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t.#Qt",
+"Qt.#.u.b.v.w.x.f.y.h.z.A.k.B.m.C.o.p.D.r.E.F.#Qt",
+"Qt.#.G.b.H.I.J.f.K.h.L.M.k.N.O.P.o.p.Q.r.R.S.#Qt",
+"Qt.#.T.b.U.V.W.f.K.h.X.Y.k.Z.l.0.o.p.1.r.2.3.#Qt",
+"Qt.#.T.b.4.5.d.f.6.h.7.z.k.8.9#..o.p##.r.Q#a.#Qt",
+"Qt.##b.b#c.5#d.f#e.h#f#g.k.j#h.B.o.p#i.r#j#k.#Qt",
+"Qt.##l.b#m.U#n.f#o.h#p.X.k#q#r#s.o.p#t.r#u#v.#Qt",
+"Qt.##w.b#x#c.5.f.W.h.y#p.k.z#y#r.o.p#z.r#A#B.#Qt",
+"Qt.##C.b.u#D.U.f#E.h#F.g.k#g.z.A.o.p.N.r#z.O.#Qt",
+"Qt.##G.b#b#x#H.f#d.h#I.6.k#f#J.z.o.p#K.r.B.B.#Qt",
+"Qt.##L.b#M#N#O.f.c.h.x#P.k.g#Q#J.o.p#R.r.8#S.#Qt",
+"Qt.##T.b#U#V.u.f.U.h#W#X.k.6#Y#Q.o.p#Z.r#q#0.#Qt",
+"Qt.##1.b#2#3#4.f#c.h#5.d.k#P.6#Y.o.p.7.r#Z#Z.#Qt",
+"Qt.##6.b#G#C#w.f.u.h.U#n.k.W.x#P.o.p#7.r#f#8.#Qt",
+"Qt.##9.ba.a#aa.f.G.h#c.U.k#dab.x.o.p.6.rac.y.#Qt",
+"Qt.#ad.baeafag.fah.h.a#c.k.c#n.d.o.p.e.r#eai.#Qt",
+"Qt.#aj.bakalam.faa.h#V.G.k#c.Uan.o.p.w.r.J.x.#Qt",
+"Qt.#ao.bapakaq.far.h#3as.k#x#Dat.o.p.c.rauau.#Qt",
+"Qt.#av.bajawak.f#T.hax#U.kay.Gaz.o.p#H.r.H.v.#Qt",
+"Qt.#aA.baBaCaD.f#6.h#LaE.kaF#lay.o.p#x.raz#c.#Qt",
+"Qt.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#Qt",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt"};
+
+// ****************************************************************************
+// EOF SuperbiasIcon.xpm - Released 2014/10/29 07:35:22 UTC

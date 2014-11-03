@@ -1,0 +1,1 @@
+This file is part of PixInsight X11 UNIX/Linux Installer

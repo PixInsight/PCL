@@ -1,0 +1,194 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.93
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Tue, 28 Oct 2014 18:16:43 GMT
+# Project id ...... jpeg
+# Project type .... DynamicLibrary
+# Platform ........ Linux/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/jpeg/linux/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/libjpeg-pxi.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../jaricom.c \
+../../jcapimin.c \
+../../jcapistd.c \
+../../jcarith.c \
+../../jccoefct.c \
+../../jccolor.c \
+../../jcdctmgr.c \
+../../jchuff.c \
+../../jcinit.c \
+../../jcmainct.c \
+../../jcmarker.c \
+../../jcmaster.c \
+../../jcomapi.c \
+../../jcparam.c \
+../../jcprepct.c \
+../../jcsample.c \
+../../jctrans.c \
+../../jdapimin.c \
+../../jdapistd.c \
+../../jdarith.c \
+../../jdatadst.c \
+../../jdatasrc.c \
+../../jdcoefct.c \
+../../jdcolor.c \
+../../jddctmgr.c \
+../../jdhuff.c \
+../../jdinput.c \
+../../jdmainct.c \
+../../jdmarker.c \
+../../jdmaster.c \
+../../jdmerge.c \
+../../jdpostct.c \
+../../jdsample.c \
+../../jdtrans.c \
+../../jerror.c \
+../../jfdctflt.c \
+../../jfdctfst.c \
+../../jfdctint.c \
+../../jidctflt.c \
+../../jidctfst.c \
+../../jidctint.c \
+../../jmemmgr.c \
+../../jmemnobs.c \
+../../jquant1.c \
+../../jquant2.c \
+../../jutils.c
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/jaricom.o \
+./x64/Release/jcapimin.o \
+./x64/Release/jcapistd.o \
+./x64/Release/jcarith.o \
+./x64/Release/jccoefct.o \
+./x64/Release/jccolor.o \
+./x64/Release/jcdctmgr.o \
+./x64/Release/jchuff.o \
+./x64/Release/jcinit.o \
+./x64/Release/jcmainct.o \
+./x64/Release/jcmarker.o \
+./x64/Release/jcmaster.o \
+./x64/Release/jcomapi.o \
+./x64/Release/jcparam.o \
+./x64/Release/jcprepct.o \
+./x64/Release/jcsample.o \
+./x64/Release/jctrans.o \
+./x64/Release/jdapimin.o \
+./x64/Release/jdapistd.o \
+./x64/Release/jdarith.o \
+./x64/Release/jdatadst.o \
+./x64/Release/jdatasrc.o \
+./x64/Release/jdcoefct.o \
+./x64/Release/jdcolor.o \
+./x64/Release/jddctmgr.o \
+./x64/Release/jdhuff.o \
+./x64/Release/jdinput.o \
+./x64/Release/jdmainct.o \
+./x64/Release/jdmarker.o \
+./x64/Release/jdmaster.o \
+./x64/Release/jdmerge.o \
+./x64/Release/jdpostct.o \
+./x64/Release/jdsample.o \
+./x64/Release/jdtrans.o \
+./x64/Release/jerror.o \
+./x64/Release/jfdctflt.o \
+./x64/Release/jfdctfst.o \
+./x64/Release/jfdctint.o \
+./x64/Release/jidctflt.o \
+./x64/Release/jidctfst.o \
+./x64/Release/jidctint.o \
+./x64/Release/jmemmgr.o \
+./x64/Release/jmemnobs.o \
+./x64/Release/jquant1.o \
+./x64/Release/jquant2.o \
+./x64/Release/jutils.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/jaricom.d \
+./x64/Release/jcapimin.d \
+./x64/Release/jcapistd.d \
+./x64/Release/jcarith.d \
+./x64/Release/jccoefct.d \
+./x64/Release/jccolor.d \
+./x64/Release/jcdctmgr.d \
+./x64/Release/jchuff.d \
+./x64/Release/jcinit.d \
+./x64/Release/jcmainct.d \
+./x64/Release/jcmarker.d \
+./x64/Release/jcmaster.d \
+./x64/Release/jcomapi.d \
+./x64/Release/jcparam.d \
+./x64/Release/jcprepct.d \
+./x64/Release/jcsample.d \
+./x64/Release/jctrans.d \
+./x64/Release/jdapimin.d \
+./x64/Release/jdapistd.d \
+./x64/Release/jdarith.d \
+./x64/Release/jdatadst.d \
+./x64/Release/jdatasrc.d \
+./x64/Release/jdcoefct.d \
+./x64/Release/jdcolor.d \
+./x64/Release/jddctmgr.d \
+./x64/Release/jdhuff.d \
+./x64/Release/jdinput.d \
+./x64/Release/jdmainct.d \
+./x64/Release/jdmarker.d \
+./x64/Release/jdmaster.d \
+./x64/Release/jdmerge.d \
+./x64/Release/jdpostct.d \
+./x64/Release/jdsample.d \
+./x64/Release/jdtrans.d \
+./x64/Release/jerror.d \
+./x64/Release/jfdctflt.d \
+./x64/Release/jfdctfst.d \
+./x64/Release/jfdctint.d \
+./x64/Release/jidctflt.d \
+./x64/Release/jidctfst.d \
+./x64/Release/jidctint.d \
+./x64/Release/jmemmgr.d \
+./x64/Release/jmemnobs.d \
+./x64/Release/jquant1.d \
+./x64/Release/jquant2.d \
+./x64/Release/jutils.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/libjpeg-pxi.so: $(OBJ_FILES)
+	g++-4.8.2 -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/libjpeg-pxi.so $(OBJ_FILES)
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/libjpeg-pxi.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/libjpeg-pxi.so $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.c
+	gcc-4.8.2 -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffunction-sections -fdata-sections -fomit-frame-pointer -ffast-math -ftree-vectorize -flto -fwhole-program -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

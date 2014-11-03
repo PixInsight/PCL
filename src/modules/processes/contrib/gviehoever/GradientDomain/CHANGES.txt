@@ -1,0 +1,50 @@
+Version 00.06.03.0010 (2011-11-07):
+- increased max. feather radius from 50 to 250 to adress problem described by Marco (lorenzi) in http://pixinsight.com/forum/index.php?topic=3588.msg24587#msg24587
+
+Version 00.06.02.0009 (2011-11-06):
+- GradientsHdrComposition: Fixed bug in serialization of data, identified by Geert Vanhauwaert
+  and Juan Conejero http://pixinsight.com/forum/index.php?topic=3579.0
+- improved linearization. Still beta.
+
+Version 00.06.01.0008 (2011-11-04):
+- Fixed some tool tips in the GradientsHdrCompression and GradientsMergeMosaic interfaces.
+- Minor fixes to documentation by Juan Conejero
+- Release via update-dev
+
+Version 00.06.00.0006 (2011-11-03):
+- fixed the FeatherRadius problem, also removed hint from docs
+- start development of GradientHdrComposition module process
+- GradientsMergeMosaic: explained creation algorithm for mask in online and bubble help
+- GradientsMergeMosaic: mask did not have correct size after bugfix in last release.
+- corrected name of Gradient*s*MergeMosaic.pidoc and Gradient*s*HdrCompression.pidoc
+- Adding new experimental module for GradientsHDRComposition
+- Adding preliminary documentation for GradientsHDRComposition
+- Minor improvements to other documentation
+- Updated Credits
+
+Version 00.05.00.0003 (2011-10-15):
+- integrated Juan's changes into documentation (mainly image sizes)
+- added information about the contributions of others to the author tag of .pidoc
+- removed head label in GUI, and set tooltip on ProcessInstance itself for
+  both GradientsMergeMosaicInterface and GradientsHdrInterface. This is for conformance
+  with other PI tools
+- GradientsHdrCompression: reduced range of LogMin/LogMax parameter after Vicent's remark that the parameters are
+  extremely sensitive. Also, the minimum logMin value is now coerced to zero instead of just
+  being a small number. The defaults are all set to "neutral" now.
+- GradientsHdrCompression: Improved bubble help and other help texts
+- GradientsHdrCompression: Added help page.
+- GradientsHdrCompression: Added module to HDR category (was Intensity Transform) to documentation
+- GradientsMergeMosaic: Added reference to video tutorial to documentation
+- GradientsMergeMosaic: Fixed issue identified by RBA in http://pixinsight.com/forum/index.php?topic=3295.msg23480#msg23480
+- Fixed some wrong Assert() statements
+- Added necessary #include to Assert.h
+- Fixed bug in Assert() macro (missing ())
+- Moved RgbPreserve.h/.cpp to pcl namespace (just as everything else)
+
+ - Known issues:
+ -- GradientsHdrCompression: Realtime preview sometimes does not follow settings correctly. Also
+    has problems with STF.
+ -- GradientsMergeMosaic with large Feather Radius values shows artefacts at the border of the merged images, if the image has a staircase structure there. This unfortunately cannot be easily avoided, and is discussed in the documentation.
+
+Version 00.04.00.0002 (2011-07-24)
+-First release that is fully functional and usually delivers results of the quality that I had in mind

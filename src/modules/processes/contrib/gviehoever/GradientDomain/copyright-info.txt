@@ -1,0 +1,2 @@
+Copyright (c) Georg Viehoever, 2011-2014. Licensed under LGPL 2.1
+Copyright (c) 2003-2014 Pleiades Astrophoto S.L.

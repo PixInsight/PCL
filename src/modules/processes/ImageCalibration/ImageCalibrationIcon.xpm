@@ -1,0 +1,190 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard ImageCalibration Process Module Version 01.03.00.0194
+// ****************************************************************************
+// ImageCalibrationIcon.xpm - Released 2014/10/29 07:35:22 UTC
+// ****************************************************************************
+// This file is part of the standard ImageCalibration PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char *ImageCalibrationIcon_XPM[]={
+"24 24 112 2",
+"Qt c None",
+".a c #000000",
+".g c #000000",
+".# c #000000",
+"#n c #0509ff",
+"#m c #0a12ff",
+"#l c #0f1aff",
+"#k c #1523ff",
+"#j c #1a2cff",
+"#i c #1f35ff",
+"#h c #243dff",
+"#g c #2946ff",
+"#f c #2e4ef7",
+"#o c #2e4fff",
+"#p c #3151fa",
+"#e c #3358ff",
+"#d c #3860ff",
+"#c c #3d69ff",
+".8 c #3f6afe",
+".7 c #4272ff",
+".Y c #477aff",
+"#O c #4b4b4b",
+".5 c #4c4c4a",
+"#I c #4c4c4c",
+".X c #4c83ff",
+"## c #4f4f4f",
+".N c #518cff",
+".M c #5695ff",
+".V c #585858",
+".B c #5c9dff",
+"#N c #5d5d5d",
+".4 c #5e5e5e",
+"#. c #5f5f5f",
+"#a c #605e59",
+".A c #61a6ff",
+".K c #656565",
+"#M c #666666",
+".C c #669efb",
+".p c #66afff",
+".y c #686868",
+".q c #68a9fd",
+".O c #6996f8",
+"#H c #6a6a6a",
+".9 c #6a75a3",
+"#w c #6d6d6b",
+".3 c #737373",
+".Z c #7394f4",
+".1 c #787878",
+"#L c #797873",
+".U c #797979",
+".2 c #7c7c7c",
+"#G c #818181",
+".n c #828282",
+"#P c #868275",
+"#E c #878787",
+".J c #8b8b8b",
+"#F c #8c8c8c",
+"#q c #8e99c7",
+".x c #8f8f8f",
+"#s c #918f8a",
+"#C c #928e7f",
+".L c #959182",
+".T c #959595",
+".Q c #9a9893",
+"#A c #9a9996",
+".R c #9c9c9c",
+".W c #a09b8a",
+".o c #a19d90",
+".m c #a1a1a1",
+".h c #a2cbef",
+"#D c #a3a095",
+".S c #a3a3a3",
+".F c #a4a3a0",
+"#z c #a6a190",
+"#S c #a7a290",
+"#r c #a7a7a7",
+".0 c #a8a8aa",
+"#B c #ababab",
+".r c #adc9ea",
+"#y c #aeaca7",
+".I c #afafaf",
+"#v c #b0b0b0",
+".l c #b3b3b3",
+".w c #b6b6b6",
+".k c #b7b6b1",
+".D c #bacce6",
+".G c #bcbcbc",
+"#R c #bdb7a1",
+"#u c #bebec0",
+".t c #bfbcb1",
+"#J c #c3bda5",
+".u c #c4c4c4",
+".e c #c7c2b0",
+".z c #c9c3ab",
+".H c #c9c9c9",
+".P c #c9d2e1",
+"#b c #cec7ae",
+"#T c #cfc8af",
+"#t c #d8d1b8",
+".d c #d8d2bc",
+".v c #d8d8d8",
+".f c #ddd6bd",
+".6 c #e8e0c3",
+"#x c #eae2c5",
+"#K c #ece4c7",
+".i c #f0eed9",
+".j c #f3ebce",
+"#Q c #f8efcf",
+".s c #f8f2d7",
+".c c #fbf2d2",
+".E c #fdf5d5",
+".b c #fff6d5",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt",
+"Qt.#.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.#Qt",
+"Qt.a.b.b.b.b.b.b.b.b.b.c.d.e.f.b.b.b.b.b.b.b.aQt",
+"Qt.g.h.i.b.b.b.b.b.b.j.k.l.m.n.o.b.b.b.b.b.b.aQt",
+"Qt.g.p.q.r.s.b.b.b.b.t.u.v.w.x.y.z.b.b.b.b.b.aQt",
+"Qt.g.p.A.B.C.D.E.b.b.F.G.H.I.J.K.L.b.b.b.b.b.aQt",
+"Qt.g.p.A.B.M.N.O.P.b.Q.R.S.T.U.V.W.b.b.b.b.b.aQt",
+"Qt.g.p.A.B.M.N.X.Y.Z.0.1.2.3.4.5.6.b.b.b.b.b.aQt",
+"Qt.g.p.A.B.M.N.X.Y.7.8.9#.###a#b.b.b.b.b.b.b.aQt",
+"Qt.g.p.A.B.M.N.X.Y.7#c#d#e#f#g#h#i#j#k#l#m#n.gQt",
+"Qt.g.p.A.B.M.N.X.Y.7#c#d#e#o#g#h#i#j#k#l#m#n.gQt",
+"Qt.g.p.A.B.M.N.X.Y.7#c#d#e#o#g#h#i#j#k#l#m#n.gQt",
+"Qt.g.p.A.B.M.N.X.Y.7#c#d#e#o#g#h#i#j#k#l#m#n.gQt",
+"Qt.g.p.A.B.M.N.X.Y.7#c#d#e#o#g#h#i#j#k#l#m#n.gQt",
+"Qt.g.p.A.B.M.N.X.Y.7#c#d#e#p#g#h#i#j#k#l#m#n.gQt",
+"Qt.g.p.A.B.M.N.X.Y.7.8#q#r.T#s#t.b.b.b.b.b.b.aQt",
+"Qt.g.p.A.B.M.N.X.Y.Z#u.G.H#v.J#w#x.b.b.b.b.b.aQt",
+"Qt.g.p.A.B.M.N.O.P.b#y.u.v.w.x.y#z.b.b.b.b.b.aQt",
+"Qt.g.p.A.B.C.D.E.b.b#A#B.l.m.n#.#C.b.b.b.b.b.aQt",
+"Qt.g.p.q.r.s.b.b.b.b#D#E#F#G#H#I#J.b.b.b.b.b.aQt",
+"Qt.g.h.i.b.b.b.b.b.b#K#L#M#N#O#P.b.b.b.b.b.b.aQt",
+"Qt.a.b.b.b.b.b.b.b.b.b#Q#R#S#T.b.b.b.b.b.b.b.aQt",
+"Qt.#.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.#Qt",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt"};
+
+// ****************************************************************************
+// EOF ImageCalibrationIcon.xpm - Released 2014/10/29 07:35:22 UTC

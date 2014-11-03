@@ -1,0 +1,259 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard LocalHistogramEqualization Process Module Version 01.00.00.0092
+// ****************************************************************************
+// LocalHistogramEqualizationIcon.xpm - Released 2014/10/29 07:35:26 UTC
+// ****************************************************************************
+// This file is part of the standard LocalHistogramEqualization PixInsight module.
+//
+// Copyright (c) 2011-2014 Zbynek Vrastil
+// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char *LocalHistogramEqualizationIcon_XPM[]={
+"24 24 180 2",
+"Qt c None",
+".# c #000000",
+"aS c #040404",
+"aR c #050505",
+"aQ c #060606",
+"aJ c #090909",
+"aI c #0a0a0a",
+"aH c #0b0b0b",
+"aG c #0c0c0c",
+"ax c #0e0e0e",
+"aw c #0f0f0f",
+"av c #101010",
+"au c #111111",
+"at c #121212",
+"ao c #131313",
+"aj c #141414",
+"ai c #151515",
+"an c #161616",
+"ag c #171717",
+"aa c #181818",
+"a# c #191919",
+"a. c #1a1a1a",
+"af c #1b1b1b",
+"#9 c #1c1c1c",
+"#3 c #1d1d1d",
+"#2 c #1e1e1e",
+"#1 c #1f1f1f",
+"#8 c #202020",
+"#Z c #212121",
+"#Y c #222222",
+"#S c #232323",
+"#X c #242424",
+"#W c #252525",
+"#Q c #262626",
+"#P c #272727",
+"#O c #282828",
+"#N c #292929",
+"#M c #2a2a2a",
+"#D c #2b2b2b",
+"#C c #2c2c2c",
+"#B c #2d2d2d",
+"#A c #2e2e2e",
+"#p c #2f2f2f",
+"#o c #303030",
+"#m c #323232",
+"#l c #333333",
+"#f c #343434",
+"#k c #353535",
+"#c c #383838",
+".6 c #393939",
+".1 c #3d3d3d",
+".R c #3e3e3e",
+".Q c #3f3f3f",
+".y c #404040",
+"#6 c #414246",
+"#x c #42444c",
+".a c #425eff",
+"#L c #434652",
+"#z c #434858",
+".x c #444858",
+".B c #454a5e",
+".b c #4562ff",
+".L c #464c64",
+"aD c #464d64",
+"#V c #464d6a",
+".H c #474e6a",
+".r c #474f70",
+".q c #475176",
+"aN c #484f6a",
+"ad c #485070",
+"am c #49537c",
+"aX c #49547c",
+".c c #4965ff",
+".k c #4966ff",
+"aP c #4a557c",
+".Y c #4a5582",
+"#j c #4b5888",
+".N c #4c5b9a",
+"#7 c #4c5c9a",
+".w c #4c5c9f",
+".d c #4c69ff",
+".l c #4c6aff",
+".C c #4d5c9a",
+"#b c #4d5ea5",
+"ak c #4e5c8e",
+".s c #4e61ab",
+".e c #4e6cff",
+".p c #4f62b1",
+".m c #506eff",
+".f c #516fff",
+"al c #5265b1",
+"aW c #5369c3",
+".g c #5371ff",
+".v c #5372ff",
+"ae c #546edb",
+".h c #5474ff",
+"aO c #556dc9",
+"aF c #5570db",
+".0 c #5572ed",
+".n c #5574ff",
+".t c #5672e7",
+".o c #5674f3",
+".i c #5675ff",
+"#a c #5771db",
+".I c #5774e7",
+"as c #5775f3",
+".j c #5776ff",
+".u c #5777ff",
+"aV c #5872db",
+".M c #5877f3",
+".D c #5877f9",
+"aE c #5974e1",
+".Z c #5979ff",
+"#y c #5a7bff",
+"#K c #5b7cff",
+"#U c #5c7cff",
+".A c #898989",
+".z c #8b8b8b",
+".G c #8c8c8c",
+".F c #8f8f8f",
+".X c #909090",
+".E c #939393",
+".W c #949494",
+".K c #969696",
+".V c #979797",
+"## c #989898",
+".J c #9a9a9a",
+".U c #9b9b9b",
+"#i c #9c9c9c",
+".T c #9e9e9e",
+"#. c #9f9f9f",
+".S c #a1a1a1",
+".9 c #a2a2a2",
+"#w c #a3a3a3",
+".8 c #a6a6a6",
+"#v c #a7a7a7",
+".7 c #a9a9a9",
+"#u c #aaaaaa",
+"#J c #ababab",
+"#h c #adadad",
+"#t c #aeaeae",
+"#g c #b0b0b0",
+"#s c #b1b1b1",
+"#I c #b2b2b2",
+"#r c #b4b4b4",
+"#H c #b5b5b5",
+"#T c #b6b6b6",
+"#q c #b8b8b8",
+"#G c #b9b9b9",
+"#5 c #bababa",
+"#F c #bcbcbc",
+"#4 c #bdbdbd",
+"#E c #c0c0c0",
+"ac c #c1c1c1",
+"#R c #c3c3c3",
+".P c #c4c4c4",
+"ab c #c5c5c5",
+".O c #c7c7c7",
+".5 c #c8c8c8",
+".4 c #cccccc",
+"#0 c #cecece",
+".3 c #cfcfcf",
+".2 c #d3d3d3",
+"#e c #d6d6d6",
+"ar c #d7d7d7",
+"#d c #dadada",
+"ah c #dddddd",
+"#n c #dedede",
+"aC c #dfdfdf",
+"aq c #e1e1e1",
+"aB c #e2e2e2",
+"ap c #e5e5e5",
+"aA c #e6e6e6",
+"az c #e9e9e9",
+"ay c #ececec",
+"aM c #ededed",
+"aL c #f0f0f0",
+"aK c #f4f4f4",
+"aU c #f8f8f8",
+"aT c #fbfbfb",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt",
+"Qt.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#Qt",
+"Qt.#.a.b.c.d.e.f.g.h.i.j.j.j.i.h.g.f.e.d.c.b.#Qt",
+"Qt.#.b.k.l.m.g.n.o.p.q.r.r.r.s.t.u.n.g.m.l.k.#Qt",
+"Qt.#.c.l.m.v.j.w.x.y.y.y.y.z.A.B.C.D.j.v.m.l.#Qt",
+"Qt.#.d.m.v.o.r.y.y.y.y.y.y.E.F.G.A.H.I.u.v.m.#Qt",
+"Qt.#.e.g.j.r.y.y.y.y.y.y.y.J.K.E.F.G.L.M.j.g.#Qt",
+"Qt.#.f.n.N.y.y.y.O.P.Q.R.R.S.T.U.V.W.X.Y.Z.n.#Qt",
+"Qt.#.g.0.x.1.1.2.3.4.5.6.6.7.8.9#..U##.L#a.u.#Qt",
+"Qt.#.h#b.6.6#c#d#e.2.3#f#f#g#h.7.8.9#.#i#j.Z.#Qt",
+"Qt.#.i.q#k#f#l#m#n#d#o#p#p#q#r#s#t#u#v#w#x#y.#Qt",
+"Qt.#.j#z#o#p#A#A#B#C#D#D#D#E#F#G#H#I#t#J.y#K.#Qt",
+"Qt.#.j#L#D#M#M#N#O#P#P#Q#Q.O#R#S#S#G#T#I.y#U.#Qt",
+"Qt.#.j#V#Q#W#W#X#S#S#Y#Z#Z#0#1#2#2#3#4#5#6#K.#Qt",
+"Qt.#.i#7#Z#Z#8#1#2#2#3#9#9#ea.a.a#aaabacad#y.#Qt",
+"Qt.#.hae.L#9afa.a.a#aaagagah#daiaj.3.4akal.Z.#Qt",
+"Qt.#.g.uamagananaiajaoaoaoapaq#n#dar.2.L#U.u.#Qt",
+"Qt.#.f.nas.LatauavawawaxaxayazaAaBaCaDaE.Z.n.#Qt",
+"Qt.#.e.g.jaF.LaGaHaHaIaJaJaKaLaMazaNaO#y.j.g.#Qt",
+"Qt.#.d.m.v.u.I.HaPaQaRaSaSaTaUak.BaV#y.u.v.m.#Qt",
+"Qt.#.c.l.m.v.j.ZaWaX.y.y.y.y.Lal#U.Z.j.v.m.l.#Qt",
+"Qt.#.b.k.l.m.g.n.u.Z#y#K#U#K#y.Z.u.n.g.m.l.k.#Qt",
+"Qt.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#Qt",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt"};
+
+// ****************************************************************************
+// EOF LocalHistogramEqualizationIcon.xpm - Released 2014/10/29 07:35:26 UTC

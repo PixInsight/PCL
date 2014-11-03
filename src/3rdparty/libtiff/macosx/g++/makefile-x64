@@ -1,0 +1,192 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.93
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Tue, 28 Oct 2014 18:16:44 GMT
+# Project id ...... libtiff
+# Project type .... DynamicLibrary
+# Platform ........ MacOSX/g++
+# Configuration ... Release/x64
+# --------------------------------------------------------------------
+# Additional preprocessor definitions:
+# ZIP_SUPPORT
+# --------------------------------------------------------------------
+# Additional include search directories:
+# $(PCLSRCDIR)/jpeg
+# $(PCLSRCDIR)/zlib
+# --------------------------------------------------------------------
+# Additional libraries:
+# jpeg-pxi
+# zlib-pxi
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/libtiff/macosx/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/liblibtiff-pxi.dylib
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../tif_aux.c \
+../../tif_close.c \
+../../tif_codec.c \
+../../tif_color.c \
+../../tif_compress.c \
+../../tif_dir.c \
+../../tif_dirinfo.c \
+../../tif_dirread.c \
+../../tif_dirwrite.c \
+../../tif_dumpmode.c \
+../../tif_error.c \
+../../tif_extension.c \
+../../tif_fax3.c \
+../../tif_fax3sm.c \
+../../tif_flush.c \
+../../tif_getimage.c \
+../../tif_jbig.c \
+../../tif_jpeg.c \
+../../tif_jpeg_12.c \
+../../tif_luv.c \
+../../tif_lzma.c \
+../../tif_lzw.c \
+../../tif_next.c \
+../../tif_ojpeg.c \
+../../tif_open.c \
+../../tif_packbits.c \
+../../tif_pixarlog.c \
+../../tif_predict.c \
+../../tif_print.c \
+../../tif_read.c \
+../../tif_stream.cxx \
+../../tif_strip.c \
+../../tif_swab.c \
+../../tif_thunder.c \
+../../tif_tile.c \
+../../tif_unix.c \
+../../tif_version.c \
+../../tif_warning.c \
+../../tif_write.c \
+../../tif_zip.c
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/tif_aux.o \
+./x64/Release/tif_close.o \
+./x64/Release/tif_codec.o \
+./x64/Release/tif_color.o \
+./x64/Release/tif_compress.o \
+./x64/Release/tif_dir.o \
+./x64/Release/tif_dirinfo.o \
+./x64/Release/tif_dirread.o \
+./x64/Release/tif_dirwrite.o \
+./x64/Release/tif_dumpmode.o \
+./x64/Release/tif_error.o \
+./x64/Release/tif_extension.o \
+./x64/Release/tif_fax3.o \
+./x64/Release/tif_fax3sm.o \
+./x64/Release/tif_flush.o \
+./x64/Release/tif_getimage.o \
+./x64/Release/tif_jbig.o \
+./x64/Release/tif_jpeg.o \
+./x64/Release/tif_jpeg_12.o \
+./x64/Release/tif_luv.o \
+./x64/Release/tif_lzma.o \
+./x64/Release/tif_lzw.o \
+./x64/Release/tif_next.o \
+./x64/Release/tif_ojpeg.o \
+./x64/Release/tif_open.o \
+./x64/Release/tif_packbits.o \
+./x64/Release/tif_pixarlog.o \
+./x64/Release/tif_predict.o \
+./x64/Release/tif_print.o \
+./x64/Release/tif_read.o \
+./x64/Release/tif_stream.o \
+./x64/Release/tif_strip.o \
+./x64/Release/tif_swab.o \
+./x64/Release/tif_thunder.o \
+./x64/Release/tif_tile.o \
+./x64/Release/tif_unix.o \
+./x64/Release/tif_version.o \
+./x64/Release/tif_warning.o \
+./x64/Release/tif_write.o \
+./x64/Release/tif_zip.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/tif_aux.d \
+./x64/Release/tif_close.d \
+./x64/Release/tif_codec.d \
+./x64/Release/tif_color.d \
+./x64/Release/tif_compress.d \
+./x64/Release/tif_dir.d \
+./x64/Release/tif_dirinfo.d \
+./x64/Release/tif_dirread.d \
+./x64/Release/tif_dirwrite.d \
+./x64/Release/tif_dumpmode.d \
+./x64/Release/tif_error.d \
+./x64/Release/tif_extension.d \
+./x64/Release/tif_fax3.d \
+./x64/Release/tif_fax3sm.d \
+./x64/Release/tif_flush.d \
+./x64/Release/tif_getimage.d \
+./x64/Release/tif_jbig.d \
+./x64/Release/tif_jpeg.d \
+./x64/Release/tif_jpeg_12.d \
+./x64/Release/tif_luv.d \
+./x64/Release/tif_lzma.d \
+./x64/Release/tif_lzw.d \
+./x64/Release/tif_next.d \
+./x64/Release/tif_ojpeg.d \
+./x64/Release/tif_open.d \
+./x64/Release/tif_packbits.d \
+./x64/Release/tif_pixarlog.d \
+./x64/Release/tif_predict.d \
+./x64/Release/tif_print.d \
+./x64/Release/tif_read.d \
+./x64/Release/tif_stream.d \
+./x64/Release/tif_strip.d \
+./x64/Release/tif_swab.d \
+./x64/Release/tif_thunder.d \
+./x64/Release/tif_tile.d \
+./x64/Release/tif_unix.d \
+./x64/Release/tif_version.d \
+./x64/Release/tif_warning.d \
+./x64/Release/tif_write.d \
+./x64/Release/tif_zip.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/liblibtiff-pxi.dylib: $(OBJ_FILES)
+	clang++ -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.8 -fPIC -headerpad_max_install_names -dynamiclib -install_name @executable_path/liblibtiff-pxi.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/liblibtiff-pxi.dylib $(OBJ_FILES) -framework CoreFoundation -ljpeg-pxi -lzlib-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/liblibtiff-pxi.dylib
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/liblibtiff-pxi.dylib $(PCLBINDIR64)
+	install_name_tool -change @executable_path/libjpeg-pxi.dylib @loader_path/libjpeg-pxi.dylib $(PCLBINDIR64)/liblibtiff-pxi.dylib
+	install_name_tool -change @executable_path/libzlib-pxi.dylib @loader_path/libzlib-pxi.dylib $(PCLBINDIR64)/liblibtiff-pxi.dylib
+
+./x64/Release/%.o: ../../%.cxx
+	clang++ -c -pipe -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.8 -fPIC -D_REENTRANT -D__PCL_MACOSX -D"ZIP_SUPPORT" -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/jpeg" -I"$(PCLSRCDIR)/zlib" -O2 -mtune=generic -mssse3 -ffast-math -ftree-vectorize -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x64/Release/%.o: ../../%.c
+	clang -c -pipe -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.8 -fPIC -D_REENTRANT -D__PCL_MACOSX -D"ZIP_SUPPORT" -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/jpeg" -I"$(PCLSRCDIR)/zlib" -O2 -mtune=generic -mssse3 -ffast-math -ftree-vectorize -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

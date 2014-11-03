@@ -1,0 +1,187 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.93
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Tue, 28 Oct 2014 18:16:43 GMT
+# Project id ...... jasper
+# Project type .... DynamicLibrary
+# Platform ........ FreeBSD/g++
+# Configuration ... Release/x64
+# --------------------------------------------------------------------
+# Additional preprocessor definitions:
+# EXCLUDE_JPG_SUPPORT
+# EXCLUDE_MIF_SUPPORT
+# EXCLUDE_PNM_SUPPORT
+# EXCLUDE_RAS_SUPPORT
+# EXCLUDE_BMP_SUPPORT
+# EXCLUDE_PGX_SUPPORT
+# --------------------------------------------------------------------
+# Additional include search directories:
+# ../../include
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/jasper/freebsd/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/libjasper-pxi.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../dummy.c \
+../../base/jas_cm.c \
+../../base/jas_debug.c \
+../../base/jas_getopt.c \
+../../base/jas_icc.c \
+../../base/jas_iccdata.c \
+../../base/jas_image.c \
+../../base/jas_init.c \
+../../base/jas_malloc.c \
+../../base/jas_seq.c \
+../../base/jas_stream.c \
+../../base/jas_string.c \
+../../base/jas_tmr.c \
+../../base/jas_tvp.c \
+../../base/jas_version.c \
+../../jp2/jp2_cod.c \
+../../jp2/jp2_dec.c \
+../../jp2/jp2_enc.c \
+../../jpc/jpc_bs.c \
+../../jpc/jpc_cs.c \
+../../jpc/jpc_dec.c \
+../../jpc/jpc_enc.c \
+../../jpc/jpc_math.c \
+../../jpc/jpc_mct.c \
+../../jpc/jpc_mqcod.c \
+../../jpc/jpc_mqdec.c \
+../../jpc/jpc_mqenc.c \
+../../jpc/jpc_qmfb.c \
+../../jpc/jpc_t1cod.c \
+../../jpc/jpc_t1dec.c \
+../../jpc/jpc_t1enc.c \
+../../jpc/jpc_t2cod.c \
+../../jpc/jpc_t2dec.c \
+../../jpc/jpc_t2enc.c \
+../../jpc/jpc_tagtree.c \
+../../jpc/jpc_tsfb.c \
+../../jpc/jpc_util.c
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/dummy.o \
+./x64/Release/base/jas_cm.o \
+./x64/Release/base/jas_debug.o \
+./x64/Release/base/jas_getopt.o \
+./x64/Release/base/jas_icc.o \
+./x64/Release/base/jas_iccdata.o \
+./x64/Release/base/jas_image.o \
+./x64/Release/base/jas_init.o \
+./x64/Release/base/jas_malloc.o \
+./x64/Release/base/jas_seq.o \
+./x64/Release/base/jas_stream.o \
+./x64/Release/base/jas_string.o \
+./x64/Release/base/jas_tmr.o \
+./x64/Release/base/jas_tvp.o \
+./x64/Release/base/jas_version.o \
+./x64/Release/jp2/jp2_cod.o \
+./x64/Release/jp2/jp2_dec.o \
+./x64/Release/jp2/jp2_enc.o \
+./x64/Release/jpc/jpc_bs.o \
+./x64/Release/jpc/jpc_cs.o \
+./x64/Release/jpc/jpc_dec.o \
+./x64/Release/jpc/jpc_enc.o \
+./x64/Release/jpc/jpc_math.o \
+./x64/Release/jpc/jpc_mct.o \
+./x64/Release/jpc/jpc_mqcod.o \
+./x64/Release/jpc/jpc_mqdec.o \
+./x64/Release/jpc/jpc_mqenc.o \
+./x64/Release/jpc/jpc_qmfb.o \
+./x64/Release/jpc/jpc_t1cod.o \
+./x64/Release/jpc/jpc_t1dec.o \
+./x64/Release/jpc/jpc_t1enc.o \
+./x64/Release/jpc/jpc_t2cod.o \
+./x64/Release/jpc/jpc_t2dec.o \
+./x64/Release/jpc/jpc_t2enc.o \
+./x64/Release/jpc/jpc_tagtree.o \
+./x64/Release/jpc/jpc_tsfb.o \
+./x64/Release/jpc/jpc_util.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/dummy.d \
+./x64/Release/base/jas_cm.d \
+./x64/Release/base/jas_debug.d \
+./x64/Release/base/jas_getopt.d \
+./x64/Release/base/jas_icc.d \
+./x64/Release/base/jas_iccdata.d \
+./x64/Release/base/jas_image.d \
+./x64/Release/base/jas_init.d \
+./x64/Release/base/jas_malloc.d \
+./x64/Release/base/jas_seq.d \
+./x64/Release/base/jas_stream.d \
+./x64/Release/base/jas_string.d \
+./x64/Release/base/jas_tmr.d \
+./x64/Release/base/jas_tvp.d \
+./x64/Release/base/jas_version.d \
+./x64/Release/jp2/jp2_cod.d \
+./x64/Release/jp2/jp2_dec.d \
+./x64/Release/jp2/jp2_enc.d \
+./x64/Release/jpc/jpc_bs.d \
+./x64/Release/jpc/jpc_cs.d \
+./x64/Release/jpc/jpc_dec.d \
+./x64/Release/jpc/jpc_enc.d \
+./x64/Release/jpc/jpc_math.d \
+./x64/Release/jpc/jpc_mct.d \
+./x64/Release/jpc/jpc_mqcod.d \
+./x64/Release/jpc/jpc_mqdec.d \
+./x64/Release/jpc/jpc_mqenc.d \
+./x64/Release/jpc/jpc_qmfb.d \
+./x64/Release/jpc/jpc_t1cod.d \
+./x64/Release/jpc/jpc_t1dec.d \
+./x64/Release/jpc/jpc_t1enc.d \
+./x64/Release/jpc/jpc_t2cod.d \
+./x64/Release/jpc/jpc_t2dec.d \
+./x64/Release/jpc/jpc_t2enc.d \
+./x64/Release/jpc/jpc_tagtree.d \
+./x64/Release/jpc/jpc_tsfb.d \
+./x64/Release/jpc/jpc_util.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/libjasper-pxi.so: $(OBJ_FILES)
+	clang++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/libjasper-pxi.so $(OBJ_FILES)
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/libjasper-pxi.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/libjasper-pxi.so $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.c
+	clang -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -D"EXCLUDE_JPG_SUPPORT" -D"EXCLUDE_MIF_SUPPORT" -D"EXCLUDE_PNM_SUPPORT" -D"EXCLUDE_RAS_SUPPORT" -D"EXCLUDE_BMP_SUPPORT" -D"EXCLUDE_PGX_SUPPORT" -I"$(PCLINCDIR)" -I"../../include" -O2 -mtune=generic -msse3 -fomit-frame-pointer -ffast-math -ftree-vectorize -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x64/Release/base/%.o: ../../base/%.c
+	clang -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -D"EXCLUDE_JPG_SUPPORT" -D"EXCLUDE_MIF_SUPPORT" -D"EXCLUDE_PNM_SUPPORT" -D"EXCLUDE_RAS_SUPPORT" -D"EXCLUDE_BMP_SUPPORT" -D"EXCLUDE_PGX_SUPPORT" -I"$(PCLINCDIR)" -I"../../include" -O2 -mtune=generic -msse3 -fomit-frame-pointer -ffast-math -ftree-vectorize -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x64/Release/jp2/%.o: ../../jp2/%.c
+	clang -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -D"EXCLUDE_JPG_SUPPORT" -D"EXCLUDE_MIF_SUPPORT" -D"EXCLUDE_PNM_SUPPORT" -D"EXCLUDE_RAS_SUPPORT" -D"EXCLUDE_BMP_SUPPORT" -D"EXCLUDE_PGX_SUPPORT" -I"$(PCLINCDIR)" -I"../../include" -O2 -mtune=generic -msse3 -fomit-frame-pointer -ffast-math -ftree-vectorize -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x64/Release/jpc/%.o: ../../jpc/%.c
+	clang -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -D"EXCLUDE_JPG_SUPPORT" -D"EXCLUDE_MIF_SUPPORT" -D"EXCLUDE_PNM_SUPPORT" -D"EXCLUDE_RAS_SUPPORT" -D"EXCLUDE_BMP_SUPPORT" -D"EXCLUDE_PGX_SUPPORT" -I"$(PCLINCDIR)" -I"../../include" -O2 -mtune=generic -msse3 -fomit-frame-pointer -ffast-math -ftree-vectorize -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

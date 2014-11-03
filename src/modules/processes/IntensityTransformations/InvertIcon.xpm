@@ -1,0 +1,242 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard IntensityTransformations Process Module Version 01.07.00.0285
+// ****************************************************************************
+// InvertIcon.xpm - Released 2014/10/29 07:35:24 UTC
+// ****************************************************************************
+// This file is part of the standard IntensityTransformations PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char* InvertIcon_XPM[] = {
+/* columns rows colors chars-per-pixel */
+"24 24 161 2",
+"9  c #FFB56A",
+"_  c #FFB56B",
+"~  c #4F4FFF",
+"E  c #1212FF",
+"9. c #FFB265",
+"7. c #6666FF",
+"0  c #FFAF60",
+"h. c #FFAC59",
+"o  c #0807FF",
+"3  c #0303FF",
+"o. c #5757FF",
+"N  c #1A1AFF",
+"v. c #FFA346",
+"c. c #7372FF",
+";. c #6E6EFF",
+",. c #3131FF",
+"r. c #2C2DFF",
+"q. c #FF9D39",
+"l  c #FF9A32",
+"$. c #4848FF",
+"M  c #100FFF",
+"C. c #0B0BFF",
+"M. c #FF9A35",
+"z  c #FF9427",
+"t  c #FF9428",
+"4. c #FF9120",
+"y. c #3E3DFF",
+"a  c #7676FF",
+"]  c #7172FF",
+"n. c #FF8E1C",
+"*. c #FF8E1E",
+"+. c #5050FF",
+"C  c #FF8B14",
+"a. c #FF8B16",
+"&. c #2526FF",
+"z. c #FF8509",
+"!  c #4141FF",
+"U  c #FF8205",
+"^  c #FF8206",
+"#  c #1B1BFF",
+"%. c #4949FF",
+"O  c #0C0CFF",
+"L. c #6564FF",
+"2  c #7777FF",
+"g. c #7273FF",
+":. c #3A3AFF",
+"4  c #FFC992",
+"5  c #FFC68D",
+"G  c #FFC385",
+"6  c #FFC386",
+"D. c #4746FF",
+"8  c #FFBA74",
+"g  c #FFBA75",
+"V  c #3333FF",
+"i. c #FFB469",
+";  c #4A4AFF",
+"T  c #6665FF",
+"q  c #FFAB55",
+"0. c #FFA850",
+"F. c #403FFF",
+"Y  c #7878FF",
+"w  c #FFA549",
+"=  c #3B3BFF",
+"2. c #FFA54B",
+"m. c #1515FF",
+"p. c #FF9F3D",
+"+  c #1011FF",
+"k  c #FF9F3E",
+"S  c #6E6DFF",
+"J. c #3130FF",
+"b. c #FF9931",
+"r  c #FF9932",
+"L  c #FF9933",
+"k. c #FF962C",
+"(  c #5A5AFF",
+"N. c #FF9021",
+"l. c #FF8D19",
+"   c None",
+"O. c #504FFF",
+"x  c #FF8A14",
+"u  c #FF8A15",
+"-. c #FF870C",
+"I  c #FF870D",
+"n  c #090AFF",
+"B. c #FF870F",
+"t. c #2525FF",
+"V. c #FF8102",
+"X  c #0403FF",
+"Q  c #1B1AFF",
+"@  c #1616FF",
+"/  c #6566FF",
+"&  c #2D2DFF",
+"K. c #0C0BFF",
+"f. c #4444FF",
+"m  c #0707FF",
+"{  c #5657FF",
+"<. c #7272FF",
+"u. c #6D6EFF",
+"*  c #3535FF",
+"d  c #FFC285",
+"7  c #FFBF7D",
+"'  c #5E5FFF",
+"H  c #FFBF7E",
+"B  c #2626FF",
+"8. c #FFBC79",
+".  c #0000FF",
+" . c #FFB66A",
+">  c #5958FF",
+"|  c #1C1BFF",
+"X. c #4F50FF",
+")  c #1717FF",
+"`  c #3332FF",
+"b  c #6B6BFF",
+".. c #FFB05F",
+"h  c #FFB060",
+"1. c #FFB061",
+"K  c #4041FF",
+"j  c #FFAA54",
+",  c #6160FF",
+"d. c #1F1FFF",
+"A  c #7373FF",
+"j. c #FFA142",
+":  c #5251FF",
+"J  c #1010FF",
+"e  c #FF9E3D",
+"3. c #FF9B35",
+"<  c #6968FF",
+"D  c #6464FF",
+"%  c #2727FF",
+"G. c #393AFF",
+"w. c #FF9225",
+"A. c #5555FF",
+"P  c #FF8F1D",
+"y  c #FF8F1E",
+"1  c #7170FF",
+"e. c #FF8912",
+"F  c #0E0DFF",
+"c  c #FF860C",
+"i  c #FF860D",
+"p  c #FF8305",
+"Z  c #FF8306",
+"s. c #FF8307",
+"Z. c #5D5DFF",
+"@. c #2020FF",
+"x. c #FF8000",
+"#. c #7978FF",
+">. c #3737FF",
+"5. c #3233FF",
+"S. c #4E4EFF",
+"6. c #2D2CFF",
+"s  c #0706FF",
+"}  c #5656FF",
+"[  c #6D6DFF",
+"=. c #2B2CFF",
+"-  c #4243FF",
+"W  c #FFBE7D",
+"R  c #5E5EFF",
+"f  c #FFBE7E",
+"$  c #2121FF",
+"v  c #7575FF",
+"H. c #3838FF",
+/* pixels */
+"                                                ",
+"                                                ",
+"    . X o O + @ # $ % & * = - ; : > , < 1 2     ",
+"    3 4 4 5 6 7 8 9 0 q w e r t y u i p a a     ",
+"    s 4 5 d f g 9 h j w k l z y x c p v b b     ",
+"    n 5 6 . m M N B V k r t y C c Z A S D D     ",
+"    F G H m J N B V K L t P x I U Y S T R R     ",
+"    E W 8 J Q B V ! ~ t P x c ^ v S / R ( (     ",
+"    ) 8 _ N B ` ! ~ ' y x c ^ ] [ / R { } }     ",
+"    |  ...B ` ! X.' S x c U A [ T R o.O.+.+.    ",
+"    @.h j ` ! ~ R S #.I p v [ T ' o.O.$.%.%.    ",
+"    &.j w k r z *.u i Z v S T R } X.$.! K K     ",
+"    =.w k r z P u -.U 2 ;.T ' { ~ $.K :.>.>.    ",
+"    ,.k r t y u c p <.[ T 6 g 1.2.3.4.5.6.6.    ",
+"    >.r t y C c p A [ 7.' 8.9.0.q.w.e.r.t.t.    ",
+"    y.t y u i Z A u.7.R o.i.j p.t a.s.B d.d.    ",
+"    f.y x -.U g.[ 7.' } ~ h.j.k.l.z.x.@.N N     ",
+"    ; x -.p c.;.T ' o.O.$.v.b.n.c x.x.Q m.m.    ",
+"    +.c U <.S 7.R o.X.$.! M.N.B.V.x.x.m.J J     ",
+"    o.Z 2 u.T R o.~ $.! :.5.6.B @.N m.J C.C.    ",
+"    7.v ;.7.Z.A.S.D.F.G.H.J.B @.N m.J K.m m     ",
+"    L.v ;.7.Z.A.S.D.F.G.H.J.B @.N m.J K.m m     ",
+"                                                ",
+"                                                "
+};
+
+// ****************************************************************************
+// EOF InvertIcon.xpm - Released 2014/10/29 07:35:24 UTC

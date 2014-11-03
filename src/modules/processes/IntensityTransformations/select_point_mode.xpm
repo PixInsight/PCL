@@ -1,0 +1,110 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard IntensityTransformations Process Module Version 01.07.00.0285
+// ****************************************************************************
+// select_point_mode.xpm - Released 2014/10/29 07:35:24 UTC
+// ****************************************************************************
+// This file is part of the standard IntensityTransformations PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char* select_point_mode_XPM[] = {
+"15 15 41 1",
+" 	c None",
+".	c #0000FF",
+"+	c #81A3FE",
+"@	c #728FFE",
+"#	c #627BFE",
+"$	c #5266FE",
+"%	c #4152FF",
+"&	c #7492FD",
+"*	c #647EFE",
+"=	c #5369FE",
+"-	c #4354FE",
+";	c #3341FF",
+">	c #6581FE",
+",	c #566CFE",
+"'	c #4557FE",
+")	c #3644FE",
+"!	c #2731FE",
+"~	c #576EFE",
+"{	c #475AFE",
+"]	c #3746FE",
+"^	c #D6AC95",
+"/	c #1B23FE",
+"(	c #495DFE",
+"_	c #3A48FF",
+":	c #2A35FF",
+"<	c #DC9F7E",
+"[	c #E09671",
+"}	c #E29067",
+"|	c #E6895A",
+"1	c #E9804C",
+"2	c #E98351",
+"3	c #ED7B44",
+"4	c #F07437",
+"5	c #F36D2C",
+"6	c #EE763B",
+"7	c #F16F30",
+"8	c #F56924",
+"9	c #F36B27",
+"0	c #F95F14",
+"a	c #FC5A0B",
+"b	c #FF5300",
+"               ",
+"               ",
+"               ",
+"   .......     ",
+"   .+@#$%.     ",
+"   .&*=-;.     ",
+"   .>,')!.     ",
+"   .~{]^/.     ",
+"   .(_:<[.     ",
+"   ....}|1     ",
+"       2345    ",
+"       678     ",
+"       9 0a    ",
+"          b    ",
+"               "};
+
+// ****************************************************************************
+// EOF select_point_mode.xpm - Released 2014/10/29 07:35:24 UTC

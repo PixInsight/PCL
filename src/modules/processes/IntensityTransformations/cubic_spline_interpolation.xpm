@@ -1,0 +1,149 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard IntensityTransformations Process Module Version 01.07.00.0285
+// ****************************************************************************
+// cubic_spline_interpolation.xpm - Released 2014/10/29 07:35:24 UTC
+// ****************************************************************************
+// This file is part of the standard IntensityTransformations PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char* cubic_spline_interpolation_XPM[] = {
+"15 15 80 1",
+" 	c None",
+".	c #000080",
+"+	c #FFFFFF",
+"@	c #FCFDFF",
+"#	c #7291FF",
+"$	c #1B4DFF",
+"%	c #6486FF",
+"&	c #F9FAFF",
+"*	c #96ACFF",
+"=	c #1749FF",
+"-	c #073DFF",
+";	c #0038FF",
+">	c #7190FF",
+",	c #436AFF",
+"'	c #2151FF",
+")	c #1144FF",
+"!	c #0138FF",
+"~	c #0A40FF",
+"{	c #EAEFFF",
+"]	c #B9C7FF",
+"^	c #3C64FF",
+"/	c #2B58FF",
+"(	c #1B4CFF",
+"_	c #0B40FF",
+":	c #7B98FF",
+"<	c #7A95FF",
+"[	c #466BFF",
+"}	c #3660FF",
+"|	c #2553FF",
+"1	c #1548FF",
+"2	c #053BFF",
+"3	c #1448FF",
+"4	c #FBFCFF",
+"5	c #EFF2FF",
+"6	c #607FFF",
+"7	c #5073FF",
+"8	c #4067FF",
+"9	c #2F5BFF",
+"0	c #1F4FFF",
+"a	c #0F43FF",
+"b	c #B9C8FF",
+"c	c #C5D0FF",
+"d	c #6A87FF",
+"e	c #5A7AFF",
+"f	c #4A6FFF",
+"g	c #3962FF",
+"h	c #2957FF",
+"i	c #194AFF",
+"j	c #093EFF",
+"k	c #6385FF",
+"l	c #A0B1FF",
+"m	c #748EFF",
+"n	c #6482FF",
+"o	c #5476FF",
+"p	c #446AFF",
+"q	c #335EFF",
+"r	c #2352FF",
+"s	c #1346FF",
+"t	c #F8FAFF",
+"u	c #E9EDFF",
+"v	c #8FA2FF",
+"w	c #7E96FF",
+"x	c #6E89FF",
+"y	c #5E7EFF",
+"z	c #4E71FF",
+"A	c #3E66FF",
+"B	c #2D59FF",
+"C	c #1D4DFF",
+"D	c #0D41FF",
+"E	c #A0B5FF",
+"F	c #C2CAFF",
+"G	c #99A9FF",
+"H	c #889DFF",
+"I	c #7891FF",
+"J	c #6885FF",
+"K	c #5879FF",
+"L	c #486DFF",
+"M	c #3761FF",
+"N	c #2755FF",
+"O	c #3863FF",
+"               ",
+" ............. ",
+" .+++++++++++. ",
+" .+++@#$%&+++. ",
+" .+++*=-;>+++. ",
+" .++&,')!~{++. ",
+" .++]^/(_;:++. ",
+" .++<[}|1234+. ",
+" .+567890a;b+. ",
+" .+cdefghijk+. ",
+" .+lmnopqrs1t. ",
+" .uvwxyzABCDE. ",
+" .FGHIJKLMN=O. ",
+" ............. ",
+"               "};
+
+// ****************************************************************************
+// EOF cubic_spline_interpolation.xpm - Released 2014/10/29 07:35:24 UTC

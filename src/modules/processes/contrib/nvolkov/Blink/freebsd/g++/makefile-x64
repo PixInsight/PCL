@@ -1,0 +1,71 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.93
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Tue, 28 Oct 2014 18:17:05 GMT
+# Project id ...... Blink
+# Project type .... Module
+# Platform ........ FreeBSD/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/contrib/nvolkov/Blink/freebsd/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/Blink-pxm.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../BlinkInterface.cpp \
+../../BlinkModule.cpp \
+../../BlinkProcess.cpp \
+../../BlinkStatisticsDialog.cpp \
+../../BlinkVideoDialog.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/BlinkInterface.o \
+./x64/Release/BlinkModule.o \
+./x64/Release/BlinkProcess.o \
+./x64/Release/BlinkStatisticsDialog.o \
+./x64/Release/BlinkVideoDialog.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/BlinkInterface.d \
+./x64/Release/BlinkModule.d \
+./x64/Release/BlinkProcess.d \
+./x64/Release/BlinkStatisticsDialog.d \
+./x64/Release/BlinkVideoDialog.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/Blink-pxm.so: $(OBJ_FILES)
+	clang++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/Blink-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/Blink-pxm.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/Blink-pxm.so $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	clang++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -I"$(PCLINCDIR)" -O3 -mtune=generic -msse3 -fomit-frame-pointer -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

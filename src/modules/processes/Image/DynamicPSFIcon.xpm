@@ -1,0 +1,206 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard Image Process Module Version 01.02.08.0281
+// ****************************************************************************
+// DynamicPSFIcon.xpm - Released 2014/10/29 07:35:22 UTC
+// ****************************************************************************
+// This file is part of the standard Image PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char* DynamicPSFIcon_XPM[]={
+"24 24 128 2",
+"Qt c None",
+"#8 c #0f10fd",
+"#1 c #1214fc",
+"#6 c #1316fc",
+"#X c #171afb",
+"#4 c #181bfb",
+"#T c #1c1ffa",
+"#Z c #1e21fa",
+"#P c #2124f9",
+"#3 c #2225fa",
+"#V c #2226f9",
+"#M c #252af9",
+"#S c #262af9",
+"#I c #2a2ff8",
+"#O c #2c30f8",
+"#0 c #2d32f7",
+"#7 c #2e33f7",
+"#D c #2f34f7",
+"#w c #3439f6",
+"#C c #343af6",
+"#F c #353bf6",
+"#q c #393ff5",
+"#k c #3e44f5",
+"#B c #3e45f5",
+"#t c #3f46f4",
+"#e c #424af4",
+"#v c #434af4",
+"#o c #444cf3",
+"#z c #444cf4",
+"#K c #474ef3",
+"## c #474ff3",
+"#i c #4951f3",
+"#a c #4a52f3",
+".6 c #4c54f2",
+".1 c #515af1",
+".3 c #525bf1",
+"#p c #535df1",
+"#U c #545df1",
+"#H c #545ef1",
+"#d c #565ff0",
+".X c #565ff1",
+"#W c #5760f0",
+".P c #5a64f0",
+".W c #5b64f0",
+"#. c #5b65f0",
+".R c #5c66ef",
+".8 c #5e68ef",
+".H c #5f6aef",
+".0 c #606aef",
+"#h c #616bee",
+".C c #646fee",
+".9 c #656fee",
+"#s c #6570ee",
+".S c #6671ee",
+"#c c #6771ee",
+"#Y c #6772ed",
+"#N c #6873ee",
+".y c #6974ed",
+".G c #6975ed",
+".M c #6a75ed",
+"#u c #6b77ed",
+"#E c #6c78ed",
+".u c #6e7aec",
+".T c #6f7bec",
+"#2 c #717cec",
+".N c #727eec",
+".t c #737fec",
+".Z c #7380ec",
+".5 c #7683eb",
+".s c #7884eb",
+".B c #7885eb",
+".U c #7986eb",
+"#j c #7a88eb",
+".L c #7b88ea",
+".r c #7c8aea",
+".x c #7d8aea",
+"#J c #7e8bea",
+".Q c #7e8cea",
+".V c #7f8cea",
+".O c #818ee9",
+".q c #818fe9",
+"#L c #8190e9",
+".A c #828fe9",
+"#y c #8290e9",
+".4 c #8391e9",
+"#n c #8492e8",
+".p c #8695e8",
+"#r c #8796e8",
+".o c #8b9ae7",
+"#b c #8c9ae7",
+"#g c #8c9be7",
+"#A c #8e9de7",
+".n c #909fe7",
+".w c #90a0e7",
+"#f c #91a0e7",
+"#x c #91a1e7",
+"#R c #93a2e6",
+".m c #95a5e6",
+".7 c #95a6e6",
+"#m c #96a6e6",
+".l c #9aaae5",
+".K c #9aabe5",
+".k c #9fb0e4",
+"#l c #9fb1e4",
+"#G c #a0b1e4",
+".j c #a3b5e3",
+".v c #a4b5e3",
+".J c #a4b6e3",
+".i c #a8bbe3",
+".F c #a9bbe2",
+"#Q c #a9bce2",
+".h c #adc0e2",
+".I c #aec0e2",
+".2 c #aec1e2",
+".g c #b2c5e1",
+".E c #b2c6e1",
+".Y c #b3c6e1",
+".f c #b7cbe0",
+".e c #bcd0df",
+".D c #bcd1df",
+"#5 c #bdd1df",
+".d c #c1d6de",
+".c c #c6dbde",
+"#9 c #c6dcdd",
+".b c #cbe0dd",
+".z c #cbe1dd",
+".a c #d0e6dc",
+".# c #d4ebdb",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt",
+"Qt.#.a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t.uQt",
+"Qt.a.b.c.d.e.f.g.h.i.v.k.l.m.w.o.p.q.x.s.t.u.yQt",
+"Qt.z.c.d.e.f.g.h.i.v.k.l.m.w.o.p.A.x.B.t.u.y.CQt",
+"Qt.c.d.D.f.E.h.F.v.k.l.m.w.o.p.A.x.B.t.u.G.C.HQt",
+"Qt.d.D.f.E.I.F.J.k.K.L.M.N.O.A.x.B.t.u.G.C.H.PQt",
+"Qt.D.f.E.I.F.J.k.K.Q.R.S.T.U.V.B.t.u.G.C.H.W.XQt",
+"Qt.f.Y.I.F.J.k.K.m.R.R.S.T.U.q.Z.u.G.C.0.W.X.1Qt",
+"Qt.Y.2.F.J.k.K.m.Q.3.R.S.T.U.4.5.G.C.0.W.X.1.6Qt",
+"Qt.2.F.J.k.K.7.w.8.3.R.S.T.U.4.q.9.0#..X.1.6##Qt",
+"Qt.F.J.k.K.7.w.4#a.3.R.S.T.U.4#b#c#.#d.1.6###eQt",
+"Qt.J.k.K.7#f#g#h#i.3.R.S.T.U.4#g#j#d.1.6###e#kQt",
+"Qt#l.K#m#f#g#n#o#i.3.R.S.T.U.4#g#f#p.6###e#k#qQt",
+"Qt.K#m#f#g#r#s#t#i.3.R.S.T.U.4#g#m#u###v#k#q#wQt",
+"Qt#m#x#g#r#y#z#t#i.3.R.S.T.U.4#g#m#A#v#B#q#C#DQt",
+"Qt#x#g#r#y#E#F#t#i.3.R.S.T.U.4#g#m#G#H#q#C#D#IQt",
+"Qt#g#r#y#J#K#F#t#i.3.R.S.T.U.4#g#m#G#L#C#D#I#MQt",
+"Qt#r#y#J#N#O#F#t#i.3.R.S.T.U.4#g#m#G.F#i#I#M#PQt",
+"Qt.4#J.U#F#O#F#t#i.3.R.S.T.U.4#g#m#G#Q#R#S#P#TQt",
+"Qt#J.U#U#V#O#F#t#i.3.R.S.T.U.4#g#m#G#Q.Y#W#T#XQt",
+"Qt.U#Y#Z#V#O#F#t#i.3.R.S.T.U.4#g#m#G#Q.Y.g#0#1Qt",
+"Qt#2#3#4#V#O#F#t#i.3.R.S.T.U.4#g#m#G#Q.Y#5.j#6Qt",
+"Qt#7#8#4#V#O#F#t#i.3.R.S.T.U.4#g#m#G#Q.Y#5#9.4Qt",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt"};
+
+// ****************************************************************************
+// EOF DynamicPSFIcon.xpm - Released 2014/10/29 07:35:22 UTC

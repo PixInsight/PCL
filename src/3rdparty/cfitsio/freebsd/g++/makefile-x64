@@ -1,0 +1,287 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.93
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Tue, 28 Oct 2014 18:16:42 GMT
+# Project id ...... cfitsio
+# Project type .... DynamicLibrary
+# Platform ........ FreeBSD/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/cfitsio/freebsd/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/libcfitsio-pxi.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../buffers.c \
+../../cfileio.c \
+../../checksum.c \
+../../drvrfile.c \
+../../drvrgsiftp.c \
+../../drvrmem.c \
+../../drvrnet.c \
+../../drvrsmem.c \
+../../editcol.c \
+../../edithdu.c \
+../../eval_f.c \
+../../eval_l.c \
+../../eval_y.c \
+../../f77_wrap1.c \
+../../f77_wrap2.c \
+../../f77_wrap3.c \
+../../f77_wrap4.c \
+../../fits_hcompress.c \
+../../fits_hdecompress.c \
+../../fitscore.c \
+../../getcol.c \
+../../getcolb.c \
+../../getcold.c \
+../../getcole.c \
+../../getcoli.c \
+../../getcolj.c \
+../../getcolk.c \
+../../getcoll.c \
+../../getcols.c \
+../../getcolsb.c \
+../../getcolui.c \
+../../getcoluj.c \
+../../getcoluk.c \
+../../getkey.c \
+../../group.c \
+../../grparser.c \
+../../histo.c \
+../../imcompress.c \
+../../iraffits.c \
+../../modkey.c \
+../../pliocomp.c \
+../../putcol.c \
+../../putcolb.c \
+../../putcold.c \
+../../putcole.c \
+../../putcoli.c \
+../../putcolj.c \
+../../putcolk.c \
+../../putcoll.c \
+../../putcols.c \
+../../putcolsb.c \
+../../putcolu.c \
+../../putcolui.c \
+../../putcoluj.c \
+../../putcoluk.c \
+../../putkey.c \
+../../quantize.c \
+../../region.c \
+../../ricecomp.c \
+../../scalnull.c \
+../../simplerng.c \
+../../swapproc.c \
+../../wcssub.c \
+../../wcsutil.c \
+../../zlib/adler32.c \
+../../zlib/crc32.c \
+../../zlib/deflate.c \
+../../zlib/infback.c \
+../../zlib/inffast.c \
+../../zlib/inflate.c \
+../../zlib/inftrees.c \
+../../zlib/trees.c \
+../../zlib/uncompr.c \
+../../zlib/zcompress.c \
+../../zlib/zuncompress.c \
+../../zlib/zutil.c
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/buffers.o \
+./x64/Release/cfileio.o \
+./x64/Release/checksum.o \
+./x64/Release/drvrfile.o \
+./x64/Release/drvrgsiftp.o \
+./x64/Release/drvrmem.o \
+./x64/Release/drvrnet.o \
+./x64/Release/drvrsmem.o \
+./x64/Release/editcol.o \
+./x64/Release/edithdu.o \
+./x64/Release/eval_f.o \
+./x64/Release/eval_l.o \
+./x64/Release/eval_y.o \
+./x64/Release/f77_wrap1.o \
+./x64/Release/f77_wrap2.o \
+./x64/Release/f77_wrap3.o \
+./x64/Release/f77_wrap4.o \
+./x64/Release/fits_hcompress.o \
+./x64/Release/fits_hdecompress.o \
+./x64/Release/fitscore.o \
+./x64/Release/getcol.o \
+./x64/Release/getcolb.o \
+./x64/Release/getcold.o \
+./x64/Release/getcole.o \
+./x64/Release/getcoli.o \
+./x64/Release/getcolj.o \
+./x64/Release/getcolk.o \
+./x64/Release/getcoll.o \
+./x64/Release/getcols.o \
+./x64/Release/getcolsb.o \
+./x64/Release/getcolui.o \
+./x64/Release/getcoluj.o \
+./x64/Release/getcoluk.o \
+./x64/Release/getkey.o \
+./x64/Release/group.o \
+./x64/Release/grparser.o \
+./x64/Release/histo.o \
+./x64/Release/imcompress.o \
+./x64/Release/iraffits.o \
+./x64/Release/modkey.o \
+./x64/Release/pliocomp.o \
+./x64/Release/putcol.o \
+./x64/Release/putcolb.o \
+./x64/Release/putcold.o \
+./x64/Release/putcole.o \
+./x64/Release/putcoli.o \
+./x64/Release/putcolj.o \
+./x64/Release/putcolk.o \
+./x64/Release/putcoll.o \
+./x64/Release/putcols.o \
+./x64/Release/putcolsb.o \
+./x64/Release/putcolu.o \
+./x64/Release/putcolui.o \
+./x64/Release/putcoluj.o \
+./x64/Release/putcoluk.o \
+./x64/Release/putkey.o \
+./x64/Release/quantize.o \
+./x64/Release/region.o \
+./x64/Release/ricecomp.o \
+./x64/Release/scalnull.o \
+./x64/Release/simplerng.o \
+./x64/Release/swapproc.o \
+./x64/Release/wcssub.o \
+./x64/Release/wcsutil.o \
+./x64/Release/zlib/adler32.o \
+./x64/Release/zlib/crc32.o \
+./x64/Release/zlib/deflate.o \
+./x64/Release/zlib/infback.o \
+./x64/Release/zlib/inffast.o \
+./x64/Release/zlib/inflate.o \
+./x64/Release/zlib/inftrees.o \
+./x64/Release/zlib/trees.o \
+./x64/Release/zlib/uncompr.o \
+./x64/Release/zlib/zcompress.o \
+./x64/Release/zlib/zuncompress.o \
+./x64/Release/zlib/zutil.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/buffers.d \
+./x64/Release/cfileio.d \
+./x64/Release/checksum.d \
+./x64/Release/drvrfile.d \
+./x64/Release/drvrgsiftp.d \
+./x64/Release/drvrmem.d \
+./x64/Release/drvrnet.d \
+./x64/Release/drvrsmem.d \
+./x64/Release/editcol.d \
+./x64/Release/edithdu.d \
+./x64/Release/eval_f.d \
+./x64/Release/eval_l.d \
+./x64/Release/eval_y.d \
+./x64/Release/f77_wrap1.d \
+./x64/Release/f77_wrap2.d \
+./x64/Release/f77_wrap3.d \
+./x64/Release/f77_wrap4.d \
+./x64/Release/fits_hcompress.d \
+./x64/Release/fits_hdecompress.d \
+./x64/Release/fitscore.d \
+./x64/Release/getcol.d \
+./x64/Release/getcolb.d \
+./x64/Release/getcold.d \
+./x64/Release/getcole.d \
+./x64/Release/getcoli.d \
+./x64/Release/getcolj.d \
+./x64/Release/getcolk.d \
+./x64/Release/getcoll.d \
+./x64/Release/getcols.d \
+./x64/Release/getcolsb.d \
+./x64/Release/getcolui.d \
+./x64/Release/getcoluj.d \
+./x64/Release/getcoluk.d \
+./x64/Release/getkey.d \
+./x64/Release/group.d \
+./x64/Release/grparser.d \
+./x64/Release/histo.d \
+./x64/Release/imcompress.d \
+./x64/Release/iraffits.d \
+./x64/Release/modkey.d \
+./x64/Release/pliocomp.d \
+./x64/Release/putcol.d \
+./x64/Release/putcolb.d \
+./x64/Release/putcold.d \
+./x64/Release/putcole.d \
+./x64/Release/putcoli.d \
+./x64/Release/putcolj.d \
+./x64/Release/putcolk.d \
+./x64/Release/putcoll.d \
+./x64/Release/putcols.d \
+./x64/Release/putcolsb.d \
+./x64/Release/putcolu.d \
+./x64/Release/putcolui.d \
+./x64/Release/putcoluj.d \
+./x64/Release/putcoluk.d \
+./x64/Release/putkey.d \
+./x64/Release/quantize.d \
+./x64/Release/region.d \
+./x64/Release/ricecomp.d \
+./x64/Release/scalnull.d \
+./x64/Release/simplerng.d \
+./x64/Release/swapproc.d \
+./x64/Release/wcssub.d \
+./x64/Release/wcsutil.d \
+./x64/Release/zlib/adler32.d \
+./x64/Release/zlib/crc32.d \
+./x64/Release/zlib/deflate.d \
+./x64/Release/zlib/infback.d \
+./x64/Release/zlib/inffast.d \
+./x64/Release/zlib/inflate.d \
+./x64/Release/zlib/inftrees.d \
+./x64/Release/zlib/trees.d \
+./x64/Release/zlib/uncompr.d \
+./x64/Release/zlib/zcompress.d \
+./x64/Release/zlib/zuncompress.d \
+./x64/Release/zlib/zutil.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/libcfitsio-pxi.so: $(OBJ_FILES)
+	clang++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/libcfitsio-pxi.so $(OBJ_FILES)
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/libcfitsio-pxi.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/libcfitsio-pxi.so $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.c
+	clang -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -I"$(PCLINCDIR)" -O2 -mtune=generic -msse3 -fomit-frame-pointer -ffast-math -ftree-vectorize -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x64/Release/zlib/%.o: ../../zlib/%.c
+	clang -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -I"$(PCLINCDIR)" -O2 -mtune=generic -msse3 -fomit-frame-pointer -ffast-math -ftree-vectorize -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

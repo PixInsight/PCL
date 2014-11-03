@@ -1,0 +1,183 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard ColorCalibration Process Module Version 01.02.00.0168
+// ****************************************************************************
+// BackgroundNeutralizationIcon.xpm - Released 2014/10/29 07:34:54 UTC
+// ****************************************************************************
+// This file is part of the standard ColorCalibration PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char *BackgroundNeutralizationIcon_XPM[]={
+"24 24 105 2",
+"Qt c None",
+".a c #090909",
+".b c #0a0a0a",
+".c c #090909",
+".d c #070707",
+".# c #000000",
+".2 c #0000ff",
+".l c #242424",
+"#e c #27f727",
+"#f c #28f828",
+"#g c #29f929",
+"#h c #2afa2a",
+"#i c #2bfb2b",
+"#j c #2cfc2c",
+"#k c #2dfd2d",
+"#l c #2efe2e",
+"#o c #2fff2f",
+".t c #444444",
+".s c #454545",
+".k c #474747",
+".m c #484848",
+"#M c #494949",
+".5 c #4e4eee",
+".6 c #5050f0",
+".7 c #5252f2",
+".8 c #5353f3",
+".9 c #5555f5",
+"#. c #5757f7",
+"## c #5858f8",
+"#a c #5a5afa",
+"#b c #5b5bfb",
+".C c #636363",
+".1 c #7f7fdf",
+".3 c #8282e2",
+".I c #838383",
+".H c #878787",
+".J c #888888",
+".B c #8e8e8e",
+".D c #8f8f8f",
+"#d c #8fdd8f",
+"#J c #909090",
+"#n c #90de90",
+"#m c #92e092",
+".4 c #9e9eda",
+"#c c #a1a1dd",
+".Q c #a2a2a2",
+".r c #b2b2b2",
+".u c #b3b3b3",
+"#K c #b5b5b5",
+"#L c #b6b6b6",
+".e c #bababa",
+".f c #bebebe",
+".g c #c1c1c1",
+".P c #c3c3c3",
+".h c #c4c4c4",
+".w c #c5c5c5",
+".i c #c6c6c6",
+".j c #c7c7c7",
+".o c #c8c8c8",
+".n c #c9c9c9",
+".p c #cacaca",
+".x c #cbcbcb",
+"#E c #cccccc",
+".q c #cdcdcd",
+".y c #cecece",
+".v c #cfcfcf",
+".z c #d1d1d1",
+".F c #d2d2d2",
+".A c #d3d3d3",
+".W c #d4d4d4",
+".E c #d5d5d5",
+".L c #d6d6d6",
+".G c #d8d8d8",
+".M c #d9d9d9",
+"#p c #da9e9e",
+".K c #dadada",
+".N c #dcdcdc",
+"#A c #dda1a1",
+".O c #dedede",
+"#B c #e08080",
+".R c #e0e0e0",
+".S c #e2e2e2",
+"#D c #e38383",
+".T c #e3e3e3",
+".V c #e4e4e4",
+".U c #e5e5e5",
+".X c #e6e6e6",
+".Z c #e7e7e7",
+"#I c #e8e8e8",
+".Y c #e9e9e9",
+"#F c #eaeaea",
+".0 c #ebebeb",
+"#G c #ededed",
+"#q c #ef4f4f",
+"#H c #efefef",
+"#r c #f05050",
+"#s c #f25252",
+"#t c #f45454",
+"#u c #f65656",
+"#v c #f85858",
+"#w c #f95959",
+"#x c #fb5b5b",
+"#y c #fc5c5c",
+"#z c #fd5d5d",
+"#C c #ff0000",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt",
+"Qt.#.a.a.a.b.b.c.d.d.d.d.d.d.d.d.c.b.b.b.a.a.#Qt",
+"Qt.a.e.f.g.h.i.j.k.l.l.l.l.l.l.m.n.o.i.h.g.f.aQt",
+"Qt.a.f.g.h.o.p.q.r.s.t.t.t.t.s.u.v.q.p.o.h.g.bQt",
+"Qt.a.g.w.o.x.y.z.A.B.C.C.C.C.D.E.A.z.y.x.o.w.bQt",
+"Qt.b.h.o.x.v.F.E.G.F.H.I.I.J.A.K.G.E.F.v.x.o.bQt",
+"Qt.b.j.x.y.F.L.M.N.O.P.Q.Q.h.R.O.N.M.L.F.y.x.bQt",
+"Qt.b.n.q.z.E.M.N.R.S.T.j.j.U.V.S.R.N.M.E.z.q.bQt",
+"Qt.b.x.v.W.G.N.R.T.X.Y.Z.Z.0.Y.X.T.R.N.G.W.v.bQt",
+"Qt.b.1.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.3.bQt",
+"Qt.b.4.5.6.7.8.9#.###a#b#b#b#a###..9.8.7.6#c.bQt",
+"Qt.b#d#e#f#g#g#h#i#j#k#l#l#l#k#j#i#h#g#g#f#m.bQt",
+"Qt.b#n#e#f#g#h#i#i#j#k#l#o#l#k#j#i#i#h#g#f#m.bQt",
+"Qt.b#p#q#r#s#t#u#v#w#x#y#z#y#x#w#v#u#t#s#r#A.bQt",
+"Qt.b#B#C#C#C#C#C#C#C#C#C#C#C#C#C#C#C#C#C#C#D.bQt",
+"Qt.b#E.z.L.K.O.T.X#F#G#F.0#H#G#F.X.T.O.K.L.z.bQt",
+"Qt.b.x.v.W.G.N.R.T.X#I.j.j#F.Y.X.T.R.N.G.W.v.bQt",
+"Qt.b.n.q.z.E.M.N.R.S.w.Q.Q.i.V.S.R.N.M.E.z.q.bQt",
+"Qt.b.j.x.y.F.L.M.N.L.J.I.I.J.G.O.N.M.L.F.y.x.bQt",
+"Qt.b.h.o.x.v.F.E.G#J.C.C.C.C#J.K.G.E.F.v.x.o.bQt",
+"Qt.a.g.w.o.x.y.z#K.s.t.t.t.t.s#L.A.z.y.x.o.w.bQt",
+"Qt.a.f.g.h.o.p#E.m.l.l.l.l.l.l#M.y.q.p.o.h.g.bQt",
+"Qt.#.a.b.b.b.b.c.d.d.d.d.d.d.d.d.c.b.b.b.b.b.#Qt",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt"};
+
+// ****************************************************************************
+// EOF BackgroundNeutralizationIcon.xpm - Released 2014/10/29 07:34:54 UTC

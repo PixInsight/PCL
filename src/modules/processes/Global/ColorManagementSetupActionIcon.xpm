@@ -1,0 +1,197 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard Global Process Module Version 01.02.05.0258
+// ****************************************************************************
+// ColorManagementSetupActionIcon.xpm - Released 2014/10/29 07:34:56 UTC
+// ****************************************************************************
+// This file is part of the standard Global PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char* ColorManagementSetupActionIcon_XPM[] = {
+"16 16 127 2",
+"  	c None",
+". 	c #000BFD",
+"+ 	c #0030FA",
+"@ 	c #002BFB",
+"# 	c #002CFA",
+"$ 	c #002CFB",
+"% 	c #3B00E1",
+"& 	c #3C00E1",
+"* 	c #3A00E2",
+"= 	c #4100DE",
+"- 	c #0F00F7",
+"; 	c #00D1EB",
+"> 	c #00BAED",
+", 	c #00BEED",
+"' 	c #00C1EE",
+") 	c #FF0081",
+"! 	c #FF007F",
+"~ 	c #FF0080",
+"{ 	c #FD0083",
+"] 	c #FF0074",
+"^ 	c #00A6EF",
+"/ 	c #00AAEF",
+"( 	c #00ACF0",
+"_ 	c #00A9EF",
+": 	c #E6008E",
+"< 	c #EA008D",
+"[ 	c #E20090",
+"} 	c #00ADEE",
+"| 	c #00ADEF",
+"1 	c #00B0F0",
+"2 	c #EB008C",
+"3 	c #EF008A",
+"4 	c #EB008B",
+"5 	c #00AEEF",
+"6 	c #EB028D",
+"7 	c #EE0084",
+"8 	c #EC018C",
+"9 	c #EC008C",
+"0 	c #00BDF1",
+"a 	c #00A9F2",
+"b 	c #00ADF2",
+"c 	c #00AFF3",
+"d 	c #00ACF2",
+"e 	c #EE0088",
+"f 	c #F644A9",
+"g 	c #EC0A91",
+"h 	c #EC0089",
+"i 	c #EF008E",
+"j 	c #EA0090",
+"k 	c #FF0083",
+"l 	c #3C00E2",
+"m 	c #00BEEC",
+"n 	c #00AAEE",
+"o 	c #00AEEE",
+"p 	c #00B0EF",
+"q 	c #01ADEE",
+"r 	c #E80080",
+"s 	c #FB9CC9",
+"t 	c #FDCBD9",
+"u 	c #E20081",
+"v 	c #E20085",
+"w 	c #E8018F",
+"x 	c #403DBE",
+"y 	c #FFFF00",
+"z 	c #F9EC05",
+"A 	c #FEF100",
+"B 	c #FFF500",
+"C 	c #FDF100",
+"D 	c #000000",
+"E 	c #877977",
+"F 	c #FFFFF8",
+"G 	c #C3A699",
+"H 	c #010000",
+"I 	c #0000BE",
+"J 	c #413DBD",
+"K 	c #FDED02",
+"L 	c #FFF200",
+"M 	c #FFF600",
+"N 	c #85736C",
+"O 	c #FFE3CE",
+"P 	c #FFDDC1",
+"Q 	c #BE957E",
+"R 	c #0000BD",
+"S 	c #FFF100",
+"T 	c #866B62",
+"U 	c #FFD5B8",
+"V 	c #F4B698",
+"W 	c #FFC39E",
+"X 	c #B97E67",
+"Y 	c #0000BB",
+"Z 	c #856254",
+"` 	c #FFC29E",
+" .	c #F7A982",
+"..	c #F6A076",
+"+.	c #FFB685",
+"@.	c #D87E39",
+"#.	c #0B05BF",
+"$.	c #835948",
+"%.	c #FFB98A",
+"&.	c #FFA171",
+"*.	c #FF9966",
+"=.	c #4F2F24",
+"-.	c #663809",
+";.	c #1E10C8",
+">.	c #3F3CBF",
+",.	c #F4E70A",
+"'.	c #FDF005",
+").	c #9B5D49",
+"!.	c #D07D5C",
+"~.	c #41241B",
+"{.	c #FF8B58",
+"].	c #180A0E",
+"^.	c #4743B7",
+"/.	c #512D07",
+"(.	c #140A00",
+"_.	c #B45510",
+":.	c #FF7C26",
+"<.	c #0401B8",
+"[.	c #100FEE",
+"}.	c #413EBE",
+"|.	c #0201BF",
+"1.	c #0000B8",
+"2.	c #0000BC",
+"3.	c #2D14C6",
+"4.	c #3618C8",
+"5.	c #0000B6",
+"6.	c #0000EE",
+". + @ # # # $ # % & & & & * = - ",
+"+ ; > , , , ' , ) ! ~ ~ ~ { ] = ",
+"@ > ^ / / / ( _ : < : : : [ { * ",
+"# , / } | } 1 } 2 3 4 4 4 : ~ & ",
+"# , / } | | 1 } 2 3 4 4 2 : ~ & ",
+"# , / } 5 5 1 } 6 7 4 8 9 : ~ & ",
+"$ 0 a b b b c d e f g h i j k l ",
+"# m n o o o p q r s t u v w ~ % ",
+"x y z A A A B C D E F G D D H I ",
+"J y K L L L M L D N O P Q D D R ",
+"x y z S S L B A D T U V W X D Y ",
+"x y z A A S B A D Z `  ...+.@.#.",
+"x y z A L L B A D $.%.&.*.=.-.;.",
+">.y ,.z z z '.z D ).!.~.{.].D R ",
+"^.y y y y y y y D /.(.D _.:.D <.",
+"[.^.>.x x x }.x |.1.2.R 3.4.5.6."};
+
+// ****************************************************************************
+// EOF ColorManagementSetupActionIcon.xpm - Released 2014/10/29 07:34:56 UTC

@@ -1,0 +1,209 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.93
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Tue, 28 Oct 2014 18:17:00 GMT
+# Project id ...... IntensityTransformations
+# Project type .... Module
+# Platform ........ FreeBSD/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/IntensityTransformations/freebsd/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/IntensityTransformations-pxm.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../AdaptiveStretchCurveGraphInterface.cpp \
+../../AdaptiveStretchInstance.cpp \
+../../AdaptiveStretchInterface.cpp \
+../../AdaptiveStretchParameters.cpp \
+../../AdaptiveStretchProcess.cpp \
+../../AutoHistogramInstance.cpp \
+../../AutoHistogramInterface.cpp \
+../../AutoHistogramParameters.cpp \
+../../AutoHistogramProcess.cpp \
+../../BinarizeAction.cpp \
+../../BinarizeInstance.cpp \
+../../BinarizeInterface.cpp \
+../../BinarizeParameters.cpp \
+../../BinarizeProcess.cpp \
+../../ColorSaturationInstance.cpp \
+../../ColorSaturationInterface.cpp \
+../../ColorSaturationParameters.cpp \
+../../ColorSaturationProcess.cpp \
+../../CurvesTransformationInstance.cpp \
+../../CurvesTransformationInterface.cpp \
+../../CurvesTransformationParameters.cpp \
+../../CurvesTransformationProcess.cpp \
+../../ExponentialNumericControl.cpp \
+../../ExponentialTransformationInstance.cpp \
+../../ExponentialTransformationInterface.cpp \
+../../ExponentialTransformationParameters.cpp \
+../../ExponentialTransformationProcess.cpp \
+../../HistogramAutoClipSetupDialog.cpp \
+../../HistogramTransformationInstance.cpp \
+../../HistogramTransformationInterface.cpp \
+../../HistogramTransformationParameters.cpp \
+../../HistogramTransformationProcess.cpp \
+../../IntensityTransformationsModule.cpp \
+../../InvertAction.cpp \
+../../InvertInstance.cpp \
+../../InvertProcess.cpp \
+../../MaskedStretchInstance.cpp \
+../../MaskedStretchInterface.cpp \
+../../MaskedStretchParameters.cpp \
+../../MaskedStretchProcess.cpp \
+../../RescaleActions.cpp \
+../../RescaleInstance.cpp \
+../../RescaleInterface.cpp \
+../../RescaleParameters.cpp \
+../../RescaleProcess.cpp \
+../../STFAutoStretchAction.cpp \
+../../STFSliders.cpp \
+../../ScreenTransferFunctionInstance.cpp \
+../../ScreenTransferFunctionInterface.cpp \
+../../ScreenTransferFunctionParameters.cpp \
+../../ScreenTransferFunctionProcess.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/AdaptiveStretchCurveGraphInterface.o \
+./x64/Release/AdaptiveStretchInstance.o \
+./x64/Release/AdaptiveStretchInterface.o \
+./x64/Release/AdaptiveStretchParameters.o \
+./x64/Release/AdaptiveStretchProcess.o \
+./x64/Release/AutoHistogramInstance.o \
+./x64/Release/AutoHistogramInterface.o \
+./x64/Release/AutoHistogramParameters.o \
+./x64/Release/AutoHistogramProcess.o \
+./x64/Release/BinarizeAction.o \
+./x64/Release/BinarizeInstance.o \
+./x64/Release/BinarizeInterface.o \
+./x64/Release/BinarizeParameters.o \
+./x64/Release/BinarizeProcess.o \
+./x64/Release/ColorSaturationInstance.o \
+./x64/Release/ColorSaturationInterface.o \
+./x64/Release/ColorSaturationParameters.o \
+./x64/Release/ColorSaturationProcess.o \
+./x64/Release/CurvesTransformationInstance.o \
+./x64/Release/CurvesTransformationInterface.o \
+./x64/Release/CurvesTransformationParameters.o \
+./x64/Release/CurvesTransformationProcess.o \
+./x64/Release/ExponentialNumericControl.o \
+./x64/Release/ExponentialTransformationInstance.o \
+./x64/Release/ExponentialTransformationInterface.o \
+./x64/Release/ExponentialTransformationParameters.o \
+./x64/Release/ExponentialTransformationProcess.o \
+./x64/Release/HistogramAutoClipSetupDialog.o \
+./x64/Release/HistogramTransformationInstance.o \
+./x64/Release/HistogramTransformationInterface.o \
+./x64/Release/HistogramTransformationParameters.o \
+./x64/Release/HistogramTransformationProcess.o \
+./x64/Release/IntensityTransformationsModule.o \
+./x64/Release/InvertAction.o \
+./x64/Release/InvertInstance.o \
+./x64/Release/InvertProcess.o \
+./x64/Release/MaskedStretchInstance.o \
+./x64/Release/MaskedStretchInterface.o \
+./x64/Release/MaskedStretchParameters.o \
+./x64/Release/MaskedStretchProcess.o \
+./x64/Release/RescaleActions.o \
+./x64/Release/RescaleInstance.o \
+./x64/Release/RescaleInterface.o \
+./x64/Release/RescaleParameters.o \
+./x64/Release/RescaleProcess.o \
+./x64/Release/STFAutoStretchAction.o \
+./x64/Release/STFSliders.o \
+./x64/Release/ScreenTransferFunctionInstance.o \
+./x64/Release/ScreenTransferFunctionInterface.o \
+./x64/Release/ScreenTransferFunctionParameters.o \
+./x64/Release/ScreenTransferFunctionProcess.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/AdaptiveStretchCurveGraphInterface.d \
+./x64/Release/AdaptiveStretchInstance.d \
+./x64/Release/AdaptiveStretchInterface.d \
+./x64/Release/AdaptiveStretchParameters.d \
+./x64/Release/AdaptiveStretchProcess.d \
+./x64/Release/AutoHistogramInstance.d \
+./x64/Release/AutoHistogramInterface.d \
+./x64/Release/AutoHistogramParameters.d \
+./x64/Release/AutoHistogramProcess.d \
+./x64/Release/BinarizeAction.d \
+./x64/Release/BinarizeInstance.d \
+./x64/Release/BinarizeInterface.d \
+./x64/Release/BinarizeParameters.d \
+./x64/Release/BinarizeProcess.d \
+./x64/Release/ColorSaturationInstance.d \
+./x64/Release/ColorSaturationInterface.d \
+./x64/Release/ColorSaturationParameters.d \
+./x64/Release/ColorSaturationProcess.d \
+./x64/Release/CurvesTransformationInstance.d \
+./x64/Release/CurvesTransformationInterface.d \
+./x64/Release/CurvesTransformationParameters.d \
+./x64/Release/CurvesTransformationProcess.d \
+./x64/Release/ExponentialNumericControl.d \
+./x64/Release/ExponentialTransformationInstance.d \
+./x64/Release/ExponentialTransformationInterface.d \
+./x64/Release/ExponentialTransformationParameters.d \
+./x64/Release/ExponentialTransformationProcess.d \
+./x64/Release/HistogramAutoClipSetupDialog.d \
+./x64/Release/HistogramTransformationInstance.d \
+./x64/Release/HistogramTransformationInterface.d \
+./x64/Release/HistogramTransformationParameters.d \
+./x64/Release/HistogramTransformationProcess.d \
+./x64/Release/IntensityTransformationsModule.d \
+./x64/Release/InvertAction.d \
+./x64/Release/InvertInstance.d \
+./x64/Release/InvertProcess.d \
+./x64/Release/MaskedStretchInstance.d \
+./x64/Release/MaskedStretchInterface.d \
+./x64/Release/MaskedStretchParameters.d \
+./x64/Release/MaskedStretchProcess.d \
+./x64/Release/RescaleActions.d \
+./x64/Release/RescaleInstance.d \
+./x64/Release/RescaleInterface.d \
+./x64/Release/RescaleParameters.d \
+./x64/Release/RescaleProcess.d \
+./x64/Release/STFAutoStretchAction.d \
+./x64/Release/STFSliders.d \
+./x64/Release/ScreenTransferFunctionInstance.d \
+./x64/Release/ScreenTransferFunctionInterface.d \
+./x64/Release/ScreenTransferFunctionParameters.d \
+./x64/Release/ScreenTransferFunctionProcess.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/IntensityTransformations-pxm.so: $(OBJ_FILES)
+	clang++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/IntensityTransformations-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/IntensityTransformations-pxm.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/IntensityTransformations-pxm.so $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	clang++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -I"$(PCLINCDIR)" -O3 -mtune=generic -msse3 -fomit-frame-pointer -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

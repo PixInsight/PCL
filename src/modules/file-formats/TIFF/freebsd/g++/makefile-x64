@@ -1,0 +1,86 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.93
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Tue, 28 Oct 2014 18:16:52 GMT
+# Project id ...... TIFF
+# Project type .... Module
+# Platform ........ FreeBSD/g++
+# Configuration ... Release/x64
+# --------------------------------------------------------------------
+# Additional include search directories:
+# ../../libtiff/include
+# --------------------------------------------------------------------
+# Additional library search directories:
+# ../../libtiff/lib/x64
+# --------------------------------------------------------------------
+# Additional libraries:
+# libtiff-pxi
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/file-formats/TIFF/freebsd/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/TIFF-pxm.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../TIFF.cpp \
+../../TIFFFormat.cpp \
+../../TIFFInstance.cpp \
+../../TIFFModule.cpp \
+../../TIFFOptionsDialog.cpp \
+../../TIFFPreferencesDialog.cpp \
+../../TIFFRangeOptionsDialog.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/TIFF.o \
+./x64/Release/TIFFFormat.o \
+./x64/Release/TIFFInstance.o \
+./x64/Release/TIFFModule.o \
+./x64/Release/TIFFOptionsDialog.o \
+./x64/Release/TIFFPreferencesDialog.o \
+./x64/Release/TIFFRangeOptionsDialog.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/TIFF.d \
+./x64/Release/TIFFFormat.d \
+./x64/Release/TIFFInstance.d \
+./x64/Release/TIFFModule.d \
+./x64/Release/TIFFOptionsDialog.d \
+./x64/Release/TIFFPreferencesDialog.d \
+./x64/Release/TIFFRangeOptionsDialog.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/TIFF-pxm.so: $(OBJ_FILES)
+	clang++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -L"../../libtiff/lib/x64" -o $(OBJ_DIR)/TIFF-pxm.so $(OBJ_FILES) -llibtiff-pxi -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/TIFF-pxm.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/TIFF-pxm.so $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	clang++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -I"$(PCLINCDIR)" -I"../../libtiff/include" -O3 -mtune=generic -msse3 -fomit-frame-pointer -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

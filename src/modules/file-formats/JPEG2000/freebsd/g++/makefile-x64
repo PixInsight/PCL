@@ -1,0 +1,88 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.93
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Tue, 28 Oct 2014 18:16:52 GMT
+# Project id ...... JPEG2000
+# Project type .... Module
+# Platform ........ FreeBSD/g++
+# Configuration ... Release/x64
+# --------------------------------------------------------------------
+# Additional preprocessor definitions:
+# EXCLUDE_JPG_SUPPORT
+# EXCLUDE_MIF_SUPPORT
+# EXCLUDE_PNM_SUPPORT
+# EXCLUDE_RAS_SUPPORT
+# EXCLUDE_BMP_SUPPORT
+# EXCLUDE_PGX_SUPPORT
+# --------------------------------------------------------------------
+# Additional include search directories:
+# ../../libjasper/include
+# --------------------------------------------------------------------
+# Additional library search directories:
+# ../../libjasper/lib/x64
+# --------------------------------------------------------------------
+# Additional libraries:
+# jasper-pxi
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/file-formats/JPEG2000/freebsd/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/JPEG2000-pxm.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../JPEG2000Format.cpp \
+../../JPEG2000Instance.cpp \
+../../JPEG2000Module.cpp \
+../../JPEG2000OptionsDialog.cpp \
+../../JPEG2000PreferencesDialog.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/JPEG2000Format.o \
+./x64/Release/JPEG2000Instance.o \
+./x64/Release/JPEG2000Module.o \
+./x64/Release/JPEG2000OptionsDialog.o \
+./x64/Release/JPEG2000PreferencesDialog.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/JPEG2000Format.d \
+./x64/Release/JPEG2000Instance.d \
+./x64/Release/JPEG2000Module.d \
+./x64/Release/JPEG2000OptionsDialog.d \
+./x64/Release/JPEG2000PreferencesDialog.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/JPEG2000-pxm.so: $(OBJ_FILES)
+	clang++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -L"../../libjasper/lib/x64" -o $(OBJ_DIR)/JPEG2000-pxm.so $(OBJ_FILES) -ljasper-pxi -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/JPEG2000-pxm.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/JPEG2000-pxm.so $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	clang++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -D"EXCLUDE_JPG_SUPPORT" -D"EXCLUDE_MIF_SUPPORT" -D"EXCLUDE_PNM_SUPPORT" -D"EXCLUDE_RAS_SUPPORT" -D"EXCLUDE_BMP_SUPPORT" -D"EXCLUDE_PGX_SUPPORT" -I"$(PCLINCDIR)" -I"../../libjasper/include" -O3 -mtune=generic -msse3 -fomit-frame-pointer -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

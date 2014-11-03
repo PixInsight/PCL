@@ -1,0 +1,71 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.93
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Tue, 28 Oct 2014 18:16:57 GMT
+# Project id ...... GREYCstoration
+# Project type .... Module
+# Platform ........ MacOSX/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/GREYCstoration/macosx/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/GREYCstoration-pxm.dylib
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../GREYCstorationInstance.cpp \
+../../GREYCstorationInterface.cpp \
+../../GREYCstorationModule.cpp \
+../../GREYCstorationParameters.cpp \
+../../GREYCstorationProcess.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/GREYCstorationInstance.o \
+./x64/Release/GREYCstorationInterface.o \
+./x64/Release/GREYCstorationModule.o \
+./x64/Release/GREYCstorationParameters.o \
+./x64/Release/GREYCstorationProcess.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/GREYCstorationInstance.d \
+./x64/Release/GREYCstorationInterface.d \
+./x64/Release/GREYCstorationModule.d \
+./x64/Release/GREYCstorationParameters.d \
+./x64/Release/GREYCstorationProcess.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/GREYCstoration-pxm.dylib: $(OBJ_FILES)
+	clang++ -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.8 -fPIC -headerpad_max_install_names -dynamiclib -install_name @executable_path/GREYCstoration-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/GREYCstoration-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/GREYCstoration-pxm.dylib
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/GREYCstoration-pxm.dylib $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	clang++ -c -pipe -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.8 -fPIC -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -O3 -mtune=generic -mssse3 -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

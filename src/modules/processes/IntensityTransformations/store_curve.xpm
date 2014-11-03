@@ -1,0 +1,104 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard IntensityTransformations Process Module Version 01.07.00.0285
+// ****************************************************************************
+// store_curve.xpm - Released 2014/10/29 07:35:23 UTC
+// ****************************************************************************
+// This file is part of the standard IntensityTransformations PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char* store_curve_XPM[] = {
+/* columns rows colors chars-per-pixel */
+"14 14 33 1",
+"+ c #657FFE",
+"5 c #495BFE",
+"9 c #3F50FF",
+"r c #2D3AFF",
+"$ c #85A8FE",
+"o c #6E8BFE",
+"e c #232CFE",
+", c #3D4DFE",
+"0 c #2B37FF",
+"q c #1921FF",
+"> c #5267FF",
+"< c #2934FE",
+"@ c #5064FE",
+"X c #7797FD",
+"& c #5B73FE",
+"O c #5970FE",
+"  c None",
+"8 c #1115FF",
+": c #6783FE",
+"w c #3645FF",
+"1 c #171DFF",
+"; c #7C9DFE",
+". c #0000FF",
+"3 c #7292FE",
+"* c #4658FE",
+"6 c #3442FF",
+"% c #708FFE",
+"= c #323FFE",
+"# c #3A4AFF",
+"2 c #090CFF",
+"7 c #212AFF",
+"4 c #5D77FE",
+"- c #1F27FF",
+/* pixels */
+"              ",
+"           .. ",
+"   X      .   ",
+"   oO    .    ",
+"   +@#   .    ",
+" $%&*=-  .    ",
+" ;:>,<12 .    ",
+" 345678  .    ",
+"   90q   .    ",
+"   we    .    ",
+"   r     .    ",
+"        .     ",
+"      ..      ",
+"              "
+};
+
+// ****************************************************************************
+// EOF store_curve.xpm - Released 2014/10/29 07:35:23 UTC

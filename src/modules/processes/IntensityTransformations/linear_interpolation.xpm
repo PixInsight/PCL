@@ -1,0 +1,137 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard IntensityTransformations Process Module Version 01.07.00.0285
+// ****************************************************************************
+// linear_interpolation.xpm - Released 2014/10/29 07:35:23 UTC
+// ****************************************************************************
+// This file is part of the standard IntensityTransformations PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char* linear_interpolation_XPM[] = {
+"15 15 68 1",
+" 	c None",
+".	c #000080",
+"+	c #FFFFFF",
+"@	c #7D9AFF",
+"#	c #BAC9FF",
+"$	c #073DFF",
+"%	c #B2C3FF",
+"&	c #FDFDFF",
+"*	c #466EFF",
+"=	c #1144FF",
+"-	c #2A58FF",
+";	c #FCFDFF",
+">	c #B4C3FF",
+",	c #2B58FF",
+"'	c #1B4CFF",
+")	c #0B40FF",
+"!	c #99AFFF",
+"~	c #F9FAFF",
+"{	c #5A7BFF",
+"]	c #3660FF",
+"^	c #2553FF",
+"/	c #1548FF",
+"(	c #1D4DFF",
+"_	c #F4F6FF",
+":	c #5073FF",
+"<	c #4067FF",
+"[	c #2F5BFF",
+"}	c #1F4FFF",
+"|	c #0F43FF",
+"1	c #819DFF",
+"2	c #F5F7FF",
+"3	c #738EFF",
+"4	c #5A7AFF",
+"5	c #4A6FFF",
+"6	c #3962FF",
+"7	c #2957FF",
+"8	c #194AFF",
+"9	c #1547FF",
+"0	c #E8EDFF",
+"a	c #BBC7FF",
+"b	c #748EFF",
+"c	c #6482FF",
+"d	c #5476FF",
+"e	c #446AFF",
+"f	c #335EFF",
+"g	c #2352FF",
+"h	c #1346FF",
+"i	c #6A8AFF",
+"j	c #F3F5FF",
+"k	c #92A4FF",
+"l	c #7E96FF",
+"m	c #6E89FF",
+"n	c #5E7EFF",
+"o	c #4E71FF",
+"p	c #3E66FF",
+"q	c #2D59FF",
+"r	c #D8E1FF",
+"s	c #C8CFFF",
+"t	c #99A9FF",
+"u	c #889DFF",
+"v	c #7891FF",
+"w	c #6885FF",
+"x	c #5879FF",
+"y	c #486DFF",
+"z	c #3761FF",
+"A	c #2755FF",
+"B	c #1749FF",
+"C	c #557AFF",
+"               ",
+" ............. ",
+" .+++++++++++. ",
+" .+++++@+++++. ",
+" .++++#$%++++. ",
+" .+++&*=-;+++. ",
+" .+++>,')!+++. ",
+" .++~{]^/(_++. ",
+" .++>:<[}|1++. ",
+" .+234567890+. ",
+" .+abcdefghi+. ",
+" .jklmnopq(=r. ",
+" .stuvwxyzABC. ",
+" ............. ",
+"               "};
+
+// ****************************************************************************
+// EOF linear_interpolation.xpm - Released 2014/10/29 07:35:23 UTC

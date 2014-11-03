@@ -1,0 +1,86 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.93
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Tue, 28 Oct 2014 18:16:51 GMT
+# Project id ...... FITS
+# Project type .... Module
+# Platform ........ FreeBSD/g++
+# Configuration ... Release/x64
+# --------------------------------------------------------------------
+# Additional include search directories:
+# ../../cfitsio/include
+# --------------------------------------------------------------------
+# Additional library search directories:
+# ../../cfitsio/lib/x64
+# --------------------------------------------------------------------
+# Additional libraries:
+# cfitsio-pxi
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/file-formats/FITS/freebsd/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/FITS-pxm.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../FITS.cpp \
+../../FITSFormat.cpp \
+../../FITSInstance.cpp \
+../../FITSModule.cpp \
+../../FITSOptionsDialog.cpp \
+../../FITSPreferencesDialog.cpp \
+../../FITSRangeOptionsDialog.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/FITS.o \
+./x64/Release/FITSFormat.o \
+./x64/Release/FITSInstance.o \
+./x64/Release/FITSModule.o \
+./x64/Release/FITSOptionsDialog.o \
+./x64/Release/FITSPreferencesDialog.o \
+./x64/Release/FITSRangeOptionsDialog.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/FITS.d \
+./x64/Release/FITSFormat.d \
+./x64/Release/FITSInstance.d \
+./x64/Release/FITSModule.d \
+./x64/Release/FITSOptionsDialog.d \
+./x64/Release/FITSPreferencesDialog.d \
+./x64/Release/FITSRangeOptionsDialog.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/FITS-pxm.so: $(OBJ_FILES)
+	clang++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -L"../../cfitsio/lib/x64" -o $(OBJ_DIR)/FITS-pxm.so $(OBJ_FILES) -lcfitsio-pxi -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/FITS-pxm.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/FITS-pxm.so $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	clang++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -I"$(PCLINCDIR)" -I"../../cfitsio/include" -O3 -mtune=generic -msse3 -fomit-frame-pointer -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

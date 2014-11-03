@@ -1,0 +1,71 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.93
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Tue, 28 Oct 2014 18:16:57 GMT
+# Project id ...... GREYCstoration
+# Project type .... Module
+# Platform ........ Linux/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/GREYCstoration/linux/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/GREYCstoration-pxm.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../GREYCstorationInstance.cpp \
+../../GREYCstorationInterface.cpp \
+../../GREYCstorationModule.cpp \
+../../GREYCstorationParameters.cpp \
+../../GREYCstorationProcess.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/GREYCstorationInstance.o \
+./x64/Release/GREYCstorationInterface.o \
+./x64/Release/GREYCstorationModule.o \
+./x64/Release/GREYCstorationParameters.o \
+./x64/Release/GREYCstorationProcess.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/GREYCstorationInstance.d \
+./x64/Release/GREYCstorationInterface.d \
+./x64/Release/GREYCstorationModule.d \
+./x64/Release/GREYCstorationParameters.d \
+./x64/Release/GREYCstorationProcess.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/GREYCstoration-pxm.so: $(OBJ_FILES)
+	g++-4.8.2 -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/GREYCstoration-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/GREYCstoration-pxm.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/GREYCstoration-pxm.so $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	g++-4.8.2 -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O3 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffunction-sections -fdata-sections -fomit-frame-pointer -ffast-math -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

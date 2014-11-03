@@ -1,0 +1,199 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard IntensityTransformations Process Module Version 01.07.00.0285
+// ****************************************************************************
+// RescaleLumActionIcon.xpm - Released 2014/10/29 07:35:23 UTC
+// ****************************************************************************
+// This file is part of the standard IntensityTransformations PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char *RescaleLumActionIcon_XPM[]={
+"16 16 129 2",
+".Q c #000000",
+"Qt c #010101",
+"#t c #020202",
+".1 c #030303",
+"#p c #060606",
+".G c #070707",
+".# c #080808",
+"#C c #090909",
+"#x c #0a0a0a",
+"#w c #0c0c0c",
+"#y c #0d0d0d",
+"#f c #0e0e0e",
+"#z c #101010",
+"#A c #141414",
+"#B c #161616",
+"#n c #181818",
+"#M c #1a1a1a",
+"#8 c #1d1d1d",
+".a c #222222",
+"#D c #282828",
+"#F c #292929",
+".o c #2a2a2a",
+"#U c #2b2b2b",
+"#a c #2c2c2c",
+"#N c #323232",
+"#m c #373737",
+"#9 c #383838",
+"#d c #393939",
+"#l c #3d3d3d",
+"#1 c #3f3f3f",
+".b c #414141",
+".R c #434343",
+".w c #444444",
+"#o c #484848",
+"#G c #4a4a4a",
+".J c #555555",
+"#u c #565656",
+".U c #575757",
+"#j c #5d5d5d",
+"#O c #606060",
+".y c #616161",
+".c c #656565",
+".q c #666666",
+".p c #686868",
+".V c #6e6e6e",
+".K c #707070",
+"#Z c #737373",
+"#H c #767676",
+".z c #7a7a7a",
+"#Y c #7b7b7b",
+"#R c #7c7c7c",
+"#i c #7e7e7e",
+".r c #838383",
+".d c #848484",
+"#. c #858585",
+"#V c #868686",
+"#c c #888888",
+".L c #8a8a8a",
+".A c #8b8b8b",
+".e c #8c8c8c",
+".s c #8d8d8d",
+"#I c #8e8e8e",
+".W c #909090",
+".f c #929292",
+"#P c #939393",
+".M c #959595",
+".X c #999999",
+".t c #9b9b9b",
+".g c #9c9c9c",
+"a. c #9d9d9d",
+".H c #a1a1a1",
+"#s c #a3a3a3",
+".Z c #a5a5a5",
+".Y c #a6a6a6",
+".B c #a7a7a7",
+".h c #a9a9a9",
+"#Q c #ababab",
+"#2 c #acacac",
+"#v c #adadad",
+".x c #afafaf",
+"#5 c #b0b0b0",
+"#q c #b2b2b2",
+"#W c #b3b3b3",
+".N c #b5b5b5",
+".C c #b6b6b6",
+".i c #b8b8b8",
+"#J c #b9b9b9",
+"#S c #bebebe",
+"#3 c #bfbfbf",
+"#r c #c3c3c3",
+".O c #c4c4c4",
+".D c #c6c6c6",
+".j c #c7c7c7",
+".u c #c8c8c8",
+".I c #c9c9c9",
+"#E c #cacaca",
+"#K c #cbcbcb",
+".4 c #cccccc",
+".T c #cdcdcd",
+"#k c #cecece",
+".5 c #cfcfcf",
+"#4 c #d1d1d1",
+".6 c #d4d4d4",
+".P c #d6d6d6",
+".k c #d7d7d7",
+".v c #d8d8d8",
+".7 c #d9d9d9",
+"#X c #dcdcdc",
+".S c #dedede",
+".8 c #dfdfdf",
+".E c #e5e5e5",
+".l c #e6e6e6",
+"#0 c #e8e8e8",
+"#b c #e9e9e9",
+".9 c #eaeaea",
+"#L c #ebebeb",
+"#e c #ededed",
+"#h c #efefef",
+".3 c #f0f0f0",
+".0 c #f1f1f1",
+".F c #f2f2f2",
+".m c #f3f3f3",
+"#6 c #f4f4f4",
+"## c #fafafa",
+"#g c #fbfbfb",
+".n c #fcfcfc",
+"#7 c #fdfdfd",
+"#T c #fefefe",
+".2 c #ffffff",
+"Qt.#.a.b.c.d.e.f.g.h.i.j.k.l.m.n",
+"Qt.#.o.p.q.r.s.f.t.h.i.u.v.l.m.n",
+"Qt.#.w.x.y.z.A.f.t.B.C.D.k.E.F.n",
+"Qt.G.H.I.J.K.L.M.g.B.N.O.P.E.F.n",
+".Q.R.S.T.U.V.d.W.X.Y.C.j.Z.C.0.n",
+".1.W.2.3.4.5.6.7.8.E.9.F#..M##.2",
+"#a#b.2.2.2.2.2.2.2.2.2.2#c#d#e.2",
+"#f.x.2#g#h#h#h#h#h#h#h.m#i.#.g.2",
+".Q#j.0#k#l#m#d#d#d#d#d#d#n.Q#o.9",
+".Q#p#q#rQt.Q.Q.Q.Q.Q.Q.Q.Q.Q.1#s",
+".Q#t#u#v#w.G#x#y#z#A#B#n#C.Q#D#E",
+"Qt.##F.A#G#j#H#I.Z#J.O#K.p.1.p#L",
+"Qt.##M#N#o#O.z#P#Q#r.v#b#R#M#S#T",
+"Qt.G#B#U.b.U.V#V.g#W.j#X#Y#Z#0#T",
+"Qt.G#B.o#1.U.V.d.X#2#3#4.t#5#6#7",
+".Q.##8#9#u#Z.r.Wa..h.i.u.k.l.m.n"};
+
+// ****************************************************************************
+// EOF RescaleLumActionIcon.xpm - Released 2014/10/29 07:35:23 UTC

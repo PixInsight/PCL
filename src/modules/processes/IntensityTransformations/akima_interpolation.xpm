@@ -1,0 +1,129 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard IntensityTransformations Process Module Version 01.07.00.0285
+// ****************************************************************************
+// akima_interpolation.xpm - Released 2014/10/29 07:35:23 UTC
+// ****************************************************************************
+// This file is part of the standard IntensityTransformations PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char* akima_interpolation_XPM[] = {
+"15 15 60 1",
+" 	c None",
+".	c #000080",
+"+	c #FFFFFF",
+"@	c #839EFF",
+"#	c #6486FF",
+"$	c #F9FAFF",
+"%	c #0038FF",
+"&	c #7190FF",
+"*	c #577BFF",
+"=	c #0138FF",
+"-	c #0A40FF",
+";	c #EAEFFF",
+">	c #4B72FF",
+",	c #0B40FF",
+"'	c #7B98FF",
+")	c #3E67FF",
+"!	c #1548FF",
+"~	c #053BFF",
+"{	c #1448FF",
+"]	c #FBFCFF",
+"^	c #EDF1FF",
+"/	c #2F5BFF",
+"(	c #1F4FFF",
+"_	c #0F43FF",
+":	c #B9C8FF",
+"<	c #A8BAFF",
+"[	c #3962FF",
+"}	c #2957FF",
+"|	c #194AFF",
+"1	c #093EFF",
+"2	c #6385FF",
+"3	c #FDFEFF",
+"4	c #A6B7FF",
+"5	c #5476FF",
+"6	c #446AFF",
+"7	c #335EFF",
+"8	c #2352FF",
+"9	c #1346FF",
+"0	c #F8FAFF",
+"a	c #F8F9FF",
+"b	c #A1B3FF",
+"c	c #6E89FF",
+"d	c #5E7EFF",
+"e	c #4E71FF",
+"f	c #3E66FF",
+"g	c #2D59FF",
+"h	c #1D4DFF",
+"i	c #0D41FF",
+"j	c #A0B5FF",
+"k	c #F3F5FF",
+"l	c #A9B6FF",
+"m	c #889DFF",
+"n	c #7891FF",
+"o	c #6885FF",
+"p	c #5879FF",
+"q	c #486DFF",
+"r	c #3761FF",
+"s	c #2755FF",
+"t	c #1749FF",
+"u	c #3863FF",
+"               ",
+" ............. ",
+" .+++++++++++. ",
+" .+++++@#$+++. ",
+" .+++++#%&+++. ",
+" .+++++*=-;++. ",
+" .+++++>,%'++. ",
+" .+++++)!~{]+. ",
+" .++++^/(_%:+. ",
+" .++++<[}|12+. ",
+" .++3456789!0. ",
+" .+abcdefghij. ",
+" .klmnopqrstu. ",
+" ............. ",
+"               "};
+
+// ****************************************************************************
+// EOF akima_interpolation.xpm - Released 2014/10/29 07:35:23 UTC

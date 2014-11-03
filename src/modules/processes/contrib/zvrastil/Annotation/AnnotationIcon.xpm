@@ -1,0 +1,122 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard Annotation Process Module Version 01.00.00.0095
+// ****************************************************************************
+// AnnotationIcon.xpm - Released 2014/10/29 07:35:26 UTC
+// ****************************************************************************
+// This file is part of the standard Annotation PixInsight module.
+//
+// Copyright (c) 2010-2014 Zbynek Vrastil
+// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char *AnnotationIcon_XPM[]={
+"22 22 45 1",
+"B c #000000",
+". c #191919",
+"# c #1a1818",
+"a c #1b1717",
+"b c #1d1717",
+"c c #1e1616",
+"d c #1f1616",
+"e c #211515",
+"f c #221414",
+"g c #241414",
+"h c #251313",
+"i c #261313",
+"j c #281212",
+"k c #291111",
+"l c #2b1111",
+"m c #2c1010",
+"n c #2e1010",
+"o c #2f0f0f",
+"p c #300e0e",
+"q c #320e0e",
+"r c #330d0d",
+"s c #340d0d",
+"t c #360c0c",
+"u c #370b0b",
+"v c #390b0b",
+"w c #3a0a0a",
+"x c #3b0a0a",
+"y c #3d0909",
+"A c #3e0909",
+"C c #400808",
+"D c #410707",
+"E c #430707",
+"F c #440606",
+"G c #450505",
+"H c #470505",
+"I c #480404",
+"J c #4a0404",
+"K c #4b0303",
+"L c #4c0303",
+"M c #4e0202",
+"N c #4f0101",
+"O c #500101",
+"P c #520000",
+"Q c #540000",
+"z c #b59600",
+".#abcdefghijklmnopqrst",
+"#abcdefghijklmnopqrstu",
+"abcdefghijklmnopqrstuv",
+"bcdefghijklmnopqrstuvw",
+"cdefghijklmnopqrstuvwx",
+"defghijklmnopqrstuvwxy",
+"efghizzzmnozzzzzzvwxyA",
+"fghijzzzBopzzBBBzzxyAC",
+"ghijzzBzzpqzzBuvzzBACD",
+"hijkzzBzzBrzzBvwzzBCDE",
+"ijklzzBzzBszzzzzzBBDEF",
+"jklmzzBzzBtzzBBBzzDEFG",
+"klmzzzzzzzuzzByAzzBFGH",
+"lmnzzBBBzzBzzBACzzBGHI",
+"mnozzBstzzBzzzzzzBBHIJ",
+"nopqBBtuvBByBBBBBBHIJK",
+"opqrstuvwxyACDEFGHIJKL",
+"pqrstuvwxyACDEFGHIJKLM",
+"qrstuvwxyACDEFGHIJKLMN",
+"rstuvwxyACDEFGHIJKLMNO",
+"stuvwxyACDEFGHIJKLMNOP",
+"tuvwxyACDEFGHIJKLMNOPQ"};
+
+// ****************************************************************************
+// EOF AnnotationIcon.xpm - Released 2014/10/29 07:35:26 UTC

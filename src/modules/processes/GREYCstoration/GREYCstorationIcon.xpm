@@ -1,0 +1,195 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard GREYCstoration Process Module Version 01.00.02.0203
+// ****************************************************************************
+// GREYCstorationIcon.xpm - Released 2014/10/29 07:34:56 UTC
+// ****************************************************************************
+// This file is part of the standard GREYCstoration PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char* GREYCstorationIcon_XPM[] = {
+/* columns rows colors chars-per-pixel */
+"24 24 114 2",
+".  c Black",
+"W  c #F26521",
+"3. c #0303FF",
+"1  c #7595FE",
+"8  c #566DFE",
+",  c #82A4FE",
+"M  c #3745FE",
+"x  c #3745FF",
+"K  c #252FFE",
+"^  c #252FFF",
+"/  c #2028FF",
+"X. c #00AEEF",
+"r  c #FBAF5C",
+"*. c #161DFE",
+"'  c #161DFF",
+")  c #303EFE",
+"+. c #303EFF",
+"7  c #5C75FE",
+"6  c #88ACFD",
+"}  c #1116FF",
+"Z  c #3D4DFE",
+"k  c #3D4DFF",
+"D  c #2B37FE",
+"~  c #2B37FF",
+"@. c #2630FE",
+">. c #2630FF",
+"w  c #8393CA",
+":  c #93BBFE",
+"A  c #3646FF",
+"0  c #627DFD",
+"3  c #627DFE",
+"&. c #0A0CFF",
+"d  c #4355FE",
+"I  c #4355FF",
+"2  c #6F8CFE",
+"p  c #5064FE",
+"j  c #495DFE",
+"P  c #495DFF",
+"i  c #566CFE",
+"B  c #708DFD",
+"y  c #708DFE",
+"e  c #00A650",
+"|  c #1B23FF",
+"%. c #0E11FE",
+"-. c #0E11FF",
+"   c None",
+"{  c #161CFF",
+"l  c #4F65FE",
+"!  c #303DFF",
+"$  c #88ABFD",
+"G  c #3D4CFE",
+"z  c #3D4CFF",
+"*  c #7695FE",
+"J  c #2B36FE",
+"_  c #2B36FF",
+"b  c #BC8CBF",
+"R  c #2128FE",
+"5  c #93BAFD",
+"L  c #556DFE",
+"@  c #93BAFE",
+"o  c #C69C6D",
+"o. c #7CC576",
+"U  c #3645FF",
+";  c #627CFE",
+"#  c #8EB3FD",
+"X  c #FF0000",
+"n  c #4354FE",
+"t  c #7C9DFD",
+"<  c #7C9DFE",
+"N  c #313EFE",
+"4  c #5D75FE",
+" . c #1216FF",
+"c  c #0000FF",
+">  c #87ACFE",
+"1. c #0304FF",
+"m  c #3C4DFE",
+"F  c #495CFE",
+"%  c #82A5FD",
+"a  c #495CFF",
+"H  c #3746FF",
+"T  c #2530FE",
+"g  c #637DFE",
+"]  c #2530FF",
+"<. c #0608FE",
+":. c #0608FF",
+"#. c #2029FE",
+"`  c #2029FF",
+"(  c #1B22FE",
+"[  c #1B22FF",
+",. c #090CFE",
+";. c #090CFF",
+"C  c #4255FE",
+"Q  c #00FF00",
+"s  c #4F64FE",
+"=. c #1117FF",
+"f  c #6985FD",
+"-  c #6985FE",
+"v  c #8C6238",
+"E  c #FFF200",
+"+  c #9DC7FE",
+"O. c #959595",
+"h  c #556CFE",
+"9  c #6F8DFD",
+"=  c #6F8DFE",
+"$. c #171CFF",
+"q  c #5065FE",
+"O  c #91268F",
+"V  c #5065FF",
+"&  c #7C9CFE",
+"S  c #313DFE",
+"Y  c #313DFF",
+"u  c #5D74FE",
+"2. c #0D11FE",
+".. c #0D11FF",
+/* pixels */
+"                                                ",
+"  . . . . . . . . . . . . . . . . . . . . . .   ",
+"  . X X X X o o o o O + O @ # $ % & * = - ; .   ",
+"  . X X X X o o o o + O : O > , < 1 2 - 3 4 .   ",
+"  . X X X X o o o o O 5 O 6 , & * = - 3 7 8 .   ",
+"  . X X X X o o o o @ O > O & 1 9 - 0 7 8 q .   ",
+"  . w w w w e e e e r $ r t 1 y - 3 u i p a .   ",
+"  . w w w w e e e e 6 r < r = - 0 7 8 s a d .   ",
+"  . w w w w e e e e r t r = f g 7 h p j d k .   ",
+"  . w w w w e e e e < r = r g 7 i l j d z x .   ",
+"  . c c c c v v v v b 9 b g 7 h s j n m M N .   ",
+"  . c c c c v v v v B b g b 8 V j C Z A S D .   ",
+"  . c c c c v v v v b 3 b 8 q F d G H N J K .   ",
+"  . c c c c v v v v 3 b L b P I Z U Y D T R .   ",
+"  . E E E E W W W W Q L Q j d z x ! ~ ^ / ( .   ",
+"  . E E E E W W W W i Q F Q Z U ) _ K ` ( ' .   ",
+"  . E E E E W W W W Q F Q Z U N _ ] R [ { } .   ",
+"  . E E E E W W W W j Q Z Q N J T ` | {  ....   ",
+"  . X.X.X.X.o.o.o.o.O.Z O.+.J @.#.[ $.} %.&..   ",
+"  . X.X.X.X.o.o.o.o.k O.N O.] ` ( *.=.-.;.:..   ",
+"  . X.X.X.X.o.o.o.o.O.N O.>.#.[ { } -.,.<.1..   ",
+"  . X.X.X.X.o.o.o.o.N O.] O.[ {  .2.&.:.3.c .   ",
+"  . . . . . . . . . . . . . . . . . . . . . .   ",
+"                                                "
+};
+
+// ****************************************************************************
+// EOF GREYCstorationIcon.xpm - Released 2014/10/29 07:34:56 UTC

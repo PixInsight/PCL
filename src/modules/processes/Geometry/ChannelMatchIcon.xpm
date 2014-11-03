@@ -1,0 +1,217 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard Geometry Process Module Version 01.01.00.0245
+// ****************************************************************************
+// ChannelMatchIcon.xpm - Released 2014/10/29 07:34:55 UTC
+// ****************************************************************************
+// This file is part of the standard Geometry PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char* ChannelMatchIcon_XPM[] = {
+/* columns rows colors chars-per-pixel */
+"24 24 136 2",
+".  c Black",
+"N  c #414040",
+"c  c #414041",
+"P  c #787878",
+"[  c #8C8B8B",
+"G  c #B14E00",
+"i  c #CE0708",
+"f. c #6E6EFF",
+"'  c #A15804",
+";. c #3131FF",
+">  c #4E4F4E",
+"w. c #00AA55",
+".. c #1ED61E",
+"u. c #717171",
+"C  c #80807F",
+"l  c #717172",
+"(  c #808080",
+"<. c #0AE60A",
+"1. c #05A857",
+"p  c #474847",
+"*  c #2E2E2E",
+"5  c #474848",
+"f  c #CA0A0A",
+"q. c #23D423",
+"-. c #2A2AFF",
+"r  c #E40202",
+"d  c #6A6A6A",
+"m  c #797978",
+"o. c #A1A2A2",
+"`  c #CF0807",
+"#  c #181818",
+"O. c #915915",
+"h  c #404140",
+"4  c #404141",
+"3  c #3B3A3A",
+",. c #3B3A3B",
+"7  c #545454",
+"9  c #636363",
+"L  c #727271",
+"a. c #8B8C8C",
+"u  c #D40606",
+"=. c #2323FF",
+"R  c #B94401",
+"@. c #00B847",
+"D  c #C03F00",
+"y  c #D90404",
+"s. c #6868FF",
+">. c #343334",
+"<  c #5C5C5B",
+"k  c #5C5C5C",
+"0  c #F80000",
+"Y  c #0A0A0A",
+"+  c #0F0E0E",
+" . c #9C5C05",
+"&  c #282828",
+"H  c #AA5500",
+"W  c #AC4F02",
+"p. c #555554",
+",  c #555555",
+"e. c #0D9E66",
+"%. c #01B945",
+"X  c #030303",
+"6  c #4E4E4E",
+"Z  c #060706",
+"t  c #DF0303",
+"   c None",
+"5. c #07A45C",
+"0. c #333434",
+"v  c #474747",
+"B  c #474748",
+"i. c #6262FF",
+"d. c #797878",
+"+. c #00C03F",
+"/  c #797879",
+"{  c #979697",
+"_  c #0E0F0F",
+"z  c #CF0708",
+"@  c #131313",
+"}  c #131314",
+"%  c #222223",
+"]  c #18D818",
+"w  c #EE0000",
+"U  c #8B8B8B",
+"X. c #8B8B8C",
+"*. c #04AE51",
+"1  c #FF0000",
+"T  c #C03E00",
+"^  c #14DB14",
+"I  c #7F8080",
+"s  c #5C5B5C",
+"K  c #6B6A6A",
+"h. c #A2A2A1",
+"$. c #0000FF",
+"2  c #2D2E2D",
+"7. c #2D2E2E",
+"#. c #00B14E",
+"A  c #CE3100",
+";  c #414140",
+"4. c #414141",
+"V  c #787978",
+"y. c #555454",
+"j  c #555455",
+"~  c #10DE10",
+")  c #969796",
+"g. c #969797",
+"t. c #5C5CFF",
+"|  c #CE0807",
+"-  c #3A3A3A",
+"3. c #3A3A3B",
+"F  c #B84700",
+"b  c #626363",
+"n  c #717271",
+"x  c #C50D0D",
+"r. c #5555FF",
+"o  c #060606",
+"Q  c #A65403",
+"J  c #00FF00",
+"8  c #5B5C5C",
+"M  c #C11010",
+"e  c #E90101",
+"$  c #1D1D1D",
+"9. c #4E4EFF",
+"g  c #3B3B3A",
+"a  c #545555",
+"E  c #B24A01",
+"!  c #0DE20D",
+"2. c #3F3FFF",
+"8. c #0AA161",
+"&. c #02B34B",
+"q  c #F30000",
+"=  c #343434",
+"6. c #4747FF",
+":  c #484747",
+"S  c #C73800",
+":. c #3838FF",
+"O  c #0A0B0B",
+/* pixels */
+"                                                ",
+"  . . . . . X o O + @ # $ % & * = - ; : > , <   ",
+"  . 1 1 1 1 1 1 1 1 1 1 1 & 2 = 3 4 5 6 7 8 9   ",
+"  . 1 0 q w e r t y u i 1 * = - ; p 6 a s 9 d   ",
+"  . 1 q w e r t y u i f 1 = g h : 6 j k 9 d l   ",
+"  . 1 w e r t y u z f x 1 - c v 6 a k b d n m   ",
+"  X 1 e r t y u i f x M 1 N B 6 , k 9 d n V C   ",
+"  Z 1 r t y A S D F G H 1 J J J J 9 K L P I U   ",
+"  Y 1 t y u S T R E W Q 1 ! ~ ^ J d l / ( U )   ",
+"  _ 1 y u ` D R E W Q ' 1 ~ ^ ] J l / ( [ { )   ",
+"  } 1 u | f F E W Q '  .1 ^ ] ..J V C X.) o.)   ",
+"  # 1 i f x G W Q '  .O.1 +.@.#.J $.$.$.$.$.)   ",
+"  $ 1 1 1 1 1 1 1 1 1 1 1 %.&.*.J =.-.;.:.$.)   ",
+"  % & * >.,.J <.! ~ ^ +.%.&.*.1.J -.;.:.2.$.)   ",
+"  & * = 3.4.J ! ~ ^ ] @.&.*.1.5.J ;.:.2.6.$.)   ",
+"  7.= 3.; v J ~ ^ ] ..#.*.1.5.8.J :.2.6.9.$.)   ",
+"  0.3 h v 6 J ^ ] ..q.w.1.5.8.e.J 2.6.9.r.$.)   ",
+"  - c v 6 j J J J J J J J J J J J 6.9.r.t.$.)   ",
+"  c v 6 y.k 9 d u.P ( $.-.;.:.2.6.9.r.t.i.$.)   ",
+"  5 6 p.k 9 d u.V ( a.$.;.:.2.6.9.r.t.i.s.$.)   ",
+"  6 p.k b d u.d.( U ) $.:.2.6.9.r.t.i.s.f.$.)   ",
+"  , 8 9 d l / ( U g.h.$.$.$.$.$.$.$.$.$.$.$.)   ",
+"  k 9 d n V C [ { ) ) ) ) ) ) ) ) ) ) ) ) ) )   ",
+"                                                "
+};
+
+// ****************************************************************************
+// EOF ChannelMatchIcon.xpm - Released 2014/10/29 07:34:55 UTC

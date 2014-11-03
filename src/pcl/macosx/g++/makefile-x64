@@ -1,0 +1,467 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.93
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Tue, 28 Oct 2014 18:16:44 GMT
+# Project id ...... PCL
+# Project type .... StaticLibrary
+# Platform ........ MacOSX/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/pcl/macosx/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/libPCL-pxi.a
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../API.cpp \
+../../APIInterface.cpp \
+../../ATrousWaveletTransform.cpp \
+../../Action.cpp \
+../../AdaptiveLocalFilter.cpp \
+../../Algebra.cpp \
+../../Arguments.cpp \
+../../Base64.cpp \
+../../Bitmap.cpp \
+../../BitmapBox.cpp \
+../../Brush.cpp \
+../../Button.cpp \
+../../CFAType.cpp \
+../../CRC32.cpp \
+../../CharTraits.cpp \
+../../CheckBox.cpp \
+../../CodeEditor.cpp \
+../../Color.cpp \
+../../ColorComboBox.cpp \
+../../ColorDialog.cpp \
+../../ColorSpace.cpp \
+../../ComboBox.cpp \
+../../Console.cpp \
+../../Control.cpp \
+../../Convolution.cpp \
+../../Crop.cpp \
+../../Cryptography.cpp \
+../../CubicSplineInterpolation.cpp \
+../../Cursor.cpp \
+../../Diagnostics.cpp \
+../../Dialog.cpp \
+../../Edit.cpp \
+../../Exception.cpp \
+../../ExternalProcess.cpp \
+../../FFT1D.cpp \
+../../FFT2D.cpp \
+../../FFTConvolution.cpp \
+../../FFTRotationAndScaling.cpp \
+../../FFTTranslation.cpp \
+../../FastRotation.cpp \
+../../File.cpp \
+../../FileDialog.cpp \
+../../FileFormat.cpp \
+../../FileFormatImplementation.cpp \
+../../FileFormatInstance.cpp \
+../../FileInfo.cpp \
+../../Font.cpp \
+../../FontComboBox.cpp \
+../../FourierTransform.cpp \
+../../Frame.cpp \
+../../GlobalSettings.cpp \
+../../Graphics.cpp \
+../../GroupBox.cpp \
+../../HexString.cpp \
+../../Histogram.cpp \
+../../HistogramTransformation.cpp \
+../../ICCProfile.cpp \
+../../ICCProfileTransformation.cpp \
+../../ImageColor.cpp \
+../../ImageOp.cpp \
+../../ImageStatistics.cpp \
+../../ImageVariant.cpp \
+../../ImageView.cpp \
+../../ImageWindow.cpp \
+../../ImageWindow_CM.cpp \
+../../IntegerResample.cpp \
+../../JulianDay.cpp \
+../../KernelFilter.cpp \
+../../Keyboard.cpp \
+../../Label.cpp \
+../../LanczosInterpolation.cpp \
+../../LinearFit.cpp \
+../../Median.cpp \
+../../MessageBox.cpp \
+../../MetaFileFormat.cpp \
+../../MetaModule.cpp \
+../../MetaParameter.cpp \
+../../MetaProcess.cpp \
+../../MorphologicalTransformation.cpp \
+../../MultiscaleLinearTransform.cpp \
+../../MultiscaleMedianTransform.cpp \
+../../MuteStatus.cpp \
+../../Mutex.cpp \
+../../NetworkTransfer.cpp \
+../../NumericControl.cpp \
+../../Parser.cpp \
+../../Pen.cpp \
+../../PolarTransform.cpp \
+../../PreviewSelectionDialog.cpp \
+../../Process.cpp \
+../../ProcessImplementation.cpp \
+../../ProcessInstance.cpp \
+../../ProcessInterface.cpp \
+../../ProcessParameter.cpp \
+../../PushButton.cpp \
+../../PyramidalWaveletTransform.cpp \
+../../RGBColorSystem.cpp \
+../../RadioButton.cpp \
+../../Random.cpp \
+../../ReadWriteMutex.cpp \
+../../ReadoutOptions.cpp \
+../../RealTimePreview.cpp \
+../../RedundantMultiscaleTransform.cpp \
+../../Render.cpp \
+../../Resample.cpp \
+../../Rotation.cpp \
+../../SVG.cpp \
+../../ScrollBox.cpp \
+../../SectionBar.cpp \
+../../SeparableConvolution.cpp \
+../../SeparableMedianFilter.cpp \
+../../Settings.cpp \
+../../SharedPixelData.cpp \
+../../Sizer.cpp \
+../../Slider.cpp \
+../../SpinBox.cpp \
+../../SpinStatus.cpp \
+../../StatusMonitor.cpp \
+../../StdAlloc.cpp \
+../../StdStatus.cpp \
+../../String.cpp \
+../../SurfaceSpline.cpp \
+../../TabBox.cpp \
+../../TextBox.cpp \
+../../Thread.cpp \
+../../Timer.cpp \
+../../ToolButton.cpp \
+../../Translation.cpp \
+../../TreeBox.cpp \
+../../UIObject.cpp \
+../../UnixSignalException.cpp \
+../../Variant.cpp \
+../../Version.cpp \
+../../View.cpp \
+../../ViewList.cpp \
+../../ViewSelectionDialog.cpp \
+../../Win32Exception.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/API.o \
+./x64/Release/APIInterface.o \
+./x64/Release/ATrousWaveletTransform.o \
+./x64/Release/Action.o \
+./x64/Release/AdaptiveLocalFilter.o \
+./x64/Release/Algebra.o \
+./x64/Release/Arguments.o \
+./x64/Release/Base64.o \
+./x64/Release/Bitmap.o \
+./x64/Release/BitmapBox.o \
+./x64/Release/Brush.o \
+./x64/Release/Button.o \
+./x64/Release/CFAType.o \
+./x64/Release/CRC32.o \
+./x64/Release/CharTraits.o \
+./x64/Release/CheckBox.o \
+./x64/Release/CodeEditor.o \
+./x64/Release/Color.o \
+./x64/Release/ColorComboBox.o \
+./x64/Release/ColorDialog.o \
+./x64/Release/ColorSpace.o \
+./x64/Release/ComboBox.o \
+./x64/Release/Console.o \
+./x64/Release/Control.o \
+./x64/Release/Convolution.o \
+./x64/Release/Crop.o \
+./x64/Release/Cryptography.o \
+./x64/Release/CubicSplineInterpolation.o \
+./x64/Release/Cursor.o \
+./x64/Release/Diagnostics.o \
+./x64/Release/Dialog.o \
+./x64/Release/Edit.o \
+./x64/Release/Exception.o \
+./x64/Release/ExternalProcess.o \
+./x64/Release/FFT1D.o \
+./x64/Release/FFT2D.o \
+./x64/Release/FFTConvolution.o \
+./x64/Release/FFTRotationAndScaling.o \
+./x64/Release/FFTTranslation.o \
+./x64/Release/FastRotation.o \
+./x64/Release/File.o \
+./x64/Release/FileDialog.o \
+./x64/Release/FileFormat.o \
+./x64/Release/FileFormatImplementation.o \
+./x64/Release/FileFormatInstance.o \
+./x64/Release/FileInfo.o \
+./x64/Release/Font.o \
+./x64/Release/FontComboBox.o \
+./x64/Release/FourierTransform.o \
+./x64/Release/Frame.o \
+./x64/Release/GlobalSettings.o \
+./x64/Release/Graphics.o \
+./x64/Release/GroupBox.o \
+./x64/Release/HexString.o \
+./x64/Release/Histogram.o \
+./x64/Release/HistogramTransformation.o \
+./x64/Release/ICCProfile.o \
+./x64/Release/ICCProfileTransformation.o \
+./x64/Release/ImageColor.o \
+./x64/Release/ImageOp.o \
+./x64/Release/ImageStatistics.o \
+./x64/Release/ImageVariant.o \
+./x64/Release/ImageView.o \
+./x64/Release/ImageWindow.o \
+./x64/Release/ImageWindow_CM.o \
+./x64/Release/IntegerResample.o \
+./x64/Release/JulianDay.o \
+./x64/Release/KernelFilter.o \
+./x64/Release/Keyboard.o \
+./x64/Release/Label.o \
+./x64/Release/LanczosInterpolation.o \
+./x64/Release/LinearFit.o \
+./x64/Release/Median.o \
+./x64/Release/MessageBox.o \
+./x64/Release/MetaFileFormat.o \
+./x64/Release/MetaModule.o \
+./x64/Release/MetaParameter.o \
+./x64/Release/MetaProcess.o \
+./x64/Release/MorphologicalTransformation.o \
+./x64/Release/MultiscaleLinearTransform.o \
+./x64/Release/MultiscaleMedianTransform.o \
+./x64/Release/MuteStatus.o \
+./x64/Release/Mutex.o \
+./x64/Release/NetworkTransfer.o \
+./x64/Release/NumericControl.o \
+./x64/Release/Parser.o \
+./x64/Release/Pen.o \
+./x64/Release/PolarTransform.o \
+./x64/Release/PreviewSelectionDialog.o \
+./x64/Release/Process.o \
+./x64/Release/ProcessImplementation.o \
+./x64/Release/ProcessInstance.o \
+./x64/Release/ProcessInterface.o \
+./x64/Release/ProcessParameter.o \
+./x64/Release/PushButton.o \
+./x64/Release/PyramidalWaveletTransform.o \
+./x64/Release/RGBColorSystem.o \
+./x64/Release/RadioButton.o \
+./x64/Release/Random.o \
+./x64/Release/ReadWriteMutex.o \
+./x64/Release/ReadoutOptions.o \
+./x64/Release/RealTimePreview.o \
+./x64/Release/RedundantMultiscaleTransform.o \
+./x64/Release/Render.o \
+./x64/Release/Resample.o \
+./x64/Release/Rotation.o \
+./x64/Release/SVG.o \
+./x64/Release/ScrollBox.o \
+./x64/Release/SectionBar.o \
+./x64/Release/SeparableConvolution.o \
+./x64/Release/SeparableMedianFilter.o \
+./x64/Release/Settings.o \
+./x64/Release/SharedPixelData.o \
+./x64/Release/Sizer.o \
+./x64/Release/Slider.o \
+./x64/Release/SpinBox.o \
+./x64/Release/SpinStatus.o \
+./x64/Release/StatusMonitor.o \
+./x64/Release/StdAlloc.o \
+./x64/Release/StdStatus.o \
+./x64/Release/String.o \
+./x64/Release/SurfaceSpline.o \
+./x64/Release/TabBox.o \
+./x64/Release/TextBox.o \
+./x64/Release/Thread.o \
+./x64/Release/Timer.o \
+./x64/Release/ToolButton.o \
+./x64/Release/Translation.o \
+./x64/Release/TreeBox.o \
+./x64/Release/UIObject.o \
+./x64/Release/UnixSignalException.o \
+./x64/Release/Variant.o \
+./x64/Release/Version.o \
+./x64/Release/View.o \
+./x64/Release/ViewList.o \
+./x64/Release/ViewSelectionDialog.o \
+./x64/Release/Win32Exception.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/API.d \
+./x64/Release/APIInterface.d \
+./x64/Release/ATrousWaveletTransform.d \
+./x64/Release/Action.d \
+./x64/Release/AdaptiveLocalFilter.d \
+./x64/Release/Algebra.d \
+./x64/Release/Arguments.d \
+./x64/Release/Base64.d \
+./x64/Release/Bitmap.d \
+./x64/Release/BitmapBox.d \
+./x64/Release/Brush.d \
+./x64/Release/Button.d \
+./x64/Release/CFAType.d \
+./x64/Release/CRC32.d \
+./x64/Release/CharTraits.d \
+./x64/Release/CheckBox.d \
+./x64/Release/CodeEditor.d \
+./x64/Release/Color.d \
+./x64/Release/ColorComboBox.d \
+./x64/Release/ColorDialog.d \
+./x64/Release/ColorSpace.d \
+./x64/Release/ComboBox.d \
+./x64/Release/Console.d \
+./x64/Release/Control.d \
+./x64/Release/Convolution.d \
+./x64/Release/Crop.d \
+./x64/Release/Cryptography.d \
+./x64/Release/CubicSplineInterpolation.d \
+./x64/Release/Cursor.d \
+./x64/Release/Diagnostics.d \
+./x64/Release/Dialog.d \
+./x64/Release/Edit.d \
+./x64/Release/Exception.d \
+./x64/Release/ExternalProcess.d \
+./x64/Release/FFT1D.d \
+./x64/Release/FFT2D.d \
+./x64/Release/FFTConvolution.d \
+./x64/Release/FFTRotationAndScaling.d \
+./x64/Release/FFTTranslation.d \
+./x64/Release/FastRotation.d \
+./x64/Release/File.d \
+./x64/Release/FileDialog.d \
+./x64/Release/FileFormat.d \
+./x64/Release/FileFormatImplementation.d \
+./x64/Release/FileFormatInstance.d \
+./x64/Release/FileInfo.d \
+./x64/Release/Font.d \
+./x64/Release/FontComboBox.d \
+./x64/Release/FourierTransform.d \
+./x64/Release/Frame.d \
+./x64/Release/GlobalSettings.d \
+./x64/Release/Graphics.d \
+./x64/Release/GroupBox.d \
+./x64/Release/HexString.d \
+./x64/Release/Histogram.d \
+./x64/Release/HistogramTransformation.d \
+./x64/Release/ICCProfile.d \
+./x64/Release/ICCProfileTransformation.d \
+./x64/Release/ImageColor.d \
+./x64/Release/ImageOp.d \
+./x64/Release/ImageStatistics.d \
+./x64/Release/ImageVariant.d \
+./x64/Release/ImageView.d \
+./x64/Release/ImageWindow.d \
+./x64/Release/ImageWindow_CM.d \
+./x64/Release/IntegerResample.d \
+./x64/Release/JulianDay.d \
+./x64/Release/KernelFilter.d \
+./x64/Release/Keyboard.d \
+./x64/Release/Label.d \
+./x64/Release/LanczosInterpolation.d \
+./x64/Release/LinearFit.d \
+./x64/Release/Median.d \
+./x64/Release/MessageBox.d \
+./x64/Release/MetaFileFormat.d \
+./x64/Release/MetaModule.d \
+./x64/Release/MetaParameter.d \
+./x64/Release/MetaProcess.d \
+./x64/Release/MorphologicalTransformation.d \
+./x64/Release/MultiscaleLinearTransform.d \
+./x64/Release/MultiscaleMedianTransform.d \
+./x64/Release/MuteStatus.d \
+./x64/Release/Mutex.d \
+./x64/Release/NetworkTransfer.d \
+./x64/Release/NumericControl.d \
+./x64/Release/Parser.d \
+./x64/Release/Pen.d \
+./x64/Release/PolarTransform.d \
+./x64/Release/PreviewSelectionDialog.d \
+./x64/Release/Process.d \
+./x64/Release/ProcessImplementation.d \
+./x64/Release/ProcessInstance.d \
+./x64/Release/ProcessInterface.d \
+./x64/Release/ProcessParameter.d \
+./x64/Release/PushButton.d \
+./x64/Release/PyramidalWaveletTransform.d \
+./x64/Release/RGBColorSystem.d \
+./x64/Release/RadioButton.d \
+./x64/Release/Random.d \
+./x64/Release/ReadWriteMutex.d \
+./x64/Release/ReadoutOptions.d \
+./x64/Release/RealTimePreview.d \
+./x64/Release/RedundantMultiscaleTransform.d \
+./x64/Release/Render.d \
+./x64/Release/Resample.d \
+./x64/Release/Rotation.d \
+./x64/Release/SVG.d \
+./x64/Release/ScrollBox.d \
+./x64/Release/SectionBar.d \
+./x64/Release/SeparableConvolution.d \
+./x64/Release/SeparableMedianFilter.d \
+./x64/Release/Settings.d \
+./x64/Release/SharedPixelData.d \
+./x64/Release/Sizer.d \
+./x64/Release/Slider.d \
+./x64/Release/SpinBox.d \
+./x64/Release/SpinStatus.d \
+./x64/Release/StatusMonitor.d \
+./x64/Release/StdAlloc.d \
+./x64/Release/StdStatus.d \
+./x64/Release/String.d \
+./x64/Release/SurfaceSpline.d \
+./x64/Release/TabBox.d \
+./x64/Release/TextBox.d \
+./x64/Release/Thread.d \
+./x64/Release/Timer.d \
+./x64/Release/ToolButton.d \
+./x64/Release/Translation.d \
+./x64/Release/TreeBox.d \
+./x64/Release/UIObject.d \
+./x64/Release/UnixSignalException.d \
+./x64/Release/Variant.d \
+./x64/Release/Version.d \
+./x64/Release/View.d \
+./x64/Release/ViewList.d \
+./x64/Release/ViewSelectionDialog.d \
+./x64/Release/Win32Exception.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/libPCL-pxi.a: $(OBJ_FILES)
+	ar r $(OBJ_DIR)/libPCL-pxi.a $(OBJ_FILES)
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/libPCL-pxi.a
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/libPCL-pxi.a $(PCLLIBDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	clang++ -c -pipe -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.8 -fPIC -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -O3 -mtune=generic -mssse3 -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

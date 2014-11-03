@@ -1,0 +1,258 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard StarGenerator Process Module Version 01.01.00.0178
+// ****************************************************************************
+// StarGeneratorIcon.xpm - Released 2014/10/29 07:35:25 UTC
+// ****************************************************************************
+// This file is part of the standard StarGenerator PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char* StarGeneratorIcon_XPM[]={
+"24 24 180 2",
+"Qt c None",
+"#d c None",
+".V c None",
+"aX c None",
+"aW c None",
+"#m c None",
+"#c c None",
+".# c #000000",
+".c c #000101",
+".f c #010102",
+".A c #010103",
+"#n c #010202",
+".G c #020204",
+"aI c #020205",
+"#R c #020306",
+"aT c #020307",
+".U c #020406",
+"#v c #030408",
+"#3 c #030409",
+".a c #04050a",
+"#X c #04070d",
+".o c #05060b",
+"#4 c #05070e",
+".b c #06090f",
+".H c #070a10",
+"aC c #070b14",
+".g c #080c13",
+"aB c #0a0f1b",
+".F c #0b0f18",
+"a. c #0d1322",
+".t c #0e121e",
+".I c #0f1320",
+"a# c #0f1628",
+"aN c #0f1629",
+".T c #101523",
+"aU c #101830",
+".j c #111625",
+".J c #141b32",
+"aM c #141d3b",
+".S c #151d34",
+"ai c #161f3f",
+"aS c #182044",
+"#K c #1a2343",
+".K c #1c2544",
+"#D c #1d2649",
+".R c #1e2748",
+"ah c #1e274f",
+".u c #1f2847",
+"#w c #202a4f",
+"aw c #212a57",
+".k c #212c4c",
+"ap c #222e5c",
+"#o c #232e55",
+"aD c #253062",
+".W c #25315a",
+"#e c #27325e",
+"aR c #29336d",
+"av c #2a366c",
+"ao c #2b3770",
+"#Q c #2c396f",
+"aV c #2c3976",
+"#b c #2d3b6b",
+"#J c #2d3c70",
+"aA c #313e7f",
+"#C c #314077",
+".z c #334175",
+"#u c #34437d",
+"aO c #354289",
+".d c #354477",
+"aH c #36448c",
+"#S c #374689",
+"#l c #374782",
+"aJ c #384691",
+".n c #39487f",
+"#Y c #39498d",
+".L c #3a4a88",
+".X c #3b4c89",
+"#a c #3c4d8d",
+"aL c #3d4b9b",
+".e c #435696",
+".Q c #4659a2",
+".Y c #485ba5",
+"#W c #4a5cb3",
+"aQ c #4a5cbc",
+"#5 c #4b5eb9",
+".B c #4c60ac",
+"## c #4d60b0",
+"#2 c #4d60bd",
+"aq c #4e60c1",
+"aE c #5366cf",
+"an c #556ad2",
+"az c #576bd6",
+"aP c #586cda",
+"aa c #596dd9",
+".p c #596fc1",
+"#9 c #596fd7",
+"#L c #5b72d8",
+".Z c #5c74cf",
+"aK c #5d73e7",
+"#E c #5d74da",
+"ag c #5e74e2",
+"aj c #5e75e4",
+"#. c #5e76d6",
+"aF c #5f75e8",
+".E c #5f77d2",
+"au c #6077e6",
+"ay c #6078e9",
+"aG c #6178eb",
+"ar c #617aeb",
+"#P c #627ae5",
+"#p c #627cde",
+"am c #637aee",
+"ax c #637af1",
+"al c #637bec",
+"as c #637bed",
+"#x c #637ce4",
+"at c #637cec",
+".h c #637dd5",
+"ak c #637ded",
+".0 c #647ddf",
+".9 c #647de0",
+"ac c #657dee",
+"ae c #657df2",
+"ab c #657eef",
+"ad c #657ef0",
+"af c #667ef4",
+"#7 c #667fef",
+"#I c #6680ec",
+"#8 c #6780f1",
+"#t c #6782e8",
+"#1 c #6881f0",
+"#0 c #6881f1",
+"#6 c #6881f3",
+"#V c #6983f1",
+".1 c #6984e7",
+"#B c #6984ed",
+"#U c #6a83f1",
+"#Z c #6a84f7",
+".s c #6a85e3",
+".8 c #6a85e9",
+"#f c #6a85ee",
+"#T c #6b86f7",
+"#N c #6c87f3",
+"#O c #6c88f4",
+"#M c #6c88f5",
+"#G c #6d89f2",
+"#H c #6d89f3",
+"#F c #6d89f5",
+".M c #6f8af2",
+".i c #6f8bea",
+".2 c #6f8cf2",
+"#z c #708bf6",
+"#y c #708cf8",
+".7 c #708df4",
+"#A c #718cf7",
+"#k c #718efa",
+"#s c #728df7",
+"#r c #728ef7",
+"#q c #728ff8",
+"#j c #7390f7",
+".P c #7391f7",
+"#i c #7490f8",
+"#h c #7491fa",
+".v c #7591f9",
+".3 c #7591fb",
+".6 c #7592fb",
+"#g c #7693fd",
+".4 c #7793fb",
+".5 c #7794fa",
+".O c #7995fa",
+".N c #7996fb",
+".y c #7997fd",
+".D c #7a97fc",
+".C c #7b97fd",
+".l c #7c99ff",
+".x c #7d99fd",
+".w c #7e9bfe",
+".r c #7f9cff",
+".q c #7f9dff",
+".m c #81a0ff",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt",
+"Qt.#.#.#.#.#.#.#.#.#.#.a.b.#.#.#.#.#.#.#.#.#.#Qt",
+"Qt.#.#.#.#.#.#.#.#.#.c.d.e.f.#.#.#.#.#.#.#.#.#Qt",
+"Qt.#.#.#.#.#.#.#.#.#.g.h.i.j.#.#.#.#.#.#.#.#.#Qt",
+"Qt.#.#.#.#.#.#.#.#.#.k.l.m.n.f.#.#.#.#.#.#.#.#Qt",
+"Qt.#.#.#.#.#.#.#.#.o.p.q.r.s.t.#.#.#.#.#.#.#.#Qt",
+"Qt.#.#.#.#.#.#.#.#.u.v.w.x.y.z.A.#.#.#.#.#.#.#Qt",
+"Qt.#.#.#.#.#.#.#.a.B.l.C.C.D.E.F.#.#.#.#.#.#.#Qt",
+"Qt.c.c.G.H.I.J.K.L.M.N.O.N.O.P.Q.R.S.T.g.U.c.cQt",
+".V.W.X.Y.Z.0.1.2.3.4.5.5.5.5.5.6.7.8.9#.###a#b#c",
+"#d#e#f#g#h#h#h.v#i#i#j#j#i#j.P.v.v#h#h#h#g#k#l#m",
+"Qt#n#o#p#q#r#q#r#r#q#r#r#q#r#r#q#r#r#q#s#t#u#vQt",
+"Qt.##n#w#x#y#z#z#z#z#z#z#z#z#z#z#z#z#A#B#C#v.#Qt",
+"Qt.#.#.c#D#E#F#G#G#H#G#G#H#G#G#H#G#G#I#J.U.#.#Qt",
+"Qt.#.#.#.c#K#L#M#N#O#N#N#O#N#N#O#N#P#Q#R.#.#.#Qt",
+"Qt.#.#.#.#.G#S#T#U#U#U#U#U#U#U#U#V#W#X.#.#.#.#Qt",
+"Qt.#.#.#.#.c#Y#Z#0#0#1#1#0#1#1#0#0#2#3.#.#.#.#Qt",
+"Qt.#.#.#.##4#5#6#7#8#7#7#8#7#7#8#7#9a..#.#.#.#Qt",
+"Qt.#.#.#.#a#aaabacacadaeafadacacacagah.#.#.#.#Qt",
+"Qt.#.#.#.#aiajakalamanaoapaqarasatauav.#.#.#.#Qt",
+"Qt.#.#.#.#awaxayazaAaB.A.#aCaDaEaFaGaH.c.#.#.#Qt",
+"Qt.#.#.#aIaJaKaLaM#R.#.#.#.#.AaNaOaPaQ#X.#.#.#Qt",
+"Qt.#.#.##3aRaSaT.#.#.#.#.#.#.#.#.GaUaVaC.#.#.#Qt",
+"QtQtQtQtQtaWQtQtQtQtQtQtQtQtQtQtQtQtaX#dQtQtQtQt"};
+
+// ****************************************************************************
+// EOF StarGeneratorIcon.xpm - Released 2014/10/29 07:35:25 UTC

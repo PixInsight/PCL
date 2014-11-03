@@ -1,0 +1,137 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard Global Process Module Version 01.02.05.0258
+// ****************************************************************************
+// ColorManagementSetupIcon.xpm - Released 2014/10/29 07:34:56 UTC
+// ****************************************************************************
+// This file is part of the standard Global PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char* ColorManagementSetupIcon_XPM[] = {
+/* columns rows colors chars-per-pixel */
+"24 24 56 1",
+"< c #FAC6AD",
+"$ c Black",
+"t c #F69769",
+"+ c #FEEFE7",
+"1 c #FAC0A4",
+"i c #F7A47B",
+"m c #F37538",
+"p c #F79E73",
+"X c #00AEEF",
+"O c #FFF6F2",
+"3 c #FBC7AE",
+"a c #F7986A",
+"6 c #F8B494",
+"& c #FCE0D4",
+"7 c #F8AE8B",
+"- c #FCD7C5",
+"4 c #F9C1A5",
+"s c #F59262",
+"5 c #F9BB9D",
+"d c #F58C5A",
+"0 c #F9B595",
+"v c #F5834C",
+"h c #F69F74",
+": c #FACBB4",
+"x c #F69364",
+"n c #F37A40",
+"> c #FBD2BE",
+"M c #F37133",
+", c #FBCCB5",
+"r c #F79D72",
+"N c #F36E2E",
+"  c None",
+"y c #F8B08D",
+"* c #FCDCCC",
+"= c #FCDCCD",
+"u c #F8AA84",
+"b c #F58E5E",
+"% c #FDE6DB",
+"c c #F58854",
+". c #0000FF",
+"@ c #FEEAE0",
+"g c #F7A57D",
+"; c #FBD1BC",
+"j c #F7996B",
+"z c #F7996D",
+"8 c #F8A982",
+"w c #F8A983",
+"# c #FFF200",
+"k c #F59363",
+"e c #F8A37A",
+"9 c #F9BC9E",
+"l c #F58D5B",
+"2 c #F9B99C",
+"f c #F58751",
+"q c #F9B08C",
+"o c #EC008C",
+/* pixels */
+"                        ",
+" ...................... ",
+" .XXXXXXXXXXoooooooooo. ",
+" .XXXXXXXXXXoooooooooo. ",
+" .XXXXXXXXXXoooooooooo. ",
+" .XXXXXXXXXXoooooooooo. ",
+" .XXXXXXXXXXoooooooooo. ",
+" .XXXXXXXXXXoooooooooo. ",
+" .XXXXXXXXXXoooooooooo. ",
+" .XXXXXXXXXXoooooooooo. ",
+" .XXXXXXXXXXooOooooooo. ",
+" .XXXXXXXXXXoo+@oooooo. ",
+" .##########$$%&*$$$$$. ",
+" .##########$$=-;:$$$$. ",
+" .##########$$>,<12$$$. ",
+" .##########$$345678$$. ",
+" .##########$$90qwert$. ",
+" .##########$$yuipasdf. ",
+" .##########$$ghjkl$$$. ",
+" .##########$$zx$cv$$$. ",
+" .##########$$b$$$nm$$. ",
+" .##########$$$$$$MN$$. ",
+" ...................... ",
+"                        "
+};
+
+// ****************************************************************************
+// EOF ColorManagementSetupIcon.xpm - Released 2014/10/29 07:34:56 UTC

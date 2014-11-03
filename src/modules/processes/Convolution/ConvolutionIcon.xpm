@@ -1,0 +1,179 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard Convolution Process Module Version 01.01.03.0138
+// ****************************************************************************
+// ConvolutionIcon.xpm - Released 2014/10/29 07:34:55 UTC
+// ****************************************************************************
+// This file is part of the standard Convolution PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char* ConvolutionIcon_XPM[] = {
+"24 24 101 2",
+"Qt c None",
+"#E c #108d92",
+"#A c #139295",
+"#B c #169798",
+"#w c #179396",
+"#x c #1a9899",
+"#t c #1b9497",
+"#u c #1e9a9b",
+"#q c #1f9699",
+"#r c #229b9c",
+"#o c #23979a",
+"#m c #26989b",
+"#p c #269c9d",
+"#j c #2a999c",
+"#s c #2a9a9a",
+"#n c #2a9d9e",
+"#f c #2e9b9e",
+"#k c #2e9fa0",
+"#c c #319c9f",
+"#F c #329c9f",
+"#g c #32a0a1",
+".# c #351866",
+"#d c #369897",
+"#. c #369da0",
+"#h c #36a1a2",
+"## c #399998",
+".8 c #399fa2",
+"#i c #39a3a4",
+"#C c #3a9998",
+"#G c #3a9fa2",
+"#l c #3aa3a4",
+".4 c #3da0a3",
+".9 c #3da4a5",
+"#H c #3ea0a3",
+"#D c #3ea4a5",
+".1 c #41a1a4",
+".5 c #41a5a6",
+".Y c #44a2a5",
+"#I c #45a2a5",
+".2 c #45a6a7",
+"#y c #46a6a7",
+".V c #48a3a7",
+".Z c #49a8a9",
+".Q c #4ca4a8",
+".W c #4da9aa",
+".N c #50a5a9",
+".R c #51aaab",
+".u c #54a7ab",
+".X c #54a9a9",
+".O c #55acad",
+".a c #57a4aa",
+".v c #59adae",
+".b c #5ca9ad",
+".S c #5cabab",
+".w c #5daeaf",
+".c c #60aaae",
+"#z c #60abaf",
+".x c #61afb0",
+"#v c #61b0b1",
+".d c #63acb0",
+".y c #65b1b2",
+".e c #67adb1",
+".z c #69b2b3",
+".f c #6baeb2",
+".A c #6db3b4",
+".g c #6fb0b3",
+".B c #71b5b6",
+".h c #73b1b4",
+".D c #74acab",
+".C c #75b6b7",
+".i c #77b2b5",
+".E c #78adac",
+"#a c #78aead",
+".T c #79b7b8",
+".j c #7bb3b6",
+"#e c #7bb4b7",
+".P c #7db8b9",
+".6 c #7db9ba",
+".k c #7eb5b8",
+"#b c #7fb5b8",
+".F c #80babb",
+".3 c #81babb",
+".l c #82b6b9",
+".G c #84bbbc",
+".m c #85b7ba",
+".7 c #86b7ba",
+".U c #86b9b9",
+".H c #88bcbd",
+".n c #89b9bc",
+".0 c #89bcbd",
+".I c #8cbebf",
+".o c #8dbabd",
+".J c #90bfc0",
+".p c #91bbbe",
+".K c #94c0c1",
+".q c #95bdc0",
+".L c #98c2c3",
+".r c #99bec1",
+".M c #9cc3c4",
+".t c #9dbbc0",
+".s c #9dbfc2",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt",
+"Qt.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#Qt",
+"Qt.#.a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t.#Qt",
+"Qt.#.u.v.w.x.y.z.A.B.C.D.E.F.G.H.I.J.K.L.M.s.#Qt",
+"Qt.#.N.O.v.w.x.y.z.A.B.#.#.P.F.G.H.I.J.K.L.r.#Qt",
+"Qt.#.Q.R.O.v.S.x.y.z.A.#.#.T.P.F.G.U.I.J.K.q.#Qt",
+"Qt.#.V.W.R.X.#.#.x.y.z.#.#.C.T.P.#.#.U.I.J.p.#Qt",
+"Qt.#.Y.Z.W.R.#.#.#.x.y.#.#.B.C.#.#.#.G.0.I.o.#Qt",
+"Qt.#.1.2.Z.W.R.#.#.#.x.#.#.A.#.#.#.P.3.G.0.n.#Qt",
+"Qt.#.4.5.2.Z.W.R.#.#.#.#.#.#.#.#.C.T.6.3.G.7.#Qt",
+"Qt.#.8.9.5.2.Z.W.R.#.#.#.#.#.#.A.B.C.T.6.3.l.#Qt",
+"Qt.##.##.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.##a#b.#Qt",
+"Qt.##c#d.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.D#e.#Qt",
+"Qt.##f#g#h#i.9.5.2.#.#.#.#.#.#.x.y.z.A.B.C.i.#Qt",
+"Qt.##j#k#g#h#l.9.#.#.#.#.#.#.#.#.x.y.z.A.B.h.#Qt",
+"Qt.##m#n#k#g#h.#.#.#.2.#.#.R.#.#.#.x.y.z.A.g.#Qt",
+"Qt.##o#p#n#k.#.#.#.9.5.#.#.W.R.#.#.#.x.y.z.f.#Qt",
+"Qt.##q#r#p#s.#.##h#l.9.#.#.Z.W.R.#.#.S.x.y.e.#Qt",
+"Qt.##t#u#r#p#s#k#g#h#l.#.#.2.Z.W.R.X.v.w#v.d.#Qt",
+"Qt.##w#x#u#r#p#n#k#g#h.#.#.5#y.Z.W.R.O.v.w#z.#Qt",
+"Qt.##A#B#x#u#r#p#n#k#g#d#C#D.5#y.Z.W.R.O.v.b.#Qt",
+"Qt.##E#A#w#t#q#o#m#j#f#F#.#G#H.1#I.V.Q.N.u.a.#Qt",
+"Qt.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#.#Qt",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt"};
+
+// ****************************************************************************
+// EOF ConvolutionIcon.xpm - Released 2014/10/29 07:34:55 UTC

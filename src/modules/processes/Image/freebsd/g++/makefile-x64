@@ -1,0 +1,167 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.93
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Tue, 28 Oct 2014 18:16:58 GMT
+# Project id ...... Image
+# Project type .... Module
+# Platform ........ FreeBSD/g++
+# Configuration ... Release/x64
+# --------------------------------------------------------------------
+# Additional libraries:
+# cminpack-pxi
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/Image/freebsd/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/Image-pxm.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../CreateAlphaChannelsInstance.cpp \
+../../CreateAlphaChannelsInterface.cpp \
+../../CreateAlphaChannelsParameters.cpp \
+../../CreateAlphaChannelsProcess.cpp \
+../../DynamicPSFInstance.cpp \
+../../DynamicPSFInterface.cpp \
+../../DynamicPSFParameters.cpp \
+../../DynamicPSFProcess.cpp \
+../../ExtractAlphaChannelsInstance.cpp \
+../../ExtractAlphaChannelsInterface.cpp \
+../../ExtractAlphaChannelsParameters.cpp \
+../../ExtractAlphaChannelsProcess.cpp \
+../../FITSHeaderAction.cpp \
+../../FITSHeaderInstance.cpp \
+../../FITSHeaderInterface.cpp \
+../../FITSHeaderParameters.cpp \
+../../FITSHeaderProcess.cpp \
+../../ImageIdentifierInstance.cpp \
+../../ImageIdentifierInterface.cpp \
+../../ImageIdentifierParameters.cpp \
+../../ImageIdentifierProcess.cpp \
+../../ImageModule.cpp \
+../../ImageSelectionDialog.cpp \
+../../NewImageAction.cpp \
+../../NewImageInstance.cpp \
+../../NewImageInterface.cpp \
+../../NewImageParameters.cpp \
+../../NewImageProcess.cpp \
+../../PSF.cpp \
+../../SampleFormatConversionInstance.cpp \
+../../SampleFormatConversionInterface.cpp \
+../../SampleFormatConversionParameters.cpp \
+../../SampleFormatConversionProcess.cpp \
+../../StarDetector.cpp \
+../../StatisticsInterface.cpp \
+../../StatisticsProcess.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/CreateAlphaChannelsInstance.o \
+./x64/Release/CreateAlphaChannelsInterface.o \
+./x64/Release/CreateAlphaChannelsParameters.o \
+./x64/Release/CreateAlphaChannelsProcess.o \
+./x64/Release/DynamicPSFInstance.o \
+./x64/Release/DynamicPSFInterface.o \
+./x64/Release/DynamicPSFParameters.o \
+./x64/Release/DynamicPSFProcess.o \
+./x64/Release/ExtractAlphaChannelsInstance.o \
+./x64/Release/ExtractAlphaChannelsInterface.o \
+./x64/Release/ExtractAlphaChannelsParameters.o \
+./x64/Release/ExtractAlphaChannelsProcess.o \
+./x64/Release/FITSHeaderAction.o \
+./x64/Release/FITSHeaderInstance.o \
+./x64/Release/FITSHeaderInterface.o \
+./x64/Release/FITSHeaderParameters.o \
+./x64/Release/FITSHeaderProcess.o \
+./x64/Release/ImageIdentifierInstance.o \
+./x64/Release/ImageIdentifierInterface.o \
+./x64/Release/ImageIdentifierParameters.o \
+./x64/Release/ImageIdentifierProcess.o \
+./x64/Release/ImageModule.o \
+./x64/Release/ImageSelectionDialog.o \
+./x64/Release/NewImageAction.o \
+./x64/Release/NewImageInstance.o \
+./x64/Release/NewImageInterface.o \
+./x64/Release/NewImageParameters.o \
+./x64/Release/NewImageProcess.o \
+./x64/Release/PSF.o \
+./x64/Release/SampleFormatConversionInstance.o \
+./x64/Release/SampleFormatConversionInterface.o \
+./x64/Release/SampleFormatConversionParameters.o \
+./x64/Release/SampleFormatConversionProcess.o \
+./x64/Release/StarDetector.o \
+./x64/Release/StatisticsInterface.o \
+./x64/Release/StatisticsProcess.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/CreateAlphaChannelsInstance.d \
+./x64/Release/CreateAlphaChannelsInterface.d \
+./x64/Release/CreateAlphaChannelsParameters.d \
+./x64/Release/CreateAlphaChannelsProcess.d \
+./x64/Release/DynamicPSFInstance.d \
+./x64/Release/DynamicPSFInterface.d \
+./x64/Release/DynamicPSFParameters.d \
+./x64/Release/DynamicPSFProcess.d \
+./x64/Release/ExtractAlphaChannelsInstance.d \
+./x64/Release/ExtractAlphaChannelsInterface.d \
+./x64/Release/ExtractAlphaChannelsParameters.d \
+./x64/Release/ExtractAlphaChannelsProcess.d \
+./x64/Release/FITSHeaderAction.d \
+./x64/Release/FITSHeaderInstance.d \
+./x64/Release/FITSHeaderInterface.d \
+./x64/Release/FITSHeaderParameters.d \
+./x64/Release/FITSHeaderProcess.d \
+./x64/Release/ImageIdentifierInstance.d \
+./x64/Release/ImageIdentifierInterface.d \
+./x64/Release/ImageIdentifierParameters.d \
+./x64/Release/ImageIdentifierProcess.d \
+./x64/Release/ImageModule.d \
+./x64/Release/ImageSelectionDialog.d \
+./x64/Release/NewImageAction.d \
+./x64/Release/NewImageInstance.d \
+./x64/Release/NewImageInterface.d \
+./x64/Release/NewImageParameters.d \
+./x64/Release/NewImageProcess.d \
+./x64/Release/PSF.d \
+./x64/Release/SampleFormatConversionInstance.d \
+./x64/Release/SampleFormatConversionInterface.d \
+./x64/Release/SampleFormatConversionParameters.d \
+./x64/Release/SampleFormatConversionProcess.d \
+./x64/Release/StarDetector.d \
+./x64/Release/StatisticsInterface.d \
+./x64/Release/StatisticsProcess.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/Image-pxm.so: $(OBJ_FILES)
+	clang++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/Image-pxm.so $(OBJ_FILES) -lcminpack-pxi -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/Image-pxm.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/Image-pxm.so $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	clang++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -I"$(PCLINCDIR)" -O3 -mtune=generic -msse3 -fomit-frame-pointer -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

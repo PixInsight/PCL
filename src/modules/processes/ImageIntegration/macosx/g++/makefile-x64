@@ -1,0 +1,104 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.93
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Tue, 28 Oct 2014 18:16:59 GMT
+# Project id ...... ImageIntegration
+# Project type .... Module
+# Platform ........ MacOSX/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/ImageIntegration/macosx/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/ImageIntegration-pxm.dylib
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../DrizzleIntegrationInstance.cpp \
+../../DrizzleIntegrationInterface.cpp \
+../../DrizzleIntegrationParameters.cpp \
+../../DrizzleIntegrationProcess.cpp \
+../../FileDataCache.cpp \
+../../FileDataCachePreferencesDialog.cpp \
+../../HDRCompositionInstance.cpp \
+../../HDRCompositionInterface.cpp \
+../../HDRCompositionParameters.cpp \
+../../HDRCompositionProcess.cpp \
+../../ImageIntegrationInstance.cpp \
+../../ImageIntegrationInterface.cpp \
+../../ImageIntegrationModule.cpp \
+../../ImageIntegrationParameters.cpp \
+../../ImageIntegrationProcess.cpp \
+../../IntegrationCache.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/DrizzleIntegrationInstance.o \
+./x64/Release/DrizzleIntegrationInterface.o \
+./x64/Release/DrizzleIntegrationParameters.o \
+./x64/Release/DrizzleIntegrationProcess.o \
+./x64/Release/FileDataCache.o \
+./x64/Release/FileDataCachePreferencesDialog.o \
+./x64/Release/HDRCompositionInstance.o \
+./x64/Release/HDRCompositionInterface.o \
+./x64/Release/HDRCompositionParameters.o \
+./x64/Release/HDRCompositionProcess.o \
+./x64/Release/ImageIntegrationInstance.o \
+./x64/Release/ImageIntegrationInterface.o \
+./x64/Release/ImageIntegrationModule.o \
+./x64/Release/ImageIntegrationParameters.o \
+./x64/Release/ImageIntegrationProcess.o \
+./x64/Release/IntegrationCache.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/DrizzleIntegrationInstance.d \
+./x64/Release/DrizzleIntegrationInterface.d \
+./x64/Release/DrizzleIntegrationParameters.d \
+./x64/Release/DrizzleIntegrationProcess.d \
+./x64/Release/FileDataCache.d \
+./x64/Release/FileDataCachePreferencesDialog.d \
+./x64/Release/HDRCompositionInstance.d \
+./x64/Release/HDRCompositionInterface.d \
+./x64/Release/HDRCompositionParameters.d \
+./x64/Release/HDRCompositionProcess.d \
+./x64/Release/ImageIntegrationInstance.d \
+./x64/Release/ImageIntegrationInterface.d \
+./x64/Release/ImageIntegrationModule.d \
+./x64/Release/ImageIntegrationParameters.d \
+./x64/Release/ImageIntegrationProcess.d \
+./x64/Release/IntegrationCache.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/ImageIntegration-pxm.dylib: $(OBJ_FILES)
+	clang++ -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.8 -fPIC -headerpad_max_install_names -dynamiclib -install_name @executable_path/ImageIntegration-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/ImageIntegration-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/ImageIntegration-pxm.dylib
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/ImageIntegration-pxm.dylib $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	clang++ -c -pipe -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.8 -fPIC -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -O3 -mtune=generic -mssse3 -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

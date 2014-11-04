@@ -1,0 +1,219 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard ImageIntegration Process Module Version 01.09.04.0251
+// ****************************************************************************
+// HDRCompositionIcon.xpm - Released 2014/10/29 07:35:23 UTC
+// ****************************************************************************
+// This file is part of the standard ImageIntegration PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char *HDRCompositionIcon_XPM[]={
+"24 24 141 2",
+"Qt c None",
+"ah c #08080d",
+"#S c #08090c",
+"a. c #08090d",
+".7 c #09090c",
+".T c #0a090c",
+".a c #0a0a0b",
+".c c #0b0a0a",
+".b c #0b0a0b",
+".d c #0b0b0a",
+".f c #0c0b09",
+".e c #0c0b0a",
+".g c #0d0b09",
+".# c #000000",
+"ak c #000001",
+".h c #010100",
+"#H c #252616",
+"#B c #252617",
+".Z c #262717",
+"#a c #262719",
+".Q c #27271a",
+"#P c #27281a",
+"#I c #28291a",
+"#7 c #2a2b1f",
+"#f c #2d2d1f",
+"#Z c #2f3027",
+".Y c #303025",
+".K c #343428",
+"#6 c #363630",
+"#Q c #37372d",
+"#l c #38372c",
+".5 c #3a392f",
+"## c #434138",
+"ad c #434346",
+".R c #464339",
+"#r c #49473d",
+"#e c #4b493f",
+"#0 c #4f4d4c",
+"#k c #525044",
+".0 c #59544d",
+"#q c #595848",
+"#w c #5c5852",
+"#v c #5e5e4c",
+".F c #625e54",
+"#A c #64624a",
+".J c #6b6a46",
+"#G c #6b6b4b",
+"#J c #6f6967",
+"#8 c #706d79",
+".6 c #726c67",
+"#O c #7c7c4f",
+"#F c #7e7e67",
+"#M c #7f8098",
+"#p c #828163",
+"#W c #828269",
+"#C c #837c7a",
+"#. c #84835e",
+".P c #848451",
+".O c #85845a",
+"#5 c #85856d",
+"#u c #868587",
+"#d c #89867d",
+"ac c #898872",
+"#V c #898a94",
+".V c #8b8775",
+"#z c #8b8b57",
+"#j c #8d8d55",
+"#4 c #8d8d96",
+"#Y c #8e8e53",
+"#N c #8e8e54",
+".4 c #8f8f55",
+"#X c #8f8f56",
+"#b c #908784",
+"ab c #929199",
+"ae c #9592ad",
+".X c #959557",
+"#R c #968e96",
+".W c #979758",
+"#U c #9799c7",
+"#y c #9c9cc0",
+"#3 c #9f9fca",
+"#i c #a19eb1",
+"ai c #a2aafc",
+".3 c #a49ea4",
+"aa c #a5a4ce",
+"af c #a5abfa",
+".I c #a79e98",
+"a# c #a7adf8",
+".G c #a89d98",
+"#2 c #a9aef7",
+"#g c #aba19f",
+"#T c #acb0f5",
+"#L c #aeb1f3",
+"#E c #afb1ec",
+"#D c #b0b2f2",
+"#x c #b2b4f0",
+"#t c #b5b5ee",
+"#1 c #b7afc2",
+"#n c #b7b7ed",
+"#o c #b9b6e1",
+"#h c #b9b8eb",
+"#c c #bcbae9",
+"ag c #bdbae7",
+"aj c #bebbe7",
+".8 c #bebbe8",
+".2 c #c0bde6",
+".L c #c1b3b0",
+"#m c #c2b5b4",
+".9 c #c2bad5",
+".U c #c3bee4",
+".M c #c5c0e2",
+".H c #c7c1e1",
+".N c #c8bec8",
+"#9 c #c9c1de",
+".E c #cac2df",
+".C c #ccc4dd",
+".i c #cec5dc",
+".j c #d1c7da",
+".k c #d3c8d8",
+".S c #d4c5c1",
+"#s c #d5c7c7",
+".l c #d5cad7",
+"#K c #d6c9cf",
+".m c #d8cbd5",
+".n c #dacdd3",
+".o c #dcced1",
+".D c #ddcdca",
+".p c #dfd0d0",
+".1 c #e0d0cd",
+".q c #e1d1ce",
+".r c #e3d3cc",
+".s c #e5d4cb",
+".t c #e8d5c9",
+".u c #ead7c7",
+".v c #edd8c6",
+".w c #efdac4",
+".x c #f1dbc2",
+".y c #f3ddc0",
+".z c #f6debf",
+".A c #f8e0bd",
+".B c #fae1bb",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt",
+"Qt.#.a.b.b.b.b.c.c.c.d.e.e.e.e.e.e.e.e.f.g.g.hQt",
+"Qt.a.i.j.k.l.m.n.o.p.q.r.s.t.u.v.w.x.y.z.A.B.gQt",
+"Qt.a.C.i.j.k.l.m.n.o.p.D.r.s.t.u.v.w.x.y.z.A.gQt",
+"Qt.a.E.C.i.j.k.l.m.n.o.F.G.r.s.t.u.v.w.x.y.z.fQt",
+"Qt.a.H.E.C.i.j.k.l.m.I.J.K.L.r.s.t.u.v.w.x.y.eQt",
+"Qt.a.M.H.E.C.i.j.k.N.O.P.Q.R.S.r.s.t.u.v.w.x.eQt",
+"Qt.T.U.M.H.E.C.i.j.V.W.X.Y.Z.0.1.r.s.t.u.v.w.eQt",
+"Qt.T.2.U.M.H.E.C.3.4.W.W.5.Z.Z.6.q.r.s.t.u.v.eQt",
+"Qt.7.8.2.U.M.H.9#..W.W.W##.Z.Z#a#b.q.r.s.t.u.eQt",
+"Qt.7#c.8.2.U.M#d.W.W.W.W#e.Z.Z.Z#f#g.q.r.s.t.eQt",
+"Qt.7#h#c.8.2#i#j.W.W.W.W#k.Z.Z.Z.Z#l#m.q.r.s.eQt",
+"Qt.7#n#h#c#o#p.W.W.W.W.W#q.Z.Z.Z.Z.Z#r#s.q.r.eQt",
+"Qt.7#t#n#h#u.W.W.W.W.W.W#v.Z.Z.Z.Z.Z.Z#w.p.q.dQt",
+"Qt.7#x#t#y#z.W.W.W.W.W.W#A.Z.Z.Z.Z.Z.Z#B#C.p.cQt",
+"Qt.7#D#E#F.W.W.W.W.W.W.W#G#H.Z.Z.Z.Z#I#J#K.o.cQt",
+"Qt.7#L#M#N.W.W.W.W.W.W.W#O#P.Z.Z.Z#Q#R.l.m.n.cQt",
+"Qt#S#T#L#U#V#W#X.W.W.W.W#Y#Z.Z.Z#0#1.j.k.l.m.bQt",
+"Qt#S#2#T#L#D#x#3#4#5#j.W.W#6#7#8#9.C.i.j.k.l.bQt",
+"Qta.a##2#T#L#D#x#t#naaabacadae.M.H.E.C.i.j.k.bQt",
+"Qta.afa##2#T#L#D#x#t#n#h#cag.2.U.M.H.E.C.i.j.bQt",
+"Qtahaiafa##2#T#L#D#x#t#n#h#caj.2.U.M.H.E.C.i.aQt",
+"Qtakaha.a.#S#S.7.7.7.7.7.7.7.7.T.T.a.a.a.a.a.#Qt",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt"};
+
+// ****************************************************************************
+// EOF HDRCompositionIcon.xpm - Released 2014/10/29 07:35:23 UTC

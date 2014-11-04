@@ -1,0 +1,104 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.93
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Tue, 28 Oct 2014 18:16:59 GMT
+# Project id ...... ImageIntegration
+# Project type .... Module
+# Platform ........ Linux/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/ImageIntegration/linux/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/ImageIntegration-pxm.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../DrizzleIntegrationInstance.cpp \
+../../DrizzleIntegrationInterface.cpp \
+../../DrizzleIntegrationParameters.cpp \
+../../DrizzleIntegrationProcess.cpp \
+../../FileDataCache.cpp \
+../../FileDataCachePreferencesDialog.cpp \
+../../HDRCompositionInstance.cpp \
+../../HDRCompositionInterface.cpp \
+../../HDRCompositionParameters.cpp \
+../../HDRCompositionProcess.cpp \
+../../ImageIntegrationInstance.cpp \
+../../ImageIntegrationInterface.cpp \
+../../ImageIntegrationModule.cpp \
+../../ImageIntegrationParameters.cpp \
+../../ImageIntegrationProcess.cpp \
+../../IntegrationCache.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/DrizzleIntegrationInstance.o \
+./x64/Release/DrizzleIntegrationInterface.o \
+./x64/Release/DrizzleIntegrationParameters.o \
+./x64/Release/DrizzleIntegrationProcess.o \
+./x64/Release/FileDataCache.o \
+./x64/Release/FileDataCachePreferencesDialog.o \
+./x64/Release/HDRCompositionInstance.o \
+./x64/Release/HDRCompositionInterface.o \
+./x64/Release/HDRCompositionParameters.o \
+./x64/Release/HDRCompositionProcess.o \
+./x64/Release/ImageIntegrationInstance.o \
+./x64/Release/ImageIntegrationInterface.o \
+./x64/Release/ImageIntegrationModule.o \
+./x64/Release/ImageIntegrationParameters.o \
+./x64/Release/ImageIntegrationProcess.o \
+./x64/Release/IntegrationCache.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/DrizzleIntegrationInstance.d \
+./x64/Release/DrizzleIntegrationInterface.d \
+./x64/Release/DrizzleIntegrationParameters.d \
+./x64/Release/DrizzleIntegrationProcess.d \
+./x64/Release/FileDataCache.d \
+./x64/Release/FileDataCachePreferencesDialog.d \
+./x64/Release/HDRCompositionInstance.d \
+./x64/Release/HDRCompositionInterface.d \
+./x64/Release/HDRCompositionParameters.d \
+./x64/Release/HDRCompositionProcess.d \
+./x64/Release/ImageIntegrationInstance.d \
+./x64/Release/ImageIntegrationInterface.d \
+./x64/Release/ImageIntegrationModule.d \
+./x64/Release/ImageIntegrationParameters.d \
+./x64/Release/ImageIntegrationProcess.d \
+./x64/Release/IntegrationCache.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/ImageIntegration-pxm.so: $(OBJ_FILES)
+	g++-4.8.2 -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/ImageIntegration-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/ImageIntegration-pxm.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/ImageIntegration-pxm.so $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	g++-4.8.2 -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O3 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffunction-sections -fdata-sections -fomit-frame-pointer -ffast-math -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

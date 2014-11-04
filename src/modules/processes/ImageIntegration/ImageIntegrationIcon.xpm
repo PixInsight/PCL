@@ -1,0 +1,197 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard ImageIntegration Process Module Version 01.09.04.0251
+// ****************************************************************************
+// ImageIntegrationIcon.xpm - Released 2014/10/29 07:35:22 UTC
+// ****************************************************************************
+// This file is part of the standard ImageIntegration PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char *ImageIntegrationIcon_XPM[]={
+"24 24 119 2",
+"Qt c None",
+"#X c #08080d",
+"#G c #08090c",
+"#U c #08090d",
+".6 c #09090c",
+".S c #0a090c",
+".a c #0a0a0b",
+".c c #0b0a0a",
+".b c #0b0a0b",
+".d c #0b0b0a",
+".f c #0c0b09",
+".e c #0c0b0a",
+".g c #0d0b09",
+".# c #000000",
+"#0 c #000001",
+".h c #010100",
+".Q c #000000",
+"#s c #010101",
+".P c #020202",
+"#x c #040405",
+"#J c #09090b",
+"#y c #0b0b0e",
+".V c #111011",
+"#N c #1c1c24",
+"#O c #1d1c24",
+"#P c #1d1d23",
+"#Q c #1e1d23",
+"#R c #1e1e22",
+"#S c #1f1e22",
+"#e c #3c3940",
+"#a c #3d3a41",
+".9 c #3d3b42",
+".4 c #3f3c43",
+"#t c #403e4a",
+".U c #413e45",
+".G c #423f43",
+".H c #433f42",
+".F c #434045",
+".I c #444041",
+".R c #45403d",
+".J c #454040",
+".L c #46413f",
+".K c #464140",
+".M c #47423f",
+"#i c #4b4851",
+"#p c #524f5b",
+".5 c #595459",
+"#. c #5b565c",
+"#l c #5c5968",
+"#b c #5e595e",
+"#f c #635d63",
+"#m c #67626e",
+".W c #6b6469",
+".X c #6d6669",
+"#o c #6d6b80",
+".Y c #6e6768",
+".Z c #6f6868",
+".0 c #706867",
+"#z c #747188",
+".N c #796f69",
+"#A c #7b788d",
+"#B c #7c788c",
+"#r c #7c7a97",
+"#j c #7d7680",
+"#C c #7e798b",
+"#D c #7f7a8a",
+"#E c #807b89",
+"#w c #8786ab",
+".1 c #948985",
+"#M c #9799cc",
+"#Y c #a2aafc",
+"#I c #a3a3d7",
+"#W c #a5abfa",
+"#V c #a7adf8",
+"#L c #a9aef7",
+"#K c #aca5b8",
+"#H c #acb0f5",
+"#v c #aeb1f3",
+"#T c #b0a9bf",
+"#q c #b0b2f2",
+"#n c #b2b4f0",
+"#k c #b5b5ee",
+"#g c #b7b7ed",
+"#c c #b9b8eb",
+"## c #bcbae9",
+"#Z c #bebbe7",
+".7 c #bebbe8",
+".2 c #c0bde6",
+".T c #c3bee4",
+"#F c #c5bbcd",
+"#u c #c5bfdf",
+".O c #c5c0e2",
+"#d c #c6bfd7",
+".8 c #c7bfd8",
+".E c #c7c1e1",
+".3 c #c8c0d9",
+"#h c #c9c1de",
+".D c #cac2df",
+".C c #ccc4dd",
+".i c #cec5dc",
+".j c #d1c7da",
+".k c #d3c8d8",
+".l c #d5cad7",
+".m c #d8cbd5",
+".n c #dacdd3",
+".o c #dcced1",
+".p c #dfd0d0",
+".q c #e1d1ce",
+".r c #e3d3cc",
+".s c #e5d4cb",
+".t c #e8d5c9",
+".u c #ead7c7",
+".v c #edd8c6",
+".w c #efdac4",
+".x c #f1dbc2",
+".y c #f3ddc0",
+".z c #f6debf",
+".A c #f8e0bd",
+".B c #fae1bb",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt",
+"Qt.#.a.b.b.b.b.c.c.c.d.e.e.e.e.e.e.e.e.f.g.g.hQt",
+"Qt.a.i.j.k.l.m.n.o.p.q.r.s.t.u.v.w.x.y.z.A.B.gQt",
+"Qt.a.C.i.j.k.l.m.n.o.p.q.r.s.t.u.v.w.x.y.z.A.gQt",
+"Qt.a.D.C.i.j.k.l.m.n.o.p.q.r.s.t.u.v.w.x.y.z.fQt",
+"Qt.a.E.D.C.i.j.F.G.H.I.I.J.K.L.M.N.u.v.w.x.y.eQt",
+"Qt.a.O.E.D.C.i.P.Q.Q.Q.Q.Q.Q.Q.Q.R.t.u.v.w.x.eQt",
+"Qt.S.T.O.E.D.C.U.Q.Q.V.W.X.Y.Z.0.1.s.t.u.v.w.eQt",
+"Qt.S.2.T.O.E.D.3.4.Q.Q.5.m.n.o.p.q.r.s.t.u.v.eQt",
+"Qt.6.7.2.T.O.E.D.8.9.Q.Q#..m.n.o.p.q.r.s.t.u.eQt",
+"Qt.6##.7.2.T.O.E.D.8#a.Q.Q#b.m.n.o.p.q.r.s.t.eQt",
+"Qt.6#c##.7.2.T.O.E.D#d#e.Q.Q#f.m.n.o.p.q.r.s.eQt",
+"Qt.6#g#c##.7.2.T.O.E#h#i.Q.Q#j.l.m.n.o.p.q.r.eQt",
+"Qt.6#k#g#c##.7.2.T.O#l.Q.Q#m.j.k.l.m.n.o.p.q.dQt",
+"Qt.6#n#k#g#c##.7.2#o.Q.Q#p.C.i.j.k.l.m.n.o.p.cQt",
+"Qt.6#q#n#k#g#c###r#s.Q#t#u.D.C.i.j.k.l.m.n.o.cQt",
+"Qt.6#v#q#n#k#g#w#x.Q#y#z#A#B#C#D#E#F.k.l.m.n.cQt",
+"Qt#G#H#v#q#n#I#J.Q.Q.Q.Q.Q.Q.Q.Q.Q#K.j.k.l.m.bQt",
+"Qt#G#L#H#v#q#M#N#N#N#O#P#P#Q#Q#R#S#T.i.j.k.l.bQt",
+"Qt#U#V#L#H#v#q#n#k#g#c##.7.2.T.O.E.D.C.i.j.k.bQt",
+"Qt#U#W#V#L#H#v#q#n#k#g#c##.7.2.T.O.E.D.C.i.j.bQt",
+"Qt#X#Y#W#V#L#H#v#q#n#k#g#c###Z.2.T.O.E.D.C.i.aQt",
+"Qt#0#X#U#U#G#G.6.6.6.6.6.6.6.6.S.S.a.a.a.a.a.#Qt",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt"};
+
+// ****************************************************************************
+// EOF ImageIntegrationIcon.xpm - Released 2014/10/29 07:35:22 UTC

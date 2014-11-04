@@ -479,7 +479,7 @@ CreateSwapWriterThreads( const GenericImage<P>& image,
    String rootDirectory = directories[0];
    StringList sortedDirectories = directories;
 #ifdef __PCL_WINDOWS
-   rootDirectory->ToUpperCase();
+   rootDirectory.ToUpperCase();
    for ( StringList::iterator i = sortedDirectories.Begin(); i != sortedDirectories.End(); ++i )
       i->ToUpperCase();
 #endif

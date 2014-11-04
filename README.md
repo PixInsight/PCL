@@ -1,4 +1,5 @@
 PCL - PixInsight Class Library
+------------------------------
 
 PixInsight is an advanced image processing software platform designed specifically for astrophotography and other technical imaging fields. PixInsight is a modular, open-architecture system where the entire processing and file handling capabilities are implemented as external installable modules.
 

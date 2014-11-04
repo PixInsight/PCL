@@ -11,9 +11,4 @@ PCL is highly portable code. As of writing this document, it is available on the
 
 Starting from version 2.0, PCL is released as an open-source library released under the [PixInsight Class Library License](http://pixinsight.com/license/PCL_PJSR_1.0.html) (PCLL). In essence, PCLL is a liberal BSD-like license that allows you to develop open-source and closed-source, free and commercial PixInsight modules without restrictions. As long as you observe all PCLL terms, you can modify PCL and use your modified version with or without releasing your source code.
 
-##### Copyright (C) 2003-2014 Pleiades Astrophoto
-
-Pleiades Astrophoto, S.L.
-Apartado Postal 204
-46185 Pobla de Vallbona (Valencia)
-Spain
+###### Copyright (C) 2003-2014 Pleiades Astrophoto

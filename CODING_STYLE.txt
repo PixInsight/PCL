@@ -1,17 +1,16 @@
-*******************************************************************************
 PixInsight Class Library - Coding Style Guidelines
-*******************************************************************************
+==================================================
 
-   * Version 0.1 - 2014 November 03
-      Initial release.
+Version 0.2 - 2014 November 03<br/>
+*Initial release.*
 
-*******************************************************************************
-
-
-1. Indentation
+==================================================
 
 
-   1.1. Use spaces, not tabulators. Tabulators should only appear in files that require them for semantic meaning, like makefiles.
+### 1. Indentation
+
+
+   1.1. Use spaces, not tabulators. Tabulators should only appear in files where they play a semantic role, like makefiles.
 
    1.2. The indentation size is 3 spaces.
 
@@ -21,7 +20,7 @@ PixInsight Class Library - Coding Style Guidelines
       if ( condition )
               DoSomething(); // wrong
 
-   1.3. The contents of an outermost namespace block (and any nested namespaces with the same scope) should not be indented. The contents of other nested namespaces should be indented.
+   1.3. The contents of a namespace block should not be indented. Nested namespaces should be indented. Use line comments to mark the closing brace of each namespace.
 
       namespace pcl
       {
@@ -31,13 +30,15 @@ PixInsight Class Library - Coding Style Guidelines
          ...
       };
 
-      namespace nested_namespace
-      {
+         namespace nested_namespace
+         {
+
          class Bar
          {
             ...
          };
-      } // pcl::nested_namespace
+
+         } // pcl::nested_namespace
 
       } // pcl
 
@@ -46,10 +47,10 @@ PixInsight Class Library - Coding Style Guidelines
       switch ( i )
       {
       case 0:
-         A();
+         DoSomething();
          break;
       case 1:
-         B();
+         DoSomethingElse();
          break;
       default:
          break;
@@ -63,6 +64,13 @@ PixInsight Class Library - Coding Style Guidelines
          ...
       private: // right
          ...
+         class Bar
+         {
+         public:  // right
+            ...
+         private: // right
+            ...
+         };
       };
 
       class Foo
@@ -71,22 +79,29 @@ PixInsight Class Library - Coding Style Guidelines
          ...
          private: // wrong
          ...
+         class Bar
+         {
+            public:  // wrong
+               ...
+            private: // wrong
+               ...
+         };
       };
 
    1.6. Try to align and indent line comments to improve readability.
 
-      DoSomething();       // these comments
-      x = Foo();           // are aligned and indented
-      if ( x == 0 )        // for improved...
-         PerformAction();  //    ...readability
+      DoSomething();          // these comments
+      x = DoFoo();            // are aligned and indented
+      if ( x == 0 )           // for improved...
+         PerformBarAction();  //    ...readability
 
       DoSomething(); // these comments
       x = Foo(); // are not aligned
       if ( x == 0 ) // and hence
-         PerformAction(); // are much harder to read
+         PerformBarAction(); // are much harder to read
 
 
-2. Spacing
+### 2. Spacing
 
 
    2.1. Do not place spaces around unary operators.
@@ -100,14 +115,14 @@ PixInsight Class Library - Coding Style Guidelines
       x = 0;               // right
       if ( (x = ++i) > 2 ) // right
 
-   2.3. Use spaces to improve readability of binary and ternary operators.
+   2.3. Use spaces to improve readability of binary and ternary operators and numerical expressions.
 
       x = a + b;     // right
       x = a+b;       // wrong
-      y = a + b*c;   // right - improve understanding of operator precedences
-      z = (a + b)/y; // right - improve readability of numerical expressions
-      i = x ? a : b; // right
-      i = x ? a:b;   // wrong
+      y = a + b*c;   // right - spacing improves understanding of operator precedences
+      z = (a + b)/c; // right - spacing improves readability of numerical expressions
+      x = a ? b : c; // right - ternary operator
+      x = a ? b:c;   // wrong
 
    2.4. Do not place spaces before comma and semicolon.
 
@@ -115,10 +130,10 @@ PixInsight Class Library - Coding Style Guidelines
       delete foo , foo = 0;           // wrong
       for ( int i = 0; i < 3; ++i )   // right
       for ( int i = 0 ; i < 3 ; ++i ) // wrong
-      DoIt();                         // right
-      DoIt() ;                        // wrong
-      CallMe( a, b, c );              // right
-      CallMe( a, b , c );             // wrong
+      DoSomething();                  // right
+      Dosomething() ;                 // wrong
+      CallMeFoo( a, b, c );           // right
+      CallMeFoo( a, b , c );          // wrong
 
    2.5. Place one space before and after colon in base class specifications.
 
@@ -132,7 +147,7 @@ PixInsight Class Library - Coding Style Guidelines
          ...
       };
 
-   2.6. Do not place spaces before colon in case specifiers.
+   2.6. Do not place spaces before colon in case labels.
 
       switch ( x )
       {
@@ -142,7 +157,7 @@ PixInsight Class Library - Coding Style Guidelines
          ...
       }
 
-   2.7. Place one space between a control statement and its parentheses.
+   2.7. Place one space between a control statement and its left parenthesis.
 
       if ( x == 0 )  // right
       if( x == 0 )   // wrong
@@ -157,10 +172,10 @@ PixInsight Class Library - Coding Style Guidelines
       for (i = 0; i < x; ++i )  // wrong
       while ( ++n  );           // wrong
 
-   2.9. Do not place spaces between a function and its parentheses.
+   2.9. Do not place spaces between a function and its left parenthesis.
 
       SomeFunc( x );  // right
-      SomeFunc ( x ); // wrong
+      SomeFunc ( x ); // wrong, unless spaces are used to vertically align arguments or parameters in a set of related items.
 
    2.10. Place one space to separate a list of function arguments or formal parameters from the opening and closing parentheses in a function call, function declaration, or function definition.
 
@@ -188,12 +203,14 @@ PixInsight Class Library - Coding Style Guidelines
       x = r[i];   // right
       x = r[ i ]; // wrong
 
-   2.14. Place one space to separate an allocation size expression from square brackets in a call to operator new[].
+   2.14. Place one space to separate an allocation size expression from square brackets in a call to operator new[]. Do the same for array declarations.
 
-      new Foo[ n ]; // right
-      new Foo[n];   // wrong
+      new Foo[ n ];         // right
+      new Foo[n];           // wrong
+      const char bar[ 10 ]; // right
+      const char bar[10];   // wrong
 
-   2.15. Place an empty line after a class member access specifier. Place an empty line before a class member access specifier, except the first one.
+   2.15. Place an empty line after a class member access specifier. Place an empty line before a class member access specifier, except the first one in a class.
 
       class Foo
       {
@@ -210,14 +227,14 @@ PixInsight Class Library - Coding Style Guidelines
       };
 
 
-3. Line Breaking
+### 3. Line Breaking
 
 
    3.1. In general, each statement should get its own line.
 
       if ( x )        // right
          y = 0;       // right
-      if ( y ) z = 1; // wrong, but can be admissible only for very brief statements.
+      if ( y ) z = 1; // generally wrong, but can be valid for very brief statements.
 
    3.2. An else statement must get its own line, and must be lined up with its corresponding if statement.
 
@@ -257,7 +274,7 @@ PixInsight Class Library - Coding Style Guidelines
          DoSomething();
 
 
-4. Braces
+### 4. Braces
 
 
    4.1. Place each brace on its own line.
@@ -285,18 +302,17 @@ PixInsight Class Library - Coding Style Guidelines
          ...
       }
 
-      if ( condition ) { ... } // wrong
+      if ( condition ) { ... }    // generally wrong, but can be admissible for very small code blocks.
+      while ( condition ) { ... } // ...
 
       if ( condition ) {       // wrong
          DoSomething();
          DoSomethingElse(); }  // wrong
 
-      while ( condition ) { DoSomething(); } // wrong
-
       static Mutex mutex;
-      {                          // right
-         AutoLock lock( mutex );
-         ProtectedCode();
+      {                          // right - a critical section protected for parallel execution
+         volatile AutoLock lock( mutex );
+         /* Protected code */
          ...
       }
 
@@ -338,8 +354,25 @@ PixInsight Class Library - Coding Style Guidelines
          // This comment requires braces
          DoSomething();    // wrong
 
+      if ( condition )
+      {
+         DoSomething();
+         DoSomethingElse();
+      }
+      else
+         CallItFooBar();   // right
 
-5. Names
+      if ( condition )
+      {
+         DoSomething();
+         DoSomethingElse();
+      }
+      else
+      {                    // can be admissible for readability in this case
+         CallItFooBar();
+      }
+
+### 5. Names
 
    5.1. Use CamelCase. Capitalize all letters in acronyms. Capitalize the first letter (Pascal case) in class, struct, union, function and function member names. Lower-case (camel-back case) the first letter in variable and data member names.
 
@@ -354,14 +387,14 @@ PixInsight Class Library - Coding Style Guidelines
       String ConvertToHTML();  // right (function name, acronym)
       String ConvertToHtml();  // wrong
 
-   5.2. Non-public, non-static data members must be prefixed with "m_". Non-public, static data members must be prefixed with "s_".
+   5.2. Non-public, non-static data members must be prefixed with "m&#95;". Non-public, static data members must be prefixed with "s&#95;".
 
       class Foo
       {
       public:
 
          int xRatio;   // right, because this is a public data member.
-         int m_result; // optional prefix, but prefer no prefix for global members, if possible.
+         int m_result; // optional prefix, but prefer no prefix for global members.
          ...
 
       protected:
@@ -374,7 +407,7 @@ PixInsight Class Library - Coding Style Guidelines
          ...
       };
 
-   5.3. In process instance implementation classes, data members implementing process parameters must be prefixed with "p_". Data members implementing read-only output properties must be prefixed with "o_".
+   5.3. In process instance implementation classes, data members implementing process parameters must be prefixed with "p&#95;". Data members implementing read-only output properties must be prefixed with "o&#95;".
 
       class MyProcessInstance : public ProcessImplementation
       {
@@ -390,7 +423,7 @@ PixInsight Class Library - Coding Style Guidelines
          int    m_dataMember; // right only if this is not an implementation of a process parameter or property.
       };
 
-   5.4. In process interface implementation classes, function members implementing event handlers must be prefixed with two underscores ("__").
+   5.4. In process interface implementation classes, function members implementing event handlers must be prefixed with either "e&#95;" or two underscores ("&#95;&#95;").
 
       class MyProcessInterface : public ProcessInterface
       {
@@ -398,9 +431,10 @@ PixInsight Class Library - Coding Style Guidelines
       private:
 
          void __ValueUpdated( NumericEdit& sender, double value ); // function member is a GUI event handler.
+         void e_Click( Button& sender, bool checked );  // also valid, but don't mix both styles in the same module.
       };
 
-   5.5. Use snake_case and lowercase letters for class typedef names. Unless you have a very good reason to proceed otherwise, use the postfix "_type" for class typedef names.
+   5.5. Use snake_case and lowercase letters for class typedef names. Unless you have a very good reason to proceed otherwise, use the postfix "&#95;type" for class typedef names.
 
       class Foo : public Bar
       {
@@ -409,7 +443,7 @@ PixInsight Class Library - Coding Style Guidelines
          typedef uint64        stream_length_type; // right
          typedef Bar:data_type data_type;          // right
          typedef int           IndexType;          // wrong
-         typedef int64         stream_distance;    // warning - may lead to confusion without the _type postfix
+         typedef int64         stream_distance;    // warning - might lead to confusion without the _type postfix
 
          ...
       };
@@ -455,6 +489,11 @@ PixInsight Class Library - Coding Style Guidelines
             ...
          }
 
+         void DisableTransparency( bool disable = true )  // enable/disable idiom, nicely expressive
+         {
+            EnableTransparency( !disable );
+         }
+
       private:
 
          bool m_transparent;
@@ -493,7 +532,7 @@ PixInsight Class Library - Coding Style Guidelines
       int EnableLogFile( bool = true );        // right
       int EnableLogFile( bool enable = true ); // wrong
 
-   5.11. Use a block comment to signify the purpose of a Boolean function argument when its meaning is not obvious. Typically you can use formal parameter names in these comments.
+   5.11. Use a block comment to signify the purpose of a Boolean function argument when its meaning is not obvious. Typically you should use formal parameter names in these comments.
 
       MaximizeWindow( window, true/*notify*/ ); // right
 
@@ -515,17 +554,18 @@ PixInsight Class Library - Coding Style Guidelines
       #endif // __MyProcessInstance_h
 
 
-6. Pointers and References
+### 6. Pointers and References
 
    6.1. Do not place spaces between indirection and reference operators and type names.
 
-      int* pointerToObject; // right
-      int *pointerToObject; // wrong
+      int* pointerToObject;  // right
+      int *pointerToObject;  // wrong
+      int * pointerToObject; // wrong
 
       void CenterPoint( double& x, double& y, double* values ); // right
       void CenterPoint( double &x, double &y, double *values ); // wrong
 
-   6.2. Output reference and pointer parameters should be placed (in formal function definitions) before input parameters.
+   6.2. Output reference and pointer parameters should be placed at the beginning of the list of function parameters, always *before* input parameters.
 
       void GetPositionVector( double& x, double& y, double& z,      // right
                               int planetNumber, double julianDay );
@@ -535,9 +575,9 @@ PixInsight Class Library - Coding Style Guidelines
 
 
 
-7. Virtual Member Functions
+### 7. Virtual Member Functions
 
-   7.1. Never omit the word 'virtual' in a reimplementation of a virtual member function.
+   7.1. Never omit the word 'virtual' in a reimplementation of a virtual or pure virtual member function.
 
       class Base
       {

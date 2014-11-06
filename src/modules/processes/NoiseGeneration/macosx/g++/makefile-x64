@@ -1,0 +1,83 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.93
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Tue, 28 Oct 2014 18:17:01 GMT
+# Project id ...... NoiseGeneration
+# Project type .... Module
+# Platform ........ MacOSX/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/NoiseGeneration/macosx/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/NoiseGeneration-pxm.dylib
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../NoiseGenerationModule.cpp \
+../../NoiseGeneratorInstance.cpp \
+../../NoiseGeneratorInterface.cpp \
+../../NoiseGeneratorParameters.cpp \
+../../NoiseGeneratorProcess.cpp \
+../../SimplexNoiseInstance.cpp \
+../../SimplexNoiseInterface.cpp \
+../../SimplexNoiseParameters.cpp \
+../../SimplexNoiseProcess.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/NoiseGenerationModule.o \
+./x64/Release/NoiseGeneratorInstance.o \
+./x64/Release/NoiseGeneratorInterface.o \
+./x64/Release/NoiseGeneratorParameters.o \
+./x64/Release/NoiseGeneratorProcess.o \
+./x64/Release/SimplexNoiseInstance.o \
+./x64/Release/SimplexNoiseInterface.o \
+./x64/Release/SimplexNoiseParameters.o \
+./x64/Release/SimplexNoiseProcess.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/NoiseGenerationModule.d \
+./x64/Release/NoiseGeneratorInstance.d \
+./x64/Release/NoiseGeneratorInterface.d \
+./x64/Release/NoiseGeneratorParameters.d \
+./x64/Release/NoiseGeneratorProcess.d \
+./x64/Release/SimplexNoiseInstance.d \
+./x64/Release/SimplexNoiseInterface.d \
+./x64/Release/SimplexNoiseParameters.d \
+./x64/Release/SimplexNoiseProcess.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/NoiseGeneration-pxm.dylib: $(OBJ_FILES)
+	clang++ -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.8 -fPIC -headerpad_max_install_names -dynamiclib -install_name @executable_path/NoiseGeneration-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/NoiseGeneration-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/NoiseGeneration-pxm.dylib
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/NoiseGeneration-pxm.dylib $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	clang++ -c -pipe -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.8 -fPIC -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -O3 -mtune=generic -mssse3 -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

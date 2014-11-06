@@ -1,0 +1,146 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard NoiseGeneration Process Module Version 01.00.02.0206
+// ****************************************************************************
+// NoiseGeneratorIcon.xpm - Released 2014/11/06 17:11:45 UTC
+// ****************************************************************************
+// This file is part of the standard NoiseGeneration PixInsight module.
+//
+// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+
+/* XPM */
+static const char* NoiseGeneratorIcon_XPM[] = {
+/* columns rows colors chars-per-pixel */
+"24 24 65 1",
+": c #3EB45B",
+"n c #9E8ABE",
+"q c #D4687F",
+"e c #F8BD93",
+"j c #0B5AFB",
+"0 c #E48309",
+"k c #691F0B",
+"# c #C56BCC",
+". c #BEA174",
+"c c #C9ABD4",
+"@ c #8E2C10",
+"D c #22C5AC",
+"v c #8321BF",
+"F c #8964DD",
+"7 c #800EA7",
+"C c #315094",
+"1 c #8C5209",
+"+ c #6FBD8E",
+"a c #D3FCF6",
+"y c #A3C5D1",
+"b c #1506A9",
+"u c #19F3E6",
+"& c #11DB43",
+"z c #58333D",
+"r c #5FE92A",
+"m c #0513D4",
+"< c #D7779E",
+"X c #8645F6",
+"- c #12BF64",
+"w c #5C4BE8",
+"  c None",
+"; c #E10ABE",
+"N c #E7C463",
+"M c #D7CB59",
+"d c #653AE0",
+"8 c #163E85",
+"g c #63749E",
+"V c #ACC460",
+"t c #621113",
+"> c #EAE6D5",
+"O c #3526CC",
+"o c #4A9EF2",
+"f c #37E352",
+"s c #AE0CA1",
+"i c #7324D6",
+"2 c #961654",
+"Z c #056AD4",
+"A c #9631C2",
+"5 c #60CF25",
+"h c #798804",
+"= c #EFA6B1",
+"% c #72A55E",
+"* c #9DD27E",
+"B c #8CB2A9",
+"$ c #A7EE46",
+"3 c #458479",
+"S c #1E98F3",
+"x c #3C09D5",
+"4 c #6D4F79",
+"6 c #4A4738",
+"l c #BBB884",
+"G c #A09B59",
+", c #91B863",
+"9 c #7279A8",
+"p c #E81D42",
+/* pixels */
+"                        ",
+" ..XXXoooOOO+++@@@###$$ ",
+" ..XXXoooOOO+++@@@###$$ ",
+" %%&&&***===---;;;:::>> ",
+" %%&&&***===---;;;:::>> ",
+" %%&&&***===---;;;:::>> ",
+" ,,<<<11122233344455566 ",
+" ,,<<<11122233344455566 ",
+" ,,<<<11122233344455566 ",
+" 77888999000qqqwwweeerr ",
+" 77888999000qqqwwweeerr ",
+" 77888999000qqqwwweeerr ",
+" ttyyyuuuiiipppaaasssdd ",
+" ttyyyuuuiiipppaaasssdd ",
+" ttyyyuuuiiipppaaasssdd ",
+" ffggghhhjjjkkklllzzzxx ",
+" ffggghhhjjjkkklllzzzxx ",
+" ffggghhhjjjkkklllzzzxx ",
+" ccvvvbbbnnnmmmMMMNNNBB ",
+" ccvvvbbbnnnmmmMMMNNNBB ",
+" ccvvvbbbnnnmmmMMMNNNBB ",
+" VVCCCZZZAAASSSDDDFFFGG ",
+" VVCCCZZZAAASSSDDDFFFGG ",
+"                        "
+};
+
+// ****************************************************************************
+// EOF NoiseGeneratorIcon.xpm - Released 2014/11/06 17:11:45 UTC

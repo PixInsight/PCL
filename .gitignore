@@ -1,0 +1,31 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+# Dependency files
+*.d
+# Precompiled Headers
+*.gch
+*.pch
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+# Fortran module files
+*.mod
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+# Executables
+*.exe
+*.out
+*.app
+# MSVC working files
+*.sdf
+*.suo
+*.log
+*.tlog
+*.lastbuildstate

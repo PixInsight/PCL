@@ -32,25 +32,25 @@ Here is a list of subdirectories, along with descriptions of the files therein. 
    Windows        : [PCL] = C:\PCL
 </dd></dl>
 
-[PCL]/include/pcl
+**[PCL]/include/pcl**
 
 <dl><dd>
    Standard PCL C++ header files. These files are necessary for development of PixInsight modules.
 </dd></dl>
 
-[PCL]/src/3rdparty
+**[PCL]/src/3rdparty**
 
 <dl><dd>
    Some third-party libraries, mainly file format support libraries, used by the PixInsight modules included in this distribution. The CFITSIO and JasPer libraries include custom modifications, which are conveniently identified in the source code (search for the 'CUSTOM CODE' string).
 </dd></dl>
 
-[PCL]/src/modules/file-formats
+**[PCL]/src/modules/file-formats**
 
 <dl><dd>
    Open-source PixInsight file format modules with complete source code.
 </dd></dl>
 
-[PCL]/src/modules/processes
+**[PCL]/src/modules/processes**
 
 <dl><dd>
    Open-source PixInsight process modules, with complete source code. These source codes are ready for compilation and form an excellent body of development reference material.
@@ -60,49 +60,49 @@ Here is a list of subdirectories, along with descriptions of the files therein. 
    For each [module_name] module, makefiles and projects are available on the following subdirectories:
 </dd></dl>
 
-[PCL]/src/modules/file-formats/[module_name]/freebsd/g++
-[PCL]/src/modules/processes/[module_name]/freebsd/g++
+**[PCL]/src/modules/file-formats/[module_name]/freebsd/g++**<br/>
+**[PCL]/src/modules/processes/[module_name]/freebsd/g++**
 
 <dl><dd>
    Makefiles for FreeBSD 10 with the system clang C++ compiler
 </dd></dl>
 
-[PCL]/src/modules/file-formats/[module_name]/linux/g++
-[PCL]/src/modules/processes/[module_name]/linux/g++
+**[PCL]/src/modules/file-formats/[module_name]/linux/g++**<br/>
+**[PCL]/src/modules/processes/[module_name]/linux/g++**
 
 <dl><dd>
    Makefiles for Linux with GCC ]= 4.7 (4.8.2 or higher recommended)
 </dd></dl>
 
-[PCL]/src/modules/file-formats/[module_name]/macosx/g++
-[PCL]/src/modules/processes/[module_name]/macosx/g++
+**[PCL]/src/modules/file-formats/[module_name]/macosx/g++**<br/>
+**[PCL]/src/modules/processes/[module_name]/macosx/g++**
 
 <dl><dd>
    Makefiles for Mac OS X ]= 10.8 with clang C++ compiler version ]= 5.0
 </dd></dl>
 
-[PCL]/src/modules/file-formats/[module_name]/windows/vc10
-[PCL]/src/modules/processes/[module_name]/windows/vc10
+**[PCL]/src/modules/file-formats/[module_name]/windows/vc10**<br/>
+**[PCL]/src/modules/processes/[module_name]/windows/vc10**
 
 <dl><dd>
    Project files (.vcxproj) for Microsoft Visual C++ 2010
 </dd></dl>
 
-[PCL]/src/modules/file-formats/[module_name]/windows/vc11
-[PCL]/src/modules/processes/[module_name]/windows/vc11
+**[PCL]/src/modules/file-formats/[module_name]/windows/vc11**<br/>
+**[PCL]/src/modules/processes/[module_name]/windows/vc11**
 
 <dl><dd>
    Project files (.vcxproj) for Microsoft Visual C++ 2012
 </dd></dl>
 
-[PCL]/src/modules/file-formats/[module_name]/windows/vc12
-[PCL]/src/modules/processes/[module_name]/windows/vc12
+**[PCL]/src/modules/file-formats/[module_name]/windows/vc12**<br/>
+**[PCL]/src/modules/processes/[module_name]/windows/vc12**
 
 <dl><dd>
    Project files (.vcxproj) for Microsoft Visual C++ 2013
 </dd></dl>
 
-[PCL]/src/pcl
+**[PCL]/src/pcl**
 
 <dl><dd>
    The complete source code of PixInsight Class Library (PCL). Along with the PCL headers distributed on the [PCL]/include/pcl directory, you can use these source files with the provided makefiles and project files to rebuild PCL on your system.
@@ -131,7 +131,7 @@ In order to use the PCL build system to compile and link PCL-based code, a numbe
 
 With the following environment variables correctly defined, you can generate makefiles and project files for your modules on all platforms automatically with the Makefile Generator script, which we have included as a standard tool on all PixInsight Core distributions.
 
-PCLDIR
+**PCLDIR**
 
 <dl><dd>
    PCL root directory. The value of this variable must be the full directory path where the PCL distribution has been installed on your computer. On FreeBSD, Linux and Mac OS X, this variable should normally be (assuming that you have installed PCL on a 'PCL' subdirectory of your home directory):
@@ -157,53 +157,54 @@ PCLDIR
    C:\PCL
 </dd></dl></dd></dl>
 
-PCLBINDIR32 (* Obsolete *)
+**PCLBINDIR32** (* Obsolete *)
 
 <dl><dd>
    Binary files subdirectory for 32-bit executables and shared objects. This variable has been deprecated and is no longer necessary. PCL development on 32-bit platforms is no longer supported.
 </dd></dl>
 
-PCLBINDIR64
+**PCLBINDIR64**
 
 <dl><dd>
    Binary files subdirectory for 64-bit executables and shared objects. Normally this variable should be equal to $PCLDIR/bin.
 </dd></dl>
 
-PCLBINDIR
+**PCLBINDIR**
 
 <dl><dd>
    PCL binaries directory. This variable should be equal to PCLBINDIR64.
 </dd></dl>
 
-PCLLIBDIR32 (* Obsolete *)
+**PCLLIBDIR32** (* Obsolete *)
 
 <dl><dd>
    32-bit libraries subdirectory. This variable has been deprecated and is no longer necessary. PCL development on 32-bit platforms is no longer supported.
 </dd></dl>
 
-PCLLIBDIR64
+**PCLLIBDIR64**
 
 <dl><dd>
    64-bit libraries subdirectory. This variable should normally be equal to $PCLDIR/lib/[platform]/x64 on each platform.
 </dd></dl>
 
-PCLLIBDIR
+**PCLLIBDIR**
 
 <dl><dd>
    PCL library files directory. This variable should be equal to PCLLIBDIR64.
 </dd></dl>
 
-PCLINCDIR
+**PCLINCDIR**
 
 <dl><dd>
    PCL include files directory. Should be equal to $PCLDIR/include.
 </dd></dl>
 
-PCLSRCDIR
+**PCLSRCDIR**
 
 <dl><dd>
    PCL source files directory. Should be equal to $PCLDIR/src.
 </dd></dl>
+
 
 
 ******

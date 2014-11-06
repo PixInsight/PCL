@@ -27,16 +27,16 @@ This PCL repository includes all standard PCL headers and source code, along wit
 
 Here is a list of subdirectories, along with descriptions of the files therein. We assume that the PCL distribution has been installed on a <PCL> directory on your local filesystem; for example:
 
-   UNIX and Linux : <PCL> = $HOME/PCL
-   Windows        : <PCL> = C:\PCL
+      UNIX and Linux : <PCL> = $HOME/PCL
+      Windows        : <PCL> = C:\PCL
 
 <PCL>/include/pcl
 
-  Standard PCL C++ header files. These files are necessary for development of PixInsight modules.
+      Standard PCL C++ header files. These files are necessary for development of PixInsight modules.
 
 <PCL>/src/3rdparty
 
-  Some third-party libraries, mainly file format support libraries, used by the PixInsight modules included in this distribution. The CFITSIO and JasPer libraries include custom modifications, which are conveniently identified in the source code (search for the 'CUSTOM CODE' string).
+      Some third-party libraries, mainly file format support libraries, used by the PixInsight modules included in this distribution. The CFITSIO and JasPer libraries include custom modifications, which are conveniently identified in the source code (search for the 'CUSTOM CODE' string).
 
 <PCL>/src/modules/file-formats
 

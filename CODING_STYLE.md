@@ -1,7 +1,7 @@
 PixInsight Class Library - Coding Style Guidelines
 --------------------------------------------------
 
-Version 0.2 - 2014 November 03<br/>
+Version 0.2 - 2014 November 9<br/>
 *Initial release.*
 
 --------------------------------------------------
@@ -119,8 +119,10 @@ Version 0.2 - 2014 November 03<br/>
 
       x = a + b;     // right
       x = a+b;       // wrong
+
       y = a + b*c;   // right - spacing improves understanding of operator precedences
       z = (a + b)/c; // right - spacing improves readability of numerical expressions
+
       x = a ? b : c; // right - ternary operator
       x = a ? b:c;   // wrong
 
@@ -128,10 +130,13 @@ Version 0.2 - 2014 November 03<br/>
 
       delete foo, foo = 0;            // right
       delete foo , foo = 0;           // wrong
+
       for ( int i = 0; i < 3; ++i )   // right
       for ( int i = 0 ; i < 3 ; ++i ) // wrong
+
       DoSomething();                  // right
       Dosomething() ;                 // wrong
+
       CallMeFoo( a, b, c );           // right
       CallMeFoo( a, b , c );          // wrong
 
@@ -161,21 +166,26 @@ Version 0.2 - 2014 November 03<br/>
 
       if ( x == 0 )  // right
       if( x == 0 )   // wrong
-      if  ( x == 0 ) // wrong, unless spaces are used to vertically align a set of related control statements.
+      if  ( x == 0 ) // wrong, unless spaces are used to vertically align a set
+                     //   of related control statements.
 
    2.8. Place one space to separate a control expression from its enclosing parentheses.
 
       if ( x == 0 )             // right
       if (x == 0)               // wrong
-      if (  x == 0 )            // wrong, unless spaces are used to vertically align a set of related control statements.
+      if (  x == 0 )            // wrong, unless spaces are used to vertically
+                                //   align a set of related control statements.
+
       for ( i = 0; i < x; ++i ) // right
       for (i = 0; i < x; ++i )  // wrong
+
       while ( ++n  );           // wrong
 
    2.9. Do not place spaces between a function and its left parenthesis.
 
       SomeFunc( x );  // right
-      SomeFunc ( x ); // wrong, unless spaces are used to vertically align arguments or parameters in a set of related items.
+      SomeFunc ( x ); // wrong, unless spaces are used to vertically align
+                      //   arguments or parameters in a set of related items.
 
    2.10. Place one space to separate a list of function arguments or formal parameters from the opening and closing parentheses in a function call, function declaration, or function definition.
 
@@ -183,15 +193,18 @@ Version 0.2 - 2014 November 03<br/>
       SomeFunc( 0 );       // right
       SomeFunc(0);         // wrong
       SomeFunc(0 );        // wrong
-      SomeFunc(  0 );      // wrong, unless spaces are used to vertically align arguments or parameters in a set of related items.
+      SomeFunc(  0 );      // wrong, unless spaces are used to vertically align 
+                           //   arguments or parameters in a set of related items.
 
    2.11. Place one space after a comma separator in a list of arguments or formal parameters in a function call, function declaration, or function definition.
 
       SomeFunc( x, y, z );        // right
       SomeFunc( x,y,z );          // wrong
+
       SomeFunc( x+2, y*z, k+1 );  // right
       SomeFunc( x+2,y*z,k+1 );    // wrong
-      SomeFunc( x+2,  y*z, k+1 ); // wrong, unless spaces are used to vertically align arguments or parameters in a set of related items.
+      SomeFunc( x+2,  y*z, k+1 ); // wrong, unless spaces are used to vertically
+                                  //   align arguments or parameters in a set of related items.
 
    2.12. Do not place spaces to separate expressions from parentheses used to modify precedence of evaluation.
 
@@ -207,6 +220,7 @@ Version 0.2 - 2014 November 03<br/>
 
       new Foo[ n ];         // right
       new Foo[n];           // wrong
+
       const char bar[ 10 ]; // right
       const char bar[10];   // wrong
 
@@ -234,6 +248,7 @@ Version 0.2 - 2014 November 03<br/>
 
       if ( x )        // right
          y = 0;       // right
+
       if ( y ) z = 1; // generally wrong, but can be valid for very brief statements.
 
    3.2. An else statement must get its own line, and must be lined up with its corresponding if statement.
@@ -302,8 +317,8 @@ Version 0.2 - 2014 November 03<br/>
          ...
       }
 
-      if ( condition ) { ... }    // generally wrong, but can be admissible for very small code blocks.
-      while ( condition ) { ... } // ...
+      if ( condition ) { ... }    // generally wrong, but can be admissible
+      while ( condition ) { ... } //   for very small code blocks.
 
       if ( condition ) {       // wrong
          DoSomething();
@@ -319,9 +334,7 @@ Version 0.2 - 2014 November 03<br/>
    4.2. Control clauses without a body must use empty braces after the control statement, separated with one space.
 
       for ( int i = 0; i < n; ++i ) {}  // right
-
       for ( int i = 0; i < n; ++i );    // wrong
-
       for ( int i = 0; i < n; ++i ) { } // wrong - should not place spaces between braces here
 
    4.3. One-line control clauses should not use braces unless comments are included before or after the one-line statement.
@@ -378,12 +391,18 @@ Version 0.2 - 2014 November 03<br/>
 
       void Foo();              // right (function name, single word)
       void foo();              // wrong
+
       float SomeFunction();    // right (function name, several words)
       float some_function();   // wrong
-      float Some_Function();   // wrong, unless there is a really good reason to use an underscore as a word separator
+      float Some_Function();   // wrong, unless you have a really good reason
+                               //   to use an underscore as a word separator
+
       class TheBarClass;       // right (class name)
+
       int Rect::Diagonal();    // right (function member)
+
       int Point::x;            // right (data member)
+
       String ConvertToHTML();  // right (function name, acronym)
       String ConvertToHtml();  // wrong
 
@@ -443,7 +462,7 @@ Version 0.2 - 2014 November 03<br/>
          typedef uint64        stream_length_type; // right
          typedef Bar:data_type data_type;          // right
          typedef int           IndexType;          // wrong
-         typedef int64         stream_distance;    // warning - might lead to confusion without the _type postfix
+         typedef int64         stream_distance;    // warning - may lead to confusion
 
          ...
       };
@@ -527,8 +546,9 @@ Version 0.2 - 2014 November 03<br/>
 
    5.10. Do not use meaningless or redundant variable names in function declarations.
 
-      void FileSize( size_type );              // right
-      void FileSize( size_type size );         // wrong
+      void SetFileSize( size_type );           // right
+      void SetFileSize( size_type size );      // wrong
+
       int EnableLogFile( bool = true );        // right
       int EnableLogFile( bool enable = true ); // wrong
 

@@ -31,37 +31,45 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\base64.h" />
-    <ClInclude Include="..\..\baseclient.h" />
+    <ClInclude Include="..\..\BaseClient.h" />
+    <ClInclude Include="..\..\BaseClientImpl.h" />
     <ClInclude Include="..\..\basedevice.h" />
     <ClInclude Include="..\..\CCDFrameInstance.h" />
     <ClInclude Include="..\..\CCDFrameInterface.h" />
     <ClInclude Include="..\..\CCDFrameProcess.h" />
+    <ClInclude Include="..\..\error.h" />
+    <ClInclude Include="..\..\IINDIProperty.h" />
     <ClInclude Include="..\..\indiapi.h" />
     <ClInclude Include="..\..\indibase.h" />
     <ClInclude Include="..\..\indicom.h" />
     <ClInclude Include="..\..\indidevapi.h" />
     <ClInclude Include="..\..\indiproperty.h" />
+    <ClInclude Include="..\..\INDIPropertyBuilder.h" />
+    <ClInclude Include="..\..\IPixInsightINDIInstance.h" />
     <ClInclude Include="..\..\lilxml.h" />
     <ClInclude Include="..\..\PixInsightINDIclient.h" />
     <ClInclude Include="..\..\PixInsightINDIInstance.h" />
     <ClInclude Include="..\..\PixInsightINDIInterface.h" />
     <ClInclude Include="..\..\PixInsightINDIModule.h" />
     <ClInclude Include="..\..\PixInsightINDIParameters.h" />
+    <ClInclude Include="..\..\PixInsightINDIParamListTypes.h" />
     <ClInclude Include="..\..\PixInsightINDIProcess.h" />
     <ClInclude Include="..\..\PropertyNode.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\base64.c" />
-    <ClCompile Include="..\..\baseclient.cpp" />
+    <ClCompile Include="..\..\BaseClientImpl.cpp" />
     <ClCompile Include="..\..\basedevice.cpp" />
     <ClCompile Include="..\..\CCDFrameInstance.cpp" />
     <ClCompile Include="..\..\CCDFrameInterface.cpp" />
     <ClCompile Include="..\..\CCDFrameProcess.cpp" />
+    <ClCompile Include="..\..\IINDIProperty.cpp" />
     <ClCompile Include="..\..\indicom.c" />
     <ClCompile Include="..\..\indiproperty.cpp" />
+    <ClCompile Include="..\..\INDIPropertyBuilder.cpp" />
     <ClCompile Include="..\..\lilxml.c" />
-    <ClCompile Include="..\..\PixInsightINDIInstance.cpp" />
     <ClCompile Include="..\..\PixInsightINDIclient.cpp" />
+    <ClCompile Include="..\..\PixInsightINDIInstance.cpp" />
     <ClCompile Include="..\..\PixInsightINDIInterface.cpp" />
     <ClCompile Include="..\..\PixInsightINDIModule.cpp" />
     <ClCompile Include="..\..\PixInsightINDIParameters.cpp" />
@@ -178,7 +186,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>$(PCLINCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\pthreads-w32-2-9-1-release\Pre-built.2\include;$(PCLINCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;__PCL_WINDOWS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -196,9 +204,9 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>PCL-pxi.lib;pthreadVCE2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\PixInsightINDI-pxm.dll</OutputFile>
-      <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\pthreads-w32-2-9-1-release\Pre-built.2\lib\x86;$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>

@@ -232,9 +232,7 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 				if (indiClient->serverIsConnected())
 					indiClient->disconnectServer();
 
-				if (!indiClient->serverIsConnected()){
-					GUI->ServerMessage_Label.SetText("Successfully disconnected from server");
-				}
+
 				GUI->UpdateDeviceList_Timer.Stop();
 				GUI->UpdatePropertyList_Timer.Stop();
 				GUI->UpdateServerMessage_Timer.Stop();
@@ -242,6 +240,17 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 				GUI->DeviceList_TreeBox.Clear();
 				// clear property list
 				GUI->PropertyList_TreeBox.Clear();
+				// build up tree after next connect
+				m_deviceNodeMap.clear();
+				m_propertyNodeMap.clear();
+				m_elementNodeMap.clear();
+				m_createPropertyTreeBox=true;
+
+
+				if (!indiClient->serverIsConnected()) {
+					GUI->ServerMessage_Label.SetText("Successfully disconnected from server");
+				}
+
             }
             ERROR_HANDLER
 		}
@@ -269,9 +278,6 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 						(*it)->Check(false);
 					}
 					(*it)->SetCheckable(false);
-
-					
-
 				}
 				
 			}
@@ -596,15 +602,18 @@ SetPropertyDialog::SetPropertyDialog():Dialog(),m_instance(NULL){
 
 
 void PixInsightINDIInterface::UpdatePropertyList(){
-	m_mutex.Lock();
 	GUI->PropertyList_TreeBox.DisableUpdates();
 	std::vector<INDIPropertyListItem> itemsToBeRemoved;
 
-	if (indiClient.get() == 0)
+	if (indiClient.get() == 0){
+		GUI->PropertyList_TreeBox.EnableUpdates();
 		return;
+	}
 
-	if (instance.p_propertyList.Begin()==instance.p_propertyList.End())
+	if (instance.p_propertyList.Begin()==instance.p_propertyList.End()){
+		GUI->PropertyList_TreeBox.EnableUpdates();
 		return;
+	}
 
 	bool createDeviceTreeBox  =m_createPropertyTreeBox;
 	bool createPropertyTreeBox=m_createPropertyTreeBox;
@@ -634,15 +643,14 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 				propertyNode=propertyIter->second;
 			}
 			else {
-				// remove Property fome childs vector of device (parent) node
+				// remove Property from childs vector of device (parent) node
 				deviceNode->RemoveChild(propertyIter->second);
 				// delete property
 				delete propertyIter->second;
 				// remove map entry
 				m_propertyNodeMap.erase(propertyIter);
 			}
-		} else if (!iter->PropertyRemovalFlag)
-		{
+		} else if (!iter->PropertyRemovalFlag){
 			PropertyNode* child = new PropertyNode(deviceNode,iter->Device,iter->Property);
 			propertyNode = child;
 			propertyNode->getTreeBoxNode()->SetText(0,iter->Property);
@@ -683,7 +691,7 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 		instance.p_propertyList.Remove(itemsToBeRemoved[i]);
 	}
 
-	m_mutex.Unlock();
+
 }
 
 void SetPropertyDialog::Button_Click( Button& sender, bool checked ){
@@ -707,6 +715,8 @@ void SetPropertyDialog::Button_Click( Button& sender, bool checked ){
 				(*it)->accept(pVisitor, newPropertyListItem.PropertyKey,
 						newPropertyListItem.NewPropertyValue);
 			}
+		} else {
+			m_instance->clearNewPropertyList();
 		}
 		Ok();
 	}

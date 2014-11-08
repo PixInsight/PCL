@@ -199,8 +199,8 @@ bool PixInsightINDIInstance::sendNewProperty(bool isAsynchCall) {
 		return false; //Nothing to do
 
 	for (pcl::Array<INDINewPropertyListItem>::iterator iter=p_newPropertyList.Begin(); iter!=p_newPropertyList.End(); ++iter){
-		if (iter->NewPropertyValue.IsEmpty()){
-		        Console().WriteLn("Empty property value ... exiting.");
+		if (iter->NewPropertyValue.IsEmpty()) {
+			Console().WriteLn("Empty property value ... exiting.");
 			return false;
 		}
 		// initialize
@@ -308,7 +308,6 @@ bool PixInsightINDIInstance::sendNewProperty(bool isAsynchCall) {
 		indiClient.get()->sendNewSwitch(switchVecProp);
 		if (switchVecProp!=NULL){
 			while (switchVecProp->s!=IPS_OK && switchVecProp->s!=IPS_IDLE &&  !p_doAbort && !m_internalAbortFlag && !isAsynchCall){
-				p_doAbort=p_doAbort||Console().AbortRequested();
 				if (switchVecProp->s==IPS_ALERT){
 					writeCurrentMessageToConsole();
 					m_internalAbortFlag=false;
@@ -328,7 +327,6 @@ bool PixInsightINDIInstance::sendNewProperty(bool isAsynchCall) {
 		// wait until completed or abort
 		if (numberVecProp!=NULL){
 			while (numberVecProp->s!=IPS_OK && numberVecProp->s!=IPS_IDLE && !p_doAbort && !m_internalAbortFlag && !isAsynchCall){
-				p_doAbort=p_doAbort||Console().AbortRequested();
 				if (numberVecProp->s==IPS_ALERT){
 					writeCurrentMessageToConsole();
 					m_internalAbortFlag=false;
@@ -346,7 +344,6 @@ bool PixInsightINDIInstance::sendNewProperty(bool isAsynchCall) {
 		// wait until completed or abort
 		if (textVecProp!=NULL){
 			while (textVecProp->s!=IPS_OK && textVecProp->s!=IPS_IDLE && !p_doAbort && !m_internalAbortFlag && !isAsynchCall){
-				p_doAbort=p_doAbort||Console().AbortRequested();
 				if (textVecProp->s==IPS_ALERT){
 					writeCurrentMessageToConsole();
 					m_internalAbortFlag=false;
@@ -434,22 +431,31 @@ bool PixInsightINDIInstance::ExecuteGlobal()
 	   Console().WriteLn(String().Format("Device=%s, Property=%s, Element=%s",IsoString(device).c_str(),IsoString(property).c_str(),IsoString(element).c_str()));
 	   if (getINDIPropertyItem(device,property,element, propItem)){
 		   p_getPropertyReturnValue=propItem.PropertyValue;
-		   Console().WriteLn(String().Format("Vaule=%s",IsoString(p_getPropertyReturnValue).c_str()));
+		   Console().WriteLn(String().Format("Value=%s",IsoString(p_getPropertyReturnValue).c_str()));
 	   }
 	   else  {
 		   Console().WriteLn(String().Format("Error: Could not get value for property %s.",IsoString(p_getPropertyParam).c_str()));
 	   }
    } else if (p_command == String("SET_ASYNCH")){
 	   bool isAsynchCall=true;
-	   sendNewProperty(isAsynchCall);
+	   bool wasSuccessful=sendNewProperty(isAsynchCall);
+	   if (!wasSuccessful){
+		   // cleanup new propertyList
+		   this->p_newPropertyList.Clear();
+	   }
    } else if (p_command == String("REGISTER_INSTANCE")){
 	   indiClient.get()->registerScriptInstance(this);
    }
    else if (p_command == String("RELEASE_INSTANCE")){
    	   indiClient.get()->registerScriptInstance(NULL);
    }
-   else
-	   sendNewProperty();
+   else{
+		bool wasSuccessful = sendNewProperty();
+		if (!wasSuccessful) {
+			// cleanup new propertyList
+			this->p_newPropertyList.Clear();
+		}
+	}
 
 
    // disable abort to continue running

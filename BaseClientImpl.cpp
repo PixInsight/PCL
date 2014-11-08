@@ -337,6 +337,7 @@ void INDI::BaseClientImpl::listenINDI()
 #else
                     close(sockfd);
 #endif
+                    sConnected = false;
                     break;
                 }
                 else

@@ -95,6 +95,7 @@ public:
    void doInternalAbort() {m_internalAbortFlag=true;}
    bool getInternalAbortFlag() {return m_internalAbortFlag;}
    void setInternalAbortFlag(bool doAbort) {m_internalAbortFlag=doAbort;}
+   void clearNewPropertyList(){p_newPropertyList.Clear();}
 private:
    DeviceListType          p_deviceList;
    PropertyListType        p_propertyList;

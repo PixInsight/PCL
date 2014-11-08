@@ -178,7 +178,7 @@ function mainDialog()
      periodicTimer.stop();
      indi.sendNewPropertyArrayAsynch(propertyArray);
      this.dialog.curRA_Edit.update();
-     periodicTimer.start();
+     //periodicTimer.start();
 
    }
 
@@ -206,13 +206,17 @@ function mainDialog()
    this.moveNorth_Button.toolTip = "<p>Move telescope towards North</p>";
    this.moveNorth_Button.onPress = function (){
      var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_NS/MOTION_NORTH","INDI_SWITCH","ON"]]
+     periodicTimer.stop();
      indi.sendNewPropertyArrayAsynch(propertyArray);
+     //periodicTimer.start();
    }
 
    this.moveNorth_Button.onRelease = function (){
      var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_NS/MOTION_NORTH","INDI_SWITCH","ON"]]
+     periodicTimer.stop();
      indi.sendNewPropertyArrayAsynch(propertyArray);
      this.dialog.curDEC_Edit.update();
+     //periodicTimer.start();
    }
 
    this.MotionControl_HSizer = new HorizontalSizer;
@@ -229,13 +233,17 @@ function mainDialog()
    this.moveSouth_Button.toolTip = "<p>Move telescope towards South</p>";
    this.moveSouth_Button.onPress = function (){
      var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_NS/MOTION_SOUTH","INDI_SWITCH","ON"]]
+     periodicTimer.stop();
      indi.sendNewPropertyArrayAsynch(propertyArray);
+     //periodicTimer.start();
    }
 
    this.moveSouth_Button.onRelease = function (){
      var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_NS/MOTION_SOUTH","INDI_SWITCH","ON"]]
+     periodicTimer.stop();
      indi.sendNewPropertyArrayAsynch(propertyArray);
      this.dialog.curDEC_Edit.update();
+     //periodicTimer.start();
    }
 
    this.moveWest_Button = new PushButton(this);
@@ -243,13 +251,17 @@ function mainDialog()
    this.moveWest_Button.toolTip = "<p>Move telescope towards West</p>";
    this.moveWest_Button.onPress = function (){
      var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_WE/MOTION_WEST","INDI_SWITCH","ON"]]
+     periodicTimer.stop();
      indi.sendNewPropertyArrayAsynch(propertyArray);
+     //periodicTimer.start();
    }
 
    this.moveWest_Button.onRelease = function (){
      var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_WE/MOTION_WEST","INDI_SWITCH","ON"]]
+     periodicTimer.stop();
      indi.sendNewPropertyArrayAsynch(propertyArray);
       this.dialog.curRA_Edit.update();
+      //periodicTimer.start();
    }
 
    this.moveEast_Button = new PushButton(this);
@@ -257,13 +269,17 @@ function mainDialog()
    this.moveEast_Button.toolTip = "<p>Move telescope towards East</p>";
    this.moveEast_Button.onPress = function (){
      var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_WE/MOTION_EAST","INDI_SWITCH","ON"]]
+     periodicTimer.stop();
      indi.sendNewPropertyArrayAsynch(propertyArray);
+     //periodicTimer.start();
    }
 
    this.moveEast_Button.onRelease = function (){
      var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_WE/MOTION_EAST","INDI_SWITCH","ON"]]
+     periodicTimer.stop();
      indi.sendNewPropertyArrayAsynch(propertyArray);
      this.dialog.curRA_Edit.update();
+     //periodicTimer.start();
    }
 
    this.MotionControlNS_VSizer = new VerticalSizer;
@@ -315,7 +331,9 @@ function mainDialog()
    this.Park_Button.toolTip = "<p>Move telescope towards the parking position.</p>";
    this.Park_Button.onPress = function (){
      var propertyArray=[["/" + currentTelescope + "/TELESCOPE_PARK/PARK","INDI_SWITCH","ON"]]
+     periodicTimer.stop();
      indi.sendNewPropertyArray(propertyArray);
+     //periodicTimer.start();
    }
 
    this.Unpark_Button = new PushButton(this);
@@ -323,7 +341,9 @@ function mainDialog()
    this.Unpark_Button.toolTip = "<p>Unpark telescope.</p>";
    this.Unpark_Button.onPress = function (){
      var propertyArray=[["/" + currentTelescope + "/TELESCOPE_PARK/PARK","INDI_SWITCH","ON"]]
+     periodicTimer.stop();
      indi.sendNewPropertyArray(propertyArray);
+     //periodicTimer.start();
    }
 
    this.Park_HSizer = new HorizontalSizer;
@@ -364,7 +384,7 @@ function mainDialog()
    this.solve_Button.toolTip = "<p>Start plate solving for current image.</p>";
 
    this.solve_Button.onClick = function (){
-
+      periodicTimer.stop();
       this.dialog.solver.SolveImage();
 
       var raInHours=this.dialog.solver.metadata.ra*24/360;
@@ -376,6 +396,7 @@ function mainDialog()
       var DEC=convertToHMS(decInHours);
 
       this.dialog.ImgDEC_Edit.text=DEC[0]+":" +DEC[1]+":"+DEC[2];
+      //periodicTimer.start();
    }
 
    this.center_Button = new PushButton(this);
@@ -390,8 +411,10 @@ function mainDialog()
      var propertyArray=[["/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA","INDI_NUMBER",raCor.toString()],
                         ["/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC","INDI_NUMBER",decCor.toString()]];
 
+     periodicTimer.stop();
      indi.sendNewPropertyArray(propertyArray);
      this.dialog.curRA_Edit.update();
+     //periodicTimer.start();
    }
 
    this.synch_Button = new PushButton(this);
@@ -399,7 +422,7 @@ function mainDialog()
    this.synch_Button.toolTip = "<p>Synchronize the image coordinates with the motor positions.</p>";
    this.synch_Button.onClick = function (){
 
-
+     periodicTimer.stop();
      var propertyArray=[["/" + currentTelescope + "/ON_COORD_SET/SYNC","INDI_SWITCH","ON"]]
      indi.sendNewPropertyArray(propertyArray);
 
@@ -413,7 +436,7 @@ function mainDialog()
 
      var propertyArray=[["/" + currentTelescope + "/ON_COORD_SET/TRACK","INDI_SWITCH","ON"]]
      indi.sendNewPropertyArray(propertyArray);
-
+     //periodicTimer.start();
    }
 
    this.ImageSolver_HSizer = new HorizontalSizer;

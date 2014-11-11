@@ -5,21 +5,21 @@
 namespace pcl {
 
 	IsoString PropertyUtils::getDevice(IsoString keyString){
-		int startpos = keyString.Find("/");
-		int endpos   = keyString.Find("/",1);
+		size_t startpos = keyString.Find("/");
+		size_t endpos   = keyString.Find("/",1);
 		return keyString.SubString(startpos+1,endpos-startpos-1);
 	}
 
 	IsoString PropertyUtils::getProperty(IsoString keyString){
-		int startpos = keyString.Find("/",1);
-		int endpos = keyString.Find("/",startpos+1);
+		size_t startpos = keyString.Find("/",1);
+		size_t endpos = keyString.Find("/",startpos+1);
 		return keyString.SubString(startpos+1,endpos-startpos-1);
 	}
 
 	IsoString PropertyUtils::getElement(IsoString keyString){
-		int startpos1 = keyString.Find("/",1);
-		int startpos2 = keyString.Find("/",startpos1+1);
-		int endpos = keyString.Find("/",startpos2+1);
+		size_t startpos1 = keyString.Find("/",1);
+		size_t startpos2 = keyString.Find("/",startpos1+1);
+		size_t endpos = keyString.Find("/",startpos2+1);
 		return keyString.SubString(startpos2+1,endpos-startpos2);
 	}
 

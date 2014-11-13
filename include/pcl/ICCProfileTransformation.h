@@ -173,7 +173,21 @@ public:
    void Add( const ICCProfile::handle profileHandle );
 
    /*!
-    * Returns a constant reference to the list of ICC profiles in this ICC
+    * Returns true if this object represents a valid color space transformation
+    * based on ICC color profiles.
+    *
+    * For this member function to return true, the underlying low-level
+    * transformation should have been created, either implicitly by using
+    * this object to apply a color transformation, or explicitly by calling
+    * Create().
+    */
+   bool IsValid() const
+   {
+      return m_transformation != 0;
+   }
+
+   /*!
+    * Returns a reference to the immutable list of ICC profiles in this ICC
     * profile transformation.
     */
    const profile_list& Profiles() const

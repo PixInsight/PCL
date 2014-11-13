@@ -2522,7 +2522,7 @@ String Variant::ToString() const
          if ( !m_data.charVectorValue->IsEmpty() )
             for ( int i = 0; ; )
             {
-               s.AppendFormat( "%02x", (*m_data.charVectorValue)[i] );
+               s.Append( String( int( (*m_data.charVectorValue)[i] ) ) );
                if ( ++i == m_data.charVectorValue->Length() )
                   break;
                s.Append( ',' );
@@ -2535,7 +2535,7 @@ String Variant::ToString() const
          if ( !m_data.byteVectorValue->IsEmpty() )
             for ( int i = 0; ; )
             {
-               s.AppendFormat( "%02x", (*m_data.byteVectorValue)[i] );
+               s.Append( String( unsigned( (*m_data.byteVectorValue)[i] ) ) );
                if ( ++i == m_data.byteVectorValue->Length() )
                   break;
                s.Append( ',' );
@@ -2629,7 +2629,7 @@ String Variant::ToString() const
                s.Append( '{' );
                for ( int j = 0; ; )
                {
-                  s.AppendFormat( "%02x", (*m_data.charMatrixValue)[i][j] );
+                  s.Append( String( int( (*m_data.charMatrixValue)[i][j] ) ) );
                   if ( ++j == m_data.charMatrixValue->Cols() )
                      break;
                   s.Append( ',' );
@@ -2650,7 +2650,7 @@ String Variant::ToString() const
                s.Append( '{' );
                for ( int j = 0; ; )
                {
-                  s.AppendFormat( "%02x", (*m_data.byteMatrixValue)[i][j] );
+                  s.Append( String( unsigned( (*m_data.byteMatrixValue)[i][j] ) ) );
                   if ( ++j == m_data.byteMatrixValue->Cols() )
                      break;
                   s.Append( ',' );
@@ -2789,8 +2789,18 @@ String Variant::ToString() const
          return s + '}';
       }
    case VariantType::ByteArray:
-      return String( String::const_schar_iterator( m_data.byteArrayValue->Begin() ),
-                     0, m_data.byteArrayValue->Length() );
+      {
+         String s = '{';
+         if ( !m_data.byteArrayValue->IsEmpty() )
+            for ( size_type i = 0; ; )
+            {
+               s.Append( String( unsigned( (*m_data.byteArrayValue)[i] ) ) );
+               if ( ++i == m_data.byteArrayValue->Length() )
+                  break;
+               s.Append( ',' );
+            }
+         return s + '}';
+      }
    case VariantType::String:
       return *m_data.stringValue;
    case VariantType::IsoString:
@@ -2927,7 +2937,7 @@ IsoString Variant::ToIsoString() const
          if ( !m_data.charVectorValue->IsEmpty() )
             for ( int i = 0; ; )
             {
-               s.AppendFormat( "%02x", (*m_data.charVectorValue)[i] );
+               s.Append( IsoString( int( (*m_data.charVectorValue)[i] ) ) );
                if ( ++i == m_data.charVectorValue->Length() )
                   break;
                s.Append( ',' );
@@ -2940,7 +2950,7 @@ IsoString Variant::ToIsoString() const
          if ( !m_data.byteVectorValue->IsEmpty() )
             for ( int i = 0; ; )
             {
-               s.AppendFormat( "%02x", (*m_data.byteVectorValue)[i] );
+               s.Append( IsoString( unsigned( (*m_data.byteVectorValue)[i] ) ) );
                if ( ++i == m_data.byteVectorValue->Length() )
                   break;
                s.Append( ',' );
@@ -3034,7 +3044,7 @@ IsoString Variant::ToIsoString() const
                s.Append( '{' );
                for ( int j = 0; ; )
                {
-                  s.AppendFormat( "%02x", (*m_data.charMatrixValue)[i][j] );
+                  s.Append( IsoString( int( (*m_data.charMatrixValue)[i][j] ) ) );
                   if ( ++j == m_data.charMatrixValue->Cols() )
                      break;
                   s.Append( ',' );
@@ -3055,7 +3065,7 @@ IsoString Variant::ToIsoString() const
                s.Append( '{' );
                for ( int j = 0; ; )
                {
-                  s.AppendFormat( "%02x", (*m_data.byteMatrixValue)[i][j] );
+                  s.Append( IsoString( unsigned( (*m_data.byteMatrixValue)[i][j] ) ) );
                   if ( ++j == m_data.byteMatrixValue->Cols() )
                      break;
                   s.Append( ',' );
@@ -3194,8 +3204,18 @@ IsoString Variant::ToIsoString() const
          return s + '}';
       }
    case VariantType::ByteArray:
-      return IsoString( IsoString::const_iterator( m_data.byteArrayValue->Begin() ),
-                        0, m_data.byteArrayValue->Length() );
+      {
+         IsoString s = '{';
+         if ( !m_data.byteArrayValue->IsEmpty() )
+            for ( size_type i = 0; ; )
+            {
+               s.Append( IsoString( unsigned( (*m_data.byteArrayValue)[i] ) ) );
+               if ( ++i == m_data.byteArrayValue->Length() )
+                  break;
+               s.Append( ',' );
+            }
+         return s + '}';
+      }
    case VariantType::String:
       return IsoString( *m_data.stringValue );
    case VariantType::IsoString:
@@ -3373,14 +3393,14 @@ StringList Variant::ToStringList() const
       {
          StringList s( m_data.charVectorValue->Length() );
          for ( int i = 0; i < m_data.charVectorValue->Length(); ++i )
-            s[i].Format( "%02x", (*m_data.charVectorValue)[i] );
+            s[i] = String( int( (*m_data.charVectorValue)[i] ) );
          return s;
       }
    case VariantType::ByteVector:
       {
          StringList s( m_data.byteVectorValue->Length() );
          for ( int i = 0; i < m_data.byteVectorValue->Length(); ++i )
-            s[i].Format( "%02x", (*m_data.byteVectorValue)[i] );
+            s[i] = String( unsigned( (*m_data.byteVectorValue)[i] ) );
          return s;
       }
    case VariantType::IVector:
@@ -3430,7 +3450,7 @@ StringList Variant::ToStringList() const
          StringList s( m_data.charMatrixValue->NumberOfElements() );
          for ( int n = 0, i = 0; i < m_data.charMatrixValue->Rows(); ++i )
             for ( int j = 0; j < m_data.charMatrixValue->Cols(); ++j, ++n )
-               s[n].Format( "%02x", (*m_data.charMatrixValue)[i][j] );
+               s[n] = String( int( (*m_data.charMatrixValue)[i][j] ) );
          return s;
       }
    case VariantType::ByteMatrix:
@@ -3438,7 +3458,7 @@ StringList Variant::ToStringList() const
          StringList s( m_data.byteMatrixValue->NumberOfElements() );
          for ( int n = 0, i = 0; i < m_data.byteMatrixValue->Rows(); ++i )
             for ( int j = 0; j < m_data.byteMatrixValue->Cols(); ++j, ++n )
-               s[n].Format( "%02x", (*m_data.byteMatrixValue)[i][j] );
+               s[n] = String( unsigned( (*m_data.byteMatrixValue)[i][j] ) );
          return s;
       }
    case VariantType::IMatrix:
@@ -3493,7 +3513,7 @@ StringList Variant::ToStringList() const
       {
          StringList s( m_data.byteArrayValue->Length() );
          for ( size_type i = 0; i < m_data.byteArrayValue->Length(); ++i )
-            s[i] = String( (*m_data.byteArrayValue)[i] );
+            s[i] = String( unsigned( (*m_data.byteArrayValue)[i] ) );
          return s;
       }
    case VariantType::String:
@@ -3635,14 +3655,14 @@ IsoStringList Variant::ToIsoStringList() const
       {
          IsoStringList s( m_data.charVectorValue->Length() );
          for ( int i = 0; i < m_data.charVectorValue->Length(); ++i )
-            s[i].Format( "%02x", (*m_data.charVectorValue)[i] );
+            s[i] = String( int( (*m_data.charVectorValue)[i] ) );
          return s;
       }
    case VariantType::ByteVector:
       {
          IsoStringList s( m_data.byteVectorValue->Length() );
          for ( int i = 0; i < m_data.byteVectorValue->Length(); ++i )
-            s[i].Format( "%02x", (*m_data.byteVectorValue)[i] );
+            s[i] = String( unsigned( (*m_data.byteVectorValue)[i] ) );
          return s;
       }
    case VariantType::IVector:
@@ -3692,7 +3712,7 @@ IsoStringList Variant::ToIsoStringList() const
          IsoStringList s( m_data.charMatrixValue->NumberOfElements() );
          for ( int n = 0, i = 0; i < m_data.charMatrixValue->Rows(); ++i )
             for ( int j = 0; j < m_data.charMatrixValue->Cols(); ++j, ++n )
-               s[n].Format( "%02x", (*m_data.charMatrixValue)[i][j] );
+               s[n] = String( int( (*m_data.charMatrixValue)[i][j] ) );
          return s;
       }
    case VariantType::ByteMatrix:
@@ -3700,7 +3720,7 @@ IsoStringList Variant::ToIsoStringList() const
          IsoStringList s( m_data.byteMatrixValue->NumberOfElements() );
          for ( int n = 0, i = 0; i < m_data.byteMatrixValue->Rows(); ++i )
             for ( int j = 0; j < m_data.byteMatrixValue->Cols(); ++j, ++n )
-               s[n].Format( "%02x", (*m_data.byteMatrixValue)[i][j] );
+               s[n] = String( unsigned( (*m_data.byteMatrixValue)[i][j] ) );
          return s;
       }
    case VariantType::IMatrix:

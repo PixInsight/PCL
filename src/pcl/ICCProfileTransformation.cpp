@@ -134,13 +134,12 @@ void ICCProfileTransformation::Clear()
          ICCProfile::Close( *i );
 
    m_profiles.Clear();
-
    m_srcRGB = m_dstRGB = false;
 }
 
 // ----------------------------------------------------------------------------
 
-void ICCProfileTransformation::CreateTransformation( bool _floatingPoint ) const
+void ICCProfileTransformation::CreateTransformation( bool floatingPoint ) const
 {
    CloseTransformation();
 
@@ -157,7 +156,7 @@ void ICCProfileTransformation::CreateTransformation( bool _floatingPoint ) const
    m_srcRGB = (*API->ColorManagement->GetProfileColorSpace)( *m_profiles.Begin() ) != int32( ICCColorSpace::Gray );
    m_dstRGB = (*API->ColorManagement->GetProfileColorSpace)( *m_profiles.ReverseBegin() ) != int32( ICCColorSpace::Gray );
 
-   m_floatingPoint = _floatingPoint;
+   m_floatingPoint = floatingPoint;
 
    int32 srcFormat = m_srcRGB ?
       (m_floatingPoint ? ColorManagementContext::RGB_F64 : ColorManagementContext::RGB_I16) :

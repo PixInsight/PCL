@@ -213,12 +213,20 @@ private:
     bool sConnected;
 
     // Parse & FILE buffers for IO
-    int sockfd;
+#if defined(WIN32)
+    SOCKET sockfd;
+#else
+	int sockfd;
+#endif
     LilXML *lillp;			/* XML parser context */
     FILE *svrwfp;			/* FILE * to talk to server */
-
-    int m_receiveFd;
+#if defined(WIN32)
+	SOCKET m_receiveFd;
+    SOCKET m_sendFd;
+#else
+	int m_receiveFd;
     int m_sendFd;
+#endif
 
     void sendCommand(char *fmt, ...);
 #if defined (WIN32)

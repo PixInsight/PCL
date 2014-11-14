@@ -29,6 +29,7 @@
 
 #if defined(WIN32)
 #include <winsock2.h>
+#include <WS2tcpip.h>
 //#include <winsock.h>
 #pragma comment(lib, "Ws2_32.lib")
 #else
@@ -93,7 +94,11 @@ bool INDI::BaseClientImpl::connectServer()
 {
     struct sockaddr_in serv_addr;
     struct hostent *hp;
-    int pipefd[2];
+#if defined(WIN32)
+    SOCKET pipefd[2];
+#else
+	int pipefd[2];
+#endif
     int ret = 0;
 
     /* lookup host address */
@@ -171,8 +176,9 @@ bool INDI::BaseClientImpl::disconnectServer()
 #endif
 
     shutdown(sockfd, SHUT_RDWR);
+#if defined(WIN32) && !defined(_DEBUG)
     while (write(m_sendFd,"1",1) <= 0)
-
+#endif
 
 
     if (svrwfp != NULL)
@@ -766,12 +772,12 @@ void INDI::BaseClientImpl::setBLOBMode(BLOBHandling blobH, const char *dev, cons
 }
 
 #if defined(WIN32)
-int INDI::BaseClientImpl::socketpair(int af, int type, int proto, SOCKET sock[2]) {
+int INDI::BaseClientImpl::socketpair(int af, int type, int proto, SOCKET socks[2]) {
 //  assert(af == AF_INET
  //     && type == SOCK_STREAM
   //    && (proto == IPPROTO_IP || proto == IPPROTO_TCP));
 
-  SOCKET listen_sock;
+ /* SOCKET listen_sock;
   SOCKADDR_IN addr1;
   SOCKADDR_IN addr2;
   int addr1_len = sizeof (addr1);
@@ -782,7 +788,7 @@ int INDI::BaseClientImpl::socketpair(int af, int type, int proto, SOCKET sock[2]
   if ((listen_sock = socket(af, type, proto)) == INVALID_SOCKET)
     goto error;
 
-  memset((void*)&addr1, 0, sizeof(addr1));
+  //memset((void*)&addr1, 0, sizeof(addr1));
   addr1.sin_family = af;
   addr1.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
   addr1.sin_port = 0;
@@ -834,7 +840,64 @@ error:
 
   WSASetLastError(error);
 
-  return SOCKET_ERROR;
+  return SOCKET_ERROR;*/
+  int make_overlapped=0;
+  union {
+       struct sockaddr_in inaddr;
+       struct sockaddr addr;
+    } a;
+    SOCKET listener;
+    int e;
+    socklen_t addrlen = sizeof(a.inaddr);
+    DWORD flags = (make_overlapped ? WSA_FLAG_OVERLAPPED : 0);
+    int reuse = 1;
+
+    if (socks == 0) {
+      WSASetLastError(WSAEINVAL);
+      return SOCKET_ERROR;
+    }
+
+    listener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (listener == INVALID_SOCKET) 
+        return SOCKET_ERROR;
+
+    memset(&a, 0, sizeof(a));
+    a.inaddr.sin_family = AF_INET;
+    a.inaddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    a.inaddr.sin_port = 0; 
+
+    socks[0] = socks[1] = INVALID_SOCKET;
+    do {
+        if (setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, 
+               (char*) &reuse, (socklen_t) sizeof(reuse)) == -1)
+            break;
+        if  (bind(listener, &a.addr, sizeof(a.inaddr)) == SOCKET_ERROR)
+            break;
+        if  (getsockname(listener, &a.addr, &addrlen) == SOCKET_ERROR)
+            break;
+        if (listen(listener, 1) == SOCKET_ERROR)
+            break;
+        socks[0] = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, flags);
+        if (socks[0] == INVALID_SOCKET)
+            break;
+        if (connect(socks[0], &a.addr, sizeof(a.inaddr)) == SOCKET_ERROR)
+            break;
+        socks[1] = accept(listener, NULL, NULL);
+        if (socks[1] == INVALID_SOCKET)
+            break;
+
+        closesocket(listener);
+        return 0;
+
+    } while (0);
+
+    e = WSAGetLastError();
+    closesocket(listener);
+    closesocket(socks[0]);
+    closesocket(socks[1]);
+    WSASetLastError(e);
+    return SOCKET_ERROR;
+
 }
 #endif 
 

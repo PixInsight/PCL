@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Global Process Module Version 01.02.05.0258
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Global Process Module Version 01.02.05.0260
 // ****************************************************************************
-// ColorManagementSetupProcess.cpp - Released 2014/10/29 07:34:56 UTC
+// ColorManagementSetupProcess.cpp - Released 2014/11/14 17:18:47 UTC
 // ****************************************************************************
 // This file is part of the standard Global PixInsight module.
 //
@@ -423,4 +423,4 @@ int ColorManagementSetupProcess::ProcessCommandLine( const StringList& argv ) co
 } // pcl
 
 // ****************************************************************************
-// EOF ColorManagementSetupProcess.cpp - Released 2014/10/29 07:34:56 UTC
+// EOF ColorManagementSetupProcess.cpp - Released 2014/11/14 17:18:47 UTC

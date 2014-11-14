@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard FITS File Format Module Version 01.01.00.0280
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard FITS File Format Module Version 01.01.00.0282
 // ****************************************************************************
-// fitsio.h - Released 2014/10/29 07:34:49 UTC
+// fitsio.h - Released 2014/11/14 17:18:35 UTC
 // ****************************************************************************
 // This file is part of the standard FITS PixInsight module.
 //
@@ -2014,4 +2014,4 @@ int CFITS_API fits_uncompress_table(fitsfile *infptr, fitsfile *outfptr, int *st
 #endif
 
 // ****************************************************************************
-// EOF fitsio.h - Released 2014/10/29 07:34:49 UTC
+// EOF fitsio.h - Released 2014/11/14 17:18:35 UTC

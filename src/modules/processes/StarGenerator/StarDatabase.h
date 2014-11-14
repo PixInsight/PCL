@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard StarGenerator Process Module Version 01.01.00.0178
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard StarGenerator Process Module Version 01.01.00.0180
 // ****************************************************************************
-// StarDatabase.h - Released 2014/10/29 07:35:25 UTC
+// StarDatabase.h - Released 2014/11/14 17:19:24 UTC
 // ****************************************************************************
 // This file is part of the standard StarGenerator PixInsight module.
 //
@@ -241,4 +241,4 @@ private:
 #endif   // __StarDatabase_h
 
 // ****************************************************************************
-// EOF StarDatabase.h - Released 2014/10/29 07:35:25 UTC
+// EOF StarDatabase.h - Released 2014/11/14 17:19:24 UTC

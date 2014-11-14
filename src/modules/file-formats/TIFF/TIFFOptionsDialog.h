@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard TIFF File Format Module Version 01.00.05.0227
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard TIFF File Format Module Version 01.00.05.0229
 // ****************************************************************************
-// TIFFOptionsDialog.h - Released 2014/10/29 07:34:49 UTC
+// TIFFOptionsDialog.h - Released 2014/11/14 17:18:35 UTC
 // ****************************************************************************
 // This file is part of the standard TIFF PixInsight module.
 //
@@ -132,4 +132,4 @@ private:
 #endif   // __TIFFOptionsDialog_h
 
 // ****************************************************************************
-// EOF TIFFOptionsDialog.h - Released 2014/10/29 07:34:49 UTC
+// EOF TIFFOptionsDialog.h - Released 2014/11/14 17:18:35 UTC

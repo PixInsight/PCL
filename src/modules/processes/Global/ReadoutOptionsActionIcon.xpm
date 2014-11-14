@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Global Process Module Version 01.02.05.0258
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Global Process Module Version 01.02.05.0260
 // ****************************************************************************
-// ReadoutOptionsActionIcon.xpm - Released 2014/10/29 07:34:56 UTC
+// ReadoutOptionsActionIcon.xpm - Released 2014/11/14 17:18:47 UTC
 // ****************************************************************************
 // This file is part of the standard Global PixInsight module.
 //
@@ -317,4 +317,4 @@ static const char* ReadoutOptionsActionIcon_XPM[] = {
 "p+q+r+s+t+u+v+w+x+y+z+A+(+0+0+0+"};
 
 // ****************************************************************************
-// EOF ReadoutOptionsActionIcon.xpm - Released 2014/10/29 07:34:56 UTC
+// EOF ReadoutOptionsActionIcon.xpm - Released 2014/11/14 17:18:47 UTC

@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard ImageIntegration Process Module Version 01.09.04.0251
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard ImageIntegration Process Module Version 01.09.04.0253
 // ****************************************************************************
-// DrizzleIntegrationInstance.cpp - Released 2014/10/29 07:35:23 UTC
+// DrizzleIntegrationInstance.cpp - Released 2014/11/14 17:19:22 UTC
 // ****************************************************************************
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -48,9 +48,9 @@
 
 #include "DrizzleIntegrationInstance.h"
 
-#include "../ImageRegistration/DrizzleDataDecoder.h"
 #include "../ImageRegistration/Homography.h"
 
+#include <pcl/DrizzleDataDecoder.h>
 #include <pcl/ErrorHandler.h>
 #include <pcl/FileFormat.h>
 #include <pcl/FileFormatInstance.h>
@@ -1465,4 +1465,4 @@ size_type DrizzleIntegrationInstance::ParameterLength( const MetaParameter* p, s
 } // pcl
 
 // ****************************************************************************
-// EOF DrizzleIntegrationInstance.cpp - Released 2014/10/29 07:35:23 UTC
+// EOF DrizzleIntegrationInstance.cpp - Released 2014/11/14 17:19:22 UTC

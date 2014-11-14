@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/Mutex.cpp - Released 2014/10/29 07:34:21 UTC
+// pcl/Mutex.cpp - Released 2014/11/14 17:17:01 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -71,4 +71,4 @@ void Mutex::PThreadReportError( int errorCode, const char* funcName )
 } // pcl
 
 // ****************************************************************************
-// EOF pcl/Mutex.cpp - Released 2014/10/29 07:34:21 UTC
+// EOF pcl/Mutex.cpp - Released 2014/11/14 17:17:01 UTC

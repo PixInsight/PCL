@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Debayer Process Module Version 01.04.03.0144
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Debayer Process Module Version 01.04.03.0146
 // ****************************************************************************
-// DebayerInterface.cpp - Released 2014/10/29 07:35:26 UTC
+// DebayerInterface.cpp - Released 2014/11/14 17:19:24 UTC
 // ****************************************************************************
 // This file is part of the standard Debayer PixInsight module.
 //
@@ -334,4 +334,4 @@ void DebayerInterface::LoadSettings()
 } // pcl
 
 // ****************************************************************************
-// EOF DebayerInterface.cpp - Released 2014/10/29 07:35:26 UTC
+// EOF DebayerInterface.cpp - Released 2014/11/14 17:19:24 UTC

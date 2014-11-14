@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/Parser.cpp - Released 2014/10/29 07:34:21 UTC
+// pcl/Parser.cpp - Released 2014/11/14 17:17:01 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -193,4 +193,4 @@ double PCL_FUNC ParseInteger( const String& s, double min, double max )
 } // pcl
 
 // ****************************************************************************
-// EOF pcl/Parser.cpp - Released 2014/10/29 07:34:21 UTC
+// EOF pcl/Parser.cpp - Released 2014/11/14 17:17:01 UTC

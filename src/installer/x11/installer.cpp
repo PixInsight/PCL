@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/installer.cpp - Released 2014/10/29 09:25:47 UTC
+// pcl/installer.cpp - Released 2014/11/14 17:24:15 UTC
 // ****************************************************************************
 //
 // This file is part of PixInsight X11 UNIX/Linux Installer
@@ -995,4 +995,4 @@ int main( int argc, const char** argv )
 }
 
 // ****************************************************************************
-// EOF pcl/installer.cpp - Released 2014/10/29 09:25:47 UTC
+// EOF pcl/installer.cpp - Released 2014/11/14 17:24:15 UTC

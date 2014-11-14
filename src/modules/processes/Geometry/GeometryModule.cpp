@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Geometry Process Module Version 01.01.00.0245
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Geometry Process Module Version 01.01.00.0247
 // ****************************************************************************
-// GeometryModule.cpp - Released 2014/10/29 07:34:55 UTC
+// GeometryModule.cpp - Released 2014/11/14 17:18:46 UTC
 // ****************************************************************************
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -49,12 +49,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     01
 #define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0245
+#define MODULE_VERSION_BUILD     0247
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2014
-#define MODULE_RELEASE_MONTH     10
-#define MODULE_RELEASE_DAY       29
+#define MODULE_RELEASE_MONTH     11
+#define MODULE_RELEASE_DAY       14
 
 #include "GeometryModule.h"
 #include "DynamicCropProcess.h"
@@ -204,4 +204,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ****************************************************************************
-// EOF GeometryModule.cpp - Released 2014/10/29 07:34:55 UTC
+// EOF GeometryModule.cpp - Released 2014/11/14 17:18:46 UTC

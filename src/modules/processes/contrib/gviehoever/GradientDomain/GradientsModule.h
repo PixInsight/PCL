@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard GradientDomain Process Module Version 00.06.04.0096
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard GradientDomain Process Module Version 00.06.04.0098
 // ****************************************************************************
-// GradientsModule.h - Released 2014/10/29 07:35:25 UTC
+// GradientsModule.h - Released 2014/11/14 17:19:24 UTC
 // ****************************************************************************
 // This file is part of the standard GradientDomain PixInsight module.
 //
@@ -61,4 +61,4 @@ public:
 #endif   // __GradientsModule_h
 
 // ****************************************************************************
-// EOF GradientsModule.h - Released 2014/10/29 07:35:25 UTC
+// EOF GradientsModule.h - Released 2014/11/14 17:19:24 UTC

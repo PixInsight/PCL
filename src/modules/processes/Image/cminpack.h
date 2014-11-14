@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Image Process Module Version 01.02.08.0281
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Image Process Module Version 01.02.08.0283
 // ****************************************************************************
-// cminpack.h - Released 2014/10/29 07:35:22 UTC
+// cminpack.h - Released 2014/11/14 17:19:21 UTC
 // ****************************************************************************
 // This file is part of the standard Image PixInsight module.
 //
@@ -308,4 +308,4 @@ void rwupdt(int n, double *r, int ldr,
 #endif /* __CMINPACK_H__ */
 
 // ****************************************************************************
-// EOF cminpack.h - Released 2014/10/29 07:35:22 UTC
+// EOF cminpack.h - Released 2014/11/14 17:19:21 UTC

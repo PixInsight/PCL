@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Flux Process Module Version 01.00.00.0064
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Flux Process Module Version 01.00.00.0066
 // ****************************************************************************
-// FluxCalibrationProcess.h - Released 2014/10/29 07:34:55 UTC
+// FluxCalibrationProcess.h - Released 2014/11/14 17:18:46 UTC
 // ****************************************************************************
 // This file is part of the standard Flux PixInsight module.
 //
@@ -95,4 +95,4 @@ PCL_END_LOCAL
 #endif   // __FluxCalibrationProcess_h
 
 // ****************************************************************************
-// EOF FluxCalibrationProcess.h - Released 2014/10/29 07:34:55 UTC
+// EOF FluxCalibrationProcess.h - Released 2014/11/14 17:18:46 UTC

@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Image Process Module Version 01.02.08.0281
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Image Process Module Version 01.02.08.0283
 // ****************************************************************************
-// PSF.h - Released 2014/10/29 07:35:22 UTC
+// PSF.h - Released 2014/11/14 17:19:21 UTC
 // ****************************************************************************
 // This file is part of the standard Image PixInsight module.
 //
@@ -227,4 +227,4 @@ inline double PSFData::FWHM( int function, double sigma, double beta )
 #endif   // __PSF_h
 
 // ****************************************************************************
-// EOF PSF.h - Released 2014/10/29 07:35:22 UTC
+// EOF PSF.h - Released 2014/11/14 17:19:21 UTC

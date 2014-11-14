@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Image Process Module Version 01.02.08.0281
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Image Process Module Version 01.02.08.0283
 // ****************************************************************************
-// SampleFormatConversionInterface.cpp - Released 2014/10/29 07:35:22 UTC
+// SampleFormatConversionInterface.cpp - Released 2014/11/14 17:19:21 UTC
 // ****************************************************************************
 // This file is part of the standard Image PixInsight module.
 //
@@ -430,4 +430,4 @@ void SampleFormatConversionInterface::GUIData::SetupTrackViewControls( SampleFor
 } // pcl
 
 // ****************************************************************************
-// EOF SampleFormatConversionInterface.cpp - Released 2014/10/29 07:35:22 UTC
+// EOF SampleFormatConversionInterface.cpp - Released 2014/11/14 17:19:21 UTC

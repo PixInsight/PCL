@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard BMP File Format Module Version 01.00.03.0209
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard BMP File Format Module Version 01.00.03.0211
 // ****************************************************************************
-// BMPInstance.cpp - Released 2014/10/29 07:34:47 UTC
+// BMPInstance.cpp - Released 2014/11/14 17:18:33 UTC
 // ****************************************************************************
 // This file is part of the standard BMP PixInsight module.
 //
@@ -268,4 +268,4 @@ void BitmapInstance::WriteImage( const UInt32Image& img )
 } // pcl
 
 // ****************************************************************************
-// EOF BMPInstance.cpp - Released 2014/10/29 07:34:47 UTC
+// EOF BMPInstance.cpp - Released 2014/11/14 17:18:33 UTC

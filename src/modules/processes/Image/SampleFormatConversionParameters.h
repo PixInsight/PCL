@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Image Process Module Version 01.02.08.0281
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Image Process Module Version 01.02.08.0283
 // ****************************************************************************
-// SampleFormatConversionParameters.h - Released 2014/10/29 07:35:22 UTC
+// SampleFormatConversionParameters.h - Released 2014/11/14 17:19:21 UTC
 // ****************************************************************************
 // This file is part of the standard Image PixInsight module.
 //
@@ -91,4 +91,4 @@ PCL_END_LOCAL
 #endif   // __SampleFormatConversionParameters_h
 
 // ****************************************************************************
-// EOF SampleFormatConversionParameters.h - Released 2014/10/29 07:35:22 UTC
+// EOF SampleFormatConversionParameters.h - Released 2014/11/14 17:19:21 UTC

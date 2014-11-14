@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Global Process Module Version 01.02.05.0258
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Global Process Module Version 01.02.05.0260
 // ****************************************************************************
-// GlobalModule.cpp - Released 2014/10/29 07:34:55 UTC
+// GlobalModule.cpp - Released 2014/11/14 17:18:46 UTC
 // ****************************************************************************
 // This file is part of the standard Global PixInsight module.
 //
@@ -49,12 +49,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     02
 #define MODULE_VERSION_REVISION  05
-#define MODULE_VERSION_BUILD     0258
+#define MODULE_VERSION_BUILD     0260
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2014
-#define MODULE_RELEASE_MONTH     10
-#define MODULE_RELEASE_DAY       29
+#define MODULE_RELEASE_MONTH     11
+#define MODULE_RELEASE_DAY       14
 
 #include "GlobalModule.h"
 #include "PreferencesProcess.h"
@@ -188,4 +188,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ****************************************************************************
-// EOF GlobalModule.cpp - Released 2014/10/29 07:34:55 UTC
+// EOF GlobalModule.cpp - Released 2014/11/14 17:18:46 UTC

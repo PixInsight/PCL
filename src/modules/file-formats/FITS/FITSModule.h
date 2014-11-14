@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard FITS File Format Module Version 01.01.00.0280
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard FITS File Format Module Version 01.01.00.0282
 // ****************************************************************************
-// FITSModule.h - Released 2014/10/29 07:34:49 UTC
+// FITSModule.h - Released 2014/11/14 17:18:35 UTC
 // ****************************************************************************
 // This file is part of the standard FITS PixInsight module.
 //
@@ -80,4 +80,4 @@ public:
 #endif   // __FITSModule_h
 
 // ****************************************************************************
-// EOF FITSModule.h - Released 2014/10/29 07:34:49 UTC
+// EOF FITSModule.h - Released 2014/11/14 17:18:35 UTC

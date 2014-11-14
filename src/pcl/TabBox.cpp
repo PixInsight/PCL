@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/TabBox.cpp - Released 2014/10/29 07:34:21 UTC
+// pcl/TabBox.cpp - Released 2014/11/14 17:17:01 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -277,4 +277,4 @@ void TabBox::SetControls( Control& left, Control& right )
 } // pcl
 
 // ****************************************************************************
-// EOF pcl/TabBox.cpp - Released 2014/10/29 07:34:21 UTC
+// EOF pcl/TabBox.cpp - Released 2014/11/14 17:17:01 UTC

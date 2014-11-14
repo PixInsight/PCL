@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/Label.cpp - Released 2014/10/29 07:34:21 UTC
+// pcl/Label.cpp - Released 2014/11/14 17:17:01 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -155,4 +155,4 @@ void Label::EnableRichText( bool enable )
 } // pcl
 
 // ****************************************************************************
-// EOF pcl/Label.cpp - Released 2014/10/29 07:34:21 UTC
+// EOF pcl/Label.cpp - Released 2014/11/14 17:17:01 UTC

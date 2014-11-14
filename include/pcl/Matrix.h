@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/Matrix.h - Released 2014/10/29 07:34:07 UTC
+// pcl/Matrix.h - Released 2014/11/14 17:16:34 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -2524,4 +2524,4 @@ typedef DMatrix                        Matrix;
 #endif   // __PCL_Matrix_h
 
 // ****************************************************************************
-// EOF pcl/Matrix.h - Released 2014/10/29 07:34:07 UTC
+// EOF pcl/Matrix.h - Released 2014/11/14 17:16:34 UTC

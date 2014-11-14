@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard GradientDomain Process Module Version 00.06.04.0096
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard GradientDomain Process Module Version 00.06.04.0098
 // ****************************************************************************
-// GradientsModule.cpp - Released 2014/10/29 07:35:25 UTC
+// GradientsModule.cpp - Released 2014/11/14 17:19:24 UTC
 // ****************************************************************************
 // This file is part of the standard GradientDomain PixInsight module.
 //
@@ -27,12 +27,12 @@
 #define MODULE_VERSION_MAJOR     00
 #define MODULE_VERSION_MINOR     06
 #define MODULE_VERSION_REVISION  04
-#define MODULE_VERSION_BUILD     0096
+#define MODULE_VERSION_BUILD     0098
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2014
-#define MODULE_RELEASE_MONTH     10
-#define MODULE_RELEASE_DAY       29
+#define MODULE_RELEASE_MONTH     11
+#define MODULE_RELEASE_DAY       14
 
 #include "GradientsModule.h"
 #include "GradientsHdrProcess.h"
@@ -137,4 +137,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ****************************************************************************
-// EOF GradientsModule.cpp - Released 2014/10/29 07:35:25 UTC
+// EOF GradientsModule.cpp - Released 2014/11/14 17:19:24 UTC

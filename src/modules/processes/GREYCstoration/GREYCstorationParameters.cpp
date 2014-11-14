@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard GREYCstoration Process Module Version 01.00.02.0203
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard GREYCstoration Process Module Version 01.00.02.0205
 // ****************************************************************************
-// GREYCstorationParameters.cpp - Released 2014/10/29 07:34:56 UTC
+// GREYCstorationParameters.cpp - Released 2014/11/14 17:18:47 UTC
 // ****************************************************************************
 // This file is part of the standard GREYCstoration PixInsight module.
 //
@@ -441,4 +441,4 @@ bool GREYCsCoupledChannels::DefaultValue() const
 } // pcl
 
 // ****************************************************************************
-// EOF GREYCstorationParameters.cpp - Released 2014/10/29 07:34:56 UTC
+// EOF GREYCstorationParameters.cpp - Released 2014/11/14 17:18:47 UTC

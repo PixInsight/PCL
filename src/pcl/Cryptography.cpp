@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/Cryptography.cpp - Released 2014/10/29 07:34:21 UTC
+// pcl/Cryptography.cpp - Released 2014/11/14 17:17:01 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -198,4 +198,4 @@ void AES256::DecryptBlock( block_type output, const block_type input ) const
 } // pcl
 
 // ****************************************************************************
-// EOF pcl/Cryptography.cpp - Released 2014/10/29 07:34:21 UTC
+// EOF pcl/Cryptography.cpp - Released 2014/11/14 17:17:01 UTC

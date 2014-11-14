@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard FITS File Format Module Version 01.01.00.0280
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard FITS File Format Module Version 01.01.00.0282
 // ****************************************************************************
-// FITSInstance.cpp - Released 2014/10/29 07:34:49 UTC
+// FITSInstance.cpp - Released 2014/11/14 17:18:35 UTC
 // ****************************************************************************
 // This file is part of the standard FITS PixInsight module.
 //
@@ -893,4 +893,4 @@ void FITSInstance::Write( const UInt32Image::sample* buffer, int startRow, int r
 } // pcl
 
 // ****************************************************************************
-// EOF FITSInstance.cpp - Released 2014/10/29 07:34:49 UTC
+// EOF FITSInstance.cpp - Released 2014/11/14 17:18:35 UTC

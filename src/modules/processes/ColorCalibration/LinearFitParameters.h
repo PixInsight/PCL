@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard ColorCalibration Process Module Version 01.02.00.0168
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard ColorCalibration Process Module Version 01.02.00.0170
 // ****************************************************************************
-// LinearFitParameters.h - Released 2014/10/29 07:34:54 UTC
+// LinearFitParameters.h - Released 2014/11/14 17:18:46 UTC
 // ****************************************************************************
 // This file is part of the standard ColorCalibration PixInsight module.
 //
@@ -116,4 +116,4 @@ PCL_END_LOCAL
 #endif   // __LinearFitParameters_h
 
 // ****************************************************************************
-// EOF LinearFitParameters.h - Released 2014/10/29 07:34:54 UTC
+// EOF LinearFitParameters.h - Released 2014/11/14 17:18:46 UTC

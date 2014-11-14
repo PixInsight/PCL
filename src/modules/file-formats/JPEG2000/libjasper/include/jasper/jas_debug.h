@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard JPEG2000 File Format Module Version 01.00.01.0212
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard JPEG2000 File Format Module Version 01.00.01.0214
 // ****************************************************************************
-// jas_debug.h - Released 2014/10/29 07:34:49 UTC
+// jas_debug.h - Released 2014/11/14 17:18:35 UTC
 // ****************************************************************************
 // This file is part of the standard JPEG2000 PixInsight module.
 //
@@ -162,4 +162,4 @@ int jas_memdump(FILE *out, void *data, size_t len);
 #endif
 
 // ****************************************************************************
-// EOF jas_debug.h - Released 2014/10/29 07:34:49 UTC
+// EOF jas_debug.h - Released 2014/11/14 17:18:35 UTC

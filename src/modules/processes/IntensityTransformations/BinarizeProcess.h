@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard IntensityTransformations Process Module Version 01.07.00.0285
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard IntensityTransformations Process Module Version 01.07.00.0287
 // ****************************************************************************
-// BinarizeProcess.h - Released 2014/10/29 07:35:23 UTC
+// BinarizeProcess.h - Released 2014/11/14 17:19:22 UTC
 // ****************************************************************************
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -99,4 +99,4 @@ PCL_END_LOCAL
 #endif   // __BinarizeProcess_h
 
 // ****************************************************************************
-// EOF BinarizeProcess.h - Released 2014/10/29 07:35:23 UTC
+// EOF BinarizeProcess.h - Released 2014/11/14 17:19:22 UTC

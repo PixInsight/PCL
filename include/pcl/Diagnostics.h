@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/Diagnostics.h - Released 2014/10/29 07:34:08 UTC
+// pcl/Diagnostics.h - Released 2014/11/14 17:16:34 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -126,4 +126,4 @@ extern "C" void PCL_FUNC __PCLAssertFail( int, const char*, const char*, int );
 #endif  // __PCL_Diagnostics_h
 
 // ****************************************************************************
-// EOF pcl/Diagnostics.h - Released 2014/10/29 07:34:08 UTC
+// EOF pcl/Diagnostics.h - Released 2014/11/14 17:16:34 UTC

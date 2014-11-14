@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Geometry Process Module Version 01.01.00.0245
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Geometry Process Module Version 01.01.00.0247
 // ****************************************************************************
-// IntegerResampleParameters.h - Released 2014/10/29 07:34:55 UTC
+// IntegerResampleParameters.h - Released 2014/11/14 17:18:46 UTC
 // ****************************************************************************
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -112,4 +112,4 @@ PCL_END_LOCAL
 #endif   // __IntegerResampleParameters_h
 
 // ****************************************************************************
-// EOF IntegerResampleParameters.h - Released 2014/10/29 07:34:55 UTC
+// EOF IntegerResampleParameters.h - Released 2014/11/14 17:18:46 UTC

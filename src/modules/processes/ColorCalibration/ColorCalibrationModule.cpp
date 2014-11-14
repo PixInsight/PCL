@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard ColorCalibration Process Module Version 01.02.00.0168
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard ColorCalibration Process Module Version 01.02.00.0170
 // ****************************************************************************
-// ColorCalibrationModule.cpp - Released 2014/10/29 07:34:54 UTC
+// ColorCalibrationModule.cpp - Released 2014/11/14 17:18:46 UTC
 // ****************************************************************************
 // This file is part of the standard ColorCalibration PixInsight module.
 //
@@ -49,12 +49,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     02
 #define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0168
+#define MODULE_VERSION_BUILD     0170
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2014
-#define MODULE_RELEASE_MONTH     10
-#define MODULE_RELEASE_DAY       29
+#define MODULE_RELEASE_MONTH     11
+#define MODULE_RELEASE_DAY       14
 
 #include "ColorCalibrationModule.h"
 #include "BackgroundNeutralizationProcess.h"
@@ -178,4 +178,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ****************************************************************************
-// EOF ColorCalibrationModule.cpp - Released 2014/10/29 07:34:54 UTC
+// EOF ColorCalibrationModule.cpp - Released 2014/11/14 17:18:46 UTC

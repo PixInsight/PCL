@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/MultiscaleMedianTransform.cpp - Released 2014/10/29 07:34:20 UTC
+// pcl/MultiscaleMedianTransform.cpp - Released 2014/11/14 17:17:00 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -415,4 +415,4 @@ void MultiscaleMedianTransform::Transform( const UInt32Image& image )
 } // pcl
 
 // ****************************************************************************
-// EOF pcl/MultiscaleMedianTransform.cpp - Released 2014/10/29 07:34:20 UTC
+// EOF pcl/MultiscaleMedianTransform.cpp - Released 2014/11/14 17:17:00 UTC

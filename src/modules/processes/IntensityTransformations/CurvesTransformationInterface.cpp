@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard IntensityTransformations Process Module Version 01.07.00.0285
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard IntensityTransformations Process Module Version 01.07.00.0287
 // ****************************************************************************
-// CurvesTransformationInterface.cpp - Released 2014/10/29 07:35:24 UTC
+// CurvesTransformationInterface.cpp - Released 2014/11/14 17:19:23 UTC
 // ****************************************************************************
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -2306,4 +2306,4 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
 } // pcl
 
 // ****************************************************************************
-// EOF CurvesTransformationInterface.cpp - Released 2014/10/29 07:35:24 UTC
+// EOF CurvesTransformationInterface.cpp - Released 2014/11/14 17:19:23 UTC

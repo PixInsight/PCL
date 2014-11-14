@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/Variant.cpp - Released 2014/10/29 07:34:20 UTC
+// pcl/Variant.cpp - Released 2014/11/14 17:17:01 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -4921,4 +4921,4 @@ Variant::data_type VariantTypeFromAPIPropertyType( uint64 apiType )
 } // pcl
 
 // ****************************************************************************
-// EOF pcl/Variant.cpp - Released 2014/10/29 07:34:20 UTC
+// EOF pcl/Variant.cpp - Released 2014/11/14 17:17:01 UTC

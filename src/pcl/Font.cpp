@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/Font.cpp - Released 2014/10/29 07:34:21 UTC
+// pcl/Font.cpp - Released 2014/11/14 17:17:01 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -585,4 +585,4 @@ String PCL_FUNC FamilyToFace( value_type family )
 } // pcl
 
 // ****************************************************************************
-// EOF pcl/Font.cpp - Released 2014/10/29 07:34:21 UTC
+// EOF pcl/Font.cpp - Released 2014/11/14 17:17:01 UTC

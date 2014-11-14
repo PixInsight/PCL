@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Fourier Process Module Version 01.00.04.0122
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Fourier Process Module Version 01.00.04.0124
 // ****************************************************************************
-// FourierTransformInstance.cpp - Released 2014/10/29 07:34:55 UTC
+// FourierTransformInstance.cpp - Released 2014/11/14 17:18:46 UTC
 // ****************************************************************************
 // This file is part of the standard Fourier PixInsight module.
 //
@@ -375,4 +375,4 @@ void* FourierTransformInstance::LockParameter( const MetaParameter* p, size_type
 } // pcl
 
 // ****************************************************************************
-// EOF FourierTransformInstance.cpp - Released 2014/10/29 07:34:55 UTC
+// EOF FourierTransformInstance.cpp - Released 2014/11/14 17:18:46 UTC

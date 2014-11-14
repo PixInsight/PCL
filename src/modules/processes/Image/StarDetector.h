@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Image Process Module Version 01.02.08.0281
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Image Process Module Version 01.02.08.0283
 // ****************************************************************************
-// StarDetector.h - Released 2014/10/29 07:35:22 UTC
+// StarDetector.h - Released 2014/11/14 17:19:21 UTC
 // ****************************************************************************
 // This file is part of the standard Image PixInsight module.
 //
@@ -123,4 +123,4 @@ inline String StarData::StatusToString() const
 #endif   // __StarDetector_h
 
 // ****************************************************************************
-// EOF StarDetector.h - Released 2014/10/29 07:35:22 UTC
+// EOF StarDetector.h - Released 2014/11/14 17:19:21 UTC

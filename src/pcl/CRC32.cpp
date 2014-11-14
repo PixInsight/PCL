@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/CRC32.cpp - Released 2014/10/29 07:34:20 UTC
+// pcl/CRC32.cpp - Released 2014/11/14 17:17:00 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -174,4 +174,4 @@ uint32 CRC32( const void* data, size_type length )
 } // pcl
 
 // ****************************************************************************
-// EOF pcl/CRC32.cpp - Released 2014/10/29 07:34:20 UTC
+// EOF pcl/CRC32.cpp - Released 2014/11/14 17:17:00 UTC

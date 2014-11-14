@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard IntensityTransformations Process Module Version 01.07.00.0285
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard IntensityTransformations Process Module Version 01.07.00.0287
 // ****************************************************************************
-// ExponentialNumericControl.cpp - Released 2014/10/29 07:35:23 UTC
+// ExponentialNumericControl.cpp - Released 2014/11/14 17:19:22 UTC
 // ****************************************************************************
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -120,4 +120,4 @@ void ExponentialNumericControl::UpdateControls()
 } // pcl
 
 // ****************************************************************************
-// EOF ExponentialNumericControl.cpp - Released 2014/10/29 07:35:23 UTC
+// EOF ExponentialNumericControl.cpp - Released 2014/11/14 17:19:22 UTC

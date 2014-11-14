@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard SplitCFA Process Module Version 01.00.05.0035
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard SplitCFA Process Module Version 01.00.05.0037
 // ****************************************************************************
-// SplitCFAModule.cpp - Released 2014/10/29 07:35:26 UTC
+// SplitCFAModule.cpp - Released 2014/11/14 17:19:24 UTC
 // ****************************************************************************
 // This file is part of the standard SplitCFA PixInsight module.
 //
@@ -50,12 +50,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  05
-#define MODULE_VERSION_BUILD     0035
+#define MODULE_VERSION_BUILD     0037
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2014
-#define MODULE_RELEASE_MONTH     10
-#define MODULE_RELEASE_DAY       29
+#define MODULE_RELEASE_MONTH     11
+#define MODULE_RELEASE_DAY       14
 
 #include "MergeCFAInterface.h"
 #include "MergeCFAProcess.h"
@@ -169,4 +169,4 @@ int InstallPixInsightModule( int mode )
 }
 
 // ****************************************************************************
-// EOF SplitCFAModule.cpp - Released 2014/10/29 07:35:26 UTC
+// EOF SplitCFAModule.cpp - Released 2014/11/14 17:19:24 UTC

@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard SplitCFA Process Module Version 01.00.05.0035
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard SplitCFA Process Module Version 01.00.05.0037
 // ****************************************************************************
-// MergeCFAInstance.cpp - Released 2014/10/29 07:35:26 UTC
+// MergeCFAInstance.cpp - Released 2014/11/14 17:19:24 UTC
 // ****************************************************************************
 // This file is part of the standard SplitCFA PixInsight module.
 //
@@ -267,4 +267,4 @@ size_type MergeCFAInstance::ParameterLength( const MetaParameter* p, size_type /
 } // pcl
 
 // ****************************************************************************
-// EOF MergeCFAInstance.cpp - Released 2014/10/29 07:35:26 UTC
+// EOF MergeCFAInstance.cpp - Released 2014/11/14 17:19:24 UTC

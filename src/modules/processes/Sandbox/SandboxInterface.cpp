@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Sandbox Process Module Version 01.00.02.0142
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Sandbox Process Module Version 01.00.02.0144
 // ****************************************************************************
-// SandboxInterface.cpp - Released 2014/10/29 07:35:25 UTC
+// SandboxInterface.cpp - Released 2014/11/14 17:19:24 UTC
 // ****************************************************************************
 // This file is part of the standard Sandbox PixInsight module.
 //
@@ -297,4 +297,4 @@ SandboxInterface::GUIData::GUIData( SandboxInterface& w )
 } // pcl
 
 // ****************************************************************************
-// EOF SandboxInterface.cpp - Released 2014/10/29 07:35:25 UTC
+// EOF SandboxInterface.cpp - Released 2014/11/14 17:19:24 UTC

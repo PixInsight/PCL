@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/CharTraits.cpp - Released 2014/10/29 07:34:21 UTC
+// pcl/CharTraits.cpp - Released 2014/11/14 17:17:01 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -214,4 +214,4 @@ int CharTraits::Compare( const char16_type* s1, size_type n1,
 } //pcl
 
 // ****************************************************************************
-// EOF pcl/CharTraits.cpp - Released 2014/10/29 07:34:21 UTC
+// EOF pcl/CharTraits.cpp - Released 2014/11/14 17:17:01 UTC

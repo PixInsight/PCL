@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/Math.h - Released 2014/10/29 07:34:08 UTC
+// pcl/Math.h - Released 2014/11/14 17:16:34 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -3086,4 +3086,4 @@ template <typename T> double BendMidvariance( const T* x, const T* xn, double ce
 #endif  // __PCL_Math_h
 
 // ****************************************************************************
-// EOF pcl/Math.h - Released 2014/10/29 07:34:08 UTC
+// EOF pcl/Math.h - Released 2014/11/14 17:16:34 UTC

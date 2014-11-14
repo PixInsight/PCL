@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Convolution Process Module Version 01.01.03.0138
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Convolution Process Module Version 01.01.03.0140
 // ****************************************************************************
-// ConvolutionDialog.h - Released 2014/10/29 07:34:55 UTC
+// ConvolutionDialog.h - Released 2014/11/14 17:18:46 UTC
 // ****************************************************************************
 // This file is part of the standard Convolution PixInsight module.
 //
@@ -100,4 +100,4 @@ private:
 #endif   // __ConvolutionDialog_h
 
 // ****************************************************************************
-// EOF ConvolutionDialog.h - Released 2014/10/29 07:34:55 UTC
+// EOF ConvolutionDialog.h - Released 2014/11/14 17:18:46 UTC

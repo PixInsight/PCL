@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/FFTRegistration.h - Released 2014/10/29 07:34:06 UTC
+// pcl/FFTRegistration.h - Released 2014/11/14 17:16:33 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -607,4 +607,4 @@ protected:
 #endif   // __PCL_FFTRegistration_h
 
 // ****************************************************************************
-// EOF pcl/FFTRegistration.h - Released 2014/10/29 07:34:06 UTC
+// EOF pcl/FFTRegistration.h - Released 2014/11/14 17:16:33 UTC

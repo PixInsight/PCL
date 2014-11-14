@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
 # PixInsight Makefile Generator Script v1.93
 # Copyright (C) 2009-2014 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Tue, 28 Oct 2014 18:16:57 GMT
+# Automatically generated on Fri, 14 Nov 2014 17:27:21 GMT
 # Project id ...... Geometry
 # Project type .... Module
 # Platform ........ Windows/vc12
@@ -30,7 +30,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{D6ED1172-B607-4493-B868-B5DC60E3F37F}</ProjectGuid>
+    <ProjectGuid>{9A65FDD9-FFE1-48A6-B8F0-DD61A64D9799}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -107,11 +107,9 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
+      <DebugInformationFormat></DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -119,8 +117,7 @@
       <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR64)\Geometry-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -148,11 +145,9 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
+      <DebugInformationFormat></DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -160,8 +155,7 @@
       <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\Geometry-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -184,8 +178,7 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -195,8 +188,7 @@
       <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR64)\Geometry-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <ImportLibrary>$(Platform)\$(Configuration)\$(ProjectName).lib</ImportLibrary>
@@ -213,8 +205,7 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -224,8 +215,7 @@
       <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\Geometry-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <ImportLibrary>$(Platform)\$(Configuration)\$(ProjectName).lib</ImportLibrary>
@@ -234,102 +224,102 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\ChannelMatchInstance.cpp" />
-    <ClCompile Include="..\..\ChannelMatchInterface.cpp" />
-    <ClCompile Include="..\..\ChannelMatchParameters.cpp" />
-    <ClCompile Include="..\..\ChannelMatchProcess.cpp" />
-    <ClCompile Include="..\..\CommonParameters.cpp" />
-    <ClCompile Include="..\..\CropInstance.cpp" />
-    <ClCompile Include="..\..\CropInterface.cpp" />
-    <ClCompile Include="..\..\CropParameters.cpp" />
-    <ClCompile Include="..\..\CropProcess.cpp" />
-    <ClCompile Include="..\..\DynamicCropInstance.cpp" />
-    <ClCompile Include="..\..\DynamicCropInterface.cpp" />
-    <ClCompile Include="..\..\DynamicCropParameters.cpp" />
-    <ClCompile Include="..\..\DynamicCropPreferencesDialog.cpp" />
-    <ClCompile Include="..\..\DynamicCropProcess.cpp" />
-    <ClCompile Include="..\..\FastRotationActions.cpp" />
-    <ClCompile Include="..\..\FastRotationInstance.cpp" />
-    <ClCompile Include="..\..\FastRotationInterface.cpp" />
-    <ClCompile Include="..\..\FastRotationParameters.cpp" />
-    <ClCompile Include="..\..\FastRotationProcess.cpp" />
-    <ClCompile Include="..\..\GeometryModule.cpp" />
-    <ClCompile Include="..\..\IntegerResampleInstance.cpp" />
-    <ClCompile Include="..\..\IntegerResampleInterface.cpp" />
-    <ClCompile Include="..\..\IntegerResampleParameters.cpp" />
-    <ClCompile Include="..\..\IntegerResampleProcess.cpp" />
-    <ClCompile Include="..\..\ResampleInstance.cpp" />
-    <ClCompile Include="..\..\ResampleInterface.cpp" />
-    <ClCompile Include="..\..\ResampleParameters.cpp" />
-    <ClCompile Include="..\..\ResampleProcess.cpp" />
-    <ClCompile Include="..\..\RotationInstance.cpp" />
-    <ClCompile Include="..\..\RotationInterface.cpp" />
-    <ClCompile Include="..\..\RotationParameters.cpp" />
-    <ClCompile Include="..\..\RotationProcess.cpp" />
+    <ClCompile Include="..\..\ChannelMatchInstance.cpp"/>
+    <ClCompile Include="..\..\ChannelMatchInterface.cpp"/>
+    <ClCompile Include="..\..\ChannelMatchParameters.cpp"/>
+    <ClCompile Include="..\..\ChannelMatchProcess.cpp"/>
+    <ClCompile Include="..\..\CommonParameters.cpp"/>
+    <ClCompile Include="..\..\CropInstance.cpp"/>
+    <ClCompile Include="..\..\CropInterface.cpp"/>
+    <ClCompile Include="..\..\CropParameters.cpp"/>
+    <ClCompile Include="..\..\CropProcess.cpp"/>
+    <ClCompile Include="..\..\DynamicCropInstance.cpp"/>
+    <ClCompile Include="..\..\DynamicCropInterface.cpp"/>
+    <ClCompile Include="..\..\DynamicCropParameters.cpp"/>
+    <ClCompile Include="..\..\DynamicCropPreferencesDialog.cpp"/>
+    <ClCompile Include="..\..\DynamicCropProcess.cpp"/>
+    <ClCompile Include="..\..\FastRotationActions.cpp"/>
+    <ClCompile Include="..\..\FastRotationInstance.cpp"/>
+    <ClCompile Include="..\..\FastRotationInterface.cpp"/>
+    <ClCompile Include="..\..\FastRotationParameters.cpp"/>
+    <ClCompile Include="..\..\FastRotationProcess.cpp"/>
+    <ClCompile Include="..\..\GeometryModule.cpp"/>
+    <ClCompile Include="..\..\IntegerResampleInstance.cpp"/>
+    <ClCompile Include="..\..\IntegerResampleInterface.cpp"/>
+    <ClCompile Include="..\..\IntegerResampleParameters.cpp"/>
+    <ClCompile Include="..\..\IntegerResampleProcess.cpp"/>
+    <ClCompile Include="..\..\ResampleInstance.cpp"/>
+    <ClCompile Include="..\..\ResampleInterface.cpp"/>
+    <ClCompile Include="..\..\ResampleParameters.cpp"/>
+    <ClCompile Include="..\..\ResampleProcess.cpp"/>
+    <ClCompile Include="..\..\RotationInstance.cpp"/>
+    <ClCompile Include="..\..\RotationInterface.cpp"/>
+    <ClCompile Include="..\..\RotationParameters.cpp"/>
+    <ClCompile Include="..\..\RotationProcess.cpp"/>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\ChannelMatchInstance.h" />
-    <ClInclude Include="..\..\ChannelMatchInterface.h" />
-    <ClInclude Include="..\..\ChannelMatchParameters.h" />
-    <ClInclude Include="..\..\ChannelMatchProcess.h" />
-    <ClInclude Include="..\..\CommonParameters.h" />
-    <ClInclude Include="..\..\CropInstance.h" />
-    <ClInclude Include="..\..\CropInterface.h" />
-    <ClInclude Include="..\..\CropParameters.h" />
-    <ClInclude Include="..\..\CropProcess.h" />
-    <ClInclude Include="..\..\DynamicCropInstance.h" />
-    <ClInclude Include="..\..\DynamicCropInterface.h" />
-    <ClInclude Include="..\..\DynamicCropParameters.h" />
-    <ClInclude Include="..\..\DynamicCropPreferencesDialog.h" />
-    <ClInclude Include="..\..\DynamicCropProcess.h" />
-    <ClInclude Include="..\..\FastRotationActions.h" />
-    <ClInclude Include="..\..\FastRotationInstance.h" />
-    <ClInclude Include="..\..\FastRotationInterface.h" />
-    <ClInclude Include="..\..\FastRotationParameters.h" />
-    <ClInclude Include="..\..\FastRotationProcess.h" />
-    <ClInclude Include="..\..\GeometryModule.h" />
-    <ClInclude Include="..\..\IntegerResampleInstance.h" />
-    <ClInclude Include="..\..\IntegerResampleInterface.h" />
-    <ClInclude Include="..\..\IntegerResampleParameters.h" />
-    <ClInclude Include="..\..\IntegerResampleProcess.h" />
-    <ClInclude Include="..\..\ResampleInstance.h" />
-    <ClInclude Include="..\..\ResampleInterface.h" />
-    <ClInclude Include="..\..\ResampleParameters.h" />
-    <ClInclude Include="..\..\ResampleProcess.h" />
-    <ClInclude Include="..\..\RotationInstance.h" />
-    <ClInclude Include="..\..\RotationInterface.h" />
-    <ClInclude Include="..\..\RotationParameters.h" />
-    <ClInclude Include="..\..\RotationProcess.h" />
+    <ClInclude Include="..\..\ChannelMatchInstance.h"/>
+    <ClInclude Include="..\..\ChannelMatchInterface.h"/>
+    <ClInclude Include="..\..\ChannelMatchParameters.h"/>
+    <ClInclude Include="..\..\ChannelMatchProcess.h"/>
+    <ClInclude Include="..\..\CommonParameters.h"/>
+    <ClInclude Include="..\..\CropInstance.h"/>
+    <ClInclude Include="..\..\CropInterface.h"/>
+    <ClInclude Include="..\..\CropParameters.h"/>
+    <ClInclude Include="..\..\CropProcess.h"/>
+    <ClInclude Include="..\..\DynamicCropInstance.h"/>
+    <ClInclude Include="..\..\DynamicCropInterface.h"/>
+    <ClInclude Include="..\..\DynamicCropParameters.h"/>
+    <ClInclude Include="..\..\DynamicCropPreferencesDialog.h"/>
+    <ClInclude Include="..\..\DynamicCropProcess.h"/>
+    <ClInclude Include="..\..\FastRotationActions.h"/>
+    <ClInclude Include="..\..\FastRotationInstance.h"/>
+    <ClInclude Include="..\..\FastRotationInterface.h"/>
+    <ClInclude Include="..\..\FastRotationParameters.h"/>
+    <ClInclude Include="..\..\FastRotationProcess.h"/>
+    <ClInclude Include="..\..\GeometryModule.h"/>
+    <ClInclude Include="..\..\IntegerResampleInstance.h"/>
+    <ClInclude Include="..\..\IntegerResampleInterface.h"/>
+    <ClInclude Include="..\..\IntegerResampleParameters.h"/>
+    <ClInclude Include="..\..\IntegerResampleProcess.h"/>
+    <ClInclude Include="..\..\ResampleInstance.h"/>
+    <ClInclude Include="..\..\ResampleInterface.h"/>
+    <ClInclude Include="..\..\ResampleParameters.h"/>
+    <ClInclude Include="..\..\ResampleProcess.h"/>
+    <ClInclude Include="..\..\RotationInstance.h"/>
+    <ClInclude Include="..\..\RotationInterface.h"/>
+    <ClInclude Include="..\..\RotationParameters.h"/>
+    <ClInclude Include="..\..\RotationProcess.h"/>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\ChannelMatchIcon.png" />
-    <None Include="..\..\CropIcon.png" />
-    <None Include="..\..\DynamicCropIcon.png" />
-    <None Include="..\..\FastRotationIcon.png" />
-    <None Include="..\..\HorizontalMirrorActionIcon.png" />
-    <None Include="..\..\IntegerResampleIcon.png" />
-    <None Include="..\..\ResampleIcon.png" />
-    <None Include="..\..\Rotate180ActionIcon.png" />
-    <None Include="..\..\Rotate90CCWActionIcon.png" />
-    <None Include="..\..\Rotate90CWActionIcon.png" />
-    <None Include="..\..\RotationIcon.png" />
-    <None Include="..\..\VerticalMirrorActionIcon.png" />
-    <None Include="..\..\__private\Symbol Redo.png" />
-    <None Include="..\..\cursors\move.png" />
-    <None Include="..\..\cursors\move_drag.png" />
-    <None Include="..\..\cursors\move_point.png" />
-    <None Include="..\..\cursors\move_point_drag.png" />
-    <None Include="..\..\cursors\resize_bottom.png" />
-    <None Include="..\..\cursors\resize_left.png" />
-    <None Include="..\..\cursors\resize_left_bottom.png" />
-    <None Include="..\..\cursors\resize_left_top.png" />
-    <None Include="..\..\cursors\resize_right.png" />
-    <None Include="..\..\cursors\resize_right_bottom.png" />
-    <None Include="..\..\cursors\resize_right_top.png" />
-    <None Include="..\..\cursors\resize_top.png" />
-    <None Include="..\..\cursors\rotate.png" />
+    <None Include="..\..\ChannelMatchIcon.png"/>
+    <None Include="..\..\CropIcon.png"/>
+    <None Include="..\..\DynamicCropIcon.png"/>
+    <None Include="..\..\FastRotationIcon.png"/>
+    <None Include="..\..\HorizontalMirrorActionIcon.png"/>
+    <None Include="..\..\IntegerResampleIcon.png"/>
+    <None Include="..\..\ResampleIcon.png"/>
+    <None Include="..\..\Rotate180ActionIcon.png"/>
+    <None Include="..\..\Rotate90CCWActionIcon.png"/>
+    <None Include="..\..\Rotate90CWActionIcon.png"/>
+    <None Include="..\..\RotationIcon.png"/>
+    <None Include="..\..\VerticalMirrorActionIcon.png"/>
+    <None Include="..\..\__private\Symbol Redo.png"/>
+    <None Include="..\..\cursors\move.png"/>
+    <None Include="..\..\cursors\move_drag.png"/>
+    <None Include="..\..\cursors\move_point.png"/>
+    <None Include="..\..\cursors\move_point_drag.png"/>
+    <None Include="..\..\cursors\resize_bottom.png"/>
+    <None Include="..\..\cursors\resize_left.png"/>
+    <None Include="..\..\cursors\resize_left_bottom.png"/>
+    <None Include="..\..\cursors\resize_left_top.png"/>
+    <None Include="..\..\cursors\resize_right.png"/>
+    <None Include="..\..\cursors\resize_right_bottom.png"/>
+    <None Include="..\..\cursors\resize_right_top.png"/>
+    <None Include="..\..\cursors\resize_top.png"/>
+    <None Include="..\..\cursors\rotate.png"/>
   </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

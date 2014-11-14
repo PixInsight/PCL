@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Image Process Module Version 01.02.08.0281
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Image Process Module Version 01.02.08.0283
 // ****************************************************************************
-// FITSHeaderParameters.cpp - Released 2014/10/29 07:35:22 UTC
+// FITSHeaderParameters.cpp - Released 2014/11/14 17:19:21 UTC
 // ****************************************************************************
 // This file is part of the standard Image PixInsight module.
 //
@@ -111,4 +111,4 @@ IsoString FITSKeywordComment::Id() const
 } // pcl
 
 // ****************************************************************************
-// EOF FITSHeaderParameters.cpp - Released 2014/10/29 07:35:22 UTC
+// EOF FITSHeaderParameters.cpp - Released 2014/11/14 17:19:21 UTC

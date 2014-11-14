@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/AbstractImage.h - Released 2014/10/29 07:34:13 UTC
+// pcl/AbstractImage.h - Released 2014/11/14 17:16:40 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -1287,4 +1287,4 @@ protected:
 #endif   // __PCL_AbstractImage_h
 
 // ****************************************************************************
-// EOF pcl/AbstractImage.h - Released 2014/10/29 07:34:13 UTC
+// EOF pcl/AbstractImage.h - Released 2014/11/14 17:16:40 UTC

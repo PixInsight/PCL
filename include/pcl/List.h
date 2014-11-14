@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/List.h - Released 2014/10/29 07:34:07 UTC
+// pcl/List.h - Released 2014/11/14 17:16:34 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -3843,4 +3843,4 @@ private:
 #endif  // __PCL_List_h
 
 // ****************************************************************************
-// EOF pcl/List.h - Released 2014/10/29 07:34:07 UTC
+// EOF pcl/List.h - Released 2014/11/14 17:16:34 UTC

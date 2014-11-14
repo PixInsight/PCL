@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/APIInterface.h - Released 2014/10/29 07:34:13 UTC
+// pcl/APIInterface.h - Released 2014/11/14 17:16:41 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -3099,4 +3099,4 @@ extern "C" void* api_func APIFunctionResolver( const char* );
 #endif   // __PCL_API_APIInterface_h
 
 // ****************************************************************************
-// EOF pcl/APIInterface.h - Released 2014/10/29 07:34:13 UTC
+// EOF pcl/APIInterface.h - Released 2014/11/14 17:16:41 UTC

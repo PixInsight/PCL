@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard CometAlignment Process Module Version 01.00.06.0057
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard CometAlignment Process Module Version 01.00.06.0059
 // ****************************************************************************
-// StarDetector.cpp - Released 2014/10/29 07:35:26 UTC
+// StarDetector.cpp - Released 2014/11/14 17:19:24 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -282,4 +282,4 @@ StarDetector::StarDetector( const ImageVariant& v, int channel,
 } // pcl
 
 // ****************************************************************************
-// EOF StarDetector.cpp - Released 2014/10/29 07:35:26 UTC
+// EOF StarDetector.cpp - Released 2014/11/14 17:19:24 UTC

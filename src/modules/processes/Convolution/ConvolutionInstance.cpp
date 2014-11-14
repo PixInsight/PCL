@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Convolution Process Module Version 01.01.03.0138
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Convolution Process Module Version 01.01.03.0140
 // ****************************************************************************
-// ConvolutionInstance.cpp - Released 2014/10/29 07:34:55 UTC
+// ConvolutionInstance.cpp - Released 2014/11/14 17:18:46 UTC
 // ****************************************************************************
 // This file is part of the standard Convolution PixInsight module.
 //
@@ -483,4 +483,4 @@ bool ConvolutionInstance::CreateFilterImage( Image& filter ) const
 } // pcl
 
 // ****************************************************************************
-// EOF ConvolutionInstance.cpp - Released 2014/10/29 07:34:55 UTC
+// EOF ConvolutionInstance.cpp - Released 2014/11/14 17:18:46 UTC

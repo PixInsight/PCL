@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Sandbox Process Module Version 01.00.02.0142
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Sandbox Process Module Version 01.00.02.0144
 // ****************************************************************************
-// SandboxParameters.cpp - Released 2014/10/29 07:35:25 UTC
+// SandboxParameters.cpp - Released 2014/11/14 17:19:24 UTC
 // ****************************************************************************
 // This file is part of the standard Sandbox PixInsight module.
 //
@@ -195,4 +195,4 @@ size_type SandboxParameterFive::MinLength() const
 } // pcl
 
 // ****************************************************************************
-// EOF SandboxParameters.cpp - Released 2014/10/29 07:35:25 UTC
+// EOF SandboxParameters.cpp - Released 2014/11/14 17:19:24 UTC

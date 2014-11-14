@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard ImageIntegration Process Module Version 01.09.04.0251
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard ImageIntegration Process Module Version 01.09.04.0253
 // ****************************************************************************
-// ImageIntegrationInterface.cpp - Released 2014/10/29 07:35:22 UTC
+// ImageIntegrationInterface.cpp - Released 2014/11/14 17:19:21 UTC
 // ****************************************************************************
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -51,8 +51,7 @@
 #include "ImageIntegrationProcess.h"
 #include "IntegrationCache.h"
 
-#include "../ImageRegistration/DrizzleDataDecoder.h"
-
+#include <pcl/DrizzleDataDecoder.h>
 #include <pcl/FileDialog.h>
 //#include <pcl/FileFormat.h>
 #include <pcl/MessageBox.h>
@@ -1845,4 +1844,4 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
 } // pcl
 
 // ****************************************************************************
-// EOF ImageIntegrationInterface.cpp - Released 2014/10/29 07:35:22 UTC
+// EOF ImageIntegrationInterface.cpp - Released 2014/11/14 17:19:21 UTC

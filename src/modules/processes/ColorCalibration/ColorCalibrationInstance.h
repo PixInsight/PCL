@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard ColorCalibration Process Module Version 01.02.00.0168
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard ColorCalibration Process Module Version 01.02.00.0170
 // ****************************************************************************
-// ColorCalibrationInstance.h - Released 2014/10/29 07:34:54 UTC
+// ColorCalibrationInstance.h - Released 2014/11/14 17:18:46 UTC
 // ****************************************************************************
 // This file is part of the standard ColorCalibration PixInsight module.
 //
@@ -114,4 +114,4 @@ private:
 #endif   // __ColorCalibrationInstance_h
 
 // ****************************************************************************
-// EOF ColorCalibrationInstance.h - Released 2014/10/29 07:34:54 UTC
+// EOF ColorCalibrationInstance.h - Released 2014/11/14 17:18:46 UTC

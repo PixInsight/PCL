@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Convolution Process Module Version 01.01.03.0138
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Convolution Process Module Version 01.01.03.0140
 // ****************************************************************************
-// ConvolutionParameters.cpp - Released 2014/10/29 07:34:55 UTC
+// ConvolutionParameters.cpp - Released 2014/11/14 17:18:46 UTC
 // ****************************************************************************
 // This file is part of the standard Convolution PixInsight module.
 //
@@ -280,4 +280,4 @@ IsoString ConViewId::Id() const
 } // pcl
 
 // ****************************************************************************
-// EOF ConvolutionParameters.cpp - Released 2014/10/29 07:34:55 UTC
+// EOF ConvolutionParameters.cpp - Released 2014/11/14 17:18:46 UTC

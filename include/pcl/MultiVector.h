@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/MultiVector.h - Released 2014/10/29 07:34:07 UTC
+// pcl/MultiVector.h - Released 2014/11/14 17:16:34 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -364,4 +364,4 @@ typedef DMultiVector               MultiVector;
 #endif   // __PCL_MultiVector_h
 
 // ****************************************************************************
-// EOF pcl/MultiVector.h - Released 2014/10/29 07:34:07 UTC
+// EOF pcl/MultiVector.h - Released 2014/11/14 17:16:34 UTC

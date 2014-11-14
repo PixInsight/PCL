@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/File.cpp - Released 2014/10/29 07:34:21 UTC
+// pcl/File.cpp - Released 2014/11/14 17:17:01 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -2428,4 +2428,4 @@ bool File::IsValidHandle( handle h ) const
 }  // pcl
 
 // ****************************************************************************
-// EOF pcl/File.cpp - Released 2014/10/29 07:34:21 UTC
+// EOF pcl/File.cpp - Released 2014/11/14 17:17:01 UTC

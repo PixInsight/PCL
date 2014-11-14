@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/Image.h - Released 2014/10/29 07:34:11 UTC
+// pcl/Image.h - Released 2014/11/14 17:16:38 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -16557,4 +16557,4 @@ typedef FComplexImage                     ComplexImage;
 #endif   // __PCL_Image_h
 
 // ****************************************************************************
-// EOF pcl/Image.h - Released 2014/10/29 07:34:11 UTC
+// EOF pcl/Image.h - Released 2014/11/14 17:16:38 UTC

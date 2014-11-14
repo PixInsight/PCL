@@ -30,3 +30,6 @@
 *.log
 *.tlog
 *.lastbuildstate
+# Folders
+host
+__private

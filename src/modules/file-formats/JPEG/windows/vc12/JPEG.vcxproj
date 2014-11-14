@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
 # PixInsight Makefile Generator Script v1.93
 # Copyright (C) 2009-2014 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Tue, 28 Oct 2014 18:16:51 GMT
+# Automatically generated on Fri, 14 Nov 2014 17:27:14 GMT
 # Project id ...... JPEG
 # Project type .... Module
 # Platform ........ Windows/vc12
@@ -42,7 +42,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{26E57EEC-B67E-4B2E-A62A-A98B4CC4BAE8}</ProjectGuid>
+    <ProjectGuid>{9A65FDD9-FFE1-48A6-B8F0-DD61A64D9799}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -119,11 +119,9 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
+      <DebugInformationFormat></DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -131,8 +129,7 @@
       <AdditionalDependencies>PCL-pxi.lib;jpeg-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR64)\JPEG-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR64);..\..\jpeglib\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -160,11 +157,9 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
+      <DebugInformationFormat></DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -172,8 +167,7 @@
       <AdditionalDependencies>PCL-pxi.lib;jpeg-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\JPEG-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR32);..\..\jpeglib\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -196,8 +190,7 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -207,8 +200,7 @@
       <AdditionalDependencies>PCL-pxi.lib;jpeg-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR64)\JPEG-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR64);..\..\jpeglib\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <ImportLibrary>$(Platform)\$(Configuration)\$(ProjectName).lib</ImportLibrary>
@@ -225,8 +217,7 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -236,8 +227,7 @@
       <AdditionalDependencies>PCL-pxi.lib;jpeg-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\JPEG-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR32);..\..\jpeglib\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <ImportLibrary>$(Platform)\$(Configuration)\$(ProjectName).lib</ImportLibrary>
@@ -246,26 +236,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\JPEG.cpp" />
-    <ClCompile Include="..\..\JPEGFormat.cpp" />
-    <ClCompile Include="..\..\JPEGInstance.cpp" />
-    <ClCompile Include="..\..\JPEGModule.cpp" />
-    <ClCompile Include="..\..\JPEGOptionsDialog.cpp" />
-    <ClCompile Include="..\..\JPEGPreferencesDialog.cpp" />
+    <ClCompile Include="..\..\JPEG.cpp"/>
+    <ClCompile Include="..\..\JPEGFormat.cpp"/>
+    <ClCompile Include="..\..\JPEGInstance.cpp"/>
+    <ClCompile Include="..\..\JPEGModule.cpp"/>
+    <ClCompile Include="..\..\JPEGOptionsDialog.cpp"/>
+    <ClCompile Include="..\..\JPEGPreferencesDialog.cpp"/>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\JPEG.h" />
-    <ClInclude Include="..\..\JPEGFormat.h" />
-    <ClInclude Include="..\..\JPEGInstance.h" />
-    <ClInclude Include="..\..\JPEGModule.h" />
-    <ClInclude Include="..\..\JPEGOptionsDialog.h" />
-    <ClInclude Include="..\..\JPEGPreferencesDialog.h" />
-    <ClInclude Include="..\..\jpeglib\include\jpeglib\jconfig.h" />
-    <ClInclude Include="..\..\jpeglib\include\jpeglib\jerror.h" />
-    <ClInclude Include="..\..\jpeglib\include\jpeglib\jmorecfg.h" />
-    <ClInclude Include="..\..\jpeglib\include\jpeglib\jpeglib.h" />
+    <ClInclude Include="..\..\JPEG.h"/>
+    <ClInclude Include="..\..\JPEGFormat.h"/>
+    <ClInclude Include="..\..\JPEGInstance.h"/>
+    <ClInclude Include="..\..\JPEGModule.h"/>
+    <ClInclude Include="..\..\JPEGOptionsDialog.h"/>
+    <ClInclude Include="..\..\JPEGPreferencesDialog.h"/>
+    <ClInclude Include="..\..\jpeglib\include\jpeglib\jconfig.h"/>
+    <ClInclude Include="..\..\jpeglib\include\jpeglib\jerror.h"/>
+    <ClInclude Include="..\..\jpeglib\include\jpeglib\jmorecfg.h"/>
+    <ClInclude Include="..\..\jpeglib\include\jpeglib\jpeglib.h"/>
   </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

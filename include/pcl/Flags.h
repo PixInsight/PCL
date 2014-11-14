@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/Flags.h - Released 2014/10/29 07:34:07 UTC
+// pcl/Flags.h - Released 2014/11/14 17:16:34 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -482,4 +482,4 @@ inline Flags<E> operator ^( unsigned a, Flags<E> b )
 #endif   // __PCL_Flags_h
 
 // ****************************************************************************
-// EOF pcl/Flags.h - Released 2014/10/29 07:34:07 UTC
+// EOF pcl/Flags.h - Released 2014/11/14 17:16:34 UTC

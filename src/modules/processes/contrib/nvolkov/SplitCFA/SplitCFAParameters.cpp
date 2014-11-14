@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard SplitCFA Process Module Version 01.00.05.0035
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard SplitCFA Process Module Version 01.00.05.0037
 // ****************************************************************************
-// SplitCFAParameters.cpp - Released 2014/10/29 07:35:26 UTC
+// SplitCFAParameters.cpp - Released 2014/11/14 17:19:24 UTC
 // ****************************************************************************
 // This file is part of the standard SplitCFA PixInsight module.
 //
@@ -134,4 +134,4 @@ bool SplitCFAOverwrite::DefaultValue() const { return false; }
 } // pcl
 
 // ****************************************************************************
-// EOF SplitCFAParameters.cpp - Released 2014/10/29 07:35:26 UTC
+// EOF SplitCFAParameters.cpp - Released 2014/11/14 17:19:24 UTC

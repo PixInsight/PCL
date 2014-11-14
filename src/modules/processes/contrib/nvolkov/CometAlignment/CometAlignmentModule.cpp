@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard CometAlignment Process Module Version 01.00.06.0057
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard CometAlignment Process Module Version 01.00.06.0059
 // ****************************************************************************
-// CometAlignmentModule.cpp - Released 2014/10/29 07:35:26 UTC
+// CometAlignmentModule.cpp - Released 2014/11/14 17:19:24 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -50,12 +50,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  06
-#define MODULE_VERSION_BUILD     0057
+#define MODULE_VERSION_BUILD     0059
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2014
-#define MODULE_RELEASE_MONTH     10
-#define MODULE_RELEASE_DAY       29
+#define MODULE_RELEASE_MONTH     11
+#define MODULE_RELEASE_DAY       14
 
 #include "CometAlignmentModule.h"
 #include "CometAlignmentProcess.h"
@@ -165,4 +165,4 @@ int InstallPixInsightModule( int mode )
 }
 
 // ****************************************************************************
-// EOF CometAlignmentModule.cpp - Released 2014/10/29 07:35:26 UTC
+// EOF CometAlignmentModule.cpp - Released 2014/11/14 17:19:24 UTC

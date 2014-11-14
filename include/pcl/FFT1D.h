@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/FFT1D.h - Released 2014/10/29 07:34:06 UTC
+// pcl/FFT1D.h - Released 2014/11/14 17:16:33 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -836,4 +836,4 @@ typedef FRealFFT                    RealFFT;
 #endif   // __PCL_FFT1D_h
 
 // ****************************************************************************
-// EOF pcl/FFT1D.h - Released 2014/10/29 07:34:06 UTC
+// EOF pcl/FFT1D.h - Released 2014/11/14 17:16:33 UTC

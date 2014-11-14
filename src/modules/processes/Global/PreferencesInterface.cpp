@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Global Process Module Version 01.02.05.0258
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Global Process Module Version 01.02.05.0260
 // ****************************************************************************
-// PreferencesInterface.cpp - Released 2014/10/29 07:34:56 UTC
+// PreferencesInterface.cpp - Released 2014/11/14 17:18:47 UTC
 // ****************************************************************************
 // This file is part of the standard Global PixInsight module.
 //
@@ -2083,4 +2083,4 @@ void PreferencesInterface::GUIData::InitializeCategories()
 } // pcl
 
 // ****************************************************************************
-// EOF PreferencesInterface.cpp - Released 2014/10/29 07:34:56 UTC
+// EOF PreferencesInterface.cpp - Released 2014/11/14 17:18:47 UTC

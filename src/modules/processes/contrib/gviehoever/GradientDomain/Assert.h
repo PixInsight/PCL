@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard GradientDomain Process Module Version 00.06.04.0096
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard GradientDomain Process Module Version 00.06.04.0098
 // ****************************************************************************
-// Assert.h - Released 2014/10/29 07:35:25 UTC
+// Assert.h - Released 2014/11/14 17:19:24 UTC
 // ****************************************************************************
 // This file is part of the standard GradientDomain PixInsight module.
 //
@@ -46,4 +46,4 @@
 #endif   // __Assert_h
 
 // ****************************************************************************
-// EOF Assert.h - Released 2014/10/29 07:35:25 UTC
+// EOF Assert.h - Released 2014/11/14 17:19:24 UTC

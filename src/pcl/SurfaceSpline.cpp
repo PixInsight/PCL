@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/SurfaceSpline.cpp - Released 2014/10/29 07:34:21 UTC
+// pcl/SurfaceSpline.cpp - Released 2014/11/14 17:17:01 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -95,4 +95,4 @@ double SurfaceSplineBase::Interpolate( const double* fx, const double* fy, int n
 } // pcl
 
 // ****************************************************************************
-// EOF pcl/SurfaceSpline.cpp - Released 2014/10/29 07:34:21 UTC
+// EOF pcl/SurfaceSpline.cpp - Released 2014/11/14 17:17:01 UTC

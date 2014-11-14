@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/Label.h - Released 2014/10/29 07:34:07 UTC
+// pcl/Label.h - Released 2014/11/14 17:16:34 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -171,4 +171,4 @@ public:
 #endif   // __PCL_Label_h
 
 // ****************************************************************************
-// EOF pcl/Label.h - Released 2014/10/29 07:34:07 UTC
+// EOF pcl/Label.h - Released 2014/11/14 17:16:34 UTC

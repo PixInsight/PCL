@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/SurfaceSpline.h - Released 2014/10/29 07:34:13 UTC
+// pcl/SurfaceSpline.h - Released 2014/11/14 17:16:41 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -326,4 +326,4 @@ protected:
 #endif   // __PCL_SurfaceSpline_h
 
 // ****************************************************************************
-// EOF pcl/SurfaceSpline.h - Released 2014/10/29 07:34:13 UTC
+// EOF pcl/SurfaceSpline.h - Released 2014/11/14 17:16:41 UTC

@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard Geometry Process Module Version 01.01.00.0245
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard Geometry Process Module Version 01.01.00.0247
 // ****************************************************************************
-// CropProcess.cpp - Released 2014/10/29 07:34:55 UTC
+// CropProcess.cpp - Released 2014/11/14 17:18:46 UTC
 // ****************************************************************************
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -147,4 +147,4 @@ ProcessImplementation* CropProcess::Clone( const ProcessImplementation& p ) cons
 } // pcl
 
 // ****************************************************************************
-// EOF CropProcess.cpp - Released 2014/10/29 07:34:55 UTC
+// EOF CropProcess.cpp - Released 2014/11/14 17:18:46 UTC

@@ -1,7 +1,7 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
+// PixInsight Class Library - PCL 02.00.13.0692
 // ****************************************************************************
-// pcl/MetaObject.h - Released 2014/10/29 07:34:11 UTC
+// pcl/MetaObject.h - Released 2014/11/14 17:16:39 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -166,4 +166,4 @@ protected:
 #endif   // __PCL_MetaObject_h
 
 // ****************************************************************************
-// EOF pcl/MetaObject.h - Released 2014/10/29 07:34:11 UTC
+// EOF pcl/MetaObject.h - Released 2014/11/14 17:16:39 UTC

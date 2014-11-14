@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard CometAlignment Process Module Version 01.00.06.0057
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard CometAlignment Process Module Version 01.00.06.0059
 // ****************************************************************************
-// CometAlignmentProcess.cpp - Released 2014/10/29 07:35:26 UTC
+// CometAlignmentProcess.cpp - Released 2014/11/14 17:19:24 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -147,4 +147,4 @@ ProcessImplementation* CometAlignmentProcess::Clone( const ProcessImplementation
 } // pcl
 
 // ****************************************************************************
-// EOF CometAlignmentProcess.cpp - Released 2014/10/29 07:35:26 UTC
+// EOF CometAlignmentProcess.cpp - Released 2014/11/14 17:19:24 UTC

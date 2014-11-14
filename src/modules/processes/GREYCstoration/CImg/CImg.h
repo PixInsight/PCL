@@ -1,8 +1,8 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0689
-// Standard GREYCstoration Process Module Version 01.00.02.0203
+// PixInsight Class Library - PCL 02.00.13.0692
+// Standard GREYCstoration Process Module Version 01.00.02.0205
 // ****************************************************************************
-// CImg.h - Released 2014/10/29 07:35:22 UTC
+// CImg.h - Released 2014/11/14 17:19:21 UTC
 // ****************************************************************************
 // This file is part of the standard GREYCstoration PixInsight module.
 //
@@ -39959,4 +39959,4 @@ namespace cimg {
 #endif
 
 // ****************************************************************************
-// EOF CImg.h - Released 2014/10/29 07:35:22 UTC
+// EOF CImg.h - Released 2014/11/14 17:19:21 UTC

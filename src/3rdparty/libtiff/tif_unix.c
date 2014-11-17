@@ -82,13 +82,19 @@ _tiffWriteProc(thandle_t fd, void* buf, tmsize_t size)
 static uint64
 _tiffSeekProc(thandle_t fd, uint64 off, int whence)
 {
-	off_t off_io = (off_t) off;
+// ### BEGIN CUSTOM CODE 2014 NOV 17
+#ifdef __WIN32__
+	__int64 off_io = (__int64) off;
+#else
+   off_t off_io = (off_t) off;
+#endif
+// ### END CUSTOM CODE 2014 NOV 17
 	if ((uint64) off_io != off)
 	{
 		errno=EINVAL;
 		return (uint64) -1; /* this is really gross */
 	}
-	
+
 // ### BEGIN CUSTOM CODE 2012 NOV 07
 #ifdef __WIN32__
 	return((uint64)_lseeki64((int)fd,off_io,whence));
@@ -97,7 +103,7 @@ _tiffSeekProc(thandle_t fd, uint64 off, int whence)
 #endif
 	//return((uint64)lseek((int)fd,off_io,whence));
 // ### END CUSTOM CODE 2012 NOV 07
-	
+
 }
 
 static int
@@ -254,9 +260,9 @@ TIFFOpenW(const wchar_t* name, const char* mode)
 
 	tif = TIFFFdOpen((int)fd, (mbname != NULL) ? mbname : "<unknown>",
 			 mode);
-	
+
 	_TIFFfree(mbname);
-	
+
 	if(!tif)
 		close(fd);
 	return tif;

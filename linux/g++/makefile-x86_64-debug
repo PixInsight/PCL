@@ -21,7 +21,7 @@ all: $(OBJ_DIR)/PixInsightINDI-pxm.so
 
 
 .PHONY: test
-test:  libgtest.a libgmock.a $(TEST_EXE)
+test:  $(OBJ_DIR)/PixInsightINDI-pxm.so libgtest.a libgmock.a $(TEST_EXE)
 
 #
 # Source files
@@ -87,6 +87,9 @@ PROPBUILDER_TEST_OBJ_FILES=\
 PROPVISITOR_TEST_OBJ_FILES=\
 ./x86_64/Release/PropertyTreeTest.o
 
+TEST_OBJ_FILES = $(CLIENT_TEST_OBJ_FILES) $(PROPBUILDER_TEST_OBJ_FILES) $(PROPVISITOR_TEST_OBJ_FILES)
+
+
 #
 # Dependency files
 #
@@ -112,7 +115,10 @@ DEP_FILES= \
 ./x86_64/Release/PixInsightINDIclientTest.d \
 ./x86_64/Release/FakePixInsightINDIInstance.d\
 ./x86_64/Release/FakeINDIClient.d\
-./x86_64/Release/INDIPropertyBuilder.d
+./x86_64/Release/INDIPropertyBuilder.d\
+./x86_64/Release/INDIPropertyBuilderTest.d\
+./x86_64/Release/PropertyTreeTest.d
+
 
 GTEST_OBJ_FILES=\
  gtest-all.o \
@@ -153,20 +159,20 @@ gmock_main.o : ${GMOCK_DIR}/src/gmock_main.cc
 	    -isystem ${GTEST_DIR}/include -I${GTEST_DIR}  -pthread -c "$<"
 
 
-PixInsightINDIclientGTest: $(OBJ_DIR)/PixInsightINDI-pxm.so $(CLIENT_TEST_OBJ_FILES)
+PixInsightINDIclientGTest: $(OBJ_FILES) $(CLIENT_TEST_OBJ_FILES)
 	g++ -I ${GTEST_DIR}/include -L"${GTEST_DIR}/lib" -I ${GMOCK_DIR}/include -L"${GMOCK_DIR}/lib"  -L"$(PCLLIBDIR64)" -pthread  -o PixInsightINDIclientGTest $(OBJ_FILES)  ${CLIENT_TEST_OBJ_FILES} libgtest.a libgmock.a  -lPCL-pxi -lz
 
-INDIPropertyBuilderGTest: $(OBJ_DIR)/PixInsightINDI-pxm.so $(PROPBUILDER_TEST_OBJ_FILES)
+INDIPropertyBuilderGTest:  $(OBJ_FILES) $(PROPBUILDER_TEST_OBJ_FILES)
 	g++ -I ${GTEST_DIR}/include -L"${GTEST_DIR}/lib" -I ${GMOCK_DIR}/include -L"${GMOCK_DIR}/lib"  -L"$(PCLLIBDIR64)" -pthread  -o INDIPropertyBuilderGTest $(OBJ_FILES)  ${PROPBUILDER_TEST_OBJ_FILES} libgtest.a libgmock.a  -lPCL-pxi -lz
 
-PropertyTreeGTest: $(OBJ_DIR)/PixInsightINDI-pxm.so $(PROPVISITOR_TEST_OBJ_FILES)
+PropertyTreeGTest:  $(OBJ_FILES) $(PROPVISITOR_TEST_OBJ_FILES)
 	g++ -I ${GTEST_DIR}/include -L"${GTEST_DIR}/lib" -I ${GMOCK_DIR}/include -L"${GMOCK_DIR}/lib"  -L"$(PCLLIBDIR64)" -pthread  -o PropertyTreeGTest $(OBJ_FILES)  ${PROPVISITOR_TEST_OBJ_FILES} libgtest.a libgmock.a  -lPCL-pxi -lz
 
 
 
 .PHONY: clean
 clean:
-	rm -f $(OBJ_FILES) $(DEP_FILES) $(TEST_OBJ_FILES) $(OBJ_DIR)/PixInsightINDI-pxm.so ./x86_64/PixInsightINDIclientGTest
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(TEST_OBJ_FILES) $(TEST_EXE) $(OBJ_DIR)/PixInsightINDI-pxm.so 
 
 .PHONY: post-build
 post-build:

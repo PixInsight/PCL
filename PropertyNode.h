@@ -72,6 +72,12 @@ namespace pcl {
 		static IsoString getKey(IsoString INDI_device, IsoString INDI_property,IsoString INDI_propertyElement){return c_sep+INDI_device+c_sep+INDI_property+c_sep+INDI_propertyElement; }
 	};
 
+	typedef enum {
+		TextColumn,
+		ValueColumn,
+		TypeColumn
+	} TreeBoxColumn;
+
 	class PropertyNode {
 	private:
 		std::vector<PropertyNode*>  m_childs;
@@ -86,6 +92,16 @@ namespace pcl {
 		PropertyNode(TreeBox& parentTreeBox);
 		PropertyNode(PropertyNode* parent,IsoString INDI_device);
 		PropertyNode(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property);
+
+		virtual ~PropertyNode() {
+			for (size_t i=0; i<m_childs.size(); ++i){
+				delete m_childs[i];
+			}
+			m_childs.clear();
+			if (m_thisTreeBoxNode!=NULL){
+				delete m_thisTreeBoxNode;
+			}
+		}
 
 		virtual void addToParentNode(PropertyNode* parentNode);
 		virtual void setTreeBoxNode(TreeBox::Node* treeBoxNode){m_thisTreeBoxNode=treeBoxNode;}
@@ -102,15 +118,16 @@ namespace pcl {
 
 	    virtual void addTreeBoxNodeToParent(PropertyNode* parent);
 
-		virtual ~PropertyNode() {
-			for (size_t i=0; i<m_childs.size(); ++i){
-				delete m_childs[i];
-			}
-			m_childs.clear();
-			if (m_thisTreeBoxNode!=NULL){
-				delete m_thisTreeBoxNode;
-			}
-		}
+	    virtual void setNodeINDIText(IsoString text);
+	    virtual void setNodeINDIValue(IsoString value);
+	    virtual void setNodeINDIType(IsoString type);
+
+	    virtual IsoString getNodeINDIText() const;
+	    virtual IsoString getNodeINDIValue() const;
+	    virtual IsoString getNodeINDIType() const;
+
+
+
 
 		virtual bool accept(IPropertyVisitor* visitor, IsoString propertyKeyStr, IsoString newValue);
 
@@ -188,9 +205,11 @@ namespace pcl {
 			PropertyTree(PropertyNode* rootNode,PropertyNodeFactory* factory):m_rootNode(rootNode),m_factory(factory){}
 			virtual ~PropertyTree(){delete m_rootNode;}
 
-			void addNode(IsoString device);
-			void addNode(IsoString device,IsoString property);
-			void addNode(IsoString device,IsoString property,IsoString element);
+			PropertyNode* addNode(IsoString device);
+			PropertyNode* addNode(PropertyNode* parent, IsoString device,IsoString property);
+			PropertyNode* addNode(PropertyNode* parent, IsoString device,IsoString property,IsoString element);
+
+			PropertyNode* addElementNode(IsoString device,IsoString property,IsoString element);
 		private:
 			PropertyNode*        m_rootNode;
 			PropertyNodeFactory* m_factory;

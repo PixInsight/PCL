@@ -122,7 +122,6 @@ TEST_F(PropertyTreeTest, TestCreatePropertyNode)
 	propRootNode->accept(findNodeVisitor,IsoString("/Devic"),IsoString(""));
 	EXPECT_FALSE(findNodeVisitor->foundNode());
 
-
 	PropertyNode* propPropertyNode = new PropertyNode(PropertyUtils::getKey(IsoString("Device"),IsoString("Property")));
 	propPropertyNode->addToParentNode(propDeviceNode);
 
@@ -157,7 +156,7 @@ TEST_F(PropertyTreeTest,TestPropertyTreeAddNode){
 	PropertyTree*  propTree = new PropertyTree(propRootNode,&factory);
 
 	EXPECT_CALL(factory,create(IsoString("/Device"))).Times(1).WillOnce(testing::ReturnNew<NiceMock<MockPropertyNode> >(IsoString("/Device")));
-	propTree->addNode(IsoString("Device"));
+	PropertyNode* deviceNode = propTree->addNode(IsoString("Device"));
 
 	FindNodeVisitor* findNodeVisitor = new FindNodeVisitor();
 	propRootNode->accept(findNodeVisitor,IsoString("/Device"),IsoString(""));
@@ -165,7 +164,7 @@ TEST_F(PropertyTreeTest,TestPropertyTreeAddNode){
 	findNodeVisitor->reset();
 
 	EXPECT_CALL(factory,create(IsoString("/Device/Property"))).Times(1).WillOnce(testing::ReturnNew<NiceMock<MockPropertyNode> >(IsoString("/Device/Property")));
-	propTree->addNode(IsoString("Device"),IsoString("Property"));
+	PropertyNode* propNode = propTree->addNode(deviceNode,IsoString("Device"),IsoString("Property"));
 
 	propRootNode->accept(findNodeVisitor,IsoString("/Device/Property"),IsoString(""));
 	EXPECT_TRUE(findNodeVisitor->foundNode());
@@ -173,7 +172,9 @@ TEST_F(PropertyTreeTest,TestPropertyTreeAddNode){
 	findNodeVisitor->reset();
 
 	EXPECT_CALL(factory,create(IsoString("/Device/Property/Element"))).Times(1).WillOnce(testing::ReturnNew<NiceMock<MockPropertyNode> >(IsoString("/Device/Property/Element")));
-	propTree->addNode(IsoString("Device"),IsoString("Property"),IsoString("Element"));
+	PropertyNode* elemNode = propTree->addNode(propNode,IsoString("Device"),IsoString("Property"),IsoString("Element"));
+
+	EXPECT_TRUE(elemNode!=NULL);
 
 	propRootNode->accept(findNodeVisitor,IsoString("/Device/Property/Element"),IsoString(""));
 	EXPECT_TRUE(findNodeVisitor->foundNode());
@@ -181,6 +182,60 @@ TEST_F(PropertyTreeTest,TestPropertyTreeAddNode){
 	delete propTree;
 }
 
+TEST_F(PropertyTreeTest,TestPropertyTreeLeafs){
+
+	NiceMock<MockPropertyNode>* propRootNode   = new NiceMock<MockPropertyNode>();
+
+	MockPropertyNodeFactory factory;
+
+	PropertyTree  propTree(propRootNode,&factory);
+
+	EXPECT_CALL(factory,create(IsoString("/Device"))).Times(1).WillOnce(testing::ReturnNew<NiceMock<MockPropertyNode> >(IsoString("/Device")));
+	EXPECT_CALL(factory,create(IsoString("/Device/Property"))).Times(1).WillOnce(testing::ReturnNew<NiceMock<MockPropertyNode> >(IsoString("/Device/Property")));
+	EXPECT_CALL(factory,create(IsoString("/Device/Property/Element"))).Times(1).WillOnce(testing::ReturnNew<NiceMock<MockPropertyNode> >(IsoString("/Device/Property/Element")));
+
+	PropertyNode* elemNode = propTree.addElementNode(IsoString("Device"),IsoString("Property"),IsoString("Element"));
+
+	EXPECT_TRUE(elemNode!=NULL);
+
+	FindNodeVisitor* findNodeVisitor = new FindNodeVisitor();
+	propRootNode->accept(findNodeVisitor,IsoString("/Device/Property/Element"),IsoString(""));
+	EXPECT_TRUE(findNodeVisitor->foundNode());
+
+	EXPECT_CALL(factory,create(IsoString("/Device"))).Times(0);
+	EXPECT_CALL(factory,create(IsoString("/Device/Property"))).Times(0);
+	EXPECT_CALL(factory,create(IsoString("/Device/Property/Element2"))).Times(1).WillOnce(testing::ReturnNew<NiceMock<MockPropertyNode> >(IsoString("/Device/Property/Element2")));
+
+	elemNode = propTree.addElementNode(IsoString("Device"),IsoString("Property"),IsoString("Element2"));
+
+	EXPECT_TRUE(elemNode!=NULL);
+
+	findNodeVisitor->reset();
+	propRootNode->accept(findNodeVisitor,IsoString("/Device/Property/Element2"),IsoString(""));
+	EXPECT_TRUE(findNodeVisitor->foundNode());
+
+	EXPECT_CALL(factory,create(IsoString("/Device"))).Times(0);
+	EXPECT_CALL(factory,create(IsoString("/Device/Property2"))).Times(1).WillOnce(testing::ReturnNew<NiceMock<MockPropertyNode> >(IsoString("/Device/Property2")));
+	EXPECT_CALL(factory,create(IsoString("/Device/Property2/Element2"))).Times(1).WillOnce(testing::ReturnNew<NiceMock<MockPropertyNode> >(IsoString("/Device/Property2/Element2")));
+
+	elemNode = propTree.addElementNode(IsoString("Device"),IsoString("Property2"),IsoString("Element2"));
+
+	EXPECT_TRUE(elemNode!=NULL);
+
+	findNodeVisitor->reset();
+	propRootNode->accept(findNodeVisitor,IsoString("/Device/Property2/Element2"),IsoString(""));
+	EXPECT_TRUE(findNodeVisitor->foundNode());
+
+	EXPECT_CALL(factory,create(IsoString("/Device"))).Times(0);
+	EXPECT_CALL(factory,create(IsoString("/Device/Property2"))).Times(0);
+	EXPECT_CALL(factory,create(IsoString("/Device/Property2/Element2"))).Times(0);
+
+	PropertyNode* elemNode2 = propTree.addElementNode(IsoString("Device"),IsoString("Property2"),IsoString("Element2"));
+
+	EXPECT_TRUE(elemNode==elemNode2);
+
+
+}
 
 
 } /* namespace pcl*/

@@ -16,12 +16,12 @@
 .PHONY: all
 all: 
 #	$(MAKE) -f ./makefile-x86 --no-print-directory
-	$(MAKE) -f ./makefile-x86_64 --no-print-directory all
+	$(MAKE) -f ./makefile-x86_64-debug --no-print-directory all
 
 .PHONY: clean
 clean:
 #	$(MAKE) -f ./makefile-x86 --no-print-directory clean
-	$(MAKE) -f ./makefile-x86_64 --no-print-directory clean
+	$(MAKE) -f ./makefile-x86_64-debug --no-print-directory clean
 
 .PHONY: test
 test:

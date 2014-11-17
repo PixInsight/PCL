@@ -103,6 +103,40 @@ namespace pcl {
 		m_childs.erase(std::remove(m_childs.begin(),m_childs.end(),child),m_childs.end());
 	}
 
+	void PropertyNode:: setNodeINDIText(IsoString text)   {
+		if (m_thisTreeBoxNode!=NULL)
+			m_thisTreeBoxNode->SetText(TextColumn,text);
+	}
+
+	void PropertyNode::setNodeINDIValue(IsoString value) {
+		if (m_thisTreeBoxNode!=NULL)
+			m_thisTreeBoxNode->SetText(ValueColumn,value);
+	}
+
+	void PropertyNode::setNodeINDIType(IsoString type)   {
+		if (m_thisTreeBoxNode!=NULL)
+			m_thisTreeBoxNode->SetText(TypeColumn,type);
+	}
+
+    IsoString PropertyNode::getNodeINDIText() const  {
+    	if (m_thisTreeBoxNode!=NULL)
+    		return m_thisTreeBoxNode->Text(TextColumn);
+    	else return IsoString("");
+    }
+
+	IsoString PropertyNode::getNodeINDIValue() const {
+		if (m_thisTreeBoxNode!=NULL)
+			return m_thisTreeBoxNode->Text(ValueColumn);
+		else return IsoString("");
+	}
+
+	IsoString PropertyNode::getNodeINDIType() const  {
+		if (m_thisTreeBoxNode!=NULL)
+			return m_thisTreeBoxNode->Text(TypeColumn);
+		else return IsoString("");
+	}
+
+
 	bool UpdateVisitor::visit(PropertyNode* pNode, IsoString propertyKeyString, IsoString newValue){
 		assert(pNode!=NULL && "property node is NULL");
 		bool requiresPostVisit=false;
@@ -149,35 +183,69 @@ namespace pcl {
 	}
 
 
-	void PropertyTree::addNode(IsoString device){
+	PropertyNode* PropertyTree::addNode(IsoString device){
 		PropertyNode* node = m_factory->create(PropertyUtils::getKey(device));
+		assert(m_rootNode!=NULL);
 		addTreeBoxItem(node);
+		return node;
 	}
-	void PropertyTree::addNode(IsoString device,IsoString property){
+	PropertyNode* PropertyTree::addNode(PropertyNode* parent, IsoString device,IsoString property){
+		IsoString keyStr = PropertyUtils::getKey(device,property);
+		PropertyNode* node = m_factory->create(keyStr);
+		node->addToParentNode(parent);
+		node->setTreeBoxNode(node->createTreeBoxNode());
+		node->addTreeBoxNodeToParent(parent);
+		return node;
+	}
+
+	PropertyNode* PropertyTree::addNode(PropertyNode* parent, IsoString device,IsoString property,IsoString element){
+		IsoString keyStr = PropertyUtils::getKey(device,property,element);
+		PropertyNode* node = m_factory->create(keyStr);
+		node->addToParentNode(parent);
+		node->setTreeBoxNode(node->createTreeBoxNode());
+		node->addTreeBoxNodeToParent(parent);
+		return node;
+	}
+
+	PropertyNode* PropertyTree::addElementNode(IsoString device,IsoString property,IsoString element){
+		assert(m_rootNode!=NULL);
+		// lookup device node
 		IsoString deviceKeyStr = PropertyUtils::getKey(device);
-		FindNodeVisitor* findDeviceNodeVisitor = new FindNodeVisitor();
-		m_rootNode->accept(findDeviceNodeVisitor,deviceKeyStr,"");
-		if (findDeviceNodeVisitor->foundNode()){
-			IsoString keyStr = PropertyUtils::getKey(device,property);
-			PropertyNode* node = m_factory->create(keyStr);
-			node->addToParentNode(findDeviceNodeVisitor->getNode());
-			node->setTreeBoxNode(node->createTreeBoxNode());
-			node->addTreeBoxNodeToParent(findDeviceNodeVisitor->getNode());
+		FindNodeVisitor* findNodeVisitor = new FindNodeVisitor();
+		m_rootNode->accept(findNodeVisitor,deviceKeyStr,"");
+		PropertyNode* deviceNode=NULL;
+		if (!findNodeVisitor->foundNode()){
+			// create and add device node
+			deviceNode=addNode(device);
+		} else {
+			deviceNode=findNodeVisitor->getNode();
 		}
-	}
-	void PropertyTree::addNode(IsoString device,IsoString property,IsoString element){
+		assert(deviceNode!=NULL);
+		// lookup property node
+		findNodeVisitor->reset();
 		IsoString propertyKeyStr = PropertyUtils::getKey(device,property);
-		FindNodeVisitor* findPropertyNodeVisitor = new FindNodeVisitor();
-		m_rootNode->accept(findPropertyNodeVisitor,propertyKeyStr,"");
-		if (findPropertyNodeVisitor->foundNode()){
-			IsoString keyStr = PropertyUtils::getKey(device,property,element);
-			PropertyNode* node = m_factory->create(keyStr);
-			node->addToParentNode(findPropertyNodeVisitor->getNode());
-			node->setTreeBoxNode(node->createTreeBoxNode());
-			node->addTreeBoxNodeToParent(findPropertyNodeVisitor->getNode());
+		deviceNode->accept(findNodeVisitor,propertyKeyStr,"");
+		PropertyNode* propNode=NULL;
+		if (!findNodeVisitor->foundNode()){
+			// create and add property node
+			propNode=addNode(deviceNode,device,property);
+		} else {
+			propNode=findNodeVisitor->getNode();
 		}
+		assert(propNode!=NULL);
+		// lookup element node
+		findNodeVisitor->reset();
+		IsoString elementKeyStr = PropertyUtils::getKey(device,property,element);
+		propNode->accept(findNodeVisitor,elementKeyStr,"");
+		PropertyNode* elemNode=NULL;
+		if (!findNodeVisitor->foundNode()){
+			// create and add property node
+			elemNode=addNode(propNode,device,property,element);
+		} else {
+			elemNode=findNodeVisitor->getNode();
+		}
+		assert(elemNode!=NULL);
+		return elemNode;
 	}
-
-
 
 }

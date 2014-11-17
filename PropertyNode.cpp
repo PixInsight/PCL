@@ -23,36 +23,52 @@ namespace pcl {
 		return keyString.SubString(startpos2+1,endpos-startpos2);
 	}
 
+
 	PropertyNode::PropertyNode(TreeBox& parentTreeBox):m_keyStr(IsoString("/")) {
-			m_thisTreeBoxNode = new TreeBox::Node(parentTreeBox);
+			m_thisTreeBoxNode = createTreeBoxNodeForTreeBox(parentTreeBox);
 	}
 
 
 	PropertyNode::PropertyNode(PropertyNode* parent,IsoString INDI_device):m_keyStr(IsoString("")), m_thisTreeBoxNode(NULL) {
 		m_keyStr = PropertyUtils::getKey(INDI_device);
 		if (parent!=NULL) {
-			parent->m_childs.push_back(this);
-			m_thisTreeBoxNode=new TreeBox::Node(*parent->m_thisTreeBoxNode);
+			addToParentNode(parent);
+			// create new device node in TreeBox
+			m_thisTreeBoxNode=createTreeBoxNode(parent->m_thisTreeBoxNode);
 		}	
 	}
 
 	PropertyNode::PropertyNode(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property):m_keyStr(IsoString("")), m_thisTreeBoxNode(NULL) {
 		m_keyStr = PropertyUtils::getKey(INDI_device,INDI_property);
 		if (parent!=NULL) {
-			parent->m_childs.push_back(this);
-			m_thisTreeBoxNode=new TreeBox::Node();
-			parent->getTreeBoxNode()->Add(m_thisTreeBoxNode);
+			addToParentNode(parent);
+			m_thisTreeBoxNode=createTreeBoxNode();
+			// link property node to device node
+			addTreeBoxNodeToParent(parent);
 		}
 	}
 
 	PropertyNode::PropertyNode(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property,IsoString INDI_propertyElement):m_keyStr(IsoString("")), m_thisTreeBoxNode(NULL) {
 		m_keyStr = PropertyUtils::getKey(INDI_device,INDI_property,INDI_propertyElement);
 		if (parent!=NULL) {
-			parent->m_childs.push_back(this);
-			m_thisTreeBoxNode=new TreeBox::Node();
-			parent->getTreeBoxNode()->Add(m_thisTreeBoxNode);
+			addToParentNode(parent);
+			m_thisTreeBoxNode=createTreeBoxNode();
+			// link element node to property node
+			addTreeBoxNodeToParent(parent);
 		}
 	}
+
+
+	void PropertyNode::addToParentNode(PropertyNode* parent) {
+		assert(parent!=NULL);
+		assert(parent!=this);
+		parent->m_childs.push_back(this);
+	 }
+    void PropertyNode::addTreeBoxNodeToParent(PropertyNode* parent) {
+    	assert(parent!=NULL);
+	    parent->getTreeBoxNode()->Add(m_thisTreeBoxNode);
+    }
+
 
 	PropertyNode* PropertyNode::create(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property,IsoString INDI_propertyElement, IsoString INDI_propertyType){
 		if (INDI_propertyType == "INDI_SWITCH"){
@@ -116,6 +132,52 @@ namespace pcl {
 		}
 
 	}
+
+	bool FindNodeVisitor::visit(PropertyNode* pNode, IsoString propertyKeyString, IsoString newPropertyString){
+		assert(pNode!=NULL && "property node is NULL");
+		bool requiresPostVisit=false;
+		if (pNode->getPropertyKeyString() == propertyKeyString){
+			m_found=true;
+			m_foundNode = pNode;
+		}
+		return requiresPostVisit;
+	}
+
+	void PropertyTree::addTreeBoxItem(PropertyNode* node){
+		node->addToParentNode(m_rootNode);
+		node->setTreeBoxNode(node->createTreeBoxNode(m_rootNode->getTreeBoxNode()));
+	}
+
+
+	void PropertyTree::addNode(IsoString device){
+		PropertyNode* node = m_factory->create(PropertyUtils::getKey(device));
+		addTreeBoxItem(node);
+	}
+	void PropertyTree::addNode(IsoString device,IsoString property){
+		IsoString deviceKeyStr = PropertyUtils::getKey(device);
+		FindNodeVisitor* findDeviceNodeVisitor = new FindNodeVisitor();
+		m_rootNode->accept(findDeviceNodeVisitor,deviceKeyStr,"");
+		if (findDeviceNodeVisitor->foundNode()){
+			IsoString keyStr = PropertyUtils::getKey(device,property);
+			PropertyNode* node = m_factory->create(keyStr);
+			node->addToParentNode(findDeviceNodeVisitor->getNode());
+			node->setTreeBoxNode(node->createTreeBoxNode());
+			node->addTreeBoxNodeToParent(findDeviceNodeVisitor->getNode());
+		}
+	}
+	void PropertyTree::addNode(IsoString device,IsoString property,IsoString element){
+		IsoString propertyKeyStr = PropertyUtils::getKey(device,property);
+		FindNodeVisitor* findPropertyNodeVisitor = new FindNodeVisitor();
+		m_rootNode->accept(findPropertyNodeVisitor,propertyKeyStr,"");
+		if (findPropertyNodeVisitor->foundNode()){
+			IsoString keyStr = PropertyUtils::getKey(device,property,element);
+			PropertyNode* node = m_factory->create(keyStr);
+			node->addToParentNode(findPropertyNodeVisitor->getNode());
+			node->setTreeBoxNode(node->createTreeBoxNode());
+			node->addTreeBoxNodeToParent(findPropertyNodeVisitor->getNode());
+		}
+	}
+
 
 
 }

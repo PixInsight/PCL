@@ -25,4 +25,4 @@ clean:
 
 .PHONY: test
 test:
-	$(MAKE) -f ./makefile-x86_64 --no-print-directory test
+	$(MAKE) -f ./makefile-x86_64-debug --no-print-directory test

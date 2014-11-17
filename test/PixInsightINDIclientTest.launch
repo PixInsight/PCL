@@ -20,7 +20,7 @@
 <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="/home/klaus/C++/PixInsightINDIclient/linux/g++/PixInsightINDIclientGTest"/>
 <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="PixInsightINDIclient"/>
 <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="false"/>
-<stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="cdt.managedbuild.toolchain.gnu.base.38908755.841511016"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value=""/>
 <booleanAttribute key="org.eclipse.cdt.launch.use_terminal" value="true"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
 <listEntry value="/PixInsightINDIclient"/>

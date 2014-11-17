@@ -80,9 +80,15 @@ namespace pcl {
 	protected:
 		PropertyNode(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property,IsoString INDI_propertyElement);
 	public:
+		PropertyNode():m_childs(),m_keyStr(IsoString("/")),m_thisTreeBoxNode(NULL){}
+		PropertyNode(IsoString keyStr):m_childs(),m_keyStr(keyStr),m_thisTreeBoxNode(NULL){}
+
 		PropertyNode(TreeBox& parentTreeBox);
 		PropertyNode(PropertyNode* parent,IsoString INDI_device);
 		PropertyNode(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property);
+
+		virtual void addToParentNode(PropertyNode* parentNode);
+		virtual void setTreeBoxNode(TreeBox::Node* treeBoxNode){m_thisTreeBoxNode=treeBoxNode;}
 
 		IsoString getPropertyKeyString() {return m_keyStr;}
 
@@ -90,7 +96,17 @@ namespace pcl {
 
 		virtual TreeBox::Node* getTreeBoxNode() {return m_thisTreeBoxNode;}
 
+		virtual TreeBox::Node* createTreeBoxNode(){return new TreeBox::Node();}
+		virtual TreeBox::Node* createTreeBoxNode(TreeBox::Node* parent){return new TreeBox::Node(*parent);}
+		virtual TreeBox::Node* createTreeBoxNodeForTreeBox(TreeBox& parent){return new TreeBox::Node(parent);}
+
+	    virtual void addTreeBoxNodeToParent(PropertyNode* parent);
+
 		virtual ~PropertyNode() {
+			for (size_t i=0; i<m_childs.size(); ++i){
+				delete m_childs[i];
+			}
+			m_childs.clear();
 			if (m_thisTreeBoxNode!=NULL){
 				delete m_thisTreeBoxNode;
 			}
@@ -122,6 +138,14 @@ namespace pcl {
 	};
 
 
+	class PropertyNodeFactory {
+	public:
+		PropertyNodeFactory(){}
+		virtual ~PropertyNodeFactory(){}
+
+		virtual PropertyNode* create(IsoString keyStr){return  new PropertyNode(keyStr);}
+	};
+
 
 	class IPropertyVisitor {
 	public:
@@ -142,6 +166,38 @@ namespace pcl {
 		virtual ~UpdateVisitor(){}
 	
 	};
+
+	class FindNodeVisitor : public IPropertyVisitor {
+	private:
+		bool          m_found;
+		PropertyNode* m_foundNode;
+	public:
+		FindNodeVisitor():m_found(false),m_foundNode(NULL){}
+
+		static IPropertyVisitor* create(){return new FindNodeVisitor();}
+		bool visit(PropertyNode* pNode, IsoString propertyKeyString, IsoString newPropertyString);
+		void postVisit(PropertyNode* pNode, IsoString propertyKeyString, IsoString newPropertyValue){}
+		bool foundNode(){return m_found;}
+		PropertyNode* getNode() const {return m_foundNode;}
+		void reset(){m_found=false;m_foundNode=NULL;}
+		virtual ~FindNodeVisitor(){}
+	};
+
+	class PropertyTree {
+		public:
+			PropertyTree(PropertyNode* rootNode,PropertyNodeFactory* factory):m_rootNode(rootNode),m_factory(factory){}
+			virtual ~PropertyTree(){delete m_rootNode;}
+
+			void addNode(IsoString device);
+			void addNode(IsoString device,IsoString property);
+			void addNode(IsoString device,IsoString property,IsoString element);
+		private:
+			PropertyNode*        m_rootNode;
+			PropertyNodeFactory* m_factory;
+			void addTreeBoxItem(PropertyNode* node);
+	};
+
+
 }
 
 #endif //PROPERTY_NODE_H

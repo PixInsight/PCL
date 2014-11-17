@@ -93,7 +93,6 @@ String Exception::Caption() const
 static String TranslateHTMLParagraphTags( const String& s )
 {
    String r;
-
    for ( size_type p0 = 0; ; )
    {
       size_type p = s.FindIC( "<p", p0 );
@@ -135,7 +134,6 @@ static String TranslateHTMLParagraphTags( const String& s )
 static String TranslateHTMLBreakTags( const String& s )
 {
    String r;
-
    for ( size_type p0 = 0; ; )
    {
       size_type p = s.FindIC( "<br", p0 );
@@ -153,6 +151,43 @@ static String TranslateHTMLBreakTags( const String& s )
       size_type p1 = s.Find( '>', p+1 );
       if ( p1 == String::notFound )
          break;
+      p0 = p1 + 1;
+   }
+
+   return r;
+}
+
+static String RemoveHTMLTags( const String& s )
+{
+   String r;
+   for ( size_type p0 = 0, n = s.Length(); ; )
+   {
+      size_type p = s.Find( '<', p0 );
+      if ( p == String::notFound )
+      {
+         r.Append( s.SubString( p0 ) );
+         return r;
+      }
+
+      size_type p1 = p;
+      for ( ;; )
+      {
+         if ( ++p1 == n )
+         {
+            r.Append( s.SubString( p0 ) );
+            return r;
+         }
+         if ( s[p1] == '>' )
+         {
+            r.Append( s.SubString( p0, (p1-p > 1) ? p-p0 : p1-p0+1 ) );
+            break;
+         }
+         if ( (s[p1] < 'a' || s[p1] > 'z') && (s[p1] < 'A' || s[p1] > 'Z') && s[p1] != '/' )
+         {
+            r.Append( s.SubString( p0, p1-p0+1 ) );
+            break;
+         }
+      }
 
       p0 = p1 + 1;
    }
@@ -173,7 +208,7 @@ void Exception::Show() const
       if ( IsPIConsole() )
          Console().CriticalLn( "<end><cbr>*** " + text );
       else
-         std::cerr << "\n*** " << TranslateHTMLParagraphTags( TranslateHTMLBreakTags( text ) ) << '\n' << std::flush;
+         std::cerr << "\n*** " << RemoveHTMLTags( TranslateHTMLParagraphTags( TranslateHTMLBreakTags( text ) ) ) << '\n' << std::flush;
    }
 
    if ( showOnGUI )

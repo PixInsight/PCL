@@ -413,13 +413,17 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
   
    ConnectionServer_Sizer.Add(ConnectServer_PushButton);
    ConnectionServer_Sizer.Add(DisconnectServer_PushButton);
-   ConnectionServer_Sizer.AddStretch();
+   //ConnectionServer_Sizer.AddStretch();
+
+   INDIServerConnection_Control.SetFixedHeight(4*fnt.Height() +2);
+
+
 
    // INDI devices
    INDIDevices_SectionBar.SetTitle("INDI Devices");
    INDIDevices_SectionBar.SetSection(INDIDevices_Control);
    INDIDevices_Control.SetSizer(INDIDevice_Sizer);
-   DeviceList_TreeBox.SetMinHeight( 8*fnt.Height() +2 );
+   INDIDevices_Control.SetFixedHeight( 8*fnt.Height() +2 );
    DeviceList_TreeBox.EnableAlternateRowColor();
    DeviceList_TreeBox.EnableMultipleSelections();
    DeviceList_TreeBox.SetNumberOfColumns(2);
@@ -444,13 +448,11 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    INDIDevice_Sizer.Add(DeviceList_TreeBox);
    INDIDevice_Sizer.Add(DeviceAction_Sizer);
 
-   int width = fnt.Width( String( '0',70 ) );
-
    INDIProperties_SectionBar.SetTitle("INDI Device Properties");
    INDIProperties_SectionBar.SetSection(INDIProperties_Control);
    INDIProperties_Control.SetSizer(INDIDeviceProperty_Sizer);
-   PropertyList_TreeBox.SetMinHeight( 26*fnt.Height() +2 );
-   PropertyList_TreeBox.SetMinWidth(width);
+   //PropertyList_TreeBox.SetMinHeight( 26*fnt.Height() +2 );
+   //PropertyList_TreeBox.SetMinWidth(width);
    PropertyList_TreeBox.EnableAlternateRowColor();
    PropertyList_TreeBox.SetNumberOfColumns(3);
    PropertyList_TreeBox.HideColumn(2);
@@ -515,7 +517,7 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
 
    w.SetSizer( Global_Sizer );
    w.AdjustToContents();
-   w.SetFixedSize();
+   //w.SetFixedSize();
 }
 
 
@@ -623,6 +625,7 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 		}
 		assert(rootNode!=NULL);
 		PropertyNodeFactory factory;
+		//TODO delete property tree in dtor
 		PropertyTree*  propTree = new PropertyTree(rootNode,&factory);
 
 		if (iter->PropertyRemovalFlag){

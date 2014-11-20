@@ -137,36 +137,6 @@ namespace pcl {
 	}
 
 
-	bool UpdateVisitor::visit(PropertyNode* pNode, IsoString propertyKeyString, IsoString newValue){
-		assert(pNode!=NULL && "property node is NULL");
-		bool requiresPostVisit=false;
-		if (pNode->getPropertyKeyString() == propertyKeyString){
-			TreeBox::Node* currentTreeNode = pNode->getTreeBoxNode();
-			currentTreeNode->SetText(1,newValue);
-
-			SwitchPropertyNode* switchNode=dynamic_cast<SwitchPropertyNode*>(pNode);
-			if (switchNode!=NULL){
-				requiresPostVisit=true;
-			}
-
-		}
-
-		return requiresPostVisit;
-	}
-
-	void UpdateVisitor::postVisit(PropertyNode* pNode, IsoString propertyKeyString, IsoString newValue){
-		assert(pNode!=NULL && "property node is NULL");
-
-		SwitchPropertyNode* switchNode=dynamic_cast<SwitchPropertyNode*>(pNode);
-		if (switchNode!=NULL){
-			if (pNode->getPropertyKeyString() != propertyKeyString){
-				TreeBox::Node* currentTreeNode = pNode->getTreeBoxNode();
-				currentTreeNode->SetText(1,newValue);
-			}	
-		}
-
-	}
-
 	bool FindNodeVisitor::visit(PropertyNode* pNode, IsoString propertyKeyString, IsoString newPropertyString){
 		assert(pNode!=NULL && "property node is NULL");
 		bool requiresPostVisit=false;
@@ -221,6 +191,7 @@ namespace pcl {
 			deviceNode=findNodeVisitor->getNode();
 		}
 		assert(deviceNode!=NULL);
+		deviceNode->setNodeINDIText(device);
 		// lookup property node
 		findNodeVisitor->reset();
 		IsoString propertyKeyStr = PropertyUtils::getKey(device,property);
@@ -233,6 +204,7 @@ namespace pcl {
 			propNode=findNodeVisitor->getNode();
 		}
 		assert(propNode!=NULL);
+		propNode->setNodeINDIText(property);
 		// lookup element node
 		findNodeVisitor->reset();
 		IsoString elementKeyStr = PropertyUtils::getKey(device,property,element);
@@ -245,6 +217,7 @@ namespace pcl {
 			elemNode=findNodeVisitor->getNode();
 		}
 		assert(elemNode!=NULL);
+		elemNode->setNodeINDIText(element);
 		return elemNode;
 	}
 

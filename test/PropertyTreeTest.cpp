@@ -38,6 +38,19 @@ public:
 	virtual void addTreeBoxNodeToParent(PropertyNode*){
 
 	}
+
+	virtual void setNodeINDIText(IsoString text){m_INDIText=text;}
+	virtual void setNodeINDIValue(IsoString value){m_INDIValue=value;}
+	virtual void setNodeINDIType(IsoString type){m_INDIType=type;}
+
+	virtual IsoString getNodeINDIText() const {return m_INDIText; }
+	virtual IsoString getNodeINDIValue() const {return m_INDIValue;}
+	virtual IsoString getNodeINDIType() const {return m_INDIType;}
+
+private:
+	IsoString m_INDIText;
+	IsoString m_INDIValue;
+	IsoString m_INDIType;
 };
 
 class MockPropertyNode : public PropertyNode {
@@ -48,6 +61,12 @@ public:
 		ON_CALL(*this,createTreeBoxNode(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::createTreeBoxNode1));
 		ON_CALL(*this,getTreeBoxNode()).WillByDefault(Invoke(&m_fake,&FakePropertyNode::getTreeBoxNode));
 		ON_CALL(*this,addTreeBoxNodeToParent(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::addTreeBoxNodeToParent));
+		ON_CALL(*this,setNodeINDIText(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDIText));
+		ON_CALL(*this,setNodeINDIValue(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDIValue));
+		ON_CALL(*this,setNodeINDIType(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDIType));
+		ON_CALL(*this,getNodeINDIText()).WillByDefault(Invoke(&m_fake,&FakePropertyNode::getNodeINDIText));
+		ON_CALL(*this,getNodeINDIValue()).WillByDefault(Invoke(&m_fake,&FakePropertyNode::getNodeINDIValue));
+		ON_CALL(*this,getNodeINDIType()).WillByDefault(Invoke(&m_fake,&FakePropertyNode::getNodeINDIType));
 	}
 
 	MockPropertyNode(IsoString device):PropertyNode(device){
@@ -55,6 +74,12 @@ public:
 		ON_CALL(*this,createTreeBoxNode(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::createTreeBoxNode1));
 		ON_CALL(*this,getTreeBoxNode()).WillByDefault(Invoke(&m_fake,&FakePropertyNode::getTreeBoxNode));
 		ON_CALL(*this,addTreeBoxNodeToParent(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::addTreeBoxNodeToParent));
+		ON_CALL(*this,setNodeINDIText(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDIText));
+		ON_CALL(*this,setNodeINDIValue(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDIValue));
+		ON_CALL(*this,setNodeINDIType(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDIType));
+		ON_CALL(*this,getNodeINDIText()).WillByDefault(Invoke(&m_fake,&FakePropertyNode::getNodeINDIText));
+		ON_CALL(*this,getNodeINDIValue()).WillByDefault(Invoke(&m_fake,&FakePropertyNode::getNodeINDIValue));
+		ON_CALL(*this,getNodeINDIType()).WillByDefault(Invoke(&m_fake,&FakePropertyNode::getNodeINDIType));
 	}
 
 	MOCK_METHOD1(setTreeBoxNode,void(TreeBox::Node*));
@@ -62,7 +87,12 @@ public:
 	MOCK_METHOD1(addTreeBoxNodeToParent,void(PropertyNode*));
 	MOCK_METHOD0(createTreeBoxNode,TreeBox::Node*(void));
 	MOCK_METHOD1(createTreeBoxNode,TreeBox::Node*(TreeBox::Node*));
-
+	MOCK_METHOD0(getNodeINDIText,IsoString(void));
+	MOCK_METHOD0(getNodeINDIValue,IsoString(void));
+	MOCK_METHOD0(getNodeINDIType,IsoString(void));
+	MOCK_METHOD1(setNodeINDIText,void(IsoString));
+	MOCK_METHOD1(setNodeINDIValue,void(IsoString));
+	MOCK_METHOD1(setNodeINDIType,void(IsoString));
 
 private:
 	FakePropertyNode m_fake;
@@ -234,6 +264,25 @@ TEST_F(PropertyTreeTest,TestPropertyTreeLeafs){
 
 	EXPECT_TRUE(elemNode==elemNode2);
 
+	// check node names
+	MockPropertyNode* foundNode;
+	findNodeVisitor->reset();
+	propRootNode->accept(findNodeVisitor,IsoString("/Device"),IsoString(""));
+	EXPECT_TRUE(findNodeVisitor->foundNode());
+	foundNode = dynamic_cast<MockPropertyNode*>(findNodeVisitor->getNode());
+	EXPECT_STREQ(foundNode->getNodeINDIText().c_str(),"Device");
+
+	findNodeVisitor->reset();
+	propRootNode->accept(findNodeVisitor,IsoString("/Device/Property2"),IsoString(""));
+	EXPECT_TRUE(findNodeVisitor->foundNode());
+	foundNode = dynamic_cast<MockPropertyNode*>(findNodeVisitor->getNode());
+	EXPECT_STREQ(foundNode->getNodeINDIText().c_str(),"Property2");
+
+	findNodeVisitor->reset();
+	propRootNode->accept(findNodeVisitor,IsoString("/Device/Property2/Element2"),IsoString(""));
+	EXPECT_TRUE(findNodeVisitor->foundNode());
+	foundNode = dynamic_cast<MockPropertyNode*>(findNodeVisitor->getNode());
+	EXPECT_STREQ(foundNode->getNodeINDIText().c_str(),"Element2");
 
 }
 

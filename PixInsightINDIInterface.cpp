@@ -72,7 +72,7 @@ PixInsightINDIInterface* ThePixInsightINDIInterface = 0;
 // ----------------------------------------------------------------------------
 
 PixInsightINDIInterface::PixInsightINDIInterface() :
-ProcessInterface(), instance( ThePixInsightINDIProcess ), GUI( 0 ), m_treeBoxDeviceNodes(), m_serverMessage(""),m_numOfDevices(0), m_createPropertyTreeBox(true)
+ProcessInterface(), instance( ThePixInsightINDIProcess ), GUI( 0 ), m_serverMessage(""),m_numOfDevices(0)
 {
    ThePixInsightINDIInterface = this;
 }
@@ -241,11 +241,7 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 				// clear property list
 				GUI->PropertyList_TreeBox.Clear();
 				// build up tree after next connect
-				m_deviceNodeMap.clear();
-				m_propertyNodeMap.clear();
-				m_elementNodeMap.clear();
-				m_createPropertyTreeBox=true;
-
+				m_rootNodeMap.clear();
 
 				if (!indiClient->serverIsConnected()) {
 					GUI->ServerMessage_Label.SetText("Successfully disconnected from server");
@@ -615,75 +611,39 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 		return;
 	}
 
-	bool createDeviceTreeBox  =m_createPropertyTreeBox;
-	bool createPropertyTreeBox=m_createPropertyTreeBox;
 	for (PixInsightINDIInstance::PropertyListType::iterator iter=instance.p_propertyList.Begin() ; iter!=instance.p_propertyList.End(); ++iter){
 
-		// lazy create device nodes
-		PropertyNodeMapType::iterator deviceIter = m_deviceNodeMap.find(iter->Device);
-		PropertyNode* deviceNode;
-		if (deviceIter!= m_deviceNodeMap.end()&&!createDeviceTreeBox){
-			deviceNode=deviceIter->second;
-		} else
-		{	// create root node
-			PropertyNode* rootNode=new PropertyNode(GUI->PropertyList_TreeBox);
-			m_treeBoxDeviceNodes.push_back(rootNode);
-			PropertyNode* child = new PropertyNode(rootNode,iter->Device);
-			deviceNode = child;
-			deviceNode->getTreeBoxNode()->SetText(0,iter->Device);
-			deviceNode->getTreeBoxNode()->SetAlignment(0, TextAlign::Left);
-			m_deviceNodeMap[iter->Device]=deviceNode;
-			createDeviceTreeBox=false;
+		PropertyNode* rootNode=NULL;
+		PropertyNodeMapType::iterator rootNodeIter = m_rootNodeMap.find(iter->Device);
+		if (rootNodeIter== m_rootNodeMap.end()){
+			rootNode=new PropertyNode(GUI->PropertyList_TreeBox);
+			m_rootNodeMap[iter->Device]=rootNode;
+		} else {
+			rootNode = rootNodeIter->second;
 		}
-		// lazy create property nodes
-		PropertyNodeMapType::iterator propertyIter = m_propertyNodeMap.find(iter->Device+iter->Property);
-		PropertyNode* propertyNode;
-		if (propertyIter!= m_propertyNodeMap.end()&&!createPropertyTreeBox){
-			if (!iter->PropertyRemovalFlag){
-				propertyNode=propertyIter->second;
-			}
-			else {
-				// remove Property from childs vector of device (parent) node
-				deviceNode->RemoveChild(propertyIter->second);
-				// delete property
-				delete propertyIter->second;
-				// remove map entry
-				m_propertyNodeMap.erase(propertyIter);
-			}
-		} else if (!iter->PropertyRemovalFlag){
-			PropertyNode* child = new PropertyNode(deviceNode,iter->Device,iter->Property);
-			propertyNode = child;
-			propertyNode->getTreeBoxNode()->SetText(0,iter->Property);
-			propertyNode->getTreeBoxNode()->SetAlignment(0, TextAlign::Left);
-			m_propertyNodeMap[iter->Device+iter->Property]=propertyNode;
-			createPropertyTreeBox=false;
-		}
-		// lazy create element nodes
-		PropertyNodeMapType::iterator elementIter = m_elementNodeMap.find(iter->Device+iter->Property+iter->Element);
-		PropertyNode* elementNode;
-		if (elementIter != m_elementNodeMap.end()&&!m_createPropertyTreeBox) {
-			if (!iter->PropertyRemovalFlag){
-				elementNode = elementIter->second;
-			}
-			else {
-				delete elementIter->second;
-				m_elementNodeMap.erase(elementIter);
+		assert(rootNode!=NULL);
+		PropertyNodeFactory factory;
+		PropertyTree*  propTree = new PropertyTree(rootNode,&factory);
+
+		if (iter->PropertyRemovalFlag){
+			FindNodeVisitor* findDeviceNodeVisitor = new FindNodeVisitor();
+			rootNode->accept(findDeviceNodeVisitor,PropertyUtils::getKey(iter->Device),IsoString(""));
+			FindNodeVisitor* findPropNodeVisitor = new FindNodeVisitor();
+			rootNode->accept(findPropNodeVisitor,PropertyUtils::getKey(iter->Device,iter->Property),IsoString(""));
+			if (findDeviceNodeVisitor->foundNode()&&findPropNodeVisitor->foundNode()){
+				findDeviceNodeVisitor->getNode()->RemoveChild(findPropNodeVisitor->getNode());
+				delete findPropNodeVisitor->getNode();
 				itemsToBeRemoved.push_back(*iter);
 			}
-		} else if (!iter->PropertyRemovalFlag){
-			// create Element node
-			elementNode = PropertyNode::create(propertyNode,iter->Device, iter->Property, iter->Element,iter->PropertyTypeStr);
-			assert(elementNode!=NULL);
-			elementNode->getTreeBoxNode()->SetText(0, iter->Element);
-			elementNode->getTreeBoxNode()->SetAlignment(0, TextAlign::Left);
-			elementNode->getTreeBoxNode()->SetText(1, iter->PropertyValue);
-			elementNode->getTreeBoxNode()->SetAlignment(1, TextAlign::Left);
-			elementNode->getTreeBoxNode()->SetText(2, iter->PropertyTypeStr);
-			m_elementNodeMap[iter->Device+iter->Property+iter->Element]=elementNode;
+		} else {
+			PropertyNode* elemNode = propTree->addElementNode(iter->Device,iter->Property,iter->Element);
+			elemNode->setNodeINDIType(iter->PropertyTypeStr);
+			elemNode->setNodeINDIValue(iter->PropertyValue);
+			elemNode->getTreeBoxNode()->SetAlignment(0, TextAlign::Left);
+			elemNode->getTreeBoxNode()->SetAlignment(1, TextAlign::Left);
 		}
-
 	}
-	m_createPropertyTreeBox=false;
+	//m_createPropertyTreeBox=false;
 	GUI->PropertyList_TreeBox.EnableUpdates();
 
 	// remove properties from property list
@@ -706,16 +666,7 @@ void SetPropertyDialog::Button_Click( Button& sender, bool checked ){
 
 		INDINewPropertyListItem newPropertyListItem=getNewPropertyListItem();
 		bool send_ok = m_instance->sendNewPropertyValue(newPropertyListItem);
-		if (send_ok) {
-			IPropertyVisitor* pVisitor = UpdateVisitor::create();
-			std::vector<PropertyNode*>* rootNodes =
-					m_interface->getPropertyTreeRootNodes();
-			for (std::vector<PropertyNode*>::iterator it = rootNodes->begin();
-					it != rootNodes->end(); ++it) {
-				(*it)->accept(pVisitor, newPropertyListItem.PropertyKey,
-						newPropertyListItem.NewPropertyValue);
-			}
-		} else {
+		if (!send_ok) {
 			m_instance->clearNewPropertyList();
 		}
 		Ok();
@@ -726,9 +677,7 @@ void SetPropertyDialog::Button_Click( Button& sender, bool checked ){
 }
 
 void PixInsightINDIInterface::__Close( Control& sender, bool& allowClose){
-	if (sender==GUI->PropertyList_TreeBox){
-		m_createPropertyTreeBox=true;
-	}
+
 }
 
 void PixInsightINDIInterface::PropertyButton_Click( Button& sender, bool checked ){

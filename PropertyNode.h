@@ -173,17 +173,6 @@ namespace pcl {
 
 
 
-	class UpdateVisitor : public IPropertyVisitor {
-	protected:
-		UpdateVisitor(){}
-	public:
-		static IPropertyVisitor* create(){return new UpdateVisitor();}
-		bool visit(PropertyNode* pNode, IsoString propertyKeyString, IsoString newPropertyValue);
-		void postVisit(PropertyNode* pNode, IsoString propertyKeyString, IsoString newPropertyValue);
-		virtual ~UpdateVisitor(){}
-	
-	};
-
 	class FindNodeVisitor : public IPropertyVisitor {
 	private:
 		bool          m_found;

@@ -115,7 +115,7 @@ namespace pcl {
 		IProperty* INDIProperty = PropertyFactory::create(property);
 		ArrayOperator<INDIPropertyListItem>* update=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayUpdate<INDIPropertyListItem>());
 
-		runOnPropertyTable(INDIProperty,update);	
+		runOnPropertyTable(INDIProperty,update);
 	}
 
 	void INDIClient::newText(ITextVectorProperty *tvp){

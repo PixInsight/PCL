@@ -142,8 +142,6 @@ public:
 
    virtual InterfaceFeatures Features() const;
 
-   std::vector<PropertyNode*>* getPropertyTreeRootNodes(){return &m_treeBoxDeviceNodes;}
-
    void UpdateControls();
    
    // PixInsight client GUI
@@ -195,17 +193,10 @@ public:
 
    GUIData* GUI;
 
-   PropertyNodeVectorType m_treeBoxDeviceNodes;
-
    IsoString m_serverMessage;
 
    size_t  m_numOfDevices;
-
-   bool m_createPropertyTreeBox;
-
-   PropertyNodeMapType m_deviceNodeMap;
-   PropertyNodeMapType m_propertyNodeMap;
-   PropertyNodeMapType m_elementNodeMap;
+   PropertyNodeMapType m_rootNodeMap;
 
    Mutex m_mutex;
 

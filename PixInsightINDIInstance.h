@@ -88,7 +88,7 @@ public:
 	virtual Array<INDIDeviceListItem>& getDeviceList(){return p_deviceList; }
 	virtual IsoString& getCurrentMessage() {return p_currentMessage;}
 
-   bool sendNewPropertyValue(const INDINewPropertyListItem& propItem);
+   bool sendNewPropertyValue(const INDINewPropertyListItem& propItem,bool isAsynch=false);
 
    bool getINDIPropertyItem(String device, String property, String element, INDIPropertyListItem& result );
 

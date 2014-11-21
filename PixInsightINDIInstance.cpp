@@ -177,10 +177,10 @@ bool PixInsightINDIInstance::getPropertyFromKeyString(INDINewPropertyListItem& p
 
 }
 
-bool PixInsightINDIInstance::sendNewPropertyValue(const INDINewPropertyListItem& propItem){
+bool PixInsightINDIInstance::sendNewPropertyValue(const INDINewPropertyListItem& propItem,bool isAsynch){
 
 	p_newPropertyList.Append(propItem);
-	return sendNewProperty();
+	return sendNewProperty(isAsynch);
 }
 
 bool PixInsightINDIInstance::sendNewProperty(bool isAsynchCall) {

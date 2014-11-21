@@ -74,6 +74,7 @@ namespace pcl {
 
 	typedef enum {
 		TextColumn,
+		StatusColumn,
 		ValueColumn,
 		TypeColumn
 	} TreeBoxColumn;
@@ -121,6 +122,7 @@ namespace pcl {
 	    virtual void setNodeINDIText(IsoString text);
 	    virtual void setNodeINDIValue(IsoString value);
 	    virtual void setNodeINDIType(IsoString type);
+	    virtual void setNodeINDIState(int state);
 
 	    virtual IsoString getNodeINDIText() const;
 	    virtual IsoString getNodeINDIValue() const;
@@ -198,7 +200,7 @@ namespace pcl {
 			PropertyNode* addNode(PropertyNode* parent, IsoString device,IsoString property);
 			PropertyNode* addNode(PropertyNode* parent, IsoString device,IsoString property,IsoString element);
 
-			PropertyNode* addElementNode(IsoString device,IsoString property,IsoString element);
+			PropertyNode* addElementNode(IsoString device,IsoString property,IsoString element, int state=IPS_OK);
 		private:
 			PropertyNode*        m_rootNode;
 			PropertyNodeFactory* m_factory;

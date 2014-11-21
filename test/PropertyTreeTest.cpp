@@ -42,6 +42,7 @@ public:
 	virtual void setNodeINDIText(IsoString text){m_INDIText=text;}
 	virtual void setNodeINDIValue(IsoString value){m_INDIValue=value;}
 	virtual void setNodeINDIType(IsoString type){m_INDIType=type;}
+	virtual void setNodeINDIState(int state){}
 
 	virtual IsoString getNodeINDIText() const {return m_INDIText; }
 	virtual IsoString getNodeINDIValue() const {return m_INDIValue;}
@@ -64,6 +65,7 @@ public:
 		ON_CALL(*this,setNodeINDIText(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDIText));
 		ON_CALL(*this,setNodeINDIValue(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDIValue));
 		ON_CALL(*this,setNodeINDIType(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDIType));
+		ON_CALL(*this,setNodeINDIState(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDIState));
 		ON_CALL(*this,getNodeINDIText()).WillByDefault(Invoke(&m_fake,&FakePropertyNode::getNodeINDIText));
 		ON_CALL(*this,getNodeINDIValue()).WillByDefault(Invoke(&m_fake,&FakePropertyNode::getNodeINDIValue));
 		ON_CALL(*this,getNodeINDIType()).WillByDefault(Invoke(&m_fake,&FakePropertyNode::getNodeINDIType));
@@ -77,6 +79,7 @@ public:
 		ON_CALL(*this,setNodeINDIText(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDIText));
 		ON_CALL(*this,setNodeINDIValue(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDIValue));
 		ON_CALL(*this,setNodeINDIType(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDIType));
+		ON_CALL(*this,setNodeINDIState(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDIState));
 		ON_CALL(*this,getNodeINDIText()).WillByDefault(Invoke(&m_fake,&FakePropertyNode::getNodeINDIText));
 		ON_CALL(*this,getNodeINDIValue()).WillByDefault(Invoke(&m_fake,&FakePropertyNode::getNodeINDIValue));
 		ON_CALL(*this,getNodeINDIType()).WillByDefault(Invoke(&m_fake,&FakePropertyNode::getNodeINDIType));
@@ -93,6 +96,7 @@ public:
 	MOCK_METHOD1(setNodeINDIText,void(IsoString));
 	MOCK_METHOD1(setNodeINDIValue,void(IsoString));
 	MOCK_METHOD1(setNodeINDIType,void(IsoString));
+	MOCK_METHOD1(setNodeINDIState,void(int));
 
 private:
 	FakePropertyNode m_fake;

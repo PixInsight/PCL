@@ -117,6 +117,23 @@ namespace pcl {
 		if (m_thisTreeBoxNode!=NULL)
 			m_thisTreeBoxNode->SetText(TypeColumn,type);
 	}
+	void PropertyNode::setNodeINDIState(int state)   {
+		if (m_thisTreeBoxNode!=NULL)
+			switch (state){
+			case IPS_OK:
+				m_thisTreeBoxNode->SetIcon(StatusColumn,Bitmap(":/bullets/bullet-ball-glass-green.png"));
+				break;
+			case IPS_ALERT:
+				m_thisTreeBoxNode->SetIcon(StatusColumn,Bitmap(":/bullets/bullet-ball-glass-red.png"));
+				break;
+			case IPS_BUSY:
+				m_thisTreeBoxNode->SetIcon(StatusColumn,Bitmap(":/bullets/bullet-ball-yellow-red.png"));
+				break;
+			case IPS_IDLE:
+				m_thisTreeBoxNode->SetIcon(StatusColumn,Bitmap(":/bullets/bullet-ball-grey-red.png"));
+				break;
+			}
+	}
 
     IsoString PropertyNode::getNodeINDIText() const  {
     	if (m_thisTreeBoxNode!=NULL)
@@ -177,7 +194,7 @@ namespace pcl {
 		return node;
 	}
 
-	PropertyNode* PropertyTree::addElementNode(IsoString device,IsoString property,IsoString element){
+	PropertyNode* PropertyTree::addElementNode(IsoString device,IsoString property,IsoString element, int state){
 		assert(m_rootNode!=NULL);
 		// lookup device node
 		IsoString deviceKeyStr = PropertyUtils::getKey(device);
@@ -205,6 +222,7 @@ namespace pcl {
 		}
 		assert(propNode!=NULL);
 		propNode->setNodeINDIText(property);
+		propNode->setNodeINDIState(state);
 		// lookup element node
 		findNodeVisitor->reset();
 		IsoString elementKeyStr = PropertyUtils::getKey(device,property,element);

@@ -124,7 +124,7 @@ bool PixInsightINDIInterface::Launch( const MetaProcess& P, const ProcessImpleme
    if ( GUI == 0 )
    {
       GUI = new GUIData( *this );
-      SetWindowTitle( "PixInsightINDI" );
+      SetWindowTitle( "INDI Device Controller" );
       UpdateControls();
    }
 
@@ -266,14 +266,6 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 						if (!device->isConnected())
 							indiClient->connectDevice(deviceName.c_str());	
 
-					if (device->isConnected()){
-						(*it)->SetCheckable(true);
-						(*it)->Check(true);
-					}
-					else {
-						(*it)->Check(false);
-					}
-					(*it)->SetCheckable(false);
 				}
 				
 			}
@@ -296,13 +288,6 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 							indiClient->disconnectDevice(deviceName.c_str());	
 
 					(*it)->Enable();
-					// uncheck 
-					if (!device->isConnected()){
-						(*it)->SetCheckable(true);
-						(*it)->Check(false);
-					}
-
-					(*it)->SetCheckable(false);
 				}
 			}
             ERROR_HANDLER
@@ -339,15 +324,12 @@ void PixInsightINDIInterface::UpdateDeviceList(){
 
 		INDI::BaseDevice* device = indiClient->getDevice(IsoString(iter->DeviceName).c_str());
 		if (device && device->isConnected()){
-			deviceNode->getTreeBoxNode()->SetCheckable(true);
-			deviceNode->getTreeBoxNode()->Check(true);
-		}
+			Bitmap icon(String(":/bullets/bullet-ball-glass-green.png"));
+			deviceNode->getTreeBoxNode()->SetIcon(0,icon);		}
 		else {
-			deviceNode->getTreeBoxNode()->SetCheckable(true);
-			deviceNode->getTreeBoxNode()->Check(false);
+			Bitmap icon(":/bullets/bullet-ball-glass-red.png");
+			deviceNode->getTreeBoxNode()->SetIcon(0,icon);
 		}
-		deviceNode->getTreeBoxNode()->SetAlignment( 0, TextAlign::Left );
-		deviceNode->getTreeBoxNode()->SetCheckable(false);
 
 	}
 	GUI->UpdateDeviceList_Timer.Stop();
@@ -413,7 +395,6 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
   
    ConnectionServer_Sizer.Add(ConnectServer_PushButton);
    ConnectionServer_Sizer.Add(DisconnectServer_PushButton);
-   //ConnectionServer_Sizer.AddStretch();
 
    INDIServerConnection_Control.SetFixedHeight(4*fnt.Height() +2);
 
@@ -429,8 +410,6 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    DeviceList_TreeBox.SetNumberOfColumns(2);
    DeviceList_TreeBox.SetHeaderText(0,"Status");
    DeviceList_TreeBox.SetHeaderText(1,"Device");
-
-
 
    DeviceAction_Sizer.SetSpacing(4);
    ConnectDevice_PushButton.SetText("Connect");
@@ -451,14 +430,14 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    INDIProperties_SectionBar.SetTitle("INDI Device Properties");
    INDIProperties_SectionBar.SetSection(INDIProperties_Control);
    INDIProperties_Control.SetSizer(INDIDeviceProperty_Sizer);
-   //PropertyList_TreeBox.SetMinHeight( 26*fnt.Height() +2 );
-   //PropertyList_TreeBox.SetMinWidth(width);
+
    PropertyList_TreeBox.EnableAlternateRowColor();
-   PropertyList_TreeBox.SetNumberOfColumns(3);
-   PropertyList_TreeBox.HideColumn(2);
+   PropertyList_TreeBox.SetNumberOfColumns(4);
+   PropertyList_TreeBox.HideColumn(TypeColumn);
    PropertyList_TreeBox.SetColumnWidth(0,300);
-   PropertyList_TreeBox.SetHeaderText(0,String("Property"));
-   PropertyList_TreeBox.SetHeaderText(1,String("Value"));
+   PropertyList_TreeBox.SetHeaderText(TextColumn,String("Property"));
+   PropertyList_TreeBox.SetHeaderText(StatusColumn,String("Status"));
+   PropertyList_TreeBox.SetHeaderText(ValueColumn,String("Value"));
    PropertyList_TreeBox.OnClose((Control::close_event_handler) &PixInsightINDIInterface::__Close,w);
 
    ServerMessage_Label.SetVariableWidth();
@@ -488,7 +467,6 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    Buttons_Sizer.AddStretch();
 
    INDIDeviceProperty_Sizer.Add(Buttons_Sizer);
-   //INDIDeviceProperty_Sizer.Add(DeviceMessage_Label);
 
    Global_Sizer.SetMargin( 8 );
    Global_Sizer.SetSpacing( 6 );
@@ -513,11 +491,9 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    UpdateServerMessage_Timer.SetPeriodic( true );
    UpdateServerMessage_Timer.OnTimer( (Timer::timer_event_handler)&PixInsightINDIInterface::__UpdateServerMessage_Timer, w );
 
-   
-
    w.SetSizer( Global_Sizer );
    w.AdjustToContents();
-   //w.SetFixedSize();
+
 }
 
 
@@ -642,8 +618,8 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 			PropertyNode* elemNode = propTree->addElementNode(iter->Device,iter->Property,iter->Element);
 			elemNode->setNodeINDIType(iter->PropertyTypeStr);
 			elemNode->setNodeINDIValue(iter->PropertyValue);
-			elemNode->getTreeBoxNode()->SetAlignment(0, TextAlign::Left);
-			elemNode->getTreeBoxNode()->SetAlignment(1, TextAlign::Left);
+			elemNode->getTreeBoxNode()->SetAlignment(TextColumn, TextAlign::Left);
+			elemNode->getTreeBoxNode()->SetAlignment(ValueColumn, TextAlign::Left);
 		}
 	}
 	//m_createPropertyTreeBox=false;
@@ -668,7 +644,7 @@ void SetPropertyDialog::Button_Click( Button& sender, bool checked ){
 	{
 
 		INDINewPropertyListItem newPropertyListItem=getNewPropertyListItem();
-		bool send_ok = m_instance->sendNewPropertyValue(newPropertyListItem);
+		bool send_ok = m_instance->sendNewPropertyValue(newPropertyListItem,true /*isAsynch*/);
 		if (!send_ok) {
 			m_instance->clearNewPropertyList();
 		}
@@ -690,14 +666,14 @@ void PixInsightINDIInterface::PropertyButton_Click( Button& sender, bool checked
 		GUI->PropertyList_TreeBox.GetSelectedNodes(selectedNodes);
 
 		for (pcl::IndirectArray<pcl::TreeBox::Node>::iterator it=selectedNodes.Begin(); it!=selectedNodes.End();++it){
-			GUI->SetPropDlg.setPropertyLabelString((*it)->Text(0));
-			GUI->SetPropDlg.setPropertyValueString((*it)->Text(1));
+			GUI->SetPropDlg.setPropertyLabelString((*it)->Text(TextColumn));
+			GUI->SetPropDlg.setPropertyValueString((*it)->Text(ValueColumn));
 			INDINewPropertyListItem propItem;
-			propItem.Device=(*it)->Parent()->Parent()->Text(0);
-			propItem.Property=(*it)->Parent()->Text(0);
-			propItem.Element=(*it)->Text(0);
-			propItem.NewPropertyValue=(*it)->Text(1);
-			propItem.PropertyType=(*it)->Text(2);
+			propItem.Device=(*it)->Parent()->Parent()->Text(TextColumn);
+			propItem.Property=(*it)->Parent()->Text(TextColumn);
+			propItem.Element=(*it)->Text(TextColumn);
+			propItem.NewPropertyValue=(*it)->Text(ValueColumn);
+			propItem.PropertyType=(*it)->Text(TypeColumn);
 			propItem.PropertyKey=PropertyUtils::getKey(propItem.Device,propItem.Property,propItem.Element);
 			GUI->SetPropDlg.setNewPropertyListItem(propItem);
 		}

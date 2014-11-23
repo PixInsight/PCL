@@ -21,6 +21,8 @@ public:
 	virtual Array<INDIPropertyListItem>& getPropertyList() {return m_propertyList;}
 	virtual Array<INDIDeviceListItem>& getDeviceList(){return m_deviceList; }
 	virtual IsoString& getCurrentMessage() {return m_currentMessage;}
+	virtual void setImageDownloadedFlag(bool flag){}
+	virtual bool getImageDownloadedFlag(){return true;}
 
 private:
 	Array<INDIDeviceListItem>    m_deviceList;

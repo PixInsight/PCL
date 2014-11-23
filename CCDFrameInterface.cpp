@@ -471,16 +471,6 @@ void CCDFrameInterface::Temperature_Timer( Timer &sender )
 				sender.Stop();
 				return;
 			}
-			// get X binning value
-			if (pInstance->getINDIPropertyItem(m_Device,
-								"CCD_BINNING", "HOR_BIN", CCDProp)) {
-				GUI->CCDBinX_Edit.SetText(CCDProp.PropertyValue);
-			}
-			// get X binning value
-			if (pInstance->getINDIPropertyItem(m_Device,
-											"CCD_BINNING", "VER_BIN", CCDProp)) {
-				GUI->CCDBinY_Edit.SetText(CCDProp.PropertyValue);
-			}
 		}
 	}
 }
@@ -509,6 +499,16 @@ void CCDFrameInterface::ComboItemSelected(ComboBox& sender, int itemIndex) {
 					newPropertyListItem.NewPropertyValue = String("ON");
 					pInstance->sendNewPropertyValue(newPropertyListItem);
 				}
+			}
+			// get X binning value
+			if (pInstance->getINDIPropertyItem(m_Device, "CCD_BINNING",
+					"HOR_BIN", CCDProp)) {
+				GUI->CCDBinX_Edit.SetText(CCDProp.PropertyValue);
+			}
+			// get X binning value
+			if (pInstance->getINDIPropertyItem(m_Device, "CCD_BINNING",
+					"VER_BIN", CCDProp)) {
+				GUI->CCDBinY_Edit.SetText(CCDProp.PropertyValue);
 			}
 			GUI->Temperature_Timer.Start();
 		}
@@ -567,12 +567,14 @@ void CCDFrameInterface::CancelButton_Click(Button& sender, bool checked){
 			newPropertyListItem.NewPropertyValue=String(m_ExposureDuration);
 
 			GUI->ExposureDuration_Timer.Start();
-			bool send_ok = pInstance->sendNewPropertyValue(newPropertyListItem);
+			bool send_ok = pInstance->sendNewPropertyValue(newPropertyListItem,true/*isAsynchCall*/);
 
 			if (!send_ok){
 				break;
 			}
 
+			while (!pInstance->getImageDownloadedFlag()){ProcessEvents();}
+			pInstance->setImageDownloadedFlag(false);
 			if (serverSendsImage) {
 				Array<ImageWindow> imgArray = ImageWindow::Open(String(tmpDir)+ String("/Image.fits"), IsoString("image"));
 

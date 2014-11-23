@@ -84,7 +84,8 @@ p_command(""),
 p_getPropertyReturnValue(""),
 p_getPropertyParam(""),
 p_doAbort(false),
-m_internalAbortFlag(false)
+m_internalAbortFlag(false),
+m_ImageDownloaded(false)
 
 {
 	
@@ -313,7 +314,6 @@ bool PixInsightINDIInstance::sendNewProperty(bool isAsynchCall) {
 					m_internalAbortFlag=false;
 					return false;
 				}
-
 			}
 			
 		}else{

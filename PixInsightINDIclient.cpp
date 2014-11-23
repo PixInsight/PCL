@@ -153,6 +153,10 @@ namespace pcl {
         	myfile.open (fileName.c_str(),ios::out|ios::binary);
         	myfile.write((const char*) bp->blob,bp->bloblen);
         	myfile.close();
+        	m_Instance->setImageDownloadedFlag(true);
+		if (m_ScriptInstance) {
+			m_ScriptInstance->setImageDownloadedFlag(true);
+		}
 	    }
 	  else {
 	    m_Instance->getCurrentMessage() =IsoString("TMPDIR environment variable not set.");

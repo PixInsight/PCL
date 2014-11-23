@@ -96,6 +96,8 @@ public:
    bool getInternalAbortFlag() {return m_internalAbortFlag;}
    void setInternalAbortFlag(bool doAbort) {m_internalAbortFlag=doAbort;}
    void clearNewPropertyList(){p_newPropertyList.Clear();}
+   virtual bool getImageDownloadedFlag(){return m_ImageDownloaded;}
+   virtual void setImageDownloadedFlag(bool flag){m_ImageDownloaded=flag;}
 private:
    DeviceListType          p_deviceList;
    PropertyListType        p_propertyList;
@@ -110,6 +112,7 @@ private:
    pcl_bool				   p_doAbort;
    
    bool                    m_internalAbortFlag;
+   bool                    m_ImageDownloaded;
 
    void getProperties();
    bool sendNewProperty(bool isAsyncCall=false);

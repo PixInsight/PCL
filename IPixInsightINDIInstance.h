@@ -20,6 +20,8 @@ public:
 	virtual Array<INDIPropertyListItem>& getPropertyList() = 0;
 	virtual Array<INDIDeviceListItem>& getDeviceList() = 0;
 	virtual IsoString& getCurrentMessage() = 0;
+	virtual void setImageDownloadedFlag(bool flag) =0 ;
+	virtual bool getImageDownloadedFlag()=0;
 };
 
 } /* namespace pcl */

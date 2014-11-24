@@ -498,6 +498,7 @@ void CCDFrameInterface::ComboItemSelected(ComboBox& sender, int itemIndex) {
 
 					newPropertyListItem.NewPropertyValue = String("ON");
 					pInstance->sendNewPropertyValue(newPropertyListItem);
+					GUI->Temperature_Timer.Start();
 				}
 			}
 			// get X binning value
@@ -510,7 +511,7 @@ void CCDFrameInterface::ComboItemSelected(ComboBox& sender, int itemIndex) {
 					"VER_BIN", CCDProp)) {
 				GUI->CCDBinY_Edit.SetText(CCDProp.PropertyValue);
 			}
-			GUI->Temperature_Timer.Start();
+
 		}
 	}
 }
@@ -573,7 +574,9 @@ void CCDFrameInterface::CancelButton_Click(Button& sender, bool checked){
 				break;
 			}
 
-			while (!pInstance->getImageDownloadedFlag()){ProcessEvents();}
+			// TODO enable abort
+			// TODO Check status of CCD_EXPOSURE_VALUE in case of server upload mode
+			while (!pInstance->getImageDownloadedFlag()){Sleep(1);ProcessEvents();}
 			pInstance->setImageDownloadedFlag(false);
 			if (serverSendsImage) {
 				Array<ImageWindow> imgArray = ImageWindow::Open(String(tmpDir)+ String("/Image.fits"), IsoString("image"));

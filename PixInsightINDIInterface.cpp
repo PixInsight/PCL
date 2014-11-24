@@ -615,7 +615,7 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 				itemsToBeRemoved.push_back(*iter);
 			}
 		} else {
-			PropertyNode* elemNode = propTree->addElementNode(iter->Device,iter->Property,iter->Element);
+			PropertyNode* elemNode = propTree->addElementNode(iter->Device,iter->Property,iter->Element,iter->PropertyState);
 			elemNode->setNodeINDIType(iter->PropertyTypeStr);
 			elemNode->setNodeINDIValue(iter->PropertyValue);
 			elemNode->getTreeBoxNode()->SetAlignment(TextColumn, TextAlign::Left);

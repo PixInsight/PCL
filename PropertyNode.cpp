@@ -127,10 +127,10 @@ namespace pcl {
 				m_thisTreeBoxNode->SetIcon(StatusColumn,Bitmap(":/bullets/bullet-ball-glass-red.png"));
 				break;
 			case IPS_BUSY:
-				m_thisTreeBoxNode->SetIcon(StatusColumn,Bitmap(":/bullets/bullet-ball-yellow-red.png"));
+				m_thisTreeBoxNode->SetIcon(StatusColumn,Bitmap(":/bullets/bullet-ball-glass-yellow.png"));
 				break;
 			case IPS_IDLE:
-				m_thisTreeBoxNode->SetIcon(StatusColumn,Bitmap(":/bullets/bullet-ball-grey-red.png"));
+				m_thisTreeBoxNode->SetIcon(StatusColumn,Bitmap(":/bullets/bullet-ball-glass-grey.png"));
 				break;
 			}
 	}

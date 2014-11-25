@@ -22,15 +22,22 @@ struct INDIDeviceListItem {
 	}
 };
 
+typedef enum {
+	Insert,
+	Update,
+	Remove,
+	Idle
+} PropertyFlag;
+
 struct INDIPropertyListItem {
-	INDIPropertyListItem():PropertyRemovalFlag(false){}
+	INDIPropertyListItem():PropertyRemovalFlag(Idle){}
 	String Device;
 	String Property;
 	INDI_TYPE PropertyType;
 	String PropertyTypeStr;
 	String Element;
 	unsigned int PropertyState;
-	bool   PropertyRemovalFlag;
+	PropertyFlag   PropertyRemovalFlag;
 	String PropertyKey;
 	String PropertyValue;
 	String NewPropertyValue;

@@ -12,7 +12,7 @@
 namespace pcl {
 
 
-	void INDIClient::runOnPropertyTable(IProperty* INDIProperty, const ArrayOperator<INDIPropertyListItem>* arrayOp){
+	void INDIClient::runOnPropertyTable(IProperty* INDIProperty, const ArrayOperator<INDIPropertyListItem>* arrayOp, PropertyFlag flag){
 		String sep("/");
 		INDIPropertyListItem propertyListItem;
 		propertyListItem.Device=INDIProperty->getDeviceName();		
@@ -25,6 +25,7 @@ namespace pcl {
 			propertyListItem.Element=INDIProperty->getElementName(i);
 			propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element;
 			propertyListItem.PropertyValue=INDIProperty->getElementValue(i);
+			propertyListItem.PropertyRemovalFlag=flag;
 			arrayOp->run(m_Instance->getPropertyList(),propertyListItem);
 		    if (m_ScriptInstance) {
 			  arrayOp->run(m_ScriptInstance->getPropertyList(), propertyListItem);
@@ -52,7 +53,7 @@ namespace pcl {
 		IProperty* INDIProperty = PropertyFactory::create(property);
 		ArrayOperator<INDIPropertyListItem>* append=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayAppend<INDIPropertyListItem>());
 		// add property to the property process parameter table
-		runOnPropertyTable(INDIProperty,append);
+		runOnPropertyTable(INDIProperty,append,Insert);
 
 		setBLOBMode(B_ALSO,property->getDeviceName());
 	}
@@ -77,7 +78,7 @@ namespace pcl {
 						+ propertyListItem.Property + sep
 						+ propertyListItem.Element;
 				propertyListItem.PropertyValue = INDIProperty->getElementValue(i);
-				propertyListItem.PropertyRemovalFlag=true;
+				propertyListItem.PropertyRemovalFlag=Remove;
 				update->run(m_Instance->getPropertyList(), propertyListItem);
 				if (m_ScriptInstance) {
 					update->run(m_ScriptInstance->getPropertyList(), propertyListItem);
@@ -103,7 +104,7 @@ namespace pcl {
 
 		IProperty* INDIProperty = PropertyFactory::create(property);
 		ArrayOperator<INDIPropertyListItem>* update=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayUpdate<INDIPropertyListItem>());
-		runOnPropertyTable(INDIProperty,update);
+		runOnPropertyTable(INDIProperty,update,Update);
 
 	}
 
@@ -115,7 +116,7 @@ namespace pcl {
 		IProperty* INDIProperty = PropertyFactory::create(property);
 		ArrayOperator<INDIPropertyListItem>* update=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayUpdate<INDIPropertyListItem>());
 
-		runOnPropertyTable(INDIProperty,update);
+		runOnPropertyTable(INDIProperty,update,Update);
 	}
 
 	void INDIClient::newText(ITextVectorProperty *tvp){
@@ -126,7 +127,7 @@ namespace pcl {
 		IProperty* INDIProperty = PropertyFactory::create(property);
 		ArrayOperator<INDIPropertyListItem>* update=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayUpdate<INDIPropertyListItem>());
 
-		runOnPropertyTable(INDIProperty,update);
+		runOnPropertyTable(INDIProperty,update,Update);
 	}
 
 	void INDIClient::newLight(ILightVectorProperty *lvp){
@@ -137,7 +138,7 @@ namespace pcl {
 		IProperty* INDIProperty = PropertyFactory::create(property);
 		ArrayOperator<INDIPropertyListItem>* update=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayUpdate<INDIPropertyListItem>());
 
-		runOnPropertyTable(INDIProperty,update);
+		runOnPropertyTable(INDIProperty,update,Update);
 	}
 
 	void INDIClient::newBLOB(IBLOB *bp){

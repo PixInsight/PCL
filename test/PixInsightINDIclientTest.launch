@@ -31,4 +31,17 @@
 <listAttribute key="org.eclipse.debug.ui.favoriteGroups">
 <listEntry value="org.eclipse.debug.ui.launchGroup.run"/>
 </listAttribute>
+<booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.DefaultEvent" value="true"/>
+<booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.HideUnresolvedSymbols" value="true"/>
+<stringAttribute key="org.eclipse.linuxtools.internal.perf.attr.Kernel.Location" value=""/>
+<booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.Kernel.SourceLineNumbers" value="false"/>
+<booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.ModuleSymbols" value="false"/>
+<booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.MultipleEvents" value="false"/>
+<booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.Multiplex" value="false"/>
+<booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.Record.Realtime" value="false"/>
+<booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.Record.Verbose" value="false"/>
+<booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.ShowSourceDisassembly" value="false"/>
+<booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.ShowStat" value="false"/>
+<booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.SourceLineNumbers" value="true"/>
+<intAttribute key="org.eclipse.linuxtools.internal.perf.attr.StatRunCount" value="1"/>
 </launchConfiguration>

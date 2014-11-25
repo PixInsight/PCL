@@ -78,6 +78,7 @@ namespace pcl
 {
 
 class PropertyNode;
+class PropertyTree;
 class PixInsightINDIInterface;
 
 class SetPropertyDialog : public Dialog 
@@ -188,6 +189,7 @@ public:
    private:
 
    typedef std::map<IsoString,PropertyNode*> PropertyNodeMapType;
+   typedef std::map<IsoString,PropertyTree*> PropertyTreeMapType;
    typedef std::vector<PropertyNode*>        PropertyNodeVectorType;
    PixInsightINDIInstance instance;
 
@@ -197,6 +199,7 @@ public:
 
    size_t  m_numOfDevices;
    PropertyNodeMapType m_rootNodeMap;
+   PropertyTreeMapType m_propertyTreeMap;
 
    Mutex m_mutex;
 

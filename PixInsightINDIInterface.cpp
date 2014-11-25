@@ -81,6 +81,12 @@ PixInsightINDIInterface::~PixInsightINDIInterface()
 {
    if ( GUI != 0 )
       delete GUI, GUI = 0;
+
+   if (m_propertyTreeMap.size()!=0){
+	   for (PropertyTreeMapType::iterator iter=m_propertyTreeMap.begin();iter!=m_propertyTreeMap.end(); iter++ ){
+		   delete iter->second;
+	   }
+   }
 }
 
 IsoString PixInsightINDIInterface::Id() const
@@ -578,6 +584,7 @@ SetPropertyDialog::SetPropertyDialog():Dialog(),m_instance(NULL){
 void PixInsightINDIInterface::UpdatePropertyList(){
 	GUI->PropertyList_TreeBox.DisableUpdates();
 	std::vector<INDIPropertyListItem> itemsToBeRemoved;
+	std::vector<INDIPropertyListItem> itemsCreated;
 
 	if (indiClient.get() == 0){
 		GUI->PropertyList_TreeBox.EnableUpdates();
@@ -589,7 +596,12 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 		return;
 	}
 
+	PropertyNodeFactory factory;
 	for (PixInsightINDIInstance::PropertyListType::iterator iter=instance.p_propertyList.Begin() ; iter!=instance.p_propertyList.End(); ++iter){
+
+		if (iter->PropertyRemovalFlag==Idle){
+			continue;
+		}
 
 		PropertyNode* rootNode=NULL;
 		PropertyNodeMapType::iterator rootNodeIter = m_rootNodeMap.find(iter->Device);
@@ -600,11 +612,18 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 			rootNode = rootNodeIter->second;
 		}
 		assert(rootNode!=NULL);
-		PropertyNodeFactory factory;
-		//TODO delete property tree in dtor
-		PropertyTree*  propTree = new PropertyTree(rootNode,&factory);
 
-		if (iter->PropertyRemovalFlag){
+		//TODO delete property tree in dtor
+		PropertyTree*  propTree = NULL;
+		PropertyTreeMapType::iterator propTreeIter = m_propertyTreeMap.find(iter->Device);
+		if (propTreeIter==m_propertyTreeMap.end()){
+			propTree = new PropertyTree(rootNode,&factory);
+		} else {
+			propTree = propTreeIter->second;
+		}
+		assert(propTree!=NULL);
+
+		if (iter->PropertyRemovalFlag==Remove){
 			FindNodeVisitor* findDeviceNodeVisitor = new FindNodeVisitor();
 			rootNode->accept(findDeviceNodeVisitor,PropertyUtils::getKey(iter->Device),IsoString(""));
 			FindNodeVisitor* findPropNodeVisitor = new FindNodeVisitor();
@@ -614,22 +633,31 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 				delete findPropNodeVisitor->getNode();
 				itemsToBeRemoved.push_back(*iter);
 			}
-		} else {
+		} else  {
 			PropertyNode* elemNode = propTree->addElementNode(iter->Device,iter->Property,iter->Element,iter->PropertyState);
 			elemNode->setNodeINDIType(iter->PropertyTypeStr);
 			elemNode->setNodeINDIValue(iter->PropertyValue);
 			elemNode->getTreeBoxNode()->SetAlignment(TextColumn, TextAlign::Left);
 			elemNode->getTreeBoxNode()->SetAlignment(ValueColumn, TextAlign::Left);
+			if (iter->PropertyRemovalFlag==Insert){
+				itemsCreated.push_back(*iter);
+			}
 		}
+
 	}
-	//m_createPropertyTreeBox=false;
 	GUI->PropertyList_TreeBox.EnableUpdates();
 
 	// remove properties from property list
 	for (size_t i=0; i<itemsToBeRemoved.size(); i++){
 		instance.p_propertyList.Remove(itemsToBeRemoved[i]);
 	}
-
+	// set newly created elements to Idle
+	for (size_t i=0; i<itemsCreated.size(); i++){
+		PixInsightINDIInstance::PropertyListType::iterator iter =instance.p_propertyList.Search(itemsCreated[i]);
+		if (iter!=instance.p_propertyList.End()){
+			iter->PropertyRemovalFlag=Idle;
+		}
+	}
 
 }
 

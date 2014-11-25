@@ -197,11 +197,11 @@ public:
 
    IsoString m_serverMessage;
 
-   size_t  m_numOfDevices;
    PropertyNodeMapType m_rootNodeMap;
+   PropertyNodeMapType m_deviceRootNodeMap;
+   PropertyNodeMapType m_deviceNodeMap;
    PropertyTreeMapType m_propertyTreeMap;
 
-   Mutex m_mutex;
 
    void UpdatePropertyList();
 

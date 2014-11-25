@@ -72,7 +72,7 @@ PixInsightINDIInterface* ThePixInsightINDIInterface = 0;
 // ----------------------------------------------------------------------------
 
 PixInsightINDIInterface::PixInsightINDIInterface() :
-ProcessInterface(), instance( ThePixInsightINDIProcess ), GUI( 0 ), m_serverMessage(""),m_numOfDevices(0)
+ProcessInterface(), instance( ThePixInsightINDIProcess ), GUI( 0 ), m_serverMessage("")
 {
    ThePixInsightINDIInterface = this;
 }
@@ -246,8 +246,11 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 				GUI->DeviceList_TreeBox.Clear();
 				// clear property list
 				GUI->PropertyList_TreeBox.Clear();
-				// build up tree after next connect
+				// clear node maps
 				m_rootNodeMap.clear();
+				m_deviceNodeMap.clear();
+				m_deviceRootNodeMap.clear();
+				m_propertyTreeMap.clear();
 
 				if (!indiClient->serverIsConnected()) {
 					GUI->ServerMessage_Label.SetText("Successfully disconnected from server");
@@ -313,7 +316,6 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 void PixInsightINDIInterface::UpdateDeviceList(){
 
 	GUI->DeviceList_TreeBox.DisableUpdates();
-	GUI->DeviceList_TreeBox.Clear();
 
 	if (indiClient.get() == 0)
 		return;
@@ -323,8 +325,27 @@ void PixInsightINDIInterface::UpdateDeviceList(){
 
 	for (PixInsightINDIInstance::DeviceListType::iterator iter=instance.p_deviceList.Begin() ; iter!=instance.p_deviceList.End(); ++iter){
 
-		PropertyNode* rootNode = new PropertyNode(GUI->DeviceList_TreeBox);
-		PropertyNode* deviceNode = new PropertyNode(rootNode,IsoString(iter->DeviceName));
+		PropertyNode* rootNode=NULL;
+		PropertyNodeMapType::iterator rootNodeIter = m_deviceRootNodeMap.find(iter->DeviceName);
+		if (rootNodeIter== m_deviceRootNodeMap.end()){
+			rootNode=new PropertyNode(GUI->DeviceList_TreeBox);
+			m_deviceRootNodeMap[iter->DeviceName]=rootNode;
+		} else {
+			rootNode = rootNodeIter->second;
+		}
+		assert(rootNode!=NULL);
+
+		PropertyNode* deviceNode = NULL;
+		PropertyNodeMapType::iterator deviceNodeIter = m_deviceNodeMap.find(iter->DeviceName);
+		if (deviceNodeIter== m_deviceNodeMap.end()){
+			deviceNode=new PropertyNode(rootNode,IsoString(iter->DeviceName));
+			m_deviceNodeMap[iter->DeviceName]=deviceNode;
+		} else {
+			deviceNode = deviceNodeIter->second;
+		}
+		assert(deviceNode!=NULL);
+
+
 		deviceNode->getTreeBoxNode()->SetText( 1, iter->DeviceName );
 		deviceNode->getTreeBoxNode()->SetAlignment( 1, TextAlign::Left );
 
@@ -333,12 +354,12 @@ void PixInsightINDIInterface::UpdateDeviceList(){
 			Bitmap icon(String(":/bullets/bullet-ball-glass-green.png"));
 			deviceNode->getTreeBoxNode()->SetIcon(0,icon);		}
 		else {
-			Bitmap icon(":/bullets/bullet-ball-glass-red.png");
+			Bitmap icon(":/bullets/bullet-ball-glass-grey.png");
 			deviceNode->getTreeBoxNode()->SetIcon(0,icon);
 		}
 
 	}
-	GUI->UpdateDeviceList_Timer.Stop();
+	//GUI->UpdateDeviceList_Timer.Stop();
 	GUI->DeviceList_TreeBox.EnableUpdates();
 }
 // ----------------------------------------------------------------------------

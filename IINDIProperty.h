@@ -48,9 +48,8 @@ public:
 	virtual String getElementName(size_t i)  {return String("unsupported element");}
 	virtual String getElementLabel(size_t i)  {return String("unsupported element");}
 	virtual String getElementValue(size_t i) {return String("unsupported value");}
+	virtual String getNumberFormat(size_t i) {return String("");}
 
-	virtual void setDeviceName(IsoString device){}
-	virtual void setName(IsoString name){}
 	virtual void addElement(IsoString elementName, IsoString value){}
 //	virtual void setElementName(size_t i,IsoString elementName){}
 //	virtual void setElementLabel(size_t i,IsoString elementLabel){}
@@ -65,6 +64,7 @@ public:
 	virtual String getElementName(size_t i);
 	virtual String getElementLabel(size_t i);
 	virtual String getElementValue(size_t i);
+	virtual String getNumberFormat(size_t i);
 	virtual void addElement(IsoString elementName, IsoString value);
 	virtual void setDeviceName(IsoString device){strcpy(((INumberVectorProperty*) m_property->getProperty())->device,device.c_str());}
 	virtual void setName(IsoString name){strcpy(((INumberVectorProperty*) m_property->getProperty())->name,name.c_str());}

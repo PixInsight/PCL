@@ -27,17 +27,18 @@ typedef enum {
 	Update,
 	Remove,
 	Idle
-} PropertyFlag;
+} PropertyFlagType;
 
 struct INDIPropertyListItem {
-	INDIPropertyListItem():PropertyRemovalFlag(Idle){}
+	INDIPropertyListItem():PropertyFlag(Idle){}
 	String Device;
 	String Property;
 	INDI_TYPE PropertyType;
 	String PropertyTypeStr;
 	String Element;
 	unsigned int PropertyState;
-	PropertyFlag   PropertyRemovalFlag;
+	PropertyFlagType   PropertyFlag;
+	String PropertyNumberFormat;
 	String PropertyKey;
 	String PropertyValue;
 	String NewPropertyValue;

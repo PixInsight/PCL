@@ -12,7 +12,7 @@
 namespace pcl {
 
 
-	void INDIClient::runOnPropertyTable(IProperty* INDIProperty, const ArrayOperator<INDIPropertyListItem>* arrayOp, PropertyFlag flag){
+	void INDIClient::runOnPropertyTable(IProperty* INDIProperty, const ArrayOperator<INDIPropertyListItem>* arrayOp, PropertyFlagType flag){
 		String sep("/");
 		INDIPropertyListItem propertyListItem;
 		propertyListItem.Device=INDIProperty->getDeviceName();		
@@ -26,6 +26,7 @@ namespace pcl {
 			propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element;
 			propertyListItem.PropertyValue=INDIProperty->getElementValue(i);
 			propertyListItem.PropertyFlag=flag;
+			propertyListItem.PropertyNumberFormat=INDIProperty->getNumberFormat(i);
 			arrayOp->run(m_Instance->getPropertyList(),propertyListItem);
 		    if (m_ScriptInstance) {
 			  arrayOp->run(m_ScriptInstance->getPropertyList(), propertyListItem);

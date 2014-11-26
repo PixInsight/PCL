@@ -136,7 +136,7 @@ private:
    IPixInsightINDIInstance*         m_Instance;
    IPixInsightINDIInstance*         m_ScriptInstance;
 
-   void runOnPropertyTable(IProperty* INDIProperty, const ArrayOperator<INDIPropertyListItem>* arrayOp, PropertyFlag flag=Idle);
+   void runOnPropertyTable(IProperty* INDIProperty, const ArrayOperator<INDIPropertyListItem>* arrayOp, PropertyFlagType flag=Idle);
 
 };
 

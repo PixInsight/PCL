@@ -146,6 +146,12 @@ String NumberProperty::getElementValue(size_t i) {
 	return String(m_property->getNumber()->np[i].value);
 }
 
+String NumberProperty::getNumberFormat(size_t i){
+	CHECK_INDEX_THROWS(
+			((INumberVectorProperty*) m_property->getProperty())->nnp);
+
+	return String(m_property->getNumber()->np[i].format);
+}
 
 String TextProperty::getElementName(size_t i) {
 	CHECK_INDEX_THROWS(

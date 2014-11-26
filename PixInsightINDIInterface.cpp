@@ -243,14 +243,26 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 				GUI->UpdatePropertyList_Timer.Stop();
 				GUI->UpdateServerMessage_Timer.Stop();
 
-				GUI->DeviceList_TreeBox.Clear();
-				// clear property list
-				GUI->PropertyList_TreeBox.Clear();
 				// clear node maps
 				m_rootNodeMap.clear();
 				m_deviceNodeMap.clear();
 				m_deviceRootNodeMap.clear();
+
+				for (PropertyTreeMapType::iterator iter=m_propertyTreeMap.begin();iter!=m_propertyTreeMap.end(); iter++ ){
+					delete iter->second;
+				}
+
 				m_propertyTreeMap.clear();
+				// flag property list items as Insert to create new property tree
+
+				for (PixInsightINDIInstance::PropertyListType::iterator iter=instance.p_propertyList.Begin() ; iter!=instance.p_propertyList.End(); ++iter){
+					iter->PropertyRemovalFlag=Insert;
+				}
+
+				GUI->DeviceList_TreeBox.Clear();
+				// clear property list
+				GUI->PropertyList_TreeBox.Clear();
+
 
 				if (!indiClient->serverIsConnected()) {
 					GUI->ServerMessage_Label.SetText("Successfully disconnected from server");

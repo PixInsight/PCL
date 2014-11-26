@@ -25,7 +25,7 @@ namespace pcl {
 			propertyListItem.Element=INDIProperty->getElementName(i);
 			propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element;
 			propertyListItem.PropertyValue=INDIProperty->getElementValue(i);
-			propertyListItem.PropertyRemovalFlag=flag;
+			propertyListItem.PropertyFlag=flag;
 			arrayOp->run(m_Instance->getPropertyList(),propertyListItem);
 		    if (m_ScriptInstance) {
 			  arrayOp->run(m_ScriptInstance->getPropertyList(), propertyListItem);
@@ -78,7 +78,7 @@ namespace pcl {
 						+ propertyListItem.Property + sep
 						+ propertyListItem.Element;
 				propertyListItem.PropertyValue = INDIProperty->getElementValue(i);
-				propertyListItem.PropertyRemovalFlag=Remove;
+				propertyListItem.PropertyFlag=Remove;
 				update->run(m_Instance->getPropertyList(), propertyListItem);
 				if (m_ScriptInstance) {
 					update->run(m_ScriptInstance->getPropertyList(), propertyListItem);

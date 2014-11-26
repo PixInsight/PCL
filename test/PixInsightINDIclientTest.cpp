@@ -53,7 +53,7 @@ TEST_F(PixInsightINDIClientTest,TestNewProperties)
 	EXPECT_STREQ(IsoString(properties[0].PropertyValue).c_str(),"OFF");
 	EXPECT_STREQ(IsoString(properties[0].PropertyTypeStr).c_str(),"INDI_SWITCH");
 	EXPECT_STREQ(IsoString(properties[0].PropertyKey).c_str(),"/TestDevice/TestSwitchProperty/TestElement");
-	EXPECT_TRUE(properties[0].PropertyRemovalFlag==Idle);
+	EXPECT_TRUE(properties[0].PropertyFlag==Idle);
 
 	EXPECT_STREQ(IsoString(properties[1].Device).c_str(), "TestDevice");
 	EXPECT_STREQ(IsoString(properties[1].Property).c_str(),"TestNumberProperty");
@@ -61,7 +61,7 @@ TEST_F(PixInsightINDIClientTest,TestNewProperties)
 	EXPECT_STREQ(IsoString(properties[1].PropertyValue).c_str(), "1.5");
 	EXPECT_STREQ(IsoString(properties[1].PropertyTypeStr).c_str(),"INDI_NUMBER");
 	EXPECT_STREQ(IsoString(properties[1].PropertyKey).c_str(),"/TestDevice/TestNumberProperty/TestElement");
-	EXPECT_TRUE(properties[1].PropertyRemovalFlag==Idle);
+	EXPECT_TRUE(properties[1].PropertyFlag==Idle);
 
 	EXPECT_STREQ(IsoString(properties[2].Device).c_str(), "TestDevice");
 	EXPECT_STREQ(IsoString(properties[2].Property).c_str(),"TestTextProperty");
@@ -69,7 +69,7 @@ TEST_F(PixInsightINDIClientTest,TestNewProperties)
 	EXPECT_STREQ(IsoString(properties[2].PropertyValue).c_str(), "value");
 	EXPECT_STREQ(IsoString(properties[2].PropertyTypeStr).c_str(),"INDI_TEXT");
 	EXPECT_STREQ(IsoString(properties[2].PropertyKey).c_str(),"/TestDevice/TestTextProperty/TestElement");
-	EXPECT_TRUE(properties[2].PropertyRemovalFlag==Idle);
+	EXPECT_TRUE(properties[2].PropertyFlag==Idle);
 
 	EXPECT_STREQ(IsoString(properties[3].Device).c_str(), "TestDevice");
 	EXPECT_STREQ(IsoString(properties[3].Property).c_str(),"TestLightProperty");
@@ -77,7 +77,7 @@ TEST_F(PixInsightINDIClientTest,TestNewProperties)
 	EXPECT_STREQ(IsoString(properties[3].PropertyValue).c_str(), "IDLE");
 	EXPECT_STREQ(IsoString(properties[3].PropertyTypeStr).c_str(),"INDI_LIGHT");
 	EXPECT_STREQ(IsoString(properties[3].PropertyKey).c_str(),"/TestDevice/TestLightProperty/TestElement");
-	EXPECT_TRUE(properties[3].PropertyRemovalFlag==Idle);
+	EXPECT_TRUE(properties[3].PropertyFlag==Idle);
 }
 
 TEST_F(PixInsightINDIClientTest,TestNewSwitch)
@@ -130,7 +130,7 @@ TEST_F(PixInsightINDIClientTest,TestMarkForRemovalText)
 
 	iclient.removeText("TestDevice","TestTextProperty","TestElement","newValue");
 	EXPECT_STREQ(IsoString(properties[2].PropertyValue).c_str(),"newValue");
-	EXPECT_TRUE(properties[2].PropertyRemovalFlag==Remove);
+	EXPECT_TRUE(properties[2].PropertyFlag==Remove);
 }
 
 TEST_F(PixInsightINDIClientTest,TestMarkForRemovalNumber)
@@ -144,7 +144,7 @@ TEST_F(PixInsightINDIClientTest,TestMarkForRemovalNumber)
 
 	iclient.removeNumber("TestDevice","TestNumberProperty","TestElement",1.0);
 	EXPECT_STREQ(IsoString(properties[1].PropertyValue).c_str(),"1");
-	EXPECT_TRUE(properties[1].PropertyRemovalFlag==Remove);
+	EXPECT_TRUE(properties[1].PropertyFlag==Remove);
 }
 
 TEST_F(PixInsightINDIClientTest,TestMarkForRemovalSwitch)
@@ -158,5 +158,5 @@ TEST_F(PixInsightINDIClientTest,TestMarkForRemovalSwitch)
 
 	iclient.removeSwitch("TestDevice","TestSwitchProperty","TestElement");
 	EXPECT_STREQ(IsoString(properties[0].PropertyValue).c_str(),"ON");
-	EXPECT_TRUE(properties[0].PropertyRemovalFlag==Remove);
+	EXPECT_TRUE(properties[0].PropertyFlag==Remove);
 }

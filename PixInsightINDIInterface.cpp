@@ -256,7 +256,7 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 				// flag property list items as Insert to create new property tree
 
 				for (PixInsightINDIInstance::PropertyListType::iterator iter=instance.p_propertyList.Begin() ; iter!=instance.p_propertyList.End(); ++iter){
-					iter->PropertyRemovalFlag=Insert;
+					iter->PropertyFlag=Insert;
 				}
 
 				GUI->DeviceList_TreeBox.Clear();
@@ -632,7 +632,7 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 	PropertyNodeFactory factory;
 	for (PixInsightINDIInstance::PropertyListType::iterator iter=instance.p_propertyList.Begin() ; iter!=instance.p_propertyList.End(); ++iter){
 
-		if (iter->PropertyRemovalFlag==Idle){
+		if (iter->PropertyFlag==Idle){
 			continue;
 		}
 
@@ -656,7 +656,7 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 		}
 		assert(propTree!=NULL);
 
-		if (iter->PropertyRemovalFlag==Remove){
+		if (iter->PropertyFlag==Remove){
 			FindNodeVisitor* findDeviceNodeVisitor = new FindNodeVisitor();
 			rootNode->accept(findDeviceNodeVisitor,PropertyUtils::getKey(iter->Device),IsoString(""));
 			FindNodeVisitor* findPropNodeVisitor = new FindNodeVisitor();
@@ -672,7 +672,7 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 			elemNode->setNodeINDIValue(iter->PropertyValue);
 			elemNode->getTreeBoxNode()->SetAlignment(TextColumn, TextAlign::Left);
 			elemNode->getTreeBoxNode()->SetAlignment(ValueColumn, TextAlign::Left);
-			if (iter->PropertyRemovalFlag==Insert){
+			if (iter->PropertyFlag==Insert){
 				itemsCreated.push_back(*iter);
 			}
 		}
@@ -688,7 +688,7 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 	for (size_t i=0; i<itemsCreated.size(); i++){
 		PixInsightINDIInstance::PropertyListType::iterator iter =instance.p_propertyList.Search(itemsCreated[i]);
 		if (iter!=instance.p_propertyList.End()){
-			iter->PropertyRemovalFlag=Idle;
+			iter->PropertyFlag=Idle;
 		}
 	}
 

@@ -125,7 +125,7 @@ void PixInsightVersion::Initialize()
    piLEVersion = le != 0;
    piLanguageCode = lang;
 
-#if PCL_API_Version >= 0x0126
+#if ( PCL_API_Version >= 0x0126 )
    char16_type* s = (*API->Global->GetPixInsightCodename)( ModuleHandle() );
    if ( s != 0 )
    {

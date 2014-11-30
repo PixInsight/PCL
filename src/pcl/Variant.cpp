@@ -4037,9 +4037,9 @@ size_type Variant::BlockSize() const
 
 // ----------------------------------------------------------------------------
 
-bool Variant::IsScalar() const
+bool Variant::IsScalarType( int type )
 {
-   switch ( m_type )
+   switch ( type )
    {
    case VariantType::Bool:
    case VariantType::Int8:
@@ -4059,9 +4059,9 @@ bool Variant::IsScalar() const
    }
 }
 
-bool Variant::IsVector() const
+bool Variant::IsVectorType( int type )
 {
-   switch ( m_type )
+   switch ( type )
    {
    case VariantType::CharVector:
    case VariantType::ByteVector:
@@ -4081,9 +4081,9 @@ bool Variant::IsVector() const
    }
 }
 
-bool Variant::IsMatrix() const
+bool Variant::IsMatrixType( int type )
 {
-   switch ( m_type )
+   switch ( type )
    {
    case VariantType::CharMatrix:
    case VariantType::ByteMatrix:
@@ -4100,9 +4100,9 @@ bool Variant::IsMatrix() const
    }
 }
 
-bool Variant::IsStructured() const
+bool Variant::IsStructuredType( int type )
 {
-   switch ( m_type )
+   switch ( type )
    {
    case VariantType::FComplex:
    case VariantType::DComplex:

@@ -1241,26 +1241,64 @@ public:
     */
    size_type BlockSize() const;
 
+   /*
+    * Returns true only if the specified \a type is a scalar %Variant type:
+    * bool, int8, int16, int32, int64, uint8, uint16, uint32, uint64, float or
+    * double.
+    */
+   static bool IsScalarType( int type );
+
    /*!
     * Returns true only if the object transported by this %Variant is of a
     * scalar type: bool, int8, int16, int32, int64, uint8, uint16, uint32,
     * uint64, float or double.
     */
-   bool IsScalar() const;
+   bool IsScalar() const
+   {
+      return IsScalarType( m_type );
+   }
+
+   /*!
+    * Returns true only if the specified \a type is a vector or vector-like
+    * %Variant type: CharVector, ByteVector, IVector, UIVector, I64Vector,
+    * UI64Vector, FVector, DVector, ByteArray, String or IsoString.
+    */
+   static bool IsVectorType( int type );
 
    /*!
     * Returns true only if the object transported by this %Variant is of a
     * vector or vector-like type: CharVector, ByteVector, IVector, UIVector,
     * I64Vector, UI64Vector, FVector, DVector, ByteArray, String or IsoString.
     */
-   bool IsVector() const;
+   bool IsVector() const
+   {
+      return IsVectorType( m_type );
+   }
+
+   /*!
+    * Returns true only if the specified \a type is a matrix %Variant type:
+    * CharMatrix, ByteMatrix, IMatrix, UIMatrix, I64Matrix, UI64Matrix, FMatrix
+    * or DMatrix.
+    */
+   static bool IsMatrixType( int type );
 
    /*!
     * Returns true only if the object transported by this %Variant is of a
     * matrix type: CharMatrix, ByteMatrix, IMatrix, UIMatrix, I64Matrix,
     * UI64Matrix, FMatrix or DMatrix.
     */
-   bool IsMatrix() const;
+   bool IsMatrix() const
+   {
+      return IsMatrixType( m_type );
+   }
+
+   /*!
+    * Returns true only if the specified \a type is a structured %Variant type:
+    * fcomplex, dcomplex, Point, FPoint, DPoint, Rect, FRect, DRect,
+    * StringList, IsoStringList, StringKeyValue, IsoStringKeyValue,
+    * StringKeyValueList or IsoStringKeyValueList.
+    */
+   static bool IsStructuredType( int type );
 
    /*!
     * Returns true only if the object transported by this %Variant is of a
@@ -1272,7 +1310,10 @@ public:
     * functions cannot be used, since these objects cannot be accessed through
     * a unique pointer and a length in bytes.
     */
-   bool IsStructured() const;
+   bool IsStructured() const
+   {
+      return IsStructuredType( m_type );
+   }
 
    /*!
     * Returns a static null-terminated string with the name of the specified

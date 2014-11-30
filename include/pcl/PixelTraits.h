@@ -394,6 +394,17 @@ public:
    }
 
    /*!
+    * Returns the address of a static null-terminated string identifying the
+    * sample data type represented by this pixel traits class.
+    *
+    * For %FloatPixelTraits, this member function returns "Float32".
+    */
+   static const char* SampleFormat()
+   {
+      return "Float32";
+   }
+
+   /*!
     * Returns the maximum valid pixel sample value.
     *
     * For %FloatPixelTraits, this member function returns 1.0F.
@@ -945,6 +956,17 @@ public:
    static bool IsComplexSample()
    {
       return false;
+   }
+
+   /*!
+    * Returns the address of a static null-terminated string identifying the
+    * sample data type represented by this pixel traits class.
+    *
+    * For %DoublePixelTraits, this member function returns "Float64".
+    */
+   static const char* SampleFormat()
+   {
+      return "Float64";
    }
 
    /*!
@@ -1509,6 +1531,17 @@ public:
    static bool IsComplexSample()
    {
       return true;
+   }
+
+   /*!
+    * Returns the address of a static null-terminated string identifying the
+    * sample data type represented by this pixel traits class.
+    *
+    * For %ComplexPixelTraits, this member function returns "Complex32".
+    */
+   static const char* SampleFormat()
+   {
+      return "Complex32";
    }
 
    /*!
@@ -2233,6 +2266,17 @@ public:
    }
 
    /*!
+    * Returns the address of a static null-terminated string identifying the
+    * sample data type represented by this pixel traits class.
+    *
+    * For %DComplexPixelTraits, this member function returns "Complex64".
+    */
+   static const char* SampleFormat()
+   {
+      return "Complex64";
+   }
+
+   /*!
     * Returns the maximum valid pixel sample value.
     *
     * For %DComplexPixelTraits, this member function returns {1.0, 0.0F}.
@@ -2944,6 +2988,17 @@ public:
    static bool IsComplexSample()
    {
       return false;
+   }
+
+   /*!
+    * Returns the address of a static null-terminated string identifying the
+    * sample data type represented by this pixel traits class.
+    *
+    * For %UInt8PixelTraits, this member function returns "UInt8".
+    */
+   static const char* SampleFormat()
+   {
+      return "UInt8";
    }
 
    /*!
@@ -3753,6 +3808,17 @@ public:
    }
 
    /*!
+    * Returns the address of a static null-terminated string identifying the
+    * sample data type represented by this pixel traits class.
+    *
+    * For %UInt16PixelTraits, this member function returns "UInt16".
+    */
+   static const char* SampleFormat()
+   {
+      return "UInt16";
+   }
+
+   /*!
     * Returns the maximum valid pixel sample value.
     *
     * For %UInt16PixelTraits, this member function returns 65535.
@@ -4559,6 +4625,17 @@ public:
    }
 
    /*!
+    * Returns the address of a static null-terminated string identifying the
+    * sample data type represented by this pixel traits class.
+    *
+    * For %UInt32PixelTraits, this member function returns "UInt32".
+    */
+   static const char* SampleFormat()
+   {
+      return "UInt32";
+   }
+
+   /*!
     * Returns the maximum valid pixel sample value.
     *
     * For %UInt32PixelTraits, this member function returns 4294967295.
@@ -5356,6 +5433,17 @@ public:
    }
 
    /*!
+    * Returns the address of a static null-terminated string identifying the
+    * sample data type represented by this pixel traits class.
+    *
+    * For %UInt20PixelTraits, this member function returns "UInt20".
+    */
+   static const char* SampleFormat()
+   {
+      return "UInt20";
+   }
+
+   /*!
     * Returns the maximum valid pixel sample value.
     *
     * For %UInt20PixelTraits, this member function returns 1048576.
@@ -5620,6 +5708,17 @@ public:
    static bool IsComplexSample()
    {
       return false;
+   }
+
+   /*!
+    * Returns the address of a static null-terminated string identifying the
+    * sample data type represented by this pixel traits class.
+    *
+    * For %UInt24PixelTraits, this member function returns "UInt24".
+    */
+   static const char* SampleFormat()
+   {
+      return "UInt24";
    }
 
    /*!

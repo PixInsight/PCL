@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.93
+# PixInsight Makefile Generator Script v1.94
 # Copyright (C) 2009-2014 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Fri, 14 Nov 2014 17:27:04 GMT
+# Automatically generated on Tue, 18 Nov 2014 11:28:30 GMT
 # Project id ...... zlib
 # Project type .... DynamicLibrary
 # Platform ........ Windows/vc10
@@ -130,6 +130,9 @@
       <TargetMachine>MachineX64</TargetMachine>
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>signtool.exe sign /a /t http://timestamp.verisign.com/scripts/timstamp.dll /v $(TargetDir)$(TargetFileName)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -168,6 +171,9 @@
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>signtool.exe sign /a /t http://timestamp.verisign.com/scripts/timstamp.dll /v $(TargetDir)$(TargetFileName)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
@@ -198,6 +204,9 @@
       <TargetMachine>MachineX64</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>signtool.exe sign /a /t http://timestamp.verisign.com/scripts/timstamp.dll /v $(TargetDir)$(TargetFileName)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -225,6 +234,9 @@
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>signtool.exe sign /a /t http://timestamp.verisign.com/scripts/timstamp.dll /v $(TargetDir)$(TargetFileName)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\adler32.c"/>

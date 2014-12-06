@@ -43,6 +43,7 @@ public:
 	virtual void setNodeINDIValue(IsoString value){m_INDIValue=value;}
 	virtual void setNodeINDIType(IsoString type){m_INDIType=type;}
 	virtual void setNodeINDIState(int state){}
+	virtual void setNodeINDINumberFormat(int numberFormat){}
 
 	virtual IsoString getNodeINDIText() const {return m_INDIText; }
 	virtual IsoString getNodeINDIValue() const {return m_INDIValue;}
@@ -66,6 +67,7 @@ public:
 		ON_CALL(*this,setNodeINDIValue(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDIValue));
 		ON_CALL(*this,setNodeINDIType(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDIType));
 		ON_CALL(*this,setNodeINDIState(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDIState));
+		ON_CALL(*this,setNodeINDINumberFormat(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDINumberFormat));
 		ON_CALL(*this,getNodeINDIText()).WillByDefault(Invoke(&m_fake,&FakePropertyNode::getNodeINDIText));
 		ON_CALL(*this,getNodeINDIValue()).WillByDefault(Invoke(&m_fake,&FakePropertyNode::getNodeINDIValue));
 		ON_CALL(*this,getNodeINDIType()).WillByDefault(Invoke(&m_fake,&FakePropertyNode::getNodeINDIType));
@@ -80,6 +82,7 @@ public:
 		ON_CALL(*this,setNodeINDIValue(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDIValue));
 		ON_CALL(*this,setNodeINDIType(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDIType));
 		ON_CALL(*this,setNodeINDIState(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDIState));
+		ON_CALL(*this,setNodeINDINumberFormat(_)).WillByDefault(Invoke(&m_fake,&FakePropertyNode::setNodeINDINumberFormat));
 		ON_CALL(*this,getNodeINDIText()).WillByDefault(Invoke(&m_fake,&FakePropertyNode::getNodeINDIText));
 		ON_CALL(*this,getNodeINDIValue()).WillByDefault(Invoke(&m_fake,&FakePropertyNode::getNodeINDIValue));
 		ON_CALL(*this,getNodeINDIType()).WillByDefault(Invoke(&m_fake,&FakePropertyNode::getNodeINDIType));
@@ -97,6 +100,7 @@ public:
 	MOCK_METHOD1(setNodeINDIValue,void(IsoString));
 	MOCK_METHOD1(setNodeINDIType,void(IsoString));
 	MOCK_METHOD1(setNodeINDIState,void(int));
+	MOCK_METHOD1(setNodeINDINumberFormat,void(int));
 
 private:
 	FakePropertyNode m_fake;
@@ -139,6 +143,40 @@ TEST_F(PropertyTreeTest, TestPropertyUtils){
 	IsoString testString2("/Device/Property");
 	elementStr=PropertyUtils::getElement(testString2);
 	EXPECT_STREQ("/",elementStr.c_str());
+
+
+}
+
+TEST_F(PropertyTreeTest, TestPropertyUtilsNumberFormat){
+
+	IsoString testString("3.23456676");
+	IsoString formattedStr = PropertyUtils::getFormattedNumber(testString,IsoString("%4.2f"));
+	EXPECT_STREQ("3.23",formattedStr.c_str());
+
+	IsoString formattedStr2 = PropertyUtils::getFormattedNumber(testString,IsoString("%4.3m"));
+	EXPECT_STREQ("3:14",formattedStr2.c_str());
+
+	IsoString formattedStr3 = PropertyUtils::getFormattedNumber(testString,IsoString("%7.3m"));
+	EXPECT_STREQ("   3:14",formattedStr3.c_str());
+
+	IsoString testString2("12.238");
+	IsoString formattedStr4 = PropertyUtils::getFormattedNumber(testString2,IsoString("%7.5m"));
+	EXPECT_STREQ("12:14.2",formattedStr4.c_str());
+
+	IsoString formattedStr5 = PropertyUtils::getFormattedNumber(testString,IsoString("%7.5m"));
+	EXPECT_STREQ(" 3:14.0",formattedStr5.c_str());
+
+	IsoString formattedStr6 = PropertyUtils::getFormattedNumber(testString,IsoString("%8.6m"));
+	EXPECT_STREQ(" 3:14:04",formattedStr6.c_str());
+
+	IsoString formattedStr7 = PropertyUtils::getFormattedNumber(testString,IsoString("%10.8m"));
+	EXPECT_STREQ(" 3:14:04.4",formattedStr7.c_str());
+
+	IsoString formattedStr8 = PropertyUtils::getFormattedNumber(testString,IsoString("%11.9m"));
+	EXPECT_STREQ(" 3:14:04.44",formattedStr8.c_str());
+
+
+
 }
 
 TEST_F(PropertyTreeTest, TestCreatePropertyNode)

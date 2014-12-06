@@ -1,6 +1,7 @@
 #include "PropertyNode.h"
 #include <assert.h>
 #include <algorithm>
+#include <math.h>
 
 namespace pcl {
 
@@ -23,6 +24,62 @@ namespace pcl {
 		return keyString.SubString(startpos2+1,endpos-startpos2);
 	}
 
+	IsoString PropertyUtils::getFormattedNumber(IsoString numberStr, IsoString numberFormat){
+		size_t im = numberFormat.Find('m');
+		if (im!=String::notFound){
+			numberFormat.DeleteRight(im);
+			numberFormat.DeleteLeft(1);
+			StringList tokens;
+			numberFormat.Break(tokens,'.',true);
+			size_t fraction = tokens[1].ToInt();
+			size_t width    = tokens[0].ToInt()-fraction;
+			assert(width>0);
+			int hours = trunc(numberStr.ToFloat());
+			switch (fraction) {
+			case 3:
+			{
+				int minutes = trunc((numberStr.ToFloat() - hours)*60);
+				IsoString formatStr = IsoString("%") + IsoString().Format("%dd",width) + IsoString(":%02d");
+				return String().Format(formatStr.c_str(),hours,minutes);
+			}
+			case 5:
+			{
+				int minutes     = trunc((numberStr.ToFloat() - hours)*60);
+				int minutesfrac = trunc(((numberStr.ToFloat() - hours)*60-minutes)*10);
+				IsoString formatStr = IsoString("%") + IsoString().Format("%dd",width) + IsoString(":%02d.%d");
+				return String().Format(formatStr.c_str(),hours,minutes,minutesfrac);
+			}
+			case 6:
+			{
+				int minutes     = trunc((numberStr.ToFloat() - hours)*60);
+				int seconds     = trunc(((numberStr.ToFloat() - hours)*60-minutes)*60);
+				IsoString formatStr = IsoString("%") + IsoString().Format("%dd",width) + IsoString(":%02d:%02d");
+				return String().Format(formatStr.c_str(),hours,minutes,seconds);
+			}
+			case 8:
+			{
+				int minutes     = trunc((numberStr.ToFloat() - hours)*60);
+				int seconds     = trunc(((numberStr.ToFloat() - hours)*60-minutes)*60);
+				int secondsfrac = trunc((((numberStr.ToFloat() - hours)*60-minutes)*60-seconds)*10);
+				IsoString formatStr = IsoString("%") + IsoString().Format("%dd",width) + IsoString(":%02d:%02d.%d");
+				return String().Format(formatStr.c_str(),hours,minutes,seconds,secondsfrac);
+			}
+			case 9:
+			{
+				int minutes     = trunc((numberStr.ToFloat() - hours)*60);
+				int seconds     = trunc(((numberStr.ToFloat() - hours)*60-minutes)*60);
+				int secondsfrac = trunc((((numberStr.ToFloat() - hours)*60-minutes)*60-seconds)*100);
+				IsoString formatStr = IsoString("%") + IsoString().Format("%dd",width) + IsoString(":%02d:%02d.%02d");
+				return String().Format(formatStr.c_str(),hours,minutes,seconds,secondsfrac);
+			}
+			return IsoString("");
+			}
+		}else {
+			return String().Format(numberFormat.c_str(),numberStr.ToFloat());
+		}
+
+		return IsoString("");
+	}
 
 	PropertyNode::PropertyNode(TreeBox& parentTreeBox):m_keyStr(IsoString("/")) {
 			m_thisTreeBoxNode = createTreeBoxNodeForTreeBox(parentTreeBox);
@@ -117,6 +174,12 @@ namespace pcl {
 		if (m_thisTreeBoxNode!=NULL)
 			m_thisTreeBoxNode->SetText(TypeColumn,type);
 	}
+
+	void PropertyNode::setNodeINDINumberFormat(IsoString numberFormat){
+		if (m_thisTreeBoxNode!=NULL)
+			m_thisTreeBoxNode->SetText(NumberFormatColumn,numberFormat);
+	}
+
 	void PropertyNode::setNodeINDIState(int state)   {
 		if (m_thisTreeBoxNode!=NULL)
 			switch (state){
@@ -240,3 +303,4 @@ namespace pcl {
 	}
 
 }
+

@@ -60,10 +60,11 @@
 #include <pcl/SectionBar.h>
 #include <pcl/SpinBox.h>
 #include <pcl/PushButton.h>
+#include <pcl/RadioButton.h>
 #include <pcl/TreeBox.h>
 #include <pcl/ErrorHandler.h>
 #include <pcl/Timer.h>
-#include<pcl/Mutex.h>
+#include <pcl/Mutex.h>
 #include <map>
 #include <vector>
 
@@ -84,35 +85,102 @@ class PixInsightINDIInterface;
 class SetPropertyDialog : public Dialog 
 {
 public:
-	SetPropertyDialog( );
+	SetPropertyDialog(PixInsightINDIInstance* indiInstance ):Dialog(),m_instance(indiInstance) {}
+	virtual ~SetPropertyDialog() {}
 	
-	void setPropertyLabelString(String label){Property_Label.SetText(label);}
-	void setPropertyValueString(String value){Property_Edit.SetText(value);}
+	virtual void setPropertyLabelString(String label){}
+	virtual void setPropertyValueString(String value){}
 	void setNewPropertyListItem(INDINewPropertyListItem& newPropItem) {m_newPropertyListItem=newPropItem;}
 	INDINewPropertyListItem getNewPropertyListItem(){return m_newPropertyListItem;}
-	void setInstance(PixInsightINDIInstance* indiInstance){m_instance=indiInstance;}
-	void setInterface(PixInsightINDIInterface* indiInterface){m_interface=indiInterface;}
+
+	static SetPropertyDialog* createPropertyDialog(IsoString IndiType,IsoString NumberFormatType,PixInsightINDIInstance* indiInstance);
+
+	void Ok_Button_Click( Button& sender, bool checked );
+	void Cancel_Button_Click( Button& sender, bool checked );
+
+
+protected:
+	INDINewPropertyListItem m_newPropertyListItem;
+
 private:
 	
 	PixInsightINDIInstance*  m_instance;
-	PixInsightINDIInterface* m_interface;
 
-	INDINewPropertyListItem m_newPropertyListItem;
+	friend class INDIClient;
 
+};
+
+class EditPropertyDialog : public SetPropertyDialog {
+private:
 	VerticalSizer       Global_Sizer;
 		HorizontalSizer		Property_Sizer;
 			Label               Property_Label;
 			Edit				Property_Edit;
-		 HorizontalSizer	Buttons_Sizer;
+		HorizontalSizer	Buttons_Sizer;
 			PushButton			OK_PushButton;
 			PushButton			Cancel_PushButton;
-	
-	void Button_Click( Button& sender, bool checked );
-	void EditCompleted( Edit& sender );
 
-	friend class INDIClient;
-	
-};	
+public:
+	EditPropertyDialog(PixInsightINDIInstance* indiInstance );
+	virtual ~EditPropertyDialog(){}
+
+	virtual void setPropertyLabelString(String label){Property_Label.SetText(label);}
+	virtual void setPropertyValueString(String value){Property_Edit.SetText(value);}
+	void EditCompleted( Edit& sender );
+};
+
+class EditSwitchPropertyDialog : public SetPropertyDialog {
+private:
+	VerticalSizer       Global_Sizer;
+		HorizontalSizer		Property_Sizer;
+			Label               Property_Label;
+			Label               ON_Label;
+			RadioButton			ON_RadioButton;
+			Label               OFF_Label;
+			RadioButton			OFF_RadioButton;
+		HorizontalSizer	Buttons_Sizer;
+			PushButton			OK_PushButton;
+			PushButton			Cancel_PushButton;
+
+public:
+	EditSwitchPropertyDialog(PixInsightINDIInstance* indiInstance );
+	virtual ~EditSwitchPropertyDialog(){}
+
+	virtual void setPropertyLabelString(String label){Property_Label.SetText(label);}
+	virtual void setPropertyValueString(String value);
+	void ButtonChecked( RadioButton& sender );
+};
+
+
+class EditNumberCoordPropertyDialog : public SetPropertyDialog {
+private:
+	VerticalSizer       Global_Sizer;
+		HorizontalSizer		Property_Sizer;
+			Label               Property_Label;
+			Edit				Hour_Edit;
+			Label               Colon1_Label;
+			Edit				Minute_Edit;
+			Label               Colon2_Label;
+			Edit				Second_Edit;
+		HorizontalSizer	Buttons_Sizer;
+			PushButton			OK_PushButton;
+			PushButton			Cancel_PushButton;
+
+	double m_hour;
+	double m_minute;
+	double m_second;
+
+
+
+public:
+	EditNumberCoordPropertyDialog(PixInsightINDIInstance* indiInstance );
+	virtual ~EditNumberCoordPropertyDialog(){}
+
+	virtual void setPropertyLabelString(String label){Property_Label.SetText(label);}
+	virtual void setPropertyValueString(String value);
+	void EditCompleted( Edit& sender);
+};
+
 
 
 // ----------------------------------------------------------------------------
@@ -149,6 +217,7 @@ public:
    struct GUIData
    {
       GUIData( PixInsightINDIInterface& );
+      ~GUIData(){delete SetPropDlg;}
 	  Timer				 UpdateDeviceList_Timer;
 	  Timer              UpdatePropertyList_Timer;
 	  Timer              UpdateServerMessage_Timer;
@@ -183,7 +252,7 @@ public:
 		 HorizontalSizer      ServerMessage_Sizer;
 		    Label               ServerMessageLabel_Label;
 		    Label               ServerMessage_Label;
-		SetPropertyDialog SetPropDlg;
+		SetPropertyDialog* SetPropDlg;
    };
 
    private:

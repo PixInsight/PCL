@@ -378,8 +378,6 @@ void PixInsightINDIInterface::UpdateDeviceList(){
 
 PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
 {
-   SetPropDlg.setInstance(&w.instance);
-   SetPropDlg.setInterface(&w);
    pcl::Font fnt = w.Font();
    int labelWidth1 = fnt.Width( String( "Three:" ) ); // the longest label text
    int editWidth1 = fnt.Width( String( '0',14 ) );
@@ -471,8 +469,9 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    INDIProperties_Control.SetSizer(INDIDeviceProperty_Sizer);
 
    PropertyList_TreeBox.EnableAlternateRowColor();
-   PropertyList_TreeBox.SetNumberOfColumns(4);
+   PropertyList_TreeBox.SetNumberOfColumns(5);
    PropertyList_TreeBox.HideColumn(TypeColumn);
+   PropertyList_TreeBox.HideColumn(NumberFormatColumn);
    PropertyList_TreeBox.SetColumnWidth(0,300);
    PropertyList_TreeBox.SetHeaderText(TextColumn,String("Property"));
    PropertyList_TreeBox.SetHeaderText(StatusColumn,String("Status"));
@@ -565,30 +564,63 @@ void PixInsightINDIInterface::__UpdateServerMessage_Timer( Timer &sender )
   }
 // ----------------------------------------------------------------------------
 
-void SetPropertyDialog::EditCompleted( Edit& sender )
-{
-   if ( sender == Property_Edit ){
-	   m_newPropertyListItem.NewPropertyValue=sender.Text();
-   }
+
+
+void SetPropertyDialog::Ok_Button_Click( Button& sender, bool checked ){
+
+	if (indiClient.get() == 0)
+		return;
+
+	assert(m_instance!=NULL);
+
+	INDINewPropertyListItem newPropertyListItem=getNewPropertyListItem();
+	bool send_ok = m_instance->sendNewPropertyValue(newPropertyListItem,true /*isAsynch*/);
+	if (!send_ok) {
+		m_instance->clearNewPropertyList();
+	}
+	Ok();
 }
 
-SetPropertyDialog::SetPropertyDialog():Dialog(),m_instance(NULL){
+void SetPropertyDialog::Cancel_Button_Click( Button& sender, bool checked ){
+		Cancel();
+}
+
+SetPropertyDialog* SetPropertyDialog::createPropertyDialog(IsoString indiType, IsoString numberFormat,PixInsightINDIInstance* indiInstance){
+	if (indiType==IsoString("INDI_NUMBER") ){
+		size_t im = numberFormat.Find('m');
+		if (im!=IsoString::notFound){
+			return new EditNumberCoordPropertyDialog(indiInstance);
+		}
+	}
+	if (indiType==IsoString("INDI_SWITCH") ){
+		return new EditSwitchPropertyDialog(indiInstance);
+	}
+
+	return new EditPropertyDialog(indiInstance);
+}
+
+void EditPropertyDialog::EditCompleted( Edit& sender )
+{
+	m_newPropertyListItem.NewPropertyValue=sender.Text();
+}
+
+EditPropertyDialog::EditPropertyDialog(PixInsightINDIInstance* indiInstance):SetPropertyDialog(indiInstance){
 	pcl::Font fnt = Font();
 	int labelWidth = fnt.Width( String( '0',30 ) );
 	int editWidth = fnt.Width( String( '0',10 ) );
 
-	SetWindowTitle(String("INDI property value"));
+	SetWindowTitle(String("INDI number property value"));
 
 	Property_Label.SetMinWidth(labelWidth);
 	Property_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
 
 	Property_Edit.SetMinWidth(editWidth);
-	Property_Edit.OnEditCompleted( (Edit::edit_event_handler)&SetPropertyDialog::EditCompleted, *this );
+	Property_Edit.OnEditCompleted( (Edit::edit_event_handler)&EditPropertyDialog::EditCompleted, *this );
    
 	OK_PushButton.SetText("OK");
-	OK_PushButton.OnClick((Button::click_event_handler) &SetPropertyDialog::Button_Click, *this );
+	OK_PushButton.OnClick((Button::click_event_handler) &SetPropertyDialog::Ok_Button_Click, *this );
 	Cancel_PushButton.SetText("Cancel");
-	Cancel_PushButton.OnClick((Button::click_event_handler) &SetPropertyDialog::Button_Click, *this );
+	Cancel_PushButton.OnClick((Button::click_event_handler) &SetPropertyDialog::Cancel_Button_Click, *this );
 
 	Property_Sizer.SetMargin(10);
 	Property_Sizer.SetSpacing(4);
@@ -597,6 +629,148 @@ SetPropertyDialog::SetPropertyDialog():Dialog(),m_instance(NULL){
 	Property_Sizer.AddStretch();
 	
 	
+	Buttons_Sizer.SetSpacing(4);
+	Buttons_Sizer.AddSpacing(10);
+	Buttons_Sizer.AddStretch();
+	Buttons_Sizer.Add(OK_PushButton);
+	Buttons_Sizer.AddStretch();
+	Buttons_Sizer.Add(Cancel_PushButton);
+	Buttons_Sizer.AddStretch();
+
+	Global_Sizer.Add(Property_Sizer);
+	Global_Sizer.Add(Buttons_Sizer);
+
+	SetSizer(Global_Sizer);
+
+}
+
+
+void EditNumberCoordPropertyDialog::setPropertyValueString(String value){
+	StringList tokens;
+	value.Break(tokens,':',true);
+	assert(tokens.Length()==3);
+	tokens[0].TrimLeft();
+	Hour_Edit.SetText(tokens[0]);
+	Minute_Edit.SetText(tokens[1]);
+	Second_Edit.SetText(tokens[2]);
+}
+
+void EditNumberCoordPropertyDialog::EditCompleted( Edit& sender )
+{
+	if (sender==Hour_Edit){
+		m_hour=sender.Text().ToDouble();
+	}
+	if (sender==Minute_Edit){
+		m_minute=sender.Text().ToDouble();
+	}
+	if (sender==Second_Edit){
+		m_second=sender.Text().ToDouble();
+	}
+	double coord=m_hour + m_minute / 60 + m_second / 3600;
+	m_newPropertyListItem.NewPropertyValue=String(coord) ;
+}
+
+EditNumberCoordPropertyDialog::EditNumberCoordPropertyDialog(PixInsightINDIInstance* indiInstance):SetPropertyDialog(indiInstance),m_hour(0),m_minute(0),m_second(0){
+	pcl::Font fnt = Font();
+	int labelWidth = fnt.Width( String( '0',20 ) );
+	int editWidth = fnt.Width( String( '0',4 ) );
+
+
+	SetWindowTitle(String("INDI coordinate property value"));
+
+	Property_Label.SetMinWidth(labelWidth);
+	Property_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+
+	Hour_Edit.SetMaxWidth(editWidth);
+	Hour_Edit.OnEditCompleted( (Edit::edit_event_handler)&EditNumberCoordPropertyDialog::EditCompleted, *this );
+
+	Colon1_Label.SetText(":");
+
+	Minute_Edit.SetMaxWidth(editWidth);
+	Minute_Edit.OnEditCompleted( (Edit::edit_event_handler)&EditNumberCoordPropertyDialog::EditCompleted, *this );
+
+	Colon2_Label.SetText(":");
+
+	Second_Edit.SetMaxWidth(editWidth);
+	Second_Edit.OnEditCompleted( (Edit::edit_event_handler)&EditNumberCoordPropertyDialog::EditCompleted, *this );
+
+
+	OK_PushButton.SetText("OK");
+	OK_PushButton.OnClick((Button::click_event_handler) &SetPropertyDialog::Ok_Button_Click, *this );
+	Cancel_PushButton.SetText("Cancel");
+	Cancel_PushButton.OnClick((Button::click_event_handler) &SetPropertyDialog::Cancel_Button_Click, *this );
+
+	Property_Sizer.SetMargin(10);
+	Property_Sizer.SetSpacing(4);
+	Property_Sizer.Add(Property_Label);
+	Property_Sizer.Add(Hour_Edit);
+	Property_Sizer.Add(Colon1_Label);
+	Property_Sizer.Add(Minute_Edit);
+	Property_Sizer.Add(Colon2_Label);
+	Property_Sizer.Add(Second_Edit);
+	Property_Sizer.AddStretch();
+
+
+	Buttons_Sizer.SetSpacing(4);
+	Buttons_Sizer.AddSpacing(10);
+	Buttons_Sizer.AddStretch();
+	Buttons_Sizer.Add(OK_PushButton);
+	Buttons_Sizer.AddStretch();
+	Buttons_Sizer.Add(Cancel_PushButton);
+	Buttons_Sizer.AddStretch();
+
+	Global_Sizer.Add(Property_Sizer);
+	Global_Sizer.Add(Buttons_Sizer);
+
+	SetSizer(Global_Sizer);
+
+}
+
+void EditSwitchPropertyDialog::setPropertyValueString(String value){
+	if (value==String("ON")){
+		throw Error("Please choose a switch property with value ON.");
+	}
+}
+
+void EditSwitchPropertyDialog::ButtonChecked( RadioButton& sender )
+{
+	m_newPropertyListItem.NewPropertyValue=String("ON") ;
+}
+
+EditSwitchPropertyDialog::EditSwitchPropertyDialog(PixInsightINDIInstance* indiInstance):SetPropertyDialog(indiInstance){
+	pcl::Font fnt = Font();
+	int labelWidth = fnt.Width( String( '0',20 ) );
+
+	SetWindowTitle(String("INDI switch property value"));
+
+	Property_Label.SetMinWidth(labelWidth);
+	Property_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+
+	ON_Label.SetText("ON");
+	OFF_Label.SetText("OFF");
+
+	ON_RadioButton.Uncheck();
+	ON_RadioButton.OnCheck((RadioButton::check_event_handler) &EditSwitchPropertyDialog::ButtonChecked,*this);
+
+
+	OFF_RadioButton.Check();
+	OFF_RadioButton.Disable(true);
+
+	OK_PushButton.SetText("OK");
+	OK_PushButton.OnClick((Button::click_event_handler) &SetPropertyDialog::Ok_Button_Click, *this );
+	Cancel_PushButton.SetText("Cancel");
+	Cancel_PushButton.OnClick((Button::click_event_handler) &SetPropertyDialog::Cancel_Button_Click, *this );
+
+	Property_Sizer.SetMargin(10);
+	Property_Sizer.SetSpacing(4);
+	Property_Sizer.Add(Property_Label);
+	Property_Sizer.Add(ON_Label);
+	Property_Sizer.Add(ON_RadioButton);
+	Property_Sizer.Add(OFF_Label);
+	Property_Sizer.Add(OFF_RadioButton);
+	Property_Sizer.AddStretch();
+
+
 	Buttons_Sizer.SetSpacing(4);
 	Buttons_Sizer.AddSpacing(10);
 	Buttons_Sizer.AddStretch();
@@ -646,7 +820,6 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 		}
 		assert(rootNode!=NULL);
 
-		//TODO delete property tree in dtor
 		PropertyTree*  propTree = NULL;
 		PropertyTreeMapType::iterator propTreeIter = m_propertyTreeMap.find(iter->Device);
 		if (propTreeIter==m_propertyTreeMap.end()){
@@ -669,7 +842,12 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 		} else  {
 			PropertyNode* elemNode = propTree->addElementNode(iter->Device,iter->Property,iter->Element,iter->PropertyState);
 			elemNode->setNodeINDIType(iter->PropertyTypeStr);
-			elemNode->setNodeINDIValue(iter->PropertyValue);
+			elemNode->setNodeINDINumberFormat(iter->PropertyNumberFormat);
+			if (iter->PropertyTypeStr==String("INDI_NUMBER")){
+				elemNode->setNodeINDIValue(PropertyUtils::getFormattedNumber(iter->PropertyValue,iter->PropertyNumberFormat));
+			} else {
+				elemNode->setNodeINDIValue(iter->PropertyValue);
+			}
 			elemNode->getTreeBoxNode()->SetAlignment(TextColumn, TextAlign::Left);
 			elemNode->getTreeBoxNode()->SetAlignment(ValueColumn, TextAlign::Left);
 			if (iter->PropertyFlag==Insert){
@@ -694,27 +872,6 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 
 }
 
-void SetPropertyDialog::Button_Click( Button& sender, bool checked ){
-
-	if (indiClient.get() == 0)
-		return;
-
-	assert(m_instance!=NULL);
-
-	if ( sender == OK_PushButton )
-	{
-
-		INDINewPropertyListItem newPropertyListItem=getNewPropertyListItem();
-		bool send_ok = m_instance->sendNewPropertyValue(newPropertyListItem,true /*isAsynch*/);
-		if (!send_ok) {
-			m_instance->clearNewPropertyList();
-		}
-		Ok();
-	}
-	else if (sender == Cancel_PushButton){
-		Cancel();
-	}
-}
 
 void PixInsightINDIInterface::__Close( Control& sender, bool& allowClose){
 
@@ -724,11 +881,18 @@ void PixInsightINDIInterface::PropertyButton_Click( Button& sender, bool checked
 	
 	if (sender==GUI->EditProperty_PushButton){
 		pcl::IndirectArray<pcl::TreeBox::Node> selectedNodes;
-		GUI->PropertyList_TreeBox.GetSelectedNodes(selectedNodes);
+		selectedNodes = GUI->PropertyList_TreeBox.SelectedNodes();
 
-		for (pcl::IndirectArray<pcl::TreeBox::Node>::iterator it=selectedNodes.Begin(); it!=selectedNodes.End();++it){
-			GUI->SetPropDlg.setPropertyLabelString((*it)->Text(TextColumn));
-			GUI->SetPropDlg.setPropertyValueString((*it)->Text(ValueColumn));
+		if (selectedNodes.Begin()!=selectedNodes.End())
+		{
+			pcl::IndirectArray<pcl::TreeBox::Node>::iterator it=selectedNodes.Begin();
+
+			// Create dialog window according to the property type
+			GUI->SetPropDlg = SetPropertyDialog::createPropertyDialog((*it)->Text(TypeColumn),(*it)->Text(NumberFormatColumn), &instance);
+			CHECK_POINTER(GUI->SetPropDlg);
+
+			GUI->SetPropDlg->setPropertyLabelString((*it)->Text(TextColumn));
+			GUI->SetPropDlg->setPropertyValueString((*it)->Text(ValueColumn));
 			INDINewPropertyListItem propItem;
 			propItem.Device=(*it)->Parent()->Parent()->Text(TextColumn);
 			propItem.Property=(*it)->Parent()->Text(TextColumn);
@@ -736,9 +900,11 @@ void PixInsightINDIInterface::PropertyButton_Click( Button& sender, bool checked
 			propItem.NewPropertyValue=(*it)->Text(ValueColumn);
 			propItem.PropertyType=(*it)->Text(TypeColumn);
 			propItem.PropertyKey=PropertyUtils::getKey(propItem.Device,propItem.Property,propItem.Element);
-			GUI->SetPropDlg.setNewPropertyListItem(propItem);
+			GUI->SetPropDlg->setNewPropertyListItem(propItem);
+
 		}
-		GUI->SetPropDlg.Execute();
+
+		GUI->SetPropDlg->Execute();
 	}
 	else if (sender==GUI->RefreshProperty_PushButton){
 		UpdatePropertyList();

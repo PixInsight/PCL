@@ -51,6 +51,8 @@ public:
 	virtual String getNumberFormat(size_t i) {return String("");}
 
 	virtual void addElement(IsoString elementName, IsoString value){}
+	virtual void setDeviceName(IsoString device){}
+	virtual void setName(IsoString name){}
 //	virtual void setElementName(size_t i,IsoString elementName){}
 //	virtual void setElementLabel(size_t i,IsoString elementLabel){}
 //	virtual void setElementValue(size_t i,IsoString elementValue){}

@@ -70,13 +70,15 @@ namespace pcl {
 		static IsoString getKey(IsoString INDI_device) {return c_sep+INDI_device;}
 		static IsoString getKey(IsoString INDI_device, IsoString INDI_property) { return c_sep+INDI_device+c_sep+INDI_property;}
 		static IsoString getKey(IsoString INDI_device, IsoString INDI_property,IsoString INDI_propertyElement){return c_sep+INDI_device+c_sep+INDI_property+c_sep+INDI_propertyElement; }
+		static IsoString getFormattedNumber(IsoString numberStr, IsoString numberFormat);
 	};
 
 	typedef enum {
 		TextColumn,
 		StatusColumn,
 		ValueColumn,
-		TypeColumn
+		TypeColumn,
+		NumberFormatColumn
 	} TreeBoxColumn;
 
 	class PropertyNode {
@@ -122,6 +124,7 @@ namespace pcl {
 	    virtual void setNodeINDIText(IsoString text);
 	    virtual void setNodeINDIValue(IsoString value);
 	    virtual void setNodeINDIType(IsoString type);
+	    virtual void setNodeINDINumberFormat(IsoString numberFormat);
 	    virtual void setNodeINDIState(int state);
 
 	    virtual IsoString getNodeINDIText() const;

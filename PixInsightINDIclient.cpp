@@ -20,6 +20,7 @@ namespace pcl {
 		propertyListItem.PropertyType=INDIProperty->getType();
 		propertyListItem.PropertyTypeStr=INDIProperty->getTypeStr();
 		propertyListItem.PropertyState =INDIProperty->getState();
+		propertyListItem.PropertyLabel =INDIProperty->getLabel();
 
 		for (size_t i=0; i<INDIProperty->getNumOfElements();i++) {
 			propertyListItem.Element=INDIProperty->getElementName(i);
@@ -27,6 +28,7 @@ namespace pcl {
 			propertyListItem.PropertyValue=INDIProperty->getElementValue(i);
 			propertyListItem.PropertyFlag=flag;
 			propertyListItem.PropertyNumberFormat=INDIProperty->getNumberFormat(i);
+			propertyListItem.ElementLabel=INDIProperty->getElementLabel(i);
 			arrayOp->run(m_Instance->getPropertyList(),propertyListItem);
 		    if (m_ScriptInstance) {
 			  arrayOp->run(m_ScriptInstance->getPropertyList(), propertyListItem);

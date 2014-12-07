@@ -78,7 +78,8 @@ namespace pcl {
 		StatusColumn,
 		ValueColumn,
 		TypeColumn,
-		NumberFormatColumn
+		NumberFormatColumn,
+		LabelColumn
 	} TreeBoxColumn;
 
 	class PropertyNode {
@@ -125,6 +126,7 @@ namespace pcl {
 	    virtual void setNodeINDIValue(IsoString value);
 	    virtual void setNodeINDIType(IsoString type);
 	    virtual void setNodeINDINumberFormat(IsoString numberFormat);
+	    virtual void setNodeINDILabel(IsoString type);
 	    virtual void setNodeINDIState(int state);
 
 	    virtual IsoString getNodeINDIText() const;
@@ -203,7 +205,7 @@ namespace pcl {
 			PropertyNode* addNode(PropertyNode* parent, IsoString device,IsoString property);
 			PropertyNode* addNode(PropertyNode* parent, IsoString device,IsoString property,IsoString element);
 
-			PropertyNode* addElementNode(IsoString device,IsoString property,IsoString element, int state=IPS_OK);
+			PropertyNode* addElementNode(IsoString device,IsoString property,IsoString element, int state=IPS_OK,IsoString label="");
 		private:
 			PropertyNode*        m_rootNode;
 			PropertyNodeFactory* m_factory;

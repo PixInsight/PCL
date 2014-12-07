@@ -180,6 +180,11 @@ namespace pcl {
 			m_thisTreeBoxNode->SetText(NumberFormatColumn,numberFormat);
 	}
 
+	void PropertyNode::setNodeINDILabel(IsoString label){
+			if (m_thisTreeBoxNode!=NULL)
+				m_thisTreeBoxNode->SetText(LabelColumn,label);
+	}
+
 	void PropertyNode::setNodeINDIState(int state)   {
 		if (m_thisTreeBoxNode!=NULL)
 			switch (state){
@@ -257,7 +262,7 @@ namespace pcl {
 		return node;
 	}
 
-	PropertyNode* PropertyTree::addElementNode(IsoString device,IsoString property,IsoString element, int state){
+	PropertyNode* PropertyTree::addElementNode(IsoString device,IsoString property,IsoString element, int state, IsoString label){
 		assert(m_rootNode!=NULL);
 		// lookup device node
 		IsoString deviceKeyStr = PropertyUtils::getKey(device);
@@ -286,6 +291,7 @@ namespace pcl {
 		assert(propNode!=NULL);
 		propNode->setNodeINDIText(property);
 		propNode->setNodeINDIState(state);
+		propNode->setNodeINDILabel(label);
 		// lookup element node
 		findNodeVisitor->reset();
 		IsoString elementKeyStr = PropertyUtils::getKey(device,property,element);

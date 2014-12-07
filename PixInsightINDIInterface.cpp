@@ -469,13 +469,14 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    INDIProperties_Control.SetSizer(INDIDeviceProperty_Sizer);
 
    PropertyList_TreeBox.EnableAlternateRowColor();
-   PropertyList_TreeBox.SetNumberOfColumns(5);
+   PropertyList_TreeBox.SetNumberOfColumns(6);
    PropertyList_TreeBox.HideColumn(TypeColumn);
    PropertyList_TreeBox.HideColumn(NumberFormatColumn);
    PropertyList_TreeBox.SetColumnWidth(0,300);
    PropertyList_TreeBox.SetHeaderText(TextColumn,String("Property"));
    PropertyList_TreeBox.SetHeaderText(StatusColumn,String("Status"));
    PropertyList_TreeBox.SetHeaderText(ValueColumn,String("Value"));
+   PropertyList_TreeBox.SetHeaderText(LabelColumn,String("Label"));
    PropertyList_TreeBox.OnClose((Control::close_event_handler) &PixInsightINDIInterface::__Close,w);
 
    ServerMessage_Label.SetVariableWidth();
@@ -840,7 +841,7 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 				itemsToBeRemoved.push_back(*iter);
 			}
 		} else  {
-			PropertyNode* elemNode = propTree->addElementNode(iter->Device,iter->Property,iter->Element,iter->PropertyState);
+			PropertyNode* elemNode = propTree->addElementNode(iter->Device,iter->Property,iter->Element,iter->PropertyState,iter->PropertyLabel);
 			elemNode->setNodeINDIType(iter->PropertyTypeStr);
 			elemNode->setNodeINDINumberFormat(iter->PropertyNumberFormat);
 			if (iter->PropertyTypeStr==String("INDI_NUMBER")){
@@ -848,8 +849,10 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 			} else {
 				elemNode->setNodeINDIValue(iter->PropertyValue);
 			}
+			elemNode->setNodeINDILabel(iter->ElementLabel);
 			elemNode->getTreeBoxNode()->SetAlignment(TextColumn, TextAlign::Left);
 			elemNode->getTreeBoxNode()->SetAlignment(ValueColumn, TextAlign::Left);
+			elemNode->getTreeBoxNode()->SetAlignment(LabelColumn, TextAlign::Left);
 			if (iter->PropertyFlag==Insert){
 				itemsCreated.push_back(*iter);
 			}
@@ -891,7 +894,7 @@ void PixInsightINDIInterface::PropertyButton_Click( Button& sender, bool checked
 			GUI->SetPropDlg = SetPropertyDialog::createPropertyDialog((*it)->Text(TypeColumn),(*it)->Text(NumberFormatColumn), &instance);
 			CHECK_POINTER(GUI->SetPropDlg);
 
-			GUI->SetPropDlg->setPropertyLabelString((*it)->Text(TextColumn));
+			GUI->SetPropDlg->setPropertyLabelString((*it)->Text(LabelColumn));
 			GUI->SetPropDlg->setPropertyValueString((*it)->Text(ValueColumn));
 			INDINewPropertyListItem propItem;
 			propItem.Device=(*it)->Parent()->Parent()->Text(TextColumn);

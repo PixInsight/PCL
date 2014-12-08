@@ -129,12 +129,13 @@ public:
 	   	 HorizontalSizer      CCDTemp_Sizer;
 	   	  Label                CCDTemp_Label;
 	   	  Edit                 CCDTemp_Edit;
-	   	 HorizontalSizer      CCDBinning_Sizer;
-	   	  Label                CCDBin_Label;
-	      Label                CCDBinX_Label;
-	  	  Edit                 CCDBinX_Edit;
-	  	  Label                CCDBinY_Label;
-	      Edit                 CCDBinY_Edit;
+	   	HorizontalSizer      CCDBinning_Sizer;
+		  Label                CCDBin_Label;
+		  Label                CCDBinX_Label;
+		  Edit                 CCDBinX_Edit;
+		  Label                CCDBinY_Label;
+		  Edit                 CCDBinY_Edit;
+
 	   SectionBar         FrameExposure_SectionBar;
 	   Control			  FrameExposure_Control;
 		VerticalSizer		FrameExposure_Sizer;
@@ -153,13 +154,6 @@ public:
 		  Edit                ExpDelay_Edit;
 		  Label 			  ExpFrame_Label;
 		  Edit                ExpFrame_Edit;
-		HorizontalSizer	     Image_Sizer;
-		  Label				  SaveImage_CheckBoxLabel;
-		  CheckBox            SaveImage_CheckBox;
-		  Label				  ImagePath_Label;
-		  Edit                ImagePath_Edit;
-		  Label 			  ImagePrefix_Label;
-		  Edit                ImagePrefix_Edit;
 		HorizontalSizer	     ExpButton_Sizer;
 		  PushButton		  StartExposure_PushButton;
 		  PushButton		  CancelExposure_PushButton;
@@ -191,7 +185,6 @@ public:
    void ComboItemSelected(ComboBox& sender, int itemIndex);
    void StartExposureButton_Click(Button& sender, bool checked);
    void CancelButton_Click(Button& sender, bool checked);
-   void CheckBoxChecked(Button& sender, Button::check_state state);
 
    void UpdateDeviceList();
 };

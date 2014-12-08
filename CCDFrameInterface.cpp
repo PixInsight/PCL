@@ -58,6 +58,9 @@
 #include "CCDFrameProcess.h"
 #include "PixInsightINDIInterface.h"
 
+// time out in seconds
+#define pcl_timeout 60
+
 namespace pcl
 {
 
@@ -130,7 +133,7 @@ bool CCDFrameInterface::Launch( const MetaProcess& P, const ProcessImplementatio
    if ( GUI == 0 )
    {
       GUI = new GUIData(*this );
-      SetWindowTitle( "INDI CCD Frames" );
+      SetWindowTitle( "INDI CCD Controller" );
       UpdateControls();
    }
 
@@ -243,6 +246,7 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
 
 	CCDParam_Sizer.Add(CCDBinning_Sizer);
 
+
 	FrameExposure_SectionBar.SetTitle("Frame Shooting");
 	FrameExposure_SectionBar.SetSection(FrameExposure_Control);
 	FrameExposure_Control.SetSizer(FrameExposure_Sizer);
@@ -331,40 +335,10 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
 	ExpDur_Sizer.Add(ExpFrame_Edit);
 	ExpDur_Sizer.AddStretch();
 
-	SaveImage_CheckBoxLabel.SetText("Save Frames:");
-	SaveImage_CheckBoxLabel.SetToolTip("<p>Enable saving the frames to disk.</p>");
-	SaveImage_CheckBoxLabel.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
-
-	SaveImage_CheckBox.OnCheck((CheckBox::check_event_handler )&CCDFrameInterface::CheckBoxChecked,w);
-
-	ImagePath_Label.SetText("Frame Folder:");
-	ImagePath_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
-	ImagePath_Label.SetToolTip("<p>Specify the directory where to save the frames.</p>");
-
-	ImagePath_Edit.SetText("./");
-	ImagePath_Edit.OnEditCompleted( (Edit::edit_event_handler)&CCDFrameInterface::EditCompleted, w );
-
-	ImagePrefix_Label.SetText("Image Prefix:");
-	ImagePrefix_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
-	ImagePrefix_Label.SetToolTip("<p>Specify a prefix for the frame file name.</p>");
-
-	ImagePrefix_Edit.SetText("Image");
-	ImagePrefix_Edit.OnEditCompleted( (Edit::edit_event_handler)&CCDFrameInterface::EditCompleted, w );
-
-	Image_Sizer.SetSpacing(10);
-	Image_Sizer.SetMargin(10);
-	Image_Sizer.Add(SaveImage_CheckBoxLabel);
-	Image_Sizer.Add(SaveImage_CheckBox);
-	Image_Sizer.Add(ImagePath_Label);
-	Image_Sizer.Add(ImagePath_Edit);
-	Image_Sizer.Add(ImagePrefix_Label);
-	Image_Sizer.Add(ImagePrefix_Edit);
-	Image_Sizer.AddStretch();
 
 
 	FrameExposure_Sizer.Add(ExpTime_Sizer);
 	FrameExposure_Sizer.Add(ExpNum_Sizer);
-	FrameExposure_Sizer.Add(Image_Sizer);
 	FrameExposure_Sizer.Add(ExpButton_Sizer);
 	FrameExposure_Sizer.Add(ExpDur_Sizer);
 
@@ -467,10 +441,18 @@ void CCDFrameInterface::Temperature_Timer( Timer &sender )
 					"CCD_TEMPERATURE", "CCD_TEMPERATURE_VALUE", CCDProp)) {
 				GUI->CCDTemp_Edit.SetText(CCDProp.PropertyValue);
 			}
-			else{
-				sender.Stop();
-				return;
+
+			// get X binning value
+			if (pInstance->getINDIPropertyItem(m_Device, "CCD_BINNING",
+					"HOR_BIN", CCDProp)) {
+				GUI->CCDBinX_Edit.SetText(CCDProp.PropertyValue);
 			}
+			// get X binning value
+			if (pInstance->getINDIPropertyItem(m_Device, "CCD_BINNING",
+					"VER_BIN", CCDProp)) {
+				GUI->CCDBinY_Edit.SetText(CCDProp.PropertyValue);
+			}
+
 		}
 	}
 }
@@ -487,6 +469,7 @@ void CCDFrameInterface::ComboItemSelected(ComboBox& sender, int itemIndex) {
 
 			INDIPropertyListItem CCDProp;
 			// check for cooler connection (e.g. Atik cameras)
+			GUI->Temperature_Timer.Start();
 			if (pInstance->getINDIPropertyItem(m_Device,
 					"COOLER_CONNECTION", "CONNECT_COOLER", CCDProp)) {
 				if(CCDProp.PropertyValue==String("OFF")){
@@ -498,18 +481,8 @@ void CCDFrameInterface::ComboItemSelected(ComboBox& sender, int itemIndex) {
 
 					newPropertyListItem.NewPropertyValue = String("ON");
 					pInstance->sendNewPropertyValue(newPropertyListItem);
-					GUI->Temperature_Timer.Start();
+
 				}
-			}
-			// get X binning value
-			if (pInstance->getINDIPropertyItem(m_Device, "CCD_BINNING",
-					"HOR_BIN", CCDProp)) {
-				GUI->CCDBinX_Edit.SetText(CCDProp.PropertyValue);
-			}
-			// get X binning value
-			if (pInstance->getINDIPropertyItem(m_Device, "CCD_BINNING",
-					"VER_BIN", CCDProp)) {
-				GUI->CCDBinY_Edit.SetText(CCDProp.PropertyValue);
 			}
 
 		}
@@ -551,10 +524,10 @@ void CCDFrameInterface::CancelButton_Click(Button& sender, bool checked){
 		if (pInstance==NULL)
 			return;
 		GUI->StartExposure_PushButton.Disable();
-		INDIPropertyListItem imageTransfer;
+		INDIPropertyListItem uploadLocal;
 		bool serverSendsImage=true;
-		if (pInstance->getINDIPropertyItem(m_Device,"TRANSFER_FORMAT","NONE",imageTransfer)){
-			serverSendsImage=!(imageTransfer.PropertyValue==String("ON"));
+		if (pInstance->getINDIPropertyItem(m_Device,"UPLOAD_MODE","UPLOAD_LOCAL",uploadLocal)){
+			serverSendsImage=!(uploadLocal.PropertyValue==String("ON"));
 		}
 
 		for (int num=0; num<m_NumOfExposures;++num){
@@ -575,9 +548,28 @@ void CCDFrameInterface::CancelButton_Click(Button& sender, bool checked){
 			}
 
 			// TODO enable abort
-			// TODO Check status of CCD_EXPOSURE_VALUE in case of server upload mode
-			while (!pInstance->getImageDownloadedFlag()){Sleep(1);ProcessEvents();}
-			pInstance->setImageDownloadedFlag(false);
+			if (serverSendsImage){
+				while (!pInstance->getImageDownloadedFlag()){Sleep(1);ProcessEvents();}
+				pInstance->setImageDownloadedFlag(false);
+			} else {
+				INDIPropertyListItem ccdExposure;
+				bool serverExposureIsBusy=false;
+				// timimg problem: wait until server sends  BUSY
+				do {
+					pInstance->getINDIPropertyItem(m_Device,"CCD_EXPOSURE","CCD_EXPOSURE_VALUE",ccdExposure);
+					Sleep(1);
+					ProcessEvents();
+					serverExposureIsBusy = ccdExposure.PropertyState==IPS_BUSY ;
+				} while (!serverExposureIsBusy && GUI->ExpDur_Edit.Text().ToFloat() < pcl_timeout);
+
+				do {
+
+					pInstance->getINDIPropertyItem(m_Device,"CCD_EXPOSURE","CCD_EXPOSURE_VALUE",ccdExposure);
+					Sleep(1);
+					ProcessEvents();
+				} while(ccdExposure.PropertyState==IPS_BUSY );
+			}
+
 			if (serverSendsImage) {
 				Array<ImageWindow> imgArray = ImageWindow::Open(String(tmpDir)+ String("/Image.fits"), IsoString("image"));
 
@@ -631,25 +623,11 @@ void CCDFrameInterface::CancelButton_Click(Button& sender, bool checked){
  void CCDFrameInterface::EditCompleted(Edit& sender){
 	 if (sender == GUI->ExpTime_Edit){
 		 m_ExposureDuration = sender.Text().ToDouble();
-	 }else if (sender == GUI->ExpNum_Edit){
+	 }else  if (sender == GUI->ExpNum_Edit) {
 		 m_NumOfExposures = sender.Text().ToInt();
-	 }else if (sender == GUI->ImagePath_Edit){
-		 m_FrameFolder = sender.Text();
-	 } else if (sender == GUI->ImagePrefix_Edit){
-	     m_FramePrefix = sender.Text();
 	 }
  }
 
- void CCDFrameInterface::CheckBoxChecked(Button& sender, Button::check_state state){
-	 if (sender == GUI->SaveImage_CheckBox){
-		 if (state == CheckState::Checked){
-			 m_saveFrame=true;
-		 }
-		 else {
-			 m_saveFrame=false;
-		 }
-	 }
- }
 
 } // pcl
 

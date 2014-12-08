@@ -378,6 +378,7 @@ bool PixInsightINDIInstance::sendNewProperty(bool isAsynchCall) {
 			result.Property=property;
 			result.Element=element;
 			result.PropertyValue=iter->PropertyValue;
+			result.PropertyState=iter->PropertyState;
 			return true;
 		}
 

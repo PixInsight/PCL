@@ -75,7 +75,6 @@ namespace pcl {
 
 	typedef enum {
 		TextColumn,
-		StatusColumn,
 		ValueColumn,
 		TypeColumn,
 		NumberFormatColumn,

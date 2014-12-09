@@ -279,7 +279,7 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 				GUI->DeviceList_TreeBox.GetSelectedNodes(selectedNodes);
 
 				for (pcl::IndirectArray<pcl::TreeBox::Node>::iterator it=selectedNodes.Begin(); it!=selectedNodes.End();++it){
-					IsoString deviceName((*it)->Text(1).To7BitASCII());
+					IsoString deviceName((*it)->Text(TextColumn).To7BitASCII());
 					
 					INDI::BaseDevice* device = indiClient->getDevice(deviceName.c_str());
 
@@ -300,7 +300,7 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 				GUI->DeviceList_TreeBox.GetSelectedNodes(selectedNodes);
 
 				for (pcl::IndirectArray<pcl::TreeBox::Node>::iterator it=selectedNodes.Begin(); it!=selectedNodes.End();++it){
-					IsoString deviceName((*it)->Text(1).To7BitASCII());
+					IsoString deviceName((*it)->Text(TextColumn).To7BitASCII());
 
 					INDI::BaseDevice* device = indiClient->getDevice(deviceName.c_str());
 
@@ -358,17 +358,18 @@ void PixInsightINDIInterface::UpdateDeviceList(){
 		assert(deviceNode!=NULL);
 
 
-		deviceNode->getTreeBoxNode()->SetText( 1, iter->DeviceName );
-		deviceNode->getTreeBoxNode()->SetAlignment( 1, TextAlign::Left );
+		deviceNode->getTreeBoxNode()->SetText( TextColumn, iter->DeviceName );
+		deviceNode->getTreeBoxNode()->SetAlignment( TextColumn, TextAlign::Left );
 
 		INDI::BaseDevice* device = indiClient->getDevice(IsoString(iter->DeviceName).c_str());
 		if (device && device->isConnected()){
 			Bitmap icon(String(":/bullets/bullet-ball-glass-green.png"));
-			deviceNode->getTreeBoxNode()->SetIcon(0,icon);		}
+			deviceNode->getTreeBoxNode()->SetIcon(TextColumn,icon);		}
 		else {
 			Bitmap icon(":/bullets/bullet-ball-glass-grey.png");
-			deviceNode->getTreeBoxNode()->SetIcon(0,icon);
+			deviceNode->getTreeBoxNode()->SetIcon(TextColumn,icon);
 		}
+
 
 	}
 	//GUI->UpdateDeviceList_Timer.Stop();
@@ -444,9 +445,8 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    INDIDevices_Control.SetFixedHeight( 8*fnt.Height() +2 );
    DeviceList_TreeBox.EnableAlternateRowColor();
    DeviceList_TreeBox.EnableMultipleSelections();
-   DeviceList_TreeBox.SetNumberOfColumns(2);
-   DeviceList_TreeBox.SetHeaderText(0,"Status");
-   DeviceList_TreeBox.SetHeaderText(1,"Device");
+   DeviceList_TreeBox.SetNumberOfColumns(1);
+   DeviceList_TreeBox.SetHeaderText(0,"Device");
 
    DeviceAction_Sizer.SetSpacing(4);
    ConnectDevice_PushButton.SetText("Connect");
@@ -469,12 +469,11 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    INDIProperties_Control.SetSizer(INDIDeviceProperty_Sizer);
 
    PropertyList_TreeBox.EnableAlternateRowColor();
-   PropertyList_TreeBox.SetNumberOfColumns(6);
+   PropertyList_TreeBox.SetNumberOfColumns(5);
    PropertyList_TreeBox.HideColumn(TypeColumn);
    PropertyList_TreeBox.HideColumn(NumberFormatColumn);
    PropertyList_TreeBox.SetColumnWidth(0,300);
    PropertyList_TreeBox.SetHeaderText(TextColumn,String("Property"));
-   PropertyList_TreeBox.SetHeaderText(StatusColumn,String("Status"));
    PropertyList_TreeBox.SetHeaderText(ValueColumn,String("Value"));
    PropertyList_TreeBox.SetHeaderText(LabelColumn,String("Label"));
    PropertyList_TreeBox.OnClose((Control::close_event_handler) &PixInsightINDIInterface::__Close,w);

@@ -189,16 +189,16 @@ namespace pcl {
 		if (m_thisTreeBoxNode!=NULL)
 			switch (state){
 			case IPS_OK:
-				m_thisTreeBoxNode->SetIcon(StatusColumn,Bitmap(":/bullets/bullet-ball-glass-green.png"));
+				m_thisTreeBoxNode->SetIcon(TextColumn,Bitmap(":/bullets/bullet-ball-glass-green.png"));
 				break;
 			case IPS_ALERT:
-				m_thisTreeBoxNode->SetIcon(StatusColumn,Bitmap(":/bullets/bullet-ball-glass-red.png"));
+				m_thisTreeBoxNode->SetIcon(TextColumn,Bitmap(":/bullets/bullet-ball-glass-red.png"));
 				break;
 			case IPS_BUSY:
-				m_thisTreeBoxNode->SetIcon(StatusColumn,Bitmap(":/bullets/bullet-ball-glass-yellow.png"));
+				m_thisTreeBoxNode->SetIcon(TextColumn,Bitmap(":/bullets/bullet-ball-glass-yellow.png"));
 				break;
 			case IPS_IDLE:
-				m_thisTreeBoxNode->SetIcon(StatusColumn,Bitmap(":/bullets/bullet-ball-glass-grey.png"));
+				m_thisTreeBoxNode->SetIcon(TextColumn,Bitmap(":/bullets/bullet-ball-glass-grey.png"));
 				break;
 			}
 	}

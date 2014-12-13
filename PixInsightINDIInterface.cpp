@@ -659,11 +659,17 @@ void EditNumberCoordPropertyDialog::EditCompleted( Edit& sender )
 {
 	if (sender==Hour_Edit){
 		m_hour=sender.Text().ToDouble();
+		m_minute=Minute_Edit.Text().ToDouble();
+		m_second=Second_Edit.Text().ToDouble();
 	}
 	if (sender==Minute_Edit){
+		m_hour=Hour_Edit.Text().ToDouble();
 		m_minute=sender.Text().ToDouble();
+		m_second=Second_Edit.Text().ToDouble();
 	}
 	if (sender==Second_Edit){
+		m_hour=Hour_Edit.Text().ToDouble();
+		m_minute=Minute_Edit.Text().ToDouble();
 		m_second=sender.Text().ToDouble();
 	}
 	double coord=m_hour + m_minute / 60 + m_second / 3600;
@@ -887,7 +893,13 @@ void PixInsightINDIInterface::PropertyButton_Click( Button& sender, bool checked
 
 		if (selectedNodes.Begin()!=selectedNodes.End())
 		{
+
 			pcl::IndirectArray<pcl::TreeBox::Node>::iterator it=selectedNodes.Begin();
+
+			// check that selected node is an element node, i.e. has two parents
+			if ((*it)->Parent()==NULL || (*it)->Parent()->Parent()==NULL){
+				throw Error("Please select an property element node (leaf of the tree)");
+			}
 
 			// Create dialog window according to the property type
 			GUI->SetPropDlg = SetPropertyDialog::createPropertyDialog((*it)->Text(TypeColumn),(*it)->Text(NumberFormatColumn), &instance);

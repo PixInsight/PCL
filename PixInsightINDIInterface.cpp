@@ -285,10 +285,8 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 
 					if (device)
 						if (!device->isConnected())
-							indiClient->connectDevice(deviceName.c_str());	
-
+							indiClient->connectDevice(deviceName.c_str());
 				}
-				
 			}
             ERROR_HANDLER
 		}
@@ -321,11 +319,11 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 			}
             ERROR_HANDLER
 		}
-        
 }
 
 
 void PixInsightINDIInterface::UpdateDeviceList(){
+
 
 	GUI->DeviceList_TreeBox.DisableUpdates();
 
@@ -374,6 +372,7 @@ void PixInsightINDIInterface::UpdateDeviceList(){
 	}
 	//GUI->UpdateDeviceList_Timer.Stop();
 	GUI->DeviceList_TreeBox.EnableUpdates();
+
 }
 // ----------------------------------------------------------------------------
 
@@ -808,7 +807,10 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 		GUI->PropertyList_TreeBox.EnableUpdates();
 		return;
 	}
-
+	if (indiClient.get()!=NULL){
+		pthread_mutex_lock(&indiClient.get()->m_mutex);
+	}
+	size_t initialPropertyLen=instance.p_propertyList.Length();
 	PropertyNodeFactory factory;
 	for (PixInsightINDIInstance::PropertyListType::iterator iter=instance.p_propertyList.Begin() ; iter!=instance.p_propertyList.End(); ++iter){
 
@@ -843,8 +845,8 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 			if (findDeviceNodeVisitor->foundNode()&&findPropNodeVisitor->foundNode()){
 				findDeviceNodeVisitor->getNode()->RemoveChild(findPropNodeVisitor->getNode());
 				delete findPropNodeVisitor->getNode();
-				itemsToBeRemoved.push_back(*iter);
 			}
+			itemsToBeRemoved.push_back(*iter);
 		} else  {
 			PropertyNode* elemNode = propTree->addElementNode(iter->Device,iter->Property,iter->Element,iter->PropertyState,iter->PropertyLabel);
 			elemNode->setNodeINDIType(iter->PropertyTypeStr);
@@ -868,8 +870,17 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 
 	// remove properties from property list
 	for (size_t i=0; i<itemsToBeRemoved.size(); i++){
-		instance.p_propertyList.Remove(itemsToBeRemoved[i]);
+		PixInsightINDIInstance::PropertyListType::iterator iter = instance.p_propertyList.Search(itemsToBeRemoved[i]);
+		if (iter==instance.p_propertyList.End()){
+			IsoString elemStr=IsoString(iter->Element);
+			throw Error(String().Format("%s",elemStr.c_str()));
+		}
+		instance.p_propertyList.Remove(iter);
+
 	}
+	size_t finalPropertyLen = instance.p_propertyList.Length();
+	Console().WriteLn(String().Format("%d,%d,%d",finalPropertyLen,itemsToBeRemoved.size(),initialPropertyLen));
+
 	// set newly created elements to Idle
 	for (size_t i=0; i<itemsCreated.size(); i++){
 		PixInsightINDIInstance::PropertyListType::iterator iter =instance.p_propertyList.Search(itemsCreated[i]);
@@ -877,7 +888,9 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 			iter->PropertyFlag=Idle;
 		}
 	}
-
+	if (indiClient.get()!=NULL){
+		pthread_mutex_unlock(&indiClient.get()->m_mutex);
+	}
 }
 
 

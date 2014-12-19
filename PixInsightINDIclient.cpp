@@ -34,8 +34,6 @@ namespace pcl {
 			  arrayOp->run(m_ScriptInstance->getPropertyList(), propertyListItem);
 		    }
 		}
-
-
 	}
 
 	void INDIClient::newDevice(INDI::BaseDevice *dp){
@@ -51,11 +49,27 @@ namespace pcl {
 		}
 
 	}
+
+	void INDIClient::deleteDevice(INDI::BaseDevice *dp){
+		assert(dp!=NULL);
+
+		if (m_Instance!=NULL){
+			for (PixInsightINDIInstance::PropertyListType::iterator iter=m_Instance->getPropertyList().Begin() ; iter!=m_Instance->getPropertyList().End(); ++iter){
+				if (iter->Device==String(dp->getDeviceName())){
+					iter->PropertyFlag=Remove;
+				}
+			}
+			// TODO script instance
+		}
+	}
+
+
 	void INDIClient::newProperty(INDI::Property *property){
 		assert(property!=NULL);
 		IProperty* INDIProperty = PropertyFactory::create(property);
 		ArrayOperator<INDIPropertyListItem>* append=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayAppend<INDIPropertyListItem>());
 		// add property to the property process parameter table
+
 		runOnPropertyTable(INDIProperty,append,Insert);
 
 		setBLOBMode(B_ALSO,property->getDeviceName());

@@ -157,6 +157,8 @@ public:
     /** \brief Send closing tag for BLOB command to server */
     virtual void finishBlob();
 
+    pthread_mutex_t m_mutex;
+
 protected:
 
     virtual void newDevice(INDI::BaseDevice *dp) {}

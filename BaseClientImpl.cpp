@@ -58,6 +58,7 @@ INDI::BaseClientImpl::BaseClientImpl()
     cPort   = 7624;
     svrwfp = NULL;    
     sConnected = false;
+    pthread_mutex_init(&m_mutex,NULL);
 #if defined(WIN32)
     WORD wVersionRequested;
     WSADATA wsaData;
@@ -457,8 +458,10 @@ int INDI::BaseClientImpl::delPropertyCmd (XMLEle *root, char * errmsg)
 		return errCode;
     }
     // delete the whole device
-    else
+    else {
+    	deleteDevice(dp);
         return removeDevice(dp->getDeviceName(), errmsg);
+    }
 }
 
 int INDI::BaseClientImpl::removeDevice( const char * devName, char * errmsg )

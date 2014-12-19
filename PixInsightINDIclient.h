@@ -122,6 +122,7 @@ class INDIClient : public INDI::BaseClientImpl
 
 protected:
 	void newDevice(INDI::BaseDevice *dp);
+	void deleteDevice(INDI::BaseDevice *dp);
 	void newProperty(INDI::Property *property);
     void removeProperty(INDI::Property *property);
     void newBLOB(IBLOB *bp);
@@ -135,7 +136,6 @@ private:
    
    IPixInsightINDIInstance*         m_Instance;
    IPixInsightINDIInstance*         m_ScriptInstance;
-
    void runOnPropertyTable(IProperty* INDIProperty, const ArrayOperator<INDIPropertyListItem>* arrayOp, PropertyFlagType flag=Idle);
 
 };

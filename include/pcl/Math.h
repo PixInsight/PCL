@@ -2730,7 +2730,7 @@ template <typename T> double Sn( T* x, T* xn )
    default: cn = (n & 1) ? n/(n - 0.9) : 1.0; break;
    }
 
-   double sn = cn * double( *pcl::Select( a2, a2+n, nh ) );
+   double sn = cn * double( *pcl::Select( a2, a2+n, nh-1 ) );
 
    delete [] a2;
    return sn;

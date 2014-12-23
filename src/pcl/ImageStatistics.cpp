@@ -281,7 +281,7 @@ public:
                data.MAD = pcl::MAD( v.Begin(), v.End(), data.median );
 
                if ( !data.noBWMV )
-                  data.bwmv = pcl::BiweightMidvariance( v.Begin(), v.End(), data.median, 1.4826*data.MAD );
+                  data.bwmv = pcl::BiweightMidvariance( v.Begin(), v.End(), data.median, data.MAD );
             }
 
             if ( !data.noPBMV )
@@ -370,7 +370,7 @@ public:
                data.MAD = pcl::MAD( V.Begin(), V.End(), data.median );
 
                if ( !data.noBWMV )
-                  data.bwmv = pcl::BiweightMidvariance( V.Begin(), V.End(), data.median, 1.4826*data.MAD );
+                  data.bwmv = pcl::BiweightMidvariance( V.Begin(), V.End(), data.median, data.MAD );
             }
 
             if ( !data.noPBMV )

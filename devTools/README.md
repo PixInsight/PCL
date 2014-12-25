@@ -4,18 +4,17 @@ Little Helpers for PI development
 This directory contains a number of small helpers that make development and git operations easier. 
 Before use, you **need to adapt the piEnv script** to contain some defaults used by your installation, for instance the PI_GIT_USER_NAME.
 
-Regardining github, the tools assume that you follow the model outlined in https://help.github.com/articles/set-up-git/
+Regarding GitHub, the tools assume that you follow the model outlined in https://help.github.com/articles/set-up-git/
 
-The tools are currently used and  tested on Fedora21. But with minor adaptions they should also be useful on other Fedora releases, FreeBSD, or MacOS.
-
+The tools are currently used and  tested on Fedora21. But with minor adaptions they should also be useful on other Fedora releases, FreeBSD, or MacOS. Feel free to share the necessary changes here.
 
 ##The commands
 The following tools are provided here:
 
 piEnv: set some environment variables as required for PCL development and some of the other tools in this directory. Then launch a new shell. You exit the shell with the exit command, which returns you to the calling shell. 
-       - You should adapt this script to reflect your settings, in particular PI_GIT_USER_NAME.
-       - Per default, it assumes that PI is installed in $HOME/PixInsight
-       - The PCL and PJSR repositories are stored in $HOME/GitHub/PCL or PJSR
+       * You should adapt this script to reflect your settings, in particular PI_GIT_USER_NAME.
+       * Per default, it assumes that PI is installed in $HOME/PixInsight
+       * The PCL and PJSR repositories are stored in $HOME/GitHub/PCL or PJSR
 
 piGitClone: create local clones of your GitHub repositories. Assumes you alreafy have created forks of the PixInsight repositories in your own GitHub space.
 

@@ -109,6 +109,13 @@ Here is a list of subdirectories, along with descriptions of the files therein. 
    The complete source code of PixInsight Class Library (PCL). Along with the PCL headers distributed on the [PCL]/include/pcl directory, you can use these source files with the provided makefiles and project files to rebuild PCL on your system.
 </dd></dl>
 
+**[PCL]/devTools**
+
+<dl><dd>
+   Some small helpers for development on Linux. See the README.md in this directory
+</dd></dl>
+
+
 
 ## Supported Compilers
 

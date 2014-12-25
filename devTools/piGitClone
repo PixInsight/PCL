@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+# clones your forked PCL and PJSR repositories, and sets upstream
+#
+cd $PI_GIT_BASE
+git clone https://github.com/$PI_GIT_USERNAME/PCL.git
+git clone https://github.com/$PI_GIT_USERNAME/PJSR.git
+git clone https://github.com/$PI_GIT_USERNAME/XISF-specification.git
+# make Juan's repositories the upstream
+cd $PCLDIR
+git remote add upstream https://github.com/PixInsight/PCL.git
+cd $PJSRDIR
+git remote add upstream https://github.com/PixInsight/PJSR.git
+cd $XISFDIR
+git remote add upstream https://github.com/PixInsight/XISF-specification.git

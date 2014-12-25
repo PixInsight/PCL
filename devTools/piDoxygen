@@ -1,0 +1,8 @@
+#!/bin/bash
+#
+# create doxygen documentation for PJSR and PCL, with more detail as the default documentation
+
+# sometimes doxygen seems to see old files. Clean everything before launching
+rm -Rf $PIDOXYGENDIR
+# generate documentation
+doxygen $PIDOXYGENCONF

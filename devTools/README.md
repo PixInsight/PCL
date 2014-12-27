@@ -26,7 +26,9 @@ The following tools are provided:
 
 * piMake: build PCL, modules and file-formats from source. It creates sub-directories and other minor chores necessary for the build. Note that a few modules **currently have build problems** as documented in the source of the script.
 
-* g++-4.8.2 and gcc-4.8.2: Wrappers for g++ and gcc, so you can compile even if you dont have these exact compiler versions on your system. Version 4.8.2 are currently hardcoded in the makefiles, while Fedora 21 provides 4.9.2 .  Of course, you are using a compiler different from the "official" version at your own risk...
+* piMakeClean: "make clean" for everything.
+
+* g++-4.8.2 and gcc-4.8.2: Wrappers for g++ and gcc, so you can compile even if you dont have these exact compiler versions on your system. Version 4.8.2 are currently hardcoded in the makefiles, while Fedora 21 provides 4.9.2 . Of course, you are using a compiler different from the "official" version at your own risk. You can select between the system compiler and your private version of gcc4.8.2 by editing piEnv.
 
 ## License
 

@@ -8,7 +8,7 @@ os:
 before_script:
   - wget https://pixinsight.com/download/PCL/PCL-02.00.13.0689-20141030.tar.gz
 env:
-  - PCLINCDIR=../../../PCL/include  PCLBINDIR64=../../../PCL/bin  PCLDIR=.
+  - PCLINCDIR=../../../PCL/include  PCLBINDIR64=../../../PCL/bin  PCLDIR=../../..
 script: 
   - ./run_build.sh
 notifications:

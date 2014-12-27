@@ -2,11 +2,14 @@
 # PixInsight Makefile Generator Script v1.93
 # Copyright (C) 2009-2014 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Sat, 27 Dec 2014 20:11:09 GMT
+# Automatically generated on Sat, 27 Dec 2014 20:59:04 GMT
 # Project id ...... PixInsightINDIclient
 # Project type .... Module
 # Platform ........ FreeBSD/g++
 # Configuration ... Release/x64
+# --------------------------------------------------------------------
+# Additional libraries:
+# z
 ######################################################################
 
 OBJ_DIR="$(PCLDIR)/module/freebsd/g++/x64/Release"
@@ -93,7 +96,7 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/PixInsightINDIclient-pxm.so: $(OBJ_FILES)
-	clang++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/PixInsightINDIclient-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
+	clang++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/PixInsightINDIclient-pxm.so $(OBJ_FILES) -lz -lpthread -lPCL-pxi
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean

@@ -8,7 +8,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-#include "../PropertyNode.h"
+#include "PropertyNode.h"
 #include <pcl/TreeBox.h>
 
 using ::testing::_;

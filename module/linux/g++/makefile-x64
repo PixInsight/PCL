@@ -1,0 +1,113 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.93
+# Copyright (C) 2009-2014 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Sat, 27 Dec 2014 16:06:12 GMT
+# Project id ...... PixInsightINDIclient
+# Project type .... Module
+# Platform ........ Linux/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="/home/klaus/data/C++/PixInsightINDIclient/module/linux/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/PixInsightINDIclient-pxm.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../BaseClientImpl.cpp \
+../../CCDFrameInstance.cpp \
+../../CCDFrameInterface.cpp \
+../../CCDFrameProcess.cpp \
+../../IINDIProperty.cpp \
+../../INDIPropertyBuilder.cpp \
+../../PixInsightINDIInstance.cpp \
+../../PixInsightINDIInterface.cpp \
+../../PixInsightINDIModule.cpp \
+../../PixInsightINDIParameters.cpp \
+../../PixInsightINDIProcess.cpp \
+../../PixInsightINDIclient.cpp \
+../../PropertyNode.cpp \
+../../base64.c \
+../../basedevice.cpp \
+../../indicom.c \
+../../indiproperty.cpp \
+../../lilxml.c
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/BaseClientImpl.o \
+./x64/Release/CCDFrameInstance.o \
+./x64/Release/CCDFrameInterface.o \
+./x64/Release/CCDFrameProcess.o \
+./x64/Release/IINDIProperty.o \
+./x64/Release/INDIPropertyBuilder.o \
+./x64/Release/PixInsightINDIInstance.o \
+./x64/Release/PixInsightINDIInterface.o \
+./x64/Release/PixInsightINDIModule.o \
+./x64/Release/PixInsightINDIParameters.o \
+./x64/Release/PixInsightINDIProcess.o \
+./x64/Release/PixInsightINDIclient.o \
+./x64/Release/PropertyNode.o \
+./x64/Release/base64.o \
+./x64/Release/basedevice.o \
+./x64/Release/indicom.o \
+./x64/Release/indiproperty.o \
+./x64/Release/lilxml.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/BaseClientImpl.d \
+./x64/Release/CCDFrameInstance.d \
+./x64/Release/CCDFrameInterface.d \
+./x64/Release/CCDFrameProcess.d \
+./x64/Release/IINDIProperty.d \
+./x64/Release/INDIPropertyBuilder.d \
+./x64/Release/PixInsightINDIInstance.d \
+./x64/Release/PixInsightINDIInterface.d \
+./x64/Release/PixInsightINDIModule.d \
+./x64/Release/PixInsightINDIParameters.d \
+./x64/Release/PixInsightINDIProcess.d \
+./x64/Release/PixInsightINDIclient.d \
+./x64/Release/PropertyNode.d \
+./x64/Release/base64.d \
+./x64/Release/basedevice.d \
+./x64/Release/indicom.d \
+./x64/Release/indiproperty.d \
+./x64/Release/lilxml.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/PixInsightINDIclient-pxm.so: $(OBJ_FILES)
+	g++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/PixInsightINDIclient-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/PixInsightINDIclient-pxm.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/PixInsightINDIclient-pxm.so $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	g++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O3 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffunction-sections -fdata-sections -fomit-frame-pointer -ffast-math -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x64/Release/%.o: ../../%.c
+	gcc -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O3 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffunction-sections -fdata-sections -fomit-frame-pointer -ffast-math -flto -fwhole-program -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

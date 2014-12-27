@@ -8,7 +8,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-#include "../INDIPropertyBuilder.h"
+#include "INDIPropertyBuilder.h"
 #include <pcl/Exception.h>
 namespace pcl {
 

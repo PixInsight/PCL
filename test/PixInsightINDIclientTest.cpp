@@ -1,8 +1,8 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-#include "../fakes/FakePixInsightINDIInstance.h"
-#include "../fakes/FakeINDIClient.h"
+#include "fakes/FakePixInsightINDIInstance.h"
+#include "fakes/FakeINDIClient.h"
 
 
 using namespace pcl;

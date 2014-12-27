@@ -8,7 +8,7 @@
 #ifndef FAKEINDICLIENT_H_
 #define FAKEINDICLIENT_H_
 
-#include "../PixInsightINDIclient.h"
+#include "PixInsightINDIclient.h"
 #include "FakePixInsightINDIInstance.h"
 namespace pcl {
 

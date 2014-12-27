@@ -8,7 +8,7 @@
 #ifndef FAKEPIXINSIGHTINDIINSTANCE_H_
 #define FAKEPIXINSIGHTINDIINSTANCE_H_
 
-#include "../IPixInsightINDIInstance.h"
+#include "IPixInsightINDIInstance.h"
 
 
 namespace pcl {

@@ -810,7 +810,6 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 	if (indiClient.get()!=NULL){
 		pthread_mutex_lock(&indiClient.get()->m_mutex);
 	}
-	size_t initialPropertyLen=instance.p_propertyList.Length();
 	PropertyNodeFactory factory;
 	for (PixInsightINDIInstance::PropertyListType::iterator iter=instance.p_propertyList.Begin() ; iter!=instance.p_propertyList.End(); ++iter){
 
@@ -878,8 +877,6 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 		instance.p_propertyList.Remove(iter);
 
 	}
-	size_t finalPropertyLen = instance.p_propertyList.Length();
-	Console().WriteLn(String().Format("%d,%d,%d",finalPropertyLen,itemsToBeRemoved.size(),initialPropertyLen));
 
 	// set newly created elements to Idle
 	for (size_t i=0; i<itemsCreated.size(); i++){

@@ -8,8 +8,8 @@
 #include <malloc.h>
 #include "FakeINDIClient.h"
 //#include "../indiapi.h"
-#include "../INDIPropertyBuilder.h"
-#include "../error.h"
+#include "INDIPropertyBuilder.h"
+#include "error.h"
 
 
 namespace pcl {

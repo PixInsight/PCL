@@ -18,4 +18,5 @@ fi
 echo $OS_PATH
 export PCLLIBDIR64=../../PCL/lib/$OS_PATH/x64
 echo $PCLLIBDIR64
+pwd
 cd module/$OS_PATH/g++/ && mkdir -p x64/Release  && make -f makefile-x64

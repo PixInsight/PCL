@@ -40,21 +40,21 @@ namespace pcl {
 			{
 				int minutes = trunc((numberStr.ToFloat() - hours)*60);
 				IsoString formatStr = IsoString("%") + IsoString().Format("%dd",width) + IsoString(":%02d");
-				return String().Format(formatStr.c_str(),hours,minutes);
+				return String().Format(formatStr.c_str(),hours,abs(minutes));
 			}
 			case 5:
 			{
 				int minutes     = trunc((numberStr.ToFloat() - hours)*60);
 				int minutesfrac = trunc(((numberStr.ToFloat() - hours)*60-minutes)*10);
 				IsoString formatStr = IsoString("%") + IsoString().Format("%dd",width) + IsoString(":%02d.%d");
-				return String().Format(formatStr.c_str(),hours,minutes,minutesfrac);
+				return String().Format(formatStr.c_str(),hours,abs(minutes),abs(minutesfrac));
 			}
 			case 6:
 			{
 				int minutes     = trunc((numberStr.ToFloat() - hours)*60);
 				int seconds     = trunc(((numberStr.ToFloat() - hours)*60-minutes)*60);
 				IsoString formatStr = IsoString("%") + IsoString().Format("%dd",width) + IsoString(":%02d:%02d");
-				return String().Format(formatStr.c_str(),hours,minutes,seconds);
+				return String().Format(formatStr.c_str(),hours,abs(minutes),abs(seconds));
 			}
 			case 8:
 			{
@@ -62,7 +62,7 @@ namespace pcl {
 				int seconds     = trunc(((numberStr.ToFloat() - hours)*60-minutes)*60);
 				int secondsfrac = trunc((((numberStr.ToFloat() - hours)*60-minutes)*60-seconds)*10);
 				IsoString formatStr = IsoString("%") + IsoString().Format("%dd",width) + IsoString(":%02d:%02d.%d");
-				return String().Format(formatStr.c_str(),hours,minutes,seconds,secondsfrac);
+				return String().Format(formatStr.c_str(),hours,abs(minutes),abs(seconds),abs(secondsfrac));
 			}
 			case 9:
 			{
@@ -70,7 +70,7 @@ namespace pcl {
 				int seconds     = trunc(((numberStr.ToFloat() - hours)*60-minutes)*60);
 				int secondsfrac = trunc((((numberStr.ToFloat() - hours)*60-minutes)*60-seconds)*100);
 				IsoString formatStr = IsoString("%") + IsoString().Format("%dd",width) + IsoString(":%02d:%02d.%02d");
-				return String().Format(formatStr.c_str(),hours,minutes,seconds,secondsfrac);
+				return String().Format(formatStr.c_str(),hours,abs(minutes),abs(seconds),abs(secondsfrac));
 			}
 			return IsoString("");
 			}

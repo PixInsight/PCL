@@ -377,7 +377,11 @@ bool PixInsightINDIInstance::sendNewProperty(bool isAsynchCall) {
 			result.Device=device;
 			result.Property=property;
 			result.Element=element;
-			result.PropertyValue=PropertyUtils::getFormattedNumber(iter->PropertyValue,iter->PropertyNumberFormat);
+			if (iter->PropertyTypeStr==String("INDI_NUMBER")){
+				result.PropertyValue=PropertyUtils::getFormattedNumber(iter->PropertyValue,iter->PropertyNumberFormat);
+			} else {
+				result.PropertyValue=iter->PropertyValue;
+			}
 			result.PropertyState=iter->PropertyState;
 			return true;
 		}

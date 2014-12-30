@@ -9,7 +9,10 @@ CCD cameras, filter wheels, DSLRs from PixInsight.
 Installation
 ------------
 The client can be installed as a regular PixInsight module. To build the module from sources use the PixInsight Makefile Generator script with the 
-following settings (for all OS except windows). For windows builds you have to link against the pthread library additionally.
+following settings (for all OS except windows). 
 
 ![Makefile Generator](images/MakefileGeneartor_Module.png)
 
+For windows builds you have to link against the pthread library additionally.
+
+![Makefile Generator](images/MakefileGeneartor_Module_Windows.png)

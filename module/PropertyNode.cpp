@@ -1,7 +1,7 @@
 #include "PropertyNode.h"
 #include <assert.h>
 #include <algorithm>
-#include <math.h>
+#include <pcl/Math.h>
 
 namespace pcl {
 
@@ -34,43 +34,43 @@ namespace pcl {
 			size_t fraction = tokens[1].ToInt();
 			size_t width    = tokens[0].ToInt()-fraction;
 			assert(width>0);
-			int hours = trunc(numberStr.ToFloat());
+			int hours = Trunc(numberStr.ToFloat());
 			switch (fraction) {
 			case 3:
 			{
-				int minutes = trunc((numberStr.ToFloat() - hours)*60);
+				int minutes = Trunc((numberStr.ToFloat() - hours)*60);
 				IsoString formatStr = IsoString("%") + IsoString().Format("%dd",width) + IsoString(":%02d");
-				return String().Format(formatStr.c_str(),hours,abs(minutes));
+				return String().Format(formatStr.c_str(),hours,Abs(minutes));
 			}
 			case 5:
 			{
-				int minutes     = trunc((numberStr.ToFloat() - hours)*60);
-				int minutesfrac = trunc(((numberStr.ToFloat() - hours)*60-minutes)*10);
+				int minutes     = Trunc((numberStr.ToFloat() - hours)*60);
+				int minutesfrac = Trunc(((numberStr.ToFloat() - hours)*60-minutes)*10);
 				IsoString formatStr = IsoString("%") + IsoString().Format("%dd",width) + IsoString(":%02d.%d");
-				return String().Format(formatStr.c_str(),hours,abs(minutes),abs(minutesfrac));
+				return String().Format(formatStr.c_str(),hours,Abs(minutes),Abs(minutesfrac));
 			}
 			case 6:
 			{
-				int minutes     = trunc((numberStr.ToFloat() - hours)*60);
-				int seconds     = trunc(((numberStr.ToFloat() - hours)*60-minutes)*60);
+				int minutes     = Trunc((numberStr.ToFloat() - hours)*60);
+				int seconds     = Trunc(((numberStr.ToFloat() - hours)*60-minutes)*60);
 				IsoString formatStr = IsoString("%") + IsoString().Format("%dd",width) + IsoString(":%02d:%02d");
-				return String().Format(formatStr.c_str(),hours,abs(minutes),abs(seconds));
+				return String().Format(formatStr.c_str(),hours,Abs(minutes),Abs(seconds));
 			}
 			case 8:
 			{
-				int minutes     = trunc((numberStr.ToFloat() - hours)*60);
-				int seconds     = trunc(((numberStr.ToFloat() - hours)*60-minutes)*60);
-				int secondsfrac = trunc((((numberStr.ToFloat() - hours)*60-minutes)*60-seconds)*10);
+				int minutes     = Trunc((numberStr.ToFloat() - hours)*60);
+				int seconds     = Trunc(((numberStr.ToFloat() - hours)*60-minutes)*60);
+				int secondsfrac = Trunc((((numberStr.ToFloat() - hours)*60-minutes)*60-seconds)*10);
 				IsoString formatStr = IsoString("%") + IsoString().Format("%dd",width) + IsoString(":%02d:%02d.%d");
-				return String().Format(formatStr.c_str(),hours,abs(minutes),abs(seconds),abs(secondsfrac));
+				return String().Format(formatStr.c_str(),hours,Abs(minutes),Abs(seconds),Abs(secondsfrac));
 			}
 			case 9:
 			{
-				int minutes     = trunc((numberStr.ToFloat() - hours)*60);
-				int seconds     = trunc(((numberStr.ToFloat() - hours)*60-minutes)*60);
-				int secondsfrac = trunc((((numberStr.ToFloat() - hours)*60-minutes)*60-seconds)*100);
+				int minutes     = Trunc((numberStr.ToFloat() - hours)*60);
+				int seconds     = Trunc(((numberStr.ToFloat() - hours)*60-minutes)*60);
+				int secondsfrac = Trunc((((numberStr.ToFloat() - hours)*60-minutes)*60-seconds)*100);
 				IsoString formatStr = IsoString("%") + IsoString().Format("%dd",width) + IsoString(":%02d:%02d.%02d");
-				return String().Format(formatStr.c_str(),hours,abs(minutes),abs(seconds),abs(secondsfrac));
+				return String().Format(formatStr.c_str(),hours,Abs(minutes),Abs(seconds),Abs(secondsfrac));
 			}
 			return IsoString("");
 			}

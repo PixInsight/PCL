@@ -269,8 +269,9 @@ bool PixInsightINDIInstance::sendNewProperty(bool isAsynchCall) {
 					sp->s = ISS_ON;
 				}
 				else {
-					Console().WriteLn(String().Format("Invalid value for INDI switch: '%s' ... exiting.",IsoString(iter->NewPropertyValue).c_str()));
-					return false;
+				    sp->s = ISS_OFF;
+					//Console().WriteLn(String().Format("Invalid value for INDI switch: '%s' ... exiting.",IsoString(iter->NewPropertyValue).c_str()));
+					//return false;
 				}
 
 			}

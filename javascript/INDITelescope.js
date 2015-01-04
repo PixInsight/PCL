@@ -212,7 +212,7 @@ function mainDialog()
    }
 
    this.moveNorth_Button.onRelease = function (){
-     var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_NS/MOTION_NORTH","INDI_SWITCH","ON"]]
+     var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_NS/MOTION_NORTH","INDI_SWITCH","OFF"]]
      periodicTimer.stop();
      indi.sendNewPropertyArrayAsynch(propertyArray);
      this.dialog.curDEC_Edit.update();
@@ -239,7 +239,7 @@ function mainDialog()
    }
 
    this.moveSouth_Button.onRelease = function (){
-     var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_NS/MOTION_SOUTH","INDI_SWITCH","ON"]]
+     var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_NS/MOTION_SOUTH","INDI_SWITCH","OFF"]]
      periodicTimer.stop();
      indi.sendNewPropertyArrayAsynch(propertyArray);
      this.dialog.curDEC_Edit.update();
@@ -257,7 +257,7 @@ function mainDialog()
    }
 
    this.moveWest_Button.onRelease = function (){
-     var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_WE/MOTION_WEST","INDI_SWITCH","ON"]]
+     var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_WE/MOTION_WEST","INDI_SWITCH","OFF"]]
      periodicTimer.stop();
      indi.sendNewPropertyArrayAsynch(propertyArray);
       this.dialog.curRA_Edit.update();
@@ -275,7 +275,7 @@ function mainDialog()
    }
 
    this.moveEast_Button.onRelease = function (){
-     var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_WE/MOTION_EAST","INDI_SWITCH","ON"]]
+     var propertyArray=[["/" + currentTelescope + "/TELESCOPE_MOTION_WE/MOTION_EAST","INDI_SWITCH","OFF"]]
      periodicTimer.stop();
      indi.sendNewPropertyArrayAsynch(propertyArray);
      this.dialog.curRA_Edit.update();

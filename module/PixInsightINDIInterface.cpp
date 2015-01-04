@@ -733,13 +733,27 @@ EditNumberCoordPropertyDialog::EditNumberCoordPropertyDialog(PixInsightINDIInsta
 
 void EditSwitchPropertyDialog::setPropertyValueString(String value){
 	if (value==String("ON")){
-		throw Error("Please choose a switch property with value ON.");
+		ON_RadioButton.Check();
+		OFF_RadioButton.Uncheck();
+	}
+	else if (value==String("OFF")) {
+		ON_RadioButton.Uncheck();
+		OFF_RadioButton.Check();
+	} else {
+		throw Error("Invalid Switch value.");
 	}
 }
 
 void EditSwitchPropertyDialog::ButtonChecked( RadioButton& sender )
 {
-	m_newPropertyListItem.NewPropertyValue=String("ON") ;
+	if (sender==ON_RadioButton){
+		m_newPropertyListItem.NewPropertyValue=String("ON") ;
+	}
+
+	if (sender==OFF_RadioButton){
+		m_newPropertyListItem.NewPropertyValue=String("OFF") ;
+	}
+
 }
 
 EditSwitchPropertyDialog::EditSwitchPropertyDialog(PixInsightINDIInstance* indiInstance):SetPropertyDialog(indiInstance){
@@ -754,12 +768,13 @@ EditSwitchPropertyDialog::EditSwitchPropertyDialog(PixInsightINDIInstance* indiI
 	ON_Label.SetText("ON");
 	OFF_Label.SetText("OFF");
 
-	ON_RadioButton.Uncheck();
+	//ON_RadioButton.Uncheck();
 	ON_RadioButton.OnCheck((RadioButton::check_event_handler) &EditSwitchPropertyDialog::ButtonChecked,*this);
 
 
-	OFF_RadioButton.Check();
-	OFF_RadioButton.Disable(true);
+	//OFF_RadioButton.Check();
+	//OFF_RadioButton.Disable(true);
+	OFF_RadioButton.OnCheck((RadioButton::check_event_handler) &EditSwitchPropertyDialog::ButtonChecked,*this);
 
 	OK_PushButton.SetText("OK");
 	OK_PushButton.OnClick((Button::click_event_handler) &SetPropertyDialog::Ok_Button_Click, *this );

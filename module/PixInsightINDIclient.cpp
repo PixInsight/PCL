@@ -166,10 +166,10 @@ namespace pcl {
 #endif
         if (tmpFolder!=NULL)
 	    {
-        	IsoString fileName = IsoString(tmpFolder) + IsoString("/") + IsoString(bp->label) + IsoString(".fits");
+        	IsoString fileName = IsoString(tmpFolder) + IsoString("/") + IsoString(bp->label) + IsoString(bp->format);
         	ofstream myfile;
         	myfile.open (fileName.c_str(),ios::out|ios::binary);
-        	myfile.write((const char*) bp->blob,bp->bloblen);
+        	myfile.write((const char*) bp->blob,bp->size);
         	myfile.close();
         	m_Instance->setImageDownloadedFlag(true);
 		if (m_ScriptInstance) {

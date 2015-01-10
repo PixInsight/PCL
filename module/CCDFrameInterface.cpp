@@ -502,11 +502,7 @@ void CCDFrameInterface::CancelButton_Click(Button& sender, bool checked){
 	newPropertyListItem.PropertyType = String("INDI_SWITCH");
 
 	newPropertyListItem.NewPropertyValue = String("ON");
-	pInstance->sendNewPropertyValue(newPropertyListItem);
-
-
-	// stop timer
-	GUI->ExposureDuration_Timer.Stop();
+	pInstance->sendNewPropertyValue(newPropertyListItem,true);
 
 	pInstance->doInternalAbort();
 
@@ -531,6 +527,7 @@ void CCDFrameInterface::CancelButton_Click(Button& sender, bool checked){
 		}
 
 		for (int num=0; num<m_NumOfExposures;++num){
+
 			GUI->ExpFrame_Edit.SetText(String(num));
 
 			INDINewPropertyListItem newPropertyListItem;
@@ -547,9 +544,10 @@ void CCDFrameInterface::CancelButton_Click(Button& sender, bool checked){
 				break;
 			}
 
+
 			// TODO enable abort
 			if (serverSendsImage){
-				while (!pInstance->getImageDownloadedFlag()){Sleep(1);ProcessEvents();}
+				while (!pInstance->getImageDownloadedFlag() && !pInstance->getInternalAbortFlag()){Sleep(1);ProcessEvents();}
 				pInstance->setImageDownloadedFlag(false);
 			} else {
 				INDIPropertyListItem ccdExposure;
@@ -560,14 +558,21 @@ void CCDFrameInterface::CancelButton_Click(Button& sender, bool checked){
 					Sleep(1);
 					ProcessEvents();
 					serverExposureIsBusy = ccdExposure.PropertyState==IPS_BUSY ;
-				} while (!serverExposureIsBusy && GUI->ExpDur_Edit.Text().ToFloat() < pcl_timeout);
+				} while (!serverExposureIsBusy && (GUI->ExpDur_Edit.Text().ToFloat() < pcl_timeout) && !pInstance->getInternalAbortFlag());
 
 				do {
 
 					pInstance->getINDIPropertyItem(m_Device,"CCD_EXPOSURE","CCD_EXPOSURE_VALUE",ccdExposure);
 					Sleep(1);
 					ProcessEvents();
-				} while(ccdExposure.PropertyState==IPS_BUSY );
+				} while((ccdExposure.PropertyState==IPS_BUSY)&& !pInstance->getInternalAbortFlag());
+			}
+
+			if (pInstance->getInternalAbortFlag()){
+				// stop timer
+				GUI->ExposureDuration_Timer.Stop();
+				GUI->ExposureDelay_Timer.Stop();
+				break;
 			}
 
 			if (serverSendsImage) {

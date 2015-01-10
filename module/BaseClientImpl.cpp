@@ -186,7 +186,9 @@ bool INDI::BaseClientImpl::disconnectServer()
         fclose(svrwfp);
    svrwfp = NULL;
 
-   pthread_join(listen_thread, NULL);
+   void* value_ptr;
+
+   pthread_join(listen_thread, &value_ptr);
 
    return true;
 }

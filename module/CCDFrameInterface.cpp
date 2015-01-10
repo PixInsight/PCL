@@ -480,7 +480,7 @@ void CCDFrameInterface::ComboItemSelected(ComboBox& sender, int itemIndex) {
 					newPropertyListItem.PropertyType = String("INDI_SWITCH");
 
 					newPropertyListItem.NewPropertyValue = String("ON");
-					pInstance->sendNewPropertyValue(newPropertyListItem);
+					pInstance->sendNewPropertyValue(newPropertyListItem,true);
 
 				}
 			}

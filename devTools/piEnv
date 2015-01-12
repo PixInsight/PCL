@@ -12,6 +12,11 @@ export PI_GIT_BASE=$HOME/GitHub
 export PI_GIT_USERNAME="GeorgViehoever"
 # directory that contains the Pixinsight installation
 export PI_DIR=$HOME/PixInsight
+# directory for correct gcc version. PI seems to be fairly sensitive to the exact version
+# Version 4.9.2 coming with Fedora 21 produced executables that did not work. Now using
+# gcc4.8.2 compiled with ../gcc-4.8.2/configure --prefix=$HOME/gcc-4.8.2 -program-suffix="-4.8.2" --disable-multilib
+export PI_GCC_DIR=$HOME/gcc-4.8.2
+
 # do plausibility check of paths
 checkDirs () {
     if [ ! -f $PCLDIR/include/pcl/AbstractImage.h ]
@@ -63,7 +68,7 @@ export PIDOXYGENDIR=$PI_GIT_BASE/doxy_html
 export PIDOXYGENCONF=$PIDEVTOOLSDIR/piDoxygen.conf
 
 # add utilities directory to PATH
-export PATH=$PIDEVTOOLSDIR:$PI_DIR/bin:$PATH
+export PATH=$PI_GCC_DIR/bin:$PIDEVTOOLSDIR:$PI_DIR/bin:$PATH
 
 # plausibility check
 checkDirs

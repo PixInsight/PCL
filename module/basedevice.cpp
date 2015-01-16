@@ -981,6 +981,7 @@ int INDI::BaseDevice::setBLOB(IBLOBVectorProperty *bvp, XMLEle * root, char * er
                  blobEL->bloblen = from64tobits( static_cast<char *> (blobEL->blob), pcdataXMLEle(ep));
 
                  strncpy(blobEL->format, valuXMLAtt(fa), MAXINDIFORMAT);
+#if defined(HAVE_ZLIB)
                     if (strstr(blobEL->format, ".z"))
                     {
                         blobEL->format[strlen(blobEL->format)-2] = '\0';
@@ -1004,6 +1005,7 @@ int INDI::BaseDevice::setBLOB(IBLOBVectorProperty *bvp, XMLEle * root, char * er
                         free(blobEL->blob);
                         blobEL->blob = dataBuffer;
                     }
+#endif
                     if (mediator)
                         mediator->newBLOB(blobEL);
                 }

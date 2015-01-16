@@ -25,7 +25,6 @@
 
 #if defined (WIN32)
 #define WIN32_LEAN_AND_MEAN
-#include <pthread.h>
 #include <winsock.h>
 #endif
 
@@ -36,7 +35,22 @@
 
 #define MAXRBUF 2048
 
+#include <pcl/Thread.h>
+#include <pcl/Mutex.h>
+
 using namespace std;
+
+
+class INDIListener : public pcl::Thread{
+public:
+	INDIListener(INDI::BaseClientImpl * client):pcl::Thread(),m_client(client){}
+	virtual ~INDIListener(){}
+
+	virtual void Run();
+private:
+	INDI::BaseClientImpl * m_client;
+};
+
 
 /**
  * \class INDI::BaseClient
@@ -157,7 +171,9 @@ public:
     /** \brief Send closing tag for BLOB command to server */
     virtual void finishBlob();
 
-    pthread_mutex_t m_mutex;
+    pcl::Mutex m_mutex;
+    // Listen to INDI server and process incoming messages
+    void listenINDI();
 
 protected:
 
@@ -192,6 +208,8 @@ protected:
     /**  Process messages */
     int messageCmd (XMLEle *root, char * errmsg);
 
+
+
 private:
 
     /** \brief Connect/Disconnect to INDI driver
@@ -201,12 +219,10 @@ private:
     */
     void setDriverConnection(bool status, const char *deviceName);
 
-    // Listen to INDI server and process incoming messages
-    void listenINDI();
+
 
     // Thread for listenINDI()
-    pthread_t listen_thread;
-
+    INDIListener* m_listener;
     vector<INDI::BaseDevice *> cDevices;
     vector<string> cDeviceNames;
 

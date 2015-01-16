@@ -823,7 +823,7 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 		return;
 	}
 	if (indiClient.get()!=NULL){
-		pthread_mutex_lock(&indiClient.get()->m_mutex);
+		indiClient.get()->m_mutex.Lock();
 	}
 	PropertyNodeFactory factory;
 	for (PixInsightINDIInstance::PropertyListType::iterator iter=instance.p_propertyList.Begin() ; iter!=instance.p_propertyList.End(); ++iter){
@@ -901,7 +901,7 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 		}
 	}
 	if (indiClient.get()!=NULL){
-		pthread_mutex_unlock(&indiClient.get()->m_mutex);
+		indiClient.get()->m_mutex.Unlock();
 	}
 }
 

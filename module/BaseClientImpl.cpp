@@ -34,23 +34,32 @@
 #pragma comment(lib, "Ws2_32.lib")
 #else
 #include <sys/socket.h>
-#endif
-
-#if defined (WIN32)
-#include <pthread.h>
-#else
 #include <netinet/in.h>
 #include <netdb.h>
 #endif
+
 #include <fcntl.h>
 
 #include "BaseClientImpl.h"
 #include "basedevice.h"
 #include "indicom.h"
 
+#include <pcl/Exception.h>
+
 #include <errno.h>
 
 #define MAXINDIBUF 256
+
+void INDIListener::Run(){
+
+	try {
+		m_client->listenINDI();
+	} catch (pcl::ProcessAborted& e){
+		// do something
+	}
+
+}
+
 
 INDI::BaseClientImpl::BaseClientImpl()
 {
@@ -58,7 +67,8 @@ INDI::BaseClientImpl::BaseClientImpl()
     cPort   = 7624;
     svrwfp = NULL;    
     sConnected = false;
-    pthread_mutex_init(&m_mutex,NULL);
+
+    pcl::Thread::NumberOfThreads (1);
 #if defined(WIN32)
     WORD wVersionRequested;
     WSADATA wsaData;
@@ -151,13 +161,8 @@ bool INDI::BaseClientImpl::connectServer()
     m_receiveFd = pipefd[0];
     m_sendFd = pipefd[1];
 
-    int result = pthread_create( &listen_thread, NULL, &INDI::BaseClientImpl::listenHelper, this);
-
-    if (result != 0)
-    {
-        perror("thread");
-        return false;
-    }
+    m_listener = new INDIListener(this);
+    m_listener->Start();
 
     sConnected = true;
     serverConnected();
@@ -186,9 +191,6 @@ bool INDI::BaseClientImpl::disconnectServer()
         fclose(svrwfp);
    svrwfp = NULL;
 
-   void* value_ptr;
-
-   pthread_join(listen_thread, &value_ptr);
 
    return true;
 }
@@ -376,6 +378,7 @@ void INDI::BaseClientImpl::listenINDI()
                 else if (msg[0])
                 {
                    fprintf (stderr, "Bad XML from %s/%d: %s\n%s\n", cServer.c_str(), cPort, msg, buffer);
+                   m_listener->Abort();
                    return;
                 }
             }
@@ -388,7 +391,7 @@ void INDI::BaseClientImpl::listenINDI()
     serverDisconnected( (sConnected == false) ? 0 : -1);
     sConnected = false;
 
-    pthread_exit(0);
+    m_listener->Abort();
 
 }
 

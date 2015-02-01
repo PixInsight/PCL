@@ -391,6 +391,30 @@ bool PixInsightINDIInstance::sendNewProperty(bool isAsynchCall) {
 	return false;
 }
 
+ bool PixInsightINDIInstance::getINDIActiveSwitchPropertyItem(String device, String property, INDIPropertyListItem& result ){
+
+ 	for (pcl::Array<INDIPropertyListItem>::iterator iter=p_propertyList.Begin(); iter!=p_propertyList.End(); ++iter){
+
+ 		if (iter->PropertyTypeStr!=String("INDI_SWITCH"))
+ 			continue;
+
+ 		if (iter->PropertyValue!=String("ON"))
+ 			continue;
+
+ 		if ((iter->Device==device) && (iter->Property==property)  ){
+ 			result.Device=device;
+ 			result.Property=property;
+ 			result.Element=iter->Element;
+ 			result.PropertyValue=iter->PropertyValue;
+ 			result.PropertyState=iter->PropertyState;
+ 			result.ElementLabel=iter->ElementLabel;
+ 			return true;
+ 		}
+
+ 	}
+ 	return false;
+ }
+
 void PixInsightINDIInstance::writeCurrentMessageToConsole(){
 	if (Console().IsCurrentThreadConsole()){
 		Console().WriteLn(String().Format("Message from INDI server: %s",IsoString(p_currentMessage).c_str()));

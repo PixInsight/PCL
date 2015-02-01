@@ -109,7 +109,7 @@ const char** CCDFrameInterface::IconImageXPM() const
 
 InterfaceFeatures CCDFrameInterface::Features() const
 {
-	return  InterfaceFeature::ApplyGlobalButton | InterfaceFeature::ApplyToViewButton | InterfaceFeature::BrowseDocumentationButton | InterfaceFeature::ResetButton;
+	return  InterfaceFeature::BrowseDocumentationButton ;
 }
 
 void CCDFrameInterface::ApplyInstance() const
@@ -182,6 +182,7 @@ void CCDFrameInterface::UpdateControls()
 
 CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
 
+	// CCD Device Selection Section ==============================================================
 	CCDDevice_SectionBar.SetTitle("INDI CCD Device Selection");
 	CCDDevice_SectionBar.SetSection(CCDDevice_Control);
 	CCDDevice_Control.SetSizer(CCDDevice_Sizer);
@@ -198,56 +199,200 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w ){
 	CCDDevice_Sizer.AddSpacing(10);
 	CCDDevice_Sizer.Add(CCDDevice_Combo);
 
+	// CCD Parameter Section ==============================================================
 	CCDParam_SectionBar.SetTitle("CCD Parameters");
 	CCDParam_SectionBar.SetSection(CCDParam_Control);
-	CCDParam_Control.SetSizer(CCDParam_Sizer);
+	CCDParam_Control.SetSizer(CCDParam_HSizer);
+	CCDParam_HSizer.SetSpacing(10);
+	CCDParam_HSizer.SetMargin(10);
+	CCDParam_HSizer.Add(CCDParam_VSizer1);
+	CCDParam_HSizer.Add(CCDParam_VSizer2);
+	CCDParam_HSizer.Add(CCDParam_VSizer3);
+	CCDParam_HSizer.Add(CCDParam_VSizer4);
+	CCDParam_HSizer.Add(CCDParam_VSizer5);
+	CCDParam_HSizer.Add(CCDParam_VSizer6);
+	CCDParam_HSizer.AddStretch();
 
 	CCDTemp_Label.SetText( "Temperature:" );
 	CCDTemp_Label.SetToolTip( "<p>Current chip temperature in Celsius.</p>" );
 	CCDTemp_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
 
 	CCDTemp_Edit.SetMinWidth( 10);
+	CCDTemp_Edit.SetMaxWidth( 130);
 	CCDTemp_Edit.Disable();
 
-	CCDTemp_Sizer.SetSpacing(10);
-	CCDTemp_Sizer.SetMargin(10);
-	CCDTemp_Sizer.Add(CCDTemp_Label);
-	CCDTemp_Sizer.AddStretch();
-	CCDTemp_Sizer.Add(CCDTemp_Edit);
-	CCDParam_Sizer.Add(CCDTemp_Sizer);
 
-	CCDBin_Label.SetText( "Binning: " );
-	CCDBin_Label.SetToolTip( "<p>Binning X (horizontal) and Y (vertical)</p>" );
-	CCDBin_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+	CCDParam_VSizer1.Add(CCDTemp_Label);
+	CCDParam_VSizer2.Add(CCDTemp_Edit);
+	CCDParam_VSizer2.AddSpacing(10);
 
 
-	CCDBinX_Label.SetText( "X: " );
-	CCDBinX_Label.SetToolTip( "<p>Binning X (horizontal)</p>" );
-	CCDBinX_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+	CCDFrameType_Label.SetText("Frame Type: ");
+	CCDFrameType_Label.SetToolTip("<p>Type of frame (light|dark|flat)</p>");
+	CCDFrameType_Label.SetTextAlignment(TextAlign::Left | TextAlign::VertCenter);
 
-	CCDBinX_Edit.SetMinWidth( 5);
+	CCDFrameType_Edit.SetMinWidth(10);
+	CCDFrameType_Edit.SetMaxWidth( 130);
+	CCDFrameType_Edit.Disable();
+
+	CCDParam_VSizer1.Add(CCDFrameType_Label);
+	CCDParam_VSizer2.Add(CCDFrameType_Edit);
+	CCDParam_VSizer2.AddSpacing(10);
+
+	CCDCompression_Label.SetText("Compression: ");
+	CCDCompression_Label.SetToolTip("<p>File compression (Compress|Raw)</p>");
+	CCDCompression_Label.SetTextAlignment(
+			TextAlign::Left | TextAlign::VertCenter);
+
+	CCDCompression_Edit.SetMinWidth(10);
+	CCDCompression_Edit.SetMaxWidth(130);
+	CCDCompression_Edit.Disable();
+
+	CCDParam_VSizer1.Add(CCDCompression_Label);
+	CCDParam_VSizer2.Add(CCDCompression_Edit);
+
+
+	CCDUploadMode_Label.SetText("Upload Mode: ");
+	CCDUploadMode_Label.SetToolTip("<p>Upload mode (client|local|both)</p>");
+	CCDUploadMode_Label.SetTextAlignment(
+			TextAlign::Left | TextAlign::VertCenter);
+
+	CCDUploadMode_Edit.SetMinWidth(5);
+	CCDUploadMode_Edit.SetMaxWidth(130);
+	CCDUploadMode_Edit.Disable();
+
+	CCDParam_VSizer3.Add(CCDUploadMode_Label);
+	CCDParam_VSizer4.Add(CCDUploadMode_Edit);
+	CCDParam_VSizer4.AddSpacing(10);
+
+
+	CCDUploadDir_Label.SetText("Directory: ");
+	CCDUploadDir_Label.SetToolTip("<p>The directory for local upload.</p>");
+	CCDUploadDir_Label.SetTextAlignment(
+			TextAlign::Left | TextAlign::VertCenter);
+
+	CCDUploadDir_Edit.SetMinWidth(5);
+	CCDUploadDir_Edit.SetMaxWidth(130);
+	CCDUploadDir_Edit.Disable();
+
+
+	CCDParam_VSizer3.Add(CCDUploadDir_Label);
+	CCDParam_VSizer4.Add(CCDUploadDir_Edit);
+	CCDParam_VSizer4.AddSpacing(10);
+
+
+
+	CCDUploadPrefix_Label.SetText("Prefix: ");
+	CCDUploadPrefix_Label.SetToolTip("<p>The image file prefix for local upload.</p>");
+	CCDUploadPrefix_Label.SetTextAlignment(
+			TextAlign::Left | TextAlign::VertCenter);
+
+	CCDUploadPrefix_Edit.SetMinWidth(5);
+	CCDUploadPrefix_Edit.SetMaxWidth(130);
+	CCDUploadPrefix_Edit.Disable();
+
+
+	CCDParam_VSizer3.Add(CCDUploadPrefix_Label);
+	CCDParam_VSizer4.Add(CCDUploadPrefix_Edit);
+
+	CCDBin_Label.SetText("Binning: ");
+	CCDBin_Label.SetToolTip("<p>Binning X (horizontal) and Y (vertical)</p>");
+	CCDBin_Label.SetTextAlignment(TextAlign::Left | TextAlign::VertCenter);
+
+	CCDBinX_Label.SetText("X: ");
+	CCDBinX_Label.SetToolTip("<p>Binning X (horizontal)</p>");
+	CCDBinX_Label.SetTextAlignment(TextAlign::Left | TextAlign::VertCenter);
+
+	CCDBinX_Edit.SetMinWidth(50);
+	CCDBinX_Edit.SetMaxWidth(70);
 	CCDBinX_Edit.Disable();
 
-	CCDBinY_Label.SetText( "Y: " );
-	CCDBinY_Label.SetToolTip( "<p>Binning Y (vertical)</p>" );
-	CCDBinY_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+	CCDBinY_Label.SetText("Y: ");
+	CCDBinY_Label.SetToolTip("<p>Binning Y (vertical)</p>");
+	CCDBinY_Label.SetTextAlignment(TextAlign::Left | TextAlign::VertCenter);
 
-	CCDBinY_Edit.SetMinWidth( 5);
+	CCDBinY_Edit.SetMinWidth(50);
+	CCDBinY_Edit.SetMaxWidth(70);
 	CCDBinY_Edit.Disable();
 
 	CCDBinning_Sizer.SetSpacing(10);
 	CCDBinning_Sizer.SetMargin(10);
-	CCDBinning_Sizer.Add(CCDBin_Label);
-	CCDBinning_Sizer.AddStretch();
 	CCDBinning_Sizer.Add(CCDBinX_Label);
 	CCDBinning_Sizer.Add(CCDBinX_Edit);
 	CCDBinning_Sizer.Add(CCDBinY_Label);
 	CCDBinning_Sizer.Add(CCDBinY_Edit);
+	CCDBinning_Sizer.AddStretch();
 
-	CCDParam_Sizer.Add(CCDBinning_Sizer);
+	CCDParam_VSizer5.Add(CCDBin_Label);
+	CCDParam_VSizer6.Add(CCDBinning_Sizer);
+
+	CCDImgSize_Label.SetText("Image Size: ");
+	CCDImgSize_Label.SetToolTip("<p>Maximum image size in X (horizontal) amd Y (vertical)</p>");
+	CCDImgSize_Label.SetTextAlignment(TextAlign::Left | TextAlign::VertCenter);
+
+	CCDImgSizeX_Label.SetText("X: ");
+	CCDImgSizeX_Label.SetToolTip("<p>Maximum image size in X (horizontal)</p>");
+	CCDImgSizeX_Label.SetTextAlignment(TextAlign::Left | TextAlign::VertCenter);
+
+	CCDImgSizeX_Edit.SetMinWidth(60);
+	CCDImgSizeX_Edit.SetMaxWidth(70);
+	CCDImgSizeX_Edit.Disable();
+
+	CCDImgSizeY_Label.SetText("Y: ");
+	CCDImgSizeY_Label.SetToolTip("<p>Maximum image size in Y (vertical)</p>");
+	CCDImgSizeY_Label.SetTextAlignment(TextAlign::Left | TextAlign::VertCenter);
+
+	CCDImgSizeY_Edit.SetMinWidth(50);
+	CCDImgSizeY_Edit.SetMaxWidth(70);
+	CCDImgSizeY_Edit.Disable();
+
+	CCDImgSize_Sizer.SetSpacing(10);
+	CCDImgSize_Sizer.SetMargin(10);
+	CCDImgSize_Sizer.Add(CCDImgSizeX_Label);
+	CCDImgSize_Sizer.Add(CCDImgSizeX_Edit);
+	CCDImgSize_Sizer.Add(CCDImgSizeY_Label);
+	CCDImgSize_Sizer.Add(CCDImgSizeY_Edit);
+	CCDImgSize_Sizer.AddStretch();
+
+	CCDParam_VSizer5.Add(CCDImgSize_Label);
+	CCDParam_VSizer6.Add(CCDImgSize_Sizer);
+
+	CCDPixSize_Label.SetText("Pixel Size: ");
+	CCDPixSize_Label.SetToolTip(
+			"<p>Minimum pixel size in X (horizontal) amd Y (vertical)</p>");
+	CCDPixSize_Label.SetTextAlignment(TextAlign::Left | TextAlign::VertCenter);
+
+	CCDPixSizeX_Label.SetText("X: ");
+	CCDPixSizeX_Label.SetToolTip("<p>Minimum pixel size [micro] in X (horizontal)</p>");
+	CCDPixSizeX_Label.SetTextAlignment(TextAlign::Left | TextAlign::VertCenter);
+
+	CCDPixSizeX_Edit.SetMinWidth(50);
+	CCDPixSizeX_Edit.SetMaxWidth(70);
+	CCDPixSizeX_Edit.Disable();
+
+	CCDPixSizeY_Label.SetText("Y: ");
+	CCDPixSizeY_Label.SetToolTip("<p>Minimum pixel size [micro] in Y (vertical)</p>");
+	CCDPixSizeY_Label.SetTextAlignment(TextAlign::Left | TextAlign::VertCenter);
+
+	CCDPixSizeY_Edit.SetMinWidth(50);
+	CCDPixSizeY_Edit.SetMaxWidth(70);
+	CCDPixSizeY_Edit.Disable();
+
+	CCDPixSize_Sizer.SetSpacing(10);
+	CCDPixSize_Sizer.SetMargin(10);
+	CCDPixSize_Sizer.Add(CCDPixSizeX_Label);
+	CCDPixSize_Sizer.Add(CCDPixSizeX_Edit);
+	CCDPixSize_Sizer.Add(CCDPixSizeY_Label);
+	CCDPixSize_Sizer.Add(CCDPixSizeY_Edit);
+	CCDPixSize_Sizer.AddStretch();
+
+	CCDParam_VSizer5.Add(CCDPixSize_Label);
+	CCDParam_VSizer6.Add(CCDPixSize_Sizer);
 
 
-	FrameExposure_SectionBar.SetTitle("Frame Shooting");
+	// CCD Timer Section ==============================================================
+
+	FrameExposure_SectionBar.SetTitle("Exposure Timer");
 	FrameExposure_SectionBar.SetSection(FrameExposure_Control);
 	FrameExposure_Control.SetSizer(FrameExposure_Sizer);
 
@@ -447,10 +592,54 @@ void CCDFrameInterface::Temperature_Timer( Timer &sender )
 					"HOR_BIN", CCDProp)) {
 				GUI->CCDBinX_Edit.SetText(CCDProp.PropertyValue);
 			}
-			// get X binning value
+			// get Y binning value
 			if (pInstance->getINDIPropertyItem(m_Device, "CCD_BINNING",
 					"VER_BIN", CCDProp)) {
 				GUI->CCDBinY_Edit.SetText(CCDProp.PropertyValue);
+			}
+			// get frame type
+			if (pInstance->getINDIActiveSwitchPropertyItem(m_Device, "CCD_FRAME_TYPE", CCDProp)) {
+				GUI->CCDFrameType_Edit.SetText(CCDProp.ElementLabel);
+			}
+			// get frame type
+			if (pInstance->getINDIActiveSwitchPropertyItem(m_Device,
+					"CCD_COMPRESSION", CCDProp)) {
+				GUI->CCDCompression_Edit.SetText(CCDProp.ElementLabel);
+			}
+			// get upload mode
+			if (pInstance->getINDIActiveSwitchPropertyItem(m_Device,
+					"UPLOAD_MODE", CCDProp)) {
+				GUI->CCDUploadMode_Edit.SetText(CCDProp.ElementLabel);
+			}
+			// get upload directory
+			if (pInstance->getINDIPropertyItem(m_Device, "UPLOAD_SETTINGS",
+					"UPLOAD_DIR", CCDProp)) {
+				GUI->CCDUploadDir_Edit.SetText(CCDProp.PropertyValue);
+			}
+			// get upload image prefix
+			if (pInstance->getINDIPropertyItem(m_Device, "UPLOAD_SETTINGS",
+					"UPLOAD_PREFIX", CCDProp)) {
+				GUI->CCDUploadPrefix_Edit.SetText(CCDProp.PropertyValue);
+			}
+			// get X image size value
+			if (pInstance->getINDIPropertyItem(m_Device, "CCD_INFO",
+					"CCD_MAX_X", CCDProp)) {
+				GUI->CCDImgSizeX_Edit.SetText(CCDProp.PropertyValue);
+			}
+			// get Y image  value
+			if (pInstance->getINDIPropertyItem(m_Device, "CCD_INFO",
+					"CCD_MAX_Y", CCDProp)) {
+				GUI->CCDImgSizeY_Edit.SetText(CCDProp.PropertyValue);
+			}
+			// get X pixel size value
+			if (pInstance->getINDIPropertyItem(m_Device, "CCD_INFO",
+					"CCD_PIXEL_SIZE_X", CCDProp)) {
+				GUI->CCDPixSizeX_Edit.SetText(CCDProp.PropertyValue);
+			}
+			// get Y pixel  value
+			if (pInstance->getINDIPropertyItem(m_Device, "CCD_INFO",
+					"CCD_PIXEL_SIZE_Y", CCDProp)) {
+				GUI->CCDPixSizeY_Edit.SetText(CCDProp.PropertyValue);
 			}
 
 		}

@@ -106,7 +106,7 @@ const char** PixInsightINDIInterface::IconImageXPM() const
 
 InterfaceFeatures PixInsightINDIInterface::Features() const
 {
-	return   InterfaceFeature::DragObject | InterfaceFeature::ApplyGlobalButton | InterfaceFeature::ApplyToViewButton | InterfaceFeature::BrowseDocumentationButton | InterfaceFeature::ResetButton;
+	return   InterfaceFeature::DragObject |   InterfaceFeature::BrowseDocumentationButton;
 }
 
 void PixInsightINDIInterface::ApplyInstance() const
@@ -311,14 +311,6 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 			}
             ERROR_HANDLER
 		}
-		else if ( sender == GUI->RefreshDevice_PushButton)
-		{
-			try
-            {
-				UpdateDeviceList();
-			}
-            ERROR_HANDLER
-		}
 }
 
 
@@ -414,14 +406,18 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    ParameterPort_SpinBox.SetToolTip( "<p>INDI server port.</p>" );
    ParameterPort_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&PixInsightINDIInterface::__IntegerValueUpdated, w );
 
+   ParameterHost_Sizer.SetSpacing(4);
+   ParameterHost_Sizer.Add(ServerData_VSizer );
+   ParameterHost_Sizer.Add(ConnectionServer_Sizer );
+   ServerData_Sizer.SetSpacing( 4 );
+   ServerData_Sizer.Add( ParameterHost_Label );
+   ServerData_Sizer.Add( ParameterHost_Edit, 100);
+   ServerData_Sizer.Add( ParameterPort_Label );
+   ServerData_Sizer.Add( ParameterPort_SpinBox );
+   ServerData_VSizer.SetSpacing( 4 );
+   ServerData_VSizer.Add(ServerData_Sizer);
+   ServerData_VSizer.AddStretch();
    
-   ParameterHost_Sizer.SetSpacing( 4 );
-   ParameterHost_Sizer.Add( ParameterHost_Label );
-   ParameterHost_Sizer.Add( ParameterHost_Edit, 100);
-   ParameterHost_Sizer.Add( ParameterPort_Label );
-   ParameterHost_Sizer.Add( ParameterPort_SpinBox );
-   ParameterHost_Sizer.Add( ConnectionServer_Sizer );
-
    //pushbuttons
    ConnectionServer_Sizer.SetSpacing(4);
    ConnectServer_PushButton.SetText( "Connect" );
@@ -432,6 +428,7 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
   
    ConnectionServer_Sizer.Add(ConnectServer_PushButton);
    ConnectionServer_Sizer.Add(DisconnectServer_PushButton);
+   ConnectionServer_Sizer.AddStretch();
 
    INDIServerConnection_Control.SetFixedHeight(4*fnt.Height() +2);
 
@@ -447,17 +444,15 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    DeviceList_TreeBox.SetNumberOfColumns(1);
    DeviceList_TreeBox.SetHeaderText(0,"Device");
 
-   DeviceAction_Sizer.SetSpacing(4);
+
    ConnectDevice_PushButton.SetText("Connect");
    ConnectDevice_PushButton.OnClick((Button::click_event_handler) &PixInsightINDIInterface::__CameraListButtons_Click, w );
    DisconnectDevice_PushButton.SetText("Disconnect");
    DisconnectDevice_PushButton.OnClick((Button::click_event_handler) &PixInsightINDIInterface::__CameraListButtons_Click, w );
-   RefreshDevice_PushButton.SetText("Refresh");
-   RefreshDevice_PushButton.OnClick((Button::click_event_handler) &PixInsightINDIInterface::__CameraListButtons_Click, w );
 
+   DeviceAction_Sizer.SetSpacing(4);
    DeviceAction_Sizer.Add(ConnectDevice_PushButton);
    DeviceAction_Sizer.Add(DisconnectDevice_PushButton);
-   DeviceAction_Sizer.Add(RefreshDevice_PushButton);
    DeviceAction_Sizer.AddStretch();
 
    INDIDevice_Sizer.Add(DeviceList_TreeBox);
@@ -489,17 +484,12 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    ServerMessage_Sizer.Add(ServerMessage_Label);
    ServerMessage_Sizer.AddStretch();
 
-   RefreshProperty_PushButton.SetText("Refresh");
-   RefreshProperty_PushButton.OnClick((Button::click_event_handler) &PixInsightINDIInterface::PropertyButton_Click, w );
    EditProperty_PushButton.SetText("Edit");
    EditProperty_PushButton.OnClick((Button::click_event_handler) &PixInsightINDIInterface::PropertyButton_Click, w );
 
    INDIDeviceProperty_Sizer.Add(PropertyList_TreeBox);
    
-
    Buttons_Sizer.SetSpacing(4);
-   Buttons_Sizer.AddSpacing(10);
-   Buttons_Sizer.Add(RefreshProperty_PushButton);
    Buttons_Sizer.Add(EditProperty_PushButton);
    Buttons_Sizer.AddStretch();
 
@@ -945,9 +935,7 @@ void PixInsightINDIInterface::PropertyButton_Click( Button& sender, bool checked
 
 		GUI->SetPropDlg->Execute();
 	}
-	else if (sender==GUI->RefreshProperty_PushButton){
-		UpdatePropertyList();
-	}
+
 }
 
 } // pcl

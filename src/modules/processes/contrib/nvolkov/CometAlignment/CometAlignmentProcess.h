@@ -1,13 +1,13 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard CometAlignment Process Module Version 01.00.06.0059
+// PixInsight Class Library - PCL 02.00.14.0695
+// Standard CometAlignment Process Module Version 01.02.02.0065
 // ****************************************************************************
-// CometAlignmentProcess.h - Released 2014/11/14 17:19:24 UTC
+// CometAlignmentProcess.h - Released 2015/02/06 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
-// Copyright (c) 2012-2014 Nikolay Volkov
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2012-2015 Nikolay Volkov
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -55,38 +55,38 @@
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------
 
-class CometAlignmentProcess : public MetaProcess
-{
-public:
+  class CometAlignmentProcess : public MetaProcess
+  {
+  public:
 
-   CometAlignmentProcess();
+    CometAlignmentProcess ();
 
-   virtual IsoString Id() const;
-   virtual IsoString Category() const;
+    virtual IsoString Id () const;
+    virtual IsoString Category () const;
 
-   virtual uint32 Version() const;
+    virtual uint32 Version () const;
 
-   virtual String Description() const;
+    virtual String Description () const;
 
-   //virtual const char** IconImageXPM() const;
+    virtual const char** IconImageXPM() const;
 
-   virtual ProcessInterface* DefaultInterface() const;
+    virtual ProcessInterface* DefaultInterface () const;
 
-   virtual ProcessImplementation* Create() const;
-   virtual ProcessImplementation* Clone( const ProcessImplementation& ) const;
-};
+    virtual ProcessImplementation* Create () const;
+    virtual ProcessImplementation* Clone (const ProcessImplementation&) const;
+  };
 
-PCL_BEGIN_LOCAL
-extern CometAlignmentProcess* TheCometAlignmentProcess;
-PCL_END_LOCAL
+  PCL_BEGIN_LOCAL
+          extern CometAlignmentProcess* TheCometAlignmentProcess;
+  PCL_END_LOCAL
 
-// ----------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------
 
 } // pcl
 
 #endif   // __CometAlignmentProcess_h
 
 // ****************************************************************************
-// EOF CometAlignmentProcess.h - Released 2014/11/14 17:19:24 UTC
+// EOF CometAlignmentProcess.h - Released 2015/02/06 19:50:08 UTC

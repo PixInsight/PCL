@@ -1,13 +1,13 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard CometAlignment Process Module Version 01.00.06.0059
+// PixInsight Class Library - PCL 02.00.14.0695
+// Standard CometAlignment Process Module Version 01.02.02.0065
 // ****************************************************************************
-// CometAlignmentModule.cpp - Released 2014/11/14 17:19:24 UTC
+// CometAlignmentModule.cpp - Released 2015/02/06 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
-// Copyright (c) 2012-2014 Nikolay Volkov
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2012-2015 Nikolay Volkov
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -48,14 +48,14 @@
 // ****************************************************************************
 
 #define MODULE_VERSION_MAJOR     01
-#define MODULE_VERSION_MINOR     00
-#define MODULE_VERSION_REVISION  06
-#define MODULE_VERSION_BUILD     0059
+#define MODULE_VERSION_MINOR     02
+#define MODULE_VERSION_REVISION  02
+#define MODULE_VERSION_BUILD     0065
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2014
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       14
+#define MODULE_RELEASE_YEAR      2015
+#define MODULE_RELEASE_MONTH     2
+#define MODULE_RELEASE_DAY       6
 
 #include "CometAlignmentModule.h"
 #include "CometAlignmentProcess.h"
@@ -101,7 +101,7 @@ String CometAlignmentModule::Author() const
 
 String CometAlignmentModule::Copyright() const
 {
-   return "Copyright (c) 2012 Nikolay Volkov";
+   return "Copyright (c) 2012-2015 Nikolay Volkov";
 }
 
 String CometAlignmentModule::TradeMarks() const
@@ -165,4 +165,4 @@ int InstallPixInsightModule( int mode )
 }
 
 // ****************************************************************************
-// EOF CometAlignmentModule.cpp - Released 2014/11/14 17:19:24 UTC
+// EOF CometAlignmentModule.cpp - Released 2015/02/06 19:50:08 UTC

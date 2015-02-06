@@ -1,13 +1,13 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard CometAlignment Process Module Version 01.00.06.0059
+// PixInsight Class Library - PCL 02.00.14.0695
+// Standard CometAlignment Process Module Version 01.02.02.0065
 // ****************************************************************************
-// CometAlignmentParameters.h - Released 2014/11/14 17:19:24 UTC
+// CometAlignmentParameters.h - Released 2015/02/06 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
-// Copyright (c) 2012-2014 Nikolay Volkov
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2012-2015 Nikolay Volkov
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,178 +54,280 @@
 
 namespace pcl
 {
-PCL_BEGIN_LOCAL
-// ----------------------------------------------------------------------------
 
-class CATargetFrames : public MetaTable
-{
-public:
-   CATargetFrames( MetaProcess* );
-   virtual IsoString Id() const;
-};
+  PCL_BEGIN_LOCAL
+  // ----------------------------------------------------------------------------
 
-class CATargetFrameEnabled : public MetaBoolean
-{
-public:
-   CATargetFrameEnabled( MetaTable* );
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
-};
+  class CATargetFrames : public MetaTable
+  {
+  public:
+    CATargetFrames (MetaProcess*);
+    virtual IsoString Id () const;
+  };
 
-class CATargetFramePath : public MetaString
-{
-public:
-   CATargetFramePath( MetaTable* );
-   virtual IsoString Id() const;
-};
+  class CATargetFrameEnabled : public MetaBoolean
+  {
+  public:
+    CATargetFrameEnabled (MetaTable*);
+    virtual IsoString Id () const;
+    virtual bool DefaultValue () const;
+  };
 
-class CATargetFrameDate : public MetaString
-{
-public:
-   CATargetFrameDate( MetaTable* );
-   virtual IsoString Id() const;
-};
+  class CATargetFramePath : public MetaString
+  {
+  public:
+    CATargetFramePath (MetaTable*);
+    virtual IsoString Id () const;
+  };
 
-class CATargetFrameJDate : public MetaDouble
-{
-public:
-   CATargetFrameJDate( MetaTable* );
-   virtual IsoString Id() const;
-};
+  class CATargetFrameDate : public MetaString
+  {
+  public:
+    CATargetFrameDate (MetaTable*);
+    virtual IsoString Id () const;
+  };
 
-class CATargetFrameX : public MetaDouble
-{
-public:
-   CATargetFrameX( MetaTable* );
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
-};
+  class CATargetFrameJDate : public MetaDouble
+  {
+  public:
+    CATargetFrameJDate (MetaTable*);
+    virtual IsoString Id () const;
+    virtual int Precision () const; //bag possible? wrong data in instance icon if Precision not set.
+  };
 
-class CATargetFrameY : public MetaDouble
-{
-public:
-   CATargetFrameY( MetaTable* );
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
-};
-//--------------------------------------------------------------------------
+  class CATargetFrameX : public MetaDouble
+  {
+  public:
+    CATargetFrameX (MetaTable*);
+    virtual IsoString Id () const;
+    virtual int Precision () const;
+    virtual double MinimumValue () const;
+    virtual double MaximumValue () const;
+  };
 
-class CAOutputDir : public MetaString
-{
-public:
-   CAOutputDir( MetaProcess* );
-   virtual IsoString Id() const;
-   virtual String DefaultValue() const;
-};
+  class CATargetFrameY : public MetaDouble
+  {
+  public:
+    CATargetFrameY (MetaTable*);
+    virtual IsoString Id () const;
+    virtual int Precision () const;
+    virtual double MinimumValue () const;
+    virtual double MaximumValue () const;
+  };
+  //--------------------------------------------------------------------------
 
-class CAPrefix : public MetaString
-{
-public:
-   CAPrefix( MetaProcess* );
-   virtual IsoString Id() const;
-   virtual String DefaultValue() const;
-};
+   class CAInputHints : public MetaString
+   {
+   public:
+      CAInputHints( MetaProcess* );
+      virtual IsoString Id() const;
+   };
 
-class CAPostfix : public MetaString
-{
-public:
-   CAPostfix( MetaProcess* );
-   virtual IsoString Id() const;
-   virtual String DefaultValue() const;
-};
+   class CAOutputHints : public MetaString
+   {
+   public:
+      CAOutputHints( MetaProcess* );
+      virtual IsoString Id() const;
+   };
 
-class CAOverwrite : public MetaBoolean
-{
-public:
-   CAOverwrite( MetaProcess* );
-   virtual IsoString Id() const;
-   virtual bool DefaultValue() const;
-};
+  class CAOutputDir : public MetaString
+  {
+  public:
+    CAOutputDir (MetaProcess*);
+    virtual IsoString Id () const;
+    virtual String DefaultValue () const;
+  };
 
-// ----------------------------------------------------------------------------
+  class CAOutputExtension : public MetaString
+  {
+  public:
+    CAOutputExtension (MetaProcess*);
+    virtual IsoString Id () const;
+    virtual String DefaultValue () const;
+  };
 
-class CAReference : public MetaUInt16
-{
-public:
-   CAReference( MetaProcess* );
-    virtual IsoString Id() const;
-};
+  class CAPrefix : public MetaString
+  {
+  public:
+    CAPrefix (MetaProcess*);
+    virtual IsoString Id () const;
+    virtual String DefaultValue () const;
+  };
 
-// ----------------------------------------------------------------------------
-class CAPixelInterpolation : public MetaEnumeration
-{
-public:
+  class CAPostfix : public MetaString
+  {
+  public:
+    CAPostfix (MetaProcess*);
+    virtual IsoString Id () const;
+    virtual String DefaultValue () const;
+  };
 
-   enum { NearestNeighbor,
-          Bilinear,
-          BicubicSpline,
-          BicubicBSpline,
-          Lanczos3,
-          Lanczos4,
-          Lanczos5,
-          MitchellNetravaliFilter,
-          CatmullRomSplineFilter,
-          CubicBSplineFilter,
-          Auto,
-          NumberOfInterpolationAlgorithms,
-          Default = BicubicSpline };
+  class CAOverwrite : public MetaBoolean
+  {
+  public:
+    CAOverwrite (MetaProcess*);
+    virtual IsoString Id () const;
+    virtual bool DefaultValue () const;
+  };
 
-   CAPixelInterpolation( MetaProcess* );
+  // ----------------------------------------------------------------------------
 
-   virtual IsoString Id() const;
-   virtual size_type NumberOfElements() const;
-   virtual IsoString ElementId( size_type ) const;
-   virtual int ElementValue( size_type ) const;
-   virtual size_type DefaultValueIndex() const;
-};
+  class CAReference : public MetaUInt16
+  {
+  public:
+    CAReference (MetaProcess*);
+    virtual IsoString Id () const;
+  };
+
+  // ----------------------------------------------------------------------------
+
+  class CASubtractFile : public MetaString
+  {
+  public:
+    CASubtractFile (MetaProcess*);
+    virtual IsoString Id () const;
+    virtual String DefaultValue () const;
+  };
+
+  // ----------------------------------------------------------------------------
+
+  class CASubtractMode : public MetaBoolean
+  {
+  public:
+    CASubtractMode (MetaProcess*);
+    virtual IsoString Id () const;
+    virtual bool DefaultValue () const;
+  };
+
+  // ----------------------------------------------------------------------------
+
+  class CAEnableLinearFit : public MetaBoolean
+  {
+  public:
+    CAEnableLinearFit (MetaProcess*);
+    virtual IsoString Id () const;
+    virtual bool DefaultValue () const;
+  };
+
+  // ----------------------------------------------------------------------------
+
+  class CARejectLow : public MetaFloat
+  {
+  public:
+    CARejectLow (MetaProcess*);
+    virtual IsoString Id () const;
+    virtual int Precision () const;
+    virtual double MinimumValue () const;
+    virtual double MaximumValue () const;
+    virtual double DefaultValue () const;
+  };
+
+  // ----------------------------------------------------------------------------
+
+  class CARejectHigh : public MetaFloat
+  {
+  public:
+    CARejectHigh (MetaProcess*);
+    virtual IsoString Id () const;
+    virtual int Precision () const;
+    virtual double MinimumValue () const;
+    virtual double MaximumValue () const;
+    virtual double DefaultValue () const;
+  };
+  // ----------------------------------------------------------------------------
+
+  class CANormalize : public MetaBoolean
+  {
+  public:
+    CANormalize (MetaProcess*);
+    virtual IsoString Id () const;
+    virtual bool DefaultValue () const;
+  };
 
 
+  // ----------------------------------------------------------------------------
 
-class CALinearClampingThreshold : public MetaFloat
-{
-public:
+  class CAPixelInterpolation : public MetaEnumeration
+  {
+  public:
 
-   CALinearClampingThreshold( MetaProcess* );
+    enum
+    {
+      NearestNeighbor,
+      Bilinear,
+      BicubicSpline,
+      BicubicBSpline,
+      Lanczos3,
+      Lanczos4,
+      Lanczos5,
+      MitchellNetravaliFilter,
+      CatmullRomSplineFilter,
+      CubicBSplineFilter,
+      Auto,
+      NumberOfInterpolationAlgorithms,
+      Default = BicubicSpline
+    };
 
-   virtual IsoString Id() const;
-   virtual int Precision() const;
-   virtual double DefaultValue() const;
-   virtual double MinimumValue() const;
-   virtual double MaximumValue() const;
-};
+    CAPixelInterpolation (MetaProcess*);
+
+    virtual IsoString Id () const;
+    virtual size_type NumberOfElements () const;
+    virtual IsoString ElementId (size_type) const;
+    virtual int ElementValue (size_type) const;
+    virtual size_type DefaultValueIndex () const;
+  };
+
+  class CALinearClampingThreshold : public MetaFloat
+  {
+  public:
+
+    CALinearClampingThreshold (MetaProcess*);
+
+    virtual IsoString Id () const;
+    virtual int Precision () const;
+    virtual double DefaultValue () const;
+    virtual double MinimumValue () const;
+    virtual double MaximumValue () const;
+  };
 
 
-// ----------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------
 
+   extern CATargetFrames* TheTargetFrames;
+   extern CATargetFrameEnabled* TheTargetFrameEnabled;
+   extern CATargetFramePath* TheTargetFramePath;
 
-extern CATargetFrames*               TheTargetFrames;
-extern CATargetFrameEnabled*         TheTargetFrameEnabled;
-extern CATargetFramePath*            TheTargetFramePath;
+   extern CATargetFrameDate* TheTargetFrameDate;
+   extern CATargetFrameJDate* TheTargetFrameJDate;
+   extern CATargetFrameX* TheTargetFrameX;
+   extern CATargetFrameY* TheTargetFrameY;
 
-extern CATargetFrameDate*            TheTargetFrameDate;
-extern CATargetFrameJDate*           TheTargetFrameJDate;
-extern CATargetFrameX*               TheTargetFrameX;
-extern CATargetFrameY*               TheTargetFrameY;
+   extern CAInputHints* TheCAInputHintsParameter;
+   extern CAOutputHints* TheCAOutputHintsParameter;
+   extern CAOutputDir* TheOutputDir;
+   extern CAOutputExtension* TheCAOutputExtensionParameter;
+   extern CAPrefix* ThePrefix;
+   extern CAPostfix* ThePostfix;
+   extern CAOverwrite* TheOverwrite;
 
-extern CAOutputDir*                  TheOutputDir;
-extern CAPrefix*                     ThePrefix;
-extern CAPostfix*                    ThePostfix;
-extern CAOverwrite*                  TheOverwrite;
+   extern CAReference* TheReference;
 
-extern CAReference*                  TheReference;
-extern CAPixelInterpolation*         ThePixelInterpolationParameter;
-extern CALinearClampingThreshold*    TheLinearClampingThresholdParameter;
+   extern CASubtractFile* TheSubtractFile;
+   extern CASubtractMode* TheSubtractMode;
+   extern CAEnableLinearFit* TheEnableLinearFit;
+   extern CARejectLow* TheRejectLow;
+   extern CARejectHigh* TheRejectHigh;
+   extern CANormalize* TheNormalize;
 
-// ----------------------------------------------------------------------------
-PCL_END_LOCAL
+   extern CAPixelInterpolation* ThePixelInterpolationParameter;
+   extern CALinearClampingThreshold* TheLinearClampingThresholdParameter;
+
+  // ----------------------------------------------------------------------------
+  PCL_END_LOCAL
 
 } // pcl
 
 #endif   // __CometAlignmentParameters_h
 
 // ****************************************************************************
-// EOF CometAlignmentParameters.h - Released 2014/11/14 17:19:24 UTC
+// EOF CometAlignmentParameters.h - Released 2015/02/06 19:50:08 UTC

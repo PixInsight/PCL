@@ -1,13 +1,13 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard CometAlignment Process Module Version 01.00.06.0059
+// PixInsight Class Library - PCL 02.00.14.0695
+// Standard CometAlignment Process Module Version 01.02.02.0065
 // ****************************************************************************
-// CometAlignmentInstance.h - Released 2014/11/14 17:19:24 UTC
+// CometAlignmentInstance.h - Released 2015/02/06 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
-// Copyright (c) 2012-2014 Nikolay Volkov
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2012-2015 Nikolay Volkov
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -57,119 +57,144 @@
 #include "CometAlignmentParameters.h"
 
 //#define debug 1
+#if debug
+#include <pcl/StdStatus.h>
+#endif
 
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-class CAThread;
-struct CAThreadData;
+  // ----------------------------------------------------------------------------
+  class CAThread;
+  struct CAThreadData;
 
-typedef IndirectArray<CAThread> thread_list;
+  typedef IndirectArray<CAThread> thread_list;
 
-class CometAlignmentInstance : public ProcessImplementation
-{
-public:
+  class CometAlignmentInstance : public ProcessImplementation
+  {
+  public:
 
-   CometAlignmentInstance( const MetaProcess* );
-   CometAlignmentInstance( const CometAlignmentInstance& );
+    CometAlignmentInstance (const MetaProcess*);
+    CometAlignmentInstance (const CometAlignmentInstance&);
 
-   virtual void Assign( const ProcessImplementation& );
+    virtual void Assign (const ProcessImplementation&);
 
-   virtual bool CanExecuteOn( const View&, String& whyNot ) const;
-   virtual bool IsHistoryUpdater( const View& v ) const;
+    virtual bool CanExecuteOn (const View&, String& whyNot) const;
+    virtual bool IsHistoryUpdater (const View& v) const;
 
-   virtual bool CanExecuteGlobal( String& whyNot ) const;
-   virtual bool ExecuteGlobal();
+    virtual bool CanExecuteGlobal (String& whyNot) const;
+    virtual bool ExecuteGlobal ();
 
-   virtual void* LockParameter( const MetaParameter*, size_type /*tableRow*/ );
-   virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
-   virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
+    virtual void* LockParameter (const MetaParameter*, size_type /*tableRow*/);
+    virtual bool AllocateParameter (size_type sizeOrLength, const MetaParameter* p, size_type tableRow);
+    virtual size_type
+    ParameterLength (const MetaParameter* p, size_type tableRow) const;
 
-private:
+  private:
 
-   struct ImageItem
-   {
-      String   path;    // absolute file path
+    struct ImageItem
+    {
+      String path; // absolute file path
       pcl_bool enabled; // if disabled, skip (ignore) this image
-      String   date;    // DATE-OBS yyyy-mm-ddThh:mm:ss[.sss...]
-      double   Jdate;   // Julian Date
-      double   x, y;    // Comet coordinates
+      String date; // DATE-OBS yyyy-mm-ddThh:mm:ss[.sss...]
+      double Jdate; // Julian Date
+      double x, y; // Comet coordinates
 
-      ImageItem( const String& p = String(), const String& d = String() ) : path( p ), enabled( true ), date( d ), Jdate( GetJdate( d ) ), x( 0 ), y( 0 )
+      ImageItem (const String& p = String (), const String& d = String ()) : path (p), enabled (true), date (d), Jdate (GetJdate (d)), x (0), y (0)
       {
+#if debug
+        Console ().WriteLn ("ImageItem(1)" + path + String ().Format (" x:%.3f, y:%.3f, jD:%f", x, y, Jdate));
+#endif
       }
 
-      ImageItem( const ImageItem& i ) : path( i.path ), enabled( i.enabled), date( i.date ), Jdate( i.Jdate ), x( i.x ), y( i.y )
+      ImageItem (const ImageItem & i) : path (i.path), enabled (i.enabled), date (i.date), Jdate (i.Jdate), x (i.x), y (i.y)
       {
+#if debug
+        Console ().WriteLn ("ImageItem(2)" + path + String ().Format (" x:%.3f, y:%.3f, jD:%f", x, y, Jdate));
+#endif
       }
 
-      inline double GetJdate( const String& d ) // Convert "yyyy-mm-ddThh:mm:ss[.sss...]" to Julian Date
+      inline double GetJdate (const String & d) // Convert "yyyy-mm-ddThh:mm:ss[.sss...]" to Julian Date
       {
-         if ( d.IsEmpty() )
-            return 0;
-
-         try
-         {
+        if (d.IsEmpty ())
+          return 0;
+        try
+          {
             // 1234567890123456789
             // yyyy-mm-ddThh:mm:ss[.sss...]
 
-            if ( d.Length() < 19 )
-               throw 0;
+            if (d.Length () < 19)
+              throw 0;
 
             int year, month, day, h, m;
             double s;
 
-            if ( !d.SubString(0,4).TryToInt( year, 10 ) ) throw 0;
-            if ( !d.SubString(5,2).TryToInt( month, 10 ) ) throw 0;
-            if ( !d.SubString(8,2).TryToInt( day, 10 ) ) throw 0;
-            if ( !d.SubString(11,2).TryToInt( h, 10 ) ) throw 0;
-            if ( !d.SubString(14,2).TryToInt( m, 10 ) ) throw 0;
-            if ( !d.SubString(17).TryToDouble( s ) ) throw 0;
+            if (!d.SubString (0, 4).TryToInt (year, 10)) throw 0;
+            if (!d.SubString (5, 2).TryToInt (month, 10)) throw 0;
+            if (!d.SubString (8, 2).TryToInt (day, 10)) throw 0;
+            if (!d.SubString (11, 2).TryToInt (h, 10)) throw 0;
+            if (!d.SubString (14, 2).TryToInt (m, 10)) throw 0;
+            if (!d.SubString (17).TryToDouble (s)) throw 0;
 
-            double dayf = ( 3600.0*h + 60.0*m + s ) / 86400;
-            return ComplexTimeToJD( year, month, day, dayf );
-         }
-         catch ( ... )
-         {
-            throw Error( "Can't convert DATE-OBS keyword value \'" + d + "\' to a Julian day number." );
-         }
+            double dayf = (3600.0 * h + 60.0 * m + s) / 86400;
+#if debug
+            Console ().WriteLn ("GetJdate() " + d + String ().Format (" jD:%f", ComplexTimeToJD (year, month, day, dayf)));
+#endif
+            return ComplexTimeToJD (year, month, day, dayf);
+          }
+        catch (...)
+          {
+            throw Error ("Can't convert DATE-OBS keyword value \'" + d + "\' to a Julian day number.");
+          }
       }
-   };
+    };
 
-   #define outputExtension ".fit"
+    typedef Array<ImageItem> image_list;
 
-   typedef Array<ImageItem> image_list;
+    ImageVariant* m_CometImage;
+    Rect m_geometry;
+
+    // instance ---------------------------------------------------------------
+    image_list p_targetFrames;
+    String p_inputHints;
+    String p_outputHints;
+    String p_outputDir;
+    String p_outputExtension;
+    pcl_bool p_overwrite;
+    String p_prefix;
+    String p_postfix;
+    size_t p_reference;
+    //Operand subtracting
+    String p_subtractFile;
+    pcl_bool p_subtractMode; // true = move operand and subtract from target, false = subtract operand from target and move
+    pcl_bool p_normalize;
+    pcl_bool p_enableLinearFit;
+    float p_rejectLow;
+    float p_rejectHigh;
+
+    // Pixel interpolation
+    pcl_enum p_pixelInterpolation; // bicubic spline | bilinear | nearest neighbor
+    float p_linearClampingThreshold; // for bicubic spline
+
+    // -------------------------------------------------------------------------
 
 
-   // instance ---------------------------------------------------------------
-   image_list  p_targetFrames;
-   String      p_outputDir;
-   pcl_bool    p_overwrite;
-   String      p_prefix;
-   String      p_postfix;
-   size_t      p_reference;
+    inline thread_list LoadTargetFrame (size_t fileIndex);
+    inline String OutputFilePath (const String&, const size_t);
+    inline void SaveImage (const CAThread*);
+    inline void InitPixelInterpolation ();
+    inline DImage GetCometImage (const String&);
+    inline ImageVariant* LoadOperandImage (const String& filePath);
 
-   // Pixel interpolation
-   pcl_enum    p_pixelInterpolation;      // bicubic spline | bilinear | nearest neighbor
-   float       p_linearClampingThreshold; // for bicubic spline
+    friend class CAThread;
+    friend class CometAlignmentInterface;
+    friend class LinearFitEngine;
+  };
 
-   // -------------------------------------------------------------------------
-
-
-   inline thread_list   LoadTargetFrame( size_t fileIndex );
-   inline String        OutputFilePath( const String& , const size_t );
-   inline void          SaveImage( const CAThread* );
-   inline void          InitPixelInterpolation();
-
-   friend class CAThread;
-   friend class CometAlignmentInterface;
-};
-
-// ----------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------
 } // pcl
 
 #endif   // __CometAlignmentInstance_h
 
 // ****************************************************************************
-// EOF CometAlignmentInstance.h - Released 2014/11/14 17:19:24 UTC
+// EOF CometAlignmentInstance.h - Released 2015/02/06 19:50:08 UTC

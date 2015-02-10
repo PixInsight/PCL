@@ -1,0 +1,223 @@
+// ****************************************************************************
+// PixInsight Class Library - PCL 02.00.13.0689
+// Standard CometAlignment Process Module Version 01.02.02.0001
+// ****************************************************************************
+// CometAlignment.xpm - Released 2015/02/03 07:35:26 UTC
+// ****************************************************************************
+// This file is part of the standard CometAlignment PixInsight module.
+//
+// Copyright (c) 2012-2014 Nikolay Volkov
+// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ****************************************************************************
+static const char* CometAlignmentIcon_XPM[] = {
+"24 24 147 2",
+"Qt c None",
+".# c #003500",
+"#k c #0082e9",
+"#q c #0090da",
+"#A c #0097d1",
+"#p c #0097d2",
+"#z c #009fc9",
+"#y c #00a6c1",
+"#H c #00a7c0",
+"#x c #00adb9",
+"#G c #00aeb8",
+"#F c #00b5b0",
+"#P c #00b6af",
+"#E c #00bca8",
+"#Y c #00bda6",
+"#O c #00bda7",
+"#X c #00c49e",
+"#N c #00c49f",
+"#M c #00cb96",
+"#6 c #00cc95",
+"#L c #00d18e",
+"#W c #00d28d",
+"#5 c #00d38c",
+"ad c #00d48c",
+"#V c #00d985",
+"#4 c #00da84",
+"ac c #00db84",
+"#U c #00e07d",
+"#3 c #00e17c",
+"ab c #00e27b",
+"ai c #00e37a",
+"#2 c #00e874",
+"ah c #00e972",
+"aa c #00e973",
+".a c #013601",
+".b c #023702",
+".c c #033803",
+".d c #043904",
+"## c #04f65f",
+".e c #053b05",
+".f c #063c06",
+".g c #083d08",
+".h c #093e09",
+".i c #0a3f0a",
+".j c #0b410b",
+".k c #0c420c",
+".l c #0d430d",
+".m c #0f440f",
+".n c #104510",
+".o c #104610",
+".p c #114711",
+".q c #124812",
+".r c #144a14",
+".s c #154b15",
+".t c #164c16",
+".u c #174d17",
+".J c #184e18",
+"#a c #18d67d",
+".L c #194f19",
+"am c #1a41b4",
+".N c #1a501a",
+".5 c #1ada7f",
+".2 c #1c521c",
+"#. c #1cda89",
+"aj c #1d45b6",
+".8 c #1d531d",
+"#c c #1e541e",
+"#h c #1e551e",
+"#n c #1f561f",
+"ae c #2149b8",
+"#w c #215721",
+"#D c #225822",
+"#b c #22bf8d",
+"#K c #235923",
+"#8 c #244bba",
+"#S c #245b24",
+"#1 c #255c25",
+"#9 c #265d26",
+".6 c #27c590",
+"af c #285e28",
+"#f c #28c5a2",
+"#0 c #294fbb",
+"ak c #295f29",
+"an c #2a612a",
+"ao c #2b622b",
+".Z c #2bca93",
+"ap c #2c632c",
+"#m c #2c9ba4",
+"#7 c #2d4efd",
+"#R c #2d54be",
+"aq c #2d642d",
+".4 c #2ecca2",
+"#g c #2f9ea6",
+"#J c #3159c0",
+"#Z c #3456fc",
+".7 c #36a5aa",
+"#C c #375fc3",
+"#l c #39a5c6",
+"#Q c #3b5efd",
+".1 c #3ba9ac",
+"#v c #3d65c6",
+".0 c #3dadae",
+"#I c #4164fc",
+"#e c #41aec6",
+"#u c #426ac9",
+"#B c #476bfc",
+"#t c #476fcc",
+".M c #486cfe",
+".Y c #49b7c6",
+"al c #4d74cf",
+".X c #4dbbc6",
+".K c #4e72fe",
+"#s c #4f72fd",
+"ag c #527ad2",
+".I c #5479fe",
+"#r c #5579fc",
+"#d c #5899e6",
+".H c #5a7ffe",
+"a# c #5c85d8",
+"#T c #5e9ee9",
+"#i c #5f94f0",
+".G c #6085fe",
+"#j c #6187fc",
+"a. c #628bdb",
+".F c #668cfd",
+"#o c #678efc",
+".E c #6c92fd",
+".9 c #6e94fd",
+".D c #7299fd",
+".3 c #739afc",
+".C c #789ffd",
+".W c #79a1fd",
+".B c #7ea5fd",
+".V c #7ea6fd",
+".A c #82a9fd",
+".U c #84acfd",
+".z c #86aefd",
+".T c #87b0fc",
+".y c #8ab3fd",
+".S c #8ab4fd",
+".R c #8eb6fc",
+".x c #8eb7fd",
+".Q c #91bafd",
+".w c #93bcfd",
+".P c #95befc",
+".v c #97c0fd",
+".O c #97c1fc",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt",
+"Qt.#.a.a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.tQt",
+"Qt.a.a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t.uQt",
+"Qt.a.b.v.w.x.y.z.A.B.C.D.E.F.G.H.I.q.r.s.t.u.JQt",
+"Qt.b.c.w.x.y.z.A.B.C.D.E.F.G.H.I.K.r.s.t.u.J.LQt",
+"Qt.c.d.x.y.z.A.B.C.D.E.F.G.H.I.K.M.s.t.u.J.L.NQt",
+"Qt.d.e.y.z.A.O.P.Q.R.S.T.U.V.W.X.Y.Z.0.1.L.N.2Qt",
+"Qt.e.f.z.A.B.P.Q.R.S.T.U.V.W.3.Y.4.5.6.7.N.2.8Qt",
+"Qt.f.g.A.B.C.Q.R.S.T.U.V.W.3.9.4#.###a#b.2.8#cQt",
+"Qt.g.h.B.C.D.R.S.T.U.V.W.3.9#d#e#f#a#b#g.8#c#hQt",
+"Qt.h.i.C.D.E.S.T.U.V.W.3.9#i#j#k#l#b#g#m#c#h#nQt",
+"Qt.i.j.D.E.F.T.U.V.W.3.9#o#p#q#r#s#t#u#v#h#n#wQt",
+"Qt.j.k.E.F.G.U.V.W.3.9#x#y#z#A#s#B#u#v#C#n#w#DQt",
+"Qt.k.l.F.G.H.V.W.3.9#E#F#G#H#s#B#I#v#C#J#w#D#KQt",
+"Qt.l.m.G.H.I.W.3#L#M#N#O#P#s#B#I#Q#C#J#R#D#K#SQt",
+"Qt.m.n.H.I.K#T#U#V#W#M#X#Y#B#I#Q#Z#J#R#0#K#S#1Qt",
+"Qt.n.o.I.K.M.9#2#3#4#5#6#B#I#Q#Z#7#R#0#8#S#1#9Qt",
+"Qt.o.p.q.r.sa.a#aaabacad#u#v#C#J#R#0#8ae#1#9afQt",
+"Qt.p.q.r.s.ta#.1agahai#u#v#C#J#R#0#8aeaj#9afakQt",
+"Qt.q.r.s.t.u.1agal#t#u#v#C#J#R#0#8aeajamafakanQt",
+"Qt.r.s.t.u.J.L.N.2.8#c#h#n#w#D#K#S#1#9afakanaoQt",
+"Qt.s.t.u.J.L.N.2.8#c#h#n#w#D#K#S#1#9afakanaoapQt",
+"Qt.t.u.J.L.N.2.8#c#h#n#w#D#K#S#1#9afakanaoapaqQt",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt"};
+// ****************************************************************************
+// EOF CometAlignment.xpm - Released 2015/02/03 07:35:26 UTC

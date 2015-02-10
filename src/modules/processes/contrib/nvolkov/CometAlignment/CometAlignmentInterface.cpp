@@ -1,8 +1,8 @@
 // ****************************************************************************
 // PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.02.0065
+// Standard CometAlignment Process Module Version 01.02.03.0001
 // ****************************************************************************
-// CometAlignmentInterface.cpp - Released 2015/02/06 19:50:08 UTC
+// CometAlignmentInterface.cpp - Released 2015/02/10 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -1427,8 +1427,12 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
 
    // Subtract Section Bar & Control
    const char* ToolTipSubtract = "<p>The selected image will be subtracted from each target image.</p>"
-           "<p>With <i>Mode</i> checked: Align to target and subtract.</p>"
-           "<p>With <i>Mode</i> uncheked: Subtract from target and align result to comet.</p>";
+           "<p>With <i>Mode</i> checked: Selected Image (usually pure comet image) "
+               "will be comet aligned to every target frame and subtracted from it"
+               ", i.e. resulting in frames with erased comet and without aligning change.</p>"
+           "<p>With <i>Mode</i> uncheked: Selected Image (usually pure star field) "
+               "will be subtracted from every target frame and each result will be comet aligned using reference frame"
+               ", i.e. resulting in frames aligned to comet without stars.</p>";
 
    Subtract_Control.SetSizer (Subtract_Sizer);
    Subtract_SectionBar.SetTitle ("Subtract");
@@ -1636,4 +1640,4 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
 } // pcl
 
 // ****************************************************************************
-// EOF CometAlignmentInterface.cpp - Released 2015/02/06 19:50:08 UTC
+// EOF CometAlignmentInterface.cpp - Released 2015/02/10 19:50:08 UTC

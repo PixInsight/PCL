@@ -1,8 +1,8 @@
 // ****************************************************************************
 // PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.02.0065
+// Standard CometAlignment Process Module Version 01.02.03.0001
 // ****************************************************************************
-// CometAlignmentInstance.cpp - Released 2015/02/06 19:50:08 UTC
+// CometAlignmentInstance.cpp - Released 2015/02/10 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -412,7 +412,7 @@ Normalize (ImageVariant& cimg)
 }
 
 inline static void
-Engine (ImageVariant& target, const DPoint& delta,
+Engine (ImageVariant& target, LinearFitEngine::linear_fit_set& LFSet, const DPoint& delta,
         const ImageVariant* operand, const bool mode, const bool enableLinearFit, const float rejectLow, const float rejectHigh, const bool normalize)
 
 {
@@ -430,7 +430,8 @@ Engine (ImageVariant& target, const DPoint& delta,
          if (enableLinearFit)
          {
             LinearFitEngine E (rejectLow, rejectHigh);
-            E.Apply (o, E.Fit (o, target)); //LinearFit Operand to Target
+            LFSet = E.Fit (o, target);
+            E.Apply (o, LFSet); //LinearFit Operand to Target
          }
 
          if (normalize == true)
@@ -443,7 +444,8 @@ Engine (ImageVariant& target, const DPoint& delta,
          if (enableLinearFit)
          {
             LinearFitEngine E (rejectLow, rejectHigh);
-            E.Apply (o, E.Fit (o, target)); //LinearFit Operand to Target
+            LFSet = E.Fit (o, target);
+            E.Apply (o, LFSet); //LinearFit Operand to Target
          }
 
          if (normalize == true)
@@ -542,7 +544,7 @@ public:
    {
       try
       {
-         Engine (*target, delta, operand, mode, enableLinearFit, rejectLow, rejectHigh, normalize);
+         Engine (*target, LFSet, delta, operand, mode, enableLinearFit, rejectLow, rejectHigh, normalize);
       }
       catch (...)
       {
@@ -577,6 +579,18 @@ public:
    {
       return subimageIndex;
    }
+   
+   DPoint 
+   Delta () const
+   {
+      return delta;
+   }
+   
+   LinearFitEngine::linear_fit_set 
+   GetLinearFitSet() const
+   {
+      return LFSet;
+   }
 
 private:
 
@@ -591,6 +605,7 @@ private:
    const bool enableLinearFit; // fit operand before subtracting
    float rejectLow; //LinearFit parameter
    float rejectHigh; //LinearFit parameter
+   LinearFitEngine::linear_fit_set LFSet;
 
 };
 
@@ -764,6 +779,19 @@ void
 CometAlignmentInstance::SaveImage (const CAThread* t)
 {
    Console console;
+   LinearFitEngine::linear_fit_set L;
+   if (p_enableLinearFit)
+   {
+      //const LinearFitEngine::linear_fit_set L(t->GetLinearFitSet());
+      L = t->GetLinearFitSet();
+      console.WriteLn( "<end><cbr>Linear fit functions:" );
+      for ( int c = 0; c <  t->TargetImage()->NumberOfNominalChannels(); ++c )
+      {
+         console.WriteLn( String().Format( "y<sub>%d</sub> = %+.6f %c %.6f&middot;x<sub>%d</sub>", c, L[c].a, (L[c].b < 0) ? '-' : '+', Abs( L[c].b ), c ) );
+         console.WriteLn( String().Format( "&sigma;<sub>%d</sub> = %+.6f", c, L[c].adev ) );
+      }
+   }
+   
    String outputFilePath = OutputFilePath (t->TargetPath (), t->SubimageIndex ());
    console.WriteLn ("Create " + outputFilePath);
 
@@ -771,7 +799,7 @@ CometAlignmentInstance::SaveImage (const CAThread* t)
    FileFormatInstance outputFile (outputFormat);
    if ( !outputFile.Create( outputFilePath, p_outputHints ) ) throw CatchedException ();
 
-   const FileData& data = t->GetFileData ();
+   const FileData& data = t->GetFileData ();   
 
    ImageOptions options = data.options; // get resolution, etc.
    outputFile.SetOptions (options);
@@ -789,7 +817,26 @@ CometAlignmentInstance::SaveImage (const CAThread* t)
       FITSKeywordArray keywords = data.keywords;
       keywords.Add (FITSHeaderKeyword ("COMMENT", IsoString (), "CometAlignment with " + PixInsightVersion::AsString ()));
       keywords.Add (FITSHeaderKeyword ("COMMENT", IsoString (), "CometAlignment with " + CometAlignmentModule::ReadableVersion ()));
-      keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment"));
+      keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.X: " + IsoString(t->Delta().x)));
+      keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.Y:" +IsoString(t->Delta().y)));
+      if (!p_subtractFile.IsEmpty ())
+      {
+         keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.Subtract: " + IsoString( p_subtractFile ) ) );
+         keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.Mode: " + IsoString( p_subtractMode ? "true" : "false" ) ) );
+         keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.LinearFit: " + IsoString( p_enableLinearFit ? "true" : "false" ) ) );
+         keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.RejectLow: " + IsoString( p_rejectLow ) ) );
+         keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.RejectHigh: " + IsoString( p_rejectHigh ) ) );
+         if (p_enableLinearFit)
+         {
+            keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.Linear fit functions:" ) );
+            for ( int c = 0; c <  t->TargetImage()->NumberOfNominalChannels(); ++c )
+            {               
+               keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), IsoString().Format( "y%d = %+.6f %c %.6f * x%d", c, L[c].a, (L[c].b < 0) ? '-' : '+', Abs( L[c].b ), c ) ) );
+               keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), IsoString().Format( "sigma%d = %+.6f", c, L[c].adev ) ) );
+            }
+         }
+         keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.Normalize: " + IsoString( p_normalize ? "true" : "false") ) );
+      }
       outputFile.Embed (keywords);
    }
    else if (!data.keywords.IsEmpty ())
@@ -1021,7 +1068,7 @@ CometAlignmentInstance::ExecuteGlobal ()
                runing--;
                try
                {
-                  console.WriteLn (String ().Format ("<br>CPU#%u has finished processing. Saving file:", i - runningThreads.Begin ()));
+                  console.WriteLn (String ().Format ("<br>CPU#%u has finished processing.", i - runningThreads.Begin ()));
                   SaveImage (*i);
                   runningThreads.Delete (i); //prepare thread for next image. now (*i == 0) the CPU is free
                }
@@ -1215,4 +1262,4 @@ CometAlignmentInstance::ParameterLength (const MetaParameter* p, size_type table
 } // pcl
 
 // ****************************************************************************
-// EOF CometAlignmentInstance.cpp - Released 2015/02/06 19:50:08 UTC
+// EOF CometAlignmentInstance.cpp - Released 2015/02/10 19:50:08 UTC

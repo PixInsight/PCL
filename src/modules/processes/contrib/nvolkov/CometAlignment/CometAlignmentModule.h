@@ -1,6 +1,6 @@
 // ****************************************************************************
 // PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.03.0001
+// Standard CometAlignment Process Module Version 01.02.03.0066
 // ****************************************************************************
 // CometAlignmentModule.h - Released 2015/02/10 19:50:08 UTC
 // ****************************************************************************

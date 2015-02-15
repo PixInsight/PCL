@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+   <title>PixInsight Reference Documentation | ExternalTool</title>
+   <meta name="keywords" content="external process, ExternalProcess, script, Python, numpy, matplotlib, astropy, Tcl, Blind Solver, astrometry.net, annotate, Aladin, countours, emphemerides, calendar" />
+   <meta name="author" content="Georg Viehoever" />
+   <meta name="description" content="Allows to integrate external programs into PixInsight processing flows if those programs can be controlled by command line arguments. The executables can be binaries or scripts written in any laguage.
+FIXME THIS IS BETA SOFTWARE, CURRENTLY ONLY TESTED ON Fedora 21 BY THE DEVELOPER. There is no reason why this tool should not work properly on other PixInsight platforms such as Windows, but the developer lacks the resources to test there as well. FEEDBACK AND CONTRIBUTIONS ARE WELCOME!" />
+   <meta name="robots" content="INDEX,FOLLOW" />
+   <meta name="generator" content="PixInsight Documentation Compiler script version 1.6.1" />
+   <script type="text/javascript" src="../../pidoc/scripts/pidoc-utility.js"></script>
+   <link type="text/css" href="../../pidoc/css/pidoc-common.css" rel="stylesheet" />
+   <link type="text/css" href="../../pidoc/css/pidoc-highlight.css" rel="stylesheet" />
+   <link type="text/css" href="../../pidoc/css/pidoc-tool.css" rel="stylesheet" />
+   <link rel="icon" href="../../pidoc/icons/pidoc-icon.png" type="image/png" />
+   <link rel="shortcut icon" href="../../pidoc/icons/pidoc-icon.png" type="image/png" />
+</head>
+<body>
+<script type="text/javascript">
+   pidoc_generateDynamicContents();
+</script>
+
+<h1>ExternalTool</h1>
+
+<hr class="separator"/>
+
+<div id="brief">
+<p>Allows to integrate external programs into PixInsight processing flows if those programs can be controlled by command line arguments. The executables can be binaries or scripts written in any laguage.</p>
+<p>FIXME THIS IS BETA SOFTWARE, CURRENTLY ONLY TESTED ON Fedora 21 BY THE DEVELOPER. There is no reason why this tool should not work properly on other PixInsight platforms such as Windows, but the developer lacks the resources to test there as well. FEEDBACK AND CONTRIBUTIONS ARE WELCOME! <a href="#__contents__">[more]</a></p></div>
+
+<div id="categories">
+<p><strong>Categories:</strong> Image</p>
+</div>
+
+<div id="keywords">
+<p><strong>Keywords:</strong> external process, ExternalProcess, script, Python, numpy, matplotlib, astropy, Tcl, Blind Solver, astrometry.net, annotate, Aladin, countours, emphemerides, calendar</p>
+</div>
+
+<h3 class="pidoc_sectionTitle" id="__toc__">Contents</h3>
+<p class="pidoc_sectionToggleButton" onclick="pidoc_toggleSection( 'toc', this );">[hide]</p>
+<div id="toc">
+<ul>
+<li class="pidoc_tocItem"><a href="#__Description__">1&emsp;Description</a></li>
+<li class="pidoc_tocItem"><a href="#__Usage__">2&emsp;Usage</a>
+<ul>
+<li class="pidoc_tocSubitem"><a href="#__Usage_:_GUI__">2.1&emsp;GUI</a>
+<ul>
+<li class="pidoc_tocSubitem"><a href="#__Usage_:_GUI_:_Select_Executable__">2.1.1&emsp;Select Executable</a></li>
+<li class="pidoc_tocSubitem"><a href="#__Usage_:_GUI_:_Trigger_Execution__">2.1.2&emsp;Trigger Execution</a></li>
+<li class="pidoc_tocSubitem"><a href="#__Usage_:_GUI_:_Source_Image_and_Result__">2.1.3&emsp;Source Image and Result</a></li>
+<li class="pidoc_tocSubitem"><a href="#__Usage_:_GUI_:_Numerical_Parameters__">2.1.4&emsp;Numerical Parameters</a></li>
+<li class="pidoc_tocSubitem"><a href="#__Usage_:_GUI_:_Finetuning_Options__">2.1.5&emsp;Finetuning Options</a></li>
+</ul>
+</li>
+<li class="pidoc_tocSubitem"><a href="#__Usage_:_Usage_Hints__">2.2&emsp;Usage Hints</a></li>
+<li class="pidoc_tocSubitem"><a href="#__Usage_:_Examples__">2.3&emsp;Examples</a>
+<ul>
+<li class="pidoc_tocSubitem"><a href="#__Usage_:_Examples_:_Prerequisites__">2.3.1&emsp;Prerequisites</a></li>
+<li class="pidoc_tocSubitem"><a href="#__Usage_:_Examples_:_genContours__">2.3.2&emsp;genContours</a></li>
+<li class="pidoc_tocSubitem"><a href="#__Usage_:_Examples_:_ephemPlot__">2.3.3&emsp;ephemPlot</a></li>
+<li class="pidoc_tocSubitem"><a href="#__Usage_:_Examples_:_astrometryDotNetBlindSolver__">2.3.4&emsp;astrometryDotNetBlindSolver</a></li>
+<li class="pidoc_tocSubitem"><a href="#__Usage_:_Examples_:_launchAladin__">2.3.5&emsp;launchAladin</a></li>
+</ul>
+</li>
+<li class="pidoc_tocSubitem"><a href="#__Usage_:_Use_from_Process_Console_or_PJSR__">2.4&emsp;Use from Process Console or PJSR</a></li>
+<li class="pidoc_tocSubitem"><a href="#__Usage_:_Adding_Tools__">2.5&emsp;Adding Tools</a></li>
+</ul>
+</li>
+<li class="pidoc_tocItem"><a href="#__relatedTools__">Related Tools</a></li>
+<li class="pidoc_tocItem"><a href="#__relatedScripts__">Related Scripts</a></li>
+</ul>
+</div>
+
+<div id="__contents__">
+
+<div class="pidoc_section" id="__Description__">
+   <h3 class="pidoc_sectionTitle">1&emsp;Description</h3>
+   <p class="pidoc_sectionToggleButton" onclick="pidoc_toggleSection( 'Description', this );">[hide]</p>
+   <div id="Description">
+<img style="float:left;margin-right:1.25em;margin-bottom:0.5em;" src="images/ExternalTool.png" alt=""/>
+<p>The astronomical community provides a lot of free and/or open source tools that can solve tasks difficult to solve with PixInsight alone. The ExternalTool module enables PixInsight to use many of these tools as if they were part of PixInsight. The only requirement is that they can be called via a command line, and that they can read and write FITS files. Instances of ExternalTool can be used on full images or previews, as part of process flows, applied with process containers, stored on a workspace, file or project, or used with PJSR - just as with any regular PixInsight process. For suitable external tools, even Realtime Previews can be generated.</p>
+<p>In its basic operation, ExternalTool</p>
+
+<ul class="pidoc_list">
+<li>stores the target image to a file, including its FITS keywords and ICC profile,</li>
+<li class="pidoc_spaced_list_item">calls an executable with user defined parameters, plus the filename of the input file and an output file name,</li>
+<li class="pidoc_spaced_list_item">monitors execution, displaying any messages on the Process Console Window, and</li>
+<li class="pidoc_spaced_list_item">on termination, it checks for the exit code and if necessary display an error message. If successful, it replaces the target image with the result image, truncating its values if necessary and transfering FITS keywords and ICC profile from the result file into PixInsight.</li>
+</ul>
+
+<p><br class="pidoc_clearfix"/></p>
+<p>Compared to other solutions, such as using the <span class="pidoc_code">!</span> Process Console command, or the PJSR ExternalProcess object, the ExternalTool process provides GUI, ease of use, and the full integration that only PCL modules can provide.</p>
+<p>The tool comes with a number of example tools, allowing to compute intensity contours, call the Aladin interactive sky atlas, plot a visibility calender of the major planets, or use the astronomy.net Blind Solver web service to platesolve images.</p>
+   </div>
+</div>
+
+<div class="pidoc_section" id="__Usage__">
+   <h3 class="pidoc_sectionTitle">2&emsp;Usage</h3>
+   <p class="pidoc_sectionToggleButton" onclick="pidoc_toggleSection( 'Usage', this );">[hide]</p>
+   <div id="Usage">
+<p>This chapter discusses the use of ExternalTool, its GUI elements, example scripts, and development of your own tools.</p>
+<p><a id="usageHints"></a></p>
+<p><a id="examples"></a></p>
+<p><a id="otherUses"></a></p>
+<p><a id="addingTools"></a></p>
+<div class="pidoc_subsection" id="__Usage_:_GUI__">
+   <h4 class="pidoc_subsectionTitle">2.1&emsp;GUI</h4>
+<p><a id="selectExecutable"></a></p>
+<p><a id="triggerExecution"></a></p>
+<p><a id="result"></a></p>
+<p><a id="numericalParameters"></a></p>
+<p><a id="finetuningOptions"></a></p>
+<div class="pidoc_subsection" id="__Usage_:_GUI_:_Select_Executable__">
+   <h5 class="pidoc_subsectionTitle">2.1.1&emsp;Select Executable</h5>
+<img style="float:left;margin-right:1.25em;margin-bottom:0.5em;" src="images/FileSelection.png" alt=""/>
+<p>The user selects an external executable using the Exec selection dialog. Hitting the &quot;?&quot; button will display a help message on the Process Console for executables that support the <span class="pidoc_code">-h</span> command line option.</p>
+<p>The Options line allows the user to specify options that should be passed to the tool with any command line. In the screenshot, we pass the year argument to the ephemPlot.py3 executable.</p>
+</div>
+
+<div class="pidoc_subsection" id="__Usage_:_GUI_:_Trigger_Execution__">
+   <h5 class="pidoc_subsectionTitle">2.1.2&emsp;Trigger Execution</h5>
+<p>Execution is triggered using the New Instance, Apply, Apply Global or Realtime Preview buttons at the lower border of the dialog, just as with any other PixInsight PCL process:</p>
+
+<ul class="pidoc_list">
+<li><strong>New Instance, Apply:</strong> The target file is written to a temporary file, and the temporary file name is passed to the executable using the <span class="pidoc_code">-f fileName</span> command line option. The result is expected in a file given by the <span class="pidoc_code">-o fileName</span> option. The result file is read and displayed when the executable terminates.</li>
+<li class="pidoc_spaced_list_item"><strong>GlobalApply:</strong> The operation is the same as with (local) apply, but no input file is provided to the executable. The executable is also given the <span class="pidoc_code">-g</span> option to indicate global operation. The result is displayed in a new image window.</li>
+<li class="pidoc_spaced_list_item"><strong>Realtime Preview:</strong> On any change of parameters, the executable is called with the current image and the current parameters, and the result is displayed in the Realtime Preview window.</li>
+</ul>
+
+<p><br class="pidoc_clearfix"/></p>
+</div>
+
+<div class="pidoc_subsection" id="__Usage_:_GUI_:_Source_Image_and_Result__">
+   <h5 class="pidoc_subsectionTitle">2.1.3&emsp;Source Image and Result</h5>
+<p>By default, External Tool will write the target image to a FITS file, including its FITS keywords and ICC profile. It cannot do this if the target image does not have a main view.</p>
+<p>By default, the process will read the result FITS file and display it. If the result is read into a main view (i.e. not a preview or Realtime preview) or a new image window, also the FITS keywords and the ICC profile are read with the image. Otherwise they are ignored and a warning is printed on the Process Console. (For those interested: FITS keywords and ICC profile belong to an Image Window, not to the individual views. It therefore would have unexpected side effects to read FITS keys when ExternalTool is applied to a Preview.)</p>
+<p>The default processing of the result can be modified using the Destination dialog section:</p>
+<img style="float:left;margin-right:1.25em;margin-bottom:0.5em;" src="images/Destination.png" alt=""/>
+
+<ul class="pidoc_list">
+<li><strong>Read Image:</strong> If <strong>not</strong> selected, do not pass an <span class="pidoc_code">-o</span> option to the external executable, and do not read in any result image. This option is useful if the external executable does not produce an image file.</li>
+<li class="pidoc_spaced_list_item"><strong>New Window:</strong> If selected, the result is read into a newly created window instead of the default target window. This is useful with (local) applies that should not modify the target image, but instead produce a new image from the data.</li>
+<li class="pidoc_spaced_list_item"><strong>Read FITS keys:</strong> if selected, read FITS keys and ICC profile from the result image (if possible, see disucssion above). Otherwise always ignore the FITS keys and ICC profile in the result file.</li>
+<li class="pidoc_spaced_list_item"><strong>Rescale Result:</strong> By default, the pixel values in the result file are truncated to the maximum range available in PI (i.e. [0,1] for real data, [0,max(uintX)] for integer data of bitlengthX.). With truncation, if the pixel values are within this range, no values change. When selected, the read data is always rescaled to the maximum value range, thus preserving the full dynamic range, but also changing the values.</li>
+</ul>
+
+<p><br class="pidoc_clearfix"/></p>
+</div>
+
+<div class="pidoc_subsection" id="__Usage_:_GUI_:_Numerical_Parameters__">
+   <h5 class="pidoc_subsectionTitle">2.1.4&emsp;Numerical Parameters</h5>
+<img style="float:left;margin-right:1.25em;margin-bottom:0.5em;" src="images/NumericalParameters.png" alt=""/>
+<p>It is possible to pass 0..3 numerical parameters in range [0,1] to the external executable, defined by sliders in the Numerical Parameters section. The parameters are simply appended to the command line passed to the external tool.</p>
+</div>
+
+<div class="pidoc_subsection" id="__Usage_:_GUI_:_Finetuning_Options__">
+   <h5 class="pidoc_subsectionTitle">2.1.5&emsp;Finetuning Options</h5>
+<img style="float:left;margin-right:1.25em;margin-bottom:0.5em;" src="images/Options.png" alt=""/>
+<p>ExternalTool uses a number of command line options to signal source image, target image and mode of operation to the external executable. The default option names are displayed in the screenshot. While it is recommended that your external executable understands those default options, or that a wrappper program translates them to options understood by the external program, it is possible to modify the defaults to accommodate other conventions. The options are:</p>
+
+<ul class="pidoc_list">
+<li><strong>Help Options:</strong> This string is added to the command line if the user hits the &quot;?&quot; button on the Exec options line. The executable is expected to output information about its use to the terminal. Default is <span class="pidoc_code">-h</span>.</li>
+<li class="pidoc_spaced_list_item"><strong>Global Options:</strong> Added to the command line to indicate a Global Apply. Default <span class="pidoc_code">-g</span>.</li>
+<li class="pidoc_spaced_list_item"><strong>Source Image Options:</strong> Added to the command line to indicate that the next parameter is the input file. Default is <span class="pidoc_code">-f</span>. The resulting command line is something like <span class="pidoc_code">-f inputFile.fit</span>.</li>
+<li class="pidoc_spaced_list_item"><strong>Result Image Options:</strong> Added to the command line to indicate that the result is expected to be written to a file with the following name. Default is <span class="pidoc_code">-o</span>. A typical command line contains thus something like <span class="pidoc_code">-o outFile.fit</span>.</li>
+</ul>
+
+<p><br class="pidoc_clearfix"/></p>
+</div>
+
+</div>
+
+<div class="pidoc_subsection" id="__Usage_:_Usage_Hints__">
+   <h4 class="pidoc_subsectionTitle">2.2&emsp;Usage Hints</h4>
+
+<ul class="pidoc_list">
+<li>Use the <a href="../../tools/FITSHeader/FITSHeader.html" title="../../tools/FITSHeader/FITSHeader.html">FITSHeader</a> tool to transfer FITS keys between different images.</li>
+<li class="pidoc_spaced_list_item">Because this tool relies on external executables, it has limited control over what these tools do. Handle with care!</li>
+<li class="pidoc_spaced_list_item">If something goes wrong during the execution of the external executable, ExternalTool can only clean up files it knows about, and report the error. To find the cause of error, carefully study the output on stdOut and stdErr that is copied to the Process Console.</li>
+</ul>
+
+</div>
+
+<div class="pidoc_subsection" id="__Usage_:_Examples__">
+   <h4 class="pidoc_subsectionTitle">2.3&emsp;Examples</h4>
+<p>ExternalTool comes with a set of example tools that you may find useful. They were all written in Python3 because it is the author's favorite scripting language, and it comes with number of libraries very useful for astronomy. But it is entirely possible to create such tools in any other <a href="#addingTools">programming language</a>.</p>
+<p><a id="blindSolver"></a></p>
+<p><a id="launchAladin"></a></p>
+<div class="pidoc_subsection" id="__Usage_:_Examples_:_Prerequisites__">
+   <h5 class="pidoc_subsectionTitle">2.3.1&emsp;Prerequisites</h5>
+<p>The tools rely on a number of other tools and libraries. To use them, you need to install them on your system.</p>
+<p>For Windows, all Python related tools are open source. The easiest way to install Python2, Python3 and add on libraries is to use the free Anaconda distribution available on <a href="http://continuum.io/downloads" title="http://continuum.io/downloads">http://continuum.io/downloads</a>. Install the 64-bit distributions of Python 2.7.x and Python 3.4.x.</p>
+<p>For Linux/FreeBDS, you can also use the Anaconda distribution, or you rely on the packages that come with your Linux system.</p>
+<p>For MacOS, Anaconda is also an option, but I dont have any experience with it.</p>
+<p>The following tools are needed by the examples. Note that the package names may differ on your system:</p>
+
+<table class="pidoc_table">
+<caption>Tools needed by Examples</caption>
+<tr>
+<th><p>Tool</p>
+</th>
+<th><p>Examples</p>
+</th>
+<th><p>Remark</p>
+</th>
+<th><p>Fedora21 package</p>
+</th>
+</tr>
+<tr>
+<td><p>Python3</p>
+</td>
+<td><p>all *.py3</p>
+</td>
+<td><p>all examples have been written in this scripting language. Version &gt;=3.4 is required.</p>
+</td>
+<td><p>python3</p>
+</td>
+</tr>
+<tr>
+<td><p>Python2</p>
+</td>
+<td><p>astrometryDotNetBlindSolver.py3</p>
+</td>
+<td><p>needed for astrometry.net client astrometryDotNetClient.py2 used by the blind solver. Version &gt;=2.6 is required.</p>
+</td>
+<td><p>python</p>
+</td>
+</tr>
+<tr>
+<td><p>numpy</p>
+</td>
+<td><p>all *.py3</p>
+</td>
+<td><p>numerical processing of arrays (=images).</p>
+</td>
+<td><p>python3-numpy</p>
+</td>
+</tr>
+<tr>
+<td><p>matplotlib</p>
+</td>
+<td><p>all *.py3</p>
+</td>
+<td><p>plot graphs, save as .png</p>
+</td>
+<td><p>python3-matplotlib</p>
+</td>
+</tr>
+<tr>
+<td><p>astropy</p>
+</td>
+<td><p>all *.py3</p>
+</td>
+<td><p>handling of FITS files and more</p>
+</td>
+<td><p>python3-astropy</p>
+</td>
+</tr>
+<tr>
+<td><p>ephem</p>
+</td>
+<td><p>ephemPlot.py3</p>
+</td>
+<td><p>compute positions of planets. This package is not available in precompiled form on Fedora21. To install on Fedora21, first install <span class="pidoc_code">python3-devel</span> using the <span class="pidoc_code">yum</span> package manager, then use the Python package manager to install ephem with <span class="pidoc_code">pip3 install ephem</span>. Installation for other Linux distributions may work differently.</p>
+</td>
+<td><p>-</p>
+</td>
+</tr>
+<tr>
+<td><p>Aladin</p>
+</td>
+<td><p>launchAladin.py3</p>
+</td>
+<td><p>Aladin is an interactive sky atlas. Download and install from <a href="http://aladin.u-strasbg.fr/" title="http://aladin.u-strasbg.fr/">http://aladin.u-strasbg.fr/</a>. The script expects the executable in <span class="pidoc_code">$PATH</span> or <span class="pidoc_code">$HOME/Aladin/Aladin.</span></p>
+</td>
+<td><p>-</p>
+</td>
+</tr>
+</table>
+
+</div>
+
+<div class="pidoc_subsection" id="__Usage_:_Examples_:_genContours__">
+   <h5 class="pidoc_subsectionTitle">2.3.2&emsp;genContours</h5>
+<img style="float:left;margin-right:1.25em;margin-bottom:0.5em;" src="images/Contours.png" alt=""/>
+<p>The <span class="pidoc_code">genContours.py3</span> tool generates contour lines within an existing image, and displays them along with a legend and image coordinates. It has been designed to show the Realtime Preview capabilites of ExternalTool, and the ability to specify numerical parameters using the sliders in the Numerical Parameters section. As it always needs a source image, it does not support Global Apply.</p>
+</div>
+
+<div class="pidoc_subsection" id="__Usage_:_Examples_:_ephemPlot__">
+   <h5 class="pidoc_subsectionTitle">2.3.3&emsp;ephemPlot</h5>
+<img style="float:left;margin-right:1.25em;margin-bottom:0.5em;" src="images/Ephem.png" alt=""/>
+<p>The <span class="pidoc_code">ephemPlot.py3</span> tool creates a visibility diagram of planets and moon for a whole year. Options allow to specify the year, location, diagram title and other details. Press the help button to learn more. If applied to an image (local Apply), the dimensions of the diagram are taken from the image, its contents is ignored. On global apply, a large diagram suitable for printing is generated.</p>
+</div>
+
+<div class="pidoc_subsection" id="__Usage_:_Examples_:_astrometryDotNetBlindSolver__">
+   <h5 class="pidoc_subsectionTitle">2.3.4&emsp;astrometryDotNetBlindSolver</h5>
+<img style="float:left;margin-right:1.25em;margin-bottom:0.5em;" src="images/BlindSolver.png" alt=""/>
+<p>The <span class="pidoc_code">astrometryDotNetBlindSolver.py3</span> tool uses the Astrometry.net web service to do a blind platesolve of your image. As it always needs a source image, it does not support Global Apply.</p>
+<p>To use Astrometry.net, you need an API key that can be generated by registering with the service. See <a href="http://nova.astrometry.net/api_help" title="http://nova.astrometry.net/api_help">http://nova.astrometry.net/api_help</a> for details. You need to specify the key with the <span class="pidoc_code">-k</span> option (something like <span class="pidoc_code">-k yourapikey123</span>).</p>
+<p>The blind solver works amazingly well, but it also fails in some cases. If it does, you should always try with an image version that has a different (less aggressive) histogram transform. Note that the image is transfered as a PNG file to Astrometry.net: a number of bright stars should still be visible after saving in this format.</p>
+<p>Use option <span class="pidoc_code">-a</span> to add basic annotations to your image. In this case, the result image is always a 8 bit deep RGB image. If you like, you can use the <a href="../../tools/FITSHeader/FITSHeader.html" title="../../tools/FITSHeader/FITSHeader.html">FITSHeader</a> tool to transfer the solution to the original image. If you do not use option <span class="pidoc_code">-a</span>, the solver transfers the solution into the original image without changing the image format.</p>
+<p>The solutions and annotations created by the blind solver are not as exact and sophisticated as those produced by <a href="../../scripts/ImageSolver/ImageSolver.html" title="../../scripts/ImageSolver/ImageSolver.html">ImageSolver</a> and <a href="../../scripts/AnnotateImage/AnnotateImage.html" title="../../scripts/AnnotateImage/AnnotateImage.html">AnnotateImage</a>. You may want to use these tools to improve on what you get from the blind solver. The screenshot above shows the blind solver annotation on the left, and the one of the AnnotationScript using the blind solver solution on the right.</p>
+<p>Note: Internally, <span class="pidoc_code">astrometryDotNetBlindSolver.py3</span> uses the Python2 script <span class="pidoc_code">astrometryDotNetClient.py2</span>. This script is not intended for use with ExternalTool.</p>
+</div>
+
+<div class="pidoc_subsection" id="__Usage_:_Examples_:_launchAladin__">
+   <h5 class="pidoc_subsectionTitle">2.3.5&emsp;launchAladin</h5>
+<img style="float:left;margin-right:1.25em;margin-bottom:0.5em;" src="images/AladinDialog.png" alt=""/>
+<p>Aladin in an interactive sky atlas that permits to query many astronomical databases, analyze the data, and overlay existing images with information from astronomical databases. The launcher opens Aladin on the target image. If no target image is given but PI expects a result (Global Apply), it opens on an empty image and loads whatever you save into this file as the result.</p>
+<img style="float:left;margin-right:1.25em;margin-bottom:0.5em;" src="images/Aladin.png" alt=""/>
+<p>The screenshot shows M74, plate solved with the <a href="#blindSolver">blind solver</a>. The picture has been annotated with the object types as retrieved from the SIMBAD database.</p>
+<p>FIXME I have not yet managed to tell Aladin on how to save the view as a FITS file. Can you help?</p>
+</div>
+
+</div>
+
+<div class="pidoc_subsection" id="__Usage_:_Use_from_Process_Console_or_PJSR__">
+   <h4 class="pidoc_subsectionTitle">2.4&emsp;Use from Process Console or PJSR</h4>
+<p>ExternalTool can also be used in other contexts.</p>
+<p>In the Procssing Console, it can be called as ExternalTool. For details, use <span class="pidoc_code">help ExternalTool</span>.</p>
+<p>In PJSR, ExternalTool can be used as the ExternalTool object. Basic use:</p>
+
+<pre class="code"><span class="pidoc_sh_keyword">var</span> P = <span class="pidoc_sh_keyword">new</span> <span class="pidoc_sh_externalObject">ExternalTool</span>;
+P.sBinPath = <span class="pidoc_sh_quotation">"ephemPlot.py3"</span>; <span class="pidoc_sh_singleLineComment">// path to executable. This needs to be an absolute path, or it need</span>
+                              <span class="pidoc_sh_singleLineComment">// to be locatable by PATH.</span>
+P.sOptions = <span class="pidoc_sh_quotation">"-y 2015"</span>;       <span class="pidoc_sh_singleLineComment">// user defined options as specified in the GUI below the sBinPath. Always</span>
+                              <span class="pidoc_sh_singleLineComment">// added to the command line.</span>
+P.sGlobalOptions = <span class="pidoc_sh_quotation">"-g"</span>;      <span class="pidoc_sh_singleLineComment">// added to command line on global apply.</span>
+P.sHelpOptions = <span class="pidoc_sh_quotation">"-h"</span>;        <span class="pidoc_sh_singleLineComment">// added to command line if help button is pressed.</span>
+P.sSourceOptions = <span class="pidoc_sh_quotation">"-f"</span>;      <span class="pidoc_sh_singleLineComment">// -f &lt;inFileName&gt; is used to identify the input file. Only given on</span>
+                              <span class="pidoc_sh_singleLineComment">// (local) Apply.</span>
+P.sResultOptions = <span class="pidoc_sh_quotation">"-o"</span>;      <span class="pidoc_sh_singleLineComment">// -o &lt;outFileName&gt; is used to identify the output file. Given on Apply,</span>
+                              <span class="pidoc_sh_singleLineComment">// Global Apply, Realtime Preview unless bReadImage is false.</span>
+P.bReadImage = <span class="pidoc_sh_keyword">true</span>;          <span class="pidoc_sh_singleLineComment">// if false, no result image is expected, and -o is not added to the</span>
+                              <span class="pidoc_sh_singleLineComment">// command line</span>
+P.bReadFitsKeys = <span class="pidoc_sh_keyword">true</span>;       <span class="pidoc_sh_singleLineComment">// if true, FITS keys and ICC profile are read into a suitable view.</span>
+                              <span class="pidoc_sh_singleLineComment">// Otherwise they are always ignored.</span>
+P.bNewWindow = <span class="pidoc_sh_keyword">false</span>;         <span class="pidoc_sh_singleLineComment">// if true, read result into newly created image window. Implied</span>
+                              <span class="pidoc_sh_singleLineComment">// by Global Apply</span>
+P.bRescaleResult = <span class="pidoc_sh_keyword">false</span>;     <span class="pidoc_sh_singleLineComment">// if true, pixel values are rescaled to the PI range, in particular</span>
+                              <span class="pidoc_sh_singleLineComment">// [0,1] for real typed results. Otherwise, they are truncated if necessary.</span>
+P.bParam1 = <span class="pidoc_sh_keyword">false</span>;            <span class="pidoc_sh_singleLineComment">// defines if dParam1 is used. If used, it is appended to the command line</span>
+P.bParam2 = <span class="pidoc_sh_keyword">false</span>;            <span class="pidoc_sh_singleLineComment">// dito for dParam2</span>
+P.bParam3 = <span class="pidoc_sh_keyword">false</span>;            <span class="pidoc_sh_singleLineComment">// dito for dParam3</span>
+P.dParam1 = <span class="pidoc_sh_number">0.000</span>;            <span class="pidoc_sh_singleLineComment">// see bParam1</span>
+P.dParam2 = <span class="pidoc_sh_number">0.000</span>;            <span class="pidoc_sh_singleLineComment">// see bParam2</span>
+P.dParam3 = <span class="pidoc_sh_number">0.000</span>;            <span class="pidoc_sh_singleLineComment">// see bParam3</span>
+<span class="pidoc_sh_multiLineComment">/*
+ * Read-only properties. They are filled on termination of the process:
+ *
+P.nExitCode = 0; // Exit code of executable. 0 means success, any other value indicates a problem
+P.sStdOut = "";  // copy of the text written to stdOut by the executable.
+P.sStdErr = "";  // copy of the text written to stdErr by the executable.
+ */</span></pre>
+
+</div>
+
+<div class="pidoc_subsection" id="__Usage_:_Adding_Tools__">
+   <h4 class="pidoc_subsectionTitle">2.5&emsp;Adding Tools</h4>
+<p>Adding tools that are called by ExternalTool can be done in any compiled or scripting programming language that can produce an executable, i.e. C, C++, Fortran, Python, Java, Perl, ... . The fact that all the <a href="#examples">examples</a> currently provided are written in Python is only due to the fact that this is the author's favorite scripting language. When creating your own tools, consider the following hints:</p>
+
+<ul class="pidoc_list">
+<li> The prerequisites for using your tool with ExternalTool are:
+<ul class="pidoc_list">
+<li>The tool can be controlled by command line: You need to be able to tell your tool everything it needs for its operation by giving it command line options. This may exclude some heavily GUI oriented tools.</li>
+<li>It can read and write FITS files: This is the only image format currently supported by ExternalTool. If your tool does not read or write images, you may still be able to use it with the options described in <a href="#result">Source Image and Result</a>.</li>
+<li>The only communication between PI and the tool executable is via command line and image files. There is no way to make call backs from the tool to PixInsigght or vice versa.</li>
+</ul>
+
+</li>
+<li class="pidoc_spaced_list_item">If there is already a tool that does what you want, you may be able to directly use it by tweaking the options in <a href="#finetuningOptions">FineTuning options</a> or by directly specifying everything needed in the <a href="#selectExecutable">Options line</a>. A better idea however may be to write a small wrapper that translates between the command line created by ExternalTool and the one expected by the other program. This can often be done with some rather basic shell or Python scripts, see the <a href="#launchAladin">launchAladin</a> example.</li>
+<li class="pidoc_spaced_list_item">The external program may be terminated by PixInsight. Clean up if necessary.</li>
+<li class="pidoc_spaced_list_item"> Using the variables as defined for PJSR in <a href="#otherUses">Other Uses</a>, the command line sent to the external tool is the following:
+<ul class="pidoc_list">
+<li>if help button is pressed: sBinPath sOptions sHelpOptions</li>
+<li>otherwise: sBinBath [sGlobalOptions] [sResultOptions &lt;resultFileName&gt;] [sSourceOptions &lt;inputFileName&gt;] sOptions [dParam1 [dParam2 [dParam3]]]</li>
+</ul>
+
+</li>
+<li class="pidoc_spaced_list_item">The example executables discussed in <a href="#examples">Examples</a> may be a good starting point for your, especially if you know Python.</li>
+<li class="pidoc_spaced_list_item">If you need more information about the exact operation of ExternalTool: it is open source, and can be found the the PCL source distribution.</li>
+</ul>
+
+</div>
+
+   </div>
+</div>
+
+<div class="pidoc_section" id="__related_tools__">
+   <h3 class="pidoc_sectionTitle">Related Tools</h3>
+   <div id="related_tools">
+<p><a href="../../tools/FITSHeaders/FITSHeaders.html" title="../../tools/FITSHeaders/FITSHeaders.html">FITSHeaders</a></p>
+   </div>
+</div>
+
+<div class="pidoc_section" id="__related_scripts__">
+   <h3 class="pidoc_sectionTitle">Related Scripts</h3>
+   <div id="related_scripts">
+<p><a href="../../scripts/ImageSolver/ImageSolver.html" title="../../scripts/ImageSolver/ImageSolver.html">ImageSolver</a>, <a href="../../scripts/ManualSolver/ManualSolver.html" title="../../scripts/ManualSolver/ManualSolver.html">ManualSolver</a>, <a href="../../scripts/AnnotateImage/AnnotateImage.html" title="../../scripts/AnnotateImage/AnnotateImage.html">AnnotateImage</a></p>
+   </div>
+</div>
+
+<hr class="separator"/>
+
+<div id="copyright">
+   <p>Copyright &copy; 2015 Georg Viehoever</p>
+</div>
+
+<div id="footer">
+   <p>Generated by the PixInsight Documentation Compiler script version 1.6.1 on 2015-02-15 01:19:31 UTC</p>
+</div>
+<br/>
+<br/>
+
+</div> <!-- contents -->
+
+</body>
+</html>

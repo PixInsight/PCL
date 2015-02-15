@@ -30,6 +30,12 @@
 *.log
 *.tlog
 *.lastbuildstate
+# Backup files
+*~
+*\#
+# Makefiles/Project files by other systems
+.idea
+CMakeLists.txt
 # Folders
 host
 __private

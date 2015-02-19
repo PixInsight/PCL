@@ -1,12 +1,12 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
+// PixInsight Class Library - PCL 02.00.14.0695
 // ****************************************************************************
-// pcl/FileInfo.h - Released 2014/11/14 17:16:40 UTC
+// pcl/FileInfo.h - Released 2015/02/06 08:47:32 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015, Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -311,6 +311,11 @@ public:
     *
     * This member function only makes sense on UNIX/Linux platforms. On Windows
     * it always returns false.
+    *
+    * On POSIX systems, this function returns true only if the item represented
+    * has the S_IXUSR file mode bit set. This means that this function will
+    * normally return true for directories, since S_IXUSR/S_IXGRP/S_IXOTH
+    * represent standard search permissions for a directory.
     */
    bool IsExecutable() const
    {
@@ -436,4 +441,4 @@ private:
 #endif  // __PCL_FileInfo_h
 
 // ****************************************************************************
-// EOF pcl/FileInfo.h - Released 2014/11/14 17:16:40 UTC
+// EOF pcl/FileInfo.h - Released 2015/02/06 08:47:32 UTC

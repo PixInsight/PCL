@@ -1,12 +1,12 @@
 // ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
+// PixInsight Class Library - PCL 02.00.14.0695
 // ****************************************************************************
-// pcl/File.cpp - Released 2014/11/14 17:17:01 UTC
+// pcl/File.cpp - Released 2015/02/06 08:48:06 UTC
 // ****************************************************************************
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015, Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -2003,26 +2003,29 @@ static String CleanPath( const String& path )
 
 String File::FullPath( const String& filePath )
 {
+   String path = filePath.Trimmed();
+   if ( path.IsEmpty() )
+      return path;
+
 #ifdef __PCL_WINDOWS
 
-   String winPath = UnixPathToWindows( filePath );
+   String winPath = UnixPathToWindows( path );
 
    DWORD n = ::GetFullPathNameW( (LPCWSTR)winPath.c_str(), 0, 0, 0 );
-
    if ( n == 0 )
-      return filePath;
+      return path;
 
    String fullPath;
    fullPath.Reserve( n += 8 );
    LPWSTR dum;
    DWORD n1 = ::GetFullPathNameW( (LPCWSTR)winPath.c_str(), n, (LPWSTR)fullPath.c_str(), &dum );
 
-   return (n1 != 0 && n1 <= n) ? WindowsPathToUnix( WinLongPathName( fullPath ) ) : filePath;
+   return (n1 != 0 && n1 <= n) ? WindowsPathToUnix( WinLongPathName( fullPath ) ) : path;
 
 #else
 
-   if ( filePath.BeginsWith( '/' ) ) // absolute path
-      return CleanPath( filePath );
+   if ( path.BeginsWith( '/' ) ) // absolute path
+      return CleanPath( path );
 
    IsoString curDir;
    curDir.Reserve( PATH_MAX );
@@ -2032,7 +2035,7 @@ String File::FullPath( const String& filePath )
    if ( !curDir.EndsWith( '/' ) )
       curDir += '/';
 
-   return CleanPath( curDir.UTF8ToUTF16() + filePath );
+   return CleanPath( curDir.UTF8ToUTF16() + path );
 
 #endif
 }
@@ -2428,4 +2431,4 @@ bool File::IsValidHandle( handle h ) const
 }  // pcl
 
 // ****************************************************************************
-// EOF pcl/File.cpp - Released 2014/11/14 17:17:01 UTC
+// EOF pcl/File.cpp - Released 2015/02/06 08:48:06 UTC

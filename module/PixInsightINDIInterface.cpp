@@ -362,7 +362,6 @@ void PixInsightINDIInterface::UpdateDeviceList(){
 
 
 	}
-	//GUI->UpdateDeviceList_Timer.Stop();
 	GUI->DeviceList_TreeBox.EnableUpdates();
 
 }
@@ -812,9 +811,6 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 		GUI->PropertyList_TreeBox.EnableUpdates();
 		return;
 	}
-	if (indiClient.get()!=NULL){
-		indiClient.get()->m_mutex.Lock();
-	}
 	PropertyNodeFactory factory;
 	for (PixInsightINDIInstance::PropertyListType::iterator iter=instance.p_propertyList.Begin() ; iter!=instance.p_propertyList.End(); ++iter){
 
@@ -889,9 +885,6 @@ void PixInsightINDIInterface::UpdatePropertyList(){
 		if (iter!=instance.p_propertyList.End()){
 			iter->PropertyFlag=Idle;
 		}
-	}
-	if (indiClient.get()!=NULL){
-		indiClient.get()->m_mutex.Unlock();
 	}
 }
 

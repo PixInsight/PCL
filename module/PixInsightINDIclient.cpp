@@ -13,6 +13,10 @@ namespace pcl {
 
 
 	void INDIClient::runOnPropertyTable(IProperty* INDIProperty, const ArrayOperator<INDIPropertyListItem>* arrayOp, PropertyFlagType flag){
+
+		if (indiClient.get()!=NULL){
+			indiClient.get()->m_mutex.Lock();
+		}
 		String sep("/");
 		INDIPropertyListItem propertyListItem;
 		propertyListItem.Device=INDIProperty->getDeviceName();		
@@ -33,6 +37,9 @@ namespace pcl {
 		    if (m_ScriptInstance) {
 			  arrayOp->run(m_ScriptInstance->getPropertyList(), propertyListItem);
 		    }
+		}
+		if (indiClient.get()!=NULL){
+			indiClient.get()->m_mutex.Unlock();
 		}
 	}
 

@@ -1,8 +1,8 @@
 // ****************************************************************************
 // PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.03.0066
+// Standard CometAlignment Process Module Version 01.02.04.0067
 // ****************************************************************************
-// CometAlignmentInstance.h - Released 2015/02/10 19:50:08 UTC
+// CometAlignmentInstance.h - Released 2015/02/20 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -99,15 +99,16 @@ namespace pcl
       String date; // DATE-OBS yyyy-mm-ddThh:mm:ss[.sss...]
       double Jdate; // Julian Date
       double x, y; // Comet coordinates
+      String   drzPath; // drizzle data file
 
-      ImageItem (const String& p = String (), const String& d = String ()) : path (p), enabled (true), date (d), Jdate (GetJdate (d)), x (0), y (0)
+      ImageItem (const String& p = String (), const String& d = String ()) : path (p), enabled (true), date (d), Jdate (GetJdate (d)), x (0), y (0), drzPath()
       {
 #if debug
         Console ().WriteLn ("ImageItem(1)" + path + String ().Format (" x:%.3f, y:%.3f, jD:%f", x, y, Jdate));
 #endif
       }
 
-      ImageItem (const ImageItem & i) : path (i.path), enabled (i.enabled), date (i.date), Jdate (i.Jdate), x (i.x), y (i.y)
+      ImageItem (const ImageItem & i) : path (i.path), enabled (i.enabled), date (i.date), Jdate (i.Jdate), x (i.x), y (i.y), drzPath( i.drzPath )
       {
 #if debug
         Console ().WriteLn ("ImageItem(2)" + path + String ().Format (" x:%.3f, y:%.3f, jD:%f", x, y, Jdate));
@@ -197,4 +198,4 @@ namespace pcl
 #endif   // __CometAlignmentInstance_h
 
 // ****************************************************************************
-// EOF CometAlignmentInstance.h - Released 2015/02/10 19:50:08 UTC
+// EOF CometAlignmentInstance.h - Released 2015/02/20 19:50:08 UTC

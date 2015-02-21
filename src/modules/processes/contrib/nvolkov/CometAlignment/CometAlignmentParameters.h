@@ -1,8 +1,8 @@
 // ****************************************************************************
 // PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.03.0066
+// Standard CometAlignment Process Module Version 01.02.04.0067
 // ****************************************************************************
-// CometAlignmentParameters.h - Released 2015/02/10 19:50:08 UTC
+// CometAlignmentParameters.h - Released 2015/02/20 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -114,8 +114,15 @@ namespace pcl
     virtual double MinimumValue () const;
     virtual double MaximumValue () const;
   };
-  //--------------------------------------------------------------------------
+  //--------------------------------------------------------------------------  
+  class CADrizzlePath : public MetaString
+  {
+  public:
+    CADrizzlePath( MetaTable* );
+    virtual IsoString Id() const;
+  };
 
+  // ----------------------------------------------------------------------------
    class CAInputHints : public MetaString
    {
    public:
@@ -301,6 +308,8 @@ namespace pcl
    extern CATargetFrameJDate* TheTargetFrameJDate;
    extern CATargetFrameX* TheTargetFrameX;
    extern CATargetFrameY* TheTargetFrameY;
+   
+   extern CADrizzlePath* TheDrizzlePath;
 
    extern CAInputHints* TheCAInputHintsParameter;
    extern CAOutputHints* TheCAOutputHintsParameter;
@@ -330,4 +339,4 @@ namespace pcl
 #endif   // __CometAlignmentParameters_h
 
 // ****************************************************************************
-// EOF CometAlignmentParameters.h - Released 2015/02/10 19:50:08 UTC
+// EOF CometAlignmentParameters.h - Released 2015/02/20 19:50:08 UTC

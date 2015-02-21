@@ -1,8 +1,8 @@
 // ****************************************************************************
 // PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.03.0066
+// Standard CometAlignment Process Module Version 01.02.04.0067
 // ****************************************************************************
-// CometAlignmentInterface.h - Released 2015/02/10 19:50:08 UTC
+// CometAlignmentInterface.h - Released 2015/02/20 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -119,15 +119,18 @@ namespace pcl
       SectionBar TargetImages_SectionBar;
       Control TargetImages_Control;
       HorizontalSizer TargetImages_Sizer;
-      TreeBox TargetImages_TreeBox;
-      VerticalSizer TargetButtons_Sizer;
-      PushButton AddFiles_PushButton;
-      PushButton SelectAll_PushButton;
-      PushButton InvertSelection_PushButton;
-      PushButton ToggleSelected_PushButton;
-      PushButton RemoveSelected_PushButton;
-      PushButton Clear_PushButton;
-      CheckBox FullPaths_CheckBox;
+        TreeBox TargetImages_TreeBox;
+        VerticalSizer TargetButtons_Sizer;
+            PushButton AddFiles_PushButton;
+            PushButton AddDrizzleFiles_PushButton;
+            PushButton ClearDrizzleFiles_PushButton;
+            PushButton SetReference_PushButton;
+            PushButton SelectAll_PushButton;
+            PushButton InvertSelection_PushButton;
+            PushButton ToggleSelected_PushButton;
+            PushButton RemoveSelected_PushButton;
+            PushButton Clear_PushButton;
+            CheckBox   FullPaths_CheckBox;
 
       SectionBar        FormatHints_SectionBar;
       Control           FormatHints_Control;
@@ -241,6 +244,8 @@ namespace pcl
     void __ItemSelected (ComboBox& sender, int itemIndex);
 
 
+    String DrizzleTargetName( const String& filePath );
+    
     friend struct GUIData;
   };
 
@@ -257,4 +262,4 @@ namespace pcl
 #endif   // __CometAlignmentInterface_h
 
 // ****************************************************************************
-// EOF CometAlignmentInterface.h - Released 2015/02/10 19:50:08 UTC
+// EOF CometAlignmentInterface.h - Released 2015/02/20 19:50:08 UTC

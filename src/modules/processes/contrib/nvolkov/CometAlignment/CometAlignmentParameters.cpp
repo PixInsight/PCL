@@ -1,8 +1,8 @@
 // ****************************************************************************
 // PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.03.0066
+// Standard CometAlignment Process Module Version 01.02.04.0067
 // ****************************************************************************
-// CometAlignmentParameters.cpp - Released 2015/02/10 19:50:08 UTC
+// CometAlignmentParameters.cpp - Released 2015/02/20 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -64,6 +64,7 @@ CATargetFrameDate* TheTargetFrameDate = 0;
 CATargetFrameJDate* TheTargetFrameJDate = 0;
 CATargetFrameX* TheTargetFrameX = 0;
 CATargetFrameY* TheTargetFrameY = 0;
+CADrizzlePath*  TheDrizzlePath = 0;
 
 CAInputHints* TheCAInputHintsParameter = 0;
 CAOutputHints* TheCAOutputHintsParameter = 0;
@@ -208,6 +209,19 @@ double CATargetFrameY::MinimumValue () const
 double CATargetFrameY::MaximumValue () const
 {
    return 100000;
+}
+
+
+// ----------------------------------------------------------------------------
+
+CADrizzlePath::CADrizzlePath( MetaTable* T ) : MetaString( T )
+{
+   TheDrizzlePath = this;
+}
+
+IsoString CADrizzlePath::Id() const
+{
+   return "drizzlePath";
 }
 
 // ----------------------------------------------------------------------------
@@ -545,4 +559,4 @@ double CALinearClampingThreshold::MaximumValue () const
 } // pcl
 
 // ****************************************************************************
-// EOF CometAlignmentParameters.cpp - Released 2015/02/10 19:50:08 UTC
+// EOF CometAlignmentParameters.cpp - Released 2015/02/20 19:50:08 UTC

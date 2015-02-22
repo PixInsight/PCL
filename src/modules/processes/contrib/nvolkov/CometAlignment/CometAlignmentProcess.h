@@ -1,8 +1,8 @@
 // ****************************************************************************
 // PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.04.0067
+// Standard CometAlignment Process Module Version 01.02.05.0068
 // ****************************************************************************
-// CometAlignmentProcess.h - Released 2015/02/20 19:50:08 UTC
+// CometAlignmentProcess.h - Released 2015/02/22 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -89,4 +89,4 @@ namespace pcl
 #endif   // __CometAlignmentProcess_h
 
 // ****************************************************************************
-// EOF CometAlignmentProcess.h - Released 2015/02/20 19:50:08 UTC
+// EOF CometAlignmentProcess.h - Released 2015/02/22 19:50:08 UTC

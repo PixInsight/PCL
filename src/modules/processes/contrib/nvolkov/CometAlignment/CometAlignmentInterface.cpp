@@ -1,8 +1,8 @@
 // ****************************************************************************
 // PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.04.0067
+// Standard CometAlignment Process Module Version 01.02.05.0068
 // ****************************************************************************
-// CometAlignmentInterface.cpp - Released 2015/02/20 19:50:08 UTC
+// CometAlignmentInterface.cpp - Released 2015/02/22 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -897,7 +897,6 @@ void CometAlignmentInterface::__TargetImages_BottonClick (Button& sender, bool c
             IVector::iterator n = assigned.Begin();
             for ( CometAlignmentInstance::image_list::iterator j = m_instance.p_targetFrames.Begin(); j != m_instance.p_targetFrames.End(); ++j, ++n )
             {
-               //String name = GUI->StaticDrizzleTargets_CheckBox.IsChecked() ? File::ChangeExtension( j->path, String() ) : File::ExtractName( j->path );
                String name = File::ExtractName( j->path );
                if ( name == targetName )
                {
@@ -1736,4 +1735,4 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
 } // pcl
 
 // ****************************************************************************
-// EOF CometAlignmentInterface.cpp - Released 2015/02/20 19:50:08 UTC
+// EOF CometAlignmentInterface.cpp - Released 2015/02/22 19:50:08 UTC

@@ -1,8 +1,8 @@
 // ****************************************************************************
 // PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.04.0067
+// Standard CometAlignment Process Module Version 01.02.05.0068
 // ****************************************************************************
-// CometAlignmentInstance.h - Released 2015/02/20 19:50:08 UTC
+// CometAlignmentInstance.h - Released 2015/02/22 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -152,7 +152,7 @@ namespace pcl
 
     typedef Array<ImageItem> image_list;
 
-    ImageVariant* m_CometImage;
+    ImageVariant* m_OperandImage;
     Rect m_geometry;
 
     // instance ---------------------------------------------------------------
@@ -181,7 +181,7 @@ namespace pcl
 
 
     inline thread_list LoadTargetFrame (size_t fileIndex);
-    inline String OutputFilePath (const String&, const size_t);
+    inline String OutputFilePath (const String&);
     inline void SaveImage (const CAThread*);
     inline void InitPixelInterpolation ();
     inline DImage GetCometImage (const String&);
@@ -198,4 +198,4 @@ namespace pcl
 #endif   // __CometAlignmentInstance_h
 
 // ****************************************************************************
-// EOF CometAlignmentInstance.h - Released 2015/02/20 19:50:08 UTC
+// EOF CometAlignmentInstance.h - Released 2015/02/22 19:50:08 UTC

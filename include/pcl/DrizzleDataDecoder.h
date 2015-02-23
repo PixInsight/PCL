@@ -490,7 +490,7 @@ public:
       Initialize();
    }
 
-private:
+protected:
 
    typedef SurfaceSplines::spline       spline;
    typedef Array<Point>                 rejection_coordinates;

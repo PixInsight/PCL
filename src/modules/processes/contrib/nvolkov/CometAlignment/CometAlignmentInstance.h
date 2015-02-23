@@ -179,8 +179,7 @@ namespace pcl
 
     // -------------------------------------------------------------------------
 
-
-    inline thread_list LoadTargetFrame (size_t fileIndex);
+	inline thread_list LoadTargetFrame (size_t fileIndex);
     inline String OutputFilePath (const String&);
     inline void SaveImage (const CAThread*);
     inline void InitPixelInterpolation ();

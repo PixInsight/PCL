@@ -180,9 +180,9 @@ namespace pcl
     // -------------------------------------------------------------------------
 
 	inline thread_list LoadTargetFrame (size_t fileIndex);
-    inline String OutputFilePath (const String&, const String&);
-	void Save (const ImageVariant*, const CAThread*, const int8);
-    inline void SaveImage (const CAThread*);
+    inline String OutputImgPath (const String&, const String&);
+	void Save (const ImageVariant*, CAThread*, const int8);
+    inline void SaveImage ( CAThread*);
     inline void InitPixelInterpolation ();
     inline DImage GetCometImage (const String&);
     inline ImageVariant* LoadOperandImage (const String& filePath);

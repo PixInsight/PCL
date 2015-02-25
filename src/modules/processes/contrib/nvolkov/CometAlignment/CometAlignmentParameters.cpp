@@ -82,7 +82,8 @@ CANormalize* TheNormalize = 0;
 CAEnableLinearFit* TheEnableLinearFit = 0;
 CARejectLow* TheRejectLow = 0;
 CARejectHigh* TheRejectHigh = 0;
-
+CADrzSaveSA* TheDrzSaveSA =0;
+CADrzSaveCA* TheDrzSaveCA =0;
 
 CAPixelInterpolation* ThePixelInterpolationParameter = 0;
 CALinearClampingThreshold* TheLinearClampingThresholdParameter = 0;
@@ -477,6 +478,39 @@ double CARejectHigh::DefaultValue () const
    return 0.92;
 }
 
+// ----------------------------------------------------------------------------
+
+CADrzSaveSA::CADrzSaveSA (MetaProcess* P) : MetaBoolean (P)
+{
+   TheDrzSaveSA = this;
+}
+
+IsoString CADrzSaveSA::Id () const
+{
+   return "drzSaveStarsAligned";
+}
+
+bool CADrzSaveSA::DefaultValue () const
+{
+   return true;
+}
+
+// ----------------------------------------------------------------------------
+
+CADrzSaveCA::CADrzSaveCA (MetaProcess* P) : MetaBoolean (P)
+{
+   TheDrzSaveCA = this;
+}
+
+IsoString CADrzSaveCA::Id () const
+{
+   return "drzSaveCometAligned";
+}
+
+bool CADrzSaveCA::DefaultValue () const
+{
+   return true;
+}
 // ----------------------------------------------------------------------------
 
 CAPixelInterpolation::CAPixelInterpolation (MetaProcess* p) : MetaEnumeration (p)

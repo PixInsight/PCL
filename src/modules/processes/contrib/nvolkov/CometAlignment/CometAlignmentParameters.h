@@ -251,6 +251,25 @@ namespace pcl
     virtual bool DefaultValue () const;
   };
 
+  // ----------------------------------------------------------------------------
+
+  class CADrzSaveSA : public MetaBoolean
+  {
+  public:
+    CADrzSaveSA (MetaProcess*);
+    virtual IsoString Id () const;
+    virtual bool DefaultValue () const;
+  };
+
+  // ----------------------------------------------------------------------------
+
+  class CADrzSaveCA : public MetaBoolean
+  {
+  public:
+    CADrzSaveCA (MetaProcess*);
+    virtual IsoString Id () const;
+    virtual bool DefaultValue () const;
+  };
 
   // ----------------------------------------------------------------------------
 
@@ -327,6 +346,8 @@ namespace pcl
    extern CARejectLow* TheRejectLow;
    extern CARejectHigh* TheRejectHigh;
    extern CANormalize* TheNormalize;
+   extern CADrzSaveSA* TheDrzSaveSA;
+   extern CADrzSaveCA* TheDrzSaveCA;
 
    extern CAPixelInterpolation* ThePixelInterpolationParameter;
    extern CALinearClampingThreshold* TheLinearClampingThresholdParameter;

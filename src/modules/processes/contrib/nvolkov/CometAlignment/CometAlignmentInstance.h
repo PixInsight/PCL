@@ -172,6 +172,8 @@ namespace pcl
     pcl_bool p_enableLinearFit;
     float p_rejectLow;
     float p_rejectHigh;
+	pcl_bool p_drzSaveSA;
+	pcl_bool p_drzSaveCA;
 
     // Pixel interpolation
     pcl_enum p_pixelInterpolation; // bicubic spline | bilinear | nearest neighbor

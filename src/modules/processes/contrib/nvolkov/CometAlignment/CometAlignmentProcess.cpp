@@ -98,6 +98,8 @@ CometAlignmentProcess::CometAlignmentProcess () : MetaProcess ()
    new CARejectLow (this);
    new CARejectHigh (this);
    new CANormalize (this);
+   new CADrzSaveSA (this);
+   new CADrzSaveCA (this);
 
    new CAPixelInterpolation (this);
    new CALinearClampingThreshold (this);

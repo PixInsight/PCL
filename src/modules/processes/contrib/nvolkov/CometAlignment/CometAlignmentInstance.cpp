@@ -84,6 +84,8 @@ p_normalize (TheNormalize->DefaultValue ()),
 p_enableLinearFit (TheEnableLinearFit->DefaultValue ()),
 p_rejectLow (TheRejectLow->DefaultValue ()),
 p_rejectHigh (TheRejectHigh->DefaultValue ()),
+p_drzSaveSA (TheDrzSaveSA->DefaultValue ()),
+p_drzSaveCA (TheDrzSaveCA->DefaultValue ()),
 p_pixelInterpolation (ThePixelInterpolationParameter->DefaultValueIndex ()),
 p_linearClampingThreshold (TheLinearClampingThresholdParameter->DefaultValue ()) { }
 
@@ -112,6 +114,8 @@ void CometAlignmentInstance::Assign (const ProcessImplementation& p)
       p_rejectLow = x->p_rejectLow;
       p_rejectHigh = x->p_rejectHigh;
       p_normalize = x->p_normalize;
+	  p_drzSaveSA = x->p_drzSaveSA;
+	  p_drzSaveCA = x->p_drzSaveCA;
       p_subtractMode = x->p_subtractMode;
       p_pixelInterpolation = x->p_pixelInterpolation;
       p_linearClampingThreshold = x->p_linearClampingThreshold;
@@ -206,7 +210,9 @@ public:
    linear_fit_set
    Fit (const ImageVariant& image, const ImageVariant& reference)
    {
+	  #if debug
 	  Console().Write("Calc LF ");
+	  #endif
       if (!image.IsComplexSample ())
          if (image.IsFloatSample ())
             switch (image.BitsPerSample ())
@@ -232,7 +238,9 @@ public:
    void
    Apply (ImageVariant& image, const linear_fit_set& L)
    {
+	   #if debug
 	   Console().Write("Apply LF ");
+	   #endif
       if (!image.IsComplexSample ())
          if (image.IsFloatSample ())
             switch (image.BitsPerSample ())
@@ -794,7 +802,9 @@ private:
 
 	   if (!i->p_normalize || cimg.IsComplexSample() )
 		   return;
+	   #if debug
 	   Console().Write("Normalize ");
+	   #endif
 	   if (cimg.IsFloatSample ())
 		   switch (cimg.BitsPerSample ())
 	   {
@@ -849,7 +859,9 @@ private:
  
    void HomographyApplyTo(ImageVariant& image, const Matrix M )
 	{
+		#if debug
 		Console().Write("Homography ");
+		#endif
 		if (!image.IsComplexSample ())
 		{
       if (image.IsFloatSample ())
@@ -1106,9 +1118,7 @@ void CometAlignmentInstance::Save(const ImageVariant* img, CAThread* t, const in
 	bool drizzle(t->isDrizzle());					//true == drizle used
 	bool operand(!p_subtractFile.IsEmpty());		//true == operand used
 	DPoint delta(t->Delta());						//comet movement delta
-	//Matrix deltaMatrix(DeltaToMatrix(delta));		//comet movement matrix
-	Matrix starMatrix(t->DrzMatrix());				//starAlignment matrix	
-	//Matrix M;										//Result matrix	
+
 	LinearFitEngine::linear_fit_set L;				//LinearFit result
 
 	if ( operand && p_enableLinearFit && mode==0 )
@@ -1143,11 +1153,6 @@ void CometAlignmentInstance::Save(const ImageVariant* img, CAThread* t, const in
    if (data.fsData != 0)
       if (outputFormat.ValidateFormatSpecificData (data.fsData)) outputFile.SetFormatSpecificData (data.fsData);
 
-   /*
-    * Add FITS header keywords and preserve existing ones, if possible.
-    * NB: A COMMENT or HISTORY keyword cannot have a value; these keywords have
-    * only the name and comment components.
-    */
    if (outputFormat.CanStoreKeywords ())
    {
       FITSKeywordArray keywords = data.keywords;
@@ -1171,33 +1176,7 @@ void CometAlignmentInstance::Save(const ImageVariant* img, CAThread* t, const in
          }
          keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.Normalize: " + IsoString( p_normalize ? "true" : "false") ) );
       }
-	  if(drizzle)
-	  {
-		  if(operand)
-		  {
-			  switch(mode)
-			  {
-			  case 0: //new not registred pureStar or pureComet image
-				  //write none 
-				  break; 
-			  case 1: //new pureStarRegistred image
-				  //write starMatrix
-				  break;	
-			  case 2: //new pureCometRegistred image
-				  //write starMatrix + delta
-				  break;	
-			  }
-			  
-		  }
-		  else
-		  {
-			  //write delta
-		  }
-	  }
-	  else
-	  {
-		  //write delta
-	  }
+
 	  keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.X: " + IsoString(delta.x)));
       keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.Y:" +IsoString(delta.y)));
 
@@ -1224,7 +1203,7 @@ void CometAlignmentInstance::Save(const ImageVariant* img, CAThread* t, const in
 	   if(operand && mode==0) //new not registred drizzle integrable image writen 
 		   t->TargetPath(outputImgPath);//store path to CAThread
 	   else // create .drz file
-		   UpdateSADrizzleFileForCA( inputImgPath, outputImgPath, delta, starMatrix, !p_subtractFile.IsEmpty(), mode, img->Width(), img->Height() );
+		   UpdateSADrizzleFileForCA( inputImgPath, outputImgPath, delta, t->DrzMatrix(), !p_subtractFile.IsEmpty(), mode, img->Width(), img->Height() );
    }
 }
 void CometAlignmentInstance::SaveImage ( CAThread* t)
@@ -1431,6 +1410,7 @@ bool CometAlignmentInstance::ExecuteGlobal ()
                   i = j;
                   break; // i pointed to CPU thread which ready to save.
                }
+			   #if debug
 			   else //the CPU IsActive
 			   {
 				   if((*j)->HasConsoleOutputText())
@@ -1440,6 +1420,7 @@ bool CometAlignmentInstance::ExecuteGlobal ()
 					   (*j)->FlushConsoleOutputText();
 				   }
 			   }
+			   #endif
             }
 
             if (i == 0) // all CPU IsActive or no new images
@@ -1562,7 +1543,8 @@ void* CometAlignmentInstance::LockParameter (const MetaParameter* p, size_type t
    if (p == TheEnableLinearFit) return &p_enableLinearFit;
    if (p == TheRejectLow) return &p_rejectLow;
    if (p == TheRejectHigh) return &p_rejectHigh;
-
+   if (p == TheDrzSaveSA) return &p_drzSaveSA;
+   if (p == TheDrzSaveCA) return &p_drzSaveCA;
 
    if (p == TheLinearClampingThresholdParameter) return &p_linearClampingThreshold;
    if (p == ThePixelInterpolationParameter) return &p_pixelInterpolation;

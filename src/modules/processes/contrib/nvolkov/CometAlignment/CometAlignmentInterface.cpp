@@ -428,16 +428,31 @@ void CometAlignmentInterface::SetReference (const int index)
 
 void CometAlignmentInterface::UpdateSubtractSection ()
 {
-   const bool d(m_instance.p_subtractFile.IsEmpty());
+   bool d(m_instance.p_subtractFile.IsEmpty());
    GUI->SubtractMode_CheckBox.Disable(d);
    GUI->Normalize_CheckBox.Disable(d);
    GUI->LinearFit_CheckBox.Disable(d);
    GUI->RejectLow_NumericControl.Disable(d);
    GUI->RejectHigh_NumericControl.Disable(d);
+   GUI->DrzSaveSA_CheckBox.Disable();
+   GUI->DrzSaveCA_CheckBox.Disable();
+   d = (!drizzle || d);
+   Console().WriteLn(String(drizzle));
+   GUI->DrzSaveSA_CheckBox.Disable(d);
+   GUI->DrzSaveCA_CheckBox.Disable(d);
+   if(d)
+   {
+	   GUI->DrzSaveSA_CheckBox.Hide();
+	   GUI->DrzSaveCA_CheckBox.Hide();
+   }
+   else
+   {
+	   GUI->DrzSaveSA_CheckBox.Show();
+	   GUI->DrzSaveCA_CheckBox.Show();
+   }
 }
 
 void CometAlignmentInterface::UpdateControls ()
-
 {
    m_pos1 = m_pos0 = 0;
    GUI->InputHints_Edit.SetText( m_instance.p_inputHints );
@@ -463,11 +478,13 @@ void CometAlignmentInterface::UpdateControls ()
    GUI->LinearFit_CheckBox.SetChecked (m_instance.p_enableLinearFit);
    GUI->RejectLow_NumericControl.SetValue (m_instance.p_rejectLow);
    GUI->RejectHigh_NumericControl.SetValue (m_instance.p_rejectHigh);
-
-   UpdateSubtractSection();
-
+   GUI->DrzSaveSA_CheckBox.SetChecked (m_instance.p_drzSaveSA);
+   GUI->DrzSaveCA_CheckBox.SetChecked (m_instance.p_drzSaveCA);
+   
    UpdateTargetImagesList ();
    UpdateImageSelectionButtons ();
+   
+   UpdateSubtractSection();
 }
 
 void CometAlignmentInterface::UpdateTargetImageItem (size_type i)
@@ -495,6 +512,8 @@ void CometAlignmentInterface::UpdateTargetImageItem (size_type i)
    String fileText;
    if ( !item.drzPath.IsEmpty() )
       fileText = "<d> ";
+   else
+	   drizzle = false; // disable drizzle because not all images have .dzr file
    if ( GUI->FullPaths_CheckBox.IsChecked() )
       fileText.Append( item.path );
    else
@@ -543,12 +562,11 @@ void CometAlignmentInterface::UpdateTargetImageItem (size_type i)
 }
 
 void CometAlignmentInterface::UpdateTargetImagesList ()
-
 {
 #if debug
    Console ().WriteLn ("Init TargetImages_TreeBox Start");
 #endif
-
+   drizzle = false;
    GUI->TargetImages_TreeBox.Clear ();
    m_pos0.MoveTo (0, 0);
    m_pos1 = m_pos0;
@@ -562,7 +580,6 @@ void CometAlignmentInterface::UpdateTargetImagesList ()
 
 
    if (m_length != 0)
-
    {
       // Set m_date0, m_date1, x0,y0,x1,y1, delta( x,y,date ) m_path0, m_path1 -----------------------------------------
       const CometAlignmentInstance::ImageItem* item;
@@ -591,9 +608,8 @@ void CometAlignmentInterface::UpdateTargetImagesList ()
 
       // Create TargetImages_TreeBox --------------------------------------------------------------------------
       GUI->TargetImages_TreeBox.DisableUpdates ();
-
+	  drizzle = true;
       for (size_type i = 0; i < m_length; ++i)
-
       {
          new TreeBox::Node (GUI->TargetImages_TreeBox);
          UpdateTargetImageItem (i);
@@ -1098,6 +1114,10 @@ void CometAlignmentInterface::__Button_Click (Button& sender, bool checked)
       m_instance.p_enableLinearFit = checked;
    else if (sender == GUI->Normalize_CheckBox)
       m_instance.p_normalize = checked;
+   else if (sender == GUI->DrzSaveSA_CheckBox)
+      m_instance.p_drzSaveSA = checked;
+   else if (sender == GUI->DrzSaveCA_CheckBox)
+      m_instance.p_drzSaveCA = checked;
 
    else if (sender == GUI->File0_PushButton && !m_instance.p_targetFrames.IsEmpty ())
       FileShow (m_instance.p_targetFrames.Begin ()->path);
@@ -1616,11 +1636,26 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
 	
    //
 
+   const char* ToolTipDrzSave = "<p>When selected .drz and subtraction operand Image, a new not aligned drizzle integrable image will writen."
+	   " i.e. not aligned pure Stars or pure Comet image."
+	   " So we can create new StarsAligned and CometAligned images and ofcourse .drz files. Which can be used for DrizzleIntegration </p>";
+   DrzSaveSA_CheckBox.SetText ("Save StarsAligned result");
+   DrzSaveSA_CheckBox.SetToolTip (ToolTipDrzSave);   
+   DrzSaveSA_CheckBox.OnClick ((Button::click_event_handler) & CometAlignmentInterface::__Button_Click, w);
+
+   DrzSaveCA_CheckBox.SetText ("Save CometAligned result");
+   DrzSaveCA_CheckBox.SetToolTip (ToolTipDrzSave);   
+   DrzSaveCA_CheckBox.OnClick ((Button::click_event_handler) & CometAlignmentInterface::__Button_Click, w);
+
+   //
+
    Subtract_Sizer.SetSpacing (4);
    Subtract_Sizer.Add (SubtractFile_Sizer);
    Subtract_Sizer.Add (SubtractChekers_Sizer);
    Subtract_Sizer.Add (RejectLow_NumericControl);
    Subtract_Sizer.Add (RejectHigh_NumericControl);
+   Subtract_Sizer.Add (DrzSaveSA_CheckBox);
+   Subtract_Sizer.Add (DrzSaveCA_CheckBox);
 
 
    //---------------------------------------------------

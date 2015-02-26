@@ -61,6 +61,7 @@
 #include <pcl/CheckBox.h>
 #include <pcl/GroupBox.h>
 #include <pcl/ComboBox.h>
+#include <pcl/RadioButton.h>
 
 #include "CometAlignmentInstance.h"
 
@@ -178,19 +179,27 @@ namespace pcl
 	SectionBar		Subtract_SectionBar;
 	Control			Subtract_Control;
 	VerticalSizer	Subtract_Sizer;
-		HorizontalSizer		SubtractFile_Sizer;
+		HorizontalSizer	SubtractFile_Sizer;
 			Label			SubtractFile_Label;
 			Edit			SubtractFile_Edit;
 			ToolButton		SubtractFile_SelectButton;
 			ToolButton		SubtractFile_ClearButton;
+		HorizontalSizer	SubtractImgOption_Sizer;
+			GroupBox        SubtractImgType_GroupBox;
+			VerticalSizer	SubtractImgType_Sizer;
+				RadioButton		SubtractStars_RadioButton;
+				RadioButton		SubtractComet_RadioButton;
+			GroupBox		DrzSave_GroupBox;
+			VerticalSizer	DrzSave_Sizer;
+				CheckBox		DrzSaveSA_CheckBox;
+				CheckBox	    DrzSaveCA_CheckBox;
+			//CheckBox		SubtractMode_CheckBox; //to-do: delete it
+
 		HorizontalSizer	SubtractChekers_Sizer;
-			CheckBox		SubtractMode_CheckBox;
 			CheckBox		LinearFit_CheckBox;
 			CheckBox		Normalize_CheckBox;
 			NumericControl	RejectLow_NumericControl;
 			NumericControl	RejectHigh_NumericControl;
-		CheckBox		DrzSaveSA_CheckBox;
-		CheckBox		DrzSaveCA_CheckBox;
 		
 	SectionBar		Interpolation_SectionBar;
 	Control			Interpolation_Control;

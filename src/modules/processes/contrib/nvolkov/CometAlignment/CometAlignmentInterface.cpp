@@ -1547,13 +1547,13 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
 
    // Subtract Section Bar & Control
    const char* ToolTipSubtract = "<p>The selected image will be subtracted from each target image.</p>"
-           "<p>With <i>Mode</i> checked: Selected Image (usually pure comet image) "
-               "will be comet aligned to every target frame and subtracted from it"
-               ", i.e. resulting in frames with erased comet and without aligning change.</p>"
-           "<p>With <i>Mode</i> uncheked: Selected Image (usually pure star field) "
-               "will be subtracted from every target frame and each result will be comet aligned using reference frame"
-               ", i.e. resulting in frames aligned to comet without stars.</p>"
-			  "<p>Warning: Sorry, but current version of CometAlignment don't support drizzle in subtraction mode.</p>";
+           "<p>With <i>Comet Aligned</i> checked: Selected Operand Image (usually pure comet image) "
+               "will be aligned to comet position in every target frame and subtracted from it.</p>"
+           "<p>With <i>Stars Aligned</i> checked: Selected Operand Image (usually pure star field)"
+		   " will be subtracted from every target frame and result will be comet aligned to comet position in reference frame.</p>"
+			  "<p>Note: In Drizzle mode (when .dzr file added), the module uses for all manipulation original not registered images."
+			  " So we can create comet aligned image directly from non registered original, i.e. avoid double registration."
+			  " Also, if .dzr file and Operand for subtraction selected, the module will write new not registered DrizzleIntegrable original.</p>";
 
    Subtract_Control.SetSizer (Subtract_Sizer);
    Subtract_SectionBar.SetTitle ("Subtract");
@@ -1589,14 +1589,13 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    //
    
    SubtractStars_RadioButton.SetText( "Stars aligned" );
-   //SubtractStars_RadioButton.SetToolTip( "Extract/delete the active (first) alpha channel only." );
+   SubtractStars_RadioButton.SetToolTip( "The Operand image is star aligned to Reference image." );
    SubtractStars_RadioButton.OnClick ((Button::click_event_handler) & CometAlignmentInterface::__Button_Click, w);
 
    SubtractComet_RadioButton.SetText( "Comet aligned" );
-   //SubtractComet_RadioButton.SetToolTip( "Extract/delete all existing alpha channels." );
+   SubtractComet_RadioButton.SetToolTip( "The Operand image is comet aligned to Reference image." );
    SubtractComet_RadioButton.OnClick ((Button::click_event_handler) & CometAlignmentInterface::__Button_Click, w);
-
-
+   
 
    //SubtractImgType_Sizer.Add
    SubtractImgType_Sizer.SetMargin( 6 );
@@ -1636,12 +1635,7 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    SubtractImgOption_Sizer.Add (DrzSave_GroupBox);
    SubtractImgOption_Sizer.AddStretch();
 
-   //
-   //SubtractMode_CheckBox.SetText ("Mode");
-   //SubtractMode_CheckBox.SetToolTip (ToolTipSubtract);
-   //SubtractMode_CheckBox.OnClick ((Button::click_event_handler) & CometAlignmentInterface::__Button_Click, w);
-
-   //
+    //
    Normalize_CheckBox.SetText ("Normalize");
    Normalize_CheckBox.SetToolTip ("<p>Normalize median after subtraction.</p>");
    Normalize_CheckBox.OnClick ((Button::click_event_handler) & CometAlignmentInterface::__Button_Click, w);

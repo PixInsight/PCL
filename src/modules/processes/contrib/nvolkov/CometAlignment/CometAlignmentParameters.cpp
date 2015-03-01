@@ -78,6 +78,7 @@ CAReference* TheReference = 0;
 
 CASubtractFile* TheSubtractFile = 0;
 CASubtractMode* TheSubtractMode = 0;
+CAOperandIsDI* TheOperandIsDI = 0;
 CANormalize* TheNormalize = 0;
 CAEnableLinearFit* TheEnableLinearFit = 0;
 CARejectLow* TheRejectLow = 0;
@@ -511,6 +512,23 @@ bool CADrzSaveCA::DefaultValue () const
 {
    return true;
 }
+// ----------------------------------------------------------------------------
+
+CAOperandIsDI::CAOperandIsDI (MetaProcess* P) : MetaBoolean (P)
+{
+   TheOperandIsDI = this;
+}
+
+IsoString CAOperandIsDI::Id () const
+{
+   return "operandIsDI";
+}
+
+bool CAOperandIsDI::DefaultValue () const
+{
+   return true;
+}
+
 // ----------------------------------------------------------------------------
 
 CAPixelInterpolation::CAPixelInterpolation (MetaProcess* p) : MetaEnumeration (p)

@@ -56,7 +56,7 @@
 
 #include "CometAlignmentParameters.h"
 
-//#define debug 1
+#define debug 1
 #if debug
 #include <pcl/StdStatus.h>
 #endif
@@ -65,6 +65,7 @@ namespace pcl
 {
 
   // ----------------------------------------------------------------------------
+  class CometAlignmentInterface;
   class CAThread;
   struct CAThreadData;
 
@@ -167,7 +168,8 @@ namespace pcl
     size_t p_reference;
     //Operand subtracting
     String p_subtractFile;
-    pcl_bool p_subtractMode; // true = move operand and subtract from target, false = subtract operand from target and move
+	pcl_bool p_OperandIsDI; // true == Subtraction Operand have DrizzleIntegration origin
+    pcl_bool p_subtractMode; // true == move operand and subtract from target, false = subtract operand from target and move
     pcl_bool p_normalize;
     pcl_bool p_enableLinearFit;
     float p_rejectLow;

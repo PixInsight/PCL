@@ -273,6 +273,16 @@ namespace pcl
 
   // ----------------------------------------------------------------------------
 
+  class CAOperandIsDI : public MetaBoolean
+  {
+  public:
+    CAOperandIsDI (MetaProcess*);
+    virtual IsoString Id () const;
+    virtual bool DefaultValue () const;
+  };
+
+  // ----------------------------------------------------------------------------
+
   class CAPixelInterpolation : public MetaEnumeration
   {
   public:
@@ -342,6 +352,7 @@ namespace pcl
 
    extern CASubtractFile* TheSubtractFile;
    extern CASubtractMode* TheSubtractMode;
+   extern CAOperandIsDI* TheOperandIsDI;
    extern CAEnableLinearFit* TheEnableLinearFit;
    extern CARejectLow* TheRejectLow;
    extern CARejectHigh* TheRejectHigh;

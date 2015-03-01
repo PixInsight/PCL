@@ -117,6 +117,7 @@ namespace pcl
 
       VerticalSizer Global_Sizer;
 
+	  TreeBox Monitor_TreeBox;
       SectionBar TargetImages_SectionBar;
       Control TargetImages_Control;
       HorizontalSizer TargetImages_Sizer;
@@ -185,16 +186,18 @@ namespace pcl
 			ToolButton		SubtractFile_SelectButton;
 			ToolButton		SubtractFile_ClearButton;
 		HorizontalSizer	SubtractImgOption_Sizer;
-			GroupBox        SubtractImgType_GroupBox;
-			VerticalSizer	SubtractImgType_Sizer;
+			GroupBox        SubtractOrigin_GroupBox;
+			VerticalSizer	SubtractOrigin_Sizer;
+				RadioButton		SubtractII_RadioButton;
+				RadioButton		SubtractDI_RadioButton;
+			GroupBox        SubtractImgType_GroupBox;			
+			VerticalSizer	SubtractImgType_Sizer;	
 				RadioButton		SubtractStars_RadioButton;
 				RadioButton		SubtractComet_RadioButton;
 			GroupBox		DrzSave_GroupBox;
 			VerticalSizer	DrzSave_Sizer;
 				CheckBox		DrzSaveSA_CheckBox;
 				CheckBox	    DrzSaveCA_CheckBox;
-			//CheckBox		SubtractMode_CheckBox; //to-do: delete it
-
 		HorizontalSizer	SubtractChekers_Sizer;
 			CheckBox		LinearFit_CheckBox;
 			CheckBox		Normalize_CheckBox;
@@ -258,6 +261,7 @@ namespace pcl
     String DrizzleTargetName( const String& filePath );
     
     friend struct GUIData;
+	friend class  CometAlignmentInstance;
   };
 
   // ----------------------------------------------------------------------------

@@ -100,6 +100,7 @@ CometAlignmentProcess::CometAlignmentProcess () : MetaProcess ()
    new CANormalize (this);
    new CADrzSaveSA (this);
    new CADrzSaveCA (this);
+   new CAOperandIsDI (this);
 
    new CAPixelInterpolation (this);
    new CALinearClampingThreshold (this);

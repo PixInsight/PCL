@@ -599,6 +599,7 @@ public:
    target (t), fileData (fd), targetPath (tp), delta (d), drizzle(dzr), drzMatrix(m), operand (o)
    {
 	   monitor = "Prepare";
+	   monitor2 = 0;
 	   i = _instance;
    }
 
@@ -1366,8 +1367,6 @@ bool CometAlignmentInstance::ExecuteGlobal ()
    Console console;
    console.Show ();
    
-
-
    String why;
    if (!CanExecuteGlobal (why)) throw Error (why);
 
@@ -1416,22 +1415,48 @@ bool CometAlignmentInstance::ExecuteGlobal ()
 
       thread_list waitingThreads; //container for hold images from next image. One or more if file is multi image	
 	  
-	  monitor.SetFixedWidth(TheCometAlignmentInterface->GUI->TargetImages_Control.Width());
-	  TheCometAlignmentInterface->GUI->Interpolation_Control.Hide();
+	  // Create Monitor to show processing status -------------------------------------------
+	  // Hide main GUI
+	  TheCometAlignmentInterface->GUI->Interpolation_Control.Hide();	  
+	  TheCometAlignmentInterface->GUI->Interpolation_SectionBar.Hide();
 	  TheCometAlignmentInterface->GUI->FormatHints_Control.Hide();
-	  TheCometAlignmentInterface->GUI->Output_Control.Hide();   
-	  TheCometAlignmentInterface->GUI->Parameter_Control.Hide();   
+	  TheCometAlignmentInterface->GUI->FormatHints_SectionBar.Hide();
+	  TheCometAlignmentInterface->GUI->Output_Control.Hide(); 
+	  TheCometAlignmentInterface->GUI->Output_SectionBar.Hide();
+	  TheCometAlignmentInterface->GUI->Parameter_Control.Hide();  
+	  TheCometAlignmentInterface->GUI->Parameter_SectionBar.Hide(); 
 	  TheCometAlignmentInterface->GUI->Subtract_Control.Hide();
+	  TheCometAlignmentInterface->GUI->Subtract_SectionBar.Hide();
 	  TheCometAlignmentInterface->GUI->TargetImages_Control.Hide();
-	  monitor.Show();
-	  //TheCometAlignmentInterface->AdjustToContents(); 
+	  TheCometAlignmentInterface->GUI->TargetImages_SectionBar.Hide();
+	  const bool fullPath(TheCometAlignmentInterface->GUI->FullPaths_CheckBox.IsChecked());
+   
+	  monitor.SetFixedHeight((runningThreads.Length()+3)*monitor.Font().Height()); //set monitor height according qty of runningThreads Length 
 
 	  for(int cpu=0; cpu < runningThreads.Length(); cpu++)
-	  {
-		  TreeBox::Node* node = new TreeBox::Node(monitor);
-		  node->SetText (0, "CPU"+String (cpu)); //CPU#
-	  }	 
+		  (new TreeBox::Node(monitor))->SetText (0, String (cpu));	 
+
+	  monitor.AdjustColumnWidthToContents(0);
+
 	  
+	  monitor.SetColumnWidth(1,TheCometAlignmentInterface->GUI->TargetImages_TreeBox.ColumnWidth(2)); //== fileName width 
+	  monitor.SetColumnWidth(2,monitor.Font().Width(String("Align PureComet")+"MM"));
+	  monitor.SetColumnWidth(3,TheCometAlignmentInterface->GUI->TargetImages_TreeBox.ColumnWidth(5)); //== Y width
+
+	  // Correcting width of Monitor_TreeBox -------------------------------------------
+	  monitor.Show();	  
+	  const int lastColumn = monitor.NumberOfColumns() - 1;
+	  monitor.ShowColumn (lastColumn); // temporarry show last column, which uset only for GUI width expansion
+	  monitor.SetColumnWidth (lastColumn, 0); // set width of last column to zero
+	  int width = 0;
+	  for (int i = 0; i < lastColumn; i++)
+		  width += monitor.ColumnWidth (i); // calculate total width of columns
+
+	  monitor.SetFixedWidth (width);
+	  monitor.HideColumn (lastColumn); // hide last column to hide horisontal scroling
+	  
+	  TheCometAlignmentInterface->Restyle ();
+	  TheCometAlignmentInterface->AdjustToContents();
       try //try 2
       {
          int runing = 0; // runing == Qty images processing now == Qty CPU isActiv now.
@@ -1460,7 +1485,8 @@ bool CometAlignmentInstance::ExecuteGlobal ()
             // ------------------------------------------------------------
             // Find idle or free CPU
             thread_list::iterator i = 0;
-            for (thread_list::iterator j = runningThreads.Begin (); j != runningThreads.End (); ++j) //Cycle in CPU units
+			int cpu =0;
+            for (thread_list::iterator j = runningThreads.Begin (); j != runningThreads.End (); ++j, ++cpu) //Cycle in CPU units
             {
                if (*j == 0) // the CPU is free and empty.
                {
@@ -1477,19 +1503,18 @@ bool CometAlignmentInstance::ExecuteGlobal ()
                }
 			   else //the CPU IsActive
 			   {
-				   if(!(*j)->monitor.IsEmpty() || (*j)->monitor2 != 0 )
+				   if(!(*j)->monitor.IsEmpty() || (*j)->monitor2 != 0 ) //If need update Status or Row into Monitor window
 				   {
-					   int cpu = j - runningThreads.Begin ();
-					   TreeBox::Node* node = monitor[cpu];
+					   TreeBox::Node* node = monitor[cpu]; //link from CPU# to Monitor node  
 					   if(!(*j)->monitor.IsEmpty() )
 					   {
-						   node->SetText (2, (*j)->monitor );
+						   node->SetText (2, (*j)->monitor ); //Show processing Status in Monitor
 						   (*j)->monitor.Clear();
 						   node->SetText (3, "");
 					   }
 					   if((*j)->monitor2 != 0 )
 					   {
-						   node->SetText (3, String((*j)->monitor2));
+						   node->SetText (3, String((*j)->monitor2)); //Show processing Row in Monitor
 						   (*j)->monitor2 = 0;
 					   }
 				   }
@@ -1508,19 +1533,18 @@ bool CometAlignmentInstance::ExecuteGlobal ()
             {
                runing--;
                try
-               {
-				   int cpu = i - runningThreads.Begin ();
-                  console.WriteLn (String ().Format ("<br>CPU#%u has finished processing.", i - runningThreads.Begin ()));
+               {				
+                  console.WriteLn (String ().Format ("<br>CPU#%u has finished processing.", cpu ));
 				  (*i)->FlushConsoleOutputText();
 				  TreeBox::Node* node = monitor[cpu];
-				  node->SetText (2, "Save");
+				  node->SetText (2, "Save"); //Status
 				  node->SetText (3, ""); //Y
 
                   SaveImage (*i);
                   
 				  runningThreads.Delete (i); //prepare thread for next image. now (*i == 0) the CPU is free
 				  
-				  node->SetText (0, ""); //#
+				  node->SetText (0, ""); //CPU#
 				  node->SetText (1, ""); //File	
 				  node->SetText (2, ""); //Status
 				  
@@ -1545,15 +1569,14 @@ bool CometAlignmentInstance::ExecuteGlobal ()
             {
                *i = *waitingThreads; //put one sub-image to runningThreads. so, now (*i != 0)
                waitingThreads.Remove (waitingThreads.Begin ()); //remove one sub-image from waitingThreads
-			   int cpu = i - runningThreads.Begin ();
-               console.WriteLn (String ().Format ("<br>CPU#%u processing file ", i - runningThreads.Begin ()) + (*i)->TargetPath ());
-               (*i)->Start (ThreadPriority::DefaultMax, i - runningThreads.Begin ());
+               console.WriteLn (String ().Format ("<br>CPU#%u processing file ", cpu ) + (*i)->TargetPath());
+ 
+			   (*i)->Start (ThreadPriority::DefaultMax, i - runningThreads.Begin ());
                runing++;
 			   
 			   TreeBox::Node* node = monitor[cpu];
-			   node->SetText (1, File::ExtractName((*i)->TargetPath())); //file
-			   node->SetText (2, "Run"); //status
-			   
+			   node->SetText (1, File::ExtractName( (*i)->TargetPath() ) ); //file
+			   node->SetText (2, "Run"); //status			   
             }
          }
          while (runing > 0 || !t.IsEmpty ());
@@ -1584,8 +1607,15 @@ bool CometAlignmentInstance::ExecuteGlobal ()
 
       if (m_OperandImage != 0)
          delete m_OperandImage, m_OperandImage = 0;
+
 	  monitor.Clear();
 	  monitor.Hide();
+	  TheCometAlignmentInterface->GUI->Interpolation_SectionBar.Show();
+	  TheCometAlignmentInterface->GUI->FormatHints_SectionBar.Show();
+	  TheCometAlignmentInterface->GUI->Output_SectionBar.Show();
+	  TheCometAlignmentInterface->GUI->Parameter_SectionBar.Show(); 
+	  TheCometAlignmentInterface->GUI->Subtract_SectionBar.Show();
+	  TheCometAlignmentInterface->GUI->TargetImages_SectionBar.Show();
 	  TheCometAlignmentInterface->GUI->TargetImages_Control.Show();
 	  TheCometAlignmentInterface->AdjustToContents(); 
    
@@ -1593,15 +1623,20 @@ bool CometAlignmentInstance::ExecuteGlobal ()
    }
    catch (...)
    {
-      //AbstractImage::EnableParallelProcessing();
       Exception::DisableConsoleOutput ();
       Exception::EnableGUIOutput ();
       if (m_OperandImage != 0) delete m_OperandImage, m_OperandImage = 0;
   
 	  monitor.Clear();
 	  monitor.Hide();
+	  TheCometAlignmentInterface->GUI->Interpolation_SectionBar.Show();
+	  TheCometAlignmentInterface->GUI->FormatHints_SectionBar.Show();
+	  TheCometAlignmentInterface->GUI->Output_SectionBar.Show();
+	  TheCometAlignmentInterface->GUI->Parameter_SectionBar.Show(); 
+	  TheCometAlignmentInterface->GUI->Subtract_SectionBar.Show();
+	  TheCometAlignmentInterface->GUI->TargetImages_SectionBar.Show();
 	  TheCometAlignmentInterface->GUI->TargetImages_Control.Show();
-	  TheCometAlignmentInterface->AdjustToContents();
+	  TheCometAlignmentInterface->AdjustToContents(); 
 
       console.NoteLn ("<end><cbr><br>* CometAlignment terminated.");
       throw;

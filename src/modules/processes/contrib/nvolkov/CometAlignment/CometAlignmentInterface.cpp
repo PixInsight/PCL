@@ -1214,12 +1214,13 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
 
    //
 
-   Monitor_TreeBox.SetMinHeight (IMAGELIST_MINHEIGHT (fnt));
-   Monitor_TreeBox.SetNumberOfColumns(3);
-   Monitor_TreeBox.SetHeaderText (0, "#");
+   //Monitor_TreeBox.SetMinHeight (IMAGELIST_MINHEIGHT (fnt));
+   Monitor_TreeBox.SetNumberOfColumns(5);
+   Monitor_TreeBox.SetHeaderText (0, "CPU#");
    Monitor_TreeBox.SetHeaderText (1, "File");
    Monitor_TreeBox.SetHeaderText (2, "Status");
    Monitor_TreeBox.SetHeaderText (3, "Row");
+   //Monitor_TreeBox.SetHeaderText (4, ""); // hiden column for Stretch
    Monitor_TreeBox.Hide();
 
    //

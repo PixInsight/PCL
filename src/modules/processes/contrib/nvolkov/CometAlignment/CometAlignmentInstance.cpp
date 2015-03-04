@@ -1,8 +1,8 @@
 // ****************************************************************************
 // PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.05.0068
+// Standard CometAlignment Process Module Version 01.02.06.0070
 // ****************************************************************************
-// CometAlignmentInstance.cpp - Released 2015/02/22 19:50:08 UTC
+// CometAlignmentInstance.cpp - Released 2015/03/04 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -1257,9 +1257,17 @@ void CometAlignmentInstance::SaveImage ( CAThread* t)
 	Save(t->TargetImage(), t, 0);			//Save result image	
 	
 	if(t->StarAligned())					//Save PureStarAligned
-		Save(&t->StarAligned(), t, 1);
+   {
+      ImageVariant* img = new ImageVariant(t->StarAligned());
+		Save(img, t, 1);
+      delete img, img = 0;
+   }
 	if(t->CometAligned())					//Save PureCometAligned
-		Save(&t->CometAligned(), t, 2);
+   {
+      ImageVariant* img = new ImageVariant(t->StarAligned());
+		Save(img, t, 2);
+      delete img, img = 0;
+   }
 		
 }
 
@@ -1429,11 +1437,11 @@ bool CometAlignmentInstance::ExecuteGlobal ()
 	  TheCometAlignmentInterface->GUI->Subtract_SectionBar.Hide();
 	  TheCometAlignmentInterface->GUI->TargetImages_Control.Hide();
 	  TheCometAlignmentInterface->GUI->TargetImages_SectionBar.Hide();
-	  const bool fullPath(TheCometAlignmentInterface->GUI->FullPaths_CheckBox.IsChecked());
+//	  const bool fullPath(TheCometAlignmentInterface->GUI->FullPaths_CheckBox.IsChecked());
    
 	  monitor.SetFixedHeight((runningThreads.Length()+3)*monitor.Font().Height()); //set monitor height according qty of runningThreads Length 
 
-	  for(int cpu=0; cpu < runningThreads.Length(); cpu++)
+	  for(int cpu=0; cpu < int(runningThreads.Length()); cpu++)
 		  (new TreeBox::Node(monitor))->SetText (0, String (cpu));	 
 
 	  monitor.AdjustColumnWidthToContents(0);
@@ -1769,4 +1777,4 @@ size_type CometAlignmentInstance::ParameterLength (const MetaParameter* p, size_
 } // pcl
 
 // ****************************************************************************
-// EOF CometAlignmentInstance.cpp - Released 2015/02/22 19:50:08 UTC
+// EOF CometAlignmentInstance.cpp - Released 2015/03/04 19:50:08 UTC

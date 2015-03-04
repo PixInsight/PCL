@@ -1,8 +1,8 @@
 // ****************************************************************************
 // PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.05.0068
+// Standard CometAlignment Process Module Version 01.02.06.0070
 // ****************************************************************************
-// CometAlignmentInstance.h - Released 2015/02/22 19:50:08 UTC
+// CometAlignmentInstance.h - Released 2015/03/04 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -168,8 +168,8 @@ namespace pcl
     size_t p_reference;
     //Operand subtracting
     String p_subtractFile;
-	pcl_bool p_OperandIsDI; // true == Subtraction Operand have DrizzleIntegration origin
     pcl_bool p_subtractMode; // true == move operand and subtract from target, false = subtract operand from target and move
+    pcl_bool p_OperandIsDI; // true == Subtraction Operand have DrizzleIntegration origin
     pcl_bool p_normalize;
     pcl_bool p_enableLinearFit;
     float p_rejectLow;
@@ -202,4 +202,4 @@ namespace pcl
 #endif   // __CometAlignmentInstance_h
 
 // ****************************************************************************
-// EOF CometAlignmentInstance.h - Released 2015/02/22 19:50:08 UTC
+// EOF CometAlignmentInstance.h - Released 2015/03/04 19:50:08 UTC

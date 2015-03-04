@@ -1,8 +1,8 @@
 // ****************************************************************************
 // PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.05.0068
+// Standard CometAlignment Process Module Version 01.02.06.0070
 // ****************************************************************************
-// StarDetector.h - Released 2015/02/22 19:50:08 UTC
+// StarDetector.h - Released 2015/03/04 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -124,4 +124,4 @@ inline String StarData::StatusToString() const
 #endif   // __StarDetector_h
 
 // ****************************************************************************
-// EOF StarDetector.h - Released 2015/02/22 19:50:08 UTC
+// EOF StarDetector.h - Released 2015/03/04 19:50:08 UTC

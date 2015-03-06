@@ -1,8 +1,8 @@
 // ****************************************************************************
 // PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.04.0067
+// Standard CometAlignment Process Module Version 01.02.06.0070
 // ****************************************************************************
-// CometAlignmentInterface.h - Released 2015/02/20 19:50:08 UTC
+// CometAlignmentInterface.h - Released 2015/03/04 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -61,6 +61,7 @@
 #include <pcl/CheckBox.h>
 #include <pcl/GroupBox.h>
 #include <pcl/ComboBox.h>
+#include <pcl/RadioButton.h>
 
 #include "CometAlignmentInstance.h"
 
@@ -116,6 +117,7 @@ namespace pcl
 
       VerticalSizer Global_Sizer;
 
+	  TreeBox Monitor_TreeBox;
       SectionBar TargetImages_SectionBar;
       Control TargetImages_Control;
       HorizontalSizer TargetImages_Sizer;
@@ -158,47 +160,57 @@ namespace pcl
                Label             Postfix_Label;
                Edit              Postfix_Edit;
 
-      SectionBar Parameter_SectionBar;
-      Control Parameter_Control;
-      VerticalSizer Parameter_Sizer;
-      HorizontalSizer File0_Sizer;
-      NumericEdit x0_NumericEdit;
-      NumericEdit y0_NumericEdit;
-      PushButton File0_PushButton;
-      Label File0_Label;
-      HorizontalSizer File1_Sizer;
-      NumericEdit x1_NumericEdit;
-      NumericEdit y1_NumericEdit;
-      PushButton File1_PushButton;
-      Label File1_Label;
-      HorizontalSizer Delta_Sizer;
-      NumericEdit xDelta_NumericEdit;
-      NumericEdit yDelta_NumericEdit;
-
-      SectionBar Subtract_SectionBar;
-      Control Subtract_Control;
-      VerticalSizer Subtract_Sizer;
-      HorizontalSizer SubtractFile_Sizer;
-      Label SubtractFile_Label;
-      Edit SubtractFile_Edit;
-      ToolButton SubtractFile_SelectButton;
-      ToolButton SubtractFile_ClearButton;
-      HorizontalSizer SubtractChekers_Sizer;
-      CheckBox SubtractMode_CheckBox;
-      CheckBox LinearFit_CheckBox;
-      CheckBox Normalize_CheckBox;
-      NumericControl RejectLow_NumericControl;
-      NumericControl RejectHigh_NumericControl;
-
-
-
-      SectionBar Interpolation_SectionBar;
-      Control Interpolation_Control;
-      VerticalSizer Interpolation_Sizer;
-      HorizontalSizer PixelInterpolation_Sizer;
-      Label PixelInterpolation_Label;
-      ComboBox PixelInterpolation_ComboBox;
-      NumericControl ClampingThreshold_NumericControl;
+    SectionBar		Parameter_SectionBar;
+    Control			Parameter_Control;
+	VerticalSizer		Parameter_Sizer;
+		HorizontalSizer		File0_Sizer;
+			NumericEdit			x0_NumericEdit;
+			NumericEdit			y0_NumericEdit;
+			PushButton			File0_PushButton;
+			Label				File0_Label;
+		HorizontalSizer		File1_Sizer;
+			NumericEdit			x1_NumericEdit;
+			NumericEdit			y1_NumericEdit;
+			PushButton			File1_PushButton;
+			Label				File1_Label;
+		HorizontalSizer		Delta_Sizer;
+			NumericEdit			xDelta_NumericEdit;
+			NumericEdit			yDelta_NumericEdit;
+			
+	SectionBar		Subtract_SectionBar;
+	Control			Subtract_Control;
+	VerticalSizer	Subtract_Sizer;
+		HorizontalSizer	SubtractFile_Sizer;
+			Label			SubtractFile_Label;
+			Edit			SubtractFile_Edit;
+			ToolButton		SubtractFile_SelectButton;
+			ToolButton		SubtractFile_ClearButton;
+		HorizontalSizer	SubtractImgOption_Sizer;
+			GroupBox        SubtractOrigin_GroupBox;
+			VerticalSizer	SubtractOrigin_Sizer;
+				RadioButton		SubtractII_RadioButton;
+				RadioButton		SubtractDI_RadioButton;
+			GroupBox        SubtractImgType_GroupBox;			
+			VerticalSizer	SubtractImgType_Sizer;	
+				RadioButton		SubtractStars_RadioButton;
+				RadioButton		SubtractComet_RadioButton;
+			GroupBox		DrzSave_GroupBox;
+			VerticalSizer	DrzSave_Sizer;
+				CheckBox		DrzSaveSA_CheckBox;
+				CheckBox	    DrzSaveCA_CheckBox;
+		HorizontalSizer	SubtractChekers_Sizer;
+			CheckBox		LinearFit_CheckBox;
+			CheckBox		Normalize_CheckBox;
+			NumericControl	RejectLow_NumericControl;
+			NumericControl	RejectHigh_NumericControl;
+		
+	SectionBar		Interpolation_SectionBar;
+	Control			Interpolation_Control;
+	VerticalSizer	Interpolation_Sizer;
+		HorizontalSizer	PixelInterpolation_Sizer;
+			Label			PixelInterpolation_Label;
+			ComboBox		PixelInterpolation_ComboBox;
+			NumericControl	ClampingThreshold_NumericControl;
     };
 
     GUIData* GUI;
@@ -216,6 +228,8 @@ namespace pcl
 
     double m_DateDelta; // days passed from first to last image
     DPoint m_PosDelta; // how many X,Y pixels comet passed from first to last image
+
+	bool drizzle; //true == is .drz file present for every image
 
     // Main routines
     void SelectDir (); // Select output directory
@@ -247,6 +261,7 @@ namespace pcl
     String DrizzleTargetName( const String& filePath );
     
     friend struct GUIData;
+	friend class  CometAlignmentInstance;
   };
 
   // ----------------------------------------------------------------------------
@@ -262,4 +277,4 @@ namespace pcl
 #endif   // __CometAlignmentInterface_h
 
 // ****************************************************************************
-// EOF CometAlignmentInterface.h - Released 2015/02/20 19:50:08 UTC
+// EOF CometAlignmentInterface.h - Released 2015/03/04 19:50:08 UTC

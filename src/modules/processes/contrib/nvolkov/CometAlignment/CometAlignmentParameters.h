@@ -1,8 +1,8 @@
 // ****************************************************************************
 // PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.04.0067
+// Standard CometAlignment Process Module Version 01.02.06.0070
 // ****************************************************************************
-// CometAlignmentParameters.h - Released 2015/02/20 19:50:08 UTC
+// CometAlignmentParameters.h - Released 2015/03/04 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -251,6 +251,35 @@ namespace pcl
     virtual bool DefaultValue () const;
   };
 
+  // ----------------------------------------------------------------------------
+
+  class CADrzSaveSA : public MetaBoolean
+  {
+  public:
+    CADrzSaveSA (MetaProcess*);
+    virtual IsoString Id () const;
+    virtual bool DefaultValue () const;
+  };
+
+  // ----------------------------------------------------------------------------
+
+  class CADrzSaveCA : public MetaBoolean
+  {
+  public:
+    CADrzSaveCA (MetaProcess*);
+    virtual IsoString Id () const;
+    virtual bool DefaultValue () const;
+  };
+
+  // ----------------------------------------------------------------------------
+
+  class CAOperandIsDI : public MetaBoolean
+  {
+  public:
+    CAOperandIsDI (MetaProcess*);
+    virtual IsoString Id () const;
+    virtual bool DefaultValue () const;
+  };
 
   // ----------------------------------------------------------------------------
 
@@ -323,10 +352,13 @@ namespace pcl
 
    extern CASubtractFile* TheSubtractFile;
    extern CASubtractMode* TheSubtractMode;
+   extern CAOperandIsDI* TheOperandIsDI;
    extern CAEnableLinearFit* TheEnableLinearFit;
    extern CARejectLow* TheRejectLow;
    extern CARejectHigh* TheRejectHigh;
    extern CANormalize* TheNormalize;
+   extern CADrzSaveSA* TheDrzSaveSA;
+   extern CADrzSaveCA* TheDrzSaveCA;
 
    extern CAPixelInterpolation* ThePixelInterpolationParameter;
    extern CALinearClampingThreshold* TheLinearClampingThresholdParameter;
@@ -339,4 +371,4 @@ namespace pcl
 #endif   // __CometAlignmentParameters_h
 
 // ****************************************************************************
-// EOF CometAlignmentParameters.h - Released 2015/02/20 19:50:08 UTC
+// EOF CometAlignmentParameters.h - Released 2015/03/04 19:50:08 UTC

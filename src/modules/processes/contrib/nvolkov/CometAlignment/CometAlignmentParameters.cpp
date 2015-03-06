@@ -1,8 +1,8 @@
 // ****************************************************************************
 // PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.04.0067
+// Standard CometAlignment Process Module Version 01.02.06.0070
 // ****************************************************************************
-// CometAlignmentParameters.cpp - Released 2015/02/20 19:50:08 UTC
+// CometAlignmentParameters.cpp - Released 2015/03/04 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -78,11 +78,13 @@ CAReference* TheReference = 0;
 
 CASubtractFile* TheSubtractFile = 0;
 CASubtractMode* TheSubtractMode = 0;
+CAOperandIsDI* TheOperandIsDI = 0;
 CANormalize* TheNormalize = 0;
 CAEnableLinearFit* TheEnableLinearFit = 0;
 CARejectLow* TheRejectLow = 0;
 CARejectHigh* TheRejectHigh = 0;
-
+CADrzSaveSA* TheDrzSaveSA =0;
+CADrzSaveCA* TheDrzSaveCA =0;
 
 CAPixelInterpolation* ThePixelInterpolationParameter = 0;
 CALinearClampingThreshold* TheLinearClampingThresholdParameter = 0;
@@ -479,6 +481,56 @@ double CARejectHigh::DefaultValue () const
 
 // ----------------------------------------------------------------------------
 
+CADrzSaveSA::CADrzSaveSA (MetaProcess* P) : MetaBoolean (P)
+{
+   TheDrzSaveSA = this;
+}
+
+IsoString CADrzSaveSA::Id () const
+{
+   return "drzSaveStarsAligned";
+}
+
+bool CADrzSaveSA::DefaultValue () const
+{
+   return true;
+}
+
+// ----------------------------------------------------------------------------
+
+CADrzSaveCA::CADrzSaveCA (MetaProcess* P) : MetaBoolean (P)
+{
+   TheDrzSaveCA = this;
+}
+
+IsoString CADrzSaveCA::Id () const
+{
+   return "drzSaveCometAligned";
+}
+
+bool CADrzSaveCA::DefaultValue () const
+{
+   return true;
+}
+// ----------------------------------------------------------------------------
+
+CAOperandIsDI::CAOperandIsDI (MetaProcess* P) : MetaBoolean (P)
+{
+   TheOperandIsDI = this;
+}
+
+IsoString CAOperandIsDI::Id () const
+{
+   return "operandIsDI";
+}
+
+bool CAOperandIsDI::DefaultValue () const
+{
+   return true;
+}
+
+// ----------------------------------------------------------------------------
+
 CAPixelInterpolation::CAPixelInterpolation (MetaProcess* p) : MetaEnumeration (p)
 {
    ThePixelInterpolationParameter = this;
@@ -559,4 +611,4 @@ double CALinearClampingThreshold::MaximumValue () const
 } // pcl
 
 // ****************************************************************************
-// EOF CometAlignmentParameters.cpp - Released 2015/02/20 19:50:08 UTC
+// EOF CometAlignmentParameters.cpp - Released 2015/03/04 19:50:08 UTC

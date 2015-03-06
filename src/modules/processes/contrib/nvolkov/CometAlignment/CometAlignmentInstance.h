@@ -1,8 +1,8 @@
 // ****************************************************************************
 // PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.04.0067
+// Standard CometAlignment Process Module Version 01.02.06.0070
 // ****************************************************************************
-// CometAlignmentInstance.h - Released 2015/02/20 19:50:08 UTC
+// CometAlignmentInstance.h - Released 2015/03/04 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -56,7 +56,7 @@
 
 #include "CometAlignmentParameters.h"
 
-//#define debug 1
+#define debug 1
 #if debug
 #include <pcl/StdStatus.h>
 #endif
@@ -65,6 +65,7 @@ namespace pcl
 {
 
   // ----------------------------------------------------------------------------
+  class CometAlignmentInterface;
   class CAThread;
   struct CAThreadData;
 
@@ -152,7 +153,7 @@ namespace pcl
 
     typedef Array<ImageItem> image_list;
 
-    ImageVariant* m_CometImage;
+    ImageVariant* m_OperandImage;
     Rect m_geometry;
 
     // instance ---------------------------------------------------------------
@@ -167,11 +168,14 @@ namespace pcl
     size_t p_reference;
     //Operand subtracting
     String p_subtractFile;
-    pcl_bool p_subtractMode; // true = move operand and subtract from target, false = subtract operand from target and move
+    pcl_bool p_subtractMode; // true == move operand and subtract from target, false = subtract operand from target and move
+    pcl_bool p_OperandIsDI; // true == Subtraction Operand have DrizzleIntegration origin
     pcl_bool p_normalize;
     pcl_bool p_enableLinearFit;
     float p_rejectLow;
     float p_rejectHigh;
+	pcl_bool p_drzSaveSA;
+	pcl_bool p_drzSaveCA;
 
     // Pixel interpolation
     pcl_enum p_pixelInterpolation; // bicubic spline | bilinear | nearest neighbor
@@ -179,10 +183,10 @@ namespace pcl
 
     // -------------------------------------------------------------------------
 
-
-    inline thread_list LoadTargetFrame (size_t fileIndex);
-    inline String OutputFilePath (const String&, const size_t);
-    inline void SaveImage (const CAThread*);
+	inline thread_list LoadTargetFrame (size_t fileIndex);
+    inline String OutputImgPath (const String&, const String&);
+	void Save (const ImageVariant*, CAThread*, const int8);
+    inline void SaveImage ( CAThread*);
     inline void InitPixelInterpolation ();
     inline DImage GetCometImage (const String&);
     inline ImageVariant* LoadOperandImage (const String& filePath);
@@ -198,4 +202,4 @@ namespace pcl
 #endif   // __CometAlignmentInstance_h
 
 // ****************************************************************************
-// EOF CometAlignmentInstance.h - Released 2015/02/20 19:50:08 UTC
+// EOF CometAlignmentInstance.h - Released 2015/03/04 19:50:08 UTC

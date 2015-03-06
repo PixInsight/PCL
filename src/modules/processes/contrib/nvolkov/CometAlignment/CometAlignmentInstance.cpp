@@ -1,8 +1,8 @@
 // ****************************************************************************
 // PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.04.0067
+// Standard CometAlignment Process Module Version 01.02.06.0070
 // ****************************************************************************
-// CometAlignmentInstance.cpp - Released 2015/02/20 19:50:08 UTC
+// CometAlignmentInstance.cpp - Released 2015/03/04 19:50:08 UTC
 // ****************************************************************************
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -48,6 +48,7 @@
 // ****************************************************************************
 
 #include "CometAlignmentInstance.h"
+#include "CometAlignmentInterface.h"
 #include "CometAlignmentModule.h" // for ReadableVersion()
 
 #include <pcl/ErrorHandler.h>
@@ -60,6 +61,7 @@
 #include <pcl/Vector.h>
 #include <pcl/Version.h>
 #include <pcl/DrizzleDataDecoder.h>
+#include <pcl/Algebra.h>
 
 namespace pcl
 {
@@ -79,10 +81,13 @@ p_postfix (ThePostfix->DefaultValue ()),
 p_reference (TheReference->DefaultValue ()),
 p_subtractFile (TheSubtractFile->DefaultValue ()),
 p_subtractMode (TheSubtractMode->DefaultValue ()),
+p_OperandIsDI (TheOperandIsDI->DefaultValue ()),
 p_normalize (TheNormalize->DefaultValue ()),
 p_enableLinearFit (TheEnableLinearFit->DefaultValue ()),
 p_rejectLow (TheRejectLow->DefaultValue ()),
 p_rejectHigh (TheRejectHigh->DefaultValue ()),
+p_drzSaveSA (TheDrzSaveSA->DefaultValue ()),
+p_drzSaveCA (TheDrzSaveCA->DefaultValue ()),
 p_pixelInterpolation (ThePixelInterpolationParameter->DefaultValueIndex ()),
 p_linearClampingThreshold (TheLinearClampingThresholdParameter->DefaultValue ()) { }
 
@@ -111,7 +116,10 @@ void CometAlignmentInstance::Assign (const ProcessImplementation& p)
       p_rejectLow = x->p_rejectLow;
       p_rejectHigh = x->p_rejectHigh;
       p_normalize = x->p_normalize;
+	  p_drzSaveSA = x->p_drzSaveSA;
+	  p_drzSaveCA = x->p_drzSaveCA;
       p_subtractMode = x->p_subtractMode;
+	  p_OperandIsDI = x->p_OperandIsDI,
       p_pixelInterpolation = x->p_pixelInterpolation;
       p_linearClampingThreshold = x->p_linearClampingThreshold;
    }
@@ -198,11 +206,17 @@ public:
 
    typedef GenericVector<LinearFit> linear_fit_set;
 
-   LinearFitEngine (const float _rejectLow, const float _rejectHigh) : rejectLow (_rejectLow), rejectHigh (_rejectHigh) { }
+   LinearFitEngine (const float _rejectLow, const float _rejectHigh) : rejectLow (_rejectLow), rejectHigh (_rejectHigh) 
+   {
+   }
 
    linear_fit_set
-   Fit (const ImageVariant& image, const ImageVariant& reference)
+   Fit (String& status, const ImageVariant& image, const ImageVariant& reference)
    {
+	   status = "LFit calc";
+	  #if debug
+	  Console().Write("Calc LF ");
+	  #endif
       if (!image.IsComplexSample ())
          if (image.IsFloatSample ())
             switch (image.BitsPerSample ())
@@ -226,8 +240,12 @@ public:
    }
 
    void
-   Apply (ImageVariant& image, const linear_fit_set& L)
+   Apply (ImageVariant& image, String& status, const linear_fit_set& L)
    {
+	   status = "LFit Apply";
+	   #if debug
+	   Console().Write("Apply LF ");
+	   #endif
       if (!image.IsComplexSample ())
          if (image.IsFloatSample ())
             switch (image.BitsPerSample ())
@@ -288,7 +306,7 @@ private:
          const typename P1::sample* v1 = image.PixelData (c);
          const typename P1::sample* vN = v1 + N;
          const typename P2::sample* v2 = reference.PixelData (c);
-         for (; v1 < vN; ++v1, ++v2/*, ++monitor*/)
+         for (; v1 < vN; ++v1, ++v2)
          {
             float f1;
             P1::FromSample (f1, *v1);
@@ -309,7 +327,7 @@ private:
 
          count[c] = F1.Length ();
 
-         L[c] = LinearFit (F1, F2/*, &monitor*/);
+         L[c] = LinearFit (F1, F2);
 
          if (!L[c].IsValid ())
             throw Error ("Invalid linear fit (channel " + String (c) + ')');
@@ -369,97 +387,72 @@ private:
 };
 
 // ----------------------------------------------------------------------------
-
-template <class P>
-static void Normalize (GenericImage<P>& img) //subtract Median from Comet image
-{
-   for (int c = 0; c < img.NumberOfNominalChannels (); ++c)
-   {
-      typename P::sample m = img.Median (0, c, c);
-      typename P::sample* v = img.PixelData (c);
-      typename P::sample* vN = v + img.NumberOfPixels ();
-      for (; v < vN; ++v)
-         if (*v > 0) //ignore black pixels
-            *v -= m;
-   }
+Matrix DeltaToMatrix(const DPoint delta)
+{	//comet movement matrix
+	return Matrix(
+		1.0, 0.0, delta.x,
+		0.0, 1.0, delta.y,
+		0.0, 0.0, 1.0);
 }
-
-static void Normalize (ImageVariant& cimg)
+/*
+ * Homography transformation
+ */
+class Homography
 {
-   if (!cimg.IsComplexSample ())
-      if (cimg.IsFloatSample ())
-         switch (cimg.BitsPerSample ())
-         {
-         case 32: Normalize (static_cast<Image&> (*cimg));
-            break;
-         case 64: Normalize (static_cast<DImage&> (*cimg));
-            break;
-         }
-      else
-         switch (cimg.BitsPerSample ())
+public:
 
-         {
-         case 8: Normalize (static_cast<UInt8Image&> (*cimg));
-            break;
-         case 16: Normalize (static_cast<UInt16Image&> (*cimg));
-            break;
-         case 32: Normalize (static_cast<UInt32Image&> (*cimg));
-            break;
-         }
-}
-
-inline static void Engine (ImageVariant& target, LinearFitEngine::linear_fit_set& LFSet, const DPoint& delta,
-        const ImageVariant* operand, const bool mode, const bool enableLinearFit, const float rejectLow, const float rejectHigh, const bool normalize)
-
-{
-   Translation T (*pixelInterpolation);
-   T.EnableParallelProcessing (); //.DisableParallelProcessing();
-   if (operand)
-
+   Homography() : H( Matrix::UnitMatrix( 3 ) )
    {
-      ImageVariant o;
-      o.CopyImage (*operand); //Create local copy of Operand image
-      if (mode) //move Operand and subtract
-      {
-         T.SetDelta (-delta); //Invert direction and set delta
-         T >> o; //align Operand to comet position
-         if (enableLinearFit)
-         {
-            LinearFitEngine E (rejectLow, rejectHigh);
-            LFSet = E.Fit (o, target);
-            E.Apply (o, LFSet); //LinearFit Operand to Target
-         }
-
-         if (normalize == true)
-            Normalize (o);
-
-         target -= o; //Subtract Operand from Target Image
-      }
-      else //subtract Operand and move
-      {
-         if (enableLinearFit)
-         {
-            LinearFitEngine E (rejectLow, rejectHigh);
-            LFSet = E.Fit (o, target);
-            E.Apply (o, LFSet); //LinearFit Operand to Target
-         }
-
-         if (normalize == true)
-            Normalize (o);
-
-         target -= o; //Subtract Operand from Target Image
-
-         T.SetDelta (delta);
-         T >> target; //Target to Comet position
-      }
-      target.Truncate (); // Truncate to [0,1]
    }
-   else
+
+   Homography( const Matrix& aH ) : H( aH )
    {
-      T.SetDelta (delta);
-      T >> target;
    }
-}
+
+   Homography( const Homography& h ) : H( h.H )
+   {
+   }
+
+   template <typename T>
+   DPoint operator ()( T x, T y ) const
+   {
+      double w = H[2][0]*x + H[2][1]*y + H[2][2];
+      PCL_CHECK( 1 + w != 1 )
+      return DPoint( (H[0][0]*x + H[0][1]*y + H[0][2])/w,
+                     (H[1][0]*x + H[1][1]*y + H[1][2])/w );
+   }
+
+   template <typename T>
+   DPoint operator ()( const GenericPoint<T>& p ) const
+   {
+      return operator ()( p.x, p.y );
+   }
+
+   Homography Inverse() const
+   {
+      return Homography( H.Inverse() );
+   }
+
+   operator const Matrix&() const
+   {
+      return H;
+   }
+
+   bool IsValid() const
+   {
+      return !H.IsEmpty();
+   }
+
+   void SetUnique()
+   {
+      H.SetUnique();
+   }
+
+private:
+
+   Matrix H;
+	
+};
 
 // ----------------------------------------------------------------------------
 
@@ -514,195 +507,6 @@ struct FileData
    }
 };
 
-// ----------------------------------------------------------------------------
-
-class CAThread : public Thread
-{
-public:
-
-   CAThread (ImageVariant* t, FileData* fd, const String& tp, int i, const DPoint d, const String& dp,
-             const ImageVariant* o, const bool m, const bool enableFit, const float rLow, const float rHigh, const bool norm) :
-   target (t), fileData (fd), targetPath (tp), subimageIndex (i), delta (d), drzPath(dp),
-   operand (o), mode (m), normalize (norm), enableLinearFit (enableFit), rejectLow (rLow), rejectHigh (rHigh) { }
-
-   virtual
-   ~CAThread ()
-   {
-      if (target != 0)
-         delete target, target = 0;
-
-      if (fileData != 0)
-         delete fileData, fileData = 0;
-   }
-
-   virtual void
-   Run ()
-   {
-      try
-      {
-         Engine (*target, LFSet, delta, operand, mode, enableLinearFit, rejectLow, rejectHigh, normalize);
-      }
-      catch (...)
-      {
-         /*
-          * NB: No exceptions can propagate out of a thread!
-          * We *only* throw exceptions to stop this thread when data.abort has
-          * been set to true by the root thread
-          */
-      }
-   }
-
-   const ImageVariant*
-   TargetImage () const
-   {
-      return target;
-   }
-
-   String
-   TargetPath () const
-   {
-      return targetPath;
-   }
-
-   const FileData&
-   GetFileData () const
-   {
-      return *fileData;
-   }
-
-   int
-   SubimageIndex () const
-   {
-      return subimageIndex;
-   }
-   
-   DPoint 
-   Delta () const
-   {
-      return delta;
-   }
-      
-   String
-   DrizlePath () const
-   {
-      return drzPath;
-   }
-      
-   LinearFitEngine::linear_fit_set 
-   GetLinearFitSet() const
-   {
-      return LFSet;
-   }
-
-private:
-
-   ImageVariant* target;
-   FileData* fileData; // Target image parameters and embedded data. It belongs to this thread.
-   String targetPath; // File path of this target image
-   int subimageIndex; // > 0 in case of a multiple image; = 0 otherwise
-   DPoint delta; // Delta x, y
-   String drzPath; // source drizzle data file
-   const ImageVariant* operand; //Image for subtraction from target
-   const bool mode; // true = move operand and subtract from target, false = subtract operand from target and move
-   const bool normalize; // restore median in subtracted area
-   const bool enableLinearFit; // fit operand before subtracting
-   float rejectLow; //LinearFit parameter
-   float rejectHigh; //LinearFit parameter
-   LinearFitEngine::linear_fit_set LFSet;
-
-};
-
-// ----------------------------------------------------------------------------
-
-template <class P>
-static void LoadImageFile (GenericImage<P>& image, FileFormatInstance& file)
-{
-   if (!file.ReadImage (image))
-      throw CatchedException ();
-}
-
-static void LoadImageFile (ImageVariant& v, FileFormatInstance& file, const ImageDescriptionArray& images, int index)
-{
-   if (!file.SelectImage (index))
-      throw CatchedException ();
-
-   v.CreateSharedImage (images[index].options.ieeefpSampleFormat, false, images[index].options.bitsPerSample);
-
-   if (v.IsFloatSample ()) switch (v.BitsPerSample ())
-      {
-      case 32: LoadImageFile (*static_cast<Image*> (v.AnyImage ()), file);
-         break;
-      case 64: LoadImageFile (*static_cast<DImage*> (v.AnyImage ()), file);
-         break;
-      }
-   else switch (v.BitsPerSample ())
-      {
-      case 8: LoadImageFile (*static_cast<UInt8Image*> (v.AnyImage ()), file);
-         break;
-      case 16: LoadImageFile (*static_cast<UInt16Image*> (v.AnyImage ()), file);
-         break;
-      case 32: LoadImageFile (*static_cast<UInt32Image*> (v.AnyImage ()), file);
-         break;
-      }
-}
-
-// ----------------------------------------------------------------------------
-
-inline thread_list CometAlignmentInstance::LoadTargetFrame (const size_t fileIndex)
-{
-   Console console;
-   const ImageItem& item = p_targetFrames[fileIndex];
-   const ImageItem& r = p_targetFrames[p_reference];
-   const DPoint delta (item.x - r.x, item.y - r.y);
-   const String filePath = item.path;
-   const String drzPath = item.drzPath;
-   console.WriteLn ("Open " + filePath);
-
-   FileFormat format (File::ExtractExtension (filePath), true, false);
-   FileFormatInstance file (format);
-
-   ImageDescriptionArray images;
-   if ( !file.Open( images, filePath, p_inputHints ) ) throw CatchedException ();
-   if (images.IsEmpty ()) throw Error (filePath + ": Empty image file.");
-
-   thread_list threads;
-   ImageVariant* target = new ImageVariant ();
-   try
-   {
-      for (unsigned int index = 0; index < images.Length (); ++index)
-      {
-         if (images.Length () > 1) console.WriteLn (String ().Format ("* Subimage %u of %u", index + 1, images.Length ()));
-         if (!file.SelectImage (index)) throw CatchedException ();
-         LoadImageFile (*target, file, images, index);
-         ProcessInterface::ProcessEvents ();
-         if (m_geometry.IsRect ())
-         {
-            if (target->Bounds () != m_geometry)
-               throw Error ("The Image geometry is not equal.");
-         }
-         else
-            m_geometry = target->Bounds ();
-
-         FileData* inputData = new FileData (file, images[index].options);
-         threads.Add (new CAThread (target, inputData, filePath, index, delta, drzPath, m_CometImage, p_subtractMode,
-                                    p_enableLinearFit, p_rejectLow, p_rejectHigh, p_normalize));
-      }
-
-      console.WriteLn ("Close " + filePath);
-      file.Close ();
-      console.WriteLn (String ().Format ("Delta x:%f, y:%f", delta.x, delta.y));
-
-      return threads;
-   }
-   catch (...)
-   {
-      if (target != 0) delete target;
-      throw;
-   }
-}
-
-// ----------------------------------------------------------------------------
-
 class DrizzleSAFilter : public DrizzleDecoderBase
 {
 public:
@@ -751,7 +555,6 @@ private:
          m_hasMatrix = true;
          return false;
       }
-      
       return itemId != "P" && itemId != "T" && itemId != "D";
    }
 };
@@ -782,78 +585,498 @@ private:
          throw Error( "No alignment matrix definition." );
    }
 };
+// ----------------------------------------------------------------------------
+
+class CAThread : public Thread
+{
+public:
+
+	String monitor;		//curent processing step status
+	int monitor2;
+
+   CAThread (ImageVariant* t, FileData* fd, const String& tp, const DPoint d, const bool dzr, const Matrix m,
+             const ImageVariant* o, const CometAlignmentInstance* _instance) :
+   target (t), fileData (fd), targetPath (tp), delta (d), drizzle(dzr), drzMatrix(m), operand (o)
+   {
+	   monitor = "Prepare";
+	   monitor2 = 0;
+	   i = _instance;
+   }
+
+   virtual
+   ~CAThread ()
+   {
+      if (target != 0)
+         delete target, target = 0;
+
+      if (fileData != 0)
+         delete fileData, fileData = 0;
+   }
+
+   virtual void
+   Run ()
+   {
+      try
+      {
+		  if (TryIsAborted()) 
+			  return;
+
+		  Matrix deltaMatrix(DeltaToMatrix(delta)); //comet movement matrix
+
+		  if (!drizzle && !operand) //1 -> Create from StarAligned new CometAligned.img 
+		  {
+			  monitor = "Align Target";
+			  HomographyApplyTo(*target, deltaMatrix);
+		  }
+		  else if(drizzle && !operand)//2 -> Create from NonAligned new CometAligned.img + .dzr
+		  {
+
+			  Matrix M = drzMatrix * deltaMatrix; // integrate star alignment matrix and comet movement matrix
+			  M /= M[2][2];
+			  monitor = "Align Original";
+			  HomographyApplyTo(*target, M);
+		  }
+		  else if(!drizzle && operand)//3 -> Create from StarAligned new PureCometAligned or PureStarAligned
+		  {
+			  ImageVariant o;
+			  o.CopyImage (*operand); //Create local copy of Operand image
+
+			  if (i->p_subtractMode) //move Operand and subtract -> create PureStarAligned
+			  {
+				  monitor = "Align Operand";
+				  HomographyApplyTo(o, deltaMatrix.Inverse()); //Invert delta & align Operand to comet position
+
+				  if (i->p_enableLinearFit)
+				  {
+					  LinearFitEngine E (i->p_rejectLow, i->p_rejectHigh);
+					  LFSet = E.Fit (monitor, o, *target);
+					  E.Apply (o, monitor, LFSet); //LinearFit Operand to Target
+				  }
+				  Normalize (o);
+				  
+				  (*target) -= o; //Subtract Operand(CometIntegration) from StarAligned and create PureStarAligned
+			  }	
+			  else //subtract Operand(StarIntegration) and move to comet position -> create PureCometAligned 
+			  {
+				  if (i->p_enableLinearFit)
+				  {
+					  LinearFitEngine E (i->p_rejectLow, i->p_rejectHigh);
+					  LFSet = E.Fit (monitor,o, *target);
+					  E.Apply (o,monitor, LFSet); //LinearFit Operand to Target
+				  }
+				  Normalize (o);  
+					  
+				  (*target) -= o; //Subtract Operand from Target Image	
+
+				  monitor = "Align Target";
+				  HomographyApplyTo(*target, deltaMatrix); //align Result to comet position
+			  }
+			  (*target).Truncate (); // Truncate to [0,1]
+
+		  }
+		  else if(drizzle && operand)//4 -> Create from NonAligned new PureNonAligned. Optional create PureCometAligned + .dzr and PureStarAligned + .dzr
+		  {
+			  
+			  ImageVariant o;
+			  o.CopyImage (*operand); //Create local copy of Operand image	  
+
+			  Matrix M(drzMatrix); 
+			  if (i->p_subtractMode) //Mode Checked -> Operand is ComaIntegration 
+			  {
+				  M = M * deltaMatrix; // integrate star alignment matrix and comet movement matrix
+				  M /= M[2][2];
+			  }
+			  else  //Mode UnChecked -> Operand is StarIntegration
+			  {
+			  }
+				
+			  if(i->p_OperandIsDI) //Operand is DrizzleIntegration
+			  {
+				  /*
+				  DrizzleIntegration and StarAlignment use different coordinate origins by design.
+				  The origin of coordinates in DI is the center of the top left pixel. 
+				  The origin in SA is the top left corner of the top left pixel. 
+				  Hence the systematic difference of 0.5 pixels. 
+				  */
+				  M = M * DeltaToMatrix(DPoint(0.5,0.5)); //add 0.5 to convert DrizzleIntegration coordinates to StarAlignment coordinates.
+				  M /= M[2][2];
+			  }
+
+			  M.Invert(); //Invert alignments direction
+			  monitor = "Align Operand";
+			  HomographyApplyTo(o, M); //Align Operand to Origin drizle integrable 
+
+			  if (TryIsAborted()) 
+				  return;
+								
+			  if (i->p_enableLinearFit)
+			  {
+				  LinearFitEngine E(i->p_rejectLow, i->p_rejectHigh);
+				  LFSet = E.Fit (monitor, o, *target);
+				  E.Apply (o, monitor, LFSet); //LinearFit Operand to Target
+			  }
+			  if (TryIsAborted()) 
+				  return;
+
+			  Normalize (o);
+			  (*target) -= o; //Subtract Operand from Target Image
+			  (*target).Truncate(); // Truncate to [0,1]
+
+			  if (TryIsAborted()) 
+				  return;
+
+			  // Optional: create PureCometAligned + .dzr and PureStarAligned + .dzr
+			  if(i->p_drzSaveSA) //create from PureNonAligned the PureStarAligned
+			  {
+				  saImg.CopyImage(*target);
+				  M = drzMatrix; // use star alignment matrix
+				  monitor = "Align PureStar";
+				  HomographyApplyTo(saImg, M);
+			  }
+
+			  if (TryIsAborted()) 
+				  return;	
+
+			  if(i->p_drzSaveCA) //create from PureNonAligned the PureCometAligned
+			  {
+				  monitor = "Align PureComet";
+				  caImg.CopyImage(*target);
+				  M = drzMatrix*deltaMatrix; // integrate star alignment matrix and comet movement matrix
+				  M /= M[2][2];
+				  HomographyApplyTo(caImg, M); 
+			  }
+		  }
+      }
+      catch (...)
+      {
+         /*
+          * NB: No exceptions can propagate out of a thread!
+          * We *only* throw exceptions to stop this thread when data.abort has
+          * been set to true by the root thread
+          */
+		  monitor ="Error";
+      }
+   }
+
+   const ImageVariant* TargetImage () const
+   {
+      return target;
+   }
+
+   String TargetPath () const
+   {
+      return targetPath;
+   }
+
+   void TargetPath(const String t)
+   {
+      targetPath = t;
+   }
+
+   const FileData& GetFileData () const
+   {
+      return *fileData;
+   }
+   
+   DPoint Delta () const
+   {
+      return delta;
+   }
+      
+   bool isDrizzle () const
+   {
+      return drizzle;
+   }
+    
+   Matrix DrzMatrix() const
+   {
+      return drzMatrix;
+   }
+      
+   LinearFitEngine::linear_fit_set GetLinearFitSet() const
+   {
+      return LFSet;
+   }
+
+   const ImageVariant StarAligned() const
+   {
+      return saImg;
+   }
+     
+   const ImageVariant CometAligned() const
+   {
+      return caImg;
+   }
+
+private:
+	const CometAlignmentInstance* i; //instance
+	ImageVariant* target; // source starAligned image, or in drizzle mode the original drizzle integrable image
+	FileData* fileData; // Target image parameters and embedded data. It belongs to this thread.
+	String targetPath; // path to source starAligned image, or in drizzle mode path to original drizzle integrable image
+	DPoint delta; // Comet movement Delta x, y around drzMatrix 
+	bool drizzle; // true == drizzle mode
+	Matrix drzMatrix; //drizzle AlignmentMatrix
+	const ImageVariant* operand; //Image for subtraction from target
+	LinearFitEngine::linear_fit_set LFSet;
+	ImageVariant saImg; //pureStarAligned
+	ImageVariant caImg; //pureCometAligned
+	
+   
+   template <class P>
+   void Normalize (GenericImage<P>& img) //subtract Median from Comet image
+   {
+	   for (int c = 0; c < img.NumberOfNominalChannels (); ++c)
+	   {
+		   typename P::sample m = img.Median (0, c, c);
+		   typename P::sample* v = img.PixelData (c);
+		   typename P::sample* vN = v + img.NumberOfPixels ();
+		   for (; v < vN; ++v)
+			   if (*v > 0) //ignore black pixels
+				   *v -= m;
+	   }
+   }
+   
+   void Normalize (ImageVariant& cimg)
+   {
+	   monitor = "Normalization";
+	   if (!i->p_normalize || cimg.IsComplexSample() )
+		   return;
+	   #if debug
+	   Console().Write("Normalize ");
+	   #endif
+	   if (cimg.IsFloatSample ())
+		   switch (cimg.BitsPerSample ())
+	   {
+		   case 32: Normalize (static_cast<Image&> (*cimg)); break;
+		   case 64: Normalize (static_cast<DImage&> (*cimg)); break;
+	   }
+	   else 
+		   switch (cimg.BitsPerSample ())
+	   {
+		   case 8: Normalize (static_cast<UInt8Image&> (*cimg)); break;
+		   case 16: Normalize (static_cast<UInt16Image&> (*cimg)); break;
+		   case 32: Normalize (static_cast<UInt32Image&> (*cimg)); break;
+	   }
+   }
+
+   template <class P>
+   void HomographyApplyTo (GenericImage<P>& input, const Matrix M)
+	{
+		Homography H(M);
+		int wi = input.Width();
+		int hi = input.Height();
+		int n = input.NumberOfNominalChannels();
+		int n1 = input.NumberOfChannels();		
+			
+		GenericImage<P> output;			
+		output.AllocateData(wi, hi, n1, input.ColorSpace());     
+			
+		IndirectArray<PixelInterpolation::Interpolator<P> > interpolators( n1 );
+		for ( int c = 0; c < n1; ++c )
+		{
+			int c0 = (c < n) ? Min( c, n-1 ) : Min( c-n, n1-n-1 ) + n;
+			interpolators[c] = pixelInterpolation->NewInterpolator( (P*)0, input.PixelData( c0 ), wi, hi );
+		}
+		
+		for ( int y = 0; y < hi; ++y)
+		{
+			for ( int x = 0; x < wi; ++x )
+			{
+				DPoint p = H(x,y); //caclulate source point via Homography
+				if ( p.x >= 0 && p.x < wi && p.y >= 0 && p.y < hi ) // ignore out of bounds points
+				{
+					for ( int c = 0; c < n1; ++c )
+					{
+						output.Pixel(x,y,c) = (*interpolators[c])( p );
+					}
+				}
+			}
+			if ( TryIsAborted() )
+				return;
+			monitor2 = y;
+		}
+		interpolators.Destroy();
+		input.Assign(output);
+	}
+ 
+   void HomographyApplyTo(ImageVariant& image, const Matrix M )
+	{
+		#if debug
+		Console().Write("Homography ");
+		#endif
+		
+		if (!image.IsComplexSample ())
+		{
+      if (image.IsFloatSample ())
+         switch (image.BitsPerSample ())
+         {
+         case 32: HomographyApplyTo (static_cast<Image&> (*image),M);
+            break;
+         case 64: HomographyApplyTo (static_cast<DImage&> (*image),M);
+            break;
+         }
+      else
+         switch (image.BitsPerSample ())
+         {
+         case 8: HomographyApplyTo (static_cast<UInt8Image&> (*image),M);
+            break;
+         case 16: HomographyApplyTo (static_cast<UInt16Image&> (*image),M);
+            break;
+         case 32: HomographyApplyTo (static_cast<UInt32Image&> (*image),M);
+            break;
+         }		
+		}
+	}
+};
 
 // ----------------------------------------------------------------------------
 
-/*
- * Creates a new .drz file for CometAlignment from drizzle data generated by
- * StarAlignment.
- * 
- * inputDrizzleFile : The original .drz file created by StarAlignment
- * caImagePath      : The path to image file created by CometAlignment
- * delta            : Comet alignment translation vector
- *
- * ### NB: Do not overwrite filePath, since we always need the initial
- *         alignment matrix.
- */
-void UpdateSADrizzleFileForCA( const String& inputDrizzleFile, const String& caImagePath, const DPoint& delta )
+template <class P>
+static void LoadImageFile (GenericImage<P>& image, FileFormatInstance& file)
 {
-   String outputDrizleFile(File::ChangeExtension (caImagePath,".drz"));
-   if ( inputDrizzleFile == outputDrizleFile )
-      throw Error( "UpdateSADrizzleFileForCA(): Internal error: Source and destination .drz files must be different." );
-   
-   File file;
-   file.OpenForReading( inputDrizzleFile );
-   fsize_type fileSize = file.Size();
-   IsoString text;
-   if ( fileSize > 0 )
+   if (!file.ReadImage (image))
+      throw CatchedException ();
+}
+
+static void LoadImageFile (ImageVariant& v, FileFormatInstance& file, ImageOptions options)
+{
+   if (!file.SelectImage (0))
+      throw CatchedException ();
+	v.CreateSharedImage (options.ieeefpSampleFormat, false, options.bitsPerSample);
+
+   if (v.IsFloatSample ()) switch (v.BitsPerSample ())
+      {
+      case 32: LoadImageFile (*static_cast<Image*> (v.AnyImage ()), file);
+         break;
+      case 64: LoadImageFile (*static_cast<DImage*> (v.AnyImage ()), file);
+         break;
+      }
+   else switch (v.BitsPerSample ())
+      {
+      case 8: LoadImageFile (*static_cast<UInt8Image*> (v.AnyImage ()), file);
+         break;
+      case 16: LoadImageFile (*static_cast<UInt16Image*> (v.AnyImage ()), file);
+         break;
+      case 32: LoadImageFile (*static_cast<UInt32Image*> (v.AnyImage ()), file);
+         break;
+      }
+}
+
+inline thread_list CometAlignmentInstance::LoadTargetFrame (const size_t fileIndex)
+{
+	Console console;
+	const ImageItem& item = p_targetFrames[fileIndex];
+	const ImageItem& r = p_targetFrames[p_reference];
+	const DPoint delta (item.x - r.x, item.y - r.y);
+	String filePath;
+	DrizzleSADataDecoder decoder;
+	const String drzPath = item.drzPath;
+	bool drizzle(!drzPath.IsEmpty());
+	if(drizzle)
+	{
+		console.WriteLn ("Use origin drizzle integrable image");
+		File file;
+		file.OpenForReading( drzPath );
+		fsize_type fileSize = file.Size();
+		IsoString text;
+		if ( fileSize > 0 )
+		{
+			text.Reserve( fileSize );
+			file.Read( reinterpret_cast<void*>( text.Begin() ), fileSize );
+			text[fileSize] = '\0';
+		}
+		file.Close();
+		DrizzleSAFilter filter;
+		text = filter.Filter( text );
+		if ( text.IsEmpty() )
+			throw Error( "The drizzle file has no image alignment data: " + drzPath );
+		if ( filter.HasSplines() )
+			throw Error( "Surface splines are not supported for drizzle by this version of CometAlignment: " + drzPath );
+		if ( !filter.HasMatrix() )
+			throw Error( "The drizzle file does not define an alignment matrix: " + drzPath );
+
+		decoder.Decode( text );
+		filePath = decoder.FilePath();
+	}
+	else
+		filePath = item.path;
+   console.WriteLn ("Open " + filePath);
+
+   FileFormat format (File::ExtractExtension (filePath), true, false);
+   FileFormatInstance file (format);
+
+   ImageDescriptionArray images;
+   if ( !file.Open( images, filePath, p_inputHints ) ) throw CatchedException ();
+   if (images.IsEmpty ()) throw Error (filePath + ": Empty image file.");
+
+   thread_list threads;
+   ImageVariant* target = new ImageVariant ();
+   try
    {
-      text.Reserve( fileSize );
-      file.Read( reinterpret_cast<void*>( text.Begin() ), fileSize );
-      text[fileSize] = '\0';
+		if (images.Length () > 1) 
+			throw Error ("Multiple image files is not supported.");
+		LoadImageFile (*target, file, images[0].options);
+		ProcessInterface::ProcessEvents ();
+		if (m_geometry.IsRect ())
+		{
+			if (target->Bounds () != m_geometry)
+				throw Error ("The Image geometry is not equal.");
+		}
+		else
+			m_geometry = target->Bounds ();
+		
+		FileData* inputData = new FileData (file, images[0].options);
+		threads.Add (new CAThread (target, inputData, filePath, delta, drizzle, decoder.AlignmentMatrix(), m_OperandImage, this));
+
+      console.WriteLn ("Close " + filePath);
+      file.Close ();
+      console.WriteLn (String ().Format ("Delta x:%f, y:%f", delta.x, delta.y));
+
+      return threads;
    }
-   file.Close();
+   catch (...)
+   {
+      if (target != 0) delete target;
+      throw;
+   }
+}
 
-   DrizzleSAFilter filter;
-   text = filter.Filter( text );
-   if ( text.IsEmpty() )
-      throw Error( "The drizzle file has no image alignment data: " + inputDrizzleFile );
-   if ( filter.HasSplines() )
-      throw Error( "Surface splines are not supported for drizzle by this version of CometAlignment: " + inputDrizzleFile );
-   if ( !filter.HasMatrix() )
-      throw Error( "The drizzle file does not define an alignment matrix: " + inputDrizzleFile );
+// ----------------------------------------------------------------------------
 
-   DrizzleSADataDecoder decoder;
-   decoder.Decode( text );
-
-   String drizzleFilePath = decoder.FilePath(); // required
-
-   int referenceWidth = decoder.ReferenceWidth(); // required
-   int referenceHeight = decoder.ReferenceHeight(); // required
-
-   Matrix H = decoder.AlignmentMatrix(); // required
-   H = H * Matrix( 1.0, 0.0, delta.x,
-                   0.0, 1.0, delta.y,
-                   0.0, 0.0, 1.0 );
-   H /= H[2][2];
+inline void UpdateSADrizzleFileForCA( const String& i, const String& o, const DPoint& d, const Matrix& m, const bool operand, const int8 mode, const int w, const int h )
+{
+	if ( i == o )
+      throw Error( "UpdateSADrizzleFileForCA(): Internal error: Source and destination .drz files must be different." );
+	String outputDrizleFile(File::ChangeExtension (o,".drz"));
+	
+	Matrix H=m; // starAlignment matrix
+	if (!operand || mode==2) 
+	{
+		H = H * DeltaToMatrix(d); // add comet movement delta
+		H /= H[2][2];
+	}
  
    Console().WriteLn ("Write drizzle file: " +outputDrizleFile);
+   File file;
    file.CreateForWriting( outputDrizleFile );
    file.OutText( "P{" );
-   file.OutText( IsoString( drizzleFilePath.ToUTF8() ) ); // drizzle source image
+   file.OutText( IsoString( i.ToUTF8() ) ); // drizzle integrable source image
    file.OutText( "}" );
    file.OutText( "T{" );
-   file.OutText( IsoString( caImagePath.ToUTF8() ) ); // registration target image
+   file.OutText( IsoString( o.ToUTF8() ) );  // registration target image
    file.OutText( "}" );
-   file.OutText( IsoString().Format( "D{%d,%d}", referenceWidth, referenceHeight ) );
+   file.OutText( IsoString().Format( "D{%d,%d}", w, h ) ); // width, height
+   for(int i=0;i<3;i++)
+	   for(int j=0;j<3;j++)
+		   Console().WriteLn (String().Format("H[%d][%d]:%.16g",i,j,H[i][j]));
+
    file.OutText( IsoString().Format( "H{%.16g,%.16g,%.16g,%.16g,%.16g,%.16g,%.16g,%.16g,%.16g}",
                     H[0][0], H[0][1], H[0][2],
                     H[1][0], H[1][1], H[1][2],
                     H[2][0], H[2][1], H[2][2] ) );
    file.Close();
-}
 
-// ----------------------------------------------------------------------------
+}
 
 template <class P>
 static void SaveImageFile (const GenericImage<P>& image, FileFormatInstance& file)
@@ -892,23 +1115,22 @@ inline String UniqueFilePath (const String& filePath)
    }
 }
 
-inline String CometAlignmentInstance::OutputFilePath (const String& filePath, const size_t index)
+inline String CometAlignmentInstance::OutputImgPath (const String& imgPath, const String& postfix)
 {
    String dir = p_outputDir;
    dir.Trim ();
    if (dir.IsEmpty ())
-      dir = File::ExtractDrive (filePath) + File::ExtractDirectory (filePath);
+      dir = File::ExtractDrive (imgPath) + File::ExtractDirectory (imgPath);
    if (dir.IsEmpty ())
       throw Error (dir + ": Unable to determine an output p_outputDir.");
    if (!dir.EndsWith ('/'))
       dir.Append ('/');
 
-   String fileName = File::ExtractName (filePath);
+   String fileName = File::ExtractName (imgPath);
    fileName.Trim ();
    if (!p_prefix.IsEmpty ()) fileName.Prepend (p_prefix);
-   if (index > 0) fileName.Append (String ().Format ("_%02d", index + 1));
-   if (!p_postfix.IsEmpty ()) fileName.Append (p_postfix);
-   if (fileName.IsEmpty ()) throw Error (filePath + ": Unable to determine an output file name.");
+   if (!p_postfix.IsEmpty ()) fileName.Append (postfix);
+   if (fileName.IsEmpty ()) throw Error (imgPath + ": Unable to determine an output file name.");
 
    String outputFilePath = dir + fileName + p_outputExtension;
    Console ().WriteLn ("<end><cbr><br>Writing output file: " + outputFilePath);
@@ -925,28 +1147,49 @@ inline String CometAlignmentInstance::OutputFilePath (const String& filePath, co
    return outputFilePath;
 }
 
-void CometAlignmentInstance::SaveImage (const CAThread* t)
+void LFReport(const LinearFitEngine::linear_fit_set L) 
 {
-   Console console;
-   LinearFitEngine::linear_fit_set L;
-   if (!p_subtractFile.IsEmpty () && p_enableLinearFit)
-   {
-      //const LinearFitEngine::linear_fit_set L(t->GetLinearFitSet());
+	Console().WriteLn( "<end><cbr>Linear fit functions:" );
+	for ( int c = 0; c <  L.Length() ; ++c )
+	{
+		Console().WriteLn( String().Format( "y<sub>%d</sub> = %+.6f %c %.6f&middot;x<sub>%d</sub>", c, L[c].a, (L[c].b < 0) ? '-' : '+', Abs( L[c].b ), c ) );
+		Console().WriteLn( String().Format( "&sigma;<sub>%d</sub> = %+.6f", c, L[c].adev ) );
+	}
+}
+void CometAlignmentInstance::Save(const ImageVariant* img, CAThread* t, const int8 mode)
+{
+	Console console;
+	
+	const String inputImgPath(t->TargetPath());		//source image path	
+	bool drizzle(t->isDrizzle());					//true == drizle used
+	bool operand(!p_subtractFile.IsEmpty());		//true == operand used
+	DPoint delta(t->Delta());						//comet movement delta
+
+	LinearFitEngine::linear_fit_set L;				//LinearFit result
+
+	if ( operand && p_enableLinearFit && mode==0 )
+	{
       L = t->GetLinearFitSet();
-      console.WriteLn( "<end><cbr>Linear fit functions:" );
-      for ( int c = 0; c <  t->TargetImage()->NumberOfNominalChannels(); ++c )
-      {
-         console.WriteLn( String().Format( "y<sub>%d</sub> = %+.6f %c %.6f&middot;x<sub>%d</sub>", c, L[c].a, (L[c].b < 0) ? '-' : '+', Abs( L[c].b ), c ) );
-         console.WriteLn( String().Format( "&sigma;<sub>%d</sub> = %+.6f", c, L[c].adev ) );
-      }
-   }
-   
-   String outputFilePath = OutputFilePath (t->TargetPath (), t->SubimageIndex ());
-   console.WriteLn ("Create " + outputFilePath);
+	  LFReport(L);
+	}
+
+	String postfix(p_postfix);
+	if(operand && drizzle)
+	{
+		switch(mode)
+		{
+		case 0: postfix.Clear(); break; //new not registred pureStar or pureComet image
+		case 1: postfix = "_r"; break;	//new pureStarRegistred image
+		case 2: postfix = "_r"+p_postfix; break;	//new pureCometRegistred image
+		}
+	}
+	
+   String outputImgPath = OutputImgPath (inputImgPath, postfix); //convert inputImgPath to output image
+   console.WriteLn ("Create " + outputImgPath);
 
    FileFormat outputFormat (p_outputExtension, false, true);
    FileFormatInstance outputFile (outputFormat);
-   if ( !outputFile.Create( outputFilePath, p_outputHints ) ) throw CatchedException ();
+   if ( !outputFile.Create( outputImgPath, p_outputHints ) ) throw CatchedException ();
 
    const FileData& data = t->GetFileData ();   
 
@@ -956,19 +1199,12 @@ void CometAlignmentInstance::SaveImage (const CAThread* t)
    if (data.fsData != 0)
       if (outputFormat.ValidateFormatSpecificData (data.fsData)) outputFile.SetFormatSpecificData (data.fsData);
 
-   /*
-    * Add FITS header keywords and preserve existing ones, if possible.
-    * NB: A COMMENT or HISTORY keyword cannot have a value; these keywords have
-    * only the name and comment components.
-    */
    if (outputFormat.CanStoreKeywords ())
    {
       FITSKeywordArray keywords = data.keywords;
       keywords.Add (FITSHeaderKeyword ("COMMENT", IsoString (), "CometAlignment with " + PixInsightVersion::AsString ()));
       keywords.Add (FITSHeaderKeyword ("COMMENT", IsoString (), "CometAlignment with " + CometAlignmentModule::ReadableVersion ()));
-      keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.X: " + IsoString(t->Delta().x)));
-      keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.Y:" +IsoString(t->Delta().y)));
-      if (!p_subtractFile.IsEmpty ())
+      if (!p_subtractFile.IsEmpty())
       {
          keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.Subtract: " + IsoString( p_subtractFile ) ) );
          keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.Mode: " + IsoString( p_subtractMode ? "true" : "false" ) ) );
@@ -978,14 +1214,18 @@ void CometAlignmentInstance::SaveImage (const CAThread* t)
          if (p_enableLinearFit)
          {
             keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.Linear fit functions:" ) );
-            for ( int c = 0; c <  t->TargetImage()->NumberOfNominalChannels(); ++c )
-            {               
+            for ( int c = 0; c < L.Length(); ++c )
+            {
                keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), IsoString().Format( "y%d = %+.6f %c %.6f * x%d", c, L[c].a, (L[c].b < 0) ? '-' : '+', Abs( L[c].b ), c ) ) );
                keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), IsoString().Format( "sigma%d = %+.6f", c, L[c].adev ) ) );
             }
          }
          keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.Normalize: " + IsoString( p_normalize ? "true" : "false") ) );
       }
+
+	  keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.X: " + IsoString(delta.x)));
+      keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.Y:" +IsoString(delta.y)));
+
       outputFile.Embed (keywords);
    }
    else if (!data.keywords.IsEmpty ())
@@ -999,20 +1239,39 @@ void CometAlignmentInstance::SaveImage (const CAThread* t)
       if (outputFormat.CanStoreMetadata ()) outputFile.Embed (data.metadata.Begin (), data.metadata.Length ());
       else console.WarningLn ("** Warning: The output format cannot store metadata - original metadata not embedded.");
 
-   SaveImageFile (*t->TargetImage (), outputFile);
+   SaveImageFile (*img, outputFile);
 
    console.WriteLn ("Close file.");
    outputFile.Close ();
-   
-   String drzPath(t->DrizlePath());
-   if(!drzPath.IsEmpty())
+      
+   if(drizzle)
    {
-		if(m_CometImage)
-			console.WarningLn ("** Warning: Sorry, but current version of CometAlignment don't support drizzle in second pass mode.");
-		else
-			UpdateSADrizzleFileForCA( drzPath, outputFilePath, t->Delta());
+	   if(operand && mode==0) //new not registred drizzle integrable image writen 
+		   t->TargetPath(outputImgPath);//store path to CAThread
+	   else // create .drz file
+		   UpdateSADrizzleFileForCA( inputImgPath, outputImgPath, delta, t->DrzMatrix(), !p_subtractFile.IsEmpty(), mode, img->Width(), img->Height() );
    }
 }
+void CometAlignmentInstance::SaveImage ( CAThread* t)
+{	
+	Save(t->TargetImage(), t, 0);			//Save result image	
+	
+	if(t->StarAligned())					//Save PureStarAligned
+   {
+      ImageVariant* img = new ImageVariant(t->StarAligned());
+		Save(img, t, 1);
+      delete img, img = 0;
+   }
+	if(t->CometAligned())					//Save PureCometAligned
+   {
+      ImageVariant* img = new ImageVariant(t->StarAligned());
+		Save(img, t, 2);
+      delete img, img = 0;
+   }
+		
+}
+
+// ----------------------------------------------------------------------------
 
 inline void CometAlignmentInstance::InitPixelInterpolation ()
 {
@@ -1090,7 +1349,6 @@ inline DImage CometAlignmentInstance::GetCometImage (const String& filePath)
 }
 
 inline ImageVariant* CometAlignmentInstance::LoadOperandImage (const String& filePath)
-
 {
    Console console;
    if (filePath.IsEmpty ())
@@ -1102,8 +1360,7 @@ inline ImageVariant* CometAlignmentInstance::LoadOperandImage (const String& fil
    if ( !file.Open( images, filePath, p_inputHints ) ) throw CatchedException ();
    if (images.IsEmpty ()) throw Error (filePath + ": Empty image file.");
    ImageVariant* img = new ImageVariant ();
-   if (!file.SelectImage (0)) throw CatchedException ();
-   LoadImageFile (*img, file, images, 0);
+	LoadImageFile (*img, file, images[0].options);
    ProcessInterface::ProcessEvents ();
    console.WriteLn ("Close " + filePath);
    file.Close ();
@@ -1117,12 +1374,14 @@ bool CometAlignmentInstance::ExecuteGlobal ()
 {
    Console console;
    console.Show ();
-
+   
    String why;
    if (!CanExecuteGlobal (why)) throw Error (why);
 
    m_geometry = 0;
-   m_CometImage = 0;
+   m_OperandImage = 0;
+
+   TreeBox monitor = TheCometAlignmentInterface->GUI->Monitor_TreeBox; 
 
    try //try 1
    {
@@ -1130,8 +1389,8 @@ bool CometAlignmentInstance::ExecuteGlobal ()
       Exception::DisableGUIOutput ();
       console.EnableAbort ();
 
-      m_CometImage = LoadOperandImage (p_subtractFile);
-      if (m_CometImage)
+      m_OperandImage = LoadOperandImage (p_subtractFile);
+      if (m_OperandImage)
       {
          if (p_subtractMode)
             console.WriteLn ("Mode: Align Operand image and subtract from Targets.");
@@ -1162,14 +1421,56 @@ bool CometAlignmentInstance::ExecuteGlobal ()
       thread_list runningThreads (n); // n = how many threads will run simultaneously
       console.WriteLn (String ().Format ("Using %u worker threads", runningThreads.Length ()));
 
-      thread_list waitingThreads; //container for hold images from next image. One or more if file is multi image
+      thread_list waitingThreads; //container for hold images from next image. One or more if file is multi image	
+	  
+	  // Create Monitor to show processing status -------------------------------------------
+	  // Hide main GUI
+	  TheCometAlignmentInterface->GUI->Interpolation_Control.Hide();	  
+	  TheCometAlignmentInterface->GUI->Interpolation_SectionBar.Hide();
+	  TheCometAlignmentInterface->GUI->FormatHints_Control.Hide();
+	  TheCometAlignmentInterface->GUI->FormatHints_SectionBar.Hide();
+	  TheCometAlignmentInterface->GUI->Output_Control.Hide(); 
+	  TheCometAlignmentInterface->GUI->Output_SectionBar.Hide();
+	  TheCometAlignmentInterface->GUI->Parameter_Control.Hide();  
+	  TheCometAlignmentInterface->GUI->Parameter_SectionBar.Hide(); 
+	  TheCometAlignmentInterface->GUI->Subtract_Control.Hide();
+	  TheCometAlignmentInterface->GUI->Subtract_SectionBar.Hide();
+	  TheCometAlignmentInterface->GUI->TargetImages_Control.Hide();
+	  TheCometAlignmentInterface->GUI->TargetImages_SectionBar.Hide();
+//	  const bool fullPath(TheCometAlignmentInterface->GUI->FullPaths_CheckBox.IsChecked());
+   
+	  monitor.SetFixedHeight((runningThreads.Length()+3)*monitor.Font().Height()); //set monitor height according qty of runningThreads Length 
 
+	  for(int cpu=0; cpu < int(runningThreads.Length()); cpu++)
+		  (new TreeBox::Node(monitor))->SetText (0, String (cpu));	 
+
+	  monitor.AdjustColumnWidthToContents(0);
+
+	  
+	  monitor.SetColumnWidth(1,TheCometAlignmentInterface->GUI->TargetImages_TreeBox.ColumnWidth(2)); //== fileName width 
+	  monitor.SetColumnWidth(2,monitor.Font().Width(String("Align PureComet")+"MM"));
+	  monitor.SetColumnWidth(3,TheCometAlignmentInterface->GUI->TargetImages_TreeBox.ColumnWidth(5)); //== Y width
+
+	  // Correcting width of Monitor_TreeBox -------------------------------------------
+	  monitor.Show();	  
+	  const int lastColumn = monitor.NumberOfColumns() - 1;
+	  monitor.ShowColumn (lastColumn); // temporarry show last column, which uset only for GUI width expansion
+	  monitor.SetColumnWidth (lastColumn, 0); // set width of last column to zero
+	  int width = 0;
+	  for (int i = 0; i < lastColumn; i++)
+		  width += monitor.ColumnWidth (i); // calculate total width of columns
+
+	  monitor.SetFixedWidth (width);
+	  monitor.HideColumn (lastColumn); // hide last column to hide horisontal scroling
+	  
+	  TheCometAlignmentInterface->Restyle ();
+	  TheCometAlignmentInterface->AdjustToContents();
       try //try 2
       {
-         int runing = 0; // runing = Qty sub-images processing now = Qty CPU isActiv now.
+         int runing = 0; // runing == Qty images processing now == Qty CPU isActiv now.
          do
          {
-            ProcessInterface::ProcessEvents (); // Keep the GUI responsive
+            Module->ProcessEvents (); // Keep the GUI responsive
             if (console.AbortRequested ()) throw ProcessAborted ();
 
             // ------------------------------------------------------------
@@ -1192,7 +1493,8 @@ bool CometAlignmentInstance::ExecuteGlobal ()
             // ------------------------------------------------------------
             // Find idle or free CPU
             thread_list::iterator i = 0;
-            for (thread_list::iterator j = runningThreads.Begin (); j != runningThreads.End (); ++j) //Cycle in CPU units
+			int cpu =0;
+            for (thread_list::iterator j = runningThreads.Begin (); j != runningThreads.End (); ++j, ++cpu) //Cycle in CPU units
             {
                if (*j == 0) // the CPU is free and empty.
                {
@@ -1207,6 +1509,24 @@ bool CometAlignmentInstance::ExecuteGlobal ()
                   i = j;
                   break; // i pointed to CPU thread which ready to save.
                }
+			   else //the CPU IsActive
+			   {
+				   if(!(*j)->monitor.IsEmpty() || (*j)->monitor2 != 0 ) //If need update Status or Row into Monitor window
+				   {
+					   TreeBox::Node* node = monitor[cpu]; //link from CPU# to Monitor node  
+					   if(!(*j)->monitor.IsEmpty() )
+					   {
+						   node->SetText (2, (*j)->monitor ); //Show processing Status in Monitor
+						   (*j)->monitor.Clear();
+						   node->SetText (3, "");
+					   }
+					   if((*j)->monitor2 != 0 )
+					   {
+						   node->SetText (3, String((*j)->monitor2)); //Show processing Row in Monitor
+						   (*j)->monitor2 = 0;
+					   }
+				   }
+			   }
             }
 
             if (i == 0) // all CPU IsActive or no new images
@@ -1221,10 +1541,21 @@ bool CometAlignmentInstance::ExecuteGlobal ()
             {
                runing--;
                try
-               {
-                  console.WriteLn (String ().Format ("<br>CPU#%u has finished processing.", i - runningThreads.Begin ()));
+               {				
+                  console.WriteLn (String ().Format ("<br>CPU#%u has finished processing.", cpu ));
+				  (*i)->FlushConsoleOutputText();
+				  TreeBox::Node* node = monitor[cpu];
+				  node->SetText (2, "Save"); //Status
+				  node->SetText (3, ""); //Y
+
                   SaveImage (*i);
-                  runningThreads.Delete (i); //prepare thread for next image. now (*i == 0) the CPU is free
+                  
+				  runningThreads.Delete (i); //prepare thread for next image. now (*i == 0) the CPU is free
+				  
+				  node->SetText (0, ""); //CPU#
+				  node->SetText (1, ""); //File	
+				  node->SetText (2, ""); //Status
+				  
                }
                catch (...)
                {
@@ -1234,15 +1565,26 @@ bool CometAlignmentInstance::ExecuteGlobal ()
                ++succeeded;
             } //now (*i == 0) the CPU is free
 
+			// Keep the GUI responsive
+			Module->ProcessEvents();
+			if ( console.AbortRequested() )
+				throw ProcessAborted();    
+
             // ------------------------------------------------------------
             // Put image to empty runningThreads slot and Run()
+
             if (!waitingThreads.IsEmpty ())
             {
                *i = *waitingThreads; //put one sub-image to runningThreads. so, now (*i != 0)
                waitingThreads.Remove (waitingThreads.Begin ()); //remove one sub-image from waitingThreads
-               console.WriteLn (String ().Format ("<br>CPU#%u processing file ", i - runningThreads.Begin ()) + (*i)->TargetPath ());
-               (*i)->Start (ThreadPriority::DefaultMax, i - runningThreads.Begin ());
+               console.WriteLn (String ().Format ("<br>CPU#%u processing file ", cpu ) + (*i)->TargetPath());
+ 
+			   (*i)->Start (ThreadPriority::DefaultMax, i - runningThreads.Begin ());
                runing++;
+			   
+			   TreeBox::Node* node = monitor[cpu];
+			   node->SetText (1, File::ExtractName( (*i)->TargetPath() ) ); //file
+			   node->SetText (2, "Run"); //status			   
             }
          }
          while (runing > 0 || !t.IsEmpty ());
@@ -1254,25 +1596,16 @@ bool CometAlignmentInstance::ExecuteGlobal ()
             throw;
          }
          ERROR_HANDLER;
-
-         bool printed = false;
-         for (thread_list::iterator i = runningThreads.Begin (); i != runningThreads.End (); ++i)
-            if (*i != 0)
-            {
-               if (!printed)
-               {
-                  console.Note ("<br>* Waiting for running tasks at CPU# ");
-                  printed = true;
-               }
-               console.Write (String ().Format (":%u ", i - runningThreads.Begin ()));
-               console.Flush ();
-               (*i)->Wait ();
-            }
-         console.NoteLn ("<br>* All running tasks are terminated.");
-         runningThreads.Destroy ();
-         waitingThreads.Destroy ();
+		 
+		 console.NoteLn( "<end><cbr><br>* Waiting for running tasks to terminate ..." );
+		 for ( thread_list::iterator i = runningThreads.Begin(); i != runningThreads.End(); ++i )
+			 if ( *i != 0 ) (*i)->Abort();
+		 for ( thread_list::iterator i = runningThreads.Begin(); i != runningThreads.End(); ++i )
+			 if ( *i != 0 ) (*i)->Wait();
+		 runningThreads.Destroy();
+		 waitingThreads.Destroy();
+		 throw;
       }
-      //Translation::EnableParallelProcessing();
 
       console.NoteLn (String ().Format ("<br>===== CometAlignment: %u succeeded, %u skipped, %u canceled =====",
                                         succeeded, skipped, total - succeeded));
@@ -1280,17 +1613,38 @@ bool CometAlignmentInstance::ExecuteGlobal ()
       Exception::DisableConsoleOutput ();
       Exception::EnableGUIOutput ();
 
-      if (m_CometImage != 0)
-         delete m_CometImage, m_CometImage = 0;
+      if (m_OperandImage != 0)
+         delete m_OperandImage, m_OperandImage = 0;
 
+	  monitor.Clear();
+	  monitor.Hide();
+	  TheCometAlignmentInterface->GUI->Interpolation_SectionBar.Show();
+	  TheCometAlignmentInterface->GUI->FormatHints_SectionBar.Show();
+	  TheCometAlignmentInterface->GUI->Output_SectionBar.Show();
+	  TheCometAlignmentInterface->GUI->Parameter_SectionBar.Show(); 
+	  TheCometAlignmentInterface->GUI->Subtract_SectionBar.Show();
+	  TheCometAlignmentInterface->GUI->TargetImages_SectionBar.Show();
+	  TheCometAlignmentInterface->GUI->TargetImages_Control.Show();
+	  TheCometAlignmentInterface->AdjustToContents(); 
+   
       return true;
    }
    catch (...)
    {
-      //AbstractImage::EnableParallelProcessing();
       Exception::DisableConsoleOutput ();
       Exception::EnableGUIOutput ();
-      if (m_CometImage != 0) delete m_CometImage, m_CometImage = 0;
+      if (m_OperandImage != 0) delete m_OperandImage, m_OperandImage = 0;
+  
+	  monitor.Clear();
+	  monitor.Hide();
+	  TheCometAlignmentInterface->GUI->Interpolation_SectionBar.Show();
+	  TheCometAlignmentInterface->GUI->FormatHints_SectionBar.Show();
+	  TheCometAlignmentInterface->GUI->Output_SectionBar.Show();
+	  TheCometAlignmentInterface->GUI->Parameter_SectionBar.Show(); 
+	  TheCometAlignmentInterface->GUI->Subtract_SectionBar.Show();
+	  TheCometAlignmentInterface->GUI->TargetImages_SectionBar.Show();
+	  TheCometAlignmentInterface->GUI->TargetImages_Control.Show();
+	  TheCometAlignmentInterface->AdjustToContents(); 
 
       console.NoteLn ("<end><cbr><br>* CometAlignment terminated.");
       throw;
@@ -1321,11 +1675,13 @@ void* CometAlignmentInstance::LockParameter (const MetaParameter* p, size_type t
 
    if (p == TheSubtractFile) return p_subtractFile.c_str ();
    if (p == TheSubtractMode) return &p_subtractMode;
+   if (p == TheOperandIsDI) return &p_OperandIsDI;
    if (p == TheNormalize) return &p_normalize;
    if (p == TheEnableLinearFit) return &p_enableLinearFit;
    if (p == TheRejectLow) return &p_rejectLow;
    if (p == TheRejectHigh) return &p_rejectHigh;
-
+   if (p == TheDrzSaveSA) return &p_drzSaveSA;
+   if (p == TheDrzSaveCA) return &p_drzSaveCA;
 
    if (p == TheLinearClampingThresholdParameter) return &p_linearClampingThreshold;
    if (p == ThePixelInterpolationParameter) return &p_pixelInterpolation;
@@ -1421,4 +1777,4 @@ size_type CometAlignmentInstance::ParameterLength (const MetaParameter* p, size_
 } // pcl
 
 // ****************************************************************************
-// EOF CometAlignmentInstance.cpp - Released 2015/02/20 19:50:08 UTC
+// EOF CometAlignmentInstance.cpp - Released 2015/03/04 19:50:08 UTC

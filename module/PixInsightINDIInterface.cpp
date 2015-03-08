@@ -200,7 +200,7 @@ void PixInsightINDIInterface::__EditCompleted( Edit& sender )
       instance.p_host = sender.Text();
 }
 
-void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool checked )
+void PixInsightINDIInterface::Buttons_Click( Button& sender, bool checked )
 {
         
         if ( sender == GUI->ConnectServer_PushButton )
@@ -210,12 +210,15 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 				if (indiClient.get() == 0)
 					indiClient.reset(new INDIClient(&instance));
 
+				if (indiClient.get()->serverIsConnected())
+					return;
+
 				IsoString ASCIIHost(instance.p_host);
-				indiClient->setServer(ASCIIHost.c_str() , instance.p_port);
+				indiClient.get()->setServer(ASCIIHost.c_str() , instance.p_port);
 
 				bool connected=false;
 
-				connected = indiClient->connectServer();
+				connected = indiClient.get()->connectServer();
 
 				if (connected){
 					GUI->UpdateDeviceList_Timer.Start();
@@ -235,8 +238,11 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
                 if (indiClient.get() == 0)
 					indiClient.reset(new INDIClient(&instance));
 
-				if (indiClient->serverIsConnected())
-					indiClient->disconnectServer();
+
+				if (indiClient.get()->serverIsConnected())
+					indiClient.get()->disconnectServer();
+				else
+					return;
 
 
 				GUI->UpdateDeviceList_Timer.Stop();
@@ -255,6 +261,7 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 				m_propertyTreeMap.clear();
 				// flag property list items as Insert to create new property tree
 
+
 				for (PixInsightINDIInstance::PropertyListType::iterator iter=instance.p_propertyList.Begin() ; iter!=instance.p_propertyList.End(); ++iter){
 					iter->PropertyFlag=Insert;
 				}
@@ -263,8 +270,7 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 				// clear property list
 				GUI->PropertyList_TreeBox.Clear();
 
-
-				if (!indiClient->serverIsConnected()) {
+				if (!indiClient.get()->serverIsConnected()) {
 					GUI->ServerMessage_Label.SetText("Successfully disconnected from server");
 				}
 
@@ -281,11 +287,11 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 				for (pcl::IndirectArray<pcl::TreeBox::Node>::iterator it=selectedNodes.Begin(); it!=selectedNodes.End();++it){
 					IsoString deviceName((*it)->Text(TextColumn).To7BitASCII());
 					
-					INDI::BaseDevice* device = indiClient->getDevice(deviceName.c_str());
+					INDI::BaseDevice* device = indiClient.get()->getDevice(deviceName.c_str());
 
 					if (device)
 						if (!device->isConnected())
-							indiClient->connectDevice(deviceName.c_str());
+							indiClient.get()->connectDevice(deviceName.c_str());
 				}
 			}
             ERROR_HANDLER
@@ -300,16 +306,34 @@ void PixInsightINDIInterface::__CameraListButtons_Click( Button& sender, bool ch
 				for (pcl::IndirectArray<pcl::TreeBox::Node>::iterator it=selectedNodes.Begin(); it!=selectedNodes.End();++it){
 					IsoString deviceName((*it)->Text(TextColumn).To7BitASCII());
 
-					INDI::BaseDevice* device = indiClient->getDevice(deviceName.c_str());
+					INDI::BaseDevice* device = indiClient.get()->getDevice(deviceName.c_str());
 
 					if (device)
 						if (device->isConnected())
-							indiClient->disconnectDevice(deviceName.c_str());	
+							indiClient.get()->disconnectDevice(deviceName.c_str());
 
 					(*it)->Enable();
 				}
 			}
             ERROR_HANDLER
+		}
+		else if ( sender == GUI->WatchDevice_PushButton)
+		{
+			try
+			{
+				pcl::IndirectArray<pcl::TreeBox::Node> selectedNodes;
+				GUI->DeviceList_TreeBox.GetSelectedNodes(selectedNodes);
+
+				for (pcl::IndirectArray<pcl::TreeBox::Node>::iterator it=selectedNodes.Begin(); it!=selectedNodes.End();++it) {
+					IsoString deviceName((*it)->Text(TextColumn).To7BitASCII());
+
+					indiClient.get()->watchDevice(deviceName.c_str());
+				}
+				MessageBox mBox(String("Please reconnect to the INDI server to activate watching devices. Press first the \"Disconnect\" and then the \"Connect\" button in the server connection section."),
+								String("Reconnect to INDI server"),StdIcon::Information);
+				mBox.Execute();
+			}
+			ERROR_HANDLER
 		}
 }
 
@@ -351,14 +375,23 @@ void PixInsightINDIInterface::UpdateDeviceList(){
 		deviceNode->getTreeBoxNode()->SetText( TextColumn, iter->DeviceName );
 		deviceNode->getTreeBoxNode()->SetAlignment( TextColumn, TextAlign::Left );
 
-		INDI::BaseDevice* device = indiClient->getDevice(IsoString(iter->DeviceName).c_str());
-		if (device && device->isConnected()){
-			Bitmap icon(String(":/bullets/bullet-ball-glass-green.png"));
-			deviceNode->getTreeBoxNode()->SetIcon(TextColumn,icon);		}
-		else {
-			Bitmap icon(":/bullets/bullet-ball-glass-grey.png");
-			deviceNode->getTreeBoxNode()->SetIcon(TextColumn,icon);
+		INDI::BaseDevice* device = indiClient.get()->getDevice(IsoString(iter->DeviceName).c_str());
+		if (device){
+			if (device->isConnected()){
+				Bitmap icon(String(":/bullets/bullet-ball-glass-green.png"));
+				deviceNode->getTreeBoxNode()->SetIcon(TextColumn,icon);
+			} else {
+				Bitmap icon(":/bullets/bullet-ball-glass-grey.png");
+				deviceNode->getTreeBoxNode()->SetIcon(TextColumn,icon);
+			}
+
+			if (indiClient.get()->isWatched(IsoString(iter->DeviceName).c_str())){
+				pcl::Font currentFont = deviceNode->getTreeBoxNode()->Font(TextColumn);
+				currentFont.SetBold();
+				deviceNode->getTreeBoxNode()->SetFont(TextColumn,currentFont);
+			}
 		}
+
 
 
 	}
@@ -420,9 +453,9 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    //pushbuttons
    ConnectionServer_Sizer.SetSpacing(4);
    ConnectServer_PushButton.SetText( "Connect" );
-   ConnectServer_PushButton.OnClick( (Button::click_event_handler) &PixInsightINDIInterface::__CameraListButtons_Click, w );
+   ConnectServer_PushButton.OnClick( (Button::click_event_handler) &PixInsightINDIInterface::Buttons_Click, w );
    DisconnectServer_PushButton.SetText( "Disconnect" );
-   DisconnectServer_PushButton.OnClick( (Button::click_event_handler) &PixInsightINDIInterface::__CameraListButtons_Click, w );
+   DisconnectServer_PushButton.OnClick( (Button::click_event_handler) &PixInsightINDIInterface::Buttons_Click, w );
 
   
    ConnectionServer_Sizer.Add(ConnectServer_PushButton);
@@ -441,17 +474,20 @@ PixInsightINDIInterface::GUIData::GUIData( PixInsightINDIInterface& w )
    DeviceList_TreeBox.EnableAlternateRowColor();
    DeviceList_TreeBox.EnableMultipleSelections();
    DeviceList_TreeBox.SetNumberOfColumns(1);
-   DeviceList_TreeBox.SetHeaderText(0,"Device");
+   DeviceList_TreeBox.SetHeaderText(TextColumn,"Device");
 
 
    ConnectDevice_PushButton.SetText("Connect");
-   ConnectDevice_PushButton.OnClick((Button::click_event_handler) &PixInsightINDIInterface::__CameraListButtons_Click, w );
+   ConnectDevice_PushButton.OnClick((Button::click_event_handler) &PixInsightINDIInterface::Buttons_Click, w );
    DisconnectDevice_PushButton.SetText("Disconnect");
-   DisconnectDevice_PushButton.OnClick((Button::click_event_handler) &PixInsightINDIInterface::__CameraListButtons_Click, w );
+   DisconnectDevice_PushButton.OnClick((Button::click_event_handler) &PixInsightINDIInterface::Buttons_Click, w );
+   WatchDevice_PushButton.SetText("Watch");
+   WatchDevice_PushButton.OnClick((Button::click_event_handler) &PixInsightINDIInterface::Buttons_Click, w );
 
    DeviceAction_Sizer.SetSpacing(4);
    DeviceAction_Sizer.Add(ConnectDevice_PushButton);
    DeviceAction_Sizer.Add(DisconnectDevice_PushButton);
+   DeviceAction_Sizer.Add(WatchDevice_PushButton);
    DeviceAction_Sizer.AddStretch();
 
    INDIDevice_Sizer.Add(DeviceList_TreeBox);

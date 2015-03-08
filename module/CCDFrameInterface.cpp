@@ -736,6 +736,7 @@ void CCDFrameInterface::CancelButton_Click(Button& sender, bool checked){
 
 			// TODO enable abort
 			if (serverSendsImage){
+				pInstance->setImageDownloadedFlag(false);
 				while (!pInstance->getImageDownloadedFlag() && !pInstance->getInternalAbortFlag()){Sleep(1);ProcessEvents();}
 				pInstance->setImageDownloadedFlag(false);
 			} else {

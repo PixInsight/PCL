@@ -88,6 +88,7 @@ namespace pcl {
 		TreeBox::Node*              m_thisTreeBoxNode;
 	protected:
 		PropertyNode(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property,IsoString INDI_propertyElement);
+
 	public:
 		PropertyNode():m_childs(),m_keyStr(IsoString("/")),m_thisTreeBoxNode(NULL){}
 		PropertyNode(IsoString keyStr):m_childs(),m_keyStr(keyStr),m_thisTreeBoxNode(NULL){}
@@ -132,10 +133,7 @@ namespace pcl {
 	    virtual IsoString getNodeINDIValue() const;
 	    virtual IsoString getNodeINDIType() const;
 
-
-
-
-		virtual bool accept(IPropertyVisitor* visitor, IsoString propertyKeyStr, IsoString newValue);
+	    virtual void accept(IPropertyVisitor* visitor, IsoString propertyKeyStr, IsoString newValue);
 
 		static PropertyNode* create(PropertyNode* parent,IsoString INDI_device, IsoString INDI_property,IsoString INDI_propertyElement, IsoString INDI_propertyType);
 	};
@@ -173,7 +171,6 @@ namespace pcl {
 	class IPropertyVisitor {
 	public:
 		virtual bool visit(PropertyNode* pNode,  IsoString propertyKeyStr, IsoString newPropertyValue) = 0;
-		virtual void postVisit(PropertyNode* pNode,  IsoString propertyKeyStr, IsoString newPropertyValue) = 0;
 		virtual ~IPropertyVisitor(){}
 	};
 
@@ -188,7 +185,6 @@ namespace pcl {
 
 		static IPropertyVisitor* create(){return new FindNodeVisitor();}
 		bool visit(PropertyNode* pNode, IsoString propertyKeyString, IsoString newPropertyString);
-		void postVisit(PropertyNode* pNode, IsoString propertyKeyString, IsoString newPropertyValue){}
 		bool foundNode(){return m_found;}
 		PropertyNode* getNode() const {return m_foundNode;}
 		void reset(){m_found=false;m_foundNode=NULL;}

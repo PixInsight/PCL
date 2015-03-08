@@ -17,6 +17,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #if defined(WIN32)
 #include <io.h>
 #include <stdio.h>
@@ -61,14 +62,16 @@ void INDIListener::Run(){
 }
 
 
-INDI::BaseClientImpl::BaseClientImpl()
+INDI::BaseClientImpl::BaseClientImpl(bool initThreads)
 {
     cServer = "localhost";
     cPort   = 7624;
     svrwfp = NULL;    
     sConnected = false;
 
-    pcl::Thread::NumberOfThreads (1);
+    if (initThreads){
+    	pcl::Thread::NumberOfThreads (1);
+    }
 #if defined(WIN32)
     WORD wVersionRequested;
     WSADATA wsaData;
@@ -99,6 +102,17 @@ void INDI::BaseClientImpl::setServer(const char * hostname, unsigned int port)
 void INDI::BaseClientImpl::watchDevice(const char * deviceName)
 {
     cDeviceNames.push_back(deviceName);
+}
+
+bool INDI::BaseClientImpl::isWatched(const char * deviceName)
+{
+	assert(deviceName!=NULL);
+	for (vector<string> ::iterator iter=cDeviceNames.begin(); iter!= cDeviceNames.end(); ++iter){
+		if (strcmp(iter->c_str(),deviceName)==0){
+			return true;
+		}
+	}
+	return false;
 }
 
 bool INDI::BaseClientImpl::connectServer()

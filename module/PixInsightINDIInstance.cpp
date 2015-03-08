@@ -199,6 +199,8 @@ bool PixInsightINDIInstance::sendNewProperty(bool isAsynchCall) {
 	if (p_newPropertyList.IsEmpty())
 		return false; //Nothing to do
 
+	//TODO check that client is connected
+
 	for (pcl::Array<INDINewPropertyListItem>::iterator iter=p_newPropertyList.Begin(); iter!=p_newPropertyList.End(); ++iter){
 		if (iter->NewPropertyValue.IsEmpty()) {
 			Console().WriteLn("Empty property value ... exiting.");

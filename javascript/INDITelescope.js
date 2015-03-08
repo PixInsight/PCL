@@ -34,6 +34,9 @@ function convertToHMS(floatNum){
    return [H,M,S];
 }
 
+function convertToCoordInHours(HMS){
+	var CoordInHours=parseFloat(HMS[0]) + parseFloat(HMS[1])/60 + parseFloat(HMS[2])/3600;
+}
 
 SetPropertyDialog.prototype = new Dialog;
 
@@ -403,9 +406,9 @@ function mainDialog()
    this.center_Button.text = "Center";
    this.center_Button.toolTip = "<p>Center the object with based on the given image coordinates.</p>";
    this.center_Button.onClick = function (){
-
-     var curRa =parseFloat(indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA"));
-     var curDec =parseFloat(indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC"));
+	 
+     var curRa =parseFloat(convertToCoordInHours(indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA").split(":")));
+     var curDec =parseFloat(convertToCoordInHours(indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC").split(":")));
      var raCor=2*curRa - this.dialog.solver.metadata.ra*24/360;
      var decCor=2*curDec -this.dialog.solver.metadata.dec;
      var propertyArray=[["/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA","INDI_NUMBER",raCor.toString()],
@@ -426,8 +429,8 @@ function mainDialog()
      var propertyArray=[["/" + currentTelescope + "/ON_COORD_SET/SYNC","INDI_SWITCH","ON"]]
      indi.sendNewPropertyArray(propertyArray);
 
-     var curRa =parseFloat(indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA"));
-     var curDec =parseFloat(indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC"));
+     var curRa =parseFloat(convertToCoordInHours(indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA").split(":")));
+     var curDec =parseFloat(convertToCoordInHours(indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC").split(":")));
      propertyArray=[["/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA","INDI_NUMBER",curRa.toString()],
                     ["/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC","INDI_NUMBER",curDec.toString()]];
 
@@ -493,17 +496,13 @@ ComboBox.prototype.update = function(){
 Edit.prototype.update = function(){
    var curRA=[0,0,0];
    var propRAValue=indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA")
-   if (propRAValue!=""){
-      curRA=convertToHMS(parseFloat(propRAValue));
-   }
-   this.dialog.curRA_Edit.text=curRA[0]+":" +curRA[1]+":"+curRA[2];
+  
+   this.dialog.curRA_Edit.text=propRAValue;
 
    var curDEC=[0,0,0];
    var propDECValue=indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC")
-   if (propDECValue!=""){
-     curDEC=convertToHMS(parseFloat(propDECValue));
-   }
-   this.dialog.curDEC_Edit.text=curDEC[0]+":" +curDEC[1]+":"+curDEC[2];
+   
+   this.dialog.curDEC_Edit.text=propDECValue;
 }
 
 mainDialog.prototype = new Dialog;

@@ -29,7 +29,7 @@ TEST_F(PixInsightINDIClientTest,TestFixture)
 TEST_F(PixInsightINDIClientTest,TestINDIClientCreationFailed)
 {
 	FakePixInsightINDIInstance* pInstance= NULL;
-	EXPECT_THROW(INDIClient iclient(pInstance),FatalError);
+	EXPECT_THROW(INDIClient iclient(pInstance,false),FatalError);
 }
 
 TEST_F(PixInsightINDIClientTest,TestINDIClientCreation)

@@ -74,7 +74,7 @@ public:
     enum { INDI_DEVICE_NOT_FOUND=-1, INDI_PROPERTY_INVALID=-2, INDI_PROPERTY_DUPLICATED = -3, INDI_DISPATCH_ERROR=-4 };
     //typedef boost::shared_ptr<INDI::BaseDevice> devicePtr;
 
-    BaseClientImpl();
+    BaseClientImpl(bool initThreads=true);
     virtual ~BaseClientImpl();
 
     /** \brief Set the server host name and port
@@ -91,7 +91,7 @@ public:
         will be created and handled.
     */
     virtual void watchDevice(const char * deviceName);
-
+    virtual bool isWatched(const char * deviceName);
 
     /** \brief Connect to INDI server.
 

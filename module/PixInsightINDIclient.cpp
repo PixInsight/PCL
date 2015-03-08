@@ -11,6 +11,12 @@
 
 namespace pcl {
 
+	INDIClient::INDIClient(IPixInsightINDIInstance* instance,bool initThreads):BaseClientImpl(initThreads),m_Instance(instance),m_ScriptInstance(NULL)
+	 {
+		 if (m_Instance==NULL){
+			 throw FatalError(ERR_MSG("Invalid instance pointer."));
+		 }
+	 }
 
 	void INDIClient::runOnPropertyTable(IProperty* INDIProperty, const ArrayOperator<INDIPropertyListItem>* arrayOp, PropertyFlagType flag){
 
@@ -84,6 +90,9 @@ namespace pcl {
 
 	void INDIClient::removeProperty(INDI::Property *property){
 		if (property!=NULL){
+			if (indiClient.get()!=NULL){
+				indiClient.get()->m_mutex.Lock();
+			}
 			ArrayOperator<INDIPropertyListItem>* update=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayUpdate<INDIPropertyListItem>());
 
 			IProperty* INDIProperty = PropertyFactory::create(property);
@@ -108,6 +117,9 @@ namespace pcl {
 					update->run(m_ScriptInstance->getPropertyList(), propertyListItem);
 				}
 			}
+		}
+		if (indiClient.get()!=NULL){
+			indiClient.get()->m_mutex.Unlock();
 		}
 	}
 

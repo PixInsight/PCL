@@ -143,17 +143,11 @@ namespace pcl {
 
 
 
-	bool PropertyNode::accept(IPropertyVisitor* visitor, IsoString propertyKeyStr, IsoString newValue){
-		bool requiresPostVisit = visitor->visit(this,propertyKeyStr, newValue);
+	void PropertyNode::accept(IPropertyVisitor* visitor, IsoString propertyKeyStr, IsoString newValue){
+		visitor->visit(this,propertyKeyStr, newValue);
 		for (size_t i=0; i<this->m_childs.size(); ++i){
-			requiresPostVisit = requiresPostVisit || m_childs[i]->accept(visitor,propertyKeyStr, newValue);
+			m_childs[i]->accept(visitor,propertyKeyStr, newValue);
 		}
-		if (requiresPostVisit){
-			for (size_t i=0; i<m_childs.size(); ++i){
-				visitor->postVisit(m_childs[i],propertyKeyStr, IsoString("OFF"));
-			}
-		}
-		return requiresPostVisit;
 	}
 
 	void PropertyNode::RemoveChild(PropertyNode* child){

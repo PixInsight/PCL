@@ -14,7 +14,7 @@ namespace pcl {
 
 class FakeINDIClient: public INDIClient {
 public:
-	FakeINDIClient(IPixInsightINDIInstance* instance):INDIClient(instance){}
+	FakeINDIClient(IPixInsightINDIInstance* instance):INDIClient(instance,false /*initThreads*/){}
 	virtual ~FakeINDIClient(){}
 	virtual void sendNewSwitch (const char * deviceName, const char *propertyName, const char *elementName);
 	virtual void sendNewNumber (const char * deviceName, const char *propertyName, const char *elementName, double value);
@@ -24,6 +24,8 @@ public:
 	virtual void removeText(const char * deviceName, const char *propertyName, const char *elementName,const char* text);
 	virtual bool connectServer();
 	virtual void setBLOBMode(BLOBHandling blobH, const char *dev, const char *prop = NULL){}
+	virtual bool isWatched(char const* device){return true;}
+
 
 };
 

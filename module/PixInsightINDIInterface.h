@@ -62,6 +62,7 @@
 #include <pcl/PushButton.h>
 #include <pcl/RadioButton.h>
 #include <pcl/TreeBox.h>
+#include <pcl/MessageBox.h>
 #include <pcl/ErrorHandler.h>
 #include <pcl/Timer.h>
 #include <pcl/Mutex.h>
@@ -81,6 +82,7 @@ namespace pcl
 class PropertyNode;
 class PropertyTree;
 class PixInsightINDIInterface;
+
 
 class SetPropertyDialog : public Dialog 
 {
@@ -242,6 +244,7 @@ public:
 			VerticalSizer		DeviceAction_Sizer;
 				PushButton			ConnectDevice_PushButton;
 				PushButton			DisconnectDevice_PushButton;
+				PushButton			WatchDevice_PushButton;
 		SectionBar         INDIProperties_SectionBar;
 		Control			   INDIProperties_Control;
 		 HorizontalSizer    INDIDeviceProperty_Sizer;
@@ -281,7 +284,7 @@ public:
    void UpdateDeviceList();
 
    // Event Handlers
-   void __CameraListButtons_Click( Button& sender, bool checked );
+   void Buttons_Click( Button& sender, bool checked );
    void PropertyButton_Click( Button& sender, bool checked );
 
    void __RealValueUpdated( NumericEdit& sender, double value );

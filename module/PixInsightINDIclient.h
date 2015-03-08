@@ -107,12 +107,7 @@ class INDIClient : public INDI::BaseClientImpl
 {
  public:
 
-	 INDIClient(IPixInsightINDIInstance* instance):BaseClientImpl(),m_Instance(instance),m_ScriptInstance(NULL)
-	 {
-		 if (m_Instance==NULL){
-			 throw FatalError(ERR_MSG("Invalid instance pointer."));
-		 }
-	 }
+	 INDIClient(IPixInsightINDIInstance* instance,bool initThreads=true);
 	 ~INDIClient(){}
 
 	 void registerScriptInstance(IPixInsightINDIInstance* scriptInstance){

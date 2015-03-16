@@ -35,7 +35,7 @@ function convertToHMS(floatNum){
 }
 
 function convertToCoordInHours(HMS){
-	var CoordInHours=parseFloat(HMS[0]) + parseFloat(HMS[1])/60 + parseFloat(HMS[2])/3600;
+   var CoordInHours=parseFloat(HMS[0]) + parseFloat(HMS[1])/60 + parseFloat(HMS[2])/3600;
    return CoordInHours;
 }
 
@@ -430,8 +430,6 @@ function mainDialog()
      var propertyArray=[["/" + currentTelescope + "/ON_COORD_SET/SYNC","INDI_SWITCH","ON"]]
      indi.sendNewPropertyArrayAsynch(propertyArray);
 
-     //var curRa =parseFloat(convertToCoordInHours(indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA").split(":")));
-     //var curDec =parseFloat(convertToCoordInHours(indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC").split(":")));
      var targetRa  = this.dialog.solver.metadata.ra*24/360;
      var targetDec = this.dialog.solver.metadata.dec;
      propertyArray=[["/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA","INDI_NUMBER",targetRa.toString()],
@@ -499,12 +497,10 @@ ComboBox.prototype.update = function(){
 Edit.prototype.update = function(){
    var curRA=[0,0,0];
    var propRAValue=indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/RA")
-
    this.dialog.curRA_Edit.text=propRAValue;
 
    var curDEC=[0,0,0];
    var propDECValue=indi.getPropertyValue2("/" + currentTelescope + "/EQUATORIAL_EOD_COORD/DEC")
-
    this.dialog.curDEC_Edit.text=propDECValue;
 }
 

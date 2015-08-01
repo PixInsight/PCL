@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard ImageIntegration Process Module Version 01.09.04.0253
-// ****************************************************************************
-// FileDataCachePreferencesDialog.cpp - Released 2014/11/14 17:19:21 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard ImageIntegration Process Module Version 01.09.04.0274
+// ----------------------------------------------------------------------------
+// FileDataCachePreferencesDialog.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "FileDataCachePreferencesDialog.h"
 #include "FileDataCache.h"
@@ -57,9 +61,11 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 FileDataCachePreferencesDialog::FileDataCachePreferencesDialog( FileDataCache* theCache ) :
-Dialog(), cache( theCache )
+   Dialog(),
+   cache( theCache )
 {
    int labelWidth1 = Font().Width( String( "Cache duration (days):" ) + 'T' );
+   int ui4 = LogicalPixelsToPhysical( 4 );
 
    //
 
@@ -79,7 +85,7 @@ Dialog(), cache( theCache )
    PersistentCache_CheckBox.SetToolTip( persistentCacheToolTip );
    PersistentCache_CheckBox.OnClick( (pcl::Button::click_event_handler)&FileDataCachePreferencesDialog::Button_Click, *this );
 
-   PersistentCache_Sizer.AddSpacing( labelWidth1 + 4 );
+   PersistentCache_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    PersistentCache_Sizer.Add( PersistentCache_CheckBox );
    PersistentCache_Sizer.AddStretch();
 
@@ -114,7 +120,7 @@ Dialog(), cache( theCache )
       "Click this button to remove all cache items currently stored in volatile RAM." );
    ClearCache_PushButton.OnClick( (pcl::Button::click_event_handler)&FileDataCachePreferencesDialog::Button_Click, *this );
 
-   ClearCache_Sizer.AddSpacing( labelWidth1 + 4 );
+   ClearCache_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    ClearCache_Sizer.Add( ClearCache_PushButton, 100 );
 
    //
@@ -124,7 +130,7 @@ Dialog(), cache( theCache )
       "Click this button to remove all stored persistent cache items." );
    PurgeCache_PushButton.OnClick( (pcl::Button::click_event_handler)&FileDataCachePreferencesDialog::Button_Click, *this );
 
-   PurgeCache_Sizer.AddSpacing( labelWidth1 + 4 );
+   PurgeCache_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    PurgeCache_Sizer.Add( PurgeCache_PushButton, 100 );
 
    //
@@ -139,7 +145,7 @@ Dialog(), cache( theCache )
    Cancel_PushButton.OnClick( (pcl::Button::click_event_handler)&FileDataCachePreferencesDialog::Button_Click, *this );
 
    Buttons_Sizer.SetSpacing( 8 );
-   Buttons_Sizer.AddSpacing( labelWidth1 + 4 );
+   Buttons_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    Buttons_Sizer.Add( OK_PushButton );
    Buttons_Sizer.Add( Cancel_PushButton );
 
@@ -244,5 +250,5 @@ void FileDataCachePreferencesDialog::Dialog_Return( Dialog& sender, int retVal )
 
 } // pcl
 
-// ****************************************************************************
-// EOF FileDataCachePreferencesDialog.cpp - Released 2014/11/14 17:19:21 UTC
+// ----------------------------------------------------------------------------
+// EOF FileDataCachePreferencesDialog.cpp - Released 2015/07/31 11:49:48 UTC

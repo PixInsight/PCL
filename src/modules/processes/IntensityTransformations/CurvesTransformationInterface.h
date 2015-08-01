@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard IntensityTransformations Process Module Version 01.07.00.0287
-// ****************************************************************************
-// CurvesTransformationInterface.h - Released 2014/11/14 17:19:23 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard IntensityTransformations Process Module Version 01.07.00.0306
+// ----------------------------------------------------------------------------
+// CurvesTransformationInterface.h - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __CurvesTransformationInterface_h
 #define __CurvesTransformationInterface_h
@@ -328,11 +332,11 @@ private:
    /*
     * Curve drawing primitives
     */
-   void PlotGrid( Graphics& g, const Rect& r, int width, int height, int hZoom, int vZoom );
-   void PlotScale( Graphics& g, const Rect& r, int width, int height );
-   void PlotCurve( Graphics& g, const Rect& r, int c, int width, int height, int hZoom, int vZoom );
-   void PlotReadouts( Bitmap& bmp, const Rect& r, int width, int height );
-   void PlotCursor( Bitmap& bmp, const Rect& r );
+   void PlotGrid( Graphics&, const Rect& viewport, int width, int height, int hZoom, int vZoom );
+   void PlotScale( Graphics&, const Rect& viewport, int width, int height );
+   void PlotCurve( Graphics&, const Rect& viewport, int channel, int width, int height, int hZoom, int vZoom );
+   void PlotReadouts( Graphics&, const Bitmap&, const Rect& viewport, int width, int height );
+   void PlotCursor( Graphics&, const Rect& viewport );
 
    RGBA ScaleColor( float ) const;
 
@@ -388,5 +392,5 @@ PCL_END_LOCAL
 
 #endif   // __CurvesTransformationInterface_h
 
-// ****************************************************************************
-// EOF CurvesTransformationInterface.h - Released 2014/11/14 17:19:23 UTC
+// ----------------------------------------------------------------------------
+// EOF CurvesTransformationInterface.h - Released 2015/07/31 11:49:48 UTC

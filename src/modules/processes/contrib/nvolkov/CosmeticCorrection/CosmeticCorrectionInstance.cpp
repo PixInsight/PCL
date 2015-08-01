@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard CosmeticCorrection Process Module Version 01.02.04.0080
-// ****************************************************************************
-// CosmeticCorrectionInstance.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard CosmeticCorrection Process Module Version 01.02.05.0101
+// ----------------------------------------------------------------------------
+// CosmeticCorrectionInstance.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard CosmeticCorrection PixInsight module.
 //
-// Copyright (c) 2011-2014 Nikolay Volkov
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2015 Nikolay Volkov
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,13 +49,14 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "CosmeticCorrectionInstance.h"
 #include "CosmeticCorrectionModule.h" // for ReadableVersion()
 
 #include <pcl/ErrorHandler.h>
 #include <pcl/FileFormat.h>
+#include <pcl/ICCProfile.h>
 #include <pcl/MetaModule.h>
 #include <pcl/MorphologicalTransformation.h>
 #include <pcl/MuteStatus.h>
@@ -88,6 +93,7 @@ namespace pcl
     ProcessImplementation(m),
     p_targetFrames(),
     p_outputDir(TheOutputDir->DefaultValue()),
+    p_outputExtension( TheOutputExtension->DefaultValue() ),
     p_overwrite(TheOverwrite->DefaultValue()),
     p_prefix(ThePrefix->DefaultValue()),
     p_postfix(ThePostfix->DefaultValue()),
@@ -127,6 +133,7 @@ namespace pcl
             p_targetFrames = x->p_targetFrames;
             p_masterDark = x->p_masterDark;
             p_outputDir = x->p_outputDir;
+            p_outputExtension = x->p_outputExtension;
             p_overwrite = x->p_overwrite;
             p_prefix = x->p_prefix;
             p_postfix = x->p_postfix;
@@ -328,18 +335,15 @@ namespace pcl
 
     struct FileData
     {
-        FileFormat* format; // the file format of retrieved data
-        const void* fsData; // format-specific data
-        ImageOptions options; // currently used for resolution only
-        FITSKeywordArray keywords; // FITS keywords
-        ICCProfile profile; // ICC profile
-        ByteArray metadata; // XML metadata
+        FileFormat* format = nullptr;  // the file format of retrieved data
+        const void* fsData = nullptr;  // format-specific data
+        ImageOptions options;          // currently used for resolution only
+        FITSKeywordArray keywords;     // FITS keywords
+        ICCProfile profile;            // ICC profile
 
-        FileData() : format(0), fsData(0), options(), keywords(), profile(), metadata()
-        {
-        }
+        FileData() = default;
 
-        FileData(FileFormatInstance& file, const ImageOptions & o) : format(0), fsData(0), options(o), keywords(), profile(), metadata()
+        FileData(FileFormatInstance& file, const ImageOptions & o) : options(o)
         {
             format = new FileFormat(file.Format());
             if (format->UsesFormatSpecificData())
@@ -350,27 +354,15 @@ namespace pcl
 
             if (format->CanStoreICCProfiles())
                 file.Extract(profile);
-
-            if (format->CanStoreMetadata())
-            {
-                void* p = 0;
-                size_t n = 0;
-                file.Extract(p, n);
-                if (p != 0)
-                {
-                    metadata = ByteArray(ByteArray::iterator(p), ByteArray::iterator(p) + n);
-                    delete (uint8*) p;
-                }
-            }
         }
 
         ~FileData()
         {
-            if (format != 0)
+            if (format != nullptr)
             {
-                if (fsData != 0)
-                    format->DisposeFormatSpecificData(const_cast<void*> (fsData)), fsData = 0;
-                delete format, format = 0;
+                if (fsData != nullptr)
+                    format->DisposeFormatSpecificData(const_cast<void*> (fsData)), fsData = nullptr;
+                delete format, format = nullptr;
             }
         }
     };
@@ -733,7 +725,7 @@ namespace pcl
 
    inline DarkImg CosmeticCorrectionInstance::GetDark(const String& filePath)
    {
-      Console().WriteLn("<end><cbr>Loading MasterDark image:<flash>");
+      Console().WriteLn("<end><cbr>Loading MasterDark image:<flush>");
       Console().WriteLn(filePath);
 
       FileFormat format(File::ExtractExtension(filePath), true, false);
@@ -882,9 +874,15 @@ namespace pcl
         if (dir.IsEmpty())
             dir = File::ExtractDrive(filePath) + File::ExtractDirectory(filePath);
         if (dir.IsEmpty())
-            throw Error(dir + ": Unable to determine an output p_outputDir.");
+            throw Error(dir + ": Unable to determine an output directory.");
         if (!dir.EndsWith('/'))
             dir.Append('/');
+
+        String ext = p_outputExtension.Trimmed();
+        if ( ext.IsEmpty() )
+           ext = ".xisf";
+        else if ( !ext.StartsWith( '.' ) )
+           ext.Prepend( '.' );
 
         String fileName = File::ExtractName(filePath);
         fileName.Trim();
@@ -893,7 +891,7 @@ namespace pcl
         if (!p_postfix.IsEmpty()) fileName.Append(p_postfix);
         if (fileName.IsEmpty()) throw Error(filePath + ": Unable to determine an output file name.");
 
-        String outputFilePath = dir + fileName + outputExtension;
+        String outputFilePath = dir + fileName + ext;
         Console().WriteLn("<end><cbr><br>Writing output file: " + outputFilePath);
 
         if ( File::Exists( outputFilePath ) )
@@ -914,7 +912,7 @@ namespace pcl
         String outputFilePath = OutputFilePath(t->TargetPath(), t->SubimageIndex());
         console.WriteLn("Create " + outputFilePath);
 
-        FileFormat outputFormat(outputExtension, false, true);
+        FileFormat outputFormat( File::ExtractExtension( outputFilePath ), false, true);
         FileFormatInstance outputFile(outputFormat);
         if (!outputFile.Create(outputFilePath)) throw CatchedException();
         const FileData& inputData = t->GetFileData();
@@ -930,7 +928,6 @@ namespace pcl
         outputFile.Embed(keywords);
 
         if (inputData.profile.IsProfile()) outputFile.Embed(inputData.profile);
-        if (!inputData.metadata.IsEmpty()) outputFile.Embed(inputData.metadata.Begin(), inputData.metadata.Length());
 
         if (!outputFile.WriteImage(*t->TargetImage())) throw CatchedException();
 
@@ -1051,7 +1048,7 @@ namespace pcl
 
                     if (i == 0) // all CPU IsActive or no new images
                     {
-                        pcl::Sleep(0.1);
+                        pcl::Sleep(100);
                         continue;
                     }
 
@@ -1166,6 +1163,7 @@ namespace pcl
         if (p == TheTargetFramePath) return p_targetFrames[tableRow].path.c_str();
 
         if (p == TheOutputDir) return p_outputDir.c_str();
+        if (p == TheOutputExtension) return p_outputExtension.c_str();
         if (p == ThePrefix) return p_prefix.c_str();
         if (p == ThePostfix) return p_postfix.c_str();
         if (p == TheOverwrite) return &p_overwrite;
@@ -1207,27 +1205,32 @@ namespace pcl
         else if (p == TheTargetFramePath)
         {
             p_targetFrames[tableRow].path.Clear();
-            if (sizeOrLength > 0) p_targetFrames[tableRow].path.Reserve(sizeOrLength);
+            if (sizeOrLength > 0) p_targetFrames[tableRow].path.SetLength(sizeOrLength);
         }
         else if (p == TheMasterPath)
         {
             p_masterDark.Clear();
-            if (sizeOrLength > 0) p_masterDark.Reserve(sizeOrLength);
+            if (sizeOrLength > 0) p_masterDark.SetLength(sizeOrLength);
         }
         else if (p == TheOutputDir)
         {
             p_outputDir.Clear();
-            if (sizeOrLength > 0) p_outputDir.Reserve(sizeOrLength);
+            if (sizeOrLength > 0) p_outputDir.SetLength(sizeOrLength);
+        }
+        else if (p == TheOutputExtension)
+        {
+            p_outputExtension.Clear();
+            if (sizeOrLength > 0) p_outputExtension.SetLength(sizeOrLength);
         }
         else if (p == ThePrefix)
         {
             p_prefix.Clear();
-            if (sizeOrLength > 0) p_prefix.Reserve(sizeOrLength);
+            if (sizeOrLength > 0) p_prefix.SetLength(sizeOrLength);
         }
         else if (p == ThePostfix)
         {
             p_postfix.Clear();
-            if (sizeOrLength > 0) p_postfix.Reserve(sizeOrLength);
+            if (sizeOrLength > 0) p_postfix.SetLength(sizeOrLength);
         }
         else if (p == TheDefects)
         {
@@ -1246,6 +1249,7 @@ namespace pcl
         if (p == TheTargetFramePath) return p_targetFrames[tableRow].path.Length();
         if (p == TheMasterPath) return p_masterDark.Length();
         if (p == TheOutputDir) return p_outputDir.Length();
+        if (p == TheOutputExtension) return p_outputExtension.Length();
         if (p == ThePrefix) return p_prefix.Length();
         if (p == ThePostfix) return p_postfix.Length();
         if (p == TheDefects) return p_defects.Length();
@@ -1256,5 +1260,5 @@ namespace pcl
 
 } // pcl
 
-// ****************************************************************************
-// EOF CosmeticCorrectionInstance.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF CosmeticCorrectionInstance.cpp - Released 2015/07/31 11:49:49 UTC

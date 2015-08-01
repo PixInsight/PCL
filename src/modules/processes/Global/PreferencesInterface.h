@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Global Process Module Version 01.02.05.0260
-// ****************************************************************************
-// PreferencesInterface.h - Released 2014/11/14 17:18:47 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Global Process Module Version 01.02.06.0280
+// ----------------------------------------------------------------------------
+// PreferencesInterface.h - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,23 +48,22 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PreferencesInterface_h
 #define __PreferencesInterface_h
 
-#include <pcl/ProcessInterface.h>
-
-#include <pcl/Sizer.h>
-#include <pcl/TreeBox.h>
-#include <pcl/Label.h>
 #include <pcl/CheckBox.h>
-#include <pcl/SpinBox.h>
-#include <pcl/Edit.h>
-#include <pcl/NumericControl.h>
 #include <pcl/ColorComboBox.h>
+#include <pcl/Edit.h>
 #include <pcl/FontComboBox.h>
+#include <pcl/Label.h>
+#include <pcl/NumericControl.h>
+#include <pcl/ProcessInterface.h>
 #include <pcl/PushButton.h>
+#include <pcl/Sizer.h>
+#include <pcl/SpinBox.h>
+#include <pcl/TreeBox.h>
 
 #include "PreferencesInstance.h"
 
@@ -72,6 +75,7 @@ namespace pcl
 class GlobalItemControl : public Control
 {
 public:
+
    GlobalItemControl();
 
    virtual void Synchronize() = 0;
@@ -84,14 +88,18 @@ public:
 class GlobalFlagControl : public GlobalItemControl
 {
 public:
+
    GlobalFlagControl();
 
    virtual void Synchronize();
 
    pcl_bool* item;
    CheckBox  checkBox;
+   Control*  enableControl;
+   Control*  disableControl;
 
 private:
+
    void __Click( Button& sender, bool checked );
 };
 
@@ -100,6 +108,7 @@ private:
 class GlobalIntegerControl : public GlobalItemControl
 {
 public:
+
    GlobalIntegerControl();
 
    virtual void Synchronize();
@@ -110,6 +119,7 @@ public:
       SpinBox         spinBox;
 
 private:
+
    void __ValueUpdated( SpinBox& sender, int value );
 };
 
@@ -118,6 +128,7 @@ private:
 class GlobalSetControl : public GlobalItemControl
 {
 public:
+
    GlobalSetControl();
 
    virtual void Synchronize();
@@ -129,6 +140,7 @@ public:
       ComboBox       comboBox;
 
 private:
+
    void __ItemSelected( ComboBox& sender, int itemIndex );
 };
 
@@ -137,6 +149,7 @@ private:
 class GlobalRealControl : public GlobalItemControl
 {
 public:
+
    GlobalRealControl();
 
    virtual void Synchronize();
@@ -147,6 +160,7 @@ public:
       NumericEdit     numericEdit;
 
 private:
+
    void __ValueUpdated( NumericEdit& sender, double value );
 };
 
@@ -155,6 +169,7 @@ private:
 class GlobalStringControl : public GlobalItemControl
 {
 public:
+
    GlobalStringControl();
 
    virtual void Synchronize();
@@ -164,9 +179,11 @@ public:
    Edit     edit;
 
 protected:
+
    virtual String GetText( const String& s );
 
 private:
+
    void __EditCompleted( Edit& sender );
 };
 
@@ -175,11 +192,13 @@ private:
 class GlobalDirectoryControl : public GlobalStringControl
 {
 public:
+
    GlobalDirectoryControl();
 
    PushButton selectDirButton;
 
 private:
+
    virtual String GetText( const String& s );
 
    void __SelectDir( Button& sender, bool checked );
@@ -190,11 +209,13 @@ private:
 class GlobalFileControl : public GlobalStringControl
 {
 public:
+
    GlobalFileControl();
 
    PushButton selectFileButton;
 
 private:
+
    virtual String GetText( const String& s );
 
    void __SelectFile( Button& sender, bool checked );
@@ -205,9 +226,11 @@ private:
 class GlobalFileExtensionControl : public GlobalStringControl
 {
 public:
+
    GlobalFileExtensionControl();
 
 private:
+
    virtual String GetText( const String& s );
 };
 
@@ -216,9 +239,11 @@ private:
 class GlobalIdentifierControl : public GlobalStringControl
 {
 public:
+
    GlobalIdentifierControl();
 
 private:
+
    virtual String GetText( const String& s );
 };
 
@@ -227,6 +252,7 @@ private:
 class GlobalColorControl : public GlobalItemControl
 {
 public:
+
    GlobalColorControl();
 
    virtual void Synchronize();
@@ -238,6 +264,7 @@ public:
       Control         colorSample;
 
 private:
+
    void __ColorSelected( ColorComboBox& sender, RGBA color );
    void __ColorSample_Paint( Control& sender, const Rect& updateRect );
    void __ColorSample_MouseRelease( Control& sender, const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers );
@@ -248,6 +275,7 @@ private:
 class GlobalFontControl : public GlobalItemControl
 {
 public:
+
    GlobalFontControl();
 
    virtual void Synchronize();
@@ -264,6 +292,7 @@ public:
       CheckBox       sizeAutoCheckBox;
 
 private:
+
    void __FontSelected( FontComboBox& sender, const String& fontFace );
    void __SizeUpdated( SpinBox& sender, int value );
    void __AutoSizeClick( Button& sender, bool checked );
@@ -274,6 +303,7 @@ private:
 class GlobalDirectoryListControl : public GlobalItemControl
 {
 public:
+
    GlobalDirectoryListControl();
 
    virtual void Synchronize();
@@ -288,6 +318,7 @@ public:
       PushButton     resetPushButton;
 
 private:
+
    void __NodeActivated( TreeBox& sender, TreeBox::Node& node, int col );
    void __Click( Button& sender, bool checked );
 };
@@ -297,6 +328,7 @@ private:
 class GlobalFileSetControl : public GlobalItemControl
 {
 public:
+
    GlobalFileSetControl();
 
    virtual void Synchronize();
@@ -311,6 +343,7 @@ public:
       PushButton     clearPushButton;
 
 private:
+
    void __NodeActivated( TreeBox& sender, TreeBox::Node& node, int col );
    void __Click( Button& sender, bool checked );
 };
@@ -365,9 +398,9 @@ public:
 
    virtual String Title() = 0;
 
-   virtual Bitmap Icon()
+   virtual Bitmap Icon( double uiScalingFactor = 1.0 )
    {
-      return Bitmap( String( ":/icons/gear.png" ) );
+      return Bitmap( UIScaledResource( uiScalingFactor, ":/icons/gear.png" ) );
    }
 
    void HidePage()
@@ -449,9 +482,19 @@ public:
 
    GlobalFileControl    StyleSheet_File;
    GlobalFileSetControl Resources_FileSet;
+   GlobalFlagControl    AutoUIScaling_Flag;
+   HorizontalSizer      UIScaling_Sizer;
+      GlobalRealControl    UIScalingFactor_Real;
+      GlobalIntegerControl FontResolution_Integer;
+   HorizontalSizer      Font_Sizer;
+      GlobalStringControl  LowResFont_String;
+      GlobalStringControl  HighResFont_String;
+   HorizontalSizer      MonoFont_Sizer;
+      GlobalStringControl  LowResMonoFont_String;
+      GlobalStringControl  HighResMonoFont_String;
 };
 
-DEFINE_PREFERENCES_CATEGORY( Resources, "Core Resources" )
+DEFINE_PREFERENCES_CATEGORY( Resources, "Core UI Resources" )
 
 // ----------------------------------------------------------------------------
 
@@ -499,7 +542,6 @@ public:
    GlobalFlagControl    RememberFileOpenType_Flag;
    GlobalFlagControl    RememberFileSaveType_Flag;
    GlobalFlagControl    StrictFileSaveMode_Flag;
-   GlobalFlagControl    DefaultEmbedMetadata_Flag;
    GlobalFlagControl    DefaultEmbedThumbnails_Flag;
    GlobalFlagControl    DefaultEmbedProperties_Flag;
 };
@@ -517,6 +559,7 @@ public:
    virtual void TransferSettings( PreferencesInstance& to, const PreferencesInstance& from );
 
    GlobalDirectoryListControl SwapDirectories_DirList;
+   GlobalFlagControl    SwapCompression_Flag;
    GlobalDirectoryControl     DownloadsDirectory_Dir;
    GlobalFlagControl    FollowDownloadLocations_Flag;
    GlobalFlagControl    VerboseNetworkOperations_Flag;
@@ -702,8 +745,6 @@ public:
 DEFINE_PREFERENCES_CATEGORY( TransparencyColors, "Transparency Colors" )
 
 // ----------------------------------------------------------------------------
-// PreferencesInterface
-// ----------------------------------------------------------------------------
 
 class PreferencesInterface : public ProcessInterface
 {
@@ -729,11 +770,28 @@ public:
    virtual bool RequiresInstanceValidation() const;
    virtual bool ImportProcess( const ProcessImplementation& );
 
-   // -------------------------------------------------------------------------
-
 private:
 
    PreferencesInstance instance;
+
+   class CategoryNode : public TreeBox::Node
+   {
+   public:
+
+      CategoryNode( TreeBox& parentTree, int pageIndex ) :
+         TreeBox::Node( parentTree ), m_pageIndex( pageIndex )
+      {
+      }
+
+      int PageIndex() const
+      {
+         return m_pageIndex;
+      }
+
+   private:
+
+      int m_pageIndex;
+   };
 
    class GUIData
    {
@@ -769,7 +827,7 @@ private:
 
       PreferencesInterface& window;
 
-      typedef IndirectArray<PreferencesCategory>   category_list;
+      typedef ReferenceArray<PreferencesCategory>  category_list;
       category_list categories;
 
       void InitializeCategories();
@@ -798,5 +856,5 @@ PCL_END_LOCAL
 
 #endif   // __PreferencesInterface_h
 
-// ****************************************************************************
-// EOF PreferencesInterface.h - Released 2014/11/14 17:18:47 UTC
+// ----------------------------------------------------------------------------
+// EOF PreferencesInterface.h - Released 2015/07/31 11:49:48 UTC

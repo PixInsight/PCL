@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard FITS File Format Module Version 01.01.00.0282
-// ****************************************************************************
-// FITSOptionsDialog.h - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard FITS File Format Module Version 01.01.02.0306
+// ----------------------------------------------------------------------------
+// FITSOptionsDialog.h - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __FITSOptionsDialog_h
 #define __FITSOptionsDialog_h
@@ -96,7 +100,6 @@ private:
    HorizontalSizer   EmbeddedData_Sizer;
       VerticalSizer     EmbeddedDataLeft_Sizer;
          CheckBox          ICCProfile_CheckBox;
-         CheckBox          Metadata_CheckBox;
          CheckBox          Properties_CheckBox;
       VerticalSizer     EmbeddedDataRight_Sizer;
          CheckBox          Thumbnail_CheckBox;
@@ -115,5 +118,5 @@ private:
 
 #endif   // __FITSOptionsDialog_h
 
-// ****************************************************************************
-// EOF FITSOptionsDialog.h - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF FITSOptionsDialog.h - Released 2015/07/31 11:49:40 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/RGBColorSystem.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/RGBColorSystem.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_RGBColorSystem_h
 #define __PCL_RGBColorSystem_h
@@ -127,27 +130,30 @@ public:
     * This constructor increments the reference counter of the source RGB
     * working space data.
     */
-   RGBColorSystem( const RGBColorSystem& s = RGBColorSystem::sRGB ) : m_data( s.m_data )
+   RGBColorSystem( const RGBColorSystem& s = RGBColorSystem::sRGB ) :
+      m_data( s.m_data )
    {
-      if ( m_data != 0 )
+      if ( m_data != nullptr )
          m_data->Attach();
    }
 
 #else
 
    /*
-    * Workaround for bogus C2535 'already defined' error in MSVC++ 2013
+    * Workaround for bogus C2535 'already defined' error (bug) in MSVC++ 2013
     */
 
-   RGBColorSystem() : m_data( RGBColorSystem::sRGB.m_data )
+   RGBColorSystem() :
+      m_data( RGBColorSystem::sRGB.m_data )
    {
-      if ( m_data != 0 )
+      if ( m_data != nullptr )
          m_data->Attach();
    }
 
-   RGBColorSystem( const RGBColorSystem& s ) : m_data( s.m_data )
+   RGBColorSystem( const RGBColorSystem& s ) :
+      m_data( s.m_data )
    {
-      if ( m_data != 0 )
+      if ( m_data != nullptr )
          m_data->Attach();
    }
 
@@ -174,8 +180,9 @@ public:
     */
    RGBColorSystem( float gamma, bool issRGB,
                    const FVector& x, const FVector& y, const FVector& Y ) :
-   m_data( new Data( gamma, issRGB, x, y, Y ) )
+      m_data( nullptr )
    {
+      m_data = new Data( gamma, issRGB, x, y, Y );
    }
 
    /*!
@@ -199,8 +206,9 @@ public:
     */
    RGBColorSystem( float gamma, bool issRGB,
                    const float* x, const float* y, const float* Y ) :
-   m_data( new Data( gamma, issRGB, FVector( x, 3 ), FVector( y, 3 ), FVector( Y, 3 ) ) )
+      m_data( nullptr )
    {
+      m_data = new Data( gamma, issRGB, FVector( x, 3 ), FVector( y, 3 ), FVector( Y, 3 ) );
    }
 
    /*!
@@ -212,11 +220,11 @@ public:
     */
    virtual ~RGBColorSystem()
    {
-      if ( m_data != 0 )
+      if ( m_data != nullptr )
       {
          if ( !m_data->Detach() )
             delete m_data;
-         m_data = 0;
+         m_data = nullptr;
       }
    }
 
@@ -485,12 +493,11 @@ public:
     */
    sample Hue( sample R, sample G, sample B ) const
    {
-      register sample max   =       pcl::Max( pcl::Max( R, G ), B );
-      register sample delta = max - pcl::Min( pcl::Min( R, G ), B );
-      register sample H;
-
+      sample max   =       pcl::Max( pcl::Max( R, G ), B );
+      sample delta = max - pcl::Min( pcl::Min( R, G ), B );
       if ( delta != 0 )
       {
+         sample H;
          if ( R == max )
             H = (G - B)/delta;      // between yellow & magenta
          else if ( G == max )
@@ -501,15 +508,12 @@ public:
          H /= 6;
          if ( H < 0 )
             H += 1;
-      }
-      else
-      {
-         // Achromatic case: R = G = B
-         //    Hue is undefined (H is set to 0 conventionally)
-         H = 0;
+         return H;
       }
 
-      return H;
+      // Achromatic case: R = G = B
+      //    Hue is undefined (H is set to 0 conventionally)
+      return 0;
    }
 
    /*!
@@ -523,8 +527,8 @@ public:
     */
    sample HSVSaturation( sample R, sample G, sample B ) const
    {
-      register sample max   =       pcl::Max( pcl::Max( R, G ), B );
-      register sample delta = max - pcl::Min( pcl::Min( R, G ), B );
+      sample max   =       pcl::Max( pcl::Max( R, G ), B );
+      sample delta = max - pcl::Min( pcl::Min( R, G ), B );
       return sample( (1.0 + max != 1.0) ? delta/max : 0.0 );
    }
 
@@ -542,16 +546,14 @@ public:
     */
    sample HSISaturation( sample R, sample G, sample B ) const
    {
-      register sample min   = pcl::Min( pcl::Min( R, G ), B );
-      register sample max   = pcl::Max( pcl::Max( R, G ), B );
-      register sample delta = max - min;
-
+      sample min   = pcl::Min( pcl::Min( R, G ), B );
+      sample max   = pcl::Max( pcl::Max( R, G ), B );
+      sample delta = max - min;
       if ( delta != 0 )
       {
-         register sample sum = min + max;
+         sample sum = min + max;
          return delta/((sum <= 1) ? sum : 2-sum);
       }
-
       return sample( 0 );
    }
 
@@ -588,8 +590,7 @@ public:
    {
       V = pcl::Max( pcl::Max( R, G ), B ); // V = Value( R, G, B );
 
-      register sample delta = V - pcl::Min( pcl::Min( R, G ), B );
-
+      sample delta = V - pcl::Min( pcl::Min( R, G ), B );
       if ( delta != 0 )
       {
          S = delta/V;
@@ -634,10 +635,10 @@ public:
     */
    static void RGBToHSI( sample& H, sample& S, sample& I, sample R, sample G, sample B )
    {
-      register sample min   = pcl::Min( pcl::Min( R, G ), B );
-      register sample max   = pcl::Max( pcl::Max( R, G ), B );
-      register sample delta = max - min;
-      register sample sum   = min + max;
+      sample min   = pcl::Min( pcl::Min( R, G ), B );
+      sample max   = pcl::Max( pcl::Max( R, G ), B );
+      sample delta = max - min;
+      sample sum   = min + max;
 
       I = 0.5*sum;
 
@@ -1605,5 +1606,5 @@ public:
 
 #endif   // __PCL_RGBColorSystem_h
 
-// ****************************************************************************
-// EOF pcl/RGBColorSystem.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/RGBColorSystem.h - Released 2015/07/30 17:15:18 UTC

@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard StarGenerator Process Module Version 01.01.00.0180
-// ****************************************************************************
-// StarGeneratorInstance.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard StarGenerator Process Module Version 01.01.00.0199
+// ----------------------------------------------------------------------------
+// StarGeneratorInstance.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard StarGenerator PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "Projection.h"
 #include "StarDatabase.h"
@@ -358,7 +362,7 @@ private:
 
       ThreadData<P> data( image, star, projection, stars, monitor );
 
-      PArray<PlotThread<P> > threads;
+      ReferenceArray<PlotThread<P> > threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new PlotThread<P>( data,
                                          i*starsPerThread,
@@ -543,14 +547,14 @@ bool StarGeneratorInstance::AllocateParameter( size_type sizeOrLength, const Met
    {
       starDatabasePath.Clear();
       if ( sizeOrLength > 0 )
-         starDatabasePath.Reserve( sizeOrLength );
+         starDatabasePath.SetLength( sizeOrLength );
       return true;
    }
    if ( p == TheSGOutputFilePathParameter )
    {
       outputFilePath.Clear();
       if ( sizeOrLength > 0 )
-         outputFilePath.Reserve( sizeOrLength );
+         outputFilePath.SetLength( sizeOrLength );
       return true;
    }
    return false;
@@ -569,5 +573,5 @@ size_type StarGeneratorInstance::ParameterLength( const MetaParameter* p, size_t
 
 } // pcl
 
-// ****************************************************************************
-// EOF StarGeneratorInstance.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF StarGeneratorInstance.cpp - Released 2015/07/31 11:49:48 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/SeparableConvolution.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/SeparableConvolution.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/SeparableConvolution.h>
 #include <pcl/Thread.h>
@@ -119,7 +122,7 @@ private:
          int numberOfThreads = convolution.IsParallelProcessingEnabled() ?
                      Min( convolution.MaxProcessors(), Thread::NumberOfThreads( numberOfRows, 4 ) ) : 1;
          int rowsPerThread = numberOfRows/numberOfThreads;
-         PArray<RowThread<P> > threads;
+         ReferenceArray<RowThread<P> > threads;
          for ( int i = 0, j = 1, y0 = image.SelectedRectangle().y0; i < numberOfThreads; ++i, ++j )
             threads.Add( new RowThread<P>( data,
                                            y0 + i*rowsPerThread,
@@ -140,7 +143,7 @@ private:
          int numberOfThreads = convolution.IsParallelProcessingEnabled() ?
                      Min( convolution.MaxProcessors(), Thread::NumberOfThreads( numberOfCols, 4 ) ) : 1;
          int colsPerThread = numberOfCols/numberOfThreads;
-         PArray<ColThread<P> > threads;
+         ReferenceArray<ColThread<P> > threads;
          for ( int i = 0, j = 1, x0 = image.SelectedRectangle().x0; i < numberOfThreads; ++i, ++j )
             threads.Add( new ColThread<P>( data,
                                            x0 + i*colsPerThread,
@@ -156,7 +159,7 @@ private:
       if ( convolution.IsRowConvolutionEnabled() && convolution.IsColumnConvolutionEnabled() )
       {
          StatusMonitor monitor = image.Status();
-         image.SetStatusCallback( 0 );
+         image.SetStatusCallback( nullptr );
 
          double k = convolution.FilterWeight();
          if ( k != 1 )
@@ -180,7 +183,7 @@ private:
       DoApply( tmp, convolution );
 
       StatusMonitor monitor = tmp.Status();
-      image.SetStatusCallback( 0 );
+      image.SetStatusCallback( nullptr );
 
       image.Mov( tmp, image.SelectedRectangle().LeftTop() );
 
@@ -191,8 +194,8 @@ private:
    struct ThreadData : public AbstractImage::ThreadData
    {
       ThreadData( GenericImage<P>& a_image, const SeparableConvolution& a_convolution, size_type a_count ) :
-      AbstractImage::ThreadData( a_image, a_count ),
-      image( a_image ), convolution( a_convolution )
+         AbstractImage::ThreadData( a_image, a_count ),
+         image( a_image ), convolution( a_convolution )
       {
       }
 
@@ -231,7 +234,7 @@ private:
    public:
 
       RowThread( ThreadData<P>& data, int firstRow, int endRow ) :
-      Thread(), m_data( data ), m_firstRow( firstRow ), m_endRow( endRow )
+         Thread(), m_data( data ), m_firstRow( firstRow ), m_endRow( endRow )
       {
       }
 
@@ -274,7 +277,7 @@ private:
    public:
 
       ColThread( ThreadData<P>& data, int firstCol, int endCol ) :
-      Thread(), m_data( data ), m_firstCol( firstCol ), m_endCol( endCol )
+         Thread(), m_data( data ), m_firstCol( firstCol ), m_endCol( endCol )
       {
       }
 
@@ -325,42 +328,50 @@ private:
 
 void SeparableConvolution::Apply( pcl::Image& image ) const
 {
-   PCL_PRECONDITION( m_filter != 0 )
+   PCL_PRECONDITION( m_filter != nullptr )
    ValidateFilter();
    PCL_SeparableConvolutionEngine::Apply( image, *this );
 }
 
 void SeparableConvolution::Apply( pcl::DImage& image ) const
 {
-   PCL_PRECONDITION( m_filter != 0 )
+   PCL_PRECONDITION( m_filter != nullptr )
    ValidateFilter();
    PCL_SeparableConvolutionEngine::Apply( image, *this );
 }
 
 void SeparableConvolution::Apply( pcl::UInt8Image& image ) const
 {
-   PCL_PRECONDITION( m_filter != 0 )
+   PCL_PRECONDITION( m_filter != nullptr )
    ValidateFilter();
    PCL_SeparableConvolutionEngine::Apply( image, *this );
 }
 
 void SeparableConvolution::Apply( pcl::UInt16Image& image ) const
 {
-   PCL_PRECONDITION( m_filter != 0 )
+   PCL_PRECONDITION( m_filter != nullptr )
    ValidateFilter();
    PCL_SeparableConvolutionEngine::Apply( image, *this );
 }
 
 void SeparableConvolution::Apply( pcl::UInt32Image& image ) const
 {
-   PCL_PRECONDITION( m_filter != 0 )
+   PCL_PRECONDITION( m_filter != nullptr )
    ValidateFilter();
    PCL_SeparableConvolutionEngine::Apply( image, *this );
 }
 
 // ----------------------------------------------------------------------------
 
+void SeparableConvolution::ValidateFilter() const
+{
+   if ( m_filter == nullptr )
+      throw Error( "Invalid access to uninitialized separable convolution" );
+}
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/SeparableConvolution.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/SeparableConvolution.cpp - Released 2015/07/30 17:15:31 UTC

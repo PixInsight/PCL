@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Global Process Module Version 01.02.05.0260
-// ****************************************************************************
-// ReadoutOptionsInterface.cpp - Released 2014/11/14 17:18:47 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Global Process Module Version 01.02.06.0280
+// ----------------------------------------------------------------------------
+// ReadoutOptionsInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "ReadoutOptionsInterface.h"
 #include "ReadoutOptionsProcess.h"
@@ -427,6 +431,7 @@ ReadoutOptionsInterface::GUIData::GUIData( ReadoutOptionsInterface& w )
 {
    int labelWidth1 = w.Font().Width( String( "Preview size in pixels:" ) + 'M' );
    int labelWidth2 = w.Font().Width( String( "Arbitrary integer range. Max. Value:" ) + 'M' );
+   int ui4 = w.LogicalPixelsToPhysical( 4 );
 
    //
 
@@ -489,7 +494,7 @@ ReadoutOptionsInterface::GUIData::GUIData( ReadoutOptionsInterface& w )
    ShowAlphaChannel_CheckBox.SetText( "Include alpha channel" );
    ShowAlphaChannel_CheckBox.OnClick( (Button::click_event_handler)&ReadoutOptionsInterface::__ButtonClick, w );
 
-   Alpha_Sizer.AddSpacing( labelWidth1 + 4 );
+   Alpha_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    Alpha_Sizer.Add( ShowAlphaChannel_CheckBox );
 
    //
@@ -497,7 +502,7 @@ ReadoutOptionsInterface::GUIData::GUIData( ReadoutOptionsInterface& w )
    ShowMaskChannel_CheckBox.SetText( "Include mask channel" );
    ShowMaskChannel_CheckBox.OnClick( (Button::click_event_handler)&ReadoutOptionsInterface::__ButtonClick, w );
 
-   Mask_Sizer.AddSpacing( labelWidth1 + 4 );
+   Mask_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    Mask_Sizer.Add( ShowMaskChannel_CheckBox );
 
    //
@@ -505,7 +510,7 @@ ReadoutOptionsInterface::GUIData::GUIData( ReadoutOptionsInterface& w )
    ShowPreview_CheckBox.SetText( "Show readout preview" );
    ShowPreview_CheckBox.OnClick( (Button::click_event_handler)&ReadoutOptionsInterface::__ButtonClick, w );
 
-   Preview_Sizer.AddSpacing( labelWidth1 + 4 );
+   Preview_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    Preview_Sizer.Add( ShowPreview_CheckBox );
 
    //
@@ -513,7 +518,7 @@ ReadoutOptionsInterface::GUIData::GUIData( ReadoutOptionsInterface& w )
    PreviewCenter_CheckBox.SetText( "Preview center hairlines" );
    PreviewCenter_CheckBox.OnClick( (Button::click_event_handler)&ReadoutOptionsInterface::__ButtonClick, w );
 
-   PreviewCenter_Sizer.AddSpacing( labelWidth1 + 4 );
+   PreviewCenter_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    PreviewCenter_Sizer.Add( PreviewCenter_CheckBox );
 
    //
@@ -649,7 +654,7 @@ ReadoutOptionsInterface::GUIData::GUIData( ReadoutOptionsInterface& w )
    Broadcast_CheckBox.SetText( "Broadcast readouts" );
    Broadcast_CheckBox.OnClick( (Button::click_event_handler)&ReadoutOptionsInterface::__ButtonClick, w );
 
-   Broadcast_Sizer.AddSpacing( labelWidth2 + 4 );
+   Broadcast_Sizer.AddUnscaledSpacing( labelWidth2 + ui4 );
    Broadcast_Sizer.Add( Broadcast_CheckBox );
 
    //
@@ -687,5 +692,5 @@ ReadoutOptionsInterface::GUIData::GUIData( ReadoutOptionsInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF ReadoutOptionsInterface.cpp - Released 2014/11/14 17:18:47 UTC
+// ----------------------------------------------------------------------------
+// EOF ReadoutOptionsInterface.cpp - Released 2015/07/31 11:49:48 UTC

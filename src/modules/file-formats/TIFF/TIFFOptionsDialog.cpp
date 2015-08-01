@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard TIFF File Format Module Version 01.00.05.0229
-// ****************************************************************************
-// TIFFOptionsDialog.cpp - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard TIFF File Format Module Version 01.00.06.0248
+// ----------------------------------------------------------------------------
+// TIFFOptionsDialog.cpp - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard TIFF PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "TIFFOptionsDialog.h"
 
@@ -102,29 +106,17 @@ Dialog(), options( o ), tiffOptions( t )
    Compression_GroupBox.SetTitle( "Compression" );
    Compression_GroupBox.SetSizer( Compression_Sizer );
    Compression_GroupBox.AdjustToContents();
-   Compression_GroupBox.SetMinWidth( SampleFormat_GroupBox.Width() );
 
    ICCProfile_CheckBox.SetText( "ICC Profile" );
    ICCProfile_CheckBox.SetMinWidth( labelWidth );
    ICCProfile_CheckBox.SetToolTip( "Embed an ICC profile" );
 
-   Metadata_CheckBox.SetText( "Metadata" );
-   Metadata_CheckBox.SetMinWidth( labelWidth );
-   Metadata_CheckBox.SetToolTip( "Embed XML metadata <* not available *>" );
-
-   Thumbnail_CheckBox.SetText( "Thumbnail Image" );
-   Thumbnail_CheckBox.SetMinWidth( labelWidth );
-   Thumbnail_CheckBox.SetToolTip( "Embed an 8-bit reduced version of the image for quick reference <* not available *>" );
-
    EmbeddedData_Sizer.SetMargin( 6 );
    EmbeddedData_Sizer.Add( ICCProfile_CheckBox );
-   EmbeddedData_Sizer.Add( Metadata_CheckBox );
-   EmbeddedData_Sizer.Add( Thumbnail_CheckBox );
 
    EmbeddedData_GroupBox.SetTitle( "Embedded Data" );
    EmbeddedData_GroupBox.SetSizer( EmbeddedData_Sizer );
    EmbeddedData_GroupBox.AdjustToContents();
-   EmbeddedData_GroupBox.SetMinWidth( SampleFormat_GroupBox.Width() );
 
    Planar_CheckBox.SetText( "Planar organization" );
    Planar_CheckBox.AdjustToContents();
@@ -149,7 +141,6 @@ Dialog(), options( o ), tiffOptions( t )
    Miscellaneous_GroupBox.SetTitle( "Miscellaneous" );
    Miscellaneous_GroupBox.SetSizer( Miscellaneous_Sizer );
    Miscellaneous_GroupBox.AdjustToContents();
-   Miscellaneous_GroupBox.SetMinWidth( SampleFormat_GroupBox.Width() );
 
    LeftPanel_Sizer.SetSpacing( 4 );
    LeftPanel_Sizer.Add( SampleFormat_GroupBox );
@@ -162,21 +153,18 @@ Dialog(), options( o ), tiffOptions( t )
 
    ImageDescription_GroupBox.SetTitle( "Image Description" );
    ImageDescription_GroupBox.SetSizer( ImageDescription_Sizer );
-   ImageDescription_GroupBox.SetFixedSize( 270, SampleFormat_GroupBox.Height() );
 
    ImageCopyright_Sizer.SetMargin( 6 );
    ImageCopyright_Sizer.Add( ImageCopyright_TextBox );
 
    ImageCopyright_GroupBox.SetTitle( "Image Copyright" );
    ImageCopyright_GroupBox.SetSizer( ImageCopyright_Sizer );
-   ImageCopyright_GroupBox.SetFixedSize( 270, Compression_GroupBox.Height() );
 
    SoftwareDescription_Sizer.SetMargin( 6 );
    SoftwareDescription_Sizer.Add( SoftwareDescription_TextBox );
 
    SoftwareDescription_GroupBox.SetTitle( "Software Description" );
    SoftwareDescription_GroupBox.SetSizer( SoftwareDescription_Sizer );
-   SoftwareDescription_GroupBox.SetFixedSize( 270, EmbeddedData_GroupBox.Height() );
 
    OK_PushButton.SetText( "OK" );
    OK_PushButton.SetDefault();
@@ -193,14 +181,14 @@ Dialog(), options( o ), tiffOptions( t )
    Buttons_Sizer.Add( Cancel_PushButton );
 
    RightPanel_Sizer.SetSpacing( 4 );
-   RightPanel_Sizer.Add( ImageDescription_GroupBox );
-   RightPanel_Sizer.Add( ImageCopyright_GroupBox );
-   RightPanel_Sizer.Add( SoftwareDescription_GroupBox );
-   RightPanel_Sizer.AddStretch();
+   RightPanel_Sizer.Add( ImageDescription_GroupBox, 50 );
+   RightPanel_Sizer.Add( ImageCopyright_GroupBox, 25 );
+   RightPanel_Sizer.Add( SoftwareDescription_GroupBox, 25 );
+   RightPanel_Sizer.AddSpacing( 8 );
    RightPanel_Sizer.Add( Buttons_Sizer );
 
    Global_Sizer.SetMargin( 8 );
-   Global_Sizer.SetSpacing( 6 );
+   Global_Sizer.SetSpacing( 8 );
    Global_Sizer.Add( LeftPanel_Sizer );
    Global_Sizer.Add( RightPanel_Sizer );
 
@@ -223,8 +211,6 @@ Dialog(), options( o ), tiffOptions( t )
    LZW_RadioButton.SetChecked( tiffOptions.compression == pcl::TIFFCompression::LZW );
 
    ICCProfile_CheckBox.SetChecked( options.embedICCProfile );
-   Metadata_CheckBox.SetChecked( options.embedMetadata );
-   Thumbnail_CheckBox.SetChecked( options.embedThumbnail );
 
    ImageDescription_TextBox.SetText( tiffOptions.imageDescription );
    ImageCopyright_TextBox.SetText( tiffOptions.copyright );
@@ -285,8 +271,6 @@ void TIFFOptionsDialog::Dialog_Return( Dialog& /*sender*/, int retVal )
          tiffOptions.compression = pcl::TIFFCompression::LZW;
 
       options.embedICCProfile = ICCProfile_CheckBox.IsChecked();
-      options.embedMetadata = Metadata_CheckBox.IsChecked();
-      options.embedThumbnail = Thumbnail_CheckBox.IsChecked();
 
       tiffOptions.planar = Planar_CheckBox.IsChecked();
 
@@ -303,5 +287,5 @@ void TIFFOptionsDialog::Dialog_Return( Dialog& /*sender*/, int retVal )
 
 } // pcl
 
-// ****************************************************************************
-// EOF TIFFOptionsDialog.cpp - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF TIFFOptionsDialog.cpp - Released 2015/07/31 11:49:40 UTC

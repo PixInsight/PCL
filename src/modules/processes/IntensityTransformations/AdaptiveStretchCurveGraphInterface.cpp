@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard IntensityTransformations Process Module Version 01.07.00.0287
-// ****************************************************************************
-// AdaptiveStretchCurveGraphInterface.cpp - Released 2014/11/14 17:19:23 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard IntensityTransformations Process Module Version 01.07.00.0306
+// ----------------------------------------------------------------------------
+// AdaptiveStretchCurveGraphInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "AdaptiveStretchCurveGraphInterface.h"
 #include "AdaptiveStretchProcess.h"
@@ -315,7 +319,7 @@ void AdaptiveStretchCurveGraphInterface::__Paint( Control& sender, const Rect& u
 void AdaptiveStretchCurveGraphInterface::__ItemSelected( ComboBox& sender, int itemIndex )
 {
    if ( sender == GUI->Size_ComboBox )
-      Resize( s_sizeItems[itemIndex], s_sizeItems[itemIndex] );
+      Resize( LogicalPixelsToPhysical( s_sizeItems[itemIndex] ), LogicalPixelsToPhysical( s_sizeItems[itemIndex] ) );
 }
 
 void AdaptiveStretchCurveGraphInterface::__Click( Button& sender, bool checked )
@@ -398,13 +402,13 @@ AdaptiveStretchCurveGraphInterface::GUIData::GUIData( AdaptiveStretchCurveGraphI
    Size_ComboBox.SetToolTip( "<p>Graph size in pixels.</p>" );
    Size_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&AdaptiveStretchCurveGraphInterface::__ItemSelected, w );
 
-   Render_ToolButton.SetIcon( Bitmap( String( ":/icons/camera.png" ) ) );
-   Render_ToolButton.SetFixedSize( 20, 20 );
+   Render_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/camera.png" ) ) );
+   Render_ToolButton.SetScaledFixedSize( 20, 20 );
    Render_ToolButton.SetToolTip( "<p>Render the current graph as a new image.</p>" );
    Render_ToolButton.OnClick( (Button::click_event_handler)&AdaptiveStretchCurveGraphInterface::__Click, w );
 
    Edit_ToolButton.SetIcon( Bitmap( CurvesTransformationIcon_XPM ) );
-   Edit_ToolButton.SetFixedSize( 20, 20 );
+   Edit_ToolButton.SetScaledFixedSize( 20, 20 );
    Edit_ToolButton.SetToolTip( "<p>Edit as a CurvesTransformation instance.</p>" );
    Edit_ToolButton.OnClick( (Button::click_event_handler)&AdaptiveStretchCurveGraphInterface::__Click, w );
 
@@ -432,5 +436,5 @@ AdaptiveStretchCurveGraphInterface::GUIData::GUIData( AdaptiveStretchCurveGraphI
 
 } // pcl
 
-// ****************************************************************************
-// EOF AdaptiveStretchCurveGraphInterface.cpp - Released 2014/11/14 17:19:23 UTC
+// ----------------------------------------------------------------------------
+// EOF AdaptiveStretchCurveGraphInterface.cpp - Released 2015/07/31 11:49:48 UTC

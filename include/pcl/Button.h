@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Button.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Button.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Button_h
 #define __PCL_Button_h
@@ -115,6 +118,8 @@ public:
     */
    virtual ~Button()
    {
+      if ( m_handlers != nullptr )
+         delete m_handlers, m_handlers = nullptr;
    }
 
    /*!
@@ -141,17 +146,16 @@ public:
 
    /*!
     * Obtains the current icon dimensions of this button in pixels. The icon's
-    * width and height are returned in the \a w and \a h referenced variables,
-    * respectively.
+    * \a width and \a height are returned in the referenced variables.
     */
-   void GetIconSize( int& w, int& h ) const;
+   void GetIconSize( int& width, int& height ) const;
 
    /*!
     * Returns the current icon width in pixels for this button.
     */
    int IconWidth() const
    {
-      int w, dum; GetIconSize( w, dum ); return w;
+      int width, dum; GetIconSize( width, dum ); return width;
    }
 
    /*!
@@ -159,14 +163,57 @@ public:
     */
    int IconHeight() const
    {
-      int dum, h; GetIconSize( dum, h ); return h;
+      int dum, height; GetIconSize( dum, height ); return height;
    }
 
    /*!
-    * Sets new icon sizes for this button, width \a w and height \a h in
-    * pixels, respectively.
+    * Sets new icon sizes for this button, \a width and \a height in pixels,
+    * respectively.
     */
-   void SetIconSize( int w, int h );
+   void SetIconSize( int width, int height );
+
+   /*! #
+    */
+   void SetIconSize( int size )
+   {
+      SetIconSize( size, size );
+   }
+
+   /*! #
+    */
+   void GetScaledIconSize( int& width, int& height ) const
+   {
+      GetIconSize( width, height ); width = PhysicalPixelsToLogical( width ); height = PhysicalPixelsToLogical( height );
+   }
+
+   /*! #
+    */
+   int ScaledIconWidth() const
+   {
+      int width, dum; GetIconSize( width, dum ); return PhysicalPixelsToLogical( width );
+   }
+
+   /*! #
+    */
+   int ScaledIconHeight() const
+   {
+      int dum, height; GetIconSize( dum, height ); return PhysicalPixelsToLogical( height );
+   }
+
+   /*! #
+    */
+   void SetScaledIconSize( int width, int height )
+   {
+      SetIconSize( LogicalPixelsToPhysical( width ), LogicalPixelsToPhysical( height ) );
+   }
+
+   /*! #
+    */
+   void SetScaledIconSize( int size )
+   {
+      size = LogicalPixelsToPhysical( size );
+      SetIconSize( size, size );
+   }
 
    /*!
     * Returns true if this button can be <em>pushed down</em>.
@@ -344,14 +391,30 @@ public:
     */
    void OnCheck( check_event_handler handler, Control& receiver );
 
+private:
+
+   struct EventHandlers
+   {
+      click_event_handler onClick   = nullptr;
+      press_event_handler onPress   = nullptr;
+      press_event_handler onRelease = nullptr;
+      check_event_handler onCheck   = nullptr;
+
+      EventHandlers() = default;
+      EventHandlers( const EventHandlers& ) = default;
+      EventHandlers& operator =( const EventHandlers& ) = default;
+   };
+
+   EventHandlers* m_handlers;
+
 protected:
 
-   click_event_handler  onClick;
-   press_event_handler  onPress;
-   press_event_handler  onRelease;
-   check_event_handler  onCheck;
-
-   Button( void* );
+   /*!
+    * \internal
+    */
+   Button( void* h ) : Control( h ), m_handlers( nullptr )
+   {
+   }
 
    friend class ButtonEventDispatcher;
 };
@@ -364,5 +427,5 @@ protected:
 
 #endif   // __PCL_Button_h
 
-// ****************************************************************************
-// EOF pcl/Button.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Button.h - Released 2015/07/30 17:15:18 UTC

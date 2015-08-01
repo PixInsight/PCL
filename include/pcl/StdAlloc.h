@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/StdAlloc.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/StdAlloc.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_StdAlloc_h
 #define __PCL_StdAlloc_h
@@ -87,16 +90,14 @@ public:
    /*!
     * Constructs a %StandardAllocator object.
     */
-   StandardAllocator()
+   StandardAllocator() : m_fastGrowth( true )
    {
    }
 
    /*!
     * Copy constructor.
     */
-   StandardAllocator( const StandardAllocator& )
-   {
-   }
+   StandardAllocator( const StandardAllocator& ) = default;
 
    /*!
     * Returns the size in bytes of the largest contiguous block that this
@@ -122,7 +123,7 @@ public:
     * \note This member function is mandatory for a block allocator to be
     * usable by the Allocator class.
     *
-    * \sa IsFastGrowthEnabled(), EnableFastGrowth()
+    * \sa ReallocatedBlockSize(), IsFastGrowthEnabled()
     */
    size_type BlockSize( size_type n ) const
    {
@@ -137,7 +138,7 @@ public:
       if ( n < 64 )
          return ((n >> 3) << 3) + 8-24;
 
-      // Grow exponentially if fast growing enabled or n < 64K
+      // Grow exponentially if fast growing is enabled or n < 64K
       if ( n < 65536 || IsFastGrowthEnabled() )
       {
          size_type nn = 64;
@@ -146,19 +147,28 @@ public:
          return nn - 24;
       }
 
-      // Grow linearly by 4K chunks for n >= 64K
+      // If fast growing is disabled, grow linearly by 4K chunks for n >= 64K
       return ((n >> 12) << 12) + 4096-24;
    }
 
    /*!
-    * Returns true if this object is equal to other block allocator.
+    * Returns the size in bytes of a reallocated data block.
+    *
+    * \param currentSize  The current size in bytes of an allocated data block.
+    *
+    * \param newSize      The new size in bytes of the reallocated data block.
+    *
+    * See IsFastGrowthEnabled() and IsShrinkingEnabled() for information about
+    * block size allocation and reallocation policies in %StandardAllocator.
     *
     * \note This member function is mandatory for a block allocator to be
     * usable by the Allocator class.
+    *
+    * \sa BlockSize(), IsShrinkingEnabled(), IsFastGrowthEnabled()
     */
-   bool operator ==( const StandardAllocator& ) const
+   size_type ReallocatedBlockSize( size_type currentSize, size_type newSize ) const
    {
-      return true;
+      return (currentSize < newSize || m_canShrink) ? BlockSize( newSize ) : currentSize;
    }
 
    /*!
@@ -194,20 +204,13 @@ public:
     */
    void DeallocateBlock( void* p )
    {
-      PCL_PRECONDITION( p != 0 )
+      PCL_PRECONDITION( p != nullptr )
       ::operator delete( p );
    }
-   /*
-   void operator delete( void* p )
-   {
-      PCL_PRECONDITION( p != 0 )
-      ::operator delete( p );
-   }
-    */
 
    /*!
-    * Returns true if <i>fast growth</i> is currently enabled for
-    * %StandardAllocator.
+    * Returns true if <i>fast growth</i> is currently enabled for this
+    * allocator.
     *
     * When fast growth is enabled, %StandardAllocator provides block sizes
     * that grow exponentially above 64 bytes: 128, 256, 512, 1K, ... 512K, 1M,
@@ -222,11 +225,14 @@ public:
     * as short strings. For blocks larger than 64K, block sizes grow by
     * constant chunks of 4K.
     *
-    * The fast block size growing policy is disabled by default.
+    * The fast block size growing policy is enabled by default.
     *
-    * \sa EnableFastGrowth(), BlockSize()
+    * \sa EnableFastGrowth(), DisableFastGrowth(), BlockSize()
     */
-   static bool IsFastGrowthEnabled();
+   bool IsFastGrowthEnabled() const
+   {
+      return m_fastGrowth;
+   }
 
    /*!
     * Enables a fast block size growing policy for %StandardAllocator.
@@ -236,7 +242,10 @@ public:
     *
     * \sa IsFastGrowthEnabled(), DisableFastGrowth()
     */
-   static void EnableFastGrowth( bool enable = true );
+   void EnableFastGrowth( bool enable = true )
+   {
+      m_fastGrowth = enable;
+   }
 
    /*!
     * Disables the fast block size growing policy for %StandardAllocator.
@@ -246,10 +255,57 @@ public:
     *
     * \sa IsFastGrowthEnabled(), EnableFastGrowth()
     */
-   static void DisableFastGrowth( bool disable = true )
+   void DisableFastGrowth( bool disable = true )
    {
       EnableFastGrowth( !disable );
    }
+
+   /*!
+    * Returns true if <i>block shrinking</i> is currently enabled for this
+    * allocator.
+    *
+    * When block shrinking is enabled, %StandardAllocator allows size
+    * reductions for reallocated blocks in calls to the ReallocatedBlockSize().
+    * When block shrinking is disabled, already allocated blocks can only be
+    * reallocated with increased lengths.
+    *
+    * \sa EnableShrinking(), DisableShrinking(), ReallocatedBlockSize()
+    */
+   bool IsShrinkingEnabled() const
+   {
+      return m_canShrink;
+   }
+
+   /*!
+    * Enables a block shrinking policy for %StandardAllocator.
+    *
+    * See IsShrinkingEnabled() for more information about block shrinking
+    * policies.
+    *
+    * \sa IsShrinkingEnabled(), DisableShrinking()
+    */
+   void EnableShrinking( bool enable = true )
+   {
+      m_canShrink = enable;
+   }
+
+   /*!
+    * Disables a block shrinking policy for %StandardAllocator.
+    *
+    * See IsShrinkingEnabled() for more information about block shrinking
+    * policies.
+    *
+    * \sa IsShrinkingEnabled(), EnableShrinking()
+    */
+   void DisableShrinking( bool disable = true )
+   {
+      EnableShrinking( !disable );
+   }
+
+private:
+
+   bool m_fastGrowth : 1;
+   bool m_canShrink  : 1;
 };
 
 } // pcl
@@ -264,7 +320,7 @@ public:
 /*
 inline void* operator new( pcl::size_type sz, pcl::StandardAllocator& )
 {
-   PCL_PRECONDITION( sz != 0 )
+   PCL_PRECONDITION( sz != nullptr )
    return ::operator new( sz );
 }
 
@@ -272,7 +328,7 @@ inline void* operator new( pcl::size_type sz, pcl::StandardAllocator& )
 
 inline void operator delete( void* p, pcl::StandardAllocator& )
 {
-   PCL_PRECONDITION( p != 0 )
+   PCL_PRECONDITION( p != nullptr )
    ::operator delete( p );
 }
 
@@ -285,7 +341,7 @@ inline void operator delete( void* p, pcl::StandardAllocator& )
  */
 inline void* operator new( pcl::size_type, void* p, pcl::StandardAllocator& )
 {
-   PCL_PRECONDITION( p != 0 )
+   PCL_PRECONDITION( p != nullptr )
    return p;
 }
 
@@ -296,7 +352,7 @@ inline void* operator new( pcl::size_type, void* p, pcl::StandardAllocator& )
 
 inline void operator delete( void* p, void*, pcl::StandardAllocator& )
 {
-   PCL_PRECONDITION( p != 0 )
+   PCL_PRECONDITION( p != nullptr )
 }
 
 #pragma warning( pop )
@@ -307,5 +363,5 @@ inline void operator delete( void* p, void*, pcl::StandardAllocator& )
 
 #endif  // __PCL_StdAlloc_h
 
-// ****************************************************************************
-// EOF pcl/StdAlloc.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/StdAlloc.h - Released 2015/07/30 17:15:18 UTC

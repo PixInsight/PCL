@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ImageView.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ImageView.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/ErrorHandler.h>
 #include <pcl/ICCProfile.h>
@@ -59,29 +62,10 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-#define sender    (reinterpret_cast<ImageView*>( hSender ))
-#define receiver  (reinterpret_cast<Control*>( hReceiver ))
-
-class ImageViewEventDispatcher
-{
-public:
-
-   static void ViewportScrolled( control_handle hSender, control_handle hReceiver, int32 dx, int32 dy )
-   {
-      if ( sender->onScrollViewport != 0 )
-         (receiver->*sender->onScrollViewport)( *sender, dx, dy );
-   }
-}; // ImageViewEventDispatcher
-
-#undef sender
-#undef receiver
-
-// ----------------------------------------------------------------------------
-
 ImageView::ImageView( Control& parent, int width, int height, int numberOfChannels,
                       int bitsPerSample, bool floatSample, bool color ) :
-ScrollBox( reinterpret_cast<void*>( 0 ) ),
-onScrollViewport( 0 )
+   ScrollBox( nullptr ),
+   m_handlers( nullptr )
 {
    TransferHandle( (*API->ImageView->CreateImageView)( ModuleHandle(), this, parent.handle, 0/*flags*/,
                                                        width, height, numberOfChannels,
@@ -89,42 +73,28 @@ onScrollViewport( 0 )
    if ( IsNull() )
       throw APIFunctionError( "CreateImageView" );
 
-   viewport.TransferHandle( (*API->ImageView->CreateImageViewViewport)( handle, &viewport ) );
-   if ( viewport.IsNull() == 0 )
+   m_viewport.TransferHandle( (*API->ImageView->CreateImageViewViewport)( handle, &m_viewport ) );
+   if ( m_viewport.IsNull() )
       throw APIFunctionError( "CreateImageViewViewport" );
 }
 
 ImageView::ImageView( void* h ) :
-ScrollBox( reinterpret_cast<void*>( 0 ) ),
-onScrollViewport( 0 )
+   ScrollBox( nullptr ),
+   m_handlers( nullptr )
 {
    TransferHandle( h );
    if ( !IsNull() )
    {
-      viewport.TransferHandle( (*API->ImageView->CreateImageViewViewport)( handle, &viewport ) );
-      if ( viewport.IsNull() )
+      m_viewport.TransferHandle( (*API->ImageView->CreateImageViewViewport)( handle, &m_viewport ) );
+      if ( m_viewport.IsNull() )
          throw APIFunctionError( "CreateImageViewViewport" );
    }
 }
 
 ImageView::ImageView( void* h, void* hV ) :
-ScrollBox( h, hV ),
-onScrollViewport( 0 )
+   ScrollBox( h, hV ),
+   m_handlers( nullptr )
 {
-}
-
-// ----------------------------------------------------------------------------
-
-void ImageView::OnScrollViewport( scroll_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onScrollViewport = 0;
-   if ( (*API->ImageView->SetImageViewScrollEventRoutine)( handle, &receiver,
-            (f != 0) ? ImageViewEventDispatcher::ViewportScrolled : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetImageViewScrollEventRoutine" );
-   }
-   onScrollViewport = f;
 }
 
 // ----------------------------------------------------------------------------
@@ -136,7 +106,6 @@ ImageVariant ImageView::Image() const
    {
       uint32 bitsPerSample;
       api_bool isFloat;
-
       if ( !(*API->SharedImage->GetImageFormat)( hImg, &bitsPerSample, &isFloat ) )
          throw APIFunctionError( "GetImageFormat" );
 
@@ -673,7 +642,46 @@ bool ImageView::IsSelection() const
 
 // ----------------------------------------------------------------------------
 
+#define sender    (reinterpret_cast<ImageView*>( hSender ))
+#define receiver  (reinterpret_cast<Control*>( hReceiver ))
+#define handlers  sender->m_handlers
+
+class ImageViewEventDispatcher
+{
+public:
+
+   static void ViewportScrolled( control_handle hSender, control_handle hReceiver, int32 dx, int32 dy )
+   {
+      if ( handlers->onScrollViewport != nullptr )
+         (receiver->*handlers->onScrollViewport)( *sender, dx, dy );
+   }
+}; // ImageViewEventDispatcher
+
+#undef sender
+#undef receiver
+#undef handlers
+
+// ----------------------------------------------------------------------------
+
+#define INIT_EVENT_HANDLERS()    \
+   __PCL_NO_ALIAS_HANDLERS;      \
+   if ( m_handlers == nullptr )  \
+      m_handlers = new EventHandlers
+
+void ImageView::OnScrollViewport( scroll_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->ImageView->SetImageViewScrollEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? ImageViewEventDispatcher::ViewportScrolled : 0 ) == api_false )
+      throw APIFunctionError( "SetImageViewScrollEventRoutine" );
+   m_handlers->onScrollViewport = f;
+}
+
+#undef INIT_EVENT_HANDLERS
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/ImageView.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ImageView.cpp - Released 2015/07/30 17:15:31 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Iterator.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Iterator.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Iterator_h
 #define __PCL_Iterator_h
@@ -115,7 +118,7 @@ struct PCL_CLASS Iterator
  * of the %Iterator class.
  */
 template <class C, class T> inline
-C IteratorClass( const Iterator<C, T>& )
+C IteratorClass( const Iterator<C,T>& )
 {
    return C();
 }
@@ -134,22 +137,22 @@ RandomAccessIterator IteratorClass( const T* )
 
 /*!
  * Returns a pointer to the item type of an instantiation of the %Iterator
- * class. The returned pointer has always a zero value.
+ * class. The returned pointer has always a \c nullptr value.
  */
 template <class C, class T> inline
-T* ItemType( const Iterator<C, T>& )
+T* ItemType( const Iterator<C,T>& )
 {
-   return 0;
+   return nullptr;
 }
 
 /*!
  * Returns a pointer to the item type of a pointer iterator, which is the same
- * pointer. The returned pointer has always a zero value.
+ * pointer. The returned pointer has always a \c nullptr value.
  */
 template <typename T> inline
 T* ItemType( const T* )
 {
-   return 0;
+   return nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -161,19 +164,19 @@ T* ItemType( const T* )
 template <class FI> inline
 distance_type Distance( FI i, FI j )
 {
-   return __distance__( i, j, IteratorClass( i ) );
+   return __pcl_distance__( i, j, IteratorClass( i ) );
 }
 
 template <class FI> inline
-distance_type __distance__( FI i, FI j, ForwardIterator )
+distance_type __pcl_distance__( FI i, FI j, ForwardIterator )
 {
    distance_type d = 0;
-   for ( ; i != j; ++i ) ++d;
+   for ( ; i != j; ++i, ++d ) {}
    return d;
 }
 
 template <class RI> inline
-distance_type __distance__( RI i, RI j, RandomAccessIterator )
+distance_type __pcl_distance__( RI i, RI j, RandomAccessIterator )
 {
    return j - i;
 }
@@ -186,27 +189,27 @@ distance_type __distance__( RI i, RI j, RandomAccessIterator )
 template <class FI> inline
 void Advance( FI& i, distance_type d )
 {
-   __advance__( i, d, IteratorClass( i ) );
+   __pcl_advance__( i, d, IteratorClass( i ) );
 }
 
 template <class FI> inline
-void __advance__( FI& i, distance_type d, ForwardIterator )
+void __pcl_advance__( FI& i, distance_type d, ForwardIterator )
 {
    PCL_PRECONDITION( d >= 0 )
-   for ( ; d > 0; --d ) ++i;
+   for ( ; d > 0; --d, ++i ) {}
 }
 
 template <class BI> inline
-void __advance__( BI& i, distance_type d, BidirectionalIterator )
+void __pcl_advance__( BI& i, distance_type d, BidirectionalIterator )
 {
    if ( d > 0 )
-      for ( ; ++i, --d != 0; );
+      for ( ; ++i, --d > 0; ) {}
    else
-      for ( ; d != 0; ++d ) --i;
+      for ( ; d < 0; ++d, --i ) {}
 }
 
 template <class RI> inline
-void __advance__( RI& i, distance_type d, RandomAccessIterator )
+void __pcl_advance__( RI& i, distance_type d, RandomAccessIterator )
 {
    i += d;
 }
@@ -219,17 +222,17 @@ void __advance__( RI& i, distance_type d, RandomAccessIterator )
 template <class FI> inline
 void MoveForward( FI& i, size_type n )
 {
-   __move_forward__( i, n, IteratorClass( i ) );
+   __pcl_move_forward__( i, n, IteratorClass( i ) );
 }
 
 template <class FI> inline
-void __move_forward__( FI& i, size_type n, ForwardIterator )
+void __pcl_move_forward__( FI& i, size_type n, ForwardIterator )
 {
-   for ( ; n > 0; --n ) ++i;
+   for ( ; n > 0; --n, ++i ) {}
 }
 
 template <class RI> inline
-void __move_forward__( RI& i, size_type n, RandomAccessIterator )
+void __pcl_move_forward__( RI& i, size_type n, RandomAccessIterator )
 {
    i += n;
 }
@@ -242,17 +245,17 @@ void __move_forward__( RI& i, size_type n, RandomAccessIterator )
 template <class BI> inline
 void MoveBackward( BI& i, size_type n )
 {
-   __move_backward__( i, n, IteratorClass( i ) );
+   __pcl_move_backward__( i, n, IteratorClass( i ) );
 }
 
 template <class BI> inline
-void __move_backward__( BI& i, size_type n, BidirectionalIterator )
+void __pcl_move_backward__( BI& i, size_type n, BidirectionalIterator )
 {
-   for ( ; n > 0; --n ) --i;
+   for ( ; n > 0; --n, --i ) {}
 }
 
 template <class RI> inline
-void __move_backward__( RI& i, size_type n, RandomAccessIterator )
+void __pcl_move_backward__( RI& i, size_type n, RandomAccessIterator )
 {
    i -= n;
 }
@@ -264,21 +267,19 @@ void __move_backward__( RI& i, size_type n, RandomAccessIterator )
  * \brief Base class of reverse iterators.
  */
 template <class BI, class C, class T>
-class PCL_CLASS ReverseIteratorBase : public Iterator<C, T>
+class PCL_CLASS ReverseIteratorBase : public pcl::Iterator<C,T>
 {
 public:
 
    /*!
     * Constructs a default %ReverseIteratorBase object.
     */
-   ReverseIteratorBase() : Iterator<C, T>(), iterator()
-   {
-   }
+   ReverseIteratorBase() = default;
 
    /*!
     * Copy constructor.
     */
-   ReverseIteratorBase( const ReverseIteratorBase<BI, C, T>& i ) : Iterator<C, T>( i ), iterator( i.iterator )
+   ReverseIteratorBase( const ReverseIteratorBase& i ) : pcl::Iterator<C,T>( i ), iterator( i.iterator )
    {
    }
 
@@ -286,16 +287,26 @@ public:
     * Constructs a %ReverseIteratorBase object as a duplicate of the specified
     * bidirectional iterator \a i.
     */
-   ReverseIteratorBase( const BI& i ) : Iterator<C, T>(), iterator( i )
+   ReverseIteratorBase( const BI& i ) : pcl::Iterator<C,T>(), iterator( i )
    {
    }
 
    /*!
-    * Returns a reference to the object pointed to by this iterator.
+    * Indirection operator. Returns a reference to the object pointed to by
+    * this reverse iterator.
     */
    T& operator *() const
    {
       return (T&)*iterator;
+   }
+
+   /*!
+    * Structure selection operator. Returns a copy of the bidirectional
+    * iterator contained by this reverse iterator.
+    */
+   BI operator ->() const
+   {
+      return this->Iterator();
    }
 
    /*!
@@ -304,13 +315,13 @@ public:
     */
    operator BI() const
    {
-      return GetIterator();
+      return this->Iterator();
    }
 
    /*!
     * A synonym for operator BI() const.
     */
-   BI GetIterator() const
+   BI Iterator() const
    {
       return iterator;
    }
@@ -349,9 +360,9 @@ protected:
  * iterators are equal if they point to the same item.
  */
 template <class BI, class C, class T> inline
-bool operator ==( const ReverseIteratorBase<BI, C, T>& i, const ReverseIteratorBase<BI, C, T>& j )
+bool operator ==( const ReverseIteratorBase<BI,C,T>& i, const ReverseIteratorBase<BI,C,T>& j )
 {
-   return i.GetIterator() == j.GetIterator();
+   return i.Iterator() == j.Iterator();
 }
 
 // ----------------------------------------------------------------------------
@@ -367,24 +378,22 @@ bool operator ==( const ReverseIteratorBase<BI, C, T>& i, const ReverseIteratorB
  * \brief Reverse bidirectional iterator.
  */
 template <class BI, class T>
-class PCL_CLASS ReverseBidirectionalIterator : public ReverseIteratorBase<BI, BidirectionalIterator, T>
+class PCL_CLASS ReverseBidirectionalIterator : public ReverseIteratorBase<BI,BidirectionalIterator,T>
 {
-   typedef ReverseIteratorBase<BI, BidirectionalIterator, T>   __R__;
-   typedef ReverseBidirectionalIterator<BI, T>                 __I__;
+   typedef ReverseIteratorBase<BI,BidirectionalIterator,T>  __R__;
+   typedef ReverseBidirectionalIterator                     __I__;
 
 public:
 
    /*!
     * Constructs a %ReverseBidirectionalIterator object.
     */
-   ReverseBidirectionalIterator() : __R__()
-   {
-   }
+   ReverseBidirectionalIterator() = default;
 
    /*!
     * Copy constructor.
     */
-   ReverseBidirectionalIterator( const ReverseBidirectionalIterator<BI, T>& i ) : __R__( i )
+   ReverseBidirectionalIterator( const ReverseBidirectionalIterator& i ) : __R__( i )
    {
    }
 
@@ -406,24 +415,22 @@ public:
  * \brief Reverse random access iterator.
  */
 template <class RI, class T>
-class PCL_CLASS ReverseRandomAccessIterator : public ReverseIteratorBase<RI, RandomAccessIterator, T>
+class PCL_CLASS ReverseRandomAccessIterator : public ReverseIteratorBase<RI,RandomAccessIterator,T>
 {
-   typedef ReverseIteratorBase<RI, RandomAccessIterator, T>    __R__;
-   typedef ReverseRandomAccessIterator<RI, T>                  __I__;
+   typedef ReverseIteratorBase<RI,RandomAccessIterator,T>   __R__;
+   typedef ReverseRandomAccessIterator                      __I__;
 
 public:
 
    /*!
     * Constructs a %ReverseRandomAccessIterator object.
     */
-   ReverseRandomAccessIterator() : __R__()
-   {
-   }
+   ReverseRandomAccessIterator() = default;
 
    /*!
     * Copy constructor.
     */
-   ReverseRandomAccessIterator( const ReverseRandomAccessIterator<RI, T>& i ) : __R__( i )
+   ReverseRandomAccessIterator( const ReverseRandomAccessIterator& i ) : __R__( i )
    {
    }
 
@@ -437,7 +444,7 @@ public:
 
    /*!
     * Subscript operator. Returns a reference to the object at a distance \a d
-    * of the current iterator position.
+    * from the current iterator position.
     */
    T& operator[]( size_type d ) const
    {
@@ -448,7 +455,7 @@ public:
     * Increments this interator by the specified distance \a d. Returns a
     * reference to this object.
     */
-   ReverseRandomAccessIterator<RI, T>& operator +=( distance_type d )
+   ReverseRandomAccessIterator& operator +=( distance_type d )
    {
       __R__::iterator -= d;
       return *this;
@@ -458,7 +465,7 @@ public:
     * Decrements this interator by the specified distance \a d. Returns a
     * reference to this object.
     */
-   ReverseRandomAccessIterator<RI, T>& operator -=( distance_type d )
+   ReverseRandomAccessIterator& operator -=( distance_type d )
    {
       __R__::iterator += d;
       return *this;
@@ -472,24 +479,24 @@ public:
 /*! #
  */
 template <class RI, class T> inline
-bool operator <( const ReverseRandomAccessIterator<RI, T>& i, const ReverseRandomAccessIterator<RI, T>& j )
+bool operator <( const ReverseRandomAccessIterator<RI,T>& i, const ReverseRandomAccessIterator<RI,T>& j )
 {
-   return j.GetIterator() < i.GetIterator();
+   return j.Iterator() < i.Iterator();
 }
 
 /*! #
  */
 template <class RI, class T> inline
-ReverseRandomAccessIterator<RI, T> operator +( const ReverseRandomAccessIterator<RI, T>& i, distance_type d )
+ReverseRandomAccessIterator<RI,T> operator +( const ReverseRandomAccessIterator<RI,T>& i, distance_type d )
 {
-   RI r = i.GetIterator();
+   RI r = i.Iterator();
    return r -= d;
 }
 
 /*! #
  */
 template <class RI, class T> inline
-ReverseRandomAccessIterator<RI, T> operator +( distance_type d, const ReverseRandomAccessIterator<RI, T>& i )
+ReverseRandomAccessIterator<RI,T> operator +( distance_type d, const ReverseRandomAccessIterator<RI,T>& i )
 {
    return i + d;
 }
@@ -497,18 +504,18 @@ ReverseRandomAccessIterator<RI, T> operator +( distance_type d, const ReverseRan
 /*! #
  */
 template <class RI, class T> inline
-ReverseRandomAccessIterator<RI, T> operator -( const ReverseRandomAccessIterator<RI, T>& i, distance_type d )
+ReverseRandomAccessIterator<RI,T> operator -( const ReverseRandomAccessIterator<RI,T>& i, distance_type d )
 {
-   RI r = i.GetIterator();
+   RI r = i.Iterator();
    return r += d;
 }
 
 /*! #
  */
 template <class RI, class T> inline
-distance_type operator -( const ReverseRandomAccessIterator<RI, T>& i, const ReverseRandomAccessIterator<RI, T>& j )
+distance_type operator -( const ReverseRandomAccessIterator<RI,T>& i, const ReverseRandomAccessIterator<RI,T>& j )
 {
-   return j.GetIterator() - i.GetIterator();
+   return j.Iterator() - i.Iterator();
 }
 
 // ----------------------------------------------------------------------------
@@ -517,5 +524,5 @@ distance_type operator -( const ReverseRandomAccessIterator<RI, T>& i, const Rev
 
 #endif  // __PCL_Iterator_h
 
-// ****************************************************************************
-// EOF pcl/Iterator.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Iterator.h - Released 2015/07/30 17:15:18 UTC

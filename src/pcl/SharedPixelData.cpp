@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/SharedPixelData.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/SharedPixelData.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/RGBColorSystem.h>
 #include <pcl/SharedPixelData.h>
@@ -65,10 +68,10 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 SharedPixelData::SharedPixelData( void* handle, int bitsPerSample, bool floatSample, bool complexSample ) :
-m_handle( handle )
+   m_handle( handle )
 {
-   if ( m_handle == 0 )
-      throw APIError( "SharedPixelData: Null image handle" );
+   if ( m_handle == nullptr )
+      throw APIError( "SharedPixelData: Null shared image handle" );
 
    if ( complexSample )
       throw APIError( "SharedPixelData: Shared complex images are not supported by this version of PCL" );
@@ -89,10 +92,10 @@ m_handle( handle )
 
 SharedPixelData::SharedPixelData( int width, int height, int numberOfChannels,
                                   int bitsPerSample, bool floatSample, int colorSpace ) :
-m_handle( (*API->SharedImage->CreateImage)( width, height, numberOfChannels,
-                                            bitsPerSample, floatSample, colorSpace, this/*owner*/ ) )
+   m_handle( (*API->SharedImage->CreateImage)( width, height, numberOfChannels,
+                                               bitsPerSample, floatSample, colorSpace, this/*owner*/ ) )
 {
-   if ( m_handle == 0 )
+   if ( m_handle == nullptr )
       throw APIFunctionError( "CreateImage" );
 }
 
@@ -100,7 +103,7 @@ m_handle( (*API->SharedImage->CreateImage)( width, height, numberOfChannels,
 
 bool SharedPixelData::IsAliased() const
 {
-   if ( m_handle == 0 )
+   if ( m_handle == nullptr )
       return false;
 
    uint32 n = 0;
@@ -113,14 +116,14 @@ bool SharedPixelData::IsAliased() const
 
 bool SharedPixelData::IsOwner() const
 {
-   return m_handle != 0 && (*API->SharedImage->GetImageOwner)( m_handle ) == this;
+   return m_handle != nullptr && (*API->SharedImage->GetImageOwner)( m_handle ) == this;
 }
 
 // ----------------------------------------------------------------------------
 
 void SharedPixelData::Attach()
 {
-   if ( m_handle != 0 )
+   if ( m_handle != nullptr )
       if ( (*API->SharedImage->AttachToImage)( m_handle, this ) == api_false )
          throw APIFunctionError( "AttachToImage" );
 }
@@ -129,7 +132,7 @@ void SharedPixelData::Attach()
 
 void SharedPixelData::Detach()
 {
-   if ( m_handle != 0 )
+   if ( m_handle != nullptr )
       if ( (*API->SharedImage->DetachFromImage)( m_handle, this ) == api_false )
          throw APIFunctionError( "DetachFromImage" );
 }
@@ -138,51 +141,33 @@ void SharedPixelData::Detach()
 
 void* SharedPixelData::Allocate( size_type size ) const
 {
-   if ( size == 0 )
-      throw APIError( "<* Warning *> SharedPixelData::Allocate(): Zero block size" );
-
-   if ( m_handle == 0 )
+   if ( size > 0 )
    {
-#ifdef _MSC_VER
-      void* p = _aligned_malloc( size, 16 );
-#else
-      void* p = _mm_malloc( size, 16 );
-#endif
-      if ( p == 0 )
-         throw std::bad_alloc();
-      return p;
-   }
-
-   void* p = (*API->Global->Allocate)( size );
-   if ( p == 0 )
+      void* p = (m_handle == nullptr) ? PCL_ALIGNED_MALLOC( size, 16 ) : (*API->Global->Allocate)( size );
+      if ( p != nullptr )
+         return p;
       throw std::bad_alloc();
-
-   return p;
+   }
+   return nullptr;
 }
 
 // ----------------------------------------------------------------------------
 
 void SharedPixelData::Deallocate( void* p ) const
 {
-   if ( p == 0 )
-      throw APIError( "<* Warning *> SharedPixelData::Deallocate(): Null block address" );
-
-   if ( m_handle == 0 )
-#ifdef _MSC_VER
-      _aligned_free( p );
-#else
-      _mm_free( p );
-#endif
-   else if ( (*API->Global->Deallocate)( p ) == api_false )
-      throw APIFunctionError( "Deallocate" );
+   if ( p != nullptr )
+      if ( m_handle == nullptr )
+         PCL_ALIGNED_FREE( p );
+      else if ( (*API->Global->Deallocate)( p ) == api_false )
+         throw APIFunctionError( "Deallocate" );
 }
 
 // ----------------------------------------------------------------------------
 
 void** SharedPixelData::GetSharedData() const
 {
-   if ( m_handle == 0 )
-      return 0;
+   if ( m_handle == nullptr )
+      return nullptr;
 
    void** data;
    if ( (*API->SharedImage->GetImagePixelData)( m_handle, &data ) == api_false )
@@ -194,7 +179,7 @@ void** SharedPixelData::GetSharedData() const
 
 void SharedPixelData::SetSharedData( void** ptrToShared )
 {
-   if ( m_handle != 0 )
+   if ( m_handle != nullptr )
       if ( (*API->SharedImage->SetImagePixelData)( m_handle, ptrToShared ) == api_false )
          throw APIFunctionError( "SetImagePixelData" );
 }
@@ -203,27 +188,24 @@ void SharedPixelData::SetSharedData( void** ptrToShared )
 
 void SharedPixelData::GetSharedGeometry( int& width, int& height, int& numberOfChannels )
 {
-   if ( m_handle != 0 )
+   if ( m_handle != nullptr )
    {
       uint32 w, h, n;
       if ( (*API->SharedImage->GetImageGeometry)( m_handle, &w, &h, &n ) == api_false )
          throw APIFunctionError( "GetImageGeometry" );
-
       width = int( w );
       height = int( h );
       numberOfChannels = int( n );
    }
    else
-   {
       width = height = numberOfChannels = 0;
-   }
 }
 
 // ----------------------------------------------------------------------------
 
 void SharedPixelData::SetSharedGeometry( int width, int height, int numberOfChannels )
 {
-   if ( m_handle != 0 )
+   if ( m_handle != nullptr )
       if ( (*API->SharedImage->SetImageGeometry)( m_handle, width, height, numberOfChannels ) == api_false )
          throw APIFunctionError( "SetImageGeometry" );
 }
@@ -232,7 +214,7 @@ void SharedPixelData::SetSharedGeometry( int width, int height, int numberOfChan
 
 void SharedPixelData::GetSharedColor( color_space& colorSpace, RGBColorSystem& RGBWS )
 {
-   if ( m_handle != 0 )
+   if ( m_handle != nullptr )
    {
       uint32 cs;
       if ( (*API->SharedImage->GetImageColorSpace)( m_handle, &cs ) == api_false )
@@ -254,34 +236,35 @@ void SharedPixelData::GetSharedColor( color_space& colorSpace, RGBColorSystem& R
 
 // ----------------------------------------------------------------------------
 
-void SharedPixelData::SetSharedColor( color_space colorSpace, const RGBColorSystem& /*RGBWS*/ )
+void SharedPixelData::SetSharedColor( color_space colorSpace, const RGBColorSystem&/*RGBWS*/ )
 {
-   if ( m_handle != 0 )
+   if ( m_handle != nullptr )
+   {
       if ( (*API->SharedImage->SetImageColorSpace)( m_handle, colorSpace ) == api_false )
          throw APIFunctionError( "SetImageColorSpace" );
-
-   /*
-    * The following code has been omitted because we cannot modify a shared
-    * image's RGBWS directly.
-    *
-    * RGB working spaces of shared images are handled by image windows in the
-    * PixInsight core application.
-    */
-   /*
-   api_RGBWS rgbws;
-   rgbws.gamma = RGBWS.Gamma();
-   rgbws.isSRGBGamma = RGBWS.IsSRGB();
-   memcpy( rgbws.x, *RGBWS.ChromaticityXCoordinates(), sizeof( rgbws.x ) );
-   memcpy( rgbws.y, *RGBWS.ChromaticityYCoordinates(), sizeof( rgbws.y ) );
-   memcpy( rgbws.Y, *RGBWS.LuminanceCoefficients(), sizeof( rgbws.Y ) );
-   if ( (*API->SetImageRGBWS)( m_handle, &rgbws ) == api_false )
-      throw APIFunctionError( "SetImageRGBWS" );
-   */
+      /*
+       * The following code has been omitted because we cannot modify a shared
+       * image's RGBWS directly.
+       *
+       * RGB working spaces of shared images are handled by image windows in the
+       * PixInsight core application.
+       */
+      /*
+      api_RGBWS rgbws;
+      rgbws.gamma = RGBWS.Gamma();
+      rgbws.isSRGBGamma = RGBWS.IsSRGB();
+      memcpy( rgbws.x, *RGBWS.ChromaticityXCoordinates(), sizeof( rgbws.x ) );
+      memcpy( rgbws.y, *RGBWS.ChromaticityYCoordinates(), sizeof( rgbws.y ) );
+      memcpy( rgbws.Y, *RGBWS.LuminanceCoefficients(), sizeof( rgbws.Y ) );
+      if ( (*API->SetImageRGBWS)( m_handle, &rgbws ) == api_false )
+         throw APIFunctionError( "SetImageRGBWS" );
+      */
+   }
 }
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/SharedPixelData.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/SharedPixelData.cpp - Released 2015/07/30 17:15:31 UTC

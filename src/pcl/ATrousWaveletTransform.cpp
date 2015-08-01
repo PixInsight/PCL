@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ATrousWaveletTransform.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ATrousWaveletTransform.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/ATrousWaveletTransform.h>
 #include <pcl/Convolution.h>
@@ -116,13 +119,13 @@ private:
             if ( T.m_layerEnabled[j0] )
             {
                w0 -= wj;
-               T.m_transform[j0] = new Image( w0 );
+               T.m_transform[j0] = Image( w0 );
             }
 
             if ( j == T.m_numberOfLayers )
             {
                if ( T.m_layerEnabled[j] )
-                  T.m_transform[j] = new Image( wj );
+                  T.m_transform[j] = Image( wj );
                break;
             }
 
@@ -134,7 +137,7 @@ private:
       }
       catch ( ... )
       {
-         T.DeleteLayers();
+         T.DestroyLayers();
          if ( statusInitialized )
             status.EnableInitialization();
          throw;
@@ -145,7 +148,7 @@ private:
 #define TRANSFORM_ENTRY                               \
    PCL_PRECONDITION( m_scalingFunction.IsValid() )    \
    ValidateScalingFunction();                         \
-   DeleteLayers();                                    \
+   DestroyLayers();                                   \
    if ( image.IsEmptySelection() )                    \
       return;
 
@@ -237,16 +240,16 @@ static double NoiseKSigmaEstimate( Array<float>& A, float K, float eps, int n, s
 double ATrousWaveletTransform::NoiseKSigma( int j, float k, float eps, int n, size_type* N ) const
 {
    ValidateLayerAccess( j );
-   Array<float> A( m_transform[j]->PixelData(), m_transform[j]->PixelData()+m_transform[j]->NumberOfPixels() );
+   Array<float> A( m_transform[j].PixelData(), m_transform[j].PixelData() + m_transform[j].NumberOfPixels() );
    return NoiseKSigmaEstimate( A, k, eps, n, N );
 }
 
 template <class P>
-static double NoiseKSigmaEstimate( const Image* wj, const GenericImage<P>& image,
+static double NoiseKSigmaEstimate( const Image& wj, const GenericImage<P>& image,
                                    float low, float high, float k, float eps, int n, size_type* N )
 {
    Array<float> A;
-   const float* w = wj->PixelData();
+   const float* w = wj.PixelData();
    for ( typename GenericImage<P>::const_sample_iterator i( image ); i; ++i, ++w )
    {
       float v; P::FromSample( v, *i );
@@ -265,7 +268,7 @@ double ATrousWaveletTransform::NoiseKSigma( int j, const ImageVariant& image,
    if ( !image )
       throw Error( "NoiseKSigma(): No image transported by ImageVariant." );
 
-   if ( image->Width() != m_transform[j]->Width() || image->Height() != m_transform[j]->Height() )
+   if ( image->Width() != m_transform[j].Width() || image->Height() != m_transform[j].Height() )
       throw Error( "NoiseKSigma(): Incompatible image geometry." );
 
    if ( high < low )
@@ -334,7 +337,7 @@ public:
          }
       }
 
-      PArray<Thread<P> > threads;
+      ReferenceArray<Thread<P> > threads;
 
       int numberOfThreads = parallel ? Min( maxProcessors, pcl::Thread::NumberOfThreads( N, 16 ) ) : 1;
       size_type pixelsPerThread = N/numberOfThreads;
@@ -411,13 +414,13 @@ private:
          c = GenericVector<const float*>( J + 1 );
          for ( int j = 0; j <= J; ++j )
          {
-            if ( transform[j] == 0 || transform[j]->IsEmpty() )
+            if ( !transform[j] )
                throw Error( "NoiseMRS(): Invalid wavelet transform." );
-            c[j] = transform[j]->PixelData();
+            c[j] = transform[j].PixelData();
          }
 
          Rect r = image.SelectedRectangle();
-         if ( r.Width() != transform[0]->Width() || r.Height() != transform[0]->Height() )
+         if ( r.Width() != transform[0].Width() || r.Height() != transform[0].Height() )
             throw Error( "NoiseMRS(): Incompatible image geometry." );
 
          if ( r == image.Bounds() )
@@ -536,5 +539,5 @@ void ATrousWaveletTransform::ValidateScalingFunction() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/ATrousWaveletTransform.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ATrousWaveletTransform.cpp - Released 2015/07/30 17:15:31 UTC

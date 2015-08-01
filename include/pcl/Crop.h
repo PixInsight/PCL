@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Crop.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Crop.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Crop_h
 #define __PCL_Crop_h
@@ -120,8 +123,8 @@ public:
     * the \a left, \a top, \a right and \a bottom sides.
     */
    Crop( double left = 0, double top = 0, double right = 0, double bottom = 0 ) :
-   GeometricTransformation(), ImageResolution(),
-   m_margins( left, top, right, bottom ), m_mode( CropMode::RelativeMargins ), m_fillValues()
+      GeometricTransformation(), ImageResolution(),
+      m_margins( left, top, right, bottom ), m_mode( CropMode::RelativeMargins ), m_fillValues()
    {
    }
 
@@ -131,8 +134,8 @@ public:
     */
    template <typename T>
    Crop( const GenericRectangle<T>& r ) :
-   GeometricTransformation(), ImageResolution(),
-   m_margins( r ), m_mode( CropMode::RelativeMargins ), m_fillValues()
+      GeometricTransformation(), ImageResolution(),
+      m_margins( r ), m_mode( CropMode::RelativeMargins ), m_fillValues()
    {
    }
 
@@ -140,20 +143,20 @@ public:
     * Copy constructor.
     */
    Crop( const Crop& x ) :
-   GeometricTransformation( x ), ImageResolution( x ),
-   m_margins( x.m_margins ), m_mode( x.m_mode ), m_fillValues( x.m_fillValues )
+      GeometricTransformation( x ), ImageResolution( x ),
+      m_margins( x.m_margins ), m_mode( x.m_mode ), m_fillValues( x.m_fillValues )
    {
    }
 
    /*!
-    * Assignment operator.
+    * Copy assignment operator. Returns a reference to this object.
     */
    Crop& operator =( const Crop& x )
    {
       (void)GeometricTransformation::operator =( x );
       (void)ImageResolution::operator =( x );
-      m_margins    = x.m_margins;
-      m_mode       = x.m_mode;
+      m_margins = x.m_margins;
+      m_mode = x.m_mode;
       m_fillValues = x.m_fillValues;
       return *this;
    }
@@ -276,5 +279,5 @@ protected:
 
 #endif   // __PCL_Crop_h
 
-// ****************************************************************************
-// EOF pcl/Crop.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Crop.h - Released 2015/07/30 17:15:18 UTC

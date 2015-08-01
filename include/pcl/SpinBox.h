@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/SpinBox.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/SpinBox.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_SpinBox_h
 #define __PCL_SpinBox_h
@@ -86,6 +89,8 @@ public:
     */
    virtual ~SpinBox()
    {
+      if ( m_handlers != nullptr )
+         delete m_handlers, m_handlers = nullptr;
    }
 
    /*!
@@ -394,6 +399,7 @@ public:
    // Event handlers
    //
    // void OnValueUpdated( SpinBox& sender, int value );
+   // void OnRangeUpdated( SpinBox& sender, int minValue, int maxValue );
 
    /*!
     * \defgroup spin_box_event_handlers SpinBox Event Handlers
@@ -414,6 +420,21 @@ public:
    typedef void (Control::*value_event_handler)( SpinBox& sender, int value );
 
    /*!
+    * Defines the prototype of a <em>spin box range event handler</em>.
+    *
+    * A spin box range event is generated when the range of a spin box control
+    * is changed.
+    *
+    * \param sender  The control that sends a spin box range event.
+    *
+    * \param minValue, maxValue   The current minimum and maximum values of the
+    *                spin box, respectively.
+    *
+    * \ingroup slider_event_handlers
+    */
+   typedef void (Control::*range_event_handler)( SpinBox& sender, int minValue, int maxValue );
+
+   /*!
     * Sets the spin box value event handler for this %SpinBox control.
     *
     * \param handler    The spin box value event handler. Must be a member
@@ -424,9 +445,30 @@ public:
     */
    void OnValueUpdated( value_event_handler handler, Control& receiver );
 
-protected:
+   /*!
+    * Sets the slider range event handler for this %SpinBox control.
+    *
+    * \param handler    The slider range event handler. Must be a member
+    *                   function of the receiver object's class.
+    *
+    * \param receiver   The control that will receive slider range events
+    *                   from this %SpinBox.
+    */
+   void OnRangeUpdated( range_event_handler handler, Control& receiver );
 
-   value_event_handler  onValueUpdated;
+private:
+
+   struct EventHandlers
+   {
+      value_event_handler onValueUpdated = nullptr;
+      range_event_handler onRangeUpdated = nullptr;
+
+      EventHandlers() = default;
+      EventHandlers( const EventHandlers& ) = default;
+      EventHandlers& operator =( const EventHandlers& ) = default;
+   };
+
+   EventHandlers* m_handlers;
 
    friend class SpinBoxEventDispatcher;
 };
@@ -439,5 +481,5 @@ protected:
 
 #endif   // __PCL_SpinBox_h
 
-// ****************************************************************************
-// EOF pcl/SpinBox.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/SpinBox.h - Released 2015/07/30 17:15:18 UTC

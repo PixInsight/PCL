@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard TIFF File Format Module Version 01.00.05.0229
-// ****************************************************************************
-// TIFFPreferencesDialog.cpp - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard TIFF File Format Module Version 01.00.06.0248
+// ----------------------------------------------------------------------------
+// TIFFPreferencesDialog.cpp - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard TIFF PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "TIFFPreferencesDialog.h"
 
@@ -98,7 +102,6 @@ Dialog(), outOfRange( r ), overrides( o ), tiffOptions( f )
    ReadRange_GroupBox.SetTitle( "Default Floating Point Input Range" );
    ReadRange_GroupBox.SetSizer( ReadRange_Sizer );
    ReadRange_GroupBox.AdjustToContents();
-   ReadRange_GroupBox.SetMinSize();
 
    //
 
@@ -156,7 +159,6 @@ Dialog(), outOfRange( r ), overrides( o ), tiffOptions( f )
    ReadRangeOptions_GroupBox.SetTitle( "Floating Point Out Of Range Policy" );
    ReadRangeOptions_GroupBox.SetSizer( ReadRangeOptions_Sizer );
    ReadRangeOptions_GroupBox.AdjustToContents();
-   ReadRangeOptions_GroupBox.SetMinSize();
 
    //
 
@@ -191,24 +193,8 @@ Dialog(), outOfRange( r ), overrides( o ), tiffOptions( f )
    ICCProfile_CheckBox.SetState( overrides.overrideICCProfileEmbedding ?
       (overrides.embedICCProfiles ? CheckState::Checked : CheckState::Unchecked) : CheckState::ThirdState );
 
-   Metadata_CheckBox.SetText( "Metadata" );
-   Metadata_CheckBox.SetMinWidth( labelWidth );
-   Metadata_CheckBox.SetTristateMode();
-   Metadata_CheckBox.SetToolTip( "Override global core application settings for embedded XML metadata." );
-   Metadata_CheckBox.SetState( overrides.overrideMetadataEmbedding ?
-      (overrides.embedMetadata ? CheckState::Checked : CheckState::Unchecked) : CheckState::ThirdState );
-
-   Thumbnail_CheckBox.SetText( "Thumbnail Image" );
-   Thumbnail_CheckBox.SetMinWidth( labelWidth );
-   Thumbnail_CheckBox.SetTristateMode();
-   Thumbnail_CheckBox.SetToolTip( "Override global core application settings for embedded thumbnails." );
-   Thumbnail_CheckBox.SetState( overrides.overrideThumbnailEmbedding ?
-      (overrides.embedThumbnails ? CheckState::Checked : CheckState::Unchecked) : CheckState::ThirdState );
-
    EmbeddedData_Sizer.SetMargin( 6 );
    EmbeddedData_Sizer.Add( ICCProfile_CheckBox );
-   EmbeddedData_Sizer.Add( Metadata_CheckBox );
-   EmbeddedData_Sizer.Add( Thumbnail_CheckBox );
 
    EmbeddedData_GroupBox.SetTitle( "Override Embedding Settings" );
    EmbeddedData_GroupBox.SetSizer( EmbeddedData_Sizer );
@@ -245,7 +231,7 @@ Dialog(), outOfRange( r ), overrides( o ), tiffOptions( f )
 
    //
 
-   LeftPanel_Sizer.SetSpacing( 4 );
+   LeftPanel_Sizer.SetSpacing( 6 );
    LeftPanel_Sizer.Add( Compression_GroupBox );
    LeftPanel_Sizer.Add( EmbeddedData_GroupBox );
    LeftPanel_Sizer.Add( Miscellaneous_GroupBox );
@@ -259,7 +245,6 @@ Dialog(), outOfRange( r ), overrides( o ), tiffOptions( f )
 
    ImageCopyright_GroupBox.SetTitle( "Image Copyright" );
    ImageCopyright_GroupBox.SetSizer( ImageCopyright_Sizer );
-   ImageCopyright_GroupBox.SetFixedSize( 270, Compression_GroupBox.Height() );
 
    SoftwareDescription_TextBox.SetText( tiffOptions.software );
 
@@ -268,7 +253,6 @@ Dialog(), outOfRange( r ), overrides( o ), tiffOptions( f )
 
    SoftwareDescription_GroupBox.SetTitle( "Software Description" );
    SoftwareDescription_GroupBox.SetSizer( SoftwareDescription_Sizer );
-   SoftwareDescription_GroupBox.SetFixedSize( 270, EmbeddedData_GroupBox.Height() );
 
    //
 
@@ -293,24 +277,25 @@ Dialog(), outOfRange( r ), overrides( o ), tiffOptions( f )
 
    //
 
-   RightPanel_Sizer.SetSpacing( 4 );
-   RightPanel_Sizer.Add( ImageCopyright_GroupBox );
-   RightPanel_Sizer.Add( SoftwareDescription_GroupBox );
-   RightPanel_Sizer.AddStretch();
+   RightPanel_Sizer.SetSpacing( 6 );
+   RightPanel_Sizer.Add( ImageCopyright_GroupBox, 75 );
+   RightPanel_Sizer.Add( SoftwareDescription_GroupBox, 25 );
+   RightPanel_Sizer.AddSpacing( 8 );
    RightPanel_Sizer.Add( Buttons_Sizer );
 
    //
 
-   BottomSection_Sizer.SetSpacing( 6 );
+   BottomSection_Sizer.SetSpacing( 16 );
    BottomSection_Sizer.Add( LeftPanel_Sizer );
    BottomSection_Sizer.Add( RightPanel_Sizer );
 
    //
 
    Global_Sizer.SetMargin( 8 );
-   Global_Sizer.SetSpacing( 12 );
+   Global_Sizer.SetSpacing( 8 );
    Global_Sizer.Add( ReadRange_GroupBox );
    Global_Sizer.Add( ReadRangeOptions_GroupBox );
+   Global_Sizer.AddSpacing( 8 );
    Global_Sizer.Add( BottomSection_Sizer );
 
    SetSizer( Global_Sizer );
@@ -334,8 +319,6 @@ void TIFFPreferencesDialog::Button_Click( Button& sender, bool /*checked*/ )
       ReadRescaleMode_ComboBox.SetCurrentItem( TIFFFormat::OutOfRangeFix_Default );
 
       ICCProfile_CheckBox.SetState( CheckState::ThirdState );
-      Metadata_CheckBox.SetState( CheckState::ThirdState );
-      Thumbnail_CheckBox.SetState( CheckState::ThirdState );
 
       TIFFImageOptions o;
 
@@ -371,12 +354,6 @@ void TIFFPreferencesDialog::Dialog_Return( Dialog& sender, int retVal )
       overrides.overrideICCProfileEmbedding = ICCProfile_CheckBox.State() != CheckState::ThirdState;
       overrides.embedICCProfiles = ICCProfile_CheckBox.IsChecked();
 
-      overrides.overrideMetadataEmbedding = Metadata_CheckBox.State() != CheckState::ThirdState;
-      overrides.embedMetadata = Metadata_CheckBox.IsChecked();
-
-      overrides.overrideThumbnailEmbedding = Thumbnail_CheckBox.State() != CheckState::ThirdState;
-      overrides.embedThumbnails = Thumbnail_CheckBox.IsChecked();
-
       if ( NoCompression_RadioButton.IsChecked() )
          tiffOptions.compression = TIFFCompression::None;
       else if ( ZIP_RadioButton.IsChecked() )
@@ -401,5 +378,5 @@ void TIFFPreferencesDialog::Dialog_Return( Dialog& sender, int retVal )
 
 } // pcl
 
-// ****************************************************************************
-// EOF TIFFPreferencesDialog.cpp - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF TIFFPreferencesDialog.cpp - Released 2015/07/31 11:49:40 UTC

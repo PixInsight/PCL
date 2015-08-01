@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Atomic.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Atomic.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Atomic_h
 #define __PCL_Atomic_h
@@ -76,9 +79,9 @@ namespace pcl
  * %AtomicInt allows non-blocking synchronization of multithreaded code with
  * respect to reference counting and other critical operations in parallel
  * algorithm implementations. This class is used extensively by PCL code to
- * implement implicitly shared containers and container operations in a
+ * implement copy-on-write shared containers and container operations in a
  * thread-safe way. An example is the ReferenceCounter class, which is at the
- * hearth of most PCL containers.
+ * hearth of most PCL container and image classes.
  *
  * %AtomicInt implements the following synchronization primitives on integers:
  *
@@ -98,7 +101,7 @@ public:
     * Constructs an %AtomicInt instance with the specified \a value. The
     * default value is zero.
     */
-   AtomicInt( int value = 0 ) : m_value( value )
+   AtomicInt( int value = 0 ) noexcept : m_value( value )
    {
       // ### N.B.
       // The default zero initialization is *critical* - Do not change it.
@@ -108,7 +111,7 @@ public:
     * Integer casting operator. Returns the current value of this atomic
     * integer object.
     */
-   operator int() const
+   operator int() const noexcept
    {
       return m_value;
    }
@@ -119,7 +122,7 @@ public:
     *
     * \note This operation is not guaranteed to be atomic.
     */
-   bool operator !() const
+   bool operator !() const noexcept
    {
       return m_value == 0;
    }
@@ -130,7 +133,7 @@ public:
     *
     * \note This operation is not guaranteed to be atomic.
     */
-   bool operator ==( int x ) const
+   bool operator ==( int x ) const noexcept
    {
       return m_value == x;
    }
@@ -141,7 +144,7 @@ public:
     *
     * \note This operation is not guaranteed to be atomic.
     */
-   bool operator !=( int x ) const
+   bool operator !=( int x ) const noexcept
    {
       return m_value != x;
    }
@@ -152,7 +155,7 @@ public:
     *
     * \note This operation is not guaranteed to be atomic.
     */
-   AtomicInt& operator =( int x )
+   AtomicInt& operator =( int x ) noexcept
    {
       m_value = x;
       return *this;
@@ -167,7 +170,7 @@ public:
     * \note This operation is guaranteed to be atomic on all supported
     * platforms and architectures.
     */
-   bool Reference()
+   bool Reference() noexcept
    {
 #ifdef __PCL_WINDOWS
       return _InterlockedIncrement( &m_value ) != 0;
@@ -190,7 +193,7 @@ public:
     * \note This operation is guaranteed to be atomic on all supported
     * platforms and architectures.
     */
-   bool Dereference()
+   bool Dereference() noexcept
    {
 #ifdef __PCL_WINDOWS
       return _InterlockedDecrement( &m_value ) != 0;
@@ -215,7 +218,7 @@ public:
     * \note This operation is guaranteed to be atomic on all supported
     * platforms and architectures.
     */
-   bool TestAndSet( int expectedValue, int newValue )
+   bool TestAndSet( int expectedValue, int newValue ) noexcept
    {
 #ifdef __PCL_WINDOWS
       return _InterlockedCompareExchange( &m_value, newValue, expectedValue ) == expectedValue;
@@ -238,7 +241,7 @@ public:
     * \note This operation is guaranteed to be atomic on all supported
     * platforms and architectures.
     */
-   int FetchAndStore( int newValue )
+   int FetchAndStore( int newValue ) noexcept
    {
 #ifdef __PCL_WINDOWS
       return _InterlockedExchange( &m_value, newValue );
@@ -258,7 +261,7 @@ public:
     * \note This operation is guaranteed to be atomic on all supported
     * platforms and architectures.
     */
-   int FetchAndAdd( int valueToAdd )
+   int FetchAndAdd( int valueToAdd ) noexcept
    {
 #ifdef __PCL_WINDOWS
       return _InterlockedExchangeAdd( &m_value, valueToAdd );
@@ -375,7 +378,7 @@ public:
     * PCL_CLASS_REENTRANCY_GUARDED_END to implement per-instance function
     * member protection.
     */
-   AutoReentrancyGuard( AtomicInt& guard ) : m_guard( guard )
+   AutoReentrancyGuard( AtomicInt& guard ) noexcept : m_guard( guard )
    {
       m_guarded = m_guard.TestAndSet( 0, 1 );
    }
@@ -385,7 +388,7 @@ public:
     * the class constructor) was zero when this object was constructed, its
     * value is reset to zero as an atomic operation.
     */
-   ~AutoReentrancyGuard()
+   ~AutoReentrancyGuard() noexcept
    {
       if ( m_guarded )
          (void)m_guard.FetchAndStore( 0 );
@@ -395,7 +398,7 @@ public:
     * Returns true if the value of the monitored guard variable (see the class
     * constructor) was zero when this object was constructed, false otherwise.
     */
-   operator bool() const
+   operator bool() const noexcept
    {
       return m_guarded;
    }
@@ -574,5 +577,5 @@ private:
 
 #endif  // __PCL_Atomic_h
 
-// ****************************************************************************
-// EOF pcl/Atomic.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Atomic.h - Released 2015/07/30 17:15:18 UTC

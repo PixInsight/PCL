@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/TabBox.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/TabBox.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/TabBox.h>
 
@@ -56,50 +59,16 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-#define sender    (reinterpret_cast<TabBox*>( hSender ))
-#define receiver  (reinterpret_cast<Control*>( hReceiver ))
-
-class TabBoxEventDispatcher
-{
-public:
-
-   static void api_func PageSelected( control_handle hSender, control_handle hReceiver, int32 pageIndex )
-   {
-      if ( sender->onPageSelected != 0 )
-         (receiver->*sender->onPageSelected)( *sender, pageIndex );
-   }
-
-}; // TabBoxEventDispatcher
-
-#undef sender
-#undef receiver
-
-// ----------------------------------------------------------------------------
-
 #ifdef _MSC_VER
 #  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
 #endif
 
 TabBox::TabBox( Control& parent ) :
-Control( (*API->TabBox->CreateTabBox)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) ),
-onPageSelected( 0 )
+   Control( (*API->TabBox->CreateTabBox)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) ),
+   m_handlers( nullptr )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateTabBox" );
-}
-
-// ----------------------------------------------------------------------------
-
-void TabBox::OnPageSelected( page_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onPageSelected = 0;
-   if ( (*API->TabBox->SetTabBoxPageSelectedEventRoutine)( handle, &receiver,
-               (f != 0) ? TabBoxEventDispatcher::PageSelected : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetTabBoxPageSelectedEventRoutine" );
-   }
-   onPageSelected = f;
 }
 
 // ----------------------------------------------------------------------------
@@ -189,15 +158,13 @@ String TabBox::PageLabel( int idx ) const
    (*API->TabBox->GetTabBoxPageLabel)( handle, idx, 0, &len );
 
    String label;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      label.Reserve( len );
-
+      label.SetLength( len );
       if ( (*API->TabBox->GetTabBoxPageLabel)( handle, idx, label.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetTabBoxPageLabel" );
+      label.ResizeToNullTerminated();
    }
-
    return label;
 }
 
@@ -230,15 +197,13 @@ String TabBox::PageToolTip( int idx ) const
    (*API->TabBox->GetTabBoxPageToolTip)( handle, idx, 0, &len );
 
    String tip;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      tip.Reserve( len );
-
+      tip.SetLength( len );
       if ( (*API->TabBox->GetTabBoxPageToolTip)( handle, idx, tip.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetTabBoxPageToolTip" );
+      tip.ResizeToNullTerminated();
    }
-
    return tip;
 }
 
@@ -274,7 +239,47 @@ void TabBox::SetControls( Control& left, Control& right )
 
 // ----------------------------------------------------------------------------
 
+#define sender    (reinterpret_cast<TabBox*>( hSender ))
+#define receiver  (reinterpret_cast<Control*>( hReceiver ))
+#define handlers  sender->m_handlers
+
+class TabBoxEventDispatcher
+{
+public:
+
+   static void api_func PageSelected( control_handle hSender, control_handle hReceiver, int32 pageIndex )
+   {
+      if ( handlers->onPageSelected != nullptr )
+         (receiver->*handlers->onPageSelected)( *sender, pageIndex );
+   }
+
+}; // TabBoxEventDispatcher
+
+#undef sender
+#undef receiver
+#undef handlers
+
+// ----------------------------------------------------------------------------
+
+#define INIT_EVENT_HANDLERS()    \
+   __PCL_NO_ALIAS_HANDLERS;      \
+   if ( m_handlers == nullptr )  \
+      m_handlers = new EventHandlers
+
+void TabBox::OnPageSelected( page_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->TabBox->SetTabBoxPageSelectedEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? TabBoxEventDispatcher::PageSelected : 0 ) == api_false )
+      throw APIFunctionError( "SetTabBoxPageSelectedEventRoutine" );
+   m_handlers->onPageSelected = f;
+}
+
+#undef INIT_EVENT_HANDLERS
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/TabBox.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/TabBox.cpp - Released 2015/07/30 17:15:31 UTC

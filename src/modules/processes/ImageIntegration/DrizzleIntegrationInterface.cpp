@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard ImageIntegration Process Module Version 01.09.04.0253
-// ****************************************************************************
-// DrizzleIntegrationInterface.cpp - Released 2014/11/14 17:19:21 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard ImageIntegration Process Module Version 01.09.04.0274
+// ----------------------------------------------------------------------------
+// DrizzleIntegrationInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "DrizzleIntegrationInterface.h"
 #include "DrizzleIntegrationProcess.h"
@@ -53,7 +57,7 @@
 #include <pcl/MessageBox.h>
 #include <pcl/PreviewSelectionDialog.h>
 
-#define FILELIST_MINHEIGHT( fnt )  (8*fnt.Height() + 2)
+#define FILELIST_MINHEIGHT( fnt )  RoundInt( 8.125*fnt.Height() )
 
 namespace pcl
 {
@@ -188,7 +192,7 @@ void DrizzleIntegrationInterface::UpdateInputDataItem( size_type i )
    node->SetText( 0, String( i+1 ) );
    node->SetAlignment( 0, TextAlign::Right );
 
-   node->SetIcon( 1, Bitmap( String( item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
+   node->SetIcon( 1, Bitmap( ScaledResource( item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
    node->SetAlignment( 1, TextAlign::Left );
 
    String fileText;
@@ -407,6 +411,7 @@ void DrizzleIntegrationInterface::__Click( Button& sender, bool checked )
    else if ( sender == GUI->SelectPreview_Button )
    {
       PreviewSelectionDialog d;
+      d.SetWindowTitle( "Select ROI Preview" );
       if ( d.Execute() )
          if ( !d.Id().IsEmpty() )
          {
@@ -474,8 +479,7 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
    int labelWidth1 = fnt.Width( String( "Input directory:" ) + 'T' );
    int editWidth1 = fnt.Width( String( '0', 8 ) );
    //int spinWidth1 = fnt.Width( String( '0', 11 ) );
-
-   const int sliderWidth = 250;
+   int ui4 = w.LogicalPixelsToPhysical( 4 );
 
    //
 
@@ -586,8 +590,8 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
    InputDirectory_Edit.SetToolTip( outputDirectoryToolTip );
    InputDirectory_Edit.OnEditCompleted( (Edit::edit_event_handler)&DrizzleIntegrationInterface::__EditCompleted, w );
 
-   InputDirectory_ToolButton.SetIcon( Bitmap( String( ":/icons/select-file.png" ) ) );
-   InputDirectory_ToolButton.SetFixedSize( 20, 20 );
+   InputDirectory_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-file.png" ) ) );
+   InputDirectory_ToolButton.SetScaledFixedSize( 20, 20 );
    InputDirectory_ToolButton.SetToolTip( "<p>Select the input directory</p>" );
    InputDirectory_ToolButton.OnClick( (Button::click_event_handler)&DrizzleIntegrationInterface::__Click, w );
 
@@ -632,7 +636,7 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
    DropShrink_NumericControl.label.SetText( "Drop shrink:" );
    DropShrink_NumericControl.label.SetFixedWidth( labelWidth1 );
    DropShrink_NumericControl.slider.SetRange( 0, 200 );
-   DropShrink_NumericControl.slider.SetMinWidth( sliderWidth );
+   DropShrink_NumericControl.slider.SetScaledMinWidth( 250 );
    DropShrink_NumericControl.SetReal();
    DropShrink_NumericControl.SetRange( TheDZDropShrinkParameter->MinimumValue(), TheDZDropShrinkParameter->MaximumValue() );
    DropShrink_NumericControl.SetPrecision( TheDZDropShrinkParameter->Precision() );
@@ -652,7 +656,7 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
       "integrated image.</p>" );
    EnableRejection_CheckBox.OnClick( (Button::click_event_handler)&DrizzleIntegrationInterface::__Click, w );
 
-   EnableRejection_Sizer.AddSpacing( labelWidth1 + 4 );
+   EnableRejection_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    EnableRejection_Sizer.Add( EnableRejection_CheckBox );
    EnableRejection_Sizer.AddStretch();
 
@@ -665,7 +669,7 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
       "used to achieve an optimal result in terms of SNR improvement.</p>" );
    EnableImageWeighting_CheckBox.OnClick( (Button::click_event_handler)&DrizzleIntegrationInterface::__Click, w );
 
-   EnableImageWeighting_Sizer.AddSpacing( labelWidth1 + 4 );
+   EnableImageWeighting_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    EnableImageWeighting_Sizer.Add( EnableImageWeighting_CheckBox );
    EnableImageWeighting_Sizer.AddStretch();
 
@@ -676,7 +680,7 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
       "additional slow computations for each input image.</p>" );
    EnableSurfaceSplines_CheckBox.OnClick( (Button::click_event_handler)&DrizzleIntegrationInterface::__Click, w );
 
-   EnableSurfaceSplines_Sizer.AddSpacing( labelWidth1 + 4 );
+   EnableSurfaceSplines_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    EnableSurfaceSplines_Sizer.Add( EnableSurfaceSplines_CheckBox );
    EnableSurfaceSplines_Sizer.AddStretch();
 
@@ -686,7 +690,7 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
       "when the same integration is being tested repeatedly.</p>" );
    ClosePreviousImages_CheckBox.OnClick( (Button::click_event_handler)&DrizzleIntegrationInterface::__Click, w );
 
-   ClosePreviousImages_Sizer.AddSpacing( labelWidth1 + 4 );
+   ClosePreviousImages_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    ClosePreviousImages_Sizer.Add( ClosePreviousImages_CheckBox );
    ClosePreviousImages_Sizer.AddStretch();
 
@@ -825,5 +829,5 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF DrizzleIntegrationInterface.cpp - Released 2014/11/14 17:19:21 UTC
+// ----------------------------------------------------------------------------
+// EOF DrizzleIntegrationInterface.cpp - Released 2015/07/31 11:49:48 UTC

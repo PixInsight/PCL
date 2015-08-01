@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard JPEG File Format Module Version 01.00.01.0228
-// ****************************************************************************
-// JPEGOptionsDialog.cpp - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard JPEG File Format Module Version 01.00.03.0249
+// ----------------------------------------------------------------------------
+// JPEGOptionsDialog.cpp - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard JPEG PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "JPEGOptionsDialog.h"
 
@@ -72,7 +76,7 @@ Dialog(), options( o ), jpegOptions( t )
    Quality_Slider.SetStepSize( 5 );
    Quality_Slider.SetTickFrequency( 5 );
    Quality_Slider.SetTickStyle( TickStyle::Bottom );
-   Quality_Slider.SetMinWidth( 210 );
+   Quality_Slider.SetScaledMinWidth( 210 );
    Quality_Slider.OnValueUpdated( (Slider::value_event_handler)&JPEGOptionsDialog::Slider_ValueUpdated, *this );
 
    CompressionRow1_Sizer.SetSpacing( 6 );
@@ -85,24 +89,22 @@ Dialog(), options( o ), jpegOptions( t )
                            "This option forces the use of Huffman coding.</p>" );
    OptimizedCoding_CheckBox.OnClick( (Button::click_event_handler)&JPEGOptionsDialog::Button_Click, *this );
 
-   CompressionRow2_Sizer.AddSpacing( labelWidth );
+   CompressionRow2_Sizer.AddUnscaledSpacing( labelWidth );
    CompressionRow2_Sizer.AddSpacing( 6 );
    CompressionRow2_Sizer.Add( OptimizedCoding_CheckBox, 100 );
 
-   /**/
    ArithmeticCoding_CheckBox.SetText( "Arithmetic coding" );
    ArithmeticCoding_CheckBox.SetToolTip( "<p>Use arithmetic coding instead of Huffman coding. "
                            "This option is incompatible with entropy optimization.</p>" );
 
-   CompressionRow3_Sizer.AddSpacing( labelWidth );
+   CompressionRow3_Sizer.AddUnscaledSpacing( labelWidth );
    CompressionRow3_Sizer.AddSpacing( 6 );
    CompressionRow3_Sizer.Add( ArithmeticCoding_CheckBox, 100 );
-   /**/
 
    Progressive_CheckBox.SetText( "Progressive" );
    Progressive_CheckBox.SetToolTip( "<p>Create a JPEG image that can be loaded by successive layers.</p>" );
 
-   CompressionRow4_Sizer.AddSpacing( labelWidth );
+   CompressionRow4_Sizer.AddUnscaledSpacing( labelWidth );
    CompressionRow4_Sizer.AddSpacing( 6 );
    CompressionRow4_Sizer.Add( Progressive_CheckBox, 100 );
 
@@ -110,34 +112,26 @@ Dialog(), options( o ), jpegOptions( t )
    Compression_Sizer.SetSpacing( 4 );
    Compression_Sizer.Add( CompressionRow1_Sizer );
    Compression_Sizer.Add( CompressionRow2_Sizer );
-   /**/
    Compression_Sizer.Add( CompressionRow3_Sizer );
-   /**/
    Compression_Sizer.Add( CompressionRow4_Sizer );
 
    JPEGCompression_GroupBox.SetTitle( "JPEG Compression" );
    JPEGCompression_GroupBox.SetSizer( Compression_Sizer );
    JPEGCompression_GroupBox.AdjustToContents();
-   JPEGCompression_GroupBox.SetMinSize();
 
    ICCProfile_CheckBox.SetText( "ICC Profile" );
    ICCProfile_CheckBox.SetToolTip( "Embed an ICC profile" );
 
-   Metadata_CheckBox.SetText( "Metadata" );
-   Metadata_CheckBox.SetToolTip( "Embed XML metadata information <* not available *>" );
-
-   Thumbnail_CheckBox.SetText( "Thumbnail Image" );
-   Thumbnail_CheckBox.SetToolTip( "Embed an 8-bit reduced version of the image for quick reference <* not available *>" );
+   ICCProfile_Sizer.AddUnscaledSpacing( labelWidth );
+   ICCProfile_Sizer.AddSpacing( 6 );
+   ICCProfile_Sizer.Add( ICCProfile_CheckBox, 100 );
 
    EmbeddedData_Sizer.SetMargin( 6 );
-   EmbeddedData_Sizer.Add( ICCProfile_CheckBox );
-   EmbeddedData_Sizer.Add( Metadata_CheckBox );
-   EmbeddedData_Sizer.Add( Thumbnail_CheckBox );
+   EmbeddedData_Sizer.Add( ICCProfile_Sizer );
 
    EmbeddedData_GroupBox.SetTitle( "Embedded Data" );
    EmbeddedData_GroupBox.SetSizer( EmbeddedData_Sizer );
    EmbeddedData_GroupBox.AdjustToContents();
-   EmbeddedData_GroupBox.SetMinSize( JPEGCompression_GroupBox.Width(), EmbeddedData_GroupBox.Height() );
 
    OK_PushButton.SetText( "OK" );
    OK_PushButton.SetDefault();
@@ -154,10 +148,10 @@ Dialog(), options( o ), jpegOptions( t )
    BottomSection_Sizer.Add( Cancel_PushButton );
 
    Global_Sizer.SetMargin( 8 );
-   Global_Sizer.SetSpacing( 6 );
+   Global_Sizer.SetSpacing( 8 );
    Global_Sizer.Add( JPEGCompression_GroupBox );
    Global_Sizer.Add( EmbeddedData_GroupBox );
-   Global_Sizer.AddSpacing( 4 );
+   Global_Sizer.AddSpacing( 8 );
    Global_Sizer.Add( BottomSection_Sizer );
 
    SetSizer( Global_Sizer );
@@ -174,15 +168,11 @@ Dialog(), options( o ), jpegOptions( t )
    Quality_SpinBox.SetValue( jpegOptions.quality );
    Quality_Slider.SetValue( jpegOptions.quality );
    OptimizedCoding_CheckBox.SetChecked( jpegOptions.optimizedCoding );
-   /**/
    ArithmeticCoding_CheckBox.SetChecked( jpegOptions.arithmeticCoding );
    ArithmeticCoding_CheckBox.Enable( !jpegOptions.optimizedCoding );
-   /**/
    Progressive_CheckBox.SetChecked( jpegOptions.progressive );
 
    ICCProfile_CheckBox.SetChecked( options.embedICCProfile );
-   Metadata_CheckBox.SetChecked( options.embedMetadata );
-   Thumbnail_CheckBox.SetChecked( options.embedThumbnail );
 }
 
 // ----------------------------------------------------------------------------
@@ -219,14 +209,10 @@ void JPEGOptionsDialog::Dialog_Return( Dialog& /*sender*/, int retVal )
    {
       jpegOptions.quality = Quality_SpinBox.Value();
       jpegOptions.optimizedCoding = OptimizedCoding_CheckBox.IsChecked();
-      /**/
       jpegOptions.arithmeticCoding = ArithmeticCoding_CheckBox.IsChecked();
-      /**/
       jpegOptions.progressive = Progressive_CheckBox.IsChecked();
 
       options.embedICCProfile = ICCProfile_CheckBox.IsChecked();
-      options.embedMetadata = Metadata_CheckBox.IsChecked();
-      options.embedThumbnail = Thumbnail_CheckBox.IsChecked();
    }
 }
 
@@ -234,5 +220,5 @@ void JPEGOptionsDialog::Dialog_Return( Dialog& /*sender*/, int retVal )
 
 } // pcl
 
-// ****************************************************************************
-// EOF JPEGOptionsDialog.cpp - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF JPEGOptionsDialog.cpp - Released 2015/07/31 11:49:40 UTC

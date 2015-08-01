@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/FontComboBox.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/FontComboBox.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,8 +47,9 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
+#include <pcl/Exception.h>
 #include <pcl/FontComboBox.h>
 
 namespace pcl
@@ -62,11 +66,7 @@ static SortedStringList GetFaceList( const FontComboBox* combo )
 {
    SortedStringList faces;
    for ( int i = 0, n = combo->NumberOfItems(); i < n; ++i )
-   {
-      String face = combo->ItemText( i );
-      face.Trim();
-      faces.Add( face );
-   }
+      faces.Add( combo->ItemText( i ).Trimmed() );
    return faces;
 }
 
@@ -83,33 +83,23 @@ static void SetFaceList( FontComboBox* combo, const C& faces )
 // ----------------------------------------------------------------------------
 
 FontComboBox::FontComboBox( Control& parent ) :
-ComboBox( parent ),
-onFontSelected( 0 ), onFontSelectedReceiver( 0 ),
-onFontHighlighted( 0 ), onFontHighlightedReceiver( 0 )
+   ComboBox( parent ),
+   m_handlers( nullptr )
 {
    ResetFonts();
-   OnItemSelected( (ComboBox::item_event_handler)&FontComboBox::__ItemSelected, *this );
-   OnItemHighlighted( (ComboBox::item_event_handler)&FontComboBox::__ItemHighlighted, *this );
-}
-
-FontComboBox::~FontComboBox()
-{
+   OnItemSelected( (ComboBox::item_event_handler)&FontComboBox::ItemSelected, *this );
+   OnItemHighlighted( (ComboBox::item_event_handler)&FontComboBox::ItemHighlighted, *this );
 }
 
 String FontComboBox::CurrentFontFace() const
 {
    int index = CurrentItem();
-   if ( index < 0 )
-      return String();
-   String face = ItemText( index );
-   face.Trim();
-   return face;
+   return (index < 0) ? String() : ItemText( index ).Trimmed();
 }
 
 void FontComboBox::SetCurrentFont( const String& face )
 {
-   String findFace = face;
-   findFace.Trim();
+   String findFace = face.Trimmed();
    if ( findFace.IsEmpty() )
       findFace = "Default";
    SetCurrentItem( FindItem( ' ' + findFace + ' ', 0, true ) ); // find exact match, case insensitive
@@ -118,10 +108,9 @@ void FontComboBox::SetCurrentFont( const String& face )
 void FontComboBox::ResetFonts()
 {
    // ### TODO: Add item icons for standard, scalable, bitmapped and fixed-pitch fonts.
-
    StringList faces = Font::AvailableFonts();
    for ( size_type i = 0; i < ItemsInArray( s_standardFaces ); ++i )
-      if ( !faces.Has( s_standardFaces[i] ) )
+      if ( !faces.Contains( s_standardFaces[i] ) )
          faces.Add( s_standardFaces[i] );
    faces.Sort();
    SetFaceList( this, faces );
@@ -131,7 +120,7 @@ void FontComboBox::AddStandardFontFamilies()
 {
    SortedStringList faces = GetFaceList( this );
    for ( size_type i = 0; i < ItemsInArray( s_standardFaces ); ++i )
-      if ( !faces.Has( s_standardFaces[i] ) )
+      if ( !faces.Contains( s_standardFaces[i] ) )
          faces.Add( s_standardFaces[i] );
    SetFaceList( this, faces );
 }
@@ -149,7 +138,7 @@ void FontComboBox::AddScalableFonts()
    StringList installedFaces = Font::AvailableFonts();
    SortedStringList faces = GetFaceList( this );
    for ( StringList::const_iterator i = installedFaces.Begin(); i != installedFaces.End(); ++i )
-      if ( !faces.Has( *i ) )
+      if ( !faces.Contains( *i ) )
          if ( Font::IsScalableFont( *i ) )
             faces.Add( *i );
    SetFaceList( this, faces );
@@ -170,7 +159,7 @@ void FontComboBox::AddFixedPitchFonts()
    StringList installedFaces = Font::AvailableFonts();
    SortedStringList faces =  GetFaceList( this );
    for ( StringList::const_iterator i = installedFaces.Begin(); i != installedFaces.End(); ++i )
-      if ( !faces.Has( *i ) )
+      if ( !faces.Contains( *i ) )
          if ( Font::IsFixedPitchFont( *i ) )
             faces.Add( *i );
    SetFaceList( this, faces );
@@ -191,7 +180,7 @@ void FontComboBox::AddItalicFonts()
    StringList installedFaces = Font::AvailableFonts();
    SortedStringList faces = GetFaceList( this );
    for ( StringList::const_iterator i = installedFaces.Begin(); i != installedFaces.End(); ++i )
-      if ( !faces.Has( *i ) )
+      if ( !faces.Contains( *i ) )
          if ( Font::IsItalicFont( *i ) )
             faces.Add( *i );
    SetFaceList( this, faces );
@@ -212,10 +201,10 @@ void FontComboBox::AddWritingSystem( const String& writingSystem )
    StringList installedFaces = Font::AvailableFonts();
    SortedStringList faces = GetFaceList( this );
    for ( StringList::const_iterator i = installedFaces.Begin(); i != installedFaces.End(); ++i )
-      if ( !faces.Has( *i ) )
+      if ( !faces.Contains( *i ) )
       {
          StringList supportedSystems = Font::AvailableFontWritingSystems( *i );
-         if ( supportedSystems.Has( writingSystem ) )
+         if ( supportedSystems.Contains( writingSystem ) )
             faces.Add( *i );
       }
    SetFaceList( this, faces );
@@ -228,63 +217,78 @@ void FontComboBox::RemoveWritingSystem( const String& writingSystem )
    for ( StringList::const_iterator i = installedFaces.Begin(); i != installedFaces.End(); ++i )
    {
       StringList supportedSystems = Font::AvailableFontWritingSystems( *i );
-      if ( supportedSystems.Has( writingSystem ) )
+      if ( supportedSystems.Contains( writingSystem ) )
          faces.Remove( *i );
    }
    SetFaceList( this, faces );
 }
 
+#define INIT_EVENT_HANDLERS()    \
+   __PCL_NO_ALIAS_HANDLERS;      \
+   if ( m_handlers == nullptr )  \
+      m_handlers = new EventHandlers
+
 void FontComboBox::OnFontSelected( font_event_handler f, Control& c )
 {
-   if ( f == 0 || c.IsNull() )
+   if ( f == nullptr || c.IsNull() )
    {
-      onFontSelected = 0;
-      onFontSelectedReceiver = 0;
+      if ( m_handlers != nullptr )
+      {
+         m_handlers->onFontSelected = nullptr;
+         m_handlers->onFontSelectedReceiver = nullptr;
+      }
    }
    else
    {
-      onFontSelected = f;
-      onFontSelectedReceiver = &c;
+      INIT_EVENT_HANDLERS();
+      m_handlers->onFontSelected = f;
+      m_handlers->onFontSelectedReceiver = &c;
    }
 }
 
 void FontComboBox::OnFontHighlighted( font_event_handler f, Control& c )
 {
-   if ( f == 0 || c.IsNull() )
+   if ( f == nullptr || c.IsNull() )
    {
-      onFontHighlighted = 0;
-      onFontHighlightedReceiver = 0;
+      if ( m_handlers != nullptr )
+      {
+         m_handlers->onFontHighlighted = nullptr;
+         m_handlers->onFontHighlightedReceiver = nullptr;
+      }
    }
    else
    {
-      onFontHighlighted = f;
-      onFontHighlightedReceiver = &c;
+      INIT_EVENT_HANDLERS();
+      m_handlers->onFontHighlighted = f;
+      m_handlers->onFontHighlightedReceiver = &c;
    }
 }
 
-void FontComboBox::__ItemSelected( ComboBox& sender, int index )
+#undef INIT_EVENT_HANDLERS
+
+void FontComboBox::ItemSelected( ComboBox& sender, int index )
 {
-   if ( onFontSelected != 0 )
-   {
-      String face = (index < 0) ? String() : ItemText( index );
-      face.Trim();
-      (onFontSelectedReceiver->*onFontSelected)( *this, face );
-   }
+   if ( m_handlers != nullptr )
+      if ( m_handlers->onFontSelected != nullptr )
+      {
+         String face = (index < 0) ? String() : ItemText( index ).Trimmed();
+         (m_handlers->onFontSelectedReceiver->*m_handlers->onFontSelected)( *this, face );
+      }
 }
 
-void FontComboBox::__ItemHighlighted( ComboBox& sender, int index )
+void FontComboBox::ItemHighlighted( ComboBox& sender, int index )
 {
-   if ( onFontHighlighted != 0 )
-   {
-      String face = (index < 0) ? String() : ItemText( index );
-      face.Trim();
-      (onFontHighlightedReceiver->*onFontHighlighted)( *this, face );
-   }
+   if ( m_handlers != nullptr )
+      if ( m_handlers->onFontHighlighted != nullptr )
+      {
+         String face = (index < 0) ? String() : ItemText( index ).Trimmed();
+         (m_handlers->onFontHighlightedReceiver->*m_handlers->onFontHighlighted)( *this, face );
+      }
 }
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/FontComboBox.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/FontComboBox.cpp - Released 2015/07/30 17:15:31 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/FFTConvolution.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/FFTConvolution.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_FFTConvolution_h
 #define __PCL_FFTConvolution_h
@@ -96,13 +99,14 @@ public:
     * either as a KernelFilter object or as an ImageVariant.
     */
    FFTConvolution() :
-   ImageTransformation(), m_filter( 0 ), m_image(),
-   m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS ), m_h( 0 )
+      ImageTransformation(),
+      m_filter( nullptr ), m_image(),
+      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS ), m_h()
    {
    }
 
    /*!
-    * Constructs a %FFTConvolution instance.
+    * Constructs an %FFTConvolution instance with the specified kernel filter.
     *
     * \param filter  Response function, or <em>convolution filter</em>. The
     *                specified object does not have to remain valid while this
@@ -111,14 +115,16 @@ public:
     *                reference-counted class).
     */
    FFTConvolution( const KernelFilter& filter ) :
-   ImageTransformation(), m_filter( filter.Clone() ), m_image(),
-   m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS ), m_h( 0 )
+      ImageTransformation(),
+      m_filter( nullptr ), m_image(),
+      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS ), m_h()
    {
-      PCL_CHECK( !m_filter->IsEmpty() )
+      SetFilter( filter );
    }
 
    /*!
-    * Constructs a %FFTConvolution instance.
+    * Constructs an %FFTConvolution instance with the specified response
+    * function image.
     *
     * \param f    A reference to an ImageVariant whose transported image is the
     *             <em>response function</em>, or <em>convolution filter</em>.
@@ -130,8 +136,9 @@ public:
     *             transports the response function image.
     */
    FFTConvolution( const ImageVariant& f ) :
-   ImageTransformation(), m_filter( 0 ), m_image( f ),
-   m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS ), m_h( 0 )
+      ImageTransformation(),
+      m_filter( nullptr ), m_image( f ),
+      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS ), m_h()
    {
       PCL_CHECK( bool( m_image ) )
    }
@@ -140,10 +147,23 @@ public:
     * Copy constructor.
     */
    FFTConvolution( const FFTConvolution& x ) :
-   ImageTransformation( x ),
-   m_filter( x.m_filter ? x.m_filter->Clone() : 0 ), m_image( x.m_image ),
-   m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors ), m_h( 0 )
+      ImageTransformation( x ),
+      m_filter( nullptr ), m_image( x.m_image ),
+      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors ), m_h()
    {
+      if ( x.m_filter != nullptr )
+         m_filter = x.m_filter->Clone();
+   }
+
+   /*!
+    * Move constructor.
+    */
+   FFTConvolution( FFTConvolution&& x ) :
+      ImageTransformation( x ),
+      m_filter( x.m_filter ), m_image( std::move( x.m_image ) ),
+      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors ), m_h( std::move( x.m_h ) )
+   {
+      x.m_filter = nullptr;
    }
 
    /*!
@@ -155,43 +175,63 @@ public:
    }
 
    /*!
-    * Assignment operator.
+    * Copy assignment operator. Returns a reference to this object.
     */
    FFTConvolution& operator =( const FFTConvolution& x )
    {
       if ( &x != this )
       {
+         (void)ImageTransformation::operator =( x );
          Destroy();
-         if ( x.m_filter != 0 )
+         if ( x.m_filter != nullptr )
             m_filter = x.m_filter->Clone();
          else
             m_image = x.m_image;
          m_parallel = x.m_parallel;
          m_maxProcessors = x.m_maxProcessors;
+         m_h = x.m_h;
       }
       return *this;
    }
 
    /*!
-    * Returns true if this %FFTConvolution object uses a KernelFilter object as
-    * its response function; false if it uses an image.
+    * Move assignment operator. Returns a reference to this object.
     */
-   bool UsingFilter() const
+   FFTConvolution& operator =( FFTConvolution&& x )
    {
-      return m_filter != 0;
+      if ( &x != this )
+      {
+         (void)ImageTransformation::operator =( x );
+         DestroyFilter();
+         m_filter = x.m_filter;
+         m_image = std::move( x.m_image );
+         m_parallel = x.m_parallel;
+         m_maxProcessors = x.m_maxProcessors;
+         m_h = std::move( x.m_h );
+         x.m_filter = nullptr;
+      }
+      return *this;
    }
 
    /*!
-    * Returns a constant reference to the kernel filter currently associated
-    * with this %FFTConvolution object. If this object does not use a kernel
-    * filter, either because it uses an image as its response function, or
-    * because this object has not been initialized, the returned filter is
-    * empty (i.e., it has no filter coefficients and zero dimensions).
+    * Returns true if this %FFTConvolution uses a KernelFilter object as its
+    * response function; false if it uses an image.
+    */
+   bool UsingFilter() const
+   {
+      return m_filter != nullptr;
+   }
+
+   /*!
+    * Returns a reference to the kernel filter currently associated with this
+    * %FFTConvolution object. If this object does not use a kernel filter,
+    * either because it uses an image as its response function, or because this
+    * object has not been initialized, the returned filter is empty (i.e., it
+    * has no filter coefficients and zero dimensions).
     */
    const KernelFilter& Filter() const
    {
-      PCL_PRECONDITION( m_filter != 0 )
-      ValidateFilter();
+      PCL_PRECONDITION( m_filter != nullptr )
       return *m_filter;
    }
 
@@ -222,7 +262,7 @@ public:
    {
       Destroy();
       m_filter = filter.Clone();
-      PCL_CHECK( !m_filter->IsEmpty() )
+      PCL_CHECK( m_filter != nullptr )
    }
 
    /*!
@@ -243,9 +283,9 @@ public:
    }
 
    /*!
-    * Returns a pointer to the discrete Fourier transform (DFT) of the complex
-    * <em>response function</em> used internally by this %FFTConvolution
-    * object, or zero if this object has not been yet initialized.
+    * Returns a reference to the discrete Fourier transform (DFT) of the
+    * complex <em>response function</em> used internally by this
+    * %FFTConvolution object.
     *
     * The internal DFT of the response function is created and initialized the
     * first time this %FFTConvolution object is used to perform a convolution.
@@ -254,25 +294,15 @@ public:
     * otherwise it is re-created on the fly, as necessary. It is destroyed when
     * a new filter is associated with this object.
     *
-    * This function returns a pointer to a complex image that stores the DFT of
-    * the original filter after transforming it to <em>wrap around order</em>.
-    * This means that the original filter data has been splitted, mirrored, and
-    * redistributed to occupy the four corners of the complex 2-D matrix prior
-    * to calculating its DFT.
-    */
-   ComplexImage* ResponseFunctionDFT()
-   {
-      return m_h;
-   }
-
-   /*!
-    * Returns a pointer to the (constant) discrete Fourier transform (DFT) of
-    * the complex <em>response function</em> used internally by this
-    * %FFTConvolution object, or zero if this object has not been initialized.
+    * This function returns a reference to a complex image that stores the DFT
+    * of the original filter after transforming it to <em>wrap around
+    * order</em>. This means that the original filter data has been splitted,
+    * mirrored, and redistributed to occupy the four corners of the complex 2-D
+    * matrix prior to calculating its DFT.
     *
-    * See the documentation for non-const ResponseFunctionDFT().
+    * If this object has not been initialized, the returned image is empty.
     */
-   const ComplexImage* ResponseFunctionDFT() const
+   const ComplexImage& ResponseFunctionDFT() const
    {
       return m_h;
    }
@@ -366,7 +396,7 @@ protected:
     * generated/reused/regenerated as this object is applied to convolve
     * different target images. It is destroyed when a new filter is specified.
     */
-   mutable ComplexImage* m_h;
+   mutable ComplexImage m_h;
 
    /*
     * In-place Fourier-based 2-D convolution algorithm.
@@ -383,27 +413,21 @@ protected:
 
 private:
 
-   void Validate() const;
-   void ValidateFilter() const;
-
    void Destroy()
    {
-      DestroyResponseFunction();
-      DestroyDFT();
-   }
-
-   void DestroyResponseFunction()
-   {
-      if ( m_filter != 0 )
-         delete m_filter, m_filter = 0;
+      DestroyFilter();
       m_image.Free();
+      m_h.FreeData();
    }
 
-   void DestroyDFT()
+   void DestroyFilter()
    {
-      if ( m_h != 0 )
-         delete m_h, m_h = 0;
+      if ( m_filter != nullptr )
+         delete m_filter, m_filter = nullptr;
    }
+
+   void Validate() const;
+   void ValidateFilter() const;
 };
 
 // ----------------------------------------------------------------------------
@@ -412,5 +436,5 @@ private:
 
 #endif   // __PCL_FFTConvolution_h
 
-// ****************************************************************************
-// EOF pcl/FFTConvolution.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/FFTConvolution.h - Released 2015/07/30 17:15:18 UTC

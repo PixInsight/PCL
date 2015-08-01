@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/GeometricTransformation.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/GeometricTransformation.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_GeometricTransformation_h
 #define __PCL_GeometricTransformation_h
@@ -88,17 +91,12 @@ public:
    /*!
     * Constructs a %GeometricTransformation object.
     */
-   GeometricTransformation() : ImageTransformation()
-   {
-   }
+   GeometricTransformation() = default;
 
    /*!
-    * Constructs a %GeometricTransformation object as a copy of an existing
-    * instance.
+    * Copy constructor.
     */
-   GeometricTransformation( const GeometricTransformation& x ) : ImageTransformation( x )
-   {
-   }
+   GeometricTransformation( const GeometricTransformation& ) = default;
 
    /*!
     * Destroys a %GeometricTransformation object.
@@ -152,28 +150,35 @@ public:
     * different pixel interpolation.
     */
    InterpolatingGeometricTransformation( PixelInterpolation& p ) :
-   GeometricTransformation(), interpolation( &p )
+      GeometricTransformation(), m_interpolation( &p )
    {
-      PCL_CHECK( interpolation != 0 )
+      PCL_CHECK( m_interpolation != nullptr )
    }
 
    /*!
-    * Constructs a %InterpolatingGeometricTransformation object as a copy of an
-    * existing instance. The constructed object will use the same pixel
-    * interpolation as the source \a x object.
+    * Copy constructor. The constructed object will use the same pixel
+    * interpolation as the source object \a x.
     *
     * The PixelInterpolation object used by both this object and the source
     * object \a x must remain valid and accessible as long as at least one of
     * both objects is associated with it.
     */
    InterpolatingGeometricTransformation( const InterpolatingGeometricTransformation& x ) :
-   GeometricTransformation( x ), interpolation( x.interpolation )
+      GeometricTransformation( x ), m_interpolation( x.m_interpolation )
    {
    }
 
    /*!
-    * Assigns an existing %InterpolatingGeometricTransformation instance to
-    * this object. Returns a reference to this object.
+    * Move constructor.
+    */
+   InterpolatingGeometricTransformation( InterpolatingGeometricTransformation&& x ) :
+      GeometricTransformation( x ), m_interpolation( x.m_interpolation )
+   {
+      x.m_interpolation = nullptr;
+   }
+
+   /*!
+    * Copy assignment operator. Returns a reference to this object.
     *
     * After assignment, this object will use the same pixel interpolation as
     * the source object \a x. The previously used pixel interpolation is simply
@@ -185,28 +190,38 @@ public:
     */
    InterpolatingGeometricTransformation& operator =( const InterpolatingGeometricTransformation& x )
    {
-      interpolation = x.interpolation;
+      m_interpolation = x.m_interpolation;
       return *this;
    }
 
    /*!
-    * Returns a reference to the (constant) PixelInterpolation object that this
-    * transformation is currently using to generate transformed pixel values.
+    * Move assignment operator. Returns a reference to this object.
+    */
+   InterpolatingGeometricTransformation& operator =( InterpolatingGeometricTransformation&& x )
+   {
+      m_interpolation = x.m_interpolation;
+      x.m_interpolation = nullptr;
+      return *this;
+   }
+
+   /*!
+    * Returns a reference to the unmodifiable PixelInterpolation object that
+    * this transformation is currently using.
     */
    const PixelInterpolation& Interpolation() const
    {
-      PCL_CHECK( interpolation != 0 )
-      return *interpolation;
+      PCL_CHECK( m_interpolation != nullptr )
+      return *m_interpolation;
    }
 
    /*!
     * Returns a reference to the PixelInterpolation object that this
-    * transformation is currently using to generate transformed pixel values.
+    * transformation is currently using.
     */
    PixelInterpolation& Interpolation()
    {
-      PCL_CHECK( interpolation != 0 )
-      return *interpolation;
+      PCL_CHECK( m_interpolation != nullptr )
+      return *m_interpolation;
    }
 
    /*!
@@ -223,13 +238,13 @@ public:
     */
    void SetInterpolation( PixelInterpolation& p )
    {
-      interpolation = &p;
-      PCL_CHECK( interpolation != 0 )
+      m_interpolation = &p;
+      PCL_CHECK( m_interpolation != nullptr )
    }
 
 protected:
 
-   PixelInterpolation* interpolation;
+   PixelInterpolation* m_interpolation;
 };
 
 // ----------------------------------------------------------------------------
@@ -238,5 +253,5 @@ protected:
 
 #endif   // __PCL_GeometricTransformation_h
 
-// ****************************************************************************
-// EOF pcl/GeometricTransformation.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/GeometricTransformation.h - Released 2015/07/30 17:15:18 UTC

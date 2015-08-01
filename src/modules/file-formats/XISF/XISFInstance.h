@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard XISF File Format Module Version 01.00.00.0023
-// ****************************************************************************
-// XISFInstance.h - Released 2014/11/30 10:38:10 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard XISF File Format Module Version 01.00.03.0056
+// ----------------------------------------------------------------------------
+// XISFInstance.h - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __XISFInstance_h
 #define __XISFInstance_h
@@ -122,6 +126,15 @@ public:
    virtual Variant ReadProperty( const IsoString& property );
    virtual void WriteProperty( const IsoString& property, const Variant& value );
 
+   virtual RGBColorSystem ReadRGBWS();
+   virtual void WriteRGBWS( const RGBColorSystem& rgbws );
+
+   virtual DisplayFunction ReadDisplayFunction();
+   virtual void WriteDisplayFunction( const DisplayFunction& df );
+
+   virtual ColorFilterArray ReadColorFilterArray();
+   virtual void WriteColorFilterArray( const ColorFilterArray& cfa );
+
 private:
 
    XISFReader*      m_reader;
@@ -137,5 +150,5 @@ private:
 
 #endif   // __XISFInstance_h
 
-// ****************************************************************************
-// EOF XISFInstance.h - Released 2014/11/30 10:38:10 UTC
+// ----------------------------------------------------------------------------
+// EOF XISFInstance.h - Released 2015/07/31 11:49:40 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/MoffatFilter.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/MoffatFilter.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_MoffatFilter_h
 #define __PCL_MoffatFilter_h
@@ -114,8 +117,9 @@ public:
     * Constructs an empty %MoffatFilter object with default functional
     * parameters: sigma=2, beta=4, epsilon=0.01, rho=1, theta=0.
     */
-   MoffatFilter() : KernelFilter(),
-   m_sigma( 2 ), m_beta( 4 ), m_rho( 1 ), m_theta( 0 ), m_epsilon( 0.01F )
+   MoffatFilter() :
+      KernelFilter(),
+      m_sigma( 2 ), m_beta( 4 ), m_rho( 1 ), m_theta( 0 ), m_epsilon( 0.01F )
    {
    }
 
@@ -124,7 +128,8 @@ public:
     * \a sigma > 0, \a beta exponent > 0 and truncation error \a epsilon > 0.
     * Assigns an optional \a name to the new filter object.
     */
-   MoffatFilter( float sigma, float beta = 4, float epsilon = 0.01, const String& name = String() ) : KernelFilter()
+   MoffatFilter( float sigma, float beta = 4, float epsilon = 0.01, const String& name = String() ) :
+      KernelFilter()
    {
       Initialize( sigma, beta, epsilon, 1, 0 );
       Rename( name );
@@ -136,7 +141,8 @@ public:
     * aspect ratio 0 <= \a rho <= 1, and rotation angle 0 <= \a theta <= PI in
     * radians. Assigns an optional \a name to the new filter object.
     */
-   MoffatFilter( float sigma, float beta, float epsilon, float rho, float theta = 0, const String& name = String() ) : KernelFilter()
+   MoffatFilter( float sigma, float beta, float epsilon, float rho, float theta = 0, const String& name = String() ) :
+      KernelFilter()
    {
       Initialize( sigma, beta, epsilon, rho, theta );
       Rename( name );
@@ -147,7 +153,8 @@ public:
     * \a beta exponent > 0 and truncation error \a epsilon > 0. Assigns an
     * optional \a name to the new filter object.
     */
-   MoffatFilter( int n, float beta = 4, float epsilon = 0.01, const String& name = String() ) : KernelFilter()
+   MoffatFilter( int n, float beta = 4, float epsilon = 0.01, const String& name = String() ) :
+      KernelFilter()
    {
       Initialize( n, beta, epsilon, 1, 0 );
       Rename( name );
@@ -159,7 +166,8 @@ public:
     * 0 <= \a rho <= 1, and rotation angle 0 <= \a theta <= PI in radians.
     * Assigns an optional \a name to the new filter object.
     */
-   MoffatFilter( int n, float beta, float epsilon, float rho, float theta = 0, const String& name = String() ) : KernelFilter()
+   MoffatFilter( int n, float beta, float epsilon, float rho, float theta = 0, const String& name = String() ) :
+      KernelFilter()
    {
       Initialize( n, beta, epsilon, rho, theta );
       Rename( name );
@@ -168,8 +176,18 @@ public:
    /*!
     * Copy constructor.
     */
-   MoffatFilter( const MoffatFilter& m ) : KernelFilter( m ),
-   m_sigma( m.m_sigma ), m_beta( m.m_beta ), m_rho( m.m_rho ), m_theta( m.m_theta ), m_epsilon( m.m_epsilon )
+   MoffatFilter( const MoffatFilter& x ) :
+      KernelFilter( x ),
+      m_sigma( x.m_sigma ), m_beta( x.m_beta ), m_rho( x.m_rho ), m_theta( x.m_theta ), m_epsilon( x.m_epsilon )
+   {
+   }
+
+   /*!
+    * Move constructor.
+    */
+   MoffatFilter( MoffatFilter&& x ) :
+      KernelFilter( std::move( x ) ),
+      m_sigma( x.m_sigma ), m_beta( x.m_beta ), m_rho( x.m_rho ), m_theta( x.m_theta ), m_epsilon( x.m_epsilon )
    {
    }
 
@@ -203,19 +221,30 @@ public:
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Copy assignment operator. Returns a reference to this object.
     */
-   MoffatFilter& operator =( const MoffatFilter& m )
+   MoffatFilter& operator =( const MoffatFilter& x )
    {
-      if ( &m != this )
-      {
-         (void)KernelFilter::operator =( m );
-         m_sigma   = m.m_sigma;
-         m_beta    = m.m_beta;
-         m_epsilon = m.m_epsilon;
-         m_rho     = m.m_rho;
-         m_theta   = m.m_theta;
-      }
+      (void)KernelFilter::operator =( x );
+      m_sigma   = x.m_sigma;
+      m_beta    = x.m_beta;
+      m_epsilon = x.m_epsilon;
+      m_rho     = x.m_rho;
+      m_theta   = x.m_theta;
+      return *this;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   MoffatFilter& operator =( MoffatFilter&& x )
+   {
+      (void)KernelFilter::operator =( std::move( x ) );
+      m_sigma   = x.m_sigma;
+      m_beta    = x.m_beta;
+      m_epsilon = x.m_epsilon;
+      m_rho     = x.m_rho;
+      m_theta   = x.m_theta;
       return *this;
    }
 
@@ -421,13 +450,26 @@ public:
       Initialize( n, m_beta, m_epsilon, m_rho, m_theta );
    }
 
+   /*!
+    * Exchanges two Moffat filters \a x1 and \a x2.
+    */
+   friend void Swap( MoffatFilter& x1, MoffatFilter& x2 )
+   {
+      pcl::Swap( static_cast<KernelFilter&>( x1 ), static_cast<KernelFilter&>( x2 ) );
+      pcl::Swap( x1.m_sigma,   x2.m_sigma );
+      pcl::Swap( x1.m_beta,    x2.m_beta );
+      pcl::Swap( x1.m_rho,     x2.m_rho );
+      pcl::Swap( x1.m_theta,   x2.m_theta );
+      pcl::Swap( x1.m_epsilon, x2.m_epsilon );
+   }
+
    // -------------------------------------------------------------------------
 
 private:
 
    float m_sigma;   // standard deviation, horizontal axis
    float m_beta;    // beta exponent
-   float m_rho;     // vertical:horizontal axes ratio
+   float m_rho;     // vertical:horizontal axis ratio
    float m_theta;   // rotation angle in radians, [0,+pi]
    float m_epsilon; // maximum truncation error in sigma units
 
@@ -514,5 +556,5 @@ private:
 
 #endif   // __PCL_MoffatFilter_h
 
-// ****************************************************************************
-// EOF pcl/MoffatFilter.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/MoffatFilter.h - Released 2015/07/30 17:15:18 UTC

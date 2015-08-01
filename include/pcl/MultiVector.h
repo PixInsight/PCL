@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/MultiVector.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/MultiVector.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_MultiVector_h
 #define __PCL_MultiVector_h
@@ -76,29 +79,32 @@ namespace pcl
  * \class GenericMultiVector
  * \brief Generic array of vectors.
  *
- * A multivector is an array of vectors. It can also be seen as a vector of
- * vectors, or a vector whose components are also vectors. %GenericMultiVector
- * implements a homogeneous multivector based on the Array and GenericVector
- * template classes. Besides all the member functions inherited from its base
- * class, it provides some useful constructors and assignment operators,
- * including arithmetic scalar-to-vector operators that work on all the
- * contained vectors as a whole.
+ * A multivector is a dynamic array of vectors. It can also be seen as a vector
+ * of vectors, or a vector whose components are also vectors.
+ * %GenericMultiVector implements a homogeneous multivector based on the Array
+ * and GenericVector template classes. Besides all the member functions
+ * inherited from its base class, it also provides some useful constructors and
+ * assignment operators, including arithmetic scalar-to-vector operators that
+ * work on all the contained vectors as a whole.
  *
  * Some typical applications of multivectors include:
  *
- * - Implementation of more sophisticated mathematical objects and structures,
+ * \li Implementation of more sophisticated mathematical objects and structures,
  * such as tensors.
  *
- * - Matrices where rows (or equivalently, columns) have to be manipulated
+ * \li Matrices where rows (or equivalently, columns) have to be manipulated
  * as independent structures. For example, to swap two rows of a GenericMatrix
  * you have to swap each pair of row elements successively, which is an O(N)
  * operation. Swapping two component vectors of a multivector is an O(1)
  * operation thanks to the implicit data sharing feature of %GenericVector, and
  * hence does not require copying or duplicating data.
  *
- * - Arrays and matrices where each component is a vector of variable length.
+ * \li Arrays and matrices where each component is a vector of variable length.
  *
- * \sa GenericVector, GenericMatrix
+ * As most PCL containers, %GenericMultiVector is a reference-counted class
+ * with implicit data sharing (or \e copy-on-write) functionality.
+ *
+ * \sa Array, GenericVector, GenericMatrix
  */
 template <typename T>
 class PCL_CLASS GenericMultiVector : public Array<GenericVector<T> >
@@ -108,55 +114,67 @@ public:
    /*!
     * The structure implementing this multivector class.
     */
-   typedef Array<GenericVector<T> >    multivector_implementation;
+   typedef Array<GenericVector<T> >             multivector_implementation;
 
    /*!
     * Represents a vector.
     */
-   typedef GenericVector<T>            vector;
+   typedef GenericVector<T>                     vector;
 
    /*!
     * Represents a scalar.
     */
-   typedef typename vector::scalar     scalar;
+   typedef typename vector::scalar              scalar;
 
    /*!
     * Represents a vector component.
     */
-   typedef typename vector::component  component;
+   typedef typename vector::component           component;
 
    /*!
-    * Represents a multivector iterator.
+    * Represents a mutable multivector iterator.
     */
-   typedef typename multivector_implementation::iterator       iterator;
+   typedef typename multivector_implementation::iterator
+                                                iterator;
 
    /*!
-    * Represents a constant multivector iterator.
+    * Represents an immutable multivector iterator.
     */
-   typedef typename multivector_implementation::const_iterator const_iterator;
+   typedef typename multivector_implementation::const_iterator
+                                                const_iterator;
 
    /*!
-    * Constructs an empty multivector.
-    * An empty multivector has no component vectors and zero length.
+    * Represents a mutable vector iterator.
     */
-   GenericMultiVector() : multivector_implementation()
+   typedef typename vector::iterator            vector_iterator;
+
+   /*!
+    * Represents an immutable vector iterator.
+    */
+   typedef typename vector::const_iterator      const_vector_iterator;
+
+   /*!
+    * Constructs an empty multivector. An empty multivector has no component
+    * vectors and zero length.
+    */
+   GenericMultiVector() :
+      multivector_implementation()
    {
    }
 
    /*!
-    * Constructs an uninitialized multivector of the specified length.
-    *
-    * \param length        Number of multivector components.
+    * Constructs an uninitialized multivector of the specified \a length.
     *
     * This constructor does not initialize component vectors. The newly created
-    * multivector will contain empty vectors.
+    * multivector will contain \a length empty vectors.
     */
-   GenericMultiVector( size_type length ) : multivector_implementation( length )
+   GenericMultiVector( size_type length ) :
+      multivector_implementation( length )
    {
    }
 
    /*!
-    * Constructs a multivector and fills it with a constant value.
+    * Constructs a multivector and fills it with a constant scalar.
     *
     * \param value         Initial value for all vector components.
     *
@@ -164,7 +182,8 @@ public:
     *
     * \param vectorLength  Number of vector components (>= 0).
     */
-   GenericMultiVector( const scalar& value, size_type length, int vectorLength ) : multivector_implementation( length )
+   GenericMultiVector( const scalar& value, size_type length, int vectorLength ) :
+      multivector_implementation( length )
    {
       for ( iterator i = this->Begin(), j = this->End(); i < j; ++i )
          *i = vector( value, vectorLength );
@@ -172,35 +191,42 @@ public:
 
    /*!
     * Copy constructor.
-    *
-    * %GenericMultiVector is a reference counted class with implicit data
-    * sharing. For more information, see
-    * GenericVector::GenericVector( const GenericVector& ).
     */
-   GenericMultiVector( const GenericMultiVector<T>& x ) : multivector_implementation( x )
+   GenericMultiVector( const GenericMultiVector& x ) :
+      multivector_implementation( x )
+   {
+   }
+
+   /*!
+    * Move constructor.
+    */
+   GenericMultiVector( GenericMultiVector&& x ) :
+      multivector_implementation( std::move( x ) )
    {
    }
 
    /*!
     * Destroys a %GenericMultiVector object.
-    *
-    * %GenericMultiVector is a reference counted class with implicit data
-    * sharing. For more information, see GenericVector::~GenericVector().
     */
-   virtual ~GenericMultiVector()
+   ~GenericMultiVector()
    {
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
-    *
-    * %GenericMultiVector is a reference counted class with implicit data
-    * sharing. For more information, see
-    * GenericVector::operator =( const GenericVector& ).
+    * Copy assignment operator. Returns a reference to this object.
     */
-   GenericMultiVector& operator =( const GenericMultiVector<T>& x )
+   GenericMultiVector& operator =( const GenericMultiVector& x )
    {
       (void)multivector_implementation::operator =( x );
+      return *this;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   GenericMultiVector& operator =( GenericMultiVector&& x )
+   {
+      (void)multivector_implementation::operator =( std::move( x ) );
       return *this;
    }
 
@@ -208,7 +234,7 @@ public:
     * Assigns a constant scalar \a x to all vector components in this
     * multivector. Returns a reference to this object.
     */
-   GenericMultiVector& operator =( const T& x )
+   GenericMultiVector& operator =( const scalar& x )
    {
       for ( iterator i = this->Begin(), j = this->End(); i < j; ++i )
          *i = x;
@@ -219,7 +245,7 @@ public:
     * Adds a constant scalar \a x to all vector components in this multivector.
     * Returns a reference to this object.
     */
-   GenericMultiVector& operator +=( const T& x )
+   GenericMultiVector& operator +=( const scalar& x )
    {
       for ( iterator i = this->Begin(), j = this->End(); i < j; ++i )
          *i += x;
@@ -230,7 +256,7 @@ public:
     * Subtracts a constant scalar \a x from all vector components of this
     * multivector. Returns a reference to this object.
     */
-   GenericMultiVector& operator -=( const T& x )
+   GenericMultiVector& operator -=( const scalar& x )
    {
       for ( iterator i = this->Begin(), j = this->End(); i < j; ++i )
          *i -= x;
@@ -241,7 +267,7 @@ public:
     * Multiplies all vector components in this multivector by a constant scalar
     * \a x. Returns a reference to this object.
     */
-   GenericMultiVector& operator *=( const T& x )
+   GenericMultiVector& operator *=( const scalar& x )
    {
       for ( iterator i = this->Begin(), j = this->End(); i < j; ++i )
          *i *= x;
@@ -252,7 +278,7 @@ public:
     * Divides all vector components in this multivector by a constant scalar
     * \a x. Returns a reference to this object.
     */
-   GenericMultiVector& operator /=( const T& x )
+   GenericMultiVector& operator /=( const scalar& x )
    {
       for ( iterator i = this->Begin(), j = this->End(); i < j; ++i )
          *i /= x;
@@ -270,38 +296,51 @@ public:
       return s;
    }
 
+   /*!
+    * Computes the sum of vector components using a numerically stable
+    * summation algorithm to minimize roundoff error.
+    */
+   double StableSum() const
+   {
+      DVector s( this->Length() );
+      size_type n = 0;
+      for ( const_iterator i = this->Begin(), j = this->End(); i < j; ++i )
+         s[n++] = i->StableSum();
+      return s.StableSum();
+   }
+
 #ifndef __PCL_NO_VECTOR_STATISTICS
 
    /*!
     * Returns the value of the smallest vector component. For empty
     * multivectors, this function returns zero.
     */
-   T MinComponent() const
+   component MinComponent() const
    {
       if ( !this->IsEmpty() )
       {
-         T min = this->Begin()->MinComponent();
+         component min = this->Begin()->MinComponent();
          for ( const_iterator i = this->Begin(), j = this->End(); ++i < j; )
             min = pcl::Min( min, i->MinComponent() );
          return min;
       }
-      return T( 0 );
+      return component( 0 );
    }
 
    /*!
     * Returns the value of the largest vector component. For empty
     * multivectors, this function returns zero.
     */
-   T MaxComponent() const
+   component MaxComponent() const
    {
       if ( !this->IsEmpty() )
       {
-         T max = this->Begin()->MaxComponent();
+         component max = this->Begin()->MaxComponent();
          for ( const_iterator i = this->Begin(), j = this->End(); ++i < j; )
             max = pcl::Max( max, i->MaxComponent() );
          return max;
       }
-      return T( 0 );
+      return component( 0 );
    }
 
 #endif   // !__PCL_NO_VECTOR_STATISTICS
@@ -363,5 +402,5 @@ typedef DMultiVector               MultiVector;
 
 #endif   // __PCL_MultiVector_h
 
-// ****************************************************************************
-// EOF pcl/MultiVector.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/MultiVector.h - Released 2015/07/30 17:15:18 UTC

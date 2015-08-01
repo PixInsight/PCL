@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/PyramidalWaveletTransform.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/PyramidalWaveletTransform.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_PyramidalWaveletTransform_h
 #define __PCL_PyramidalWaveletTransform_h
@@ -67,6 +70,10 @@
 #include <pcl/Vector.h>
 #endif
 
+#ifndef __PCL_String_h
+#include <pcl/String.h>
+#endif
+
 namespace pcl
 {
 
@@ -85,7 +92,7 @@ public:
    /*!
     * Constructs a default %WaveletFilter object.
     */
-   WaveletFilter() : Kc ( 0 ), Kr(), N( 0 ), ioff( 0 ), joff( 0 )
+   WaveletFilter() : Kc ( nullptr ), Kr(), N( 0 ), ioff( 0 ), joff( 0 )
    {
    }
 
@@ -99,7 +106,7 @@ public:
    /*!
     * Returns an identifying name for this wavelet filter.
     */
-   virtual const char* Name() const = 0;
+   virtual String Name() const = 0;
 
    /*!
     * Performs an in-place one-dimensional wavelet transform.
@@ -126,7 +133,19 @@ protected:
    int           ioff;
    int           joff;
 
-   void Initialize();
+   void Initialize()
+   {
+      PCL_CHECK( Kc != nullptr && N > 0 )
+      Kr = Vector( N );
+      for ( int k = 0, sig = -1; k < N; ++k )
+      {
+         Kr[N-1-k] = sig*Kc[k];
+         sig = -sig;
+      }
+   // ioff = joff = -(N >> 1);
+      ioff = -2;
+      joff = -N + 2;
+   }
 
 private:
 
@@ -151,7 +170,7 @@ public:
 
    /*!
     */
-   virtual const char* Name() const
+   virtual String Name() const
    {
       return "Daubechies-4";
    }
@@ -176,7 +195,7 @@ public:
 
    /*!
     */
-   virtual const char* Name() const
+   virtual String Name() const
    {
       return "Daubechies-6";
    }
@@ -201,7 +220,7 @@ public:
 
    /*!
     */
-   virtual const char* Name() const
+   virtual String Name() const
    {
       return "Daubechies-8";
    }
@@ -226,7 +245,7 @@ public:
 
    /*!
     */
-   virtual const char* Name() const
+   virtual String Name() const
    {
       return "Daubechies-10";
    }
@@ -251,7 +270,7 @@ public:
 
    /*!
     */
-   virtual const char* Name() const
+   virtual String Name() const
    {
       return "Daubechies-12";
    }
@@ -276,7 +295,7 @@ public:
 
    /*!
     */
-   virtual const char* Name() const
+   virtual String Name() const
    {
       return "Daubechies-20";
    }
@@ -312,7 +331,8 @@ public:
     * will be used as the scaling function of the wavelet transform.
     */
    PyramidalWaveletTransform() :
-   BidirectionalImageTransformation(), scalingFunction( 0 ), nonstandard( true ), w( 0 )
+      BidirectionalImageTransformation(),
+      m_scalingFunction( nullptr ), m_nonstandard( true ), m_transform()
    {
    }
 
@@ -321,22 +341,27 @@ public:
     * wavelet filter \a f.
     */
    PyramidalWaveletTransform( const WaveletFilter& f ) :
-   BidirectionalImageTransformation(), scalingFunction( &f ), nonstandard( true ), w( 0 )
+      BidirectionalImageTransformation(),
+      m_scalingFunction( &f ), m_nonstandard( true ), m_transform()
    {
-      PCL_CHECK( scalingFunction != 0 )
+      PCL_CHECK( m_scalingFunction != nullptr )
    }
 
    /*!
     * Copy constructor.
-    *
-    * \note This constructor <em>does not copy the existing wavelet
-    * transform</em> in the source object \a x. It just creates a duplicate
-    * of current operating parameters in \a x: wavelet filter and transform
-    * type (standard or nonstandard transform).
     */
    PyramidalWaveletTransform( const PyramidalWaveletTransform& x ) :
-   BidirectionalImageTransformation( x ),
-   scalingFunction( x.scalingFunction ), nonstandard( x.nonstandard ), w( 0 )
+      BidirectionalImageTransformation( x ),
+      m_scalingFunction( x.m_scalingFunction ), m_nonstandard( x.m_nonstandard ), m_transform( x.m_transform )
+   {
+   }
+
+   /*!
+    * Move constructor.
+    */
+   PyramidalWaveletTransform( PyramidalWaveletTransform&& x ) :
+      BidirectionalImageTransformation( x ),
+      m_scalingFunction( x.m_scalingFunction ), m_nonstandard( x.m_nonstandard ), m_transform( std::move( x.m_transform ) )
    {
    }
 
@@ -346,27 +371,29 @@ public:
     */
    virtual ~PyramidalWaveletTransform()
    {
-      Clear();
    }
 
    /*!
-    * Assignment operator.
-    *
-    * \note The existing wavelet transform in the source object \a x is
-    * <em>not assigned</em>; only operating parameters are assigned:
-    * wavelet filter and transform type (standard/nonstandard).
-    *
-    * \note As a consequence of this assignment operator, the existing wavelet
-    * transform in this instance is destroyed.
+    * Copy assignment operator. Returns a reference to this object.
     */
    PyramidalWaveletTransform& operator =( const PyramidalWaveletTransform& x )
    {
-      if ( &x != this )
-      {
-         Clear();
-         scalingFunction = x.scalingFunction;
-         nonstandard = x.nonstandard;
-      }
+      (void)BidirectionalImageTransformation::operator =( x );
+      m_scalingFunction = x.m_scalingFunction;
+      m_nonstandard = x.m_nonstandard;
+      m_transform = x.m_transform;
+      return *this;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   PyramidalWaveletTransform& operator =( PyramidalWaveletTransform&& x )
+   {
+      (void)BidirectionalImageTransformation::operator =( x );
+      m_scalingFunction = x.m_scalingFunction;
+      m_nonstandard = x.m_nonstandard;
+      m_transform = std::move( x.m_transform );
       return *this;
    }
 
@@ -376,8 +403,8 @@ public:
     */
    const WaveletFilter& ScalingFunction() const
    {
-      PCL_PRECONDITION( scalingFunction != 0 )
-      return *scalingFunction;
+      PCL_PRECONDITION( m_scalingFunction != nullptr )
+      return *m_scalingFunction;
    }
 
    /*!
@@ -387,8 +414,8 @@ public:
    void SetScalingFunction( const WaveletFilter& f )
    {
       Clear();
-      scalingFunction = &f;
-      PCL_CHECK( scalingFunction != 0 )
+      m_scalingFunction = &f;
+      PCL_CHECK( m_scalingFunction != nullptr )
    }
 
    /*!
@@ -397,7 +424,7 @@ public:
     */
    bool IsStandard() const
    {
-      return !nonstandard;
+      return !m_nonstandard;
    }
 
    /*!
@@ -409,7 +436,7 @@ public:
     */
    bool IsNonstandard() const
    {
-      return nonstandard;
+      return m_nonstandard;
    }
 
    /*!
@@ -422,7 +449,7 @@ public:
    void SetStandard( bool b = true )
    {
       Clear();
-      nonstandard = !b;
+      m_nonstandard = !b;
    }
 
    /*!
@@ -437,11 +464,11 @@ public:
    void SetNonstandard( bool b = true )
    {
       Clear();
-      nonstandard = b;
+      m_nonstandard = b;
    }
 
    /*!
-    * Returns a constant reference to the wavelet transform in this
+    * Returns a reference to the wavelet transform in this
     * %PyramidalWaveletTransform object.
     *
     * The returned image is empty if no transform has been performed by this
@@ -449,8 +476,7 @@ public:
     */
    const Image& Transform() const
    {
-      PCL_PRECONDITION( w != 0 )
-      return *w;
+      return m_transform;
    }
 
    /*!
@@ -462,44 +488,7 @@ public:
     */
    Image& Transform()
    {
-      PCL_PRECONDITION( w != 0 )
-      return *w;
-   }
-
-   /*!
-    * A synonym for Transform() const;
-    */
-   const Image& operator *() const
-   {
-      PCL_PRECONDITION( w != 0 )
-      return Transform();
-   }
-
-   /*!
-    * A synonym for Transform();
-    */
-   Image& operator *()
-   {
-      PCL_PRECONDITION( w != 0 )
-      return Transform();
-   }
-
-   /*!
-    * Returns a pointer to the wavelet transform in this
-    * %PyramidalWaveletTransform object, whose ownership is transferred to the
-    * caller.
-    *
-    * If no wavelet transform has been performed, this function returns zero.
-    *
-    * The caller is responsible for deallocation of the returned wavelet
-    * transform image. After calling this function, this object will be empty
-    * (no transform).
-    */
-   Image* ReleaseTransform()
-   {
-      Image* w1 = w;
-      w = 0;
-      return w1;
+      return m_transform;
    }
 
    /*!
@@ -507,8 +496,7 @@ public:
     */
    void Clear()
    {
-      if ( w != 0 )
-         delete w, w = 0;
+      m_transform.FreeData();
    }
 
 protected:
@@ -516,18 +504,18 @@ protected:
    /*
     * Scaling function, or wavelet filter.
     */
-   const WaveletFilter* scalingFunction;
+   const WaveletFilter* m_scalingFunction;
 
    /*
     * Flag true if nonstandard transforms are being used.
     * Standard transforms are used otherwise (and by default).
     */
-   bool nonstandard : 1;
+   bool m_nonstandard : 1;
 
    /*
     * Wavelet transform
     */
-   pcl::Image* w;
+   pcl::Image m_transform;
 
    void Validate() const;
    void DoTransform( StatusMonitor& );
@@ -557,5 +545,5 @@ protected:
 
 #endif   // __PCL_PyramidalWaveletTransform_h
 
-// ****************************************************************************
-// EOF pcl/PyramidalWaveletTransform.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/PyramidalWaveletTransform.h - Released 2015/07/30 17:15:18 UTC

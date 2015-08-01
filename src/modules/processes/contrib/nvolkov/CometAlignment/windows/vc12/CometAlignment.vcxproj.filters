@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.93
-# Copyright (C) 2009-2014 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.95
+# Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Fri, 14 Nov 2014 17:27:32 GMT
+# Automatically generated on Thu, 30 Jul 2015 17:10:46 GMT
 # Project id ...... CometAlignment
 # Project type .... Module
 # Platform ........ Windows/vc12
@@ -17,6 +17,9 @@
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{61114dbc-b961-4bb7-be8f-19901b89253d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Image Files">
+      <UniqueIdentifier>{5f4b9cad-dcb5-426e-a182-4c299db01993}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -58,5 +61,10 @@
     <ClInclude Include="..\..\StarDetector.h">
         <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\CometAlignmentIcon.png">
+        <Filter>Image Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

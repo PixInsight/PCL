@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Global Process Module Version 01.02.05.0260
-// ****************************************************************************
-// ColorManagementSetupInstance.h - Released 2014/11/14 17:18:47 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Global Process Module Version 01.02.06.0280
+// ----------------------------------------------------------------------------
+// ColorManagementSetupInstance.h - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,19 +48,17 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __ColorManagementSetupInstance_h
 #define __ColorManagementSetupInstance_h
 
-#include <pcl/ProcessImplementation.h>
 #include <pcl/MetaParameter.h> // for pcl_bool, pcl_enum
+#include <pcl/ProcessImplementation.h>
 
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-// ColorManagementSetupInstance
 // ----------------------------------------------------------------------------
 
 class ColorManagementSetupInstance : public ProcessImplementation
@@ -80,12 +82,10 @@ public:
 
    void LoadCurrentSettings();
 
-   // -------------------------------------------------------------------------
-
 private:
 
    pcl_bool enabled;
-   String   updateMonitorProfile; // X11 only - ignored on Mac OS X and Windows
+   String   updateMonitorProfile;
    String   defaultRGBProfile;
    String   defaultGrayProfile;
    pcl_enum defaultRenderingIntent;
@@ -110,5 +110,5 @@ private:
 
 #endif   // __ColorManagementSetupInstance_h
 
-// ****************************************************************************
-// EOF ColorManagementSetupInstance.h - Released 2014/11/14 17:18:47 UTC
+// ----------------------------------------------------------------------------
+// EOF ColorManagementSetupInstance.h - Released 2015/07/31 11:49:48 UTC

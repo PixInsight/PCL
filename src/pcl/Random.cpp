@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Random.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Random.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/AutoLock.h>
 #include <pcl/Exception.h>
@@ -103,7 +106,7 @@ static uint64 TimeSeed()
 {
    union { time_t t; uint64 u; } t;
    t.t = time( 0 );
-   return XorShift64Seed( t.u );
+   return t.u;
 }
 
 uint64 RandomSeed64()
@@ -111,11 +114,10 @@ uint64 RandomSeed64()
    static Mutex mutex;
    static uint64 seed = 0;
    volatile AutoLock lock( mutex );
-   if ( seed != 0 )
-      return XorShift64Seed( seed );
-   if ( !GetSystemSeed( &seed, sizeof( seed ) ) )
-      seed = TimeSeed();
-   return seed;
+   if ( seed == 0 )
+      if ( !GetSystemSeed( &seed, sizeof( seed ) ) )
+         seed = TimeSeed();
+   return XorShift64Seed( seed );
 }
 
 // ----------------------------------------------------------------------------
@@ -404,10 +406,9 @@ private:
 // ----------------------------------------------------------------------------
 
 RandomNumberGenerator::RandomNumberGenerator( double ymax, uint32 seed ) :
-m_generator( new FastMersenneTwister( seed ? seed : RandomSeed32() ) ),
-m_ymax( ymax ),
-m_normal( false )
+   m_generator( nullptr ), m_ymax( ymax ), m_normal( false )
 {
+   m_generator = new FastMersenneTwister( seed ? seed : RandomSeed32() );
    if ( m_ymax < 0 || 1 + m_ymax == 1 )
       m_ymax = 1;
    m_rmax = m_ymax/double( uint32_max );
@@ -415,8 +416,8 @@ m_normal( false )
 
 RandomNumberGenerator::~RandomNumberGenerator()
 {
-   if ( m_generator != 0 )
-      delete m_generator, m_generator = 0;
+   if ( m_generator != nullptr )
+      delete m_generator, m_generator = nullptr;
 }
 
 uint32 RandomNumberGenerator::Rand32()
@@ -528,5 +529,5 @@ int RandomNumberGenerator::Poisson( double lambda )
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/Random.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Random.cpp - Released 2015/07/30 17:15:31 UTC

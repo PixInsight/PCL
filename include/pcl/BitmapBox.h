@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/BitmapBox.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/BitmapBox.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_BitmapBox_h
 #define __PCL_BitmapBox_h
@@ -71,77 +74,77 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
-   \class BitmapBox
-   \brief Client-side interface to a PixInsight %BitmapBox control.
-
-   ### TODO: Write a detailed description for %BitmapBox
-*/
+ * \class BitmapBox
+ * \brief Client-side interface to a PixInsight %BitmapBox control.
+ *
+ * ### TODO: Write a detailed description for %BitmapBox
+ */
 class PCL_CLASS BitmapBox : public Frame
 {
 public:
 
    /*!
-      Constructs a %BitmapBox control that draws a bitmap \a bmp and is a child
-      of \a parent.
-   */
+    * Constructs a %BitmapBox control that draws a bitmap \a bmp and is a child
+    * of \a parent.
+    */
    BitmapBox( const Bitmap& bmp = Bitmap::Null(), Control& parent = Control::Null() );
 
    /*!
-      Destroys a %BitmapBox control.
-   */
+    * Destroys a %BitmapBox object.
+    */
    virtual ~BitmapBox()
    {
    }
 
    /*!
-      Returns the bitmap currently drawn by this %BitmapBox control.
-   */
+    * Returns the bitmap currently drawn by this %BitmapBox control.
+    */
    Bitmap CurrentBitmap() const;
 
    /*!
-      Sets the bitmap \a bmp for this %BitmapBox control.
-   */
+    * Sets the bitmap \a bmp for this %BitmapBox control.
+    */
    void SetBitmap( const Bitmap& bmp );
 
    /*!
-      Removes the bitmap in this %BitmapBox control. Does not destroy the
-      bitmap (unless it becomes unreferenced); only disassociates it from this
-      %BitmapBox control.
-   */
+    * Removes the bitmap in this %BitmapBox control. Does not destroy the
+    * bitmap (unless it becomes unreferenced); only disassociates it from this
+    * %BitmapBox control.
+    */
    void Clear()
    {
       SetBitmap( Bitmap::Null() );
    }
 
    /*!
-      Returns the margin in pixels that this %BitmapBox control reserves around
-      its bitmap.
-   */
+    * Returns the margin in pixels that this %BitmapBox control reserves around
+    * its bitmap.
+    */
    int Margin() const;
 
    /*!
-      Sets a new margin \a m in pixels for this %BitmapBox control.
-   */
+    * Sets a new margin \a m in pixels for this %BitmapBox control.
+    */
    void SetMargin( int m );
 
    /*!
-      Sets the margin of this %BitmapBox control to zero pixels.
-   */
+    * Sets the margin of this %BitmapBox control to zero pixels.
+    */
    void ClearMargin()
    {
       SetMargin( 0 );
    }
 
    /*! #
-   */
+    */
    bool IsAutoFitEnabled() const;
 
    /*! #
-   */
+    */
    void EnableAutoFit( bool = true );
 
    /*! #
-   */
+    */
    void DisableAutoFit( bool disable = true )
    {
       EnableAutoFit( !disable );
@@ -156,5 +159,5 @@ public:
 
 #endif   // __PCL_BitmapBox_h
 
-// ****************************************************************************
-// EOF pcl/BitmapBox.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/BitmapBox.h - Released 2015/07/30 17:15:18 UTC

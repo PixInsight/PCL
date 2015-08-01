@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Brush.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Brush.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Brush_h
 #define __PCL_Brush_h
@@ -190,6 +193,13 @@ public:
    }
 
    /*!
+    * Move constructor.
+    */
+   Brush( Brush&& x ) : UIObject( std::move( x ) )
+   {
+   }
+
+   /*!
     * Destroys a %Brush object. If this object references an existing brush in
     * the PixInsight core application, its reference count is decremented. If
     * it becomes unreferenced, it will be garbage-collected.
@@ -199,7 +209,7 @@ public:
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Copy assignment operator. Returns a reference to this object.
     *
     * Makes this object reference the same server-side brush as the specified
     * instance \a b. If the previous brush becomes unreferenced, it will be
@@ -207,7 +217,16 @@ public:
     */
    Brush& operator =( const Brush& b )
    {
-      SetHandle( b.handle );
+      Assign( b );
+      return *this;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   Brush& operator =( Brush&& x )
+   {
+      Transfer( x );
       return *this;
    }
 
@@ -304,7 +323,10 @@ public:
 
 private:
 
-   Brush( void* );
+   Brush( void* h ) : UIObject( h )
+   {
+   }
+
    virtual void* CloneHandle() const;
 
    friend class GraphicsContextBase;
@@ -420,6 +442,10 @@ protected:
    GradientBrush( const GradientBrush& x ) : Brush( x )
    {
    }
+
+   GradientBrush( GradientBrush&& x ) : Brush( std::move( x ) )
+   {
+   }
 };
 
 /*!
@@ -495,7 +521,14 @@ public:
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Move constructor.
+    */
+   LinearGradientBrush( LinearGradientBrush&& x ) : GradientBrush( std::move( x ) )
+   {
+   }
+
+   /*!
+    * Copy assignment operator. Returns a reference to this object.
     *
     * Makes this object reference the same server-side brush as the specified
     * instance \a b. If the previous brush becomes unreferenced, it will be
@@ -504,6 +537,15 @@ public:
    LinearGradientBrush& operator =( const LinearGradientBrush& b )
    {
       SetHandle( b.handle );
+      return *this;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   LinearGradientBrush& operator =( LinearGradientBrush&& x )
+   {
+      Transfer( x );
       return *this;
    }
 
@@ -608,7 +650,14 @@ public:
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Move constructor.
+    */
+   RadialGradientBrush( RadialGradientBrush&& x ) : GradientBrush( std::move( x ) )
+   {
+   }
+
+   /*!
+    * Copy assignment operator. Returns a reference to this object.
     *
     * Makes this object reference the same server-side brush as the specified
     * instance \a b. If the previous brush becomes unreferenced, it will be
@@ -617,6 +666,15 @@ public:
    RadialGradientBrush& operator =( const RadialGradientBrush& b )
    {
       SetHandle( b.handle );
+      return *this;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   RadialGradientBrush& operator =( RadialGradientBrush&& x )
+   {
+      Transfer( x );
       return *this;
    }
 
@@ -703,6 +761,13 @@ public:
    }
 
    /*!
+    * Move constructor.
+    */
+   ConicalGradientBrush( ConicalGradientBrush&& x ) : GradientBrush( std::move( x ) )
+   {
+   }
+
+   /*!
     * Assignment operator. Returns a reference to this object.
     *
     * Makes this object reference the same server-side brush as the specified
@@ -712,6 +777,15 @@ public:
    ConicalGradientBrush& operator =( const ConicalGradientBrush& b )
    {
       SetHandle( b.handle );
+      return *this;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   ConicalGradientBrush& operator =( ConicalGradientBrush&& x )
+   {
+      Transfer( x );
       return *this;
    }
 
@@ -748,5 +822,5 @@ public:
 
 #endif   // __PCL_Brush_h
 
-// ****************************************************************************
-// EOF pcl/Brush.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Brush.h - Released 2015/07/30 17:15:18 UTC

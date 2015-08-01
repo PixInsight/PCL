@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard SplitCFA Process Module Version 01.00.05.0037
-// ****************************************************************************
-// MergeCFAInterface.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard SplitCFA Process Module Version 01.00.05.0056
+// ----------------------------------------------------------------------------
+// MergeCFAInterface.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard SplitCFA PixInsight module.
 //
-// Copyright (c) 2013-2014 Nikolay Volkov
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2013-2015 Nikolay Volkov
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,7 +49,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "MergeCFAInterface.h"
 #include "MergeCFAProcess.h"
@@ -229,7 +233,7 @@ MergeCFAInterface::GUIData::GUIData( MergeCFAInterface& w )
 
    CFA0_Label.SetTextAlignment( TextAlign::VertCenter );
    CFA0_ViewList.OnViewSelected( (ViewList::view_event_handler)&MergeCFAInterface::__ViewList_ViewSelected, w );
-   CFA0_ViewList.SetMinWidth( 200 );
+   CFA0_ViewList.SetScaledMinWidth( 200 );
 
    MergeCFA0_Sizer.SetSpacing( 4 );
    MergeCFA0_Sizer.Add( CFA0_Label );
@@ -237,7 +241,7 @@ MergeCFAInterface::GUIData::GUIData( MergeCFAInterface& w )
 
    CFA1_Label.SetTextAlignment( TextAlign::VertCenter );
    CFA1_ViewList.OnViewSelected( (ViewList::view_event_handler)&MergeCFAInterface::__ViewList_ViewSelected, w );
-   CFA1_ViewList.SetMinWidth( 200 );
+   CFA1_ViewList.SetScaledMinWidth( 200 );
 
    MergeCFA1_Sizer.SetSpacing( 4 );
    MergeCFA1_Sizer.Add( CFA1_Label );
@@ -245,7 +249,7 @@ MergeCFAInterface::GUIData::GUIData( MergeCFAInterface& w )
 
    CFA2_Label.SetTextAlignment( TextAlign::VertCenter );
    CFA2_ViewList.OnViewSelected( (ViewList::view_event_handler)&MergeCFAInterface::__ViewList_ViewSelected, w );
-   CFA2_ViewList.SetMinWidth( 200 );
+   CFA2_ViewList.SetScaledMinWidth( 200 );
 
    MergeCFA2_Sizer.SetSpacing( 4 );
    MergeCFA2_Sizer.Add( CFA2_Label );
@@ -278,5 +282,5 @@ MergeCFAInterface::GUIData::GUIData( MergeCFAInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF MergeCFAInterface.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF MergeCFAInterface.cpp - Released 2015/07/31 11:49:49 UTC

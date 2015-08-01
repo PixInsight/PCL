@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.94
-# Copyright (C) 2009-2014 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.95
+# Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Tue, 18 Nov 2014 11:28:31 GMT
+# Automatically generated on Thu, 30 Jul 2015 17:10:24 GMT
 # Project id ...... PCL
 # Project type .... StaticLibrary
 # Platform ........ Windows/vc12
@@ -100,7 +100,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <AdditionalIncludeDirectories>$(PCLINCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;__PCL_WINDOWS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -126,7 +126,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <AdditionalIncludeDirectories>$(PCLINCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;__PCL_WINDOWS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -151,7 +151,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(PCLINCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;__PCL_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -170,7 +170,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(PCLINCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;__PCL_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -208,6 +208,7 @@
     <ClCompile Include="..\..\ColorDialog.cpp"/>
     <ClCompile Include="..\..\ColorSpace.cpp"/>
     <ClCompile Include="..\..\ComboBox.cpp"/>
+    <ClCompile Include="..\..\Compression.cpp"/>
     <ClCompile Include="..\..\Console.cpp"/>
     <ClCompile Include="..\..\Control.cpp"/>
     <ClCompile Include="..\..\Convolution.cpp"/>
@@ -217,6 +218,7 @@
     <ClCompile Include="..\..\Cursor.cpp"/>
     <ClCompile Include="..\..\Diagnostics.cpp"/>
     <ClCompile Include="..\..\Dialog.cpp"/>
+    <ClCompile Include="..\..\DisplayFunction.cpp"/>
     <ClCompile Include="..\..\Edit.cpp"/>
     <ClCompile Include="..\..\Exception.cpp"/>
     <ClCompile Include="..\..\ExternalProcess.cpp"/>
@@ -265,13 +267,12 @@
     <ClCompile Include="..\..\MetaParameter.cpp"/>
     <ClCompile Include="..\..\MetaProcess.cpp"/>
     <ClCompile Include="..\..\MorphologicalTransformation.cpp"/>
+    <ClCompile Include="..\..\MultiViewSelectionDialog.cpp"/>
     <ClCompile Include="..\..\MultiscaleLinearTransform.cpp"/>
     <ClCompile Include="..\..\MultiscaleMedianTransform.cpp"/>
     <ClCompile Include="..\..\MuteStatus.cpp"/>
-    <ClCompile Include="..\..\Mutex.cpp"/>
     <ClCompile Include="..\..\NetworkTransfer.cpp"/>
     <ClCompile Include="..\..\NumericControl.cpp"/>
-    <ClCompile Include="..\..\Parser.cpp"/>
     <ClCompile Include="..\..\Pen.cpp"/>
     <ClCompile Include="..\..\PolarTransform.cpp"/>
     <ClCompile Include="..\..\PreviewSelectionDialog.cpp"/>
@@ -304,7 +305,6 @@
     <ClCompile Include="..\..\SpinBox.cpp"/>
     <ClCompile Include="..\..\SpinStatus.cpp"/>
     <ClCompile Include="..\..\StatusMonitor.cpp"/>
-    <ClCompile Include="..\..\StdAlloc.cpp"/>
     <ClCompile Include="..\..\StdStatus.cpp"/>
     <ClCompile Include="..\..\String.cpp"/>
     <ClCompile Include="..\..\SurfaceSpline.cpp"/>
@@ -315,7 +315,11 @@
     <ClCompile Include="..\..\ToolButton.cpp"/>
     <ClCompile Include="..\..\Translation.cpp"/>
     <ClCompile Include="..\..\TreeBox.cpp"/>
+    <ClCompile Include="..\..\UCCaseFolding.cpp"/>
+    <ClCompile Include="..\..\UCLowercase.cpp"/>
+    <ClCompile Include="..\..\UCUppercase.cpp"/>
     <ClCompile Include="..\..\UIObject.cpp"/>
+    <ClCompile Include="..\..\UIScaling.cpp"/>
     <ClCompile Include="..\..\UnixSignalException.cpp"/>
     <ClCompile Include="..\..\Variant.cpp"/>
     <ClCompile Include="..\..\Version.cpp"/>

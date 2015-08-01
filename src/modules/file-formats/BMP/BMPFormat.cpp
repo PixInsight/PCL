@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard BMP File Format Module Version 01.00.03.0211
-// ****************************************************************************
-// BMPFormat.cpp - Released 2014/11/14 17:18:33 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard BMP File Format Module Version 01.00.03.0230
+// ----------------------------------------------------------------------------
+// BMPFormat.cpp - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard BMP PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "BMPFormat.h"
 #include "BMPInstance.h"
@@ -67,26 +71,22 @@ IsoString BMPFormat::Name() const
 
 StringList BMPFormat::FileExtensions() const
 {
-   StringList exts;
-   exts.Add( ".bmp" );
-   return exts;
+   return StringList() << ".bmp";
 }
 
 IsoStringList BMPFormat::MimeTypes() const
 {
-   IsoStringList mimes;
-   mimes.Add( "image/bmp" );
-   mimes.Add( "image/x-bmp" );
-   mimes.Add( "image/x-bitmap" );
-   mimes.Add( "image/x-xbitmap" );
-   mimes.Add( "image/x-win-bitmap" );
-   mimes.Add( "image/x-windows-bmp" );
-   mimes.Add( "image/ms-bmp" );
-   mimes.Add( "image/x-ms-bmp" );
-   mimes.Add( "application/bmp" );
-   mimes.Add( "application/x-bmp" );
-   mimes.Add( "application/x-win-bitmap" );
-   return mimes;
+   return IsoStringList() << "image/bmp"
+                          << "image/x-bmp"
+                          << "image/x-bitmap"
+                          << "image/x-xbitmap"
+                          << "image/x-win-bitmap"
+                          << "image/x-windows-bmp"
+                          << "image/ms-bmp"
+                          << "image/x-ms-bmp"
+                          << "application/bmp"
+                          << "application/x-bmp"
+                          << "application/x-win-bitmap";
 }
 
 uint32 BMPFormat::Version() const
@@ -105,13 +105,13 @@ String BMPFormat::Implementation() const
    "<html>"
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
-   "<p>Support for the Windows Bitmap format (BMP), based on the Qt4 library.</p>"
+   "<p>Support for the Windows Bitmap format (BMP), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (c) 1992-2014 Digia Plc and/or its subsidiary(-ies).</p>"
+   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2014 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -158,16 +158,13 @@ IsoString GIFFormat::Name() const
 
 StringList GIFFormat::FileExtensions() const
 {
-   StringList exts;
-   exts.Add( ".gif" );
-   return exts;
+   return StringList() << ".gif";
 }
 
 IsoStringList GIFFormat::MimeTypes() const
 {
-   IsoStringList mimes;
-   mimes.Add( "image/gif" );  // RFC2045,RFC2046
-   return mimes;
+   // RFC2045,RFC2046
+   return IsoStringList() << "image/gif";
 }
 
 uint32 GIFFormat::Version() const
@@ -187,13 +184,13 @@ String GIFFormat::Implementation() const
    "<html>"
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
-   "<p>Read-only support for the Graphics Interchange Format (GIF), based on the Qt4 library.</p>"
+   "<p>Read-only support for the Graphics Interchange Format (GIF), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (c) 1992-2014 Digia Plc and/or its subsidiary(-ies).</p>"
+   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2014 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -240,19 +237,12 @@ IsoString ICOFormat::Name() const
 
 StringList ICOFormat::FileExtensions() const
 {
-   StringList exts;
-   exts.Add( ".ico" );
-   return exts;
+   return StringList() << ".ico";
 }
 
 IsoStringList ICOFormat::MimeTypes() const
 {
-   IsoStringList mimes;
-   mimes.Add( "image/ico" );
-   mimes.Add( "image/x-icon" );
-   mimes.Add( "application/ico" );
-   mimes.Add( "application/x-ico" );
-   return mimes;
+   return IsoStringList() << "image/ico" << "image/x-icon" << "application/ico" << "application/x-ico";
 }
 
 uint32 ICOFormat::Version() const
@@ -272,13 +262,13 @@ String ICOFormat::Implementation() const
    "<html>"
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
-   "<p>Support for the Windows Icon format (ICO), based on the Qt4 library.</p>"
+   "<p>Support for the Windows Icon format (ICO), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (c) 1992-2014 Digia Plc and/or its subsidiary(-ies).</p>"
+   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2014 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -325,18 +315,12 @@ IsoString MNGFormat::Name() const
 
 StringList MNGFormat::FileExtensions() const
 {
-   StringList exts;
-   exts.Add( ".mng" );
-   return exts;
+   return StringList() << ".mng";
 }
 
 IsoStringList MNGFormat::MimeTypes() const
 {
-   IsoStringList mimes;
-   mimes.Add( "image/mng" );
-   mimes.Add( "video/mng" );
-   mimes.Add( "video/x-mng" );
-   return mimes;
+   return IsoStringList() << "image/mng" << "video/mng" << "video/x-mng";
 }
 
 uint32 MNGFormat::Version() const
@@ -356,13 +340,13 @@ String MNGFormat::Implementation() const
    "<html>"
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
-   "<p>Read-only support for the Multiple Network Graphics format (MNG), based on the Qt4 library.</p>"
+   "<p>Read-only support for the Multiple Network Graphics format (MNG), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (c) 1992-2014 Digia Plc and/or its subsidiary(-ies).</p>"
+   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2014 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -409,19 +393,12 @@ IsoString PBMFormat::Name() const
 
 StringList PBMFormat::FileExtensions() const
 {
-   StringList exts;
-   exts.Add( ".pbm" );
-   return exts;
+   return StringList() << ".pbm";
 }
 
 IsoStringList PBMFormat::MimeTypes() const
 {
-   IsoStringList mimes;
-   mimes.Add( "image/pbm" );
-   mimes.Add( "image/x-pbm" );
-   mimes.Add( "image/portable bitmap" );
-   mimes.Add( "image/x-portable-bitmap" );
-   return mimes;
+   return IsoStringList() << "image/pbm" << "image/x-pbm" << "image/portable bitmap" << "image/x-portable-bitmap";
 }
 
 uint32 PBMFormat::Version() const
@@ -441,13 +418,13 @@ String PBMFormat::Implementation() const
    "<html>"
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
-   "<p>Read-only support for the Portable Bitmap format (PBM), based on the Qt4 library.</p>"
+   "<p>Read-only support for the Portable Bitmap format (PBM), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (c) 1992-2014 Digia Plc and/or its subsidiary(-ies).</p>"
+   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2014 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -494,19 +471,12 @@ IsoString PGMFormat::Name() const
 
 StringList PGMFormat::FileExtensions() const
 {
-   StringList exts;
-   exts.Add( ".pgm" );
-   return exts;
+   return StringList() << ".pgm";
 }
 
 IsoStringList PGMFormat::MimeTypes() const
 {
-   IsoStringList mimes;
-   mimes.Add( "image/pgm" );
-   mimes.Add( "image/x-pgm" );
-   mimes.Add( "image/portable graymap" );
-   mimes.Add( "image/x-portable-graymap" );
-   return mimes;
+   return IsoStringList() << "image/pgm" << "image/x-pgm" << "image/portable graymap" << "image/x-portable-graymap";
 }
 
 uint32 PGMFormat::Version() const
@@ -526,13 +496,13 @@ String PGMFormat::Implementation() const
    "<html>"
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
-   "<p>Read-only support for the Portable Graymap format (PGM), based on the Qt4 library.</p>"
+   "<p>Read-only support for the Portable Graymap format (PGM), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (c) 1992-2014 Digia Plc and/or its subsidiary(-ies).</p>"
+   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2014 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -579,18 +549,12 @@ IsoString PNGFormat::Name() const
 
 StringList PNGFormat::FileExtensions() const
 {
-   StringList exts;
-   exts.Add( ".png" );
-   return exts;
+   return StringList() << ".png";
 }
 
 IsoStringList PNGFormat::MimeTypes() const
 {
-   IsoStringList mimes;
-   mimes.Add( "image/png" );
-   mimes.Add( "application/png" );
-   mimes.Add( "application/x-png" );
-   return mimes;
+   return IsoStringList() << "image/png" << "application/png" << "application/x-png";
 }
 
 uint32 PNGFormat::Version() const
@@ -610,13 +574,13 @@ String PNGFormat::Implementation() const
    "<html>"
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
-   "<p>Basic support for the Portable Network Graphics format (PNG), based on the Qt4 library.</p>"
+   "<p>Basic support for the Portable Network Graphics format (PNG), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (c) 1992-2014 Digia Plc and/or its subsidiary(-ies).</p>"
+   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2014 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -663,21 +627,17 @@ IsoString PPMFormat::Name() const
 
 StringList PPMFormat::FileExtensions() const
 {
-   StringList exts;
-   exts.Add( ".ppm" );
-   return exts;
+   return StringList() << ".ppm";
 }
 
 IsoStringList PPMFormat::MimeTypes() const
 {
-   IsoStringList mimes;
-   mimes.Add( "image/ppm" );
-   mimes.Add( "image/x-portable-pixmap" );
-   mimes.Add( "image/x-p" );
-   mimes.Add( "image/x-ppm" );
-   mimes.Add( "application/ppm" );
-   mimes.Add( "application/x-ppm" );
-   return mimes;
+   return IsoStringList() << "image/ppm"
+                          << "image/x-portable-pixmap"
+                          << "image/x-p"
+                          << "image/x-ppm"
+                          << "application/ppm"
+                          << "application/x-ppm";
 }
 
 uint32 PPMFormat::Version() const
@@ -697,13 +657,13 @@ String PPMFormat::Implementation() const
    "<html>"
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
-   "<p>Support for the Portable Pixmap format (PPM), based on the Qt4 library.</p>"
+   "<p>Support for the Portable Pixmap format (PPM), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (c) 1992-2014 Digia Plc and/or its subsidiary(-ies).</p>"
+   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2014 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -750,17 +710,12 @@ IsoString XBMFormat::Name() const
 
 StringList XBMFormat::FileExtensions() const
 {
-   StringList exts;
-   exts.Add( ".xbm" );
-   return exts;
+   return StringList() << ".xbm";
 }
 
 IsoStringList XBMFormat::MimeTypes() const
 {
-   IsoStringList mimes;
-   mimes.Add( "image/xbm" );
-   mimes.Add( "image/x-xbitmap" );
-   return mimes;
+   return IsoStringList() << "image/xbm" << "image/x-xbitmap";
 }
 
 uint32 XBMFormat::Version() const
@@ -780,13 +735,13 @@ String XBMFormat::Implementation() const
    "<html>"
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
-   "<p>Support for the X11 Bitmap format (XBM), based on the Qt4 library.</p>"
+   "<p>Support for the X11 Bitmap format (XBM), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (c) 1992-2014 Digia Plc and/or its subsidiary(-ies).</p>"
+   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2014 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -833,18 +788,12 @@ IsoString XPMFormat::Name() const
 
 StringList XPMFormat::FileExtensions() const
 {
-   StringList exts;
-   exts.Add( ".xpm" );
-   return exts;
+   return StringList() << ".xpm";
 }
 
 IsoStringList XPMFormat::MimeTypes() const
 {
-   IsoStringList mimes;
-   mimes.Add( "image/xpm" );
-   mimes.Add( "image/x-xpm" );
-   mimes.Add( "image/x-xpixmap" );
-   return mimes;
+   return IsoStringList() << "image/xpm" << "image/x-xpm" << "image/x-xpixmap";
 }
 
 uint32 XPMFormat::Version() const
@@ -864,13 +813,13 @@ String XPMFormat::Implementation() const
    "<html>"
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
-   "<p>Support for the X11 Pixmap format (XPM), based on the Qt4 library.</p>"
+   "<p>Support for the X11 Pixmap format (XPM), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (c) 1992-2014 Digia Plc and/or its subsidiary(-ies).</p>"
+   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2014 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -917,23 +866,18 @@ IsoString TGAFormat::Name() const
 
 StringList TGAFormat::FileExtensions() const
 {
-   StringList exts;
-   exts.Add( ".tga" );
-   exts.Add( ".tpic" );
-   return exts;
+   return StringList() << ".tga" << ".tpic";
 }
 
 IsoStringList TGAFormat::MimeTypes() const
 {
-   IsoStringList mimes;
-   mimes.Add( "image/tga" );
-   mimes.Add( "image/x-tga" );
-   mimes.Add( "image/targa" );
-   mimes.Add( "image/x-targa" );
-   mimes.Add( "application/tga" );
-   mimes.Add( "application/x-tga" );
-   mimes.Add( "application/x-targa" );
-   return mimes;
+   return IsoStringList() << "image/tga"
+                          << "image/x-tga"
+                          << "image/targa"
+                          << "image/x-targa"
+                          << "application/tga"
+                          << "application/x-tga"
+                          << "application/x-targa";
 }
 
 uint32 TGAFormat::Version() const
@@ -952,15 +896,15 @@ String TGAFormat::Implementation() const
    "<html>"
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
-   "<p>Read-only support for the Truevision TGA format (TARGA), based on the Qt4 library.</p>"
+   "<p>Read-only support for the Truevision TGA format (TARGA), based on the Qt5 library.</p>"
 
    "<p>RLE compressed TGA files are not supported by this reader. Only uncompressed images can be read.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (c) 1992-2014 Digia Plc and/or its subsidiary(-ies).</p>"
+   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2014 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -1007,17 +951,12 @@ IsoString SVGFormat::Name() const
 
 StringList SVGFormat::FileExtensions() const
 {
-   StringList exts;
-   exts.Add( ".svg" );
-   return exts;
+   return StringList() << ".svg";
 }
 
 IsoStringList SVGFormat::MimeTypes() const
 {
-   IsoStringList mimes;
-   mimes.Add( "image/svg" );
-   mimes.Add( "image/svg+xml" );
-   return mimes;
+   return IsoStringList() << "image/svg" << "image/svg+xml";
 }
 
 uint32 SVGFormat::Version() const
@@ -1037,13 +976,13 @@ String SVGFormat::Implementation() const
    "<html>"
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
-   "<p>Read-only support for the Scalable Vector Graphics format (SVG), based on the Qt4 library.</p>"
+   "<p>Read-only support for the Scalable Vector Graphics format (SVG), based on the Qt5 library.</p>"
 
    "<p>Qt Library:<br/>"
-   "Copyright (c) 1992-2014 Digia Plc and/or its subsidiary(-ies).</p>"
+   "Copyright (C) 2014-2015 Digia Plc and/or its subsidiary(-ies)</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2014 Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2015 Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -1081,5 +1020,5 @@ FileFormatImplementation* SVGFormat::Create() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF BMPFormat.cpp - Released 2014/11/14 17:18:33 UTC
+// ----------------------------------------------------------------------------
+// EOF BMPFormat.cpp - Released 2015/07/31 11:49:40 UTC

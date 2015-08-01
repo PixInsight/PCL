@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Process.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Process.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/Process.h>
 
@@ -60,10 +63,10 @@ class ProcessPrivate
 {
 public:
 
-   meta_process_handle handle;
-   api_process_props   properties;
+   meta_process_handle    handle;
+   api_process_properties properties;
 
-   ProcessPrivate() : handle( 0 )
+   ProcessPrivate() : handle( nullptr )
    {
       GetProperties();
    }
@@ -75,7 +78,7 @@ public:
 
    ~ProcessPrivate()
    {
-      handle = 0;
+      handle = nullptr;
       GetProperties();
    }
 
@@ -84,11 +87,12 @@ private:
    void GetProperties()
    {
       // Strict aliasing safe code
-      union { api_process_props properties; uint32 u; } v;
+      static_assert( sizeof( api_process_properties ) <= sizeof( uint64 ), "Invalid sizeof( api_process_properties )" );
+      union { api_process_properties properties; uint64 u; } v;
       v.u = 0u;
       properties = v.properties;
 
-      if ( handle != 0 )
+      if ( handle != nullptr )
          if ( !(*API->Process->GetProcessProperties)( handle, &properties ) )
             throw APIFunctionError( "GetProcessProperties" );
    }
@@ -96,11 +100,10 @@ private:
 
 // ----------------------------------------------------------------------------
 
-Process::Process( const IsoString& id ) :
-ProcessBase(),
-data( new ProcessPrivate( (*API->Process->GetProcessByName)( ModuleHandle(), id.c_str() ) ) )
+Process::Process( const IsoString& id ) : ProcessBase(), data( nullptr )
 {
-   if ( data->handle == 0 )
+   data = new ProcessPrivate( (*API->Process->GetProcessByName)( ModuleHandle(), id.c_str() ) );
+   if ( data->handle == nullptr )
    {
       if ( id.IsEmpty() )
          throw Error( "Process: Empty process identifier specified" );
@@ -111,24 +114,22 @@ data( new ProcessPrivate( (*API->Process->GetProcessByName)( ModuleHandle(), id.
    }
 }
 
-Process::Process( const Process& p ) :
-ProcessBase(),
-data( new ProcessPrivate( p.data->handle ) )
+Process::Process( const Process& p ) : ProcessBase(), data( nullptr )
 {
+   data = new ProcessPrivate( p.data->handle );
 }
 
-Process::Process( const void* handle ) :
-ProcessBase(),
-data( new ProcessPrivate( handle ) )
+Process::Process( const void* handle ) : ProcessBase(), data( nullptr )
 {
-   if ( data->handle == 0 )
+   data = new ProcessPrivate( handle );
+   if ( data->handle == nullptr )
       throw Error( "Process: Null process handle" );
 }
 
 Process::~Process()
 {
-   if ( data != 0 )
-      delete data, data = 0;
+   if ( data != nullptr )
+      delete data, data = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -139,14 +140,13 @@ IsoString Process::Id() const
    (*API->Process->GetProcessIdentifier)( data->handle, 0, &len );
 
    IsoString id;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      id.Reserve( len );
+      id.SetLength( len );
       if ( (*API->Process->GetProcessIdentifier)( data->handle, id.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetProcessIdentifier" );
+      id.ResizeToNullTerminated();
    }
-
    return id;
 }
 
@@ -158,16 +158,15 @@ IsoStringList Process::Aliases() const
    (*API->Process->GetProcessAliasIdentifiers)( data->handle, 0, &len );
 
    IsoStringList aliases;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
       IsoString csAliases;
-      csAliases.Reserve( len );
+      csAliases.SetLength( len );
       if ( (*API->Process->GetProcessAliasIdentifiers)( data->handle, csAliases.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetProcessAliasIdentifiers" );
+      csAliases.ResizeToNullTerminated();
       csAliases.Break( aliases, ',' );
    }
-
    return aliases;
 }
 
@@ -179,16 +178,15 @@ IsoStringList Process::Categories() const
    (*API->Process->GetProcessCategory)( data->handle, 0, &len );
 
    IsoStringList categories;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
       IsoString csCategories;
-      csCategories.Reserve( len );
+      csCategories.SetLength( len );
       if ( (*API->Process->GetProcessCategory)( data->handle, csCategories.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetProcessCategory" );
+      csCategories.ResizeToNullTerminated();
       csCategories.Break( categories, ',' );
    }
-
    return categories;
 }
 
@@ -207,14 +205,13 @@ String Process::Description() const
    (*API->Process->GetProcessDescription)( data->handle, 0, &len );
 
    String description;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      description.Reserve( len );
+      description.SetLength( len );
       if ( (*API->Process->GetProcessDescription)( data->handle, description.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetProcessDescription" );
+      description.ResizeToNullTerminated();
    }
-
    return description;
 }
 
@@ -226,14 +223,13 @@ String Process::ScriptComment() const
    (*API->Process->GetProcessScriptComment)( data->handle, 0, &len );
 
    String comment;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      comment.Reserve( len );
+      comment.SetLength( len );
       if ( (*API->Process->GetProcessScriptComment)( data->handle, comment.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetProcessScriptComment" );
+      comment.ResizeToNullTerminated();
    }
-
    return comment;
 }
 
@@ -394,8 +390,7 @@ IsoStringList Process::AllProcessCategories()
    (*API->Process->EnumerateProcessCategories)( 0, 0, &len, 0 );
 
    IsoStringList categories;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
       IsoString category;
       category.Reserve( len );
@@ -403,7 +398,6 @@ IsoStringList Process::AllProcessCategories()
                                           category.c_str(), &len, &categories ) == api_false )
          throw APIFunctionError( "EnumerateProcessCategories" );
    }
-
    return categories;
 }
 
@@ -439,7 +433,7 @@ api_bool InternalProcessEnumerator::CategoryCallback( meta_process_handle handle
 {
 #define enumeration reinterpret_cast<ProcessesByCategoryEnumerationData*>( data )
    Process P( handle );
-   if ( P.Categories().Has( enumeration->category ) )
+   if ( P.Categories().Contains( enumeration->category ) )
       enumeration->processes.Add( P );
    return api_true;
 #undef enumeration
@@ -457,5 +451,5 @@ Array<Process> Process::ProcessesByCategory( const IsoString& category )
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/Process.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Process.cpp - Released 2015/07/30 17:15:31 UTC

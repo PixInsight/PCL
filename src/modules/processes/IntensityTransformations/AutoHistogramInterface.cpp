@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard IntensityTransformations Process Module Version 01.07.00.0287
-// ****************************************************************************
-// AutoHistogramInterface.cpp - Released 2014/11/14 17:19:23 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard IntensityTransformations Process Module Version 01.07.00.0306
+// ----------------------------------------------------------------------------
+// AutoHistogramInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "AutoHistogramInterface.h"
 #include "AutoHistogramParameters.h"
@@ -255,14 +259,9 @@ void AutoHistogramInterface::__Click( Button& sender, bool checked )
 
          instance.p_stretchTogether = !view.IsColor();
 
-         if ( !view.AreStatisticsAvailable() )
-            view.CalculateStatistics();
-
-         View::statistics_list S;
-         view.GetStatistics( S );
-         for ( size_type c = 0; c < S.Length(); ++c )
-            instance.p_targetMedian[c] = S[c]->Median();
-         S.Destroy();
+         DVector median = view.ComputeOrFetchProperty( "Median" ).ToDVector();
+         for ( int c = 0; c < median.Length(); ++c )
+            instance.p_targetMedian[c] = median[c];
       }
    }
 
@@ -344,9 +343,9 @@ void AutoHistogramInterface::__Paint( Control& sender, const Rect& /*updateRect*
    {
       Graphics g( sender );
       g.SetBrush( RGBAColor( float( instance.p_targetMedian[0] ),
-                           float( instance.p_targetMedian[1] ),
-                           float( instance.p_targetMedian[2] ) ) );
-      g.SetPen( RGBAColor( 0, 0, 0 ) );
+                             float( instance.p_targetMedian[1] ),
+                             float( instance.p_targetMedian[2] ) ) );
+      g.SetPen( 0xff000000, sender.DisplayPixelRatio() );
       g.DrawRect( sender.BoundsRect() );
    }
 }
@@ -381,7 +380,7 @@ AutoHistogramInterface::GUIData::GUIData( AutoHistogramInterface& w )
 
    ClipLowRK_NumericControl.label.SetText( "RGB/K:" );
    ClipLowRK_NumericControl.label.SetFixedWidth( labelWidth );
-   ClipLowRK_NumericControl.slider.SetMinWidth( 200 );
+   ClipLowRK_NumericControl.slider.SetScaledMinWidth( 200 );
    ClipLowRK_NumericControl.slider.SetRange( 0, 100 );
    ClipLowRK_NumericControl.SetReal();
    ClipLowRK_NumericControl.SetRange( 0, 1 );
@@ -390,7 +389,7 @@ AutoHistogramInterface::GUIData::GUIData( AutoHistogramInterface& w )
 
    ClipLowG_NumericControl.label.SetText( "G:" );
    ClipLowG_NumericControl.label.SetFixedWidth( labelWidth );
-   ClipLowG_NumericControl.slider.SetMinWidth( 200 );
+   ClipLowG_NumericControl.slider.SetScaledMinWidth( 200 );
    ClipLowG_NumericControl.slider.SetRange( 0, 100 );
    ClipLowG_NumericControl.SetReal();
    ClipLowG_NumericControl.SetRange( 0, 1 );
@@ -399,7 +398,7 @@ AutoHistogramInterface::GUIData::GUIData( AutoHistogramInterface& w )
 
    ClipLowB_NumericControl.label.SetText( "B:" );
    ClipLowB_NumericControl.label.SetFixedWidth( labelWidth );
-   ClipLowB_NumericControl.slider.SetMinWidth( 200 );
+   ClipLowB_NumericControl.slider.SetScaledMinWidth( 200 );
    ClipLowB_NumericControl.slider.SetRange( 0, 100 );
    ClipLowB_NumericControl.SetReal();
    ClipLowB_NumericControl.SetRange( 0, 1 );
@@ -417,7 +416,7 @@ AutoHistogramInterface::GUIData::GUIData( AutoHistogramInterface& w )
 
    ClipHighRK_NumericControl.label.SetText( "RGB/K:" );
    ClipHighRK_NumericControl.label.SetFixedWidth( labelWidth );
-   ClipHighRK_NumericControl.slider.SetMinWidth( 200 );
+   ClipHighRK_NumericControl.slider.SetScaledMinWidth( 200 );
    ClipHighRK_NumericControl.slider.SetRange( 0, 100 );
    ClipHighRK_NumericControl.SetReal();
    ClipHighRK_NumericControl.SetRange( 0, 1 );
@@ -426,7 +425,7 @@ AutoHistogramInterface::GUIData::GUIData( AutoHistogramInterface& w )
 
    ClipHighG_NumericControl.label.SetText( "G:" );
    ClipHighG_NumericControl.label.SetFixedWidth( labelWidth );
-   ClipHighG_NumericControl.slider.SetMinWidth( 200 );
+   ClipHighG_NumericControl.slider.SetScaledMinWidth( 200 );
    ClipHighG_NumericControl.slider.SetRange( 0, 100 );
    ClipHighG_NumericControl.SetReal();
    ClipHighG_NumericControl.SetRange( 0, 1 );
@@ -435,7 +434,7 @@ AutoHistogramInterface::GUIData::GUIData( AutoHistogramInterface& w )
 
    ClipHighB_NumericControl.label.SetText( "B:" );
    ClipHighB_NumericControl.label.SetFixedWidth( labelWidth );
-   ClipHighB_NumericControl.slider.SetMinWidth( 200 );
+   ClipHighB_NumericControl.slider.SetScaledMinWidth( 200 );
    ClipHighB_NumericControl.slider.SetRange( 0, 100 );
    ClipHighB_NumericControl.SetReal();
    ClipHighB_NumericControl.SetRange( 0, 1 );
@@ -504,7 +503,7 @@ AutoHistogramInterface::GUIData::GUIData( AutoHistogramInterface& w )
 
    TargetMedianRK_NumericControl.label.SetText( "RGB/K:" );
    TargetMedianRK_NumericControl.label.SetFixedWidth( labelWidth );
-   TargetMedianRK_NumericControl.slider.SetMinWidth( 250 );
+   TargetMedianRK_NumericControl.slider.SetScaledMinWidth( 250 );
    TargetMedianRK_NumericControl.slider.SetRange( 0, 250 );
    TargetMedianRK_NumericControl.SetReal();
    TargetMedianRK_NumericControl.SetRange( TheAHTargetMedianRParameter->MinimumValue(), TheAHTargetMedianRParameter->MaximumValue() );
@@ -513,7 +512,7 @@ AutoHistogramInterface::GUIData::GUIData( AutoHistogramInterface& w )
 
    TargetMedianG_NumericControl.label.SetText( "G:" );
    TargetMedianG_NumericControl.label.SetFixedWidth( labelWidth );
-   TargetMedianG_NumericControl.slider.SetMinWidth( 250 );
+   TargetMedianG_NumericControl.slider.SetScaledMinWidth( 250 );
    TargetMedianG_NumericControl.slider.SetRange( 0, 250 );
    TargetMedianG_NumericControl.SetReal();
    TargetMedianG_NumericControl.SetRange( TheAHTargetMedianGParameter->MinimumValue(), TheAHTargetMedianGParameter->MaximumValue() );
@@ -522,7 +521,7 @@ AutoHistogramInterface::GUIData::GUIData( AutoHistogramInterface& w )
 
    TargetMedianB_NumericControl.label.SetText( "B:" );
    TargetMedianB_NumericControl.label.SetFixedWidth( labelWidth );
-   TargetMedianB_NumericControl.slider.SetMinWidth( 250 );
+   TargetMedianB_NumericControl.slider.SetScaledMinWidth( 250 );
    TargetMedianB_NumericControl.slider.SetRange( 0, 250 );
    TargetMedianB_NumericControl.SetReal();
    TargetMedianB_NumericControl.SetRange( TheAHTargetMedianBParameter->MinimumValue(), TheAHTargetMedianBParameter->MaximumValue() );
@@ -534,7 +533,7 @@ AutoHistogramInterface::GUIData::GUIData( AutoHistogramInterface& w )
    TargetMedianValues_Sizer.Add( TargetMedianG_NumericControl );
    TargetMedianValues_Sizer.Add( TargetMedianB_NumericControl );
 
-   ColorSample_Control.SetFixedWidth( 60 );
+   ColorSample_Control.SetScaledFixedWidth( 60 );
    ColorSample_Control.OnPaint( (Control::paint_event_handler)&AutoHistogramInterface::__Paint, w );
 
    TargetMedian_Sizer.SetSpacing( 4 );
@@ -544,7 +543,7 @@ AutoHistogramInterface::GUIData::GUIData( AutoHistogramInterface& w )
    CaptureReadouts_CheckBox.SetText( "Capture readouts" );
    CaptureReadouts_CheckBox.SetToolTip( "<p>Read target median values from image readouts when this tool is visible</p>" );
 
-   CaptureReadouts_Sizer.AddSpacing( labelWidth+4 );
+   CaptureReadouts_Sizer.AddUnscaledSpacing( labelWidth + w.LogicalPixelsToPhysical( 4 ) );
    CaptureReadouts_Sizer.Add( CaptureReadouts_CheckBox );
 
    SetToActiveImage_Button.SetText( "Set As Active Image" );
@@ -582,5 +581,5 @@ AutoHistogramInterface::GUIData::GUIData( AutoHistogramInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF AutoHistogramInterface.cpp - Released 2014/11/14 17:19:23 UTC
+// ----------------------------------------------------------------------------
+// EOF AutoHistogramInterface.cpp - Released 2015/07/31 11:49:48 UTC

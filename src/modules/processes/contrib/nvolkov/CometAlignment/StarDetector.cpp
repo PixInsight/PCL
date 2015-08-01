@@ -1,9 +1,13 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.06.0070
-// ****************************************************************************
-// StarDetector.cpp - Released 2015/03/04 19:50:08 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard CometAlignment Process Module Version 01.02.06.0089
+// ----------------------------------------------------------------------------
+// StarDetector.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard CometAlignment PixInsight module.
 //
 // Copyright (c) 2012-2015 Nikolay Volkov
@@ -45,7 +49,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "StarDetector.h"
 
@@ -229,7 +233,7 @@ StarDetector::Status Detect( DPoint& pos, int& radius, float threshold, const Ge
    return StarDetector::NoConvergence;
 }
 
-StarDetector::StarDetector( const ImageVariant& v, int channel,
+StarDetector::StarDetector( const ImageVariant& image, int channel,
                             const DPoint& pos, int radius, float threshold, bool autoAperture )
 {
    star.status = NotDetected;
@@ -237,43 +241,42 @@ StarDetector::StarDetector( const ImageVariant& v, int channel,
    star.rect = pos;
    star.pos = pos;
 
-   const AbstractImage* img = v.AnyImage();
-   if ( img != 0 )
+   if ( image )
    {
-      img->SelectChannel( channel );
+      image->SelectChannel( channel );
 
-      if ( v.IsFloatSample() )
-         switch ( v.BitsPerSample() )
+      if ( image.IsFloatSample() )
+         switch ( image.BitsPerSample() )
          {
-         case 32: star.status = Detect( star.pos, radius, threshold, *static_cast<const Image*>( img ) ); break;
-         case 64: star.status = Detect( star.pos, radius, threshold, *static_cast<const DImage*>( img ) ); break;
+         case 32: star.status = Detect( star.pos, radius, threshold, static_cast<const Image&>( *image ) ); break;
+         case 64: star.status = Detect( star.pos, radius, threshold, static_cast<const DImage&>( *image ) ); break;
          }
       else
-         switch ( v.BitsPerSample() )
+         switch ( image.BitsPerSample() )
          {
-         case  8: star.status = Detect( star.pos, radius, threshold, *static_cast<const UInt8Image*>( img ) ); break;
-         case 16: star.status = Detect( star.pos, radius, threshold, *static_cast<const UInt16Image*>( img ) ); break;
-         case 32: star.status = Detect( star.pos, radius, threshold, *static_cast<const UInt32Image*>( img ) ); break;
+         case  8: star.status = Detect( star.pos, radius, threshold, static_cast<const UInt8Image&>( *image ) ); break;
+         case 16: star.status = Detect( star.pos, radius, threshold, static_cast<const UInt16Image&>( *image ) ); break;
+         case 32: star.status = Detect( star.pos, radius, threshold, static_cast<const UInt32Image&>( *image ) ); break;
          }
-   }
 
-   star.rect = DRect( star.pos - double( radius ), star.pos + double( radius ) );
+      star.rect = DRect( star.pos - double( radius ), star.pos + double( radius ) );
 
-   if ( autoAperture && star )
-   {
-      Rect r = star.rect.RoundedToInt();
-
-      for ( double m0 = 1; ; )
+      if ( autoAperture && star )
       {
-         img->SelectRectangle( r );
-         double m = Matrix::FromImage( v ).Median();
-         if ( m0 < m || (m0 - m)/m0 < 0.01 )
-            break;
-         m0 = m;
-         r.InflateBy( 1, 1 );
-      }
+         Rect r = star.rect.RoundedToInt();
 
-      star.rect = r;
+         for ( double m0 = 1; ; )
+         {
+            image->SelectRectangle( r );
+            double m = Matrix::FromImage( image ).Median();
+            if ( m0 < m || (m0 - m)/m0 < 0.01 )
+               break;
+            m0 = m;
+            r.InflateBy( 1, 1 );
+         }
+
+         star.rect = r;
+      }
    }
 }
 
@@ -281,5 +284,5 @@ StarDetector::StarDetector( const ImageVariant& v, int channel,
 
 } // pcl
 
-// ****************************************************************************
-// EOF StarDetector.cpp - Released 2015/03/04 19:50:08 UTC
+// ----------------------------------------------------------------------------
+// EOF StarDetector.cpp - Released 2015/07/31 11:49:49 UTC

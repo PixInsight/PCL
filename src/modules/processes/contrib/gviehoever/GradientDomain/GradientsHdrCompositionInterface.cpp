@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard GradientDomain Process Module Version 00.06.04.0098
-// ****************************************************************************
-// GradientsHdrCompositionInterface.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard GradientDomain Process Module Version 00.06.04.0117
+// ----------------------------------------------------------------------------
+// GradientsHdrCompositionInterface.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard GradientDomain PixInsight module.
 //
-// Copyright (c) Georg Viehoever, 2011-2014. Licensed under LGPL 2.1
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) Georg Viehoever, 2011-2015. Licensed under LGPL 2.1
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -22,7 +26,7 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "GradientsHdrCompositionInterface.h"
 #include "GradientsHdrCompositionProcess.h"
@@ -33,7 +37,7 @@
 #include <pcl/GlobalSettings.h>
 #include <pcl/ErrorHandler.h>
 
-#define IMAGELIST_MINHEIGHT( fnt )  (8*fnt.Height() + 2)
+#define IMAGELIST_MINHEIGHT( fnt )  RoundInt( 8.125*fnt.Height() )
 
 namespace pcl
 {
@@ -180,10 +184,10 @@ void GradientsHdrCompositionInterface::UpdateTargetImageItem( size_type i )
    node->SetText( 0, String( i+1 ) );
    node->SetAlignment( 0, TextAlign::Right );
 
-   node->SetIcon( 1, Bitmap( String( item.enabled ? ":/icons/enabled.png" : ":/icons/disabled.png" ) ) );
+   node->SetIcon( 1, Bitmap( ScaledResource( item.enabled ? ":/icons/enabled.png" : ":/icons/disabled.png" ) ) );
    node->SetAlignment( 1, TextAlign::Left );
 
-   node->SetIcon( 2, Bitmap( String( ":/icons/document.png" ) ) );
+   node->SetIcon( 2, Bitmap( ScaledResource( ":/icons/document.png" ) ) );
    if ( GUI->FullPaths_CheckBox.IsChecked() )
       node->SetText( 2, item.path );
    else
@@ -483,7 +487,7 @@ GradientsHdrCompositionInterface::GUIData::GUIData( GradientsHdrCompositionInter
                            "Smallest value is neutral. Use if result image is too faint</p>";
    LogBias_NumericControl.label.SetText( "Log10 Bias:" );
    LogBias_NumericControl.label.SetFixedWidth( labelWidth1 );
-   LogBias_NumericControl.slider.SetMinWidth( 250 );
+   LogBias_NumericControl.slider.SetScaledMinWidth( 250 );
    LogBias_NumericControl.slider.SetRange( 0, 100 );
    LogBias_NumericControl.SetReal();
    LogBias_NumericControl.SetRange( TheGradientsHdrCompositionLogBiasParameter->MinimumValue(), TheGradientsHdrCompositionLogBiasParameter->MaximumValue() );
@@ -568,5 +572,5 @@ GradientsHdrCompositionInterface::GUIData::GUIData( GradientsHdrCompositionInter
 
 } // pcl
 
-// ****************************************************************************
-// EOF GradientsHdrCompositionInterface.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF GradientsHdrCompositionInterface.cpp - Released 2015/07/31 11:49:49 UTC

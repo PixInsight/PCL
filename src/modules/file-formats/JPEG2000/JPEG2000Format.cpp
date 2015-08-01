@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard JPEG2000 File Format Module Version 01.00.01.0214
-// ****************************************************************************
-// JPEG2000Format.cpp - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard JPEG2000 File Format Module Version 01.00.01.0233
+// ----------------------------------------------------------------------------
+// JPEG2000Format.cpp - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard JPEG2000 PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "JPEG2000Format.h"
 #include "JPEG2000PreferencesDialog.h"
@@ -67,9 +71,7 @@ IsoString JPCFormat::Name() const
 
 StringList JPCFormat::FileExtensions() const
 {
-   StringList exts;
-   exts.Add( ".jpc" ); exts.Add( ".j2c" );
-   return exts;
+   return StringList() << ".jpc" << ".j2c";
 }
 
 IsoStringList JPCFormat::MimeTypes() const
@@ -103,7 +105,7 @@ String JPCFormat::Implementation() const
    "Copyright (c) 2001-2007 Michael David Adams</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2014, Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2015, Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -124,13 +126,13 @@ bool JPCFormat::UsesFormatSpecificData() const
 
 bool JPCFormat::ValidateFormatSpecificData( const void* data ) const
 {
-   return JPEG2000FormatOptions::FromGenericDataBlock( data ) != 0;
+   return JPEG2000FormatOptions::FromGenericDataBlock( data ) != nullptr;
 }
 
 void JPCFormat::DisposeFormatSpecificData( void* data ) const
 {
    JPEG2000FormatOptions* o = JPEG2000FormatOptions::FromGenericDataBlock( data );
-   if ( o != 0 )
+   if ( o != nullptr )
       delete o;
 }
 
@@ -197,19 +199,13 @@ IsoString JP2Format::Name() const
 
 StringList JP2Format::FileExtensions() const
 {
-   StringList exts;
-   exts.Add( ".jp2" ); exts.Add( ".jpx" ); exts.Add( ".jpk" ); exts.Add( ".j2k" );
-   return exts;
+   return StringList() << ".jp2" << ".jpx" << ".jpk" << ".j2k";
 }
 
 IsoStringList JP2Format::MimeTypes() const
 {
-   IsoStringList mimes;
-   mimes.Add( "image/jp2" ); // RFC3745
-   mimes.Add( "image/jpeg2000" );
-   mimes.Add( "image/jpeg2000-image" );
-   mimes.Add( "image/x-jpeg2000-image" );
-   return mimes;
+   // RFC3745
+   return IsoStringList() << "image/jp2" << "image/jpeg2000" << "image/jpeg2000-image" << "image/x-jpeg2000-image";
 }
 
 String JP2Format::Description() const
@@ -261,12 +257,6 @@ bool JP2Format::EditPreferences() const
 
       Settings::Write( "JP2OverrideICCProfileEmbedding", overrides.overrideICCProfileEmbedding );
       Settings::Write( "JP2EmbedICCProfiles",            overrides.embedICCProfiles );
-      Settings::Write( "JP2OverrideMetadataEmbedding",   overrides.overrideMetadataEmbedding );
-      Settings::Write( "JP2EmbedMetadata",               overrides.embedMetadata );
-      /*
-      Settings::Write( "JP2OverrideThumbnailEmbedding",  overrides.overrideThumbnailEmbedding );
-      Settings::Write( "JP2EmbedThumbnails",             overrides.embedThumbnails );
-      */
 
       return true;
    }
@@ -297,12 +287,6 @@ JP2Format::EmbeddingOverrides JP2Format::DefaultEmbeddingOverrides()
 
    Settings::Read( "JP2OverrideICCProfileEmbedding", overrides.overrideICCProfileEmbedding );
    Settings::Read( "JP2EmbedICCProfiles",            overrides.embedICCProfiles );
-   Settings::Read( "JP2OverrideMetadataEmbedding",   overrides.overrideMetadataEmbedding );
-   Settings::Read( "JP2EmbedMetadata",               overrides.embedMetadata );
-   /*
-   Settings::Read( "JP2OverrideThumbnailEmbedding",  overrides.overrideThumbnailEmbedding );
-   Settings::Read( "JP2EmbedThumbnails",             overrides.embedThumbnails );
-   */
 
    return overrides;
 }
@@ -312,23 +296,23 @@ JP2Format::EmbeddingOverrides JP2Format::DefaultEmbeddingOverrides()
 #define JP2K_SIGNATURE  0x4A50324Bu  // JP2K
 
 JPEG2000FormatOptions::JPEG2000FormatOptions( bool isCodeStream ) :
-signature( JP2K_SIGNATURE ),
-options( isCodeStream ? JPCFormat::DefaultOptions() : JP2Format::DefaultOptions() )
+   signature( JP2K_SIGNATURE ),
+   options( isCodeStream ? JPCFormat::DefaultOptions() : JP2Format::DefaultOptions() )
 {
 }
 
 JPEG2000FormatOptions::JPEG2000FormatOptions( const JPEG2000FormatOptions& x ) :
-signature( JP2K_SIGNATURE ), options( x.options )
+   signature( JP2K_SIGNATURE ), options( x.options )
 {
 }
 
 JPEG2000FormatOptions* JPEG2000FormatOptions::FromGenericDataBlock( const void* data )
 {
-   if ( data == 0 )
-      return 0;
+   if ( data == nullptr )
+      return nullptr;
    const JPEG2000FormatOptions* o = reinterpret_cast<const JPEG2000FormatOptions*>( data );
    if ( o->signature != JP2K_SIGNATURE )
-      return 0;
+      return nullptr;
    return const_cast<JPEG2000FormatOptions*>( o );
 }
 
@@ -336,5 +320,5 @@ JPEG2000FormatOptions* JPEG2000FormatOptions::FromGenericDataBlock( const void* 
 
 } // pcl
 
-// ****************************************************************************
-// EOF JPEG2000Format.cpp - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF JPEG2000Format.cpp - Released 2015/07/31 11:49:40 UTC

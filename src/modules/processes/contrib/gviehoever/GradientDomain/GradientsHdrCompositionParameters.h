@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard GradientDomain Process Module Version 00.06.04.0098
-// ****************************************************************************
-// GradientsHdrCompositionParameters.h - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard GradientDomain Process Module Version 00.06.04.0117
+// ----------------------------------------------------------------------------
+// GradientsHdrCompositionParameters.h - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard GradientDomain PixInsight module.
 //
-// Copyright (c) Georg Viehoever, 2011-2014. Licensed under LGPL 2.1
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) Georg Viehoever, 2011-2015. Licensed under LGPL 2.1
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -22,7 +26,7 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __GradientsHdrCompositionParameters_h
 #define __GradientsHdrCompositionParameters_h
@@ -148,5 +152,5 @@ PCL_END_LOCAL
 
 #endif
 
-// ****************************************************************************
-// EOF GradientsHdrCompositionParameters.h - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF GradientsHdrCompositionParameters.h - Released 2015/07/31 11:49:49 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ProcessInterface.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ProcessInterface.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/AutoLock.h>
 #include <pcl/ErrorHandler.h>
@@ -65,8 +68,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 ProcessInterface::ProcessInterface() :
-Control( 0 ), MetaObject( Module ), launchCount( 0 ), autoSaveGeometry( true )
-
+   Control( nullptr ), MetaObject( Module ), m_launchCount( 0 ), m_autoSaveGeometry( true )
 {
    if ( Module == 0 )
       throw Error( "ProcessInterface: Module not initialized - illegal ProcessInterface instantiation" );
@@ -75,7 +77,8 @@ Control( 0 ), MetaObject( Module ), launchCount( 0 ), autoSaveGeometry( true )
 // ----------------------------------------------------------------------------
 
 // Private ctor. to create a null object
-ProcessInterface::ProcessInterface( int ) : Control( 0 ), MetaObject( 0 )
+ProcessInterface::ProcessInterface( int ) :
+   Control( nullptr ), MetaObject( nullptr )
 {
 }
 
@@ -83,7 +86,7 @@ class NullInterface : public ProcessInterface
 {
 public:
 
-   NullInterface() : ProcessInterface( 0 )
+   NullInterface() : ProcessInterface( -1 )
    {
    }
 
@@ -94,16 +97,16 @@ public:
 
    virtual MetaProcess* Process() const
    {
-      return 0;
+      return nullptr;
    }
 };
 
 ProcessInterface& ProcessInterface::Null()
 {
-   static NullInterface* nullInterface = 0;
+   static NullInterface* nullInterface = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullInterface == 0 )
+   if ( nullInterface == nullptr )
       nullInterface = new NullInterface();
    return *nullInterface;
 }
@@ -113,7 +116,7 @@ ProcessInterface& ProcessInterface::Null()
 void ProcessInterface::ApplyInstance() const
 {
    ProcessImplementation* p = NewProcess();
-   if ( p != 0 )
+   if ( p != nullptr )
       p->LaunchOnCurrentView();
 }
 
@@ -122,7 +125,7 @@ void ProcessInterface::ApplyInstance() const
 void ProcessInterface::ApplyInstanceGlobal() const
 {
    ProcessImplementation* p = NewProcess();
-   if ( p != 0 )
+   if ( p != nullptr )
       p->LaunchGlobal();
 }
 
@@ -130,9 +133,10 @@ void ProcessInterface::ApplyInstanceGlobal() const
 
 void ProcessInterface::Cancel()
 {
-   // Don't close the dynamic interface if the Control key (the Command key on
-   // Mac OS X) is currently pressed.
-
+   /*
+    * Undocumented feature: Do not close the dynamic interface if the Control
+    * key (the Command key on OS X) is being pressed.
+    */
    ImageWindow::TerminateDynamicSession(
 #ifdef __PCL_MACOSX
       !IsCmdPressed()
@@ -147,7 +151,7 @@ void ProcessInterface::Cancel()
 bool ProcessInterface::BrowseDocumentation() const
 {
    const MetaProcess* P = Process();
-   if ( P != 0 && P->CanBrowseDocumentation() )
+   if ( P != nullptr && P->CanBrowseDocumentation() )
       return P->BrowseDocumentation();
    return false;
 }
@@ -173,7 +177,7 @@ void ProcessInterface::BroadcastImageUpdated( const View& v )
  */
 void ProcessInterface::ProcessEvents()
 {
-   if ( Module != 0 )
+   if ( Module != nullptr )
       Module->ProcessEvents();
 }
 
@@ -260,7 +264,7 @@ public:
             P = reinterpret_cast<const MetaProcess*>( hP );
          else
             P = iface->Process();
-         if ( P == 0 )
+         if ( P == nullptr )
             return api_false;
 
          if ( iface->Launch( *P, reinterpret_cast<const ProcessImplementation*>( hp ), myDynamic, myFlags ) )
@@ -268,7 +272,7 @@ public:
             *dynamic = api_bool( myDynamic );
             *flags = uint32( myFlags );
 
-            if ( iface->launchCount++ == 0 )
+            if ( iface->m_launchCount++ == 0 )
             {
                iface->LoadSettings();
 
@@ -292,7 +296,7 @@ public:
       try
       {
          ProcessImplementation* p = reinterpret_cast<const ProcessInterface*>( hi )->NewProcess();
-         *hmp = (p != 0) ? p->Meta() : 0;
+         *hmp = (p != nullptr) ? p->Meta() : 0;
          return p;
       }
       ERROR_HANDLER
@@ -304,7 +308,7 @@ public:
       try
       {
          ProcessImplementation* p = reinterpret_cast<const ProcessInterface*>( hi )->NewTestProcess();
-         *hmp = (p != 0) ? p->Meta() : 0;
+         *hmp = (p != nullptr) ? p->Meta() : 0;
          return p;
       }
       ERROR_HANDLER
@@ -848,46 +852,6 @@ public:
       ERROR_HANDLER
    }
 
-   static void api_func HistogramsUpdated( interface_handle hi, const_view_handle hv )
-   {
-      try
-      {
-         View v( hv );
-         reinterpret_cast<ProcessInterface*>( hi )->HistogramsUpdated( v );
-      }
-      ERROR_HANDLER
-   }
-
-   static void api_func HistogramsDestroyed( interface_handle hi, const_view_handle hv )
-   {
-      try
-      {
-         View v( hv );
-         reinterpret_cast<ProcessInterface*>( hi )->HistogramsDestroyed( v );
-      }
-      ERROR_HANDLER
-   }
-
-   static void api_func StatisticsUpdated( interface_handle hi, const_view_handle hv )
-   {
-      try
-      {
-         View v( hv );
-         reinterpret_cast<ProcessInterface*>( hi )->StatisticsUpdated( v );
-      }
-      ERROR_HANDLER
-   }
-
-   static void api_func StatisticsDestroyed( interface_handle hi, const_view_handle hv )
-   {
-      try
-      {
-         View v( hv );
-         reinterpret_cast<ProcessInterface*>( hi )->StatisticsDestroyed( v );
-      }
-      ERROR_HANDLER
-   }
-
    static void api_func ViewPropertyUpdated( interface_handle hi, const_view_handle hv, const char* property )
    {
       try
@@ -1094,7 +1058,7 @@ void ProcessInterface::PerformAPIDefinitions() const
          (*API->InterfaceDefinition->SetInterfaceDescription)( desc.c_str() );
    }
 
-   if ( IconImageXPM() != 0 )
+   if ( IconImageXPM() != nullptr )
       (*API->InterfaceDefinition->SetInterfaceIconImage)( IconImageXPM() );
    else
    {
@@ -1103,7 +1067,7 @@ void ProcessInterface::PerformAPIDefinitions() const
          (*API->InterfaceDefinition->SetInterfaceIconImageFile)( path.c_str() );
    }
 
-   if ( SmallIconImageXPM() != 0 )
+   if ( SmallIconImageXPM() != nullptr )
       (*API->InterfaceDefinition->SetInterfaceIconSmallImage)( SmallIconImageXPM() );
    else
    {
@@ -1198,18 +1162,6 @@ void ProcessInterface::PerformAPIDefinitions() const
       (*API->InterfaceDefinition->SetTransparencyModeUpdatedNotificationRoutine)( InterfaceDispatcher::TransparencyModeUpdated );
    }
 
-   if ( WantsHistogramNotifications() )
-   {
-      (*API->InterfaceDefinition->SetHistogramsUpdatedNotificationRoutine)( InterfaceDispatcher::HistogramsUpdated );
-      (*API->InterfaceDefinition->SetHistogramsDestroyedNotificationRoutine)( InterfaceDispatcher::HistogramsDestroyed );
-   }
-
-   if ( WantsStatisticsNotifications() )
-   {
-      (*API->InterfaceDefinition->SetStatisticsUpdatedNotificationRoutine)( InterfaceDispatcher::StatisticsUpdated );
-      (*API->InterfaceDefinition->SetStatisticsDestroyedNotificationRoutine)( InterfaceDispatcher::StatisticsDestroyed );
-   }
-
    if ( WantsViewPropertyNotifications() )
    {
       (*API->InterfaceDefinition->SetViewPropertyUpdatedNotificationRoutine)( InterfaceDispatcher::ViewPropertyUpdated );
@@ -1258,5 +1210,5 @@ void ProcessInterface::PerformAPIDefinitions() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/ProcessInterface.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ProcessInterface.cpp - Released 2015/07/30 17:15:31 UTC

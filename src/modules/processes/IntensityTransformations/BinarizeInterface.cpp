@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard IntensityTransformations Process Module Version 01.07.00.0287
-// ****************************************************************************
-// BinarizeInterface.cpp - Released 2014/11/14 17:19:23 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard IntensityTransformations Process Module Version 01.07.00.0306
+// ----------------------------------------------------------------------------
+// BinarizeInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "BinarizeInterface.h"
 #include "BinarizeParameters.h"
@@ -325,7 +329,7 @@ void BinarizeInterface::__ColorSample_Paint( Control& sender, const Rect& /*upda
 {
    Graphics g( sender );
    g.SetBrush( RGBAColor( float( instance.level[0] ), float( instance.level[1] ), float( instance.level[2] ) ) );
-   g.SetPen( RGBAColor( 0, 0, 0 ) );
+   g.SetPen( 0xff000000, sender.DisplayPixelRatio() );
    g.DrawRect( sender.BoundsRect() );
 }
 
@@ -366,7 +370,7 @@ BinarizeInterface::GUIData::GUIData( BinarizeInterface& w )
 
    V0_NumericControl.label.SetText( "RGB/K:" );
    V0_NumericControl.label.SetFixedWidth( labelWidth );
-   V0_NumericControl.slider.SetMinWidth( 200 );
+   V0_NumericControl.slider.SetScaledMinWidth( 200 );
    V0_NumericControl.slider.SetRange( 0, 100 );
    V0_NumericControl.SetReal();
    V0_NumericControl.SetRange( TheBinarizeLevelRParameter->MinimumValue(), TheBinarizeLevelRParameter->MaximumValue() );
@@ -377,7 +381,7 @@ BinarizeInterface::GUIData::GUIData( BinarizeInterface& w )
 
    V1_NumericControl.label.SetText( "G:" );
    V1_NumericControl.label.SetFixedWidth( labelWidth );
-   V1_NumericControl.slider.SetMinWidth( 200 );
+   V1_NumericControl.slider.SetScaledMinWidth( 200 );
    V1_NumericControl.slider.SetRange( 0, 100 );
    V1_NumericControl.SetReal();
    V1_NumericControl.SetRange( TheBinarizeLevelGParameter->MinimumValue(), TheBinarizeLevelGParameter->MaximumValue() );
@@ -388,7 +392,7 @@ BinarizeInterface::GUIData::GUIData( BinarizeInterface& w )
 
    V2_NumericControl.label.SetText( "B:" );
    V2_NumericControl.label.SetFixedWidth( labelWidth );
-   V2_NumericControl.slider.SetMinWidth( 200 );
+   V2_NumericControl.slider.SetScaledMinWidth( 200 );
    V2_NumericControl.slider.SetRange( 0, 100 );
    V2_NumericControl.SetReal();
    V2_NumericControl.SetRange( TheBinarizeLevelBParameter->MinimumValue(), TheBinarizeLevelBParameter->MaximumValue() );
@@ -404,7 +408,7 @@ BinarizeInterface::GUIData::GUIData( BinarizeInterface& w )
 
    //
 
-   ColorSample_Control.SetFixedWidth( 60 );
+   ColorSample_Control.SetScaledFixedWidth( 60 );
    ColorSample_Control.OnPaint( (Control::paint_event_handler)&BinarizeInterface::__ColorSample_Paint, w );
 
    Threshold_Sizer.SetSpacing( 4 );
@@ -442,5 +446,5 @@ BinarizeInterface::GUIData::GUIData( BinarizeInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF BinarizeInterface.cpp - Released 2014/11/14 17:19:23 UTC
+// ----------------------------------------------------------------------------
+// EOF BinarizeInterface.cpp - Released 2015/07/31 11:49:48 UTC

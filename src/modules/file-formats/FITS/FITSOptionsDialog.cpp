@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard FITS File Format Module Version 01.01.00.0282
-// ****************************************************************************
-// FITSOptionsDialog.cpp - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard FITS File Format Module Version 01.01.02.0306
+// ----------------------------------------------------------------------------
+// FITSOptionsDialog.cpp - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "FITSOptionsDialog.h"
 
@@ -54,10 +58,12 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 FITSOptionsDialog::FITSOptionsDialog( const pcl::ImageOptions& o, const pcl::FITSImageOptions& f ) :
-Dialog(), options( o ), fitsOptions( f )
+   Dialog(),
+   options( o ),
+   fitsOptions( f )
 {
    pcl::Font fnt = Font();
-   int labelWidth = fnt.Width( String( "64-bit IEEE 754 floating point" ) + 'M' );
+   int labelWidth = fnt.Width( String( "64-bit IEEE 754 floating point" ) + String( 'M', 3 ) );
 
    //
 
@@ -73,6 +79,7 @@ Dialog(), options( o ), fitsOptions( f )
    Float_RadioButton.SetText( "32-bit IEEE 754 floating point" );
    Float_RadioButton.SetMinWidth( labelWidth );
 
+   SampleFormatLeft_Sizer.SetSpacing( 4 );
    SampleFormatLeft_Sizer.Add( UInt8_RadioButton );
    SampleFormatLeft_Sizer.Add( UInt16_RadioButton );
    SampleFormatLeft_Sizer.Add( Int16_RadioButton );
@@ -92,6 +99,7 @@ Dialog(), options( o ), fitsOptions( f )
    Double_RadioButton.SetText( "64-bit IEEE 754 floating point" );
    Double_RadioButton.SetMinWidth( labelWidth );
 
+   SampleFormatRight_Sizer.SetSpacing( 4 );
    SampleFormatRight_Sizer.Add( UInt32_RadioButton );
    SampleFormatRight_Sizer.Add( Int32_RadioButton );
    SampleFormatRight_Sizer.Add( Int64_RadioButton );
@@ -112,17 +120,12 @@ Dialog(), options( o ), fitsOptions( f )
    ICCProfile_CheckBox.SetMinWidth( labelWidth );
    ICCProfile_CheckBox.SetToolTip( "Embed an ICC profile" );
 
-   Metadata_CheckBox.SetText( "Metadata" );
-   Metadata_CheckBox.SetMinWidth( labelWidth );
-   Metadata_CheckBox.SetToolTip( "Embed XML metadata <* not available *>" );
-
    Properties_CheckBox.SetText( "Properties" );
    Properties_CheckBox.SetMinWidth( labelWidth );
    Properties_CheckBox.SetToolTip( "Embed image properties" );
 
    EmbeddedDataLeft_Sizer.SetSpacing( 4 );
    EmbeddedDataLeft_Sizer.Add( ICCProfile_CheckBox );
-   EmbeddedDataLeft_Sizer.Add( Metadata_CheckBox );
    EmbeddedDataLeft_Sizer.Add( Properties_CheckBox );
    //EmbeddedDataLeft_Sizer.AddStretch();
 
@@ -167,10 +170,10 @@ Dialog(), options( o ), fitsOptions( f )
    //
 
    Global_Sizer.SetMargin( 8 );
-   Global_Sizer.SetSpacing( 6 );
+   Global_Sizer.SetSpacing( 8 );
    Global_Sizer.Add( SampleFormat_GroupBox );
    Global_Sizer.Add( EmbeddedData_GroupBox );
-   Global_Sizer.AddSpacing( 4 );
+   Global_Sizer.AddSpacing( 8 );
    Global_Sizer.Add( BottomSection_Sizer );
 
    SetSizer( Global_Sizer );
@@ -190,7 +193,6 @@ Dialog(), options( o ), fitsOptions( f )
    Double_RadioButton.SetChecked( options.bitsPerSample == 64 && options.ieeefpSampleFormat );
 
    ICCProfile_CheckBox.SetChecked( options.embedICCProfile );
-   Metadata_CheckBox.SetChecked( options.embedMetadata );
    Properties_CheckBox.SetChecked( options.embedProperties );
    FixedPrecision_CheckBox.SetChecked( fitsOptions.writeFixedFloatKeywords );
    Thumbnail_CheckBox.SetChecked( options.embedThumbnail );
@@ -254,7 +256,6 @@ void FITSOptionsDialog::Dialog_Return( Dialog& /*sender*/, int retVal )
       }
 
       options.embedICCProfile = ICCProfile_CheckBox.IsChecked();
-      options.embedMetadata = Metadata_CheckBox.IsChecked();
       options.embedThumbnail = Thumbnail_CheckBox.IsChecked();
       options.embedProperties = Properties_CheckBox.IsChecked();
 
@@ -266,5 +267,5 @@ void FITSOptionsDialog::Dialog_Return( Dialog& /*sender*/, int retVal )
 
 } // pcl
 
-// ****************************************************************************
-// EOF FITSOptionsDialog.cpp - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF FITSOptionsDialog.cpp - Released 2015/07/31 11:49:40 UTC

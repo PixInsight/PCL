@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ExternalProcess.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ExternalProcess.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/AutoLock.h>
 #include <pcl/ErrorHandler.h>
@@ -56,50 +59,6 @@
 
 namespace pcl
 {
-
-// ----------------------------------------------------------------------------
-
-#define sender    (reinterpret_cast<ExternalProcess*>( hSender ))
-#define receiver  (reinterpret_cast<Control*>( hReceiver ))
-
-class ExternalProcessEventDispatcher
-{
-public:
-
-   static void Started( external_process_handle hSender, control_handle hReceiver )
-   {
-      if ( sender->onStarted != 0 )
-         (receiver->*sender->onStarted)( *sender );
-   }
-
-   static void Finished( external_process_handle hSender, control_handle hReceiver, int32 exitCode, int32 exitStatus )
-   {
-      if ( sender->onFinished != 0 )
-         (receiver->*sender->onFinished)( *sender, exitCode, exitStatus == ExternalProcessContext::NormalExit );
-   }
-
-   static void StandardOutputDataAvailable( external_process_handle hSender, control_handle hReceiver )
-   {
-      if ( sender->onStandardOutputDataAvailable != 0 )
-         (receiver->*sender->onStandardOutputDataAvailable)( *sender );
-   }
-
-   static void StandardErrorDataAvailable( external_process_handle hSender, control_handle hReceiver )
-   {
-      if ( sender->onStandardErrorDataAvailable != 0 )
-         (receiver->*sender->onStandardErrorDataAvailable)( *sender );
-   }
-
-   static void Error( external_process_handle hSender, control_handle hReceiver, int32 errorCode )
-   {
-      if ( sender->onError != 0 )
-         (receiver->*sender->onError)( *sender, ExternalProcess::error_code( errorCode ) );
-   }
-
-}; // ExternalProcessEventDispatcher
-
-#undef sender
-#undef receiver
 
 // ----------------------------------------------------------------------------
 
@@ -162,25 +121,18 @@ public:
 #endif
 
 ExternalProcess::ExternalProcess() :
-UIObject( (*API->ExternalProcess->CreateExternalProcess)( ModuleHandle(), this ) ),
-onStarted( 0 ),
-onFinished( 0 ),
-onStandardOutputDataAvailable( 0 ),
-onStandardErrorDataAvailable( 0 ),
-onError( 0 )
+   UIObject( (*API->ExternalProcess->CreateExternalProcess)( ModuleHandle(), this ) ),
+   m_handlers( nullptr )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateExternalProcess" );
 }
 
 // ----------------------------------------------------------------------------
 
-ExternalProcess::ExternalProcess( void* h ) : UIObject( h ),
-onStarted( 0 ),
-onFinished( 0 ),
-onStandardOutputDataAvailable( 0 ),
-onStandardErrorDataAvailable( 0 ),
-onError( 0 )
+ExternalProcess::ExternalProcess( void* h ) :
+   UIObject( h ),
+   m_handlers( nullptr )
 {
 }
 
@@ -188,11 +140,11 @@ onError( 0 )
 
 ExternalProcess& ExternalProcess::Null()
 {
-   static ExternalProcess* nullExternalProcess = 0;
+   static ExternalProcess* nullExternalProcess = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullExternalProcess == 0 )
-      nullExternalProcess = new ExternalProcess( reinterpret_cast<void*>( 0 ) );
+   if ( nullExternalProcess == nullptr )
+      nullExternalProcess = new ExternalProcess( nullptr );
    return *nullExternalProcess;
 }
 
@@ -208,7 +160,6 @@ void ExternalProcess::Start( const String& program, const StringList& arguments 
 }
 
 // ----------------------------------------------------------------------------
-
 
 bool ExternalProcess::WaitForStarted( int ms )
 {
@@ -320,13 +271,13 @@ String ExternalProcess::WorkingDirectory() const
    (*API->ExternalProcess->GetExternalProcessWorkingDirectory)( handle, 0, &len );
 
    String dirPath;
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      dirPath.Reserve( len );
+      dirPath.SetLength( len );
       if ( (*API->ExternalProcess->GetExternalProcessWorkingDirectory)( handle, dirPath.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetExternalProcessWorkingDirectory" );
+      dirPath.ResizeToNullTerminated();
    }
-
    return dirPath;
 }
 
@@ -472,7 +423,7 @@ void ExternalProcess::Write( const IsoString& text )
 
 void ExternalProcess::Write( const char* text )
 {
-   if ( text != 0 )
+   if ( text != nullptr )
       if ( *text != '\0' )
          if ( (*API->ExternalProcess->WriteToExternalProcess)( handle, text, strlen( text ) ) == api_false )
             throw APIFunctionError( "WriteToExternalProcess" );
@@ -482,7 +433,7 @@ void ExternalProcess::Write( const char* text )
 
 void ExternalProcess::Write( const void* data, size_type count )
 {
-   if ( data != 0 )
+   if ( data != nullptr )
       if ( count > 0 )
          if ( (*API->ExternalProcess->WriteToExternalProcess)( handle, data, count ) == api_false )
             throw APIFunctionError( "WriteToExternalProcess" );
@@ -508,66 +459,6 @@ void ExternalProcess::SetEnvironment( const StringList& environment )
       vars.Add( i->c_str() );
    if ( (*API->ExternalProcess->SetExternalProcessEnvironment)( handle, vars.Begin(), vars.Length() ) == api_false )
       throw APIFunctionError( "SetExternalProcessEnvironment" );
-}
-
-// ----------------------------------------------------------------------------
-
-void ExternalProcess::OnStarted( process_event_handler handler, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onStarted = 0;
-   if ( (*API->ExternalProcess->SetExternalProcessStartedEventRoutine)( handle, &receiver,
-                     (handler != 0) ? ExternalProcessEventDispatcher::Started : 0 ) == api_false )
-      throw APIFunctionError( "SetExternalProcessStartedEventRoutine" );
-   onStarted = handler;
-}
-
-// ----------------------------------------------------------------------------
-
-void ExternalProcess::OnFinished( process_exit_event_handler handler, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onFinished = 0;
-   if ( (*API->ExternalProcess->SetExternalProcessFinishedEventRoutine)( handle, &receiver,
-                     (handler != 0) ? ExternalProcessEventDispatcher::Finished : 0 ) == api_false )
-      throw APIFunctionError( "SetExternalProcessFinishedEventRoutine" );
-   onFinished = handler;
-}
-
-// ----------------------------------------------------------------------------
-
-void ExternalProcess::OnStandardOutputDataAvailable( process_event_handler handler, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onStandardOutputDataAvailable = 0;
-   if ( (*API->ExternalProcess->SetExternalProcessStandardOutputDataAvailableEventRoutine)( handle, &receiver,
-                     (handler != 0) ? ExternalProcessEventDispatcher::StandardOutputDataAvailable : 0 ) == api_false )
-      throw APIFunctionError( "SetExternalProcessStandardOutputDataAvailableEventRoutine" );
-   onStandardOutputDataAvailable = handler;
-}
-
-// ----------------------------------------------------------------------------
-
-void ExternalProcess::OnStandardErrorDataAvailable( process_event_handler handler, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onStandardErrorDataAvailable = 0;
-   if ( (*API->ExternalProcess->SetExternalProcessStandardErrorDataAvailableEventRoutine)( handle, &receiver,
-                     (handler != 0) ? ExternalProcessEventDispatcher::StandardErrorDataAvailable : 0 ) == api_false )
-      throw APIFunctionError( "SetExternalProcessStandardErrorDataAvailableEventRoutine" );
-   onStandardErrorDataAvailable = handler;
-}
-
-// ----------------------------------------------------------------------------
-
-void ExternalProcess::OnError( process_error_event_handler handler, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onError = 0;
-   if ( (*API->ExternalProcess->SetExternalProcessErrorEventRoutine)( handle, &receiver,
-                     (handler != 0) ? ExternalProcessEventDispatcher::Error : 0 ) == api_false )
-      throw APIFunctionError( "SetExternalProcessErrorEventRoutine" );
-   onError = handler;
 }
 
 // ----------------------------------------------------------------------------
@@ -606,7 +497,107 @@ void* ExternalProcess::CloneHandle() const
 
 // ----------------------------------------------------------------------------
 
+#define sender    (reinterpret_cast<ExternalProcess*>( hSender ))
+#define receiver  (reinterpret_cast<Control*>( hReceiver ))
+#define handlers  sender->m_handlers
+
+class ExternalProcessEventDispatcher
+{
+public:
+
+   static void Started( external_process_handle hSender, control_handle hReceiver )
+   {
+      if ( handlers->onStarted != nullptr )
+         (receiver->*handlers->onStarted)( *sender );
+   }
+
+   static void Finished( external_process_handle hSender, control_handle hReceiver, int32 exitCode, int32 exitStatus )
+   {
+      if ( handlers->onFinished != nullptr )
+         (receiver->*handlers->onFinished)( *sender, exitCode, exitStatus == ExternalProcessContext::NormalExit );
+   }
+
+   static void StandardOutputDataAvailable( external_process_handle hSender, control_handle hReceiver )
+   {
+      if ( handlers->onStandardOutputDataAvailable != nullptr )
+         (receiver->*handlers->onStandardOutputDataAvailable)( *sender );
+   }
+
+   static void StandardErrorDataAvailable( external_process_handle hSender, control_handle hReceiver )
+   {
+      if ( handlers->onStandardErrorDataAvailable != nullptr )
+         (receiver->*handlers->onStandardErrorDataAvailable)( *sender );
+   }
+
+   static void Error( external_process_handle hSender, control_handle hReceiver, int32 errorCode )
+   {
+      if ( handlers->onError != nullptr )
+         (receiver->*handlers->onError)( *sender, ExternalProcess::error_code( errorCode ) );
+   }
+
+}; // ExternalProcessEventDispatcher
+
+#undef sender
+#undef receiver
+#undef handlers
+
+// ----------------------------------------------------------------------------
+
+#define INIT_EVENT_HANDLERS()    \
+   __PCL_NO_ALIAS_HANDLERS;      \
+   if ( m_handlers == nullptr )  \
+      m_handlers = new EventHandlers
+
+void ExternalProcess::OnStarted( process_event_handler handler, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->ExternalProcess->SetExternalProcessStartedEventRoutine)( handle, &receiver,
+                     (handler != nullptr) ? ExternalProcessEventDispatcher::Started : 0 ) == api_false )
+      throw APIFunctionError( "SetExternalProcessStartedEventRoutine" );
+   m_handlers->onStarted = handler;
+}
+
+void ExternalProcess::OnFinished( process_exit_event_handler handler, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->ExternalProcess->SetExternalProcessFinishedEventRoutine)( handle, &receiver,
+                     (handler != nullptr) ? ExternalProcessEventDispatcher::Finished : 0 ) == api_false )
+      throw APIFunctionError( "SetExternalProcessFinishedEventRoutine" );
+   m_handlers->onFinished = handler;
+}
+
+void ExternalProcess::OnStandardOutputDataAvailable( process_event_handler handler, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->ExternalProcess->SetExternalProcessStandardOutputDataAvailableEventRoutine)( handle, &receiver,
+                     (handler != nullptr) ? ExternalProcessEventDispatcher::StandardOutputDataAvailable : 0 ) == api_false )
+      throw APIFunctionError( "SetExternalProcessStandardOutputDataAvailableEventRoutine" );
+   m_handlers->onStandardOutputDataAvailable = handler;
+}
+
+void ExternalProcess::OnStandardErrorDataAvailable( process_event_handler handler, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->ExternalProcess->SetExternalProcessStandardErrorDataAvailableEventRoutine)( handle, &receiver,
+                     (handler != nullptr) ? ExternalProcessEventDispatcher::StandardErrorDataAvailable : 0 ) == api_false )
+      throw APIFunctionError( "SetExternalProcessStandardErrorDataAvailableEventRoutine" );
+   m_handlers->onStandardErrorDataAvailable = handler;
+}
+
+void ExternalProcess::OnError( process_error_event_handler handler, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->ExternalProcess->SetExternalProcessErrorEventRoutine)( handle, &receiver,
+                     (handler != nullptr) ? ExternalProcessEventDispatcher::Error : 0 ) == api_false )
+      throw APIFunctionError( "SetExternalProcessErrorEventRoutine" );
+   m_handlers->onError = handler;
+}
+
+#undef INIT_EVENT_HANDLERS
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/ExternalProcess.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ExternalProcess.cpp - Released 2015/07/30 17:15:31 UTC

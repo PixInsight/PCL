@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ImageInfo.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ImageInfo.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_ImageInfo_h
 #define __PCL_ImageInfo_h
@@ -72,8 +75,10 @@ namespace pcl
  * \class ImageInfo
  * \brief A simple structure to hold basic information about images
  */
-struct PCL_CLASS ImageInfo
+class PCL_CLASS ImageInfo
 {
+public:
+
    int   width;            //!< %Image width in pixels
    int   height;           //!< %Image height in pixels
    int   numberOfChannels; //!< Number of channels, including alpha channels
@@ -91,10 +96,12 @@ struct PCL_CLASS ImageInfo
    /*!
     * Copy constructor.
     */
-   ImageInfo( const ImageInfo& x )
-   {
-      (void)operator =( x );
-   }
+   ImageInfo( const ImageInfo& ) = default;
+
+   /*!
+    * Copy assignment operator. Returns a reference to this object.
+    */
+   ImageInfo& operator =( const ImageInfo& ) = default;
 
    /*!
     * Constructs an %ImageInfo object with data obtained from the specified
@@ -111,19 +118,6 @@ struct PCL_CLASS ImageInfo
       numberOfChannels = image.NumberOfSelectedChannels();
       colorSpace       = image.ColorSpace();
       supported        = IsValid();
-   }
-
-   /*!
-    * Assignment operator. Returns a reference to this object.
-    */
-   ImageInfo& operator =( const ImageInfo& x )
-   {
-      width            = x.width;
-      height           = x.height;
-      numberOfChannels = x.numberOfChannels;
-      colorSpace       = x.colorSpace;
-      supported        = x.supported;
-      return *this;
    }
 
    /*!
@@ -155,8 +149,7 @@ struct PCL_CLASS ImageInfo
    }
 
    /*!
-    * Returns true if this %Imageinfo structure describes a valid, nonempty
-    * image.
+    * Returns true if this object describes a valid nonempty image.
     */
    bool IsValid() const
    {
@@ -186,5 +179,5 @@ inline bool operator ==( const ImageInfo& a, const ImageInfo& b )
 
 #endif   // __PCL_ImageInfo_h
 
-// ****************************************************************************
-// EOF pcl/ImageInfo.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ImageInfo.h - Released 2015/07/30 17:15:18 UTC

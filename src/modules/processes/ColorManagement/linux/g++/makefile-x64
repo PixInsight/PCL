@@ -1,0 +1,83 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.95
+# Copyright (C) 2009-2015 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Thu, 30 Jul 2015 17:10:36 GMT
+# Project id ...... ColorManagement
+# Project type .... Module
+# Platform ........ Linux/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/ColorManagement/linux/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/ColorManagement-pxm.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../AssignICCProfileInstance.cpp \
+../../AssignICCProfileInterface.cpp \
+../../AssignICCProfileParameters.cpp \
+../../AssignICCProfileProcess.cpp \
+../../ColorManagementModule.cpp \
+../../ICCProfileTransformationInstance.cpp \
+../../ICCProfileTransformationInterface.cpp \
+../../ICCProfileTransformationParameters.cpp \
+../../ICCProfileTransformationProcess.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/AssignICCProfileInstance.o \
+./x64/Release/AssignICCProfileInterface.o \
+./x64/Release/AssignICCProfileParameters.o \
+./x64/Release/AssignICCProfileProcess.o \
+./x64/Release/ColorManagementModule.o \
+./x64/Release/ICCProfileTransformationInstance.o \
+./x64/Release/ICCProfileTransformationInterface.o \
+./x64/Release/ICCProfileTransformationParameters.o \
+./x64/Release/ICCProfileTransformationProcess.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/AssignICCProfileInstance.d \
+./x64/Release/AssignICCProfileInterface.d \
+./x64/Release/AssignICCProfileParameters.d \
+./x64/Release/AssignICCProfileProcess.d \
+./x64/Release/ColorManagementModule.d \
+./x64/Release/ICCProfileTransformationInstance.d \
+./x64/Release/ICCProfileTransformationInterface.d \
+./x64/Release/ICCProfileTransformationParameters.d \
+./x64/Release/ICCProfileTransformationProcess.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/ColorManagement-pxm.so: $(OBJ_FILES)
+	g++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/ColorManagement-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/ColorManagement-pxm.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/ColorManagement-pxm.so $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.cpp
+	g++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -mtune=generic -mssse3 -O3 -minline-all-stringops -ffunction-sections -fdata-sections -fomit-frame-pointer -ffast-math -ftree-vectorize --param vect-max-version-for-alias-checks=1000 --param vect-max-version-for-alignment-checks=1000 -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

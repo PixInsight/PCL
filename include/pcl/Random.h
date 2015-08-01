@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Random.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Random.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Random_h
 #define __PCL_Random_h
@@ -274,7 +277,7 @@ private:
  * \code
  * XorShift1024 X; // initialized automatically
  * // ...
- * double x = X();      // x = random uniform deviate in the range [0,1[
+ * double x = X();      // x = random uniform deviate in the range [0,1)
  * uint64 y = X.UI64(); // y = 64-bit unsigned integer random uniform deviate
  * uint32 z = X.UI32(); // z = 32-bit unsigned integer random uniform deviate
  * uint32 t = X.UIN( 100 ); // t = integer uniform deviate in the range [0,99]
@@ -309,7 +312,7 @@ public:
    }
 
    /*!
-    * Returns a double precision uniform random deviate in the [0,1[ range.
+    * Returns a double precision uniform random deviate in the [0,1) range.
     */
    double operator()()
    {
@@ -338,11 +341,28 @@ public:
    }
 
    /*!
+    * Returns a 64-bit unsigned integer uniform random deviate in the range
+    * [0,n-1].
+    */
+   uint64 UI64N( uint64 n )
+   {
+      return UI64() % n;
+   }
+
+   /*!
     * Returns an unsigned integer uniform random deviate in the range [0,n-1].
     */
    uint32 UIN( uint32 n )
    {
       return UI64() % n;
+   }
+
+   /*!
+    * A synonym for UIN().
+    */
+   uint32 UI32N( uint32 n )
+   {
+      return UIN( n );
    }
 
    /*
@@ -376,5 +396,5 @@ private:
 
 #endif   // __PCL_Random_h
 
-// ****************************************************************************
-// EOF pcl/Random.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Random.h - Released 2015/07/30 17:15:18 UTC

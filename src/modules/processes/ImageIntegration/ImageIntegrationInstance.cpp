@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard ImageIntegration Process Module Version 01.09.04.0253
-// ****************************************************************************
-// ImageIntegrationInstance.cpp - Released 2014/11/14 17:19:21 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard ImageIntegration Process Module Version 01.09.04.0274
+// ----------------------------------------------------------------------------
+// ImageIntegrationInstance.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "ImageIntegrationInstance.h"
 #include "IntegrationCache.h"
@@ -79,13 +83,7 @@ class DrizzleIntegrationFilter : public DrizzleDecoderBase
 {
 public:
 
-   DrizzleIntegrationFilter() : DrizzleDecoderBase()
-   {
-   }
-
-   virtual ~DrizzleIntegrationFilter()
-   {
-   }
+   DrizzleIntegrationFilter() = default;
 
 private:
 
@@ -98,55 +96,55 @@ private:
 // ----------------------------------------------------------------------------
 
 ImageIntegrationInstance::ImageIntegrationInstance( const MetaProcess* m ) :
-ProcessImplementation( m ),
-p_images(),
-p_inputHints(),
-p_combination( IICombination::Default ),
-p_normalization( IINormalization::Default ),
-p_weightMode( IIWeightMode::Default ),
-p_weightKeyword( TheIIWeightKeywordParameter->DefaultValue() ),
-p_weightScale( IIWeightScale::Default ),
-p_ignoreNoiseKeywords( TheIIIgnoreNoiseKeywordsParameter->DefaultValue() ),
-p_rejection( IIRejection::Default ),
-p_rejectionNormalization( IIRejectionNormalization::Default ),
-p_minMaxLow( TheIIMinMaxLowParameter->DefaultValue() ),
-p_minMaxHigh( TheIIMinMaxHighParameter->DefaultValue() ),
-p_pcClipLow( TheIIPercentileLowParameter->DefaultValue() ),
-p_pcClipHigh( TheIIPercentileHighParameter->DefaultValue() ),
-p_sigmaLow( TheIISigmaLowParameter->DefaultValue() ),
-p_sigmaHigh( TheIISigmaHighParameter->DefaultValue() ),
-p_linearFitLow( TheIILinearFitLowParameter->DefaultValue() ),
-p_linearFitHigh( TheIILinearFitHighParameter->DefaultValue() ),
-p_ccdGain( TheIICCDGainParameter->DefaultValue() ),
-p_ccdReadNoise( TheIICCDReadNoiseParameter->DefaultValue() ),
-p_ccdScaleNoise( TheIICCDScaleNoiseParameter->DefaultValue() ),
-p_clipLow( TheIIClipLowParameter->DefaultValue() ),
-p_clipHigh( TheIIClipHighParameter->DefaultValue() ),
-p_rangeClipLow( TheIIRangeClipLowParameter->DefaultValue() ),
-p_rangeLow( TheIIRangeLowParameter->DefaultValue() ),
-p_rangeClipHigh( TheIIRangeClipHighParameter->DefaultValue() ),
-p_rangeHigh( TheIIRangeHighParameter->DefaultValue() ),
-p_reportRangeRejection( TheIIReportRangeRejectionParameter->DefaultValue() ),
-p_mapRangeRejection( TheIIMapRangeRejectionParameter->DefaultValue() ),
-p_generate64BitResult( TheIIGenerate64BitResultParameter->DefaultValue() ),
-p_generateRejectionMaps( TheIIGenerateRejectionMapsParameter->DefaultValue() ),
-p_generateIntegratedImage( TheIIGenerateIntegratedImageParameter->DefaultValue() ),
-p_generateDrizzleData( TheIIGenerateDrizzleDataParameter->DefaultValue() ),
-p_closePreviousImages( TheIIClosePreviousImagesParameter->DefaultValue() ),
-p_bufferSizeMB( TheIIBufferSizeParameter->DefaultValue() ),
-p_stackSizeMB( TheIIStackSizeParameter->DefaultValue() ),
-p_useROI( TheIIUseROIParameter->DefaultValue() ),
-p_roi( 0 ),
-p_useCache( TheIIUseCacheParameter->DefaultValue() ),
-p_evaluateNoise( TheIIEvaluateNoiseParameter->DefaultValue() ),
-p_mrsMinDataFraction( TheIIMRSMinDataFractionParameter->DefaultValue() ),
-p_noGUIMessages( TheIINoGUIMessagesParameter->DefaultValue() ),
-o_output()
+   ProcessImplementation( m ),
+   p_images(),
+   p_inputHints(),
+   p_combination( IICombination::Default ),
+   p_normalization( IINormalization::Default ),
+   p_weightMode( IIWeightMode::Default ),
+   p_weightKeyword( TheIIWeightKeywordParameter->DefaultValue() ),
+   p_weightScale( IIWeightScale::Default ),
+   p_ignoreNoiseKeywords( TheIIIgnoreNoiseKeywordsParameter->DefaultValue() ),
+   p_rejection( IIRejection::Default ),
+   p_rejectionNormalization( IIRejectionNormalization::Default ),
+   p_minMaxLow( TheIIMinMaxLowParameter->DefaultValue() ),
+   p_minMaxHigh( TheIIMinMaxHighParameter->DefaultValue() ),
+   p_pcClipLow( TheIIPercentileLowParameter->DefaultValue() ),
+   p_pcClipHigh( TheIIPercentileHighParameter->DefaultValue() ),
+   p_sigmaLow( TheIISigmaLowParameter->DefaultValue() ),
+   p_sigmaHigh( TheIISigmaHighParameter->DefaultValue() ),
+   p_linearFitLow( TheIILinearFitLowParameter->DefaultValue() ),
+   p_linearFitHigh( TheIILinearFitHighParameter->DefaultValue() ),
+   p_ccdGain( TheIICCDGainParameter->DefaultValue() ),
+   p_ccdReadNoise( TheIICCDReadNoiseParameter->DefaultValue() ),
+   p_ccdScaleNoise( TheIICCDScaleNoiseParameter->DefaultValue() ),
+   p_clipLow( TheIIClipLowParameter->DefaultValue() ),
+   p_clipHigh( TheIIClipHighParameter->DefaultValue() ),
+   p_rangeClipLow( TheIIRangeClipLowParameter->DefaultValue() ),
+   p_rangeLow( TheIIRangeLowParameter->DefaultValue() ),
+   p_rangeClipHigh( TheIIRangeClipHighParameter->DefaultValue() ),
+   p_rangeHigh( TheIIRangeHighParameter->DefaultValue() ),
+   p_reportRangeRejection( TheIIReportRangeRejectionParameter->DefaultValue() ),
+   p_mapRangeRejection( TheIIMapRangeRejectionParameter->DefaultValue() ),
+   p_generate64BitResult( TheIIGenerate64BitResultParameter->DefaultValue() ),
+   p_generateRejectionMaps( TheIIGenerateRejectionMapsParameter->DefaultValue() ),
+   p_generateIntegratedImage( TheIIGenerateIntegratedImageParameter->DefaultValue() ),
+   p_generateDrizzleData( TheIIGenerateDrizzleDataParameter->DefaultValue() ),
+   p_closePreviousImages( TheIIClosePreviousImagesParameter->DefaultValue() ),
+   p_bufferSizeMB( TheIIBufferSizeParameter->DefaultValue() ),
+   p_stackSizeMB( TheIIStackSizeParameter->DefaultValue() ),
+   p_useROI( TheIIUseROIParameter->DefaultValue() ),
+   p_roi( 0 ),
+   p_useCache( TheIIUseCacheParameter->DefaultValue() ),
+   p_evaluateNoise( TheIIEvaluateNoiseParameter->DefaultValue() ),
+   p_mrsMinDataFraction( TheIIMRSMinDataFractionParameter->DefaultValue() ),
+   p_noGUIMessages( TheIINoGUIMessagesParameter->DefaultValue() ),
+   o_output()
 {
 }
 
 ImageIntegrationInstance::ImageIntegrationInstance( const ImageIntegrationInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
@@ -154,7 +152,7 @@ ProcessImplementation( x )
 void ImageIntegrationInstance::Assign( const ProcessImplementation& p )
 {
    const ImageIntegrationInstance* x = dynamic_cast<const ImageIntegrationInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       p_images                  = x->p_images;
       p_inputHints              = x->p_inputHints;
@@ -711,6 +709,12 @@ private:
 
    double KeywordValue( const IsoString& keyName );
 
+   template <class S>
+   double KeywordValue( const S& keyName )
+   {
+      return KeywordValue( IsoString( keyName ) );
+   }
+
    void ResetCacheableData();
    void AddToCache( const String& path ) const;
    bool GetFromCache( const String& path );
@@ -828,7 +832,7 @@ void IntegrationFile::Open( const String& path, const String& drzPath,
       throw Error( m_file->FilePath() + ": Empty image file." );
 
    if ( images.Length() > 1 )
-      throw Error( m_file->FilePath() + ": Integration of multiple image files is not supported." );
+      console.NoteLn( String().Format( "<end><cbr>* Ignoring %u additional image(s) in input file.", images.Length()-1 ) );
 
    if ( !images[0].info.supported || images[0].info.NumberOfSamples() == 0 )
       throw Error( m_file->FilePath() + ": Invalid or unsupported image." );
@@ -1446,7 +1450,7 @@ private:
       DataLoaderEngine& m_engine;
    };
 
-   typedef PArray<DataLoaderThread> thread_list;
+   typedef ReferenceArray<DataLoaderThread> thread_list;
 
    int              r; // starting row
    RejectionStacks& R; // set of pixel stacks
@@ -1737,7 +1741,7 @@ private:
       RejectionEngine& m_engine;
    };
 
-   typedef PArray<RejectionThread> thread_list;
+   typedef ReferenceArray<RejectionThread> thread_list;
 
    class NormalizationThread : public RejectionThread
    {
@@ -2410,7 +2414,12 @@ void RejectionEngine::LinearFitRejectionThread::Run()
 
             if ( nc == 0 )
             {
-               M.DataPtr()[i] = (L.b < 1e7) ? ArcTan( L.b )/Const<double>::pi4() : 1.0;
+               /*
+                * N.B.: The fitted slope could be an insignificant negative
+                * number because of roundoff - do not propagate it. See bug
+                * report: http://pixinsight.com/forum/index.php?topic=8704.0
+                */
+               M.DataPtr()[i] = (L.b > 0) ? ((L.b < 1e7) ? ArcTan( L.b )/Const<double>::pi4() : 1.0) : 0.0;
                break;
             }
 
@@ -2591,7 +2600,7 @@ private:
       IntegrationEngine& m_engine;
    };
 
-   typedef PArray<IntegrationThread> thread_list;
+   typedef ReferenceArray<IntegrationThread> thread_list;
 
          int              chn; // current channel
          RejectionStacks& R;   // set of pixel stacks
@@ -3579,26 +3588,15 @@ bool ImageIntegrationInstance::ExecuteGlobal()
 
             try
             {
-               File f;
-               f.OpenForReading( F.DrizzleDataPath() );
-               size_type fileSize = f.Size();
-               IsoString text;
-               if ( fileSize > 0 )
-               {
-                  text.Reserve( fileSize );
-                  f.Read( reinterpret_cast<void*>( text.Begin() ), fileSize );
-                  text[fileSize] = '\0';
-               }
-               f.Close();
-
-               DrizzleIntegrationFilter filter;
-               IsoString data = filter.Filter( text );
+               IsoString text = File::ReadTextFile( F.DrizzleDataPath() );
+               IsoString data = DrizzleIntegrationFilter().Filter( text );
                if ( data.IsEmpty() )
                {
                   console.WarningLn( "** Warning: Ignoring invalid drizzle data: " + F.DrizzleDataPath() );
                   continue;
                }
 
+               File f;
                f.CreateForWriting( F.DrizzleDataPath() );
                f.OutText( data );
                F.ToDrizzleData( f );
@@ -3876,49 +3874,49 @@ bool ImageIntegrationInstance::AllocateParameter( size_type sizeOrLength, const 
    {
       p_images[tableRow].path.Clear();
       if ( sizeOrLength > 0 )
-         p_images[tableRow].path.Reserve( sizeOrLength );
+         p_images[tableRow].path.SetLength( sizeOrLength );
    }
    else if ( p == TheIIDrizzlePathParameter )
    {
       p_images[tableRow].drzPath.Clear();
       if ( sizeOrLength > 0 )
-         p_images[tableRow].drzPath.Reserve( sizeOrLength );
+         p_images[tableRow].drzPath.SetLength( sizeOrLength );
    }
    else if ( p == TheIIInputHintsParameter )
    {
       p_inputHints.Clear();
       if ( sizeOrLength > 0 )
-         p_inputHints.Reserve( sizeOrLength );
+         p_inputHints.SetLength( sizeOrLength );
    }
    else if ( p == TheIIWeightKeywordParameter )
    {
       p_weightKeyword.Clear();
       if ( sizeOrLength > 0 )
-         p_weightKeyword.Reserve( sizeOrLength );
+         p_weightKeyword.SetLength( sizeOrLength );
    }
    else if ( p == TheIIIntegrationImageIdParameter )
    {
       o_output.integrationImageId.Clear();
       if ( sizeOrLength > 0 )
-         o_output.integrationImageId.Reserve( sizeOrLength );
+         o_output.integrationImageId.SetLength( sizeOrLength );
    }
    else if ( p == TheIILowRejectionMapImageIdParameter )
    {
       o_output.lowRejectionMapImageId.Clear();
       if ( sizeOrLength > 0 )
-         o_output.lowRejectionMapImageId.Reserve( sizeOrLength );
+         o_output.lowRejectionMapImageId.SetLength( sizeOrLength );
    }
    else if ( p == TheIIHighRejectionMapImageIdParameter )
    {
       o_output.highRejectionMapImageId.Clear();
       if ( sizeOrLength > 0 )
-         o_output.highRejectionMapImageId.Reserve( sizeOrLength );
+         o_output.highRejectionMapImageId.SetLength( sizeOrLength );
    }
    else if ( p == TheIISlopeMapImageIdParameter )
    {
       o_output.slopeMapImageId.Clear();
       if ( sizeOrLength > 0 )
-         o_output.slopeMapImageId.Reserve( sizeOrLength );
+         o_output.slopeMapImageId.SetLength( sizeOrLength );
    }
    else if ( p == TheIIImageDataParameter )
    {
@@ -3962,5 +3960,5 @@ size_type ImageIntegrationInstance::ParameterLength( const MetaParameter* p, siz
 
 } // pcl
 
-// ****************************************************************************
-// EOF ImageIntegrationInstance.cpp - Released 2014/11/14 17:19:21 UTC
+// ----------------------------------------------------------------------------
+// EOF ImageIntegrationInstance.cpp - Released 2015/07/31 11:49:48 UTC

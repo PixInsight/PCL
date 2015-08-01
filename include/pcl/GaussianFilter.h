@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/GaussianFilter.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/GaussianFilter.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_GaussianFilter_h
 #define __PCL_GaussianFilter_h
@@ -104,8 +107,9 @@ public:
     * Constructs an empty %GaussianFilter object with default functional
     * parameters: sigma=2, epsilon=0.01, rho=1, theta=0.
     */
-   GaussianFilter() : KernelFilter(),
-   m_sigma( 2 ), m_rho( 1 ), m_theta( 0 ), m_epsilon( 0.01F )
+   GaussianFilter() :
+      KernelFilter(),
+      m_sigma( 2 ), m_rho( 1 ), m_theta( 0 ), m_epsilon( 0.01F )
    {
    }
 
@@ -114,7 +118,8 @@ public:
     * \a sigma > 0 and truncation error \a epsilon > 0. Assigns an optional
     * \a name to the new filter object.
     */
-   GaussianFilter( float sigma, float epsilon = 0.01, const String& name = String() ) : KernelFilter()
+   GaussianFilter( float sigma, float epsilon = 0.01, const String& name = String() ) :
+      KernelFilter()
    {
       Initialize( sigma, epsilon, 1, 0 );
       Rename( name );
@@ -126,7 +131,8 @@ public:
     * 0 <= \a rho <= 1, and rotation angle 0 <= \a theta <= PI in radians.
     * Assigns an optional \a name to the new filter object.
     */
-   GaussianFilter( float sigma, float epsilon, float rho, float theta = 0, const String& name = String() ) : KernelFilter()
+   GaussianFilter( float sigma, float epsilon, float rho, float theta = 0, const String& name = String() ) :
+      KernelFilter()
    {
       Initialize( sigma, epsilon, rho, theta );
       Rename( name );
@@ -137,7 +143,8 @@ public:
     * and truncation error \a epsilon > 0. Assigns an optional \a name to the
     * new filter object.
     */
-   GaussianFilter( int n, float epsilon = 0.01, const String& name = String() ) : KernelFilter()
+   GaussianFilter( int n, float epsilon = 0.01, const String& name = String() ) :
+      KernelFilter()
    {
       Initialize( n, epsilon, 1, 0 );
       Rename( name );
@@ -149,7 +156,8 @@ public:
     * rotation angle 0 <= \a theta <= PI in radians. Assigns an optional
     * \a name to the new filter object.
     */
-   GaussianFilter( int n, float epsilon, float rho, float theta = 0, const String& name = String() ) : KernelFilter()
+   GaussianFilter( int n, float epsilon, float rho, float theta = 0, const String& name = String() ) :
+      KernelFilter()
    {
       Initialize( n, epsilon, rho, theta );
       Rename( name );
@@ -158,8 +166,18 @@ public:
    /*!
     * Copy constructor.
     */
-   GaussianFilter( const GaussianFilter& g ) : KernelFilter( g ),
-   m_sigma( g.m_sigma ), m_rho( g.m_rho ), m_theta( g.m_theta ), m_epsilon( g.m_epsilon )
+   GaussianFilter( const GaussianFilter& x ) :
+      KernelFilter( x ),
+      m_sigma( x.m_sigma ), m_rho( x.m_rho ), m_theta( x.m_theta ), m_epsilon( x.m_epsilon )
+   {
+   }
+
+   /*!
+    * Move constructor.
+    */
+   GaussianFilter( GaussianFilter&& x ) :
+      KernelFilter( std::move( x ) ),
+      m_sigma( x.m_sigma ), m_rho( x.m_rho ), m_theta( x.m_theta ), m_epsilon( x.m_epsilon )
    {
    }
 
@@ -202,18 +220,28 @@ public:
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Copy assignment operator. Returns a reference to this object.
     */
-   GaussianFilter& operator =( const GaussianFilter& g )
+   GaussianFilter& operator =( const GaussianFilter& x )
    {
-      if ( &g != this )
-      {
-         (void)KernelFilter::operator =( g );
-         m_sigma   = g.m_sigma;
-         m_epsilon = g.m_epsilon;
-         m_rho     = g.m_rho;
-         m_theta   = g.m_theta;
-      }
+      (void)KernelFilter::operator =( x );
+      m_sigma   = x.m_sigma;
+      m_epsilon = x.m_epsilon;
+      m_rho     = x.m_rho;
+      m_theta   = x.m_theta;
+      return *this;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   GaussianFilter& operator =( GaussianFilter&& x )
+   {
+      (void)KernelFilter::operator =( std::move( x ) );
+      m_sigma   = x.m_sigma;
+      m_epsilon = x.m_epsilon;
+      m_rho     = x.m_rho;
+      m_theta   = x.m_theta;
       return *this;
    }
 
@@ -390,7 +418,17 @@ public:
       Initialize( n, m_epsilon, m_rho, m_theta );
    }
 
-   // -------------------------------------------------------------------------
+   /*!
+    * Exchanges two Gaussian filters \a x1 and \a x2.
+    */
+   friend void Swap( GaussianFilter& x1, GaussianFilter& x2 )
+   {
+      pcl::Swap( static_cast<KernelFilter&>( x1 ), static_cast<KernelFilter&>( x2 ) );
+      pcl::Swap( x1.m_sigma,   x2.m_sigma );
+      pcl::Swap( x1.m_rho,     x2.m_rho );
+      pcl::Swap( x1.m_theta,   x2.m_theta );
+      pcl::Swap( x1.m_epsilon, x2.m_epsilon );
+   }
 
 private:
 
@@ -477,5 +515,5 @@ private:
 
 #endif   // __PCL_GaussianFilter_h
 
-// ****************************************************************************
-// EOF pcl/GaussianFilter.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/GaussianFilter.h - Released 2015/07/30 17:15:18 UTC

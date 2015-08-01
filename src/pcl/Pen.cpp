@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Pen.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Pen.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/AutoLock.h>
 #include <pcl/Brush.h>
@@ -58,8 +61,8 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-Pen::Pen( RGBA color, int width, Pen::style style, Pen::cap cap, Pen::join join ) :
-UIObject( (*API->Pen->CreatePen)( ModuleHandle(), color, width, style, cap, join ) )
+Pen::Pen( RGBA color, float width, Pen::style style, Pen::cap cap, Pen::join join ) :
+   UIObject( (*API->Pen->CreatePen)( ModuleHandle(), color, width, style, cap, join ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CreatePen" );
@@ -67,32 +70,29 @@ UIObject( (*API->Pen->CreatePen)( ModuleHandle(), color, width, style, cap, join
 
 // ----------------------------------------------------------------------------
 
-Pen::Pen( void* h ) : UIObject( h )
-{
-}
-
-// ----------------------------------------------------------------------------
-
 Pen& Pen::Null()
 {
-   static Pen* nullPen = 0;
+   static Pen* nullPen = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullPen == 0 )
+   if ( nullPen == nullptr )
       nullPen = new Pen( reinterpret_cast<void*>( 0 ) );
    return *nullPen;
 }
 
 // ----------------------------------------------------------------------------
 
-int Pen::Width() const
+float Pen::Width() const
 {
-   return (*API->Pen->GetPenWidth)( handle );
+   float width;
+   if ( (*API->Pen->GetPenWidth)( handle, &width ) == api_false )
+      throw APIFunctionError( "GetPenWidth" );
+   return width;
 }
 
 // ----------------------------------------------------------------------------
 
-void Pen::SetWidth( int width )
+void Pen::SetWidth( float width )
 {
    SetUnique();
    (*API->Pen->SetPenWidth)( handle, width );
@@ -184,5 +184,5 @@ void* Pen::CloneHandle() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/Pen.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Pen.cpp - Released 2015/07/30 17:15:31 UTC

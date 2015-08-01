@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/AdaptiveLocalFilter.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/AdaptiveLocalFilter.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_AdaptiveLocalFilter_h
 #define __PCL_AdaptiveLocalFilter_h
@@ -108,9 +111,9 @@ public:
     *                is used by default).
     */
    AdaptiveLocalFilter( double sigma, int size = 5, bool useMAD = false ) :
-   ImageTransformation(),
-   m_size( Max( 3, size|1 ) ), m_sigma( Max( 0.0, sigma ) ), m_useMAD( useMAD ),
-   m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      ImageTransformation(),
+      m_size( Max( 3, size|1 ) ), m_sigma( Max( 0.0, sigma ) ), m_useMAD( useMAD ),
+      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
    }
 
@@ -118,9 +121,9 @@ public:
     * Copy constructor.
     */
    AdaptiveLocalFilter( const AdaptiveLocalFilter& x ) :
-   ImageTransformation( x ),
-   m_size( x.m_size ), m_sigma( x.m_sigma ), m_useMAD( x.m_useMAD ),
-   m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
+      ImageTransformation( x ),
+      m_size( x.m_size ), m_sigma( x.m_sigma ), m_useMAD( x.m_useMAD ),
+      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
    {
    }
 
@@ -129,23 +132,6 @@ public:
     */
    virtual ~AdaptiveLocalFilter()
    {
-   }
-
-   /*!
-    * Assignment operator. Returns a reference to this object.
-    */
-   AdaptiveLocalFilter& operator =( const AdaptiveLocalFilter& x )
-   {
-      if ( &x != this )
-      {
-         m_size          = x.m_size;
-         m_sigma         = x.m_sigma;
-         m_useMAD        = x.m_useMAD;
-         m_parallel      = x.m_parallel;
-         m_maxProcessors = x.m_maxProcessors;
-         (void)ImageTransformation::operator =( x );
-      }
-      return *this;
    }
 
    /*!
@@ -310,5 +296,5 @@ protected:
 
 #endif   // __PCL_AdaptiveLocalFilter_h
 
-// ****************************************************************************
-// EOF pcl/AdaptiveLocalFilter.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/AdaptiveLocalFilter.h - Released 2015/07/30 17:15:18 UTC

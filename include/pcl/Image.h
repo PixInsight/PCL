@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Image.h - Released 2014/11/14 17:16:38 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Image.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Image_h
 #define __PCL_Image_h
@@ -79,12 +82,16 @@
 #include <pcl/Vector.h>
 #endif
 
-#ifndef __PCL_PArray_h
-#include <pcl/PArray.h>
+#ifndef __PCL_ReferenceArray_h
+#include <pcl/ReferenceArray.h>
 #endif
 
 #ifndef __PCL_File_h
 #include <pcl/File.h>
+#endif
+
+#ifndef __PCL_Compression_h
+#include <pcl/Compression.h>
 #endif
 
 #ifndef __PCL_Mutex_h
@@ -309,7 +316,7 @@ public:
     * The \c pixel_traits type identifies a class implementing basic storage
     * and functional primitives adapted to a particular sample data type.
     */
-   typedef P                                 pixel_traits;
+   typedef P                                    pixel_traits;
 
    /*!
     * Represents a class responsible for allocation and deallocation of pixel
@@ -320,43 +327,43 @@ public:
     * By default, %GenericImage uses an instantiation of the PixelAllocator
     * template class for \c pixel_traits.
     */
-   typedef PixelAllocator<P>                 pixel_allocator;
+   typedef PixelAllocator<P>                    pixel_allocator;
 
    /*!
     * Represents the data type used to store pixel sample values in this
     * template instantiation of %GenericImage.
     */
-   typedef typename pixel_traits::sample     sample;
+   typedef typename pixel_traits::sample        sample;
 
    /*!
     * An enumerated type that represents the set of supported color spaces.
     * Valid constants for this enumeration are defined in the ColorSpace
     * namespace.
     */
-   typedef AbstractImage::color_space        color_space;
+   typedef AbstractImage::color_space           color_space;
 
    /*!
     * The type of a container class used to store rectangular and channel range
     * selections.
     */
-   typedef AbstractImage::selection_stack    selection_stack;
+   typedef AbstractImage::selection_stack       selection_stack;
 
    /*!
     * An enumerated type that represents the set of supported arithmetic and
     * bitwise pixel operations. Valid constants for this enumeration are
     * defined in the ImageOp namespace.
     */
-   typedef ImageOp::value_type               image_op;
+   typedef ImageOp::value_type                  image_op;
 
    /*!
     * A vector of pixel sample values.
     */
-   typedef GenericVector<sample>             sample_vector;
+   typedef GenericVector<sample>                sample_vector;
 
    /*!
     * A dynamic array of pixel sample values.
     */
-   typedef Array<sample>                     sample_array;
+   typedef Array<sample>                        sample_array;
 
    // -------------------------------------------------------------------------
 
@@ -389,7 +396,8 @@ public:
       /*!
        * Default constructor. Initializes an invalid iterator.
        */
-      sample_iterator() : m_image( 0 ), m_iterator( 0 ), m_end( 0 )
+      sample_iterator() :
+         m_image( nullptr ), m_iterator( nullptr ), m_end( nullptr )
       {
       }
 
@@ -406,13 +414,11 @@ public:
        *                then the resulting iterator will also be invalid, with
        *                an empty iteration range. The default value is -1.
        */
-      sample_iterator( GenericImage<P>& image, int channel = -1 ) :
-      m_image( &image ), m_iterator( 0 ), m_end( 0 )
+      sample_iterator( image_type& image, int channel = -1 ) :
+         m_image( &image ), m_iterator( nullptr ), m_end( nullptr )
       {
          m_image->SetUnique();
-         if ( channel < 0 )
-            channel = m_image->SelectedChannel();
-         if ( m_image->IsValidChannelIndex( channel ) )
+         if ( m_image->ParseChannel( channel ) )
          {
             m_iterator = (*m_image)[channel];
             m_end = m_iterator + m_image->NumberOfPixels();
@@ -435,34 +441,34 @@ public:
        * \note Both iteration limits \a i and \a j must be pointers to pixel
        * samples in the \e same channel of the specified \a image.
        */
-      sample_iterator( GenericImage<P>& image, sample* i, sample* j ) :
-      m_image( &image ), m_iterator( i ), m_end( j )
+      sample_iterator( image_type& image, sample* i, sample* j ) :
+         m_image( &image ), m_iterator( i ), m_end( j )
       {
       }
 
       /*!
        * Copy constructor.
        */
-      sample_iterator( const sample_iterator& i ) :
-      m_image( i.m_image ), m_iterator( i.m_iterator ), m_end( i.m_end )
-      {
-      }
+      sample_iterator( const sample_iterator& ) = default;
 
       /*!
-       * Assignment operator. Returns a reference to this iterator.
+       * Copy assignment operator. Returns a reference to this object.
        */
-      sample_iterator& operator =( const sample_iterator& i )
+      sample_iterator& operator =( const sample_iterator& ) = default;
+
+      /*!
+       * Returns true only if this iterator is valid. A valid iterator defines
+       * a valid iterated image and a non-null position.
+       */
+      bool IsValid() const
       {
-         m_image    = i.m_image;
-         m_iterator = i.m_iterator;
-         m_end      = i.m_end;
-         return *this;
+         return m_image != nullptr && m_iterator != nullptr;
       }
 
       /*!
        * Returns a reference to the image being iterated by this object.
        */
-      GenericImage<P>& Image() const
+      image_type& Image() const
       {
          return *m_image;
       }
@@ -477,7 +483,7 @@ public:
 
       /*!
        * Boolean type conversion operator. Returns true if this iterator is
-       * valid. A pixel sample iterator is valid if it has not reached (or
+       * active. A pixel sample iterator is active if it has not reached (or
        * surpassed) its iteration limit: either the end of the iterated image
        * channel, or the end of the iteration range, depending on how the
        * iterator has been constructed.
@@ -723,7 +729,8 @@ public:
       /*!
        * Default constructor. Initializes an invalid iterator.
        */
-      const_sample_iterator() : m_image( 0 ), m_iterator( 0 ), m_end( 0 )
+      const_sample_iterator() :
+         m_image( nullptr ), m_iterator( nullptr ), m_end( nullptr )
       {
       }
 
@@ -740,12 +747,10 @@ public:
        *                then the resulting iterator will also be invalid, with
        *                an empty iteration range. The default value is -1.
        */
-      const_sample_iterator( const GenericImage<P>& image, int channel = -1 ) :
-      m_image( &image ), m_iterator( 0 ), m_end( 0 )
+      const_sample_iterator( const image_type& image, int channel = -1 ) :
+         m_image( &image ), m_iterator( nullptr ), m_end( nullptr )
       {
-         if ( channel < 0 )
-            channel = m_image->SelectedChannel();
-         if ( m_image->IsValidChannelIndex( channel ) )
+         if ( m_image->ParseChannel( channel ) )
          {
             m_iterator = (*m_image)[channel];
             m_end = m_iterator + m_image->NumberOfPixels();
@@ -768,8 +773,8 @@ public:
        * \note Both iteration limits \a i and \a j must be pointers to constant
        * pixel samples in the \e same channel of the specified \a image.
        */
-      const_sample_iterator( const GenericImage<P>& image, const sample* i, const sample* j ) :
-      m_image( &image ), m_iterator( i ), m_end( j )
+      const_sample_iterator( const image_type& image, const sample* i, const sample* j ) :
+         m_image( &image ), m_iterator( i ), m_end( j )
       {
       }
 
@@ -781,17 +786,14 @@ public:
        * is a reference to an object of a different class.
        */
       const_sample_iterator( const sample_iterator& i ) :
-      m_image( i.m_image ), m_iterator( i.m_iterator ), m_end( i.m_end )
+         m_image( i.m_image ), m_iterator( i.m_iterator ), m_end( i.m_end )
       {
       }
 
       /*!
        * Copy constructor.
        */
-      const_sample_iterator( const const_sample_iterator& i ) :
-      m_image( i.m_image ), m_iterator( i.m_iterator ), m_end( i.m_end )
-      {
-      }
+      const_sample_iterator( const const_sample_iterator& ) = default;
 
       /*!
        * Assigns a mutable iterator to this object. Returns a reference to this
@@ -806,21 +808,24 @@ public:
       }
 
       /*!
-       * Assignment operator. Returns a reference to this object.
+       * Copy assignment operator. Returns a reference to this object.
        */
-      const_sample_iterator& operator =( const const_sample_iterator& i )
+      const_sample_iterator& operator =( const const_sample_iterator& ) = default;
+
+      /*!
+       * Returns true only if this iterator is valid. A valid iterator defines
+       * a valid iterated image and a non-null position.
+       */
+      bool IsValid() const
       {
-         m_image    = i.m_image;
-         m_iterator = i.m_iterator;
-         m_end      = i.m_end;
-         return *this;
+         return m_image != nullptr && m_iterator != nullptr;
       }
 
       /*!
        * Returns a reference to the constant image being iterated by this
        * object.
        */
-      const GenericImage<P>& Image() const
+      const image_type& Image() const
       {
          return *m_image;
       }
@@ -836,7 +841,7 @@ public:
 
       /*!
        * Boolean type conversion operator. Returns true if this iterator is
-       * valid. A pixel sample iterator is valid if it has not reached (or
+       * active. A pixel sample iterator is active if it has not reached (or
        * surpassed) its iteration limit: either the end of the iterated image
        * channel, or the end of the iteration range, depending on how the
        * iterator has been constructed.
@@ -1063,19 +1068,17 @@ public:
       sample_pointer m_end;
 
       roi_sample_iterator_base() :
-      m_image( 0 ), m_iterator( 0 ), m_rowBegin( 0 ), m_rowEnd( 0 ), m_end( 0 )
+         m_image( nullptr ), m_iterator( nullptr ), m_rowBegin( nullptr ), m_rowEnd( nullptr ), m_end( nullptr )
       {
       }
 
       roi_sample_iterator_base( image_type& image, const Rect& rect, int channel ) :
-      m_image( &image ), m_iterator( 0 ), m_rowBegin( 0 ), m_rowEnd( 0 ), m_end( 0 )
+         m_image( &image ), m_iterator( nullptr ), m_rowBegin( nullptr ), m_rowEnd( nullptr ), m_end( nullptr )
       {
          Rect r = rect;
          if ( m_image->ParseRect( r ) )
          {
-            if ( channel < 0 )
-               channel = m_image->SelectedChannel();
-            if ( m_image->IsValidChannelIndex( channel ) )
+            if ( m_image->ParseChannel( channel ) )
             {
                m_iterator = m_rowBegin = m_image->PixelAddress( r.x0, r.y0, channel );
                m_rowEnd = m_rowBegin + r.Width();
@@ -1085,7 +1088,7 @@ public:
       }
 
       roi_sample_iterator_base( image_type& image, sample_pointer i, sample_pointer j ) :
-      m_image( &image ), m_iterator( 0 ), m_rowBegin( 0 ), m_rowEnd( 0 ), m_end( 0 )
+         m_image( &image ), m_iterator( nullptr ), m_rowBegin( nullptr ), m_rowEnd( nullptr ), m_end( nullptr )
       {
          if ( j < i )
             pcl::Swap( i, j );
@@ -1094,19 +1097,9 @@ public:
          m_end = j;
       }
 
-      roi_sample_iterator_base( const roi_sample_iterator_base& i )
-      {
-         Assign( i );
-      }
+      roi_sample_iterator_base( const roi_sample_iterator_base& i ) = default;
 
-      void Assign( const roi_sample_iterator_base& i )
-      {
-         m_image    = i.m_image;
-         m_iterator = i.m_iterator;
-         m_rowBegin = i.m_rowBegin;
-         m_rowEnd   = i.m_rowEnd;
-         m_end      = i.m_end;
-      }
+      roi_sample_iterator_base& operator =( const roi_sample_iterator_base& ) = default;
 
       void Increment()
       {
@@ -1178,12 +1171,13 @@ public:
       typedef typename image_type::sample       sample;
 
       typedef roi_sample_iterator_base<GenericImage<P>, sample*>
-         iterator_base;
+                                                iterator_base;
 
       /*!
        * Default constructor. Initializes an invalid iterator.
        */
-      roi_sample_iterator() : iterator_base()
+      roi_sample_iterator() :
+         iterator_base()
       {
       }
 
@@ -1209,8 +1203,8 @@ public:
        *                then the resulting iterator will also be invalid, with
        *                an empty iteration range. The default value is -1.
        */
-      roi_sample_iterator( GenericImage<P>& image, const Rect& rect = Rect( 0 ), int channel = -1 ) :
-      iterator_base( image.SetUnique(), rect, channel )
+      roi_sample_iterator( image_type& image, const Rect& rect = Rect( 0 ), int channel = -1 ) :
+         iterator_base( image.SetUnique(), rect, channel )
       {
       }
 
@@ -1230,32 +1224,34 @@ public:
        * \note Both iteration limits \a i and \a j must be pointers to pixel
        * samples in the \e same channel of the specified \a image.
        */
-      roi_sample_iterator( GenericImage<P>& image, sample* i, sample* j ) :
-      iterator_base( image, i, j )
+      roi_sample_iterator( image_type& image, sample* i, sample* j ) :
+         iterator_base( image, i, j )
       {
       }
 
       /*!
        * Copy constructor.
        */
-      roi_sample_iterator( const roi_sample_iterator& i ) :
-      iterator_base( i )
-      {
-      }
+      roi_sample_iterator( const roi_sample_iterator& ) = default;
 
       /*!
-       * Assignment operator. Returns a reference to this object.
+       * Copy assignment operator. Returns a reference to this object.
        */
-      roi_sample_iterator& operator =( const roi_sample_iterator& i )
+      roi_sample_iterator& operator =( const roi_sample_iterator& ) = default;
+
+      /*!
+       * Returns true only if this iterator is valid. A valid iterator defines
+       * a valid iterated image and a non-null position.
+       */
+      bool IsValid() const
       {
-         this->Assign(  i );
-         return *this;
+         return this->m_image != nullptr && this->m_iterator != nullptr;
       }
 
       /*!
        * Returns a reference to the image being iterated by this object.
        */
-      GenericImage<P>& Image() const
+      image_type& Image() const
       {
          return *this->m_image;
       }
@@ -1270,9 +1266,9 @@ public:
 
       /*!
        * Boolean type conversion operator. Returns true if this iterator is
-       * valid. A ROI pixel sample iterator is valid if it has not reached (or
-       * surpassed) its iteration limit, i.e. the bottom right corner of its
-       * iterated region of interest.
+       * active. A ROI pixel sample iterator is active if it has not reached
+       * (or surpassed) its iteration limit, i.e. the bottom right corner of
+       * its iterated region of interest.
        */
       operator bool() const
       {
@@ -1498,12 +1494,13 @@ public:
       typedef typename image_type::sample       sample;
 
       typedef roi_sample_iterator_base<const GenericImage<P>, const sample*>
-         iterator_base;
+                                                iterator_base;
 
       /*!
        * Default constructor. Initializes an invalid iterator.
        */
-      const_roi_sample_iterator() : iterator_base()
+      const_roi_sample_iterator() :
+         iterator_base()
       {
       }
 
@@ -1529,8 +1526,8 @@ public:
        *                then the resulting iterator will also be invalid, with
        *                an empty iteration range. The default value is -1.
        */
-      const_roi_sample_iterator( const GenericImage<P>& image, const Rect& rect = Rect( 0 ), int channel = -1 ) :
-      iterator_base( image, rect, channel )
+      const_roi_sample_iterator( const image_type& image, const Rect& rect = Rect( 0 ), int channel = -1 ) :
+         iterator_base( image, rect, channel )
       {
       }
 
@@ -1550,8 +1547,8 @@ public:
        * \note Both iteration limits \a i and \a j must be pointers to constant
        * pixel samples in the \e same channel of the specified \a image.
        */
-      const_roi_sample_iterator( const GenericImage<P>& image, const sample* i, const sample* j ) :
-      iterator_base( image, i, j )
+      const_roi_sample_iterator( const image_type& image, const sample* i, const sample* j ) :
+         iterator_base( image, i, j )
       {
       }
 
@@ -1564,17 +1561,14 @@ public:
        * function is a reference to an object of a different class.
        */
       const_roi_sample_iterator( const roi_sample_iterator& i ) :
-      iterator_base( i.m_image, i.m_rowBegin, i.m_end )
+         iterator_base( i.m_image, i.m_rowBegin, i.m_end )
       {
       }
 
       /*!
        * Copy constructor.
        */
-      const_roi_sample_iterator( const const_roi_sample_iterator& i ) :
-      iterator_base( i )
-      {
-      }
+      const_roi_sample_iterator( const const_roi_sample_iterator& ) = default;
 
       /*!
        * Assigns a mutable iterator to this object. Returns a reference to this
@@ -1591,19 +1585,24 @@ public:
       }
 
       /*!
-       * Assignment operator. Returns a reference to this object.
+       * Copy assignment operator. Returns a reference to this object.
        */
-      const_roi_sample_iterator& operator =( const const_roi_sample_iterator& i )
+      const_roi_sample_iterator& operator =( const const_roi_sample_iterator& ) = default;
+
+      /*!
+       * Returns true only if this iterator is valid. A valid iterator defines
+       * a valid iterated image and a non-null position.
+       */
+      bool IsValid() const
       {
-         iterator_base::Assign( i );
-         return *this;
+         return this->m_image != nullptr && this->m_iterator != nullptr;
       }
 
       /*!
        * Returns a reference to the constant image being iterated by this
        * object.
        */
-      const GenericImage<P>& Image() const
+      const image_type& Image() const
       {
          return *this->m_image;
       }
@@ -1619,9 +1618,9 @@ public:
 
       /*!
        * Boolean type conversion operator. Returns true if this iterator is
-       * valid. A ROI pixel sample iterator is valid if it has not reached (or
-       * surpassed) its iteration limit, i.e. the bottom right corner of its
-       * iterated region of interest.
+       * active. A ROI pixel sample iterator is active if it has not reached
+       * (or surpassed) its iteration limit, i.e. the bottom right corner of
+       * its iterated region of interest.
        */
       operator bool() const
       {
@@ -1825,44 +1824,38 @@ public:
       filter_type    m_filter;
       sample_pointer m_begin;
 
-      filter_sample_iterator_base() : iterator_base(), m_filter(), m_begin( 0 )
+      filter_sample_iterator_base() :
+         iterator_base(), m_filter(), m_begin( nullptr )
       {
       }
 
       filter_sample_iterator_base( image_type& image, const filter_type& filter, int channel ) :
-      iterator_base( image, channel ), m_filter( filter ), m_begin( iterator_base::m_iterator )
+         iterator_base( image, channel ), m_filter( filter ), m_begin( iterator_base::m_iterator )
       {
          JumpToNextValidSample();
       }
 
       filter_sample_iterator_base( image_type& image, const filter_type& filter, sample_pointer i, sample_pointer j ) :
-      iterator_base( image, i, j ), m_filter( filter ), m_begin( iterator_base::m_iterator )
+         iterator_base( image, i, j ), m_filter( filter ), m_begin( iterator_base::m_iterator )
       {
          JumpToNextValidSample();
       }
 
       filter_sample_iterator_base( const iterator_base& i, const filter_type& filter ) :
-      iterator_base( i ), m_filter( filter ), m_begin( iterator_base::m_iterator )
+         iterator_base( i ), m_filter( filter ), m_begin( iterator_base::m_iterator )
       {
          JumpToNextValidSample();
       }
 
-      filter_sample_iterator_base( const filter_sample_iterator_base& i ) :
-      iterator_base( i ), m_filter( i.m_filter ), m_begin( i.m_begin )
-      {
-      }
+      filter_sample_iterator_base( const filter_sample_iterator_base& ) = default;
 
-      void Assign( const filter_sample_iterator_base& i )
-      {
-         (void)iterator_base::operator =( i );
-         m_filter = i.m_filter;
-         m_begin  = i.m_begin;
-      }
+      filter_sample_iterator_base& operator =( const filter_sample_iterator_base& ) = default;
 
-      void Assign( const iterator_base& i )
+      filter_sample_iterator_base& operator =( const iterator_base& i )
       {
          (void)iterator_base::operator =( i );
          JumpToNextValidSample();
+         return *this;
       }
 
       void JumpToNextValidSample()
@@ -1938,12 +1931,13 @@ public:
       typedef F                                 filter_type;
 
       typedef filter_sample_iterator_base<GenericImage<P>, sample_iterator, sample*, F>
-         iterator_base;
+                                                iterator_base;
 
       /*!
        * Default constructor. Initializes an invalid iterator.
        */
-      filter_sample_iterator() : iterator_base()
+      filter_sample_iterator() :
+         iterator_base()
       {
       }
 
@@ -1963,8 +1957,8 @@ public:
        *                then the resulting iterator will also be invalid, with
        *                an empty iteration range. The default value is -1.
        */
-      filter_sample_iterator( GenericImage<P>& image, const F& filter, int channel = -1 ) :
-      iterator_base( image.SetUnique(), filter, channel )
+      filter_sample_iterator( image_type& image, const F& filter, int channel = -1 ) :
+         iterator_base( image.SetUnique(), filter, channel )
       {
       }
 
@@ -1986,8 +1980,8 @@ public:
        * \note Both iteration limits \a i and \a j must be pointers to pixel
        * samples in the \e same channel of the specified \a image.
        */
-      filter_sample_iterator( GenericImage<P>& image, const F& filter, sample* i, sample* j ) :
-      iterator_base( image, filter, i, j )
+      filter_sample_iterator( image_type& image, const F& filter, sample* i, sample* j ) :
+         iterator_base( image, filter, i, j )
       {
       }
 
@@ -1996,26 +1990,19 @@ public:
        * iterator and the specified \a filter.
        */
       filter_sample_iterator( const sample_iterator& i, const F& filter ) :
-      iterator_base( i, filter )
+         iterator_base( i, filter )
       {
       }
 
       /*!
        * Copy constructor.
        */
-      filter_sample_iterator( const filter_sample_iterator& i ) :
-      iterator_base( i )
-      {
-      }
+      filter_sample_iterator( const filter_sample_iterator& i ) = default;
 
       /*!
-       * Assignment operator. Returns a reference to this iterator.
+       * Copy assignment operator. Returns a reference to this iterator.
        */
-      filter_sample_iterator& operator =( const filter_sample_iterator& i )
-      {
-         iterator_base::Assign( i );
-         return *this;
-      }
+      filter_sample_iterator& operator =( const filter_sample_iterator& ) = default;
 
       /*!
        * Assigns a pixel sample iterator to this object. Returns a reference to
@@ -2023,14 +2010,23 @@ public:
        */
       filter_sample_iterator& operator =( const sample_iterator& i )
       {
-         iterator_base::Assign( i );
+         (void)iterator_base::operator =( i );
          return *this;
+      }
+
+      /*!
+       * Returns true only if this iterator is valid. A valid iterator defines
+       * a valid iterated image and a non-null position.
+       */
+      bool IsValid() const
+      {
+         return this->m_image != nullptr && this->m_iterator != nullptr;
       }
 
       /*!
        * Returns a reference to the image being iterated by this object.
        */
-      GenericImage<P>& Image() const
+      image_type& Image() const
       {
          return *this->m_image;
       }
@@ -2063,7 +2059,7 @@ public:
 
       /*!
        * Boolean type conversion operator. Returns true if this iterator is
-       * valid. A pixel sample iterator is valid if it has not reached (or
+       * active. A pixel sample iterator is active if it has not reached (or
        * surpassed) its iteration limit: either the end of the iterated image
        * channel, or the end of the iteration range, depending on how the
        * iterator has been constructed.
@@ -2299,7 +2295,8 @@ public:
     * automatic and transparent fashion.
     */
    template <class F>
-   class const_filter_sample_iterator : public filter_sample_iterator_base<const GenericImage<P>, const_sample_iterator, const sample*, F>
+   class const_filter_sample_iterator :
+      public filter_sample_iterator_base<const GenericImage<P>, const_sample_iterator, const sample*, F>
    {
    public:
 
@@ -2325,12 +2322,13 @@ public:
       typedef F                                 filter_type;
 
       typedef filter_sample_iterator_base<const GenericImage<P>, const_sample_iterator, const sample*, F>
-         iterator_base;
+                                                iterator_base;
 
       /*!
        * Default constructor. Initializes an invalid iterator.
        */
-      const_filter_sample_iterator() : iterator_base()
+      const_filter_sample_iterator() :
+         iterator_base()
       {
       }
 
@@ -2350,8 +2348,8 @@ public:
        *                then the resulting iterator will also be invalid, with
        *                an empty iteration range. The default value is -1.
        */
-      const_filter_sample_iterator( const GenericImage<P>& image, const F& filter, int channel = -1 ) :
-      iterator_base( image, filter, channel )
+      const_filter_sample_iterator( const image_type& image, const F& filter, int channel = -1 ) :
+         iterator_base( image, filter, channel )
       {
       }
 
@@ -2373,8 +2371,8 @@ public:
        * \note Both iteration limits \a i and \a j must be pointers to constant
        * pixel samples in the \e same channel of the specified \a image.
        */
-      const_filter_sample_iterator( const GenericImage<P>& image, const F& filter, const sample* i, const sample* j ) :
-      iterator_base( image, filter, i, j )
+      const_filter_sample_iterator( const image_type& image, const F& filter, const sample* i, const sample* j ) :
+         iterator_base( image, filter, i, j )
       {
       }
 
@@ -2383,7 +2381,7 @@ public:
        * sample iterator and the specified \a filter.
        */
       const_filter_sample_iterator( const sample_iterator& i, const F& filter ) :
-      iterator_base( i.m_image, filter, i.m_iterator, i.m_end )
+         iterator_base( i.m_image, filter, i.m_iterator, i.m_end )
       {
       }
 
@@ -2392,7 +2390,7 @@ public:
        * sample iterator and the specified \a filter.
        */
       const_filter_sample_iterator( const const_sample_iterator& i, const F& filter ) :
-      iterator_base( i, filter )
+         iterator_base( i, filter )
       {
       }
 
@@ -2401,26 +2399,19 @@ public:
        * filter pixel sample iterator.
        */
       const_filter_sample_iterator( const filter_sample_iterator<F>& i ) :
-      iterator_base( i )
+         iterator_base( i )
       {
       }
 
       /*!
        * Copy constructor.
        */
-      const_filter_sample_iterator( const const_filter_sample_iterator& i ) :
-      iterator_base( i )
-      {
-      }
+      const_filter_sample_iterator( const const_filter_sample_iterator& ) = default;
 
       /*!
-       * Assignment operator. Returns a reference to this iterator.
+       * Copy assignment operator. Returns a reference to this iterator.
        */
-      const_filter_sample_iterator& operator =( const const_filter_sample_iterator& i )
-      {
-         iterator_base::Assign( i );
-         return *this;
-      }
+      const_filter_sample_iterator& operator =( const const_filter_sample_iterator& ) = default;
 
       /*!
        * Assigns a mutable pixel sample iterator to this object. Returns a
@@ -2439,15 +2430,24 @@ public:
        */
       const_filter_sample_iterator& operator =( const const_sample_iterator& i )
       {
-         iterator_base::Assign( i );
+         (void)iterator_base::operator =( i );
          return *this;
+      }
+
+      /*!
+       * Returns true only if this iterator is valid. A valid iterator defines
+       * a valid iterated image and a non-null position.
+       */
+      bool IsValid() const
+      {
+         return this->m_image != nullptr && this->m_iterator != nullptr;
       }
 
       /*!
        * Returns a reference to the constant image being iterated by this
        * object.
        */
-      const GenericImage<P>& Image() const
+      const image_type& Image() const
       {
          return *this->m_image;
       }
@@ -2481,7 +2481,7 @@ public:
 
       /*!
        * Boolean type conversion operator. Returns true if this iterator is
-       * valid. A pixel sample iterator is valid if it has not reached (or
+       * active. A pixel sample iterator is active if it has not reached (or
        * surpassed) its iteration limit: either the end of the iterated image
        * channel, or the end of the iteration range, depending on how the
        * iterator has been constructed.
@@ -2691,49 +2691,43 @@ public:
    protected:
 
       typedef roi_sample_iterator_base<image_type, sample_pointer>
-         roi_iterator_base;
+                                                roi_iterator_base;
 
       filter_type    m_filter;
       sample_pointer m_begin;
 
-      roi_filter_sample_iterator_base() : roi_iterator_base(), m_filter(), m_begin( 0 )
+      roi_filter_sample_iterator_base() :
+         roi_iterator_base(), m_filter(), m_begin( nullptr )
       {
       }
 
       roi_filter_sample_iterator_base( image_type& image, const filter_type& filter, const Rect& rect, int channel ) :
-      roi_iterator_base( image, rect, channel ), m_filter( filter ), m_begin( roi_iterator_base::m_iterator )
+         roi_iterator_base( image, rect, channel ), m_filter( filter ), m_begin( roi_iterator_base::m_iterator )
       {
          JumpToNextValidSample();
       }
 
       roi_filter_sample_iterator_base( image_type& image, const filter_type& filter, sample_pointer i, sample_pointer j ) :
-      roi_iterator_base( image, i, j ), m_filter( filter ), m_begin( roi_iterator_base::m_iterator )
+         roi_iterator_base( image, i, j ), m_filter( filter ), m_begin( roi_iterator_base::m_iterator )
       {
          JumpToNextValidSample();
       }
 
       roi_filter_sample_iterator_base( const roi_iterator_base& i, const filter_type& filter ) :
-      roi_iterator_base( i ), m_filter( filter ), m_begin( roi_iterator_base::m_iterator )
+         roi_iterator_base( i ), m_filter( filter ), m_begin( roi_iterator_base::m_iterator )
       {
          JumpToNextValidSample();
       }
 
-      roi_filter_sample_iterator_base( const roi_filter_sample_iterator_base& i ) :
-      roi_iterator_base( i ), m_filter( i.m_filter ), m_begin( i.m_begin )
-      {
-      }
+      roi_filter_sample_iterator_base( const roi_filter_sample_iterator_base& ) = default;
 
-      void Assign( const roi_filter_sample_iterator_base& i )
-      {
-         roi_iterator_base::Assign( i );
-         m_filter = i.m_filter;
-         m_begin  = i.m_begin;
-      }
+      roi_filter_sample_iterator_base& operator =( const roi_filter_sample_iterator_base& i ) = default;
 
-      void Assign( const roi_iterator_base& i )
+      roi_filter_sample_iterator_base& operator =( const roi_iterator_base& i )
       {
-         roi_iterator_base::Assign( i );
+         (void)roi_iterator_base::operator =( i );
          JumpToNextValidSample();
+         return *this;
       }
 
       void JumpToNextValidSample()
@@ -2786,12 +2780,13 @@ public:
       typedef F                                 filter_type;
 
       typedef roi_filter_sample_iterator_base<GenericImage<P>, sample*, F>
-         iterator_base;
+                                                iterator_base;
 
       /*!
        * Default constructor. Initializes an invalid iterator.
        */
-      roi_filter_sample_iterator() : iterator_base()
+      roi_filter_sample_iterator() :
+         iterator_base()
       {
       }
 
@@ -2820,8 +2815,8 @@ public:
        *                then the resulting iterator will also be invalid, with
        *                an empty iteration range. The default value is -1.
        */
-      roi_filter_sample_iterator( GenericImage<P>& image, const F& filter, const Rect& rect = Rect( 0 ), int channel = -1 ) :
-      iterator_base( image.SetUnique(), filter, rect, channel )
+      roi_filter_sample_iterator( image_type& image, const F& filter, const Rect& rect = Rect( 0 ), int channel = -1 ) :
+         iterator_base( image.SetUnique(), filter, rect, channel )
       {
       }
 
@@ -2843,8 +2838,8 @@ public:
        * \note Both iteration limits \a i and \a j must be pointers to pixel
        * samples in the \e same channel of the specified \a image.
        */
-      roi_filter_sample_iterator( GenericImage<P>& image, const F& filter, sample* i, sample* j ) :
-      iterator_base( image, filter, i, j )
+      roi_filter_sample_iterator( image_type& image, const F& filter, sample* i, sample* j ) :
+         iterator_base( image, filter, i, j )
       {
       }
 
@@ -2853,26 +2848,19 @@ public:
        * iterator from the specified ROI iterator \a i and \a filter.
        */
       roi_filter_sample_iterator( const roi_sample_iterator& i, const F& filter ) :
-      iterator_base( i, filter )
+         iterator_base( i, filter )
       {
       }
 
       /*!
        * Copy constructor.
        */
-      roi_filter_sample_iterator( const roi_filter_sample_iterator& i ) :
-      iterator_base( i )
-      {
-      }
+      roi_filter_sample_iterator( const roi_filter_sample_iterator& ) = default;
 
       /*!
-       * Assignment operator. Returns a reference to this object.
+       * Copy assignment operator. Returns a reference to this object.
        */
-      roi_filter_sample_iterator& operator =( const roi_filter_sample_iterator& i )
-      {
-         this->Assign( i );
-         return *this;
-      }
+      roi_filter_sample_iterator& operator =( const roi_filter_sample_iterator& ) = default;
 
       /*!
        * Assigns a ROI pixel sample iterator. Returns a reference to this
@@ -2880,14 +2868,23 @@ public:
        */
       roi_filter_sample_iterator& operator =( const roi_sample_iterator& i )
       {
-         this->Assign( i );
+         (void)iterator_base::operator =( i );
          return *this;
+      }
+
+      /*!
+       * Returns true only if this iterator is valid. A valid iterator defines
+       * a valid iterated image and a non-null position.
+       */
+      bool IsValid() const
+      {
+         return this->m_image != nullptr && this->m_iterator != nullptr;
       }
 
       /*!
        * Returns a reference to the image being iterated by this object.
        */
-      GenericImage<P>& Image() const
+      image_type& Image() const
       {
          return *this->m_image;
       }
@@ -2920,9 +2917,9 @@ public:
 
       /*!
        * Boolean type conversion operator. Returns true if this iterator is
-       * valid. A ROI pixel sample iterator is valid if it has not reached (or
-       * surpassed) its iteration limit, i.e. the bottom right corner of its
-       * iterated region of interest.
+       * active. A ROI pixel sample iterator is active if it has not reached
+       * (or surpassed) its iteration limit, i.e. the bottom right corner of
+       * its iterated region of interest.
        */
       operator bool() const
       {
@@ -3160,12 +3157,13 @@ public:
       typedef F                                 filter_type;
 
       typedef roi_filter_sample_iterator_base<const GenericImage<P>, const sample*, F>
-         iterator_base;
+                                                iterator_base;
 
       /*!
        * Default constructor. Initializes an invalid iterator.
        */
-      const_roi_filter_sample_iterator() : iterator_base()
+      const_roi_filter_sample_iterator() :
+         iterator_base()
       {
       }
 
@@ -3194,8 +3192,8 @@ public:
        *                then the resulting iterator will also be invalid, with
        *                an empty iteration range. The default value is -1.
        */
-      const_roi_filter_sample_iterator( const GenericImage<P>& image, const F& filter, const Rect& rect = Rect( 0 ), int channel = -1 ) :
-      iterator_base( image, filter, rect, channel )
+      const_roi_filter_sample_iterator( const image_type& image, const F& filter, const Rect& rect = Rect( 0 ), int channel = -1 ) :
+         iterator_base( image, filter, rect, channel )
       {
       }
 
@@ -3217,8 +3215,8 @@ public:
        * \note Both iteration limits \a i and \a j must be pointers to pixel
        * samples in the \e same channel of the specified \a image.
        */
-      const_roi_filter_sample_iterator( const GenericImage<P>& image, const F& filter, const sample* i, const sample* j ) :
-      iterator_base( image, filter, i, j )
+      const_roi_filter_sample_iterator( const image_type& image, const F& filter, const sample* i, const sample* j ) :
+         iterator_base( image, filter, i, j )
       {
       }
 
@@ -3227,26 +3225,19 @@ public:
        * iterator from the specified immutable ROI iterator \a i and \a filter.
        */
       const_roi_filter_sample_iterator( const const_roi_sample_iterator& i, const F& filter ) :
-      iterator_base( i, filter )
+         iterator_base( i, filter )
       {
       }
 
       /*!
        * Copy constructor.
        */
-      const_roi_filter_sample_iterator( const const_roi_filter_sample_iterator& i ) :
-      iterator_base( i )
-      {
-      }
+      const_roi_filter_sample_iterator( const const_roi_filter_sample_iterator& ) = default;
 
       /*!
-       * Assignment operator. Returns a reference to this object.
+       * Copy assignment operator. Returns a reference to this object.
        */
-      const_roi_filter_sample_iterator& operator =( const const_roi_filter_sample_iterator& i )
-      {
-         this->Assign( i );
-         return *this;
-      }
+      const_roi_filter_sample_iterator& operator =( const const_roi_filter_sample_iterator& ) = default;
 
       /*!
        * Assigns an immutable ROI pixel sample iterator. Returns a reference to
@@ -3254,15 +3245,24 @@ public:
        */
       const_roi_filter_sample_iterator& operator =( const const_roi_sample_iterator& i )
       {
-         this->Assign( i );
+         (void)iterator_base::operator =( i );
          return *this;
+      }
+
+      /*!
+       * Returns true only if this iterator is valid. A valid iterator defines
+       * a valid iterated image and a non-null position.
+       */
+      bool IsValid() const
+      {
+         return this->m_image != nullptr && this->m_iterator != nullptr;
       }
 
       /*!
        * Returns a reference to the constant image being iterated by this
        * object.
        */
-      const GenericImage<P>& Image() const
+      const image_type& Image() const
       {
          return *this->m_image;
       }
@@ -3296,9 +3296,9 @@ public:
 
       /*!
        * Boolean type conversion operator. Returns true if this iterator is
-       * valid. A ROI pixel sample iterator is valid if it has not reached (or
-       * surpassed) its iteration limit, i.e. the bottom right corner of its
-       * iterated region of interest.
+       * active. A ROI pixel sample iterator is active if it has not reached
+       * (or surpassed) its iteration limit, i.e. the bottom right corner of
+       * its iterated region of interest.
        */
       operator bool() const
       {
@@ -3532,14 +3532,16 @@ public:
       /*!
        * Default constructor. Initializes an invalid iterator.
        */
-      pixel_iterator() : m_image( 0 ), m_iterator(), m_end( 0 )
+      pixel_iterator() :
+         m_image( nullptr ), m_iterator(), m_end( nullptr )
       {
       }
 
       /*!
        * Constructs a mutable pixel iterator for the specified \a image.
        */
-      pixel_iterator( GenericImage<P>& image ) : m_image( &image ), m_iterator(), m_end( 0 )
+      pixel_iterator( image_type& image ) :
+         m_image( &image ), m_iterator(), m_end( nullptr )
       {
          m_image->SetUnique();
          if ( !m_image->IsEmpty() )
@@ -3554,26 +3556,26 @@ public:
       /*!
        * Copy constructor.
        */
-      pixel_iterator( const pixel_iterator& i ) :
-      m_image( i.m_image ), m_iterator( i.m_iterator ), m_end( i.m_end )
-      {
-      }
+      pixel_iterator( const pixel_iterator& ) = default;
 
       /*!
-       * Assignment operator. Returns a reference to this iterator.
+       * Copy assignment operator. Returns a reference to this iterator.
        */
-      pixel_iterator& operator =( const pixel_iterator& i )
+      pixel_iterator& operator =( const pixel_iterator& ) = default;
+
+      /*!
+       * Returns true only if this iterator is valid. A valid iterator defines
+       * a valid iterated image and a non-null position.
+       */
+      bool IsValid() const
       {
-         m_image    = i.m_image;
-         m_iterator = i.m_iterator;
-         m_end      = i.m_end;
-         return *this;
+         return m_image != nullptr && !m_iterator.IsEmpty();
       }
 
       /*!
        * Returns a reference to the image being iterated by this object.
        */
-      GenericImage<P>& Image() const
+      image_type& Image() const
       {
          return *m_image;
       }
@@ -3589,8 +3591,8 @@ public:
 
       /*!
        * Boolean type conversion operator. Returns true if this iterator is
-       * valid. A pixel iterator is valid if it has not reached (or surpassed)
-       * its iteration limit.
+       * active. A pixel iterator is active if it has not reached (or
+       * surpassed) its iteration limit.
        */
       operator bool() const
       {
@@ -3794,14 +3796,16 @@ public:
       /*!
        * Default constructor. Initializes an invalid iterator.
        */
-      const_pixel_iterator() : m_image( 0 ), m_iterator(), m_end( 0 )
+      const_pixel_iterator() :
+         m_image( nullptr ), m_iterator(), m_end( nullptr )
       {
       }
 
       /*!
        * Constructs an immutable pixel iterator for the specified \a image.
        */
-      const_pixel_iterator( const GenericImage<P>& image ) : m_image( &image ), m_iterator(), m_end( 0 )
+      const_pixel_iterator( const image_type& image ) :
+         m_image( &image ), m_iterator(), m_end( nullptr )
       {
          if ( !m_image->IsEmpty() )
          {
@@ -3815,27 +3819,27 @@ public:
       /*!
        * Copy constructor.
        */
-      const_pixel_iterator( const const_pixel_iterator& i ) :
-      m_image( i.m_image ), m_iterator( i.m_iterator ), m_end( i.m_end )
-      {
-      }
+      const_pixel_iterator( const const_pixel_iterator& ) = default;
 
       /*!
-       * Assignment operator. Returns a reference to this iterator.
+       * Copy assignment operator. Returns a reference to this iterator.
        */
-      const_pixel_iterator& operator =( const const_pixel_iterator& i )
+      const_pixel_iterator& operator =( const const_pixel_iterator& ) = default;
+
+      /*!
+       * Returns true only if this iterator is valid. A valid iterator defines
+       * a valid iterated image and a non-null position.
+       */
+      bool IsValid() const
       {
-         m_image    = i.m_image;
-         m_iterator = i.m_iterator;
-         m_end      = i.m_end;
-         return *this;
+         return m_image != nullptr && !m_iterator.IsEmpty();
       }
 
       /*!
        * Returns a reference to the constant image being iterated by this
        * object.
        */
-      const GenericImage<P>& Image() const
+      const image_type& Image() const
       {
          return *m_image;
       }
@@ -3851,8 +3855,8 @@ public:
 
       /*!
        * Boolean type conversion operator. Returns true if this iterator is
-       * valid. A pixel iterator is valid if it has not reached (or surpassed)
-       * its iteration limit.
+       * active. A pixel iterator is active if it has not reached (or
+       * surpassed) its iteration limit.
        */
       operator bool() const
       {
@@ -4030,7 +4034,7 @@ public:
    {
    protected:
 
-      typedef GenericVector<sample_pointer>  iterator_type;
+      typedef GenericVector<sample_pointer>     iterator_type;
 
       image_type*    m_image;
       iterator_type  m_iterator;
@@ -4039,12 +4043,12 @@ public:
       sample_pointer m_end;
 
       roi_pixel_iterator_base() :
-      m_image( 0 ), m_iterator(), m_rowBegin( 0 ), m_rowEnd( 0 ), m_end( 0 )
+         m_image( nullptr ), m_iterator(), m_rowBegin( nullptr ), m_rowEnd( nullptr ), m_end( nullptr )
       {
       }
 
       roi_pixel_iterator_base( image_type& image, const Rect& rect ) :
-      m_image( &image ), m_iterator(), m_rowBegin( 0 ), m_rowEnd( 0 ), m_end( 0 )
+         m_image( &image ), m_iterator(), m_rowBegin( nullptr ), m_rowEnd( nullptr ), m_end( nullptr )
       {
          Rect r = rect;
          if ( m_image->ParseRect( r ) )
@@ -4058,19 +4062,9 @@ public:
          }
       }
 
-      roi_pixel_iterator_base( const roi_pixel_iterator_base& i )
-      {
-         Assign( i );
-      }
+      roi_pixel_iterator_base( const roi_pixel_iterator_base& ) = default;
 
-      void Assign( const roi_pixel_iterator_base& i )
-      {
-         m_image    = i.m_image;
-         m_iterator = i.m_iterator;
-         m_rowBegin = i.m_rowBegin;
-         m_rowEnd   = i.m_rowEnd;
-         m_end      = i.m_end;
-      }
+      roi_pixel_iterator_base& operator =( const roi_pixel_iterator_base& ) = default;
 
       void Increment()
       {
@@ -4152,12 +4146,13 @@ public:
       typedef typename image_type::sample       sample;
 
       typedef roi_pixel_iterator_base<GenericImage<P>, sample*>
-         iterator_base;
+                                                iterator_base;
 
       /*!
        * Default constructor. Initializes an invalid iterator.
        */
-      roi_pixel_iterator() : iterator_base()
+      roi_pixel_iterator() :
+         iterator_base()
       {
       }
 
@@ -4175,32 +4170,34 @@ public:
        *                with an empty iteration range. The default value is an
        *                empty rectangle.
        */
-      roi_pixel_iterator( GenericImage<P>& image, const Rect& rect = Rect( 0 ) ) :
-      iterator_base( image.SetUnique(), rect )
+      roi_pixel_iterator( image_type& image, const Rect& rect = Rect( 0 ) ) :
+         iterator_base( image.SetUnique(), rect )
       {
       }
 
       /*!
        * Copy constructor.
        */
-      roi_pixel_iterator( const roi_pixel_iterator& i ) :
-      iterator_base( i )
-      {
-      }
+      roi_pixel_iterator( const roi_pixel_iterator& ) = default;
 
       /*!
-       * Assignment operator. Returns a reference to this object.
+       * Copy assignment operator. Returns a reference to this object.
        */
-      roi_pixel_iterator& operator =( const roi_pixel_iterator& i )
+      roi_pixel_iterator& operator =( const roi_pixel_iterator& ) = default;
+
+      /*!
+       * Returns true only if this iterator is valid. A valid iterator defines
+       * a valid iterated image and a non-null position.
+       */
+      bool IsValid() const
       {
-         this->Assign( i );
-         return *this;
+         return this->m_image != nullptr && !this->m_iterator.IsEmpty();
       }
 
       /*!
        * Returns a reference to the image being iterated by this object.
        */
-      GenericImage<P>& Image() const
+      image_type& Image() const
       {
          return *this->m_image;
       }
@@ -4216,7 +4213,7 @@ public:
 
       /*!
        * Boolean type conversion operator. Returns true if this iterator is
-       * valid. A ROI pixel iterator is valid if it has not reached (or
+       * active. A ROI pixel iterator is active if it has not reached (or
        * surpassed) its iteration limit, i.e. the bottom right corner of its
        * iterated region of interest.
        */
@@ -4407,12 +4404,13 @@ public:
       typedef typename image_type::sample       sample;
 
       typedef roi_pixel_iterator_base<const GenericImage<P>, const sample*>
-         iterator_base;
+                                                iterator_base;
 
       /*!
        * Default constructor. Initializes an invalid iterator.
        */
-      const_roi_pixel_iterator() : iterator_base()
+      const_roi_pixel_iterator() :
+         iterator_base()
       {
       }
 
@@ -4430,33 +4428,35 @@ public:
        *                with an empty iteration range. The default value is an
        *                empty rectangle.
        */
-      const_roi_pixel_iterator( const GenericImage<P>& image, const Rect& rect = Rect( 0 ) ) :
-      iterator_base( image, rect )
+      const_roi_pixel_iterator( const image_type& image, const Rect& rect = Rect( 0 ) ) :
+         iterator_base( image, rect )
       {
       }
 
       /*!
        * Copy constructor.
        */
-      const_roi_pixel_iterator( const const_roi_pixel_iterator& i ) :
-      iterator_base( i )
-      {
-      }
+      const_roi_pixel_iterator( const const_roi_pixel_iterator& ) = default;
 
       /*!
-       * Assignment operator. Returns a reference to this object.
+       * Copy assignment operator. Returns a reference to this object.
        */
-      const_roi_pixel_iterator& operator =( const const_roi_pixel_iterator& i )
+      const_roi_pixel_iterator& operator =( const const_roi_pixel_iterator& ) = default;
+
+      /*!
+       * Returns true only if this iterator is valid. A valid iterator defines
+       * a valid iterated image and a non-null position.
+       */
+      bool IsValid() const
       {
-         this->Assign( i );
-         return *this;
+         return this->m_image != nullptr && !this->m_iterator.IsEmpty();
       }
 
       /*!
        * Returns a reference to the constant image being iterated by this
        * object.
        */
-      const GenericImage<P>& Image() const
+      const image_type& Image() const
       {
          return *this->m_image;
       }
@@ -4472,7 +4472,7 @@ public:
 
       /*!
        * Boolean type conversion operator. Returns true if this iterator is
-       * valid. A ROI pixel iterator is valid if it has not reached (or
+       * active. A ROI pixel iterator is active if it has not reached (or
        * surpassed) its iteration limit, i.e. the bottom right corner of its
        * iterated region of interest.
        */
@@ -4644,35 +4644,28 @@ public:
       filter_type    m_filter;
       sample_pointer m_begin;
 
-      filter_pixel_iterator_base() : iterator_base(), m_filter(), m_begin( 0 )
+      filter_pixel_iterator_base() :
+         iterator_base(), m_filter(), m_begin( nullptr )
       {
       }
 
       filter_pixel_iterator_base( image_type& image, const filter_type& filter ) :
-      iterator_base( image ), m_filter( filter ), m_begin( iterator_base::m_iterator )
+         iterator_base( image ), m_filter( filter ), m_begin( iterator_base::m_iterator )
       {
          JumpToNextValidSample();
       }
 
       filter_pixel_iterator_base( const iterator_base& i, const filter_type& filter ) :
-      iterator_base( i ), m_filter( filter ), m_begin( iterator_base::m_iterator )
+         iterator_base( i ), m_filter( filter ), m_begin( iterator_base::m_iterator )
       {
          JumpToNextValidSample();
       }
 
-      filter_pixel_iterator_base( const filter_pixel_iterator_base& i ) :
-      iterator_base( i ), m_filter( i.m_filter ), m_begin( i.m_begin )
-      {
-      }
+      filter_pixel_iterator_base( const filter_pixel_iterator_base& ) = default;
 
-      void Assign( const filter_pixel_iterator_base& i )
-      {
-         (void)iterator_base::operator =( i );
-         m_filter = i.m_filter;
-         m_begin  = i.m_begin;
-      }
+      filter_pixel_iterator_base& operator =( const filter_pixel_iterator_base& ) = default;
 
-      void Assign( const iterator_base& i )
+      filter_pixel_iterator_base& operator =( const iterator_base& i )
       {
          (void)iterator_base::operator =( i );
          JumpToNextValidSample();
@@ -4755,12 +4748,13 @@ public:
       typedef F                                 filter_type;
 
       typedef filter_pixel_iterator_base<GenericImage<P>, pixel_iterator, sample*, F>
-         iterator_base;
+                                                iterator_base;
 
       /*!
        * Default constructor. Initializes an invalid iterator.
        */
-      filter_pixel_iterator() : iterator_base()
+      filter_pixel_iterator() :
+         iterator_base()
       {
       }
 
@@ -4772,8 +4766,8 @@ public:
        * \param filter  Reference to a predicate object that will be used to
        *                filter pixels.
        */
-      filter_pixel_iterator( GenericImage<P>& image, const F& filter ) :
-      iterator_base( image.SetUnique(), filter )
+      filter_pixel_iterator( image_type& image, const F& filter ) :
+         iterator_base( image.SetUnique(), filter )
       {
       }
 
@@ -4782,26 +4776,19 @@ public:
        * iterator and the specified \a filter.
        */
       filter_pixel_iterator( const pixel_iterator& i, const F& filter ) :
-      iterator_base( i, filter )
+         iterator_base( i, filter )
       {
       }
 
       /*!
        * Copy constructor.
        */
-      filter_pixel_iterator( const filter_pixel_iterator& i ) :
-      iterator_base( i )
-      {
-      }
+      filter_pixel_iterator( const filter_pixel_iterator& ) = default;
 
       /*!
-       * Assignment operator. Returns a reference to this iterator.
+       * Copy assignment operator. Returns a reference to this iterator.
        */
-      filter_pixel_iterator& operator =( const filter_pixel_iterator& i )
-      {
-         iterator_base::Assign( i );
-         return *this;
-      }
+      filter_pixel_iterator& operator =( const filter_pixel_iterator& ) = default;
 
       /*!
        * Assigns a mutable pixel iterator to this object. Returns a reference
@@ -4809,14 +4796,23 @@ public:
        */
       filter_pixel_iterator& operator =( const pixel_iterator& i )
       {
-         iterator_base::Assign( i );
+         (void)iterator_base::operator =( i );
          return *this;
+      }
+
+      /*!
+       * Returns true only if this iterator is valid. A valid iterator defines
+       * a valid iterated image and a non-null position.
+       */
+      bool IsValid() const
+      {
+         return this->m_image != nullptr && !this->m_iterator.IsEmpty();
       }
 
       /*!
        * Returns a reference to the image being iterated by this object.
        */
-      GenericImage<P>& Image() const
+      image_type& Image() const
       {
          return *this->m_image;
       }
@@ -4850,8 +4846,8 @@ public:
 
       /*!
        * Boolean type conversion operator. Returns true if this iterator is
-       * valid. A pixel iterator is valid if it has not reached (or surpassed)
-       * its iteration limit.
+       * active. A pixel iterator is active if it has not reached (or
+       * surpassed) its iteration limit.
        */
       operator bool() const
       {
@@ -5058,7 +5054,8 @@ public:
     * automatic and transparent fashion.
     */
    template <class F>
-   class const_filter_pixel_iterator : public filter_pixel_iterator_base<const GenericImage<P>, const_pixel_iterator, const sample*, F>
+   class const_filter_pixel_iterator :
+      public filter_pixel_iterator_base<const GenericImage<P>, const_pixel_iterator, const sample*, F>
    {
    public:
 
@@ -5084,12 +5081,13 @@ public:
       typedef F                                 filter_type;
 
       typedef filter_pixel_iterator_base<const GenericImage<P>, const_pixel_iterator, const sample*, F>
-         iterator_base;
+                                                iterator_base;
 
       /*!
        * Default constructor. Initializes an invalid iterator.
        */
-      const_filter_pixel_iterator() : iterator_base()
+      const_filter_pixel_iterator() :
+         iterator_base()
       {
       }
 
@@ -5101,8 +5099,8 @@ public:
        * \param filter  Reference to a predicate object that will be used to
        *                filter pixels.
        */
-      const_filter_pixel_iterator( const GenericImage<P>& image, const F& filter ) :
-      iterator_base( image, filter )
+      const_filter_pixel_iterator( const image_type& image, const F& filter ) :
+         iterator_base( image, filter )
       {
       }
 
@@ -5111,26 +5109,19 @@ public:
        * iterator and the specified \a filter.
        */
       const_filter_pixel_iterator( const const_pixel_iterator& i, const F& filter ) :
-      iterator_base( i, filter )
+         iterator_base( i, filter )
       {
       }
 
       /*!
        * Copy constructor.
        */
-      const_filter_pixel_iterator( const const_filter_pixel_iterator& i ) :
-      iterator_base( i )
-      {
-      }
+      const_filter_pixel_iterator( const const_filter_pixel_iterator& ) = default;
 
       /*!
-       * Assignment operator. Returns a reference to this iterator.
+       * Copy assignment operator. Returns a reference to this iterator.
        */
-      const_filter_pixel_iterator& operator =( const const_filter_pixel_iterator& i )
-      {
-         iterator_base::Assign( i );
-         return *this;
-      }
+      const_filter_pixel_iterator& operator =( const const_filter_pixel_iterator& ) = default;
 
       /*!
        * Assigns an immutable pixel iterator to this object. Returns a
@@ -5138,15 +5129,24 @@ public:
        */
       const_filter_pixel_iterator& operator =( const const_pixel_iterator& i )
       {
-         iterator_base::Assign( i );
+         (void)iterator_base::operator =( i );
          return *this;
+      }
+
+      /*!
+       * Returns true only if this iterator is valid. A valid iterator defines
+       * a valid iterated image and a non-null position.
+       */
+      bool IsValid() const
+      {
+         return this->m_image != nullptr && !this->m_iterator.IsEmpty();
       }
 
       /*!
        * Returns a reference to the constant image being iterated by this
        * object.
        */
-      const GenericImage<P>& Image() const
+      const image_type& Image() const
       {
          return *this->m_image;
       }
@@ -5180,8 +5180,8 @@ public:
 
       /*!
        * Boolean type conversion operator. Returns true if this iterator is
-       * valid. A pixel iterator is valid if it has not reached (or surpassed)
-       * its iteration limit.
+       * active. A pixel iterator is active if it has not reached (or
+       * surpassed) its iteration limit.
        */
       operator bool() const
       {
@@ -5360,43 +5360,37 @@ public:
    protected:
 
       typedef roi_pixel_iterator_base<image_type, sample_pointer>
-         roi_iterator_base;
+                                                roi_iterator_base;
 
       filter_type    m_filter;
       sample_pointer m_begin;
 
-      roi_filter_pixel_iterator_base() : roi_iterator_base(), m_filter(), m_begin( 0 )
+      roi_filter_pixel_iterator_base() :
+         roi_iterator_base(), m_filter(), m_begin( nullptr )
       {
       }
 
       roi_filter_pixel_iterator_base( image_type& image, const filter_type& filter, const Rect& rect ) :
-      roi_iterator_base( image, rect ), m_filter( filter ), m_begin( roi_iterator_base::m_iterator )
+         roi_iterator_base( image, rect ), m_filter( filter ), m_begin( roi_iterator_base::m_iterator )
       {
          JumpToNextValidSample();
       }
 
       roi_filter_pixel_iterator_base( const roi_iterator_base& i, const filter_type& filter ) :
-      roi_iterator_base( i ), m_filter( filter ), m_begin( roi_iterator_base::m_iterator )
+         roi_iterator_base( i ), m_filter( filter ), m_begin( roi_iterator_base::m_iterator )
       {
          JumpToNextValidSample();
       }
 
-      roi_filter_pixel_iterator_base( const roi_filter_pixel_iterator_base& i ) :
-      roi_iterator_base( i ), m_filter( i.m_filter ), m_begin( i.m_begin )
-      {
-      }
+      roi_filter_pixel_iterator_base( const roi_filter_pixel_iterator_base& ) = default;
 
-      void Assign( const roi_filter_pixel_iterator_base& i )
-      {
-         roi_iterator_base::Assign( i );
-         m_filter = i.m_filter;
-         m_begin  = i.m_begin;
-      }
+      roi_filter_pixel_iterator_base& operator =( const roi_filter_pixel_iterator_base& ) = default;
 
-      void Assign( const roi_iterator_base& i )
+      roi_filter_pixel_iterator_base& operator =( const roi_iterator_base& i )
       {
-         roi_iterator_base::Assign( i );
+         (void)roi_iterator_base::operator =( i );
          JumpToNextValidSample();
+         return *this;
       }
 
       void JumpToNextValidSample()
@@ -5449,12 +5443,13 @@ public:
       typedef F                                 filter_type;
 
       typedef roi_filter_pixel_iterator_base<GenericImage<P>, sample*, F>
-         iterator_base;
+                                                iterator_base;
 
       /*!
        * Default constructor. Initializes an invalid iterator.
        */
-      roi_filter_pixel_iterator() : iterator_base()
+      roi_filter_pixel_iterator() :
+         iterator_base()
       {
       }
 
@@ -5475,8 +5470,8 @@ public:
        *                with an empty iteration range. The default value is an
        *                empty rectangle.
        */
-      roi_filter_pixel_iterator( GenericImage<P>& image, const F& filter, const Rect& rect = Rect( 0 ) ) :
-      iterator_base( image.SetUnique(), filter, rect )
+      roi_filter_pixel_iterator( image_type& image, const F& filter, const Rect& rect = Rect( 0 ) ) :
+         iterator_base( image.SetUnique(), filter, rect )
       {
       }
 
@@ -5485,40 +5480,42 @@ public:
        * from the specified ROI pixel iterator \a i and \a filter.
        */
       roi_filter_pixel_iterator( const roi_pixel_iterator& i, const F& filter ) :
-      iterator_base( i, filter )
+         iterator_base( i, filter )
       {
       }
 
       /*!
        * Copy constructor.
        */
-      roi_filter_pixel_iterator( const roi_filter_pixel_iterator& i ) :
-      iterator_base( i )
-      {
-      }
+      roi_filter_pixel_iterator( const roi_filter_pixel_iterator& ) = default;
 
       /*!
-       * Assignment operator. Returns a reference to this object.
+       * Copy assignment operator. Returns a reference to this object.
        */
-      roi_filter_pixel_iterator& operator =( const roi_filter_pixel_iterator& i )
-      {
-         this->Assign( i );
-         return *this;
-      }
+      roi_filter_pixel_iterator& operator =( const roi_filter_pixel_iterator& ) = default;
 
       /*!
        * Assigns a ROI pixel iterator. Returns a reference to this object.
        */
       roi_filter_pixel_iterator& operator =( const roi_pixel_iterator& i )
       {
-         this->Assign( i );
+         (void)iterator_base::operator =( i );
          return *this;
+      }
+
+      /*!
+       * Returns true only if this iterator is valid. A valid iterator defines
+       * a valid iterated image and a non-null position.
+       */
+      bool IsValid() const
+      {
+         return this->m_image != nullptr && !this->m_iterator.IsEmpty();
       }
 
       /*!
        * Returns a reference to the image being iterated by this object.
        */
-      GenericImage<P>& Image() const
+      image_type& Image() const
       {
          return *this->m_image;
       }
@@ -5552,7 +5549,7 @@ public:
 
       /*!
        * Boolean type conversion operator. Returns true if this iterator is
-       * valid. A ROI pixel iterator is valid if it has not reached (or
+       * active. A ROI pixel iterator is active if it has not reached (or
        * surpassed) its iteration limit, i.e. the bottom right corner of its
        * iterated region of interest.
        */
@@ -5758,12 +5755,13 @@ public:
       typedef F                                 filter_type;
 
       typedef roi_filter_pixel_iterator_base<const GenericImage<P>, const sample*, F>
-         iterator_base;
+                                                iterator_base;
 
       /*!
        * Default constructor. Initializes an invalid iterator.
        */
-      const_roi_filter_pixel_iterator() : iterator_base()
+      const_roi_filter_pixel_iterator() :
+         iterator_base()
       {
       }
 
@@ -5785,8 +5783,8 @@ public:
        *                with an empty iteration range. The default value is an
        *                empty rectangle.
        */
-      const_roi_filter_pixel_iterator( const GenericImage<P>& image, const F& filter, const Rect& rect = Rect( 0 ) ) :
-      iterator_base( image, filter, rect )
+      const_roi_filter_pixel_iterator( const image_type& image, const F& filter, const Rect& rect = Rect( 0 ) ) :
+         iterator_base( image, filter, rect )
       {
       }
 
@@ -5795,41 +5793,44 @@ public:
        * iterator from the specified ROI pixel iterator \a i and \a filter.
        */
       const_roi_filter_pixel_iterator( const const_roi_pixel_iterator& i, const F& filter ) :
-      iterator_base( i, filter )
+         iterator_base( i, filter )
       {
       }
 
       /*!
        * Copy constructor.
        */
-      const_roi_filter_pixel_iterator( const const_roi_filter_pixel_iterator& i ) :
-      iterator_base( i )
-      {
-      }
+      const_roi_filter_pixel_iterator( const const_roi_filter_pixel_iterator& ) = default;
+
 
       /*!
-       * Assignment operator. Returns a reference to this object.
+       * Copy assignment operator. Returns a reference to this object.
        */
-      const_roi_filter_pixel_iterator& operator =( const const_roi_filter_pixel_iterator& i )
-      {
-         this->Assign( i );
-         return *this;
-      }
+      const_roi_filter_pixel_iterator& operator =( const const_roi_filter_pixel_iterator& ) = default;
 
       /*!
        * Assigns a ROI pixel iterator. Returns a reference to this object.
        */
       const_roi_filter_pixel_iterator& operator =( const const_roi_pixel_iterator& i )
       {
-         this->Assign( i );
+         (void)iterator_base::operator =( i );
          return *this;
+      }
+
+      /*!
+       * Returns true only if this iterator is valid. A valid iterator defines
+       * a valid iterated image and a non-null position.
+       */
+      bool IsValid() const
+      {
+         return this->m_image != nullptr && !this->m_iterator.IsEmpty();
       }
 
       /*!
        * Returns a reference to the constant image being iterated by this
        * object.
        */
-      const GenericImage<P>& Image() const
+      const image_type& Image() const
       {
          return *this->m_image;
       }
@@ -5863,7 +5864,7 @@ public:
 
       /*!
        * Boolean type conversion operator. Returns true if this iterator is
-       * valid. A ROI pixel iterator is valid if it has not reached (or
+       * active. A ROI pixel iterator is active if it has not reached (or
        * surpassed) its iteration limit, i.e. the bottom right corner of its
        * iterated region of interest.
        */
@@ -6090,7 +6091,7 @@ public:
     * \a image, both of the same template instantiation, use the same pixel
     * sample type.
     */
-   bool SameSampleType( const GenericImage<P>& image ) const
+   bool SameSampleType( const GenericImage& image ) const
    {
       return true;
    }
@@ -6101,8 +6102,10 @@ public:
     * Constructs a default local image. This object will be initialized as an
     * empty grayscale image with local storage.
     */
-   GenericImage() : AbstractImage(), m_data( new Data( this ) )
+   GenericImage() :
+      AbstractImage(), m_data( nullptr )
    {
+      m_data = new Data( this );
    }
 
    /*!
@@ -6117,8 +6120,8 @@ public:
     * \li If the source object is a <em>completely selected</em> local image
     * (see the note below), then this object will reference the same image
     * data, and hence no duplicate of the existing pixel data will be
-    * generated. This enables the implicit data sharing mechanism of
-    * %GenericImage.
+    * generated. This enables the copy-on-write (or implicit data sharing)
+    * functionality of %GenericImage.
     *
     * \li If the source image is only partially selected, then a local image
     * will be initialized to store in this object a copy of the selected pixel
@@ -6134,12 +6137,14 @@ public:
     * selection is also enabled after calling the inherited
     * ImageGeometry::ResetSelections() member function.
     */
-   GenericImage( const GenericImage<P>& image ) : AbstractImage(), m_data( 0 )
+   GenericImage( const GenericImage& image ) :
+      AbstractImage(), m_data( nullptr )
    {
       if ( !image.IsShared() )
          if ( image.IsCompletelySelected() )
          {
-            (m_data = image.m_data)->Attach( this );
+            image.m_data->Attach( this );
+            m_data = image.m_data;
             m_status = image.m_status;
             ResetSelections();
             return;
@@ -6147,6 +6152,16 @@ public:
 
       m_data = new Data( this );
       (void)Assign( image );
+   }
+
+   /*!
+    * Move constructor.
+    */
+   GenericImage( GenericImage&& image ) :
+      AbstractImage( image ), m_data( image.m_data )
+   {
+      image.m_data = nullptr;
+      m_data->Transfer( this );
    }
 
    /*!
@@ -6162,8 +6177,10 @@ public:
     * different template instantiation of %GenericImage.
     */
    template <class P1>
-   GenericImage( const GenericImage<P1>& image ) : AbstractImage(), m_data( new Data( this ) )
+   GenericImage( const GenericImage<P1>& image ) :
+      AbstractImage(), m_data( nullptr )
    {
+      m_data = new Data( this );
       (void)Assign( image );
    }
 
@@ -6210,8 +6227,9 @@ public:
    template <class P1>
    GenericImage( const GenericImage<P1>& image,
                  const Rect& rect, int firstChannel = -1, int lastChannel = -1 ) :
-   AbstractImage(), m_data( new Data( this ) )
+      AbstractImage(), m_data( nullptr )
    {
+      m_data = new Data( this );
       (void)Assign( image, rect, firstChannel, lastChannel );
    }
 
@@ -6234,8 +6252,9 @@ public:
     * this constructor, so the image will contain unpredictable values.
     */
    GenericImage( int width, int height, color_space colorSpace = ColorSpace::Gray ) :
-   AbstractImage(), m_data( new Data( this ) )
+      AbstractImage(), m_data( nullptr )
    {
+      m_data = new Data( this );
       m_data->Allocate( width, height,
                         ColorSpace::NumberOfNominalChannels( colorSpace ), colorSpace );
       ResetSelections();
@@ -6256,8 +6275,10 @@ public:
     * exception with the appropriate error message.
     */
    explicit
-   GenericImage( File& stream ) : AbstractImage(), m_data( new Data( this ) )
+   GenericImage( File& stream ) :
+      AbstractImage(), m_data( nullptr )
    {
+      m_data = new Data( this );
       Read( stream );
    }
 
@@ -6281,8 +6302,10 @@ public:
     * image; your code will be exactly the same under both situations.
     */
    explicit
-   GenericImage( void* handle ) : AbstractImage(), m_data( new Data( this, handle ) )
+   GenericImage( void* handle ) :
+      AbstractImage(), m_data( nullptr )
    {
+      m_data = new Data( this, handle );
       ResetSelections();
    }
 
@@ -6297,8 +6320,9 @@ public:
     *                symbolic constants. If this parameter is not specified, a
     *                grayscale image will be constructed.
     *
-    * The first \c void* parameter is strictly formal - its sole purpose is to
-    * distinguish this constructor from the normal, local storage constructor.
+    * The first \c void* parameter is strictly formal. Its value will be
+    * ignored as its sole purpose is to distinguish this constructor from the
+    * corresponding local storage constructor.
     *
     * The number of channels in the constructed image will depend on the
     * specified color space. Grayscale images will have a single channel. In
@@ -6313,9 +6337,10 @@ public:
     * this constructor, so the image will contain unpredictable values.
     */
    GenericImage( void*, int width, int height, color_space colorSpace = ColorSpace::Gray ) :
-   AbstractImage(), m_data( new Data( this, width, height,
-                                      ColorSpace::NumberOfNominalChannels( colorSpace ), colorSpace ) )
+      AbstractImage(), m_data( nullptr )
    {
+      m_data = new Data( this, width, height,
+                         ColorSpace::NumberOfNominalChannels( colorSpace ), colorSpace );
       ResetSelections();
    }
 
@@ -6338,11 +6363,11 @@ public:
     */
    virtual ~GenericImage()
    {
-      if ( m_data != 0 )
+      if ( m_data != nullptr )
       {
          if ( !m_data->Detach() )
             delete m_data;
-         m_data = 0;
+         m_data = nullptr;
       }
    }
 
@@ -6366,7 +6391,6 @@ public:
     */
    bool IsShared() const
    {
-      PCL_CHECK( m_data != 0 )
       return m_data->IsShared();
    }
 
@@ -6382,7 +6406,6 @@ public:
     */
    bool IsUnique() const
    {
-      PCL_CHECK( m_data != 0 )
       return m_data->IsUniqueAtomic();
    }
 
@@ -6401,13 +6424,12 @@ public:
     * \note This is a thread-safe routine. It can be safely called from
     * multiple running threads.
     */
-   GenericImage<P>& SetLocal()
+   GenericImage& SetLocal()
    {
-      PCL_CHECK( m_data != 0 )
       volatile AutoLock lock( m_mutex );
       if ( m_data->IsShared() )
       {
-         GenericImage<P> local;
+         GenericImage local;
          local.m_data->Allocate( m_width, m_height, m_numberOfChannels, m_colorSpace );
          local.m_RGBWS = m_RGBWS;
          local.m_selected = m_selected;
@@ -6441,26 +6463,23 @@ public:
     * the local heap of the calling module.
     *
     * \note This is a thread-safe routine. It can be safely called from
-    * multiple running threads (either directly, or indirectly as a result of
-    * an attempt to access mutable image data).
+    * multiple running threads, either directly, or indirectly as a result of
+    * an attempt to access mutable image data.
     */
-   GenericImage<P>& SetUnique()
+   GenericImage& SetUnique()
    {
       /*
        * NB: This is a performance-critical routine. DO NOT change it or the
        *     order of operations if you don't know what you are doing.
        */
-      PCL_CHECK( m_data != 0 )
       if ( !m_data->IsUniqueAtomic() )
       {
          volatile AutoLock lock( m_mutex );
          if ( !m_data->IsUnique() )
          {
-            Data* oldData = m_data;
             Data* newData = m_data->Clone( this );
+            m_data->Detach();
             m_data = newData;
-            if ( !oldData->Detach() )
-               delete oldData;
          }
       }
       return *this;
@@ -6538,25 +6557,18 @@ public:
     * \note Newly allocated pixel samples are not initialized, so the image
     * will contain unpredictable values after calling this member function.
     */
-   GenericImage<P>& AllocateData( int width, int height,
-                                  int numberOfChannels = 1,
-                                  color_space colorSpace = ColorSpace::Gray )
+   GenericImage& AllocateData( int width, int height,
+                               int numberOfChannels = 1,
+                               color_space colorSpace = ColorSpace::Gray )
    {
-      PCL_CHECK( m_data != 0 )
       volatile AutoLock lock( m_mutex );
-      Data* newData;
-      if ( IsUnique() )
-         newData = m_data;
-      else
-         newData = new Data( this );
-      newData->Allocate( width, height, numberOfChannels, colorSpace );
-      if ( newData != m_data )
+      if ( !m_data->IsUnique() )
       {
-         Data* oldData = m_data;
-         m_data = newData;
-         if ( !oldData->Detach() )
-            delete oldData;
+         m_data->Detach();
+         m_data = nullptr;
+         m_data = new Data( this );
       }
+      m_data->Allocate( width, height, numberOfChannels, colorSpace );
       ResetSelections();
       return *this;
    }
@@ -6571,9 +6583,9 @@ public:
     * AllocateData( rect.Width(), rect.Height(), numberOfChannels, colorSpace );
     * \endcode
     */
-   GenericImage<P>& AllocateData( const Rect& rect,
-                                  int numberOfChannels = 1,
-                                  color_space colorSpace = ColorSpace::Gray )
+   GenericImage& AllocateData( const Rect& rect,
+                               int numberOfChannels = 1,
+                               color_space colorSpace = ColorSpace::Gray )
    {
       return AllocateData( rect.Width(), rect.Height(), numberOfChannels, colorSpace );
    }
@@ -6589,19 +6601,17 @@ public:
     * are dereferenced, and a newly created empty local image is uniquely
     * referenced by this object.
     */
-   GenericImage<P>& FreeData()
+   GenericImage& FreeData()
    {
-      PCL_CHECK( m_data != 0 )
       volatile AutoLock lock( m_mutex );
       if ( !m_data->IsEmpty() )
-         if ( IsUnique() )
+         if ( m_data->IsUnique() )
             m_data->Deallocate();
          else
          {
-            Data* oldData = m_data;
+            m_data->Detach();
+            m_data = nullptr;
             m_data = new Data( this );
-            if ( !oldData->Detach() )
-               delete oldData;
          }
       ResetSelections();
       return *this;
@@ -6662,28 +6672,19 @@ public:
     * its public member functions for all allocations and deallocations of
     * pixel data.
     */
-   GenericImage<P>& ImportData( sample** data, int width, int height,
-                                int numberOfChannels = 1, color_space colorSpace = ColorSpace::Gray )
+   GenericImage& ImportData( sample** data, int width, int height,
+                             int numberOfChannels = 1, color_space colorSpace = ColorSpace::Gray )
    {
-      PCL_CHECK( m_data != 0 )
       volatile AutoLock lock( m_mutex );
-      Data* newData;
-      if ( IsUnique() )
-         newData = m_data;
-      else
+      if ( !m_data->IsUnique() )
       {
          if ( m_data->IsShared() )
             throw Error( "GenericImage::ImportData(): Invalid operation for an aliased shared image" );
-         newData = new Data( this );
+         m_data->Detach();
+         m_data = nullptr;
+         m_data = new Data( this );
       }
-      newData->Import( data, width, height, numberOfChannels, colorSpace );
-      if ( newData != m_data )
-      {
-         Data* oldData = m_data;
-         m_data = newData;
-         if ( !oldData->Detach() )
-            delete oldData;
-      }
+      m_data->Import( data, width, height, numberOfChannels, colorSpace );
       ResetSelections();
       return *this;
    }
@@ -6724,45 +6725,12 @@ public:
     */
    sample** ReleaseData()
    {
-      PCL_CHECK( m_data != 0 )
       volatile AutoLock lock( m_mutex );
       if ( !m_data->IsUnique() )
          throw Error( "GenericImage::ReleaseData(): Invalid operation for an aliased image" );
       sample** data = m_data->Release();
       ResetSelections();
       return data;
-   }
-
-   /*!
-    * Obtains a duplicate of selected pixel samples in an existing image.
-    *
-    * Note that calling this function is equivalent to:
-    *
-    * \code
-    * image.Assign( *this, rect, firstChannel, lastChannel );
-    * \endcode
-    *
-    * \deprecated This member function has been deprecated and is kept in PCL
-    * for compatibility with previous versions. In newly produced code, use the
-    * GenericImage::Assign() member function for the target \a image, as
-    * indicated above.
-    */
-   template <class P1>
-   void CloneData( GenericImage<P1>& image,
-                   const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
-   {
-      (void)image.Assign( *this, rect, firstChannel, lastChannel );
-   }
-
-   /*!
-    * \deprecated This member function has been deprecated. See
-    * GenericImage::CloneData() for more information. In newly produced code,
-    * use the GenericImage::Assign() member function for the target \a image.
-    */
-   template <class P1>
-   void ClonePixelData( GenericImage<P1>& image ) const
-   {
-      CloneData( image );
    }
 
    // -------------------------------------------------------------------------
@@ -6847,6 +6815,14 @@ public:
    {
       PCL_PRECONDITION( 0 <= channel && channel < m_numberOfChannels )
       return m_pixelData[channel];
+   }
+
+   /*!
+    * Returns true only is this is a valid, nonempty image.
+    */
+   operator bool() const
+   {
+      return m_data != nullptr && !m_data->IsEmpty();
    }
 
    /*!
@@ -7251,8 +7227,8 @@ public:
     * \endcode
     */
    template <class P1>
-   GenericImage<P>& Assign( const GenericImage<P1>& image,
-                            const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Assign( const GenericImage<P1>& image,
+                         const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       m_status = image.Status();
 
@@ -7287,8 +7263,8 @@ public:
       return *this;
    }
 
-   GenericImage<P>& Assign( const GenericImage<P>& image,
-                            const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Assign( const GenericImage& image,
+                         const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       m_status = image.Status();
 
@@ -7306,10 +7282,9 @@ public:
          // Self-assignment
          if ( !completeSelection )
          {
-            GenericImage<P> result( image, r, firstChannel, lastChannel ); // ### implicit recursion
+            GenericImage result( image, r, firstChannel, lastChannel ); // ### implicit recursion
             result.m_data->Attach( this );
-            if ( !m_data->Detach() )
-               delete m_data; // should not happen!
+            m_data->Detach();
             m_data = result.m_data;
          }
          ResetSelections();
@@ -7321,7 +7296,7 @@ public:
             if ( completeSelection )
             {
                image.m_data->Attach( this );
-               if ( m_data != 0 )
+               if ( m_data != nullptr ) // !?
                   if ( !m_data->Detach() )
                      delete m_data;
                m_data = image.m_data;
@@ -7362,24 +7337,80 @@ public:
     * This operator is a convenience synonym for Assign().
     */
    template <class P1>
-   GenericImage<P>& operator =( const GenericImage<P1>& image )
+   GenericImage& operator =( const GenericImage<P1>& image )
    {
       return Assign( image );
    }
 
    /*!
-    * Copies pixel samples from the specified source \a image to this image.
-    * Returns a reference to this image.
+    * Copy assignment operator. Copies pixel samples from the specified source
+    * \a image to this image. Returns a reference to this image.
     *
     * This operator is a synonym for Assign(), where both this object and the
     * source \a image are instances of the same template instantiation of
     * %GenericImage. The declaration of this operator is necessary for
-    * syntactical reasons, in order to provide a pure assignment operator for
-    * the %GenericImage template class.
+    * optimization purposes. It also provides a pure copy assignment operator
+    * for the %GenericImage template class.
     */
-   GenericImage<P>& operator =( const GenericImage<P>& image )
+   GenericImage& operator =( const GenericImage& image )
    {
       return Assign( image );
+   }
+
+#define TRANSFER_BODY()                                     \
+      if ( !m_data->Detach() )                              \
+         delete m_data;                                     \
+      m_data = image.m_data;                                \
+      image.m_data = nullptr;                               \
+      if ( m_data != nullptr ) /* if not self-assignment */ \
+      {                                                     \
+         m_data->Transfer( this );                          \
+         (void)AbstractImage::operator =( image );          \
+      }                                                     \
+      return *this
+
+   /*!
+    * Transfers data from another \a image to this object. Returns a reference
+    * to this image.
+    *
+    * Decrements the reference counter of the current image data, and destroys
+    * it if it becomes unreferenced.
+    *
+    * Transfers the source image to this object, leaving empty and invalid the
+    * source \a image, which cannot be used and must be destroyed immediately
+    * after calling this function.
+    */
+   GenericImage& Transfer( GenericImage& image )
+   {
+      TRANSFER_BODY();
+   }
+
+   /*!
+    * Transfers data from another \a image to this object. Returns a reference
+    * to this image.
+    *
+    * Decrements the reference counter of the current image data, and destroys
+    * it if it becomes unreferenced.
+    *
+    * Transfers the source image to this object, leaving empty and invalid the
+    * source \a image, which cannot be used and must be destroyed immediately
+    * after calling this function.
+    */
+   GenericImage& Transfer( GenericImage&& image )
+   {
+      TRANSFER_BODY();
+   }
+
+#undef TRANSFER_BODY
+
+   /*!
+    * Move assignment operator. Returns a reference to this image.
+    *
+    * This operator is equivalent to Transfer( GenericImage& ).
+    */
+   GenericImage& operator =( GenericImage&& image )
+   {
+      return Transfer( image );
    }
 
    /*!
@@ -7388,20 +7419,18 @@ public:
     *
     * This operator is a convenience synonym for Fill().
     */
-   GenericImage<P>& operator =( sample scalar )
+   GenericImage& operator =( sample scalar )
    {
       return Fill( scalar );
    }
 
    /*!
-    * Exchanges this object with another \a image of the same template
-    * instantiation. Returns a reference to this image.
+    * Exchanges two images \a x1 and \a x2 of the same template instantiation.
     */
-   GenericImage<P> Swap( GenericImage<P>& image )
+   friend void Swap( GenericImage& x1, GenericImage& x2 )
    {
-      AbstractImage::Swap( image );
-      pcl::Swap( m_data, image.m_data );
-      return *this;
+      x1.AbstractImage::Swap( x2 );
+      pcl::Swap( x1.m_data, x2.m_data );
    }
 
    // -------------------------------------------------------------------------
@@ -7566,7 +7595,7 @@ public:
     * does nothing.
     */
    template <typename T>
-   GenericImage<P>& SetRow( const T* buffer, int y, int channel = -1 )
+   GenericImage& SetRow( const T* buffer, int y, int channel = -1 )
    {
       PCL_PRECONDITION( buffer != 0 )
       if ( channel < 0 )
@@ -7598,7 +7627,7 @@ public:
     * does nothing.
     */
    template <typename T>
-   GenericImage<P>& SetColumn( const T* buffer, int x, int channel = -1 )
+   GenericImage& SetColumn( const T* buffer, int x, int channel = -1 )
    {
       PCL_PRECONDITION( buffer != 0 )
       if ( channel < 0 )
@@ -7623,26 +7652,27 @@ public:
     * Newly created channels are not initialized, so their pixel samples will
     * contain unpredictable values.
     */
-   GenericImage<P>& CreateAlphaChannels( int n )
+   GenericImage& CreateAlphaChannels( int n )
    {
       if ( n > 0 && m_numberOfChannels > 0 )
       {
          SetUnique();
          sample** oldData = m_pixelData;
-         sample** newData = 0;
+         sample** newData = nullptr;
          try
          {
             newData = m_allocator.AllocateChannelSlots( m_numberOfChannels+n );
-            ::memcpy( newData, oldData, m_numberOfChannels*sizeof( sample* ) );
+            for ( int i = 0; i < m_numberOfChannels; ++i )
+               newData[i] = oldData[i];
             for ( int i = 0; i < n; ++i )
                newData[m_numberOfChannels+i] = m_allocator.AllocatePixels( m_width, m_height );
          }
          catch ( ... )
          {
-            if ( newData != 0 )
+            if ( newData != nullptr )
             {
                for ( int i = 0; i < n; ++i )
-                  if ( newData[m_numberOfChannels+i] != 0 )
+                  if ( newData[m_numberOfChannels+i] != nullptr )
                      m_allocator.Deallocate( newData[m_numberOfChannels+i] );
                m_allocator.Deallocate( newData );
             }
@@ -7671,30 +7701,31 @@ public:
     * \warning See the ImportData() member function documentation for an
     * important warning notice that applies also to this function.
    */
-   GenericImage<P>& AddAlphaChannel( sample* data = 0 )
+   GenericImage& AddAlphaChannel( sample* data = nullptr )
    {
       // $$$ WARNING $$$
-      // * If this is a shared image, data must either be zero or point to a
+      // * If this is a shared image, data must either be null or point to a
       //   shared memory block.
-      // * If this is a local image, data must either be zero or point to a
+      // * If this is a local image, data must either be null or point to a
       //   block allocated in the local heap.
 
-      if ( data == 0 )
+      if ( data == nullptr )
          CreateAlphaChannels( 1 );
       else if ( m_numberOfChannels > 0 )
       {
          SetUnique();
          sample** oldData = m_pixelData;
-         sample** newData = 0;
+         sample** newData = nullptr;
          try
          {
             newData = m_allocator.AllocateChannelSlots( m_numberOfChannels+1 );
-            ::memcpy( newData, oldData, m_numberOfChannels*sizeof( sample* ) );
+            for ( int i = 0; i < m_numberOfChannels; ++i )
+               newData[i] = oldData[i];
             newData[m_numberOfChannels] = data;
          }
          catch ( ... )
          {
-            if ( newData != 0 )
+            if ( newData != nullptr )
                m_allocator.Deallocate( newData );
             throw;
          }
@@ -7729,7 +7760,7 @@ public:
     * blocks cannot be transferred between local and shared images. If this
     * rule is violated, this member function will throw an Error exception.
     */
-   GenericImage<P>& ReleaseAlphaChannel( GenericImage<P>& image, int channel )
+   GenericImage& ReleaseAlphaChannel( GenericImage& image, int channel )
    {
       if ( IsShared() != image.IsShared() )
          throw Error( "GenericImage::ReleaseAlphaChannel(): Cannot release pixel data between local and shared images" );
@@ -7742,7 +7773,7 @@ public:
 
       int c = NumberOfNominalChannels() + channel;
 
-      sample** newData = 0;
+      sample** newData = nullptr;
       try
       {
          newData = image.m_allocator.AllocateChannelSlots( 1 );
@@ -7750,7 +7781,7 @@ public:
       }
       catch ( ... )
       {
-         if ( newData != 0 )
+         if ( newData != nullptr )
             image.m_allocator.Deallocate( newData );
          throw;
       }
@@ -7765,7 +7796,7 @@ public:
       image.m_data->UpdateSharedImage();
       image.ResetSelections();
 
-      m_pixelData[c] = 0;
+      m_pixelData[c] = nullptr;
       ForgetAlphaChannel( channel );
 
       return *this;
@@ -7782,14 +7813,14 @@ public:
     * not a normal channel index comprising nominal channels. That is, the
     * first alpha channel is indexed as zero by this function.
     */
-   GenericImage<P>& DeleteAlphaChannel( int channel )
+   GenericImage& DeleteAlphaChannel( int channel )
    {
       if ( channel >= 0 && channel < NumberOfAlphaChannels() )
       {
          SetUnique();
          int c = NumberOfNominalChannels() + channel;
          m_allocator.Deallocate( m_pixelData[c] );
-         m_pixelData[c] = 0;
+         m_pixelData[c] = nullptr;
          ForgetAlphaChannel( channel );
       }
 
@@ -7812,7 +7843,7 @@ public:
     * not a normal channel index comprising nominal channels. That is, the
     * first alpha channel is indexed as zero by this function.
     */
-   GenericImage<P>& ForgetAlphaChannel( int channel )
+   GenericImage& ForgetAlphaChannel( int channel )
    {
       if ( channel >= 0 && channel < NumberOfAlphaChannels() )
       {
@@ -7823,8 +7854,10 @@ public:
          int n0 = NumberOfNominalChannels();
          int c = n0 + channel;
 
-         ::memcpy( newData, oldData, c*sizeof( sample* ) );
-         ::memcpy( newData+c, oldData+c+1, (m_numberOfChannels - c)*sizeof( sample* ) );
+         for ( int i = 0; i < c; ++i )
+            newData[i] = oldData[i];
+         for ( int i = c, j = c; ++j < m_numberOfChannels; ++i )
+            newData[i] = oldData[j];
 
          m_allocator.SetSharedData( m_pixelData = newData );
          m_allocator.SetSharedGeometry( m_width, m_height, --m_numberOfChannels );
@@ -7842,7 +7875,7 @@ public:
     * Destroys all existing alpha channels in this image. Returns a reference
     * to this image.
     */
-   GenericImage<P>& DeleteAlphaChannels()
+   GenericImage& DeleteAlphaChannels()
    {
       int n0 = NumberOfNominalChannels();
       int n = m_numberOfChannels;
@@ -7850,7 +7883,7 @@ public:
       {
          SetUnique();
          do
-            m_allocator.Deallocate( m_pixelData[--n] ), m_pixelData[n] = 0;
+            m_allocator.Deallocate( m_pixelData[--n] ), m_pixelData[n] = nullptr;
          while ( n > n0 );
          ForgetAlphaChannels();
       }
@@ -7866,7 +7899,7 @@ public:
     * channels in this image before calling this function, in order to be able
     * to deallocate them when appropriate, or you'll induce a memory leak.
     */
-   GenericImage<P>& ForgetAlphaChannels()
+   GenericImage& ForgetAlphaChannels()
    {
       int n0 = NumberOfNominalChannels();
       if ( m_numberOfChannels > n0 )
@@ -7875,7 +7908,8 @@ public:
          sample** oldData = m_pixelData;
          sample** newData = m_allocator.AllocateChannelSlots( n0 );
 
-         ::memcpy( newData, oldData, n0*sizeof( sample* ) );
+         for ( int i = 0; i < n0; ++i )
+            newData[i] = oldData[i];
 
          m_allocator.SetSharedData( m_pixelData = newData );
          m_allocator.SetSharedGeometry( m_width, m_height, m_numberOfChannels = n0 );
@@ -7887,140 +7921,6 @@ public:
       }
 
       return *this;
-   }
-
-   // -------------------------------------------------------------------------
-
-   /*!
-    * Transfers pixel data to this image from another \a image, which is an
-    * instance of a different template instantiation of %GenericImage. Returns
-    * a reference to this image.
-    *
-    * The previously referenced pixel data are dereferenced, and destroyed
-    * immediately if they become unreferenced. The source \a image loses its
-    * data and is left empty after calling this function.
-    *
-    * During the transfer process, source pixel samples are converted to the
-    * sample data type of this image. This involves conversions from the source
-    * data type P1::sample to the target data type P::sample, using pixel
-    * traits primitives.
-    *
-    * \warning If the specified source \a image is aliased, this member
-    * function throws an Error exception without altering neither the source
-    * \a image nor this image. This is because for the sake of performance this
-    * function forces the source \a image to release its data ignoring the
-    * implicit data sharing mechanism of %GenericImage. Aliased pixel data
-    * cannot be released (see the Release() member function for more
-    * information).
-    *
-    * \note Increments the status monitoring object by the number of samples in
-    * the source \a image.
-    */
-   template <class P1>
-   GenericImage<P>& Transfer( GenericImage<P1>& image )
-   {
-      //if ( m_data == image.m_data ) // ### cannot happen!
-      //   return *this;
-
-      int width = image.Width();
-      int height = image.Height();
-      int numberOfChannels = image.NumberOfChannels();
-      color_space colorSpace = image.ColorSpace();
-      size_type N = image.NumberOfPixels();
-
-      typename P1::sample** oldData = image.ReleaseData();
-      sample** newData = 0;
-
-      StatusMonitor status = m_status;
-
-      FreeData();
-
-      if ( status.IsInitializationEnabled() )
-         status.Initialize( String().Format( "Conversion to %d-bit %s sample format",
-                                             P::BitsPerSample(),
-                                             P::IsComplexSample() ? "complex" :
-                                                (P::IsFloatSample() ? "IEEE floating-point" : "integer") ),
-                            N*numberOfChannels );
-      try
-      {
-         newData = m_allocator.AllocateChannelSlots( numberOfChannels );
-
-         for ( int i = 0; i < numberOfChannels; ++i, status += N )
-         {
-            newData[i] = m_allocator.AllocatePixels( N );
-            P::Copy( newData[i], oldData[i], N );
-            image.Allocator().Deallocate( oldData[i] ), oldData[i] = 0;
-         }
-
-         m_pixelData = newData;
-
-         m_width = width;
-         m_height = height;
-         m_numberOfChannels = numberOfChannels;
-
-         m_colorSpace = colorSpace;
-
-         m_data->UpdateSharedImage();
-
-         m_status = status;
-
-         ResetSelections();
-
-         return *this;
-      }
-      catch ( ... )
-      {
-         if ( oldData != 0 )
-         {
-            for ( int i = 0; i < numberOfChannels; ++i )
-               if ( oldData[i] != 0 )
-                  image.Allocator().Deallocate( oldData[i] );
-            image.Allocator().Deallocate( oldData );
-         }
-
-         if ( newData != 0 )
-         {
-            for ( int i = 0; i < numberOfChannels; ++i )
-               if ( newData[i] != 0 )
-                  m_allocator.Deallocate( newData[i] );
-            m_allocator.Deallocate( newData );
-         }
-
-         m_data->Reset();
-         m_data->UpdateSharedImage();
-
-         m_status = status;
-
-         ResetSelections();
-
-         throw;
-      }
-   }
-
-   /*!
-    * Transfers pixel data to this image from another \a image, which is an
-    * instance of the same template instantiation of %GenericImage. Returns a
-    * reference to this image.
-    *
-    * The previously referenced pixel data are dereferenced, and destroyed
-    * immediately if they become unreferenced. The source \a image loses its
-    * data and is left empty after calling this function.
-    *
-    * \warning If the specified source \a image is aliased, this member
-    * function throws an Error exception without altering neither the source
-    * \a image nor this image. This is because for the sake of performance this
-    * function forces the source \a image to release its data, ignoring the
-    * implicit data sharing mechanism of %GenericImage. Aliased pixel data
-    * cannot be released (see the Release() member function for more
-    * information).
-    */
-   GenericImage<P>& Transfer( GenericImage<P>& image )
-   {
-      int width = image.m_width;
-      int height = image.m_height;
-      int numberOfChannels = image.m_numberOfChannels;
-      color_space colorSpace = image.m_colorSpace;
-      return ImportData( image.ReleaseData(), width, height, numberOfChannels, colorSpace );
    }
 
    // -------------------------------------------------------------------------
@@ -8062,7 +7962,7 @@ public:
     * pixel samples.
     */
    template <typename T>
-   GenericImage<P>& Fill( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Fill( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       Rect r = rect;
       if ( !ParseSelection( r, firstChannel, lastChannel ) )
@@ -8108,8 +8008,8 @@ public:
     * Fill( T, const Rect&, int, int ).
     */
    template <typename T>
-   GenericImage<P>& Fill( const GenericVector<T>& values,
-                          const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Fill( const GenericVector<T>& values,
+                       const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       Rect r = rect;
       if ( !ParseSelection( r, firstChannel, lastChannel ) )
@@ -8150,9 +8050,9 @@ public:
     * the number of selected pixel samples.
     */
    template <typename T>
-   GenericImage<P> Filled( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Filled( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.Fill( scalar );
       return result;
    }
@@ -8169,10 +8069,10 @@ public:
     * the number of selected pixel samples.
     */
    template <typename T>
-   GenericImage<P> Filled( const GenericVector<T>& values,
-                           const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Filled( const GenericVector<T>& values,
+                        const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.Fill( values );
       return result;
    }
@@ -8191,7 +8091,7 @@ public:
     * \note Increments the status monitoring object by the number of selected
     * pixel samples.
     */
-   GenericImage<P>& Zero( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Zero( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Fill( P::ToSample( 0.0 ), rect, firstChannel, lastChannel );
    }
@@ -8210,7 +8110,7 @@ public:
     * \note Increments the status monitoring object by the number of selected
     * pixel samples.
     */
-   GenericImage<P>& One( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& One( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Fill( P::ToSample( 1.0 ), rect, firstChannel, lastChannel );
    }
@@ -8228,7 +8128,7 @@ public:
     * \note Increments the status monitoring object by the number of selected
     * pixel samples.
     */
-   GenericImage<P>& Black( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Black( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Fill( P::MinSampleValue(), rect, firstChannel, lastChannel );
    }
@@ -8246,7 +8146,7 @@ public:
     * \note Increments the status monitoring object by the number of selected
     * pixel samples.
     */
-   GenericImage<P>& White( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& White( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Fill( P::MaxSampleValue(), rect, firstChannel, lastChannel );
    }
@@ -8268,7 +8168,7 @@ public:
     * pixel samples.
     */
    template <typename T>
-   GenericImage<P>& Invert( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Invert( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       Rect r = rect;
       if ( !ParseSelection( r, firstChannel, lastChannel ) )
@@ -8309,9 +8209,9 @@ public:
     * the number of selected pixel samples.
     */
    template <typename T>
-   GenericImage<P> Inverted( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Inverted( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.Invert( scalar );
       return result;
    }
@@ -8333,7 +8233,7 @@ public:
     * \note Increments the status monitoring object by the number of selected
     * pixel samples.
     */
-   GenericImage<P>& Invert( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Invert( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Invert( P::MaxSampleValue(), rect, firstChannel, lastChannel );
    }
@@ -8349,9 +8249,9 @@ public:
     * \note Increments the status monitoring object of the returned image by
     * the number of selected pixel samples.
     */
-   GenericImage<P> Inverted( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Inverted( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.Invert();
       return result;
    }
@@ -8364,9 +8264,9 @@ public:
     * \note Increments the status monitoring object of the returned image by
     * the number of selected pixel samples.
     */
-   GenericImage<P> operator ~() const
+   GenericImage operator ~() const
    {
-      GenericImage<P> result( *this );
+      GenericImage result( *this );
       (void)result.Invert();
       return result;
    }
@@ -8381,7 +8281,7 @@ public:
     * \note Increments the status monitoring object by the number of selected
     * pixel samples.
     */
-   GenericImage<P>& Not( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Not( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       Rect r = rect;
       if ( !ParseSelection( r, firstChannel, lastChannel ) )
@@ -8426,8 +8326,8 @@ public:
     * pixel samples.
     */
    template <typename T>
-   GenericImage<P>& Truncate( T lowerBound, T upperBound,
-                              const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Truncate( T lowerBound, T upperBound,
+                           const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       Rect r = rect;
       if ( !ParseSelection( r, firstChannel, lastChannel ) )
@@ -8482,10 +8382,10 @@ public:
     * the number of selected pixel samples.
     */
    template <typename T>
-   GenericImage<P> Truncated( T lowerBound, T upperBound,
-                              const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Truncated( T lowerBound, T upperBound,
+                           const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.Truncate( lowerBound, upperBound );
       return result;
    }
@@ -8511,7 +8411,7 @@ public:
     * \note Increments the status monitoring object by the number of selected
     * pixel samples.
     */
-   GenericImage<P>& Truncate( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Truncate( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Truncate( P::MinSampleValue(), P::MaxSampleValue(), rect, firstChannel, lastChannel );
    }
@@ -8526,9 +8426,9 @@ public:
     * \note Increments the status monitoring object of the returned image by
     * the number of selected pixel samples.
     */
-   GenericImage<P> Truncated( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Truncated( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.Truncate();
       return result;
    }
@@ -8562,8 +8462,8 @@ public:
     * pixel samples.
     */
    template <typename T>
-   GenericImage<P>& Rescale( T lowerBound, T upperBound,
-                             const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Rescale( T lowerBound, T upperBound,
+                          const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       Rect r = rect;
       if ( !ParseSelection( r, firstChannel, lastChannel ) )
@@ -8662,10 +8562,10 @@ public:
     * the number of selected pixel samples.
     */
    template <typename T>
-   GenericImage<P> Rescaled( T lowerBound, T upperBound,
-                             const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Rescaled( T lowerBound, T upperBound,
+                          const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.Rescale( lowerBound, upperBound );
       return result;
    }
@@ -8686,7 +8586,7 @@ public:
     * \note Increments the status monitoring object by the number of selected
     * pixel samples.
     */
-   GenericImage<P>& Rescale( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Rescale( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Rescale( P::MinSampleValue(), P::MaxSampleValue(), rect, firstChannel, lastChannel );
    }
@@ -8701,9 +8601,9 @@ public:
     * \note Increments the status monitoring object of the returned image by
     * the number of selected pixel samples.
     */
-   GenericImage<P> Rescaled( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Rescaled( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.Rescale();
       return result;
    }
@@ -8743,8 +8643,8 @@ public:
     * pixel samples.
     */
    template <typename T>
-   GenericImage<P>& Normalize( T lowerBound, T upperBound,
-                               const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Normalize( T lowerBound, T upperBound,
+                            const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       Rect r = rect;
       if ( !ParseSelection( r, firstChannel, lastChannel ) )
@@ -8843,10 +8743,10 @@ public:
     * the number of selected pixel samples.
     */
    template <typename T>
-   GenericImage<P> Normalized( T lowerBound, T upperBound,
-                               const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Normalized( T lowerBound, T upperBound,
+                            const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.Normalize( lowerBound, upperBound );
       return result;
    }
@@ -8867,7 +8767,7 @@ public:
     * \note Increments the status monitoring object by the number of selected
     * pixel samples.
     */
-   GenericImage<P>& Normalize( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Normalize( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Normalize( P::MinSampleValue(), P::MaxSampleValue(), rect, firstChannel, lastChannel );
    }
@@ -8882,9 +8782,9 @@ public:
     * \note Increments the status monitoring object of the returned image by
     * the number of selected pixel samples.
     */
-   GenericImage<P> Normalized( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Normalized( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.Normalize();
       return result;
    }
@@ -8919,8 +8819,8 @@ public:
     * pixel samples.
     */
    template <typename T>
-   GenericImage<P>& Binarize( T threshold,
-                              const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Binarize( T threshold,
+                           const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       Rect r = rect;
       if ( !ParseSelection( r, firstChannel, lastChannel ) )
@@ -8961,10 +8861,10 @@ public:
     * the number of selected pixel samples.
     */
    template <typename T>
-   GenericImage<P> Binarized( T threshold,
-                              const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Binarized( T threshold,
+                           const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.Binarize( threshold );
       return result;
    }
@@ -8985,7 +8885,7 @@ public:
     * \note Increments the status monitoring object by the number of selected
     * pixel samples.
     */
-   GenericImage<P>& Binarize( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Binarize( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Binarize( (P::MinSampleValue() + P::MaxSampleValue())/2, rect, firstChannel, lastChannel );
    }
@@ -9001,9 +8901,9 @@ public:
     * \note Increments the status monitoring object of the returned image by
     * the number of selected pixel samples.
     */
-   GenericImage<P> Binarized( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Binarized( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.Binarize();
       return result;
    }
@@ -9021,7 +8921,7 @@ public:
     * \note Increments the status monitoring object by the number of selected
     * pixel samples.
    */
-   GenericImage<P>& SetAbsoluteValue( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& SetAbsoluteValue( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       Rect r = rect;
       if ( !ParseSelection( r, firstChannel, lastChannel ) )
@@ -9052,7 +8952,7 @@ public:
    /*!
     * A synonym for SetAbsoluteValue().
     */
-   GenericImage<P>& Abs( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Abs( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return SetAbsoluteValue( rect, firstChannel, lastChannel );
    }
@@ -9067,9 +8967,9 @@ public:
     * \note Increments the status monitoring object of the returned image by
     * the number of selected pixel samples.
     */
-   GenericImage<P> AbsoluteValue( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage AbsoluteValue( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.SetAbsoluteValue();
       return result;
    }
@@ -9082,8 +8982,8 @@ public:
     * template specializations of the Apply() member function.
     */
    template <typename T>
-   GenericImage<P>& ApplyScalar( T scalar, image_op op = ImageOp::Mov,
-                                 const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& ApplyScalar( T scalar, image_op op = ImageOp::Mov,
+                              const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       if ( op == ImageOp::Div )
          if ( 1 + scalar == 1 )
@@ -9099,8 +8999,7 @@ public:
       if ( m_status.IsInitializationEnabled() )
          m_status.Initialize( "Applying scalar: "
                               + ImageOp::Id( op )
-                              /*+ ' ' + String( scalar )*/, N*(1 + lastChannel - firstChannel) );
-      // ### FIXME: The above String( scalar ) causes an 'ambiguous overloaded function' error.
+                              + ' ' + String( scalar ), N*(1 + lastChannel - firstChannel) );
 
       if ( r == Bounds() )
          for ( int i = firstChannel; i <= lastChannel; ++i, m_status += N )
@@ -9210,38 +9109,38 @@ public:
     * pixel samples.
     */
    template <typename T>
-   GenericImage<P>& Apply( T scalar, image_op op = ImageOp::Mov,
-                           const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Apply( T scalar, image_op op = ImageOp::Mov,
+                        const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return ApplyScalar( scalar, op, rect, firstChannel, lastChannel );
    }
 
-   GenericImage<P>& Apply( float scalar, image_op op = ImageOp::Mov,
-                           const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Apply( float scalar, image_op op = ImageOp::Mov,
+                        const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       if ( ImageOp::IsArithmeticOperator( op ) || ImageOp::IsPixelCompositionOperator( op ) )
          return ApplyScalar( scalar, op, rect, firstChannel, lastChannel );
       return ApplyScalar( P::ToSample( scalar ), op, rect, firstChannel, lastChannel );
    }
 
-   GenericImage<P>& Apply( double scalar, image_op op = ImageOp::Mov,
-                           const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Apply( double scalar, image_op op = ImageOp::Mov,
+                        const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       if ( ImageOp::IsArithmeticOperator( op ) || ImageOp::IsPixelCompositionOperator( op ) )
          return ApplyScalar( scalar, op, rect, firstChannel, lastChannel );
       return ApplyScalar( P::ToSample( scalar ), op, rect, firstChannel, lastChannel );
    }
 
-   GenericImage<P>& Apply( pcl::Complex<float> scalar, image_op op = ImageOp::Mov,
-                           const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Apply( pcl::Complex<float> scalar, image_op op = ImageOp::Mov,
+                        const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       if ( ImageOp::IsArithmeticOperator( op ) || ImageOp::IsPixelCompositionOperator( op ) )
          return ApplyScalar( scalar, op, rect, firstChannel, lastChannel );
       return ApplyScalar( P::ToSample( scalar ), op, rect, firstChannel, lastChannel );
    }
 
-   GenericImage<P>& Apply( pcl::Complex<double> scalar, image_op op = ImageOp::Mov,
-                           const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Apply( pcl::Complex<double> scalar, image_op op = ImageOp::Mov,
+                        const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       if ( ImageOp::IsArithmeticOperator( op ) || ImageOp::IsPixelCompositionOperator( op ) )
          return ApplyScalar( scalar, op, rect, firstChannel, lastChannel );
@@ -9267,10 +9166,10 @@ public:
     * the number of selected pixel samples.
     */
    template <typename T>
-   GenericImage<P> Applied( T scalar, image_op op = ImageOp::Mov,
-                            const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Applied( T scalar, image_op op = ImageOp::Mov,
+                         const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.Apply( scalar, op );
       return result;
    }
@@ -9322,21 +9221,15 @@ public:
     * samples in the intersection between both operand images.
     */
    template <class P1>
-   GenericImage<P>& Apply( const GenericImage<P1>& image, image_op op = ImageOp::Mov,
-                           const Point& point = Point( int_max ), int channel = -1,
-                           const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Apply( const GenericImage<P1>& image, image_op op = ImageOp::Mov,
+                        const Point& point = Point( int_max ), int channel = -1,
+                        const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       Rect r = rect;
       if ( !image.ParseSelection( r, firstChannel, lastChannel ) )
          return *this;
 
-      if ( channel < 0 )
-      {
-         channel = m_channel;
-         if ( channel < 0 )
-            return *this;
-      }
-      if ( channel >= m_numberOfChannels )
+      if ( !ParseChannel( channel ) )
          return *this;
 
       Point p = point;
@@ -9508,14 +9401,14 @@ public:
     * the number of selected pixel samples.
     */
    template <class P1>
-   GenericImage<P> Applied( const GenericImage<P1>& image, image_op op = ImageOp::Mov,
-                            const Point& point = Point( int_max ), int channel = -1,
-                            const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Applied( const GenericImage<P1>& image, image_op op = ImageOp::Mov,
+                         const Point& point = Point( int_max ), int channel = -1,
+                         const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
       int c0 = (channel < 0) ? m_channel : channel;
       int c1 = c0 + ((firstChannel < 0) ? image.FirstSelectedChannel() : firstChannel);
       int c2 = c0 + ((lastChannel < 0) ? image.LastSelectedChannel() : lastChannel);
-      GenericImage<P> result( *this, rect.MovedTo( point ), c1, c2 );
+      GenericImage result( *this, rect.MovedTo( point ), c1, c2 );
       (void)result.Apply( image, op, Point( 0 ), 0, rect, firstChannel, lastChannel );
       return result;
    }
@@ -9555,9 +9448,9 @@ public:
     *
     * \sa ImageTransformation
     */
-   GenericImage<P>& Apply( const ImageTransformation& transformation,
-                           const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 );
-   // ### Implemented in pcl/ImageTransformation.h (due to mutual dependencies)
+   GenericImage& Apply( const ImageTransformation& transformation,
+                        const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 );
+   // ### Implemented in pcl/ImageTransformation.h (because of mutual dependencies)
 
    /*!
     * Creates a local image with a subset of pixel samples from this image, and
@@ -9577,10 +9470,10 @@ public:
     * transformations always use the current image selection, which this
     * function changes temporarily.
     */
-   GenericImage<P> Applied( const ImageTransformation& transformation,
-                            const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Applied( const ImageTransformation& transformation,
+                         const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.Apply( transformation );
       return result;
    }
@@ -9608,7 +9501,7 @@ public:
     */
    void Transform( BidirectionalImageTransformation& transform,
                    const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const;
-   // ### Implemented in pcl/ImageTransformation.h (due to mutual dependencies)
+   // ### Implemented in pcl/ImageTransformation.h (because of mutual dependencies)
 
    // -------------------------------------------------------------------------
 
@@ -9655,8 +9548,8 @@ public:
     * the intersection between this image and the specified rectangular region
     * of the source bitmap.
     */
-   GenericImage<P>& Blend( const Bitmap& bitmap,
-                           const Point& point = Point( int_max ), const Rect& rect = Rect( 0 ) )
+   GenericImage& Blend( const Bitmap& bitmap,
+                        const Point& point = Point( int_max ), const Rect& rect = Rect( 0 ) )
    {
       Rect r = rect;
       if ( r.IsRect() )
@@ -9808,10 +9701,10 @@ public:
     * the number of pixels in the intersection between this image and the
     * specified rectangular region of the source bitmap.
     */
-   GenericImage<P> Blended( const Bitmap& bitmap,
-                            const Point& point = Point( int_max ), const Rect& rect = Rect( 0 ) ) const
+   GenericImage Blended( const Bitmap& bitmap,
+                         const Point& point = Point( int_max ), const Rect& rect = Rect( 0 ) ) const
    {
-      GenericImage<P> result( *this, Bounds(), 0, m_numberOfChannels-1 );
+      GenericImage result( *this, Bounds(), 0, m_numberOfChannels-1 );
       (void)result.Blend( bitmap, point, rect );
       return result;
    }
@@ -9831,7 +9724,7 @@ public:
     * \endcode
     */
    template <typename T>
-   GenericImage<P>& Move( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Move( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( scalar, ImageOp::Mov, rect, firstChannel, lastChannel );
    }
@@ -9840,7 +9733,7 @@ public:
     * A synonym for Move().
     */
    template <typename T>
-   GenericImage<P>& Mov( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Mov( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Move( scalar, rect, firstChannel, lastChannel );
    }
@@ -9856,7 +9749,7 @@ public:
     * \endcode
     */
    template <typename T>
-   GenericImage<P>& Add( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Add( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( scalar, ImageOp::Add, rect, firstChannel, lastChannel );
    }
@@ -9865,7 +9758,7 @@ public:
     * A synonym for Add().
     */
    template <typename T>
-   GenericImage<P>& operator +=( T scalar )
+   GenericImage& operator +=( T scalar )
    {
       return Add( scalar );
    }
@@ -9881,9 +9774,9 @@ public:
     * the number of selected pixel samples.
     */
    template <typename T>
-   GenericImage<P> Added( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Added( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.Add( scalar );
       return result;
    }
@@ -9899,7 +9792,7 @@ public:
     * \endcode
     */
    template <typename T>
-   GenericImage<P>& Subtract( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Subtract( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( scalar, ImageOp::Sub, rect, firstChannel, lastChannel );
    }
@@ -9908,7 +9801,7 @@ public:
     * A synonym for Subtract().
     */
    template <typename T>
-   GenericImage<P>& Sub( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Sub( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Subtract( scalar, rect, firstChannel, lastChannel );
    }
@@ -9917,7 +9810,7 @@ public:
     * A synonym for Subtract().
     */
    template <typename T>
-   GenericImage<P>& operator -=( T scalar )
+   GenericImage& operator -=( T scalar )
    {
       return Subtract( scalar );
    }
@@ -9933,9 +9826,9 @@ public:
     * the number of selected pixel samples.
     */
    template <typename T>
-   GenericImage<P> Subtracted( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Subtracted( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.Subtract( scalar );
       return result;
    }
@@ -9951,7 +9844,7 @@ public:
     * \endcode
     */
    template <typename T>
-   GenericImage<P>& Multiply( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Multiply( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( scalar, ImageOp::Mul, rect, firstChannel, lastChannel );
    }
@@ -9960,7 +9853,7 @@ public:
     * A synonym for Multiply().
     */
    template <typename T>
-   GenericImage<P>& Mul( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Mul( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Multiply( scalar, rect, firstChannel, lastChannel );
    }
@@ -9969,7 +9862,7 @@ public:
     * A synonym for Multiply().
     */
    template <typename T>
-   GenericImage<P>& operator *=( T scalar )
+   GenericImage& operator *=( T scalar )
    {
       return Multiply( scalar );
    }
@@ -9985,9 +9878,9 @@ public:
     * the number of selected pixel samples.
     */
    template <typename T>
-   GenericImage<P> Multiplied( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Multiplied( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.Multiply( scalar );
       return result;
    }
@@ -10006,7 +9899,7 @@ public:
     * insignificant.
     */
    template <typename T>
-   GenericImage<P>& Divide( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Divide( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( scalar, ImageOp::Div, rect, firstChannel, lastChannel );
    }
@@ -10015,7 +9908,7 @@ public:
     * A synonym for Divide().
     */
    template <typename T>
-   GenericImage<P>& Div( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Div( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Divide( scalar, rect, firstChannel, lastChannel );
    }
@@ -10024,7 +9917,7 @@ public:
     * A synonym for Divide().
     */
    template <typename T>
-   GenericImage<P>& operator /=( T scalar )
+   GenericImage& operator /=( T scalar )
    {
       return Divide( scalar );
    }
@@ -10043,9 +9936,9 @@ public:
     * insignificant.
     */
    template <typename T>
-   GenericImage<P> Divided( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Divided( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.Divide( scalar );
       return result;
    }
@@ -10061,7 +9954,7 @@ public:
     * \endcode
     */
    template <typename T>
-   GenericImage<P>& Raise( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Raise( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( scalar, ImageOp::Pow, rect, firstChannel, lastChannel );
    }
@@ -10070,7 +9963,7 @@ public:
     * A synonym for Raise().
     */
    template <typename T>
-   GenericImage<P>& Pow( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Pow( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Raise( scalar, rect, firstChannel, lastChannel );
    }
@@ -10079,7 +9972,7 @@ public:
     * A synonym for Raise().
     */
    template <typename T>
-   GenericImage<P>& operator ^=( T scalar )
+   GenericImage& operator ^=( T scalar )
    {
       return Raise( scalar );
    }
@@ -10095,9 +9988,9 @@ public:
     * the number of selected pixel samples.
     */
    template <typename T>
-   GenericImage<P> Raised( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Raised( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.Raise( scalar );
       return result;
    }
@@ -10114,7 +10007,7 @@ public:
     * \endcode
     */
    template <typename T>
-   GenericImage<P>& SetAbsoluteDifference( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& SetAbsoluteDifference( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( scalar, ImageOp::Dif, rect, firstChannel, lastChannel );
    }
@@ -10123,7 +10016,7 @@ public:
     * A synonym for SetAbsoluteDifference().
     */
    template <typename T>
-   GenericImage<P>& Dif( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Dif( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return SetAbsoluteDifference( scalar, rect, firstChannel, lastChannel );
    }
@@ -10140,9 +10033,9 @@ public:
     * the number of selected pixel samples.
     */
    template <typename T>
-   GenericImage<P> AbsoluteDifference( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage AbsoluteDifference( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.SetAbsoluteDifference( scalar );
       return result;
    }
@@ -10158,7 +10051,7 @@ public:
     * \endcode
     */
    template <typename T>
-   GenericImage<P>& SetMinimum( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& SetMinimum( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( scalar, ImageOp::Min, rect, firstChannel, lastChannel );
    }
@@ -10167,7 +10060,7 @@ public:
     * A synonym for SetMinimum().
     */
    template <typename T>
-   GenericImage<P>& Min( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Min( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return SetMinimum( scalar, rect, firstChannel, lastChannel );
    }
@@ -10184,9 +10077,9 @@ public:
     * the number of selected pixel samples.
     */
    template <typename T>
-   GenericImage<P> Minimum( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Minimum( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.SetMinimum( scalar );
       return result;
    }
@@ -10202,7 +10095,7 @@ public:
     * \endcode
     */
    template <typename T>
-   GenericImage<P>& SetMaximum( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& SetMaximum( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( scalar, ImageOp::Max, rect, firstChannel, lastChannel );
    }
@@ -10211,7 +10104,7 @@ public:
     * A synonym for SetMaximum().
     */
    template <typename T>
-   GenericImage<P>& Max( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Max( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return SetMaximum( scalar, rect, firstChannel, lastChannel );
    }
@@ -10228,9 +10121,9 @@ public:
     * the number of selected pixel samples.
     */
    template <typename T>
-   GenericImage<P> Maximum( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+   GenericImage Maximum( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
-      GenericImage<P> result( *this, rect, firstChannel, lastChannel );
+      GenericImage result( *this, rect, firstChannel, lastChannel );
       (void)result.SetMaximum( scalar );
       return result;
    }
@@ -10247,7 +10140,7 @@ public:
     * \endcode
     */
    template <typename T>
-   GenericImage<P>& Or( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Or( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( scalar, ImageOp::Or, rect, firstChannel, lastChannel );
    }
@@ -10264,7 +10157,7 @@ public:
     * \endcode
     */
    template <typename T>
-   GenericImage<P>& And( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& And( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( scalar, ImageOp::And, rect, firstChannel, lastChannel );
    }
@@ -10281,7 +10174,7 @@ public:
     * \endcode
     */
    template <typename T>
-   GenericImage<P>& Xor( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Xor( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( scalar, ImageOp::Xor, rect, firstChannel, lastChannel );
    }
@@ -10298,7 +10191,7 @@ public:
     * \endcode
     */
    template <typename T>
-   GenericImage<P>& Nor( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Nor( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( scalar, ImageOp::Nor, rect, firstChannel, lastChannel );
    }
@@ -10315,7 +10208,7 @@ public:
     * \endcode
     */
    template <typename T>
-   GenericImage<P>& Nand( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Nand( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( scalar, ImageOp::Nand, rect, firstChannel, lastChannel );
    }
@@ -10332,7 +10225,7 @@ public:
     * \endcode
     */
    template <typename T>
-   GenericImage<P>& Xnor( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Xnor( T scalar, const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( scalar, ImageOp::Xnor, rect, firstChannel, lastChannel );
    }
@@ -10350,9 +10243,9 @@ public:
     * \endcode
     */
    template <class P1>
-   GenericImage<P>& Move( const GenericImage<P1>& image,
-                          const Point& point = Point( int_max ), int channel = -1,
-                          const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Move( const GenericImage<P1>& image,
+                       const Point& point = Point( int_max ), int channel = -1,
+                       const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( image, ImageOp::Mov, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10361,9 +10254,9 @@ public:
     * A synonym for Move().
     */
    template <class P1>
-   GenericImage<P>& Mov( const GenericImage<P1>& image,
-                         const Point& point = Point( int_max ), int channel = -1,
-                         const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Mov( const GenericImage<P1>& image,
+                      const Point& point = Point( int_max ), int channel = -1,
+                      const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Move( image, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10379,9 +10272,9 @@ public:
     * \endcode
     */
    template <class P1>
-   GenericImage<P>& Add( const GenericImage<P1>& image,
-                         const Point& point = Point( int_max ), int channel = -1,
-                         const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Add( const GenericImage<P1>& image,
+                      const Point& point = Point( int_max ), int channel = -1,
+                      const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( image, ImageOp::Add, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10390,7 +10283,7 @@ public:
     * A synonym for Add().
     */
    template <class P1>
-   GenericImage<P>& operator +=( const GenericImage<P1>& image )
+   GenericImage& operator +=( const GenericImage<P1>& image )
    {
       return Add( image );
    }
@@ -10406,9 +10299,9 @@ public:
     * \endcode
     */
    template <class P1>
-   GenericImage<P>& Subtract( const GenericImage<P1>& image,
-                              const Point& point = Point( int_max ), int channel = -1,
-                              const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Subtract( const GenericImage<P1>& image,
+                           const Point& point = Point( int_max ), int channel = -1,
+                           const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( image, ImageOp::Sub, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10417,9 +10310,9 @@ public:
     * A synonym for Subtract().
     */
    template <class P1>
-   GenericImage<P>& Sub( const GenericImage<P1>& image,
-                         const Point& point = Point( int_max ), int channel = -1,
-                         const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Sub( const GenericImage<P1>& image,
+                      const Point& point = Point( int_max ), int channel = -1,
+                      const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Subtract( image, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10428,7 +10321,7 @@ public:
     * A synonym for Subtract().
     */
    template <class P1>
-   GenericImage<P>& operator -=( const GenericImage<P1>& image )
+   GenericImage& operator -=( const GenericImage<P1>& image )
    {
       return Subtract( image );
    }
@@ -10444,9 +10337,9 @@ public:
     * \endcode
     */
    template <class P1>
-   GenericImage<P>& Multiply( const GenericImage<P1>& image,
-                              const Point& point = Point( int_max ), int channel = -1,
-                              const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Multiply( const GenericImage<P1>& image,
+                           const Point& point = Point( int_max ), int channel = -1,
+                           const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( image, ImageOp::Mul, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10455,9 +10348,9 @@ public:
     * A synonym for Multiply().
     */
    template <class P1>
-   GenericImage<P>& Mul( const GenericImage<P1>& image,
-                         const Point& point = Point( int_max ), int channel = -1,
-                         const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Mul( const GenericImage<P1>& image,
+                      const Point& point = Point( int_max ), int channel = -1,
+                      const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Multiply( image, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10466,7 +10359,7 @@ public:
     * A synonym for Multiply().
     */
    template <class P1>
-   GenericImage<P>& operator *=( const GenericImage<P1>& image )
+   GenericImage& operator *=( const GenericImage<P1>& image )
    {
       return Multiply( image );
    }
@@ -10486,9 +10379,9 @@ public:
     * maximum sample value in the native range of this image.
     */
    template <class P1>
-   GenericImage<P>& Divide( const GenericImage<P1>& image,
-                            const Point& point = Point( int_max ), int channel = -1,
-                            const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Divide( const GenericImage<P1>& image,
+                         const Point& point = Point( int_max ), int channel = -1,
+                         const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( image, ImageOp::Div, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10497,9 +10390,9 @@ public:
     * A synonym for Divide().
     */
    template <class P1>
-   GenericImage<P>& Div( const GenericImage<P1>& image,
-                         const Point& point = Point( int_max ), int channel = -1,
-                         const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Div( const GenericImage<P1>& image,
+                      const Point& point = Point( int_max ), int channel = -1,
+                      const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Divide( image, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10508,7 +10401,7 @@ public:
     * A synonym for Divide().
     */
    template <class P1>
-   GenericImage<P>& operator /=( const GenericImage<P1>& image )
+   GenericImage& operator /=( const GenericImage<P1>& image )
    {
       return Divide( image );
    }
@@ -10525,9 +10418,9 @@ public:
     * \endcode
     */
    template <class P1>
-   GenericImage<P>& Raise( const GenericImage<P1>& image,
-                           const Point& point = Point( int_max ), int channel = -1,
-                           const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Raise( const GenericImage<P1>& image,
+                        const Point& point = Point( int_max ), int channel = -1,
+                        const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( image, ImageOp::Pow, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10536,9 +10429,9 @@ public:
     * A synonym for Raise().
     */
    template <class P1>
-   GenericImage<P>& Pow( const GenericImage<P1>& image,
-                         const Point& point = Point( int_max ), int channel = -1,
-                         const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Pow( const GenericImage<P1>& image,
+                      const Point& point = Point( int_max ), int channel = -1,
+                      const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Raise( image, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10547,7 +10440,7 @@ public:
     * A synonym for Raise().
     */
    template <class P1>
-   GenericImage<P>& operator ^=( const GenericImage<P1>& image )
+   GenericImage& operator ^=( const GenericImage<P1>& image )
    {
       return Raise( image );
    }
@@ -10564,9 +10457,9 @@ public:
     * \endcode
     */
    template <class P1>
-   GenericImage<P>& SetAbsoluteDifference( const GenericImage<P1>& image,
-                                           const Point& point = Point( int_max ), int channel = -1,
-                                           const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& SetAbsoluteDifference( const GenericImage<P1>& image,
+                                        const Point& point = Point( int_max ), int channel = -1,
+                                        const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( image, ImageOp::Dif, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10575,9 +10468,9 @@ public:
     * A synonym for SetAbsoluteDifference().
     */
    template <class P1>
-   GenericImage<P>& Dif( const GenericImage<P1>& image,
-                         const Point& point = Point( int_max ), int channel = -1,
-                         const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Dif( const GenericImage<P1>& image,
+                      const Point& point = Point( int_max ), int channel = -1,
+                      const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return SetAbsoluteDifference( image, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10594,9 +10487,9 @@ public:
     * \endcode
     */
    template <class P1>
-   GenericImage<P>& SetMinimum( const GenericImage<P1>& image,
-                                const Point& point = Point( int_max ), int channel = -1,
-                                const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& SetMinimum( const GenericImage<P1>& image,
+                             const Point& point = Point( int_max ), int channel = -1,
+                             const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( image, ImageOp::Min, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10605,9 +10498,9 @@ public:
     * A synonym for SetMinimum().
     */
    template <class P1>
-   GenericImage<P>& Min( const GenericImage<P1>& image,
-                         const Point& point = Point( int_max ), int channel = -1,
-                         const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Min( const GenericImage<P1>& image,
+                      const Point& point = Point( int_max ), int channel = -1,
+                      const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return SetMinimum( image, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10624,9 +10517,9 @@ public:
     * \endcode
     */
    template <class P1>
-   GenericImage<P>& SetMaximum( const GenericImage<P1>& image,
-                                const Point& point = Point( int_max ), int channel = -1,
-                                const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& SetMaximum( const GenericImage<P1>& image,
+                             const Point& point = Point( int_max ), int channel = -1,
+                             const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( image, ImageOp::Max, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10635,9 +10528,9 @@ public:
     * A synonym for SetMaximum().
     */
    template <class P1>
-   GenericImage<P>& Max( const GenericImage<P1>& image,
-                         const Point& point = Point( int_max ), int channel = -1,
-                         const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Max( const GenericImage<P1>& image,
+                      const Point& point = Point( int_max ), int channel = -1,
+                      const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return SetMaximum( image, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10654,9 +10547,9 @@ public:
     * \endcode
     */
    template <class P1>
-   GenericImage<P>& Or( const GenericImage<P1>& image,
-                        const Point& point = Point( int_max ), int channel = -1,
-                        const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Or( const GenericImage<P1>& image,
+                     const Point& point = Point( int_max ), int channel = -1,
+                     const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( image, ImageOp::Or, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10673,9 +10566,9 @@ public:
     * \endcode
     */
    template <class P1>
-   GenericImage<P>& And( const GenericImage<P1>& image,
-                         const Point& point = Point( int_max ), int channel = -1,
-                         const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& And( const GenericImage<P1>& image,
+                      const Point& point = Point( int_max ), int channel = -1,
+                      const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( image, ImageOp::And, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10692,9 +10585,9 @@ public:
     * \endcode
     */
    template <class P1>
-   GenericImage<P>& Xor( const GenericImage<P1>& image,
-                         const Point& point = Point( int_max ), int channel = -1,
-                         const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Xor( const GenericImage<P1>& image,
+                      const Point& point = Point( int_max ), int channel = -1,
+                      const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( image, ImageOp::Xor, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10711,9 +10604,9 @@ public:
     * \endcode
     */
    template <class P1>
-   GenericImage<P>& Nor( const GenericImage<P1>& image,
-                         const Point& point = Point( int_max ), int channel = -1,
-                         const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Nor( const GenericImage<P1>& image,
+                      const Point& point = Point( int_max ), int channel = -1,
+                      const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( image, ImageOp::Nor, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10730,9 +10623,9 @@ public:
     * \endcode
     */
    template <class P1>
-   GenericImage<P>& Nand( const GenericImage<P1>& image,
-                          const Point& point = Point( int_max ), int channel = -1,
-                          const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Nand( const GenericImage<P1>& image,
+                       const Point& point = Point( int_max ), int channel = -1,
+                       const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( image, ImageOp::Nand, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10749,9 +10642,9 @@ public:
     * \endcode
     */
    template <class P1>
-   GenericImage<P>& Xnor( const GenericImage<P1>& image,
-                          const Point& point = Point( int_max ), int channel = -1,
-                          const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Xnor( const GenericImage<P1>& image,
+                       const Point& point = Point( int_max ), int channel = -1,
+                       const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Apply( image, ImageOp::Xnor, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10796,21 +10689,15 @@ public:
     * samples in the intersection between both operand images.
     */
    template <class P1>
-   GenericImage<P>& Exchange( GenericImage<P1>& image,
-                              const Point& point = Point( int_max ), int channel = -1,
-                              const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Exchange( GenericImage<P1>& image,
+                           const Point& point = Point( int_max ), int channel = -1,
+                           const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       Rect r = rect;
       if ( !image.ParseSelection( r, firstChannel, lastChannel ) )
          return *this;
 
-      if ( channel < 0 )
-      {
-         channel = m_channel;
-         if ( channel < 0 )
-            return *this;
-      }
-      if ( channel >= m_numberOfChannels )
+      if ( !ParseChannel( channel ) )
          return *this;
 
       Point p = point;
@@ -10845,7 +10732,7 @@ public:
 
       size_type N = size_type( r.Width() )*size_type( r.Height() );
       if ( m_status.IsInitializationEnabled() )
-         m_status.Initialize( "Exchanging samples", N*(1 + lastChannel - firstChannel) );
+         m_status.Initialize( "Exchanging pixel samples", N*(1 + lastChannel - firstChannel) );
 
       if ( r == Bounds() && r == image.Bounds() )
          for ( int i = channel, j = firstChannel; j <= lastChannel; ++i, ++j, m_status += N )
@@ -10880,9 +10767,9 @@ public:
     * A synonym for Exchange().
     */
    template <class P1>
-   GenericImage<P>& Xchg( GenericImage<P1>& image,
-                          const Point& point = Point( int_max ), int channel = -1,
-                          const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
+   GenericImage& Xchg( GenericImage<P1>& image,
+                       const Point& point = Point( int_max ), int channel = -1,
+                       const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 )
    {
       return Exchange( image, point, channel, rect, firstChannel, lastChannel );
    }
@@ -10923,16 +10810,16 @@ public:
       int rowsPerThread = r.Height()/numberOfThreads;
       bool useAffinity = m_parallel && Thread::IsRootThread();
 
-      PArray<MinThread> threads;
+      ReferenceArray<MinThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new MinThread( *this, r, firstChannel, lastChannel,
                                      i*rowsPerThread,
                                      (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<MinThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<MinThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename PArray<MinThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<MinThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Wait();
       }
       else
@@ -10940,7 +10827,7 @@ public:
 
       sample min = P::MinSampleValue();
       bool initialized = false;
-      for ( typename PArray<MinThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( typename ReferenceArray<MinThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
          if ( i->initialized )
             if ( initialized )
             {
@@ -10988,7 +10875,8 @@ public:
     * \note Increments the status monitoring object by the number of selected
     * pixel samples.
     */
-   sample MaximumSampleValue( const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1, int maxProcessors = 0 ) const
+   sample MaximumSampleValue( const Rect& rect = Rect( 0 ),
+                              int firstChannel = -1, int lastChannel = -1, int maxProcessors = 0 ) const
    {
       Rect r = rect;
       if ( !ParseSelection( r, firstChannel, lastChannel ) )
@@ -11002,16 +10890,16 @@ public:
       int rowsPerThread = r.Height()/numberOfThreads;
       bool useAffinity = m_parallel && Thread::IsRootThread();
 
-      PArray<MaxThread> threads;
+      ReferenceArray<MaxThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new MaxThread( *this, r, firstChannel, lastChannel,
                                      i*rowsPerThread,
                                      (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<MaxThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<MaxThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename PArray<MaxThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<MaxThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Wait();
       }
       else
@@ -11019,7 +10907,7 @@ public:
 
       sample max = P::MinSampleValue();
       bool initialized = false;
-      for ( typename PArray<MaxThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( typename ReferenceArray<MaxThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
          if ( i->initialized )
             if ( initialized )
             {
@@ -11096,16 +10984,16 @@ public:
       int rowsPerThread = r.Height()/numberOfThreads;
       bool useAffinity = m_parallel && Thread::IsRootThread();
 
-      PArray<MinMaxThread> threads;
+      ReferenceArray<MinMaxThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new MinMaxThread( *this, r, firstChannel, lastChannel,
                                      i*rowsPerThread,
                                      (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<MinMaxThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<MinMaxThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename PArray<MinMaxThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<MinMaxThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Wait();
       }
       else
@@ -11114,7 +11002,7 @@ public:
       sample vmin = P::MinSampleValue();
       sample vmax = P::MinSampleValue();
       bool initialized = false;
-      for ( typename PArray<MinMaxThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( typename ReferenceArray<MinMaxThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
          if ( i->initialized )
             if ( initialized )
             {
@@ -11194,16 +11082,16 @@ public:
       int rowsPerThread = r.Height()/numberOfThreads;
       bool useAffinity = m_parallel && Thread::IsRootThread();
 
-      PArray<MinPosThread> threads;
+      ReferenceArray<MinPosThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new MinPosThread( *this, r, firstChannel, lastChannel,
                                      i*rowsPerThread,
                                      (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<MinPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<MinPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename PArray<MinPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<MinPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Wait();
       }
       else
@@ -11211,7 +11099,7 @@ public:
 
       sample min = P::MinSampleValue();
       bool initialized = false;
-      for ( typename PArray<MinPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( typename ReferenceArray<MinPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
          if ( i->initialized )
             if ( initialized )
             {
@@ -11339,16 +11227,16 @@ public:
       int rowsPerThread = r.Height()/numberOfThreads;
       bool useAffinity = m_parallel && Thread::IsRootThread();
 
-      PArray<MaxPosThread> threads;
+      ReferenceArray<MaxPosThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new MaxPosThread( *this, r, firstChannel, lastChannel,
                                      i*rowsPerThread,
                                      (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<MaxPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<MaxPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename PArray<MaxPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<MaxPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Wait();
       }
       else
@@ -11356,7 +11244,7 @@ public:
 
       sample max = P::MinSampleValue();
       bool initialized = false;
-      for ( typename PArray<MaxPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( typename ReferenceArray<MaxPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
          if ( i->initialized )
             if ( initialized )
             {
@@ -11498,16 +11386,16 @@ public:
       int rowsPerThread = r.Height()/numberOfThreads;
       bool useAffinity = m_parallel && Thread::IsRootThread();
 
-      PArray<MinMaxPosThread> threads;
+      ReferenceArray<MinMaxPosThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new MinMaxPosThread( *this, r, firstChannel, lastChannel,
                                            i*rowsPerThread,
                                            (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<MinMaxPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<MinMaxPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename PArray<MinMaxPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<MinMaxPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Wait();
       }
       else
@@ -11516,7 +11404,7 @@ public:
       sample vmin = P::MinSampleValue();
       sample vmax = P::MinSampleValue();
       bool initialized = false;
-      for ( typename PArray<MinMaxPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( typename ReferenceArray<MinMaxPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
          if ( i->initialized )
             if ( initialized )
             {
@@ -11595,32 +11483,6 @@ public:
    }
 
    /*!
-    * \deprecated This member function has been deprecated. It is still part of
-    * PCL only to keep existing code alive. In newly produced code, use
-    * LocateExtremeSampleValues() instead.
-    */
-   void LocateExtremePixelValues( int& xmin, int& ymin, sample& min,
-                                  int& xmax, int& ymax, sample& max,
-                                  const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1,
-                                  int maxProcessors = 0 ) const
-   {
-      LocateExtremeSampleValues( xmin, ymin, min, xmax, ymax, max, rect, firstChannel, lastChannel, maxProcessors );
-   }
-
-   /*!
-    * \deprecated This member function has been deprecated. It is still part of
-    * PCL only to keep existing code alive. In newly produced code, use
-    * LocateExtremeSampleValues() instead.
-    */
-   void LocateExtremePixelValues( Point& pmin, sample& min,
-                                  Point& pmax, sample& max,
-                                  const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1,
-                                  int maxProcessors = 0 ) const
-   {
-      LocateExtremeSampleValues( pmin, min, pmax, max, rect, firstChannel, lastChannel, maxProcessors );
-   }
-
-   /*!
     * Returns the number of pixel samples selectable for statistics calculation
     * from a subset of pixel samples.
     *
@@ -11666,23 +11528,23 @@ public:
       int rowsPerThread = r.Height()/numberOfThreads;
       bool useAffinity = m_parallel && Thread::IsRootThread();
 
-      PArray<CountThread> threads;
+      ReferenceArray<CountThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new CountThread( *this, r, firstChannel, lastChannel,
                                        i*rowsPerThread,
                                        (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<CountThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<CountThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename PArray<CountThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<CountThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Wait();
       }
       else
          threads[0].Run();
 
       uint64 count = 0;
-      for ( typename PArray<CountThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( typename ReferenceArray<CountThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
          count += i->count;
 
       threads.Destroy();
@@ -11733,16 +11595,16 @@ public:
       int rowsPerThread = r.Height()/numberOfThreads;
       bool useAffinity = m_parallel && Thread::IsRootThread();
 
-      PArray<SumThread> threads;
+      ReferenceArray<SumThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new SumThread( *this, r, firstChannel, lastChannel,
                                      i*rowsPerThread,
                                      (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<SumThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<SumThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename PArray<SumThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<SumThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Wait();
       }
       else
@@ -11751,7 +11613,7 @@ public:
       double s = 0;
       double e = 0;
       size_type n = 0;
-      for ( typename PArray<SumThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( typename ReferenceArray<SumThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
       {
          double y = i->s - e;
          double t = s + y;
@@ -11796,7 +11658,8 @@ public:
     * performance, for larger sets of even length this function returns the
     * high median, which is the order statistic of rank ceil(n/2). Note that
     * for large sets, the difference between a high median and the mean of the
-    * high and low medians is statistically irrelevant.
+    * high and low medians is statistically irrelevant (modulo special cases
+    * that are irrelevant for practical matters).
     *
     * \note Increments the status monitoring object by the number of selected
     * pixel samples.
@@ -11816,23 +11679,23 @@ public:
       int rowsPerThread = r.Height()/numberOfThreads;
       bool useAffinity = m_parallel && Thread::IsRootThread();
 
-      PArray<SmpThread> threads;
+      ReferenceArray<SmpThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new SmpThread( *this, r, firstChannel, lastChannel,
                                      i*rowsPerThread,
                                      (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<SmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<SmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename PArray<SmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<SmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Wait();
       }
       else
          threads[0].Run();
 
       Array<sample> samples;
-      for ( typename PArray<SmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( typename ReferenceArray<SmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
          if ( !i->samples.IsEmpty() )
          {
             samples.Add( i->samples.Begin(), i->samples.At( i->n ) );
@@ -11910,16 +11773,16 @@ public:
       int rowsPerThread = r.Height()/numberOfThreads;
       bool useAffinity = m_parallel && Thread::IsRootThread();
 
-      PArray<SumThread> sumThreads;
+      ReferenceArray<SumThread> sumThreads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          sumThreads.Add( new SumThread( *this, r, firstChannel, lastChannel,
                                         i*rowsPerThread,
                                         (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<SumThread>::iterator i = sumThreads.Begin(); i != sumThreads.End(); ++i )
+         for ( typename ReferenceArray<SumThread>::iterator i = sumThreads.Begin(); i != sumThreads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( sumThreads.Begin(), i ) : -1 );
-         for ( typename PArray<SumThread>::iterator i = sumThreads.Begin(); i != sumThreads.End(); ++i )
+         for ( typename ReferenceArray<SumThread>::iterator i = sumThreads.Begin(); i != sumThreads.End(); ++i )
             i->Wait();
       }
       else
@@ -11928,7 +11791,7 @@ public:
       double s = 0;
       double e = 0;
       size_type n = 0;
-      for ( typename PArray<SumThread>::iterator i = sumThreads.Begin(); i != sumThreads.End(); ++i )
+      for ( typename ReferenceArray<SumThread>::iterator i = sumThreads.Begin(); i != sumThreads.End(); ++i )
       {
          double y = i->s - e;
          double t = s + y;
@@ -11943,23 +11806,23 @@ public:
          return 0;
       double mean = s/n;
 
-      PArray<VarThread> varThreads;
+      ReferenceArray<VarThread> varThreads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          varThreads.Add( new VarThread( *this, mean, r, firstChannel, lastChannel,
                                         i*rowsPerThread,
                                         (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<VarThread>::iterator i = varThreads.Begin(); i != varThreads.End(); ++i )
+         for ( typename ReferenceArray<VarThread>::iterator i = varThreads.Begin(); i != varThreads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( varThreads.Begin(), i ) : -1 );
-         for ( typename PArray<VarThread>::iterator i = varThreads.Begin(); i != varThreads.End(); ++i )
+         for ( typename ReferenceArray<VarThread>::iterator i = varThreads.Begin(); i != varThreads.End(); ++i )
             i->Wait();
       }
       else
          varThreads[0].Run();
 
       double var = 0, eps = 0;
-      for ( typename PArray<VarThread>::iterator i = varThreads.Begin(); i != varThreads.End(); ++i )
+      for ( typename ReferenceArray<VarThread>::iterator i = varThreads.Begin(); i != varThreads.End(); ++i )
          var += i->var, eps += i->eps;
 
       varThreads.Destroy();
@@ -12059,16 +11922,16 @@ public:
       int rowsPerThread = r.Height()/numberOfThreads;
       bool useAffinity = m_parallel && Thread::IsRootThread();
 
-      PArray<SumAbsDevThread> threads;
+      ReferenceArray<SumAbsDevThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new SumAbsDevThread( *this, center, r, firstChannel, lastChannel,
                                            i*rowsPerThread,
                                            (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<SumAbsDevThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<SumAbsDevThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename PArray<SumAbsDevThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<SumAbsDevThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Wait();
       }
       else
@@ -12077,7 +11940,7 @@ public:
       double s = 0;
       double e = 0;
       size_type n = 0;
-      for ( typename PArray<SumAbsDevThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( typename ReferenceArray<SumAbsDevThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
       {
          double y = i->s - e;
          double t = s + y;
@@ -12151,23 +12014,23 @@ public:
       int rowsPerThread = r.Height()/numberOfThreads;
       bool useAffinity = m_parallel && Thread::IsRootThread();
 
-      PArray<SmpAbsDevThread> threads;
+      ReferenceArray<SmpAbsDevThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new SmpAbsDevThread( *this, center, r, firstChannel, lastChannel,
                                            i*rowsPerThread,
                                            (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<SmpAbsDevThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<SmpAbsDevThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename PArray<SmpAbsDevThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<SmpAbsDevThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Wait();
       }
       else
          threads[0].Run();
 
       Array<double> devs;
-      for ( typename PArray<SmpAbsDevThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( typename ReferenceArray<SmpAbsDevThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
          if ( !i->devs.IsEmpty() )
          {
             devs.Add( i->devs.Begin(), i->devs.At( i->n ) );
@@ -12253,16 +12116,16 @@ public:
       int rowsPerThread = r.Height()/numberOfThreads;
       bool useAffinity = m_parallel && Thread::IsRootThread();
 
-      PArray<BWMVThread> threads;
+      ReferenceArray<BWMVThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new BWMVThread( *this, center, kd, r, firstChannel, lastChannel,
                                       i*rowsPerThread,
                                       (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<BWMVThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<BWMVThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename PArray<BWMVThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<BWMVThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Wait();
       }
       else
@@ -12270,7 +12133,7 @@ public:
 
       double num = 0, den = 0;
       size_type n = 0;
-      for ( typename PArray<BWMVThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( typename ReferenceArray<BWMVThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
       {
          num += i->num;
          den += i->den;
@@ -12350,23 +12213,23 @@ public:
       int rowsPerThread = r.Height()/numberOfThreads;
       bool useAffinity = m_parallel && Thread::IsRootThread();
 
-      PArray<DSmpThread> threads;
+      ReferenceArray<DSmpThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new DSmpThread( *this, r, firstChannel, lastChannel,
                                       i*rowsPerThread,
                                       (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename PArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Wait();
       }
       else
          threads[0].Run();
 
       Array<double> values;
-      for ( typename PArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( typename ReferenceArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
          if ( !i->values.IsEmpty() )
          {
             values.Add( i->values.Begin(), i->values.At( i->n ) );
@@ -12437,23 +12300,23 @@ public:
       int rowsPerThread = r.Height()/numberOfThreads;
       bool useAffinity = m_parallel && Thread::IsRootThread();
 
-      PArray<DSmpThread> threads;
+      ReferenceArray<DSmpThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new DSmpThread( *this, r, firstChannel, lastChannel,
                                       i*rowsPerThread,
                                       (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename PArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Wait();
       }
       else
          threads[0].Run();
 
       Array<double> values;
-      for ( typename PArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( typename ReferenceArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
          if ( !i->values.IsEmpty() )
          {
             values.Add( i->values.Begin(), i->values.At( i->n ) );
@@ -12523,23 +12386,23 @@ public:
       int rowsPerThread = r.Height()/numberOfThreads;
       bool useAffinity = m_parallel && Thread::IsRootThread();
 
-      PArray<DSmpThread> threads;
+      ReferenceArray<DSmpThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new DSmpThread( *this, r, firstChannel, lastChannel,
                                       i*rowsPerThread,
                                       (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename PArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Wait();
       }
       else
          threads[0].Run();
 
       Array<double> values;
-      for ( typename PArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( typename ReferenceArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
          if ( !i->values.IsEmpty() )
          {
             values.Add( i->values.Begin(), i->values.At( i->n ) );
@@ -12605,16 +12468,16 @@ public:
       int rowsPerThread = r.Height()/numberOfThreads;
       bool useAffinity = m_parallel && Thread::IsRootThread();
 
-      PArray<SumThread> threads;
+      ReferenceArray<SumThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new SumThread( *this, r, firstChannel, lastChannel,
                                      i*rowsPerThread,
                                      (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<SumThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<SumThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename PArray<SumThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<SumThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Wait();
       }
       else
@@ -12622,7 +12485,7 @@ public:
 
       double s = 0;
       double e = 0;
-      for ( typename PArray<SumThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( typename ReferenceArray<SumThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
       {
          double y = i->s - e;
          double t = s + y;
@@ -12680,16 +12543,16 @@ public:
       int rowsPerThread = r.Height()/numberOfThreads;
       bool useAffinity = m_parallel && Thread::IsRootThread();
 
-      PArray<SumAbsThread> threads;
+      ReferenceArray<SumAbsThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new SumAbsThread( *this, r, firstChannel, lastChannel,
                                      i*rowsPerThread,
                                      (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<SumAbsThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<SumAbsThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename PArray<SumAbsThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<SumAbsThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Wait();
       }
       else
@@ -12697,7 +12560,7 @@ public:
 
       double s = 0;
       double e = 0;
-      for ( typename PArray<SumAbsThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( typename ReferenceArray<SumAbsThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
       {
          double y = i->s - e;
          double t = s + y;
@@ -12753,16 +12616,16 @@ public:
       int rowsPerThread = r.Height()/numberOfThreads;
       bool useAffinity = m_parallel && Thread::IsRootThread();
 
-      PArray<SumSqrThread> threads;
+      ReferenceArray<SumSqrThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new SumSqrThread( *this, r, firstChannel, lastChannel,
                                         i*rowsPerThread,
                                         (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<SumSqrThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<SumSqrThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename PArray<SumSqrThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<SumSqrThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Wait();
       }
       else
@@ -12770,7 +12633,7 @@ public:
 
       double s = 0;
       double e = 0;
-      for ( typename PArray<SumSqrThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( typename ReferenceArray<SumSqrThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
       {
          double y = i->s - e;
          double t = s + y;
@@ -12826,16 +12689,16 @@ public:
       int rowsPerThread = r.Height()/numberOfThreads;
       bool useAffinity = m_parallel && Thread::IsRootThread();
 
-      PArray<SumSqrThread> threads;
+      ReferenceArray<SumSqrThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new SumSqrThread( *this, r, firstChannel, lastChannel,
                                         i*rowsPerThread,
                                         (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename PArray<SumSqrThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<SumSqrThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename PArray<SumSqrThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+         for ( typename ReferenceArray<SumSqrThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Wait();
       }
       else
@@ -12844,7 +12707,7 @@ public:
       double s = 0;
       double e = 0;
       size_type n = 0;
-      for ( typename PArray<SumSqrThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( typename ReferenceArray<SumSqrThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
       {
          double y = i->s - e;
          double t = s + y;
@@ -12860,6 +12723,53 @@ public:
       if ( n < 1 )
          return 0;
       return s/n;
+   }
+
+   /*!
+    * Returns a 64-bit non-cryptographic hash value computed for the specified
+    * \a channel of this image.
+    *
+    * This function calls pcl::Hash64() for the internal pixel sample buffer.
+    *
+    * The \a seed parameter can be used to generate repeatable hash values. It
+    * can also be set to a random value in compromised environments.
+    *
+    * For information on the rest of parameters of this member function, see
+    * the documentation for Fill().
+    */
+   uint64 Hash64( int channel = -1, uint64 seed = 0 ) const
+   {
+      if ( !ParseChannel( channel ) )
+         return 0;
+      return pcl::Hash64( m_pixelData[channel], ChannelSize(), seed );
+   }
+
+   /*!
+    * Returns a 32-bit non-cryptographic hash value computed for the specified
+    * \a channel of this image.
+    *
+    * This function calls pcl::Hash32() for the internal pixel sample buffer.
+    *
+    * The \a seed parameter can be used to generate repeatable hash values. It
+    * can also be set to a random value in compromised environments.
+    *
+    * For information on the rest of parameters of this member function, see
+    * the documentation for Fill().
+    */
+   uint32 Hash32( int channel = -1, uint32 seed = 0 ) const
+   {
+      if ( !ParseChannel( channel ) )
+         return 0;
+      return pcl::Hash32( m_pixelData[channel], ChannelSize(), seed );
+   }
+
+   /*!
+    * Returns a non-cryptographic hash value computed for the specified
+    * \a channel of this image. This function is a synonym for Hash64().
+    */
+   uint64 Hash( int channel = -1, uint64 seed = 0 ) const
+   {
+      return Hash64( channel, seed );
    }
 
    // -------------------------------------------------------------------------
@@ -12925,7 +12835,7 @@ public:
     * Write( File&, const Rect&, int, int ).
     */
    void Write( const String& filePath,
-                           const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
+               const Rect& rect = Rect( 0 ), int firstChannel = -1, int lastChannel = -1 ) const
    {
       File file;
       file.CreateForWriting( filePath );
@@ -12969,7 +12879,7 @@ public:
     * handling capabilities. For more powerful and sophisticated ways to
     * serialize image data, see the ImageVariant class.
     */
-   GenericImage<P>& Read( File& file )
+   GenericImage& Read( File& file )
    {
       int width, height, numberOfChannels, colorSpace;
       file.ReadUI32( width );
@@ -13004,7 +12914,7 @@ public:
     * This member function is just a wrapper to the more general version:
     * Read( File& ).
     */
-   GenericImage<P>& Read( const String& filePath )
+   GenericImage& Read( const String& filePath )
    {
       File file;
       file.OpenForReading( filePath );
@@ -13046,7 +12956,7 @@ public:
     * pixels of the cropping rectangle.
     */
    template <typename T>
-   GenericImage<P>& CropBy( int left, int top, int right, int bottom, const GenericVector<T>& fillValues )
+   GenericImage& CropBy( int left, int top, int right, int bottom, const GenericVector<T>& fillValues )
    {
       if ( left == 0 && top == 0 && right == 0 && bottom == 0 )
          return *this;
@@ -13072,52 +12982,75 @@ public:
          m_status.Initialize( String().Format( "Crop margins: %+d, %+d, %+d, %+d",
                                                left, top, right, bottom ), N*m_numberOfChannels );
 
-      for ( int c = 0; c < m_numberOfChannels; ++c, m_status += N )
+      sample** newData = nullptr;
+
+      try
       {
-         sample* newData = m_allocator.AllocatePixels( N );
-         sample* f = newData;
-         sample v = (c < fillValues.Length()) ? P::ToSample( fillValues[c] ) : P::MinSampleValue();
+         newData = m_allocator.AllocateChannelSlots( m_numberOfChannels );
 
-         for ( int i = r.y0, j; ; )
+         for ( int c = 0; c < m_numberOfChannels; ++c, m_status += N )
          {
-            for ( ; i < 0; ++i )
-               for ( int j = 0; j < width; ++j )
-                  *f++ = v;
+            sample* f = newData[c] = m_allocator.AllocatePixels( N );
+            sample v = (c < fillValues.Length()) ? P::ToSample( fillValues[c] ) : P::MinSampleValue();
 
-            for ( j = r.x0; j < 0; ++j )
-               *f++ = v;
-
-            for ( const sample* f0 = PixelAddress( j, i, c ); ; )
+            for ( int i = r.y0, j; i < r.y1; )
             {
-               *f++ = *f0++;
-
-               if ( ++j == m_width )
-                  for ( ; j < r.x1; ++j )
-                     *f++ = v;
-
-               if ( j == r.x1 )
-                  break;
-            }
-
-            if ( ++i == m_height )
-               for ( ; i < r.y1; ++i )
+               for ( ; i < 0; ++i )
                   for ( int j = 0; j < width; ++j )
                      *f++ = v;
 
-            if ( i == r.y1 )
-               break;
+               for ( j = r.x0; j < 0; ++j )
+                  *f++ = v;
+
+               for ( const sample* f0 = PixelAddress( j, i, c ); j < r.x1; )
+               {
+                  *f++ = *f0++;
+                  if ( ++j == m_width )
+                     for ( ; j < r.x1; ++j )
+                        *f++ = v;
+               }
+
+               if ( ++i == m_height )
+                  for ( ; i < r.y1; ++i )
+                     for ( int j = 0; j < width; ++j )
+                        *f++ = v;
+            }
          }
 
-         m_allocator.Deallocate( m_pixelData[c] );
-         m_pixelData[c] = newData;
+         try
+         {
+            for ( int c = 0; c < m_numberOfChannels; ++c )
+            {
+               m_allocator.Deallocate( m_pixelData[c] );
+               m_pixelData[c] = newData[c];
+            }
+            m_allocator.Deallocate( newData );
+            newData = nullptr;
+
+            m_allocator.SetSharedGeometry( m_width = width, m_height = height, m_numberOfChannels );
+
+            ResetPoint();
+            ResetSelection();
+            return *this;
+         }
+         catch ( ... )
+         {
+            m_data->Deallocate();
+            ResetSelections();
+            throw;
+         }
       }
-
-      m_allocator.SetSharedGeometry( m_width = width, m_height = height, m_numberOfChannels );
-
-      ResetPoint();
-      ResetSelection();
-
-      return *this;
+      catch ( ... )
+      {
+         if ( newData != nullptr )
+         {
+            for ( int i = 0; i < m_numberOfChannels; ++i )
+               if ( newData[i] != nullptr )
+                  m_allocator.Deallocate( newData[i] ), newData[i] = nullptr;
+            m_allocator.Deallocate( newData );
+         }
+         throw;
+      }
    }
 
    /*!
@@ -13131,7 +13064,7 @@ public:
     * CropBy( left, top, right, bottom, sample_vector() );
     * \endcode
     */
-   GenericImage<P>& CropBy( int left, int top, int right, int bottom )
+   GenericImage& CropBy( int left, int top, int right, int bottom )
    {
       return CropBy( left, top, right, bottom, sample_vector() );
    }
@@ -13147,7 +13080,7 @@ public:
     * \endcode
     */
    template <typename T>
-   GenericImage<P>& CropTo( const Rect& rect, const GenericVector<T>& fillValues )
+   GenericImage& CropTo( const Rect& rect, const GenericVector<T>& fillValues )
    {
       Rect r = rect.Ordered();
       return CropBy( -r.x0, -r.y0, r.x1 - m_width, r.y1 - m_height, fillValues );
@@ -13164,7 +13097,7 @@ public:
     * CropTo( rect, sample_vector() );
     * \endcode
     */
-   GenericImage<P>& CropTo( const Rect& rect )
+   GenericImage& CropTo( const Rect& rect )
    {
       return CropTo( rect, sample_vector() );
    }
@@ -13180,7 +13113,7 @@ public:
     * \endcode
     */
    template <typename T>
-   GenericImage<P>& CropTo( int x0, int y0, int x1, int y1, const GenericVector<T>& fillValues )
+   GenericImage& CropTo( int x0, int y0, int x1, int y1, const GenericVector<T>& fillValues )
    {
       return CropTo( Rect( x0, y0, x1, y1 ), fillValues );
    }
@@ -13196,7 +13129,7 @@ public:
     * CropTo( x0, y0, x1, y1, sample_vector() );
     * \endcode
     */
-   GenericImage<P>& CropTo( int x0, int y0, int x1, int y1 )
+   GenericImage& CropTo( int x0, int y0, int x1, int y1 )
    {
       return CropTo( x0, y0, x1, y1, sample_vector() );
    }
@@ -13212,7 +13145,7 @@ public:
     * \endcode
     */
    template <typename T>
-   GenericImage<P>& Crop( const GenericVector<T>& fillValues )
+   GenericImage& Crop( const GenericVector<T>& fillValues )
    {
       return CropTo( m_rectangle, fillValues );
    }
@@ -13228,7 +13161,7 @@ public:
     * Crop( sample_vector() );
     * \endcode
     */
-   GenericImage<P>& Crop()
+   GenericImage& Crop()
    {
       return Crop( sample_vector() );
    }
@@ -13255,7 +13188,7 @@ public:
     * \endcode
     */
    template <typename T>
-   GenericImage<P>& ShiftBy( int dx, int dy, const GenericVector<T>& fillValues )
+   GenericImage& ShiftBy( int dx, int dy, const GenericVector<T>& fillValues )
    {
       return CropBy( dx, dy, -dx, -dy, fillValues );
    }
@@ -13271,7 +13204,7 @@ public:
     * ShiftBy( dx, dy, sample_vector() );
     * \endcode
     */
-   GenericImage<P>& ShiftBy( int dx, int dy )
+   GenericImage& ShiftBy( int dx, int dy )
    {
       return ShiftBy( dx, dy, sample_vector() );
    }
@@ -13283,7 +13216,7 @@ public:
     * A synonym for ShiftBy( int, int, sample ).
     */
    template <typename T>
-   GenericImage<P>& ShiftTo( int x, int y, const GenericVector<T>& fillValues )
+   GenericImage& ShiftTo( int x, int y, const GenericVector<T>& fillValues )
    {
       return ShiftBy( x, y, fillValues );
    }
@@ -13299,7 +13232,7 @@ public:
     * ShiftTo( x, y, sample_vector() );
     * \endcode
     */
-   GenericImage<P>& ShiftTo( int x, int y )
+   GenericImage& ShiftTo( int x, int y )
    {
       return ShiftTo( x, y, sample_vector() );
    }
@@ -13315,7 +13248,7 @@ public:
     * \endcode
     */
    template <typename T>
-   GenericImage<P>& ShiftTo( const Point& p, const GenericVector<T>& fillValues )
+   GenericImage& ShiftTo( const Point& p, const GenericVector<T>& fillValues )
    {
       return ShiftBy( p.x, p.y, fillValues );
    }
@@ -13331,7 +13264,7 @@ public:
     * ShiftTo( p, sample_vector() );
     * \endcode
     */
-   GenericImage<P>& ShiftTo( const Point& p )
+   GenericImage& ShiftTo( const Point& p )
    {
       return ShiftTo( p, sample_vector() );
    }
@@ -13341,7 +13274,7 @@ public:
     * \a height in pixels. Returns a reference to this image.
     */
    template <typename T>
-   GenericImage<P>& ShiftToCenter( int width, int height, const GenericVector<T>& fillValues )
+   GenericImage& ShiftToCenter( int width, int height, const GenericVector<T>& fillValues )
    {
       int dx2 = (width - m_width) >> 1;
       int dy2 = (height - m_height) >> 1;
@@ -13360,7 +13293,7 @@ public:
     * ShiftToCenter( width, height, sample_vector() );
     * \endcode
     */
-   GenericImage<P>& ShiftToCenter( int width, int height )
+   GenericImage& ShiftToCenter( int width, int height )
    {
       return ShiftToCenter( width, height, sample_vector() );
    }
@@ -13370,7 +13303,7 @@ public:
     * \a width and \a height in pixels. Returns a reference to this image.
     */
    template <typename T>
-   GenericImage<P>& ShiftToTopLeft( int width, int height, const GenericVector<T>& fillValues )
+   GenericImage& ShiftToTopLeft( int width, int height, const GenericVector<T>& fillValues )
    {
       int dx = width - m_width;
       int dy = height - m_height;
@@ -13389,7 +13322,7 @@ public:
     * ShiftToTopLeft( width, height, sample_vector() );
     * \endcode
     */
-   GenericImage<P>& ShiftToTopLeft( int width, int height )
+   GenericImage& ShiftToTopLeft( int width, int height )
    {
       return ShiftToTopLeft( width, height, sample_vector() );
    }
@@ -13399,7 +13332,7 @@ public:
     * \a width and \a height in pixels. Returns a reference to this image.
     */
    template <typename T>
-   GenericImage<P>& ShiftToTopRight( int width, int height, const GenericVector<T>& fillValues )
+   GenericImage& ShiftToTopRight( int width, int height, const GenericVector<T>& fillValues )
    {
       int dx = width - m_width;
       int dy = height - m_height;
@@ -13418,7 +13351,7 @@ public:
     * ShiftToTopRight( width, height, sample_vector() );
     * \endcode
     */
-   GenericImage<P>& ShiftToTopRight( int width, int height )
+   GenericImage& ShiftToTopRight( int width, int height )
    {
       return ShiftToTopRight( width, height, sample_vector() );
    }
@@ -13428,7 +13361,7 @@ public:
     * \a width and \a height in pixels. Returns a reference to this image.
     */
    template <typename T>
-   GenericImage<P>& ShiftToBottomLeft( int width, int height, const GenericVector<T>& fillValues )
+   GenericImage& ShiftToBottomLeft( int width, int height, const GenericVector<T>& fillValues )
    {
       int dx = width - m_width;
       int dy = height - m_height;
@@ -13447,7 +13380,7 @@ public:
     * ShiftToBottomLeft( width, height, sample_vector() );
     * \endcode
     */
-   GenericImage<P>& ShiftToBottomLeft( int width, int height )
+   GenericImage& ShiftToBottomLeft( int width, int height )
    {
       return ShiftToBottomLeft( width, height, sample_vector() );
    }
@@ -13457,7 +13390,7 @@ public:
     * \a width and \a height in pixels. Returns a reference to this image.
     */
    template <typename T>
-   GenericImage<P>& ShiftToBottomRight( int width, int height, const GenericVector<T>& fillValues )
+   GenericImage& ShiftToBottomRight( int width, int height, const GenericVector<T>& fillValues )
    {
       int dx = width - m_width;
       int dy = height - m_height;
@@ -13476,7 +13409,7 @@ public:
     * ShiftToBottomRight( width, height, sample_vector() );
     * \endcode
     */
-   GenericImage<P>& ShiftToBottomRight( int width, int height )
+   GenericImage& ShiftToBottomRight( int width, int height )
    {
       return ShiftToBottomRight( width, height, sample_vector() );
    }
@@ -13492,7 +13425,7 @@ public:
     * \endcode
     */
    template <typename T>
-   GenericImage<P>& Shift( const GenericVector<T>& fillValues )
+   GenericImage& Shift( const GenericVector<T>& fillValues )
    {
       return ShiftTo( m_point, fillValues );
    }
@@ -13508,7 +13441,7 @@ public:
     * Shift( sample_vector() );
     * \endcode
     */
-   GenericImage<P>& Shift()
+   GenericImage& Shift()
    {
       return Shift( sample_vector() );
    }
@@ -13548,9 +13481,11 @@ public:
     * \note Increments the status monitoring object by the number of pixels
     * (\e not samples) in the image.
     */
-   GenericImage<P>& SetColorSpace( color_space colorSpace, int maxProcessors = 0 )
+   GenericImage& SetColorSpace( color_space colorSpace, int maxProcessors = 0 )
    {
       size_type N = NumberOfPixels();
+      if ( N == 0 )
+         return *this;
 
       if ( colorSpace == m_colorSpace )
       {
@@ -13561,40 +13496,68 @@ public:
       SetUnique();
 
       if ( m_status.IsInitializationEnabled() )
-         m_status.Initialize( "In-place color space conversion ("
+         m_status.Initialize( "In-place color space conversion: "
                             + ColorSpace::Name( m_colorSpace )
                             + " -> "
-                            + ColorSpace::Name( colorSpace ) + ")", N );
+                            + ColorSpace::Name( colorSpace ), N );
 
       int n = m_numberOfChannels;
 
       if ( m_colorSpace == ColorSpace::Gray )
       {
-         // Setup new channel slots; make room for the G and B channels.
          sample** oldData = m_pixelData;
-         sample** newData = m_allocator.AllocateChannelSlots( 2+n );
+         sample** newData = nullptr;
 
-         // Put the nominal gray channel in the R slot
-         *newData = *oldData;
+         try
+         {
+            // Make room for the G and B channels.
+            newData = m_allocator.AllocateChannelSlots( 2+n );
 
-         // Allocate and copy the G and B channels
-         newData[1] = m_allocator.AllocatePixels( N );
-         ::memcpy( newData[1], *oldData, ChannelSize() );
-         newData[2] = m_allocator.AllocatePixels( N );
-         ::memcpy( newData[2], *oldData, ChannelSize() );
+            // Put the nominal gray channel into the R slot
+            newData[0] = oldData[0];
 
-         // Put existing alpha channels in their corresponding slots
-         for ( int i = 1; i < n; ++i )
-            newData[i+2] = oldData[i];
+            // Allocate and copy the G and B channels
+            newData[1] = m_allocator.AllocatePixels( N );
+            ::memcpy( newData[1], oldData[0], ChannelSize() );
+            newData[2] = m_allocator.AllocatePixels( N );
+            ::memcpy( newData[2], oldData[0], ChannelSize() );
 
-         m_pixelData = newData;
-         m_numberOfChannels += 2;
-         m_colorSpace = ColorSpace::RGB;
-         m_data->UpdateSharedImage();
+            // Put existing alpha channels in their corresponding slots
+            for ( int i = 1; i < n; ++i )
+               newData[i+2] = oldData[i];
 
-         ResetChannelRange();
+            try
+            {
+               m_pixelData = newData;
+               newData = nullptr;
+               m_numberOfChannels += 2;
+               m_colorSpace = ColorSpace::RGB;
+               m_data->UpdateSharedImage();
 
-         m_allocator.Deallocate( oldData );
+               ResetChannelRange();
+
+               m_allocator.Deallocate( oldData );
+            }
+            catch ( ... )
+            {
+               m_data->Deallocate();
+               ResetSelections();
+               throw;
+            }
+         }
+         catch ( ... )
+         {
+            if ( newData != nullptr )
+            {
+               newData[0] = nullptr;
+               if ( newData[1] != nullptr )
+                  m_allocator.Deallocate( newData[1] ), newData[1] = nullptr;
+               if ( newData[2] != nullptr )
+                  m_allocator.Deallocate( newData[2] ), newData[2] = nullptr;
+               m_allocator.Deallocate( newData );
+               throw;
+            }
+         }
 
          if ( colorSpace == ColorSpace::RGB )
          {
@@ -13610,7 +13573,7 @@ public:
 
       ThreadData data( *this, N );
 
-      PArray<ColorSpaceConversionThread> threads;
+      ReferenceArray<ColorSpaceConversionThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new ColorSpaceConversionThread( *this, data, colorSpace,
                                                       i*pixelsPerThread,
@@ -13623,23 +13586,35 @@ public:
       if ( colorSpace == ColorSpace::Gray )
       {
          sample** oldData = m_pixelData;
-         sample** newData = m_allocator.AllocateChannelSlots( n-2 );
+         sample** newData = nullptr;
 
-         *newData = *oldData;
+         try
+         {
+            newData = m_allocator.AllocateChannelSlots( n-2 );
+            newData[0] = oldData[0];
+            for ( int i = 3; i < n; ++i )
+               newData[i-2] = oldData[i];
 
-         for ( int i = 3; i < n; ++i )
-            newData[i-2] = oldData[i];
+            m_pixelData = newData;
+            newData = nullptr;
+            m_numberOfChannels -= 2;
+            m_colorSpace = ColorSpace::Gray;
+            m_data->UpdateSharedImage();
 
-         m_pixelData = newData;
-         m_numberOfChannels -= 2;
-         m_colorSpace = ColorSpace::Gray;
-         m_data->UpdateSharedImage();
+            ResetChannelRange();
 
-         ResetChannelRange();
-
-         m_allocator.Deallocate( oldData[1] );
-         m_allocator.Deallocate( oldData[2] );
-         m_allocator.Deallocate( oldData );
+            m_allocator.Deallocate( oldData[1] );
+            m_allocator.Deallocate( oldData[2] );
+            m_allocator.Deallocate( oldData );
+         }
+         catch ( ... )
+         {
+            m_data->Deallocate();
+            ResetSelections();
+            if ( newData != nullptr )
+               m_allocator.Deallocate( newData );
+            throw;
+         }
       }
       else
       {
@@ -13759,7 +13734,7 @@ public:
 
          ThreadData data( *this, N );
 
-         PArray<GetLuminanceThread<P1> > threads;
+         ReferenceArray<GetLuminanceThread<P1> > threads;
          for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
             threads.Add( new GetLuminanceThread<P1>( Y, *this, data, r,
                                                      i*rowsPerThread,
@@ -13891,7 +13866,7 @@ public:
 
          ThreadData data( *this, N );
 
-         PArray<GetLightnessThread<P1> > threads;
+         ReferenceArray<GetLightnessThread<P1> > threads;
          for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
             threads.Add( new GetLightnessThread<P1>( L, *this, data, r,
                                                      i*rowsPerThread,
@@ -14015,7 +13990,7 @@ public:
 
          ThreadData data( *this, N );
 
-         PArray<GetIntensityThread<P1> > threads;
+         ReferenceArray<GetIntensityThread<P1> > threads;
          for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
             threads.Add( new GetIntensityThread<P1>( I, *this, data, r,
                                                      i*rowsPerThread,
@@ -14100,9 +14075,9 @@ public:
     * pixels (\e not samples).
     */
    template <class P1>
-   GenericImage<P>& SetLuminance( const GenericImage<P1>& Y,
-                                  const Point& point = Point( int_max ), const Rect& rect = Rect( 0 ),
-                                  int maxProcessors = 0 )
+   GenericImage& SetLuminance( const GenericImage<P1>& Y,
+                               const Point& point = Point( int_max ), const Rect& rect = Rect( 0 ),
+                               int maxProcessors = 0 )
    {
       Rect r = rect;
       if ( !Y.ParseRect( r ) )
@@ -14159,7 +14134,7 @@ public:
 
          ThreadData data( *this, N );
 
-         PArray<SetLuminanceThread<P1> > threads;
+         ReferenceArray<SetLuminanceThread<P1> > threads;
          for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
             threads.Add( new SetLuminanceThread<P1>( *this, Y, data, p, r,
                                                      i*rowsPerThread,
@@ -14182,9 +14157,9 @@ public:
     * (either 32-bit or 64-bit floating point, depending on the sample data
     * type of this image).
     */
-   GenericImage<P>& SetLuminance( const ImageVariant& Y,
-                                  const Point& point = Point( int_max ), const Rect& rect = Rect( 0 ),
-                                  int maxProcessors = 0 );
+   GenericImage& SetLuminance( const ImageVariant& Y,
+                               const Point& point = Point( int_max ), const Rect& rect = Rect( 0 ),
+                               int maxProcessors = 0 );
    // Implemented in pcl/ImageVariant.h
 
    /*!
@@ -14246,9 +14221,9 @@ public:
     * pixels (\e not samples).
     */
    template <class P1>
-   GenericImage<P>& SetLightness( const GenericImage<P1>& L,
-                                  const Point& point = Point( int_max ), const Rect& rect = Rect( 0 ),
-                                  int maxProcessors = 0 )
+   GenericImage& SetLightness( const GenericImage<P1>& L,
+                               const Point& point = Point( int_max ), const Rect& rect = Rect( 0 ),
+                               int maxProcessors = 0 )
    {
       Rect r = rect;
       if ( !L.ParseRect( r ) )
@@ -14305,7 +14280,7 @@ public:
 
          ThreadData data( *this, N );
 
-         PArray<SetLightnessThread<P1> > threads;
+         ReferenceArray<SetLightnessThread<P1> > threads;
          for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
             threads.Add( new SetLightnessThread<P1>( *this, L, data, p, r,
                                                      i*rowsPerThread,
@@ -14328,10 +14303,61 @@ public:
     * (either 32-bit or 64-bit floating point, depending on the sample data
     * type of this image).
     */
-   GenericImage<P>& SetLightness( const ImageVariant& L,
-                                  const Point& point = Point( int_max ), const Rect& rect = Rect( 0 ),
-                                  int maxProcessors = 0 );
+   GenericImage& SetLightness( const ImageVariant& L,
+                               const Point& point = Point( int_max ), const Rect& rect = Rect( 0 ),
+                               int maxProcessors = 0 );
    // Implemented in pcl/ImageVariant.h
+
+   /*!
+    * Compression of image pixel samples.
+    *
+    * \param compressor A compression algorithm that will be used to compress
+    *                   pixel sample data from this image.
+    *
+    * \param rect       A rectangular region in image pixel coordinates. This
+    *                   region determines the subset of pixel samples that will
+    *                   be compressed. If this parameter is not specified, or
+    *                   if an empty rectangle is specified, this function will
+    *                   compress pixel samples in the current rectangular
+    *                   selection of this image, that is, SelectedRectangle().
+    *
+    * \param channel    Channel index. Must be the zero-based index of an
+    *                   existing channel in this image, or an integer < 0. If
+    *                   this parameter is not specified or a negative integer,
+    *                   this function will compress pixel samples in the
+    *                   currently selected channel of this image, that is,
+    *                   SelectedChannel().
+    *
+    * \param perf       If non-null, pointer to a Compression::Performance
+    *                   structure where performance data will be provided.
+    *
+    * Returns a dynamic array of compressed sub-blocks. Each array element is a
+    * Compression::Subblock structure with the compressed data and the
+    * corresponding uncompressed length in bytes. If compression succeeds, the
+    * returned array will have at least one element.
+    *
+    * Data will be compressed for the intersection of the specified (or
+    * implicitly selected) rectangular region with this image. All predefined
+    * pixel sample types are supported, including integer, real and complex
+    * pixels.
+    *
+    * If there is no intersection between the rectangular region and the image,
+    * if an invalid channel index is specified, or if one or more sub-blocks
+    * are not compressible with the specified compression algorithm, this
+    * function returns an empty array.
+    */
+   Compression::subblock_list Compress( const Compression& compressor,
+                                        const Rect& rect = Rect( 0 ), int channel = -1,
+                                        Compression::Performance* perf = nullptr ) const
+   {
+      Rect r = rect;
+      if ( !ParseSelection( r, channel ) )
+         return Compression::subblock_list();
+      if ( r == Bounds() )
+         return compressor.Compress( m_pixelData[channel], ChannelSize(), perf );
+      GenericImage<P> subimage( *this, r, channel, channel );
+      return compressor.Compress( subimage[0], subimage.ChannelSize(), perf );
+   }
 
    // -------------------------------------------------------------------------
 
@@ -14361,6 +14387,30 @@ public:
    }
 
    /*!
+    * Interprets a channel index as a parameter to define a pixel sample
+    * selection.
+    *
+    * \param[in,out] channel     If a negative channel index is specified, this
+    *                      parameter will be replaced with the currently
+    *                      selected channel index in this image.
+    *
+    * Returns true if the output channel index is valid.
+    */
+   bool ParseChannel( int& channel ) const
+   {
+      if ( channel < 0 )
+      {
+         channel = m_channel;
+         if ( channel < 0 )
+            return false;
+      }
+      if ( channel >= m_numberOfChannels )
+         return false;
+
+      return true;
+   }
+
+   /*!
     * Interprets the coordinates of a rectangle and two channel indexes as
     * parameters to define a pixel sample selection.
     *
@@ -14385,16 +14435,7 @@ public:
     */
    bool ParseSelection( Rect& rect, int& firstChannel, int& lastChannel ) const
    {
-      if ( !ParseRect( rect ) )
-         return false;
-
-      if ( firstChannel < 0 )
-      {
-         firstChannel = m_channel;
-         if ( firstChannel < 0 )
-            return false;
-      }
-      if ( firstChannel >= m_numberOfChannels )
+      if ( !ParseRect( rect ) || !ParseChannel( firstChannel ) )
          return false;
 
       if ( lastChannel < 0 )
@@ -14410,6 +14451,28 @@ public:
          pcl::Swap( firstChannel, lastChannel );
 
       return true;
+   }
+
+   /*!
+    * Interprets the coordinates of a rectangle and one channel index as
+    * parameters to define a pixel sample selection.
+    *
+    * \param[in,out] rect  If this rectangle is empty (defining either a
+    *                      point or a line), this function sets it to the
+    *                      current rectangular selection in this image. If this
+    *                      rectangle is nonempty, this function constrains its
+    *                      coordinates to stay within image boundaries.
+    *
+    * \param[in,out] channel     If a negative channel index is specified, this
+    *                      parameter will be replaced with the currently
+    *                      selected channel index in this image.
+    *
+    * Returns true if the output rectangle is nonempty and the output channel
+    * index is valid.
+    */
+   bool ParseSelection( Rect& rect, int& channel ) const
+   {
+      return ParseRect( rect ) && ParseChannel( channel );
    }
 
    // -------------------------------------------------------------------------
@@ -14452,8 +14515,8 @@ private:
       /*
        * Constructs an empty local image.
        */
-      Data( GenericImage<P>* image ) :
-      ReferenceCounter(), data( 0 ), allocator(), geometry(), color()
+      Data( GenericImage* image ) :
+         ReferenceCounter(), data( nullptr ), allocator(), geometry(), color()
       {
          LinkWithClientImage( image );
       }
@@ -14461,8 +14524,8 @@ private:
       /*
        * Constructs an aliased shared image.
        */
-      Data( GenericImage<P>* image, void* handle ) :
-      ReferenceCounter(), data( 0 ), allocator( handle ), geometry(), color()
+      Data( GenericImage* image, void* handle ) :
+         ReferenceCounter(), data( nullptr ), allocator( handle ), geometry(), color()
       {
          SynchronizeWithSharedImage();
          LinkWithClientImage( image );
@@ -14471,22 +14534,27 @@ private:
       /*
        * Constructs a newly created shared image.
        */
-      Data( GenericImage<P>* image, int width, int height, int numberOfChannels, int colorSpace ) :
-      ReferenceCounter(), data( 0 ), allocator( width, height, numberOfChannels, colorSpace ), geometry(), color()
+      Data( GenericImage* image, int width, int height, int numberOfChannels, int colorSpace ) :
+         ReferenceCounter(), data( nullptr ), allocator( width, height, numberOfChannels, colorSpace ), geometry(), color()
       {
          SynchronizeWithSharedImage();
          LinkWithClientImage( image );
       }
 
-      void Attach( GenericImage<P>* image )
+      void Attach( GenericImage* image )
       {
          ReferenceCounter::Attach();
          LinkWithClientImage( image );
       }
 
+      void Transfer( GenericImage* image )
+      {
+         LinkWithClientImage( image );
+      }
+
       ~Data()
       {
-         if ( allocator.IsShared() )
+         if ( IsShared() )
             Reset();
          else
             Deallocate();
@@ -14499,7 +14567,7 @@ private:
 
       bool IsEmpty() const
       {
-         return data == 0;
+         return data == nullptr;
       }
 
       void Allocate( int width, int height, int numberOfChannels, color_space colorSpace )
@@ -14511,85 +14579,117 @@ private:
          }
 
          if ( numberOfChannels < ColorSpace::NumberOfNominalChannels( colorSpace ) )
-            throw Error( "GenericImage::Allocate(): Insufficient number of channels" );
+            throw Error( "GenericImage::Data::Allocate(): Insufficient number of channels" );
 
-         try
+         if ( data != nullptr )
          {
-            if ( data != 0 )
+            if ( size_type( width )*size_type( height ) == geometry.NumberOfPixels() )
             {
-               if ( size_type( width )*size_type( height ) == geometry.NumberOfPixels() )
+               if ( numberOfChannels != geometry.numberOfChannels )
                {
-                  if ( numberOfChannels != geometry.numberOfChannels )
+                  sample** newData = nullptr;
+                  int m = pcl::Min( geometry.numberOfChannels, numberOfChannels );
+
+                  try
                   {
-                     sample** newData = 0;
+                     newData = allocator.AllocateChannelSlots( numberOfChannels );
+                     for ( int i = 0; i < m; ++i )
+                        newData[i] = data[i];
+                     for ( int i = m; i < numberOfChannels; ++i )
+                        newData[i] = allocator.AllocatePixels( width, height );
 
                      try
                      {
-                        int m = pcl::Min( geometry.numberOfChannels, numberOfChannels );
-
-                        sample** newData = allocator.AllocateChannelSlots( numberOfChannels );
-                        for ( int i = 0; i < m; ++i )
-                           newData[i] = data[i], data[i] = 0;
-
                         for ( int i = m; i < geometry.numberOfChannels; ++i )
-                           if ( data[i] != 0 )
-                              allocator.Deallocate( data[i] ), data[i] = 0;
-                        allocator.Deallocate( data ), data = 0;
-
-                        for ( int i = m; i < numberOfChannels; ++i )
-                           newData[i] = allocator.AllocatePixels( width, height );
-
+                           if ( data[i] != nullptr )
+                              allocator.Deallocate( data[i] ), data[i] = nullptr;
+                        allocator.Deallocate( data );
                         data = newData;
+                        newData = nullptr;
                      }
                      catch ( ... )
                      {
-                        if ( newData != 0 )
-                        {
-                           for ( int i = 0; i < numberOfChannels; ++i )
-                              if ( newData[i] != 0 )
-                                 allocator.Deallocate( newData[i] );
-                           allocator.Deallocate( newData );
-                        }
+                        Deallocate();
                         throw;
                      }
                   }
-               }
-               else
-               {
-                  for ( int i = 0; i < geometry.numberOfChannels; ++i )
-                     if ( data[i] != 0 )
-                        allocator.Deallocate( data[i] ), data[i] = 0;
-
-                  if ( numberOfChannels != geometry.numberOfChannels )
+                  catch ( ... )
                   {
-                     allocator.Deallocate( data ), data = 0;
-                     data = allocator.AllocateChannelSlots( numberOfChannels );
+                     if ( newData != nullptr )
+                     {
+                        for ( int i = m; i < numberOfChannels; ++i )
+                           if ( newData[i] != nullptr )
+                              allocator.Deallocate( newData[i] ), newData[i] = nullptr;
+                        allocator.Deallocate( newData );
+                     }
+                     throw;
                   }
-
-                  for ( int i = 0; i < numberOfChannels; ++i )
-                     data[i] = allocator.AllocatePixels( width, height );
                }
             }
             else
+            {
+               sample** newData = nullptr;
+
+               try
+               {
+                  newData = allocator.AllocateChannelSlots( numberOfChannels );
+                  for ( int i = 0; i < numberOfChannels; ++i )
+                     newData[i] = allocator.AllocatePixels( width, height );
+
+                  try
+                  {
+                     for ( int i = 0; i < geometry.numberOfChannels; ++i )
+                        if ( data[i] != nullptr )
+                           allocator.Deallocate( data[i] ), data[i] = nullptr;
+                     allocator.Deallocate( data );
+                     data = newData;
+                     newData = nullptr;
+                  }
+                  catch ( ... )
+                  {
+                     Deallocate();
+                     throw;
+                  }
+               }
+               catch ( ... )
+               {
+                  if ( newData != nullptr )
+                  {
+                     for ( int i = 0; i < numberOfChannels; ++i )
+                        if ( newData[i] != nullptr )
+                           allocator.Deallocate( newData[i] ), newData[i] = nullptr;
+                     allocator.Deallocate( newData );
+                  }
+                  throw;
+               }
+            }
+         }
+         else
+         {
+            try
             {
                data = allocator.AllocateChannelSlots( numberOfChannels );
                for ( int i = 0; i < numberOfChannels; ++i )
                   data[i] = allocator.AllocatePixels( width, height );
             }
-
-            geometry.width = width;
-            geometry.height = height;
-            geometry.numberOfChannels = numberOfChannels;
-
-            color.colorSpace = colorSpace;
-
-            UpdateSharedImage();
+            catch ( ... )
+            {
+               for ( int i = 0; i < numberOfChannels; ++i )
+                  if ( data[i] != nullptr )
+                     allocator.Deallocate( data[i] ), data[i] = nullptr;
+               allocator.Deallocate( data );
+               Reset();
+               throw;
+            }
          }
-         catch ( ... )
-         {
-            Deallocate();
-            throw;
-         }
+
+         geometry.width = width;
+         geometry.height = height;
+         geometry.numberOfChannels = numberOfChannels;
+
+         color.colorSpace = colorSpace;
+
+         UpdateSharedImage();
       }
 
       void Import( sample** newData, int width, int height, int numberOfChannels, color_space colorSpace )
@@ -14601,7 +14701,7 @@ private:
             if ( newData != 0 && width > 0 && height > 0 && numberOfChannels > 0 )
             {
                if ( numberOfChannels < ColorSpace::NumberOfNominalChannels( colorSpace ) )
-                  throw Error( "GenericImage::Import(): Insufficient number of channels" );
+                  throw Error( "GenericImage::Data::Import(): Insufficient number of channels" );
 
                data = newData;
 
@@ -14626,20 +14726,20 @@ private:
 
       void Deallocate()
       {
-         if ( data != 0 )
+         if ( data != nullptr )
          {
             for ( int i = 0; i < geometry.numberOfChannels; ++i )
-               if ( data[i] != 0 )
-                  allocator.Deallocate( data[i] ), data[i] = 0;
+               if ( data[i] != nullptr )
+                  allocator.Deallocate( data[i] ), data[i] = nullptr;
             allocator.Deallocate( data );
             Reset();
             UpdateSharedImage();
          }
       }
 
-      Data* Clone( GenericImage<P>* image ) const
+      Data* Clone( GenericImage* image ) const
       {
-         Data* clone = 0;
+         Data* clone = nullptr;
          try
          {
             clone = new Data;
@@ -14662,7 +14762,7 @@ private:
          }
          catch ( ... )
          {
-            if ( clone != 0 )
+            if ( clone != nullptr )
                clone->Deallocate();
             throw;
          }
@@ -14670,7 +14770,7 @@ private:
 
       void Reset()
       {
-         data = 0;
+         data = nullptr;
          geometry.Reset();
          color.Reset();
       }
@@ -14691,12 +14791,11 @@ private:
 
    private:
 
-      Data() :
-      ReferenceCounter(), data( 0 ), allocator(), geometry(), color()
+      Data() : ReferenceCounter(), data( nullptr ), allocator(), geometry(), color()
       {
       }
 
-      void LinkWithClientImage( GenericImage<P>* image )
+      void LinkWithClientImage( GenericImage* image )
       {
          image->m_geometry = &geometry;
          image->m_color = &color;
@@ -14719,9 +14818,9 @@ private:
    {
    public:
 
-      RectThreadBase( const GenericImage<P>& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-      Thread(),
-      m_image( image ), m_rect( rect ), m_ch1( ch1 ), m_ch2( ch2 ), m_firstRow( firstRow ), m_endRow( endRow )
+      RectThreadBase( const GenericImage& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
+         Thread(),
+         m_image( image ), m_rect( rect ), m_ch1( ch1 ), m_ch2( ch2 ), m_firstRow( firstRow ), m_endRow( endRow )
       {
       }
 
@@ -14760,10 +14859,10 @@ private:
 
    protected:
 
-      const GenericImage<P>&  m_image;
-      const Rect&             m_rect;
-            int               m_ch1, m_ch2;
-            int               m_firstRow, m_endRow;
+      const GenericImage& m_image;
+      const Rect&         m_rect;
+            int           m_ch1, m_ch2;
+            int           m_firstRow, m_endRow;
 
       virtual void Perform( const sample* ) {} // not pure because of VC++ 'peculiarities'
       virtual void PostProcess() {}
@@ -14777,8 +14876,8 @@ private:
 
       uint64 count;
 
-      CountThread( const GenericImage<P>& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-      RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), count( 0 )
+      CountThread( const GenericImage& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
+         RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), count( 0 )
       {
       }
 
@@ -14810,8 +14909,8 @@ private:
       sample min;
       bool initialized : 1;
 
-      MinThread( const GenericImage<P>& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-      RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), initialized( false )
+      MinThread( const GenericImage& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
+         RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), initialized( false )
       {
       }
 
@@ -14841,8 +14940,8 @@ private:
       sample max;
       bool initialized : 1;
 
-      MaxThread( const GenericImage<P>& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-      RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), initialized( false )
+      MaxThread( const GenericImage& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
+         RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), initialized( false )
       {
       }
 
@@ -14873,8 +14972,8 @@ private:
       sample max;
       bool initialized : 1;
 
-      MinMaxThread( const GenericImage<P>& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-      RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), initialized( false )
+      MinMaxThread( const GenericImage& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
+         RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), initialized( false )
       {
       }
 
@@ -14907,8 +15006,8 @@ private:
       Point pmin, pmax;
       bool initialized : 1;
 
-      ExtremePosThreadBase( const GenericImage<P>& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-      RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), initialized( false ), m_amin( 0 ), m_amax( 0 )
+      ExtremePosThreadBase( const GenericImage& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
+         RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), initialized( false ), m_amin( 0 ), m_amax( 0 )
       {
       }
 
@@ -14951,8 +15050,8 @@ private:
 
       sample min;
 
-      MinPosThread( const GenericImage<P>& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-      ExtremePosThreadBase( image, rect, ch1, ch2, firstRow, endRow )
+      MinPosThread( const GenericImage& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
+         ExtremePosThreadBase( image, rect, ch1, ch2, firstRow, endRow )
       {
       }
 
@@ -14981,8 +15080,8 @@ private:
 
       sample max;
 
-      MaxPosThread( const GenericImage<P>& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-      ExtremePosThreadBase( image, rect, ch1, ch2, firstRow, endRow )
+      MaxPosThread( const GenericImage& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
+         ExtremePosThreadBase( image, rect, ch1, ch2, firstRow, endRow )
       {
       }
 
@@ -15011,8 +15110,8 @@ private:
 
       sample min, max;
 
-      MinMaxPosThread( const GenericImage<P>& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-      ExtremePosThreadBase( image, rect, ch1, ch2, firstRow, endRow )
+      MinMaxPosThread( const GenericImage& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
+         ExtremePosThreadBase( image, rect, ch1, ch2, firstRow, endRow )
       {
       }
 
@@ -15044,8 +15143,8 @@ private:
       double s;
       size_type n;
 
-      SumThread( const GenericImage<P>& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-      RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), s( 0 ), n( 0 ), e( 0 )
+      SumThread( const GenericImage& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
+         RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), s( 0 ), n( 0 ), e( 0 )
       {
       }
 
@@ -15075,8 +15174,8 @@ private:
    {
    public:
 
-      SumSqrThread( const GenericImage<P>& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-      SumThread( image, rect, ch1, ch2, firstRow, endRow )
+      SumSqrThread( const GenericImage& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
+         SumThread( image, rect, ch1, ch2, firstRow, endRow )
       {
       }
 
@@ -15095,8 +15194,8 @@ private:
    {
    public:
 
-      SumAbsThread( const GenericImage<P>& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-      SumThread( image, rect, ch1, ch2, firstRow, endRow )
+      SumAbsThread( const GenericImage& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
+         SumThread( image, rect, ch1, ch2, firstRow, endRow )
       {
       }
 
@@ -15118,8 +15217,8 @@ private:
       Array<sample> samples;
       size_type n;
 
-      SmpThread( const GenericImage<P>& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-      RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), samples(), n( 0 )
+      SmpThread( const GenericImage& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
+         RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), samples(), n( 0 )
       {
          size_type N = size_type(  this->m_rect.Width() )
                      * size_type( this->m_endRow - this->m_firstRow )
@@ -15144,8 +15243,8 @@ private:
       double var;
       double eps;
 
-      VarThread( const GenericImage<P>& image, double mean, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-      RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), var( 0 ), eps( 0 ), m_mean( mean )
+      VarThread( const GenericImage& image, double mean, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
+         RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), var( 0 ), eps( 0 ), m_mean( mean )
       {
       }
 
@@ -15171,8 +15270,8 @@ private:
       Array<double> devs;
       size_type n;
 
-      SmpAbsDevThread( const GenericImage<P>& image, double center, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-      RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), devs(), n( 0 ), m_center( center )
+      SmpAbsDevThread( const GenericImage& image, double center, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
+         RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), devs(), n( 0 ), m_center( center )
       {
          size_type N = size_type(  this->m_rect.Width() )
                      * size_type( this->m_endRow - this->m_firstRow )
@@ -15197,8 +15296,8 @@ private:
    {
    public:
 
-      SumAbsDevThread( const GenericImage<P>& image, double center, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-      SumThread( image, rect, ch1, ch2, firstRow, endRow ), m_center( center )
+      SumAbsDevThread( const GenericImage& image, double center, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
+         SumThread( image, rect, ch1, ch2, firstRow, endRow ), m_center( center )
       {
       }
 
@@ -15223,9 +15322,9 @@ private:
       double den;
       size_type n;
 
-      BWMVThread( const GenericImage<P>& image, double center, double kd,
+      BWMVThread( const GenericImage& image, double center, double kd,
                   const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-      RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), num( 0 ), den( 0 ), n( 0 ), m_center( center ), m_kd( kd )
+         RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), num( 0 ), den( 0 ), n( 0 ), m_center( center ), m_kd( kd )
       {
       }
 
@@ -15258,8 +15357,8 @@ private:
       Array<double> values;
       size_type n;
 
-      DSmpThread( const GenericImage<P>& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
-      RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), values(), n( 0 )
+      DSmpThread( const GenericImage& image, const Rect& rect, int ch1, int ch2, int firstRow, int endRow ) :
+         RectThreadBase( image, rect, ch1, ch2, firstRow, endRow ), values(), n( 0 )
       {
          size_type N = size_type(  this->m_rect.Width() )
                      * size_type( this->m_endRow - this->m_firstRow )
@@ -15281,10 +15380,10 @@ private:
    {
    public:
 
-      ColorSpaceConversionThread( GenericImage<P>& image, ThreadData& data,
+      ColorSpaceConversionThread( GenericImage& image, ThreadData& data,
                                   color_space toColorSpace, size_type begin, size_type end ) :
-      Thread(),
-      m_image( image ), m_data( data ), m_toColorSpace( toColorSpace ), m_begin( begin ), m_end( end )
+         Thread(),
+         m_image( image ), m_data( data ), m_toColorSpace( toColorSpace ), m_begin( begin ), m_end( end )
       {
       }
 
@@ -15487,10 +15586,10 @@ private:
 
    private:
 
-      GenericImage<P>& m_image;
-      ThreadData&      m_data;
-      color_space      m_toColorSpace;
-      size_type        m_begin, m_end;
+      GenericImage& m_image;
+      ThreadData&   m_data;
+      color_space   m_toColorSpace;
+      size_type     m_begin, m_end;
    };
 
    // -------------------------------------------------------------------------
@@ -15500,11 +15599,11 @@ private:
    {
    public:
 
-      GetLuminanceThread( GenericImage<P1>& luminance, const GenericImage<P>& image, ThreadData& data,
+      GetLuminanceThread( GenericImage<P1>& luminance, const GenericImage& image, ThreadData& data,
                           const Rect& rect, int firstRow, int endRow ) :
-      Thread(),
-      m_luminance( luminance ), m_image( image ), m_data( data ),
-      m_rect( rect ), m_firstRow( firstRow ), m_endRow( endRow )
+         Thread(),
+         m_luminance( luminance ), m_image( image ), m_data( data ),
+         m_rect( rect ), m_firstRow( firstRow ), m_endRow( endRow )
       {
       }
 
@@ -15574,7 +15673,7 @@ private:
    private:
 
             GenericImage<P1>& m_luminance;
-      const GenericImage<P>&  m_image;
+      const GenericImage&     m_image;
             ThreadData&       m_data;
       const Rect&             m_rect;
             int               m_firstRow, m_endRow;
@@ -15587,11 +15686,11 @@ private:
    {
    public:
 
-      GetLightnessThread( GenericImage<P1>& lightness, const GenericImage<P>& image, ThreadData& data,
+      GetLightnessThread( GenericImage<P1>& lightness, const GenericImage& image, ThreadData& data,
                           const Rect& rect, int firstRow, int endRow ) :
-      Thread(),
-      m_lightness( lightness ), m_image( image ), m_data( data ),
-      m_rect( rect ), m_firstRow( firstRow ), m_endRow( endRow )
+         Thread(),
+         m_lightness( lightness ), m_image( image ), m_data( data ),
+         m_rect( rect ), m_firstRow( firstRow ), m_endRow( endRow )
       {
       }
 
@@ -15658,7 +15757,7 @@ private:
    private:
 
             GenericImage<P1>& m_lightness;
-      const GenericImage<P>&  m_image;
+      const GenericImage&     m_image;
             ThreadData&       m_data;
       const Rect&             m_rect;
             int               m_firstRow, m_endRow;
@@ -15671,11 +15770,11 @@ private:
    {
    public:
 
-      GetIntensityThread( GenericImage<P1>& luminance, const GenericImage<P>& image, ThreadData& data,
+      GetIntensityThread( GenericImage<P1>& luminance, const GenericImage& image, ThreadData& data,
                           const Rect& rect, int firstRow, int endRow ) :
-      Thread(),
-      m_intensity( luminance ), m_image( image ), m_data( data ),
-      m_rect( rect ), m_firstRow( firstRow ), m_endRow( endRow )
+         Thread(),
+         m_intensity( luminance ), m_image( image ), m_data( data ),
+         m_rect( rect ), m_firstRow( firstRow ), m_endRow( endRow )
       {
       }
 
@@ -15734,7 +15833,7 @@ private:
    private:
 
             GenericImage<P1>& m_intensity;
-      const GenericImage<P>&  m_image;
+      const GenericImage&     m_image;
             ThreadData&       m_data;
       const Rect&             m_rect;
             int               m_firstRow, m_endRow;
@@ -15747,11 +15846,11 @@ private:
    {
    public:
 
-      SetLuminanceThread( GenericImage<P>& image, const GenericImage<P1>& luminance, ThreadData& data,
+      SetLuminanceThread( GenericImage& image, const GenericImage<P1>& luminance, ThreadData& data,
                           const Point& target, const Rect& rect, int firstRow, int endRow ) :
-      Thread(),
-      m_image( image ), m_luminance( luminance ), m_data( data ),
-      m_target( target ), m_rect( rect ), m_firstRow( firstRow ), m_endRow( endRow )
+         Thread(),
+         m_image( image ), m_luminance( luminance ), m_data( data ),
+         m_target( target ), m_rect( rect ), m_firstRow( firstRow ), m_endRow( endRow )
       {
       }
 
@@ -15970,7 +16069,7 @@ private:
 
    private:
 
-            GenericImage<P>&  m_image;
+            GenericImage&     m_image;
       const GenericImage<P1>& m_luminance;
             ThreadData&       m_data;
       const Point&            m_target;
@@ -15985,11 +16084,11 @@ private:
    {
    public:
 
-      SetLightnessThread( GenericImage<P>& image, const GenericImage<P1>& lightness, ThreadData& data,
+      SetLightnessThread( GenericImage& image, const GenericImage<P1>& lightness, ThreadData& data,
                           const Point& target, const Rect& rect, int firstRow, int endRow ) :
-      Thread(),
-      m_image( image ), m_lightness( lightness ), m_data( data ),
-      m_target( target ), m_rect( rect ), m_firstRow( firstRow ), m_endRow( endRow )
+         Thread(),
+         m_image( image ), m_lightness( lightness ), m_data( data ),
+         m_target( target ), m_rect( rect ), m_firstRow( firstRow ), m_endRow( endRow )
       {
       }
 
@@ -16202,7 +16301,7 @@ private:
 
    private:
 
-            GenericImage<P>&  m_image;
+            GenericImage&     m_image;
       const GenericImage<P1>& m_lightness;
             ThreadData&       m_data;
       const Point&            m_target;
@@ -16556,5 +16655,5 @@ typedef FComplexImage                     ComplexImage;
 
 #endif   // __PCL_Image_h
 
-// ****************************************************************************
-// EOF pcl/Image.h - Released 2014/11/14 17:16:38 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Image.h - Released 2015/07/30 17:15:18 UTC

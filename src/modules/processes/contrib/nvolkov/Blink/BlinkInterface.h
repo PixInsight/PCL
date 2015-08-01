@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Blink Process Module Version 01.02.01.0147
-// ****************************************************************************
-// BlinkInterface.h - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Blink Process Module Version 01.02.01.0166
+// ----------------------------------------------------------------------------
+// BlinkInterface.h - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
-// Copyright (c) 2011-2014 Nikolay Volkov
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2015 Nikolay Volkov
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,7 +49,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __BlinkInterface_h
 #define __BlinkInterface_h
@@ -60,7 +64,7 @@
 #include <pcl/ImageStatistics.h>
 #include <pcl/ImageWindow.h>
 #include <pcl/Label.h>
-#include <pcl/PArray.h>
+#include <pcl/ReferenceArray.h>
 #include <pcl/ProcessInterface.h>
 #include <pcl/ScrollBox.h>
 #include <pcl/Sizer.h>
@@ -135,7 +139,6 @@ private:
       ImageInfo         m_info;
       FITSKeywordArray  m_keywords;     // FITS keywords
       ICCProfile        m_profile;      // ICC profile
-      ByteArray         m_metadata;     // XML metadata
 
       stats_list        m_statSTF;      // image statistics for STF calculation
       stats_list        m_statReal;     // image statistics in actual pixel values
@@ -203,7 +206,7 @@ private:
       Rect              m_screenRect;     // BlinkScreen geometry
       Rect              m_statRect;       // statReal geometry
 
-      PArray<FileData>  m_filesData;      // Path, Images, FITS keywords, ICC profile, XML metadata, ...
+      ReferenceArray<FileData>  m_filesData;      // Path, Images, FITS keywords, ICC profile, ...
 
       ImageWindow       m_screen;         // BlinkScreen image window
       ImageInfo         m_info;           // BlinkScreen image info
@@ -384,5 +387,5 @@ PCL_END_LOCAL
 
 #endif   // __BlinkInterface_h
 
-// ****************************************************************************
-// EOF BlinkInterface.h - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF BlinkInterface.h - Released 2015/07/31 11:49:49 UTC

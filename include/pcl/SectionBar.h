@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/SectionBar.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/SectionBar.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,34 +47,34 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
-#ifndef __PCL_SectionBar_h
-#define __PCL_SectionBar_h
+#ifndef PCL_SectionBar_h
+#define PCL_SectionBar_h
 
 /// \file pcl/SectionBar.h
 
-#ifndef __PCL_Defs_h
+#ifndef PCL_Defs_h
 #include <pcl/Defs.h>
 #endif
 
-#ifndef __PCL_Control_h
+#ifndef PCL_Control_h
 #include <pcl/Control.h>
 #endif
 
-#ifndef __PCL_Sizer_h
+#ifndef PCL_Sizer_h
 #include <pcl/Sizer.h>
 #endif
 
-#ifndef __PCL_Label_h
+#ifndef PCL_Label_h
 #include <pcl/Label.h>
 #endif
 
-#ifndef __PCL_ToolButton_h
+#ifndef PCL_ToolButton_h
 #include <pcl/ToolButton.h>
 #endif
 
-#ifndef __PCL_CheckBox_h
+#ifndef PCL_CheckBox_h
 #include <pcl/CheckBox.h>
 #endif
 
@@ -112,14 +115,14 @@ public:
    virtual ~SectionBar();
 
    /*!
-    * Returns a constant reference to the <em>section control</em> managed by
+    * Returns a reference to the immutable <em>section control</em> managed by
     * this %SectionBar.
     *
     * \sa SetSection()
     */
    const Control& Section() const
    {
-      return (section != 0) ? *section : Control::Null();
+      return (m_section != nullptr) ? *m_section : Control::Null();
    }
 
    /*!
@@ -130,7 +133,7 @@ public:
     */
    Control& Section()
    {
-      return (section != 0) ? *section : Control::Null();
+      return (m_section != nullptr) ? *m_section : Control::Null();
    }
 
    /*!
@@ -147,7 +150,7 @@ public:
     */
    String Title() const
    {
-      return label.Text();
+      return Title_Label.Text();
    }
 
    /*!
@@ -155,9 +158,9 @@ public:
     *
     * \sa Title()
     */
-   void SetTitle( const String& t )
+   void SetTitle( const String& title )
    {
-      label.SetText( t );
+      Title_Label.SetText( title );
    }
 
    /*!
@@ -167,7 +170,7 @@ public:
     */
    bool HasTitleCheckBox() const
    {
-      return check != 0;
+      return Title_CheckBox != nullptr;
    }
 
    /*!
@@ -195,7 +198,7 @@ public:
     */
    bool IsChecked() const
    {
-      return check != 0 && check->IsChecked();
+      return Title_CheckBox != nullptr && Title_CheckBox->IsChecked();
    }
 
    /*!
@@ -235,7 +238,7 @@ public:
     */
    virtual bool IsEnabled() const
    {
-      return label.IsEnabled();
+      return Title_Label.IsEnabled();
    }
 
    /*!
@@ -319,34 +322,41 @@ public:
     */
    void OnCheck( check_event_handler handler, Control& receiver );
 
-protected:
+private:
 
-   Control* section;
+   struct EventHandlers
+   {
+      section_event_handler onToggleSection         = nullptr;
+      Control*              onToggleSectionReceiver = nullptr;
 
-   VerticalSizer   vSizer;
-      HorizontalSizer hSizer;
-         Label          label;
-         CheckBox*      check;  // nonzero for a checkable SectionBar
-         ToolButton     button;
+      check_event_handler   onCheck                 = nullptr;
+      Control*              onCheckReceiver         = nullptr;
 
-   section_event_handler onToggleSection;
-   Control*              onToggleSectionReceiver;
+      EventHandlers() = default;
+      EventHandlers( const EventHandlers& ) = default;
+      EventHandlers& operator =( const EventHandlers& ) = default;
+   };
 
-   check_event_handler   onCheck;
-   Control*              onCheckReceiver;
+   EventHandlers* m_handlers;
+   Control*       m_section;
 
-   virtual void __Click( Button& sender, bool checked );
-   virtual void __MousePress( Control& sender, const pcl::Point& pos,
-                     int mouseButton, unsigned buttons, unsigned modifiers );
-   virtual void __Show( Control& sender );
-   virtual void __Hide( Control& sender );
+   VerticalSizer   Global_Sizer;
+      HorizontalSizer Title_Sizer;
+         Label          Title_Label;
+         CheckBox*      Title_CheckBox; // non-null for a checkable SectionBar
+         ToolButton     Title_ToolButton;
+
+   void ButtonClick( Button&, bool );
+   void MousePress( Control&, const pcl::Point&, int, unsigned, unsigned );
+   void ControlShow( Control& );
+   void ControlHide( Control& );
 };
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-#endif   // __PCL_SectionBar_h
+#endif   // PCL_SectionBar_h
 
-// ****************************************************************************
-// EOF pcl/SectionBar.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/SectionBar.h - Released 2015/07/30 17:15:18 UTC

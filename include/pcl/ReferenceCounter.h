@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ReferenceCounter.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ReferenceCounter.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_ReferenceCounter_h
 #define __PCL_ReferenceCounter_h
@@ -76,27 +79,28 @@ namespace pcl
 
 /*!
  * \class ReferenceCounter
- * \brief Thread-safe reference counter.
+ * \brief Thread-safe reference counter for copy-on-write data structures.
  *
- * %ReferenceCounter is used internally by most PCL container classes to
- * implement reference-counted <em>shared data</em>.
+ * %ReferenceCounter is used internally by most PCL container and image classes
+ * to implement reference-counted, copy-on-write <em>shared data</em>.
  *
  * %ReferenceCounter is a thread-safe reference counter because it implements
  * its internal counter as an instance of the AtomicInt class. This means that
  * counter increment and decrement are implemented as atomic operations.
  *
- * Shared data is a fundamental technique for optimization of memory resources
- * and execution speed in classes and algorithms that involve copying and
- * passing objects between functions. Basically, a set of objects can share the
- * same data with the condition that the data remains unmodified. In this case,
- * the set of objects is said to be \e referencing a single data item, and all
- * objects in the set are considered as \e aliases of the data. When an alias
- * object tries to modify its referenced data, a new copy is generated
- * on-demand and the object uniquely references the newly generated data, which
- * can then be freely modified. This mechanism works in a completely automatic
- * and transparent way, and %ReferenceCounter just provides a counter to keep
- * track of the number of aliased objects that reference the same data at a
- * given time, plus a number of useful related functions.
+ * Copy-on-write is a fundamental technique for optimization of resources and
+ * execution speed by preventing unnecessary duplication of data, especially
+ * when objects are copied and aliased frequently but seldom modified.
+ * Basically, a set of objects can share the same data with the condition that
+ * the data remains unmodified. In this case, the set of objects is said to be
+ * \e referencing a single data item, and all objects in the set are considered
+ * as \e aliases of the data. When an alias object tries to modify its
+ * referenced data, a new copy is generated on-demand and the object uniquely
+ * references the newly generated data, which can then be freely modified. This
+ * mechanism works in a completely automatic and transparent way, and
+ * %ReferenceCounter just provides a thread-safe counter to keep track of the
+ * number of aliased objects that reference the same data structure at a given
+ * time, plus a number of useful related functions.
  *
  * \sa AtomicInt
  */
@@ -109,14 +113,14 @@ public:
     * initialized to one, which means that only one object (the caller) is
     * referencing the data associated with this object.
     */
-   ReferenceCounter() : count( 1 )
+   ReferenceCounter() noexcept : m_count( 1 )
    {
    }
 
    /*!
     * Destroys a %ReferenceCounter object.
     */
-   ~ReferenceCounter()
+   ~ReferenceCounter() noexcept
    {
    }
 
@@ -129,9 +133,9 @@ public:
     *
     * \sa Detach()
     */
-   void Attach()
+   void Attach() noexcept
    {
-      (void)count.Reference();
+      (void)m_count.Reference();
    }
 
    /*!
@@ -141,23 +145,27 @@ public:
     * Returns true if the reference counter is greater than zero; false if the
     * reference counter becomes zero after decrementing. When the reference
     * counter is zero, the data being controlled with this counter is no longer
-    * referenced by any object and can be safely destroyed.
+    * referenced by any object and thus can be safely destroyed.
     *
     * \note This detachment operation is thread-safe: the internal dereference
     * operation is atomic.
     *
     * \sa Attach()
     */
+#ifndef __PCL_REFCOUNT_CHECK_DETACHMENT
+   bool Detach() noexcept
+   {
+      PCL_PRECONDITION( m_count > 0 )
+      return m_count.Dereference();
+   }
+#else
    bool Detach()
    {
-#ifdef __PCL_REFCOUNT_CHECK_DETACHMENT
-      if ( count == 0 )
-         throw Error( "<* Warning *> Detach(): Invalid reference count." );
-#else
-      PCL_PRECONDITION( count != 0 )
-#endif
-      return count.Dereference();
+      if ( m_count <= 0 )
+         throw Error( "Detach(): invalid reference counter." );
+      return m_count.Dereference();
    }
+#endif   // !__PCL_REFCOUNT_CHECK_DETACHMENT
 
    /*!
     * Returns true if the data being controlled with this counter is only
@@ -168,9 +176,9 @@ public:
     *
     * \sa IsUniqueAtomic(), Attach(), Detach(), IsGarbage()
     */
-   bool IsUnique() const
+   bool IsUnique() const noexcept
    {
-      return count < 2;
+      return m_count < 2;
    }
 
    /*!
@@ -182,10 +190,10 @@ public:
     *
     * \sa IsUnique(), Attach(), Detach(), IsGarbage()
     */
-   bool IsUniqueAtomic() const
+   bool IsUniqueAtomic() const noexcept
    {
-      return const_cast<ReferenceCounter*>( this )->count.FetchAndAdd( 0 ) < 2;
-      //return const_cast<ReferenceCounter*>( this )->count.TestAndSet( 1, 1 );
+      return m_count.FetchAndAdd( 0 ) < 2;
+      //return m_count.TestAndSet( 1, 1 );
    }
 
    /*!
@@ -193,22 +201,25 @@ public:
     * referenced by any object. In such case, the data can be safely destroyed,
     * since no object depends on it.
     *
-    * \warning To check if this reference counter is zero (and hence the data
-    * is no longer referenced), it is more efficient and secure to use the
-    * value returned by Detach(), instead of this member function, when
-    * applicable. If Detach() returns false, then this counter is zero after an
-    * atomic dereference operation.
+    * \warning To check if this reference counter is zero (and hence that the
+    * data is no longer referenced) in multithreaded environments, it is much
+    * more efficient and secure to use the value returned by Detach() instead
+    * of this member function. If Detach() returns false, then this counter is
+    * zero just after an atomic dereference operation.
     *
     * \sa IsUnique(), Attach(), Detach()
     */
-   bool IsGarbage() const
+   bool IsGarbage() const noexcept
    {
-      return count == 0;
+      return m_count == 0;
    }
 
 private:
 
-   AtomicInt count;
+   mutable AtomicInt m_count;
+
+   ReferenceCounter( const ReferenceCounter& ) = delete;
+   ReferenceCounter& operator =( const ReferenceCounter& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -217,5 +228,5 @@ private:
 
 #endif  // __PCL_ReferenceCounter_h
 
-// ****************************************************************************
-// EOF pcl/ReferenceCounter.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ReferenceCounter.h - Released 2015/07/30 17:15:18 UTC

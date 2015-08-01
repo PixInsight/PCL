@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/MetaModule.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/MetaModule.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_MetaModule_h
 #define __PCL_MetaModule_h
@@ -364,8 +367,8 @@ public:
     * This routine is called by the PCL internal code, and indirectly by the
     * PixInsight core application.
     *
-    * The default implementation simply calls \c ::operator new( sz ) to
-    * allocate a block of the specified size.
+    * The default implementation simply calls ::operator new( sz ) to allocate
+    * a block of the specified size.
     *
     * You usually should not need to reimplement this function, unless you want
     * to implement a special memory management strategy for your module.
@@ -385,8 +388,8 @@ public:
     * This routine is called by the PCL internal code, and indirectly by the
     * PixInsight core application.
     *
-    * The default implementation simply calls \c ::operator delete( p ) to
-    * free the specified block.
+    * The default implementation simply calls ::operator delete( p ) to free
+    * the specified block.
     *
     * You usually should not need to reimplement this function, unless you want
     * to implement a special memory management strategy for your module.
@@ -459,13 +462,96 @@ public:
     */
    void ProcessEvents();
 
-   // -------------------------------------------------------------------------
+   /*!
+    * Loads a bitmap resource file.
+    *
+    * \param filePath   Path to a resource file in Qt's binary resource format
+    *                   (RCC format). This path must point to a location on the
+    *                   local file system (remote resources are not allowed in
+    *                   current PCL versions).
+    *
+    * \param rootPath   Root path for all the loaded bitmap resources. This
+    *                   parameter is an empty string by default.
+    *
+    * If the specified resource file does not exist or is invalid, this
+    * function will throw an Error exception.
+    *
+    * <b>Automatic Resource Location</b>
+    *
+    * Resource files can be loaded from arbitrary locations. However, modules
+    * typically install their resources on the /rsc/rcc/modules directory under
+    * the local PixInsight installation. A module can specify the
+    * "&amp;module_resource_dir/" prefix in resource file paths to let the
+    * PixInsight core application load the resources from the appropriate
+    * standard distribution directory automatically. For example, if a module
+    * whose name is "Foo" makes the following call:
+    *
+    * \code LoadResource( "@module_resource_dir/MyResources.rcc" ); \endcode
+    *
+    * the core application will attempt to load the following resource file:
+    *
+    * &lt;install-dir&gt;/rsc/rcc/module/Foo/MyResources.rcc
+    *
+    * where &lt;install-dir&gt; is the local directory where the running
+    * PixInsight core application is installed.
+    *
+    * <b>Resource Root Paths</b>
+    *
+    * All the resources loaded by a call to this function will be rooted at the
+    * specified \a rootPath under a standard ":/module/&lt;module-name&gt;/"
+    * root path prefix set by the PixInsight core application automatically.
+    * For example, if the Foo module calls this function as follows:
+    *
+    * \code LoadResource( "@module_resource_dir/MyResources.rcc" ); \endcode
+    *
+    * and the MyResources.rcc file contains a resource named "foo-icon.png", it
+    * will be available at the following resource path:
+    *
+    * :/module/Foo/foo-icon.png
+    *
+    * This system guarantees that a module will never invalidate or replace
+    * existing resources loaded by the core application or other modules. Note
+    * that a module still can cause problems by loading resources incorrectly,
+    * but these problems cannot propagate outside the failing module.
+    *
+    * To ease working with module-defined resources, the standard
+    * ":/&amp;module_root/" prefix can be specified in resource file paths:
+    *
+    * \code Bitmap bmp( ":/@module_root/foo-icon.png" ); \endcode
+    *
+    * Continuing with the Foo module example, this call would load the bitmap
+    * at ":/module/Foo/foo-icon.png".
+    *
+    * \b References
+    *
+    * \li The Qt Resource System: http://doc.qt.io/qt-5/resources.html
+    *
+    * \sa UnloadResource()
+    */
+   void LoadResource( const String& filePath, const String& rootPath = String() );
+
+   /*!
+    * Unloads a bitmap resource file.
+    *
+    * After calling this function, all the resources available from the
+    * specified resource file will be unavailable. The \a filePath and
+    * \a rootPath arguments must be identical to the ones used when the
+    * resource was loaded by a call to LoadResource().
+    *
+    * If the specified resource has not been loaded, or if there are active
+    * references to the resource (for example, because one or more existing
+    * Bitmap objects depend on data stored in the resource), this function
+    * will throw an Error exception.
+    *
+    * \sa LoadResource()
+    */
+   void UnloadResource( const String& filePath, const String& rootPath = String() );
 
 private:
 
-   // MetaModule instances are unique objects by definition.
-   MetaModule( const MetaModule& ) : MetaObject( 0 ) { PCL_CHECK( 0 ) }
-   void operator =( const MetaModule& ) { PCL_CHECK( 0 ) }
+   // MetaModule instances are unique objects.
+   MetaModule( const MetaModule& ) = delete;
+   void operator =( const MetaModule& ) = delete;
 
    virtual void PerformAPIDefinitions() const;
 
@@ -684,5 +770,5 @@ namespace InstallMode
 
 #endif   // __PCL_MetaModule_h
 
-// ****************************************************************************
-// EOF pcl/MetaModule.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/MetaModule.h - Released 2015/07/30 17:15:18 UTC

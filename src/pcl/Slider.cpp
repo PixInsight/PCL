@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Slider.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Slider.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/Math.h>
 #include <pcl/Slider.h>
@@ -57,74 +60,21 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-#define sender    (reinterpret_cast<Slider*>( hSender ))
-#define receiver  (reinterpret_cast<Control*>( hReceiver ))
-
-class SliderEventDispatcher
-{
-public:
-
-   static void api_func ValueUpdated( control_handle hSender, control_handle hReceiver, int32 value )
-   {
-      if ( sender->onValueUpdated != 0 )
-         (receiver->*sender->onValueUpdated)( *sender, value );
-   }
-
-   static void api_func RangeUpdated( control_handle hSender, control_handle hReceiver, int32 minValue, int32 maxValue )
-   {
-      if ( sender->onRangeUpdated != 0 )
-         (receiver->*sender->onRangeUpdated)( *sender, minValue, maxValue );
-   }
-
-}; // SliderEventDispatcher
-
-#undef sender
-#undef receiver
-
-// ----------------------------------------------------------------------------
-
 #ifdef _MSC_VER
 #  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
 #endif
 
 /*
  * ### TODO: Create a new class to encapsulate the common behavior of SpinBox
- *           and Slider. Proposal of class name: RangeControl
+ *           and Slider. Proposed class name: RangeControl
  */
 
 Slider::Slider( Control& parent, bool vertical ) :
-Control( (*API->Slider->CreateSlider)( ModuleHandle(), this, vertical, parent.handle, 0 /*flags*/ ) ),
-onValueUpdated( 0 ),
-onRangeUpdated( 0 )
+   Control( (*API->Slider->CreateSlider)( ModuleHandle(), this, vertical, parent.handle, 0/*flags*/ ) ),
+   m_handlers( nullptr )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateSlider" );
-}
-
-// ----------------------------------------------------------------------------
-
-void Slider::OnValueUpdated( value_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onValueUpdated = 0;
-   if ( (*API->Slider->SetSliderValueUpdatedEventRoutine)( handle, &receiver,
-        (f != 0) ? SliderEventDispatcher::ValueUpdated : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetSliderValueUpdatedEventRoutine" );
-   }
-   onValueUpdated = f;
-}
-
-void Slider::OnRangeUpdated( range_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onRangeUpdated = 0;
-   if ( (*API->Slider->SetSliderRangeUpdatedEventRoutine)( handle, &receiver,
-        (f != 0) ? SliderEventDispatcher::RangeUpdated : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetSliderRangeUpdatedEventRoutine" );
-   }
-   onRangeUpdated = f;
 }
 
 // ----------------------------------------------------------------------------
@@ -243,7 +193,62 @@ void Slider::EnableTracking ( bool enable )
 
 // ----------------------------------------------------------------------------
 
+#define sender    (reinterpret_cast<Slider*>( hSender ))
+#define receiver  (reinterpret_cast<Control*>( hReceiver ))
+#define handlers  sender->m_handlers
+
+class SliderEventDispatcher
+{
+public:
+
+   static void api_func ValueUpdated( control_handle hSender, control_handle hReceiver, int32 value )
+   {
+      if ( handlers->onValueUpdated != nullptr )
+         (receiver->*handlers->onValueUpdated)( *sender, value );
+   }
+
+   static void api_func RangeUpdated( control_handle hSender, control_handle hReceiver, int32 minValue, int32 maxValue )
+   {
+      if ( handlers->onRangeUpdated != nullptr )
+         (receiver->*handlers->onRangeUpdated)( *sender, minValue, maxValue );
+   }
+
+}; // SliderEventDispatcher
+
+#undef sender
+#undef receiver
+#undef handlers
+
+// ----------------------------------------------------------------------------
+
+#define INIT_EVENT_HANDLERS()    \
+   __PCL_NO_ALIAS_HANDLERS;      \
+   if ( m_handlers == nullptr )  \
+      m_handlers = new EventHandlers
+
+void Slider::OnValueUpdated( value_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->Slider->SetSliderValueUpdatedEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? SliderEventDispatcher::ValueUpdated : 0 ) == api_false )
+      throw APIFunctionError( "SetSliderValueUpdatedEventRoutine" );
+   m_handlers->onValueUpdated = f;
+}
+
+void Slider::OnRangeUpdated( range_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->Slider->SetSliderRangeUpdatedEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? SliderEventDispatcher::RangeUpdated : 0 ) == api_false )
+      throw APIFunctionError( "SetSliderRangeUpdatedEventRoutine" );
+   m_handlers->onRangeUpdated = f;
+}
+
+#undef INIT_EVENT_HANDLERS
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/Slider.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Slider.cpp - Released 2015/07/30 17:15:31 UTC

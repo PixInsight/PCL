@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ImageDescription.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ImageDescription.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_ImageDescription_h
 #define __PCL_ImageDescription_h
@@ -96,16 +99,19 @@ struct PCL_CLASS ImageDescription
    /*!
     * Default constructor.
     */
-   ImageDescription() : info(), options(), id()
-   {
-   }
+   ImageDescription() = default;
 
    /*!
     * Constructs an %ImageDescription object from the specified ImageInfo,
     * ImageOptions and image identifier.
     */
    ImageDescription( const ImageInfo& i, const ImageOptions& o, const IsoString& s = IsoString() ) :
-   info( i ), options( o ), id( s )
+      info( i ), options( o ), id( s )
+   {
+   }
+
+   ImageDescription( const ImageInfo& i, const ImageOptions& o, const String& s ) :
+      ImageDescription( i, o, IsoString( s ) )
    {
    }
 
@@ -121,9 +127,7 @@ struct PCL_CLASS ImageDescription
    /*!
     * Copy constructor.
     */
-   ImageDescription( const ImageDescription& x ) : info( x.info ), options( x.options ), id( x.id )
-   {
-   }
+   ImageDescription( const ImageDescription& ) = default;
 
    /*!
     * Assignment operator. Returns a reference to this object.
@@ -251,5 +255,5 @@ typedef Array<ImagePropertyDescription>  ImagePropertyDescriptionArray;
 
 #endif   // __PCL_ImageDescription_h
 
-// ****************************************************************************
-// EOF pcl/ImageDescription.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ImageDescription.h - Released 2015/07/30 17:15:18 UTC

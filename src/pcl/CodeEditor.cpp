@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/CodeEditor.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/CodeEditor.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/CodeEditor.h>
 #include <pcl/MetaModule.h>
@@ -57,67 +60,12 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-#define sender    (reinterpret_cast<CodeEditor*>( hSender ))
-#define receiver  (reinterpret_cast<Control*>( hReceiver ))
-
-class CodeEditorEventDispatcher
-{
-public:
-
-   static void TextUpdated( control_handle hSender, control_handle hReceiver )
-   {
-      if ( sender->onTextUpdated != 0 )
-         (receiver->*sender->onTextUpdated)( *sender );
-   }
-
-   static void CursorPositionUpdated( control_handle hSender, control_handle hReceiver, int32 line, int32 col )
-   {
-      if ( sender->onCursorPositionUpdated != 0 )
-         (receiver->*sender->onCursorPositionUpdated)( *sender, line, col );
-   }
-
-   static void SelectionUpdated( control_handle hSender, control_handle hReceiver, int32 fromLine, int32 fromCol, int32 toLine, int32 toCol )
-   {
-      if ( sender->onSelectionUpdated != 0 )
-         (receiver->*sender->onSelectionUpdated)( *sender, fromLine, fromCol, toLine, toCol );
-   }
-
-   static void OverwriteModeUpdated( control_handle hSender, control_handle hReceiver, api_bool overwrite )
-   {
-      if ( sender->onOverwriteModeUpdated != 0 )
-         (receiver->*sender->onOverwriteModeUpdated)( *sender, overwrite != api_false );
-   }
-
-   static void SelectionModeUpdated( control_handle hSender, control_handle hReceiver, api_bool blockMode )
-   {
-      if ( sender->onSelectionModeUpdated != 0 )
-         (receiver->*sender->onSelectionModeUpdated)( *sender, blockMode != api_false );
-   }
-
-   static void DynamicWordWrapModeUpdated( control_handle hSender, control_handle hReceiver, api_bool wordWrap )
-   {
-      if ( sender->onDynamicWordWrapModeUpdated != 0 )
-         (receiver->*sender->onDynamicWordWrapModeUpdated)( *sender, wordWrap != api_false );
-   }
-
-}; // CodeEditorEventDispatcher
-
-#undef sender
-#undef receiver
-
-// ----------------------------------------------------------------------------
-
 CodeEditor::CodeEditor( Control& parent ) :
-Control( (*API->CodeEditor->CreateCodeEditor)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) ),
-onTextUpdated( 0 ),
-onCursorPositionUpdated( 0 ),
-onSelectionUpdated( 0 ),
-onOverwriteModeUpdated( 0 ),
-onSelectionModeUpdated( 0 ),
-onDynamicWordWrapModeUpdated( 0 ),
-m_lineNumbers( reinterpret_cast<void*>( 0 ) )
+   Control( (*API->CodeEditor->CreateCodeEditor)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) ),
+   m_handlers( nullptr ),
+   m_lineNumbers( nullptr )
 {
-   if ( handle == 0 )
+   if ( handle == nullptr )
       throw APIFunctionError( "CreateCodeEditor" );
 }
 
@@ -142,13 +90,13 @@ String CodeEditor::FilePath() const
    (*API->CodeEditor->GetEditorFilePath)( handle, 0, &len );
 
    String path;
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      path.Reserve( len );
+      path.SetLength( len );
       if ( (*API->CodeEditor->GetEditorFilePath)( handle, path.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetEditorFilePath" );
+      path.ResizeToNullTerminated();
    }
-
    return path;
 }
 
@@ -167,13 +115,13 @@ String CodeEditor::Text() const
    (*API->CodeEditor->GetEditorText)( handle, 0, &len );
 
    String text;
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      text.Reserve( len );
+      text.SetLength( len );
       if ( (*API->CodeEditor->GetEditorText)( handle, text.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetEditorText" );
+      text.ResizeToNullTerminated();
    }
-
    return text;
 }
 
@@ -192,13 +140,13 @@ IsoString CodeEditor::EncodedText( const IsoString& encoding ) const
    (*API->CodeEditor->GetEditorEncodedText)( handle, 0, &len, encoding.c_str() );
 
    IsoString text;
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      text.Reserve( len );
+      text.SetLength( len );
       if ( (*API->CodeEditor->GetEditorEncodedText)( handle, text.c_str(), &len, encoding.c_str() ) == api_false )
          throw APIFunctionError( "GetEditorEncodedText" );
+      text.ResizeToNullTerminated();
    }
-
    return text;
 }
 
@@ -346,13 +294,13 @@ String CodeEditor::SelectedText() const
    (*API->CodeEditor->GetEditorSelectedText)( handle, 0, &len );
 
    String text;
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      text.Reserve( len );
+      text.SetLength( len );
       if ( (*API->CodeEditor->GetEditorSelectedText)( handle, text.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetEditorSelectedText" );
+      text.ResizeToNullTerminated();
    }
-
    return text;
 }
 
@@ -418,7 +366,7 @@ void CodeEditor::Paste()
 
 void CodeEditor::Delete()
 {
-   (*API->CodeEditor->EditorClear)( handle ); // ### FIXME: This API function should be EditorDelete()
+   (*API->CodeEditor->EditorDelete)( handle );
 }
 
 // ----------------------------------------------------------------------------
@@ -479,79 +427,122 @@ int CodeEditor::ReplaceAll( const String& toFind, const String& replaceWith, Fin
 
 // ----------------------------------------------------------------------------
 
-void CodeEditor::OnTextUpdated( editor_event_handler handler, Control& receiver )
+#define sender    (reinterpret_cast<CodeEditor*>( hSender ))
+#define receiver  (reinterpret_cast<Control*>( hReceiver ))
+#define handlers  sender->m_handlers
+
+class CodeEditorEventDispatcher
 {
-   __PCL_NO_ALIAS_HANDLER;
-   onTextUpdated = 0;
-   if ( (*API->CodeEditor->SetEditorTextUpdatedEventRoutine)( handle, &receiver,
-                     (handler != 0) ? CodeEditorEventDispatcher::TextUpdated : 0 ) == api_false )
-      throw APIFunctionError( "SetEditorTextUpdatedEventRoutine" );
-   onTextUpdated = handler;
-}
+public:
+
+   static void TextUpdated( control_handle hSender, control_handle hReceiver )
+   {
+      if ( handlers->onTextUpdated != nullptr )
+         (receiver->*handlers->onTextUpdated)( *sender );
+   }
+
+   static void CursorPositionUpdated( control_handle hSender, control_handle hReceiver, int32 line, int32 col )
+   {
+      if ( handlers->onCursorPositionUpdated != nullptr )
+         (receiver->*handlers->onCursorPositionUpdated)( *sender, line, col );
+   }
+
+   static void SelectionUpdated( control_handle hSender, control_handle hReceiver, int32 fromLine, int32 fromCol, int32 toLine, int32 toCol )
+   {
+      if ( handlers->onSelectionUpdated != nullptr )
+         (receiver->*handlers->onSelectionUpdated)( *sender, fromLine, fromCol, toLine, toCol );
+   }
+
+   static void OverwriteModeUpdated( control_handle hSender, control_handle hReceiver, api_bool overwrite )
+   {
+      if ( handlers->onOverwriteModeUpdated != nullptr )
+         (receiver->*handlers->onOverwriteModeUpdated)( *sender, overwrite != api_false );
+   }
+
+   static void SelectionModeUpdated( control_handle hSender, control_handle hReceiver, api_bool blockMode )
+   {
+      if ( handlers->onSelectionModeUpdated != nullptr )
+         (receiver->*handlers->onSelectionModeUpdated)( *sender, blockMode != api_false );
+   }
+
+   static void DynamicWordWrapModeUpdated( control_handle hSender, control_handle hReceiver, api_bool wordWrap )
+   {
+      if ( handlers->onDynamicWordWrapModeUpdated != nullptr )
+         (receiver->*handlers->onDynamicWordWrapModeUpdated)( *sender, wordWrap != api_false );
+   }
+
+}; // CodeEditorEventDispatcher
+
+#undef sender
+#undef receiver
+#undef handlers
 
 // ----------------------------------------------------------------------------
+
+#define INIT_EVENT_HANDLERS()    \
+   __PCL_NO_ALIAS_HANDLERS;      \
+   if ( m_handlers == nullptr )  \
+      m_handlers = new EventHandlers
+
+void CodeEditor::OnTextUpdated( editor_event_handler handler, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->CodeEditor->SetEditorTextUpdatedEventRoutine)( handle, &receiver,
+                  (handler != nullptr) ? CodeEditorEventDispatcher::TextUpdated : nullptr ) == api_false )
+      throw APIFunctionError( "SetEditorTextUpdatedEventRoutine" );
+   m_handlers->onTextUpdated = handler;
+}
 
 void CodeEditor::OnCursorPositionUpdated( cursor_event_handler handler, Control& receiver )
 {
-   __PCL_NO_ALIAS_HANDLER;
-   onCursorPositionUpdated = 0;
+   INIT_EVENT_HANDLERS();
    if ( (*API->CodeEditor->SetEditorCursorPositionUpdatedEventRoutine)( handle, &receiver,
-                     (handler != 0) ? CodeEditorEventDispatcher::CursorPositionUpdated : 0 ) == api_false )
+                  (handler != nullptr) ? CodeEditorEventDispatcher::CursorPositionUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetEditorCursorPositionUpdatedEventRoutine" );
-   onCursorPositionUpdated = handler;
+   m_handlers->onCursorPositionUpdated = handler;
 }
-
-// ----------------------------------------------------------------------------
 
 void CodeEditor::OnSelectionUpdated( selection_event_handler handler, Control& receiver )
 {
-   __PCL_NO_ALIAS_HANDLER;
-   onSelectionUpdated = 0;
+   INIT_EVENT_HANDLERS();
    if ( (*API->CodeEditor->SetEditorSelectionUpdatedEventRoutine)( handle, &receiver,
-                     (handler != 0) ? CodeEditorEventDispatcher::SelectionUpdated : 0 ) == api_false )
+                  (handler != nullptr) ? CodeEditorEventDispatcher::SelectionUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetEditorSelectionUpdatedEventRoutine" );
-   onSelectionUpdated = handler;
+   m_handlers->onSelectionUpdated = handler;
 }
-
-// ----------------------------------------------------------------------------
 
 void CodeEditor::OnOverwriteModeUpdated( state_event_handler handler, Control& receiver )
 {
-   __PCL_NO_ALIAS_HANDLER;
-   onOverwriteModeUpdated = 0;
+   INIT_EVENT_HANDLERS();
    if ( (*API->CodeEditor->SetEditorOverwriteModeUpdatedEventRoutine)( handle, &receiver,
-                     (handler != 0) ? CodeEditorEventDispatcher::OverwriteModeUpdated : 0 ) == api_false )
+                  (handler != nullptr) ? CodeEditorEventDispatcher::OverwriteModeUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetEditorOverwriteModeUpdatedEventRoutine" );
-   onOverwriteModeUpdated = handler;
+   m_handlers->onOverwriteModeUpdated = handler;
 }
-
-// ----------------------------------------------------------------------------
 
 void CodeEditor::OnSelectionModeUpdated( state_event_handler handler, Control& receiver )
 {
-   __PCL_NO_ALIAS_HANDLER;
-   onSelectionModeUpdated = 0;
+   INIT_EVENT_HANDLERS();
    if ( (*API->CodeEditor->SetEditorSelectionModeUpdatedEventRoutine)( handle, &receiver,
-                     (handler != 0) ? CodeEditorEventDispatcher::SelectionModeUpdated : 0 ) == api_false )
+                  (handler != nullptr) ? CodeEditorEventDispatcher::SelectionModeUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetEditorSelectionModeUpdatedEventRoutine" );
-   onSelectionModeUpdated = handler;
+   m_handlers->onSelectionModeUpdated = handler;
 }
-
-// ----------------------------------------------------------------------------
 
 void CodeEditor::OnDynamicWordWrapModeUpdated( state_event_handler handler, Control& receiver )
 {
-   __PCL_NO_ALIAS_HANDLER;
-   onDynamicWordWrapModeUpdated = 0;
+   INIT_EVENT_HANDLERS();
    if ( (*API->CodeEditor->SetEditorDynamicWordWrapModeUpdatedEventRoutine)( handle, &receiver,
-                     (handler != 0) ? CodeEditorEventDispatcher::DynamicWordWrapModeUpdated : 0 ) == api_false )
+                  (handler != nullptr) ? CodeEditorEventDispatcher::DynamicWordWrapModeUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetEditorDynamicWordWrapModeUpdatedEventRoutine" );
-   onDynamicWordWrapModeUpdated = handler;
+   m_handlers->onDynamicWordWrapModeUpdated = handler;
 }
+
+#undef INIT_EVENT_HANDLERS
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/CodeEditor.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/CodeEditor.cpp - Released 2015/07/30 17:15:31 UTC

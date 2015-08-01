@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/SectionBar.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/SectionBar.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,126 +47,133 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/SectionBar.h>
 #include <pcl/GlobalSettings.h>
 #include <pcl/ProcessInterface.h>
 
-#define contract_icon   Bitmap( ":/process-interface/contract-vert.png" )
-#define expand_icon     Bitmap( ":/process-interface/expand-vert.png" )
+#define contract_icon ":/process-interface/contract-vert.png"
+#define expand_icon   ":/process-interface/expand-vert.png"
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-SectionBar::SectionBar( Control& parent ) : Control( parent ),
-section( 0 ), check( 0 ),
-onToggleSection( 0 ), onToggleSectionReceiver( 0 ),
-onCheck( 0 ), onCheckReceiver( 0 )
+#ifdef _MSC_VER
+#  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
+#endif
+
+SectionBar::SectionBar( Control& parent ) :
+   Control( parent ),
+   m_handlers( nullptr ),
+   m_section( nullptr ),
+   Title_CheckBox( nullptr )
 {
    SetObjectId( "IWSectionBar" );
 
    SetFocusStyle( FocusStyle::NoFocus );
 
-   label.SetText( String( 'M' ) );
-   label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
-   label.SetText( String() );
+   SetSizer( Global_Sizer );
 
-   button.SetIcon( contract_icon );
-   button.SetFixedSize( 17, 17 );
-   button.SetFocusStyle( FocusStyle::NoFocus );
-   button.OnClick( (Button::click_event_handler)&SectionBar::__Click, *this );
+   Global_Sizer.AddSpacing( 1 );
+   Global_Sizer.Add( Title_Sizer );
+   Global_Sizer.AddSpacing( 1 );
 
-   hSizer.AddSpacing( 4 );
-   hSizer.Add( label );
-   hSizer.AddStretch();
-   hSizer.Add( button );
-   hSizer.AddSpacing( 4 );
+   Title_Sizer.AddSpacing( 4 );
+   Title_Sizer.Add( Title_Label );
+   Title_Sizer.AddStretch();
+   Title_Sizer.Add( Title_ToolButton );
+   Title_Sizer.AddSpacing( 4 );
 
-   vSizer.AddSpacing( 1 );
-   vSizer.Add( hSizer );
-   vSizer.AddSpacing( 1 );
+   Title_Label.SetText( String( 'M' ) );
+   Title_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+   Title_Label.SetText( String() );
 
-   SetSizer( vSizer );
+   Title_ToolButton.SetIcon( Bitmap( ScaledResource( contract_icon ) ) );
+   Title_ToolButton.SetScaledFixedSize( 17, 17 );
+   Title_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
+   Title_ToolButton.OnClick( (Button::click_event_handler)&SectionBar::ButtonClick, *this );
+
    AdjustToContents();
    SetFixedHeight();
 
-   OnMousePress( (Control::mouse_button_event_handler)&SectionBar::__MousePress, *this );
-   OnShow( (Control::event_handler)&SectionBar::__Show, *this );
+   OnMousePress( (Control::mouse_button_event_handler)&SectionBar::MousePress, *this );
+   OnShow( (Control::event_handler)&SectionBar::ControlShow, *this );
 }
 
 // ----------------------------------------------------------------------------
 
 SectionBar::~SectionBar()
 {
-   if ( section != 0 )
+   if ( Title_CheckBox != nullptr )
    {
-      section->OnShow( 0, Control::Null() );
-      section->OnHide( 0, Control::Null() );
-      section = 0;
+      Title_CheckBox->OnClick( nullptr, Control::Null() );
+      delete Title_CheckBox, Title_CheckBox = nullptr;
+   }
 
-      if ( check != 0 )
-      {
-         check->OnClick( 0, Control::Null() );
-         delete check;
-         check = 0;
-      }
+   if ( m_handlers != nullptr )
+      delete m_handlers, m_handlers = nullptr;
+
+   if ( m_section != nullptr )
+   {
+      m_section->OnShow( nullptr, Control::Null() );
+      m_section->OnHide( nullptr, Control::Null() );
+      m_section = nullptr;
    }
 }
 
 // ----------------------------------------------------------------------------
 
-void SectionBar::SetSection( Control& c )
+void SectionBar::SetSection( Control& section )
 {
-   if ( section != 0 )
+   if ( m_section != nullptr )
    {
-      section->OnShow( 0, Control::Null() );
-      section->OnHide( 0, Control::Null() );
-      section = 0;
+      m_section->OnShow( nullptr, Control::Null() );
+      m_section->OnHide( nullptr, Control::Null() );
+      m_section = nullptr;
    }
 
-   if ( c.IsNull() )
+   if ( section.IsNull() )
       return;
 
-   section = &c;
+   m_section = &section;
+   m_section->OnShow( (Control::event_handler)&SectionBar::ControlShow, *this );
+   m_section->OnHide( (Control::event_handler)&SectionBar::ControlHide, *this );
 
-   if ( section->IsVisible() )
-      button.SetIcon( contract_icon );
-   else
-      button.SetIcon( expand_icon );
-
-   section->OnShow( (Control::event_handler)&SectionBar::__Show, *this );
-   section->OnHide( (Control::event_handler)&SectionBar::__Hide, *this );
+   Title_ToolButton.SetIcon( Bitmap( ScaledResource( m_section->IsVisible() ? contract_icon : expand_icon ) ) );
 }
 
 // ----------------------------------------------------------------------------
 
 void SectionBar::EnableTitleCheckBox( bool enable )
 {
-   if ( (check == 0) == enable )
+   if ( (Title_CheckBox == nullptr) == enable )
    {
-      if ( check != 0 )
+      if ( Title_CheckBox != nullptr )
       {
-         check->OnClick( 0, Control::Null() );
-         onCheck = 0;
-         onCheckReceiver = 0;
-         delete check;
-         check = 0;
+         Title_CheckBox->OnClick( nullptr, Control::Null() );
+         if ( m_handlers != nullptr )
+         {
+            m_handlers->onCheck = nullptr;
+            m_handlers->onCheckReceiver = nullptr;
+         }
+         delete Title_CheckBox;
+         Title_CheckBox = nullptr;
       }
       else
       {
-         check = new CheckBox;
-         check->SetFocusStyle( FocusStyle::NoFocus );
-         check->SetChecked();
-         check->OnClick( (Button::click_event_handler)&SectionBar::__Click, *this );
-         hSizer.Insert( 1, *check );
-         hSizer.InsertSpacing( 2, 2 );
+         Title_CheckBox = new CheckBox;
+         Title_CheckBox->SetFocusStyle( FocusStyle::NoFocus );
+         Title_CheckBox->SetChecked();
+         Title_CheckBox->OnClick( (Button::click_event_handler)&SectionBar::ButtonClick, *this );
+         Title_Sizer.Insert( 1, *Title_CheckBox );
+         Title_Sizer.InsertSpacing( 2, 2 );
       }
 
-      if ( section != 0 )
-         section->Enable();
+      if ( m_section != nullptr )
+         m_section->Enable();
    }
 }
 
@@ -171,11 +181,11 @@ void SectionBar::EnableTitleCheckBox( bool enable )
 
 void SectionBar::SetChecked( bool checked )
 {
-   if ( check != 0 )
+   if ( Title_CheckBox != nullptr )
    {
-      if ( section != 0 )
-         section->Enable( checked );
-      check->SetChecked( checked );
+      if ( m_section != nullptr )
+         m_section->Enable( checked );
+      Title_CheckBox->SetChecked( checked );
    }
 }
 
@@ -183,153 +193,169 @@ void SectionBar::SetChecked( bool checked )
 
 void SectionBar::Enable( bool enabled )
 {
-   label.Enable( enabled );
+   Title_Label.Enable( enabled );
 
-   if ( check != 0 )
-      check->Enable( enabled );
+   if ( Title_CheckBox != nullptr )
+      Title_CheckBox->Enable( enabled );
 
-   if ( section != 0 )
-      section->Enable( enabled && (check == 0 || check->IsChecked()) );
+   if ( m_section != nullptr )
+      m_section->Enable( enabled && (Title_CheckBox == nullptr || Title_CheckBox->IsChecked()) );
 }
 
 // ----------------------------------------------------------------------------
+
+#define INIT_EVENT_HANDLERS()    \
+   __PCL_NO_ALIAS_HANDLERS;      \
+   if ( m_handlers == nullptr )  \
+      m_handlers = new EventHandlers
 
 void SectionBar::OnToggleSection( section_event_handler f, Control& c )
 {
-   __PCL_NO_ALIAS_HANDLER;
-   if ( f == 0 || c.IsNull() )
+   if ( f == nullptr || c.IsNull() )
    {
-      onToggleSection = 0;
-      onToggleSectionReceiver = 0;
+      if ( m_handlers != nullptr )
+      {
+         m_handlers->onToggleSection = nullptr;
+         m_handlers->onToggleSectionReceiver = nullptr;
+      }
    }
    else
    {
-      onToggleSection = f;
-      onToggleSectionReceiver = &c;
+      INIT_EVENT_HANDLERS();
+      m_handlers->onToggleSection = f;
+      m_handlers->onToggleSectionReceiver = &c;
    }
 }
-
-// ----------------------------------------------------------------------------
 
 void SectionBar::OnCheck( check_event_handler f, Control& c )
 {
-   __PCL_NO_ALIAS_HANDLER;
-   if ( check == 0 || f == 0 || c.IsNull() )
+   if ( Title_CheckBox == nullptr || f == nullptr || c.IsNull() )
    {
-      onCheck = 0;
-      onCheckReceiver = 0;
+      if ( m_handlers != nullptr )
+      {
+         m_handlers->onCheck = nullptr;
+         m_handlers->onCheckReceiver = nullptr;
+      }
    }
    else
    {
-      onCheck = f;
-      onCheckReceiver = &c;
+      INIT_EVENT_HANDLERS();
+      m_handlers->onCheck = f;
+      m_handlers->onCheckReceiver = &c;
    }
 }
 
+#undef INIT_EVENT_HANDLERS
+
 // ----------------------------------------------------------------------------
 
-void SectionBar::__Click( Button& sender, bool checked )
+void SectionBar::ButtonClick( Button& sender, bool checked )
 {
-   if ( section != 0 && sender == button )
+   if ( m_section != nullptr && sender == Title_ToolButton )
    {
-      if ( onToggleSection != 0 )
-         (onToggleSectionReceiver->*onToggleSection)( *this, *section, true );
+      if ( m_handlers != nullptr )
+         if ( m_handlers->onToggleSection != nullptr )
+            (m_handlers->onToggleSectionReceiver->*m_handlers->onToggleSection)( *this, *m_section, true );
 
-      bool visible = section->IsVisible();
+      bool visible = m_section->IsVisible();
 
-      Control p = section->Parent();
-      if ( !p.IsNull() )
+      Control* p = &m_section->Parent();
+      if ( !p->IsNull() )
       {
-         while ( !p.Parent().IsNull() )
-            p = p.Parent();
-
-         p.DisableUpdates();
+         while ( !p->Parent().IsNull() )
+            p = &p->Parent();
+         p->DisableUpdates();
       }
 
       if ( visible )
-         section->Hide();
+         m_section->Hide();
       else
-         section->Show();
+         m_section->Show();
 
-      // On Mac OS X, forcing event processing here causes a lot of flickering.
+      // On OS X, forcing event processing here causes a lot of flickering.
       // On X11 and Windows, it's just the opposite...
 #ifndef __PCL_MACOSX
       ProcessInterface::ProcessEvents();
 #endif
-      if ( !p.IsNull() )
+      if ( !p->IsNull() )
       {
-         bool fixedWidth = p.IsFixedWidth();
+         bool fixedWidth = p->IsFixedWidth();
          if ( !fixedWidth )
-            p.SetFixedWidth();
+            p->SetFixedWidth();
 
-         bool fixedHeight = p.IsFixedHeight();
+         bool fixedHeight = p->IsFixedHeight();
          if ( fixedHeight )
-            p.SetVariableHeight();
+            p->SetVariableHeight();
 
-         p.AdjustToContents();
+         p->AdjustToContents();
 
 //#ifndef __PCL_MACOSX
          ProcessInterface::ProcessEvents();
 //#endif
          if ( !fixedWidth )
-            p.SetVariableWidth();
+            p->SetVariableWidth();
          if ( fixedHeight )
-            p.SetFixedHeight();
+            p->SetFixedHeight();
 
-         p.EnableUpdates();
+         p->EnableUpdates();
       }
 
-      if ( onToggleSection != 0 )
-         (onToggleSectionReceiver->*onToggleSection)( *this, *section, false );
+      if ( m_handlers != nullptr )
+         if ( m_handlers->onToggleSection != nullptr )
+            (m_handlers->onToggleSectionReceiver->*m_handlers->onToggleSection)( *this, *m_section, false );
    }
-   else if ( check != 0 && sender == *check )
+   else if ( Title_CheckBox != nullptr && sender == *Title_CheckBox )
    {
-      if ( section != 0 )
-         section->Enable( checked );
+      if ( m_section != nullptr )
+         m_section->Enable( checked );
 
-      if ( onCheck != 0 )
-         (onCheckReceiver->*onCheck)( *this, checked );
+      if ( m_handlers != nullptr )
+         if ( m_handlers->onCheck != nullptr )
+            (m_handlers->onCheckReceiver->*m_handlers->onCheck)( *this, checked );
    }
 }
 
 // ----------------------------------------------------------------------------
 
-void SectionBar::__MousePress( Control& /*sender*/, const pcl::Point& /*pos*/,
-               int mouseButton, unsigned /*buttons*/, unsigned /*modifiers*/ )
+void SectionBar::MousePress( Control& /*sender*/, const pcl::Point& /*pos*/,
+                             int mouseButton, unsigned /*buttons*/, unsigned /*modifiers*/ )
 {
    if ( mouseButton == MouseButton::Left )
-      __Click( button, false );
+      ButtonClick( Title_ToolButton, false );
 }
 
 // ----------------------------------------------------------------------------
 
-void SectionBar::__Show( Control& sender )
+void SectionBar::ControlShow( Control& sender )
 {
-   if ( section != 0 )
+   if ( m_section != nullptr )
    {
-      if ( sender == *section )
-         button.SetIcon( contract_icon );
+      const char* iconResource = nullptr;
+      if ( sender == *m_section )
+         iconResource = contract_icon;
       else if ( sender == *this )
       {
-         if ( section->IsVisible() )
-            button.SetIcon( contract_icon );
+         if ( m_section->IsVisible() )
+            iconResource = contract_icon;
          else
-            button.SetIcon( expand_icon );
+            iconResource = expand_icon;
       }
+      if ( iconResource != nullptr )
+         Title_ToolButton.SetIcon( Bitmap( ScaledResource( iconResource ) ) );
    }
 }
 
 // ----------------------------------------------------------------------------
 
-void SectionBar::__Hide( Control& sender )
+void SectionBar::ControlHide( Control& sender )
 {
-   if ( section != 0 && sender == *section )
-      button.SetIcon( expand_icon );
+   if ( m_section != 0 && sender == *m_section )
+      Title_ToolButton.SetIcon( Bitmap( ScaledResource( expand_icon ) ) );
 }
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/SectionBar.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/SectionBar.cpp - Released 2015/07/30 17:15:31 UTC

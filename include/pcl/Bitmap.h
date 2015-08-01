@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Bitmap.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Bitmap.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Bitmap_h
 #define __PCL_Bitmap_h
@@ -94,17 +97,24 @@ namespace pcl
  *         transparency of each pìxel: from 0=transparent to 0xFF=opaque.
  *         This is the default mode.</td></tr>
  * <tr><td>BitmapFormat::RGB32</td>
- *     <td>RRGGBB format. The alpha component is not used. This mode can be
- *         used to improve the performance of graphics output when painting on
- *         controls. This is actually necessary under X11.</td></tr>
+ *     <td>ffRRGGBB format. The alpha component is set to a constant value of
+ *         255 = 0xff, hence the bitmap is always opaque. This mode can be used
+ *         to improve the performance of graphics output when painting on
+ *         controls, especially on X11 platforms (Linux and FreeBSD).</td></tr>
+ * <tr><td>BitmapFormat::ARGB32_Premultiplied</td>
+ *     <td>AARRGGBB format with red, green and blue components premultiplied by
+ *         the alpha channel and divided by 255. This format is faster for
+ *         bitmap renditions drawn with the Graphics and VectorGraphics
+ *         classes.</td></tr>
  * </table>
  */
 namespace BitmapFormat
 {
    enum value_type
    {
-      ARGB32,  // AARRGGBB
-      RGB32,   // RRGGBB - alpha not used
+      ARGB32,               // AARRGGBB
+      RGB32,                // ffRRGGBB
+      ARGB32_Premultiplied, // AARRGGBB with premultiplied RGB
 
       NumberOfBitmapFormats,
 
@@ -196,12 +206,6 @@ public:
     *
     * For the sake of performance, bitmap pixel values are not initialized, so
     * they will contain unpredictable \e garbage values.
-    *
-    * \note On X11 platforms (Linux/UNIX) without composite rendering
-    * extensions, bitmaps in the default BitmapFormat::ARGB32 format are
-    * painted very slowly on controls. To render a bitmap on a control, the
-    * BitmapFormat::RGB32 format (alpha ignored) should be used for the sake of
-    * compatibility and graphics output performance.
     */
    Bitmap( int width, int height, pixel_format fmt = BitmapFormat::ARGB32 );
 
@@ -245,13 +249,15 @@ public:
     * example, the following code snippet loads one of the standard core
     * application icons:
     *
-    * \code
-    * Bitmap icon( ":/icons/document.png" );
-    * \endcode
+    * \code Bitmap icon( ":/icons/document.png" ); \endcode
+    *
+    * A module can also use the standard ":/&amp;module_root/" prefix to load
+    * module-defined resources. See MetaModule::LoadResource() for a detailed
+    * description.
     *
     * \b References
     *
-    * \li http://qt-project.org/doc/qt-4.8/resources.html
+    * \li The Qt Resource System: http://doc.qt.io/qt-5/resources.html
     */
    Bitmap( const char* filePath );
 
@@ -328,6 +334,13 @@ public:
    }
 
    /*!
+    * Move constructor.
+    */
+   Bitmap( Bitmap&& x ) : UIObject( std::move( x ) )
+   {
+   }
+
+   /*!
     * Destroys a %Bitmap object.
     *
     * The actual bitmap object that this %Bitmap instance refers to lives in
@@ -341,7 +354,7 @@ public:
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Copy assignment operator. Returns a reference to this object.
     *
     * Makes this object reference the same server-side bitmap as the specified
     * instance \a bmp. If the previous bitmap becomes unreferenced, it will be
@@ -349,7 +362,16 @@ public:
     */
    Bitmap& operator =( const Bitmap& bmp )
    {
-      SetHandle( bmp.handle );
+      Assign( bmp );
+      return *this;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   Bitmap& operator =( Bitmap&& x )
+   {
+      Transfer( x );
       return *this;
    }
 
@@ -373,12 +395,6 @@ public:
     *
     * Supported pixel format values are enumerated in the BitmapFormat
     * namespace.
-    *
-    * \note On old X11 platforms (Linux/UNIX) without composite rendering
-    * extensions, bitmaps in the default BitmapFormat::ARGB32 format are
-    * painted very slowly on controls. To render a bitmap on a control, the
-    * BitmapFormat::RGB32 format (alpha ignored) should be used for the sake of
-    * compatibility and graphics output performance.
     */
    void SetPixelFormat( pixel_format fmt );
 
@@ -397,7 +413,7 @@ public:
     *
     * \param displayChannel   See the DisplayChannel enumeration for possible
     *             values. The default mode is DisplayChannel::RGBK, which means
-    *             that the image will be rendered RGB/gray composite mode.
+    *             that the image will be rendered in RGB/gray composite mode.
     *
     * \param transparency     If this parameter is true and the image has one
     *             or more alpha channels, the image will be rendered over a
@@ -405,11 +421,12 @@ public:
     *             define pixel opacity. If this parameter is false, alpha
     *             channels will not be interpreted as transparency masks.
     *
-    * \param mask    If nonzero, this is the address of an image that will be
+    * \param mask    If non-null, this is the address of an image that will be
     *             treated as a mask acting for the source image. Mask pixels
     *             modify the image rendition according to the specified mask
-    *             rendering mode (see the maskMode paramter). If specified, the
-    *             mask image must have the same dimensions as the source image.
+    *             rendering mode (see the maskMode paramter). The mask image
+    *             must have the same dimensions as the source image. This
+    *             parameter is nullptr by default.
     *
     * \param maskMode   This parameter defines the mask rendering mode to be
     *             used if a mask image has been specified. See the MaskMode
@@ -417,36 +434,37 @@ public:
     *             MaskMode::Default, which corresponds to the red overlay mask
     *             rendering mode.
     *
-    * \param maskInverted     If \a mask is nonzero and this parameter is true,
-    *             mask pixels will be inverted before rendering them over
+    * \param maskInverted     If \a mask is non-null and this parameter is
+    *             true, mask pixels will be inverted before rendering them over
     *             source image pixels.
     *
-    * \param LUT     If nonzero, this is the address of a <em>look-up
+    * \param LUT     If non-null, this is the address of a <em>look-up
     *             table</em> that will be used to remap bitmap pixel values.
+    *             This parameter is nullptr by default.
     *
     * \param fastDownsample   If this parameter is true, a fast sparse
-    *             interpolation algorithm is used to render images with
-    *             negative zoom factors less than -2. Fast subsampling
+    *             interpolation algorithm will be used to render the image if a
+    *             \a zoom factor less than -2 is specified. Fast subsampling
     *             interpolation is considerably faster than normal (slow)
     *             interpolation, but the generated renditions are less
     *             accurate. In general though, fast interpolation errors are
     *             barely noticeable. This parameter is true by default.
     *
-    * \param callback   If nonzero, this is the address of a callback routine
+    * \param callback   If non-null, this is the address of a callback routine
     *             that will be invoked during the bitmap rendition procedure.
     *             If the callback routine returns false, the rendition is
     *             aborted and a null bitmap (Bitmap::Null()) is returned. By
-    *             default this parameter is zero.
+    *             default this parameter is nullptr.
     *
     * This is a high-performance routine, implemented with highly optimized
     * parallel code, that can be used for real-time image visualization. If
     * allowed through global preferences, it will use all available processors
-    * and processor cores, via concurrent threads.
+    * and processor cores by means of concurrent threads.
     */
    static Bitmap Render( const ImageVariant& image,
             int zoom = 1, display_channel displayChannel = DisplayChannel::RGBK, bool transparency = true,
-            const ImageVariant* mask = 0, mask_mode maskMode = MaskMode::Default, bool maskInverted = false,
-            const uint8** LUT = 0, bool fastDownsample = true, bool (*callback)() = 0 );
+            const ImageVariant* mask = nullptr, mask_mode maskMode = MaskMode::Default, bool maskInverted = false,
+            const uint8** LUT = nullptr, bool fastDownsample = true, bool (*callback)() = nullptr );
 
    /*!
     * Obtains the dimensions (width, height) of this bitmap in pixels.
@@ -481,15 +499,16 @@ public:
    }
 
    /*!
-    * Returns true if this bitmap is empty. An empty bitmap does not contain an
-    * image, so it has zero dimensions.
+    * Returns true if this bitmap is empty. An empty bitmap has zero dimensions
+    * and does not contain any image.
     */
    bool IsEmpty() const;
 
    /*!
-    * Returns true if this bitmap contains an image, i.e. if it is not empty.
+    * Returns true if this bitmap contains an image, that is, if it is not an
+    * empty bitmap.
     *
-    * \note This operator member function returns !IsEmpty().
+    * This is a convenience operator that simply returns !IsEmpty().
     */
    operator bool() const
    {
@@ -1298,7 +1317,10 @@ public:
 
 private:
 
-   Bitmap( void* );
+   Bitmap( void* h ) : UIObject( h )
+   {
+   }
+
    virtual void* CloneHandle() const;
 
    friend class GraphicsContextBase;
@@ -1328,5 +1350,5 @@ private:
 
 #endif   // __PCL_Bitmap_h
 
-// ****************************************************************************
-// EOF pcl/Bitmap.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Bitmap.h - Released 2015/07/30 17:15:18 UTC

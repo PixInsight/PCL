@@ -2325,7 +2325,7 @@ bool ImageCalibrationInstance::ExecuteGlobal()
                       */
                      if ( (*j)->IsActive() )
                      {
-                        pcl::Sleep( 0.1 );
+                        pcl::Sleep( 100 );
                         continue;
                      }
                   }

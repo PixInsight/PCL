@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ICCProfile.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ICCProfile.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_ICCProfile_h
 #define __PCL_ICCProfile_h
@@ -181,9 +184,9 @@ class PCL_CLASS ICCProfile
 public:
 
    /*!
-    * Represents an opaque handle to a server-side open ICC profile.
+    * Represents an opaque handle to a server-side ICC profile.
     */
-   typedef void*  handle;
+   typedef void*                       handle;
 
    /*!
     * Represents an ICC profile device class.
@@ -199,9 +202,19 @@ public:
     * Constructs an empty %ICCProfile object. An empty %ICCProfile doesn't
     * store an ICC profile structure.
     */
-   ICCProfile() : data(), path()
-   {
-   }
+   ICCProfile() = default;
+
+   /*!
+    * Copy constructor.
+    */
+   ICCProfile( const ICCProfile& ) = default;
+
+   /*!
+    * Move constructor.
+    */
+#ifndef _MSC_VER
+   ICCProfile( ICCProfile&& ) = default;
+#endif
 
    /*!
     * Constructs an %ICCProfile object and loads an ICC profile from a file at
@@ -217,11 +230,13 @@ public:
    }
 
    /*!
-    * Copy constructor. This constructor simply calls operator =( x ).
+    * Constructs an %ICCProfile object to store a copy of the raw ICC profile
+    * structure available in the specified container. This constructor simply
+    * calls Set( rawData ).
     */
-   ICCProfile( const ICCProfile& x ) : data(), path()
+   ICCProfile( const ByteArray& rawData ) : data(), path()
    {
-      (void)operator =( x );
+      Set( rawData );
    }
 
    /*!
@@ -238,25 +253,21 @@ public:
     * Destroys an %ICCProfile object. If this object stores an ICC profile, it
     * is deallocated upon destruction.
     */
-   virtual ~ICCProfile()
+   ~ICCProfile()
    {
-      Clear();
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
-    *
-    * If this object stores an ICC profile structure, it is deallocated before
-    * assignment. If the specified object \a x contains an ICC profile
-    * structure, this operator generates a duplicate that will be stored and
-    * owned by this object after assignment.
+    * Copy assignment operator. Returns a reference to this object.
     */
-   ICCProfile& operator =( const ICCProfile& x )
-   {
-      data = x.data;
-      path = x.path;
-      return *this;
-   }
+   ICCProfile& operator =( const ICCProfile& ) = default;
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+#ifndef _MSC_VER
+   ICCProfile& operator =( ICCProfile&& ) = default;
+#endif
 
    /*!
     * Returns true if this object stores an ICC color profile structure.
@@ -455,6 +466,15 @@ public:
    }
 
    /*!
+    * Exchanges two ICC profiles \a x1 and \a x2.
+    */
+   friend void Swap( ICCProfile& x1, ICCProfile& x2 )
+   {
+      pcl::Swap( x1.data, x2.data );
+      pcl::Swap( x1.path, x2.path );
+   }
+
+   /*!
     * Opens an ICC profile disk file at \a profilePath. Returns a handle to the
     * opened ICC profile.
     *
@@ -558,7 +578,7 @@ public:
     * routine will return a fallback directory within the installation
     * directory tree of the PixInsight Core application.
     *
-    * On Mac OS X, the returned list may contain one or more from the following
+    * On OS X, the returned list may contain one or more from the following
     * directories:
     *
     *    ~/Library/ColorSync/Profiles
@@ -641,7 +661,7 @@ public:
 
    /*!
     * \class pcl::ICCProfile::Info
-    * \brief A structure to hold descriptive data about ICC profiles
+    * \brief A structure to hold descriptive data about ICC profiles.
     *
     * The %ICCProfile::Info structure is designed to be used with the
     * ICCProfile::FindProfilesByColorSpace() utility function.
@@ -714,5 +734,5 @@ private:
 
 #endif   // __PCL_ICCProfile_h
 
-// ****************************************************************************
-// EOF pcl/ICCProfile.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ICCProfile.h - Released 2015/07/30 17:15:18 UTC

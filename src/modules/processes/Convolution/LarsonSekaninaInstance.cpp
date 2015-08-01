@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Convolution Process Module Version 01.01.03.0140
-// ****************************************************************************
-// LarsonSekaninaInstance.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Convolution Process Module Version 01.01.03.0159
+// ----------------------------------------------------------------------------
+// LarsonSekaninaInstance.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Convolution PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "LarsonSekaninaInstance.h"
 #include "LarsonSekaninaParameters.h"
@@ -166,7 +170,7 @@ void Convolve_2( const GenericImage<P1>& image, GenericImage<P2>& sharp,
          break;
       }
 
-      interpolator = P->NewInterpolator( (P1*)0, image[c], image.Width(), image.Height() );
+      interpolator = P->NewInterpolator<P1>( image[c], image.Width(), image.Height() );
 
       int w = image.Width() - 1;
       int h = image.Height() - 1;
@@ -372,9 +376,9 @@ bool LarsonSekaninaInstance::ExecuteOn( View& view )
 
    ImageVariant sharpImg;
    sharpImg.CreateFloatImage( (image.BitsPerSample() > 32) ? image.BitsPerSample() : 32 );
-   sharpImg.AllocateImage( image.AnyImage()->Width(), image.AnyImage()->Height(), 1, ColorSpace::Gray );
+   sharpImg.AllocateImage( image->Width(), image->Height(), 1, ColorSpace::Gray );
 
-   if ( useLuminance && image.AnyImage()->IsColor() )
+   if ( useLuminance && image->IsColor() )
    {
       ImageVariant L;
       image.GetLightness( L );
@@ -384,9 +388,9 @@ bool LarsonSekaninaInstance::ExecuteOn( View& view )
    }
    else
    {
-      for ( int c = 0, n = image.AnyImage()->NumberOfNominalChannels(); c < n; ++c )
+      for ( int c = 0, n = image->NumberOfNominalChannels(); c < n; ++c )
       {
-         image.AnyImage()->SelectChannel( c );
+         image->SelectChannel( c );
          if ( n > 1 )
             Console().WriteLn( "<end><cbr>Processing channel #" + String( c ) );
 
@@ -435,5 +439,5 @@ void* LarsonSekaninaInstance::LockParameter( const MetaParameter* p, size_type /
 
 } // pcl
 
-// ****************************************************************************
-// EOF LarsonSekaninaInstance.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF LarsonSekaninaInstance.cpp - Released 2015/07/31 11:49:48 UTC

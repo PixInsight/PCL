@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/PolarTransform.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/PolarTransform.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_PolarTransform_h
 #define __PCL_PolarTransform_h
@@ -96,21 +99,16 @@ public:
     * while this %PolarTransformBase object exists.
     */
    PolarTransformBase( PixelInterpolation& p ) :
-   InterpolatingGeometricTransformation( p ),
-   m_initialAngle( 0 ), m_finalAngle( pcl::Const<float>::_2pi() ),
-   m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      InterpolatingGeometricTransformation( p ),
+      m_initialAngle( 0 ), m_finalAngle( pcl::Const<float>::_2pi() ),
+      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
    }
 
    /*!
     * Copy constructor.
     */
-   PolarTransformBase( const PolarTransformBase& x ) :
-   InterpolatingGeometricTransformation( x ),
-   m_initialAngle( x.m_initialAngle ), m_finalAngle( x.m_finalAngle ),
-   m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
-   {
-   }
+   PolarTransformBase( const PolarTransformBase& ) = default;
 
    /*!
     * Returns the initial rotation angle in radians. The default initial
@@ -296,9 +294,7 @@ public:
    /*!
     * Copy constructor.
     */
-   PolarTransform( const PolarTransform& x ) : PolarTransformBase( x )
-   {
-   }
+   PolarTransform( const PolarTransform& ) = default;
 
 protected:
 
@@ -349,9 +345,7 @@ public:
    /*!
     * Copy constructor.
     */
-   LogPolarTransform( const LogPolarTransform& x ) : PolarTransformBase( x )
-   {
-   }
+   LogPolarTransform( const LogPolarTransform& ) = default;
 
    /*!
     * \internal
@@ -377,5 +371,5 @@ protected:
 
 #endif   // __PCL_PolarTransform_h
 
-// ****************************************************************************
-// EOF pcl/PolarTransform.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/PolarTransform.h - Released 2015/07/30 17:15:18 UTC

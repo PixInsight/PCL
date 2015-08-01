@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard JPEG File Format Module Version 01.00.01.0228
-// ****************************************************************************
-// JPEGFormat.cpp - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard JPEG File Format Module Version 01.00.03.0249
+// ----------------------------------------------------------------------------
+// JPEGFormat.cpp - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard JPEG PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "JPEGFormat.h"
 #include "JPEGInstance.h"
@@ -68,19 +72,13 @@ IsoString JPEGFormat::Name() const
 
 StringList JPEGFormat::FileExtensions() const
 {
-   StringList exts;
-   exts.Add( ".jpg" ); exts.Add( ".jpeg" );
-   return exts;
+   return StringList() << ".jpg" << ".jpeg";
 }
 
 IsoStringList JPEGFormat::MimeTypes() const
 {
-   IsoStringList mimes;
-   mimes.Add( "image/jpeg" ); // RFC2045,RFC2046
-   mimes.Add( "image/jpg" );
-   mimes.Add( "application/jpeg" );
-   mimes.Add( "application/jpg" );
-   return mimes;
+   // RFC2045,RFC2046
+   return IsoStringList() << "image/jpeg" << "image/jpg" << "application/jpeg" << "application/jpg";
 }
 
 uint32 JPEGFormat::Version() const
@@ -91,7 +89,6 @@ uint32 JPEGFormat::Version() const
 String JPEGFormat::Description() const
 {
    return
-
    "<html>"
    "<p>Joint Photographic Experts Group (JPEG) File Interchange Format, JFIF 1.02 Specification.</p>"
    "</html>";
@@ -113,7 +110,7 @@ String JPEGFormat::Implementation() const
    "Modified 2002-2014 by Guido Vollbeding.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2014, Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2015, Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -143,16 +140,6 @@ bool JPEGFormat::CanStoreResolution() const
 bool JPEGFormat::CanStoreICCProfiles() const
 {
    return true;
-}
-
-bool JPEGFormat::CanStoreMetadata() const
-{
-   return false; // true; ### TODO
-}
-
-bool JPEGFormat::CanStoreThumbnails() const
-{
-   return false; // true; ### TODO
 }
 
 bool JPEGFormat::CanEditPreferences() const
@@ -201,10 +188,6 @@ bool JPEGFormat::EditPreferences() const
 
       Settings::Write( "JPEGOverrideICCProfileEmbedding", overrides.overrideICCProfileEmbedding );
       Settings::Write( "JPEGEmbedICCProfiles",            overrides.embedICCProfiles );
-      Settings::Write( "JPEGOverrideMetadataEmbedding",   overrides.overrideMetadataEmbedding );
-      Settings::Write( "JPEGEmbedMetadata",               overrides.embedMetadata );
-      Settings::Write( "JPEGOverrideThumbnailEmbedding",  overrides.overrideThumbnailEmbedding );
-      Settings::Write( "JPEGEmbedThumbnails",             overrides.embedThumbnails );
 
       return true;
    }
@@ -254,10 +237,6 @@ JPEGFormat::EmbeddingOverrides JPEGFormat::DefaultEmbeddingOverrides()
 
    Settings::Read( "JPEGOverrideICCProfileEmbedding", overrides.overrideICCProfileEmbedding );
    Settings::Read( "JPEGEmbedICCProfiles",            overrides.embedICCProfiles );
-   Settings::Read( "JPEGOverrideMetadataEmbedding",   overrides.overrideMetadataEmbedding );
-   Settings::Read( "JPEGEmbedMetadata",               overrides.embedMetadata );
-   Settings::Read( "JPEGOverrideThumbnailEmbedding",  overrides.overrideThumbnailEmbedding );
-   Settings::Read( "JPEGEmbedThumbnails",             overrides.embedThumbnails );
 
    return overrides;
 }
@@ -267,22 +246,22 @@ JPEGFormat::EmbeddingOverrides JPEGFormat::DefaultEmbeddingOverrides()
 #define JPEG_SIGNATURE  0x4A504547u
 
 JPEGFormat::FormatOptions::FormatOptions() :
-signature( JPEG_SIGNATURE ), options( JPEGFormat::DefaultOptions() )
+   signature( JPEG_SIGNATURE ), options( JPEGFormat::DefaultOptions() )
 {
 }
 
 JPEGFormat::FormatOptions::FormatOptions( const JPEGFormat::FormatOptions& x ) :
-signature( JPEG_SIGNATURE ), options( x.options )
+   signature( JPEG_SIGNATURE ), options( x.options )
 {
 }
 
 JPEGFormat::FormatOptions* JPEGFormat::FormatOptions::FromGenericDataBlock( const void* data )
 {
-   if ( data == 0 )
-      return 0;
+   if ( data == nullptr )
+      return nullptr;
    const JPEGFormat::FormatOptions* o = reinterpret_cast<const JPEGFormat::FormatOptions*>( data );
    if ( o->signature != JPEG_SIGNATURE )
-      return 0;
+      return nullptr;
    return const_cast<JPEGFormat::FormatOptions*>( o );
 }
 
@@ -290,5 +269,5 @@ JPEGFormat::FormatOptions* JPEGFormat::FormatOptions::FromGenericDataBlock( cons
 
 } // pcl
 
-// ****************************************************************************
-// EOF JPEGFormat.cpp - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF JPEGFormat.cpp - Released 2015/07/31 11:49:40 UTC

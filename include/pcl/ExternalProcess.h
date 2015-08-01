@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ExternalProcess.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ExternalProcess.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_ExternalProcess_h
 #define __PCL_ExternalProcess_h
@@ -149,18 +152,19 @@ public:
     */
    virtual ~ExternalProcess()
    {
+      if ( m_handlers != nullptr )
+         delete m_handlers, m_handlers = nullptr;
    }
 
    /*!
     * Ensures that the server-side object managed by this instance is uniquely
     * referenced.
     *
-    * Since external processes are unique objects by definition, calling this
-    * member function has no effect.
+    * Since external processes are unique objects, calling this member function
+    * has no effect.
     */
    virtual void SetUnique()
    {
-      // Unique by definition
    }
 
    /*!
@@ -569,7 +573,7 @@ public:
     * \note In the returned %ByteArray, the data from both stdout and stderr
     * streams will be mixed because they are gathered as they are generated. If
     * you need the data from both streams separately, call the StandardOutput()
-    * and StandardError() member functions.
+    * and StandardError() member functions as appropriate.
     */
    ByteArray Read();
 
@@ -791,17 +795,28 @@ public:
 
 private:
 
-   process_event_handler       onStarted;
-   process_exit_event_handler  onFinished;
-   process_event_handler       onStandardOutputDataAvailable;
-   process_event_handler       onStandardErrorDataAvailable;
-   process_error_event_handler onError;
+   struct EventHandlers
+   {
+      process_event_handler       onStarted                     = nullptr;
+      process_exit_event_handler  onFinished                    = nullptr;
+      process_event_handler       onStandardOutputDataAvailable = nullptr;
+      process_event_handler       onStandardErrorDataAvailable  = nullptr;
+      process_error_event_handler onError                       = nullptr;
+
+      EventHandlers() = default;
+      EventHandlers( const EventHandlers& ) = default;
+      EventHandlers& operator =( const EventHandlers& ) = default;
+   };
+
+   EventHandlers* m_handlers;
 
    ExternalProcess( void* );
    virtual void* CloneHandle() const;
 
-   ExternalProcess( const ExternalProcess& ) { PCL_CHECK( 0 ) }
-   void operator =( const ExternalProcess& ) { PCL_CHECK( 0 ) }
+   ExternalProcess( const ExternalProcess& ) = delete;
+   ExternalProcess& operator =( const ExternalProcess& ) = delete;
+   ExternalProcess( ExternalProcess&& ) = delete;
+   ExternalProcess& operator =( ExternalProcess&& ) = delete;
 
    friend class ExternalProcessPrivate;
    friend class ExternalProcessEventDispatcher;
@@ -815,5 +830,5 @@ private:
 
 #endif   // __PCL_ExternalProcess_h
 
-// ****************************************************************************
-// EOF pcl/ExternalProcess.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ExternalProcess.h - Released 2015/07/30 17:15:18 UTC

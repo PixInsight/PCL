@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Global Process Module Version 01.02.05.0260
-// ****************************************************************************
-// PreferencesInterface.cpp - Released 2014/11/14 17:18:47 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Global Process Module Version 01.02.06.0280
+// ----------------------------------------------------------------------------
+// PreferencesInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,25 +48,25 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "PreferencesInterface.h"
-#include "PreferencesProcess.h"
 #include "PreferencesParameters.h" // for DefaultFontInfo
+#include "PreferencesProcess.h"
 
-#include <pcl/Sizer.h>
-#include <pcl/Label.h>
-#include <pcl/ComboBox.h>
 #include <pcl/CheckBox.h>
-#include <pcl/Edit.h>
-#include <pcl/RadioButton.h>
-#include <pcl/PushButton.h>
-#include <pcl/Dialog.h>
-#include <pcl/FileDialog.h>
 #include <pcl/ColorDialog.h>
-#include <pcl/Graphics.h>
-#include <pcl/GlobalSettings.h>
+#include <pcl/ComboBox.h>
+#include <pcl/Dialog.h>
+#include <pcl/Edit.h>
 #include <pcl/ErrorHandler.h>
+#include <pcl/FileDialog.h>
+#include <pcl/GlobalSettings.h>
+#include <pcl/Graphics.h>
+#include <pcl/Label.h>
+#include <pcl/PushButton.h>
+#include <pcl/RadioButton.h>
+#include <pcl/Sizer.h>
 
 namespace pcl
 {
@@ -75,7 +79,8 @@ static global_item_ref_list globalItemControls;
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-GlobalItemControl::GlobalItemControl() : Control()
+GlobalItemControl::GlobalItemControl() :
+   Control()
 {
    Restyle();
 
@@ -97,7 +102,11 @@ GlobalItemControl::GlobalItemControl() : Control()
 
 // ----------------------------------------------------------------------------
 
-GlobalFlagControl::GlobalFlagControl() : GlobalItemControl(), item( 0 )
+GlobalFlagControl::GlobalFlagControl() :
+   GlobalItemControl(),
+   item( 0 ),
+   enableControl( 0 ),
+   disableControl( 0 )
 {
    checkBox.OnClick( (Button::click_event_handler)&GlobalFlagControl::__Click, *this );
    checkBox.SetButtonColor( BackgroundColor() );
@@ -108,18 +117,32 @@ GlobalFlagControl::GlobalFlagControl() : GlobalItemControl(), item( 0 )
 void GlobalFlagControl::Synchronize()
 {
    if ( item != 0 )
+   {
       checkBox.SetChecked( *item );
+      if ( enableControl != 0 )
+         enableControl->Enable( *item );
+      if ( disableControl != 0 )
+         disableControl->Disable( *item );
+   }
 }
 
 void GlobalFlagControl::__Click( Button&/*sender*/, bool checked )
 {
    if ( item != 0 )
+   {
       *item = checked;
+      if ( enableControl != 0 )
+         enableControl->Enable( *item );
+      if ( disableControl != 0 )
+         disableControl->Disable( *item );
+   }
 }
 
 // ----------------------------------------------------------------------------
 
-GlobalIntegerControl::GlobalIntegerControl() : GlobalItemControl(), item( 0 )
+GlobalIntegerControl::GlobalIntegerControl() :
+   GlobalItemControl(),
+   item( 0 )
 {
    spinBox.OnValueUpdated( (SpinBox::value_event_handler)&GlobalIntegerControl::__ValueUpdated, *this );
    spinSizer.Add( spinBox );
@@ -316,7 +339,7 @@ GlobalFileExtensionControl::GlobalFileExtensionControl() : GlobalStringControl()
 
 String GlobalFileExtensionControl::GetText( const String& s )
 {
-   if ( !s.IsEmpty() && !s.BeginsWith( '.' ) )
+   if ( !s.IsEmpty() && !s.StartsWith( '.' ) )
       return '.' + s;
    return s;
 }
@@ -340,7 +363,7 @@ GlobalColorControl::GlobalColorControl() : GlobalItemControl(), item( 0 )
 {
    colorComboBox.OnColorSelected( (ColorComboBox::color_event_handler)&GlobalColorControl::__ColorSelected, *this );
 
-   colorSample.SetMinWidth( 30 );
+   colorSample.SetScaledMinWidth( 30 );
    colorSample.SetCursor( StdCursor::UpArrow );
    colorSample.OnPaint( (Control::paint_event_handler)&GlobalColorControl::__ColorSample_Paint, *this );
    colorSample.OnMouseRelease( (Control::mouse_button_event_handler)&GlobalColorControl::__ColorSample_MouseRelease, *this );
@@ -377,7 +400,7 @@ void GlobalColorControl::__ColorSample_Paint( Control& sender, const Rect& /*upd
    {
       Graphics g( sender );
       g.SetBrush( *item );
-      g.SetPen( RGBAColor( 0, 0, 0 ) );
+      g.SetPen( 0xff000000, sender.DisplayPixelRatio() );
       g.DrawRect( sender.BoundsRect() );
    }
 }
@@ -403,7 +426,7 @@ GlobalFontControl::GlobalFontControl() : GlobalItemControl(), item( 0 ), itemSiz
    fontComboBox.OnFontSelected( (FontComboBox::font_event_handler)&GlobalFontControl::__FontSelected, *this );
 
    fontSample.SetText( "The quick brown fox jumps over the lazy dog 0123456789" );
-   fontSample.SetMinWidth( 350 );
+   fontSample.SetScaledMinWidth( 350 );
 
    sizeLabel.SetText( "Font size (pt):" );
    sizeLabel.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
@@ -511,7 +534,7 @@ GlobalDirectoryListControl::GlobalDirectoryListControl() : GlobalItemControl(), 
    directoriesTreeBox.DisableMultipleSelections();
    directoriesTreeBox.DisableRootDecoration();
    directoriesTreeBox.EnableAlternateRowColor();
-   directoriesTreeBox.SetMinHeight( 80 );
+   directoriesTreeBox.SetScaledMinHeight( 80 );
    directoriesTreeBox.OnNodeActivated( (TreeBox::node_event_handler)&GlobalDirectoryListControl::__NodeActivated, *this );
 
    addPushButton.SetText( "Add" );
@@ -615,7 +638,7 @@ GlobalFileSetControl::GlobalFileSetControl() : GlobalItemControl(), items()
    filesTreeBox.DisableMultipleSelections();
    filesTreeBox.DisableRootDecoration();
    filesTreeBox.EnableAlternateRowColor();
-   filesTreeBox.SetMinHeight( 80 );
+   filesTreeBox.SetScaledMinHeight( 80 );
    filesTreeBox.OnNodeActivated( (TreeBox::node_event_handler)&GlobalFileSetControl::__NodeActivated, *this );
 
    addPushButton.SetText( "Add" );
@@ -836,8 +859,11 @@ void PreferencesInterface::UpdateControls()
 
 void PreferencesInterface::SelectPageByTreeNode( TreeBox::Node* node )
 {
-   PreferencesCategoryPage* page = GUI->PageByIndex( *reinterpret_cast<int*>( node->Data() ) );
-   if ( page == 0 || page->IsVisible() )
+   CategoryNode* cnode = dynamic_cast<CategoryNode*>( node );
+   if ( cnode == nullptr )
+      return;
+   PreferencesCategoryPage* page = GUI->PageByIndex( cnode->PageIndex() );
+   if ( page == nullptr || page->IsVisible() )
       return;
 
    GUI->HideAllPages();
@@ -868,21 +894,26 @@ void PreferencesInterface::__Category_CurrentNodeUpdated( TreeBox& sender, TreeB
 void PreferencesInterface::__LoadSettings_ButtonClick( Button& sender, bool /*checked*/ )
 {
    if ( sender == GUI->LoadCurrentSettings_PushButton )
+   {
       instance.LoadCurrentSettings();
+   }
    else if ( sender == GUI->LoadCurrentPageSettings_PushButton ||
              sender == GUI->LoadDefaultPageSettings_PushButton )
    {
       TreeBox::Node* node = GUI->CategorySelection_TreeBox.CurrentNode();
-      if ( node != 0 )
+      if ( node != nullptr )
       {
-         PreferencesCategoryPage* page = GUI->PageByIndex( *(int*)node->Data() );
-         if ( page != 0 )
+         CategoryNode* cnode = dynamic_cast<CategoryNode*>( node );
+         if ( cnode != nullptr )
          {
-            PreferencesInstance defaultInstance( ThePreferencesProcess ); // yeah, it loads defaults by default :)
-            if ( sender == GUI->LoadCurrentPageSettings_PushButton )
-               defaultInstance.LoadCurrentSettings();
-
-            page->TransferSettings( instance, defaultInstance );
+            PreferencesCategoryPage* page = GUI->PageByIndex( cnode->PageIndex() );
+            if ( page != nullptr )
+            {
+               PreferencesInstance defaultInstance( ThePreferencesProcess ); // yeah, it loads defaults by default :)
+               if ( sender == GUI->LoadCurrentPageSettings_PushButton )
+                  defaultInstance.LoadCurrentSettings();
+               page->TransferSettings( instance, defaultInstance );
+            }
          }
       }
    }
@@ -1001,7 +1032,7 @@ ResourcesPreferencesPage::ResourcesPreferencesPage( PreferencesInstance& instanc
       "<p>With style sheets, you can literally transform the whole PixInsight platform to adapt it to your "
       "needs and taste, giving it a personal look and feel of your choice. For full information on Qt style "
       "sheets and their syntax, we recommend the following section of the official Qt reference documentation:</p>"
-      "<p>http://qt-project.org/doc/qt-4.8/stylesheet.html</p>"
+      "<p>http://doc.qt.io/qt-5/stylesheet.html</p>"
       "<p>The core style sheet file is only loaded upon application startup. Changes to this parameter will take "
       "place the next time PixInsight is executed.</p>"
       "<p><b>* Warning * Specifying an invalid style sheet file may yield an unusable core application. "
@@ -1025,16 +1056,111 @@ ResourcesPreferencesPage::ResourcesPreferencesPage( PreferencesInstance& instanc
       "PixInsight's graphical interface in its default style. Additional resources can be specified to provide "
       "support for special modules, scripts or custom GUI styles.</p>"
       "<p>For information on the Qt resource system, please refer to the following document:</p>"
-      "<p>http://qt-project.org/doc/qt-4.8/resources.html</p>"
+      "<p>http://doc.qt.io/qt-5/resources.html</p>"
       "<p>Core resource files are only loaded upon application startup. Changes to this parameter will take place "
       "the next time PixInsight is executed.</p>"
       "<p><b>* Warning * Replacing standard core resources with invalid ones may yield an unusable core application, "
       "and/or cause problems with distributed modules and scripts. DO NOT change this parameter if you are not sure "
       "of what you are doing.</b></p>" );
 
+   AutoUIScaling_Flag.checkBox.SetText( "Automatic UI scaling" );
+   AutoUIScaling_Flag.item = &instance.application.autoUIScaling;
+   AutoUIScaling_Flag.disableControl = &UIScalingFactor_Real;
+   AutoUIScaling_Flag.SetToolTip(
+      "<p>When enabled, the PixInsight Core application will try to detect high-dpi monitors automatically, and will "
+      "compute appropriate scaling factors for all GUI elements and resources. For automatic DPI-based scaling, the "
+      "reference is a 27-inch monitor at QHD resolution (2560x1440 physical display pixels, or 109 dpi). This "
+      "pixel density corresponds to a scaling factor of 1.0.</p>"
+      "<p>Keep in mind that automatic display characterization is not always feasible or accurate. For example, some "
+      "X11 desktop managers don't support high-dpi monitors adequately, especially with multiple monitors working at "
+      "different resolutions. Virtualized operating systems can also have problems for automatic detection of monitor "
+      "dimensions. In these cases, you can disable this option to specify the correct scaling factor manually (see the "
+      "UI scaling factor parameter below).</p>"
+      "<p>Core UI scaling parameters are only fetched upon application startup. Changes to this parameter will take "
+      "place the next time PixInsight is executed.</p>"
+      "<p><b>* Warning * Specifying wrong UI scaling settings may yield an unusable core application. DO NOT change "
+      "this parameter if you are not sure of what you are doing.</b></p>" );
+
+   UIScalingFactor_Real.label.SetText( "UI scaling factor" );
+   UIScalingFactor_Real.numericEdit.SetReal();
+   UIScalingFactor_Real.numericEdit.SetRange( 1, 4 );
+   UIScalingFactor_Real.numericEdit.SetPrecision( 2 );
+   UIScalingFactor_Real.item = &instance.application.uiScalingFactor;
+   UIScalingFactor_Real.SetToolTip(
+      "<p>When the automatic UI scaling option is disabled, you can specify a manual scaling factor in the range "
+      "[1,4].</p>"
+      "<p>Core UI scaling parameters are only fetched upon application startup. Changes to this parameter will take "
+      "place the next time PixInsight is executed.</p>"
+      "<p><b>* Warning * Specifying a wrong scaling factor may yield an unusable core application. DO NOT change "
+      "this parameter if you are not sure of what you are doing.</b></p>" );
+
+   FontResolution_Integer.label.SetText( "Font resolution (dpi)" );
+   FontResolution_Integer.spinBox.SetRange( 1, 1000 );
+   FontResolution_Integer.item = &instance.application.fontResolution;
+   FontResolution_Integer.SetToolTip(
+      "<p>Resolution in dots per inch (dpi) for automatic conversion of point dimensions to scaled pixel dimensions. "
+      "This parameter will be applied for automatic scaling of core font resources in a platform-independent way. This "
+      "parameter can be useful to fine tune core font rendering. The default value is 100 dpi.</p>"
+      "<p>Core UI scaling parameters are only fetched upon application startup. Changes to this parameter will take "
+      "place the next time PixInsight is executed.</p>"
+      "<p><b>* Warning * Specifying wrong UI scaling settings may yield an unusable core application. DO NOT change "
+      "this parameter if you are not sure of what you are doing.</b></p>" );
+
+   UIScaling_Sizer.SetSpacing( 4 );
+   UIScaling_Sizer.Add( UIScalingFactor_Real, 50 );
+   UIScaling_Sizer.Add( FontResolution_Integer, 50 );
+
+   LowResFont_String.label.SetText( "Low-resolution font" );
+   LowResFont_String.item = &instance.application.lowResFont;
+   LowResFont_String.SetToolTip(
+      "<p>Core UI font family used for normal (low-dpi) screen resolutions.</p>"
+      "<p>Core UI settings are only fetched upon application startup. Changes to this parameter will take place the "
+      "next time PixInsight is executed.</p>"
+      "<p><b>* Warning * Specifying wrong core fonts may yield an unusable core application. DO NOT change this "
+      "parameter if you are not sure of what you are doing.</b></p>" );
+
+   HighResFont_String.label.SetText( "High-resolution font" );
+   HighResFont_String.item = &instance.application.highResFont;
+   HighResFont_String.SetToolTip(
+      "<p>Core UI font family used for high-dpi screen resolutions.</p>"
+      "<p>Core UI settings are only fetched upon application startup. Changes to this parameter will take place the "
+      "next time PixInsight is executed.</p>"
+      "<p><b>* Warning * Specifying wrong core fonts may yield an unusable core application. DO NOT change this "
+      "parameter if you are not sure of what you are doing.</b></p>" );
+
+   Font_Sizer.SetSpacing( 4 );
+   Font_Sizer.Add( LowResFont_String, 50 );
+   Font_Sizer.Add( HighResFont_String, 50 );
+
+   LowResMonoFont_String.label.SetText( "Low-resolution monospaced font" );
+   LowResMonoFont_String.item = &instance.application.lowResMonoFont;
+   LowResMonoFont_String.SetToolTip(
+      "<p>Core UI monospaced font family used for normal (low-dpi) screen resolutions.</p>"
+      "<p>Core UI settings are only fetched upon application startup. Changes to this parameter will take place the "
+      "next time PixInsight is executed.</p>"
+      "<p><b>* Warning * Specifying wrong core fonts may yield an unusable core application. DO NOT change this "
+      "parameter if you are not sure of what you are doing.</b></p>" );
+
+   HighResMonoFont_String.label.SetText( "High-resolution monospaced font" );
+   HighResMonoFont_String.item = &instance.application.highResMonoFont;
+   HighResMonoFont_String.SetToolTip(
+      "<p>Core UI monospaced font family used for high-dpi screen resolutions.</p>"
+      "<p>Core UI settings are only fetched upon application startup. Changes to this parameter will take place the "
+      "next time PixInsight is executed.</p>"
+      "<p><b>* Warning * Specifying wrong core fonts may yield an unusable core application. DO NOT change this "
+      "parameter if you are not sure of what you are doing.</b></p>" );
+
+   MonoFont_Sizer.SetSpacing( 4 );
+   MonoFont_Sizer.Add( LowResMonoFont_String, 50 );
+   MonoFont_Sizer.Add( HighResMonoFont_String, 50 );
+
    Page_Sizer.SetSpacing( 4 );
    Page_Sizer.Add( StyleSheet_File );
    Page_Sizer.Add( Resources_FileSet );
+   Page_Sizer.Add( AutoUIScaling_Flag );
+   Page_Sizer.Add( UIScaling_Sizer );
+   Page_Sizer.Add( Font_Sizer );
+   Page_Sizer.Add( MonoFont_Sizer );
    Page_Sizer.AddStretch();
 
    SetSizer( Page_Sizer );
@@ -1043,6 +1169,23 @@ ResourcesPreferencesPage::ResourcesPreferencesPage( PreferencesInstance& instanc
 void ResourcesPreferencesPage::TransferSettings( PreferencesInstance& to, const PreferencesInstance& from )
 {
    to.application.styleSheetFile = from.application.styleSheetFile;
+   to.application.resourceFile01 = from.application.resourceFile01;
+   to.application.resourceFile02 = from.application.resourceFile02;
+   to.application.resourceFile03 = from.application.resourceFile03;
+   to.application.resourceFile04 = from.application.resourceFile04;
+   to.application.resourceFile05 = from.application.resourceFile05;
+   to.application.resourceFile06 = from.application.resourceFile06;
+   to.application.resourceFile07 = from.application.resourceFile07;
+   to.application.resourceFile08 = from.application.resourceFile08;
+   to.application.resourceFile09 = from.application.resourceFile09;
+   to.application.resourceFile10 = from.application.resourceFile10;
+   to.application.autoUIScaling = from.application.autoUIScaling;
+   to.application.uiScalingFactor = from.application.uiScalingFactor;
+   to.application.fontResolution = from.application.fontResolution;
+   to.application.lowResFont = from.application.lowResFont;
+   to.application.highResFont = from.application.highResFont;
+   to.application.lowResMonoFont = from.application.lowResMonoFont;
+   to.application.highResMonoFont = from.application.highResMonoFont;
 }
 
 // ----------------------------------------------------------------------------
@@ -1227,11 +1370,6 @@ FileIOPreferencesPage::FileIOPreferencesPage( PreferencesInstance& instance )
       "associated file path is not changed to the new location. This is because what "
       "has been written to disk is not an accurate representation of existing image data.</p>" );
 
-   DefaultEmbedMetadata_Flag.checkBox.SetText( "Enable metadata embedding by default" );
-   DefaultEmbedMetadata_Flag.item = &instance.imageWindow.defaultEmbedMetadata;
-   DefaultEmbedMetadata_Flag.SetToolTip(
-      "<p>Enable <i>Embed Metadata</i> check boxes on File Options dialogs by default.</p>" );
-
    DefaultEmbedThumbnails_Flag.checkBox.SetText( "Enable thumbnail embedding by default" );
    DefaultEmbedThumbnails_Flag.item = &instance.imageWindow.defaultEmbedThumbnails;
    DefaultEmbedThumbnails_Flag.SetToolTip(
@@ -1249,7 +1387,6 @@ FileIOPreferencesPage::FileIOPreferencesPage( PreferencesInstance& instance )
    Page_Sizer.Add( RememberFileOpenType_Flag );
    Page_Sizer.Add( RememberFileSaveType_Flag );
    Page_Sizer.Add( StrictFileSaveMode_Flag );
-   Page_Sizer.Add( DefaultEmbedMetadata_Flag );
    Page_Sizer.Add( DefaultEmbedThumbnails_Flag );
    Page_Sizer.Add( DefaultEmbedProperties_Flag );
    Page_Sizer.AddStretch();
@@ -1261,10 +1398,10 @@ void FileIOPreferencesPage::TransferSettings( PreferencesInstance& to, const Pre
 {
    to.imageWindow.backupFiles            = from.imageWindow.backupFiles;
    to.imageWindow.defaultFileExtension   = from.imageWindow.defaultFileExtension;
+   to.imageWindow.nativeFileDialogs      = from.imageWindow.nativeFileDialogs;
    to.imageWindow.rememberFileOpenType   = from.imageWindow.rememberFileOpenType;
    to.imageWindow.rememberFileSaveType   = from.imageWindow.rememberFileSaveType;
    to.imageWindow.strictFileSaveMode     = from.imageWindow.strictFileSaveMode;
-   to.imageWindow.defaultEmbedMetadata   = from.imageWindow.defaultEmbedMetadata;
    to.imageWindow.defaultEmbedThumbnails = from.imageWindow.defaultEmbedThumbnails;
 }
 
@@ -1299,6 +1436,14 @@ DirectoriesAndNetworkPreferencesPage::DirectoriesAndNetworkPreferencesPage( Pref
       "<i>defrag</i> utility (or equivalent) on a regular basis. Under UNIX/Linux and Mac OS X, there are no "
       "fragmentation problems because the native filesystems on these platforms prevent fragmentation automatically.</p>" );
 
+   SwapCompression_Flag.checkBox.SetText( "Swap file compression" );
+   SwapCompression_Flag.item = &instance.imageWindow.swapCompression;
+   SwapCompression_Flag.SetToolTip(
+      "<p>Enable this option to compress image swap files. In the current versions of PixInsight, swap files are compressed "
+      "using a multithreaded implementation of the LZ4 fast lossless compression algorithm with byte shuffling. This allows "
+      "for real-time compression/decompression of swap data for moderately sized images. Swap file compression can provide "
+      "significant disk space savings with minimal impact on I/O throughoutput in most cases.</p>" );
+
    DownloadsDirectory_Dir.label.SetText( "Downloads directory" );
    DownloadsDirectory_Dir.item = &instance.imageWindow.downloadsDirectory;
    DownloadsDirectory_Dir.SetToolTip(
@@ -1324,6 +1469,7 @@ DirectoriesAndNetworkPreferencesPage::DirectoriesAndNetworkPreferencesPage( Pref
 
    Page_Sizer.SetSpacing( 4 );
    Page_Sizer.Add( SwapDirectories_DirList );
+   Page_Sizer.Add( SwapCompression_Flag );
    Page_Sizer.Add( DownloadsDirectory_Dir );
    Page_Sizer.Add( FollowDownloadLocations_Flag );
    Page_Sizer.Add( VerboseNetworkOperations_Flag );
@@ -1335,6 +1481,7 @@ DirectoriesAndNetworkPreferencesPage::DirectoriesAndNetworkPreferencesPage( Pref
 void DirectoriesAndNetworkPreferencesPage::TransferSettings( PreferencesInstance& to, const PreferencesInstance& from )
 {
    to.imageWindow.swapDirectories          = from.imageWindow.swapDirectories;
+   to.imageWindow.swapCompression          = from.imageWindow.swapCompression;
    to.imageWindow.downloadsDirectory       = from.imageWindow.downloadsDirectory;
    to.imageWindow.followDownloadLocations  = from.imageWindow.followDownloadLocations;
    to.imageWindow.verboseNetworkOperations = from.imageWindow.verboseNetworkOperations;
@@ -1519,6 +1666,7 @@ MiscImageWindowSettingsPreferencesPage::MiscImageWindowSettingsPreferencesPage( 
 
    FastScreenRenditions_Flag.checkBox.SetText( "Use fast screen renditions" );
    FastScreenRenditions_Flag.item = &instance.imageWindow.fastScreenRenditions;
+   FastScreenRenditions_Flag.enableControl = &FastScreenRenditionThreshold_Integer;
    FastScreenRenditions_Flag.SetToolTip(
       "<p>Use a fast pixel interpolation algorithm to generate reduced screen renditions of images for zoom "
       "ratios below 1:2. With this option enabled, screen renditions can be significantly faster, although "
@@ -1945,7 +2093,6 @@ PreferencesInterface::GUIData::GUIData( PreferencesInterface& w ) : window( w )
 {
    InitializeCategories();
 
-   CategorySelection_TreeBox.SetDataOwnership( true );
    CategorySelection_TreeBox.HideHeader();
    CategorySelection_TreeBox.SetNumberOfColumns( 1 );
    CategorySelection_TreeBox.EnableRootDecoration();
@@ -1956,10 +2103,9 @@ PreferencesInterface::GUIData::GUIData( PreferencesInterface& w ) : window( w )
    int index = 0;
    for ( category_list::iterator i = categories.Begin(); i != categories.End(); ++i )
    {
-      TreeBox::Node* node = new TreeBox::Node( CategorySelection_TreeBox );
-      node->SetText( 0, (*i)->Title() );
-      node->SetIcon( 0, (*i)->Icon() );
-      node->SetData( new int( index++ ) );
+      CategoryNode* node = new CategoryNode( CategorySelection_TreeBox, index++ );
+      node->SetText( 0, i->Title() );
+      node->SetIcon( 0, i->Icon( w.DisplayPixelRatio() ) );
    }
 
    pcl::Font titleFont = w.Font();
@@ -1971,7 +2117,7 @@ PreferencesInterface::GUIData::GUIData( PreferencesInterface& w ) : window( w )
 
    Title_Control.SetObjectId( "IWSectionBar" );
    Title_Control.SetSizer( Title_Sizer );
-   Title_Control.SetMinWidth( 390 );
+   Title_Control.SetScaledMinWidth( 390 );
 
    CategoryStack_Sizer.SetMargin( 4 );
    CategoryStack_Sizer.Add( Title_Control );
@@ -1979,7 +2125,7 @@ PreferencesInterface::GUIData::GUIData( PreferencesInterface& w ) : window( w )
    CategoryStack_Sizer.AddStretch();
 
    CategoryStack_Control.SetSizer( CategoryStack_Sizer );
-   CategoryStack_Control.SetMinHeight( 500 );
+   CategoryStack_Control.SetScaledMinHeight( 500 );
 
    TopRow_Sizer.SetSpacing( 12 );
    TopRow_Sizer.Add( CategorySelection_TreeBox );
@@ -2024,10 +2170,10 @@ PreferencesCategoryPage* PreferencesInterface::GUIData::PageByIndex( int index )
    if ( index < 0 || index >= NumberOfPages() )
       return 0;
 
-   PreferencesCategoryPage* page = categories[index]->page;
+   PreferencesCategoryPage* page = categories[index].page;
    if ( page == 0 )
    {
-      page = categories[index]->CreatePage( window.instance );
+      page = categories[index].CreatePage( window.instance );
 
       CategoryStack_Sizer.Insert( 2, *page );
 
@@ -2050,13 +2196,13 @@ PreferencesCategoryPage* PreferencesInterface::GUIData::PageByIndex( int index )
 void PreferencesInterface::GUIData::HideAllPages()
 {
    for ( category_list::iterator i = categories.Begin(); i != categories.End(); ++i )
-      (*i)->HidePage();
+      i->HidePage();
 }
 
 void PreferencesInterface::GUIData::PerformAllPageAdditionalUpdates()
 {
    for ( category_list::iterator i = categories.Begin(); i != categories.End(); ++i )
-      (*i)->PerformAdditionalUpdates();
+      i->PerformAdditionalUpdates();
 }
 
 void PreferencesInterface::GUIData::InitializeCategories()
@@ -2082,5 +2228,5 @@ void PreferencesInterface::GUIData::InitializeCategories()
 
 } // pcl
 
-// ****************************************************************************
-// EOF PreferencesInterface.cpp - Released 2014/11/14 17:18:47 UTC
+// ----------------------------------------------------------------------------
+// EOF PreferencesInterface.cpp - Released 2015/07/31 11:49:48 UTC

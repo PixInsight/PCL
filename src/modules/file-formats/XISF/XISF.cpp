@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard XISF File Format Module Version 01.00.00.0023
-// ****************************************************************************
-// XISF.cpp - Released 2014/11/30 10:38:10 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard XISF File Format Module Version 01.00.03.0056
+// ----------------------------------------------------------------------------
+// XISF.cpp - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "XISF.h"
 
@@ -52,14 +56,17 @@
 #include <QtCore/QXmlStreamWriter>
 #include <QtCore/QUrl>
 
+#include <pcl/AutoPointer.h>
+#include <pcl/ColorFilterArray.h>
+#include <pcl/Compression.h>
+#include <pcl/Cryptography.h>
 #include <pcl/Console.h>
+#include <pcl/DisplayFunction.h>
 #include <pcl/FITSHeaderKeyword.h>
 #include <pcl/Image.h>
 #include <pcl/MetaModule.h>
 #include <pcl/Random.h>
 #include <pcl/Version.h>
-
-#include <zlib/zlib.h>
 
 // ----------------------------------------------------------------------------
 
@@ -133,9 +140,9 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*
- * XISF File Signature
+ * XISF Monolithic File Signature
  *
- * All XISF version 1.0 files begin with the following sequence:
+ * All XISF version 1.0 monolithic files begin with the following sequence:
  *
  * XISF0100<header-length><reserved>
  *
@@ -145,33 +152,38 @@ namespace pcl
  * future use; it must be zero. After the file signature sequence comes the XML
  * header and all attached data blocks.
  *
- * In this file signature as well as in the rest of this implementation, we
- * assume a little-endian hardware architecture. At present, only Intel-based
- * machines, which are little-endian, are targetted by the PixInsight platform.
+ * In this file signature, as well as in the rest of this implementation, we
+ * assume little-endian byte order as per the XISF 1.0 standard.
  */
 struct XISFFileSignature
 {
-   uint8  magic[ 8 ];   // XISF0100
-   uint32 headerLength; // length in bytes of the XML file header
-   uint32 reserved;     // reserved - must be zero
+#ifndef _MSC_VER
+   uint8  magic[ 8 ]   = { 'X', 'I', 'S', 'F', '0', '1', '0', '0' };
+#else
+   uint8  magic[ 8 ];
+#endif
+   uint32 headerLength = 0;  // length in bytes of the XML file header
+   uint32 reserved     = 0;  // reserved - must be zero
 
-   XISFFileSignature( uint64 length = 0 )
+   XISFFileSignature() = default;
+   XISFFileSignature( const XISFFileSignature& ) = default;
+   XISFFileSignature& operator =( const XISFFileSignature& ) = default;
+
+   XISFFileSignature( uint32 length ) : headerLength( length )
    {
+#ifdef _MSC_VER
       magic[0] = 'X'; magic[1] = 'I'; magic[2] = 'S'; magic[3] = 'F';
       magic[4] = '0'; magic[5] = '1'; magic[6] = '0'; magic[7] = '0';
-      headerLength = length;
-      reserved = 0;
+#endif
    }
-
-   XISFFileSignature( const XISFFileSignature& ) = default;
 
    void Validate() const
    {
       if ( magic[0] != 'X' || magic[1] != 'I' || magic[2] != 'S' || magic[3] != 'F' )
-         throw Error( "Not an XISF file." );
+         throw Error( "Not a monolithic XISF file." );
       if ( magic[4] != '0' || magic[5] != '1' || magic[6] != '0' || magic[7] != '0' )
          throw Error( "Not an XISF version 1.0 file." );
-      if ( headerLength < 245 ) // length of an empty XISF header, from "<?xml..." to </xisf>
+      if ( headerLength < 65 ) // length of an empty XISF header, from "<?xml..." to </xisf>
          throw Error( "Invalid or corrupted XISF file." );
    }
 };
@@ -212,7 +224,7 @@ const char* XISFEngineBase::SampleFormatId( int bitsPerSample, bool floatSample,
 
 bool XISFEngineBase::GetSampleFormatFromId( int& bitsPerSample, bool& floatSample, bool& complexSample, const IsoString& formatId )
 {
-   IsoString id = formatId.LowerCase();
+   IsoString id = formatId.CaseFolded();
    if ( id == "float32" )
    {
       bitsPerSample = 32;
@@ -275,16 +287,8 @@ const char* XISFEngineBase::ColorSpaceId( int colorSpace )
       return "Gray";
    case ColorSpace::RGB:
       return "RGB";
-   case ColorSpace::CIEXYZ:
-      return "CIEXYZ";
    case ColorSpace::CIELab:
       return "CIELab";
-   case ColorSpace::CIELch:
-      return "CIELch";
-   case ColorSpace::HSV:
-      return "HSV";
-   case ColorSpace::HSI:
-      return "HSI";
    default:
       return 0;
    }
@@ -292,21 +296,13 @@ const char* XISFEngineBase::ColorSpaceId( int colorSpace )
 
 int XISFEngineBase::ColorSpaceFromId( const IsoString& spaceId )
 {
-   IsoString id = spaceId.LowerCase();
+   IsoString id = spaceId.CaseFolded();
    if ( id == "gray" )
       return ColorSpace::Gray;
    if ( id == "rgb" )
       return ColorSpace::RGB;
-   if ( id == "ciexyz" )
-      return ColorSpace::CIEXYZ;
    if ( id == "cielab" )
       return ColorSpace::CIELab;
-   if ( id == "cielch" )
-      return ColorSpace::CIELch;
-   if ( id == "hsv" )
-      return ColorSpace::HSV;
-   if ( id == "hsi" )
-      return ColorSpace::HSI;
    return ColorSpace::Unknown;
 }
 
@@ -333,7 +329,7 @@ int XISFEngineBase::CFATypeFromId( const IsoString& cfaId )
 {
    if ( cfaId.IsEmpty() )
       return CFAType::None;
-   IsoString id = cfaId.LowerCase();
+   IsoString id = cfaId.CaseFolded();
    if ( id == "bggr" )
       return CFAType::BGGR;
    if ( id == "grbg" )
@@ -351,7 +347,7 @@ const char* XISFEngineBase::PropertyTypeId( int type )
 {
    switch ( type )
    {
-   case VariantType::Bool:       return "Boolean";
+   case VariantType::Boolean:    return "Boolean";
    case VariantType::Int8:       return "Int8";
    case VariantType::Int16:      return "Int16";
    case VariantType::Int32:      return "Int32";
@@ -360,46 +356,64 @@ const char* XISFEngineBase::PropertyTypeId( int type )
    case VariantType::UInt16:     return "UInt16";
    case VariantType::UInt32:     return "UInt32";
    case VariantType::UInt64:     return "UInt64";
-   case VariantType::Float:      return "Float32";
-   case VariantType::Double:     return "Float64";
-   case VariantType::ByteArray:  return "ByteArray";
-   case VariantType::IVector:    return "IVector";
-   case VariantType::UIVector:   return "UIVector";
+   case VariantType::Float32:    return "Float32";
+   case VariantType::Float64:    return "Float64";
+
+   case VariantType::Complex32:  return "Complex32";
+   case VariantType::Complex64:  return "Complex64";
+
+   case VariantType::I8Vector:   return "I8Vector";
+   case VariantType::UI8Vector:  return "UI8Vector";
+   case VariantType::I16Vector:  return "I16Vector";
+   case VariantType::UI16Vector: return "UI16Vector";
+   case VariantType::I32Vector:  return "I32Vector";
+   case VariantType::UI32Vector: return "UI32Vector";
    case VariantType::I64Vector:  return "I64Vector";
    case VariantType::UI64Vector: return "UI64Vector";
-   case VariantType::FVector:    return "F32Vector";
-   case VariantType::DVector:    return "F64Vector";
-   case VariantType::ByteMatrix: return "ByteMatrix";
-   case VariantType::IMatrix:    return "IMatrix";
-   case VariantType::UIMatrix:   return "UIMatrix";
+   case VariantType::F32Vector:  return "F32Vector";
+   case VariantType::F64Vector:  return "F64Vector";
+   case VariantType::C32Vector:  return "C32Vector";
+   case VariantType::C64Vector:  return "C64Vector";
+
+   case VariantType::I8Matrix:   return "I8Matrix";
+   case VariantType::UI8Matrix:  return "UI8Matrix";
+   case VariantType::I16Matrix:  return "I16Matrix";
+   case VariantType::UI16Matrix: return "UI16Matrix";
+   case VariantType::I32Matrix:  return "I32Matrix";
+   case VariantType::UI32Matrix: return "UI32Matrix";
    case VariantType::I64Matrix:  return "I64Matrix";
    case VariantType::UI64Matrix: return "UI64Matrix";
-   case VariantType::FMatrix:    return "F32Matrix";
-   case VariantType::DMatrix:    return "F64Matrix";
-   case VariantType::String:     return "String16";
-   case VariantType::IsoString:  return "String8";
-   default:                      return 0;
+   case VariantType::F32Matrix:  return "F32Matrix";
+   case VariantType::F64Matrix:  return "F64Matrix";
+   case VariantType::C32Matrix:  return "C32Matrix";
+   case VariantType::C64Matrix:  return "C64Matrix";
+
+   case VariantType::String:     return "String";
+   case VariantType::IsoString:  return "String";
+
+   default:                      return nullptr;
    }
 }
 
 int XISFEngineBase::PropertyTypeFromId( const IsoString& typeId )
 {
-   IsoString id = typeId.LowerCase();
-   if ( id == "boolean" || id == "bool" )
-      return VariantType::Bool;
+   IsoString id = typeId.CaseFolded();
+
+   if ( id == "boolean" )
+      return VariantType::Boolean;
    if ( id == "int8" )
       return VariantType::Int8;
-   if ( id == "int16" )
+   if ( id == "int16" || id == "short" )
       return VariantType::Int16;
-   if ( id == "int32" )
+   if ( id == "int32" || id == "int" )
       return VariantType::Int32;
    if ( id == "int64" )
       return VariantType::Int64;
-   if ( id == "uint8" )
+   if ( id == "uint8" || id == "byte" )
       return VariantType::UInt8;
-   if ( id == "uint16" )
+   if ( id == "uint16" || id == "ushort" )
       return VariantType::UInt16;
-   if ( id == "uint32" )
+   if ( id == "uint32" || id == "uint" )
       return VariantType::UInt32;
    if ( id == "uint64" )
       return VariantType::UInt64;
@@ -407,49 +421,236 @@ int XISFEngineBase::PropertyTypeFromId( const IsoString& typeId )
       return VariantType::Float;
    if ( id == "float64" || id == "double" )
       return VariantType::Double;
-   if ( id == "bytearray" )
-      return VariantType::ByteArray;
-   if ( id == "ivector" )
-      return VariantType::IVector;
-   if ( id == "uivector" )
-      return VariantType::UIVector;
+
+   if ( id == "complex32" )
+      return VariantType::Complex32;
+   if ( id == "complex64" || id == "complex" )
+      return VariantType::Complex64;
+
+   if ( id == "i8vector" )
+      return VariantType::I8Vector;
+   if ( id == "ui8vector" || id == "bytearray" || id == "bytevector" )
+      return VariantType::UI8Vector;
+   if ( id == "i16vector" )
+      return VariantType::I16Vector;
+   if ( id == "ui16vector" )
+      return VariantType::UI16Vector;
+   if ( id == "i32vector" || id == "ivector" )
+      return VariantType::I32Vector;
+   if ( id == "ui32vector" || id == "uivector" )
+      return VariantType::UI32Vector;
    if ( id == "i64vector" )
       return VariantType::I64Vector;
    if ( id == "ui64vector" )
       return VariantType::UI64Vector;
-   if ( id == "f32vector" || id == "fvector" )
-      return VariantType::FVector;
-   if ( id == "f64vector" || id == "dvector" )
-      return VariantType::DVector;
-   if ( id == "bytematrix" )
-      return VariantType::ByteMatrix;
-   if ( id == "imatrix" )
-      return VariantType::IMatrix;
-   if ( id == "uimatrix" )
-      return VariantType::UIMatrix;
+   if ( id == "f32vector" )
+      return VariantType::F32Vector;
+   if ( id == "f64vector" || id == "vector" )
+      return VariantType::F64Vector;
+   if ( id == "c32vector" )
+      return VariantType::C32Vector;
+   if ( id == "c64vector" )
+      return VariantType::C64Vector;
+
+   if ( id == "i8matrix" )
+      return VariantType::I8Matrix;
+   if ( id == "ui8matrix" || id == "bytematrix" )
+      return VariantType::UI8Matrix;
+   if ( id == "i16matrix" )
+      return VariantType::I16Matrix;
+   if ( id == "ui16matrix" )
+      return VariantType::UI16Matrix;
+   if ( id == "i32matrix" || id == "imatrix" )
+      return VariantType::I32Matrix;
+   if ( id == "ui32matrix" || id == "uimatrix" )
+      return VariantType::UI32Matrix;
    if ( id == "i64matrix" )
       return VariantType::I64Matrix;
    if ( id == "ui64matrix" )
       return VariantType::UI64Matrix;
-   if ( id == "f32matrix" || id == "fmatrix" )
-      return VariantType::FMatrix;
-   if ( id == "f64matrix" || id == "dmatrix" )
-      return VariantType::DMatrix;
-   if ( id == "string16" || id == "string" || id == "utf16string" )
-      return VariantType::String;
-   if ( id == "string8" || id == "isostring" || id == "utf8string" )
+   if ( id == "f32matrix" )
+      return VariantType::F32Matrix;
+   if ( id == "f64matrix" || id == "matrix" )
+      return VariantType::F64Matrix;
+   if ( id == "c32matrix" )
+      return VariantType::C32Matrix;
+   if ( id == "c64matrix" )
+      return VariantType::C64Matrix;
+
+   if ( id == "string" || id == "string8" )
       return VariantType::IsoString;
+   if ( id == "string16" )
+      return VariantType::String;
+
    return VariantType::Invalid;
+}
+
+const char* XISFEngineBase::CompressionMethodId( int compressionMethod )
+{
+   switch ( compressionMethod )
+   {
+   default:
+   case XISF_COMPRESSION_NONE:
+      return "";
+   case XISF_COMPRESSION_ZLIB:
+      return "zlib";
+   case XISF_COMPRESSION_LZ4:
+      return "lz4";
+   case XISF_COMPRESSION_LZ4HC:
+      return "lz4hc";
+   case XISF_COMPRESSION_ZLIB_SH:
+      return "zlib+sh";
+   case XISF_COMPRESSION_LZ4_SH:
+      return "lz4+sh";
+   case XISF_COMPRESSION_LZ4HC_SH:
+      return "lz4hc+sh";
+   }
+}
+
+int XISFEngineBase::CompressionMethodFromId( const IsoString& methodId )
+{
+   if ( methodId.IsEmpty() )
+      return XISF_COMPRESSION_NONE;
+   IsoString id = methodId.CaseFolded();
+   if ( id == "zlib" )
+      return XISF_COMPRESSION_ZLIB;
+   if ( id == "lz4" )
+      return XISF_COMPRESSION_LZ4;
+   if ( id == "lz4hc" )
+      return XISF_COMPRESSION_LZ4HC;
+   if ( id == "zlib+sh" )
+      return XISF_COMPRESSION_ZLIB_SH;
+   if ( id == "lz4+sh" )
+      return XISF_COMPRESSION_LZ4_SH;
+   if ( id == "lz4hc+sh" )
+      return XISF_COMPRESSION_LZ4HC_SH;
+   return XISF_COMPRESSION_UNKNOWN;
+}
+
+Compression* XISFEngineBase::NewCompression( int compressionMethod, int itemSize )
+{
+   Compression* compressor = nullptr;
+   switch ( compressionMethod )
+   {
+   case XISF_COMPRESSION_ZLIB:
+   case XISF_COMPRESSION_ZLIB_SH:
+      compressor = new ZLibCompression;
+      break;
+   case XISF_COMPRESSION_LZ4:
+   case XISF_COMPRESSION_LZ4_SH:
+      compressor = new LZ4Compression;
+      break;
+   case XISF_COMPRESSION_LZ4HC:
+   case XISF_COMPRESSION_LZ4HC_SH:
+      compressor = new LZ4HCCompression;
+      break;
+   default: // ?!
+   case XISF_COMPRESSION_NONE:
+      throw Error( String().Format( "Internal error: Invalid compression codec %02x", compressionMethod ) );
+   }
+   switch ( compressionMethod )
+   {
+   case XISF_COMPRESSION_ZLIB_SH:
+   case XISF_COMPRESSION_LZ4_SH:
+   case XISF_COMPRESSION_LZ4HC_SH:
+      if ( itemSize > 1 )
+      {
+         compressor->EnableByteShuffling();
+         compressor->SetItemSize( itemSize );
+         break;
+      }
+      // else fall through
+   default:
+      compressor->DisableByteShuffling();
+      break;
+   }
+   compressor->DisableChecksums();
+   return compressor;
+}
+
+int XISFEngineBase::CompressionLevelForMethod( int method, int level )
+{
+   level = Range( level, 0, XISF_COMPRESSION_LEVEL_MAX );
+   int maxLevel;
+   switch ( method )
+   {
+   default: // ?!
+   case XISF_COMPRESSION_NONE:
+      return 0;
+   case XISF_COMPRESSION_ZLIB:
+   case XISF_COMPRESSION_ZLIB_SH:
+      if ( level == 0 )
+         return 6;
+      maxLevel = 9;
+      break;
+   case XISF_COMPRESSION_LZ4:
+   case XISF_COMPRESSION_LZ4_SH:
+      if ( level == 0 )
+         return 64;
+      maxLevel = 64;
+      break;
+   case XISF_COMPRESSION_LZ4HC:
+   case XISF_COMPRESSION_LZ4HC_SH:
+      if ( level == 0 )
+         return 9;
+      maxLevel = 16;
+      break;
+   }
+   return Max( 1, RoundInt( double( level )/XISF_COMPRESSION_LEVEL_MAX * maxLevel ) );
+}
+
+bool XISFEngineBase::CompressionUsesByteShuffle( int method )
+{
+   switch ( method )
+   {
+   case XISF_COMPRESSION_ZLIB_SH:
+   case XISF_COMPRESSION_LZ4_SH:
+   case XISF_COMPRESSION_LZ4HC_SH:
+      return true;
+   default:
+      return false;
+   }
+}
+
+int XISFEngineBase::CompressionMethodNoShuffle( int method )
+{
+   switch ( method )
+   {
+   case XISF_COMPRESSION_ZLIB_SH:
+      return XISF_COMPRESSION_ZLIB;
+   case XISF_COMPRESSION_LZ4_SH:
+      return XISF_COMPRESSION_LZ4;
+   case XISF_COMPRESSION_LZ4HC_SH:
+      return XISF_COMPRESSION_LZ4HC;
+   default:
+      return method;
+   }
+}
+
+bool XISFEngineBase::CompressionNeedsItemSize( int method )
+{
+   return CompressionUsesByteShuffle( method );
+}
+
+CryptographicHash* XISFEngineBase::NewCryptographicHash( const IsoString& checksumMethod )
+{
+   IsoString method = checksumMethod.CaseFolded();
+   if ( method == "sha1" || method == "sha-1" )
+      return new SHA1;
+   // ### TODO: Implement SHA-256
+   throw Error( "Internal error: Invalid cryptographic hashing algorithm '" + checksumMethod + "'" );
 }
 
 bool XISFEngineBase::IsInternalPropertyId( const IsoString& id )
 {
-   return id.BeginsWith( XISF_INTERNAL_PREFIX );
+   return id.StartsWith( XISF_INTERNAL_PREFIX );
 }
 
 IsoString XISFEngineBase::InternalPropertyId( const IsoString& id )
 {
-   return XISF_INTERNAL_PREFIX + id;
+   if ( !IsInternalPropertyId( id ) )
+      return XISF_INTERNAL_PREFIX + id;
+   return id;
 }
 
 // ----------------------------------------------------------------------------
@@ -459,64 +660,271 @@ IsoString XISFEngineBase::InternalPropertyId( const IsoString& id )
  */
 struct XISFInputDataBlock
 {
+   struct SubblockDimensions
+   {
+      fsize_type compressedSize   = 0; // size in bytes of the compressed subblock.
+      fsize_type uncompressedSize = 0; // size in bytes of the uncompressed subblock.
+   };
+
+   /*
+    * A list of compressed subblock dimensions.
+    */
+   typedef Array<SubblockDimensions>   subblock_info;
+
+   /*
+    * Compressed subblocks.
+    */
+   typedef Compression::subblock_list  subblock_list;
+
    /*
     * For blocks stored as attachments, the position and size members provide
     * direct file coordinates.
     *
     * For inline and embedded blocks, we have position=0 and the data already
     * acquired in the data array. The size member is redundant in this case.
+    *
+    * For compressed blocks stored as attachments, the subblockDimensions
+    * member provides compressed and uncompressed subblock sizes in bytes.
+    *
+    * For inline and embedded compressed blocks, the data member already has
+    * the compressed data loaded.
     */
-   fpos_type  position;         // absolute file position in bytes
-   fsize_type size;             // block size in bytes
-   bool       compressed : 1;   // zlib compression ?
-   fsize_type uncompressedSize; // if compressed, size of the uncompressed data
-   ByteArray  data;             // block data
+   fpos_type     position          = 0;   // absolute file position in bytes
+   fsize_type    size              = 0;   // file block size in bytes
+   int           compressionMethod = XISF_COMPRESSION_NONE; // compression algorithm
+   int           itemSize          = 1;   // size in bytes of a data item, for byte shuffling
+   subblock_info subblockInfo;            // compressed subblock dimensions
+   subblock_list subblocks;               // compressed data
+   ByteArray     data;                    // uncompressed data
+   ByteArray     checksum;                // cryptographic hash digest
+   IsoString     checksumMethod;          // hashing algorithm
+   mutable bool  checksumVerified  = false;
 
-   XISFInputDataBlock() : position( 0 ), size( 0 ), compressed( false ), uncompressedSize( 0 ), data()
-   {
-   }
-
+   XISFInputDataBlock() = default;
    XISFInputDataBlock( const XISFInputDataBlock& ) = default;
    XISFInputDataBlock& operator =( const XISFInputDataBlock& ) = default;
+
+   bool IsValid() const
+   {
+      return position > 0 || HasData() || HasCompressedData();
+   }
+
+   bool IsAttachment() const
+   {
+      return position > 0;
+   }
+
+   bool IsCompressed() const
+   {
+      return compressionMethod != XISF_COMPRESSION_NONE;
+   }
 
    bool HasData() const
    {
       return !data.IsEmpty();
    }
 
-   bool IsCompressed() const
+   bool HasCompressedData() const
    {
-      return compressed;
+      return !subblocks.IsEmpty();
    }
 
-   bool IsValid() const
+   bool HasChecksum() const
    {
-      return position > 0 || HasData();
+      return !checksum.IsEmpty();
    }
 
    bool IsEmpty() const
    {
-      return !HasData() && size <= 0;
+      return size <= 0 && !HasData() && !HasCompressedData();
    }
 
-   void UncompressData()
+   size_type DataSize() const
    {
+      if ( IsEmpty() )
+         return 0;
+
       if ( HasData() )
+         return data.Length();
+
+      if ( IsCompressed() )
+      {
+         size_type uncompressedSize = 0;
+         for ( subblock_info::const_iterator i = subblockInfo.Begin(); i != subblockInfo.End(); ++i )
+            uncompressedSize += i->uncompressedSize;
+         return uncompressedSize;
+      }
+
+      return size;
+   }
+
+   void GetData( File& file, void* dst, size_type dstSize, size_type offset = 0 )
+   {
+      if ( IsEmpty() )
+         throw Error( "Internal error: Invalid call to XISFInputDataBlock::GetData()" );
+
+      VerifyChecksum( file );
+
+      if ( IsCompressed() )
+         Uncompress( file );
+
+      if ( HasData() )
+      {
+         if ( offset + dstSize > data.Length() )
+            throw Error( "Internal error: Invalid dst size in block data access." );
+         ::memcpy( dst, data.At( offset ), dstSize );
+      }
+      else
+      {
+         if ( offset + dstSize > size_type( size ) )
+            throw Error( "Internal error: Invalid dst size in block data access." );
+         file.SetPosition( position + offset );
+         file.Read( dst, dstSize );
+      }
+   }
+
+   void LoadData( File& file )
+   {
+      VerifyChecksum( file );
+
+      if ( !HasData() )
          if ( IsCompressed() )
+            Uncompress( file );
+         else
          {
-            if ( uncompressedSize == 0 || uncompressedSize >= uint32( -1 ) )
-               throw Error( "Internal error: Invalid uncompressed data size." );
+            data = ByteArray( size );
+            file.SetPosition( position );
+            file.Read( data.Begin(), size );
+         }
+   }
 
-            ByteArray uncompressedData = ByteArray( size_type( uncompressedSize ) );
-            unsigned long resultSize = uint32( uncompressedSize );
-            int result = ::uncompress( uncompressedData.Begin(), &resultSize, data.Begin(), (unsigned long)data.Length() );
-            if ( result != Z_OK )
-               throw Error( "Failed to uncompress block data." );
-            if ( fsize_type( resultSize ) != uncompressedSize )
-               throw Error( "Failed to uncompress block data: Uncompressed data size mismatch." );
+   void UnloadData()
+   {
+      if ( IsCompressed() )
+      {
+         data.Clear();
+         if ( IsAttachment() )
+            subblocks.Clear();
+      }
+      else
+      {
+         if ( IsAttachment() )
+            data.Clear();
+      }
+   }
 
-            data = uncompressedData;
-            compressed = false;
+   void SetCompressedData( const ByteArray& compressedData )
+   {
+      if ( IsAttachment() || !IsCompressed() )
+         throw Error( "Internal error: Invalid call to XISFInputDataBlock::SetCompressedData()" );
+
+      size_type offset = 0;
+      subblocks.Clear();
+      for ( subblock_info::const_iterator i = subblockInfo.Begin(); i != subblockInfo.End(); ++i )
+      {
+         if ( offset + i->compressedSize > compressedData.Length() )
+            throw Error( "Invalid or corrupted compressed block data." );
+         Compression::Subblock subblock;
+         subblock.compressedData = ByteArray( compressedData.At( offset ), compressedData.At( offset + i->compressedSize ) );
+         subblock.uncompressedSize = i->uncompressedSize;
+         subblocks << subblock;
+         offset += i->compressedSize;
+      }
+
+      File f;
+      VerifyChecksum( f );
+   }
+
+   void LoadCompressedData( File& file )
+   {
+      if ( IsEmpty() || !IsCompressed() )
+         throw Error( "Internal error: Invalid call to XISFInputDataBlock::LoadCompressedData()" );
+
+      VerifyChecksum( file );
+
+      if ( !HasCompressedData() )
+      {
+         file.SetPosition( position );
+         for ( subblock_info::const_iterator i = subblockInfo.Begin(); i != subblockInfo.End(); ++i )
+         {
+            Compression::Subblock subblock;
+            subblock.compressedData = ByteArray( size_type( i->compressedSize ) );
+            subblock.uncompressedSize = i->uncompressedSize;
+            file.Read( subblock.compressedData.Begin(), i->compressedSize );
+            subblocks << subblock;
+         }
+
+         if ( subblocks.IsEmpty() )
+            throw Error( "Internal error: Invalid or corrupted compressed subblock data." );
+      }
+   }
+
+   void Uncompress( File& file )
+   {
+      if ( IsEmpty() || !IsCompressed() )
+         throw Error( "Internal error: Invalid call to XISFInputDataBlock::Uncompress()" );
+
+      if ( !HasData() )
+      {
+         AutoPointer<Compression> compressor( XISFEngineBase::NewCompression( compressionMethod, itemSize ) );
+         LoadCompressedData( file );
+         data = compressor->Uncompress( subblocks );
+         subblocks.Clear();
+      }
+   }
+
+   void VerifyChecksum( File& file ) const
+   {
+      if ( HasChecksum() )
+         if ( !checksumVerified )
+         {
+            ByteArray theChecksum;
+            AutoPointer<CryptographicHash> hash( XISFEngineBase::NewCryptographicHash( checksumMethod ) );
+
+            if ( IsAttachment() )
+            {
+               hash->Initialize();
+               const size_type chunkSize = 4096;
+               size_type numberOfChunks = size / chunkSize;
+               size_type lastChunkSize = size % chunkSize;
+               ByteArray chunk( chunkSize );
+               file.SetPosition( position );
+               for ( size_type i = 0; i <= numberOfChunks; ++i )
+               {
+                  size_type thisChunkSize = (i < numberOfChunks) ? chunkSize : lastChunkSize;
+                  if ( thisChunkSize > 0 )
+                  {
+                     file.Read( reinterpret_cast<void*>( chunk.Begin() ), thisChunkSize );
+                     hash->Update( chunk.Begin(), thisChunkSize );
+                  }
+               }
+               theChecksum = hash->Finalize();
+            }
+            else
+            {
+               if ( HasCompressedData() )
+               {
+                  hash->Initialize();
+                  for ( subblock_list::const_iterator i = subblocks.Begin(); i != subblocks.End(); ++i )
+                     hash->Update( i->compressedData.Begin(), i->compressedData.Length() );
+                  theChecksum = hash->Finalize();
+               }
+               else if ( HasData() )
+               {
+                  theChecksum = hash->Hash( data );
+               }
+               else
+               {
+                  throw Error( "Internal error: Invalid call to XISFInputDataBlock::VerifyChecksum()" );
+               }
+            }
+
+            checksumVerified = true;
+
+            if ( theChecksum != checksum )
+               throw Error( "Block " + hash->AlgorithmName() + " checksum mismatch: "
+                            "Expected " + IsoString::ToHex( checksum ) +
+                               ", got " + IsoString::ToHex( theChecksum ) );
          }
    }
 };
@@ -618,7 +1026,6 @@ public:
 #else
       m_path = path;
 #endif
-      m_path.Trim();
 
       try
       {
@@ -633,9 +1040,8 @@ public:
             m_fileSize = m_file.Size();
             m_minBlockPos = m_headerLength + sizeof( XISFFileSignature );
 
-            text.Reserve( m_headerLength );
+            text.SetLength( m_headerLength );
             m_file.Read( reinterpret_cast<void*>( text.Begin() ), m_headerLength );
-            text[m_headerLength] = '\0';
          }
 
          if ( text.IsEmpty() )
@@ -667,31 +1073,15 @@ public:
                       * Image elements can only have attachment or embedded
                       * storage.
                       */
-                     GetBlockData( data.image, xml );
+                     GetBlock( data.image, xml );
 
                      /*
                       * Image element attributes.
                       */
 
-                     data.id = IsoString( xml.attributes().value( "id" ).toString() ).Trimmed();
-                     if ( !data.id.IsEmpty() )
-                        if ( data.id.IsValidIdentifier() )
-                        {
-                           XISFInputPropertyBlock property;
-                           property.id = InternalPropertyId( "ImageIdentifier" );
-                           property.type = VariantType::IsoString;
-                           property.value = data.id;
-                           AddPropertyBlock( data.properties, property, xml );
-                        }
-                        else
-                        {
-                           Warning( xml, "Ignoring invalid image identifier '" + data.id + "'" );
-                           data.id.Clear();
-                        }
-
                      GetImageGeometry( data.image, xml );
 
-                     // sampleFormat="<f>"
+                     // sampleFormat="<sample-format>"
                      IsoString s = IsoString( xml.attributes().value( "sampleFormat" ).toString() ).Trimmed();
                      if ( s.IsEmpty() )
                         throw Error( "Missing image sampleFormat attribute." );
@@ -711,12 +1101,20 @@ public:
                      if ( data.options.ieeefpSampleFormat )
                         data.options.upperRange = 1;
                      else
-                        data.options.upperRange = (uint32( 1 ) << data.options.bitsPerSample) - 1;
+                        data.options.upperRange = (uint64( 1 ) << data.options.bitsPerSample) - 1; // assume bitsPerSample <= 32
 
+                     // bounds="<lower>:<upper>"
                      s = IsoString( xml.attributes().value( "bounds" ).toString() ).Trimmed();
-                     if ( !s.IsEmpty() )
+                     if ( s.IsEmpty() )
                      {
-                        // bounds="<l>:<u>"
+                        if ( data.options.ieeefpSampleFormat && !data.options.complexSample )
+                           throw Error( "Missing bounds image attribute, which is mandatory for a floating point real image." );
+                     }
+                     else
+                     {
+                        if ( data.options.complexSample )
+                           throw Error( "Invalid bounds image attribute, which is forbidden for a complex image." );
+
                         IsoStringList tokens;
                         s.Break( tokens, ':', true/*trim*/ );
                         if ( tokens.Length() < 2 )
@@ -727,56 +1125,30 @@ public:
                         if ( tokens.Length() > 2 )
                            Warning( xml, "Ignoring excess image bounds data: '" + s + "'" );
 
-                        if ( xml.attributes().hasAttribute( "lowerBound" ) ||
-                             xml.attributes().hasAttribute( "upperBound" ) )
-                           Warning( xml, "Ignoring redundant image bounds attributes." );
-                     }
-                     else
-                     {
-                        // lowerBound="<l>"
-                        s = IsoString( xml.attributes().value( "lowerBound" ).toString() ).Trimmed();
-                        if ( s.IsEmpty() )
+                        if ( !data.options.ieeefpSampleFormat )
                         {
-                           if ( data.options.ieeefpSampleFormat )
-                              throw Error( "Missing image bounds or lowerBound attribute, which is mandatory for a floating point real or complex image." );
+                           if ( data.options.lowerRange < 0 || data.options.lowerRange >= (uint64( 1 ) << data.options.bitsPerSample) )
+                              throw Error( "Invalid " + String( data.options.bitsPerSample ) + "-bit integer lower bound: " + s );
+                           if ( data.options.upperRange < 0 || data.options.upperRange >= (uint64( 1 ) << data.options.bitsPerSample) )
+                              throw Error( "Invalid " + String( data.options.bitsPerSample ) + "-bit integer upper bound: " + s );
                         }
-                        else
-                           data.options.lowerRange = s.ToDouble();
 
-                        // upperBound="<u>"
-                        s = IsoString( xml.attributes().value( "upperBound" ).toString() ).Trimmed();
-                        if ( s.IsEmpty() )
+                        if ( data.options.upperRange < data.options.lowerRange )
                         {
-                           if ( data.options.ieeefpSampleFormat )
-                              throw Error( "Missing image upperBound attribute, which is mandatory for a floating point real or complex image." );
+                           Swap( data.options.lowerRange, data.options.upperRange );
+                           Warning( xml, "Swapping unordered lower and upper bound attribute values (good try! :)" );
                         }
-                        else
-                           data.options.upperRange = s.ToDouble();
-                     }
 
-                     if ( !data.options.ieeefpSampleFormat )
-                     {
-                        if ( data.options.lowerRange < 0 || data.options.lowerRange >= (uint32( 1 ) << data.options.bitsPerSample) )
-                           throw Error( "Invalid " + String( data.options.bitsPerSample ) + "-bit integer lower bound: " + s );
-                        if ( data.options.upperRange < 0 || data.options.upperRange >= (uint32( 1 ) << data.options.bitsPerSample) )
-                           throw Error( "Invalid " + String( data.options.bitsPerSample ) + "-bit integer upper bound: " + s );
+                        if ( 1 == 1 + data.options.upperRange - data.options.lowerRange )
+                           Warning( xml, "Empty or infinitesimal pixel sample range." );
                      }
-
-                     if ( data.options.upperRange < data.options.lowerRange )
-                     {
-                        Swap( data.options.lowerRange, data.options.upperRange );
-                        Warning( xml, "Swapping unordered lower and upper bound attribute values (good try! :)" );
-                     }
-
-                     if ( 1 == 1 + data.options.upperRange - data.options.lowerRange )
-                        Warning( xml, "Empty or infinitesimal pixel sample range." );
 
                      // colorSpace="<s>"
                      s = IsoString( xml.attributes().value( "colorSpace" ).toString() ).Trimmed();
                      if ( s.IsEmpty() )
                      {
                         data.image.info.colorSpace = ColorSpace::Gray;
-                        Warning( xml, "Missing colorSpace image attribute; assuming the grayscale color space." );
+                        Warning( xml, "Missing colorSpace image attribute: Assuming the grayscale color space." );
                      }
                      else
                      {
@@ -789,13 +1161,59 @@ public:
                      if ( !data.image.info.supported )
                         throw Error( "Invalid/unsupported image parameters." );
 
-                     // cfaType="<a>"
-                     s = IsoString( xml.attributes().value( "cfaType" ).toString() ).Trimmed();
+                     // offset="<sample-value>"
+                     s = IsoString( xml.attributes().value( "offset" ).toString() ).Trimmed();
                      if ( !s.IsEmpty() )
                      {
-                        data.options.cfaType = CFATypeFromId( s );
-                        if ( data.options.cfaType == CFAType::None )
-                           throw Error( "Invalid/unsupported CFA type '" + s + "'" );
+                        // ### TODO
+                     }
+
+                     // pixelStorage="<storage-model>"
+                     s = IsoString( xml.attributes().value( "pixelStorage" ).toString() ).Trimmed().CaseFolded();
+                     if ( !s.IsEmpty() )
+                     {
+                        if ( s == "normal" )
+                           throw Error( "The normal pixel storage model is not supported by this XISF implementation." );
+                        if ( s != "planar" )
+                           throw Error( "Unknown pixel storage model \'" + s + "\'" );
+                     }
+
+                     // imageType="<type-spec>"
+                     s = IsoString( xml.attributes().value( "imageType" ).toString() ).Trimmed();
+                     if ( !s.IsEmpty() )
+                     {
+                        // ### TODO
+                     }
+
+                     // id="<image-id>"
+                     data.id = IsoString( xml.attributes().value( "id" ).toString() ).Trimmed();
+                     if ( !data.id.IsEmpty() )
+                        if ( data.id.IsValidIdentifier() )
+                        {
+                           XISFInputPropertyBlock property;
+                           property.id = InternalPropertyId( "ImageIdentifier" );
+                           property.type = VariantType::IsoString;
+                           property.value = data.id;
+                           AddPropertyBlock( data.properties, property, xml );
+                        }
+                        else
+                        {
+                           Warning( xml, "Ignoring invalid image identifier '" + data.id + "'" );
+                           data.id.Clear();
+                        }
+
+                     // uuid="<uuid>"
+                     s = IsoString( xml.attributes().value( "uuid" ).toString() ).Trimmed();
+                     if ( !s.IsEmpty() )
+                     {
+                        // ### TODO
+                     }
+
+                     // orientation="<rotation>"
+                     s = IsoString( xml.attributes().value( "orientation" ).toString() ).Trimmed();
+                     if ( !s.IsEmpty() )
+                     {
+                        // ### TODO
                      }
 
                      if ( m_xisfOptions.verbosity > 0 )
@@ -841,7 +1259,7 @@ public:
                               XML_READ_ERROR_UNWIND( xml, "FITSKeyword" )
                            }
                         }
-                        else if ( xml.name() == "RGBWS" )
+                        else if ( xml.name() == "RGBWorkingSpace" )
                         {
                            /*
                             * RGB working space parameters.
@@ -852,7 +1270,35 @@ public:
                               {
                                  GetRGBWS( data.rgbws, xml );
                               }
-                              XML_READ_ERROR_UNWIND( xml, "RGBWS" )
+                              XML_READ_ERROR_UNWIND( xml, "RGBWorkingSpace" )
+                           }
+                        }
+                        else if ( xml.name() == "DisplayFunction" )
+                        {
+                           /*
+                            * Display function parameters.
+                            */
+                           if ( !m_xisfOptions.ignoreEmbeddedData )
+                           {
+                              try
+                              {
+                                 GetDisplayFunction( data.df, xml );
+                              }
+                              XML_READ_ERROR_UNWIND( xml, "DisplayFunction" )
+                           }
+                        }
+                        else if ( xml.name() == "ColorFilterArray" )
+                        {
+                           /*
+                            * Display function parameters.
+                            */
+                           if ( !m_xisfOptions.ignoreEmbeddedData )
+                           {
+                              try
+                              {
+                                 GetColorFilterArray( data.cfa, xml );
+                              }
+                              XML_READ_ERROR_UNWIND( xml, "ColorFilterArray" )
                            }
                         }
                         else if ( xml.name() == "Resolution" )
@@ -881,9 +1327,7 @@ public:
                                  if ( data.iccProfile.IsValid() )
                                     Warning( xml, "Redefining ICCProfile Image element." );
 
-                                 GetBlockData( data.iccProfile, xml );
-                                 if ( data.iccProfile.IsEmpty() )
-                                    throw Error( "Missing ICC profile data." );
+                                 GetICCProfile( data.iccProfile, xml );
                               }
                               XML_READ_ERROR_UNWIND( xml, "ICCProfile" )
                            }
@@ -898,7 +1342,7 @@ public:
                               try
                               {
                                  if ( data.thumbnail.IsValid() )
-                                    Warning( xml, "Redefining thumbnail Image element." );
+                                    Warning( xml, "Redefining Thumbnail Image element." );
 
                                  GetThumbnail( data.thumbnail, xml );
                               }
@@ -910,14 +1354,14 @@ public:
                            /*
                             * Image data (location="embedded").
                             */
-                           if ( !data.image.IsEmpty() )
-                              Warning( xml, String( "Redefining image data." ) );
-
-                           GetImageEmbeddedData( data.image, xml );
+                           if ( data.image.IsEmpty() )
+                              GetBlockEmbeddedData( data.image, xml );
+                           else
+                              Warning( xml, "Ignoring unexpected Image embedded data." );
                         }
                         else
                         {
-                           Warning( xml, String( "Skipping unknown \'" + xml.name().toString() + "\' Image element." ) );
+                           Warning( xml, String( "Skipping unknown \'" + xml.name().toString() + "\' Image child element." ) );
                         }
 
                         if ( xml.isCharacters() )
@@ -970,7 +1414,7 @@ public:
                         }
                         else
                         {
-                           Warning( xml, String( "Skipping unknown \'" + xml.name().toString() + "\' Metadata element." ) );
+                           Warning( xml, String( "Skipping unknown \'" + xml.name().toString() + "\' Metadata child element." ) );
                         }
 
                         if ( xml.isCharacters() )
@@ -1154,6 +1598,34 @@ public:
    }
 
    /*
+    * The RGB working space (RGBWS) associated with the current image.
+    */
+   pcl::RGBColorSystem RGBWorkingSpace() const
+   {
+      CheckImageAccess();
+      return m_images[m_currentImage].rgbws;
+   }
+
+   /*
+    * The display function (aka screen transfer function, or STF) associated
+    * with the current image.
+    */
+   pcl::DisplayFunction DisplayFunction() const
+   {
+      CheckImageAccess();
+      return m_images[m_currentImage].df;
+   }
+
+   /*
+    * The CFA pattern of the current image.
+    */
+   pcl::ColorFilterArray ColorFilterArray() const
+   {
+      CheckImageAccess();
+      return m_images[m_currentImage].cfa;
+   }
+
+   /*
     * The ICC profile structure associated with the current image.
     */
    pcl::ICCProfile ICCProfile()
@@ -1162,30 +1634,15 @@ public:
       XISFInputDataBlock& block = m_images[m_currentImage].iccProfile;
       if ( !block.IsValid() )
          return pcl::ICCProfile();
-      if ( !block.HasData() )
-      {
-         block.data = ByteArray( size_type( block.size ) );
-         m_file.SetPosition( block.position );
-         m_file.Read( block.data.Begin(), block.size );
 
-         if ( block.IsCompressed() )
-            UncompressBlock( block );
-      }
-      pcl::ICCProfile icc( reinterpret_cast<const void*>( block.data.Begin() ) );
+      ByteArray data( block.DataSize() );
+      GetBlockData( block, data.Begin(), data.Length() );
+      block.UnloadData();
+      pcl::ICCProfile icc( data );
       if ( m_xisfOptions.verbosity > 0 )
          if ( icc.IsProfile() )
             m_console.WriteLn( "<end><cbr>ICC profile extracted: \'" + icc.Description() + "\', " + String( icc.ProfileSize() ) + " bytes." );
       return icc;
-   }
-
-   /*
-    * Metadata block associated with the current image.
-    */
-   ByteArray Metadata()
-   {
-      CheckImageAccess();
-      return ByteArray(); // ### TODO
-      //m_images[m_currentImage].metadata;
    }
 
    /*
@@ -1198,35 +1655,13 @@ public:
       if ( !block.IsValid() )
          return UInt8Image();
 
-      if ( block.IsCompressed() )
-      {
-         if ( !block.HasData() )
-         {
-            block.data = ByteArray( size_type( block.size ) );
-            m_file.SetPosition( block.position );
-            m_file.Read( block.data.Begin(), block.size );
-         }
-
-         UncompressBlock( block );
-      }
-
       UInt8Image thumbnail;
       thumbnail.AllocateData( block.info.width, block.info.height, block.info.numberOfChannels, ColorSpace::value_type( block.info.colorSpace ) );
-      if ( (block.HasData() ? block.data.Length() : size_type( block.size )) != thumbnail.ImageSize() )
+      if ( block.DataSize() != thumbnail.ImageSize() )
          throw Error( "Internal error: invalid thumbnail block size." );
 
-      for ( int i = 0; i < thumbnail.NumberOfChannels(); ++i )
-         if ( block.HasData() )
-         {
-            // location="inline"
-            ::memcpy( thumbnail[i], block.data.At( i*thumbnail.ChannelSize() ), thumbnail.ChannelSize() );
-         }
-         else
-         {
-            // location="attachment:<position>:<size>"
-            m_file.SetPosition( block.position + i*thumbnail.ChannelSize() );
-            m_file.Read( thumbnail[i], thumbnail.ChannelSize() );
-         }
+      GetBlockData( block, thumbnail );
+      block.UnloadData();
 
       if ( m_xisfOptions.verbosity > 1 )
          if ( !thumbnail.IsEmpty() )
@@ -1245,7 +1680,7 @@ public:
       ImagePropertyDescriptionArray descriptions;
       const XISFInputPropertyBlockArray& properties = m_images[m_currentImage].properties;
       for ( XISFInputPropertyBlockArray::const_iterator i = properties.Begin(); i != properties.End(); ++i )
-         descriptions.Append( ImagePropertyDescription( i->id, Variant::data_type( i->type ) ) );
+         descriptions << ImagePropertyDescription( i->id, Variant::data_type( i->type ) );
       return descriptions;
    }
 
@@ -1255,31 +1690,46 @@ public:
    Variant Property( const IsoString& id )
    {
       CheckImageAccess();
-      XISFInputPropertyBlockArray::const_iterator i = m_images[m_currentImage].properties.Search( id );
-      if ( i == m_images[m_currentImage].properties.End() )
+      XISFInputPropertyBlockArray::const_iterator p = m_images[m_currentImage].properties.Search( id );
+      if ( p == m_images[m_currentImage].properties.End() )
          return Variant();
+
+      XISFInputPropertyBlockArray::iterator i = m_images[m_currentImage].properties.MutableIterator( p );
 
       if ( !i->HasValue() )
       {
-         if ( Variant::IsScalarType( i->type ) || i->type == VariantType::String || i->type == VariantType::IsoString )
-            throw Error( "Internal error: invalid or corrupted image property '" + i->id + "'" );
+         if ( Variant::IsScalarType( i->type ) || Variant::IsComplexType( i->type ) )
+            throw Error( "Internal error: invalid or corrupted property '" + i->id + "'" );
 
-         if ( Variant::IsVectorType( i->type ) )
+         if ( i->type == VariantType::IsoString ) // UTF-8 string
+         {
+            i->value = Variant( IsoString( '\0', i->DataSize() ) );
+         }
+         else if ( Variant::IsVectorType( i->type ) )
          {
             if ( i->dimensions.Length() != 1 || i->dimensions[0] < 0 )
-               throw Error( "Internal error: invalid vector length for image property '" + i->id + "'" );
+               throw Error( "Internal error: invalid vector length for property '" + i->id + "'" );
 
             int length = i->dimensions[0];
             switch ( i->type )
             {
-            case VariantType::ByteArray:
-               i->value = Variant( ByteArray( size_type( length ) ) );
+            case VariantType::I8Vector:
+               i->value = Variant( I8Vector( length ) );
                break;
-            case VariantType::IVector:
-               i->value = Variant( IVector( length ) );
+            case VariantType::UI8Vector:
+               i->value = Variant( UI8Vector( length ) );
                break;
-            case VariantType::UIVector:
-               i->value = Variant( UIVector( length ) );
+            case VariantType::I16Vector:
+               i->value = Variant( I16Vector( length ) );
+               break;
+            case VariantType::UI16Vector:
+               i->value = Variant( UI16Vector( length ) );
+               break;
+            case VariantType::I32Vector:
+               i->value = Variant( I32Vector( length ) );
+               break;
+            case VariantType::UI32Vector:
+               i->value = Variant( UI32Vector( length ) );
                break;
             case VariantType::I64Vector:
                i->value = Variant( I64Vector( length ) );
@@ -1287,11 +1737,17 @@ public:
             case VariantType::UI64Vector:
                i->value = Variant( UI64Vector( length ) );
                break;
-            case VariantType::FVector:
-               i->value = Variant( FVector( length ) );
+            case VariantType::F32Vector:
+               i->value = Variant( F32Vector( length ) );
                break;
-            case VariantType::DVector:
-               i->value = Variant( DVector( length ) );
+            case VariantType::F64Vector:
+               i->value = Variant( F64Vector( length ) );
+               break;
+            case VariantType::C32Vector:
+               i->value = Variant( C32Vector( length ) );
+               break;
+            case VariantType::C64Vector:
+               i->value = Variant( C64Vector( length ) );
                break;
             default:
                throw Error( "Internal error: invalid vector data type for property '" + i->id + "'" );
@@ -1300,20 +1756,29 @@ public:
          else if ( Variant::IsMatrixType( i->type ) )
          {
             if ( i->dimensions.Length() != 2 || i->dimensions[0] < 0 || i->dimensions[1] < 0 )
-               throw Error( "Internal error: invalid matrix dimensions for image property '" + i->id + "'" );
+               throw Error( "Internal error: invalid matrix dimensions for property '" + i->id + "'" );
 
             int rows = i->dimensions[0];
             int cols = i->dimensions[1];
             switch ( i->type )
             {
-            case VariantType::ByteMatrix:
-               i->value = Variant( ByteMatrix( rows, cols ) );
+            case VariantType::I8Matrix:
+               i->value = Variant( I8Matrix( rows, cols ) );
                break;
-            case VariantType::IMatrix:
-               i->value = Variant( IMatrix( rows, cols ) );
+            case VariantType::UI8Matrix:
+               i->value = Variant( UI8Matrix( rows, cols ) );
                break;
-            case VariantType::UIMatrix:
-               i->value = Variant( UIMatrix( rows, cols ) );
+            case VariantType::I16Matrix:
+               i->value = Variant( I16Matrix( rows, cols ) );
+               break;
+            case VariantType::UI16Matrix:
+               i->value = Variant( UI16Matrix( rows, cols ) );
+               break;
+            case VariantType::I32Matrix:
+               i->value = Variant( I32Matrix( rows, cols ) );
+               break;
+            case VariantType::UI32Matrix:
+               i->value = Variant( UI32Matrix( rows, cols ) );
                break;
             case VariantType::I64Matrix:
                i->value = Variant( I64Matrix( rows, cols ) );
@@ -1321,11 +1786,17 @@ public:
             case VariantType::UI64Matrix:
                i->value = Variant( UI64Matrix( rows, cols ) );
                break;
-            case VariantType::FMatrix:
-               i->value = Variant( FMatrix( rows, cols ) );
+            case VariantType::F32Matrix:
+               i->value = Variant( F32Matrix( rows, cols ) );
                break;
-            case VariantType::DMatrix:
-               i->value = Variant( DMatrix( rows, cols ) );
+            case VariantType::F64Matrix:
+               i->value = Variant( F64Matrix( rows, cols ) );
+               break;
+            case VariantType::C32Matrix:
+               i->value = Variant( C32Matrix( rows, cols ) );
+               break;
+            case VariantType::C64Matrix:
+               i->value = Variant( C64Matrix( rows, cols ) );
                break;
             default:
                throw Error( "Internal error: invalid matrix data type for property '" + i->id + "'" );
@@ -1334,41 +1805,19 @@ public:
          else
             throw Error( "Internal error: invalid data type for property '" + i->id + "'" );
 
+         if ( i->DataSize() != i->value.BlockSize() )
+            throw Error( "Internal error: Invalid block size for property '" + i->id + "'" );
+
          if ( i->value.BlockSize() > 0 )
          {
-            XISFInputPropertyBlock& property = const_cast<XISFInputPropertyBlock&>( *i );
-
-            if ( !property.HasData() )
-               if ( property.IsCompressed() )
-               {
-                  property.data = ByteArray( size_type( property.size ) );
-                  m_file.SetPosition( property.position );
-                  m_file.Read( property.data.Begin(), property.size );
-
-                  UncompressBlock( property );
-               }
-
-            if ( property.HasData() )
-            {
-               // location="inline" or compressed data
-               if ( property.data.Length() != property.value.BlockSize() )
-                  throw Error( "Invalid block size for property '" + i->id + "'" );
-               ::memcpy( const_cast<void*>( property.value.InternalBlockAddress() ), property.data.Begin(), property.data.Length() );
-               property.data.Clear();
-            }
-            else
-            {
-               // location="attachment:<position>:<size>"
-               if ( size_type( property.size ) != property.value.BlockSize() )
-                  throw Error( "Invalid block size for property '" + i->id + "'" );
-               m_file.SetPosition( property.position );
-               m_file.Read( const_cast<void*>( property.value.InternalBlockAddress() ), property.size );
-            }
+            GetBlockData( *i, const_cast<void*>( i->value.InternalBlockAddress() ), i->value.BlockSize() );
+            i->UnloadData();
          }
-         else
+
+         if ( i->type == VariantType::IsoString )
          {
-            if ( i->HasData() || i->size != 0 )
-               throw Error( "Internal error: Invalid block size for property '" + i->id + "'" );
+            i->type = VariantType::String; // UTF-8 string converted to UTF-16
+            i->value = Variant( String( i->value.ToIsoString().UTF8ToUTF16() ) );
          }
       }
 
@@ -1408,7 +1857,7 @@ public:
 
    /*
     * Read the current image and store it (possibly involving a pixel sample
-    * data type conversion) in the specified GenericImage<>.
+    * data type conversion) in the specified GenericImage.
     */
    template <class P>
    void ReadImage( GenericImage<P>& image )
@@ -1431,43 +1880,12 @@ public:
       if ( !block.IsValid() )
          throw Error( "Internal error: invalid image block." );
 
-      bool loadedCompressedData = false;
-      if ( block.IsCompressed() )
-      {
-         if ( !block.HasData() )
-         {
-            block.data = ByteArray( size_type( block.size ) );
-            m_file.SetPosition( block.position );
-            m_file.Read( block.data.Begin(), block.size );
-            loadedCompressedData = true;
-         }
-
-         UncompressBlock( block );
-      }
-
       image.AllocateData( block.info.width, block.info.height, block.info.numberOfChannels, ColorSpace::value_type( block.info.colorSpace ) );
-      if ( (block.HasData() ? block.data.Length() : size_type( block.size )) != image.ImageSize() )
-         throw Error( "Internal error: invalid image block size." );
+      if ( block.DataSize() != image.ImageSize() )
+         throw Error( "Internal error: Invalid image block size." );
 
-      for ( int i = 0; i < image.NumberOfChannels(); ++i )
-         if ( block.HasData() )
-         {
-            // location="inline"
-            ::memcpy( image[i], block.data.At( i*image.ChannelSize() ), image.ChannelSize() );
-         }
-         else
-         {
-            // location="attachment:<position>:<size>"
-            m_file.SetPosition( block.position + i*image.ChannelSize() );
-            m_file.Read( image[i], image.ChannelSize() );
-         }
-
-      if ( block.HasData() )
-         if ( loadedCompressedData )
-         {
-            block.compressed = true;
-            block.data.Clear();
-         }
+      GetBlockData( block, image );
+      block.UnloadData();
 
       if ( options.readNormalized )
          NormalizeImage( image, options );
@@ -1485,10 +1903,7 @@ public:
          throw Error( "Internal error: invalid image block." );
 
       if ( block.IsCompressed() )
-         if ( block.HasData() )
-            UncompressBlock( block );
-         else
-            throw Error( "Cannot perform sequential/random disk read operations on a compressed data block." );
+         block.Uncompress( m_file );
 
       const pcl::ImageOptions& options = m_images[m_currentImage].options;
       if ( options.complexSample )
@@ -1529,7 +1944,7 @@ private:
    XISFOptions       m_xisfOptions;    // format-specific options
    IsoString         m_hints;          // format hints (only used to generate metadata)
    mutable Console   m_console;        // for verbosity
-   IsoString         m_path;           // path of the input file
+   String            m_path;           // path of the input file
    File              m_file;           // the input file
    fsize_type        m_fileSize;       // size in bytes of the input file
    fsize_type        m_headerLength;   // length in bytes of the XML file header
@@ -1542,13 +1957,14 @@ private:
    {
       pcl::ImageOptions           options;    // image geometry and color space
       IsoString                   id;         // optional image identifier
-      RGBColorSystem              rgbws;      // RGB working space
-      FITSKeywordArray            keywords;   // legacy FITS header keywords
+      pcl::RGBColorSystem         rgbws;      // RGB working space
+      pcl::DisplayFunction        df;         // display function
+      pcl::ColorFilterArray       cfa;        // CFA pattern
+      pcl::FITSKeywordArray       keywords;   // legacy FITS header keywords
       XISFInputImageBlock         image;      // image data block
       XISFInputDataBlock          iccProfile; // ICC profile data block
       XISFInputImageBlock         thumbnail;  // image thumbnail data block
       XISFInputPropertyBlockArray properties; // image properties
-      // ### TODO: metadata
    };
 
    typedef Array<ImageData> ImageDataArray;
@@ -1565,15 +1981,14 @@ private:
    StringList        m_warnings;       // XML warnings
 
    /*
-    * Get the position and size of a block from the current XML element.
+    * Get the position, size and compression parameters of a block from the
+    * current XML element.
     */
-   void GetBlockData( XISFInputDataBlock& block, QXmlStreamReader& xml )
+   void GetBlock( XISFInputDataBlock& block, QXmlStreamReader& xml, bool getEmbeddedData = false )
    {
       block.position = 0;
       block.size = 0;
       block.data.Clear();
-
-      GetBlockCompression( block, xml );
 
       IsoString s = IsoString( xml.attributes().value( "location" ).toString() ).Trimmed();
       if ( s.IsEmpty() )
@@ -1584,6 +1999,7 @@ private:
 
       if ( tokens[0] == "attachment" )
       {
+         //  location="attachment:<position>:<size>"
          if ( tokens.Length() != 3 )
             throw Error( "Malformed attachment location attribute: '" + s + "'" );
          block.position = tokens[1].ToUInt64();
@@ -1592,116 +2008,236 @@ private:
          block.size = tokens[2].ToUInt64();
          if ( block.size == 0 || block.size + block.position > m_fileSize )
             throw Error( "Invalid block size: " + s );
+
+         GetBlockCompression( block, xml );
+         GetBlockChecksum( block, xml );
       }
       else if ( tokens[0] == "inline" )
       {
+         // location="inline:<encoding>"
          if ( tokens.Length() != 2 )
             throw Error( "Malformed inline location attribute: '" + s + "'" );
-         IsoString encodedData = IsoString( xml.readElementText() ).Trimmed();
-         tokens[1].ToLowerCase(); // encoding is case-insensitive
-         if ( tokens[1] == "base64" )
-            block.data = encodedData.FromBase64();
-         else if ( tokens[1] == "hex" )
-            block.data = encodedData.FromHex();
-         else
-            throw Error( "Invalid/unsupported block data encoding '" + tokens[1] + "'" );
-         block.size = block.data.Length();
 
-         if ( block.IsCompressed() )
-            UncompressBlock( block );
+         GetBlockEncodedData( block, xml, tokens[1] );
       }
       else if ( tokens[0] == "embedded" )
       {
+         // location="embedded"
          if ( tokens.Length() != 1 )
             throw Error( "Malformed embedded location attribute: '" + s + "'" );
-         // NB: Embedded data will be available in a child <Data> element.
+
+         if ( getEmbeddedData )
+         {
+            QString elementName = xml.name().toString();
+
+            while ( xml.readNextStartElement() )
+            {
+               if ( xml.name() == "Data" )
+               {
+                  // location="embedded"
+                  if ( !block.IsEmpty() )
+                     Warning( xml, String( "Redefining " + elementName + " embedded data." ) );
+
+                  GetBlockEmbeddedData( block, xml );
+               }
+               else
+               {
+                  Warning( xml, String( "Skipping unknown \'" + xml.name().toString() + "\' " + elementName + " child element." ) );
+               }
+
+               if ( xml.isCharacters() )
+                  Warning( xml, String( "Ignoring unexpected " + elementName + " element contents." ) );
+
+               if ( !xml.isEndElement() )
+                  xml.skipCurrentElement();
+            }
+         }
       }
       else if ( tokens[0] == "url" )
       {
-         if ( tokens.Length() != 2 )
-            throw Error( "Malformed url location attribute: '" + s + "'" );
+         // location="url(<URL>)"
+         // location="url(<URL>):<index-id>"
          throw Error( "URL block locations are not supported by this XISF implementation: '" + s + "'" );
-         // ### TODO: Support location="url:..."
+         // ### TODO: Support location="url..."
+      }
+      else if ( tokens[0] == "path" )
+      {
+         // location="path(<abs-file-path>)"
+         // location="path(<abs-file-path>):<index-id>"
+         throw Error( "Path block locations are not supported by this XISF implementation: '" + s + "'" );
       }
       else
       {
-         throw Error( "Invalid/unsupported block location: '" + s + "'" );
+         throw Error( "Invalid or unknown block location: '" + s + "'" );
       }
    }
 
-   void GetImageEmbeddedData( XISFInputDataBlock& block, QXmlStreamReader& xml )
+   void GetBlockEncodedData( XISFInputDataBlock& block, QXmlStreamReader& xml, const IsoString& encoding )
    {
       GetBlockCompression( block, xml );
+      GetBlockChecksum( block, xml );
 
-      IsoString encoding = IsoString( xml.attributes().value( "encoding" ).toString() ).Trimmed().LowerCase();
+      ByteArray data;
+      IsoString encodedData = IsoString( xml.readElementText() ).Trimmed();
+      if ( encoding == "base64" )
+         data = encodedData.FromBase64();
+      else if ( encoding == "hex" )
+         data = encodedData.FromHex();
+      else
+         throw Error( "Invalid/unsupported data encoding '" + encoding + "'" );
+
+      block.size = data.Length();
+
+      if ( block.IsCompressed() )
+      {
+         if ( block.subblockInfo[0].compressedSize == 0 )
+            block.subblockInfo[0].compressedSize = data.Length();
+         block.SetCompressedData( data );
+      }
+      else
+      {
+         block.data = data;
+         block.VerifyChecksum( m_file );
+      }
+   }
+
+   void GetBlockEmbeddedData( XISFInputDataBlock& block, QXmlStreamReader& xml )
+   {
+      IsoString encoding = IsoString( xml.attributes().value( "encoding" ).toString() ).Trimmed().CaseFolded();
       if ( encoding.IsEmpty() )
       {
          encoding = "base64";
          Warning( xml, String( "Missing data encoding attribute; assuming base64 encoding by default." ) );
       }
 
-      IsoString encodedData = IsoString( xml.readElementText() ).Trimmed();
-      if ( encoding == "base64" )
-         block.data = encodedData.FromBase64();
-      else if ( encoding == "hex" )
-         block.data = encodedData.FromHex();
-      else
-         throw Error( "Invalid/unsupported data encoding '" + encoding + "'" );
-      block.size = block.data.Length();
-
-      if ( block.IsCompressed() )
-         UncompressBlock( block );
+      GetBlockEncodedData( block, xml, encoding );
    }
 
    /*
-    * Get block compression parameters: compression algorithm and uncompressed
-    * data size in bytes.
+    * Get block compression parameters: compression algorithm and subblock
+    * descriptors.
     */
    void GetBlockCompression( XISFInputDataBlock& block, QXmlStreamReader& xml )
    {
-      block.compressed = false;
-      block.uncompressedSize = 0;
+      block.compressionMethod = XISF_COMPRESSION_NONE;
+      block.itemSize = 1;
+      block.subblockInfo.Clear();
+      block.subblocks.Clear();
 
+      // compression="<codec>:<uncompressed-size>"
+      // compression="<codec>:<uncompressed-size>:<item-size>"
       IsoString s = IsoString( xml.attributes().value( "compression" ).toString() ).Trimmed();
       if ( !s.IsEmpty() )
       {
          IsoStringList tokens;
          s.Break( tokens, ':', true/*trim*/ );
 
-         if ( tokens[0] == "zlib" )
-         {
-            if ( tokens.Length() != 2 )
-               throw Error( "Malformed block compression attribute: '" + s + "'" );
-            block.compressed = true;
-            block.uncompressedSize = tokens[1].ToUInt64();
-            if ( block.uncompressedSize == 0 || block.uncompressedSize >= uint32( -1 ) )
-               throw Error( "Invalid uncompressed block size: " + s );
+         if ( tokens.Length() < 2 || tokens.Length() > 3 ) // all supported codecs use one or two parameters
+            throw Error( "Malformed block compression attribute: '" + s + "'" );
 
+         block.compressionMethod = CompressionMethodFromId( tokens[0] );
+         if ( block.compressionMethod == XISF_COMPRESSION_NONE )
+            throw Error( "Missing data compression algorithm: " + s );
+         if ( block.compressionMethod == XISF_COMPRESSION_UNKNOWN )
+            throw Error( "Unknown data compression algorithm '" + tokens[0] + "'" );
+
+         size_type uncompressedSize = tokens[1].ToUInt64();
+         if ( uncompressedSize == 0 )
+            throw Error( "Invalid uncompressed block size: " + s );
+
+         if ( tokens.Length() > 2 )
+         {
+            block.itemSize = tokens[2].ToUInt();
+            if ( block.itemSize < 1 || block.itemSize > 16 )
+               throw Error( "Invalid uncompressed item size: " + s );
+         }
+
+         // subblocks="<cs0>,<us0>:<cs1>,<us1>:...:<csN-1>,<usN-1>"
+         s = IsoString( xml.attributes().value( "subblocks" ).toString() ).Trimmed();
+         if ( !s.IsEmpty() )
+         {
+            tokens.Clear();
+            s.Break( tokens, ':', true/*trim*/ );
+            for ( IsoStringList::const_iterator i = tokens.Begin(); i != tokens.End(); ++i )
+            {
+               IsoStringList items;
+               i->Break( items, ',', true/*trim*/ );
+
+               if ( items.Length() != 2 )
+                  throw Error( "Malformed compression subblocks attribute: '" + s + "'" );
+
+               XISFInputDataBlock::SubblockDimensions d;
+               d.compressedSize = items[0].ToInt64();
+               d.uncompressedSize = items[1].ToInt64();
+               if ( d.compressedSize <= 0 || d.uncompressedSize <= 0 )
+                  throw Error( "Invalid compression subblock parameters: '" + *i + "'" );
+               block.subblockInfo << d;
+            }
          }
          else
-            throw Error( "Unknown data compression algorithm '" + tokens[0] + "'" );
+         {
+            XISFInputDataBlock::SubblockDimensions d;
+            d.compressedSize = block.size;
+            d.uncompressedSize = uncompressedSize;
+            block.subblockInfo << d;
+         }
       }
    }
 
    /*
-    * Uncompress an input data block.
+    * Get block checksum parameters: hashing algorithm and digest value.
     */
-   void UncompressBlock( XISFInputDataBlock& block )
+   void GetBlockChecksum( XISFInputDataBlock& block, QXmlStreamReader& xml )
    {
-      if ( m_xisfOptions.verbosity > 0 )
+      block.checksum.Clear();
+      block.checksumMethod.Clear();
+      block.checksumVerified = false;
+
+      // checksum="<algorithm>:<digest>"
+      IsoString s = IsoString( xml.attributes().value( "checksum" ).toString() ).Trimmed();
+      if ( !s.IsEmpty() )
       {
-         m_console.Write( "<end><cbr>Uncompressing block: " + File::SizeAsString( block.size ) + " -> " );
+         IsoStringList tokens;
+         s.Break( tokens, ':', true/*trim*/ );
+
+         if ( tokens.Length() != 2 )
+            throw Error( "Malformed block checksum attribute: '" + s + "'" );
+
+         block.checksumMethod = tokens[0].CaseFolded();
+         if ( block.checksumMethod != "sha1" && block.checksumMethod != "sha-1" )
+            throw Error( "Invalid/unsupported checksum algorithm '" + tokens[0] + "'" );
+         block.checksum = tokens[1].FromHex();
+         if ( block.checksum.Length() != 20 ) // SHA-1 digests have 160 bits = 20 bytes
+            throw Error( "Invalid SHA-1 digest value '" + tokens[1] + "'" );
+      }
+   }
+
+   void GetBlockData( XISFInputDataBlock& block, void* dst, size_type dstSize, int channel = 0 )
+   {
+      bool verbose = m_xisfOptions.verbosity > 0 && block.IsCompressed() && !block.HasData();
+      if ( verbose )
+      {
+         m_console.Write( "<end><cbr>Uncompressing block (" +
+               String( CompressionMethodId( block.compressionMethod ) ) + "): " +
+               File::SizeAsString( block.size ) + " -> " );
          Module->ProcessEvents();
       }
 
-      block.UncompressData();
+      block.GetData( m_file, dst, dstSize, channel*dstSize );
 
-      if ( m_xisfOptions.verbosity > 0 )
+      if ( verbose )
       {
          m_console.WriteLn( File::SizeAsString( block.data.Length() ) +
                String().Format( " (%.2f%%)", 100*double( block.data.Length() - block.size )/block.data.Length() ) );
          Module->ProcessEvents();
       }
+   }
+
+   template <class P>
+   void GetBlockData( XISFInputDataBlock& block, GenericImage<P>& image )
+   {
+      for ( int i = 0; i < image.NumberOfChannels(); ++i )
+         GetBlockData( block, image[i], image.ChannelSize(), i );
    }
 
    /*
@@ -1714,7 +2250,7 @@ private:
          properties.Add( property );
       else
       {
-         const_cast<XISFInputPropertyBlock&>( *i ) = property;
+         *properties.MutableIterator( i ) = property;
          Warning( xml, "Redefining property '" + property.id + "'" );
       }
    }
@@ -1742,9 +2278,11 @@ private:
       if ( Variant::IsScalarType( property.type ) )
       {
          IsoString v = IsoString( xml.attributes().value( "value" ).toString() ).Trimmed();
+         if ( v.IsEmpty() )
+            throw Error( "Missing value attribute for scalar property '" + property.id + "'" );
          switch ( property.type )
          {
-         case VariantType::Bool:
+         case VariantType::Boolean:
             property.value = Variant( v.ToBool() );
             break;
          case VariantType::Int8:
@@ -1771,10 +2309,10 @@ private:
          case VariantType::UInt64:
             property.value = Variant( uint64( v.ToUInt64() ) );
             break;
-         case VariantType::Float:
+         case VariantType::Float32:
             property.value = Variant( v.ToFloat() );
             break;
-         case VariantType::Double:
+         case VariantType::Float64:
             property.value = Variant( v.ToDouble() );
             break;
          default:
@@ -1783,25 +2321,30 @@ private:
       }
       else
       {
-         if ( property.type == VariantType::IsoString )
+         if ( Variant::IsStringType( property.type ) )
          {
-            property.value = Variant( IsoString( String( xml.readElementText() ).ToUTF8() ) );
-         }
-         else if ( property.type == VariantType::String )
-         {
-            property.value = Variant( String( xml.readElementText() ) );
+            if ( xml.attributes().hasAttribute( "location" ) )
+            {
+               property.type = VariantType::IsoString; // UTF-8 string
+               GetBlock( property, xml, true/*getEmbeddedData*/ );
+            }
+            else
+            {
+               property.type = VariantType::String; // inline string converted from UTF-8 to UTF-16
+               property.value = Variant( String( xml.readElementText() ) );
+            }
          }
          else if ( Variant::IsVectorType( property.type ) )
          {
             s = IsoString( xml.attributes().value( "length" ).toString() ).Trimmed();
             if ( s.IsEmpty() )
                throw Error( "Missing vector length attribute." );
-            int length = s.ToInt();
-            if ( length < 0 )
+            int n = s.ToInt();
+            if ( n < 0 )
                throw Error( "Invalid vector length: " + s );
-            property.dimensions.Append( length );
+            property.dimensions.Append( n );
 
-            GetBlockData( property, xml );
+            GetBlock( property, xml, true/*getEmbeddedData*/ );
          }
          else if ( Variant::IsMatrixType( property.type ) )
          {
@@ -1821,7 +2364,31 @@ private:
                throw Error( "Invalid matrix dimension: " + s );
             property.dimensions.Append( n );
 
-            GetBlockData( property, xml );
+            GetBlock( property, xml, true/*getEmbeddedData*/ );
+         }
+         else if ( Variant::IsComplexType( property.type ) )
+         {
+            IsoString v = IsoString( xml.attributes().value( "value" ).toString() ).Trimmed();
+            if ( v.IsEmpty() )
+               throw Error( "Missing value attribute for complex property '" + property.id + "'" );
+            if ( !v.StartsWith( '(' ) || !v.EndsWith( ')' ) )
+               throw Error( "Invalid complex literal: '" + v + "'" );
+            v.Delete( v.Length()-1 ); // remove closing ')'
+            IsoStringList c;
+            v.Break( c, ',', true/*trim*/, 1 ); // skip opening '('
+            if ( c.Length() != 2 )
+               throw Error( "Malformed complex literal: '" + v + "'" );
+            switch ( property.type )
+            {
+            case VariantType::Complex32:
+               property.value = Variant( Complex32( c[0].ToFloat(), c[1].ToFloat() ) );
+               break;
+            case VariantType::Complex64:
+               property.value = Variant( Complex64( c[0].ToDouble(), c[1].ToDouble() ) );
+               break;
+            default:
+               throw Error( "Internal error: Invalid complex property type '" + s + "'" );
+            }
          }
          else
             throw Error( "Internal error: Invalid property type '" + s + "'" );
@@ -1847,7 +2414,7 @@ private:
 
       FITSHeaderKeyword k = keyword;
       k.StripValueDelimiters();
-      IsoString kname = k.name.UpperCase(); // just in case!
+      IsoString kname = k.name.Uppercase(); // just in case!
 
       /*
        * Do not import irrelevant/mechanic FITS keywords.
@@ -1855,7 +2422,7 @@ private:
        */
       if ( kname          == "SIMPLE"    ||
            kname          == "BITPIX"    ||
-           kname.BeginsWith( "NAXIS" )   ||
+           kname.StartsWith( "NAXIS" )   ||
            kname          == "EXTEND"    ||
            kname          == "NEXTEND"   ||
            kname          == "BSCALE"    ||
@@ -1871,11 +2438,11 @@ private:
            kname          == "ROOTNAME"  ||
            kname          == "HDUNAME"   ||
            kname          == "EXTNAME"   ||
-           kname.BeginsWith( "TLMIN" )   ||
-           kname.BeginsWith( "TLMAX" )   ||
-           kname.BeginsWith( "TDMIN" )   ||
-           kname.BeginsWith( "TDMAX" )   ||
-           kname.BeginsWith( "TDBIN" )   ||
+           kname.StartsWith( "TLMIN" )   ||
+           kname.StartsWith( "TLMAX" )   ||
+           kname.StartsWith( "TDMIN" )   ||
+           kname.StartsWith( "TDMAX" )   ||
+           kname.StartsWith( "TDBIN" )   ||
            kname          == "PINSIGHT"  ||
            kname          == "COLORSPC"  ||
            kname          == "ALPHACHN"  ||
@@ -1940,42 +2507,21 @@ private:
    void GetImageGeometry( XISFInputImageBlock& image, QXmlStreamReader& xml )
    {
       IsoString s = IsoString( xml.attributes().value( "geometry" ).toString() ).Trimmed();
-      if ( !s.IsEmpty() )
-      {
-         // geometry="<w>:<h>:<n>"
-         IsoStringList tokens;
-         s.Break( tokens, ':', true/*trim*/ );
-         if ( tokens.Length() < 2 )
-            throw Error( "Insufficient image geometry parameters: '" + s + "'" );
-         if ( tokens.Length() < 3 )
-            throw Error( "One-dimensional images are not supported by this implementation: '" + s + "'" );
-         if ( tokens.Length() > 3 )
-            throw Error( "This implementation only supports two-dimensional images: '" + s + "'" );
-         image.info.width = tokens[0].ToInt();
-         image.info.height = tokens[1].ToInt();
-         image.info.numberOfChannels = tokens[2].ToInt();
+      if ( s.IsEmpty() )
+         throw Error( "Missing image geometry attribute." );
 
-         if ( xml.attributes().hasAttribute( "width" ) ||
-              xml.attributes().hasAttribute( "height" ) ||
-              xml.attributes().hasAttribute( "numberOfChannels" ) )
-            Warning( xml, "Ignoring redundant (incorrect, actually) image geometry attributes." );
-      }
-      else
-      {
-         // width="<w>" height="<h>" numberOfChannels="<n>"
-         s = IsoString( xml.attributes().value( "width" ).toString() ).Trimmed();
-         if ( s.IsEmpty() )
-            throw Error( "Missing image geometry or width attribute." );
-         image.info.width = s.ToInt();
-         s = IsoString( xml.attributes().value( "height" ).toString() ).Trimmed();
-         if ( s.IsEmpty() )
-            throw Error( "Missing image height attribute." );
-         image.info.height = s.ToInt();
-         s = IsoString( xml.attributes().value( "numberOfChannels" ).toString() ).Trimmed();
-         if ( s.IsEmpty() )
-            throw Error( "Missing image numberOfChannels attribute." );
-         image.info.numberOfChannels = s.ToInt();
-      }
+      // geometry="<width>:<height>:<channel-count>"
+      IsoStringList tokens;
+      s.Break( tokens, ':', true/*trim*/ );
+      if ( tokens.Length() < 2 )
+         throw Error( "Insufficient image geometry parameters: '" + s + "'" );
+      if ( tokens.Length() < 3 )
+         throw Error( "One-dimensional images are not supported by this XISF implementation: '" + s + "'" );
+      if ( tokens.Length() > 3 )
+         throw Error( "This XISF implementation only supports two-dimensional images: '" + s + "'" );
+      image.info.width = tokens[0].ToInt();
+      image.info.height = tokens[1].ToInt();
+      image.info.numberOfChannels = tokens[2].ToInt();
 
       if ( image.info.width < 1 )
          throw Error( "Invalid image width: " + String( image.info.width ) );
@@ -2004,11 +2550,11 @@ private:
               sxr.IsEmpty() || sxg.IsEmpty() || sxb.IsEmpty() ||
               syr.IsEmpty() || syg.IsEmpty() || syb.IsEmpty() ||
               sYr.IsEmpty() || sYg.IsEmpty() || sYb.IsEmpty() )
-         throw Error( "Missing required RGBWS parameter attribute(s)." );
+         throw Error( "Missing required RGBWS parameter(s)." );
 
-      if ( sgamma.LowerCase() == "srgb" )
+      if ( sgamma.CaseFolded() == "srgb" )
       {
-         gamma = 2.2;
+         gamma = 2.2F;
          sRGB = true;
       }
       else
@@ -2029,18 +2575,68 @@ private:
       rgbws = RGBColorSystem( gamma, sRGB, x, y, Y );
    }
 
+   static void ParseDisplayFunctionParameters( DVector& v, const char* attributeName, QXmlStreamReader& xml, double vmin, double vmax )
+   {
+      IsoString s = IsoString( xml.attributes().value( attributeName ).toString() ).Trimmed();
+      if ( s.IsEmpty() )
+         throw Error( "Missing DisplayFunction '" + String( attributeName ) + "' attribute." );
+      IsoStringList items;
+      s.Break( items, ':', true/*trim*/ );
+      if ( items.Length() != 4 )
+         throw Error( "Malformed DisplayFunction '" + String( attributeName ) + "' attribute." );
+      v = DVector( 4 );
+      for ( int i = 0; i < 4; ++i )
+      {
+         v[i] = items[i].ToDouble();
+         if ( v[i] < vmin || v[i] > vmax )
+            throw Error( "Invalid DisplayFunction '" + String( attributeName ) + "' attribute component(s)." );
+      }
+   }
+
+   void GetDisplayFunction( pcl::DisplayFunction& df, QXmlStreamReader& xml )
+   {
+      DVector m, s, h, l, r;
+      ParseDisplayFunctionParameters( m, "m", xml, 0, 1 );
+      ParseDisplayFunctionParameters( s, "s", xml, 0, 1 );
+      ParseDisplayFunctionParameters( h, "h", xml, 0, 1 );
+      ParseDisplayFunctionParameters( l, "l", xml, int_min, 0 );
+      ParseDisplayFunctionParameters( r, "r", xml, 1, int_max );
+      df = pcl::DisplayFunction( m, s, h, l, r );
+   }
+
+   void GetColorFilterArray( pcl::ColorFilterArray& cfa, QXmlStreamReader& xml )
+   {
+      IsoString pattern = IsoString( xml.attributes().value( "pattern" ).toString() ).Trimmed();
+      if ( pattern.IsEmpty() )
+         throw Error( "Missing pattern ColorFilterArray attribute." );
+
+      IsoString s = IsoString( xml.attributes().value( "width" ).toString() ).Trimmed();
+      if ( s.IsEmpty() )
+         throw Error( "Missing width ColorFilterArray attribute." );
+      int width = s.ToInt();
+
+      s = IsoString( xml.attributes().value( "height" ).toString() ).Trimmed();
+      if ( s.IsEmpty() )
+         throw Error( "Missing height ColorFilterArray attribute." );
+      int height = s.ToInt();
+
+      String name = String( xml.attributes().value( "name" ).toString() ).Trimmed();
+
+      cfa = pcl::ColorFilterArray( pattern, width, height, name );
+   }
+
    void GetImageResolution( pcl::ImageOptions& options, QXmlStreamReader& xml )
    {
       IsoString s = IsoString( xml.attributes().value( "horizontal" ).toString() ).Trimmed();
       if ( s.IsEmpty() )
-         throw Error( "Missing horizontal resolution attribute." );
+         throw Error( "Missing horizontal Resolution attribute." );
       options.xResolution = s.ToDouble();
       if ( options.xResolution <= 0 || !IsFinite( options.xResolution ) )
          throw Error( "Invalid horizontal resolution: " + s );
 
       s = IsoString( xml.attributes().value( "vertical" ).toString() ).Trimmed();
       if ( s.IsEmpty() )
-         throw Error( "Missing vertical resolution attribute." );
+         throw Error( "Missing vertical Resolution attribute." );
       options.yResolution = s.ToDouble();
       if ( options.yResolution <= 0 || !IsFinite( options.yResolution ) )
          throw Error( "Invalid vertical resolution: " + s );
@@ -2048,7 +2644,7 @@ private:
       s = IsoString( xml.attributes().value( "unit" ).toString() ).Trimmed();
       if ( !s.IsEmpty() )
       {
-         IsoString u = s.LowerCase();
+         IsoString u = s.CaseFolded();
          if ( u == "cm" || u == "metric" )
             options.metricResolution = true;
          else if ( u == "inch" || u == "english" )
@@ -2058,14 +2654,21 @@ private:
       }
    }
 
+   void GetICCProfile( XISFInputDataBlock& iccProfile, QXmlStreamReader& xml )
+   {
+      GetBlock( iccProfile, xml, true/*getEmbeddedData*/ );
+      if ( iccProfile.IsEmpty() )
+         throw Error( "Missing ICC profile data." );
+   }
+
    void GetThumbnail( XISFInputImageBlock& thumbnail, QXmlStreamReader& xml )
    {
       GetImageGeometry( thumbnail, xml );
 
       IsoString s = IsoString( xml.attributes().value( "sampleFormat" ).toString() ).Trimmed();
       if ( !s.IsEmpty() )
-         if ( s.LowerCase() != "uint8" )
-            throw Error( "Invalid/unsupported thumbnail sampleFormat attribute. Should be UInt8 format." );
+         if ( s.CaseFolded() != "uint8" )
+            throw Error( "Invalid/unsupported Thumbnail sampleFormat attribute. Should be UInt8 format." );
 
       s = IsoString( xml.attributes().value( "colorSpace" ).toString() ).Trimmed();
       if ( s.IsEmpty() )
@@ -2079,31 +2682,7 @@ private:
             throw Error( "Unsupported thumbnail color space '" + s + "'. Should be either RGB or grayscale." );
       }
 
-      GetBlockData( thumbnail, xml );
-
-      while ( xml.readNextStartElement() )
-      {
-         if ( xml.name() == "Data" )
-         {
-            /*
-             * Embedded image data (location="embedded").
-             */
-            if ( !thumbnail.IsEmpty() )
-               Warning( xml, String( "Redefining embedded thumbnail data." ) );
-
-            GetImageEmbeddedData( thumbnail, xml );
-         }
-         else
-         {
-            Warning( xml, String( "Skipping unknown \'" + xml.name().toString() + "\' Thumbnail element." ) );
-         }
-
-         if ( xml.isCharacters() )
-            Warning( xml, String( "Ignoring unexpected thumbnail element contents." ) );
-
-         if ( !xml.isEndElement() )
-            xml.skipCurrentElement();
-      }
+      GetBlock( thumbnail, xml, true/*getEmbeddedData*/ );
 
       if ( thumbnail.info.width > XISF_THUMBNAIL_MAX || thumbnail.info.height > XISF_THUMBNAIL_MAX )
       {
@@ -2121,20 +2700,11 @@ private:
    template <class P>
    void ReadSamples( typename P::sample* buffer, int startRow, int rowCount, int channel, P*, P* )
    {
-      const XISFInputImageBlock& block = m_images[m_currentImage].image;
+      XISFInputImageBlock& block = m_images[m_currentImage].image;
 
       size_type count = BlockSampleCount( rowCount );
-      if ( block.HasData() )
-      {
-         // location="inline"
-         ::memcpy( buffer, block.data.At( BlockSampleOffset( startRow, channel ) ), count*sizeof( *buffer ) );
-      }
-      else
-      {
-         // location="attachment:<position>:<size>"
-         m_file.SetPosition( block.position + BlockSampleOffset( startRow, channel ) );
-         m_file.Read( buffer, count*sizeof( *buffer ) );
-      }
+
+      block.GetData( m_file, buffer, count*sizeof( *buffer ), BlockSampleOffset( startRow, channel ) );
 
       if ( m_images[m_currentImage].options.readNormalized )
          NormalizeSamples( buffer, count, m_images[m_currentImage].options );
@@ -2147,20 +2717,10 @@ private:
    template <class O, class P>
    void ReadSamples( typename O::sample* buffer, int startRow, int rowCount, int channel, O*, P* )
    {
-      const XISFInputImageBlock& block = m_images[m_currentImage].image;
+      XISFInputImageBlock& block = m_images[m_currentImage].image;
 
       Array<typename P::sample> data( BlockSampleCount( rowCount ) );
-      if ( block.HasData() )
-      {
-         // location="inline"
-         ::memcpy( data.Begin(), block.data.At( BlockSampleOffset( startRow, channel ) ), data.Length()*sizeof( *data ) );
-      }
-      else
-      {
-         // location="attachment:<position>:<size>"
-         m_file.SetPosition( block.position + BlockSampleOffset( startRow, channel ) );
-         m_file.Read( data.Begin(), data.Length()*sizeof( *data ) );
-      }
+      block.GetData( m_file, data.Begin(), data.Length()*sizeof( *data ), BlockSampleOffset( startRow, channel ) );
 
       if ( m_images[m_currentImage].options.readNormalized )
          NormalizeSamples( data.Begin(), data.Length(), m_images[m_currentImage].options );
@@ -2173,66 +2733,66 @@ private:
     * Normalization of floating point and integer real pixel samples.
     */
 
-#define NORMALIZE_FLOAT_IMAGE( I )                                            \
-      /*                                                                      \
-       * Replace NaNs and infinities with minimum values.                     \
-       * Truncate out-of-range sample values                                  \
-       */                                                                     \
-      for ( int c = 0; c < image.NumberOfChannels(); ++c )                    \
-         for ( I::sample_iterator i( image, c ); i; ++i )                     \
-            if ( !IsFinite( *i ) || *i < options.lowerRange )                 \
-               *i = options.lowerRange;                                       \
-            else if ( *i > options.upperRange )                               \
-               *i = options.upperRange;                                       \
-                                                                              \
-      /*                                                                      \
-       * Normalize to [0,1]                                                   \
-       */                                                                     \
-      if ( options.lowerRange != 0 || options.upperRange != 1 )               \
-      {                                                                       \
-         double range = options.upperRange - options.lowerRange;              \
-         if ( 1 + range != 1 )                                                \
-         {                                                                    \
-            for ( int c = 0; c < image.NumberOfChannels(); ++c )              \
-               for ( I::sample_iterator i( image, c ); i; ++i )               \
-                  *i = (*i - options.lowerRange)/range;                       \
-         }                                                                    \
-         else if ( options.lowerRange < 0 || options.lowerRange > 1 )         \
-         {                                                                    \
-            double f = Range( options.lowerRange, 0.0, 1.0 );                 \
-            for ( int c = 0; c < image.NumberOfChannels(); ++c )              \
-               for ( I::sample_iterator i( image, c ); i; ++i )               \
-                  *i = f;                                                     \
-         }                                                                    \
+#define NORMALIZE_FLOAT_IMAGE( I )                                                  \
+      /*                                                                            \
+       * Replace NaNs and infinities with minimum values.                           \
+       * Truncate out-of-range sample values.                                       \
+       */                                                                           \
+      for ( int c = 0; c < image.NumberOfChannels(); ++c )                          \
+         for ( I::sample_iterator i( image, c ); i; ++i )                           \
+            if ( !IsFinite( *i ) || *i < options.lowerRange )                       \
+               *i = options.lowerRange;                                             \
+            else if ( *i > options.upperRange )                                     \
+               *i = options.upperRange;                                             \
+                                                                                    \
+      /*                                                                            \
+       * Normalize to [0,1]                                                         \
+       */                                                                           \
+      if ( options.lowerRange != 0 || options.upperRange != 1 )                     \
+      {                                                                             \
+         double range = options.upperRange - options.lowerRange;                    \
+         if ( 1 + range != 1 )                                                      \
+         {                                                                          \
+            for ( int c = 0; c < image.NumberOfChannels(); ++c )                    \
+               for ( I::sample_iterator i( image, c ); i; ++i )                     \
+                  *i = (*i - options.lowerRange)/range;                             \
+         }                                                                          \
+         else if ( options.lowerRange < 0 || options.lowerRange > 1 )               \
+         {                                                                          \
+            double f = Range( options.lowerRange, 0.0, 1.0 );                       \
+            for ( int c = 0; c < image.NumberOfChannels(); ++c )                    \
+               for ( I::sample_iterator i( image, c ); i; ++i )                     \
+                  *i = f;                                                           \
+         }                                                                          \
       }
 
-#define NORMALIZE_INTEGER_IMAGE( I )                                          \
-      /*                                                                      \
-       * Truncate out-of-range sample values                                  \
-       */                                                                     \
+#define NORMALIZE_INTEGER_IMAGE( I )                                                \
+      /*                                                                            \
+       * Truncate out-of-range sample values                                        \
+       */                                                                           \
       I::sample r0 = I::pixel_traits::FloatToSample( Ceil( options.lowerRange ) );  \
       I::sample r1 = I::pixel_traits::FloatToSample( Floor( options.upperRange ) ); \
-      for ( int c = 0; c < image.NumberOfChannels(); ++c )                    \
-         for ( I::sample_iterator i( image, c ); i; ++i )                     \
-            if ( *i < r0 )                                                    \
-               *i = r0;                                                       \
-            else if ( *i > r1 )                                               \
-               *i = r1;                                                       \
-                                                                              \
-      /*                                                                      \
-       * Normalize to [0,I::pixel_traits::MaxSampleValue()]                   \
-       */                                                                     \
-      if ( options.lowerRange > 0 ||                                          \
-           options.upperRange < I::pixel_traits::MaxSampleValue() )           \
-      {                                                                       \
-         double range = options.upperRange - options.lowerRange;              \
-         if ( 1 + range != 1 )                                                \
-         {                                                                    \
-            double scale = I::pixel_traits::MaxSampleValue()/range;           \
-            for ( int c = 0; c < image.NumberOfChannels(); ++c )              \
-               for ( I::sample_iterator i( image, c ); i; ++i )               \
-                  *i = (*i - options.lowerRange)*scale;                       \
-         }                                                                    \
+      for ( int c = 0; c < image.NumberOfChannels(); ++c )                          \
+         for ( I::sample_iterator i( image, c ); i; ++i )                           \
+            if ( *i < r0 )                                                          \
+               *i = r0;                                                             \
+            else if ( *i > r1 )                                                     \
+               *i = r1;                                                             \
+                                                                                    \
+      /*                                                                            \
+       * Normalize to [0,I::pixel_traits::MaxSampleValue()]                         \
+       */                                                                           \
+      if ( options.lowerRange > 0 ||                                                \
+           options.upperRange < I::pixel_traits::MaxSampleValue() )                 \
+      {                                                                             \
+         double range = options.upperRange - options.lowerRange;                    \
+         if ( 1 + range != 1 )                                                      \
+         {                                                                          \
+            double scale = I::pixel_traits::MaxSampleValue()/range;                 \
+            for ( int c = 0; c < image.NumberOfChannels(); ++c )                    \
+               for ( I::sample_iterator i( image, c ); i; ++i )                     \
+                  *i = (*i - options.lowerRange)*scale;                             \
+         }                                                                          \
       }
 
    void NormalizeImage( Image& image, const pcl::ImageOptions& options ) const
@@ -2268,60 +2828,60 @@ private:
       NORMALIZE_INTEGER_IMAGE( UInt32Image )
    }
 
-#define NORMALIZE_FLOAT_SAMPLES( P )                                          \
-      /*                                                                      \
-       * Replace NaNs and infinities with minimum values.                     \
-       * Truncate out-of-range sample values                                  \
-       */                                                                     \
-      for ( P::sample* i = buffer, * j = i + count; i < j; ++i )              \
-         if ( !IsFinite( *i ) || *i < options.lowerRange )                    \
-            *i = options.lowerRange;                                          \
-         else if ( *i > options.upperRange )                                  \
-            *i = options.upperRange;                                          \
-                                                                              \
-      /*                                                                      \
-       * Normalize to [0,1]                                                   \
-       */                                                                     \
-      if ( options.lowerRange != 0 || options.upperRange != 1 )               \
-      {                                                                       \
-         double range = options.upperRange - options.lowerRange;              \
-         if ( 1 + range != 1 )                                                \
-         {                                                                    \
-            for ( P::sample* i = buffer, * j = i + count; i < j; ++i )        \
-               *i = (*i - options.lowerRange)/range;                          \
-         }                                                                    \
-         else if ( options.lowerRange < 0 || options.lowerRange > 1 )         \
-         {                                                                    \
-            double f = Range( options.lowerRange, 0.0, 1.0 );                 \
-            for ( P::sample* i = buffer, * j = i + count; i < j; ++i )        \
-               *i = f;                                                        \
-         }                                                                    \
+#define NORMALIZE_FLOAT_SAMPLES( P )                                                \
+      /*                                                                            \
+       * Replace NaNs and infinities with minimum values.                           \
+       * Truncate out-of-range sample values                                        \
+       */                                                                           \
+      for ( P::sample* i = buffer, * j = i + count; i < j; ++i )                    \
+         if ( !IsFinite( *i ) || *i < options.lowerRange )                          \
+            *i = options.lowerRange;                                                \
+         else if ( *i > options.upperRange )                                        \
+            *i = options.upperRange;                                                \
+                                                                                    \
+      /*                                                                            \
+       * Normalize to [0,1]                                                         \
+       */                                                                           \
+      if ( options.lowerRange != 0 || options.upperRange != 1 )                     \
+      {                                                                             \
+         double range = options.upperRange - options.lowerRange;                    \
+         if ( 1 + range != 1 )                                                      \
+         {                                                                          \
+            for ( P::sample* i = buffer, * j = i + count; i < j; ++i )              \
+               *i = (*i - options.lowerRange)/range;                                \
+         }                                                                          \
+         else if ( options.lowerRange < 0 || options.lowerRange > 1 )               \
+         {                                                                          \
+            double f = Range( options.lowerRange, 0.0, 1.0 );                       \
+            for ( P::sample* i = buffer, * j = i + count; i < j; ++i )              \
+               *i = f;                                                              \
+         }                                                                          \
       }
 
-#define NORMALIZE_INTEGER_SAMPLES( P )                                        \
-      /*                                                                      \
-       * Truncate out-of-range sample values                                  \
-       */                                                                     \
-      P::sample r0 = P::FloatToSample( Ceil( options.lowerRange ) );          \
-      P::sample r1 = P::FloatToSample( Floor( options.upperRange ) );         \
-      for ( P::sample* i = buffer, * j = i + count; i < j; ++i )              \
-         if ( *i < r0 )                                                       \
-            *i = r0;                                                          \
-         else if ( *i > r1 )                                                  \
-            *i = r1;                                                          \
-                                                                              \
-      /*                                                                      \
-       * Normalize to [0,P::MaxSampleValue()]                                 \
-       */                                                                     \
-      if ( options.lowerRange > 0 || options.upperRange < P::MaxSampleValue() ) \
-      {                                                                       \
-         double range = options.upperRange - options.lowerRange;              \
-         if ( 1 + range != 1 )                                                \
-         {                                                                    \
-            double scale = P::MaxSampleValue()/range;                         \
-            for ( P::sample* i = buffer, * j = i + count; i < j; ++i )        \
-               *i = (*i - options.lowerRange)*scale;                          \
-         }                                                                    \
+#define NORMALIZE_INTEGER_SAMPLES( P )                                              \
+      /*                                                                            \
+       * Truncate out-of-range sample values                                        \
+       */                                                                           \
+      P::sample r0 = P::FloatToSample( Ceil( options.lowerRange ) );                \
+      P::sample r1 = P::FloatToSample( Floor( options.upperRange ) );               \
+      for ( P::sample* i = buffer, * j = i + count; i < j; ++i )                    \
+         if ( *i < r0 )                                                             \
+            *i = r0;                                                                \
+         else if ( *i > r1 )                                                        \
+            *i = r1;                                                                \
+                                                                                    \
+      /*                                                                            \
+       * Normalize to [0,P::MaxSampleValue()]                                       \
+       */                                                                           \
+      if ( options.lowerRange > 0 || options.upperRange < P::MaxSampleValue() )     \
+      {                                                                             \
+         double range = options.upperRange - options.lowerRange;                    \
+         if ( 1 + range != 1 )                                                      \
+         {                                                                          \
+            double scale = P::MaxSampleValue()/range;                               \
+            for ( P::sample* i = buffer, * j = i + count; i < j; ++i )              \
+               *i = (*i - options.lowerRange)*scale;                                \
+         }                                                                          \
       }
 
    void NormalizeSamples( FloatPixelTraits::sample* buffer, size_type count, const pcl::ImageOptions& options ) const
@@ -2361,11 +2921,11 @@ private:
     * The absolute file position in bytes of the first pixel sample in the
     * specified row of a channel of the current image.
     */
-   size_type BlockSampleOffset( size_type startRow, size_type channel ) const
+   size_type BlockSampleOffset( size_type startRow, size_type channel = 0 ) const
    {
       const pcl::ImageOptions& options = m_images[m_currentImage].options;
       const XISFInputImageBlock& block = m_images[m_currentImage].image;
-      return size_type( options.bitsPerSample >> 3 ) * (size_type( channel ) * BlockSampleCount( block.info.height ) + BlockSampleCount( startRow ));
+      return size_type( options.bitsPerSample >> 3 ) * (channel * BlockSampleCount( block.info.height ) + BlockSampleCount( startRow ));
    }
 
    /*
@@ -2440,7 +3000,9 @@ private:
 
 // ----------------------------------------------------------------------------
 
-XISFReader::XISFReader() : m_engine( 0 ), m_options()
+XISFReader::XISFReader() :
+   m_engine( nullptr ),
+   m_options()
 {
 }
 
@@ -2551,13 +3113,6 @@ bool XISFReader::Extract( ICCProfile& iccProfile )
    return true;
 }
 
-bool XISFReader::Extract( ByteArray& data )
-{
-   CheckOpenStream( "Extract" );
-   data = m_engine->Metadata();
-   return true;
-}
-
 bool XISFReader::Extract( UInt8Image& thumbnail )
 {
    CheckOpenStream( "Extract" );
@@ -2576,6 +3131,27 @@ ImagePropertyDescriptionArray XISFReader::Properties() const
 {
    CheckOpenStream( "Properties" );
    return m_engine->Properties();
+}
+
+bool XISFReader::Extract( RGBColorSystem& rgbws )
+{
+   CheckOpenStream( "Extract" );
+   rgbws = m_engine->RGBWorkingSpace();
+   return true;
+}
+
+bool XISFReader::Extract( DisplayFunction& df )
+{
+   CheckOpenStream( "Extract" );
+   df = m_engine->DisplayFunction();
+   return true;
+}
+
+bool XISFReader::Extract( ColorFilterArray& cfa )
+{
+   CheckOpenStream( "Extract" );
+   cfa = m_engine->ColorFilterArray();
+   return true;
 }
 
 void XISFReader::ReadImage( FImage& image )
@@ -2679,73 +3255,204 @@ void XISFReader::CheckClosedStream( const char* memberFunction ) const
 
 struct XISFOutputBlock
 {
-   IsoString attachmentPos;
-   bool      compressed : 1;
-   ByteArray data;
+   /*
+    * Compressed subblocks.
+    */
+   typedef Compression::subblock_list  subblock_list;
 
-   XISFOutputBlock() : attachmentPos(), compressed( false ), data()
+   IsoString     attachmentPos;
+   int           compressionMethod = XISF_COMPRESSION_NONE;
+   int           itemSize          = 1;
+   subblock_list subblocks;
+   ByteArray     data;
+   IsoString     checksumMethod;
+   ByteArray     checksum;
+
+   XISFOutputBlock() :
+      attachmentPos( UniqueAttachmentToken() )
    {
    }
 
-   XISFOutputBlock( const ByteArray& a_data ) :
-   attachmentPos( RandomAttachmentPos() ), compressed( false ), data( a_data )
+   XISFOutputBlock( const ByteArray& src ) :
+      attachmentPos( UniqueAttachmentToken() ),
+      data( src )
    {
    }
 
-   XISFOutputBlock( const void* blockData, size_type blockSize ) :
-   attachmentPos( RandomAttachmentPos() ), compressed( false ),
-   data( reinterpret_cast<const uint8*>( blockData ), reinterpret_cast<const uint8*>( blockData )+blockSize )
+   XISFOutputBlock( const void* src, size_type size ) :
+      attachmentPos( UniqueAttachmentToken() ),
+      data( reinterpret_cast<const uint8*>( src ),
+            reinterpret_cast<const uint8*>( src ) + size )
    {
    }
 
    XISFOutputBlock( const XISFOutputBlock& ) = default;
+
    XISFOutputBlock& operator =( const XISFOutputBlock& ) = default;
+
+   bool IsCompressed() const
+   {
+      return compressionMethod != XISF_COMPRESSION_NONE;
+   }
 
    bool HasData() const
    {
       return !data.IsEmpty();
    }
 
-   bool IsCompressed() const
+   bool HasCompressedData() const
    {
-      return compressed;
+      return !subblocks.IsEmpty();
+   }
+
+   bool HasChecksum() const
+   {
+      return !checksum.IsEmpty();
+   }
+
+   size_type BlockSize() const
+   {
+      if ( HasData() )
+         return data.Length();
+
+      if ( HasCompressedData() )
+      {
+         size_type compressedSize = 0;
+         for ( subblock_list::const_iterator i = subblocks.Begin(); i != subblocks.End(); ++i )
+            compressedSize += i->compressedData.Length();
+         return compressedSize;
+      }
+
+      return 0;
+   }
+
+   IsoString EncodedData() const
+   {
+      if ( HasData() )
+         return IsoString::ToBase64( data );
+
+      if ( HasCompressedData() )
+      {
+         ByteArray compressedData;
+         for ( subblock_list::const_iterator i = subblocks.Begin(); i != subblocks.End(); ++i )
+            compressedData.Append( i->compressedData );
+         return IsoString::ToBase64( compressedData );
+      }
+
+      return IsoString();
+   }
+
+   IsoString CompressionAttributeValue() const
+   {
+      // compression="<codec>:<uncompressed-size>:<item-size>"
+      IsoString value;
+      if ( IsCompressed() )
+      {
+         size_type uncompressedSize = 0;
+         for ( subblock_list::const_iterator i = subblocks.Begin(); i != subblocks.End(); ++i )
+            uncompressedSize += i->uncompressedSize;
+         value = IsoString( XISFEngineBase::CompressionMethodId( compressionMethod ) ) + ':' + IsoString( uncompressedSize );
+         if ( itemSize > 1 && XISFEngineBase::CompressionNeedsItemSize( compressionMethod ) )
+            value += ':' + IsoString( itemSize );
+      }
+      return value;
+   }
+
+   IsoString SubblocksAttributeValue() const
+   {
+      // subblocks="<cs0>,<us0>:<cs1>,<us1>:...:<csN-1>,<usN-1>"
+      IsoString value;
+      if ( subblocks.Length() > 1 )
+         for ( subblock_list::const_iterator i = subblocks.Begin(); ; )
+         {
+            value.AppendFormat( "%llu,%llu", i->compressedData.Length(), i->uncompressedSize );
+            if ( ++i == subblocks.End() )
+               break;
+            value += ':';
+         }
+      return value;
+   }
+
+   void CompressData( int method, int bytesPerItem, int level )
+   {
+      if ( HasData() )
+      {
+         if ( bytesPerItem < 2 )
+            method = XISFEngineBase::CompressionMethodNoShuffle( method );
+
+         AutoPointer<Compression> compressor( XISFEngineBase::NewCompression( method, bytesPerItem ) );
+         compressor->SetCompressionLevel( level );
+
+         subblocks = compressor->Compress( data );
+         if ( subblocks.IsEmpty() )
+         {
+            compressionMethod = XISF_COMPRESSION_NONE;
+            itemSize = 1;
+         }
+         else
+         {
+            compressionMethod = method;
+            itemSize = bytesPerItem;
+            data.Clear();
+         }
+      }
+   }
+
+   void ComputeChecksum( const IsoString& method )
+   {
+      AutoPointer<CryptographicHash> hash( XISFEngineBase::NewCryptographicHash( checksumMethod = method ) );
+
+      if ( HasData() )
+      {
+         checksum = hash->Hash( data );
+      }
+      else if ( HasCompressedData() )
+      {
+         hash->Initialize();
+         for ( subblock_list::const_iterator i = subblocks.Begin(); i != subblocks.End(); ++i )
+            hash->Update( i->compressedData );
+         checksum = hash->Finalize();
+      }
+   }
+
+   IsoString ChecksumAttributeValue() const
+   {
+      // checksum="<algorithm>:<digest>"
+      IsoString value;
+      if ( HasChecksum() )
+         value = checksumMethod + ':' + IsoString::ToHex( checksum );
+      return value;
+   }
+
+   void WriteData( File& file ) const
+   {
+      if ( HasData() )
+      {
+         file.Write( reinterpret_cast<const void*>( data.Begin() ), fsize_type( data.Length() ) );
+      }
+      else if ( HasCompressedData() )
+      {
+         for ( subblock_list::const_iterator i = subblocks.Begin(); i != subblocks.End(); ++i )
+            file.Write( reinterpret_cast<const void*>( i->compressedData.Begin() ), fsize_type( i->compressedData.Length() ) );
+      }
    }
 
    void Clear()
    {
-      attachmentPos.Clear();
-      data.Clear();
-   }
-
-   void CompressData( int level )
-   {
-      if ( HasData() )
-      {
-         unsigned long compressedSize = ::compressBound( uint32( data.Length() ) );
-         ByteArray compressedData = ByteArray( size_type( compressedSize ) );
-         int result = ::compress2( compressedData.Begin(), &compressedSize, data.Begin(), uint32( data.Length() ), level );
-         if ( result != Z_OK )
-            throw Error( "Failed to compress block data." );
-         data = ByteArray( compressedData.Begin(), compressedData.At( compressedSize ) );
-         compressed = true;
-      }
+      (void)operator =( XISFOutputBlock() );
    }
 
 private:
 
-   static IsoString RandomAttachmentPos()
+   /*
+    * Create a unique token for second-pass generation of an attachment
+    * attribute:
+    *
+    *    location="attachment:<position>:<size>"
+    */
+   static IsoString UniqueAttachmentToken()
    {
-      static const char* C = "Aa9Bb0CcD8dEe1Ff7Gg2Hh6Ii3Jj4Kk5Ll4MmNn5OoP3pQq6Rr2Ss7TtU1uVv8Ww0Xx9YyZz";
-      static const int N1 = ::strlen( C ) - 1;
-      static XorShift1024* R = 0;
-      if ( R == 0 )
-         R = new XorShift1024;
-      IsoString token;
-      token.Reserve( 16 );
-      for ( int i = 0; i < 16; ++i )
-         token[i] = C[R->UIN( N1 )];
-      token[16] = uint8( 0 );
-      return "attachment:" + token;
+      return "attachment:" + IsoString::Random( 16 );
    }
 };
 
@@ -2822,7 +3529,6 @@ public:
 #else
       m_path = path;
 #endif
-      m_path.Trim();
 
       StartDocument();
    }
@@ -2834,6 +3540,11 @@ public:
    {
       if ( !IsOpen() )
          return;
+
+      /*
+       * Complete a possible sequential/random access image block.
+       */
+      CloseRandomAccessBlock();
 
       /*
        * Complete the XML document.
@@ -2850,7 +3561,7 @@ public:
          {
             IsoString attachmentPos = IsoString().Format( "attachment:%llu", pos );
             m_text.replace( i->attachmentPos.c_str(), attachmentPos.c_str() );
-            pos = AlignedPosition( pos + i->data.Length() );
+            pos = AlignedPosition( pos + i->BlockSize() );
             i->attachmentPos = attachmentPos;
          }
          if ( m_text.count() == n )
@@ -2870,10 +3581,10 @@ public:
       for ( XISFOutputBlockArray::const_iterator i = m_blocks.Begin(); i < m_blocks.End(); ++i )
       {
          fpos_type pos = f.Position();
-         fpos_type pad = AlignedPosition( pos ) - pos;
-         if ( pad )
-            f.Write( zero.Begin(), pad );
-         f.Write( i->data.Begin(), i->data.Length() );
+         fsize_type padding = AlignedPosition( pos ) - pos;
+         if ( padding )
+            f.Write( zero.Begin(), padding );
+         i->WriteData( f );
       }
       f.Close();
 
@@ -2923,6 +3634,23 @@ public:
    }
 
    /*
+    * Set the display function of the current image in this output stream.
+    */
+   void SetDisplayFunction( const DisplayFunction& df )
+   {
+      m_df = df;
+   }
+
+   /*
+    * Set the color filter array (CFA) of the current image in this output
+    * stream.
+    */
+   void SetColorFilterArray( const ColorFilterArray& cfa )
+   {
+      m_cfa = cfa;
+   }
+
+   /*
     * Embed a list of FITS header keywords in the current image of this output
     * stream.
     */
@@ -2951,20 +3679,6 @@ public:
    }
 
    /*
-    * Embed a metadata block in the current image in this output stream.
-    */
-   void SetMetadata( const ByteArray& metadata )
-   {
-      // ### TODO
-   }
-
-   ByteArray EmbeddedMetadata() const
-   {
-      // ### TODO
-      return ByteArray();
-   }
-
-   /*
     * Embed a thumbnail image for the current image in this output stream.
     */
    void SetThumbnail( const UInt8Image& thumbnail )
@@ -2988,9 +3702,9 @@ public:
       {
          XISFOutputPropertyArray::const_iterator i = m_properties.Search( id );
          if ( i == m_properties.End() )
-            m_properties.Add( XISFOutputProperty( id, value ) );
+            m_properties << XISFOutputProperty( id, value );
          else
-            const_cast<XISFOutputProperty&>( *i ).value = value;
+            m_properties.MutableIterator( i )->value = value;
          if ( m_xisfOptions.verbosity > 1 )
             m_console.WriteLn( "<end><cbr>Property '" + id + "' (" + PropertyTypeId( value.Type() ) + ") embedded." );
       }
@@ -3031,6 +3745,8 @@ public:
    {
       if ( !IsOpen() )
          return;
+
+      CloseRandomAccessBlock();
 
       if ( m_options.bitsPerSample != P::BitsPerSample() ||
            m_options.ieeefpSampleFormat != P::IsFloatSample() ||
@@ -3095,15 +3811,13 @@ public:
       if ( !IsOpen() )
          return;
 
-      /*
-       * ### See comment in the WriteImage() function above.
-       */
-      StartElement( "Image" );
+      CloseRandomAccessBlock();
+
       m_info = info;
-      WriteImageAttributes();
-      NewRandomAccessBlock();
-      WriteImageElements();
-      EndElement(); // Image
+      m_randomData = ByteArray( size_type( m_info.width )
+                                         * m_info.height
+                                         * m_info.numberOfChannels
+                                         * (m_options.bitsPerSample >> 3), uint8( 0 ) );
    }
 
    /*
@@ -3112,26 +3826,27 @@ public:
    template <typename T, class P>
    void WriteSamples( const T* buffer, int startRow, int rowCount, int channel, P* )
    {
-      if ( m_randomBlock.HasData() ) // CreateImage() should have been called before
-         if ( m_options.complexSample )
-            switch ( m_options.bitsPerSample )
-            {
-            case 32: WriteSamples( buffer, startRow, rowCount, channel, (P*)0, (ComplexPixelTraits*)0 ); break;
-            case 64: WriteSamples( buffer, startRow, rowCount, channel, (P*)0, (DComplexPixelTraits*)0 ); break;
-            }
-         else if ( m_options.ieeefpSampleFormat )
-            switch ( m_options.bitsPerSample )
-            {
-            case 32: WriteSamples( buffer, startRow, rowCount, channel, (P*)0, (FloatPixelTraits*)0 ); break;
-            case 64: WriteSamples( buffer, startRow, rowCount, channel, (P*)0, (DoublePixelTraits*)0 ); break;
-            }
-         else
-            switch ( m_options.bitsPerSample )
-            {
-            case  8: WriteSamples( buffer, startRow, rowCount, channel, (P*)0, (UInt8PixelTraits*)0 ); break;
-            case 16: WriteSamples( buffer, startRow, rowCount, channel, (P*)0, (UInt16PixelTraits*)0 ); break;
-            case 32: WriteSamples( buffer, startRow, rowCount, channel, (P*)0, (UInt32PixelTraits*)0 ); break;
-            }
+      if ( !m_randomData.IsEmpty() ) // CreateImage() should have been called before
+         if ( rowCount > 0 )
+            if ( m_options.complexSample )
+               switch ( m_options.bitsPerSample )
+               {
+               case 32: WriteSamples( buffer, startRow, rowCount, channel, (P*)0, (ComplexPixelTraits*)0 ); break;
+               case 64: WriteSamples( buffer, startRow, rowCount, channel, (P*)0, (DComplexPixelTraits*)0 ); break;
+               }
+            else if ( m_options.ieeefpSampleFormat )
+               switch ( m_options.bitsPerSample )
+               {
+               case 32: WriteSamples( buffer, startRow, rowCount, channel, (P*)0, (FloatPixelTraits*)0 ); break;
+               case 64: WriteSamples( buffer, startRow, rowCount, channel, (P*)0, (DoublePixelTraits*)0 ); break;
+               }
+            else
+               switch ( m_options.bitsPerSample )
+               {
+               case  8: WriteSamples( buffer, startRow, rowCount, channel, (P*)0, (UInt8PixelTraits*)0 ); break;
+               case 16: WriteSamples( buffer, startRow, rowCount, channel, (P*)0, (UInt16PixelTraits*)0 ); break;
+               case 32: WriteSamples( buffer, startRow, rowCount, channel, (P*)0, (UInt32PixelTraits*)0 ); break;
+               }
    }
 
 private:
@@ -3143,7 +3858,7 @@ private:
    IsoString               m_hints;       // format hints (only used to generate metadata)
    mutable Console         m_console;     // for verbosity
    QXmlStreamWriter*       m_xml;         // XML output stream
-   IsoString               m_path;        // path of the current output file
+   String                  m_path;        // path of the current output file
    QByteArray              m_text;        // XML header
 
    /*
@@ -3153,13 +3868,14 @@ private:
    pcl::ImageInfo          m_info;        // geometry and color space data
    IsoString               m_id;          // optional image identifier
    RGBColorSystem          m_rgbws;       // RGB working space
+   DisplayFunction         m_df;          // display function
+   ColorFilterArray        m_cfa;         // CFA pattern
    FITSKeywordArray        m_keywords;    // compatibility FITS header keywords
    ICCProfile              m_iccProfile;  // ICC profile
    UInt8Image              m_thumbnail;   // thumbnail image
    XISFOutputPropertyArray m_properties;  // image properties
    XISFOutputBlockArray    m_blocks;      // generic blobs
-   XISFOutputBlock         m_randomBlock; // sequential/random access block
-   // ### TODO: metadata
+   ByteArray               m_randomData;  // sequential/random access image data
 
    /*
     * Reset the state of the engine and destroy all internal data structures
@@ -3171,12 +3887,14 @@ private:
       m_text = QByteArray();
       m_info.Reset();
       m_id.Clear();
+      m_df.Reset();
+      m_cfa.Clear();
       m_keywords.Clear();
       m_iccProfile.Clear();
       m_thumbnail.FreeData();
       m_properties.Clear();
       m_blocks.Clear();
-      m_randomBlock.Clear();
+      m_randomData.Clear();
    }
 
    /*
@@ -3184,8 +3902,8 @@ private:
     */
    void DestroyXMLWriter()
    {
-      if ( m_xml != 0 )
-         delete m_xml, m_xml = 0;
+      if ( m_xml != nullptr )
+         delete m_xml, m_xml = nullptr;
    }
 
    /*
@@ -3221,10 +3939,10 @@ private:
        * XISF metadata properties.
        */
       StartElement( "Metadata" );
-      WriteProperty( "CreationTime", IsoString( QDateTime::currentDateTimeUtc().toString( Qt::ISODate ) ) );
-      WriteProperty( "CreatorApplication", String( PixInsightVersion::AsString( false/*withCodename*/ ) ) );
-      WriteProperty( "CreatorModule", String( Module->ReadableVersion() ) );
-      WriteProperty( "CreatorOS", String(
+      WriteProperty( "XISF:CreationTime", IsoString( QDateTime::currentDateTimeUtc().toString( Qt::ISODate ) ) );
+      WriteProperty( "XISF:CreatorApplication", String( PixInsightVersion::AsString( false/*withCodename*/ ) ) );
+      WriteProperty( "XISF:CreatorModule", String( Module->ReadableVersion() ) );
+      WriteProperty( "XISF:CreatorOS", String(
 #ifdef __PCL_FREEBSD
                            "FreeBSD"
 #endif
@@ -3232,25 +3950,27 @@ private:
                            "Linux"
 #endif
 #ifdef __PCL_MACOSX
-                           "OS X"
+                           "OSX"
 #endif
 #ifdef __PCL_WINDOWS
                            "Windows"
 #endif
                          ) );
-      if ( m_xisfOptions.compressData )
+
+      if ( m_xisfOptions.compressionMethod == XISF_COMPRESSION_NONE )
       {
-         WriteProperty( "CompressionMethod", IsoString( "zlib" ) );
-         WriteProperty( "CompressionLevel", int32( m_xisfOptions.compressionLevel ) );
+         WriteProperty( "XISF:BlockAlignmentSize", m_xisfOptions.blockAlignmentSize );
+         WriteProperty( "XISF:MaxInlineBlockSize", m_xisfOptions.maxInlineBlockSize );
       }
       else
       {
-         WriteProperty( "BlockAlignmentSize", m_xisfOptions.blockAlignmentSize );
-         WriteProperty( "MaxInlineBlockSize", m_xisfOptions.maxInlineBlockSize );
+         WriteProperty( "XISF:CompressionMethod", IsoString( CompressionMethodId( m_xisfOptions.compressionMethod ) ) );
+         WriteProperty( "XISF:CompressionLevel", CompressionLevelForMethod( m_xisfOptions.compressionMethod, m_xisfOptions.compressionLevel ) );
+         WriteProperty( "XISF:AbstractCompressionLevel", int( m_xisfOptions.compressionLevel ) );
       }
 
       if ( !m_hints.IsEmpty() )
-         WriteProperty( "OutputHints", m_hints );
+         WriteProperty( "XISF:OutputHints", m_hints );
 
       EndElement();
 
@@ -3303,50 +4023,90 @@ private:
    }
 
    /*
+    * Write the compression and subblocks attributes for the current XML
+    * element. If the current element is not a compressed block, this function
+    * does nothing.
+    */
+   void WriteBlockCompressionAttributes( const XISFOutputBlock& block )
+   {
+      IsoString compressionAttributeValue = block.CompressionAttributeValue();
+      IsoString subblocksAttributeValue = block.SubblocksAttributeValue();
+      if ( !compressionAttributeValue.IsEmpty() )
+         SetElementAttribute( "compression", compressionAttributeValue );
+      if ( !subblocksAttributeValue.IsEmpty() )
+         SetElementAttribute( "subblocks", subblocksAttributeValue );
+   }
+
+   /*
+    * Write the checksum attribute for the current XML element. If the current
+    * element has not computed a valid checksum, this function does nothing.
+    */
+   void WriteBlockChecksumAttributes( const XISFOutputBlock& block )
+   {
+      IsoString checksumAttributeValue = block.ChecksumAttributeValue();
+      if ( !checksumAttributeValue.IsEmpty() )
+         SetElementAttribute( "checksum", checksumAttributeValue );
+   }
+
+   /*
     * Generate a new output data block.
     *
-    * For compressed data, write the required compression="<alg>:<usize>",
-    * where <alg> is the compression algorithm and <usize> is the uncompressed
-    * block size.
+    * For compressed data, write the required attribute:
     *
-    * For inline and embedded data, write the required
-    * location="inline:<encoding>" or location="embedded" attributes and emit
-    * base64 encoded data.
+    *    compression="<alg>:<usize>:<isize>",
     *
-    * For attached data, write the location="attachment:<pos>:<size>" attribute
-    * and generate an offline block structure to be written upon stream
+    * where <alg> is the compression algorithm, <usize> is the uncompressed
+    * block size, and <isize> is the optional item size in bytes (default=1).
+    *
+    * For inline and embedded data, write the required attribute:
+    *
+    *    location="inline:<encoding>"
+    *
+    * or
+    *
+    *    location="embedded"
+    *
+    * and emit base64-encoded data.
+    *
+    * For attached data, write the attribute:
+    *
+    *    location="attachment:<pos>:<size>"
+    *
+    * and generate an offline block structure to be generated upon stream
     * completion.
     */
-   void NewBlock( const void* blockData, size_type blockSize, bool canInline = true )
+   void NewBlock( const ByteArray& blockData, int itemSize = 1, bool canInline = true )
    {
-      XISFOutputBlock block( blockData, blockSize );
+      XISFOutputBlock block( blockData );
 
-      if ( m_xisfOptions.compressData )
-         if ( blockSize >= uint32( -1 ) ) // zlib works with 32-bit block lengths.
-            m_console.WarningLn( "<end><cbr>** Warning: Cannot compress blocks larger than 4 GiB." );
-         else
-            CompressBlock( block );
+      if ( m_xisfOptions.compressionMethod != XISF_COMPRESSION_NONE )
+         CompressBlock( block, itemSize );
 
-      if ( block.data.Length() <= m_xisfOptions.maxInlineBlockSize )
+      if ( m_xisfOptions.checksums )
+         block.ComputeChecksum( "sha1" );
+
+      size_type blockSize = block.BlockSize();
+
+      if ( blockSize <= m_xisfOptions.maxInlineBlockSize )
       {
          /*
           * Generate inline or embedded data.
           */
          if ( canInline )
          {
-            if ( block.IsCompressed() )
-               SetElementAttribute( "compression", "zlib:" + IsoString( blockSize ) );
+            WriteBlockCompressionAttributes( block );
+            WriteBlockChecksumAttributes( block );
             SetElementAttribute( "location", "inline:base64" );
-            WriteElementText( IsoString::ToBase64( block.data ) );
+            WriteElementText( block.EncodedData() );
          }
          else
          {
             SetElementAttribute( "location", "embedded" );
             StartElement( "Data" );
-            if ( block.IsCompressed() )
-               SetElementAttribute( "compression", "zlib:" + IsoString( blockSize ) );
+            WriteBlockCompressionAttributes( block );
+            WriteBlockChecksumAttributes( block );
             SetElementAttribute( "encoding", "base64" );
-            WriteElementText( IsoString::ToBase64( block.data ) );
+            WriteElementText( block.EncodedData() );
             EndElement();
          }
       }
@@ -3355,11 +4115,20 @@ private:
          /*
           * Prepare a new block for attachment.
           */
-         if ( block.IsCompressed() )
-            SetElementAttribute( "compression", "zlib:" + IsoString( blockSize ) );
-         SetElementAttribute( "location", block.attachmentPos + ':' + IsoString( block.data.Length() ) );
-         m_blocks.Append( block );
+         WriteBlockCompressionAttributes( block );
+         WriteBlockChecksumAttributes( block );
+         SetElementAttribute( "location", block.attachmentPos + ':' + IsoString( blockSize ) );
+         m_blocks << block;
       }
+   }
+
+   /*
+    *
+    */
+   void NewBlock( const void* blockData, size_type blockSize, int itemSize = 1, bool canInline = true )
+   {
+      NewBlock( ByteArray( reinterpret_cast<const uint8*>( blockData ),
+                           reinterpret_cast<const uint8*>( blockData ) + blockSize ), itemSize, canInline );
    }
 
    /*
@@ -3392,43 +4161,59 @@ private:
          }
       }
 
-      NewBlock( blockData.Begin(), blockData.Length(), false/*canInline*/ );
+      NewBlock( blockData, P::BytesPerSample(), false/*canInline*/ );
    }
 
    /*
-    * Generate a new data block for incremental/random image output.
-    *
-    * Random access blocks can only be stored as attachments in the current
-    * implementation. This is a consequence of the sequential behavior of
-    * QXmlStreamWriter.
+    * Complete the current data block for incremental/random image output. If
+    * no random access data have been allocated, this function has no effect.
     */
-   void NewRandomAccessBlock()
+   void CloseRandomAccessBlock()
    {
-      m_randomBlock = XISFOutputBlock( ByteArray(
-         size_type( m_info.width ) * m_info.height * m_info.numberOfChannels * (m_options.bitsPerSample >> 3) ) );
-      SetElementAttribute( "location", m_randomBlock.attachmentPos + ':' + IsoString( m_randomBlock.data.Length() ) );
-      if ( m_xisfOptions.compressData )
-         m_console.WarningLn( "<end><cbr>** Warning: Random-access output blocks cannot be compressed." );
+      if ( !m_randomData.IsEmpty() )
+      {
+         if ( m_xisfOptions.verbosity > 0 )
+         {
+            m_console.WriteLn( "<end><cbr>Writing image" + (m_id.IsEmpty() ? String() : String( " '" + m_id + '\'' )) +
+               String().Format( ": w=%d h=%d n=%d ",
+                                 m_info.width, m_info.height, m_info.numberOfChannels ) +
+               ColorSpaceId( m_info.colorSpace ) + ' ' +
+               SampleFormatId( m_options.bitsPerSample, m_options.ieeefpSampleFormat, m_options.complexSample ) );
+            Module->ProcessEvents();
+         }
+
+         StartElement( "Image" );
+         WriteImageAttributes();
+         NewBlock( m_randomData, m_options.bitsPerSample >> 3, false/*canInline*/ );
+         WriteImageElements();
+         EndElement(); // Image
+         m_randomData.Clear();
+      }
    }
 
    /*
     * Compress an output data block.
     */
-   void CompressBlock( XISFOutputBlock& block )
+   void CompressBlock( XISFOutputBlock& block, int itemSize )
    {
       size_type uncompressedSize = block.data.Length();
+      int compressionLevel = CompressionLevelForMethod( m_xisfOptions.compressionMethod, m_xisfOptions.compressionLevel );
       if ( m_xisfOptions.verbosity > 0 )
       {
-         m_console.Write( "<end><cbr>Compressing block: " + File::SizeAsString( uncompressedSize ) + " -> " );
+         m_console.Write( "<end><cbr>Compressing block (" +
+               String( CompressionMethodId( m_xisfOptions.compressionMethod ) ) +
+               String().Format( ":%d): ", compressionLevel ) +
+               File::SizeAsString( uncompressedSize ) + " -> " );
          Module->ProcessEvents();
       }
 
-      block.CompressData( m_xisfOptions.compressionLevel );
+      block.CompressData( m_xisfOptions.compressionMethod, itemSize, compressionLevel );
 
       if ( m_xisfOptions.verbosity > 0 )
       {
-         m_console.WriteLn( File::SizeAsString( block.data.Length() ) +
-               String().Format( " (%.2f%%)", 100*double( uncompressedSize - block.data.Length() )/uncompressedSize ) );
+         size_type compressedSize = block.BlockSize();
+         m_console.WriteLn( File::SizeAsString( compressedSize ) +
+               String().Format( " (%.2f%%)", 100*double( uncompressedSize - compressedSize )/uncompressedSize ) );
          Module->ProcessEvents();
       }
    }
@@ -3441,20 +4226,18 @@ private:
       if ( !m_id.IsEmpty() )
          SetElementAttribute( "id", m_id );
 
-      SetElementAttribute( "geometry", String().Format( "%d:%d:%d", m_info.width, m_info.height, m_info.numberOfChannels ) );
+      SetElementAttribute( "geometry", IsoString().Format( "%d:%d:%d", m_info.width, m_info.height, m_info.numberOfChannels ) );
       SetElementAttribute( "sampleFormat", SampleFormatId( m_options.bitsPerSample, m_options.ieeefpSampleFormat, m_options.complexSample ) );
 
       if ( m_options.ieeefpSampleFormat )
-      {
-         if ( m_xisfOptions.outputUpperBound < m_xisfOptions.outputLowerBound )
-            Swap( m_xisfOptions.outputLowerBound, m_xisfOptions.outputUpperBound );
-         SetElementAttribute( "bounds", IsoString().Format( "%.16lg:%.16lg", m_xisfOptions.outputLowerBound, m_xisfOptions.outputUpperBound ) );
-      }
+         if ( !m_options.complexSample )
+         {
+            if ( m_xisfOptions.outputUpperBound < m_xisfOptions.outputLowerBound )
+               Swap( m_xisfOptions.outputLowerBound, m_xisfOptions.outputUpperBound );
+            SetElementAttribute( "bounds", IsoString().Format( "%.16lg:%.16lg", m_xisfOptions.outputLowerBound, m_xisfOptions.outputUpperBound ) );
+         }
 
       SetElementAttribute( "colorSpace", ColorSpaceId( m_info.colorSpace ) );
-
-      if ( m_options.cfaType != CFAType::None )
-         SetElementAttribute( "cfaType", CFATypeId( m_options.cfaType ) );
    }
 
    /*
@@ -3480,20 +4263,32 @@ private:
             }
       }
 
-      // if ( m_options.embedRGBWS ) ### TODO
+      if ( m_options.embedColorFilterArray )
+         if ( !m_cfa.IsEmpty() )
+         {
+            StartElement( "ColorFilterArray" );
+            SetElementAttribute( "pattern", m_cfa.Pattern() );
+            SetElementAttribute( "width", IsoString( m_cfa.Width() ) );
+            SetElementAttribute( "height", IsoString( m_cfa.Height() ) );
+            if ( !m_cfa.Name().IsEmpty() )
+               SetElementAttribute( "name", m_cfa.Name().ToUTF8() );
+            EndElement();
+         }
+
+      if ( m_options.embedRGBWS )
          if ( m_rgbws != RGBColorSystem::sRGB )
          {
-            StartElement( "RGBWS" );
-            SetElementAttribute( "gamma", m_rgbws.IsSRGB() ? String( "sRGB" ) : String( m_rgbws.Gamma() ) );
-            SetElementAttribute( "xr", String( m_rgbws.ChromaticityXCoordinates()[0] ) );
-            SetElementAttribute( "xg", String( m_rgbws.ChromaticityXCoordinates()[1] ) );
-            SetElementAttribute( "xb", String( m_rgbws.ChromaticityXCoordinates()[2] ) );
-            SetElementAttribute( "yr", String( m_rgbws.ChromaticityYCoordinates()[0] ) );
-            SetElementAttribute( "yg", String( m_rgbws.ChromaticityYCoordinates()[1] ) );
-            SetElementAttribute( "yb", String( m_rgbws.ChromaticityYCoordinates()[2] ) );
-            SetElementAttribute( "Yr", String( m_rgbws.LuminanceCoefficients()[0] ) );
-            SetElementAttribute( "Yg", String( m_rgbws.LuminanceCoefficients()[1] ) );
-            SetElementAttribute( "Yb", String( m_rgbws.LuminanceCoefficients()[2] ) );
+            StartElement( "RGBWorkingSpace" );
+            SetElementAttribute( "gamma", m_rgbws.IsSRGB() ? IsoString( "sRGB" ) : IsoString( m_rgbws.Gamma() ) );
+            SetElementAttribute( "xr", IsoString( m_rgbws.ChromaticityXCoordinates()[0] ) );
+            SetElementAttribute( "xg", IsoString( m_rgbws.ChromaticityXCoordinates()[1] ) );
+            SetElementAttribute( "xb", IsoString( m_rgbws.ChromaticityXCoordinates()[2] ) );
+            SetElementAttribute( "yr", IsoString( m_rgbws.ChromaticityYCoordinates()[0] ) );
+            SetElementAttribute( "yg", IsoString( m_rgbws.ChromaticityYCoordinates()[1] ) );
+            SetElementAttribute( "yb", IsoString( m_rgbws.ChromaticityYCoordinates()[2] ) );
+            SetElementAttribute( "Yr", IsoString( m_rgbws.LuminanceCoefficients()[0] ) );
+            SetElementAttribute( "Yg", IsoString( m_rgbws.LuminanceCoefficients()[1] ) );
+            SetElementAttribute( "Yb", IsoString( m_rgbws.LuminanceCoefficients()[2] ) );
             EndElement();
             if ( m_xisfOptions.verbosity > 0 )
             {
@@ -3502,31 +4297,44 @@ private:
             }
          }
 
-      // if ( m_options.embedResolution ) ### TODO
-         if ( m_options.xResolution > 0 && m_options.yResolution > 0 )
+      if ( m_options.embedDisplayFunction )
+         if ( !m_df.IsIdentityTransformation() )
          {
-            StartElement( "Resolution" );
-            SetElementAttribute( "horizontal", String( m_options.xResolution ) );
-            SetElementAttribute( "vertical", String( m_options.yResolution ) );
-            SetElementAttribute( "unit", m_options.metricResolution ? "cm" : "inch" );
+            DVector m, s, h, l, r;
+            m_df.GetDisplayFunctionParameters( m, s, h, l, r );
+            StartElement( "DisplayFunction" );
+            SetElementAttribute( "m", IsoString().Format( "%.16lg:%.16lg:%.16lg:%.16lg", m[0], m[1], m[2], m[3] ) );
+            SetElementAttribute( "s", IsoString().Format( "%.16lg:%.16lg:%.16lg:%.16lg", s[0], s[1], s[2], s[3] ) );
+            SetElementAttribute( "h", IsoString().Format( "%.16lg:%.16lg:%.16lg:%.16lg", h[0], h[1], h[2], h[3] ) );
+            SetElementAttribute( "l", IsoString().Format( "%.16lg:%.16lg:%.16lg:%.16lg", l[0], l[1], l[2], l[3] ) );
+            SetElementAttribute( "r", IsoString().Format( "%.16lg:%.16lg:%.16lg:%.16lg", r[0], r[1], r[2], r[3] ) );
             EndElement();
-            if ( m_xisfOptions.verbosity > 1 )
+            if ( m_xisfOptions.verbosity > 0 )
             {
-               m_console.WriteLn( "<end><cbr>Image resolution parameters embedded." );
+               m_console.WriteLn( "<end><cbr>Display function parameters embedded." );
                Module->ProcessEvents();
             }
          }
 
-      /*
-      if ( m_options.embedMetadata )
-         ### TODO
-      */
+      if ( m_options.xResolution > 0 && m_options.yResolution > 0 )
+      {
+         StartElement( "Resolution" );
+         SetElementAttribute( "horizontal", IsoString( m_options.xResolution ) );
+         SetElementAttribute( "vertical", IsoString( m_options.yResolution ) );
+         SetElementAttribute( "unit", m_options.metricResolution ? "cm" : "inch" );
+         EndElement();
+         if ( m_xisfOptions.verbosity > 1 )
+         {
+            m_console.WriteLn( "<end><cbr>Image resolution parameters embedded." );
+            Module->ProcessEvents();
+         }
+      }
 
       if ( m_options.embedICCProfile )
          if ( m_iccProfile.IsProfile() )
          {
             StartElement( "ICCProfile" );
-            NewBlock( reinterpret_cast<const void*>( m_iccProfile.ProfileData().Begin() ), m_iccProfile.ProfileSize() );
+            NewBlock( m_iccProfile.ProfileData() );
             EndElement();
             if ( m_xisfOptions.verbosity > 0 )
             {
@@ -3553,7 +4361,7 @@ private:
          {
             m_thumbnail.ResetSelections();
             StartElement( "Thumbnail" );
-            SetElementAttribute( "geometry", String().Format( "%d:%d:%d", m_thumbnail.Width(), m_thumbnail.Height(), m_thumbnail.NumberOfChannels() ) );
+            SetElementAttribute( "geometry", IsoString().Format( "%d:%d:%d", m_thumbnail.Width(), m_thumbnail.Height(), m_thumbnail.NumberOfChannels() ) );
             SetElementAttribute( "sampleFormat", "UInt8" );
             SetElementAttribute( "colorSpace", m_thumbnail.IsColor() ? "RGB" : "Gray" );
             NewBlock( m_thumbnail );
@@ -3578,31 +4386,46 @@ private:
 
       if ( value.IsScalar() )
       {
-         SetElementAttribute( "value", value.ToString() );
+         SetElementAttribute( "value", value.ToIsoString() );
       }
       else if ( value.Type() == VariantType::IsoString )
       {
-         WriteElementText( QString::fromUtf8( reinterpret_cast<const char*>( value.InternalBlockAddress() ) ) );
+         if ( m_xisfOptions.compressionMethod == XISF_COMPRESSION_NONE || value.BlockSize() <= 80 )
+         {
+            if ( value.BlockSize() > 0 )
+               WriteElementText( QString::fromUtf8( reinterpret_cast<const char*>( value.InternalBlockAddress() ) ) );
+         }
+         else
+            NewBlock( value.InternalBlockAddress(), value.BlockSize() );
       }
       else if ( value.Type() == VariantType::String )
       {
-         WriteElementText( QString::fromUtf16( reinterpret_cast<const uint16*>( value.InternalBlockAddress() ) ) );
+         if ( m_xisfOptions.compressionMethod == XISF_COMPRESSION_NONE || value.BlockSize() <= 160 )
+         {
+            if ( value.BlockSize() > 0 )
+               WriteElementText( QString::fromUtf16( reinterpret_cast<const uint16*>( value.InternalBlockAddress() ) ) );
+         }
+         else
+         {
+            IsoString utf8 = value.ToString().ToUTF8();
+            NewBlock( utf8.Begin(), utf8.Length() );
+         }
       }
       else if ( value.IsVector() )
       {
-         SetElementAttribute( "length", String( value.VectorLength() ) );
-         NewBlock( value.InternalBlockAddress(), value.BlockSize() );
+         SetElementAttribute( "length", IsoString( value.VectorLength() ) );
+         NewBlock( value.InternalBlockAddress(), value.BlockSize(), value.BytesPerBlockElement() );
       }
       else if ( value.IsMatrix() )
       {
          Rect d = value.MatrixDimensions();
-         SetElementAttribute( "rows", String( d.Height() ) );
-         SetElementAttribute( "columns", String( d.Width() ) );
-         NewBlock( value.InternalBlockAddress(), value.BlockSize() );
+         SetElementAttribute( "rows", IsoString( d.Height() ) );
+         SetElementAttribute( "columns", IsoString( d.Width() ) );
+         NewBlock( value.InternalBlockAddress(), value.BlockSize(), value.BytesPerBlockElement() );
       }
       else
       {
-         throw Error( "Internal error: Invalid property data type: " + String( value.Type() ) );
+         throw Error( "Internal error: Invalid property data type: " + IsoString( value.Type() ) );
       }
 
       EndElement();
@@ -3619,7 +4442,7 @@ private:
    template <class I, class P>
    void WriteSamples( const typename I::sample* buffer, int startRow, int rowCount, int channel, I*, P* )
    {
-      typename P::sample* p = reinterpret_cast<typename P::sample*>( m_randomBlock.data.At( BlockSampleOffset( startRow, channel ) ) );
+      typename P::sample* p = reinterpret_cast<typename P::sample*>( m_randomData.At( BlockSampleOffset( startRow, channel ) ) );
       size_type n = BlockSampleCount( rowCount );
       for ( size_type i = 0; i < n; ++i, ++p, ++buffer )
          *p = P::ToSample( *buffer );
@@ -3631,7 +4454,7 @@ private:
    template <class P>
    void WriteSamples( const typename P::sample* buffer, int startRow, int rowCount, int channel, P*, P* )
    {
-      ::memcpy( m_randomBlock.data.At( BlockSampleOffset( startRow, channel ) ), buffer, BlockSampleSize( rowCount ) );
+      ::memcpy( m_randomData.At( BlockSampleOffset( startRow, channel ) ), buffer, BlockSampleSize( rowCount ) );
    }
 
    /*
@@ -3667,7 +4490,7 @@ private:
     */
    fpos_type AlignedPosition( fpos_type upos ) const
    {
-      if ( m_xisfOptions.compressData || m_xisfOptions.blockAlignmentSize < 2 )
+      if ( m_xisfOptions.compressionMethod != XISF_COMPRESSION_NONE || m_xisfOptions.blockAlignmentSize < 2 )
          return upos;
       fpos_type apos = m_xisfOptions.blockAlignmentSize * (upos/m_xisfOptions.blockAlignmentSize);
       if ( apos < upos )
@@ -3769,17 +4592,6 @@ ICCProfile XISFWriter::EmbeddedICCProfile() const
    return IsOpen() ? m_engine->EmbeddedICCProfile() : ICCProfile();
 }
 
-void XISFWriter::Embed( const ByteArray& metadata )
-{
-   CheckOpenStream( "Embed" );
-   m_engine->SetMetadata( metadata );
-}
-
-ByteArray XISFWriter::EmbeddedMetadata() const
-{
-   return IsOpen() ? m_engine->EmbeddedMetadata() : ByteArray();
-}
-
 void XISFWriter::Embed( const UInt8Image& thumbnail )
 {
    CheckOpenStream( "Embed" );
@@ -3795,6 +4607,24 @@ void XISFWriter::Embed( const Variant& value, const IsoString& id )
 {
    CheckOpenStream( "Embed" );
    m_engine->SetProperty( value, id );
+}
+
+void XISFWriter::Embed( const RGBColorSystem& rgbws )
+{
+   CheckOpenStream( "Embed" );
+   m_engine->SetRGBWorkingSpace( rgbws );
+}
+
+void XISFWriter::Embed( const DisplayFunction& df )
+{
+   CheckOpenStream( "Embed" );
+   m_engine->SetDisplayFunction( df );
+}
+
+void XISFWriter::Embed( const ColorFilterArray& cfa )
+{
+   CheckOpenStream( "Embed" );
+   m_engine->SetColorFilterArray( cfa );
 }
 
 void XISFWriter::WriteImage( const Image& image )
@@ -3903,5 +4733,5 @@ void XISFWriter::CheckClosedStream( const char* memberFunction ) const
 
 } // pcl
 
-// ****************************************************************************
-// EOF XISF.cpp - Released 2014/11/30 10:38:10 UTC
+// ----------------------------------------------------------------------------
+// EOF XISF.cpp - Released 2015/07/31 11:49:40 UTC

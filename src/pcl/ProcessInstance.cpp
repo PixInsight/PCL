@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ProcessInstance.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ProcessInstance.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/AutoLock.h>
 #include <pcl/ImageInfo.h>
@@ -120,9 +123,10 @@ bool ProcessInstance::Assign( const ProcessInstance& p )
 
 bool ProcessInstance::Validate( String& whyNot )
 {
-   whyNot.Clear();
    whyNot.Reserve( WHYNOT_MAXLENGTH );
-   return (*API->Process->ValidateProcessInstance)( handle, whyNot.c_str(), WHYNOT_MAXLENGTH ) != api_false;
+   bool result = (*API->Process->ValidateProcessInstance)( handle, whyNot.c_str(), WHYNOT_MAXLENGTH ) != api_false;
+   whyNot.ResizeToNullTerminated();
+   return result;
 }
 
 // ----------------------------------------------------------------------------
@@ -141,9 +145,10 @@ bool ProcessInstance::IsMaskable( const View& view, const ImageWindow& mask ) co
 
 bool ProcessInstance::CanExecuteOn( const View& view, String& whyNot ) const
 {
-   whyNot.Clear();
    whyNot.Reserve( WHYNOT_MAXLENGTH );
-   return (*API->Process->ValidateViewExecution)( handle, view.handle, whyNot.c_str(), WHYNOT_MAXLENGTH ) != api_false;
+   bool result = (*API->Process->ValidateViewExecution)( handle, view.handle, whyNot.c_str(), WHYNOT_MAXLENGTH ) != api_false;
+   whyNot.ResizeToNullTerminated();
+   return result;
 }
 
 bool ProcessInstance::ExecuteOn( View& view, bool swapFile )
@@ -155,9 +160,10 @@ bool ProcessInstance::ExecuteOn( View& view, bool swapFile )
 
 bool ProcessInstance::CanExecuteGlobal( String& whyNot ) const
 {
-   whyNot.Clear();
    whyNot.Reserve( WHYNOT_MAXLENGTH );
-   return (*API->Process->ValidateGlobalExecution)( handle, whyNot.c_str(), WHYNOT_MAXLENGTH ) != api_false;
+   bool result = (*API->Process->ValidateGlobalExecution)( handle, whyNot.c_str(), WHYNOT_MAXLENGTH ) != api_false;
+   whyNot.ResizeToNullTerminated();
+   return result;
 }
 
 bool ProcessInstance::ExecuteGlobal()
@@ -183,18 +189,14 @@ bool ProcessInstance::CanExecuteOn( const ImageVariant& image, String& whyNot ) 
 
    image.PopSelections();
 
-   whyNot.Clear();
    whyNot.Reserve( WHYNOT_MAXLENGTH );
-
    bool ok = (*API->Process->ValidateImageExecution)( handle, image.SharedImageHandle(), whyNot.c_str(), WHYNOT_MAXLENGTH ) != api_false;
+   whyNot.ResizeToNullTerminated();
 
    image.PushSelections();
    image.ResetSelections();
-
    ImageInfo info2( *image );
-
    image.PopSelections();
-
    if ( info1 != info2 )
       APIHackingAttempt( "ValidateImageExecution" );
 
@@ -245,14 +247,13 @@ String ProcessInstance::Description() const
    (*API->Process->GetProcessInstanceDescription)( handle, 0, &len );
 
    String description;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      description.Reserve( len );
+      description.SetLength( len );
       if ( (*API->Process->GetProcessInstanceDescription)( handle, description.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetProcessInstanceDescription" );
+      description.ResizeToNullTerminated();
    }
-
    return description;
 }
 
@@ -308,8 +309,7 @@ IsoStringList ProcessInstance::Icons()
    (*API->Process->EnumerateProcessIcons)( 0, 0, &len, 0 );
 
    IsoStringList icons;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
       IsoString iconId;
       iconId.Reserve( len );
@@ -317,7 +317,6 @@ IsoStringList ProcessInstance::Icons()
                                           iconId.c_str(), &len, &icons ) == api_false )
          throw APIFunctionError( "EnumerateProcessIcons" );
    }
-
    return icons;
 }
 
@@ -351,8 +350,7 @@ IsoStringList ProcessInstance::IconsByProcessId( const IsoString& processId )
    (*API->Process->EnumerateProcessIcons)( 0, 0, &len, 0 );
 
    ProcessIconsByProcessIdEnumerationData data( processId );
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
       IsoString iconId;
       iconId.Reserve( len );
@@ -360,7 +358,6 @@ IsoStringList ProcessInstance::IconsByProcessId( const IsoString& processId )
                                           iconId.c_str(), &len, &data ) == api_false )
          throw APIFunctionError( "EnumerateProcessIcons" );
    }
-
    return data.icons;
 }
 
@@ -387,10 +384,11 @@ Variant ProcessInstance::ParameterValue( const ProcessParameter& parameter, size
       String value;
       if ( len > 0 )
       {
-         value.Reserve( len );
+         value.SetLength( len );
          if ( (*API->Process->GetParameterValue)( handle, parameter.Handle(),
                                                   rowIndex, &apiType, value.c_str(), &len ) == api_false )
             throw APIFunctionError( "GetParameterValue" );
+         value.ResizeToNullTerminated();
       }
       return value;
    }
@@ -440,8 +438,8 @@ Variant ProcessInstance::ParameterValue( const ProcessParameter& parameter, size
    case PTYPE_INT64:  return value.i64;
    case PTYPE_FLOAT:  return value.f;
    case PTYPE_DOUBLE: return value.d;
-   case PTYPE_BOOL:   return value.b;
-   case PTYPE_ENUM:   return value.e;
+   case PTYPE_BOOL:   return value.b != api_false;
+   case PTYPE_ENUM:   return int( value.e );
    default:
       throw Error( "ProcessParameter::ParameterValue(): Internal error: Unknown parameter type" );
    }
@@ -549,5 +547,5 @@ void* ProcessInstance::CloneHandle() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/ProcessInstance.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ProcessInstance.cpp - Released 2015/07/30 17:15:31 UTC

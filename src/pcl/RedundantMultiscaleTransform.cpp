@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/RedundantMultiscaleTransform.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/RedundantMultiscaleTransform.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/Exception.h>
 #include <pcl/RedundantMultiscaleTransform.h>
@@ -67,7 +70,7 @@ public:
    {
       for ( int j = T.m_numberOfLayers; ; --j )
       {
-         if ( T.m_transform[j] != 0 && T.m_layerEnabled[j] )
+         if ( T.m_transform[j] && T.m_layerEnabled[j] )
          {
             StatusMonitor status = image.Status();
             bool statusInitialized = false;
@@ -77,9 +80,9 @@ public:
             try
             {
                if ( image.IsEmpty() || image.IsEmptySelection() )
-                  image.Assign( *T.m_transform[j] );
+                  image.Assign( T.m_transform[j] );
                else
-                  image.Apply( *T.m_transform[j] );
+                  image.Apply( T.m_transform[j] );
 
                size_type N = image.NumberOfSelectedSamples();
 
@@ -94,8 +97,8 @@ public:
                image.Status() += (T.m_numberOfLayers - j)*N;
 
                for ( ; --j >= 0; )
-                  if ( T.m_transform[j] != 0 && T.m_layerEnabled[j] )
-                     image += *T.m_transform[j];
+                  if ( T.m_transform[j] && T.m_layerEnabled[j] )
+                     image += T.m_transform[j];
                   else
                      image.Status() += N;
 
@@ -182,7 +185,7 @@ void RedundantMultiscaleTransform::ValidateLayerIndex( int j ) const
 void RedundantMultiscaleTransform::ValidateLayerAccess( int j ) const
 {
    ValidateLayerIndex( j );
-   if ( m_transform.IsEmpty() || m_transform[j] == 0 || m_transform[j]->IsEmpty() )
+   if ( m_transform.IsEmpty() || !m_transform[j] )
       throw Error( "Invalid access to nonexistent multiscale transform layer." );
 }
 
@@ -190,5 +193,5 @@ void RedundantMultiscaleTransform::ValidateLayerAccess( int j ) const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/RedundantMultiscaleTransform.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/RedundantMultiscaleTransform.cpp - Released 2015/07/30 17:15:31 UTC

@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard AssistedColorCalibration Process Module Version 01.00.00.0098
-// ****************************************************************************
-// AssistedColorCalibrationInterface.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard AssistedColorCalibration Process Module Version 01.00.00.0117
+// ----------------------------------------------------------------------------
+// AssistedColorCalibrationInterface.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard AssistedColorCalibration PixInsight module.
 //
-// Copyright (c) 2010-2014 Zbynek Vrastil
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2010-2015 Zbynek Vrastil
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,7 +49,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "AssistedColorCalibrationInterface.h"
 #include "AssistedColorCalibrationProcess.h"
@@ -618,8 +622,8 @@ AssistedColorCalibrationInterface::GUIData::GUIData( AssistedColorCalibrationInt
    WhiteBalance_Sizer.Add( GreenCorrectionFactor_NumericControl );
    WhiteBalance_Sizer.Add( BlueCorrectionFactor_NumericControl );
 
-   WhiteBalanceReset_ToolButton.SetIcon( Bitmap( ":/icons/delete.png" ) );
-   WhiteBalanceReset_ToolButton.SetFixedSize( 20, 20 );
+   WhiteBalanceReset_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/delete.png" ) ) );
+   WhiteBalanceReset_ToolButton.SetScaledFixedSize( 20, 20 );
    WhiteBalanceReset_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    WhiteBalanceReset_ToolButton.SetToolTip( "Reset white balance factors" );
    WhiteBalanceReset_ToolButton.OnClick( (ToolButton::click_event_handler)&AssistedColorCalibrationInterface::__Reset_ButtonClick, w );
@@ -663,15 +667,15 @@ AssistedColorCalibrationInterface::GUIData::GUIData( AssistedColorCalibrationInt
 
    //   histogram group
 
-   HistogramPlot_Control.SetFixedHeight( 150 );
-   HistogramPlot_Control.SetFixedWidth( 200 );
+   HistogramPlot_Control.SetScaledFixedHeight( 150 );
+   HistogramPlot_Control.SetScaledFixedWidth( 200 );
    HistogramPlot_Control.SetToolTip("<p> The histogram transformation applied to the preview image <i>after</i> applying white balance coefficients and "
       "subtracting background reference. Use it to set up the preview so the image is reasonably close to what you expect as final result.</p>");
    HistogramPlot_Control.OnPaint( (Control::paint_event_handler)&AssistedColorCalibrationInterface::__Histogram_Paint, w );
 
    HistogramSliders_Control.EnableMouseTracking();
    HistogramSliders_Control.SetCursor( StdCursor::UpArrow );
-   HistogramSliders_Control.SetFixedHeight( 12 );
+   HistogramSliders_Control.SetScaledFixedHeight( 12 );
    HistogramSliders_Control.OnPaint( (Control::paint_event_handler)&AssistedColorCalibrationInterface::__Sliders_Paint, w );
    HistogramSliders_Control.OnMouseMove( (Control::mouse_event_handler)&AssistedColorCalibrationInterface::__Sliders_MouseMove, w );
    HistogramSliders_Control.OnMousePress( (Control::mouse_button_event_handler)&AssistedColorCalibrationInterface::__Sliders_MousePress, w );
@@ -686,8 +690,8 @@ AssistedColorCalibrationInterface::GUIData::GUIData( AssistedColorCalibrationInt
    SetUpHistogramNumericEdit( w, HistogramHighlights_NumericEdit, TheACCHistogramHighlights, "Highlights", "<p>Highlights clipping</p>" );
    SetUpHistogramNumericEdit( w, HistogramMidtones_NumericEdit, TheACCHistogramMidtones, "Midtones", "<p>Midtones balance</p>" );
 
-   HistogramReset_ToolButton.SetIcon( Bitmap( ":/icons/delete.png" ) );
-   HistogramReset_ToolButton.SetFixedSize( 20, 20 );
+   HistogramReset_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/delete.png" ) ) );
+   HistogramReset_ToolButton.SetScaledFixedSize( 20, 20 );
    HistogramReset_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    HistogramReset_ToolButton.SetToolTip( "Reset histogram settings" );
    HistogramReset_ToolButton.OnClick( (ToolButton::click_event_handler)&AssistedColorCalibrationInterface::__Reset_ButtonClick, w );
@@ -813,5 +817,5 @@ void AssistedColorCalibrationInterface::GUIData::SetUpSaturationNumericControl( 
 
 } // pcl
 
-// ****************************************************************************
-// EOF AssistedColorCalibrationInterface.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF AssistedColorCalibrationInterface.cpp - Released 2015/07/31 11:49:49 UTC

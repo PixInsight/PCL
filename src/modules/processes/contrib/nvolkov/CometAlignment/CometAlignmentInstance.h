@@ -1,9 +1,13 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.06.0070
-// ****************************************************************************
-// CometAlignmentInstance.h - Released 2015/03/04 19:50:08 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard CometAlignment Process Module Version 01.02.06.0089
+// ----------------------------------------------------------------------------
+// CometAlignmentInstance.h - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard CometAlignment PixInsight module.
 //
 // Copyright (c) 2012-2015 Nikolay Volkov
@@ -45,7 +49,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __CometAlignmentInstance_h
 #define __CometAlignmentInstance_h
@@ -56,7 +60,8 @@
 
 #include "CometAlignmentParameters.h"
 
-#define debug 1
+//#define debug 1
+
 #if debug
 #include <pcl/StdStatus.h>
 #endif
@@ -131,12 +136,12 @@ namespace pcl
             int year, month, day, h, m;
             double s;
 
-            if (!d.SubString (0, 4).TryToInt (year, 10)) throw 0;
-            if (!d.SubString (5, 2).TryToInt (month, 10)) throw 0;
-            if (!d.SubString (8, 2).TryToInt (day, 10)) throw 0;
-            if (!d.SubString (11, 2).TryToInt (h, 10)) throw 0;
-            if (!d.SubString (14, 2).TryToInt (m, 10)) throw 0;
-            if (!d.SubString (17).TryToDouble (s)) throw 0;
+            if (!d.Substring (0, 4).TryToInt (year, 10)) throw 0;
+            if (!d.Substring (5, 2).TryToInt (month, 10)) throw 0;
+            if (!d.Substring (8, 2).TryToInt (day, 10)) throw 0;
+            if (!d.Substring (11, 2).TryToInt (h, 10)) throw 0;
+            if (!d.Substring (14, 2).TryToInt (m, 10)) throw 0;
+            if (!d.Substring (17).TryToDouble (s)) throw 0;
 
             double dayf = (3600.0 * h + 60.0 * m + s) / 86400;
 #if debug
@@ -201,5 +206,5 @@ namespace pcl
 
 #endif   // __CometAlignmentInstance_h
 
-// ****************************************************************************
-// EOF CometAlignmentInstance.h - Released 2015/03/04 19:50:08 UTC
+// ----------------------------------------------------------------------------
+// EOF CometAlignmentInstance.h - Released 2015/07/31 11:49:49 UTC

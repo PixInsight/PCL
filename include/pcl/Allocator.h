@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Allocator.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Allocator.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Allocator_h
 #define __PCL_Allocator_h
@@ -82,7 +85,7 @@ namespace pcl
  * memory. %Allocator inherits block allocation capabilities and specializes
  * them for allocation of a particular type T.
  *
- * The type T must have default constructor and copy constructor semantics.
+ * The type T must have default and copy construction semantics.
  *
  * Besides the default and copy constructors, the block allocator class A must
  * define the following member functions:
@@ -101,17 +104,18 @@ namespace pcl
  * Returns the size in bytes of an <em>allocation block</em> suitable to store
  * at least \a n contiguous bytes. %Allocator uses this block size to reserve
  * memory in chunks of optimized length. This greatly improves efficiency of
- * containers because minimizes the frequency of allocation/deallocation
+ * containers because it minimizes the frequency of allocation/deallocation
  * operations.
  *
  * \code
- * bool A::operator ==( const A& ) const
+ * size_type A::ReallocatedBlockSize( size_type currentSize, size_type newSize ) const
  * \endcode
  *
- * Returns true if two block allocators are equal. When two containers use
- * equal block allocators (in the sense defined by this operator), there are a
- * number of important container operations that can be implemented using
- * particularly efficient algorithms.
+ * Returns the size in bytes of a reallocated block. \a currentSize is the
+ * current size in bytes of the block being reallocated, and \a newSize is the
+ * requested block size. This function is similar to A::BlockSize(), but it is
+ * called for reallocation of already existing data blocks, for example before
+ * deleting a subset of container elements.
  *
  * \code
  * void* AllocateBlock( size_type sz )
@@ -126,8 +130,7 @@ namespace pcl
  * \endcode
  *
  * Custom deallocation routine. Deallocates a contiguous block of memory that
- * has been previously allocated by this block allocator (or any allocator
- * equal to this, in the sense defined by the above equality operator).
+ * has been previously allocated by any allocator of class A.
  *
  * StandardAllocator is an example of a block allocator that uses the standard
  * new and delete operators.
@@ -186,7 +189,7 @@ public:
     */
    void Deallocate( T* p )
    {
-      PCL_PRECONDITION( p != 0 )
+      PCL_PRECONDITION( p != nullptr )
       this->DeallocateBlock( (void*)p );
       //this->operator delete( (void*)p );
    }
@@ -201,13 +204,17 @@ public:
    }
 
    /*!
+    * Returns the length of a newly allocated data block.
+    *
     * Given a number \a n of T instances, returns the corresponding <em>paged
     * length</em> for this allocator. The paged length is the actual number of
     * T instances that would be allocated instead of \a n, which depends on the
-    * <em>block size</em> reported by the allocator class.
+    * block allocation policy implemented by the allocator class.
     *
     * The value returned by this member function is always greater than or
     * equal to \a n.
+    *
+    * \sa ShrunkLength()
     */
    size_type PagedLength( size_type n ) const
    {
@@ -215,12 +222,24 @@ public:
    }
 
    /*!
-    * Returns true if this allocator is equal, in the sense defined by the
-    * block allocator class A, to other allocator \a x.
+    * Returns the length of a reallocated data block.
+    *
+    * \param currentLength The current length of an allocated data block.
+    *
+    * \param newLength     The new length of the reallocated data block.
+    *
+    * The returned length is the actual number of T instances that would be
+    * allocated instead of \a newLength, which depends on the block allocation
+    * policy implemented by the allocator class.
+    *
+    * The value returned by this member function is always greater than or
+    * equal to \a n.
+    *
+    * \sa PagedLength()
     */
-   bool operator ==( const Allocator<T, A>& x ) const
+   size_type ReallocatedLength( size_type currentLength, size_type newLength ) const
    {
-      return A::operator ==( x );
+      return A::ReallocatedBlockSize( currentLength*sizeof( T ), newLength*sizeof( T ) )/sizeof( T );
    }
 };
 
@@ -239,7 +258,7 @@ public:
  */
 template <class T, class A> inline void Construct( T* p, A& a )
 {
-   PCL_PRECONDITION( p != 0 )
+   PCL_PRECONDITION( p != nullptr )
    new( (void*)p, a )T();
 }
 
@@ -252,7 +271,7 @@ template <class T, class A> inline void Construct( T* p, A& a )
  */
 template <class T, class T1, class A> inline void Construct( T* p, const T1& v, A& a )
 {
-   PCL_PRECONDITION( p != 0 )
+   PCL_PRECONDITION( p != nullptr )
    new( (void*)p, a )T( v );
 }
 
@@ -267,144 +286,124 @@ template <class T, class T1, class A> inline void Construct( T* p, const T1& v, 
  * \sa Allocator
  * \ingroup object_construction_destruction
  */
-template <typename T> inline void Destroy( T* p )
+template <class T> inline void Destroy( T* p )
 {
-   PCL_PRECONDITION( p != 0 )
+   PCL_PRECONDITION( p != nullptr )
    p->~T();
+}
+
+/*!
+ * Destroys a contiguous sequence of objects. Invokes the destructor of class
+ * T for each object in the range [p,q).
+ * \sa Allocator
+ * \ingroup object_construction_destruction
+ */
+template <class T> inline void Destroy( T* p, T* q )
+{
+   PCL_PRECONDITION( p != nullptr && q != nullptr )
+   for ( ; p < q; ++p )
+      p->~T();
 }
 
 #ifdef _MSC_VER
 #  pragma warning( pop )
 #endif
 
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( void* )                {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( bool* )                {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( signed char* )         {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( unsigned char* )       {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( wchar_t* )             {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( signed int* )          {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( unsigned int* )        {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( signed short* )        {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( unsigned short* )      {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( signed long* )         {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( unsigned long* )       {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( signed long long* )    {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( unsigned long long* )  {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( float* )               {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( double* )              {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( long double* )         {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( void** )               {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( bool** )               {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( signed char** )        {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( unsigned char** )      {}
-/*!
- * \ingroup object_construction_destruction
- */
+inline void Destroy( void* )        {}
+inline void Destroy( void*, void* ) {}
+
+inline void Destroy( bool* )        {}
+inline void Destroy( bool*, bool* ) {}
+
+inline void Destroy( signed char* )               {}
+inline void Destroy( signed char*, signed char* ) {}
+
+inline void Destroy( unsigned char* )                 {}
+inline void Destroy( unsigned char*, unsigned char* ) {}
+
+inline void Destroy( wchar_t* )           {}
+inline void Destroy( wchar_t*, wchar_t* ) {}
+
+inline void Destroy( signed int* )              {}
+inline void Destroy( signed int*, signed int* ) {}
+
+inline void Destroy( unsigned int* )                {}
+inline void Destroy( unsigned int*, unsigned int* ) {}
+
+inline void Destroy( signed short* )                {}
+inline void Destroy( signed short*, signed short* ) {}
+
+inline void Destroy( unsigned short* )                  {}
+inline void Destroy( unsigned short*, unsigned short* ) {}
+
+inline void Destroy( signed long* )               {}
+inline void Destroy( signed long*, signed long* ) {}
+
+inline void Destroy( unsigned long* )                 {}
+inline void Destroy( unsigned long*, unsigned long* ) {}
+
+inline void Destroy( signed long long* )                    {}
+inline void Destroy( signed long long*, signed long long* ) {}
+
+inline void Destroy( unsigned long long* )                      {}
+inline void Destroy( unsigned long long*, unsigned long long* ) {}
+
+inline void Destroy( float* )         {}
+inline void Destroy( float*, float* ) {}
+
+inline void Destroy( double* )          {}
+inline void Destroy( double*, double* ) {}
+
+inline void Destroy( long double* )               {}
+inline void Destroy( long double*, long double* ) {}
+
+inline void Destroy( void** )         {}
+inline void Destroy( void**, void** ) {}
+
+inline void Destroy( bool** )         {}
+inline void Destroy( bool**, bool** ) {}
+
+inline void Destroy( signed char** )                {}
+inline void Destroy( signed char**, signed char** ) {}
+
+inline void Destroy( unsigned char** )                  {}
+inline void Destroy( unsigned char**, unsigned char** ) {}
+
 inline void Destroy( wchar_t** )            {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( signed int** )         {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( unsigned int** )       {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( signed short** )       {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( unsigned short** )     {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( signed long** )        {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( unsigned long** )      {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( signed long long** )   {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( unsigned long long** ) {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( float** )              {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( double** )             {}
-/*!
- * \ingroup object_construction_destruction
- */
-inline void Destroy( long double** )        {}
+inline void Destroy( wchar_t**, wchar_t** ) {}
+
+inline void Destroy( signed int** )               {}
+inline void Destroy( signed int**, signed int** ) {}
+
+inline void Destroy( unsigned int** )                 {}
+inline void Destroy( unsigned int**, unsigned int** ) {}
+
+inline void Destroy( signed short** )                 {}
+inline void Destroy( signed short**, signed short** ) {}
+
+inline void Destroy( unsigned short** )                   {}
+inline void Destroy( unsigned short**, unsigned short** ) {}
+
+inline void Destroy( signed long** )                {}
+inline void Destroy( signed long**, signed long** ) {}
+
+inline void Destroy( unsigned long** )                  {}
+inline void Destroy( unsigned long**, unsigned long** ) {}
+
+inline void Destroy( signed long long** )                     {}
+inline void Destroy( signed long long**, signed long long** ) {}
+
+inline void Destroy( unsigned long long** )                       {}
+inline void Destroy( unsigned long long**, unsigned long long** ) {}
+
+inline void Destroy( float** )          {}
+inline void Destroy( float**, float** ) {}
+
+inline void Destroy( double** )           {}
+inline void Destroy( double**, double** ) {}
+
+inline void Destroy( long double** )                {}
+inline void Destroy( long double**, long double** ) {}
 
 // ----------------------------------------------------------------------------
 
@@ -412,5 +411,5 @@ inline void Destroy( long double** )        {}
 
 #endif  // __PCL_Allocator_h
 
-// ****************************************************************************
-// EOF pcl/Allocator.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Allocator.h - Released 2015/07/30 17:15:18 UTC

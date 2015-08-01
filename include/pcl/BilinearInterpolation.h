@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/BilinearInterpolation.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/BilinearInterpolation.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_BilinearInterpolation_h
 #define __PCL_BilinearInterpolation_h
@@ -117,7 +120,7 @@ public:
     */
    virtual double operator()( double x, double y ) const
    {
-      PCL_PRECONDITION( m_data != 0 )
+      PCL_PRECONDITION( m_data != nullptr )
       PCL_PRECONDITION( m_width > 0 && m_height > 0 )
 
       int j0 = pcl::Range( TruncI( x ), 0, m_width-1 );
@@ -126,9 +129,8 @@ public:
       int j1 = j0 + 1;
       int i1 = i0 + 1;
 
-      register double p00, p10, p01, p11;
-
-      const T* fp = m_data + (i0*m_width + j0);
+      double p00, p10, p01, p11;
+      const T* fp = m_data + (int64( i0 )*m_width + j0);
 
       p00 = *fp;
       p10 = (j1 < m_width) ? fp[1] : (m_fillBorder ? m_fillValue : *fp);
@@ -145,8 +147,8 @@ public:
       p11 = (j1 < m_width) ? fp[1] : (m_fillBorder ? m_fillValue : *fp);
 
 __1:
-      register double dx = x - j0, dx1 = 1 - dx;
-      register double dy = y - i0, dy1 = 1 - dy;
+      double dx = x - j0, dx1 = 1 - dx;
+      double dy = y - i0, dy1 = 1 - dy;
       return p00*dx1*dy1 + p10*dx*dy1 + p01*dx1*dy + p11*dx*dy;
    }
 };
@@ -165,5 +167,5 @@ __1:
 
 #endif   // __PCL_BilinearInterpolation_h
 
-// ****************************************************************************
-// EOF pcl/BilinearInterpolation.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/BilinearInterpolation.h - Released 2015/07/30 17:15:18 UTC

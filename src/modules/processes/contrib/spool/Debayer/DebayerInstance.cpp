@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Debayer Process Module Version 01.04.03.0146
-// ****************************************************************************
-// DebayerInstance.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Debayer Process Module Version 01.04.03.0165
+// ----------------------------------------------------------------------------
+// DebayerInstance.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "DebayerInstance.h"
 #include "DebayerParameters.h"
@@ -172,7 +176,7 @@ public:
 
       AbstractImage::ThreadData data( target, target_h );
 
-      PArray<SuperPixelThread<P> > threads;
+      ReferenceArray<SuperPixelThread<P> > threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new SuperPixelThread<P>( data, target, source, instance,
                                                i*rowsPerThread,
@@ -199,7 +203,7 @@ public:
 
       AbstractImage::ThreadData data( target, target_h-2 );
 
-      PArray<BilinearThread<P> > threads;
+      ReferenceArray<BilinearThread<P> > threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new BilinearThread<P>( data, target, source, instance,
                                              i*rowsPerThread + 1,
@@ -234,7 +238,7 @@ public:
 
       AbstractImage::ThreadData data( target, target_h-4 );
 
-      PArray<VNGThread<P> > threads;
+      ReferenceArray<VNGThread<P> > threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new VNGThread<P>( data, target, source, instance,
                                         i*rowsPerThread + 2,
@@ -270,7 +274,7 @@ public:
       if ( numberOfThreads >= 3 )
       {
          int numberOfSubthreads = RoundI( numberOfThreads/3.0 );
-         PArray<NoiseEvaluationThread> threads;
+         ReferenceArray<NoiseEvaluationThread> threads;
          threads.Add( new NoiseEvaluationThread( image, 0, algorithm, numberOfSubthreads ) );
          threads.Add( new NoiseEvaluationThread( image, 1, algorithm, numberOfSubthreads ) );
          threads.Add( new NoiseEvaluationThread( image, 2, algorithm, numberOfThreads - 2*numberOfSubthreads ) );
@@ -709,6 +713,7 @@ private:
          switch ( current_channel )
          {
          // green center
+         default: // just to shut down '-Wmaybe-uninitialized' warnings
          case 1:
             gradients[G_NE] = Abs( v[8]  - v[16] ) + Abs( v[4]  - v[12] ) +
                               Abs( v[3]  - v[11] ) + Abs( v[9]  - v[17] );
@@ -993,6 +998,10 @@ bool DebayerInstance::ExecuteOn( View& view )
       throw Error( "Internal error: Invalid de-Bayer method!" );
    }
 
+   String filePath = view.Window().FilePath();
+   if ( !filePath.IsEmpty() )
+      targetWindow.MainView().SetPropertyValue( "CFASourceFilePath", filePath, true/*notify*/, ViewPropertyAttribute::Storable );
+
    FITSKeywordArray keywords;
    view.Window().GetKeywords( keywords );
 
@@ -1010,7 +1019,7 @@ bool DebayerInstance::ExecuteOn( View& view )
        *         *Only* our NOISExxx keywords must be present in the header.
        */
       for ( size_type i = 0; i < keywords.Length(); )
-         if ( keywords[i].name.BeginsWithIC( "NOISE" ) )
+         if ( keywords[i].name.StartsWithIC( "NOISE" ) )
             keywords.Remove( keywords.At( i ) );
          else
             ++i;
@@ -1142,25 +1151,25 @@ bool DebayerInstance::AllocateParameter( size_type sizeOrLength, const MetaParam
    {
       o_imageId.Clear();
       if ( sizeOrLength > 0 )
-         o_imageId.Reserve( sizeOrLength );
+         o_imageId.SetLength( sizeOrLength );
    }
    else if ( p == TheDebayerNoiseAlgorithmRParameter )
    {
       o_noiseAlgorithms[0].Clear();
       if ( sizeOrLength > 0 )
-         o_noiseAlgorithms[0].Reserve( sizeOrLength );
+         o_noiseAlgorithms[0].SetLength( sizeOrLength );
    }
    else if ( p == TheDebayerNoiseAlgorithmGParameter )
    {
       o_noiseAlgorithms[1].Clear();
       if ( sizeOrLength > 0 )
-         o_noiseAlgorithms[1].Reserve( sizeOrLength );
+         o_noiseAlgorithms[1].SetLength( sizeOrLength );
    }
    else if ( p == TheDebayerNoiseAlgorithmBParameter )
    {
       o_noiseAlgorithms[2].Clear();
       if ( sizeOrLength > 0 )
-         o_noiseAlgorithms[2].Reserve( sizeOrLength );
+         o_noiseAlgorithms[2].SetLength( sizeOrLength );
    }
    else
       return false;
@@ -1186,5 +1195,5 @@ size_type DebayerInstance::ParameterLength( const MetaParameter* p, size_type ta
 
 } // pcl
 
-// ****************************************************************************
-// EOF DebayerInstance.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF DebayerInstance.cpp - Released 2015/07/31 11:49:49 UTC

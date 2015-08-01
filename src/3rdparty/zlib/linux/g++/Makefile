@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.94
-# Copyright (C) 2009-2014 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.95
+# Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Tue, 18 Nov 2014 11:28:30 GMT
+# Automatically generated on Thu, 30 Jul 2015 17:10:23 GMT
 # Project id ...... zlib
 # Project type .... DynamicLibrary
 # Platform ........ Linux/g++

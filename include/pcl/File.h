@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/File.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/File.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_File_h
 #define __PCL_File_h
@@ -83,12 +86,8 @@
 
 // Removing conflicting identifiers from Win32 SDK headers.
 
-#ifdef RemoveDirectory
-#undef RemoveDirectory
-#endif
-
-#ifdef CreateDirectory
-#undef CreateDirectory
+#ifdef CreateFile
+#undef CreateFile
 #endif
 
 #ifdef CopyFile
@@ -99,7 +98,15 @@
 #undef MoveFile
 #endif
 
+#ifdef CreateDirectory
+#undef CreateDirectory
 #endif
+
+#ifdef RemoveDirectory
+#undef RemoveDirectory
+#endif
+
+#endif // !__PCL_FILE_DONT_REMOVE_PREVIOUS_DECLARATION
 
 namespace pcl
 {
@@ -108,7 +115,7 @@ namespace pcl
 
 /*!
  * \namespace FileMode
- * \brief File access, share and opening/creation modes
+ * \brief File access, share and opening/creation modes.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
  * <tr><td>FileMode::Read</td>         <td>Read access enabled</td></tr>
@@ -160,7 +167,7 @@ typedef Flags<FileMode::mask_type>  FileModes;
 
 /*!
  * \namespace SeekMode
- * \brief File seek modes
+ * \brief File seek modes.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
  * <tr><td>SeekMode::FromBegin</td>     <td>Move file pointer relative to the beginning of the file</td></tr>
@@ -183,7 +190,7 @@ namespace SeekMode
 
 /*!
  * \namespace FileAttribute
- * \brief File attributes
+ * \brief File attributes.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
  * <tr><td colspan="2"><b>File type</b></td></tr>
@@ -196,7 +203,7 @@ namespace SeekMode
  * <tr><td>FileAttribute::Socket</td>        <td>Socket</td></tr>
  * <tr><td>FileAttribute::FileType</td>      <td>Mask to isolate file type flags</td></tr>
  * <tr><td colspan="2"><b>File attributes</b>\n
- *                    <em>Windows-exclusive, except ReadOnly and Hidden, which we emulate on X.</em></td></tr>
+ *                    <em>Windows-exclusive, except ReadOnly and Hidden, which we emulate on POSIX platforms.</em></td></tr>
  * <tr><td>FileAttribute::Archive</td>       <td>File is archived</td></tr>
  * <tr><td>FileAttribute::Compressed</td>    <td>File is compressed</td></tr>
  * <tr><td>FileAttribute::Encrypted</td>     <td>File is encrypted</td></tr>
@@ -272,20 +279,20 @@ typedef Flags<FileAttribute::mask_type>   FileAttributes;
 
 /*!
  * \struct FileTime
- * \brief Local file date and time
+ * \brief File date and time.
  */
 struct FileTime
 {
-   uint16   year           : 16; //!< Year
-   uint8    month          :  4; //!< Month [1,12]
-   uint8    day            :  5; //!< Day [1,31]
-   uint8    hour           :  5; //!< Hour [0,23]
-   int                     :  2;
-   uint8    minute         :  6; //!< Minute [0,59]
-   uint8    second         :  6; //!< Second [0,59]
-   int                     :  4;
-   uint16   milliseconds   : 10; //!< Milliseconds [0,999]
-   int                     :  6;
+   uint16   year         : 16; //!< Year
+   uint8    month        :  4; //!< Month [1,12]
+   uint8    day          :  5; //!< Day [1,31]
+   uint8    hour         :  5; //!< Hour [0,23]
+   int                   :  2;
+   uint8    minute       :  6; //!< Minute [0,59]
+   uint8    second       :  6; //!< Second [0,59]
+   int                   :  4;
+   uint16   milliseconds : 10; //!< Milliseconds [0,999]
+   int                   :  6;
 
    /*!
     * Returns true if this file time is equal to another object \a t.
@@ -357,15 +364,15 @@ struct FileTime
  */
 struct FindFileInfo
 {
-   String         name;          //!< File or directory name, including extension
-   FileAttributes attributes;    //!< Item attributes
-   fsize_type     size;          //!< File size in bytes
-   int            numberOfLinks; //!< Number of existing hard links to this file
-   int            userId;        //!< User id of the file owner
-   int            groupId;       //!< Group id of the file owner
-   FileTime       created;       //!< Creation time
-   FileTime       lastAccessed;  //!< Time of last access
-   FileTime       lastModified;  //!< Time of last change
+   String         name;          //!< File or directory name, including the file name extension.
+   FileAttributes attributes;    //!< Item attributes.
+   fsize_type     size;          //!< File size in bytes.
+   int            numberOfLinks; //!< Number of existing hard links to this file.
+   int            userId;        //!< User id of the file owner.
+   int            groupId;       //!< Group id of the file owner.
+   FileTime       created;       //!< Creation time.
+   FileTime       lastAccessed;  //!< Time of last access.
+   FileTime       lastModified;  //!< Time of last change.
 
    /*!
     * Returns true if this %FindFileInfo structure corresponds to a directory.
@@ -451,12 +458,13 @@ struct FindFileInfo
 
 /*!
  * \namespace ReadTextOption
- * \brief File text reading options
+ * \brief File text reading options.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
- * <tr><td>RemoveEmptyLines</td>   <td>Discard empty text lines (after trimming whitespace, when applicable)</td></tr>
- * <tr><td>TrimTrailingSpaces</td> <td>Delete trailing whitespace characters from input text lines</td></tr>
- * <tr><td>TrimLeadingSpaces</td>  <td>Delete leading whitespace characters from input text lines</td></tr>
+ * <tr><td>RemoveEmptyLines</td>   <td>Discard empty text lines (after trimming whitespace, when applicable).</td></tr>
+ * <tr><td>TrimTrailingSpaces</td> <td>Delete trailing whitespace characters from input text lines.</td></tr>
+ * <tr><td>TrimLeadingSpaces</td>  <td>Delete leading whitespace characters from input text lines.</td></tr>
+ * <tr><td>TrimSpaces</td>         <td>Delete both leading and trailing whitespace characters from input text lines.</td></tr>
  * </table>
  *
  * \sa File::ReadLines(), File::ScanLines()
@@ -465,9 +473,10 @@ namespace ReadTextOption
 {
    enum mask_type
    {
-      RemoveEmptyLines     = 0x0001,
-      TrimTrailingSpaces   = 0x0002,
-      TrimLeadingSpaces    = 0x0004
+      RemoveEmptyLines   = 0x0001,
+      TrimTrailingSpaces = 0x0002,
+      TrimLeadingSpaces  = 0x0004,
+      TrimSpaces         = TrimTrailingSpaces | TrimLeadingSpaces
    };
 }
 
@@ -491,7 +500,7 @@ class PCL_CLASS File
 public:
 
    /*!
-    * Represents a low-level handle to a file object.
+    * Represents a low-level opaque handle to a file.
     */
    typedef void*  handle;
 
@@ -503,27 +512,27 @@ public:
    // -------------------------------------------------------------------------
 
    /*!
-    * \class pcl::File::Exception
-    * \brief Abstract base class of all file exceptions
+    * \class Error
+    * File I/O exception.
     */
-   class PCL_CLASS Exception : public pcl::Exception
+   class Error : public pcl::Error
    {
    public:
 
       /*!
-       * Constructs a %File::Exception object with the specified full file
-       * \a path.
+       * Constructs a %File::Error object with the specified full file
+       * \a path and error \a message.
        */
-      Exception( const String& filePath ) : pcl::Exception(), m_filePath( filePath )
+      Error( const String& filePath, const String& message ) :
+         pcl::Error( message ),
+         m_filePath( filePath )
       {
       }
 
       /*!
        * Copy constructor.
        */
-      Exception( const Exception& x ) : pcl::Exception( x ), m_filePath( x.m_filePath )
-      {
-      }
+      Error( const Error& ) = default;
 
       /*!
        */
@@ -533,29 +542,33 @@ public:
       }
 
       /*!
+       * Returns the full file path associated to this file error.
        */
-      virtual String Message() const
-      {
-         String msg = ErrorMessage();
-         if ( !m_filePath.IsEmpty() )
-         {
-            msg += ": ";
-            msg += m_filePath;
-         }
-         return msg;
-      }
-
-      /*!
-       * Returns the full file path associated to this file exception.
-       */
-      String FilePath() const
+      virtual String FilePath() const
       {
          return m_filePath;
       }
 
       /*!
        */
-      virtual String ErrorMessage() const = 0;
+      virtual String ErrorMessage() const
+      {
+         return m_message;
+      }
+
+      /*!
+       */
+      virtual String Message() const
+      {
+         String filePath = FilePath();
+         String message = m_message;
+         if ( !filePath.IsEmpty() )
+         {
+            message += ": ";
+            message += filePath;
+         }
+         return message;
+      }
 
    private:
 
@@ -564,98 +577,36 @@ public:
 
    // -------------------------------------------------------------------------
 
-#define PCL_DECLARE_FILE_EXCEPTION( className, errorMessage )                 \
-   class className : public File::Exception                                   \
-   {                                                                          \
-   public:                                                                    \
-      className( const String& fn ) : File::Exception( fn )                   \
-      {                                                                       \
-      }                                                                       \
-      className( const className& x ) : File::Exception( x )                  \
-      {                                                                       \
-      }                                                                       \
-      virtual String ErrorMessage() const                                     \
-      {                                                                       \
-         return errorMessage;                                                 \
-      }                                                                       \
-   };
-
-   PCL_DECLARE_FILE_EXCEPTION( InvalidFileName,           "Invalid or empty file name" )
-   PCL_DECLARE_FILE_EXCEPTION( FileDoesNotExist,          "No such file or directory" )
-   PCL_DECLARE_FILE_EXCEPTION( UnableToOpenFile,          "Unable to open file" )
-   PCL_DECLARE_FILE_EXCEPTION( UnableToCreateFile,        "Unable to create file" )
-   PCL_DECLARE_FILE_EXCEPTION( UnableToCloseFile,         "Unable to close file" )
-   PCL_DECLARE_FILE_EXCEPTION( ReadError,                 "File read error" )
-   PCL_DECLARE_FILE_EXCEPTION( WriteError,                "File write error" )
-   PCL_DECLARE_FILE_EXCEPTION( SeekError,                 "File seek error" )
-   PCL_DECLARE_FILE_EXCEPTION( AccessError,               "File/directory access error" )
-   PCL_DECLARE_FILE_EXCEPTION( UnableToResizeFile,        "Unable to resize file" )
-   PCL_DECLARE_FILE_EXCEPTION( UnexpectedEndOfFile,       "Unexpected end of file" )
-   PCL_DECLARE_FILE_EXCEPTION( IncompleteWriteOperation,  "Incomplete file write operation" )
-   PCL_DECLARE_FILE_EXCEPTION( FlushFailed,               "File flush operation failed" )
-   PCL_DECLARE_FILE_EXCEPTION( UnableToDeleteFile,        "Unable to delete file" )
-   PCL_DECLARE_FILE_EXCEPTION( UnableToCreateDirectory,   "Unable to create directory" )
-   PCL_DECLARE_FILE_EXCEPTION( UnableToRemoveDirectory,   "Unable to remove directory" )
-   PCL_DECLARE_FILE_EXCEPTION( UnableToMoveFile,          "Unable to move/rename file" )
-   PCL_DECLARE_FILE_EXCEPTION( UnableToSetFileAttributes, "Unable to set file attributes" )
-   PCL_DECLARE_FILE_EXCEPTION( InvalidSearchPath,         "Invalid directory search path" )
-   PCL_DECLARE_FILE_EXCEPTION( DirectorySearchError,      "Error searching directory" )
-
-   /*!
-    * \internal
-    */
-   class Error : public File::Exception
-   {
-   public:
-
-      Error( const String& filePath, const String& message ) : File::Exception( filePath ), m_message( message )
-      {
-      }
-      Error( const Error& x ) : File::Exception( x ), m_message( x.m_message )
-      {
-      }
-      virtual String ErrorMessage() const
-      {
-         return m_message;
-      }
-
-   private:
-
-      String m_message;
-   };
-
-   // -------------------------------------------------------------------------
-
    /*!
     * \class Find
-    * \brief Implementation of directory search operations.
+    * \brief Directory search operation.
     */
    class PCL_CLASS Find
    {
    public:
 
       /*!
-       * Constructs a %File::Find object.
+       * Constructs an inactive %File::Find object.
        */
-      Find() : handle( 0 )
+      Find() : m_handle( nullptr )
       {
       }
 
       /*!
-       * Constructs a %File::Find object and starts a search operation for
-       * \a path.
+       * Constructs a %File::Find object and starts a new directory search
+       * operation for the specified \a path.
        *
        * The specified \a path can include wildcards to define a pattern to
        * search for a set of directory items.
        */
-      Find( const String& path ) : handle( 0 )
+      Find( const String& path ) : m_handle( nullptr )
       {
          Begin( path );
       }
 
       /*!
-       * Destroys a %File::Find object. If a directory search is currently
-       * active, it is finalized.
+       * Destroys a %File::Find object. If a directory search operation is
+       * currently active, it is finalized.
        */
       ~Find()
       {
@@ -663,7 +614,7 @@ public:
       }
 
       /*!
-       * Starts a new directory search operation for \a path.
+       * Starts a new directory search operation for the specified \a path.
        *
        * The specified \a path can include wildcards to define a pattern to
        * search for a set of directory items.
@@ -681,35 +632,36 @@ public:
       bool NextItem( FindFileInfo& info );
 
       /*!
-       * Finalizes the current file search operation.
+       * Finalizes the current file search operation, if there is one active.
        */
       void End();
 
       /*!
-       * Returns the path of the current file search operation.
+       * Returns the search path of the current file search operation.
        */
       String SearchPath() const
       {
-         return searchPath;
+         return m_searchPath;
       }
 
    private:
 
-      FindFileInfo info;
-      String       searchPath;
+      FindFileInfo m_info;
+      String       m_searchPath;
 #ifndef __PCL_WINDOWS
-      String       searchDir;
-      String       searchName;
+      String       m_searchDir;
+      String       m_searchName;
 #endif
-      void*        handle;
+      void*        m_handle;
 
-      Find( const Find& ) { PCL_CHECK( 0 ) } // disable copy
+      Find( const Find& ) = delete;
+      Find& operator =( const Find& ) = delete;
    };
 
    // -------------------------------------------------------------------------
 
    /*!
-    * \class pcl::File::Progress
+    * \class Progress
     * \brief Abstract base class of file progress objects
     *
     * The purpose of a file progress object is to provide feedback to the user
@@ -736,10 +688,10 @@ public:
        *                      zero.
        */
       Progress( fsize_type total, const String& initialText = String(), fsize_type initialValue = 0 ) :
-      m_total( Max( fsize_type( 0 ), total ) ),
-      m_current( Range( initialValue, fsize_type( 0 ), m_total ) ),
-      m_text( initialText ),
-      m_abort( false )
+         m_total( Max( fsize_type( 0 ), total ) ),
+         m_current( Range( initialValue, fsize_type( 0 ), m_total ) ),
+         m_text( initialText ),
+         m_abort( false )
       {
       }
 
@@ -887,6 +839,36 @@ public:
       PCL_PRECONDITION( !path.IsEmpty() )
       Initialize();
       Open( path, mode );
+   }
+
+   /*!
+    * Move constructor.
+    */
+   File( File&& x ) :
+      m_fileHandle( x.m_fileHandle ),
+      m_filePath( std::move( x.m_filePath ) ),
+      m_fileMode( x.m_fileMode )
+   {
+      x.m_fileHandle = s_invalidHandle;
+      x.m_fileMode = FileMode::Zero;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   File& operator =( File&& x )
+   {
+      if ( &x != this )
+      {
+         if ( IsOpen() )
+            Close();
+         m_fileHandle = x.m_fileHandle;
+         m_filePath = std::move( x.m_filePath );
+         m_fileMode = x.m_fileMode;
+         x.m_fileHandle = s_invalidHandle;
+         x.m_fileMode = FileMode::Zero;
+      }
+      return *this;
    }
 
    /*!
@@ -1162,40 +1144,62 @@ public:
    }
 
    /*!
-    * Reads an 8-bit string
+    * Reads a dynamic 8-bit string stored as binary data. The data should have
+    * been generated by a previous call to Write( const IsoString& ) on the
+    * file being read.
     */
    void Read( IsoString& s );
 
    /*!
-    * Reads a Unicode string
+    * Reads a dynamic UTF-16 string stored as binary data. The data should have
+    * been generated by a previous call to Write( const IsoString& ) on the
+    * file being read.
     */
    void Read( String& s );
 
    /*!
-    * Writes an 8-bit string
+    * Writes a sequence of 8-bit characters, defined by the range [i,j), as
+    * binary data.
+    */
+   void Write( const char* i, const char* j );
+
+   /*!
+    * Writes a null-terminated 8-bit string as binary data.
+    */
+   void Write( const char* s )
+   {
+      Write( s, s + IsoCharTraits::Length( s ) );
+   }
+
+   /*!
+    * Writes a dynamic 8-bit string as binary data.
     */
    void Write( const IsoString& s )
    {
-      Write( s.c_str() );
+      Write( s.Begin(), s.End() );
    }
 
    /*!
-    * Writes a C string of \c char.
+    * Writes a sequence of UTF-16 characters, defined by the range [i,j), as
+    * binary data.
     */
-   void Write( const char* s );
+   void Write( const char16_type* i, const char16_type* j );
 
    /*!
-    * Writes a Unicode string
+    * Writes a null-terminated string of UTF-16 characters as binary data.
+    */
+   void Write( const char16_type* s )
+   {
+      Write( s, s + CharTraits::Length( s ) );
+   }
+
+   /*!
+    * Writes a dynamic UTF-16 string as binary data.
     */
    void Write( const String& s )
    {
-      Write( s.c_str() );
+      Write( s.Begin(), s.End() );
    }
-
-   /*!
-    * Writes a C string of \c char16_type.
-    */
-   void Write( const char16_type* s );
 
 #ifndef __PCL_NO_FLAGS_FILE_IO
 
@@ -1238,33 +1242,94 @@ public:
 #endif
 
    /*!
-    * Writes an 8-bit string as plain text.
+    * Writes a sequence of 8-bit characters, defined by the range [i,j), as
+    * plain text.
+    */
+   void OutText( const char* i, const char* j )
+   {
+      if ( i < j )
+         Write( (const void*)i, fsize_type( j - i ) );
+   }
+
+   /*!
+    * Writes a null-terminated 8-bit string as plain text.
+    */
+   void OutText( const char* s )
+   {
+      OutText( s, s + IsoCharTraits::Length( s ) );
+   }
+
+   /*!
+    * Writes a dynamic 8-bit string as plain text.
     */
    void OutText( const IsoString& s )
    {
-      OutText( s.c_str() );
+      OutText( s.Begin(), s.End() );
    }
 
    /*!
-    * Writes a C string of \c char.
+    * Writes a sequence of UTF-16 characters, defined by the range [i,j), as
+    * plain text.
     */
-   void OutText( const char* );
+   void OutText( const char16_type* i, const char16_type* j )
+   {
+      if ( i < j )
+         Write( (const void*)i, fsize_type( j - i ) << 1 );
+   }
 
    /*!
-    * Writes a Unicode string (UTF16) as plain text.
+    * Writes a null-terminated UTF-16 string as plain text.
+    */
+   void OutText( const char16_type* s )
+   {
+      OutText( s, s + CharTraits::Length( s ) );
+   }
+
+   /*!
+    * Writes a dynamic UTF16 string as plain text.
     */
    void OutText( const String& s )
    {
-      OutText( s.c_str() );
+      OutText( s.Begin(), s.End() );
    }
 
    /*!
-    * Writes a C string of \c char16_type.
+    * Writes a sequence of 8-bit characters, defined by the range [i,j), as
+    * plain text. Then writes a newline character.
     */
-   void OutText( const char16_type* );
+   void OutTextLn( const char* i, const char* j )
+   {
+      OutText( i, j ); Write( '\n' );
+   }
 
    /*!
-    * Writes an 8-bit string as plain text and appends a newline character.
+    * Writes a null-terminated 8-bit string as plain text and appends a newline
+    * character.
+    */
+   void OutTextLn( const char* s )
+   {
+      OutText( s ); Write( '\n' );
+   }
+
+   /*!
+    * Writes an 8-bit newline character ('\n').
+    *
+    * \warning Do not use this member function if you are generating plain text
+    * encoded as UTF-16, for example in a sequence of calls to
+    * OutTextLn( const String& s ). In such case you can call:\n
+    * \n
+    * \code OutTextLn( String() ); \endcode \n
+    * \n
+    * to generate a newline in UTF-16 format.
+    */
+   void OutTextLn()
+   {
+      Write( '\n' );
+   }
+
+   /*!
+    * Writes a dynamic 8-bit string as plain text and appends a newline
+    * character.
     */
    void OutTextLn( const IsoString& s )
    {
@@ -1272,25 +1337,28 @@ public:
    }
 
    /*!
-    * Writes a C string of \c char and appends a newline character.
+    * Writes a sequence of UTF-16 characters, defined by the range [i,j), as
+    * plain text. Then writes a newline character.
     */
-   void OutTextLn( const char* s = 0 )
+   void OutTextLn( const char16_type* i, const char16_type* j )
    {
-      OutText( s ); Write( '\n' );
+      OutText( i, j ); Write( char16_type( '\n' ) );
    }
 
    /*!
-    * Writes a Unicode string as plain text and appends a newline character.
+    * Writes a null-terminated UTF-16 string as plain text and appends a
+    * newline character.
     */
-   void OutTextLn( const String& s )
+   void OutTextLn( const char16_type* s )
    {
       OutText( s ); Write( char16_type( '\n' ) );
    }
 
    /*!
-    * Writes a C string of \c char and appends a newline character.
+    * Writes a dynamic UTF16 string as plain text and appends a newline
+    * character.
     */
-   void OutTextLn( const char16_type* s = 0 )
+   void OutTextLn( const String& s )
    {
       OutText( s ); Write( char16_type( '\n' ) );
    }
@@ -1309,11 +1377,22 @@ public:
    virtual void Open( const String& path, FileModes mode = FileMode::Read|FileMode::Open );
 
    /*!
-    * Opens a file at \a path for read-only access.
+    * Opens a file at the specified \a path for read-only access.
     */
    virtual void OpenForReading( const String& path )
    {
       Open( path, FileMode::Read|FileMode::Open );
+   }
+
+   /*!
+    * Returns an open file at the specified \a path, ready for read-only
+    * access.
+    */
+   static File OpenFileForReading( const String& path )
+   {
+      File f;
+      f.OpenForReading( path );
+      return f;
    }
 
    /*!
@@ -1325,8 +1404,20 @@ public:
    }
 
    /*!
-    * Creates a file at \a path for read/write access. If a file exists with
-    * the specified \a path, its contents are truncated to zero length.
+    * Returns an open file at the specified \a path, ready for read/write
+    * access.
+    */
+   static File OpenFileForReadWrite( const String& path )
+   {
+      File f;
+      f.OpenForReadWrite( path );
+      return f;
+   }
+
+   /*!
+    * Creates a file at the specified \a path for read/write access. If a file
+    * already exists with the same \a path, its contents will be truncated to
+    * zero length.
     */
    virtual void Create( const String& path )
    {
@@ -1334,8 +1425,21 @@ public:
    }
 
    /*!
-    * Creates a file at \a path for write-only access. If a file exists with
-    * the specified \a path, its contents are truncated to zero length.
+    * Returns a newly created file at the specified \a path, ready for
+    * read/write access. If a file already exists with the same \a path, its
+    * contents will be truncated to zero length.
+    */
+   static File CreateFile( const String& path )
+   {
+      File f;
+      f.Create( path );
+      return f;
+   }
+
+   /*!
+    * Creates a file at the specified \a path for write-only access. If a file
+    * already exists with the same \a path, its contents will be truncated to
+    * zero length.
     */
    virtual void CreateForWriting( const String& path )
    {
@@ -1343,12 +1447,35 @@ public:
    }
 
    /*!
-    * Opens a file at \a path if it exists, or creates it otherwise. The file
-    * is opened in read/write mode.
+    * Returns a newly created file at the specified \a path, ready for
+    * write-only access. If a file already exists with the same \a path, its
+    * contents will be truncated to zero length.
+    */
+   static File CreateFileForWriting( const String& path )
+   {
+      File f;
+      f.CreateForWriting( path );
+      return f;
+   }
+
+   /*!
+    * Opens a file at the specified \a path if it exists, or creates it
+    * otherwise. The file will be opened in read/write mode.
     */
    void OpenOrCreate( const String& path )
    {
       Open( path, FileMode::Read|FileMode::Write|FileMode::Open|FileMode::Create );
+   }
+
+   /*!
+    * Returns an open file at the specified \a path if it already exists, or a
+    * newly created file otherwise, ready for read/write access.
+    */
+   static File OpenOrCreateFile( const String& path )
+   {
+      File f;
+      f.OpenOrCreate( path );
+      return f;
    }
 
    /*!
@@ -1385,17 +1512,6 @@ public:
     * \ingroup file_utilities
     */
    static void RemoveDirectory( const String& dirPath );
-
-   /*!
-    * A synonym for Remove().
-    * \ingroup file_utilities
-    *
-    * \deprecated Use Remove() in newly produced code.
-    */
-   static void Delete( const String& filePath ) // ### deprecated
-   {
-      Remove( filePath );
-   }
 
    /*!
     * Moves and/or renames a file.
@@ -1489,6 +1605,52 @@ public:
    static void WriteFile( const String& filePath, const ByteArray& contents );
 
    /*!
+    * Creates a file with a subset of a ByteArray container.
+    *
+    * \param filePath   Path to the file that will be created.
+    *
+    * \param contents   Reference to a ByteArray object providing the contents
+    *                   that will be written to the newly created file.
+    *
+    * \param start      Zero-based index of the first byte to be written.
+    *
+    * \param size       Number of bytes that will be written.
+    *
+    * \warning If a file already exists at the specified path, its previous
+    * contents will be lost after calling this function.
+    */
+   static void WriteFile( const String& filePath, const ByteArray& contents, size_type start, size_type size );
+
+   /*!
+    * Reads the contents of a file at the specified \a filePath and returns
+    * them as plain text stored in a dynamic 8-bit string.
+    *
+    * This function is useful to load document files encoded in UTF-8,
+    * ISO/IEC-8859-1 (or Latin-1), and other 8-bit encodings.
+    *
+    * \ingroup file_utilities
+    */
+   static IsoString ReadTextFile( const String& filePath );
+
+   /*!
+    * Creates a file with the specified plain text content.
+    *
+    * \param filePath   Path to the file that will be created.
+    *
+    * \param text       Reference to an IsoString object providing the plain
+    *                   text that will be written to the newly created file.
+    *
+    * This function is useful to generate document files encoded in UTF-8,
+    * ISO/IEC-8859-1 (or Latin-1), and other 8-bit encodings.
+    *
+    * \warning If a file already exists at the specified path, its previous
+    * contents will be lost after calling this function.
+    *
+    * \ingroup file_utilities
+    */
+   static void WriteTextFile( const String& filePath, const IsoString& text );
+
+   /*!
     * Changes the access permissions of a file or directory.
     *
     * \param targetPath    Path to the existing file or directory whose
@@ -1553,11 +1715,11 @@ public:
     *                         must be different from the specified target file.
     *
     * \param progress         Pointer to an instance of (a derived class of)
-    *                         File::Progress. If a nonzero pointer is
+    *                         File::Progress. If a non-null pointer is
     *                         specified, the object will be used to provide
     *                         progress information and the possibility of
     *                         aborting the file copy operation. The default
-    *                         value is zero.
+    *                         value is \c nullptr.
     *
     * The file copy operation is implemented as an iterative block copying
     * routine. This means that huge files can be copied with minimal
@@ -1568,7 +1730,7 @@ public:
     *
     * This function does not follow symbolic links. It does not copy the file
     * pointed to by a symbolic link, but the link itself. This is only relevant
-    * to platforms that support symbolic links (all but Windows).
+    * to platforms that support symbolic links (i.e., all of them but Windows).
     *
     * If a \a progress object is specified, it receives successive calls to
     * File::Progress::Add() with increments in bytes. If the progress object
@@ -1577,7 +1739,7 @@ public:
     *
     * \ingroup file_utilities
     */
-   static void CopyFile( const String& targetFilePath, const String& sourceFilePath, File::Progress* progress = 0 );
+   static void CopyFile( const String& targetFilePath, const String& sourceFilePath, File::Progress* progress = nullptr );
 
    /*!
     * Moves a single file.
@@ -1590,11 +1752,11 @@ public:
     *                         must be different from the specified target file.
     *
     * \param progress         Pointer to an instance of (a derived class of)
-    *                         File::Progress. If a nonzero pointer is
+    *                         File::Progress. If a non-null pointer is
     *                         specified, the object will be used to provide
     *                         progress information and the possibility of
     *                         aborting the file copy operation. The default
-    *                         value is zero.
+    *                         value is \c nullptr.
     *
     * For file move operations within the same physical device, this function
     * implements a simple rename operation. In these cases, the \a progress
@@ -1611,7 +1773,7 @@ public:
     *
     * This function does not follow symbolic links. It does not move the file
     * pointed to by a symbolic link, but the link itself. This is only relevant
-    * to platforms that support symbolic links (all but Windows).
+    * to platforms that support symbolic links (i.e., all of them but Windows).
     *
     * If a \a progress object is specified and it aborts the file move
     * operation, this member function throws a ProcessAborted exception. In
@@ -1619,7 +1781,7 @@ public:
     *
     * \ingroup file_utilities
     */
-   static void MoveFile( const String& targetFilePath, const String& sourceFilePath, File::Progress* progress = 0 );
+   static void MoveFile( const String& targetFilePath, const String& sourceFilePath, File::Progress* progress = nullptr );
 
    /*!
     * Returns true if two files or directories are mounted on the same physical
@@ -1627,12 +1789,12 @@ public:
     *
     * This is relevant to some critical file operations. For example, moving a
     * file on the same device is a simple and fast rename operation. However,
-    * moving a file between devices involves copying the entire file contents.
+    * moving a file across devices involves copying the entire file contents.
     *
     * This function does not follow symbolic links. It does not consider
     * mounted devices for files pointed to by symbolic links, but for the links
     * themselves. This is only relevant to platforms that support symbolic
-    * links (all but Windows).
+    * links (all of them but Windows).
     *
     * \ingroup file_utilities
     */
@@ -1645,7 +1807,7 @@ public:
     * On UNIX and Linux platforms, this function compares the device and inode
     * numbers reported by the st_dev and st_ino members of the stat structure,
     * respectively. This pair of numbers uniquely identifies every file on the
-    * system.
+    * system, irrespective of file names.
     *
     * On Windows platforms, this function verifies the devices that support
     * both files and, if they are the same, performs a case-insensitive
@@ -1654,7 +1816,7 @@ public:
     * This function does not follow symbolic links. It does not consider
     * mounted devices for files pointed to by symbolic links, but for the links
     * themselves. This is only relevant to platforms that support symbolic
-    * links (all but Windows).
+    * links (all of them but Windows).
     *
     * \ingroup file_utilities
     */
@@ -1702,7 +1864,7 @@ public:
     *
     * \param data          A void* that will be passed to the callback function
     *                      as its second argument on each call. The default
-    *                      value is zero.
+    *                      value is \c nullptr.
     *
     * \param options       Optional set of flags (ORed combination) that can be
     *                      specified to control the way text lines are explored
@@ -1724,7 +1886,7 @@ public:
     * \ingroup file_utilities
     */
    static size_type ScanLines( const String& filePath,
-                               bool (*callback)( char*, void* ), void* data = 0,
+                               bool (*callback)( char*, void* ), void* data = nullptr,
                                ReadTextOptions options = ReadTextOptions() );
 
    /*!
@@ -1763,7 +1925,7 @@ public:
     *
     * \param n          Number of random characters in the generated file name.
     *                   Must be at least five characters. The default value is
-    *                   eight characters.
+    *                   twelve characters.
     *
     * \param prefix     An optional prefix that will be prepended to the
     *                   generated file name.
@@ -1779,13 +1941,13 @@ public:
     * The returned file name is guaranteed to be unique on the specified
     * directory (or on the current directory of the calling process if no
     * directory is specified) just after this function returns. Note that since
-    * a random number generator is used to select file name characters, there
-    * is no practical chance for a race condition by calling this function from
-    * several threads concurrently.
+    * a high-quality random number generator is used to select file name
+    * characters, there is no practical chance for a race condition by calling
+    * this function from several threads concurrently.
     *
     * \ingroup file_utilities
     */
-   static String UniqueFileName( const String& directory = String(), int n = 8,
+   static String UniqueFileName( const String& directory = String(), int n = 12,
                                  const String& prefix = String(), const String& postfix = String() );
 
    /*!
@@ -1798,11 +1960,11 @@ public:
     *                   platforms. If a symbolic link is specified, the
     *                   returned values refer to the target device.
     *
-    * \param[out] totalBytes  If nonzero, the address of a variable that
+    * \param[out] totalBytes  If non-null, the address of a variable that
     *                   receives the total capacity in bytes of the device that
     *                   supports the specified directory.
     *
-    * \param[out] freeBytes   If nonzero, the address of a variable that
+    * \param[out] freeBytes   If non-null, the address of a variable that
     *                   receives the total number of free bytes on the device
     *                   that supports the specified directory.
     *
@@ -1812,7 +1974,7 @@ public:
     *
     * \ingroup file_utilities
     */
-   static uint64 GetAvailableSpace( const String& dirPath, uint64* totalBytes = 0, uint64* freeBytes = 0 );
+   static uint64 GetAvailableSpace( const String& dirPath, uint64* totalBytes = nullptr, uint64* freeBytes = nullptr );
 
    /*!
     * Finds a Windows drive specification in the specified \a path.
@@ -2049,12 +2211,14 @@ protected:
    String    m_filePath;
    FileModes m_fileMode;
 
+   static const handle s_invalidHandle;
+
    void Initialize();
    virtual bool IsValidHandle( handle h ) const;
 
    // Cannot copy a File object.
-   File( const File& ) { PCL_CHECK( 0 ) }
-   void operator =( const File& ) { PCL_CHECK( 0 ) }
+   File( const File& ) = delete;
+   File& operator =( const File& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -2063,5 +2227,5 @@ protected:
 
 #endif   // __PCL_File_h
 
-// ****************************************************************************
-// EOF pcl/File.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/File.h - Released 2015/07/30 17:15:18 UTC

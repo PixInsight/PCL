@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Fourier Process Module Version 01.00.04.0124
-// ****************************************************************************
-// InverseFourierTransformInstance.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Fourier Process Module Version 01.00.04.0143
+// ----------------------------------------------------------------------------
+// InverseFourierTransformInstance.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Fourier PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "InverseFourierTransformInstance.h"
 
@@ -117,44 +121,41 @@ public:
       if ( !instance.idOfFirstComponent.IsValidIdentifier() || !instance.idOfSecondComponent.IsValidIdentifier() )
          throw Error( "Invalid DFT component identifier(s)" );
 
-      ImageWindow w1 = ImageWindow::WindowById( instance.idOfFirstComponent );
-      if ( w1.IsNull() )
+      ImageWindow window1 = ImageWindow::WindowById( instance.idOfFirstComponent );
+      if ( window1.IsNull() )
          throw Error( "No such view: \'" + instance.idOfFirstComponent + '\'' );
 
-      IsoString component1 = GetDFTComponentMetadata( min1, max1, centered, width, height, w1 );
+      IsoString component1 = GetDFTComponentMetadata( min1, max1, centered, width, height, window1 );
 
-      ImageVariant v1 = w1.MainView().GetImage();
+      ImageVariant image1 = window1.MainView().GetImage();
 
-      if ( !v1.IsFloatSample() )
+      if ( !image1.IsFloatSample() )
          throw Error( "A DFT component must be a floating point image: \'" + instance.idOfFirstComponent + '\'' );
 
-      ImageWindow w2 = ImageWindow::WindowById( instance.idOfSecondComponent );
-      if ( w2.IsNull() )
+      ImageWindow window2 = ImageWindow::WindowById( instance.idOfSecondComponent );
+      if ( window2.IsNull() )
          throw Error( "No such view: \'" + instance.idOfSecondComponent + '\'' );
 
       bool centered2;
       int width2, height2;
-      IsoString component2 = GetDFTComponentMetadata( min2, max2, centered2, width2, height2, w2 );
+      IsoString component2 = GetDFTComponentMetadata( min2, max2, centered2, width2, height2, window2 );
       if ( centered2 != centered )
          throw Error( "Mismatched coordinate origins between Fourier transform components" );
       if ( width2 != width || height2 != height )
          throw Error( "Mismatched image dimensions between Fourier transform components" );
 
-      ImageVariant v2 = w2.MainView().GetImage();
+      ImageVariant image2 = window2.MainView().GetImage();
 
-      if ( !v2.IsFloatSample() )
+      if ( !image2.IsFloatSample() )
          throw Error( "A DFT component must be a floating point image: \'" + instance.idOfSecondComponent + '\'' );
 
-      if ( v2.BitsPerSample() != v1.BitsPerSample() )
+      if ( image2.BitsPerSample() != image1.BitsPerSample() )
          throw Error( "Mismatched sample types between Fourier transform components" );
 
-      AbstractImage* img1 = v1.AnyImage();
-      AbstractImage* img2 = v2.AnyImage();
-
-      if ( img1->Bounds() != img2->Bounds() )
+      if ( image1->Bounds() != image2->Bounds() )
          throw Error( "Mismatched dimensions between Fourier transform components" );
 
-      if ( img1->ColorSpace() != img2->ColorSpace() )
+      if ( image1->ColorSpace() != image2->ColorSpace() )
          throw Error( "Mismatched color spaces between Fourier transform components" );
 
       magnitudeAndPhase = false;
@@ -190,37 +191,34 @@ public:
       if ( componentsSwapped )
       {
          Swap( component1, component2 );
-         Swap( w1, w2 );
-         Swap( v1, v2 );
-         Swap( img1, img2 );
+         Swap( window1, window2 );
+         Swap( image1, image2 );
          Swap( min1, min2 );
          Swap( max1, max2 );
       }
 
-      ImageWindow w( 1, 1, img1->NumberOfNominalChannels(), v1.BitsPerSample(),
-                     true/*floatSample*/, img1->IsColor(),
-                     true/*initialProcessing*/, IsoString( "inverse_DFT" ) );
-      ImageVariant v = w.MainView().Image();
-      AbstractImage* image = v.AnyImage();
-
-      switch ( v.BitsPerSample() )
+      ImageWindow window( 1, 1, image1->NumberOfNominalChannels(), image1.BitsPerSample(),
+                          true/*floatSample*/, image1->IsColor(),
+                          true/*initialProcessing*/, IsoString( "inverse_DFT" ) );
+      ImageVariant image = window.MainView().Image();
+      switch ( image.BitsPerSample() )
       {
       case 32:
-         DoInverseTransform( *static_cast<Image*>( image ),
-                             *static_cast<const Image*>( img1 ),
-                             *static_cast<const Image*>( img2 ),
+         DoInverseTransform( static_cast<Image&>( *image ),
+                             static_cast<const Image&>( *image1 ),
+                             static_cast<const Image&>( *image2 ),
                              (ComplexPixelTraits*)0 );
          break;
       case 64:
-         DoInverseTransform( *static_cast<DImage*>( image ),
-                             *static_cast<const DImage*>( img1 ),
-                             *static_cast<const DImage*>( img2 ),
+         DoInverseTransform( static_cast<DImage&>( *image ),
+                             static_cast<const DImage&>( *image1 ),
+                             static_cast<const DImage&>( *image2 ),
                              (DComplexPixelTraits*)0 );
          break;
       }
 
-      w.Show();
-      w.ZoomToFit( false/*allowMagnification*/ );
+      window.Show();
+      window.ZoomToFit( false/*allowMagnification*/ );
    }
 
 private:
@@ -495,13 +493,13 @@ bool InverseFourierTransformInstance::AllocateParameter( size_type sizeOrLength,
    {
       idOfFirstComponent.Clear();
       if ( sizeOrLength != 0 )
-         idOfFirstComponent.Reserve( sizeOrLength );
+         idOfFirstComponent.SetLength( sizeOrLength );
    }
    else if ( p == TheIFTIdOfSecondComponentParameter )
    {
       idOfSecondComponent.Clear();
       if ( sizeOrLength != 0 )
-         idOfSecondComponent.Reserve( sizeOrLength );
+         idOfSecondComponent.SetLength( sizeOrLength );
    }
    else
       return false;
@@ -522,5 +520,5 @@ size_type InverseFourierTransformInstance::ParameterLength( const MetaParameter*
 
 } // pcl
 
-// ****************************************************************************
-// EOF InverseFourierTransformInstance.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF InverseFourierTransformInstance.cpp - Released 2015/07/31 11:49:48 UTC

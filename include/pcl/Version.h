@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Version.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Version.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Version_h
 #define __PCL_Version_h
@@ -131,10 +134,11 @@ public:
 
 private:
 
-   // Not an instantiable class
-   Version() { PCL_CHECK( 0 ) }
-   Version( const Version& ) { PCL_CHECK( 0 ) }
-   virtual ~Version() { PCL_CHECK( 0 ) }
+   // Not an instantiable class.
+   Version() = delete;
+   Version( const Version& ) = delete;
+   void operator =( const Version& ) = delete;
+   ~Version() = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -233,10 +237,11 @@ public:
 
 private:
 
-   // Not an instantiable class
-   PixInsightVersion() { PCL_CHECK( 0 ) }
-   PixInsightVersion( const PixInsightVersion& ) { PCL_CHECK( 0 ) }
-   virtual ~PixInsightVersion() { PCL_CHECK( 0 ) }
+   // Not an instantiable class.
+   PixInsightVersion() = delete;
+   PixInsightVersion( const PixInsightVersion& ) = delete;
+   void operator =( const PixInsightVersion& ) = delete;
+   ~PixInsightVersion() = delete;
 
    static void Initialize();
 
@@ -249,5 +254,5 @@ private:
 
 #endif   // __PCL_Version_h
 
-// ****************************************************************************
-// EOF pcl/Version.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Version.h - Released 2015/07/30 17:15:18 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Flags.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Flags.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Flags_h
 #define __PCL_Flags_h
@@ -67,6 +70,12 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
+template <bool> struct FlagType {};
+template <>     struct FlagType<true>  { typedef unsigned type; };
+template <>     struct FlagType<false> { typedef int      type; };
+
+// ----------------------------------------------------------------------------
+
 /*!
  * \class Flags
  * \brief A type-safe collection of enumerated flags
@@ -78,11 +87,19 @@ class PCL_CLASS Flags
 {
 public:
 
+   static_assert( sizeof( E ) <= sizeof( int ),
+                  "Invalid sizeof( Flags::enum_type ): Must not be larger than sizeof( int )" );
+
    /*!
-    * Represents the enumerated type that defines individual flags for this
-    * class.
+    * Represents the enumerated type that defines individual flags.
     */
-   typedef E enum_type;
+   typedef                          E enum_type;
+
+   /*!
+    * Represents the integral type used to store flags.
+    */
+   typedef typename FlagType<std::is_unsigned<enum_type>::value>::type
+                                    flag_type;
 
    /*!
     * Constructs an empty (zero) %Flags instance.
@@ -92,33 +109,36 @@ public:
    }
 
    /*!
-    * Copy constructor.
-    */
-   Flags( const Flags& f ) : m_flags( f.m_flags )
-   {
-   }
-
-   /*!
     * Constructs a %Flags instance from an enumerated flag value \a e.
     */
-   Flags( E e ) : m_flags( e )
+   constexpr
+   Flags( enum_type e ) : m_flags( int( e ) )
    {
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Constructs a %Flags instance from a mask \a m.
     */
-   Flags& operator =( Flags f )
+   constexpr
+   Flags( flag_type m ) : m_flags( int( m ) )
    {
-      m_flags = f.m_flags;
-      return *this;
    }
+
+   /*!
+    * Copy constructor.
+    */
+   Flags( const Flags& ) = default;
+
+   /*!
+    * Copy assignment operator. Returns a reference to this object.
+    */
+   Flags& operator =( const Flags& ) = default;
 
    /*!
     * Assigns an enumerated flag value \a e to this object. Returns a reference
     * to this object.
     */
-   Flags& operator =( E e )
+   Flags& operator =( enum_type e )
    {
       m_flags = e;
       return *this;
@@ -139,7 +159,7 @@ public:
     * stores the resulting flags in this object. Returns a reference to this
     * object.
     */
-   Flags& operator &=( E e )
+   Flags& operator &=( enum_type e )
    {
       m_flags &= unsigned( e );
       return *this;
@@ -171,7 +191,7 @@ public:
     * \a e and stores the resulting flags in this object. Returns a reference
     * to this object.
     */
-   Flags& operator |=( E e )
+   Flags& operator |=( enum_type e )
    {
       m_flags |= unsigned( e );
       return *this;
@@ -204,7 +224,7 @@ public:
     * value \a e and stores the resulting flags in this object. Returns a
     * reference to this object.
     */
-   Flags& operator ^=( E e )
+   Flags& operator ^=( enum_type e )
    {
       m_flags ^= unsigned( e );
       return *this;
@@ -224,7 +244,7 @@ public:
    /*!
     * Returns true if the specified flag \a e is set in this %Flags object.
     */
-   bool IsFlagSet( E e ) const
+   constexpr bool IsFlagSet( enum_type e ) const
    {
       return (m_flags & e) != 0;
    }
@@ -232,7 +252,7 @@ public:
    /*!
     * Sets or clears the specified flag \a e in this %Flags object.
     */
-   void SetFlag( E e, bool on = true )
+   void SetFlag( enum_type e, bool on = true )
    {
       if ( on )
          m_flags |= e;
@@ -244,7 +264,7 @@ public:
     * Clears the specified flag \a e.
     * This is a convenience member function, equivalent to SetFlag( e, false ).
     */
-   void ClearFlag( E e )
+   void ClearFlag( enum_type e )
    {
       SetFlag( e, false );
    }
@@ -254,14 +274,14 @@ public:
     */
    void Clear()
    {
-      m_flags = 0u;
+      m_flags = 0;
    }
 
    /*!
     * Sets the specified flag \a e in this object. Returns a reference to this
     * object.
     */
-   Flags& operator <<( E e )
+   Flags& operator <<( enum_type e )
    {
       SetFlag( e );
       return *this;
@@ -270,15 +290,15 @@ public:
    /*!
     * Returns true if all flags in this object are zero.
     */
-   bool operator !() const
+   constexpr bool operator !() const
    {
       return m_flags == 0;
    }
 
    /*!
-    * Converts this %Flags object to an unsigned integer.
+    * Converts this %Flags object to an integer.
     */
-   operator unsigned() const
+   constexpr operator flag_type() const
    {
       return m_flags;
    }
@@ -287,14 +307,86 @@ public:
     * Returns a %Flags object whose value is the bitwise negation of the flags
     * stored in this object.
     */
-   Flags operator ~() const
+   constexpr Flags operator ~() const
    {
-      Flags f; f.m_flags = ~m_flags; return f;
+      return Flags( enum_type( ~m_flags ) );
+   }
+
+   /*!
+    * Bitwise AND between two %Flags objects.
+    */
+   constexpr Flags operator &( Flags f ) const
+   {
+      return Flags( enum_type( m_flags & f.m_flags ) );
+   }
+
+   /*!
+    * Bitwise AND between a Flags object and an enumerated value.
+    */
+   constexpr Flags operator &( enum_type e ) const
+   {
+      return Flags( enum_type( m_flags & flag_type( e ) ) );
+   }
+
+   /*!
+    * Bitwise AND between a %Flags object and a mask.
+    */
+   constexpr Flags operator &( unsigned m ) const
+   {
+      return Flags( enum_type( m_flags & m ) );
+   }
+
+   /*!
+    * Bitwise OR between two %Flags objects.
+    */
+   constexpr Flags operator |( Flags f ) const
+   {
+      return Flags( enum_type( m_flags | f.m_flags ) );
+   }
+
+   /*!
+    * Bitwise OR between a Flags object and an enumerated value.
+    */
+   constexpr Flags operator |( enum_type e ) const
+   {
+      return Flags( enum_type( m_flags | flag_type( e ) ) );
+   }
+
+   /*!
+    * Bitwise OR between a %Flags object and a mask.
+    */
+   constexpr Flags operator |( unsigned m ) const
+   {
+      return Flags( enum_type( m_flags | m ) );
+   }
+
+   /*!
+    * Bitwise XOR between two %Flags objects.
+    */
+   constexpr Flags operator ^( Flags f ) const
+   {
+      return Flags( enum_type( m_flags ^ f.m_flags ) );
+   }
+
+   /*!
+    * Bitwise XOR between a Flags object and an enumerated value.
+    */
+   constexpr Flags operator ^( enum_type e ) const
+   {
+      return Flags( enum_type( m_flags ^ flag_type( e ) ) );
+   }
+
+   /*!
+    * Bitwise XOR between a %Flags object and a mask.
+    */
+   constexpr Flags operator ^( unsigned m ) const
+   {
+      return Flags( enum_type( m_flags ^ m ) );
    }
 
 private:
 
-   unsigned m_flags;
+   flag_type m_flags;
 
 #ifndef __PCL_NO_FLAGS_SETTINGS_IO
    friend class Settings;
@@ -311,175 +403,9 @@ private:
 
 // ----------------------------------------------------------------------------
 
-/*!
- * \defgroup flags_bitwise_operators Bitwise Flags Operators
- */
-
-/*!
- * Bitwise AND between two Flags objects \a a and \a b.
- * \ingroup flags_bitwise_operators
- */
-template <class E>
-inline Flags<E> operator &( Flags<E> a, Flags<E> b )
-{
-   Flags<E> f( a ); f &= b; return f;
-}
-
-/*!
- * Bitwise AND between a Flags object \a a and an enumerated value \a b.
- * \ingroup flags_bitwise_operators
- */
-template <class E>
-inline Flags<E> operator &( Flags<E> a, E b )
-{
-   Flags<E> f( a ); f &= b; return f;
-}
-
-/*!
- * Bitwise AND between an enumerated value \a a and a Flags object \a b.
- * \ingroup flags_bitwise_operators
- */
-template <class E>
-inline Flags<E> operator &( E a, Flags<E> b )
-{
-   return Flags<E>( a ) & b;
-}
-
-/*!
- * Bitwise AND between a Flags object \a a and a flags mask \a b.
- * \ingroup flags_bitwise_operators
- */
-template <class E>
-inline Flags<E> operator &( Flags<E> a, unsigned b )
-{
-   Flags<E> f( a ); f &= b; return f;
-}
-
-/*!
- * Bitwise AND between a flags mask \a a and a Flags object \a b.
- * \ingroup flags_bitwise_operators
- */
-template <class E>
-inline Flags<E> operator &( unsigned a, Flags<E> b )
-{
-   return Flags<E>( b ) & a;
-}
-
-/*!
- * Bitwise OR between two Flags objects \a a and \a b.
- * \ingroup flags_bitwise_operators
- */
-template <class E>
-inline Flags<E> operator |( Flags<E> a, Flags<E> b )
-{
-   Flags<E> f( a ); f |= b; return f;
-}
-
-/*!
- * Bitwise OR between a Flags object \a a and an enumerated value \a b.
- * \ingroup flags_bitwise_operators
- */
-template <class E>
-inline Flags<E> operator |( Flags<E> a, E b )
-{
-   Flags<E> f( a ); f |= b; return f;
-}
-
-/*!
- * Bitwise OR between an enumerated value \a a and a Flags object \a b.
- * \ingroup flags_bitwise_operators
- */
-template <class E>
-inline Flags<E> operator |( E a, Flags<E> b )
-{
-   return Flags<E>( a ) | b;
-}
-
-/*!
- * Bitwise OR between a Flags object \a a and a flags mask \a b.
- * \ingroup flags_bitwise_operators
- */
-template <class E>
-inline Flags<E> operator |( Flags<E> a, unsigned b )
-{
-   Flags<E> f( a ); f |= b; return f;
-}
-
-/*!
- * Bitwise OR between a flags mask \a a and a Flags object \a b.
- * \ingroup flags_bitwise_operators
- */
-template <class E>
-inline Flags<E> operator |( unsigned a, Flags<E> b )
-{
-   return Flags<E>( b ) | a;
-}
-
-/*!
- * Bitwise OR between two enumerated flags \a a and \a b.
- * \ingroup flags_bitwise_operators
- */
-template <class E>
-inline Flags<E> operator |( E a, E b )
-{
-   return Flags<E>( a ) | b;
-}
-
-/*!
- * Bitwise XOR between two Flags objects \a a and \a b.
- * \ingroup flags_bitwise_operators
- */
-template <class E>
-inline Flags<E> operator ^( Flags<E> a, Flags<E> b )
-{
-   Flags<E> f( a ); f ^= b; return f;
-}
-
-/*!
- * Bitwise XOR between a Flags object \a a and an enumerated value \a b.
- * \ingroup flags_bitwise_operators
- */
-template <class E>
-inline Flags<E> operator ^( Flags<E> a, E b )
-{
-   Flags<E> f( a ); f ^= b; return f;
-}
-
-/*!
- * Bitwise XOR between an enumerated value \a a and a Flags object \a b.
- * \ingroup flags_bitwise_operators
- */
-template <class E>
-inline Flags<E> operator ^( E a, Flags<E> b )
-{
-   return Flags<E>( a ) ^ b;
-}
-
-/*!
- * Bitwise XOR between a Flags object \a a and a flags mask \a b.
- * \ingroup flags_bitwise_operators
- */
-template <class E>
-inline Flags<E> operator ^( Flags<E> a, unsigned b )
-{
-   Flags<E> f( a ); f ^= b; return f;
-}
-
-/*!
- * Bitwise XOR between a flags mask \a a and a Flags object \a b.
- * \ingroup flags_bitwise_operators
- */
-template <class E>
-inline Flags<E> operator ^( unsigned a, Flags<E> b )
-{
-   return Flags<E>( b ) ^ a;
-}
-
-// ----------------------------------------------------------------------------
-
 } // pcl
 
 #endif   // __PCL_Flags_h
 
-// ****************************************************************************
-// EOF pcl/Flags.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Flags.h - Released 2015/07/30 17:15:18 UTC

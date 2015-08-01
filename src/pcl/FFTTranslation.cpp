@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/FFTTranslation.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/FFTTranslation.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/FFTRegistration.h>
 #include <pcl/FourierTransform.h>
@@ -59,7 +62,7 @@ class PCL_FFTTranslationEngine
 public:
 
    template <class P>
-   static ComplexImage* Initialize( const GenericImage<P>& image, bool largeTranslations )
+   static ComplexImage Initialize( const GenericImage<P>& image, bool largeTranslations )
    {
       // We work with square matrices.
       Rect r = image.SelectedRectangle();
@@ -73,36 +76,35 @@ public:
    }
 
    template <class P>
-   static void Evaluate( FPoint& delta, float& peak, const GenericImage<P>& image, const ComplexImage* C0 )
+   static void Evaluate( FPoint& delta, float& peak, const GenericImage<P>& image, const ComplexImage& C0 )
    {
-      ComplexImage* C = 0;
-      bool statusInitialization = image.Status().IsInitializationEnabled();
-
-      delta = 0.0F;
+      bool initializationEnabled = image.Status().IsInitializationEnabled();
 
       try
       {
-         int size = C0->Width(); // we work with square matrices
+         delta = 0.0F;
 
-         if ( statusInitialization )
+         int size = C0.Width(); // we work with square matrices
+
+         if ( initializationEnabled )
          {
             image.Status().Initialize( "FFT Translation", 4*size + size*size );
             image.Status().DisableInitialization();
          }
 
          // FFT of the target image
-         C = PCL_FFTTranslationEngine::Initialize( image, size );                        //*** status += 2*size
+         ComplexImage C = PCL_FFTTranslationEngine::Initialize( image, size ); //*** status += 2*size
 
          // Phase correlation matrix
-         PhaseCorrelationMatrix( **C, **C+C->NumberOfPixels(), **C0, **C );
+         PhaseCorrelationMatrix( *C, *C + C.NumberOfPixels(), *C0, *C );
 
          // Inverse DFT of the PCM/CPSM
-         InPlaceInverseFourierTransform() >> *C;      //*** status += 2*size
+         InPlaceInverseFourierTransform() >> C;       //*** status += 2*size
 
          // Absolute value of PCM/CPSM
-         Image R( *C );
+         Image R( C );
 
-         delete C, C = 0; // C no longer needed
+         C.FreeData(); // no longer needed
 
          // The position of the maximum matrix element gives us the displacement
          // of the target image w.r.t. the reference image.
@@ -158,15 +160,12 @@ public:
          delta.x = Round( delta.x, 2 );
          delta.y = Round( delta.y, 2 );
 
-         if ( statusInitialization )
+         if ( initializationEnabled )
             image.Status().EnableInitialization();
       }
-
       catch ( ... )
       {
-         if ( C != 0 )
-            delete C;
-         if ( statusInitialization )
+         if ( initializationEnabled )
             image.Status().EnableInitialization();
          throw;
       }
@@ -175,128 +174,113 @@ public:
 private:
 
    template <class P>
-   static ComplexImage* Initialize( const GenericImage<P>& image, int size )
+   static ComplexImage Initialize( const GenericImage<P>& image, int size )
    {
-      ComplexImage* C = 0;
+      Rect r = image.SelectedRectangle();
+      int w = Min( r.Width(), size );
+      int h = Min( r.Height(), size );
 
-      bool statusInitialization = image.Status().IsInitializationEnabled();
+      ComplexImage C( size, size );
 
-      try
+      // Place real data centered within our working space
+      C.Zero().Mov( image, Point( (size - w) >> 1, (size - h) >> 1 ) );
+
+      C.Status() = image.Status();
+
+      bool initializationEnabled = image.Status().IsInitializationEnabled();
+      if ( initializationEnabled )
       {
-         Rect r = image.SelectedRectangle();
-         int w = Min( r.Width(), size );
-         int h = Min( r.Height(), size );
-
-         // Place real data centered within our working space
-         C = new ComplexImage( size, size );
-         C->Zero().Mov( image, Point( (size - w) >> 1, (size - h) >> 1 ) );
-
-         C->Status() = image.Status();
-
-         if ( statusInitialization )
-         {
-            C->Status().Initialize( "FFT Translation Reference Matrix", 2*size );
-            C->Status().DisableInitialization();
-         }
-
-         InPlaceFourierTransform() >> *C;  // status += 2*size
-
-         image.Status() = C->Status();
-
-         if ( statusInitialization )
-            image.Status().EnableInitialization();
-
-         return C;
+         C.Status().Initialize( "FFT Translation Reference Matrix", 2*size );
+         C.Status().DisableInitialization();
       }
 
-      catch ( ... )
-      {
-         if ( C != 0 )
-            delete C;
-         if ( statusInitialization )
-            image.Status().EnableInitialization();
-         throw;
-      }
+      InPlaceFourierTransform() >> C;   // status += 2*size
+
+      image.Status() = C.Status();
+      if ( initializationEnabled )
+         image.Status().EnableInitialization();
+
+      return C;
    }
 };
 
 // ----------------------------------------------------------------------------
 
-ComplexImage* FFTTranslation::DoInitialize( const pcl::Image& image )
+ComplexImage FFTTranslation::DoInitialize( const pcl::Image& image )
 {
-   return PCL_FFTTranslationEngine::Initialize( image, largeTranslations );
+   return PCL_FFTTranslationEngine::Initialize( image, m_largeTranslations );
 }
 
-ComplexImage* FFTTranslation::DoInitialize( const pcl::DImage& image )
+ComplexImage FFTTranslation::DoInitialize( const pcl::DImage& image )
 {
-   return PCL_FFTTranslationEngine::Initialize( image, largeTranslations );
+   return PCL_FFTTranslationEngine::Initialize( image, m_largeTranslations );
 }
 
-ComplexImage* FFTTranslation::DoInitialize( const pcl::ComplexImage& image )
+ComplexImage FFTTranslation::DoInitialize( const pcl::ComplexImage& image )
 {
-   return PCL_FFTTranslationEngine::Initialize( image, largeTranslations );
+   return PCL_FFTTranslationEngine::Initialize( image, m_largeTranslations );
 }
 
-ComplexImage* FFTTranslation::DoInitialize( const pcl::DComplexImage& image )
+ComplexImage FFTTranslation::DoInitialize( const pcl::DComplexImage& image )
 {
-   return PCL_FFTTranslationEngine::Initialize( image, largeTranslations );
+   return PCL_FFTTranslationEngine::Initialize( image, m_largeTranslations );
 }
 
-ComplexImage* FFTTranslation::DoInitialize( const pcl::UInt8Image& image )
+ComplexImage FFTTranslation::DoInitialize( const pcl::UInt8Image& image )
 {
-   return PCL_FFTTranslationEngine::Initialize( image, largeTranslations );
+   return PCL_FFTTranslationEngine::Initialize( image, m_largeTranslations );
 }
 
-ComplexImage* FFTTranslation::DoInitialize( const pcl::UInt16Image& image )
+ComplexImage FFTTranslation::DoInitialize( const pcl::UInt16Image& image )
 {
-   return PCL_FFTTranslationEngine::Initialize( image, largeTranslations );
+   return PCL_FFTTranslationEngine::Initialize( image, m_largeTranslations );
 }
 
-ComplexImage* FFTTranslation::DoInitialize( const pcl::UInt32Image& image )
+ComplexImage FFTTranslation::DoInitialize( const pcl::UInt32Image& image )
 {
-   return PCL_FFTTranslationEngine::Initialize( image, largeTranslations );
+   return PCL_FFTTranslationEngine::Initialize( image, m_largeTranslations );
 }
 
 // ----------------------------------------------------------------------------
 
 void FFTTranslation::DoEvaluate( const pcl::Image& image )
 {
-   PCL_FFTTranslationEngine::Evaluate( delta, peak, image, fftReference );
+   PCL_FFTTranslationEngine::Evaluate( m_delta, m_peak, image, m_fftReference );
 }
 
 void FFTTranslation::DoEvaluate( const pcl::DImage& image )
 {
-   PCL_FFTTranslationEngine::Evaluate( delta, peak, image, fftReference );
+   PCL_FFTTranslationEngine::Evaluate( m_delta, m_peak, image, m_fftReference );
 }
 
 void FFTTranslation::DoEvaluate( const pcl::ComplexImage& image )
 {
-   PCL_FFTTranslationEngine::Evaluate( delta, peak, image, fftReference );
+   PCL_FFTTranslationEngine::Evaluate( m_delta, m_peak, image, m_fftReference );
 }
 
 void FFTTranslation::DoEvaluate( const pcl::DComplexImage& image )
 {
-   PCL_FFTTranslationEngine::Evaluate( delta, peak, image, fftReference );
+   PCL_FFTTranslationEngine::Evaluate( m_delta, m_peak, image, m_fftReference );
 }
 
 void FFTTranslation::DoEvaluate( const pcl::UInt8Image& image )
 {
-   PCL_FFTTranslationEngine::Evaluate( delta, peak, image, fftReference );
+   PCL_FFTTranslationEngine::Evaluate( m_delta, m_peak, image, m_fftReference );
 }
 
 void FFTTranslation::DoEvaluate( const pcl::UInt16Image& image )
 {
-   PCL_FFTTranslationEngine::Evaluate( delta, peak, image, fftReference );
+   PCL_FFTTranslationEngine::Evaluate( m_delta, m_peak, image, m_fftReference );
 }
 
 void FFTTranslation::DoEvaluate( const pcl::UInt32Image& image )
 {
-   PCL_FFTTranslationEngine::Evaluate( delta, peak, image, fftReference );
+   PCL_FFTTranslationEngine::Evaluate( m_delta, m_peak, image, m_fftReference );
 }
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/FFTTranslation.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/FFTTranslation.cpp - Released 2015/07/30 17:15:31 UTC

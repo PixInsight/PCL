@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Flux Process Module Version 01.00.00.0066
-// ****************************************************************************
-// B3EInterface.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Flux Process Module Version 01.00.00.0085
+// ----------------------------------------------------------------------------
+// B3EInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Flux PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,17 +48,16 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "B3EInterface.h"
-#include "B3EProcess.h"
 #include "B3EParameters.h"
-
-#include "ImageSelectionDialog.h"
-#include "PreviewSelectionDialog.h"
+#include "B3EProcess.h"
 
 #include <pcl/ErrorHandler.h>
+#include <pcl/PreviewSelectionDialog.h>
 #include <pcl/ViewList.h>
+#include <pcl/ViewSelectionDialog.h>
 
 #define CLIGHT 299792.455  // speed of light in km/s
 
@@ -276,7 +279,7 @@ void B3EInterface::__EditCompleted_bkg( Edit& sender )
          if ( p == String::notFound )
             valid = id.IsValidIdentifier();
          else
-            valid = id.Left( p ).IsValidIdentifier() && id.SubString( p+2 ).IsValidIdentifier();
+            valid = id.Left( p ).IsValidIdentifier() && id.Substring( p+2 ).IsValidIdentifier();
          if ( !valid )
             throw Error( "Invalid view identifier: " + id );
       }
@@ -316,16 +319,18 @@ void B3EInterface::__Clicked( Button& sender, bool checked )
 {
    if ( sender == GUI->InputImage1_ToolButton )
    {
-      ImageSelectionDialog d( instance.p_inputView[0].id );
+      ViewSelectionDialog d( instance.p_inputView[0].id );
+      d.SetWindowTitle( "Select First Input Image" );
       if ( d.Execute() )
-         instance.p_inputView[0].id = d.id;
+         instance.p_inputView[0].id = d.Id();
       GUI->InputImage1_Edit.SetText( instance.p_inputView[0].id );
    }
    else if ( sender == GUI->InputImage2_ToolButton )
    {
-      ImageSelectionDialog d( instance.p_inputView[1].id );
+      ViewSelectionDialog d( instance.p_inputView[1].id );
+      d.SetWindowTitle( "Select Second Input Image" );
       if ( d.Execute() )
-         instance.p_inputView[1].id = d.id;
+         instance.p_inputView[1].id = d.Id();
       GUI->InputImage2_Edit.SetText( instance.p_inputView[1].id );
    }
    else if ( sender == GUI->OutOfRangeMask_CheckBox )
@@ -334,10 +339,11 @@ void B3EInterface::__Clicked( Button& sender, bool checked )
    }
    else if ( sender == GUI->BackgroundReferenceView1_ToolButton )
    {
-      ImageSelectionDialog d( instance.p_inputView[0].backgroundReferenceViewId );
+      ViewSelectionDialog d( instance.p_inputView[0].backgroundReferenceViewId );
+      d.SetWindowTitle( "Select First Background Reference Image" );
       if ( d.Execute() == StdDialogCode::Ok )
       {
-         instance.p_inputView[0].backgroundReferenceViewId = d.id;
+         instance.p_inputView[0].backgroundReferenceViewId = d.Id();
          GUI->BackgroundReferenceView1_Edit.SetText( BACKGROUND_REFERENCE_ID1 );
       }
    }
@@ -346,20 +352,22 @@ void B3EInterface::__Clicked( Button& sender, bool checked )
    else if ( sender == GUI->BackgroundROISelectPreview1_Button )
    {
       PreviewSelectionDialog d;
+      d.SetWindowTitle( "Select First Background ROI" );
       if ( d.Execute() )
-         if ( !d.id.IsEmpty() )
+         if ( !d.Id().IsEmpty() )
          {
-            View view = View::ViewById( d.id );
+            View view = View::ViewById( d.Id() );
             if ( !view.IsNull() )
                instance.p_inputView[0].backgroundROI = view.Window().PreviewRect( view.Id() );
          }
    }
    else if ( sender == GUI->BackgroundReferenceView2_ToolButton )
    {
-      ImageSelectionDialog d( instance.p_inputView[1].backgroundReferenceViewId );
+      ViewSelectionDialog d( instance.p_inputView[1].backgroundReferenceViewId );
+      d.SetWindowTitle( "Select Second Background Reference Image" );
       if ( d.Execute() == StdDialogCode::Ok )
       {
-         instance.p_inputView[1].backgroundReferenceViewId = d.id;
+         instance.p_inputView[1].backgroundReferenceViewId = d.Id();
          GUI->BackgroundReferenceView2_Edit.SetText( BACKGROUND_REFERENCE_ID2 );
       }
    }
@@ -368,10 +376,11 @@ void B3EInterface::__Clicked( Button& sender, bool checked )
    else if ( sender == GUI->BackgroundROISelectPreview2_Button )
    {
       PreviewSelectionDialog d;
+      d.SetWindowTitle( "Select Second Background ROI" );
       if ( d.Execute() )
-         if ( !d.id.IsEmpty() )
+         if ( !d.Id().IsEmpty() )
          {
-            View view = View::ViewById( d.id );
+            View view = View::ViewById( d.Id() );
             if ( !view.IsNull() )
                instance.p_inputView[1].backgroundROI = view.Window().PreviewRect( view.Id() );
          }
@@ -492,6 +501,7 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    int labelWidth2 = fnt.Width( String( "Height:" ) + 'T' );
    int editWidth1 = fnt.Width( String( '0', 15 ) );
    int editWidth2 = fnt.Width( String( 'M', 30 ) );
+   int ui4 = w.LogicalPixelsToPhysical( 4 );
 
 /////////////////////// InputImage1_Sizer///////////////////////////////////////
 
@@ -506,9 +516,9 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    InputImage1_Edit.SetToolTip( inputImage1ToolTip );
    InputImage1_Edit.OnEditCompleted( (Edit::edit_event_handler)&B3EInterface::__EditCompleted, w );
 
-   InputImage1_ToolButton.SetIcon( Bitmap( String( ":/icons/select-view.png" ) ) );
+   InputImage1_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    InputImage1_ToolButton.SetToolTip( "<p>Select the first input view.</p>" );
-   InputImage1_ToolButton.SetFixedSize( 20, 20 );
+   InputImage1_ToolButton.SetScaledFixedSize( 20, 20 );
    InputImage1_ToolButton.OnClick( (Button::click_event_handler)&B3EInterface::__Clicked, w );
 
    InputImage1_Sizer.SetSpacing( 4 );
@@ -529,9 +539,9 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    InputImage2_Edit.SetToolTip( inputImage2ToolTip );
    InputImage2_Edit.OnEditCompleted( (Edit::edit_event_handler)&B3EInterface::__EditCompleted, w );
 
-   InputImage2_ToolButton.SetIcon( Bitmap( String( ":/icons/select-view.png" ) ) );
+   InputImage2_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    InputImage2_ToolButton.SetToolTip( "<p>Select the second input view.</p>" );
-   InputImage2_ToolButton.SetFixedSize( 20, 20 );
+   InputImage2_ToolButton.SetScaledFixedSize( 20, 20 );
    InputImage2_ToolButton.OnClick( (Button::click_event_handler)&B3EInterface::__Clicked, w );
 
    InputImage2_Sizer.SetSpacing( 4 );
@@ -636,7 +646,7 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
       "those above the maximum flux estimated from the input images.</p>" );
    OutOfRangeMask_CheckBox.OnClick( (pcl::Button::click_event_handler)&B3EInterface::__Clicked, w );
 
-   OutOfRangeMask_Sizer.AddSpacing( labelWidth1+4 );
+   OutOfRangeMask_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    OutOfRangeMask_Sizer.Add( OutOfRangeMask_CheckBox );
    OutOfRangeMask_Sizer.AddStretch();
 
@@ -669,8 +679,8 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    BackgroundReferenceView1_Edit.OnGetFocus( (Control::event_handler)&B3EInterface::__GetFocus, w );
    BackgroundReferenceView1_Edit.OnEditCompleted( (Edit::edit_event_handler)&B3EInterface::__EditCompleted_bkg, w );
 
-   BackgroundReferenceView1_ToolButton.SetIcon( Bitmap( ":/icons/select-view.png" ) );
-   BackgroundReferenceView1_ToolButton.SetFixedSize( 20, 20 );
+   BackgroundReferenceView1_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
+   BackgroundReferenceView1_ToolButton.SetScaledFixedSize( 20, 20 );
    BackgroundReferenceView1_ToolButton.SetToolTip( "<p>Select the background reference image.</p>" );
    BackgroundReferenceView1_ToolButton.OnClick( (Button::click_event_handler)&B3EInterface::__Clicked, w );
 
@@ -682,7 +692,7 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    BackgroundLow1_NumericControl.label.SetText( "Lower limit:" );
    BackgroundLow1_NumericControl.label.SetFixedWidth( labelWidth1 );
    BackgroundLow1_NumericControl.slider.SetRange( 0, 100 );
-   BackgroundLow1_NumericControl.slider.SetMinWidth( 200 );
+   BackgroundLow1_NumericControl.slider.SetScaledMinWidth( 200 );
    BackgroundLow1_NumericControl.SetReal();
    BackgroundLow1_NumericControl.SetRange( TheB3EBackgroundLow1Parameter->MinimumValue(), TheB3EBackgroundLow1Parameter->MaximumValue() );
    BackgroundLow1_NumericControl.SetPrecision( TheB3EBackgroundLow1Parameter->Precision() );
@@ -693,7 +703,7 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    BackgroundHigh1_NumericControl.label.SetText( "Upper limit:" );
    BackgroundHigh1_NumericControl.label.SetFixedWidth( labelWidth1 );
    BackgroundHigh1_NumericControl.slider.SetRange( 0, 100 );
-   BackgroundHigh1_NumericControl.slider.SetMinWidth( 200 );
+   BackgroundHigh1_NumericControl.slider.SetScaledMinWidth( 200 );
    BackgroundHigh1_NumericControl.SetReal();
    BackgroundHigh1_NumericControl.SetRange( TheB3EBackgroundHigh1Parameter->MinimumValue(), TheB3EBackgroundHigh1Parameter->MaximumValue() );
    BackgroundHigh1_NumericControl.SetPrecision( TheB3EBackgroundHigh1Parameter->Precision() );
@@ -709,7 +719,7 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    const char* backgroundROIX01ToolTip = "<p>X pixel coordinate of the upper-left corner of the ROI, background reference.</p>";
 
    BackgroundROIX01_Label.SetText( "Left:" );
-   BackgroundROIX01_Label.SetFixedWidth( labelWidth2 - DELTA_FRAME );
+   BackgroundROIX01_Label.SetFixedWidth( labelWidth2 - w.LogicalPixelsToPhysical( DELTA_FRAME ) );
    BackgroundROIX01_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    BackgroundROIX01_Label.SetToolTip( backgroundROIX01ToolTip );
 
@@ -738,7 +748,7 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    const char* backgroundROIWidth1ToolTip = "<p>Width of the ROI in pixels, background reference.</p>";
 
    BackgroundROIWidth1_Label.SetText( "Width:" );
-   BackgroundROIWidth1_Label.SetFixedWidth( labelWidth2 - DELTA_FRAME );
+   BackgroundROIWidth1_Label.SetFixedWidth( labelWidth2 - w.LogicalPixelsToPhysical( DELTA_FRAME ) );
    BackgroundROIWidth1_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    BackgroundROIWidth1_Label.SetToolTip( backgroundROIWidth1ToolTip );
 
@@ -787,7 +797,7 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
       "pixels that you intend to use as background reference.</p>" );
    OutputBackgroundReferenceMask1_CheckBox.OnClick( (Button::click_event_handler)&B3EInterface::__Clicked, w );
 
-   OutputBackgroundReferenceMask1_Sizer.AddSpacing( labelWidth1 + 4 );
+   OutputBackgroundReferenceMask1_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    OutputBackgroundReferenceMask1_Sizer.Add( OutputBackgroundReferenceMask1_CheckBox );
    OutputBackgroundReferenceMask1_Sizer.AddStretch();
 
@@ -825,8 +835,8 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    BackgroundReferenceView2_Edit.OnGetFocus( (Control::event_handler)&B3EInterface::__GetFocus, w );
    BackgroundReferenceView2_Edit.OnEditCompleted( (Edit::edit_event_handler)&B3EInterface::__EditCompleted_bkg, w );
 
-   BackgroundReferenceView2_ToolButton.SetIcon( Bitmap( ":/icons/select-view.png" ) );
-   BackgroundReferenceView2_ToolButton.SetFixedSize( 20, 20 );
+   BackgroundReferenceView2_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
+   BackgroundReferenceView2_ToolButton.SetScaledFixedSize( 20, 20 );
    BackgroundReferenceView2_ToolButton.SetToolTip( "<p>Select the background reference image.</p>" );
    BackgroundReferenceView2_ToolButton.OnClick( (Button::click_event_handler)&B3EInterface::__Clicked, w );
 
@@ -838,7 +848,7 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    BackgroundLow2_NumericControl.label.SetText( "Lower limit:" );
    BackgroundLow2_NumericControl.label.SetFixedWidth( labelWidth1 );
    BackgroundLow2_NumericControl.slider.SetRange( 0, 100 );
-   BackgroundLow2_NumericControl.slider.SetMinWidth( 200 );
+   BackgroundLow2_NumericControl.slider.SetScaledMinWidth( 200 );
    BackgroundLow2_NumericControl.SetReal();
    BackgroundLow2_NumericControl.SetRange( TheB3EBackgroundLow2Parameter->MinimumValue(), TheB3EBackgroundLow2Parameter->MaximumValue() );
    BackgroundLow2_NumericControl.SetPrecision( TheB3EBackgroundLow2Parameter->Precision() );
@@ -849,7 +859,7 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    BackgroundHigh2_NumericControl.label.SetText( "Upper limit:" );
    BackgroundHigh2_NumericControl.label.SetFixedWidth( labelWidth1 );
    BackgroundHigh2_NumericControl.slider.SetRange( 0, 100 );
-   BackgroundHigh2_NumericControl.slider.SetMinWidth( 200 );
+   BackgroundHigh2_NumericControl.slider.SetScaledMinWidth( 200 );
    BackgroundHigh2_NumericControl.SetReal();
    BackgroundHigh2_NumericControl.SetRange( TheB3EBackgroundHigh2Parameter->MinimumValue(), TheB3EBackgroundHigh2Parameter->MaximumValue() );
    BackgroundHigh2_NumericControl.SetPrecision( TheB3EBackgroundHigh2Parameter->Precision() );
@@ -865,7 +875,7 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    const char* backgroundROIX02ToolTip = "<p>X pixel coordinate of the upper-left corner of the ROI, background reference.</p>";
 
    BackgroundROIX02_Label.SetText( "Left:" );
-   BackgroundROIX02_Label.SetFixedWidth( labelWidth2 - DELTA_FRAME );
+   BackgroundROIX02_Label.SetFixedWidth( labelWidth2 - w.LogicalPixelsToPhysical( DELTA_FRAME ) );
    BackgroundROIX02_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    BackgroundROIX02_Label.SetToolTip( backgroundROIX02ToolTip );
 
@@ -894,7 +904,7 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    const char* backgroundROIWidth2ToolTip = "<p>Width of the ROI in pixels, background reference.</p>";
 
    BackgroundROIWidth2_Label.SetText( "Width:" );
-   BackgroundROIWidth2_Label.SetFixedWidth( labelWidth2 - DELTA_FRAME );
+   BackgroundROIWidth2_Label.SetFixedWidth( labelWidth2 - w.LogicalPixelsToPhysical( DELTA_FRAME ) );
    BackgroundROIWidth2_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    BackgroundROIWidth2_Label.SetToolTip( backgroundROIWidth2ToolTip );
 
@@ -943,7 +953,7 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
       "pixels that you intend to use as background reference.</p>" );
    OutputBackgroundReferenceMask2_CheckBox.OnClick( (Button::click_event_handler)&B3EInterface::__Clicked, w );
 
-   OutputBackgroundReferenceMask2_Sizer.AddSpacing( labelWidth1 + 4 );
+   OutputBackgroundReferenceMask2_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    OutputBackgroundReferenceMask2_Sizer.Add( OutputBackgroundReferenceMask2_CheckBox );
    OutputBackgroundReferenceMask2_Sizer.AddStretch();
 
@@ -982,5 +992,5 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF B3EInterface.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF B3EInterface.cpp - Released 2015/07/31 11:49:48 UTC

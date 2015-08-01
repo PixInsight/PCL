@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.94
-# Copyright (C) 2009-2014 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.95
+# Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Tue, 18 Nov 2014 11:28:31 GMT
+# Automatically generated on Thu, 30 Jul 2015 17:10:24 GMT
 # Project id ...... PCL
 # Project type .... StaticLibrary
 # Platform ........ Windows/vc12
@@ -83,6 +83,9 @@
     <ClCompile Include="..\..\ComboBox.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Compression.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Console.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
@@ -108,6 +111,9 @@
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Dialog.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DisplayFunction.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Edit.cpp">
@@ -254,6 +260,9 @@
     <ClCompile Include="..\..\MorphologicalTransformation.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\MultiViewSelectionDialog.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\MultiscaleLinearTransform.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
@@ -263,16 +272,10 @@
     <ClCompile Include="..\..\MuteStatus.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Mutex.cpp">
-        <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\NetworkTransfer.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\NumericControl.cpp">
-        <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Parser.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Pen.cpp">
@@ -371,9 +374,6 @@
     <ClCompile Include="..\..\StatusMonitor.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\StdAlloc.cpp">
-        <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\StdStatus.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
@@ -404,7 +404,19 @@
     <ClCompile Include="..\..\TreeBox.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\UCCaseFolding.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\UCLowercase.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\UCUppercase.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\UIObject.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\UIScaling.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\UnixSignalException.cpp">

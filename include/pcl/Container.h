@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Container.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Container.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Container_h
 #define __PCL_Container_h
@@ -62,17 +65,15 @@ namespace pcl
 
 /*!
  * \class Container
- * \brief Root base class of all PCL containers
+ * \brief Root base class of all PCL containers.
  */
 class PCL_CLASS Container
 {
 };
 
-// ----------------------------------------------------------------------------
-
 /*!
  * \class DirectContainer
- * \brief Root base class of all PCL containers of objects
+ * \brief Root base class of all PCL containers of objects.
  */
 template <typename T>
 class PCL_CLASS DirectContainer : public Container
@@ -81,11 +82,9 @@ public:
    typedef T  item_type;
 };
 
-// ----------------------------------------------------------------------------
-
 /*!
  * \class IndirectContainer
- * \brief Root base class of all PCL containers of pointers to objects
+ * \brief Root base class of all PCL containers of pointers to objects.
  */
 template <typename T>
 class PCL_CLASS IndirectContainer : public Container
@@ -94,11 +93,42 @@ public:
    typedef T* item_type;
 };
 
+/*!
+ * \class DirectSortedContainer
+ * \brief Root base class of all PCL sorted containers of objects.
+ */
+template <typename T>
+class PCL_CLASS DirectSortedContainer: public DirectContainer<T>
+{
+};
+
+/*!
+ * \class IndirectSortedContainer
+ * \brief Root base class of all PCL sorted containers of pointers to objects.
+ */
+template <typename T>
+class PCL_CLASS IndirectSortedContainer : public IndirectContainer<T>
+{
+};
+
+#define PCL_ASSERT_DIRECT_CONTAINER( C, T )                                   \
+   static_assert( std::is_base_of<DirectContainer<T>, C>::value,              \
+                  "Argument type must derive from DirectContainer<T>." )
+
+#define PCL_ASSERT_INDIRECT_CONTAINER( C, T )                                 \
+   static_assert( std::is_base_of<IndirectContainer<T>, C>::value,            \
+                  "Argument type must derive from IndirectContainer<T>." )
+
+#define PCL_ASSERT_CONTAINER( C, T )                                          \
+   static_assert( std::is_base_of<DirectContainer<T>, C>::value               \
+               || std::is_base_of<IndirectContainer<T>, C>::value,            \
+                  "Argument type must derive from DirectContainer<T> or IndirectContainer<T>." )
+
 // ----------------------------------------------------------------------------
 
 } // pcl
 
 #endif  // __PCL_Container_h
 
-// ****************************************************************************
-// EOF pcl/Container.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Container.h - Released 2015/07/30 17:15:18 UTC

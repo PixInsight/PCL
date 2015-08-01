@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/CubicSplineInterpolation.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/CubicSplineInterpolation.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_CubicSplineInterpolation_h
 #define __PCL_CubicSplineInterpolation_h
@@ -127,8 +130,8 @@ public:
     * Constructs a %CubicSplineInterpolation instance.
     */
    CubicSplineInterpolation() :
-   UnidimensionalInterpolation<T>(),
-   m_dy1( 0 ), m_dyn( 0 ), m_dy2(), m_current( 0 )
+      UnidimensionalInterpolation<T>(),
+      m_dy1( 0 ), m_dyn( 0 ), m_dy2(), m_current( 0 )
    {
    }
 
@@ -252,14 +255,12 @@ public:
       m_dy2.Clear();
    }
 
-   // -------------------------------------------------------------------------
-
 private:
 
-   T             m_dy1;   // 1st derivative of spline at the first data point
-   T             m_dyn;   // 1st derivative of spline at the last data point
-   vector_type   m_dy2;   // second derivatives of the interpolating function at x[i]
-   mutable int32 m_current;   // index of the current interpolation segment
+           T           m_dy1;     // 1st derivative of spline at the first data point
+           T           m_dyn;     // 1st derivative of spline at the last data point
+           vector_type m_dy2;     // second derivatives of the interpolating function at x[i]
+   mutable int32       m_current; // index of the current interpolation segment
 };
 
 // ----------------------------------------------------------------------------
@@ -268,5 +269,5 @@ private:
 
 #endif  // __PCL_CubicSplineInterpolation_h
 
-// ****************************************************************************
-// EOF pcl/CubicSplineInterpolation.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/CubicSplineInterpolation.h - Released 2015/07/30 17:15:18 UTC

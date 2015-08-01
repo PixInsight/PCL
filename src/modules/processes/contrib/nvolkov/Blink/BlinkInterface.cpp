@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Blink Process Module Version 01.02.01.0147
-// ****************************************************************************
-// BlinkInterface.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Blink Process Module Version 01.02.01.0166
+// ----------------------------------------------------------------------------
+// BlinkInterface.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
-// Copyright (c) 2011-2014 Nikolay Volkov
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2015 Nikolay Volkov
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,7 +49,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "BlinkInterface.h"
 #include "BlinkProcess.h"
@@ -53,6 +57,7 @@
 #include "BlinkVideoDialog.h"
 
 #include <pcl/Console.h>
+#include <pcl/ElapsedTime.h>
 #include <pcl/ErrorHandler.h>
 #include <pcl/FileDialog.h>
 #include <pcl/FileFormat.h>
@@ -83,7 +88,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-#define PreviewSize  202
+static int PreviewSize = 202;
 
 // ----------------------------------------------------------------------------
 
@@ -183,39 +188,6 @@ int gettimeofday( timeval* tv, void* /*notUsed*/ )
 
 #endif   // __PCL_WINDOWS
 
-class ElapsedTime
-{
-public:
-
-   ElapsedTime()
-   {
-      Restart();
-   }
-
-   void Restart()
-   {
-      gettimeofday( &m_start, 0 );
-   }
-
-   double Seconds() const
-   {
-      timeval current;
-      gettimeofday( &current, 0 );
-      return (current.tv_sec - m_start.tv_sec) +
-            (current.tv_usec - m_start.tv_usec)/1000000.0;
-   }
-
-   // For the sake of elegance ...
-   operator double() const
-   {
-      return Seconds();
-   }
-
-private:
-
-   timeval m_start;
-};
-
 // ----------------------------------------------------------------------------
 // BlinkInterface::FileData Implementation
 // ----------------------------------------------------------------------------
@@ -233,7 +205,6 @@ BlinkInterface::FileData::FileData( FileFormatInstance& file,
    m_info( description.info ),
    m_keywords(),
    m_profile(),
-   m_metadata(),
    m_statSTF(),
    m_statReal(),
    m_statRealRect( 0 ),
@@ -253,18 +224,6 @@ BlinkInterface::FileData::FileData( FileFormatInstance& file,
 
    if ( m_format->CanStoreICCProfiles() )
       file.Extract( m_profile );
-
-   if ( m_format->CanStoreMetadata() )
-   {
-      void* p = 0;
-      size_type n = 0;
-      file.Extract( p, n );
-      if ( p != 0 )
-      {
-         m_metadata = ByteArray( ByteArray::iterator( p ), ByteArray::iterator( p )+n );
-         delete (uint8*)p;
-      }
-   }
 #if debug
    Console().WriteLn(String().Format( "FileData End") );
 #endif
@@ -489,9 +448,7 @@ void BlinkInterface::BlinkData::AutoSTF()
    int n = m_filesData[fileNumber].m_image->NumberOfNominalChannels();
    double c0 = 0, m = 0;
 
-   View::stf_list stf;
-   for ( int i = 0; i < 4; ++i )
-      stf.Add( new HistogramTransformation );
+   View::stf_list stf( 4 );
 
    if ( TheBlinkInterface->GUI->RGBLinked_Button.IsChecked() || n == 1 )
    {
@@ -505,9 +462,9 @@ void BlinkInterface::BlinkData::AutoSTF()
       m = HistogramTransformation::MTF( g_stfTargetBackground, m/n - c0 );
       for ( int i = 0; i < 3; i++ )
       {
-         stf[i]->SetMidtonesBalance( m );
-         stf[i]->SetClipping( c0, 1 );
-         stf[i]->SetRange( 0, 1 );
+         stf[i].SetMidtonesBalance( m );
+         stf[i].SetClipping( c0, 1 );
+         stf[i].SetRange( 0, 1 );
       }
    }
    else
@@ -516,19 +473,17 @@ void BlinkInterface::BlinkData::AutoSTF()
       {
          c0 = (1 +  S[c].MAD() != 1) ? Range( S[c].Median() + g_stfShadowsClipping * S[c].MAD(), 0.0, 1.0 ) : 0.0;
          m = HistogramTransformation::MTF( g_stfTargetBackground, S[c].Median() - c0 );
-         stf[c]->SetMidtonesBalance( m );
-         stf[c]->SetClipping( c0, 1 );
-         stf[c]->SetRange( 0, 1 );
+         stf[c].SetMidtonesBalance( m );
+         stf[c].SetClipping( c0, 1 );
+         stf[c].SetRange( 0, 1 );
       }
    }
 
-   stf[3]->SetMidtonesBalance( 0.5 );
-   stf[3]->SetClipping( 0, 1 );
-   stf[3]->SetRange( 0, 1 );
+   stf[3].SetMidtonesBalance( 0.5 );
+   stf[3].SetClipping( 0, 1 );
+   stf[3].SetRange( 0, 1 );
 
    m_screen.MainView().SetScreenTransferFunctions( stf );
-
-   stf.Destroy();
 
    EnableSTF();
 }
@@ -843,6 +798,7 @@ bool BlinkInterface::Launch( const MetaProcess&, const ProcessImplementation*, b
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "Blink" );
+      PreviewSize = GUI->Preview_ScrollBox.Width(); // already scaled to logical units
    }
 
    Init();
@@ -1090,8 +1046,8 @@ void BlinkInterface::Image2Preview()
       img.ResetChannelRange();
    }
 
-   int w = (img.Width() > img.Height()) ? PreviewSize : RoundI( float( PreviewSize )*img.Width()/img.Height() );
-   int h = (img.Height() > img.Width()) ? PreviewSize : RoundI( float( PreviewSize )*img.Height()/img.Width() );
+   int w = (img.Width() > img.Height()) ? PreviewSize : RoundInt( float( PreviewSize )*img.Width()/img.Height() );
+   int h = (img.Height() > img.Width()) ? PreviewSize : RoundInt( float( PreviewSize )*img.Height()/img.Width() );
    m_previewBmp = Bitmap::Render( &img ).ScaledToSize( w, h ); // fit big Image to small Preview
 }
 
@@ -1156,7 +1112,7 @@ void BlinkInterface::FileAdd()
       UpdateFileNumbers();
       GUI->Files_TreeBox.EnableUpdates();
 
-      Console().WriteLn( String().Format( "<end><cbr><br>Loaded in %.3f seconds.", double( timer ) ) );
+      Console().WriteLn( String().Format( "<end><cbr><br>Loaded in %.3f seconds.", timer() ) );
       Console().Hide();
 
       Init();
@@ -1415,7 +1371,7 @@ void BlinkInterface::Play()
 {
    Stop();
 
-   GUI->Play_Button.SetIcon( Bitmap( ":/icons/pause.png" ) );
+   GUI->Play_Button.SetIcon( Bitmap( ScaledResource( ":/icons/pause.png" ) ) );
    GUI->Play_Button.SetToolTip( "Pause Animation" );
    DisableButtonsIfRunning();
 
@@ -1455,7 +1411,7 @@ void BlinkInterface::Stop()
       m_isRunning = false;
    }
 
-   GUI->Play_Button.SetIcon( Bitmap( ":/icons/play.png" ) );
+   GUI->Play_Button.SetIcon( Bitmap( ScaledResource( ":/icons/play.png" ) ) );
    GUI->Play_Button.SetToolTip( "Play Animation" );
    DisableButtonsIfRunning();
 }
@@ -1608,7 +1564,7 @@ void BlinkInterface::__Files_NodeDoubleClicked( TreeBox& sender, TreeBox::Node& 
 
    m_blink.m_isBlinkMaster = true;
    m_blink.m_blinkMaster = sender.ChildIndex( &node );
-   node.SetIcon( 0, Bitmap( ":/icons/repeat.png" ) );
+   node.SetIcon( 0, Bitmap( ScaledResource( ":/icons/repeat.png" ) ) );
 
 #if debug
    Console().WriteLn( "blinkMaster set to row: " + String( m_blink.m_blinkMaster ) );
@@ -1765,7 +1721,7 @@ void BlinkInterface::__FilePanelHideButton_Click( Button& sender, bool /*checked
       GUI->RightPanel_Control.Show();
       GUI->RightPanel_Control.SetVariableSize();
 
-      GUI->ShowTreeBox_Button.SetIcon( Bitmap( ":/process-interface/contract.png" ) );
+      GUI->ShowTreeBox_Button.SetIcon( Bitmap( ScaledResource( ":/process-interface/contract.png" ) ) );
       GUI->ShowTreeBox_Button.SetToolTip( "<p>Hide file panel</p>" );
    }
    else
@@ -1776,7 +1732,7 @@ void BlinkInterface::__FilePanelHideButton_Click( Button& sender, bool /*checked
       AdjustToContents();
       SetFixedSize();
 
-      GUI->ShowTreeBox_Button.SetIcon( Bitmap( ":/process-interface/expand.png" ) );
+      GUI->ShowTreeBox_Button.SetIcon( Bitmap( ScaledResource( ":/process-interface/expand.png" ) ) );
       GUI->ShowTreeBox_Button.SetToolTip( "<p>Show file panel</p>" );
    }
 }
@@ -1814,7 +1770,7 @@ void BlinkInterface::__UpdateAnimation_Timer( Timer& timer )
    }
 
 #if debug
-   GUI->DebugInfo_Label.SetText( String().Format("%.3f",time) + "+" + String().Format( "%.3f", double( t ) ) );
+   GUI->DebugInfo_Label.SetText( String().Format("%.3f",time) + "+" + String().Format( "%.3f", t() ) );
 #endif
 }
 
@@ -1923,7 +1879,7 @@ FileFormatInstance BlinkInterface::CreateImageFile( int index, const String& his
    if ( fd.m_format->CanWrite() )
       extension = File::ExtractExtension( filePath );
    else
-      extension = ".fit";
+      extension = ".xisf";
 
    filePath = UniqueFilePath( File::ChangeExtension( filePath, extension ), dir );
    FileFormat outputFormat( extension, false/*toRead*/, true/*toWrite*/ );
@@ -1952,10 +1908,6 @@ FileFormatInstance BlinkInterface::CreateImageFile( int index, const String& his
    if ( fd.m_format->CanStoreICCProfiles() )
       outputFile.Embed( fd.m_profile );
 
-   if ( fd.m_format->CanStoreMetadata() )
-      if ( !fd.m_metadata.IsEmpty() )
-         outputFile.Embed( fd.m_metadata.Begin(), fd.m_metadata.Length() );
-
    return outputFile;
 }
 
@@ -1972,8 +1924,6 @@ void BlinkInterface::ResetFilesTreeBox()
 }
 
 // ----------------------------------------------------------------------------
-// BlinkInterface::GUIData Implementation
-// ----------------------------------------------------------------------------
 
 BlinkInterface::GUIData::GUIData( BlinkInterface& w )
 {
@@ -1988,7 +1938,7 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
 
    Preview_ScrollBox.SetToolTip( scrollControlToolTip );
    Preview_ScrollBox.SetStyle( FrameStyle::Flat ); // no frame
-   Preview_ScrollBox.SetFixedSize( PreviewSize, PreviewSize );
+   Preview_ScrollBox.SetScaledFixedSize( PreviewSize, PreviewSize );
    Preview_ScrollBox.Viewport().SetCursor( StdCursor::CirclePlus );
    Preview_ScrollBox.Viewport().OnPaint( (Control::paint_event_handler)&BlinkInterface::__ScrollControl_Paint, w );
    Preview_ScrollBox.Viewport().OnMouseWheel( (Control::mouse_wheel_event_handler)&BlinkInterface::__ScrollControl_MouseWheel, w );
@@ -1996,7 +1946,7 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
    Preview_ScrollBox.Viewport().OnMouseMove( (Control::mouse_event_handler)&BlinkInterface::__ScrollControl_MouseMove, w );
 
    RGBLinked_Button.SetCheckable();
-   RGBLinked_Button.SetIcon( Bitmap( ":/icons/select-color.png" ) );
+   RGBLinked_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-color.png" ) ) );
    RGBLinked_Button.SetToolTip( "<p>Link RGB channels. Enabled only for RGB images.</p>" );
    RGBLinked_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__Brightness_Click, w );
 
@@ -2015,15 +1965,15 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
    DebugInfo_Label.Sizer().AddStretch();
 #endif
 
-   PreviousImage_Button.SetIcon( Bitmap( ":/icons/left.png" ) );
+   PreviousImage_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/left.png" ) ) );
    PreviousImage_Button.SetToolTip( "Previous image" );
    PreviousImage_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__ActionButton_Click, w );
 
-   Play_Button.SetIcon( Bitmap( ":/icons/play.png" ) );
+   Play_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/play.png" ) ) );
    Play_Button.SetToolTip( "Play Animation" );
    Play_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__ActionButton_Click, w );
 
-   NextImage_Button.SetIcon( Bitmap( ":/icons/right.png" ) );
+   NextImage_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/right.png" ) ) );
    NextImage_Button.SetToolTip( "Next image" );
    NextImage_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__ActionButton_Click, w );
 
@@ -2032,7 +1982,7 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
    BlinkingDelay_ComboBox.SetToolTip( "Minimum delay between images" );
    BlinkingDelay_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&BlinkInterface::__Delay_ItemSelected, w );
 
-   ShowTreeBox_Button.SetIcon( Bitmap( ":/process-interface/contract.png" ) );
+   ShowTreeBox_Button.SetIcon( Bitmap( w.ScaledResource( ":/process-interface/contract.png" ) ) );
    ShowTreeBox_Button.SetToolTip( "Hide file panel" );
    ShowTreeBox_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__FilePanelHideButton_Click, w );
 
@@ -2054,7 +2004,7 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
          "To select more then one image use Shift or Ctrl + arow keys or click.</p>";
 
    Files_TreeBox.SetNumberOfColumns( 3 );
-   Files_TreeBox.SetMinWidth( 250 );
+   Files_TreeBox.SetScaledMinWidth( 250 );
    Files_TreeBox.HideHeader();
    Files_TreeBox.Sort( 2 ); // sort by fileNumber with preped '0'
 
@@ -2072,37 +2022,37 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
    Files_TreeBox.OnMouseWheel( (Control::mouse_wheel_event_handler)&BlinkInterface::__Files_MouseWheel, w );
    Files_TreeBox.OnNodeDoubleClicked( (TreeBox::node_event_handler)&BlinkInterface::__Files_NodeDoubleClicked, w );
 
-   FileAdd_Button.SetIcon( Bitmap( ":/icons/folder-open.png" ) );
+   FileAdd_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/folder-open.png" ) ) );
    FileAdd_Button.SetToolTip( "<p>Add image files.</p>" );
    FileAdd_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__FileButton_Click, w );
 
-   FileClose_Button.SetIcon( Bitmap( ":/icons/window-close.png" ) );
+   FileClose_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/window-close.png" ) ) );
    FileClose_Button.SetToolTip( String( "<p>Close Selected images.</p>" ) + selectionNoteToolTip );
    FileClose_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__FileButton_Click, w );
 
-   FileCloseAll_Button.SetIcon( Bitmap( ":/icons/window-close-all.png" ) );
+   FileCloseAll_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/window-close-all.png" ) ) );
    FileCloseAll_Button.SetToolTip( "<p>Close all images.</p>" );
    FileCloseAll_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__FileButton_Click, w );
 
-   FileCopyTo_Button.SetIcon( Bitmap( ":/icons/save.png" ) );
+   FileCopyTo_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/save.png" ) ) );
    FileCopyTo_Button.SetToolTip( String( "<p>Copy selected files to new location.</p>" ) + fileNameNoteToolTip + selectionNoteToolTip );
    FileCopyTo_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__FileButton_Click, w );
 
-   FileMoveTo_Button.SetIcon( Bitmap( ":/icons/file-copy.png" ) );
+   FileMoveTo_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/file-copy.png" ) ) );
    FileMoveTo_Button.SetToolTip( String( "<p>Move selected files to new location.</p>" ) + fileNameNoteToolTip + selectionNoteToolTip );
    FileMoveTo_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__FileButton_Click, w );
 
-   FileCropTo_Button.SetIcon( Bitmap( ":/icons/cut.png" ) );
+   FileCropTo_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/cut.png" ) ) );
    FileCropTo_Button.SetToolTip(
       String( "<p>Crop the selected files by the green rectangle and save them to a new location. "
               "You can define a preview to use its size and position.</p>" ) + fileNameNoteToolTip + selectionNoteToolTip );
    FileCropTo_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__FileButton_Click, w );
 
-   Statistics_button.SetIcon( Bitmap( ":/icons/statistics.png" ) );
+   Statistics_button.SetIcon( Bitmap( w.ScaledResource( ":/icons/statistics.png" ) ) );
    Statistics_button.SetToolTip( "<p>Series analysis report.</p>");
    Statistics_button.OnClick( (Button::click_event_handler)&BlinkInterface::__FileButton_Click, w );
 
-   CropToVideo_button.SetIcon( Bitmap( ":/icons/clap.png" ) );
+   CropToVideo_button.SetIcon( Bitmap( w.ScaledResource( ":/icons/clap.png" ) ) );
    CropToVideo_button.SetToolTip( "<p>Crop and create video.</p>");
    CropToVideo_button.OnClick( (Button::click_event_handler)&BlinkInterface::__FileButton_Click, w );
 
@@ -2184,5 +2134,5 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF BlinkInterface.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF BlinkInterface.cpp - Released 2015/07/31 11:49:49 UTC

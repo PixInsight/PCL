@@ -1,12 +1,13 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/installer.cpp - Released 2014/11/14 17:24:15 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
 //
 // This file is part of PixInsight X11 UNIX/Linux Installer
 //
-// Copyright (c) 2013-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2013-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +45,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #if !defined( __PCL_FREEBSD ) && !defined( __PCL_LINUX )
 #error This source file can only be compiled on FreeBSD and Linux platforms.
@@ -689,7 +690,7 @@ void PixInsightX11Installer::ShowLogo()
    std::cout <<
    "\n-------------------------------------------------------------------------------"
    "\nPixInsight X11 UNIX/Linux installer version " << VersionString() <<
-   "\nCopyright (C) 2003-2014 Pleiades Astrophoto. All Rights Reserved"
+   "\nCopyright (C) 2003-2015 Pleiades Astrophoto. All Rights Reserved"
    "\n-------------------------------------------------------------------------------"
    "\n";
 }
@@ -705,9 +706,9 @@ void PixInsightX11Installer::CopyFile( const String& targetFilePath, const Strin
 
 void PixInsightX11Installer::CopyFiles( const String& targetDir, const String& sourceDir )
 {
-   if ( !targetDir.BeginsWith( '/' ) )
+   if ( !targetDir.StartsWith( '/' ) )
       throw Error( "CopyFiles(): Relative target directory." );
-   if ( !sourceDir.BeginsWith( '/' ) )
+   if ( !sourceDir.StartsWith( '/' ) )
       throw Error( "CopyFiles(): Relative source directory." );
    if ( targetDir.EndsWith( '/' ) || sourceDir.EndsWith( '/' ) )
       throw Error( "CopyFiles(): Incorrectly terminated directories." );
@@ -766,7 +767,7 @@ void PixInsightX11Installer::CopyFiles( const String& targetDir, const String& s
 
 StringList PixInsightX11Installer::SearchDirectory( const String& dirPath )
 {
-   if ( !dirPath.BeginsWith( '/' ) )
+   if ( !dirPath.StartsWith( '/' ) )
       throw Error( "SearchDirectory(): Relative search directory." );
    if ( dirPath.EndsWith( '/' ) )
       throw Error( "SearchDirectory(): Incorrectly terminated directory." );
@@ -778,9 +779,9 @@ StringList PixInsightX11Installer::SearchDirectory( const String& dirPath )
 
 void PixInsightX11Installer::DirectorySearch_Recursive( StringList& foundItems, const String& dirPath, const String& baseDir )
 {
-   if ( dirPath.Has( ".." ) )
+   if ( dirPath.Contains( ".." ) )
       throw Error( "SearchDirectory(): Attempt to redirect outside the base directory." );
-   if ( !dirPath.BeginsWith( baseDir ) )
+   if ( !dirPath.StartsWith( baseDir ) )
       throw Error( "SearchDirectory(): Attempt to redirect outside the base directory." );
    if ( !File::DirectoryExists( dirPath ) )
       throw Error( "SearchDirectory(): Attempt to search a nonexistent directory." );
@@ -811,7 +812,7 @@ void PixInsightX11Installer::DirectorySearch_Recursive( StringList& foundItems, 
 
 void PixInsightX11Installer::RemoveDirectory( const String& dirPath )
 {
-   if ( !dirPath.BeginsWith( '/' ) )
+   if ( !dirPath.StartsWith( '/' ) )
       throw Error( "RemoveDirectory(): Relative directory." );
    if ( !File::DirectoryExists( dirPath ) )
       throw Error( "RemoveDirectory(): Nonexistent directory." );
@@ -824,9 +825,9 @@ void PixInsightX11Installer::RemoveDirectory( const String& dirPath )
 
 void PixInsightX11Installer::RemoveDirectory_Recursive( const String& dirPath, const String& baseDir )
 {
-   if ( dirPath.Has( ".." ) )
+   if ( dirPath.Contains( ".." ) )
       throw Error( "RemoveDirectory(): Attempt to climb up the filesystem." );
-   if ( !dirPath.BeginsWith( baseDir ) )
+   if ( !dirPath.StartsWith( baseDir ) )
       throw Error( "RemoveDirectory(): Attempt to redirect outside the base directory." );
    if ( !File::DirectoryExists( dirPath ) )
       throw Error( "RemoveDirectory(): Attempt to remove a nonexistent directory." );
@@ -914,13 +915,13 @@ bool PixInsightX11Installer::IsPixInsightInstallation( const String& dirPath )
 String PixInsightX11Installer::Unquoted( const String& s )
 {
    String r = s;
-   if ( s.BeginsWith( '\"' ) )
+   if ( s.StartsWith( '\"' ) )
       if ( s.EndsWith( '\"' ) )
       {
          r.DeleteRight( r.UpperBound() );
          r.DeleteLeft( 1 );
       }
-   if ( s.BeginsWith( '\'' ) )
+   if ( s.StartsWith( '\'' ) )
       if ( s.EndsWith( '\'' ) )
       {
          r.DeleteRight( r.UpperBound() );
@@ -935,8 +936,9 @@ bool PixInsightX11Installer::AskForConfirmation()
 {
    std::cout << "\n==> Are you sure [yes|no] ? " << std::flush;
    IsoString answer( ' ', 8 );
-   std::cin.getline( answer.c_str(), 8 );
-   if ( answer.Trimmed().LowerCase() == "yes" )
+   std::cin.getline( answer.Begin(), 8 );
+   answer.ResizeToNullTerminated();
+   if ( answer.Trimmed().Lowercase() == "yes" )
       return true;
    std::cout << "\n** Canceled\n\n";
    return false;
@@ -994,5 +996,5 @@ int main( int argc, const char** argv )
    return EXIT_ERROR;
 }
 
-// ****************************************************************************
-// EOF pcl/installer.cpp - Released 2014/11/14 17:24:15 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/installer.cpp - Released 2015/07/23 17:29:42 UTC

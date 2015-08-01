@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard ImageCalibration Process Module Version 01.03.00.0196
-// ****************************************************************************
-// ImageCalibrationInstance.cpp - Released 2014/11/14 17:19:21 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard ImageCalibration Process Module Version 01.03.00.0215
+// ----------------------------------------------------------------------------
+// ImageCalibrationInstance.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "ImageCalibrationInstance.h"
 
@@ -826,20 +830,15 @@ static void EvaluateNoise( FVector& noiseEstimates, FVector& noiseFractions, Str
 
 struct OutputFileData
 {
-   FileFormat*      format;   // the file format of retrieved data
-   const void*      fsData;   // format-specific data
-   ImageOptions     options;  // currently used for resolution only
-   FITSKeywordArray keywords; // FITS keywords
-   ICCProfile       profile;  // ICC profile
-   ByteArray        metadata; // XML metadata
+   FileFormat*      format = nullptr;  // the file format of retrieved data
+   const void*      fsData = nullptr;  // format-specific data
+   ImageOptions     options;           // currently used for resolution only
+   FITSKeywordArray keywords;          // FITS keywords
+   ICCProfile       profile;           // ICC profile
 
-   OutputFileData() :
-   format( 0 ), fsData( 0 ), options(), keywords(), profile(), metadata()
-   {
-   }
+   OutputFileData() = default;
 
-   OutputFileData( FileFormatInstance& file, const ImageOptions& o ) :
-   format( 0 ), fsData( 0 ), options( o ), keywords(), profile(), metadata()
+   OutputFileData( FileFormatInstance& file, const ImageOptions& o ) : options( o )
    {
       format = new FileFormat( file.Format() );
 
@@ -851,31 +850,15 @@ struct OutputFileData
 
       if ( format->CanStoreICCProfiles() )
          file.Extract( profile );
-
-      if ( format->CanStoreMetadata() )
-      {
-         /*
-          * ### TODO: Add a FileFormatInstance::Extract( ByteArray& ) member
-          *           function to implement this in PCL.
-          */
-         void* p = 0;
-         size_type n = 0;
-         file.Extract( p, n );
-         if ( p != 0 )
-         {
-            metadata = ByteArray( ByteArray::iterator( p ), ByteArray::iterator( p )+n );
-            delete (uint8*)p;
-         }
-      }
    }
 
    ~OutputFileData()
    {
-      if ( format != 0 )
+      if ( format != nullptr )
       {
-         if ( fsData != 0 )
-            format->DisposeFormatSpecificData( const_cast<void*>( fsData ) ), fsData = 0;
-         delete format, format = 0;
+         if ( fsData != nullptr )
+            format->DisposeFormatSpecificData( const_cast<void*>( fsData ) ), fsData = nullptr;
+         delete format, format = nullptr;
       }
    }
 };
@@ -1177,7 +1160,7 @@ void ImageCalibrationInstance::SubtractPedestal( Image* image, FileFormatInstanc
    case ICPedestalMode::CustomKeyword:
       if ( file.Format().CanStoreKeywords() )
       {
-         IsoString keyName = (pedestalMode == ICPedestalMode::Keyword) ? "PEDESTAL" : pedestalKeyword;
+         IsoString keyName( (pedestalMode == ICPedestalMode::Keyword) ? "PEDESTAL" : pedestalKeyword );
          FITSKeywordArray keywords;
          if ( !file.Extract( keywords ) )
             break;
@@ -1354,7 +1337,7 @@ ImageCalibrationInstance::LoadTargetFrame( const String& filePath,
                                              (images.Length() > 1) ? j+1 : 0,
                                              threadData ) );
          // The thread owns the target image
-         target = 0;
+         target = nullptr;
       }
 
       /*
@@ -1366,7 +1349,7 @@ ImageCalibrationInstance::LoadTargetFrame( const String& filePath,
    }
    catch ( ... )
    {
-      if ( target != 0 )
+      if ( target != nullptr )
          delete target;
       threads.Destroy();
       throw;
@@ -1396,7 +1379,7 @@ void ImageCalibrationInstance::WriteCalibratedImage( const CalibrationThread* t 
       fileExtension = File::ExtractExtension( t->TargetPath() );
    if ( fileExtension.IsEmpty() )
       throw Error( t->TargetPath() + ": Unable to determine an output file extension." );
-   if ( !fileExtension.BeginsWith( '.' ) )
+   if ( !fileExtension.StartsWith( '.' ) )
       fileExtension.Prepend( '.' );
 
    /*
@@ -1645,7 +1628,7 @@ void ImageCalibrationInstance::WriteCalibratedImage( const CalibrationThread* t 
           *         *Only* our NOISExxx keywords must be present in the header.
           */
          for ( size_type i = 0; i < keywords.Length(); )
-            if ( keywords[i].name.BeginsWithIC( "NOISE" ) )
+            if ( keywords[i].name.StartsWithIC( "NOISE" ) )
                keywords.Remove( keywords.At( i ) );
             else
                ++i;
@@ -1706,15 +1689,6 @@ void ImageCalibrationInstance::WriteCalibratedImage( const CalibrationThread* t 
          outputFile.Embed( data.profile );
       else
          console.WarningLn( "** Warning: The output format cannot store color profiles - original ICC profile not embedded." );
-
-   /*
-    * Preserve metadata, if possible.
-    */
-   if ( !data.metadata.IsEmpty() )
-      if ( outputFormat.CanStoreMetadata() )
-         outputFile.Embed( data.metadata.Begin(), data.metadata.Length() );
-      else
-         console.WarningLn( "** Warning: The output format cannot store metadata - original metadata not embedded." );
 
    /*
     * Write the output image.
@@ -2239,7 +2213,7 @@ bool ImageCalibrationInstance::ExecuteGlobal()
                       */
                      if ( (*j)->IsActive() )
                      {
-                        pcl::Sleep( 0.1 );
+                        pcl::Sleep( 100 );
                         continue;
                      }
                   }
@@ -2680,25 +2654,25 @@ bool ImageCalibrationInstance::AllocateParameter( size_type sizeOrLength, const 
    {
       targetFrames[tableRow].path.Clear();
       if ( sizeOrLength > 0 )
-         targetFrames[tableRow].path.Reserve( sizeOrLength );
+         targetFrames[tableRow].path.SetLength( sizeOrLength );
    }
    else if ( p == TheICInputHintsParameter )
    {
       inputHints.Clear();
       if ( sizeOrLength > 0 )
-         inputHints.Reserve( sizeOrLength );
+         inputHints.SetLength( sizeOrLength );
    }
    else if ( p == TheICOutputHintsParameter )
    {
       outputHints.Clear();
       if ( sizeOrLength > 0 )
-         outputHints.Reserve( sizeOrLength );
+         outputHints.SetLength( sizeOrLength );
    }
    else if ( p == TheICPedestalKeywordParameter )
    {
       pedestalKeyword.Clear();
       if ( sizeOrLength > 0 )
-         pedestalKeyword.Reserve( sizeOrLength );
+         pedestalKeyword.SetLength( sizeOrLength );
    }
    else if ( p == TheICOverscanRegionsParameter )
    {
@@ -2708,43 +2682,43 @@ bool ImageCalibrationInstance::AllocateParameter( size_type sizeOrLength, const 
    {
       masterBias.path.Clear();
       if ( sizeOrLength > 0 )
-         masterBias.path.Reserve( sizeOrLength );
+         masterBias.path.SetLength( sizeOrLength );
    }
    else if ( p == TheICMasterDarkPathParameter )
    {
       masterDark.path.Clear();
       if ( sizeOrLength > 0 )
-         masterDark.path.Reserve( sizeOrLength );
+         masterDark.path.SetLength( sizeOrLength );
    }
    else if ( p == TheICMasterFlatPathParameter )
    {
       masterFlat.path.Clear();
       if ( sizeOrLength > 0 )
-         masterFlat.path.Reserve( sizeOrLength );
+         masterFlat.path.SetLength( sizeOrLength );
    }
    else if ( p == TheICOutputDirectoryParameter )
    {
       outputDirectory.Clear();
       if ( sizeOrLength > 0 )
-         outputDirectory.Reserve( sizeOrLength );
+         outputDirectory.SetLength( sizeOrLength );
    }
    else if ( p == TheICOutputExtensionParameter )
    {
       outputExtension.Clear();
       if ( sizeOrLength > 0 )
-         outputExtension.Reserve( sizeOrLength );
+         outputExtension.SetLength( sizeOrLength );
    }
    else if ( p == TheICOutputPrefixParameter )
    {
       outputPrefix.Clear();
       if ( sizeOrLength > 0 )
-         outputPrefix.Reserve( sizeOrLength );
+         outputPrefix.SetLength( sizeOrLength );
    }
    else if ( p == TheICOutputPostfixParameter )
    {
       outputPostfix.Clear();
       if ( sizeOrLength > 0 )
-         outputPostfix.Reserve( sizeOrLength );
+         outputPostfix.SetLength( sizeOrLength );
    }
    else if ( p == TheICOutputDataParameter )
    {
@@ -2756,25 +2730,25 @@ bool ImageCalibrationInstance::AllocateParameter( size_type sizeOrLength, const 
    {
       output[tableRow].outputFilePath.Clear();
       if ( sizeOrLength > 0 )
-         output[tableRow].outputFilePath.Reserve( sizeOrLength );
+         output[tableRow].outputFilePath.SetLength( sizeOrLength );
    }
    else if ( p == TheICNoiseAlgorithmRKParameter )
    {
       output[tableRow].noiseAlgorithms[0].Clear();
       if ( sizeOrLength > 0 )
-         output[tableRow].noiseAlgorithms[0].Reserve( sizeOrLength );
+         output[tableRow].noiseAlgorithms[0].SetLength( sizeOrLength );
    }
    else if ( p == TheICNoiseAlgorithmGParameter )
    {
       output[tableRow].noiseAlgorithms[1].Clear();
       if ( sizeOrLength > 0 )
-         output[tableRow].noiseAlgorithms[1].Reserve( sizeOrLength );
+         output[tableRow].noiseAlgorithms[1].SetLength( sizeOrLength );
    }
    else if ( p == TheICNoiseAlgorithmBParameter )
    {
       output[tableRow].noiseAlgorithms[2].Clear();
       if ( sizeOrLength > 0 )
-         output[tableRow].noiseAlgorithms[2].Reserve( sizeOrLength );
+         output[tableRow].noiseAlgorithms[2].SetLength( sizeOrLength );
    }
    else
       return false;
@@ -2827,5 +2801,5 @@ size_type ImageCalibrationInstance::ParameterLength( const MetaParameter* p, siz
 
 } // pcl
 
-// ****************************************************************************
-// EOF ImageCalibrationInstance.cpp - Released 2014/11/14 17:19:21 UTC
+// ----------------------------------------------------------------------------
+// EOF ImageCalibrationInstance.cpp - Released 2015/07/31 11:49:48 UTC

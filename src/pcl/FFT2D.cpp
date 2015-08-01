@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/FFT2D.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/FFT2D.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/FFT2D.h>
 #include <pcl/Thread.h>
@@ -61,7 +64,7 @@ public:
 
    typedef Ti             input_type;
    typedef To             output_type;
-   typedef PArray<Thread> thread_list;
+   typedef ReferenceArray<Thread> thread_list;
 
    PCL_FFT2DEngineBase( int rows, int cols, To* output, const Ti* input, int dir, StatusMonitor* monitor, bool parallel, int maxProcessors ) :
    m_rows( rows ), m_cols( cols ), m_output( output ), m_input( input ), m_dir( dir ),
@@ -516,5 +519,5 @@ void FFT2DBase::Transform( int rows, int cols, double* y, const dcomplex* x, Sta
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/FFT2D.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/FFT2D.cpp - Released 2015/07/30 17:15:31 UTC

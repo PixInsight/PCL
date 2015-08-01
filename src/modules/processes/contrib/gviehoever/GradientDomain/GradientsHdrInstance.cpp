@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard GradientDomain Process Module Version 00.06.04.0098
-// ****************************************************************************
-// GradientsHdrInstance.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard GradientDomain Process Module Version 00.06.04.0117
+// ----------------------------------------------------------------------------
+// GradientsHdrInstance.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard GradientDomain PixInsight module.
 //
-// Copyright (c) Georg Viehoever, 2011-2014. Licensed under LGPL 2.1
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) Georg Viehoever, 2011-2015. Licensed under LGPL 2.1
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -22,16 +26,17 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "GradientsHdrInstance.h"
 #include <cmath>
 
 #include "GradientsHdrParameters.h"
 
-#include <pcl/View.h>
-#include <pcl/StdStatus.h>
+#include <pcl/AutoViewLock.h>
 #include <pcl/Console.h>
+#include <pcl/StdStatus.h>
+#include <pcl/View.h>
 
 #include "GradientsHdrCompression.h" // this contains the real magic...
 #include "RgbPreserve.h" //color preserving intensity transform
@@ -150,43 +155,41 @@ void GradientsHdrInstance::ApplyClip16( UInt16Image& img, int zoom )
 
 bool GradientsHdrInstance::ExecuteOn( View& view )
 {
-   try
-   {
-      view.Lock();
+   AutoViewLock lock( view );
 
-      ImageVariant v;
-      v = view.Image();
+   ImageVariant image = view.Image();
 
-      StandardStatus status;
-      v.AnyImage()->SetStatusCallback( &status );
-      //FIXME no abort implemented yet
-      Console().EnableAbort();
+   Console().EnableAbort(); // FIXME no abort implemented yet
 
-      if ( !v.IsComplexSample() )
-         if ( v.IsFloatSample() )
-            switch ( v.BitsPerSample() )
-            {
-            case 32: GradientsHdrEngine::Apply( *static_cast<pcl::Image*>( v.AnyImage() ), *this ); break;
-            case 64: GradientsHdrEngine::Apply( *static_cast<pcl::DImage*>( v.AnyImage() ), *this ); break;
-            }
-         else
-            switch ( v.BitsPerSample() )
-            {
-            case  8: GradientsHdrEngine::Apply( *static_cast<pcl::UInt8Image*>( v.AnyImage() ), *this ); break;
-            case 16: GradientsHdrEngine::Apply( *static_cast<pcl::UInt16Image*>( v.AnyImage() ), *this ); break;
-            case 32: GradientsHdrEngine::Apply( *static_cast<pcl::UInt32Image*>( v.AnyImage() ), *this ); break;
-            }
+   StandardStatus status;
+   image->SetStatusCallback( &status );
 
-      view.Unlock();
+   if ( !image.IsComplexSample() )
+      if ( image.IsFloatSample() )
+         switch ( image.BitsPerSample() )
+         {
+         case 32:
+            GradientsHdrEngine::Apply( static_cast<pcl::Image&>( *image ), *this );
+            break;
+         case 64:
+            GradientsHdrEngine::Apply( static_cast<pcl::DImage&>( *image ), *this );
+            break;
+         }
+      else
+         switch ( image.BitsPerSample() )
+         {
+         case  8:
+            GradientsHdrEngine::Apply( static_cast<pcl::UInt8Image&>( *image ), *this );
+            break;
+         case 16:
+            GradientsHdrEngine::Apply( static_cast<pcl::UInt16Image&>( *image ), *this );
+            break;
+         case 32:
+            GradientsHdrEngine::Apply( static_cast<pcl::UInt32Image&>( *image ), *this );
+            break;
+         }
 
-      return true;
-   }
-
-   catch ( ... )
-   {
-      view.Unlock(); // Never leave a view locked!
-      throw;
-   }
+   return true;
 }
 
 void* GradientsHdrInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/ )
@@ -219,5 +222,5 @@ size_type GradientsHdrInstance::ParameterLength( const MetaParameter* p, size_ty
 
 } // pcl
 
-// ****************************************************************************
-// EOF GradientsHdrInstance.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF GradientsHdrInstance.cpp - Released 2015/07/31 11:49:49 UTC

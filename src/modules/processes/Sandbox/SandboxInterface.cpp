@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Sandbox Process Module Version 01.00.02.0144
-// ****************************************************************************
-// SandboxInterface.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Sandbox Process Module Version 01.00.02.0163
+// ----------------------------------------------------------------------------
+// SandboxInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Sandbox PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "SandboxInterface.h"
 #include "SandboxParameters.h"
@@ -207,7 +211,7 @@ SandboxInterface::GUIData::GUIData( SandboxInterface& w )
 
    ParameterOne_NumericControl.label.SetText( "One:" );
    ParameterOne_NumericControl.label.SetFixedWidth( labelWidth1 );
-   ParameterOne_NumericControl.slider.SetMinWidth( 250 );
+   ParameterOne_NumericControl.slider.SetScaledMinWidth( 250 );
    ParameterOne_NumericControl.slider.SetRange( 0, 100 );
    ParameterOne_NumericControl.SetReal();
    ParameterOne_NumericControl.SetRange( TheSandboxParameterOneParameter->MinimumValue(), TheSandboxParameterOneParameter->MaximumValue() );
@@ -239,7 +243,7 @@ SandboxInterface::GUIData::GUIData( SandboxInterface& w )
    ParameterThree_CheckBox.SetToolTip( "<p>This is the third parameter.</p>" );
    ParameterThree_CheckBox.OnClick( (pcl::Button::click_event_handler)&SandboxInterface::__ItemClicked, w );
 
-   ParameterThree_Sizer.AddSpacing( labelWidth1 + 4 );
+   ParameterThree_Sizer.AddUnscaledSpacing( labelWidth1 + w.LogicalPixelsToPhysical( 4 ) );
    ParameterThree_Sizer.Add( ParameterThree_CheckBox );
    ParameterThree_Sizer.AddStretch();
 
@@ -296,5 +300,5 @@ SandboxInterface::GUIData::GUIData( SandboxInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF SandboxInterface.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF SandboxInterface.cpp - Released 2015/07/31 11:49:48 UTC

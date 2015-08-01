@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Convolution Process Module Version 01.01.03.0140
-// ****************************************************************************
-// LarsonSekaninaInterface.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Convolution Process Module Version 01.01.03.0159
+// ----------------------------------------------------------------------------
+// LarsonSekaninaInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Convolution PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "LarsonSekaninaInterface.h"
 #include "LarsonSekaninaProcess.h"
@@ -321,6 +325,7 @@ LarsonSekaninaInterface::GUIData::GUIData( LarsonSekaninaInterface& w )
    int labelWidth1 = fnt.Width( String( "Angular Increment:" ) + 'M' );
    int editWidth1 = fnt.Width( String( '0', 12 ) );
    int editWidth2 = fnt.Width( String( '0', 20 ) );
+   int ui4 = w.LogicalPixelsToPhysical( 4 );
 
    //
 
@@ -338,15 +343,15 @@ LarsonSekaninaInterface::GUIData::GUIData( LarsonSekaninaInterface& w )
    Radius_NumericEdit.edit.SetFixedWidth( editWidth1 );
    Radius_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&LarsonSekaninaInterface::__RadiusEdit_ValueUpdated, w );
 
-   RadiusCoarse_Slider.SetMinWidth( 250 );
+   RadiusCoarse_Slider.SetScaledMinWidth( 250 );
    RadiusCoarse_Slider.SetRange( 10, 100 );
-   RadiusCoarse_Slider.SetFixedHeight( RoundI( 0.75*Radius_NumericEdit.Height() ) );
+   RadiusCoarse_Slider.SetFixedHeight( RoundInt( 0.75*Radius_NumericEdit.Height() ) );
    RadiusCoarse_Slider.SetToolTip( "Radius coarse: from 10 to 100 pixels." );
    RadiusCoarse_Slider.OnValueUpdated( (Slider::value_event_handler)&LarsonSekaninaInterface::__Radius_ValueUpdated, w );
 
-   RadiusFine_Slider.SetMinWidth( 250 );
+   RadiusFine_Slider.SetScaledMinWidth( 250 );
    RadiusFine_Slider.SetRange( 0, 100 );
-   RadiusFine_Slider.SetFixedHeight( RoundI( 0.75*Radius_NumericEdit.Height() ) );
+   RadiusFine_Slider.SetFixedHeight( RoundInt( 0.75*Radius_NumericEdit.Height() ) );
    RadiusFine_Slider.SetToolTip( "Radius fine: from 0 to 10 pixels" );
    RadiusFine_Slider.OnValueUpdated( (Slider::value_event_handler)&LarsonSekaninaInterface::__Radius_ValueUpdated, w );
 
@@ -369,15 +374,15 @@ LarsonSekaninaInterface::GUIData::GUIData( LarsonSekaninaInterface& w )
    Angle_NumericEdit.edit.SetFixedWidth( editWidth1 );
    Angle_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&LarsonSekaninaInterface::__AngleEdit_ValueUpdated, w );
 
-   AngleCoarse_Slider.SetMinWidth( 250 );
+   AngleCoarse_Slider.SetScaledMinWidth( 250 );
    AngleCoarse_Slider.SetRange( 10, 90 );
-   AngleCoarse_Slider.SetFixedHeight( RoundI( 0.75*Angle_NumericEdit.Height() ) );
+   AngleCoarse_Slider.SetFixedHeight( RoundInt( 0.75*Angle_NumericEdit.Height() ) );
    AngleCoarse_Slider.SetToolTip( "Angle coarse: from 10 to 90 degrees." );
    AngleCoarse_Slider.OnValueUpdated( (Slider::value_event_handler)&LarsonSekaninaInterface::__Angle_ValueUpdated, w );
 
-   AngleFine_Slider.SetMinWidth( 250 );
+   AngleFine_Slider.SetScaledMinWidth( 250 );
    AngleFine_Slider.SetRange( 0, 100 );
-   AngleFine_Slider.SetFixedHeight( RoundI( 0.75*Angle_NumericEdit.Height() ) );
+   AngleFine_Slider.SetFixedHeight( RoundInt( 0.75*Angle_NumericEdit.Height() ) );
    AngleFine_Slider.SetToolTip( "Angle fine: from 0 to 10 degrees." );
    AngleFine_Slider.OnValueUpdated( (Slider::value_event_handler)&LarsonSekaninaInterface::__Angle_ValueUpdated, w );
 
@@ -447,7 +452,7 @@ LarsonSekaninaInterface::GUIData::GUIData( LarsonSekaninaInterface& w )
 
    Amount_NumericControl.label.SetText( "Amount:" );
    Amount_NumericControl.label.SetFixedWidth( labelWidth1 );
-   Amount_NumericControl.slider.SetMinWidth( 250 );
+   Amount_NumericControl.slider.SetScaledMinWidth( 250 );
    Amount_NumericControl.slider.SetRange( 0, 110 );
    Amount_NumericControl.SetReal();
    Amount_NumericControl.SetRange( TheLSAmountParameter->MinimumValue(), TheLSAmountParameter->MaximumValue() );
@@ -458,7 +463,7 @@ LarsonSekaninaInterface::GUIData::GUIData( LarsonSekaninaInterface& w )
 
    Threshold_NumericControl.label.SetText( "Threshold:" );
    Threshold_NumericControl.label.SetFixedWidth( labelWidth1 );
-   Threshold_NumericControl.slider.SetMinWidth( 250 );
+   Threshold_NumericControl.slider.SetScaledMinWidth( 250 );
    Threshold_NumericControl.slider.SetRange( 0, 100 );
    Threshold_NumericControl.SetReal();
    Threshold_NumericControl.SetRange( TheLSThresholdParameter->MinimumValue(), TheLSThresholdParameter->MaximumValue() );
@@ -469,7 +474,7 @@ LarsonSekaninaInterface::GUIData::GUIData( LarsonSekaninaInterface& w )
 
    Deringing_NumericControl.label.SetText( "Deringing:" );
    Deringing_NumericControl.label.SetFixedWidth( labelWidth1 );
-   Deringing_NumericControl.slider.SetMinWidth( 250 );
+   Deringing_NumericControl.slider.SetScaledMinWidth( 250 );
    Deringing_NumericControl.slider.SetRange( 0, 100 );
    Deringing_NumericControl.SetReal();
    Deringing_NumericControl.SetRange( TheLSDeringingParameter->MinimumValue(), TheLSDeringingParameter->MaximumValue() );
@@ -486,7 +491,7 @@ LarsonSekaninaInterface::GUIData::GUIData( LarsonSekaninaInterface& w )
    HighPassMode_CheckBox.SetToolTip( "Use Larson-Sekanina as a high-pass filter." );
    HighPassMode_CheckBox.OnClick( (Button::click_event_handler)&LarsonSekaninaInterface::__HighPassMode_Click, w );
 
-   UseLuminance_Sizer.AddSpacing( labelWidth1 + 4 );
+   UseLuminance_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    UseLuminance_Sizer.Add( UseLuminance_CheckBox );
    UseLuminance_Sizer.AddSpacing( 16 );
    UseLuminance_Sizer.Add( HighPassMode_CheckBox );
@@ -508,7 +513,7 @@ LarsonSekaninaInterface::GUIData::GUIData( LarsonSekaninaInterface& w )
 
    RangeLow_NumericControl.label.SetText( "Low Range:" );
    RangeLow_NumericControl.label.SetFixedWidth( labelWidth1 );
-   RangeLow_NumericControl.slider.SetMinWidth( 250 );
+   RangeLow_NumericControl.slider.SetScaledMinWidth( 250 );
    RangeLow_NumericControl.slider.SetRange( 0, 100 );
    RangeLow_NumericControl.SetReal();
    RangeLow_NumericControl.SetRange( TheLSRangeLowParameter->MinimumValue(), TheLSRangeLowParameter->MaximumValue() );
@@ -519,7 +524,7 @@ LarsonSekaninaInterface::GUIData::GUIData( LarsonSekaninaInterface& w )
 
    RangeHigh_NumericControl.label.SetText( "High Range:" );
    RangeHigh_NumericControl.label.SetFixedWidth( labelWidth1 );
-   RangeHigh_NumericControl.slider.SetMinWidth( 250 );
+   RangeHigh_NumericControl.slider.SetScaledMinWidth( 250 );
    RangeHigh_NumericControl.slider.SetRange( 0, 100 );
    RangeHigh_NumericControl.SetReal();
    RangeHigh_NumericControl.SetRange( TheLSRangeHighParameter->MinimumValue(), TheLSRangeHighParameter->MaximumValue() );
@@ -532,7 +537,7 @@ LarsonSekaninaInterface::GUIData::GUIData( LarsonSekaninaInterface& w )
    Disable_CheckBox.SetToolTip( "Avalaible for Floating Point images only. *** Warning *** out-of-range values may arise!" );
    Disable_CheckBox.OnClick( (Button::click_event_handler)&LarsonSekaninaInterface::__Disable_Click, w );
 
-   Disable_Sizer.AddSpacing( labelWidth1 + 4 );
+   Disable_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    Disable_Sizer.Add( Disable_CheckBox );
    Disable_Sizer.AddStretch();
 
@@ -571,5 +576,5 @@ LarsonSekaninaInterface::GUIData::GUIData( LarsonSekaninaInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF LarsonSekaninaInterface.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF LarsonSekaninaInterface.cpp - Released 2015/07/31 11:49:48 UTC

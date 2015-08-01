@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Mutex.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Mutex.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Mutex_h
 #define __PCL_Mutex_h
@@ -64,17 +67,18 @@
 #endif
 
 #ifdef __PCL_UNIX
-# include <pthread.h>
-# ifndef __PCL_Atomic_h
-#  include <pcl/Atomic.h>
-# endif
+#  include <stdio.h>
+#  include <pthread.h>
+#  ifndef __PCL_Atomic_h
+#    include <pcl/Atomic.h>
+#  endif
 #endif
 
 #ifdef __PCL_WINDOWS
-# ifndef __windows_h
-#  include <windows.h>
-#  define __windows_h
-# endif
+#  ifndef __windows_h
+#    include <windows.h>
+#    define __windows_h
+#  endif
 #endif
 
 namespace pcl
@@ -84,7 +88,7 @@ namespace pcl
 
 /*!
  * \class Mutex
- * \brief Mutual exclusion lock variable
+ * \brief Adaptive mutual exclusion lock variable
  *
  * The word \e mutex is an abbreviation for <em>mutual exclusion</em>. A mutex
  * object provides access synchronization for threads. A mutex protects one or
@@ -224,14 +228,14 @@ public:
     *             performing a semaphore wait operation when a thread attempts
     *             to lock this mutex and it has already been locked by another
     *             thread. If this mutex becomes unlocked during the spinning
-    *             loops, the (expensive) wait operation can be avoided. The
-    *             spin count must be >= 0. The default value is 20.
+    *             loops, the expensive wait operation can be avoided. The spin
+    *             count must be >= 0. The default value is 512.
     */
-   Mutex( int spin = 20 ) :
+   Mutex( int spin = 512 ) noexcept :
 #ifndef __PCL_WINDOWS
-   m_lockState( 0 ),
+      m_lockState( 0 ),
 #endif
-   m_spinCount( Max( 0, spin ) )
+      m_spinCount( Max( 0, spin ) )
    {
 #ifdef __PCL_WINDOWS
       (void)InitializeCriticalSectionAndSpinCount( &criticalSection, DWORD( m_spinCount ) );
@@ -247,7 +251,7 @@ public:
     * (mostly catastrophic) behavior. Always make sure that a mutex has been
     * unlocked before destroying it.
     */
-   virtual ~Mutex()
+   virtual ~Mutex() noexcept
    {
 #ifdef __PCL_WINDOWS
       DeleteCriticalSection( &criticalSection );
@@ -275,17 +279,19 @@ public:
     * number of spinning loops performed can be specified as a parameter to the
     * Mutex::Mutex( int ) constructor.
     */
-   void Lock()
+   void Lock() noexcept
    {
 #ifdef __PCL_WINDOWS
       EnterCriticalSection( &criticalSection );
 #else
-      for ( register int spin = m_spinCount; ; )
+      for ( int spin = m_spinCount; ; )
       {
          // Is the mutex free? If so, get it now and don't look back!
          if ( m_lockState == 0 && m_lockState.TestAndSet( 0, 1 ) )
-            if ( PThreadLockMutex() )
-               break;
+         {
+            (void)PThreadLockMutex();
+            break;
+         }
 
          if ( --spin < 0 )
          {
@@ -304,13 +310,13 @@ public:
     *
     * See the Lock() documentation for more information.
     */
-   void Unlock()
+   void Unlock() noexcept
    {
 #ifdef __PCL_WINDOWS
       LeaveCriticalSection( &criticalSection );
 #else
-      if ( PThreadUnlockMutex() )
-         (void)m_lockState.FetchAndStore( 0 );
+      (void)m_lockState.FetchAndStore( 0 );
+      (void)PThreadUnlockMutex();
 #endif
    }
 
@@ -341,7 +347,7 @@ public:
     * mutex.Unlock();
     * \endcode
     */
-   void operator ()( bool lock = true )
+   void operator ()( bool lock = true ) noexcept
    {
       if ( lock )
          Lock();
@@ -354,17 +360,14 @@ public:
     * successfully locked, false otherwise.
     *
     * Unlike Lock(), this function does not block execution of the calling
-    * thread if this mutex couldn't be locked.
+    * thread if this mutex cannot be locked.
     */
-   bool TryLock()
+   bool TryLock() noexcept
    {
 #ifdef __PCL_WINDOWS
       return TryEnterCriticalSection( &criticalSection ) != FALSE;
 #else
-      if ( m_lockState == 0 && m_lockState.TestAndSet( 0, 1 ) )
-         if ( PThreadLockMutex() )
-            return true;
-      return false;
+      return m_lockState == 0 && m_lockState.TestAndSet( 0, 1 ) && PThreadLockMutex();
 #endif
    }
 
@@ -375,7 +378,7 @@ public:
     * construction. For information on mutex spin counts, refer to %Mutex's
     * constructor: Mutex::Mutex( int ).
     */
-   int SpinCount() const
+   int SpinCount() const noexcept
    {
       return m_spinCount;
    }
@@ -386,50 +389,46 @@ private:
 
    CRITICAL_SECTION criticalSection;
 
-#else // UNIX
+#else // Linux/UNIX
 
-   AtomicInt       m_lockState; // 0=unlocked, 1=acquired, 2=locked
+   AtomicInt       m_lockState; // 0=unlocked, 1=acquired
    pthread_mutex_t m_mutex;
 
-   static void PThreadReportError( int, const char* );
-
-   static bool PThreadCheckError( int errorCode, const char* funcName )
-   {
-      if ( errorCode != 0 )
-      {
-         PThreadReportError( errorCode, funcName );
-         return false;
-      }
-      return true;
-   }
-
-   bool PThreadInitMutex()
+   bool PThreadInitMutex() noexcept
    {
       return PThreadCheckError( pthread_mutex_init( &m_mutex, 0 ), "pthread_mutex_init" );
    }
 
-   bool PThreadDestroyMutex()
+   bool PThreadDestroyMutex() noexcept
    {
       return PThreadCheckError( pthread_mutex_destroy( &m_mutex ), "pthread_mutex_destroy" );
    }
 
-   bool PThreadLockMutex()
+   bool PThreadLockMutex() noexcept
    {
       return PThreadCheckError( pthread_mutex_lock( &m_mutex ), "pthread_mutex_lock" );
    }
 
-   bool PThreadUnlockMutex()
+   bool PThreadUnlockMutex() noexcept
    {
       return PThreadCheckError( pthread_mutex_unlock( &m_mutex ), "pthread_mutex_unlock" );
    }
 
-#endif
+   static bool PThreadCheckError( int errorCode, const char* funcName ) noexcept
+   {
+      if ( errorCode == 0 )
+         return true;
+      fprintf( stderr, "%s() failed. Error code: %d\n", funcName, errorCode );
+      return false;
+   }
+
+#endif   // __PCL_WINDOWS
 
    int m_spinCount;
 
    // Cannot copy a Mutex object.
-   Mutex( const Mutex& ) { PCL_CHECK( 0 ) }
-   void operator =( const Mutex& ) { PCL_CHECK( 0 ) }
+   Mutex( const Mutex& ) = delete;
+   void operator =( const Mutex& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -438,5 +437,5 @@ private:
 
 #endif   // __PCL_Mutex_h
 
-// ****************************************************************************
-// EOF pcl/Mutex.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Mutex.h - Released 2015/07/30 17:15:18 UTC

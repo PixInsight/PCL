@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/MetaProcess.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/MetaProcess.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/Console.h>
 #include <pcl/ErrorHandler.h>
@@ -75,7 +78,7 @@ static void __Mandatory( const IsoString& procId, const char* funcName )
 
 MetaProcess::MetaProcess() : MetaObject( Module )
 {
-   if ( Module == 0 )
+   if ( Module == nullptr )
       throw Error( "MetaProcess: Module not initialized - illegal MetaProcess instantiation" );
 }
 
@@ -111,7 +114,7 @@ bool MetaProcess::BrowseDocumentation() const
 Bitmap MetaProcess::Icon() const
 {
    const char** xpm = IconImageXPM();
-   if ( xpm != 0 )
+   if ( xpm != nullptr )
       return Bitmap( xpm );
 
    String filePath = IconImageFile();
@@ -124,7 +127,7 @@ Bitmap MetaProcess::Icon() const
 Bitmap MetaProcess::SmallIcon() const
 {
    const char** xpm = SmallIconImageXPM();
-   if ( xpm != 0 )
+   if ( xpm != nullptr )
       return Bitmap( xpm );
 
    String filePath = SmallIconImageFile();
@@ -138,8 +141,8 @@ Bitmap MetaProcess::SmallIcon() const
 
 const MetaParameter* MetaProcess::operator[]( size_type i ) const
 {
-   const MetaParameter* p = dynamic_cast<const MetaParameter*>( children[i] );
-   if ( p == 0 )
+   const MetaParameter* p = dynamic_cast<const MetaParameter*>( m_children[i] );
+   if ( p == nullptr )
       throw Error( "MetaProcess: invalid non-parameter child instance" );
    return p;
 }
@@ -298,7 +301,7 @@ public:
    {
       try
       {
-         return (api_bool)constInstance->IsMaskable( pcl::View( hv ), pcl::ImageWindow( hw ) );
+         return (api_bool)constInstance->IsMaskable( pcl::View( hv ), pcl::ImageWindow( window_handle( hw ) ) );
       }
       ERROR_HANDLER
       return api_false;
@@ -819,7 +822,7 @@ void MetaProcess::PerformAPIDefinitions() const
          (*API->ProcessDefinition->SetProcessScriptComment)( cmnt.c_str() );
    }
 
-   if ( IconImageXPM() != 0 )
+   if ( IconImageXPM() != nullptr )
       (*API->ProcessDefinition->SetProcessIconImage)( IconImageXPM() );
    else
    {
@@ -828,7 +831,7 @@ void MetaProcess::PerformAPIDefinitions() const
          (*API->ProcessDefinition->SetProcessIconImageFile)( path.c_str() );
    }
 
-   if ( SmallIconImageXPM() != 0 )
+   if ( SmallIconImageXPM() != nullptr )
       (*API->ProcessDefinition->SetProcessIconSmallImage)( SmallIconImageXPM() );
    else
    {
@@ -909,5 +912,5 @@ void MetaProcess::PerformAPIDefinitions() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/MetaProcess.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/MetaProcess.cpp - Released 2015/07/30 17:15:31 UTC

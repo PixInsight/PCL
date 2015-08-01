@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/KDTree.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/KDTree.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_KDTree_h
 #define __PCL_KDTree_h
@@ -125,25 +128,31 @@ class PCL_CLASS KDTree
 public:
 
    /*!
+    * Represents an N-dimensional point stored in this K-d tree.
+    */
+   typedef T                           point;
+
+   /*!
     * Represents a point component.
     */
-   typedef typename T::component    component;
+   typedef typename point::component   component;
 
    /*!
     * A vector of point components. Used internally for tree build and range
     * search operations.
     */
-   typedef GenericVector<component> component_vector;
+   typedef GenericVector<component>    component_vector;
 
    /*!
     * A list of points. Used for tree build and search operations.
     */
-   typedef Array<T>                 point_list;
+   typedef Array<point>                point_list;
 
    /*!
     * Constructs an empty K-d tree.
     */
-   KDTree() : m_root( 0 ), m_dimension( 0 ), m_bucketCapacity( 0 ), m_length( 0 )
+   KDTree() :
+      m_root( nullptr ), m_dimension( 0 ), m_bucketCapacity( 0 ), m_length( 0 )
    {
    }
 
@@ -166,7 +175,7 @@ public:
     * Error exception is thrown.
     */
    KDTree( const point_list& points, int bucketCapacity = 16 ) :
-   m_root( 0 ), m_dimension( 0 ), m_bucketCapacity( 0 ), m_length( 0 )
+      m_root( nullptr ), m_dimension( 0 ), m_bucketCapacity( 0 ), m_length( 0 )
    {
       Build( points, bucketCapacity );
    }
@@ -191,9 +200,35 @@ public:
     * Error exception is thrown.
     */
    KDTree( const point_list& points, int dimension, int bucketCapacity ) :
-   m_root( 0 ), m_dimension( 0 ), m_bucketCapacity( 0 ), m_length( 0 )
+      m_root( nullptr ), m_dimension( 0 ), m_bucketCapacity( 0 ), m_length( 0 )
    {
       Build( points, dimension, bucketCapacity );
+   }
+
+   /*!
+    * Move constructor.
+    */
+   KDTree( KDTree&& x ) :
+      m_root( x.m_root ), m_dimension( x.m_dimension ),
+      m_bucketCapacity( x.m_bucketCapacity ), m_length( x.m_length )
+   {
+      x.m_root = nullptr;
+      x.m_length = 0;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   KDTree& operator =( KDTree&& x )
+   {
+      DestroyTree( m_root );
+      m_root = x.m_root;
+      m_dimension = x.m_dimension;
+      m_bucketCapacity = x.m_bucketCapacity;
+      m_length = x.m_length;
+      x.m_root = nullptr;
+      x.m_length = 0;
+      return *this;
    }
 
    /*!
@@ -210,7 +245,7 @@ public:
    void Clear()
    {
       DestroyTree( m_root );
-      m_root = 0;
+      m_root = nullptr;
       m_length = 0;
    }
 
@@ -282,7 +317,7 @@ public:
    /*!
     * Performs a range search in this K-d tree.
     *
-    * \param point   Reference to the point being searched for. The coordinates
+    * \param pt      Reference to the point being searched for. The coordinates
     *                of this point define the center of the hyper-rectangular
     *                search range in the N-dimensional point space.
     *
@@ -293,21 +328,21 @@ public:
     * within the search range. In two dimensions, the search range would be the
     * rectangle defined by the points:
     *
-    * {point.x - epsilon, point.y - epsilon} and \n
-    * {point.x + epsilon, point.y + epsilon}
+    * (pt[0] - epsilon, pt[1] - epsilon) and \n
+    * (pt[0] + epsilon, pt[1] + epsilon)
     *
     * with an obvious extension to higher dimensions. If \a epsilon is zero,
     * the search can only return the set of stored points that are identical to
-    * the specified search \a point.
+    * the specified search point.
     */
-   point_list Search( const T& point, component epsilon ) const
+   point_list Search( const point& pt, component epsilon ) const
    {
       component_vector p0( m_dimension );
       component_vector p1( m_dimension );
       for ( int i = 0; i < m_dimension; ++i )
       {
-         p0[i] = point[i] - epsilon;
-         p1[i] = point[i] + epsilon;
+         p0[i] = pt[i] - epsilon;
+         p1[i] = pt[i] + epsilon;
       }
       point_list found;
       SearchTree( found, p0, p1, m_root, 0 );
@@ -317,7 +352,7 @@ public:
    /*!
     * Performs a range search in this K-d tree.
     *
-    * \param point      Reference to the point being searched for. The
+    * \param pt         Reference to the point being searched for. The
     *                   coordinates of this point define the center of the
     *                   hyper-rectangular search range in the N-dimensional
     *                   point space.
@@ -331,28 +366,28 @@ public:
     *
     * The callback function prototype should be:
     *
-    * \code void callback( const T& point, void* data ) \endcode
+    * \code void callback( const point& pt, void* data ) \endcode
     *
     * The callback function will be called once for each point found in the
     * tree within the specified search range. In two dimensions, the search
     * range would be the rectangle defined by the points:
     *
-    * {point.x - epsilon, point.y - epsilon} and \n
-    * {point.x + epsilon, point.y + epsilon}
+    * (pt[0] - epsilon, pt[1] - epsilon) and \n
+    * (pt[0] + epsilon, pt[1] + epsilon)
     *
     * with an obvious extension to higher dimensions. If \a epsilon is zero,
     * the search can only return the set of stored points that are identical to
-    * the specified search \a point.
+    * the specified search point.
     */
    template <class F>
-   void Search( const T& point, component epsilon, F callback, void* data ) const
+   void Search( const point& pt, component epsilon, F callback, void* data ) const
    {
       component_vector p0( m_dimension );
       component_vector p1( m_dimension );
       for ( int i = 0; i < m_dimension; ++i )
       {
-         p0[i] = point[i] - epsilon;
-         p1[i] = point[i] + epsilon;
+         p0[i] = pt[i] - epsilon;
+         p1[i] = pt[i] + epsilon;
       }
       SearchTree( p0, p1, callback, data, m_root, 0 );
    }
@@ -379,7 +414,18 @@ public:
     */
    bool IsEmpty()
    {
-      return m_root == 0;
+      return m_root == nullptr;
+   }
+
+   /*!
+    * Exchanges two %KDTree objects \a x1 and \a x2.
+    */
+   friend void Swap( KDTree& x1, KDTree& x2 )
+   {
+      pcl::Swap( x1.m_root,           x2.m_root );
+      pcl::Swap( x1.m_dimension,      x2.m_dimension );
+      pcl::Swap( x1.m_bucketCapacity, x2.m_bucketCapacity );
+      pcl::Swap( x1.m_length,         x2.m_length );
    }
 
 private:
@@ -390,13 +436,13 @@ private:
       Node*  left;   // child points at coordinates <= split
       Node*  right;  // child points at coordinates > split
 
-      Node( double s = 0 ) : split( s ), left( 0 ), right( 0 )
+      Node( double s = 0 ) : split( s ), left( nullptr ), right( nullptr )
       {
       }
 
       bool IsLeaf() const
       {
-         return left == 0 && right == 0;
+         return left == nullptr && right == nullptr;
       }
    };
 
@@ -417,7 +463,7 @@ private:
    Node* BuildTree( const point_list& points, int depth )
    {
       if ( points.IsEmpty() )
-         return 0;
+         return nullptr;
 
       if ( points.Length() <= size_type( m_bucketCapacity ) )
       {
@@ -441,7 +487,7 @@ private:
       if ( left.IsEmpty() || right.IsEmpty() )
       {
          delete node;
-         return 0;
+         return nullptr;
       }
 
       node->left  = BuildTree( left, depth+1 );
@@ -451,7 +497,7 @@ private:
       if ( node->IsLeaf() )
       {
          delete node;
-         return 0;
+         return nullptr;
       }
 
       return node;
@@ -459,7 +505,7 @@ private:
 
    void SearchTree( point_list& found, const component_vector& p0, const component_vector& p1, const Node* node, int depth ) const
    {
-      if ( node != 0 )
+      if ( node != nullptr )
          if ( node->IsLeaf() )
          {
             const LeafNode* leaf = static_cast<const LeafNode*>( node );
@@ -489,7 +535,7 @@ private:
    template <class F>
    void SearchTree( const component_vector& p0, const component_vector& p1, F callback, void* data, const Node* node, int depth ) const
    {
-      if ( node != 0 )
+      if ( node != nullptr )
          if ( node->IsLeaf() )
          {
             const LeafNode* leaf = static_cast<const LeafNode*>( node );
@@ -518,7 +564,7 @@ private:
 
    void DestroyTree( Node* node )
    {
-      if ( node != 0 )
+      if ( node != nullptr )
          if ( node->IsLeaf() )
             delete static_cast<LeafNode*>( node );
          else
@@ -544,5 +590,5 @@ private:
 
 #endif   // __PCL_KDTree_h
 
-// ****************************************************************************
-// EOF pcl/KDTree.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/KDTree.h - Released 2015/07/30 17:15:18 UTC

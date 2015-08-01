@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Sizer.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Sizer.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/AutoLock.h>
 #include <pcl/Control.h>
@@ -59,7 +62,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 Sizer::Sizer( bool vertical ) :
-UIObject( (*API->Sizer->CreateSizer)( ModuleHandle(), vertical ) )
+   UIObject( (*API->Sizer->CreateSizer)( ModuleHandle(), vertical ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CreateSizer" );
@@ -67,18 +70,12 @@ UIObject( (*API->Sizer->CreateSizer)( ModuleHandle(), vertical ) )
 
 // ----------------------------------------------------------------------------
 
-Sizer::Sizer( void* h ) : UIObject( h )
-{
-}
-
-// ----------------------------------------------------------------------------
-
 Sizer& Sizer::Null()
 {
-   static Sizer* nullSizer = 0;
+   static Sizer* nullSizer = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullSizer == 0 )
+   if ( nullSizer == nullptr )
       nullSizer = new Sizer( reinterpret_cast<void*>( 0 ) );
    return *nullSizer;
 }
@@ -137,9 +134,9 @@ void Sizer::Add( Control& c, int stretchFactor, Sizer::item_alignment align )
 
 // ----------------------------------------------------------------------------
 
-void Sizer::AddSpacing( int size )
+void Sizer::AddSpacing( int size, bool autoScaling )
 {
-   (*API->Sizer->InsertSizerSpacing)( handle, -1, size );
+   (*API->Sizer->InsertSizerSpacing)( handle, -1, autoScaling ? LogicalPixelsToPhysical( size ) : size );
 }
 
 // ----------------------------------------------------------------------------
@@ -167,9 +164,9 @@ void Sizer::Insert( int index, Control& c, int stretchFactor, Sizer::item_alignm
 
 // ----------------------------------------------------------------------------
 
-void Sizer::InsertSpacing( int index, int size )
+void Sizer::InsertSpacing( int index, int size, bool autoScaling )
 {
-   (*API->Sizer->InsertSizerSpacing)( handle, index, size );
+   (*API->Sizer->InsertSizerSpacing)( handle, index, autoScaling ? LogicalPixelsToPhysical( size ) : size );
 }
 
 // ----------------------------------------------------------------------------
@@ -229,44 +226,42 @@ void Sizer::SetAlignment( Control& c, Sizer::item_alignment align )
 
 // ----------------------------------------------------------------------------
 
-int Sizer::Margin() const
+int Sizer::Margin( bool autoScaling ) const
 {
-   return (*API->Sizer->GetSizerMargin)( handle );
+   int margin = (*API->Sizer->GetSizerMargin)( handle );
+   return autoScaling ? PhysicalPixelsToLogical( margin ) : margin;
 }
 
 // ----------------------------------------------------------------------------
 
-void Sizer::SetMargin( int n )
+void Sizer::SetMargin( int size, bool autoScaling )
 {
-   (*API->Sizer->SetSizerMargin)( handle, n );
+   (*API->Sizer->SetSizerMargin)( handle, autoScaling ? LogicalPixelsToPhysical( size ) : size );
 }
 
 // ----------------------------------------------------------------------------
 
-int Sizer::Spacing() const
+int Sizer::Spacing( bool autoScaling ) const
 {
-   return (*API->Sizer->GetSizerSpacing)( handle );
+   int spacing = (*API->Sizer->GetSizerSpacing)( handle );
+   return autoScaling ? PhysicalPixelsToLogical( spacing ) : spacing;
 }
 
 // ----------------------------------------------------------------------------
 
-void Sizer::SetSpacing( int n )
+void Sizer::SetSpacing( int size, bool autoScaling )
 {
-   (*API->Sizer->SetSizerSpacing)( handle, n );
+   (*API->Sizer->SetSizerSpacing)( handle, autoScaling ? LogicalPixelsToPhysical( size ) : size );
 }
 
 // ----------------------------------------------------------------------------
 
-bool Sizer::IsAutoScalingEnabled() const
+double Sizer::DisplayPixelRatio() const
 {
-   return (*API->Sizer->GetSizerAutoScalingEnabled)( handle ) != api_false;
-}
-
-// ----------------------------------------------------------------------------
-
-void Sizer::EnableAutoScaling( bool enable )
-{
-   (*API->Sizer->SetSizerAutoScalingEnabled)( handle, enable );
+   double r;
+   if ( (*API->Sizer->GetSizerDisplayPixelRatio)( handle, &r ) == api_false )
+      throw APIFunctionError( "GetSizerDisplayPixelRatio" );
+   return r;
 }
 
 // ----------------------------------------------------------------------------
@@ -280,5 +275,5 @@ void* Sizer::CloneHandle() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/Sizer.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Sizer.cpp - Released 2015/07/30 17:15:31 UTC

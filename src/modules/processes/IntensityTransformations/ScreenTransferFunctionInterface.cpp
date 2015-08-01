@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard IntensityTransformations Process Module Version 01.07.00.0287
-// ****************************************************************************
-// ScreenTransferFunctionInterface.cpp - Released 2014/11/14 17:19:22 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard IntensityTransformations Process Module Version 01.07.00.0306
+// ----------------------------------------------------------------------------
+// ScreenTransferFunctionInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "HistogramTransformationInstance.h"
 #include "ScreenTransferFunctionInterface.h"
@@ -295,11 +299,12 @@ private:
 };
 
 STFAutoStretchDialog::STFAutoStretchDialog() :
-Dialog(), view(),
-shadowsClipping( DEFAULT_AUTOSTRETCH_SCLIP ),
-targetBackground( DEFAULT_AUTOSTRETCH_TBGND ),
-boostClippingFactor( DEFAULT_AUTOSTRETCH_BOOST_SCLIP ),
-boostBackgroundFactor( DEFAULT_AUTOSTRETCH_BOOST_TBGND )
+   Dialog(),
+   view(),
+   shadowsClipping( DEFAULT_AUTOSTRETCH_SCLIP ),
+   targetBackground( DEFAULT_AUTOSTRETCH_TBGND ),
+   boostClippingFactor( DEFAULT_AUTOSTRETCH_BOOST_SCLIP ),
+   boostBackgroundFactor( DEFAULT_AUTOSTRETCH_BOOST_TBGND )
 {
    int labelWidth1 = Font().Width( String( "Boost background factor:" ) + 'T' );
    int editWidth1 = Font().Width( String( '0', 10 ) );
@@ -314,13 +319,13 @@ boostBackgroundFactor( DEFAULT_AUTOSTRETCH_BOOST_TBGND )
    IncludePreviews_CheckBox.OnClick( (Button::click_event_handler)&STFAutoStretchDialog::__Button_Click, *this );
    IncludePreviews_CheckBox.SetChecked();
 
-   IncludePreviews_Sizer.AddSpacing( labelWidth1 + 4 );
+   IncludePreviews_Sizer.AddUnscaledSpacing( labelWidth1 + LogicalPixelsToPhysical( 4 ) );
    IncludePreviews_Sizer.Add( IncludePreviews_CheckBox );
    IncludePreviews_Sizer.AddStretch();
 
    ShadowsClipping_NumericControl.label.SetText( "Shadows clipping:" );
    ShadowsClipping_NumericControl.label.SetFixedWidth( labelWidth1 );
-   ShadowsClipping_NumericControl.slider.SetMinWidth( 250 );
+   ShadowsClipping_NumericControl.slider.SetScaledMinWidth( 250 );
    ShadowsClipping_NumericControl.slider.SetRange( 0, 200 );
    ShadowsClipping_NumericControl.SetReal();
    ShadowsClipping_NumericControl.SetRange( -10.0, 0.0 );
@@ -332,7 +337,7 @@ boostBackgroundFactor( DEFAULT_AUTOSTRETCH_BOOST_TBGND )
 
    TargetBackground_NumericControl.label.SetText( "Target background:" );
    TargetBackground_NumericControl.label.SetFixedWidth( labelWidth1 );
-   TargetBackground_NumericControl.slider.SetMinWidth( 250 );
+   TargetBackground_NumericControl.slider.SetScaledMinWidth( 250 );
    TargetBackground_NumericControl.slider.SetRange( 0, 200 );
    TargetBackground_NumericControl.SetReal();
    TargetBackground_NumericControl.SetRange( 0.0, 1.0 );
@@ -346,7 +351,7 @@ boostBackgroundFactor( DEFAULT_AUTOSTRETCH_BOOST_TBGND )
 
    BoostClippingFactor_NumericControl.label.SetText( "Boost clipping factor:" );
    BoostClippingFactor_NumericControl.label.SetFixedWidth( labelWidth1 );
-   BoostClippingFactor_NumericControl.slider.SetMinWidth( 250 );
+   BoostClippingFactor_NumericControl.slider.SetScaledMinWidth( 250 );
    BoostClippingFactor_NumericControl.slider.SetRange( 0, 200 );
    BoostClippingFactor_NumericControl.SetReal();
    BoostClippingFactor_NumericControl.SetRange( 0.0, 1.0 );
@@ -358,7 +363,7 @@ boostBackgroundFactor( DEFAULT_AUTOSTRETCH_BOOST_TBGND )
 
    BoostBackgroundFactor_NumericControl.label.SetText( "Boost background factor:" );
    BoostBackgroundFactor_NumericControl.label.SetFixedWidth( labelWidth1 );
-   BoostBackgroundFactor_NumericControl.slider.SetMinWidth( 250 );
+   BoostBackgroundFactor_NumericControl.slider.SetScaledMinWidth( 250 );
    BoostBackgroundFactor_NumericControl.slider.SetRange( 0, 180 );
    BoostBackgroundFactor_NumericControl.SetReal();
    BoostBackgroundFactor_NumericControl.SetRange( 1.0, 10.0 );
@@ -426,7 +431,7 @@ boostBackgroundFactor( DEFAULT_AUTOSTRETCH_BOOST_TBGND )
 
 void STFAutoStretchDialog::LoadSettings()
 {
-   String key = KEY_STF + "AutoStretch/";
+   IsoString key = KEY_STF + "AutoStretch/";
    Settings::Read( key + "ShadowsClipping", shadowsClipping );
    Settings::Read( key + "TargetBackground", targetBackground );
    Settings::Read( key + "BoostClippingFactor", boostClippingFactor );
@@ -435,7 +440,7 @@ void STFAutoStretchDialog::LoadSettings()
 
 void STFAutoStretchDialog::SaveSettings() const
 {
-   String key = KEY_STF + "AutoStretch/";
+   IsoString key = KEY_STF + "AutoStretch/";
    Settings::Write( key + "ShadowsClipping", shadowsClipping );
    Settings::Write( key + "TargetBackground", targetBackground );
    Settings::Write( key + "BoostClippingFactor", boostClippingFactor );
@@ -1158,22 +1163,27 @@ void ScreenTransferFunctionInterface::ComputeAutoStretch( View& view, bool boost
 
 // ----------------------------------------------------------------------------
 
-void ScreenTransferFunctionInterface::ApplyTo( View& v ) const
+void ScreenTransferFunctionInterface::ApplyTo( View& view ) const
 {
-   if ( !v.IsNull() )
-   {
-      PCL_CLASS_REENTRANCY_GUARDED_BEGIN // prevent reentrant ImageSTFUpdated() and UpdateReadout() events
+   PCL_CLASS_REENTRANCY_GUARDED_BEGIN // prevent reentrant ImageSTFUpdated() and UpdateReadout() events
 
-      const_cast<ScreenTransferFunctionInterface*>( this )->m_instance.ApplyTo( v );
+   if ( !view.IsNull() )
+      const_cast<ScreenTransferFunctionInterface*>( this )->m_instance.ApplyTo( view );
 
-      PCL_REENTRANCY_GUARDED_END
-   }
+   PCL_REENTRANCY_GUARDED_END
 }
 
 void ScreenTransferFunctionInterface::ApplyToCurrentView() const
 {
+   PCL_CLASS_REENTRANCY_GUARDED_BEGIN // prevent reentrant ImageSTFUpdated() and UpdateReadout() events
+
    View currentView = ImageWindow::ActiveWindow().CurrentView();
-   ApplyTo( currentView );
+   if ( !currentView.IsNull() )
+      const_cast<ScreenTransferFunctionInterface*>( this )->m_instance.ApplyTo( currentView );
+
+   ProcessEvents();
+
+   PCL_REENTRANCY_GUARDED_END
 }
 
 // ----------------------------------------------------------------------------
@@ -1387,21 +1397,21 @@ ScreenTransferFunctionInterface::GUIData::GUIData( ScreenTransferFunctionInterfa
 
    int labelWidth = w.Font().Width( "G:" ) + 2;
 
-   LinkRGB_ToolButton.SetIcon( Bitmap( ":/icons/link.png" ) );
-   LinkRGB_ToolButton.SetFixedSize( 20, 20 );
+   LinkRGB_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/link.png" ) ) );
+   LinkRGB_ToolButton.SetScaledFixedSize( 20, 20 );
    LinkRGB_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    LinkRGB_ToolButton.SetToolTip( "Link RGB Channels" );
    LinkRGB_ToolButton.SetCheckable();
    LinkRGB_ToolButton.OnClick( (ToolButton::click_event_handler)&ScreenTransferFunctionInterface::__ModeButtonClick, w );
 
-   Zoom11_ToolButton.SetIcon( Bitmap( ":/toolbar/view-zoom-1-1.png" ) );
-   Zoom11_ToolButton.SetFixedSize( 20, 20 );
+   Zoom11_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/toolbar/view-zoom-1-1.png" ) ) );
+   Zoom11_ToolButton.SetScaledFixedSize( 20, 20 );
    Zoom11_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    Zoom11_ToolButton.SetToolTip( "Zoom 1:1" );
    Zoom11_ToolButton.OnClick( (ToolButton::click_event_handler)&ScreenTransferFunctionInterface::__ModeButtonClick, w );
 
-   Auto_ToolButton.SetIcon( Bitmap( ":/icons/burn.png" ) );
-   Auto_ToolButton.SetFixedSize( 20, 20 );
+   Auto_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/burn.png" ) ) );
+   Auto_ToolButton.SetScaledFixedSize( 20, 20 );
    Auto_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    Auto_ToolButton.SetToolTip( "<p>Auto Stretch</p>"
                                "<p>"
@@ -1414,64 +1424,64 @@ ScreenTransferFunctionInterface::GUIData::GUIData( ScreenTransferFunctionInterfa
                                "<p>Shift+Click to apply boosted AutoStretch functions.</p>" );
    Auto_ToolButton.OnMouseRelease( (Control::mouse_button_event_handler)&ScreenTransferFunctionInterface::__STFAutoStretch_MouseRelease, w );
 
-   Edit_ToolButton.SetIcon( Bitmap( ":/icons/wrench.png" ) );
-   Edit_ToolButton.SetFixedSize( 20, 20 );
+   Edit_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/wrench.png" ) ) );
+   Edit_ToolButton.SetScaledFixedSize( 20, 20 );
    Edit_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    Edit_ToolButton.SetToolTip( "Edit STF Parameters" );
    Edit_ToolButton.OnClick( (ToolButton::click_event_handler)&ScreenTransferFunctionInterface::__ModeButtonClick, w );
 
-   EditMode_ToolButton.SetIcon( Bitmap( ":/icons/select.png" ) );
-   EditMode_ToolButton.SetFixedSize( 20, 20 );
+   EditMode_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select.png" ) ) );
+   EditMode_ToolButton.SetScaledFixedSize( 20, 20 );
    EditMode_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    EditMode_ToolButton.SetToolTip( "<p>Edit STF Mode</p>"
                                    "<p>Hold Shift pressed while dragging to block image update events.</p>");
    EditMode_ToolButton.SetCheckable();
    EditMode_ToolButton.OnClick( (ToolButton::click_event_handler)&ScreenTransferFunctionInterface::__ModeButtonClick, w );
 
-   ZoomInMode_ToolButton.SetIcon( Bitmap( ":/toolbar/view-zoom-in.png" ) );
-   ZoomInMode_ToolButton.SetFixedSize( 20, 20 );
+   ZoomInMode_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/toolbar/view-zoom-in.png" ) ) );
+   ZoomInMode_ToolButton.SetScaledFixedSize( 20, 20 );
    ZoomInMode_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ZoomInMode_ToolButton.SetToolTip( "Zoom In Mode" );
    ZoomInMode_ToolButton.SetCheckable();
    ZoomInMode_ToolButton.OnClick( (ToolButton::click_event_handler)&ScreenTransferFunctionInterface::__ModeButtonClick, w );
 
-   ZoomOutMode_ToolButton.SetIcon( Bitmap( ":/toolbar/view-zoom-out.png" ) );
-   ZoomOutMode_ToolButton.SetFixedSize( 20, 20 );
+   ZoomOutMode_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/toolbar/view-zoom-out.png" ) ) );
+   ZoomOutMode_ToolButton.SetScaledFixedSize( 20, 20 );
    ZoomOutMode_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ZoomOutMode_ToolButton.SetToolTip( "Zoom Out Mode" );
    ZoomOutMode_ToolButton.SetCheckable();
    ZoomOutMode_ToolButton.OnClick( (ToolButton::click_event_handler)&ScreenTransferFunctionInterface::__ModeButtonClick, w );
 
-   PanMode_ToolButton.SetIcon( Bitmap( ":/toolbar/image-mode-pan-horz.png" ) );
-   PanMode_ToolButton.SetFixedSize( 20, 20 );
+   PanMode_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/toolbar/image-mode-pan-horz.png" ) ) );
+   PanMode_ToolButton.SetScaledFixedSize( 20, 20 );
    PanMode_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    PanMode_ToolButton.SetToolTip( "Scroll Mode" );
    PanMode_ToolButton.SetCheckable();
    PanMode_ToolButton.OnClick( (ToolButton::click_event_handler)&ScreenTransferFunctionInterface::__ModeButtonClick, w );
 
-   ReadoutShadows_ToolButton.SetIcon( Bitmap( ":/toolbar/image-mode-readout-shadows.png" ) );
-   ReadoutShadows_ToolButton.SetFixedSize( 20, 20 );
+   ReadoutShadows_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/toolbar/image-mode-readout-shadows.png" ) ) );
+   ReadoutShadows_ToolButton.SetScaledFixedSize( 20, 20 );
    ReadoutShadows_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ReadoutShadows_ToolButton.SetToolTip( "Black Point Readout" );
    ReadoutShadows_ToolButton.SetCheckable();
    ReadoutShadows_ToolButton.OnClick( (ToolButton::click_event_handler)&ScreenTransferFunctionInterface::__ReadoutButtonClick, w );
 
-   ReadoutMidtones_ToolButton.SetIcon( Bitmap( ":/toolbar/image-mode-readout-midtones.png" ) );
-   ReadoutMidtones_ToolButton.SetFixedSize( 20, 20 );
+   ReadoutMidtones_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/toolbar/image-mode-readout-midtones.png" ) ) );
+   ReadoutMidtones_ToolButton.SetScaledFixedSize( 20, 20 );
    ReadoutMidtones_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ReadoutMidtones_ToolButton.SetToolTip( "Midtones Readout" );
    ReadoutMidtones_ToolButton.SetCheckable();
    ReadoutMidtones_ToolButton.OnClick( (ToolButton::click_event_handler)&ScreenTransferFunctionInterface::__ReadoutButtonClick, w );
 
-   ReadoutHighlights_ToolButton.SetIcon( Bitmap( ":/toolbar/image-mode-readout-highlights.png" ) );
-   ReadoutHighlights_ToolButton.SetFixedSize( 20, 20 );
+   ReadoutHighlights_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/toolbar/image-mode-readout-highlights.png" ) ) );
+   ReadoutHighlights_ToolButton.SetScaledFixedSize( 20, 20 );
    ReadoutHighlights_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ReadoutHighlights_ToolButton.SetToolTip( "White Point Readout" );
    ReadoutHighlights_ToolButton.SetCheckable();
    ReadoutHighlights_ToolButton.OnClick( (ToolButton::click_event_handler)&ScreenTransferFunctionInterface::__ReadoutButtonClick, w );
 
-   STFEnabled_ToolButton.SetIcon( Bitmap( String( ":/toolbar/image-stf.png" ) ) );
-   STFEnabled_ToolButton.SetFixedSize( 20, 20 );
+   STFEnabled_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/toolbar/image-stf.png" ) ) );
+   STFEnabled_ToolButton.SetScaledFixedSize( 20, 20 );
    STFEnabled_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    STFEnabled_ToolButton.SetCheckable();
    STFEnabled_ToolButton.OnClick( (ToolButton::click_event_handler)&ScreenTransferFunctionInterface::__STFEnabledButtonClick, w );
@@ -1487,13 +1497,13 @@ ScreenTransferFunctionInterface::GUIData::GUIData( ScreenTransferFunctionInterfa
       ChannelId_Label[c].SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
       Sliders_Control[c].SetChannel( c, true );
-      Sliders_Control[c].SetMinWidth( 400 );
+      Sliders_Control[c].SetScaledMinWidth( 400 );
       Sliders_Control[c].SetFocusStyle( FocusStyle::NoFocus );
       Sliders_Control[c].OnValueUpdated( (STFSliders::value_event_handler)&ScreenTransferFunctionInterface::__SliderValueUpdated, w );
       Sliders_Control[c].OnRangeUpdated( (STFSliders::range_event_handler)&ScreenTransferFunctionInterface::__SliderRangeUpdated, w );
 
-      Reset_ToolButton[c].SetIcon( Bitmap( String( ":/icons/clear.png" ) ) );
-      Reset_ToolButton[c].SetFixedSize( 20, 20 );
+      Reset_ToolButton[c].SetIcon( Bitmap( w.ScaledResource( ":/icons/clear.png" ) ) );
+      Reset_ToolButton[c].SetScaledFixedSize( 20, 20 );
       Reset_ToolButton[c].SetFocusStyle( FocusStyle::NoFocus );
       Reset_ToolButton[c].SetToolTip( String( "Reset " ) + chToolTip[c] + " Parameters" );
       Reset_ToolButton[c].OnClick( (ToolButton::click_event_handler)&ScreenTransferFunctionInterface::__ResetButtonClick, w );
@@ -1545,5 +1555,5 @@ ScreenTransferFunctionInterface::GUIData::GUIData( ScreenTransferFunctionInterfa
 
 } // pcl
 
-// ****************************************************************************
-// EOF ScreenTransferFunctionInterface.cpp - Released 2014/11/14 17:19:22 UTC
+// ----------------------------------------------------------------------------
+// EOF ScreenTransferFunctionInterface.cpp - Released 2015/07/31 11:49:48 UTC

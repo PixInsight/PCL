@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Edit.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Edit.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/Edit.h>
 #include <pcl/TextAlign.h>
@@ -57,128 +60,16 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-#define sender    (reinterpret_cast<Edit*>( hSender ))
-#define receiver  (reinterpret_cast<Control*>( hReceiver ))
-
-class EditEventDispatcher
-{
-public:
-
-   static void api_func EditCompleted( control_handle hSender, control_handle hReceiver )
-   {
-      if ( sender->onEditCompleted != 0 )
-         (receiver->*sender->onEditCompleted)( *sender );
-   }
-
-   static void api_func ReturnPressed( control_handle hSender, control_handle hReceiver )
-   {
-      if ( sender->onReturnPressed != 0 )
-         (receiver->*sender->onReturnPressed)( *sender );
-   }
-
-   static void api_func TextUpdated( control_handle hSender, control_handle hReceiver, const char16_type* text )
-   {
-      if ( sender->onTextUpdated != 0 )
-      {
-         String s( text );
-         (receiver->*sender->onTextUpdated)( *sender, s );
-      }
-   }
-
-   static void api_func CaretPositionUpdated( control_handle hSender, control_handle hReceiver, int32 oldPos, int32 newPos )
-   {
-      if ( sender->onCaretPositionUpdated != 0 )
-         (receiver->*sender->onCaretPositionUpdated)( *sender, oldPos, newPos );
-   }
-
-   static void api_func SelectionUpdated( control_handle hSender, control_handle hReceiver, int32 newStart, int32 newEnd )
-   {
-      if ( sender->onSelectionUpdated != 0 )
-         (receiver->*sender->onSelectionUpdated)( *sender, newStart, newEnd );
-   }
-}; // EditEventDispatcher
-
-#undef sender
-#undef receiver
-
-// ----------------------------------------------------------------------------
-
 #ifdef _MSC_VER
 #  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
 #endif
 
 Edit::Edit( const String& text, Control& parent ) :
-Frame( (*API->Edit->CreateEdit)( ModuleHandle(), this, text.c_str(), parent.handle, 0 /*flags*/ ) ),
-onEditCompleted( 0 ),
-onReturnPressed( 0 ),
-onTextUpdated( 0 ),
-onCaretPositionUpdated( 0 ),
-onSelectionUpdated( 0 )
+   Frame( (*API->Edit->CreateEdit)( ModuleHandle(), this, text.c_str(), parent.handle, 0/*flags*/ ) ),
+   m_handlers( nullptr )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CreateEdit" );
-}
-
-// ----------------------------------------------------------------------------
-
-void Edit::OnEditCompleted( edit_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onEditCompleted = 0;
-   if ( (*API->Edit->SetEditCompletedEventRoutine)( handle, &receiver,
-        (f != 0) ? EditEventDispatcher::EditCompleted : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetEditCompletedEventRoutine" );
-   }
-   onEditCompleted = f;
-}
-
-void Edit::OnReturnPressed( edit_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onReturnPressed = 0;
-   if ( (*API->Edit->SetReturnPressedEventRoutine)( handle, &receiver,
-        (f != 0) ? EditEventDispatcher::ReturnPressed : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetReturnPressedEventRoutine" );
-   }
-   onReturnPressed = f;
-}
-
-void Edit::OnTextUpdated( text_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onTextUpdated = 0;
-   if ( (*API->Edit->SetTextUpdatedEventRoutine)( handle, &receiver,
-        (f != 0) ? EditEventDispatcher::TextUpdated : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetTextUpdatedEventRoutine" );
-   }
-   onTextUpdated = f;
-}
-
-void Edit::OnCaretPositionUpdated( caret_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onCaretPositionUpdated = 0;
-   if ( (*API->Edit->SetCaretPositionUpdatedEventRoutine)( handle, &receiver,
-        (f != 0) ? EditEventDispatcher::CaretPositionUpdated : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetCaretPositionUpdatedEventRoutine" );
-   }
-   onCaretPositionUpdated = f;
-}
-
-void Edit::OnSelectionUpdated( selection_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onSelectionUpdated = 0;
-   if ( (*API->Edit->SetSelectionUpdatedEventRoutine)( handle, &receiver,
-        (f != 0) ? EditEventDispatcher::SelectionUpdated : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetSelectionUpdatedEventRoutine" );
-   }
-   onSelectionUpdated = f;
 }
 
 // ----------------------------------------------------------------------------
@@ -189,15 +80,13 @@ String Edit::Text() const
    (*API->Edit->GetEditText)( handle, 0, &len );
 
    String text;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      text.Reserve( len );
-
+      text.SetLength( len );
       if ( (*API->Edit->GetEditText)( handle, text.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetEditText" );
+      text.ResizeToNullTerminated();
    }
-
    return text;
 }
 
@@ -272,15 +161,13 @@ String Edit::Mask() const
    (*API->Edit->GetEditMask)( handle, 0, &len );
 
    String mask;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      mask.Reserve( len );
-
+      mask.SetLength( len );
       if ( (*API->Edit->GetEditMask)( handle, mask.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetEditMask" );
+      mask.ResizeToNullTerminated();
    }
-
    return mask;
 }
 
@@ -328,15 +215,13 @@ String Edit::SelectedText() const
    (*API->Edit->GetEditSelectedText)( handle, 0, &len );
 
    String text;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      text.Reserve( len );
-
+      text.SetLength( len );
       if ( (*API->Edit->GetEditSelectedText)( handle, text.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetEditSelectedText" );
+      text.ResizeToNullTerminated();
    }
-
    return text;
 }
 
@@ -370,7 +255,109 @@ void Edit::SetRightAlignment( bool right )
 
 // ----------------------------------------------------------------------------
 
+#define sender    (reinterpret_cast<Edit*>( hSender ))
+#define receiver  (reinterpret_cast<Control*>( hReceiver ))
+#define handlers  sender->m_handlers
+
+class EditEventDispatcher
+{
+public:
+
+   static void api_func EditCompleted( control_handle hSender, control_handle hReceiver )
+   {
+      if ( handlers->onEditCompleted != nullptr )
+         (receiver->*handlers->onEditCompleted)( *sender );
+   }
+
+   static void api_func ReturnPressed( control_handle hSender, control_handle hReceiver )
+   {
+      if ( handlers->onReturnPressed != nullptr )
+         (receiver->*handlers->onReturnPressed)( *sender );
+   }
+
+   static void api_func TextUpdated( control_handle hSender, control_handle hReceiver, const char16_type* text )
+   {
+      if ( handlers->onTextUpdated != nullptr )
+      {
+         String s( text );
+         (receiver->*handlers->onTextUpdated)( *sender, s );
+      }
+   }
+
+   static void api_func CaretPositionUpdated( control_handle hSender, control_handle hReceiver, int32 oldPos, int32 newPos )
+   {
+      if ( handlers->onCaretPositionUpdated != nullptr )
+         (receiver->*handlers->onCaretPositionUpdated)( *sender, oldPos, newPos );
+   }
+
+   static void api_func SelectionUpdated( control_handle hSender, control_handle hReceiver, int32 newStart, int32 newEnd )
+   {
+      if ( handlers->onSelectionUpdated != nullptr )
+         (receiver->*handlers->onSelectionUpdated)( *sender, newStart, newEnd );
+   }
+}; // EditEventDispatcher
+
+#undef sender
+#undef receiver
+#undef handlers
+
+// ----------------------------------------------------------------------------
+
+#define INIT_EVENT_HANDLERS()    \
+   __PCL_NO_ALIAS_HANDLERS;      \
+   if ( m_handlers == nullptr )  \
+      m_handlers = new EventHandlers
+
+void Edit::OnEditCompleted( edit_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->Edit->SetEditCompletedEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? EditEventDispatcher::EditCompleted : 0 ) == api_false )
+      throw APIFunctionError( "SetEditCompletedEventRoutine" );
+   m_handlers->onEditCompleted = f;
+}
+
+void Edit::OnReturnPressed( edit_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->Edit->SetReturnPressedEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? EditEventDispatcher::ReturnPressed : 0 ) == api_false )
+      throw APIFunctionError( "SetReturnPressedEventRoutine" );
+   m_handlers->onReturnPressed = f;
+}
+
+void Edit::OnTextUpdated( text_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->Edit->SetTextUpdatedEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? EditEventDispatcher::TextUpdated : 0 ) == api_false )
+      throw APIFunctionError( "SetTextUpdatedEventRoutine" );
+   m_handlers->onTextUpdated = f;
+}
+
+void Edit::OnCaretPositionUpdated( caret_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->Edit->SetCaretPositionUpdatedEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? EditEventDispatcher::CaretPositionUpdated : 0 ) == api_false )
+      throw APIFunctionError( "SetCaretPositionUpdatedEventRoutine" );
+   m_handlers->onCaretPositionUpdated = f;
+}
+
+void Edit::OnSelectionUpdated( selection_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->Edit->SetSelectionUpdatedEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? EditEventDispatcher::SelectionUpdated : 0 ) == api_false )
+      throw APIFunctionError( "SetSelectionUpdatedEventRoutine" );
+   m_handlers->onSelectionUpdated = f;
+}
+
+#undef INIT_EVENT_HANDLERS
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/Edit.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Edit.cpp - Released 2015/07/30 17:15:31 UTC

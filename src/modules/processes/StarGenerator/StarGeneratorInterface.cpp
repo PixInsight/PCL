@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard StarGenerator Process Module Version 01.01.00.0180
-// ****************************************************************************
-// StarGeneratorInterface.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard StarGenerator Process Module Version 01.01.00.0199
+// ----------------------------------------------------------------------------
+// StarGeneratorInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard StarGenerator PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "StarGeneratorInterface.h"
 #include "StarGeneratorProcess.h"
@@ -431,8 +435,8 @@ StarGeneratorInterface::GUIData::GUIData( StarGeneratorInterface& w )
    StarDatabase_Edit.SetToolTip( starDatabaseToolTip );
    StarDatabase_Edit.OnEditCompleted( (Edit::edit_event_handler)&StarGeneratorInterface::__EditCompleted, w );
 
-   StarDatabase_ToolButton.SetIcon( Bitmap( String( ":/icons/select-file.png" ) ) );
-   StarDatabase_ToolButton.SetFixedSize( 20, 20 );
+   StarDatabase_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-file.png" ) ) );
+   StarDatabase_ToolButton.SetScaledFixedSize( 20, 20 );
    StarDatabase_ToolButton.SetToolTip( starDatabaseToolTip );
    StarDatabase_ToolButton.OnClick( (Button::click_event_handler)&StarGeneratorInterface::__Button_Clicked, w );
 
@@ -652,8 +656,8 @@ StarGeneratorInterface::GUIData::GUIData( StarGeneratorInterface& w )
    OutputFile_Edit.SetToolTip( outputFileToolTip );
    OutputFile_Edit.OnEditCompleted( (Edit::edit_event_handler)&StarGeneratorInterface::__EditCompleted, w );
 
-   OutputFile_ToolButton.SetIcon( Bitmap( String( ":/icons/select-file.png" ) ) );
-   OutputFile_ToolButton.SetFixedSize( 20, 20 );
+   OutputFile_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-file.png" ) ) );
+   OutputFile_ToolButton.SetScaledFixedSize( 20, 20 );
    OutputFile_ToolButton.SetToolTip( outputFileToolTip );
    OutputFile_ToolButton.OnClick( (Button::click_event_handler)&StarGeneratorInterface::__Button_Clicked, w );
 
@@ -680,7 +684,7 @@ StarGeneratorInterface::GUIData::GUIData( StarGeneratorInterface& w )
       "magnitude).</p>" );
    Nonlinear_CheckBox.OnClick( (Button::click_event_handler)&StarGeneratorInterface::__Button_Clicked, w );
 
-   Nonlinear_Sizer.AddSpacing( labelWidth1+4 );
+   Nonlinear_Sizer.AddUnscaledSpacing( labelWidth1 + w.LogicalPixelsToPhysical( 4 ) );
    Nonlinear_Sizer.Add( Nonlinear_CheckBox );
    Nonlinear_Sizer.AddStretch();
 
@@ -724,5 +728,5 @@ StarGeneratorInterface::GUIData::GUIData( StarGeneratorInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF StarGeneratorInterface.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF StarGeneratorInterface.cpp - Released 2015/07/31 11:49:48 UTC

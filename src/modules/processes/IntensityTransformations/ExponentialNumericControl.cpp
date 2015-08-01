@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard IntensityTransformations Process Module Version 01.07.00.0287
-// ****************************************************************************
-// ExponentialNumericControl.cpp - Released 2014/11/14 17:19:22 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard IntensityTransformations Process Module Version 01.07.00.0306
+// ----------------------------------------------------------------------------
+// ExponentialNumericControl.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "ExponentialNumericControl.h"
 
@@ -61,7 +65,7 @@ ExponentialNumericControl::ExponentialNumericControl( Control& parent ) : Numeri
 
    m_coefficient.label.Hide();
    m_coefficient.slider.SetRange( 0, 180 ); // step size = 0.05
-   m_coefficient.slider.SetMinWidth( 250 );
+   m_coefficient.slider.SetScaledMinWidth( 250 );
    m_coefficient.SetReal();
    m_coefficient.SetRange( 1.00, 10.00 );
    m_coefficient.SetPrecision( 2 );
@@ -81,15 +85,17 @@ ExponentialNumericControl::ExponentialNumericControl( Control& parent ) : Numeri
 void ExponentialNumericControl::__CoefficientValueUpdated( NumericEdit& sender, double value )
 {
    SetValue( Range( value, 1.0, 9.99 ) * Pow10I<double>()( m_exponent.Value() ) );
-   if ( onValueUpdated != 0 )
-      (onValueUpdatedReceiver->*onValueUpdated)( *this, Value() );
+   if ( m_handlers != nullptr )
+      if ( m_handlers->onValueUpdated != nullptr )
+         (m_handlers->onValueUpdatedReceiver->*m_handlers->onValueUpdated)( *this, Value() );
 }
 
 void ExponentialNumericControl::__ExponentValueUpdated( SpinBox& sender, int value )
 {
    SetValue( m_coefficient.Value() * Pow10I<double>()( value ) );
-   if ( onValueUpdated != 0 )
-      (onValueUpdatedReceiver->*onValueUpdated)( *this, Value() );
+   if ( m_handlers != nullptr )
+      if ( m_handlers->onValueUpdated != nullptr )
+         (m_handlers->onValueUpdatedReceiver->*m_handlers->onValueUpdated)( *this, Value() );
 }
 
 void ExponentialNumericControl::UpdateControls()
@@ -100,8 +106,9 @@ void ExponentialNumericControl::UpdateControls()
    if ( 1 + x == 1 )
    {
       SetValue( 1.0e-08 );
-      if ( onValueUpdated != 0 )
-         (onValueUpdatedReceiver->*onValueUpdated)( *this, Value() );
+      if ( m_handlers != nullptr )
+         if ( m_handlers->onValueUpdated != nullptr )
+            (m_handlers->onValueUpdatedReceiver->*m_handlers->onValueUpdated)( *this, Value() );
       return;
    }
 
@@ -119,5 +126,5 @@ void ExponentialNumericControl::UpdateControls()
 
 } // pcl
 
-// ****************************************************************************
-// EOF ExponentialNumericControl.cpp - Released 2014/11/14 17:19:22 UTC
+// ----------------------------------------------------------------------------
+// EOF ExponentialNumericControl.cpp - Released 2015/07/31 11:49:48 UTC

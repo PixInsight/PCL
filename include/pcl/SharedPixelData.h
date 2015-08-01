@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/SharedPixelData.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/SharedPixelData.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_SharedPixelData_h
 #define __PCL_SharedPixelData_h
@@ -83,7 +86,7 @@ public:
    /*!
     * Constructs a %SharedPixelData object that represents a local image.
     */
-   SharedPixelData() : m_handle( 0 )
+   SharedPixelData() : m_handle( nullptr )
    {
    }
 
@@ -98,7 +101,7 @@ public:
     * \param floatSample      Whether this image stores floating point pixel
     *                         data, or integer pixel data.
     *
-    * \param complexSample    Whether this image stores complex pixel data, or
+    * \param complexSample    Whether this image stores complex pixel data or
     *                         real pixel data.
     *
     * \note This constructor throws an Error exception if the specified handle
@@ -123,7 +126,7 @@ public:
     * \param floatSample      Whether this image stores floating point pixel
     *                         data, or integer pixel data.
     *
-    * \param colorSpace       Color space to which this image belongs.
+    * \param colorSpace       Color space where pixels are represented.
     */
    SharedPixelData( int width, int height, int numberOfChannels,
                     int bitsPerSample, bool floatSample, int colorSpace );
@@ -155,7 +158,7 @@ public:
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Copy assignment operator. Returns a reference to this object.
     *
     * If this object represents a shared image, it is dereferenced. If the
     * specified object \a x represents a shared image, then this object will
@@ -198,7 +201,7 @@ public:
     */
    bool IsShared() const
    {
-      return m_handle != 0;
+      return m_handle != nullptr;
    }
 
    /*!
@@ -247,5 +250,5 @@ protected:
 
 #endif   // __PCL_SharedPixelData_h
 
-// ****************************************************************************
-// EOF pcl/SharedPixelData.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/SharedPixelData.h - Released 2015/07/30 17:15:18 UTC

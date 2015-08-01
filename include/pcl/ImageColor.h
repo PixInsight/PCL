@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ImageColor.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ImageColor.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_ImageColor_h
 #define __PCL_ImageColor_h
@@ -237,23 +240,17 @@ protected:
     */
    static RGBColorSystem s_defaultRGBWS;
 
-   ImageColor() : m_color( 0 )
+   ImageColor() : m_color( nullptr )
    {
    }
 
-   ImageColor( const ImageColor& x ) : m_color( x.m_color )
-   {
-   }
+   ImageColor( const ImageColor& ) = default;
+
+   ImageColor& operator =( const ImageColor& ) = default;
 
    virtual ~ImageColor()
    {
-      m_color = 0;
-   }
-
-   ImageColor& operator =( const ImageColor& x )
-   {
-      m_color = x.m_color;
-      return *this;
+      m_color = nullptr;
    }
 
    void Swap( ImageColor& image )
@@ -273,5 +270,5 @@ protected:
 
 #endif   // __PCL_ImageColor_h
 
-// ****************************************************************************
-// EOF pcl/ImageColor.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ImageColor.h - Released 2015/07/30 17:15:18 UTC

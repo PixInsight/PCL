@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard XISF File Format Module Version 01.00.00.0023
-// ****************************************************************************
-// XISF.h - Released 2014/11/30 10:38:10 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard XISF File Format Module Version 01.00.03.0056
+// ----------------------------------------------------------------------------
+// XISF.h - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_XISF_h
 #define __PCL_XISF_h
@@ -69,22 +73,48 @@ namespace pcl
 class XISFReaderEngine;
 class XISFWriterEngine;
 
+class PCL_CLASS Compression;
+class PCL_CLASS CryptographicHash;
+
 // ----------------------------------------------------------------------------
 
 /*
  * Default block size in bytes for optional alignment of XISF data structures.
  */
-#define XISF_BLOCK_ALIGN_SIZE 4096
+#define XISF_BLOCK_ALIGN_SIZE       4096
 
 /*
  * Maximum size in bytes of an inline data block.
  */
-#define XISF_BLOCK_INLINE_MAX 3072 // 3072*4/3 = 4096 (base64)
+#define XISF_BLOCK_INLINE_MAX       3072 // 3072*4/3 = 4096 (base64)
 
 /*
  * Maximum allowed width or height of an XISF image thumbnail in pixels.
  */
-#define XISF_THUMBNAIL_MAX 1024
+#define XISF_THUMBNAIL_MAX          1024
+
+/*
+ * Supported compression algorithms.
+ */
+#define XISF_COMPRESSION_NONE       0
+#define XISF_COMPRESSION_ZLIB       1
+#define XISF_COMPRESSION_LZ4        2
+#define XISF_COMPRESSION_LZ4HC      3
+#define XISF_COMPRESSION_ZLIB_SH    4
+#define XISF_COMPRESSION_LZ4_SH     5
+#define XISF_COMPRESSION_LZ4HC_SH   6
+#define XISF_COMPRESSION_UNKNOWN    0x0F
+
+/*
+ * Default compression level. This means that the specific compression level
+ * used will be chosen as a good compromise for the current compression method.
+ */
+#define XISF_COMPRESSION_LEVEL_DEFAULT 0
+
+/*
+ * Maximum codec-independent compression level.
+ */
+#define XISF_COMPRESSION_LEVEL_MAX     100
 
 /*
  * XISF-specific file options.
@@ -102,40 +132,43 @@ public:
    bool   autoMetadata        : 1;  // * automatically generate a number of internal XISF properties
    bool   noWarnings          : 1;  // * suppress all warning messages
    bool   warningsAreErrors   : 1;  // * treat warnings as errors
-   bool   compressData        : 1;  // use zlib compression for data blocks
-   uint8  compressionLevel    : 4;  // zlib compression level
+   bool   checksums           : 1;  // include block checksums
+   uint8  compressionMethod   : 4;  // algorithm for compression of data blocks
+   uint8  compressionLevel    : 7;  // codec-independent compression level: 0=auto, 1=fast, 100=max-compression
    uint8  verbosity           : 3;  // * 0 = quiet, > 0 = write console state messages
    uint16 blockAlignmentSize;       // block alignment size in bytes (0 = 1 = unaligned)
    uint16 maxInlineBlockSize;       // maximum size in bytes of an inline/embedded data block
    double outputLowerBound;         // * lower bound for output floating point samples (default=0)
    double outputUpperBound;         // * upper bound for output floating point samples (default=1)
 
-   XISFOptions() :
-   storeFITSKeywords( true ),
-   ignoreFITSKeywords( false ),
-   importFITSKeywords( false ),
-   ignoreEmbeddedData( false ),
-   ignoreProperties( false ),
-   autoMetadata( true ),
-   noWarnings( false ),
-   warningsAreErrors( false ),
-   compressData( false ),
-   compressionLevel( 6 ),
-   verbosity( 1 ),
-   blockAlignmentSize( XISF_BLOCK_ALIGN_SIZE ),
-   maxInlineBlockSize( XISF_BLOCK_INLINE_MAX ),
-   outputLowerBound( 0 ),
-   outputUpperBound( 1 )
+   XISFOptions()
    {
-   }
-
-   void Reset()
-   {
-      (void)operator =( XISFOptions() );
+      Reset();
    }
 
    XISFOptions( const XISFOptions& ) = default;
+
    XISFOptions& operator =( const XISFOptions& ) = default;
+
+   void Reset()
+   {
+      storeFITSKeywords  = true;
+      ignoreFITSKeywords = false;
+      importFITSKeywords = false;
+      ignoreEmbeddedData = false;
+      ignoreProperties   = false;
+      autoMetadata       = true;
+      noWarnings         = false;
+      warningsAreErrors  = false;
+      checksums          = false;
+      compressionMethod  = XISF_COMPRESSION_NONE;
+      compressionLevel   = XISF_COMPRESSION_LEVEL_DEFAULT;
+      verbosity          = 1;
+      blockAlignmentSize = XISF_BLOCK_ALIGN_SIZE;
+      maxInlineBlockSize = XISF_BLOCK_INLINE_MAX;
+      outputLowerBound   = 0;
+      outputUpperBound   = 1;
+   }
 };
 
 // ----------------------------------------------------------------------------
@@ -269,12 +302,6 @@ public:
    bool Extract( ICCProfile& iccProfile );
 
    /*!
-    * Extracts metadata from the current image in this input stream. Returns
-    * true if the extraction operation was successful.
-    */
-   bool Extract( ByteArray& data );
-
-   /*!
     * Extracts a thumbnail image from the current image in this input stream.
     * Returns true if the extraction operation was successful.
     */
@@ -290,6 +317,26 @@ public:
     * Returns a list of property identifiers in this XISF file.
     */
    ImagePropertyDescriptionArray Properties() const;
+
+   /*!
+    * Extracts RGB working space parameters for the current image in this input
+    * stream. Returns true if the extraction operation was successful.
+    */
+   bool Extract( RGBColorSystem& rgbws );
+
+   /*!
+    * Extracts display function (aka STF) parameters for the current image in
+    * this input stream. Returns true if the extraction operation was
+    * successful.
+    */
+   bool Extract( DisplayFunction& df );
+
+   /*!
+    * Extracts a color filter array (CFA) description for the current image in
+    * this input stream. Returns true if the extraction operation was
+    * successful.
+    */
+   bool Extract( ColorFilterArray& cfa );
 
    /*!
     * Reads a 32-bit floating point image.
@@ -513,18 +560,6 @@ public:
    ICCProfile EmbeddedICCProfile() const;
 
    /*!
-    * Embeds metadata in the current image of this image writer.
-    */
-   void Embed( const ByteArray& data );
-
-   /*!
-    * Returns a copy of the metadata that have been embedded in the current
-    * image, or an empty ByteArray if the stream is closed or no metadata have
-    * been embedded.
-    */
-   ByteArray EmbeddedMetadata() const;
-
-   /*!
     * Embeds an 8-bit thumbnail image in the current image of this image
     * writer.
     */
@@ -541,6 +576,24 @@ public:
     * Embeds an image property with the specified \a value and \a identifier.
     */
    void Embed( const Variant& value, const IsoString& identifier );
+
+   /*!
+    * Embeds RGB working space parameters for the current image of this image
+    * writer.
+    */
+   void Embed( const RGBColorSystem& rgbws );
+
+   /*!
+    * Embeds display function (aka STF) parameters for the current image of
+    * this image writer.
+    */
+   void Embed( const DisplayFunction& df );
+
+   /*!
+    * Embeds a color filter array (CFA) description for the current image of
+    * this image writer.
+    */
+   void Embed( const ColorFilterArray& cfa );
 
    /*!
     * Writes a 32-bit floating point image.
@@ -681,7 +734,7 @@ public:
     * Identifier of a pixel sample data type. Used as XML element attribute
     * values in XISF headers.
     *
-    * Currently XISF can store images in seven pixel sample formats:
+    * XISF 1.0 supports seven pixel sample formats:
     *
     * - 32-bit IEEE 754 floating point real (float)
     * - 64-bit IEEE 754 floating point real (double)
@@ -710,17 +763,13 @@ public:
     * Identifier of a color space. Used as XML element attribute values in XISF
     * headers.
     *
-    * Currently XISF can store images in seven color spaces:
+    * XISF 1.0 supports three color spaces:
     *
     * - Grayscale
     * - RGB
-    * - CIE XYZ
     * - CIE L*a*b*
-    * - CIE L*c*h*
-    * - HSV
-    * - HSI
     *
-    * For more information on supported color spaces, see pcl/RGBColorSystem.h
+    * For more information on color spaces, see pcl/RGBColorSystem.h
     */
    static const char* ColorSpaceId( int colorSpace );
 
@@ -763,6 +812,55 @@ public:
    static int PropertyTypeFromId( const IsoString& typeId );
 
    /*
+    * Identifier of a supported compression algorithm.  Used as XML element
+    * attribute values in XISF headers.
+    */
+   static const char* CompressionMethodId( int method );
+
+   /*
+    * Get a compression algorithm given its identifier. Used for
+    * deserialization from XML file headers.
+    */
+   static int CompressionMethodFromId( const IsoString& methodId );
+
+   /*
+    * Returns a pointer to a dynamically allocated Compression object. The
+    * returned object implements the specified compression method. itemSize is
+    * the length in bytes of a data element for byte shufflig.
+    */
+   static Compression* NewCompression( int method, int itemSize = 1 );
+
+   /*
+    * Actual compression level to be used for the specified compression method
+    * and user-defined compression level.
+    */
+   static int CompressionLevelForMethod( int method, int level );
+
+   /*
+    * Whether a compression algorithm uses byte shuffling to preprocess
+    * uncompressed data.
+    */
+   static bool CompressionUsesByteShuffle( int method );
+
+   /*
+    * Given a compression algorithm, returns the equivalent without byte
+    * shuffling.
+    */
+   static int CompressionMethodNoShuffle( int method );
+
+   /*
+    * Whether a compression algorithm needs to know the size of each element in
+    * a compressed block (for example, for byte shuffling).
+    */
+   static bool CompressionNeedsItemSize( int method );
+
+   /*
+    * Returns a pointer to a dynamically allocated CryptographicHash object.
+    * The returned object implements the specified hashing algorithm.
+    */
+   static CryptographicHash* NewCryptographicHash( const IsoString& checksumMethod );
+
+   /*
     * Property identifiers starting with the XISF: namespace prefix are
     * reserved by the XISF engine and cannot be defined by external client
     * applications.
@@ -783,5 +881,5 @@ public:
 
 #endif   // __PCL_XISF_h
 
-// ****************************************************************************
-// EOF XISF.h - Released 2014/11/30 10:38:10 UTC
+// ----------------------------------------------------------------------------
+// EOF XISF.h - Released 2015/07/31 11:49:40 UTC

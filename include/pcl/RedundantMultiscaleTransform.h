@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/RedundantMultiscaleTransform.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/RedundantMultiscaleTransform.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_RedundantMultiscaleTransform_h
 #define __PCL_RedundantMultiscaleTransform_h
@@ -107,17 +110,17 @@ public:
    /*!
     * Represents a multiscale layer.
     */
-   typedef Image                    layer;
+   typedef Image                 layer;
 
    /*!
     * Represents a set of multiscale layers, or multiscale transform.
     */
-   typedef IndirectArray<layer>     transform;
+   typedef Array<layer>          transform;
 
    /*!
     * Represents a set of layer enabled/disabled states.
     */
-   typedef GenericVector<bool>      layer_state_set;
+   typedef GenericVector<bool>   layer_state_set;
 
    /*!
     * Constructs a redundant multiscale transform.
@@ -147,30 +150,42 @@ public:
       BidirectionalImageTransformation(),
       m_delta( Max( 0, d ) ),
       m_numberOfLayers( Max( 1, n ) ),
-      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS ),
-      m_transform(), m_layerEnabled()
+      m_parallel( true ),
+      m_maxProcessors( PCL_MAX_PROCESSORS ),
+      m_transform(),
+      m_layerEnabled()
    {
       PCL_PRECONDITION( n >= 1 )
       PCL_PRECONDITION( d >= 0 )
-      InitializeLayers();
+      InitializeLayersAndStates();
    }
 
    /*!
     * Copy constructor.
-    *
-    * \note This constructor <em>does not copy the existing layers</em> in the
-    * source object \a x. It just creates a duplicate of current working
-    * parameters in \a x: number of layers and layer states.
     */
    RedundantMultiscaleTransform( const RedundantMultiscaleTransform& x ) :
       BidirectionalImageTransformation( x ),
       m_delta( x.m_delta ),
       m_numberOfLayers( x.m_numberOfLayers ),
-      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors ),
-      m_transform(), m_layerEnabled()
+      m_parallel( x.m_parallel ),
+      m_maxProcessors( x.m_maxProcessors ),
+      m_transform( x.m_transform ),
+      m_layerEnabled( x.m_layerEnabled )
    {
-      InitializeLayers();
-      m_layerEnabled = x.m_layerEnabled;
+   }
+
+   /*!
+    * Move constructor.
+    */
+   RedundantMultiscaleTransform( RedundantMultiscaleTransform&& x ) :
+      BidirectionalImageTransformation( x ),
+      m_delta( x.m_delta ),
+      m_numberOfLayers( x.m_numberOfLayers ),
+      m_parallel( x.m_parallel ),
+      m_maxProcessors( x.m_maxProcessors ),
+      m_transform( std::move( x.m_transform ) ),
+      m_layerEnabled( std::move( x.m_layerEnabled ) )
+   {
    }
 
    /*!
@@ -179,43 +194,36 @@ public:
     */
    virtual ~RedundantMultiscaleTransform()
    {
-      Destroy();
    }
 
    /*!
-    * Assignment operator.
-    *
-    * \note The existing layers in the source transform \a x are <em>not
-    * assigned</em>; only working parameters are assigned: number of layers and
-    * layer states.
-    *
-    * \note As a consequence of this assignment operator, all existing layers
-    * in this transform are destroyed.
+    * Copy assignment operator. Returns a reference to this object.
     */
    RedundantMultiscaleTransform& operator =( const RedundantMultiscaleTransform& x )
    {
-      if ( &x != this )
-      {
-         Destroy();
-         m_delta          = x.m_delta;
-         m_numberOfLayers = x.m_numberOfLayers;
-         m_parallel       = x.m_parallel;
-         m_maxProcessors  = x.m_maxProcessors;
-         InitializeLayers();
-         m_layerEnabled   = x.m_layerEnabled;
-      }
+      (void)BidirectionalImageTransformation::operator =( x );
+      m_delta          = x.m_delta;
+      m_numberOfLayers = x.m_numberOfLayers;
+      m_parallel       = x.m_parallel;
+      m_maxProcessors  = x.m_maxProcessors;
+      m_transform      = x.m_transform;
+      m_layerEnabled   = x.m_layerEnabled;
       return *this;
    }
 
    /*!
-    * Copies the specified transform \a x to this object, \e including the
-    * existing transform layers in \a x (unlike the assignment operator and
-    * the copy constructor). The previous contents of this transform are lost.
+    * Move assignment operator. Returns a reference to this object.
     */
-   virtual void CopyTransform( const RedundantMultiscaleTransform& x )
+   RedundantMultiscaleTransform& operator =( RedundantMultiscaleTransform&& x )
    {
-      (void)operator =( x );
-      m_transform.CloneAssign( x.m_transform );
+      (void)BidirectionalImageTransformation::operator =( x );
+      m_delta          = x.m_delta;
+      m_numberOfLayers = x.m_numberOfLayers;
+      m_parallel       = x.m_parallel;
+      m_maxProcessors  = x.m_maxProcessors;
+      m_transform      = std::move( x.m_transform );
+      m_layerEnabled   = std::move( x.m_layerEnabled );
+      return *this;
    }
 
    /*!
@@ -248,7 +256,7 @@ public:
    void SetScalingSequence( int d )
    {
       PCL_PRECONDITION( d >= 0 )
-      DeleteLayers();
+      DestroyLayers();
       m_delta = Max( 0, d );
    }
 
@@ -319,15 +327,14 @@ public:
    void SetNumberOfLayers( int n )
    {
       PCL_PRECONDITION( n >= 1 )
-      DestroyLayers();
       m_numberOfLayers = Max( 1, n );
-      InitializeLayers();
+      InitializeLayersAndStates();
    }
 
    /*!
     * Returns a reference to the immutable layer at scale index \a i,
     * 0 <= \a i <= \a n, where \a n is the number of generated detail layers.
-    * If \a i == \a n, this member function returns a constant reference to the
+    * If \a i == \a n, this member function returns a reference to the
     * large-scale residual layer.
     *
     * \note Before trying to access layers, the multiscale transform must be
@@ -338,26 +345,26 @@ public:
    const layer& Layer( int i ) const
    {
       ValidateLayerAccess( i );
-      return *m_transform[i];
+      return m_transform[i];
    }
 
    /*!
-    * Returns a reference to the layer at scale index \a i. This is an
-    * overloaded member function, provided for convenience.
+    * Returns a reference to the (mutable) layer at scale index \a i. This is
+    * an overloaded member function, provided for convenience.
     *
-    * See Layer( int i ) const for more information.
+    * See Layer( int ) const for more information.
     */
    layer& Layer( int i )
    {
       ValidateLayerAccess( i );
-      return *m_transform[i];
+      return m_transform[i];
    }
 
    /*!
-    * Returns a constant reference to the layer at scale index \a i. This is a
-    * convenience operator, equivalent to:
+    * Returns a reference to the (immutable) layer at scale index \a i. This is
+    * a convenience operator, equivalent to:
     *
-    * \code Layer( i ); \endcode
+    * \code Layer( i ) const; \endcode
     *
     * The array subscript operators can produce more elegant code than the
     * %Layer functions.
@@ -368,7 +375,7 @@ public:
    }
 
    /*!
-    * Returns a reference to the layer at scale index \a i. This is a
+    * Returns a reference to the (mutable) layer at scale index \a i. This is a
     * convenience operator, equivalent to:
     *
     * \code Layer( i ); \endcode
@@ -396,7 +403,7 @@ public:
    void DeleteLayer( int i )
    {
       ValidateLayerAccess( i );
-      m_transform.Delete( m_transform.At( i ) );
+      m_transform[i].FreeData();
    }
 
    /*!
@@ -408,7 +415,7 @@ public:
    bool IsLayer( int i ) const
    {
       ValidateLayerIndex( i );
-      return m_transform[i] != 0;
+      return !m_transform[i].IsEmpty();
    }
 
    /*!
@@ -498,7 +505,7 @@ public:
    {
       ValidateLayerAccess( i );
       if ( k != 0 )
-         *m_transform[i] *= (k > 0) ? (1 + k) : 1/(1 - k);
+         m_transform[i] *= (k > 0) ? (1 + k) : 1/(1 - k);
    }
 
    /*!
@@ -516,7 +523,7 @@ public:
    virtual transform ReleaseTransform()
    {
       transform r = m_transform;
-      InitializeLayers();
+      DestroyLayers();
       return r;
    }
 
@@ -526,8 +533,7 @@ public:
     */
    virtual void Reset()
    {
-      DestroyLayers();
-      InitializeLayers();
+      InitializeLayersAndStates();
    }
 
    /*!
@@ -630,8 +636,8 @@ protected:
    unsigned m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT;
 
    /*
-    * Vector of transform layers, including the residual layer, so the length
-    * of this vector is numberOfLayers+1.
+    * Array of transform layers, including the residual layer, so the length
+    * of this array is numberOfLayers+1.
     */
    transform m_transform;
 
@@ -651,25 +657,15 @@ protected:
    virtual void Apply( pcl::UInt16Image& ) const;
    virtual void Apply( pcl::UInt32Image& ) const;
 
-   virtual void Destroy()
+   void InitializeLayersAndStates()
    {
       DestroyLayers();
-   }
-
-   void InitializeLayers()
-   {
-      m_transform = transform( size_type( m_numberOfLayers+1 ) );
       m_layerEnabled = layer_state_set( true, m_numberOfLayers+1 );
    }
 
    void DestroyLayers()
    {
-      m_transform.Destroy();
-   }
-
-   void DeleteLayers()
-   {
-      m_transform.Delete();
+      m_transform = transform( size_type( m_numberOfLayers+1 ) );
    }
 
    void ValidateLayerIndex( int j ) const;
@@ -684,5 +680,5 @@ protected:
 
 #endif   // __PCL_RedundantMultiscaleTransform_h
 
-// ****************************************************************************
-// EOF pcl/RedundantMultiscaleTransform.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/RedundantMultiscaleTransform.h - Released 2015/07/30 17:15:18 UTC

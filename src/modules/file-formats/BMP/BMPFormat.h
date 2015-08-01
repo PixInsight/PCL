@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard BMP File Format Module Version 01.00.03.0211
-// ****************************************************************************
-// BMPFormat.h - Released 2014/11/14 17:18:33 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard BMP File Format Module Version 01.00.03.0230
+// ----------------------------------------------------------------------------
+// BMPFormat.h - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard BMP PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __BMPFormat_h
 #define __BMPFormat_h
@@ -54,8 +58,6 @@
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-// BMPFormat
 // ----------------------------------------------------------------------------
 
 class BMPFormat : public MetaFileFormat
@@ -85,8 +87,6 @@ public:
 };
 
 // ----------------------------------------------------------------------------
-// GIFFormat
-// ----------------------------------------------------------------------------
 
 class GIFFormat : public MetaFileFormat
 {
@@ -114,8 +114,6 @@ public:
    virtual FileFormatImplementation* Create() const;
 };
 
-// ----------------------------------------------------------------------------
-// ICOFormat
 // ----------------------------------------------------------------------------
 
 class ICOFormat : public MetaFileFormat
@@ -145,8 +143,6 @@ public:
 };
 
 // ----------------------------------------------------------------------------
-// MNGFormat
-// ----------------------------------------------------------------------------
 
 class MNGFormat : public MetaFileFormat
 {
@@ -174,8 +170,6 @@ public:
    virtual FileFormatImplementation* Create() const;
 };
 
-// ----------------------------------------------------------------------------
-// PBMFormat
 // ----------------------------------------------------------------------------
 
 class PBMFormat : public MetaFileFormat
@@ -205,8 +199,6 @@ public:
 };
 
 // ----------------------------------------------------------------------------
-// PGMFormat
-// ----------------------------------------------------------------------------
 
 class PGMFormat : public MetaFileFormat
 {
@@ -234,8 +226,6 @@ public:
    virtual FileFormatImplementation* Create() const;
 };
 
-// ----------------------------------------------------------------------------
-// PNGFormat
 // ----------------------------------------------------------------------------
 
 class PNGFormat : public MetaFileFormat
@@ -265,8 +255,6 @@ public:
 };
 
 // ----------------------------------------------------------------------------
-// PPMFormat
-// ----------------------------------------------------------------------------
 
 class PPMFormat : public MetaFileFormat
 {
@@ -294,8 +282,6 @@ public:
    virtual FileFormatImplementation* Create() const;
 };
 
-// ----------------------------------------------------------------------------
-// XBMFormat
 // ----------------------------------------------------------------------------
 
 class XBMFormat : public MetaFileFormat
@@ -325,8 +311,6 @@ public:
 };
 
 // ----------------------------------------------------------------------------
-// XPMFormat
-// ----------------------------------------------------------------------------
 
 class XPMFormat : public MetaFileFormat
 {
@@ -355,8 +339,6 @@ public:
 };
 
 // ----------------------------------------------------------------------------
-// TGAFormat
-// ----------------------------------------------------------------------------
 
 class TGAFormat : public MetaFileFormat
 {
@@ -384,8 +366,6 @@ public:
    virtual FileFormatImplementation* Create() const;
 };
 
-// ----------------------------------------------------------------------------
-// SVGFormat
 // ----------------------------------------------------------------------------
 
 class SVGFormat : public MetaFileFormat
@@ -420,5 +400,5 @@ public:
 
 #endif   // __BMPFormat_h
 
-// ****************************************************************************
-// EOF BMPFormat.h - Released 2014/11/14 17:18:33 UTC
+// ----------------------------------------------------------------------------
+// EOF BMPFormat.h - Released 2015/07/31 11:49:40 UTC

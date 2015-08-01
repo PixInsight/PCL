@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/MessageBox.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/MessageBox.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/MessageBox.h>
 #include <pcl/Exception.h>
@@ -73,12 +76,12 @@ class MessageBox::MessageBoxPrivate
                       MessageBox::std_button  aButton2,
                       int                     aDefaultButton,
                       int                     aEscapeButton ) :
-   text( aText ),
-   caption( aCaption ),
-   icon( aIcon ),
-   button0( aButton0 ), button1( aButton1 ), button2( aButton2 ),
-   defaultButton( aDefaultButton ), escapeButton( aEscapeButton ),
-   result( StdButton::NoButton )
+      text( aText ),
+      caption( aCaption ),
+      icon( aIcon ),
+      button0( aButton0 ), button1( aButton1 ), button2( aButton2 ),
+      defaultButton( aDefaultButton ), escapeButton( aEscapeButton ),
+      result( StdButton::NoButton )
    {
    }
 
@@ -101,24 +104,24 @@ MessageBox::MessageBox( const String& text,
                         std_button    button1,
                         std_button    button2,
                         int           defaultButton,
-                        int           escapeButton ) :
-p( new MessageBoxPrivate( text, caption, icon, button0, button1, button2, defaultButton, escapeButton ) )
+                        int           escapeButton ) : p( nullptr )
 {
+   p = new MessageBoxPrivate( text, caption, icon, button0, button1, button2, defaultButton, escapeButton );
 }
 
 // ----------------------------------------------------------------------------
 
 MessageBox::~MessageBox()
 {
-   if ( p != 0 )
-      delete p, p = 0;
+   if ( p != nullptr )
+      delete p, p = nullptr;
 }
 
 // ----------------------------------------------------------------------------
 
 MessageBox::std_button MessageBox::Execute()
 {
-   if ( API == 0 )
+   if ( API == nullptr )
    {
       // Errors occurring before API initialization.
 
@@ -144,15 +147,16 @@ MessageBox::std_button MessageBox::Execute()
       system( cmd.c_str() );
 
 #endif   // __PCL_WINDOWS
+
       return StdButton::Ok;
    }
 
    // Request a PixInsight MessageBox primitive.
 
    return std_button( (*API->Global->MessageBox)( p->text.c_str(), p->caption.c_str(),
-                                                    p->button0, p->button1, p->button2,
-                                                    p->defaultButton, p->escapeButton,
-                                                    p->icon ) );
+                                                  p->button0, p->button1, p->button2,
+                                                  p->defaultButton, p->escapeButton,
+                                                  p->icon ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -248,5 +252,5 @@ void MessageBox::SetEscapeButtonIndex( int index )
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/MessageBox.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/MessageBox.cpp - Released 2015/07/30 17:15:31 UTC

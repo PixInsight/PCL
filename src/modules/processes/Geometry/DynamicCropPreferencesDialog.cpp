@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Geometry Process Module Version 01.01.00.0247
-// ****************************************************************************
-// DynamicCropPreferencesDialog.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Geometry Process Module Version 01.01.00.0266
+// ----------------------------------------------------------------------------
+// DynamicCropPreferencesDialog.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "DynamicCropPreferencesDialog.h"
 #include "DynamicCropInterface.h"
@@ -76,7 +80,7 @@ DynamicCropPreferencesDialog::DynamicCropPreferencesDialog() : Dialog()
    Alpha_Slider.SetStepSize( 10 );
    Alpha_Slider.SetTickFrequency( 10 );
    Alpha_Slider.SetTickStyle( TickStyle::NoTicks );
-   Alpha_Slider.SetMinWidth( 265 );
+   Alpha_Slider.SetScaledMinWidth( 265 );
    Alpha_Slider.OnValueUpdated( (Slider::value_event_handler)&DynamicCropPreferencesDialog::Slider_ValueUpdated, *this );
 
    FillColor_Sizer.SetMargin( 8 );
@@ -173,5 +177,5 @@ void DynamicCropPreferencesDialog::Dialog_Return( Dialog& sender, int retVal )
 
 } // pcl
 
-// ****************************************************************************
-// EOF DynamicCropPreferencesDialog.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF DynamicCropPreferencesDialog.cpp - Released 2015/07/31 11:49:48 UTC

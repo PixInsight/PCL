@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Exception.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Exception.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/api/APIInterface.h>
 
@@ -63,7 +66,7 @@ namespace pcl
 static bool s_useConsole = false;
 static bool s_useGUI = true;
 
-static bool IsPIConsole()
+static bool HaveConsole()
 {
    return API != 0 && (*API->Global->GetConsole)() != 0;
 }
@@ -98,12 +101,12 @@ static String TranslateHTMLParagraphTags( const String& s )
       size_type p = s.FindIC( "<p", p0 );
       if ( p == String::notFound )
       {
-         r.Append( s.SubString( p0 ) );
+         r.Append( s.Substring( p0 ) );
          break;
       }
 
       if ( p != p0 )
-         r.Append( s.SubString( p0, p-p0 ).Trimmed() );
+         r.Append( s.Substring( p0, p-p0 ).Trimmed() );
 
       r.Append( '\n' );
 
@@ -116,12 +119,12 @@ static String TranslateHTMLParagraphTags( const String& s )
       size_type p2 = s.FindIC( "</p>", p1 );
       if ( p2 == String::notFound )
       {
-         r.Append( s.SubString( p1 ) );
+         r.Append( s.Substring( p1 ) );
          break;
       }
 
       if ( p2 != p1 )
-         r.Append( s.SubString( p1, p2-p1 ).Trimmed() );
+         r.Append( s.Substring( p1, p2-p1 ).Trimmed() );
 
       r.Append( '\n' );
 
@@ -139,12 +142,12 @@ static String TranslateHTMLBreakTags( const String& s )
       size_type p = s.FindIC( "<br", p0 );
       if ( p == String::notFound )
       {
-         r.Append( s.SubString( p0 ) );
+         r.Append( s.Substring( p0 ) );
          break;
       }
 
       if ( p != p0 )
-         r.Append( s.SubString( p0, p-p0 ) );
+         r.Append( s.Substring( p0, p-p0 ) );
 
       r.Append( '\n' );
 
@@ -165,7 +168,7 @@ static String RemoveHTMLTags( const String& s )
       size_type p = s.Find( '<', p0 );
       if ( p == String::notFound )
       {
-         r.Append( s.SubString( p0 ) );
+         r.Append( s.Substring( p0 ) );
          return r;
       }
 
@@ -174,17 +177,17 @@ static String RemoveHTMLTags( const String& s )
       {
          if ( ++p1 == n )
          {
-            r.Append( s.SubString( p0 ) );
+            r.Append( s.Substring( p0 ) );
             return r;
          }
          if ( s[p1] == '>' )
          {
-            r.Append( s.SubString( p0, (p1-p > 1) ? p-p0 : p1-p0+1 ) );
+            r.Append( s.Substring( p0, (p1-p > 1) ? p-p0 : p1-p0+1 ) );
             break;
          }
          if ( (s[p1] < 'a' || s[p1] > 'z') && (s[p1] < 'A' || s[p1] > 'Z') && s[p1] != '/' )
          {
-            r.Append( s.SubString( p0, p1-p0+1 ) );
+            r.Append( s.Substring( p0, p1-p0+1 ) );
             break;
          }
       }
@@ -205,7 +208,7 @@ void Exception::Show() const
    if ( s_useConsole || !showOnGUI )
    {
       String text = caption + ": " + info;
-      if ( IsPIConsole() )
+      if ( HaveConsole() )
          Console().CriticalLn( "<end><cbr>*** " + text );
       else
          std::cerr << "\n*** " << RemoveHTMLTags( TranslateHTMLParagraphTags( TranslateHTMLBreakTags( text ) ) ) << '\n' << std::flush;
@@ -250,7 +253,7 @@ String ParseError::Message() const
       {
          s += m_beingParsed.Left( m_errorPosition );
          s += char16_type( 0x2b1b ); // Unicode black large square character
-         s += m_beingParsed.SubString( m_errorPosition );
+         s += m_beingParsed.Substring( m_errorPosition );
       }
       else
          s += m_beingParsed;
@@ -273,7 +276,7 @@ void ParseError::Show() const
             if ( !info.IsEmpty() )
                info += ":\n";
 
-            if ( IsPIConsole() )
+            if ( HaveConsole() )
                info += "<monospace><raw>";
 
             info += m_beingParsed;
@@ -281,7 +284,7 @@ void ParseError::Show() const
             info += String( '.', m_errorPosition );
             info += '^';
 
-            if ( IsPIConsole() )
+            if ( HaveConsole() )
                info += "</raw><default-font>";
          }
          else
@@ -289,16 +292,16 @@ void ParseError::Show() const
             if ( !info.IsEmpty() )
                info += ": ";
 
-            if ( IsPIConsole() )
+            if ( HaveConsole() )
                info += "<raw>";
 
             info += m_beingParsed;
 
-            if ( IsPIConsole() )
+            if ( HaveConsole() )
                info += "</raw>";
          }
 
-      if ( IsPIConsole() )
+      if ( HaveConsole() )
          Console().CriticalLn( "<end><cbr>*** " + Caption() + ": " + info );
       else
          std::cerr << "\n*** " << Caption() << ": " << info << '\n';
@@ -344,7 +347,7 @@ void SourceCodeError::Show() const
 
    if ( s_useConsole || !showOnGUI )
    {
-      if ( IsPIConsole() )
+      if ( HaveConsole() )
          Console().CriticalLn( "<end><cbr>*** " + Caption() + ": <raw>" + Message() + "</raw>" );
       else
          std::cerr << "\n*** " << Caption() << ": " << Message() << '\n';
@@ -362,5 +365,5 @@ void SourceCodeError::Show() const
 
 }  // pcl
 
-// ****************************************************************************
-// EOF pcl/Exception.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Exception.cpp - Released 2015/07/30 17:15:31 UTC

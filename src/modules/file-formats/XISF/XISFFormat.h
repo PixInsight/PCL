@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard XISF File Format Module Version 01.00.00.0023
-// ****************************************************************************
-// XISFFormat.h - Released 2014/11/30 10:38:10 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard XISF File Format Module Version 01.00.03.0056
+// ----------------------------------------------------------------------------
+// XISFFormat.h - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __XISFFormat_h
 #define __XISFFormat_h
@@ -87,9 +91,11 @@ public:
    virtual bool CanStoreResolution() const;
    virtual bool CanStoreKeywords() const;
    virtual bool CanStoreICCProfiles() const;
-   virtual bool CanStoreMetadata() const;
    virtual bool CanStoreThumbnails() const;
    virtual bool CanStoreProperties() const;
+   virtual bool CanStoreRGBWS() const;
+   virtual bool CanStoreDisplayFunctions() const;
+   virtual bool CanStoreColorFilterArrays() const;
    virtual bool SupportsCompression() const;
    virtual bool SupportsMultipleImages() const;
    virtual bool CanEditPreferences() const;
@@ -98,8 +104,6 @@ public:
    virtual FileFormatImplementation* Create() const;
 
    virtual bool EditPreferences() const;
-
-   // XISF format-specific data
 
    virtual bool ValidateFormatSpecificData( const void* data ) const;
    virtual void DisposeFormatSpecificData( void* data ) const;
@@ -120,25 +124,18 @@ public:
 
    static XISFOptions DefaultOptions();
 
-   // Overridden embedding options.
    struct EmbeddingOverrides
    {
-      bool overrideICCProfileEmbedding;
-      bool embedICCProfiles;
-      bool overrideMetadataEmbedding;
-      bool embedMetadata;
-      bool overrideThumbnailEmbedding;
-      bool embedThumbnails;
-      bool overridePropertyEmbedding;
-      bool embedProperties;
-
-      EmbeddingOverrides() :
-      overrideICCProfileEmbedding( false ), embedICCProfiles( false ),
-      overrideMetadataEmbedding( false ), embedMetadata( false ),
-      overrideThumbnailEmbedding( false ), embedThumbnails( false ),
-      overridePropertyEmbedding( false ), embedProperties( true )
-      {
-      }
+      bool overridePropertyEmbedding        = false;
+      bool embedProperties                  = true;
+      bool overrideICCProfileEmbedding      = false;
+      bool embedICCProfiles                 = false;
+      bool overrideDisplayFunctionEmbedding = false;
+      bool embedDisplayFunctions            = false;
+      bool overrideRGBWorkingSpaceEmbedding = false;
+      bool embedRGBWorkingSpaces            = false;
+      bool overrideThumbnailEmbedding       = false;
+      bool embedThumbnails                  = false;
    };
 
    static EmbeddingOverrides DefaultEmbeddingOverrides();
@@ -150,5 +147,5 @@ public:
 
 #endif   // __XISFFormat_h
 
-// ****************************************************************************
-// EOF XISFFormat.h - Released 2014/11/30 10:38:10 UTC
+// ----------------------------------------------------------------------------
+// EOF XISFFormat.h - Released 2015/07/31 11:49:40 UTC

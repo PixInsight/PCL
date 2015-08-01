@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.93
-# Copyright (C) 2009-2014 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.95
+# Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Fri, 14 Nov 2014 17:27:19 GMT
+# Automatically generated on Thu, 30 Jul 2015 17:10:38 GMT
 # Project id ...... Convolution
 # Project type .... Module
 # Platform ........ Windows/vc12
@@ -30,7 +30,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9A65FDD9-FFE1-48A6-B8F0-DD61A64D9799}</ProjectGuid>
+    <ProjectGuid>{F8BBEDB1-8473-4B96-B89E-798FF4234742}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -100,16 +100,18 @@
       <OmitFramePointers>true</OmitFramePointers>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <AdditionalIncludeDirectories>$(PCLINCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;__PCL_WINDOWS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat></DebugInformationFormat>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -117,7 +119,8 @@
       <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR64)\Convolution-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile></ModuleDefinitionFile>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -127,6 +130,9 @@
       <TargetMachine>MachineX64</TargetMachine>
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>signtool.exe sign /a /t http://timestamp.verisign.com/scripts/timstamp.dll /v $(TargetDir)$(TargetFileName)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -137,7 +143,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <AdditionalIncludeDirectories>$(PCLINCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;__PCL_WINDOWS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -145,9 +151,11 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat></DebugInformationFormat>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -155,7 +163,8 @@
       <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\Convolution-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile></ModuleDefinitionFile>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -165,6 +174,9 @@
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>signtool.exe sign /a /t http://timestamp.verisign.com/scripts/timstamp.dll /v $(TargetDir)$(TargetFileName)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
@@ -173,12 +185,13 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(PCLINCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;__PCL_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -188,24 +201,29 @@
       <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR64)\Convolution-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile></ModuleDefinitionFile>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <ImportLibrary>$(Platform)\$(Configuration)\$(ProjectName).lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>signtool.exe sign /a /t http://timestamp.verisign.com/scripts/timstamp.dll /v $(TargetDir)$(TargetFileName)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(PCLINCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;__PCL_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -215,54 +233,58 @@
       <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\Convolution-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile></ModuleDefinitionFile>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <ImportLibrary>$(Platform)\$(Configuration)\$(ProjectName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>signtool.exe sign /a /t http://timestamp.verisign.com/scripts/timstamp.dll /v $(TargetDir)$(TargetFileName)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\ConvolutionDialog.cpp"/>
-    <ClCompile Include="..\..\ConvolutionInstance.cpp"/>
-    <ClCompile Include="..\..\ConvolutionInterface.cpp"/>
-    <ClCompile Include="..\..\ConvolutionModule.cpp"/>
-    <ClCompile Include="..\..\ConvolutionParameters.cpp"/>
-    <ClCompile Include="..\..\ConvolutionProcess.cpp"/>
-    <ClCompile Include="..\..\FilterLibrary.cpp"/>
-    <ClCompile Include="..\..\LarsonSekaninaInstance.cpp"/>
-    <ClCompile Include="..\..\LarsonSekaninaInterface.cpp"/>
-    <ClCompile Include="..\..\LarsonSekaninaParameters.cpp"/>
-    <ClCompile Include="..\..\LarsonSekaninaProcess.cpp"/>
-    <ClCompile Include="..\..\UnsharpMaskInstance.cpp"/>
-    <ClCompile Include="..\..\UnsharpMaskInterface.cpp"/>
-    <ClCompile Include="..\..\UnsharpMaskParameters.cpp"/>
-    <ClCompile Include="..\..\UnsharpMaskProcess.cpp"/>
+    <ClCompile Include="..\..\ConvolutionDialog.cpp" />
+    <ClCompile Include="..\..\ConvolutionInstance.cpp" />
+    <ClCompile Include="..\..\ConvolutionInterface.cpp" />
+    <ClCompile Include="..\..\ConvolutionModule.cpp" />
+    <ClCompile Include="..\..\ConvolutionParameters.cpp" />
+    <ClCompile Include="..\..\ConvolutionProcess.cpp" />
+    <ClCompile Include="..\..\FilterLibrary.cpp" />
+    <ClCompile Include="..\..\LarsonSekaninaInstance.cpp" />
+    <ClCompile Include="..\..\LarsonSekaninaInterface.cpp" />
+    <ClCompile Include="..\..\LarsonSekaninaParameters.cpp" />
+    <ClCompile Include="..\..\LarsonSekaninaProcess.cpp" />
+    <ClCompile Include="..\..\UnsharpMaskInstance.cpp" />
+    <ClCompile Include="..\..\UnsharpMaskInterface.cpp" />
+    <ClCompile Include="..\..\UnsharpMaskParameters.cpp" />
+    <ClCompile Include="..\..\UnsharpMaskProcess.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\ConvolutionDialog.h"/>
-    <ClInclude Include="..\..\ConvolutionInstance.h"/>
-    <ClInclude Include="..\..\ConvolutionInterface.h"/>
-    <ClInclude Include="..\..\ConvolutionModule.h"/>
-    <ClInclude Include="..\..\ConvolutionParameters.h"/>
-    <ClInclude Include="..\..\ConvolutionProcess.h"/>
-    <ClInclude Include="..\..\FilterLibrary.h"/>
-    <ClInclude Include="..\..\LarsonSekaninaInstance.h"/>
-    <ClInclude Include="..\..\LarsonSekaninaInterface.h"/>
-    <ClInclude Include="..\..\LarsonSekaninaParameters.h"/>
-    <ClInclude Include="..\..\LarsonSekaninaProcess.h"/>
-    <ClInclude Include="..\..\UnsharpMaskInstance.h"/>
-    <ClInclude Include="..\..\UnsharpMaskInterface.h"/>
-    <ClInclude Include="..\..\UnsharpMaskParameters.h"/>
-    <ClInclude Include="..\..\UnsharpMaskProcess.h"/>
+    <ClInclude Include="..\..\ConvolutionDialog.h" />
+    <ClInclude Include="..\..\ConvolutionInstance.h" />
+    <ClInclude Include="..\..\ConvolutionInterface.h" />
+    <ClInclude Include="..\..\ConvolutionModule.h" />
+    <ClInclude Include="..\..\ConvolutionParameters.h" />
+    <ClInclude Include="..\..\ConvolutionProcess.h" />
+    <ClInclude Include="..\..\FilterLibrary.h" />
+    <ClInclude Include="..\..\LarsonSekaninaInstance.h" />
+    <ClInclude Include="..\..\LarsonSekaninaInterface.h" />
+    <ClInclude Include="..\..\LarsonSekaninaParameters.h" />
+    <ClInclude Include="..\..\LarsonSekaninaProcess.h" />
+    <ClInclude Include="..\..\UnsharpMaskInstance.h" />
+    <ClInclude Include="..\..\UnsharpMaskInterface.h" />
+    <ClInclude Include="..\..\UnsharpMaskParameters.h" />
+    <ClInclude Include="..\..\UnsharpMaskProcess.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\ConvolutionIcon.png"/>
-    <None Include="..\..\LarsonSekaninaIcon.png"/>
-    <None Include="..\..\UnsharpMaskIcon.png"/>
+    <None Include="..\..\ConvolutionIcon.png" />
+    <None Include="..\..\LarsonSekaninaIcon.png" />
+    <None Include="..\..\UnsharpMaskIcon.png" />
   </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

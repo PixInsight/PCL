@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Matrix.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Matrix.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Matrix_h
 #define __PCL_Matrix_h
@@ -111,6 +114,12 @@
 # endif
 #endif
 
+#ifndef __PCL_NO_VECTOR_INSTANTIATE
+# ifndef __PCL_Complex_h
+#  include <pcl/Complex.h>
+# endif
+#endif
+
 /*
  * Valid filter kernel sizes are odd integers >= 3. This macro is used for the
  * KernelFilter and SeparableFilter classes to ensure validity of filter
@@ -130,8 +139,9 @@ namespace pcl
  * %GenericMatrix is a lightweight template class implementing a matrix of
  * arbitrary size. This class provides the following main features:
  *
- * \li Reference counted. %GenericMatrix instances can safely be passed as
- * function return values and by-value function arguments.
+ * \li Implicit data sharing with reference counting and copy-on-write
+ * functionality. %GenericMatrix instances can safely be passed as function
+ * return values and by-value function arguments.
  *
  * \li Thread-safe. %GenericMatrix instances can safely be accessed from
  * multiple threads. The reference counter implements atomic reference and
@@ -140,8 +150,9 @@ namespace pcl
  * \li Efficient matrix storage and access to matrix elements. %Matrix
  * elements are dynamically allocated as a single, contiguous memory block.
  *
- * \li Support for basic matrix operations, including matrix inversion and
- * transposition, scalar-to-matrix and matrix-to-matrix arithmetic operations.
+ * \li Support for a comprehensive set matrix operations, including matrix
+ * inversion and transposition, scalar-to-matrix and matrix-to-matrix
+ * arithmetic operations, and image to/from matrix conversions.
  *
  * \sa GenericVector, \ref matrix_operators, \ref matrix_types
  */
@@ -153,14 +164,35 @@ public:
    /*!
     * Represents a matrix element.
     */
-   typedef T         element;
+   typedef T                        element;
+
+   /*!
+    * Represents a vector of matrix elements.
+    */
+   typedef GenericVector<element>   vector;
+
+   /*!
+    * Represents a mutable matrix block iterator. In a matrix of n rows and m
+    * columns, a block iterator allows iteration on the entire set of matrix
+    * elements from {0,0} to {n-1,m-1} in row-column order.
+    */
+   typedef element*                 block_iterator;
+
+   /*!
+    * Represents an immutable matrix block iterator. In a matrix of n rows and
+    * m columns, a block iterator allows iteration on the entire set of matrix
+    * elements from {0,0} to {n-1,m-1} in row-column order.
+    */
+   typedef const element*           const_block_iterator;
 
    /*!
     * Constructs an empty matrix.
     * An empty matrix has no elements and zero dimensions.
     */
-   GenericMatrix() : data( new Data( 0, 0 ) )
+   GenericMatrix() :
+      m_data( nullptr )
    {
+      m_data = new Data( 0, 0 );
    }
 
    /*!
@@ -172,8 +204,10 @@ public:
     * Matrix elements are not initialized by this constructor; the newly
     * created matrix will contain unpredictable values.
     */
-   GenericMatrix( int rows, int cols ) : data( new Data( rows, cols ) )
+   GenericMatrix( int rows, int cols ) :
+      m_data( nullptr )
    {
+      m_data = new Data( rows, cols );
    }
 
    /*!
@@ -183,9 +217,11 @@ public:
     * \param rows    Number of matrix rows (>= 0).
     * \param cols    Number of matrix columns (>= 0).
     */
-   GenericMatrix( const T& x, int rows, int cols ) : data( new Data( rows, cols ) )
+   GenericMatrix( const element& x, int rows, int cols ) :
+      m_data( nullptr )
    {
-      pcl::Fill( data->Begin(), data->End(), x );
+      m_data = new Data( rows, cols );
+      pcl::Fill( m_data->Begin(), m_data->End(), x );
    }
 
    /*!
@@ -202,10 +238,16 @@ public:
     * \param cols    Number of matrix columns (>= 0).
     */
    template <typename T1>
-   GenericMatrix( const T1* a, int rows, int cols ) : data( new Data( rows, cols ) )
+   GenericMatrix( const T1* a, int rows, int cols ) :
+      m_data( nullptr )
    {
-      if ( a != 0 )
-         pcl::Copy( data->Begin(), a, a + NumberOfElements() );
+      m_data = new Data( rows, cols );
+      if ( a != nullptr )
+      {
+         block_iterator c = m_data->Begin();
+         for ( const T1* b = a + NumberOfElements(); a < b; ++a, ++c )
+            *c = element( *a );
+      }
    }
 
    /*!
@@ -222,22 +264,33 @@ public:
    template <typename T1>
    GenericMatrix( const T1& a00, const T1& a01, const T1& a02,
                   const T1& a10, const T1& a11, const T1& a12,
-                  const T1& a20, const T1& a21, const T1& a22 ) : data( new Data( 3, 3 ) )
+                  const T1& a20, const T1& a21, const T1& a22 ) :
+      m_data( nullptr )
    {
-      T* v = data->Begin();
-      v[0] = T( a00 ); v[1] = T( a01 ); v[2] = T( a02 );
-      v[3] = T( a10 ); v[4] = T( a11 ); v[5] = T( a12 );
-      v[6] = T( a20 ); v[7] = T( a21 ); v[8] = T( a22 );
+      m_data = new Data( 3, 3 );
+      block_iterator v = m_data->Begin();
+      v[0] = element( a00 ); v[1] = element( a01 ); v[2] = element( a02 );
+      v[3] = element( a10 ); v[4] = element( a11 ); v[5] = element( a12 );
+      v[6] = element( a20 ); v[7] = element( a21 ); v[8] = element( a22 );
    }
 
    /*!
-    * Copy constructor. This object references the same data that is being
+    * Copy constructor. This object will reference the same data that is being
     * referenced by the specified matrix \a x.
     */
-   GenericMatrix( const GenericMatrix<T>& x ) : data( x.data )
+   GenericMatrix( const GenericMatrix& x ) :
+      m_data( x.m_data )
    {
-      if ( data != 0 )
-         data->Attach();
+      m_data->Attach();
+   }
+
+   /*!
+    * Move constructor.
+    */
+   GenericMatrix( GenericMatrix&& x ) :
+      m_data( x.m_data )
+   {
+      x.m_data = nullptr;
    }
 
    /*!
@@ -262,16 +315,17 @@ public:
     * submatrix coordinates and dimensions to the nearest valid values,
     * possibly constructing an empty matrix.
     */
-   GenericMatrix( const GenericMatrix<T>& x, int i0, int j0, int rows, int cols ) : data( 0 )
+   GenericMatrix( const GenericMatrix& x, int i0, int j0, int rows, int cols ) :
+      m_data( nullptr )
    {
       i0 = Range( i0, 0, Max( 0, x.Rows()-1 ) );
       j0 = Range( j0, 0, Max( 0, x.Cols()-1 ) );
       rows = Range( rows, 0, Max( 0, x.Rows()-i0 ) );
       cols = Range( cols, 0, Max( 0, x.Cols()-j0 ) );
-      data = new Data( rows, cols );
-      for ( int i = 0; i < data->Rows(); ++i, ++i0 )
-         for ( int j = 0; j < data->Cols(); ++j, ++j0 )
-            data->v[i][j] = x.data->v[i0][j0];
+      m_data = new Data( rows, cols );
+      for ( int i = 0; i < m_data->Rows(); ++i, ++i0 )
+         for ( int j = 0; j < m_data->Cols(); ++j, ++j0 )
+            m_data->v[i][j] = x.m_data->v[i0][j0];
    }
 
 #ifndef __PCL_NO_MATRIX_IMAGE_CONVERSION
@@ -313,9 +367,11 @@ public:
     * sample is outside the normalized [0,1] range.
     */
    template <class P>
-   GenericMatrix( const GenericImage<P>& image, const Rect& rect = Rect( 0 ), int channel = -1 ) : data( 0 )
+   GenericMatrix( const GenericImage<P>& image, const Rect& rect = Rect( 0 ), int channel = -1 ) :
+      m_data( nullptr )
    {
-      (void)operator =( FromImage( image, rect, channel ) );
+      GenericMatrix M = FromImage( image, rect, channel );
+      pcl::Swap( m_data, M.m_data );
    }
 
    /*!
@@ -332,9 +388,11 @@ public:
     * GenericMatrix::GenericMatrix( const GenericImage&, const Rect&, int ) for
     * more information about the conversion performed by this constructor.
     */
-   GenericMatrix( const ImageVariant& image, const Rect& rect = Rect( 0 ), int channel = -1 )
+   GenericMatrix( const ImageVariant& image, const Rect& rect = Rect( 0 ), int channel = -1 ) :
+      m_data( nullptr )
    {
-      (void)operator =( FromImage( image, rect, channel ) );
+      GenericMatrix M = FromImage( image, rect, channel );
+      pcl::Swap( m_data, M.m_data );
    }
 
 #endif   // !__PCL_NO_MATRIX_IMAGE_CONVERSION
@@ -346,11 +404,11 @@ public:
     */
    virtual ~GenericMatrix()
    {
-      if ( data != 0 )
+      if ( m_data != nullptr )
       {
-         if ( !data->Detach() )
-            delete data;
-         data = 0;
+         if ( !m_data->Detach() )
+            delete m_data;
+         m_data = nullptr;
       }
    }
 
@@ -359,50 +417,113 @@ public:
     */
    void Clear()
    {
-      if ( data != 0 )
-         if ( data->IsUnique() )
-            data->Deallocate();
+      if ( !IsEmpty() )
+         if ( m_data->IsUnique() )
+            m_data->Deallocate();
          else
          {
-            data->Detach();
-            data = new Data( 0, 0 );
+            m_data->Detach();
+            m_data = nullptr;
+            m_data = new Data( 0, 0 );
          }
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Copy assignment operator. Returns a reference to this object.
     *
     * If this instance and the specified source instance \a x reference
-    * different matrix data, then the previously referenced data is
-    * dereferenced and the new data (which is being referenced by \a x) is
-    * referenced by this object. If the previous data becomes unreferenced
-    * (garbage), then it is destroyed and deallocated immediately.
+    * different matrix data, the data previously referenced by this object is
+    * dereferenced. If the previous data becomes unreferenced, it is destroyed
+    * and deallocated. Then the data being referenced by \a x is also
+    * referenced by this object.
     *
-    * If this instance and the specified source instance \a x reference the
-    * same matrix data, then this function does nothing.
+    * If this instance and the specified source instance \a x already reference
+    * the same matrix data, then this function does nothing.
     */
-   GenericMatrix& operator =( const GenericMatrix<T>& x )
+   GenericMatrix& operator =( const GenericMatrix& x )
    {
-      if ( x.data != data )
-      {
-         x.data->Attach();
-         if ( data != 0 )
-            if ( !data->Detach() )
-               delete data;
-         data = x.data;
-      }
+      Assign( x );
       return *this;
    }
 
    /*!
-    * Exchanges two matrices \a A and \a B.
+    * Assigns a matrix \a x to this object.
+    *
+    * If this instance and the specified source instance \a x reference
+    * different matrix data, the data previously referenced by this object is
+    * dereferenced. If the previous data becomes unreferenced, it is destroyed
+    * and deallocated. Then the data being referenced by \a x is also
+    * referenced by this object.
+    *
+    * If this instance and the specified source instance \a x already reference
+    * the same matrix data, then this function does nothing.
+    */
+   void Assign( const GenericMatrix& x )
+   {
+      x.m_data->Attach();
+      if ( !m_data->Detach() )
+         delete m_data;
+      m_data = x.m_data;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   GenericMatrix& operator =( GenericMatrix&& x )
+   {
+      Transfer( x );
+      return *this;
+   }
+
+   /*!
+    * Transfers data from another matrix \a x to this object.
+    *
+    * Decrements the reference counter of the current matrix data. If the data
+    * becomes unreferenced, it is destroyed and deallocated. The matrix data
+    * referenced by the source object \a x is then transferred to this object,
+    * and the source object \a x is left empty.
+    *
+    * \warning The source matrix \a x will be an invalid object after calling
+    * this function, and hence should be destroyed immediately. Any attempt to
+    * access an invalid object will most likely lead to a crash.
+    */
+   void Transfer( GenericMatrix& x )
+   {
+      if ( !m_data->Detach() )
+         delete m_data;
+      m_data = x.m_data;
+      x.m_data = nullptr;
+   }
+
+   /*!
+    * Transfers data from another matrix \a x to this object.
+    *
+    * Decrements the reference counter of the current matrix data. If the data
+    * becomes unreferenced, it is destroyed and deallocated. The matrix data
+    * referenced by the source object \a x is then transferred to this object,
+    * and the source object \a x is left empty.
+    *
+    * \warning The source matrix \a x will be an invalid object after calling
+    * this function, and hence should be destroyed immediately. Any attempt to
+    * access an invalid object will most likely lead to a crash.
+    */
+   void Transfer( GenericMatrix&& x )
+   {
+      if ( !m_data->Detach() )
+         delete m_data;
+      m_data = x.m_data;
+      x.m_data = nullptr;
+   }
+
+   /*!
+    * Exchanges two matrices \a x1 and \a x2.
     *
     * This function is efficient because it simply swaps the internal matrix
-    * data pointers owned by both objects.
+    * data pointers owned by the objects.
     */
-   friend void Swap( GenericMatrix<T>& A, GenericMatrix<T>& B )
+   friend void Swap( GenericMatrix& x1, GenericMatrix& x2 )
    {
-      Swap( A.data, B.data );
+      pcl::Swap( x1.m_data, x2.m_data );
    }
 
    /*!
@@ -413,38 +534,36 @@ public:
     * ensures that this instance uniquely references its matrix data,
     * generating a new matrix data block if necessary.
     */
-   GenericMatrix& operator =( const T& x )
+   GenericMatrix& operator =( const element& x )
    {
       if ( !IsUnique() )
       {
-         Data* newData = new Data( data->Rows(), data->Cols() );
-         if ( !data->Detach() )
-            delete data;
-         data = newData;
+         Data* newData = new Data( m_data->Rows(), m_data->Cols() );
+         m_data->Detach();
+         m_data = newData;
       }
-      pcl::Fill( data->Begin(), data->End(), x );
+      pcl::Fill( m_data->Begin(), m_data->End(), x );
       return *this;
    }
 
 #define IMPLEMENT_SCALAR_ASSIGN_OP( op )                                      \
       if ( IsUnique() )                                                       \
       {                                                                       \
-               T* a = data->Begin();                                          \
-         const T* b = data->End();                                            \
+               block_iterator a = m_data->Begin();                            \
+         const_block_iterator b = m_data->End();                              \
          for ( ; a < b; ++a )                                                 \
             *a op##= x;                                                       \
       }                                                                       \
       else                                                                    \
       {                                                                       \
-         Data* newData = new Data( data->Rows(), data->Cols() );              \
-               T* a = newData->Begin();                                       \
-         const T* b = newData->End();                                         \
-         const T* c = data->Begin();                                          \
+         Data* newData = new Data( m_data->Rows(), m_data->Cols() );          \
+               block_iterator a = newData->Begin();                           \
+         const_block_iterator b = newData->End();                             \
+         const_block_iterator c = m_data->Begin();                            \
          for ( ; a < b; ++a, ++c )                                            \
             *a = *c op x;                                                     \
-         if ( !data->Detach() )                                               \
-            delete data;                                                      \
-         data = newData;                                                      \
+         m_data->Detach();                                                    \
+         m_data = newData;                                                    \
       }                                                                       \
       return *this;
 
@@ -456,7 +575,7 @@ public:
     * ensures that this instance uniquely references its matrix data,
     * generating a duplicate if necessary.
     */
-   GenericMatrix& operator +=( const T& x )
+   GenericMatrix& operator +=( const element& x )
    {
       IMPLEMENT_SCALAR_ASSIGN_OP( + )
    }
@@ -469,7 +588,7 @@ public:
     * function ensures that this instance uniquely references its matrix data,
     * generating a duplicate if necessary.
     */
-   GenericMatrix& operator -=( const T& x )
+   GenericMatrix& operator -=( const element& x )
    {
       IMPLEMENT_SCALAR_ASSIGN_OP( - )
    }
@@ -482,7 +601,7 @@ public:
     * ensures that this instance uniquely references its matrix data,
     * generating a duplicate if necessary.
     */
-   GenericMatrix& operator *=( const T& x )
+   GenericMatrix& operator *=( const element& x )
    {
       IMPLEMENT_SCALAR_ASSIGN_OP( * )
    }
@@ -495,7 +614,7 @@ public:
     * ensures that this instance uniquely references its matrix data,
     * generating a duplicate if necessary.
     */
-   GenericMatrix& operator /=( const T& x )
+   GenericMatrix& operator /=( const element& x )
    {
       IMPLEMENT_SCALAR_ASSIGN_OP( / )
    }
@@ -508,26 +627,25 @@ public:
     * ensures that this instance uniquely references its matrix data,
     * generating a duplicate if necessary.
     */
-   GenericMatrix& operator ^=( const T& x )
+   GenericMatrix& operator ^=( const element& x )
    {
       if ( IsUnique() )
       {
-               T* a = data->Begin();
-         const T* b = data->End();
+               block_iterator a = m_data->Begin();
+         const_block_iterator b = m_data->End();
          for ( ; a < b; ++a )
             *a = pcl::Pow( *a, x );
       }
       else
       {
-         Data* newData = new Data( data->Rows(), data->Cols() );
-               T* a = newData->Begin();
-         const T* b = newData->End();
-         const T* c = data->Begin();
+         Data* newData = new Data( m_data->Rows(), m_data->Cols() );
+               block_iterator a = newData->Begin();
+         const_block_iterator b = newData->End();
+         const_block_iterator c = m_data->Begin();
          for ( ; a < b; ++a, ++c )
             *a = pcl::Pow( *c, x );
-         if ( !data->Detach() )
-            delete data;
-         data = newData;
+         m_data->Detach();
+         m_data = newData;
       }
       return *this;
    }
@@ -541,10 +659,10 @@ public:
     */
    GenericMatrix Sqr() const
    {
-      GenericMatrix<T> R( data->Rows(), data->Cols() );
-            T* r = R.data->Begin();
-      const T* s = R.data->End();
-      const T* a = data->Begin();
+      GenericMatrix R( m_data->Rows(), m_data->Cols() );
+            block_iterator r = R.m_data->Begin();
+      const_block_iterator s = R.m_data->End();
+      const_block_iterator a = m_data->Begin();
       for ( ; r < s; ++r, ++a )
          *r = *a * *a;
       return R;
@@ -560,22 +678,21 @@ public:
    {
       if ( IsUnique() )
       {
-               T* a = data->Begin();
-         const T* b = data->End();
+               block_iterator a = m_data->Begin();
+         const_block_iterator b = m_data->End();
          for ( ; a < b; ++a )
             *a *= *a;
       }
       else
       {
-         Data* newData = new Data( data->Rows(), data->Cols() );
-               T* a = newData->Begin();
-         const T* b = newData->End();
-         const T* c = data->Begin();
+         Data* newData = new Data( m_data->Rows(), m_data->Cols() );
+               block_iterator a = newData->Begin();
+         const_block_iterator b = newData->End();
+         const_block_iterator c = m_data->Begin();
          for ( ; a < b; ++a, ++c )
             *a = *c * *c;
-         if ( !data->Detach() )
-            delete data;
-         data = newData;
+         m_data->Detach();
+         m_data = newData;
       }
    }
 
@@ -586,10 +703,10 @@ public:
     */
    GenericMatrix Sqrt() const
    {
-      GenericMatrix<T> R( data->Rows(), data->Cols() );
-            T* r = R.data->Begin();
-      const T* s = R.data->End();
-      const T* a = data->Begin();
+      GenericMatrix R( m_data->Rows(), m_data->Cols() );
+            block_iterator r = R.m_data->Begin();
+      const_block_iterator s = R.m_data->End();
+      const_block_iterator a = m_data->Begin();
       for ( ; r < s; ++r, ++a )
          *r = pcl::Sqrt( *a );
       return R;
@@ -605,22 +722,21 @@ public:
    {
       if ( IsUnique() )
       {
-               T* a = data->Begin();
-         const T* b = data->End();
+               block_iterator a = m_data->Begin();
+         const_block_iterator b = m_data->End();
          for ( ; a < b; ++a )
             *a = pcl::Sqrt( *a );
       }
       else
       {
-         Data* newData = new Data( data->Rows(), data->Cols() );
-               T* a = newData->Begin();
-         const T* b = newData->End();
-         const T* c = data->Begin();
+         Data* newData = new Data( m_data->Rows(), m_data->Cols() );
+               block_iterator a = newData->Begin();
+         const_block_iterator b = newData->End();
+         const_block_iterator c = m_data->Begin();
          for ( ; a < b; ++a, ++c )
             *a = pcl::Sqrt( *c );
-         if ( !data->Detach() )
-            delete data;
-         data = newData;
+         m_data->Detach();
+         m_data = newData;
       }
    }
 
@@ -631,10 +747,10 @@ public:
     */
    GenericMatrix Abs() const
    {
-      GenericMatrix<T> R( data->Rows(), data->Cols() );
-            T* r = R.data->Begin();
-      const T* s = R.data->End();
-      const T* a = data->Begin();
+      GenericMatrix R( m_data->Rows(), m_data->Cols() );
+            block_iterator r = R.m_data->Begin();
+      const_block_iterator s = R.m_data->End();
+      const_block_iterator a = m_data->Begin();
       for ( ; r < s; ++r, ++a )
          *r = pcl::Abs( *a );
       return R;
@@ -650,22 +766,21 @@ public:
    {
       if ( IsUnique() )
       {
-               T* a = data->Begin();
-         const T* b = data->End();
+               block_iterator a = m_data->Begin();
+         const_block_iterator b = m_data->End();
          for ( ; a < b; ++a )
             *a = pcl::Abs( *a );
       }
       else
       {
-         Data* newData = new Data( data->Rows(), data->Cols() );
-               T* a = newData->Begin();
-         const T* b = newData->End();
-         const T* c = data->Begin();
+         Data* newData = new Data( m_data->Rows(), m_data->Cols() );
+               block_iterator a = newData->Begin();
+         const_block_iterator b = newData->End();
+         const_block_iterator c = m_data->Begin();
          for ( ; a < b; ++a, ++c )
             *a = pcl::Abs( *c );
-         if ( !data->Detach() )
-            delete data;
-         data = newData;
+         m_data->Detach();
+         m_data = newData;
       }
    }
 
@@ -674,16 +789,16 @@ public:
     */
    bool IsUnique() const
    {
-      return data->IsUnique();
+      return m_data->IsUnique();
    }
 
    /*!
     * Returns true if this instance references (shares) the same matrix data as
     * another instance \a x.
     */
-   bool IsAliasOf( const GenericMatrix<T>& x ) const
+   bool IsAliasOf( const GenericMatrix& x ) const
    {
-      return data == x.data;
+      return m_data == x.m_data;
    }
 
    /*!
@@ -697,11 +812,10 @@ public:
    {
       if ( !IsUnique() )
       {
-         Data* newData = new Data( data->Rows(), data->Cols() );
-         pcl::Copy( newData->Begin(), data->Begin(), data->End() );
-         if ( !data->Detach() )
-            delete data;
-         data = newData;
+         Data* newData = new Data( m_data->Rows(), m_data->Cols() );
+         pcl::Copy( newData->Begin(), m_data->Begin(), m_data->End() );
+         m_data->Detach();
+         m_data = newData;
       }
    }
 
@@ -711,7 +825,7 @@ public:
     */
    int Rows() const
    {
-      return data->Rows();
+      return m_data->Rows();
    }
 
    /*!
@@ -720,7 +834,7 @@ public:
     */
    int Cols() const
    {
-      return data->Cols();
+      return m_data->Cols();
    }
 
    /*!
@@ -732,6 +846,26 @@ public:
    int Columns() const
    {
       return Cols();
+   }
+
+   /*!
+    * Returns true only if this matrix is valid. A matrix is valid if it
+    * references an internal matrix structure, even if it is an empty matrix.
+    *
+    * In general, all %GenericMatrix objects are valid with only two
+    * exceptions:
+    *
+    * \li Objects that have been move-copied or move-assigned to other
+    * matrices.
+    * \li Objects that have been invalidated explicitly by calling Transfer().
+    *
+    * An invalid matrix object cannot be used and should be destroyed
+    * immediately. Invalid matrices are always destroyed automatically during
+    * move construction and move assignment operations.
+    */
+   bool IsValid() const
+   {
+      return m_data != nullptr;
    }
 
    /*!
@@ -759,7 +893,7 @@ public:
     */
    size_type NumberOfElements() const
    {
-      return data->NumberOfElements();
+      return m_data->NumberOfElements();
    }
 
    /*!
@@ -768,7 +902,7 @@ public:
     */
    size_type Size() const
    {
-      return data->Size();
+      return m_data->Size();
    }
 
    /*!
@@ -778,7 +912,7 @@ public:
     * %Matrix comparisons are performed element-wise. Two matrices are equal if
     * both have the same dimensions and identical element values.
     */
-   bool operator ==( const GenericMatrix<T>& x ) const
+   bool operator ==( const GenericMatrix& x ) const
    {
       return IsAliasOf( x ) || SameDimensions( x ) && pcl::Equal( Begin(), x.Begin(), x.End() );
    }
@@ -792,7 +926,7 @@ public:
     * differ, or until the end of one of the matrices is reached. In the latter
     * case the shortest matrix is the lesser one.
     */
-   bool operator <( const GenericMatrix<T>& x ) const
+   bool operator <( const GenericMatrix& x ) const
    {
       return !IsAliasOf( x ) && pcl::Compare( Begin(), End(), x.Begin(), x.End() ) < 0;
    }
@@ -801,7 +935,7 @@ public:
     * Returns true if this matrix has the same dimensions, i.e. the same number
     * of rows and columns, as another matrix \a x.
     */
-   bool SameDimensions( const GenericMatrix<T>& x ) const
+   bool SameDimensions( const GenericMatrix& x ) const
    {
       return Rows() == x.Rows() && Cols() == x.Cols();
    }
@@ -815,22 +949,19 @@ public:
     * rows and columns, are different. Only the number and order of elements
     * are relevant for this comparison.
     */
-   bool SameElements( const GenericMatrix<T>& x ) const
+   bool SameElements( const GenericMatrix& x ) const
    {
       if ( IsAliasOf( x ) )
          return true;
       if ( NumberOfElements() != x.NumberOfElements() )
          return false;
-      const T* a  = Begin();
-      const T* a1 = End();
-      const T* b  = x.Begin();
-      for ( ; ; ++a, ++b )
-      {
-         if ( a == a1 )
-            return true;
-         if ( *a != *b )
+      const_block_iterator a = Begin();
+      const_block_iterator b = End();
+      const_block_iterator c = x.Begin();
+      for ( ; a < b; ++a, ++c )
+         if ( *a != *c )
             return false;
-      }
+      return true;
    }
 
    /*!
@@ -839,19 +970,19 @@ public:
     * Before returning, this function ensures that this instance uniquely
     * references its matrix data.
     */
-   T& Element( int i, int j )
+   element& Element( int i, int j )
    {
       SetUnique();
-      return data->Element( i, j );
+      return m_data->Element( i, j );
    }
 
    /*!
     * Returns a reference to the immutable matrix element at row \a i and
     * column \a j.
     */
-   const T& Element( int i, int j ) const
+   const element& Element( int i, int j ) const
    {
-      return data->Element( i, j );
+      return m_data->Element( i, j );
    }
 
    /*!
@@ -863,10 +994,10 @@ public:
     * Before returning, this function ensures that this instance uniquely
     * references its matrix data.
     */
-   T* operator []( int i )
+   block_iterator operator []( int i )
    {
       SetUnique();
-      return data->v[i];
+      return m_data->v[i];
    }
 
    /*!
@@ -875,9 +1006,9 @@ public:
     * All elements in row \a i are guaranteed to be stored at consecutive
     * locations addressable from the pointer returned by this function.
     */
-   const T* operator []( int i ) const
+   const_block_iterator operator []( int i ) const
    {
-      return data->v[i];
+      return m_data->v[i];
    }
 
    /*!
@@ -892,10 +1023,10 @@ public:
     * Before returning, this function ensures that this instance uniquely
     * references its matrix data.
     */
-   T* Begin()
+   block_iterator Begin()
    {
       SetUnique();
-      return data->Begin();
+      return m_data->Begin();
    }
 
    /*!
@@ -907,9 +1038,9 @@ public:
     * are stored in row order: all elements of row 0 followed by all elements
     * of row 1, and so on.
     */
-   const T* Begin() const
+   const_block_iterator Begin() const
    {
-      return data->Begin();
+      return m_data->Begin();
    }
 
    /*!
@@ -918,7 +1049,7 @@ public:
     *
     * This member function is a convenience alias to Begin().
     */
-   T* operator *()
+   block_iterator operator *()
    {
       return Begin();
    }
@@ -929,7 +1060,7 @@ public:
     *
     * This member function is a convenience alias to Begin() const.
     */
-   const T* operator *() const
+   const_block_iterator operator *() const
    {
       return Begin();
    }
@@ -946,10 +1077,10 @@ public:
     * Before returning, this function ensures that this instance uniquely
     * references its matrix data.
     */
-   T* End()
+   block_iterator End()
    {
       SetUnique();
-      return data->End();
+      return m_data->End();
    }
 
    /*!
@@ -962,9 +1093,9 @@ public:
     * function. Matrix elements are stored in row order (all elements of row n
     * followed by all elements of row n-1, and so on).
     */
-   const T* End() const
+   const_block_iterator End() const
    {
-      return data->End();
+      return m_data->End();
    }
 
    /*!
@@ -983,32 +1114,32 @@ public:
     * This function can be used to perform fast operations on matrix elements,
     * avoiding the overhead caused by deep copies of matrix data, when such
     * copies are not necessary. Typically this happens when two or more threads
-    * work simultaneously over non-overlapping regions of the same matrix.
+    * work simultaneously on non-overlapping regions of the same matrix.
     */
-   T** DataPtr()
+   block_iterator* DataPtr()
    {
-      return data->v;
+      return m_data->v;
    }
 
    /*!
     * Returns a vector with the matrix elements at the specified row \a i.
     */
-   GenericVector<T> RowVector( int i ) const
+   vector RowVector( int i ) const
    {
-      GenericVector<T> r( data->Cols() );
-      for ( int j = 0; j < data->Cols(); ++j )
-         r[j] = data->v[i][j];
+      vector r( m_data->Cols() );
+      for ( int j = 0; j < m_data->Cols(); ++j )
+         r[j] = m_data->v[i][j];
       return r;
    }
 
    /*!
     * Returns a vector with the matrix elements at the specified column \a j.
     */
-   GenericVector<T> ColumnVector( int j ) const
+   vector ColumnVector( int j ) const
    {
-      GenericVector<T> c( data->Rows() );
-      for ( int i = 0; i < data->Rows(); ++i )
-         c[i] = data->v[i][j];
+      vector c( m_data->Rows() );
+      for ( int i = 0; i < m_data->Rows(); ++i )
+         c[i] = m_data->v[i][j];
       return c;
    }
 
@@ -1017,7 +1148,7 @@ public:
     *
     * This member function is an alias for ColumnVector().
     */
-   GenericVector<T> ColVector( int j ) const
+   vector ColVector( int j ) const
    {
       return ColumnVector( j );
    }
@@ -1029,8 +1160,9 @@ public:
    template <class V>
    void SetRow( int i, const V& r )
    {
-      for ( int j = 0; j < data->Cols() && j < r.Length(); ++j )
-         data->v[i][j] = T( r[j] );
+      SetUnique();
+      for ( int j = 0; j < m_data->Cols() && j < r.Length(); ++j )
+         m_data->v[i][j] = element( r[j] );
    }
 
    /*!
@@ -1040,8 +1172,9 @@ public:
    template <class V>
    void SetColumn( int j, const V& c )
    {
-      for ( int i = 0; i < data->Rows() && i < c.Length(); ++i )
-         data->v[i][j] = T( c[i] );
+      SetUnique();
+      for ( int i = 0; i < m_data->Rows() && i < c.Length(); ++i )
+         m_data->v[i][j] = element( c[i] );
    }
 
    /*!
@@ -1061,11 +1194,11 @@ public:
     * The rest of matrix elements are set to zero. The returned object is a
     * square matrix whose dimensions are equal to the length of \a r.
     */
-   static GenericMatrix<T> FromRowVector( const GenericVector<T>& r )
+   static GenericMatrix FromRowVector( const vector& r )
    {
-      GenericMatrix<T> R( T( 0 ), r.Length(), r.Length() );
+      GenericMatrix R( element( 0 ), r.Length(), r.Length() );
       for ( int j = 0; j < r.Length(); ++j )
-         R.data->v[0][j] = r[j];
+         R.m_data->v[0][j] = r[j];
       return R;
    }
 
@@ -1074,18 +1207,18 @@ public:
     * \a c. The rest of matrix elements are set to zero. The returned object is
     * a square matrix whose dimensions are equal to the length of \a c.
     */
-   static GenericMatrix<T> FromColumnVector( const GenericVector<T>& c )
+   static GenericMatrix FromColumnVector( const vector& c )
    {
-      GenericMatrix<T> C( T( 0 ), c.Length(), c.Length() );
+      GenericMatrix C( element( 0 ), c.Length(), c.Length() );
       for ( int i = 0; i < c.Length(); ++i )
-         C.data->v[i][0] = c[i];
+         C.m_data->v[i][0] = c[i];
       return C;
    }
 
    /*!
     * This member function is an alias for FromColumnVector().
     */
-   static GenericMatrix<T> FromColVector( const GenericVector<T>& c )
+   static GenericMatrix FromColVector( const vector& c )
    {
       return FromColumnVector( c );
    }
@@ -1096,11 +1229,11 @@ public:
     * A unit matrix is an <em>n</em> x <em>n</em> square matrix whose elements
     * are ones on its main diagonal and zeros elsewhere.
     */
-   static GenericMatrix<T> UnitMatrix( int n )
+   static GenericMatrix UnitMatrix( int n )
    {
-      GenericMatrix<T> One( T( 0 ), n, n );
+      GenericMatrix One( element( 0 ), n, n );
       for ( int i = 0; i < n; ++i )
-         One[i][i] = T( 1 );
+         One[i][i] = element( 1 );
       return One;
    }
 
@@ -1110,12 +1243,12 @@ public:
     * The transpose of a matrix A is another matrix A<sup>T</sup> whose rows
     * are the columns of A (or, equivalently, whose columns are the rows of A).
     */
-   GenericMatrix<T> Transpose() const
+   GenericMatrix Transpose() const
    {
-      GenericMatrix<T> Tr( data->Cols(), data->Rows() );
-      for ( int i = 0; i < data->Rows(); ++i )
-         for ( int j = 0; j < data->Cols(); ++j )
-            Tr.data->v[j][i] = data->v[i][j];
+      GenericMatrix Tr( m_data->Cols(), m_data->Rows() );
+      for ( int i = 0; i < m_data->Rows(); ++i )
+         for ( int j = 0; j < m_data->Cols(); ++j )
+            Tr.m_data->v[j][i] = m_data->v[i][j];
       return Tr;
    }
 
@@ -1129,7 +1262,7 @@ public:
     * its determinant is zero or insignificant), then this function throws the
     * appropriate Error exception.
     */
-   GenericMatrix<T> Inverse() const
+   GenericMatrix Inverse() const
    {
       if ( Rows() != Cols() || Rows() == 0 )
          throw Error( "Invalid matrix inversion: Non-square or empty matrix." );
@@ -1142,23 +1275,23 @@ public:
       {
       case 1:
          {
-            if ( 1 + *data->v[0] == 1 )
+            if ( 1 + *m_data->v[0] == 1 )
                throw Error( "Invalid matrix inversion: Singular matrix." );
-            GenericMatrix<T> Ai( 1, 1 );
-            Ai[0][0] = 1/(*data->v[0]);
+            GenericMatrix Ai( 1, 1 );
+            Ai[0][0] = 1/(*m_data->v[0]);
             return Ai;
          }
       case 2:
          {
-            const T* A0 = data->v[0];
-            const T* A1 = data->v[1];
+            const_block_iterator A0 = m_data->v[0];
+            const_block_iterator A1 = m_data->v[1];
 
             // Determinant
-            T d = A0[0]*A1[1] - A0[1]*A1[0];
+            element d = A0[0]*A1[1] - A0[1]*A1[0];
             if ( 1 + d == 1 )
                throw Error( "Invalid matrix inversion: Singular matrix." );
 
-            GenericMatrix<T> Ai( 2, 2 );
+            GenericMatrix Ai( 2, 2 );
             Ai[0][0] =  A1[1]/d;
             Ai[0][1] = -A0[1]/d;
             Ai[1][0] = -A1[0]/d;
@@ -1167,19 +1300,19 @@ public:
          }
       case 3:
          {
-            const T* A0 = data->v[0];
-            const T* A1 = data->v[1];
-            const T* A2 = data->v[2];
+            const_block_iterator A0 = m_data->v[0];
+            const_block_iterator A1 = m_data->v[1];
+            const_block_iterator A2 = m_data->v[2];
 
             // Determinant
-            T d1 = A1[1]*A2[2] - A1[2]*A2[1];
-            T d2 = A1[2]*A2[0] - A1[0]*A2[2];
-            T d3 = A1[0]*A2[1] - A1[1]*A2[0];
-            T d  = A0[0]*d1 + A0[1]*d2 + A0[2]*d3;
+            element d1 = A1[1]*A2[2] - A1[2]*A2[1];
+            element d2 = A1[2]*A2[0] - A1[0]*A2[2];
+            element d3 = A1[0]*A2[1] - A1[1]*A2[0];
+            element d  = A0[0]*d1 + A0[1]*d2 + A0[2]*d3;
             if ( 1 + d == 1 )
                throw Error( "Invalid matrix inversion: Singular matrix." );
 
-            GenericMatrix<T> Ai( 3, 3 );
+            GenericMatrix Ai( 3, 3 );
             Ai[0][0] = d1/d;
             Ai[0][1] = (A2[1]*A0[2] - A2[2]*A0[1])/d;
             Ai[0][2] = (A0[1]*A1[2] - A0[2]*A1[1])/d;
@@ -1194,8 +1327,8 @@ public:
       default:
          {
             void PCL_FUNC InPlaceGaussJordan( GenericMatrix<T>&, GenericMatrix<T>& );
-            GenericMatrix<T> Ai( *this );
-            GenericMatrix<T> B = UnitMatrix( Rows() );
+            GenericMatrix Ai( *this );
+            GenericMatrix B = UnitMatrix( Rows() );
             InPlaceGaussJordan( Ai, B );
             return Ai;
          }
@@ -1215,13 +1348,14 @@ public:
    void Invert()
    {
       if ( Rows() <= 3 )
-         (void)operator =( Inverse() );
+         Transfer( Inverse() );
       else
       {
          if ( Rows() != Cols() || Rows() == 0 )
             throw Error( "Invalid matrix inversion: Non-square or empty matrix." );
          void PCL_FUNC InPlaceGaussJordan( GenericMatrix<T>&, GenericMatrix<T>& );
-         GenericMatrix<T> B = UnitMatrix( Rows() );
+         SetUnique();
+         GenericMatrix B = UnitMatrix( Rows() );
          InPlaceGaussJordan( *this, B );
       }
    }
@@ -1236,17 +1370,17 @@ public:
    void Flip()
    {
       SetUnique();
-      pcl::Reverse( data->Begin(), data->End() );
+      pcl::Reverse( m_data->Begin(), m_data->End() );
    }
 
    /*!
     * Returns a flipped copy of this matrix. Flipping a matrix consists of
     * rotating its elements by 180 degrees.
     */
-   GenericMatrix<T> Flipped() const
+   GenericMatrix Flipped() const
    {
-      GenericMatrix<T> Tf( data->Cols(), data->Rows() );
-      pcl::CopyReversed( Tf.data->End(), data->Begin(), data->End() );
+      GenericMatrix Tf( m_data->Cols(), m_data->Rows() );
+      pcl::CopyReversed( Tf.m_data->End(), m_data->Begin(), m_data->End() );
       return Tf;
    }
 
@@ -1262,16 +1396,26 @@ public:
     * After calling this member function, all matrix elements will be within
     * the  [\a f0,\a f1] range.
     */
-   void Truncate( const T& f0 = T( 0 ), const T& f1 = T( 1 ) )
+   void Truncate( const element& f0 = element( 0 ), const element& f1 = element( 1 ) )
    {
       SetUnique();
-      T* a = data->Begin();
-      T* b = data->End();
+      block_iterator a = m_data->Begin();
+      block_iterator b = m_data->End();
       for ( ; a < b; ++a )
          if ( *a < f0 )
             *a = f0;
          else if ( *a > f1 )
             *a = f1;
+   }
+
+   /*!
+    * Returns a truncated copy of this matrix. See Truncate().
+    */
+   GenericMatrix Truncated( const element& f0 = element( 0 ), const element& f1 = element( 1 ) ) const
+   {
+      GenericMatrix R( *this );
+      R.Truncate( f0, f1 );
+      return R;
    }
 
    /*!
@@ -1289,10 +1433,10 @@ public:
     *
     * \a r = \a f0 + (\a s - \a m)*(\a f1 - \a f0)/(\a M - \a m)
     */
-   void Rescale( const T& f0 = T( 0 ), const T& f1 = T( 1 ) )
+   void Rescale( const element& f0 = element( 0 ), const element& f1 = element( 1 ) )
    {
-      T v0 = MinElement();
-      T v1 = MaxElement();
+      element v0 = MinElement();
+      element v1 = MaxElement();
       if ( v0 != f0 || v1 != f1 )
       {
          SetUnique();
@@ -1300,22 +1444,32 @@ public:
          {
             if ( f0 != f1 )
             {
-               T* a = data->Begin();
-               T* b = data->End();
+               block_iterator a = m_data->Begin();
+               block_iterator b = m_data->End();
                double d = (double( f1 ) - double( f0 ))/(double( v1 ) - double( v0 ));
-               if ( f0 == T( 0 ) )
+               if ( f0 == element( 0 ) )
                   for ( ; a < b; ++a )
-                     *a = T( d*(*a - v0) );
+                     *a = element( d*(*a - v0) );
                else
                   for ( ; a < b; ++a )
-                     *a = T( d*(*a - v0) + f0 );
+                     *a = element( d*(*a - v0) + f0 );
             }
             else
-               pcl::Fill( data->Begin(), data->End(), f0 );
+               pcl::Fill( m_data->Begin(), m_data->End(), f0 );
          }
          else
-            pcl::Fill( data->Begin(), data->End(), pcl::Range( v0, f0, f1 ) );
+            pcl::Fill( m_data->Begin(), m_data->End(), pcl::Range( v0, f0, f1 ) );
       }
+   }
+
+   /*!
+    * Returns a rescaled copy of this matrix. See Rescale().
+    */
+   GenericMatrix Rescaled( const element& f0 = element( 0 ), const element& f1 = element( 1 ) ) const
+   {
+      GenericMatrix R( *this );
+      R.Rescale( f0, f1 );
+      return R;
    }
 
    /*!
@@ -1323,7 +1477,18 @@ public:
     */
    void Sort()
    {
-      pcl::Sort( data->Begin(), data->End() );
+      SetUnique();
+      pcl::Sort( m_data->Begin(), m_data->End() );
+   }
+
+   /*!
+    * Returns a sorted copy of this matrix.
+    */
+   GenericMatrix Sorted() const
+   {
+      GenericMatrix R( *this );
+      R.Sort();
+      return R;
    }
 
    /*!
@@ -1334,17 +1499,30 @@ public:
    template <class BP>
    void Sort( BP p )
    {
-      pcl::Sort( data->Begin(), data->End(), p );
+      SetUnique();
+      pcl::Sort( m_data->Begin(), m_data->End(), p );
+   }
+
+   /*!
+    * Returns a sorted copy of this matrix, where ordering of matrix elements
+    * is defined by the specified binary predicate \a p. See Sort( BP p ).
+    */
+   template <class BP>
+   GenericMatrix Sorted( BP p ) const
+   {
+      GenericMatrix R( *this );
+      R.Sort( p );
+      return R;
    }
 
    /*!
     * Returns a pointer to the first immutable matrix element with the
     * specified value \a x, or zero if this matrix does not contain such value.
     */
-   const T* Find( const T& x ) const
+   const_block_iterator Find( const element& x ) const
    {
-      const T* p = pcl::LinearSearch( data->Begin(), data->End(), x );
-      return (p != data->End()) ? p : 0;
+      const_block_iterator p = pcl::LinearSearch( m_data->Begin(), m_data->End(), x );
+      return (p != m_data->End()) ? p : 0;
    }
 
    /*!
@@ -1352,7 +1530,7 @@ public:
     * specified value \a x, or zero if this matrix does not contain such value.
     * This function is an alias to Find().
     */
-   const T* FindFirst( const T& x ) const
+   const_block_iterator FindFirst( const element& x ) const
    {
       return Find( x );
    }
@@ -1361,18 +1539,18 @@ public:
     * Returns a pointer to the last immutable matrix element with the
     * specified value \a x, or zero if this matrix does not contain such value.
     */
-   const T* FindLast( const T& x ) const
+   const_block_iterator FindLast( const element& x ) const
    {
-      const T* p = pcl::LinearSearchLast( data->Begin(), data->End(), x );
-      return (p != data->End()) ? p : -1;
+      const_block_iterator p = pcl::LinearSearchLast( m_data->Begin(), m_data->End(), x );
+      return (p != m_data->End()) ? p : -1;
    }
 
    /*!
     * Returns true if this matrix contains the specified value \a x.
     */
-   bool Has( const T& x ) const
+   bool Contains( const element& x ) const
    {
-      return pcl::LinearSearch( data->Begin(), data->End(), x ) != data->End();
+      return pcl::LinearSearch( m_data->Begin(), m_data->End(), x ) != m_data->End();
    }
 
 #ifndef __PCL_NO_MATRIX_STATISTICS
@@ -1381,11 +1559,11 @@ public:
     * Returns the value of the minimum element in this matrix.
     * For empty matrices, this function returns zero.
     */
-   T MinElement() const
+   element MinElement() const
    {
       if ( !IsEmpty() )
-         return *MinItem( data->Begin(), data->End() );
-      return T( 0 );
+         return *MinItem( m_data->Begin(), m_data->End() );
+      return element( 0 );
    }
 
    /*!
@@ -1394,29 +1572,29 @@ public:
     * For empty matrices, this function returns zero and assigns zero to the
     * point coordinates.
     */
-   T MinElement( Point& p ) const
+   element MinElement( Point& p ) const
    {
       if ( !IsEmpty() )
       {
-         const T* m = MinItem( data->Begin(), data->End() );
-         int d = m - data->Begin();
-         p.y = d/data->Cols();
-         p.x = d%data->Cols();
+         const_block_iterator m = MinItem( m_data->Begin(), m_data->End() );
+         distance_type d = m - m_data->Begin();
+         p.y = int( d/m_data->Cols() );
+         p.x = int( d%m_data->Cols() );
          return *m;
       }
       p = 0;
-      return T( 0 );
+      return element( 0 );
    }
 
    /*!
     * Returns the value of the maximum element in this matrix.
     * For empty matrices, this function returns zero.
     */
-   T MaxElement() const
+   element MaxElement() const
    {
       if ( !IsEmpty() )
-         return *MaxItem( data->Begin(), data->End() );
-      return T( 0 );
+         return *MaxItem( m_data->Begin(), m_data->End() );
+      return element( 0 );
    }
 
    /*!
@@ -1425,18 +1603,18 @@ public:
     * For empty matrices, this function returns zero and assigns zero to the
     * point coordinates.
     */
-   T MaxElement( Point& p ) const
+   element MaxElement( Point& p ) const
    {
       if ( !IsEmpty() )
       {
-         const T* m = MaxItem( data->Begin(), data->End() );
-         int d = m - data->Begin();
-         p.y = d/data->Cols();
-         p.x = d%data->Cols();
+         const_block_iterator m = MaxItem( m_data->Begin(), m_data->End() );
+         int d = m - m_data->Begin();
+         p.y = d/m_data->Cols();
+         p.x = d%m_data->Cols();
          return *m;
       }
       p = 0;
-      return T( 0 );
+      return element( 0 );
    }
 
    /*!
@@ -1446,7 +1624,7 @@ public:
     */
    double Sum() const
    {
-      return pcl::Sum( data->Begin(), data->End() );
+      return pcl::Sum( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -1457,7 +1635,7 @@ public:
     */
    double StableSum() const
    {
-      return pcl::StableSum( data->Begin(), data->End() );
+      return pcl::StableSum( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -1467,7 +1645,7 @@ public:
     */
    double Modulus() const
    {
-      return pcl::Modulus( data->Begin(), data->End() );
+      return pcl::Modulus( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -1478,7 +1656,7 @@ public:
     */
    double StableModulus() const
    {
-      return pcl::StableModulus( data->Begin(), data->End() );
+      return pcl::StableModulus( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -1488,7 +1666,7 @@ public:
     */
    double SumOfSquares() const
    {
-      return pcl::SumOfSquares( data->Begin(), data->End() );
+      return pcl::SumOfSquares( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -1499,7 +1677,7 @@ public:
     */
    double StableSumOfSquares() const
    {
-      return pcl::StableSumOfSquares( data->Begin(), data->End() );
+      return pcl::StableSumOfSquares( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -1509,7 +1687,7 @@ public:
     */
    double Mean() const
    {
-      return pcl::Mean( data->Begin(), data->End() );
+      return pcl::Mean( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -1520,7 +1698,7 @@ public:
     */
    double StableMean() const
    {
-      return pcl::StableMean( data->Begin(), data->End() );
+      return pcl::StableMean( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -1530,7 +1708,7 @@ public:
     */
    double Variance() const
    {
-      return pcl::Variance( data->Begin(), data->End() );
+      return pcl::Variance( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -1541,7 +1719,7 @@ public:
     */
    double StdDev() const
    {
-      return pcl::StdDev( data->Begin(), data->End() );
+      return pcl::StdDev( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -1559,7 +1737,7 @@ public:
    double Median()
    {
       SetUnique();
-      return pcl::Median( data->Begin(), data->End() );
+      return pcl::Median( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -1576,7 +1754,7 @@ public:
     */
    double Median() const
    {
-      return GenericMatrix<T>( *this ).Median();
+      return GenericMatrix( *this ).Median();
    }
 
    /*!
@@ -1595,7 +1773,7 @@ public:
     */
    double AvgDev( double center ) const
    {
-      return pcl::AvgDev( data->Begin(), data->End(), center );
+      return pcl::AvgDev( m_data->Begin(), m_data->End(), center );
    }
 
    /*!
@@ -1615,7 +1793,7 @@ public:
     */
    double StableAvgDev( double center ) const
    {
-      return pcl::StableAvgDev( data->Begin(), data->End(), center );
+      return pcl::StableAvgDev( m_data->Begin(), m_data->End(), center );
    }
 
    /*!
@@ -1632,7 +1810,7 @@ public:
     */
    double AvgDev() const
    {
-      return pcl::AvgDev( data->Begin(), data->End() );
+      return pcl::AvgDev( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -1650,7 +1828,7 @@ public:
     */
    double StableAvgDev() const
    {
-      return pcl::StableAvgDev( data->Begin(), data->End() );
+      return pcl::StableAvgDev( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -1666,7 +1844,7 @@ public:
     */
    double MAD( double center ) const
    {
-      return pcl::MAD( data->Begin(), data->End(), center );
+      return pcl::MAD( m_data->Begin(), m_data->End(), center );
    }
 
    /*!
@@ -1681,7 +1859,7 @@ public:
     */
    double MAD() const
    {
-      return pcl::MAD( data->Begin(), data->End() );
+      return pcl::MAD( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -1705,12 +1883,12 @@ public:
     *
     * \b References
     *
-    * Rand R. Wilcox (2012), <em>Introduction to Robust Estimation and Hypothesis
-    * Testing, 3rd Edition</em>, Elsevier Inc., Section 3.12.1.
+    * Rand R. Wilcox (2012), <em>Introduction to Robust Estimation and
+    * Hypothesis Testing, 3rd Edition</em>, Elsevier Inc., Section 3.12.1.
     */
    double BiweightMidvariance( double center, double sigma, int k = 9 ) const
    {
-      return pcl::BiweightMidvariance( data->Begin(), data->End(), center, sigma, k );
+      return pcl::BiweightMidvariance( m_data->Begin(), m_data->End(), center, sigma, k );
    }
 
    /*!
@@ -1728,14 +1906,14 @@ public:
     *
     * \b References
     *
-    * Rand R. Wilcox (2012), <em>Introduction to Robust Estimation and Hypothesis
-    * Testing, 3rd Edition</em>, Elsevier Inc., Section 3.12.1.
+    * Rand R. Wilcox (2012), <em>Introduction to Robust Estimation and
+    * Hypothesis Testing, 3rd Edition</em>, Elsevier Inc., Section 3.12.1.
     */
    double BiweightMidvariance( int k = 9 ) const
    {
       double center = Median();
       double sigma = 1.4826*MAD( center );
-      return pcl::BiweightMidvariance( data->Begin(), data->End(), center, sigma, k );
+      return pcl::BiweightMidvariance( m_data->Begin(), m_data->End(), center, sigma, k );
    }
 
    /*!
@@ -1762,7 +1940,7 @@ public:
     */
    double BendMidvariance( double center, double beta = 0.2 ) const
    {
-      return pcl::BendMidvariance( data->Begin(), data->End(), center, beta );
+      return pcl::BendMidvariance( m_data->Begin(), m_data->End(), center, beta );
    }
 
    /*!
@@ -1781,12 +1959,12 @@ public:
     *
     * \b References
     *
-    * Rand R. Wilcox (2012), <em>Introduction to Robust Estimation and Hypothesis
-    * Testing, 3rd Edition</em>, Elsevier Inc., Section 3.12.3.
+    * Rand R. Wilcox (2012), <em>Introduction to Robust Estimation and
+    * Hypothesis Testing, 3rd Edition</em>, Elsevier Inc., Section 3.12.3.
     */
    double BendMidvariance( double beta = 0.2 ) const
    {
-      return pcl::BendMidvariance( data->Begin(), data->End(), Median(), beta );
+      return pcl::BendMidvariance( m_data->Begin(), m_data->End(), Median(), beta );
    }
 
    /*!
@@ -1806,13 +1984,13 @@ public:
     *
     * \b References
     *
-    * P.J. Rousseeuw and C. Croux (1993), <em>Alternatives to the Median Absolute
-    * Deviation,</em> Journal of the American Statistical Association, Vol. 88,
-    * pp. 1273-1283.
+    * P.J. Rousseeuw and C. Croux (1993), <em>Alternatives to the Median
+    * Absolute Deviation,</em> Journal of the American Statistical Association,
+    * Vol. 88, pp. 1273-1283.
     */
    double Sn() const
    {
-      GenericMatrix<T> A( *this );
+      GenericMatrix A( *this );
       return pcl::Sn( A.Begin(), A.End() );
    }
 
@@ -1827,8 +2005,8 @@ public:
     *
     * The constant c = 2.2219 must be used to make the Qn estimator converge to
     * the standard deviation of a pure normal distribution. However, this
-    * implementation does not apply it (it uses c=1 implicitly), for consistency
-    * with other implementations of scale estimators.
+    * implementation does not apply it (it uses c=1 implicitly), for
+    * consistency with other implementations of scale estimators.
     *
     * \b References
     *
@@ -1838,11 +2016,168 @@ public:
     */
    double Qn() const
    {
-      GenericMatrix<T> A( *this );
+      GenericMatrix A( *this );
       return pcl::Qn( A.Begin(), A.End() );
    }
 
 #endif   // !__PCL_NO_MATRIX_STATISTICS
+
+   /*!
+    * Returns a 64-bit non-cryptographic hash value computed for this matrix.
+    *
+    * This function calls pcl::Hash64() for the internal matrix data.
+    *
+    * The \a seed parameter can be used to generate repeatable hash values. It
+    * can also be set to a random value in compromised environments.
+    */
+   uint64 Hash64( uint64 seed = 0 ) const
+   {
+      return pcl::Hash64( m_data->Begin(), m_data->Size(), seed );
+   }
+
+   /*!
+    * Returns a 32-bit non-cryptographic hash value computed for this matrix.
+    *
+    * This function calls pcl::Hash32() for the internal matrix data.
+    *
+    * The \a seed parameter can be used to generate repeatable hash values. It
+    * can also be set to a random value in compromised environments.
+    */
+   uint32 Hash32( uint32 seed = 0 ) const
+   {
+      return pcl::Hash32( m_data->Begin(), m_data->Size(), seed );
+   }
+
+   /*!
+    * Returns a non-cryptographic hash value computed for this matrix. This
+    * function is a synonym for Hash64().
+    */
+   uint64 Hash( uint64 seed = 0 ) const
+   {
+      return Hash64( seed );
+   }
+
+   /*!
+    * Generates a sequence of string tokens separated with the specified
+    * \a separator string. Returns a reference to the target string \a s.
+    *
+    * For each matrix element, this function appends a string representation
+    * (known as a \e token) to the target string \a s. If the matrix contains
+    * more than one element, successive tokens are separated with the specified
+    * \a separator.
+    *
+    * The string type S must have a meaningful %Append() member function and
+    * type conversion semantics to transform a matrix element to a string. The
+    * standard String and IsoString PCL classes provide the required
+    * functionality for most scalar types, although it is probably better to
+    * use String::ToSeparated() and IsoString::ToSeparated() instead of calling
+    * these functions directly.
+    */
+   template <class S, typename SP>
+   S& ToSeparated( S& s, SP separator ) const
+   {
+      const_block_iterator i = m_data->Begin(), j = m_data->End();
+      if ( i < j )
+      {
+         s.Append( S( *i ) );
+         if ( ++i < j )
+         {
+            S p( separator );
+            do
+            {
+               s.Append( p );
+               s.Append( S( *i ) );
+            }
+            while ( ++i < j );
+         }
+      }
+      return s;
+   }
+
+   /*!
+    * Generates a sequence of string tokens separated with the specified
+    * \a separator string by calling an \a append function. Returns a reference
+    * to the target string \a s.
+    *
+    * For each matrix element x, this function appends a string representation
+    * (known as a \e token) to the target string \a s by calling the \a append
+    * function:
+    *
+    *\code append( s, S( x ) ); \endcode
+    *
+    * If the matrix has more than one element, successive tokens are separated
+    * by calling:
+    *
+    * \code append( s, S( separator ) ); \endcode
+    *
+    * The string type S must have type conversion semantics to transform a
+    * matrix element to a string. The standard String and IsoString PCL classes
+    * provide the required functionality for most scalar types, although it is
+    * probably better to use String::ToSeparated() and IsoString::ToSeparated()
+    * instead of calling these functions directly.
+    */
+   template <class S, typename SP, class AF>
+   S& ToSeparated( S& s, SP separator, AF append ) const
+   {
+      const_block_iterator i = m_data->Begin(), j = m_data->End();
+      if ( i < j )
+      {
+         append( s, S( *i ) );
+         if ( ++i < j )
+         {
+            S p( separator );
+            do
+            {
+               append( s, p );
+               append( s, S( *i ) );
+            }
+            while ( ++i < j );
+         }
+      }
+      return s;
+   }
+
+   /*!
+    * Generates a comma-separated sequence of string tokens. Returns a
+    * reference to the target string \a s.
+    *
+    * This function is equivalent to:
+    *
+    * \code ToSeparated( s, ',' ); \endcode
+    */
+   template <class S>
+   S& ToCommaSeparated( S& s ) const
+   {
+      return ToSeparated( s, ',' );
+   }
+
+   /*!
+    * Generates a space-separated sequence of string tokens. Returns a
+    * reference to the target string \a s.
+    *
+    * This function is equivalent to:
+    *
+    * \code ToSeparated( s, ' ' ); \endcode
+    */
+   template <class S>
+   S& ToSpaceSeparated( S& s ) const
+   {
+      return ToSeparated( s, ' ' );
+   }
+
+   /*!
+    * Generates a tabulator-separated sequence of string tokens. Returns a
+    * reference to the target string \a s.
+    *
+    * This function is equivalent to:
+    *
+    * \code ToSeparated( s, '\t' ); \endcode
+    */
+   template <class S>
+   S& ToTabSeparated( S& s ) const
+   {
+      return ToSeparated( s, '\t' );
+   }
 
 #ifndef __PCL_NO_MATRIX_PHASE_MATRICES
 
@@ -1850,12 +2185,11 @@ public:
     * Returns the phase correlation matrix for two matrices \a A and \a B.
     * \ingroup phase_matrices
     */
-   static GenericMatrix<T> PhaseCorrelationMatrix( const GenericMatrix<T>& A,
-                                                   const GenericMatrix<T>& B )
+   static GenericMatrix PhaseCorrelationMatrix( const GenericMatrix& A, const GenericMatrix& B )
    {
       if ( B.Rows() != A.Rows() || B.Cols() != A.Cols() )
          throw Error( "Invalid matrix dimensions in PhaseCorrelationMatrix()" );
-      GenericMatrix<T> R( A.Rows(), A.Cols() );
+      GenericMatrix R( A.Rows(), A.Cols() );
       PhaseCorrelationMatrix( R.Begin(), R.End(), A.Begin(), B.Begin() );
       return R;
    }
@@ -1864,12 +2198,11 @@ public:
     * Returns the cross power spectrum matrix for two matrices \a A and \a B.
     * \ingroup phase_matrices
     */
-   static GenericMatrix<T> CrossPowerSpectrumMatrix( const GenericMatrix<T>& A,
-                                                     const GenericMatrix<T>& B )
+   static GenericMatrix CrossPowerSpectrumMatrix( const GenericMatrix& A, const GenericMatrix& B )
    {
       if ( B.Rows() != A.Rows() || B.Cols() != A.Cols() )
          throw Error( "Invalid matrix dimensions in CrossPowerSpectrumMatrix()" );
-      GenericMatrix<T> R( A.Rows(), A.Cols() );
+      GenericMatrix R( A.Rows(), A.Cols() );
       CrossPowerSpectrumMatrix( R.Begin(), R.End(), A.Begin(), B.Begin() );
       return R;
    }
@@ -1901,8 +2234,8 @@ public:
    {
       image.AllocateData( Cols(), Rows() );
       typename P::sample* v = *image;
-      const T* a = data->Begin();
-      const T* b = data->End();
+      const_block_iterator a = m_data->Begin();
+      const_block_iterator b = m_data->End();
       for ( ; a < b; ++a, ++v )
          *v = P::ToSample( *a );
    }
@@ -1980,7 +2313,8 @@ public:
     * sample types are supported, including integer, real and complex pixels.
     *
     * If there is no intersection between the rectangular region and the image,
-    * this function returns an empty matrix.
+    * or if an invalid channel index is specified, this function returns an
+    * empty matrix.
     *
     * Note that if the source image is of a floating point type (either real or
     * complex) and the scalar type T of this matrix instantiation is of an
@@ -1989,30 +2323,18 @@ public:
     * sample is outside the normalized [0,1] range.
     */
    template <class P>
-   static GenericMatrix<T> FromImage( const GenericImage<P>& image, const Rect& rect = Rect( 0 ), int channel = -1 )
+   static GenericMatrix FromImage( const GenericImage<P>& image, const Rect& rect = Rect( 0 ), int channel = -1 )
    {
       Rect r = rect;
-      if ( r.IsRect() )
-      {
-         if ( !image.Clip( r ) )
-            return GenericMatrix<T>();
-      }
-      else
-      {
-         if ( image.IsEmptySelection() )
-            return GenericMatrix<T>();
-         r = image.SelectedRectangle();
-      }
-
-      if ( channel < 0 )
-         channel = image.SelectedChannel();
+      if ( !image.ParseSelection( r, channel ) )
+         return GenericMatrix();
 
       if ( r == image.Bounds() )
       {
-         GenericMatrix<T> M( image.Height(), image.Width() );
+         GenericMatrix M( image.Height(), image.Width() );
          const typename P::sample* v = image[channel];
-               T* a = M.data->Begin();
-         const T* b = M.data->End();
+               block_iterator a = M.m_data->Begin();
+         const_block_iterator b = M.m_data->End();
          for ( ; a < b; ++a, ++v )
             P::FromSample( *a, *v );
          return M;
@@ -2021,8 +2343,8 @@ public:
       {
          int w = r.Width();
          int h = r.Height();
-         GenericMatrix<T> M( h, w );
-         T* a = M.data->Begin();
+         GenericMatrix M( h, w );
+         block_iterator a = M.m_data->Begin();
          for ( int i = r.y0; i < r.y1; ++i )
          {
             const typename P::sample* v = image.PixelAddress( r.x0, i, channel );
@@ -2047,7 +2369,7 @@ public:
     * FromImage( const GenericImage&, const Rect&, int ) for more information
     * about the conversion performed by this member function.
     */
-   static GenericMatrix<T> FromImage( const ImageVariant& image, const Rect& rect = Rect( 0 ), int channel = -1 )
+   static GenericMatrix FromImage( const ImageVariant& image, const Rect& rect = Rect( 0 ), int channel = -1 )
    {
       if ( image )
          if ( image.IsFloatSample() )
@@ -2070,7 +2392,7 @@ public:
             case 32: return FromImage( static_cast<const UInt32Image&>( *image ), rect, channel );
             }
 
-      return GenericMatrix<T>();
+      return GenericMatrix();
    }
 
 #endif   // !__PCL_NO_MATRIX_IMAGE_CONVERSION
@@ -2079,11 +2401,11 @@ private:
 
    struct Data : public ReferenceCounter
    {
-      int n; // rows
-      int m; // columns
-      T** v; // elements
+      int             n; // rows
+      int             m; // columns
+      block_iterator* v; // elements
 
-      Data( int rows, int cols ) : ReferenceCounter(), n( 0 ), m( 0 ), v( 0 )
+      Data( int rows, int cols ) : ReferenceCounter(), n( 0 ), m( 0 ), v( nullptr )
       {
          if ( rows > 0 && cols > 0 )
             Allocate( rows, cols );
@@ -2111,20 +2433,20 @@ private:
 
       size_type Size() const
       {
-         return NumberOfElements()*sizeof( T );
+         return NumberOfElements()*sizeof( element );
       }
 
-      T* Begin() const
+      block_iterator Begin() const
       {
-         return (v != 0) ? *v : 0;
+         return (v != nullptr) ? *v : nullptr;
       }
 
-      T* End() const
+      block_iterator End() const
       {
-         return (v != 0) ? *v + NumberOfElements() : 0;
+         return (v != nullptr) ? *v + NumberOfElements() : nullptr;
       }
 
-      T& Element( int i, int j ) const
+      element& Element( int i, int j ) const
       {
          return v[i][j];
       }
@@ -2133,8 +2455,8 @@ private:
       {
          n = rows;
          m = cols;
-         v = new T*[ n ];
-         *v = new T[ NumberOfElements() ];
+         v = new block_iterator[ n ];
+         *v = new element[ NumberOfElements() ];
          for ( int i = 1; i < n; ++i )
             v[i] = v[i-1] + m;
       }
@@ -2142,17 +2464,17 @@ private:
       void Deallocate()
       {
          PCL_PRECONDITION( refCount == 0 )
-         if ( v != 0 )
+         if ( v != nullptr )
          {
-            if ( *v != 0 )
+            if ( *v != nullptr )
                delete [] *v;
             delete [] v;
-            v = 0, n = m = 0;
+            v = nullptr, n = m = 0;
          }
       }
    };
 
-   Data* data;
+   Data* m_data;
 };
 
 // ----------------------------------------------------------------------------
@@ -2178,10 +2500,10 @@ GenericMatrix<T> operator +( const GenericMatrix<T>& A, const GenericMatrix<T>& 
    if ( B.Rows() != A.Rows() || B.Cols() != A.Cols() )
       throw Error( "Invalid matrix addition." );
    GenericMatrix<T> R( A.Rows(), A.Cols() );
-         T* r = R.Begin();
-   const T* s = R.End();
-   const T* a = A.Begin();
-   const T* b = B.Begin();
+   typename       GenericMatrix<T>::block_iterator r = R.Begin();
+   typename GenericMatrix<T>::const_block_iterator s = R.End();
+   typename GenericMatrix<T>::const_block_iterator a = A.Begin();
+   typename GenericMatrix<T>::const_block_iterator b = B.Begin();
    for ( ; r < s; ++r, ++a, ++b )
       *r = *a + *b;
    return R;
@@ -2196,9 +2518,9 @@ template <typename T> inline
 GenericMatrix<T> operator +( const GenericMatrix<T>& A, const T& x )
 {
    GenericMatrix<T> R( A.Rows(), A.Cols() );
-         T* r = R.Begin();
-   const T* s = R.End();
-   const T* a = A.Begin();
+   typename       GenericMatrix<T>::block_iterator r = R.Begin();
+   typename GenericMatrix<T>::const_block_iterator s = R.End();
+   typename GenericMatrix<T>::const_block_iterator a = A.Begin();
    for ( ; r < s; ++r, ++a )
       *r = *a + x;
    return R;
@@ -2234,10 +2556,10 @@ GenericMatrix<T> operator -( const GenericMatrix<T>& A, const GenericMatrix<T>& 
    if ( B.Rows() != A.Rows() || B.Cols() != A.Cols() )
       throw Error( "Invalid matrix subtraction." );
    GenericMatrix<T> R( A.Rows(), A.Cols() );
-         T* r = R.Begin();
-   const T* s = R.End();
-   const T* a = A.Begin();
-   const T* b = B.Begin();
+   typename       GenericMatrix<T>::block_iterator r = R.Begin();
+   typename GenericMatrix<T>::const_block_iterator s = R.End();
+   typename GenericMatrix<T>::const_block_iterator a = A.Begin();
+   typename GenericMatrix<T>::const_block_iterator b = B.Begin();
    for ( ; r < s; ++r, ++a, ++b )
       *r = *a - *b;
    return R;
@@ -2252,9 +2574,9 @@ template <typename T> inline
 GenericMatrix<T> operator -( const GenericMatrix<T>& A, const T& x )
 {
    GenericMatrix<T> R( A.Rows(), A.Cols() );
-         T* r = R.Begin();
-   const T* s = R.End();
-   const T* a = A.Begin();
+   typename       GenericMatrix<T>::block_iterator r = R.Begin();
+   typename GenericMatrix<T>::const_block_iterator s = R.End();
+   typename GenericMatrix<T>::const_block_iterator a = A.Begin();
    for ( ; r < s; ++r, ++a )
       *r = *a - x;
    return R;
@@ -2273,9 +2595,9 @@ template <typename T> inline
 GenericMatrix<T> operator -( const T& x, const GenericMatrix<T>& A )
 {
    GenericMatrix<T> R( A.Rows(), A.Cols() );
-         T* r = R.Begin();
-   const T* s = R.End();
-   const T* a = A.Begin();
+   typename       GenericMatrix<T>::block_iterator r = R.Begin();
+   typename GenericMatrix<T>::const_block_iterator s = R.End();
+   typename GenericMatrix<T>::const_block_iterator a = A.Begin();
    for ( ; r < s; ++r, ++a )
       *r = x - *a;
    return R;
@@ -2324,9 +2646,9 @@ template <typename T> inline
 GenericMatrix<T> operator *( const GenericMatrix<T>& A, const T& x )
 {
    GenericMatrix<T> R( A.Rows(), A.Cols() );
-         T* r = R.Begin();
-   const T* s = R.End();
-   const T* a = A.Begin();
+   typename       GenericMatrix<T>::block_iterator r = R.Begin();
+   typename GenericMatrix<T>::const_block_iterator s = R.End();
+   typename GenericMatrix<T>::const_block_iterator a = A.Begin();
    for ( ; r < s; ++r, ++a )
       *r = *a * x;
    return R;
@@ -2357,9 +2679,9 @@ template <typename T> inline
 GenericMatrix<T> operator /( const GenericMatrix<T>& A, const T& x )
 {
    GenericMatrix<T> R( A.Rows(), A.Cols() );
-         T* r = R.Begin();
-   const T* s = R.End();
-   const T* a = A.Begin();
+   typename       GenericMatrix<T>::block_iterator r = R.Begin();
+   typename GenericMatrix<T>::const_block_iterator s = R.End();
+   typename GenericMatrix<T>::const_block_iterator a = A.Begin();
    for ( ; r < s; ++r, ++a )
       *r = *a / x;
    return R;
@@ -2377,9 +2699,9 @@ template <typename T> inline
 GenericMatrix<T> operator /( const T& x, const GenericMatrix<T>& A )
 {
    GenericMatrix<T> R( A.Rows(), A.Cols() );
-         T* r = R.Begin();
-   const T* s = R.End();
-   const T* a = A.Begin();
+   typename       GenericMatrix<T>::block_iterator r = R.Begin();
+   typename GenericMatrix<T>::const_block_iterator s = R.End();
+   typename GenericMatrix<T>::const_block_iterator a = A.Begin();
    for ( ; r < s; ++r, ++a )
       *r = x / *a;
    return R;
@@ -2396,9 +2718,9 @@ template <typename T> inline
 GenericMatrix<T> operator ^( const GenericMatrix<T>& A, const T& x )
 {
    GenericMatrix<T> R( A.Rows(), A.Cols() );
-         T* r = R.Begin();
-   const T* s = R.End();
-   const T* a = A.Begin();
+   typename       GenericMatrix<T>::block_iterator r = R.Begin();
+   typename GenericMatrix<T>::const_block_iterator s = R.End();
+   typename GenericMatrix<T>::const_block_iterator a = A.Begin();
    for ( ; r < s; ++r, ++a )
       *r = pcl::Pow( *a, x );
    return R;
@@ -2416,9 +2738,9 @@ template <typename T> inline
 GenericMatrix<T> operator ^( const T& x, const GenericMatrix<T>& A )
 {
    GenericMatrix<T> R( A.Rows(), A.Cols() );
-         T* r = R.Begin();
-   const T* s = R.End();
-   const T* a = A.Begin();
+   typename       GenericMatrix<T>::block_iterator r = R.Begin();
+   typename GenericMatrix<T>::const_block_iterator s = R.End();
+   typename GenericMatrix<T>::const_block_iterator a = A.Begin();
    for ( ; r < s; ++r, ++a )
       *r = pcl::Pow( x, *a );
    return R;
@@ -2433,59 +2755,98 @@ GenericMatrix<T> operator ^( const T& x, const GenericMatrix<T>& A )
  */
 
 /*!
- * \class pcl::DMatrix
+ * \class pcl::I8Matrix
  * \ingroup matrix_types
- * \brief 64-bit floating point real matrix.
+ * \brief 8-bit signed integer matrix.
  *
- * %DMatrix is a template instantiation of GenericMatrix for \c double.
+ * %I8Matrix is a template instantiation of GenericMatrix for \c int8.
  */
-typedef GenericMatrix<double>          DMatrix;
-
-/*!
- * \class pcl::FMatrix
- * \ingroup matrix_types
- * \brief 32-bit floating point real matrix.
- *
- * %FMatrix is a template instantiation of GenericMatrix for \c float.
- */
-typedef GenericMatrix<float>           FMatrix;
+typedef GenericMatrix<int8>         I8Matrix;
 
 /*!
  * \class pcl::CharMatrix
  * \ingroup matrix_types
  * \brief 8-bit signed integer matrix.
  *
- * %CharMatrix is a template instantiation of GenericMatrix for \c int8.
+ * %CharMatrix is an alias for I8Matrix. It is a template instantiation of
+ * GenericMatrix for \c int8.
  */
-typedef GenericMatrix<int8>            CharMatrix;
+typedef I8Matrix                    CharMatrix;
+
+/*!
+ * \class pcl::UI8Matrix
+ * \ingroup matrix_types
+ * \brief 8-bit unsigned integer matrix.
+ *
+ * %UI8Matrix is a template instantiation of GenericMatrix for \c uint8.
+ */
+typedef GenericMatrix<uint8>        UI8Matrix;
 
 /*!
  * \class pcl::ByteMatrix
  * \ingroup matrix_types
  * \brief 8-bit unsigned integer matrix.
  *
- * %ByteMatrix is a template instantiation of GenericMatrix for \c uint8.
+ * %ByteMatrix is an alias for UI8Matrix. It is a template instantiation of
+ * GenericMatrix for \c uint8.
  */
-typedef GenericMatrix<uint8>           ByteMatrix;
+typedef UI8Matrix                   ByteMatrix;
+
+/*!
+ * \class pcl::I16Matrix
+ * \ingroup matrix_types
+ * \brief 16-bit signed integer matrix.
+ *
+ * %I16Matrix is a template instantiation of GenericMatrix for \c int16.
+ */
+typedef GenericMatrix<int16>        I16Matrix;
+
+/*!
+ * \class pcl::UI16Matrix
+ * \ingroup matrix_types
+ * \brief 16-bit unsigned integer matrix.
+ *
+ * %UI16Matrix is a template instantiation of GenericMatrix for \c uint16.
+ */
+typedef GenericMatrix<uint16>       UI16Matrix;
+
+/*!
+ * \class pcl::I32Matrix
+ * \ingroup matrix_types
+ * \brief 32-bit signed integer matrix.
+ *
+ * %I32Matrix is a template instantiation of GenericMatrix for \c int32.
+ */
+typedef GenericMatrix<int32>        I32Matrix;
 
 /*!
  * \class pcl::IMatrix
  * \ingroup matrix_types
- * \brief Integer matrix.
+ * \brief 32-bit signed integer matrix.
  *
- * %IMatrix is a template instantiation of GenericMatrix for the \c int type.
+ * %IMatrix is an alias for I32Matrix. It is a template instantiation of
+ * GenericMatrix for \c int32.
  */
-typedef GenericMatrix<int>             IMatrix;
+typedef I32Matrix                   IMatrix;
+
+/*!
+ * \class pcl::UI32Matrix
+ * \ingroup matrix_types
+ * \brief 32-bit unsigned integer matrix.
+ *
+ * %UI32Matrix is a template instantiation of GenericMatrix for \c uint32.
+ */
+typedef GenericMatrix<uint32>       UI32Matrix;
 
 /*!
  * \class pcl::UIMatrix
  * \ingroup matrix_types
  * \brief Unsigned integer matrix.
  *
- * %UIMatrix is a template instantiation of GenericMatrix for the \c unsigned
- * \c int type.
+ * %UIMatrix is an alias for UI32Matrix. It is a template instantiation of
+ * GenericMatrix for \c uint32.
  */
-typedef GenericMatrix<unsigned int>    UIMatrix;
+typedef UI32Matrix                  UIMatrix;
 
 /*!
  * \class pcl::I64Matrix
@@ -2494,16 +2855,54 @@ typedef GenericMatrix<unsigned int>    UIMatrix;
  *
  * %I64Matrix is a template instantiation of GenericMatrix for \c int64.
  */
-typedef GenericMatrix<int64>           I64Matrix;
+typedef GenericMatrix<int64>        I64Matrix;
 
 /*!
  * \class pcl::UI64Matrix
  * \ingroup matrix_types
  * \brief 64-bit unsigned integer matrix.
  *
- * %UI64Matrix is a template instantiation of GenericMatrix for \c int64.
+ * %UI64Matrix is a template instantiation of GenericMatrix for \c uint64.
  */
-typedef GenericMatrix<uint64>          UI64Matrix;
+typedef GenericMatrix<uint64>       UI64Matrix;
+
+/*!
+ * \class pcl::F32Matrix
+ * \ingroup matrix_types
+ * \brief 32-bit floating point real matrix.
+ *
+ * %F32Matrix is a template instantiation of GenericMatrix for \c float.
+ */
+typedef GenericMatrix<float>        F32Matrix;
+
+/*!
+ * \class pcl::FMatrix
+ * \ingroup matrix_types
+ * \brief 32-bit floating point real matrix.
+ *
+ * %FMatrix is an alias for F32Matrix. It is a template instantiation of
+ * GenericMatrix for \c float.
+ */
+typedef F32Matrix                   FMatrix;
+
+/*!
+ * \class pcl::F64Matrix
+ * \ingroup matrix_types
+ * \brief 64-bit floating point real matrix.
+ *
+ * %F64Matrix is a template instantiation of GenericMatrix for \c double.
+ */
+typedef GenericMatrix<double>       F64Matrix;
+
+/*!
+ * \class pcl::DMatrix
+ * \ingroup matrix_types
+ * \brief 64-bit floating point real matrix.
+ *
+ * %DMatrix is an alias for F64Matrix. It is a template instantiation of
+ * GenericMatrix for \c double.
+ */
+typedef F64Matrix                   DMatrix;
 
 /*!
  * \class pcl::Matrix
@@ -2513,7 +2912,25 @@ typedef GenericMatrix<uint64>          UI64Matrix;
  * %Matrix is an alias for DMatrix. It is a template instantiation of
  * GenericMatrix for the \c double type.
  */
-typedef DMatrix                        Matrix;
+typedef DMatrix                     Matrix;
+
+/*!
+ * \class pcl::C32Matrix
+ * \ingroup matrix_types
+ * \brief 32-bit floating point complex matrix.
+ *
+ * %C32Matrix is a template instantiation of GenericMatrix for \c Complex32.
+ */
+typedef GenericMatrix<Complex32>    C32Matrix;
+
+/*!
+ * \class pcl::C64Matrix
+ * \ingroup matrix_types
+ * \brief 64-bit floating point complex matrix.
+ *
+ * %C64Matrix is a template instantiation of GenericMatrix for \c Complex64.
+ */
+typedef GenericMatrix<Complex64>    C64Matrix;
 
 #endif   // !__PCL_NO_MATRIX_INSTANTIATE
 
@@ -2523,5 +2940,5 @@ typedef DMatrix                        Matrix;
 
 #endif   // __PCL_Matrix_h
 
-// ****************************************************************************
-// EOF pcl/Matrix.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Matrix.h - Released 2015/07/30 17:15:18 UTC

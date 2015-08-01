@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ICCProfile.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ICCProfile.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/ICCProfile.h>
 #include <pcl/File.h>
@@ -85,12 +88,14 @@ struct ICCHeader
    uint8    profileID[ 16 ];
    uint8    reserved[ 28 ];
 
-   /*
-    * Helper function to retrieve the profile size in bytes.
-    */
    size_type Size() const
    {
       return size_type( BigToLittleEndian( size ) );
+   }
+
+   uint32 Signature() const
+   {
+      return BigToLittleEndian( signature );
    }
 };
 
@@ -103,16 +108,16 @@ struct ICCHeader
 
 #define ICC_MAGIC_NUMBER   0x61637370 // 'acsp'
 
-static bool ValidateHeader( const ICCHeader* h )
+static bool IsValidHeader( const ICCHeader* h )
 {
-   return h != 0 &&
+   return h != nullptr &&
           h->Size() > sizeof( ICCHeader ) &&
-          BigToLittleEndian( h->signature ) == ICC_MAGIC_NUMBER;
+          h->Signature() == ICC_MAGIC_NUMBER;
 }
 
-static bool ValidateHeader( const ByteArray& x )
+static bool IsValidHeader( const ByteArray& x )
 {
-   return ValidateHeader( reinterpret_cast<const ICCHeader*>( x.Begin() ) );
+   return IsValidHeader( reinterpret_cast<const ICCHeader*>( x.Begin() ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -125,9 +130,11 @@ static void ThrowError( const String& message )
    String apiMessage;
    if ( len > 0 )
    {
-      apiMessage.Reserve( len );
+      apiMessage.SetLength( len );
       if ( (*API->ColorManagement->GetLastErrorMessage)( apiMessage.c_str(), &len ) == api_false )
          apiMessage.Clear();
+      else
+         apiMessage.ResizeToNullTerminated();
    }
 
    if ( apiMessage.IsEmpty() )
@@ -244,7 +251,7 @@ void ICCProfile::Load( const String& profilePath )
       data = ByteArray( size );
       f.Read( data.Begin(), size );
 
-      if ( !ValidateHeader( data ) )
+      if ( !IsValidHeader( data ) )
          throw Error( "Invalid or corrupted ICC profile: " + path );
 
       f.Close();
@@ -265,7 +272,7 @@ void ICCProfile::Set( const ByteArray& icc )
 
    if ( !icc.IsEmpty() )
    {
-      if ( !ValidateHeader( icc ) )
+      if ( !IsValidHeader( icc ) )
          throw Error( String().Format( "Invalid or corrupted ICC profile data at %p", icc.Begin() ) );
       data = icc;
    }
@@ -279,7 +286,7 @@ void ICCProfile::Set( const void* icc )
 
    Clear();
 
-   if ( !ValidateHeader( iccHeader ) )
+   if ( !IsValidHeader( iccHeader ) )
       throw Error( String().Format( "Invalid or corrupted ICC profile data at %p", icc ) );
    const uint8* iccBegin = reinterpret_cast<const uint8*>( icc );
    data = ByteArray( iccBegin, iccBegin + iccHeader->Size() );
@@ -341,27 +348,24 @@ bool ICCProfile::IsValid( const void* data )
 
 String ICCProfile::Description( handle h, const char* language, const char* country )
 {
-   if ( language == 0 || *language == '\0' )
+   if ( language == nullptr || *language == '\0' )
       language = "en";
-   if ( country == 0 || *country == '\0' )
+   if ( country == nullptr || *country == '\0' )
       country = "US";
 
    size_type len;
    (void)(*API->ColorManagement->GetProfileInformation)( h, ::ColorManagementContext::Description,
                                                          language, country, 0, &len );
    String description;
-
    if ( len > 0 )
    {
-      description.Reserve( len );
-
+      description.SetLength( len );
       if ( (*API->ColorManagement->GetProfileInformation)( h, ::ColorManagementContext::Description,
                                        language, country, description.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetProfileInformation" );
-
+      description.ResizeToNullTerminated();
       description.Trim();
    }
-
    return description;
 }
 
@@ -379,9 +383,10 @@ StringList ICCProfile::ProfileDirectories()
          break;
 
       String path;
-      path.Reserve( len );
+      path.SetLength( len );
       if ( (*API->Global->GetProfilesDirectory)( i, path.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetProfilesDirectory" );
+      path.ResizeToNullTerminated();
 
       directories.Add( path );
    }
@@ -416,13 +421,13 @@ static String FindProfileRecursively( const String& description, const String& d
             {
                String desc = ICCProfile::Description( h );
                ICCProfile::Close( h );
-               if ( exactMatch ? (desc == description) : desc.HasIC( description ) )
+               if ( exactMatch ? (desc == description) : desc.ContainsIC( description ) )
                   return filePath;
             }
          }
-
          catch ( ... )
          {
+            // Do not propagate exceptions here.
             if ( h != 0 )
                ICCProfile::Close( h );
          }
@@ -484,12 +489,12 @@ static void FindProfilesRecursively( StringList& list, const String& dirPath )
             f.Open( filePath, FileMode::Read|FileMode::Open|FileMode::ShareRead );
             f.Read( &hdr, sizeof( ICCHeader ) );
             f.Close();
-            if ( ValidateHeader( &hdr ) )
+            if ( IsValidHeader( &hdr ) )
                list.Add( filePath );
          }
-
          catch ( ... )
          {
+            // Do not propagate exceptions here.
             f.Close();
          }
       }
@@ -590,6 +595,7 @@ void ICCProfile::ExtractProfileList( StringList& selectedDescriptionsList,
                }
                catch ( ... )
                {
+                  // Do not propagate exceptions here.
                }
             }
          }
@@ -630,5 +636,5 @@ ICCProfile::profile_list ICCProfile::FindProfilesByColorSpace( ICCColorSpaces co
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/ICCProfile.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ICCProfile.cpp - Released 2015/07/30 17:15:31 UTC

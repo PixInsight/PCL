@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard XISF File Format Module Version 01.00.00.0023
-// ****************************************************************************
-// XISFPreferencesDialog.h - Released 2014/11/30 10:38:10 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard XISF File Format Module Version 01.00.03.0056
+// ----------------------------------------------------------------------------
+// XISFPreferencesDialog.h - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,32 +48,24 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
-#ifndef __XISFPreferencesDialog_h
-#define __XISFPreferencesDialog_h
+#ifndef XISFPreferencesDialog_h
+#define XISFPreferencesDialog_h
 
 #include "XISFFormat.h"
-
-#include <pcl/CheckBox.h>
-#include <pcl/Dialog.h>
-#include <pcl/GroupBox.h>
-#include <pcl/Label.h>
-#include <pcl/PushButton.h>
-#include <pcl/Sizer.h>
-#include <pcl/SpinBox.h>
+#include "XISFOptionsDialog.h"
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-class XISFPreferencesDialog: public Dialog
+class XISFPreferencesDialog : public XISFOptionsDialogBase
 {
 public:
 
    XISFFormat::EmbeddingOverrides overrides;
-   XISFOptions                    options;
 
    XISFPreferencesDialog( const XISFFormat::EmbeddingOverrides&, const XISFOptions& );
    virtual ~XISFPreferencesDialog() = default;
@@ -87,14 +83,6 @@ private:
       HorizontalSizer   ImportFITSKeywords_Sizer;
          CheckBox          ImportFITSKeywords_CheckBox;
 
-   GroupBox          DataCompression_GroupBox;
-   VerticalSizer     DataCompression_Sizer;
-      HorizontalSizer   Compression_Sizer;
-         CheckBox          Compression_CheckBox;
-      HorizontalSizer   CompressionLevel_Sizer;
-         Label             CompressionLevel_Label;
-         SpinBox           CompressionLevel_SpinBox;
-
    GroupBox          DataAlignment_GroupBox;
    VerticalSizer     DataAlignment_Sizer;
       HorizontalSizer   AlignmentSize_Sizer;
@@ -110,25 +98,24 @@ private:
          CheckBox             Properties_CheckBox;
       HorizontalSizer      ICCProfile_Sizer;
          CheckBox             ICCProfile_CheckBox;
-      HorizontalSizer      Metadata_Sizer;
-         CheckBox             Metadata_CheckBox;
+      HorizontalSizer      DisplayFunction_Sizer;
+         CheckBox             DisplayFunction_CheckBox;
+      HorizontalSizer      RGBWorkingSpace_Sizer;
+         CheckBox             RGBWorkingSpace_CheckBox;
       HorizontalSizer      Thumbnail_Sizer;
          CheckBox             Thumbnail_CheckBox;
 
-   HorizontalSizer   BottomSection_Sizer;
-      PushButton        Reset_PushButton;
-      PushButton        OK_PushButton;
-      PushButton        Cancel_PushButton;
+   PushButton        Reset_PushButton;
 
-   void __Button_Click( Button& sender, bool checked );
-   void __Dialog_Return( Dialog& sender, int retVal );
+   void Button_Click( Button& sender, bool checked );
+   void Dialog_Return( Dialog& sender, int retVal );
 };
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-#endif   // __XISFPreferencesDialog_h
+#endif   // XISFPreferencesDialog_h
 
-// ****************************************************************************
-// EOF XISFPreferencesDialog.h - Released 2014/11/30 10:38:10 UTC
+// ----------------------------------------------------------------------------
+// EOF XISFPreferencesDialog.h - Released 2015/07/31 11:49:40 UTC

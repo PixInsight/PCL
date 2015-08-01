@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard ImageCalibration Process Module Version 01.03.00.0196
-// ****************************************************************************
-// ImageCalibrationInterface.cpp - Released 2014/11/14 17:19:21 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard ImageCalibration Process Module Version 01.03.00.0215
+// ----------------------------------------------------------------------------
+// ImageCalibrationInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "ImageCalibrationInterface.h"
 #include "ImageCalibrationProcess.h"
@@ -192,10 +196,10 @@ void ImageCalibrationInterface::UpdateTargetImageItem( size_type i )
    node->SetText( 0, String( i+1 ) );
    node->SetAlignment( 0, TextAlign::Right );
 
-   node->SetIcon( 1, Bitmap( String( item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
+   node->SetIcon( 1, Bitmap( ScaledResource( item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
    node->SetAlignment( 1, TextAlign::Left );
 
-   node->SetIcon( 2, Bitmap( String( ":/browser/document.png" ) ) );
+   node->SetIcon( 2, Bitmap( ScaledResource( ":/browser/document.png" ) ) );
    if ( GUI->FullPaths_CheckBox.IsChecked() )
       node->SetText( 2, item.path );
    else
@@ -567,7 +571,7 @@ void ImageCalibrationInterface::__OutputFiles_EditCompleted( Edit& sender )
       instance.outputDirectory = text;
    else if ( sender == GUI->OutputExtension_Edit )
    {
-      if ( !text.IsEmpty() && !text.BeginsWith( '.' ) )
+      if ( !text.IsEmpty() && !text.StartsWith( '.' ) )
          text.Prepend( '.' );
       instance.outputExtension = text;
    }
@@ -856,6 +860,7 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
    int labelWidth1 = fnt.Width( String( "Optimization window (px):" ) + 'M' );
    int editWidth1 = fnt.Width( String( 'M', 5  ) );
    int editWidth2 = fnt.Width( String( '0', 10  ) );
+   int ui4 = w.LogicalPixelsToPhysical( 4 );
 
    //
 
@@ -986,8 +991,8 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
    OutputDirectory_Edit.SetToolTip( outputDirectoryToolTip );
    OutputDirectory_Edit.OnEditCompleted( (Edit::edit_event_handler)&ImageCalibrationInterface::__OutputFiles_EditCompleted, w );
 
-   OutputDirectory_ToolButton.SetIcon( Bitmap( String( ":/icons/select-file.png" ) ) );
-   OutputDirectory_ToolButton.SetFixedSize( 20, 20 );
+   OutputDirectory_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-file.png" ) ) );
+   OutputDirectory_ToolButton.SetScaledFixedSize( 20, 20 );
    OutputDirectory_ToolButton.SetToolTip( "<p>Select the output directory</p>" );
    OutputDirectory_ToolButton.OnClick( (Button::click_event_handler)&ImageCalibrationInterface::__OutputFiles_Click, w );
 
@@ -1095,7 +1100,7 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
    EvaluateNoise_CheckBox.OnClick( (Button::click_event_handler)&ImageCalibrationInterface::__OutputFiles_Click, w );
 
    EvaluateNoise_Sizer.SetSpacing( 4 );
-   EvaluateNoise_Sizer.AddSpacing( labelWidth1 + 4 );
+   EvaluateNoise_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    EvaluateNoise_Sizer.Add( EvaluateNoise_CheckBox );
    EvaluateNoise_Sizer.AddStretch();
 
@@ -1134,7 +1139,7 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
    OverwriteExistingFiles_CheckBox.OnClick( (Button::click_event_handler)&ImageCalibrationInterface::__OutputFiles_Click, w );
 
    OverwriteExistingFiles_Sizer.SetSpacing( 4 );
-   OverwriteExistingFiles_Sizer.AddSpacing( labelWidth1 + 4 );
+   OverwriteExistingFiles_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    OverwriteExistingFiles_Sizer.Add( OverwriteExistingFiles_CheckBox );
    OverwriteExistingFiles_Sizer.AddStretch();
 
@@ -1312,7 +1317,7 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
       "that will be subtracted from all pixels in the corresponding target region.</p>" );
    Overscan1_CheckBox.OnClick( (Button::click_event_handler)&ImageCalibrationInterface::__Overscan_Click, w );
 
-   Overscan1_Sizer.AddSpacing( labelWidth1 + 4 );
+   Overscan1_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    Overscan1_Sizer.Add( Overscan1_CheckBox );
    Overscan1_Sizer.AddStretch();
 
@@ -1409,7 +1414,7 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
       "that will be subtracted from all pixels in the corresponding target region.</p>" );
    Overscan2_CheckBox.OnClick( (Button::click_event_handler)&ImageCalibrationInterface::__Overscan_Click, w );
 
-   Overscan2_Sizer.AddSpacing( labelWidth1 + 4 );
+   Overscan2_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    Overscan2_Sizer.Add( Overscan2_CheckBox );
    Overscan2_Sizer.AddStretch();
 
@@ -1506,7 +1511,7 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
       "that will be subtracted from all pixels in the corresponding target region.</p>" );
    Overscan3_CheckBox.OnClick( (Button::click_event_handler)&ImageCalibrationInterface::__Overscan_Click, w );
 
-   Overscan3_Sizer.AddSpacing( labelWidth1 + 4 );
+   Overscan3_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    Overscan3_Sizer.Add( Overscan3_CheckBox );
    Overscan3_Sizer.AddStretch();
 
@@ -1603,7 +1608,7 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
       "that will be subtracted from all pixels in the corresponding target region.</p>" );
    Overscan4_CheckBox.OnClick( (Button::click_event_handler)&ImageCalibrationInterface::__Overscan_Click, w );
 
-   Overscan4_Sizer.AddSpacing( labelWidth1 + 4 );
+   Overscan4_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    Overscan4_Sizer.Add( Overscan4_CheckBox );
    Overscan4_Sizer.AddStretch();
 
@@ -1722,8 +1727,8 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
    MasterBiasPath_Edit.SetToolTip( "<p>File path of the master bias frame.</p>" );
    MasterBiasPath_Edit.OnEditCompleted( (Edit::edit_event_handler)&ImageCalibrationInterface::__MasterFrame_EditCompleted, w );
 
-   MasterBiasPath_ToolButton.SetIcon( Bitmap( String( ":/icons/select-file.png" ) ) );
-   MasterBiasPath_ToolButton.SetFixedSize( 20, 20 );
+   MasterBiasPath_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-file.png" ) ) );
+   MasterBiasPath_ToolButton.SetScaledFixedSize( 20, 20 );
    MasterBiasPath_ToolButton.SetToolTip( "<p>Select the master bias image file.</p>" );
    MasterBiasPath_ToolButton.OnClick( (Button::click_event_handler)&ImageCalibrationInterface::__MasterFrame_Click, w );
 
@@ -1737,7 +1742,7 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
       "one or more overscan regions have been defined and are enabled.</p>" );
    CalibrateMasterBias_CheckBox.OnClick( (Button::click_event_handler)&ImageCalibrationInterface::__MasterFrame_Click, w );
 
-   CalibrateMasterBias_Sizer.AddSpacing( labelWidth1 + 4 );
+   CalibrateMasterBias_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    CalibrateMasterBias_Sizer.Add( CalibrateMasterBias_CheckBox );
    CalibrateMasterBias_Sizer.AddStretch();
 
@@ -1759,8 +1764,8 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
    MasterDarkPath_Edit.SetToolTip( "<p>File path of the master dark frame.</p>" );
    MasterDarkPath_Edit.OnEditCompleted( (Edit::edit_event_handler)&ImageCalibrationInterface::__MasterFrame_EditCompleted, w );
 
-   MasterDarkPath_ToolButton.SetIcon( Bitmap( String( ":/icons/select-file.png" ) ) );
-   MasterDarkPath_ToolButton.SetFixedSize( 20, 20 );
+   MasterDarkPath_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-file.png" ) ) );
+   MasterDarkPath_ToolButton.SetScaledFixedSize( 20, 20 );
    MasterDarkPath_ToolButton.SetToolTip( "<p>Select the master dark image file.</p>" );
    MasterDarkPath_ToolButton.OnClick( (Button::click_event_handler)&ImageCalibrationInterface::__MasterFrame_Click, w );
 
@@ -1775,7 +1780,7 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
       "bias frame has been selected and is enabled.</p>" );
    CalibrateMasterDark_CheckBox.OnClick( (Button::click_event_handler)&ImageCalibrationInterface::__MasterFrame_Click, w );
 
-   CalibrateMasterDark_Sizer.AddSpacing( labelWidth1 + 4 );
+   CalibrateMasterDark_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    CalibrateMasterDark_Sizer.Add( CalibrateMasterDark_CheckBox );
    CalibrateMasterDark_Sizer.AddStretch();
 
@@ -1787,14 +1792,14 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
       "(wavelet-based) noise evaluation and linear minimization routines.</p>" );
    OptimizeDarks_CheckBox.OnClick( (Button::click_event_handler)&ImageCalibrationInterface::__MasterFrame_Click, w );
 
-   OptimizeDarks_Sizer.AddSpacing( labelWidth1 + 4 );
+   OptimizeDarks_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    OptimizeDarks_Sizer.Add( OptimizeDarks_CheckBox );
    OptimizeDarks_Sizer.AddStretch();
 
    DarkOptimizationThreshold_NumericControl.label.SetText( "Optimization threshold:" );
    DarkOptimizationThreshold_NumericControl.label.SetFixedWidth( labelWidth1 );
    DarkOptimizationThreshold_NumericControl.slider.SetRange( 0, 250 );
-   DarkOptimizationThreshold_NumericControl.slider.SetMinWidth( 250 );
+   DarkOptimizationThreshold_NumericControl.slider.SetScaledMinWidth( 250 );
    DarkOptimizationThreshold_NumericControl.SetReal();
    DarkOptimizationThreshold_NumericControl.SetRange( TheICDarkOptimizationThresholdParameter->MinimumValue(), TheICDarkOptimizationThresholdParameter->MaximumValue() );
    DarkOptimizationThreshold_NumericControl.SetPrecision( TheICDarkOptimizationThresholdParameter->Precision() );
@@ -1885,8 +1890,8 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
    MasterFlatPath_Edit.SetToolTip( "<p>File path of the master flat frame.</p>" );
    MasterFlatPath_Edit.OnEditCompleted( (Edit::edit_event_handler)&ImageCalibrationInterface::__MasterFrame_EditCompleted, w );
 
-   MasterFlatPath_ToolButton.SetIcon( Bitmap( String( ":/icons/select-file.png" ) ) );
-   MasterFlatPath_ToolButton.SetFixedSize( 20, 20 );
+   MasterFlatPath_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-file.png" ) ) );
+   MasterFlatPath_ToolButton.SetScaledFixedSize( 20, 20 );
    MasterFlatPath_ToolButton.SetToolTip( "<p>Select the master flat image file.</p>" );
    MasterFlatPath_ToolButton.OnClick( (Button::click_event_handler)&ImageCalibrationInterface::__MasterFrame_Click, w );
 
@@ -1901,7 +1906,7 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
       "regions and master calibration frames have been defined and are enabled.</p>" );
    CalibrateMasterFlat_CheckBox.OnClick( (Button::click_event_handler)&ImageCalibrationInterface::__MasterFrame_Click, w );
 
-   CalibrateMasterFlat_Sizer.AddSpacing( labelWidth1 + 4 );
+   CalibrateMasterFlat_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    CalibrateMasterFlat_Sizer.Add( CalibrateMasterFlat_CheckBox );
    CalibrateMasterFlat_Sizer.AddStretch();
 
@@ -1948,5 +1953,5 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF ImageCalibrationInterface.cpp - Released 2014/11/14 17:19:21 UTC
+// ----------------------------------------------------------------------------
+// EOF ImageCalibrationInterface.cpp - Released 2015/07/31 11:49:48 UTC

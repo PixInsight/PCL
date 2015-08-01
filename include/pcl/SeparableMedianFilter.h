@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/SeparableMedianFilter.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/SeparableMedianFilter.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_SeparableMedianFilter_h
 #define __PCL_SeparableMedianFilter_h
@@ -89,8 +92,8 @@ public:
     *                odd integer &gt;= 3 (3, 5, 7, ...).
     */
    SeparableMedianFilter( int size = 3 ) :
-   ImageTransformation(), m_size( PCL_VALID_KERNEL_SIZE( size ) ),
-   m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      ImageTransformation(),
+      m_size( PCL_VALID_KERNEL_SIZE( size ) ), m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
       PCL_PRECONDITION( size >= 3 && size&1 == 1 )
    }
@@ -99,8 +102,8 @@ public:
     * Copy constructor.
     */
    SeparableMedianFilter( const SeparableMedianFilter& x ) :
-   ImageTransformation( x ), m_size( x.m_size ),
-   m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
+      ImageTransformation( x ),
+      m_size( x.m_size ), m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
    {
    }
 
@@ -109,17 +112,6 @@ public:
     */
    virtual ~SeparableMedianFilter()
    {
-   }
-
-   /*!
-    * Assignment operator. Returns a reference to this object.
-    */
-   SeparableMedianFilter& operator =( const SeparableMedianFilter& x )
-   {
-      m_size          = x.m_size;
-      m_parallel      = x.m_parallel;
-      m_maxProcessors = x.m_maxProcessors;
-      return *this;
    }
 
    /*!
@@ -234,5 +226,5 @@ protected:
 
 #endif   // __PCL_SeparableMedianFilter_h
 
-// ****************************************************************************
-// EOF pcl/SeparableMedianFilter.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/SeparableMedianFilter.h - Released 2015/07/30 17:15:18 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Defs.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Defs.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Defs_h
 #define __PCL_Defs_h
@@ -167,7 +170,7 @@
 #endif
 
 /*
- * __PCL_UNIX is automatically defined on FreeBSD, Linux and Mac OS X platforms.
+ * __PCL_UNIX is always defined on FreeBSD, Linux and Mac OS X platforms.
  */
 #if defined( __PCL_LINUX ) || defined( __PCL_FREEBSD ) || defined( __PCL_MACOSX )
 #  ifndef __PCL_UNIX
@@ -176,7 +179,7 @@
 #endif
 
 /*
- * __PCL_X11 is automatically defined on FreeBSD and Linux platforms.
+ * __PCL_X11 is always defined on FreeBSD and Linux platforms.
  */
 #if defined( __PCL_LINUX ) || defined( __PCL_FREEBSD )
 #  ifndef __PCL_X11
@@ -185,8 +188,48 @@
 #endif
 
 /*
+ * Minimum compiler requirements:
+ *
+ * - MS Visual C++ 2012 or higher on Windows
+ * - GCC >= 4.6 (4.8 recommended) on UNIX/Linux
+ * - Clang >= 3.3 on UNIX/Linux
+ */
+#ifdef __PCL_WINDOWS
+#  ifdef _MSC_VER
+#    if _MSC_VER < 1700
+#      error This version of PCL requires MSVC++ 2012 or higher on MS Windows platforms.
+#    endif
+#  else
+#    error Unsupported C++ compiler on MS Windows platform.
+#  endif
+#else
+#  ifdef _MSC_VER
+#    error _MSC_VER should not be #defined on UNIX/Linux platforms.
+#  endif
+#  ifdef __GNUC__
+#    define GCC_VERSION (__GNUC__*10000 + __GNUC_MINOR__*100 + __GNUC_PATCHLEVEL__)
+#  endif
+#  ifdef __clang__
+#    if !__has_feature( cxx_inheriting_constructors )
+#      error This version of PCL requires Clang 3.3 or higher on UNIX/Linux platforms.
+#    endif
+#  else
+#    ifdef __GNUC__
+#      if GCC_VERSION < 40600
+#        error This version of PCL requires GCC 4.6 or higher on UNIX/Linux platforms.
+#      endif
+#      if GCC_VERSION < 40800
+#        warning GCC 4.8 or higher should be used on UNIX/Linux platforms.
+#      endif
+#    else
+#      error Unsupported C++ compiler on UNIX/Linux platform.
+#    endif
+#  endif
+#endif
+
+/*
  * Brain-damaged compilers emit particularly useless warning messages.
- * N.B. This must be done *before* including windows.h
+ * N.B.: This must be done *before* including windows.h
  */
 #ifndef __PCL_NO_WARNING_MUTE_PRAGMAS
 #  ifdef _MSC_VER
@@ -194,6 +237,7 @@
 #      define _CRT_SECURE_NO_DEPRECATE 1 // Deal with MS's attempt at deprecating C standard runtime functions
 #      pragma warning( disable: 4996 )   // ...
 #    endif
+#    pragma warning( disable: 4018 )     // '<' : signed/unsigned mismatch
 #    pragma warning( disable: 4049 )     // More than 64k source lines
 #    pragma warning( disable: 4244 )     // Conversion from 'type1' to 'type2', possible loss of data
 #    pragma warning( disable: 4345 )     // Behavior change: an object of POD type constructed...
@@ -202,6 +246,7 @@
 #    pragma warning( disable: 4522 )     // Multiple assignment operators defined
 #    pragma warning( disable: 4710 )     // Function not inlined
 #    pragma warning( disable: 4723 )     // Potential divide by 0
+#    pragma warning( disable: 4800 )     // 'boolean' : forcing value to bool 'true' or 'false' (performance warning)
 #  endif
 #endif
 
@@ -248,7 +293,7 @@ __pragma(warning( disable : 4267 ))
 #endif
 
 /*
- * C standard definitions
+ * C standard definitions.
  */
 #ifndef __stddef_h
 #  include <stddef.h>
@@ -258,22 +303,32 @@ __pragma(warning( disable : 4267 ))
 #endif
 
 /*
+ * C++11: Utility functions.
+ */
+#ifndef __utility_h
+#  include <utility>
+#  ifndef __utility_h
+#    define __utility_h
+#  endif
+#endif
+
+/*
+ * C++11: Compile-time type information classes.
+ */
+#ifndef __type_traits_h
+#  include <type_traits>
+#  ifndef __type_traits_h
+#    define __type_traits_h
+#  endif
+#endif
+
+/*
  * Macros that control global symbol visibility.
  *
- * On UNIX/Linux, GCC version 4.6 or higher is required, and compilation with
- * -fvisibility=hidden is required for PCL and all PixInsight modules and
- * applications.
- *
- * On Windows, we require MS VC++ 2008 or higher.
+ * On UNIX/Linux, compilation with -fvisibility=hidden is required for PCL and
+ * all PixInsight modules and applications.
  */
-#ifdef __PCL_WINDOWS    // MS VC++ >= 2008 on Windows
-#  ifdef _MSC_VER
-#    if _MSC_VER < 1500
-#      error This version of PCL requires MSVC++ 2008 or higher on MS Windows platforms.
-#    endif
-#  else
-#    warning Unknown C++ compiler detected on MS Windows platform.
-#  endif
+#ifdef _MSC_VER               // Windows
 #  define PCL_EXPORT          __declspec(dllexport)
 #  define PCL_MODULE_EXPORT   extern "C" PCL_EXPORT
 #  define PCL_IMPORT          __declspec(dllimport)
@@ -283,36 +338,28 @@ __pragma(warning( disable : 4267 ))
 #  define PCL_INTERNAL
 #  define PCL_BEGIN_INTERNAL
 #  define PCL_END_INTERNAL
-#else                   // GCC >= 4.2 on Linux/X11, FreeBSD/X11 and Mac OS X
-#  ifdef __GNUC__
-#    define GCC_VERSION (__GNUC__*10000 + __GNUC_MINOR__*100 + __GNUC_PATCHLEVEL__)
-#    if GCC_VERSION < 40200
-#      error This version of PCL requires g++ 4.2 or higher on UNIX/Linux platforms.
-#    endif
+#else                         // Linux/X11, FreeBSD/X11 and Mac OS X
+#  define PCL_EXPORT          __attribute__((visibility ("default")))
+#  if defined( __clang__ )    // Clang does not have the "externally_visible" attribute
+#    define PCL_MODULE_EXPORT   extern "C" __attribute__((visibility ("default")))
 #  else
-#    warning Unknown C++ compiler detected on UNIX/Linux platform.
+#    define PCL_MODULE_EXPORT   extern "C" __attribute__((visibility ("default"), externally_visible))
 #  endif
-#  define PCL_EXPORT          __attribute__ ((visibility ("default")))
-#  if defined( __PCL_FREEBSD ) || defined( __PCL_MACOSX ) // clang does not have the "externally_visible" attribute
-#    define PCL_MODULE_EXPORT   extern "C" __attribute__ ((visibility ("default")))
-#  else
-#    define PCL_MODULE_EXPORT   extern "C" __attribute__ ((visibility ("default"), externally_visible))
-#  endif
-#  define PCL_IMPORT          __attribute__ ((visibility ("default")))
-#  define PCL_LOCAL           __attribute__ ((visibility ("hidden")))
+#  define PCL_IMPORT          __attribute__((visibility ("default")))
+#  define PCL_LOCAL           __attribute__((visibility ("hidden")))
 #  define PCL_BEGIN_LOCAL     _Pragma ( "GCC visibility push( hidden )" )
 #  define PCL_END_LOCAL       _Pragma ( "GCC visibility pop" )
-#  define PCL_INTERNAL        __attribute__ ((visibility ("internal")))
+#  define PCL_INTERNAL        __attribute__((visibility ("internal")))
 #  define PCL_BEGIN_INTERNAL  _Pragma ( "GCC visibility push( internal )" )
 #  define PCL_END_INTERNAL    _Pragma ( "GCC visibility pop" )
 #endif
-#ifdef __PCL_DSO        // Using PCL as a dynamic shared object (.so, .dylib, .dll)
-#  ifdef __PCL_BUILDING_PCL_DSO   // building the PCL DSO
+#ifdef __PCL_DSO              // Using PCL as a dynamic shared object - ### untested/experimental
+#  ifdef __PCL_BUILDING_PCL_DSO     // building the PCL DSO
 #    define PCL_PUBLIC        PCL_EXPORT
-#  else                           // linking against the PCL DSO
+#  else                             // linking against the PCL DSO
 #    define PCL_PUBLIC        PCL_IMPORT
 #  endif
-#else                   // Using PCL as a static library
+#else                         // Using PCL as a static library
 #  define PCL_PUBLIC
 #endif
 
@@ -325,20 +372,55 @@ __pragma(warning( disable : 4267 ))
 #define PCL_DATA              PCL_PUBLIC
 
 /*
- * Fastcall calling convention
+ * Fastcall calling convention.
  */
 #ifndef __PCL_NO_FASTCALL
-#  ifdef __PCL_WINDOWS
+#  ifdef _MSC_VER
 #    define PCL_FASTCALL      __fastcall
 #  else
-#    define PCL_FASTCALL      __attribute__ ((fastcall))
+#    define PCL_FASTCALL      __attribute__((fastcall))
 #  endif
 #else
 #  define PCL_FASTCALL
 #endif
 
 /*
- * Minimum Win32 versions supported
+ * Always inline functions.
+ */
+#ifndef __PCL_NO_FORCE_INLINE
+#  ifdef _MSC_VER // Visual Studio
+#    define PCL_FORCE_INLINE  __forceinline
+#  else
+#    define PCL_FORCE_INLINE  inline __attribute__((always_inline))
+#  endif
+#else
+#  define PCL_FORCE_INLINE
+#endif
+
+/*
+ * Aligned memory allocation functions.
+ */
+#ifdef _MSC_VER
+#  define PCL_ALIGNED_MALLOC  _aligned_malloc
+#  define PCL_ALIGNED_FREE    _aligned_free
+#else
+#  define PCL_ALIGNED_MALLOC  _mm_malloc
+#  define PCL_ALIGNED_FREE    _mm_free
+#endif
+
+/*
+ * 16-byte aligned blocks for automatic vectorization.
+ */
+#ifdef _MSC_VER               // Windows
+#  define PCL_ALIGNED16       __declspec(align(16))
+#  define PCL_ASSUME16( x )   x
+#else                         // GCC and Clang
+#  define PCL_ALIGNED16       __attribute__((aligned(16)))
+#  define PCL_ASSUME16( x )   __builtin_assume_aligned( x, 16 )
+#endif
+
+/*
+ * Minimum Win32 versions supported.
  */
 #ifdef __PCL_WINDOWS
 #  ifndef __PCL_NO_WIN32_MINIMUM_VERSIONS
@@ -348,9 +430,16 @@ __pragma(warning( disable : 4267 ))
 #endif
 
 /*
- * Size and distance types
+ * C++11 features not supported by Visual Studio 2013.
  */
+#ifdef _MSC_VER
+#  define constexpr
+#  define noexcept
+#endif
 
+/*
+ * Size and distance types.
+ */
 #ifndef __PCL_NO_SIZE_AND_DISTANCE_TYPES
 
 namespace pcl
@@ -373,12 +462,11 @@ typedef ptrdiff_t             distance_type;
 
 }  // pcl
 
-#endif   // __PCL_NO_SIZE_AND_DISTANCE_TYPES
+#endif   // !__PCL_NO_SIZE_AND_DISTANCE_TYPES
 
 /*
  * Portable integer types
  */
-
 #ifndef __PCL_NO_PORTABLE_INTEGER_TYPES
 
 namespace pcl
@@ -388,7 +476,7 @@ namespace pcl
  */
 
 /*!
- * Signed 8-bit integer type.
+ * Signed two's complement 8-bit integer type.
  * \ingroup portable_integer_types
  */
 typedef signed char           int8;
@@ -400,7 +488,7 @@ typedef signed char           int8;
 typedef unsigned char         uint8;
 
 /*!
- * Signed 16-bit integer type.
+ * Signed two's complement 16-bit integer type.
  * \ingroup portable_integer_types
  */
 typedef signed short          int16;
@@ -412,7 +500,7 @@ typedef signed short          int16;
 typedef unsigned short        uint16;
 
 /*!
- * Signed 32-bit integer type.
+ * Signed two's complement 32-bit integer type.
  * \ingroup portable_integer_types
  */
 typedef signed int            int32;
@@ -428,7 +516,7 @@ typedef signed __int64        int64;
 typedef unsigned __int64      uint64;
 #else             // Valid for gcc
 /*!
- * Signed 64-bit integer type.
+ * Signed two's complement 64-bit integer type.
  * \ingroup portable_integer_types
  */
 typedef signed long long      int64;
@@ -438,16 +526,29 @@ typedef signed long long      int64;
  * \ingroup portable_integer_types
  */
 typedef unsigned long long    uint64;
-#endif
+#endif // _MSC_VER
 
-}  // pcl
+class PCL_CLASS PCL_AssertScalarSizes
+{
+public:
 
-#endif   // __PCL_NO_PORTABLE_INTEGER_TYPES
+   static_assert( sizeof( int8 ) == 1, "Invalid sizeof( int8 )" );
+   static_assert( sizeof( uint8 ) == 1, "Invalid sizeof( uint8 )" );
+   static_assert( sizeof( int16 ) == 2, "Invalid sizeof( int16 )" );
+   static_assert( sizeof( uint16 ) == 2, "Invalid sizeof( uint16 )" );
+   static_assert( sizeof( int32 ) == 4, "Invalid sizeof( int32 )" );
+   static_assert( sizeof( uint32 ) == 4, "Invalid sizeof( uint32 )" );
+   static_assert( sizeof( int64 ) == 8, "Invalid sizeof( int64 )" );
+   static_assert( sizeof( uint64 ) == 8, "Invalid sizeof( uint64 )" );
+   static_assert( sizeof( float ) == sizeof( uint32 ), "Invalid sizeof( float )" );
+   static_assert( sizeof( double ) == sizeof( uint64 ), "Invalid sizeof( double )" );
+};
+
+} // pcl
 
 /*
  * Integer limits
  */
-
 #ifndef __PCL_NO_INTEGER_LIMITS
 
 /*!
@@ -537,7 +638,7 @@ typedef unsigned long long    uint64;
 #define uint64_to_uint24      9.0949464756281961368912116576494e-13
 #define uint64_to_uint32      2.3283064359965952029459655278022e-10
 
-#else // Non-MS C++, i.e. g++ or compatible
+#else // Non-MS C++, i.e. GCC or compatible
 
 /*!
  * The smallest 8-bit signed integer.
@@ -867,12 +968,24 @@ inline double UBitMax( int n )
 
 } // pcl
 
-#endif   // __PCL_NO_INTEGER_LIMITS
+#endif   // !__PCL_NO_INTEGER_LIMITS
+
+/*!
+ * Left rotation macros
+ */
+#ifndef __PCL_NO_ROTL_MACROS
+#  ifdef _MSC_VER
+#    define RotL32( x, r ) _rotl( x, r )
+#    define RotL64( x, r ) _rotl64( x, r )
+#  else
+#    define RotL32( x, r ) ((x << r) | (x >> (32 - r)))
+#    define RotL64( x, r ) ((x << r) | (x >> (64 - r)))
+#  endif
+#endif // !__PCL_NO_ROTL_MACROS
 
 /*
  * Unicode character types.
  */
-
 #ifndef __PCL_NO_UNICODE_CHARACTER_TYPES
 
 namespace pcl
@@ -896,12 +1009,11 @@ typedef uint32                char32_type;
 
 } // pcl
 
-#endif   // __PCL_NO_UNICODE_CHARACTER_TYPES
+#endif   // !__PCL_NO_UNICODE_CHARACTER_TYPES
 
 /*
  * File size and position types.
  */
-
 #ifndef __PCL_NO_FILE_SIZE_AND_POSITION_TYPES
 
 #ifndef __PCL_WINDOWS
@@ -935,7 +1047,9 @@ typedef int64                 fsize_type;
 
 }  // pcl
 
-#endif   // __PCL_NO_FILE_SIZE_AND_POSITION_TYPES
+#endif   // !__PCL_NO_FILE_SIZE_AND_POSITION_TYPES
+
+#endif   // !__PCL_NO_PORTABLE_INTEGER_TYPES
 
 /*
  * Maximum number of processors allowed.
@@ -947,5 +1061,5 @@ typedef int64                 fsize_type;
 
 #endif   // __PCL_Defs_h
 
-// ****************************************************************************
-// EOF pcl/Defs.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Defs.h - Released 2015/07/30 17:15:18 UTC

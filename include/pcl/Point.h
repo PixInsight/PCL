@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Point.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Point.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Point_h
 #define __PCL_Point_h
@@ -64,12 +67,7 @@
 #endif
 
 #ifdef __PCL_QT_INTERFACE
-#  include <qglobal.h>
-#  if ( QT_VERSION >= 0x040000 )
-#    include <QtCore/QPoint>
-#  else
-#    include <qpoint.h>
-#  endif
+#  include <QtCore/QPoint>
 #endif
 
 namespace pcl
@@ -78,12 +76,15 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*
- * ### N.B.: The template class GenericPoint<T> cannot have virtual member
- *           functions. This is because some internal PCL and core routines
- *           rely on GenericPoint<int>, GenericPoint<float> and
- *           GenericPoint<double> being directly castable to int*, float* and
- *           double*, respectively.
+ * ### NB: Template class GenericPoint cannot have virtual member functions.
+ *         This is because internal PCL and core routines rely on
+ *         GenericPoint<int>, GenericPoint<float> and GenericPoint<double> to
+ *         be directly castable to int*, float* and double*, respectively. See
+ *         also the PCL_ASSERT_POINT_SIZE() macro.
  */
+
+#define PCL_ASSERT_POINT_SIZE() \
+   static_assert( sizeof( *this ) == 2*sizeof( T ), "Invalid sizeof( GenericPoint<> )" )
 
 /*!
  * \class GenericPoint
@@ -114,8 +115,8 @@ public:
    /*
     * Point coordinates
     */
-   T  x; //!< Abscissa (horizontal coordinate).
-   T  y; //!< Ordinate (vertical coordinate).
+   component x; //!< Abscissa (horizontal coordinate).
+   component y; //!< Ordinate (vertical coordinate).
 
    /*!
     * Constructs a default %GenericPoint instance. Point coordinates are not
@@ -123,6 +124,7 @@ public:
     */
    GenericPoint()
    {
+      PCL_ASSERT_POINT_SIZE();
    }
 
    /*!
@@ -133,15 +135,17 @@ public:
     * with numeric conversion semantics.
     */
    template <typename T1>
-   GenericPoint( T1 xPos, T1 yPos ) : x( T( xPos ) ), y( T( yPos ) )
+   GenericPoint( T1 xPos, T1 yPos ) : x( component( xPos ) ), y( component( yPos ) )
    {
+      PCL_ASSERT_POINT_SIZE();
    }
 
    /*!
     * Copy constructor for %GenericPoint.
     */
-   GenericPoint( T p )
+   GenericPoint( component p )
    {
+      PCL_ASSERT_POINT_SIZE();
       x = y = p;
    }
 
@@ -151,15 +155,49 @@ public:
     * template argument.
     */
    template <typename T1>
-   GenericPoint( const GenericPoint<T1>& p ) : x( T( p.x ) ), y( T( p.y ) )
+   GenericPoint( const GenericPoint<T1>& p ) : x( component( p.x ) ), y( component( p.y ) )
    {
+      PCL_ASSERT_POINT_SIZE();
    }
 
 #ifdef __PCL_QT_INTERFACE
-   GenericPoint( const QPoint& p ) : x( T( p.x() ) ), y( T( p.y() ) )
+   GenericPoint( const QPoint& p ) : x( component( p.x() ) ), y( component( p.y() ) )
    {
+      PCL_ASSERT_POINT_SIZE();
    }
 #endif
+
+   /*!
+    * Returns the Euclidian distance between this point and another point \a p
+    * in the plane.
+    *
+    * The Euclidian distance between two points p and q is the length of the
+    * straight line between both points: Sqrt( (p.x - q.x)^2 + (p.y - q.y)^2 ).
+    *
+    * \sa ManhattanDistanceTo()
+    */
+   template <typename T1>
+   double DistanceTo( const GenericPoint<T1>& p ) const
+   {
+      double dx = double( p.x ) - double( x );
+      double dy = double( p.y ) - double( y );
+      return pcl::Sqrt( dx*dx + dy*dy );
+   }
+
+   /*!
+    * Returns the Manhattan distance between this point and another point \a p
+    * in the plane.
+    *
+    * The Manhattan distance between two points p and q is the sum of distances
+    * measured along axes at right angles: |p.x - q.x| + |p.y - q.y|.
+    *
+    * \sa DistanceTo()
+    */
+   template <typename T1>
+   double ManhattanDistanceTo( const GenericPoint<T1>& p ) const
+   {
+      return Abs( double( p.x ) - double( x ) ) + Abs( double( p.y ) - double( y ) );
+   }
 
    /*!
     * Moves this point to the location of another point \a p.
@@ -181,7 +219,7 @@ public:
    template <typename T1>
    void MoveTo( T1 xPos, T1 yPos )
    {
-      x = T( xPos ); y = T( yPos );
+      x = component( xPos ); y = component( yPos );
    }
 
 #ifdef __PCL_QT_INTERFACE
@@ -196,18 +234,18 @@ public:
     * specified point \a d.
     */
    template <typename T1>
-   GenericPoint<T> MovedTo( const GenericPoint<T1>& p ) const
+   GenericPoint MovedTo( const GenericPoint<T1>& p ) const
    {
-      return GenericPoint<T>( T( p.x ), T( p.y ) );
+      return GenericPoint( component( p.x ), component( p.y ) );
    }
 
    /*!
     * Returns a point at the specified \a xPos and \a yPos coordinates.
     */
    template <typename T1>
-   GenericPoint<T> MovedTo( T1 xPos, T1 yPos ) const
+   GenericPoint MovedTo( T1 xPos, T1 yPos ) const
    {
-      return GenericPoint<T>( T( xPos ), T( yPos ) );
+      return GenericPoint( component( xPos ), component( yPos ) );
    }
 
    /*!
@@ -229,9 +267,9 @@ public:
     * Moves this point by increments \a dx and \a dy in the X and Y directions,
     * respectively, relative to its current position.
     *
-    * Given the declaration:
+    * For example, given the declaration:
     *
-    * \code GenericPoint<T> p; \endcode
+    * \code GenericPoint<float> p; \endcode
     *
     * These two expressions are equivalent:
     *
@@ -245,7 +283,7 @@ public:
    template <typename T1>
    void MoveBy( T1 dx, T1 dy )
    {
-      x += T( dx ); y += T( dy );
+      x += component( dx ); y += component( dy );
    }
 
    /*!
@@ -261,7 +299,7 @@ public:
    template <typename T1>
    void MoveBy( T1 dxy )
    {
-      x += T( dxy ); y += T( dxy );
+      x += component( dxy ); y += component( dxy );
    }
 
 #ifdef __PCL_QT_INTERFACE
@@ -276,9 +314,9 @@ public:
     * displaced by the increments specified as the point \a d.
     */
    template <typename T1>
-   GenericPoint<T> MovedBy( const GenericPoint<T1>& d ) const
+   GenericPoint MovedBy( const GenericPoint<T1>& d ) const
    {
-      return GenericPoint<T>( x + T( d.x ), y + T( d.y ) );
+      return GenericPoint( x + component( d.x ), y + component( d.y ) );
    }
 
    /*!
@@ -286,9 +324,106 @@ public:
     * displaced by the specified increments \a dx and \a dy.
     */
    template <typename T1>
-   GenericPoint<T> MovedBy( T1 dx, T1 dy ) const
+   GenericPoint MovedBy( T1 dx, T1 dy ) const
    {
-      return GenericPoint<T>( x + T( dx ), y + T( dy ) );
+      return GenericPoint( x + component( dx ), y + component( dy ) );
+   }
+
+   /*!
+    * Rotates this point in the plane by the specified \a angle in radians,
+    * with respect to a center of rotation given by its coordinates \a xc and
+    * \a yc.
+    */
+   template <typename T1, typename T2>
+   void Rotate( T1 angle, T2 xc, T2 yc )
+   {
+      pcl::Rotate( x, y, angle, xc, yc );
+   }
+
+   /*!
+    * Rotates this point in the plane by the specified \a angle in radians,
+    * with respect to the specified \a center of rotation.
+    */
+   template <typename T1, typename T2>
+   void Rotate( T1 angle, const GenericPoint<T2>& center )
+   {
+      Rotate( angle, center.x, center.y );
+   }
+
+   /*!
+    * Rotates this point in the plane by the specified angle, given by its sine
+    * and cosine, \a sa and \a ca respectively, with respect to a center of
+    * rotation given by its coordinates \a xc and \a yc.
+    */
+   template <typename T1, typename T2>
+   void Rotate( T1 sa, T1 ca, T2 xc, T2 yc )
+   {
+      pcl::Rotate( x, y, sa, ca, xc, yc );
+   }
+
+   /*!
+    * Rotates this point in the plane by the specified angle, given by its sine
+    * and cosine, \a sa and \a ca respectively, with respect to the specified
+    * \a center of rotation.
+    */
+   template <typename T1, typename T2>
+   void Rotate( T1 sa, T1 ca, const GenericPoint<T2>& center )
+   {
+      Rotate( sa, ca, center.x, center.y );
+   }
+
+   /*!
+    * Returns a point whose coordinates are the coordinates of this point
+    * rotated in the plane by the specified \a angle in radians, with respect
+    * to a center of rotation given by its coordinates \a xc and \a yc.
+    */
+   template <typename T1, typename T2>
+   GenericPoint Rotated( T1 angle, T2 xc, T2 yc ) const
+   {
+      GenericPoint p( *this );
+      p.Rotate( angle, xc, yc );
+      return p;
+   }
+
+   /*!
+    * Returns a point whose coordinates are the coordinates of this point
+    * rotated in the plane by the specified \a angle in radians, with respect
+    * to the specified \a center of rotation.
+    */
+   template <typename T1, typename T2>
+   GenericPoint Rotated( T1 angle, const GenericPoint<T2>& center ) const
+   {
+      GenericPoint p( *this );
+      p.Rotate( angle, center );
+      return p;
+   }
+
+   /*!
+    * Returns a point whose coordinates are the coordinates of this point
+    * rotated in the plane by the specified angle given by its sine and cosine,
+    * \a sa and \a ca respectively, with respect to a center of rotation given
+    * by its coordinates \a xc and \a yc.
+    */
+   template <typename T1, typename T2>
+   GenericPoint Rotated( T1 sa, T1 ca, T2 xc, T2 yc ) const
+   {
+      GenericPoint p( *this );
+      p.Rotate( sa, ca, xc, yc );
+      return p;
+   }
+
+   /*!
+    * Returns a point whose coordinates are the coordinates of this point
+    * rotated in the plane by the specified angle given by its sine and cosine,
+    * \a sa and \a ca respectively, with respect to the specified \a center of
+    * rotation.
+    */
+   template <typename T1, typename T2>
+   GenericPoint Rotated( T1 sa, T1 ca, const GenericPoint<T2>& center ) const
+   {
+      GenericPoint p( *this );
+      p.Rotate( sa, ca, center );
+      return p;
    }
 
    /*!
@@ -299,8 +434,8 @@ public:
     */
    void Round()
    {
-      x = T( pcl::Round( double( x ) ) );
-      y = T( pcl::Round( double( y ) ) );
+      x = component( pcl::Round( double( x ) ) );
+      y = component( pcl::Round( double( y ) ) );
    }
 
    /*!
@@ -311,8 +446,8 @@ public:
    void Round( int n )
    {
       PCL_PRECONDITION( n >= 0 )
-      x = T( pcl::Round( double( x ), n ) );
-      y = T( pcl::Round( double( y ), n ) );
+      x = component( pcl::Round( double( x ), n ) );
+      y = component( pcl::Round( double( y ), n ) );
    }
 
    /*!
@@ -321,9 +456,9 @@ public:
     *
     * \sa Round(), Rounded( int ), Truncated(), RoundedToInt(), TruncatedToInt()
     */
-   GenericPoint<T> Rounded() const
+   GenericPoint Rounded() const
    {
-      return GenericPoint<T>( T( pcl::Round( double( x ) ) ), T( pcl::Round( double( y ) ) ) );
+      return GenericPoint( component( pcl::Round( double( x ) ) ), component( pcl::Round( double( y ) ) ) );
    }
 
    /*!
@@ -332,10 +467,10 @@ public:
     *
     * \sa Round( int ), Rounded(), Truncated(), RoundedToInt(), TruncatedToInt()
     */
-   GenericPoint<T> Rounded( int n ) const
+   GenericPoint Rounded( int n ) const
    {
       PCL_PRECONDITION( n >= 0 )
-      return GenericPoint<T>( T( pcl::Round( double( x ), n ) ), T( pcl::Round( double( y ), n ) ) );
+      return GenericPoint( component( pcl::Round( double( x ), n ) ), component( pcl::Round( double( y ), n ) ) );
    }
 
    /*!
@@ -346,7 +481,7 @@ public:
     */
    GenericPoint<int> RoundedToInt() const
    {
-      return GenericPoint<int>( pcl::RoundI( double( x ) ), pcl::RoundI( double( y ) ) );
+      return GenericPoint<int>( pcl::RoundInt( double( x ) ), pcl::RoundInt( double( y ) ) );
    }
 
    /*!
@@ -358,8 +493,8 @@ public:
     */
    void Truncate()
    {
-      x = T( pcl::Trunc( double( x ) ) );
-      y = T( pcl::Trunc( double( y ) ) );
+      x = component( pcl::Trunc( double( x ) ) );
+      y = component( pcl::Trunc( double( y ) ) );
    }
 
    /*!
@@ -369,9 +504,9 @@ public:
     *
     * \sa Truncate(), Rounded(), RoundedToInt(), TruncatedToInt()
     */
-   GenericPoint<T> Truncated() const
+   GenericPoint Truncated() const
    {
-      return GenericPoint<T>( T( pcl::Trunc( double( x ) ) ), T( pcl::Trunc( double( y ) ) ) );
+      return GenericPoint( component( pcl::Trunc( double( x ) ) ), component( pcl::Trunc( double( y ) ) ) );
    }
 
    /*!
@@ -383,7 +518,7 @@ public:
     */
    GenericPoint<int> TruncatedToInt() const
    {
-      return GenericPoint<int>( pcl::TruncI( double( x ) ), pcl::TruncI( double( y ) ) );
+      return GenericPoint<int>( pcl::TruncInt( double( x ) ), pcl::TruncInt( double( y ) ) );
    }
 
    /*!
@@ -393,9 +528,11 @@ public:
     * \sa MoveTo()
     */
    template <typename T1>
-   GenericPoint<T>& operator =( const GenericPoint<T1>& p )
+   GenericPoint& operator =( const GenericPoint<T1>& p )
    {
-      x = T( p.x ); y = T( p.y ); return *this;
+      x = component( p.x );
+      y = component( p.y );
+      return *this;
    }
 
    /*!
@@ -404,15 +541,18 @@ public:
     *
     * \sa MoveTo()
     */
-   GenericPoint<T>& operator =( T v )
+   GenericPoint& operator =( component v )
    {
-      x = y = v; return *this;
+      x = y = v;
+      return *this;
    }
 
 #ifdef __PCL_QT_INTERFACE
-   GenericPoint<T>& operator =( const QPoint& p )
+   GenericPoint& operator =( const QPoint& p )
    {
-      x = T( p.x() ); y = T( p.y() ); return *this;
+      x = component( p.x() );
+      y = component( p.y() );
+      return *this;
    }
 #endif
 
@@ -423,9 +563,11 @@ public:
     * \sa MoveBy(), operator -=()
     */
    template <typename T1>
-   GenericPoint<T>& operator +=( const GenericPoint<T1>& p )
+   GenericPoint& operator +=( const GenericPoint<T1>& p )
    {
-      x += T( p.x ); y += T( p.y ); return *this;
+      x += component( p.x );
+      y += component( p.y );
+      return *this;
    }
 
    /*!
@@ -434,15 +576,19 @@ public:
     *
     * \sa MoveBy(), operator -=()
     */
-   GenericPoint<T>& operator +=( T d )
+   GenericPoint& operator +=( component d )
    {
-      x += d; y += d; return *this;
+      x += d;
+      y += d;
+      return *this;
    }
 
 #ifdef __PCL_QT_INTERFACE
-   GenericPoint<T>& operator +=( const QPoint& p )
+   GenericPoint& operator +=( const QPoint& p )
    {
-      x += T( p.x() ); y += T( p.y() ); return *this;
+      x += component( p.x() );
+      y += component( p.y() );
+      return *this;
    }
 #endif
 
@@ -453,9 +599,11 @@ public:
     * \sa MoveBy(), operator +=()
     */
    template <typename T1>
-   GenericPoint<T>& operator -=( const GenericPoint<T1>& p )
+   GenericPoint& operator -=( const GenericPoint<T1>& p )
    {
-      x -= T( p.x ); y -= T( p.y ); return *this;
+      x -= component( p.x );
+      y -= component( p.y );
+      return *this;
    }
 
    /*!
@@ -464,15 +612,19 @@ public:
     *
     * \sa MoveBy(), operator +=()
     */
-   GenericPoint<T>& operator -=( T d )
+   GenericPoint& operator -=( component d )
    {
-      x -= d; y -= d; return *this;
+      x -= d;
+      y -= d;
+      return *this;
    }
 
 #ifdef __PCL_QT_INTERFACE
-   GenericPoint<T>& operator -=( const QPoint& p )
+   GenericPoint& operator -=( const QPoint& p )
    {
-      x -= T( p.x() ); y -= T( p.y() ); return *this;
+      x -= component( p.x() );
+      y -= component( p.y() );
+      return *this;
    }
 #endif
 
@@ -483,9 +635,11 @@ public:
     * \sa operator /=(), operator +=()
     */
    template <typename T1>
-   GenericPoint<T>& operator *=( const GenericPoint<T1>& p )
+   GenericPoint& operator *=( const GenericPoint<T1>& p )
    {
-      x *= T( p.x ); y *= T( p.y ); return *this;
+      x *= component( p.x );
+      y *= component( p.y );
+      return *this;
    }
 
    /*!
@@ -494,15 +648,19 @@ public:
     *
     * \sa operator /=(), operator +=()
     */
-   GenericPoint<T>& operator *=( T d )
+   GenericPoint& operator *=( component d )
    {
-      x *= d; y *= d; return *this;
+      x *= d;
+      y *= d;
+      return *this;
    }
 
 #ifdef __PCL_QT_INTERFACE
-   GenericPoint<T>& operator *=( const QPoint& p )
+   GenericPoint& operator *=( const QPoint& p )
    {
-      x *= T( p.x() ); y *= T( p.y() ); return *this;
+      x *= component( p.x() );
+      y *= component( p.y() );
+      return *this;
    }
 #endif
 
@@ -513,10 +671,12 @@ public:
     * \sa operator *=(), operator -=()
     */
    template <typename T1>
-   GenericPoint<T>& operator /=( const GenericPoint<T1>& p )
+   GenericPoint& operator /=( const GenericPoint<T1>& p )
    {
-      PCL_PRECONDITION( T( p.x ) != T( 0 ) && T( p.y ) != T( 0 ) )
-      x /= T( p.x ); y /= T( p.y ); return *this;
+      PCL_PRECONDITION( component( p.x ) != component( 0 ) && component( p.y ) != component( 0 ) )
+      x /= component( p.x );
+      y /= component( p.y );
+      return *this;
    }
 
    /*!
@@ -525,24 +685,28 @@ public:
     *
     * \sa operator *=(), operator -=()
     */
-   GenericPoint<T>& operator /=( T d )
+   GenericPoint& operator /=( component d )
    {
-      PCL_PRECONDITION( d != T( 0 ) )
-      x /= d; y /= d; return *this;
+      PCL_PRECONDITION( d != component( 0 ) )
+      x /= d;
+      y /= d;
+      return *this;
    }
 
 #ifdef __PCL_QT_INTERFACE
-   GenericPoint<T>& operator /=( const QPoint& p )
+   GenericPoint& operator /=( const QPoint& p )
    {
-      PCL_PRECONDITION( T( p.x() ) != T( 0 ) && T( p.y() ) != T( 0 ) )
-      x /= T( p.x() ); y /= T( p.y() ); return *this;
+      PCL_PRECONDITION( component( p.x() ) != component( 0 ) && component( p.y() ) != component( 0 ) )
+      x /= component( p.x() );
+      y /= component( p.y() );
+      return *this;
    }
 #endif
 
    /*!
     * Returns a copy of this point.
     */
-   GenericPoint<T> operator +() const
+   GenericPoint operator +() const
    {
       return *this;
    }
@@ -552,9 +716,28 @@ public:
     * coordinates of this point, but the opposed signs. The returned point so
     * defined represents a vector diametrically opposed to this one.
     */
-   GenericPoint<T> operator -() const
+   GenericPoint operator -() const
    {
-      return GenericPoint<T>( -x, -y );
+      return GenericPoint( -x, -y );
+   }
+
+   /*!
+    * Returns a reference to a point component. Returns a reference to the X
+    * point coordinate if the specified index \a i is zero, or a reference to
+    * the Y coordinate otherwise.
+    */
+   component& operator []( int i )
+   {
+      return (i == 0) ? x : y;
+   }
+
+   /*!
+    * Returns a copy of a point component. Returns the X point coordinate if
+    * the specified index \a i is zero, or the Y coordinate otherwise.
+    */
+   component operator []( int i ) const
+   {
+      return (i == 0) ? x : y;
    }
 
    /*!
@@ -583,6 +766,8 @@ public:
    }
 #endif
 };
+
+#undef PCL_ASSERT_POINT_SIZE
 
 // ----------------------------------------------------------------------------
 
@@ -890,8 +1075,8 @@ GenericPoint<T> operator /( T d1, const GenericPoint<T>& p2 )
 template <typename T> inline
 double Distance( const GenericPoint<T>& p1, const GenericPoint<T>& p2 )
 {
-   register double dx = p2.x - p1.x;
-   register double dy = p2.y - p1.y;
+   double dx = double( p2.x ) - double( p1.x );
+   double dy = double( p2.y ) - double( p1.y );
    return pcl::Sqrt( dx*dx + dy*dy );
 }
 
@@ -903,7 +1088,7 @@ double Distance( const GenericPoint<T>& p1, const GenericPoint<T>& p2 )
 template <typename T1, typename T2> inline
 double ManhattanDistance( const GenericPoint<T1>& p1, const GenericPoint<T2>& p2 )
 {
-   return Abs( p2.x - p1.x ) + Abs( p2.y - p1.y );
+   return Abs( double( p2.x ) - double( p1.x ) ) + Abs( double( p2.y ) - double( p1.y ) );
 }
 
 /*!
@@ -1001,7 +1186,8 @@ void Rotate( GenericPoint<T>& p, T1 sa, T1 ca, const GenericPoint<T2>& c )
 template <typename T> inline
 void Swap( GenericPoint<T>& p1, GenericPoint<T>& p2 )
 {
-   pcl::Swap( p1.x, p2.x ); pcl::Swap( p1.y, p2.y );
+   pcl::Swap( p1.x, p2.x );
+   pcl::Swap( p1.y, p2.y );
 }
 
 // ----------------------------------------------------------------------------
@@ -1013,31 +1199,61 @@ void Swap( GenericPoint<T>& p1, GenericPoint<T>& p2 )
  */
 
 /*!
+ * \class pcl::I32Point
+ * \ingroup point_types_2d
+ * \brief 32-bit integer point on the plane.
+ *
+ * %I32Point is a template instantiation of GenericPoint for the \c int32 type.
+ */
+typedef GenericPoint<int32>         I32Point;
+
+/*!
  * \class pcl::Point
  * \ingroup point_types_2d
- * \brief Discrete (or integer) point in the plane.
+ * \brief 32-bit integer point on the plane.
  *
- * Point is a template instantiation of GenericPoint for the \c int type.
+ * %Point is an alias for I32Point. It is a template instantiation of
+ * GenericPoint for \c int32.
  */
-typedef GenericPoint<int>           Point;
+typedef I32Point                    Point;
+
+/*!
+ * \class pcl::F32Point
+ * \ingroup point_types_2d
+ * \brief 32-bit floating-point point in the R^2 space.
+ *
+ * %F32Point is a template instantiation of GenericPoint for the \c float type.
+ */
+typedef GenericPoint<float>         F32Point;
 
 /*!
  * \class pcl::FPoint
  * \ingroup point_types_2d
  * \brief 32-bit floating-point point in the R^2 space.
  *
- * FPoint is a template instantiation of GenericPoint for the \c float type.
+ * %FPoint is an alias for F32Point. It is a template instantiation of
+ * GenericPoint for \c float.
  */
-typedef GenericPoint<float>         FPoint;
+typedef F32Point                    FPoint;
+
+/*!
+ * \class pcl::F64Point
+ * \ingroup point_types_2d
+ * \brief 64-bit floating-point point in the R^2 space.
+ *
+ * %F64Point is a template instantiation of GenericPoint for \c double.
+ */
+typedef GenericPoint<double>        F64Point;
 
 /*!
  * \class pcl::DPoint
  * \ingroup point_types_2d
  * \brief 64-bit floating-point point in the R^2 space.
  *
- * DPoint is a template instantiation of GenericPoint for the \c double type.
+ * %DPoint is an alias for F64Point. It is a template instantiation of
+ * GenericPoint for \c double.
  */
-typedef GenericPoint<double>        DPoint;
+typedef F64Point                    DPoint;
 
 #endif   // !__PCL_NO_POINT_INSTANTIATE
 
@@ -1047,5 +1263,5 @@ typedef GenericPoint<double>        DPoint;
 
 #endif  // __PCL_Point_h
 
-// ****************************************************************************
-// EOF pcl/Point.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Point.h - Released 2015/07/30 17:15:18 UTC

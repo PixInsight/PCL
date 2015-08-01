@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/LanczosInterpolation.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/LanczosInterpolation.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/AutoLock.h>
 #include <pcl/LanczosInterpolation.h>
@@ -54,9 +57,9 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-PCL_DATA float* __Lanczos3_LUT = 0;
-PCL_DATA float* __Lanczos4_LUT = 0;
-PCL_DATA float* __Lanczos5_LUT = 0;
+PCL_DATA float* PCL_Lanczos3_LUT = 0;
+PCL_DATA float* PCL_Lanczos4_LUT = 0;
+PCL_DATA float* PCL_Lanczos5_LUT = 0;
 
 // ----------------------------------------------------------------------------
 
@@ -80,7 +83,7 @@ static double Lanczos( double x, int n )
 // ----------------------------------------------------------------------------
 
 // Thread-safe routine
-void PCL_FUNC __InitializeLanczosLUT( float*& LUT, int n )
+void PCL_FUNC PCL_InitializeLanczosLUT( float*& LUT, int n )
 {
    static Mutex mutex;
    volatile AutoLock lock( mutex );
@@ -99,5 +102,5 @@ void PCL_FUNC __InitializeLanczosLUT( float*& LUT, int n )
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/LanczosInterpolation.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/LanczosInterpolation.cpp - Released 2015/07/30 17:15:31 UTC

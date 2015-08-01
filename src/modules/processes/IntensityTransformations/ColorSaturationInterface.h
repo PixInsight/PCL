@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard IntensityTransformations Process Module Version 01.07.00.0287
-// ****************************************************************************
-// ColorSaturationInterface.h - Released 2014/11/14 17:19:22 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard IntensityTransformations Process Module Version 01.07.00.0306
+// ----------------------------------------------------------------------------
+// ColorSaturationInterface.h - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __ColorSaturationInterface_h
 #define __ColorSaturationInterface_h
@@ -65,8 +69,6 @@
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-// ColorSaturationInterface
 // ----------------------------------------------------------------------------
 
 class ColorSaturationInterface : public ProcessInterface
@@ -101,8 +103,6 @@ public:
    virtual void BeginReadout( const View& v );
    virtual void UpdateReadout( const View& v, const DPoint& p, double R, double G, double B, double A );
    virtual void EndReadout( const View& v );
-
-   // -------------------------------------------------------------------------
 
 private:
 
@@ -175,46 +175,46 @@ private:
 
    enum working_mode { EditMode, SelectMode, DeleteMode, ZoomInMode, ZoomOutMode, PanMode, NoMode = -1 };
 
-   working_mode   mode;
-   working_mode   savedMode;     // for temporary keyboard mode switch
+   working_mode   m_mode;
+   working_mode   m_savedMode;     // for temporary keyboard mode switch
 
-   size_type      currentPoint;  // point index
+   size_type      m_currentPoint;  // point index
 
-   bool           readoutActive;
-   double         readouts[ 4 ]; // 0=R 1=G 2=B 3=Alpha
-   RGBColorSystem readoutRGBWS;
+   bool           m_readoutActive;
+   double         m_readouts[ 4 ]; // 0=R 1=G 2=B 3=Alpha
+   RGBColorSystem m_readoutRGBWS;
 
-   int            zoomX;
-   int            zoomY;
+   int            m_zoomX;
+   int            m_zoomY;
 
-   int            scale;
+   int            m_scale;
 
-   bool           showGrid;      // draw coordinate grids
+   bool           m_showGrid;      // draw coordinate grids
 
-   int            panning;       // panning the viewport?
-   Point          panOrigin;
+   int            m_panning;       // panning the viewport?
+   Point          m_panOrigin;
 
-   bool           cursorVisible;
-   bool           dragging;      // dragging a curve point?
-   Point          cursorPos;     // cursor position in viewport crds.
-   DPoint         curvePos;      // cursor position in normalized crds.
+   bool           m_cursorVisible;
+   bool           m_dragging;      // dragging a curve point?
+   Point          m_cursorPos;     // cursor position in viewport crds.
+   DPoint         m_curvePos;      // cursor position in normalized crds.
 
-   Bitmap         viewportBitmap; // screen bitmap
-   bool           viewportDirty : 1;
+   Bitmap         m_viewportBitmap; // screen bitmap
+   bool           m_viewportDirty : 1;
 
-   HSCurve        storedCurve;
+   HSCurve        m_storedCurve;
 
-   RGBA           channelColor;
-   RGBA           gridColor0;
-   RGBA           gridColor1;
-   RGBA           gridColor2;
-   RGBA           backgroundColor;
+   RGBA           m_channelColor;
+   RGBA           m_gridColor0;
+   RGBA           m_gridColor1;
+   RGBA           m_gridColor2;
+   RGBA           m_backgroundColor;
 
-   int            minCurveWidth; // these are constants currently, but who knows...
-   int            minCurveHeight;
-   int            scaleSize;
+   int            m_minCurveWidth; // these are constants currently, but who knows...
+   int            m_minCurveHeight;
+   int            m_scaleSize;
 
-   bool           settingUp;  // true during viewport transitional states (e.g. resizing)
+   bool           m_settingUp : 1; // true during viewport transitional states (e.g. resizing)
 
    /*
     * Auxiliary Functions
@@ -222,12 +222,12 @@ private:
 
    template <typename T> T ViewportToCurve( T y ) const
    {
-      return 2*(y - 0.5)*scale;
+      return 2*(y - 0.5)*m_scale;
    }
 
    template <typename T> T CurveToViewport( T y ) const
    {
-      return 0.5*(1 + y/scale);
+      return 0.5*(1 + y/m_scale);
    }
 
    /*
@@ -236,7 +236,7 @@ private:
 
    size_type CurrentPoint() const
    {
-      return currentPoint;
+      return m_currentPoint;
    }
 
    double CurrentInputValue() const
@@ -315,11 +315,11 @@ private:
    /*
     * Curve drawing primitives
     */
-   void PlotGrid( Graphics& g, const Rect& r, int width, int height, int hZoom, int vZoom );
-   void PlotScale( Graphics& g, const Rect& r, int width, int height );
-   void PlotCurve( Graphics& g, const Rect& r, int width, int height, int hZoom, int vZoom );
-   void PlotReadouts( Bitmap& bmp, const Rect& r, int width, int height );
-   void PlotCursor( Bitmap& bmp, const Rect& r );
+   void PlotGrid( Graphics&, const Rect& viewport, int width, int height, int hZoom, int vZoom );
+   void PlotScale( Graphics&, const Rect& viewport, int width, int height );
+   void PlotCurve( Graphics&, const Rect& viewport, int width, int height, int hZoom, int vZoom );
+   void PlotReadouts( Graphics&, const Bitmap&, const Rect& viewport, int width, int height );
+   void PlotCursor( Graphics&, const Rect& viewport );
 
    RGBA ScaleColor( float ) const;
 
@@ -377,5 +377,5 @@ PCL_END_LOCAL
 
 #endif   // __ColorSaturationInterface_h
 
-// ****************************************************************************
-// EOF ColorSaturationInterface.h - Released 2014/11/14 17:19:22 UTC
+// ----------------------------------------------------------------------------
+// EOF ColorSaturationInterface.h - Released 2015/07/31 11:49:48 UTC

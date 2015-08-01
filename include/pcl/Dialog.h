@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Dialog.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Dialog.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Dialog_h
 #define __PCL_Dialog_h
@@ -105,10 +108,10 @@ public:
    /*!
     * Constructs a %Dialog object.
     *
-    * If the specified \a parent control is not null, the dialog will be shown
-    * centered over its parent. Otherwise the dialog window will be shown
-    * centered on the current workspace. Note that specifying a dialog parent
-    * does not change the dialog's \e modality: all dialog windows are
+    * If the specified \a parent control is a non-null control, the dialog will
+    * be shown centered over its parent. Otherwise the dialog window will be
+    * shown centered on the current workspace. Note that specifying a dialog
+    * parent does not change the dialog's \e modality: all dialog windows are
     * application-modal in PixInsight. See the Execute() and Open() member
     * functions for more information.
     */
@@ -119,6 +122,8 @@ public:
     */
    virtual ~Dialog()
    {
+      if ( m_handlers != nullptr )
+         delete m_handlers, m_handlers = nullptr;
    }
 
    /*!
@@ -270,8 +275,17 @@ public:
 
 private:
 
-   execute_event_handler   onExecute;
-   return_event_handler    onReturn;
+   struct EventHandlers
+   {
+      execute_event_handler onExecute = nullptr;
+      return_event_handler  onReturn  = nullptr;
+
+      EventHandlers() = default;
+      EventHandlers( const EventHandlers& ) = default;
+      EventHandlers& operator =( const EventHandlers& ) = default;
+   };
+
+   EventHandlers* m_handlers;
 
    friend class DialogEventDispatcher;
 };
@@ -284,5 +298,5 @@ private:
 
 #endif   // __PCL_Dialog_h
 
-// ****************************************************************************
-// EOF pcl/Dialog.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Dialog.h - Released 2015/07/30 17:15:18 UTC

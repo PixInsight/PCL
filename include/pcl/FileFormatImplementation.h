@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/FileFormatImplementation.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/FileFormatImplementation.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_FileFormat_h
 #define __PCL_FileFormat_h
@@ -75,6 +78,18 @@
 
 #ifndef __PCL_ICCProfile_h
 #include <pcl/ICCProfile.h>
+#endif
+
+#ifndef __PCL_RGBColorSystem_h
+#include <pcl/RGBColorSystem.h>
+#endif
+
+#ifndef __PCL_DisplayFunction_h
+#include <pcl/DisplayFunction.h>
+#endif
+
+#ifndef __PCL_ColorFilterArray_h
+#include <pcl/ColorFilterArray.h>
 #endif
 
 namespace pcl
@@ -245,15 +260,6 @@ public:
    virtual void Extract( ICCProfile& icc );
 
    /*!
-    * Extraction of embedded metadata for the current image in this file.
-    *
-    * If the current image embeds metadata, the address of a newly allocated
-    * copy of them should be assigned to the \a data pointer, and its length in
-    * bytes should be assigned to the \a length variable.
-    */
-   virtual void Extract( void*& data, size_type& length );
-
-   /*!
     * Extraction of an embedded thumbnail for the current image in this file.
     *
     * If the current image embeds a thumbnail image, it should be assigned to
@@ -297,6 +303,58 @@ public:
     * does not support data properties. See FileFormat::CanStoreProperties().
     */
    virtual void WriteProperty( const IsoString& property, const Variant& value );
+
+   /*!
+    * Extraction of the RGB working space associated with the current image in
+    * this file. If no RGBWS is defined for the current image, this function
+    * should return a default RGBColorSystem object (see RGBColorSystem::sRGB).
+    *
+    * This member function will never be called if the underlying file format
+    * does not support storage of RGB working spaces. See
+    * FileFormat::CanStoreRGBWS().
+    */
+   virtual RGBColorSystem ReadRGBWS();
+
+   /*!
+    * Specifies the parameters of an RGB working space that will be embedded in
+    * the next image written or created in this file.
+    */
+   virtual void WriteRGBWS( const RGBColorSystem& rgbws );
+
+   /*!
+    * Extraction of the display function associated with the current image in
+    * this file. If no display function is defined for the current image, this
+    * function should return an identity display function (see
+    * DisplayFunction's default constructor).
+    *
+    * This member function will never be called if the underlying file format
+    * does not support storage of display functions. See
+    * FileFormat::CanStoreDisplayFunctions().
+    */
+   virtual DisplayFunction ReadDisplayFunction();
+
+   /*!
+    * Specifies a display function that will be embedded in the next image
+    * written or created in this file.
+    */
+   virtual void WriteDisplayFunction( const DisplayFunction& df );
+
+   /*!
+    * Extraction of the color filter array (CFA) for the current image in this
+    * file. If no CFA is defined for the current image, this function should
+    * return an empty CFA (see ColorFilterArray's default constructor).
+    *
+    * This member function will never be called if the underlying file format
+    * does not support storage of color filter arrays. See
+    * FileFormat::CanStoreColorFilterArrays().
+    */
+   virtual ColorFilterArray ReadColorFilterArray();
+
+   /*!
+    * Specifies a color filter array (CFA) that will be embedded in the next
+    * image written or created in this file.
+    */
+   virtual void WriteColorFilterArray( const ColorFilterArray& cfa );
 
    /*!
     * Reads the current image in 32-bit floating point format.
@@ -543,16 +601,6 @@ public:
    virtual void Embed( const ICCProfile& icc );
 
    /*!
-    * Specifies a metadata block to be embedded in the next image written or
-    * created in this file.
-    *
-    * \param data    Starting address of the source metadata block.
-    *
-    * \param length  Length in bytes of the source metadata block.
-    */
-   virtual void Embed( const void* data, size_type length );
-
-   /*!
     * Specifies a thumbnail \a image to be embedded in the next image written
     * or created in this file.
     */
@@ -676,11 +724,11 @@ private:
    /*
     * FileFormatImplementation instances (e.g., image files) are unique.
     */
-   FileFormatImplementation( const FileFormatImplementation& x ) : meta( 0 ) { PCL_CHECK( 0 ) }
-   void operator =( const FileFormatImplementation& ) { PCL_CHECK( 0 ) }
+   FileFormatImplementation( const FileFormatImplementation& x ) = delete;
+   void operator =( const FileFormatImplementation& ) = delete;
 
    /*
-    * Internal stuff to automatize low-level C API communication.
+    * Internal stuff to automate low-level C API communication.
     */
 
    FileFormatImplementationPrivate* data;
@@ -698,10 +746,6 @@ private:
    const ICCProfile& GetICCProfile() const;
    void EndICCProfileExtraction();
 
-   void BeginMetadataExtraction();
-   const void* GetMetadata( size_type& );
-   void EndMetadataExtraction();
-
    void BeginThumbnailExtraction();
    const UInt8Image& GetThumbnail() const;
    void EndThumbnailExtraction();
@@ -709,6 +753,18 @@ private:
    void BeginPropertyExtraction();
    const Variant& GetImageProperty( const IsoString& );
    void EndPropertyExtraction();
+
+   void BeginRGBWSExtraction();
+   const RGBColorSystem& GetRGBWS() const;
+   void EndRGBWSExtraction();
+
+   void BeginDisplayFunctionExtraction();
+   const DisplayFunction& GetDisplayFunction() const;
+   void EndDisplayFunctionExtraction();
+
+   void BeginColorFilterArrayExtraction();
+   const ColorFilterArray& GetColorFilterArray() const;
+   void EndColorFilterArrayExtraction();
 
    void BeginKeywordEmbedding();
    void AddKeyword( const FITSHeaderKeyword& );
@@ -718,10 +774,6 @@ private:
    void SetICCProfile( const ICCProfile& );
    void EndICCProfileEmbedding();
 
-   void BeginMetadataEmbedding();
-   void SetMetadata( const void*, size_type );
-   void EndMetadataEmbedding();
-
    void BeginThumbnailEmbedding();
    void SetThumbnail( const UInt8Image& );
    void EndThumbnailEmbedding();
@@ -729,6 +781,18 @@ private:
    void BeginPropertyEmbedding();
    void SetImageProperty( const IsoString&, const Variant& );
    void EndPropertyEmbedding();
+
+   void BeginRGBWSEmbedding();
+   void SetRGBWS( const RGBColorSystem& );
+   void EndRGBWSEmbedding();
+
+   void BeginDisplayFunctionEmbedding();
+   void SetDisplayFunction( const DisplayFunction& );
+   void EndDisplayFunctionEmbedding();
+
+   void BeginColorFilterArrayEmbedding();
+   void SetColorFilterArray( const ColorFilterArray& );
+   void EndColorFilterArrayEmbedding();
 
    friend class FileFormatDispatcher;
 };
@@ -741,5 +805,5 @@ private:
 
 #endif   // __PCL_FileFormat_h
 
-// ****************************************************************************
-// EOF pcl/FileFormatImplementation.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/FileFormatImplementation.h - Released 2015/07/30 17:15:18 UTC

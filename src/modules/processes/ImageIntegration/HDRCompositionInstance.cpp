@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard ImageIntegration Process Module Version 01.09.04.0253
-// ****************************************************************************
-// HDRCompositionInstance.cpp - Released 2014/11/14 17:19:21 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard ImageIntegration Process Module Version 01.09.04.0274
+// ----------------------------------------------------------------------------
+// HDRCompositionInstance.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "HDRCompositionInstance.h"
 
@@ -292,8 +296,6 @@ UInt8Image* HDRCompositionFile::rejectionMask = 0;
 
 void HDRCompositionFile::DoOpen( const String& path, const HDRCompositionInstance* instance )
 {
-   Console console;
-
    FileFormat format( File::ExtractExtension( path ), true, false );
 
    file = new FileFormatInstance( format );
@@ -307,7 +309,7 @@ void HDRCompositionFile::DoOpen( const String& path, const HDRCompositionInstanc
       throw Error( file->FilePath() + ": Empty image file." );
 
    if ( images.Length() > 1 )
-      throw Error( file->FilePath() + ": HDR composition of multiple image files is not supported." );
+      Console().NoteLn( String().Format( "<end><cbr>* Ignoring %u additional image(s) in input file.", images.Length()-1 ) );
 
    if ( !images[0].info.supported || images[0].info.NumberOfSamples() == 0 )
       throw Error( file->FilePath() + ": Invalid or unsupported image." );
@@ -424,7 +426,7 @@ public:
          for ( int c = 0; c < HDRCompositionFile::NumberOfChannels(); ++c )
          {
             double k = Q[c];
-            console.WriteLn( String().Format( "q<sub>%d</sub> = %.5e (%.2f bits)", c, k, Log2( k ) ) );
+            console.WriteLn( String().Format( "q%d = %.5e (%.2f bits)", c, k, Log2( k ) ) );
          }
 
          Array<GenericVector<LinearFit> > L;
@@ -462,7 +464,7 @@ public:
             double k = Q[c];
             for ( size_type i = 0; i < L.Length(); ++i )
                k /= L[i][c].b;
-            console.WriteLn( String().Format( "q<sub>%d</sub> = %.5e (%.2f bits)", c, k, Log2( k ) ) );
+            console.WriteLn( String().Format( "q%d = %.5e (%.2f bits)", c, k, Log2( k ) ) );
 
             if ( !instance->generate64BitResult && k > 1.2e+07 )
                outOfRange = true;
@@ -484,8 +486,6 @@ public:
 private:
 
    const HDRCompositionInstance* instance;
-
-   //
 
    template <class P>
    IVector Quantize( const GenericImage<P>& image ) const
@@ -517,8 +517,6 @@ private:
       }
       return IVector();
    }
-
-   //
 
    template <class P>
    bool Combine( GenericImage<P>& hdr, GenericVector<LinearFit>& L, UInt8Image& outlierMask,
@@ -692,7 +690,7 @@ private:
 
          console.WriteLn( "<end><cbr>Linear fit functions:" );
          for ( int c = 0; c < hdr.NumberOfNominalChannels(); ++c )
-            console.WriteLn( String().Format( "y<sub>%d</sub> = %+.6f + %.6f&middot;x<sub>%d</sub>",
+            console.WriteLn( String().Format( "y%d = %+.6f + %.6f&middot;x%d",
                                               c, L[c].a, L[c].b, c ) );
       }
 
@@ -736,8 +734,6 @@ private:
       }
       return false;
    }
-
-   //
 
    ImageWindow CreateGrayscaleImageWindow( const IsoString& id,
                                            int bitsPerSample = 32, bool floatingPoint = true ) const
@@ -885,13 +881,13 @@ bool HDRCompositionInstance::AllocateParameter( size_type sizeOrLength, const Me
    {
       images[tableRow].path.Clear();
       if ( sizeOrLength > 0 )
-         images[tableRow].path.Reserve( sizeOrLength );
+         images[tableRow].path.SetLength( sizeOrLength );
    }
    else if ( p == TheHCInputHintsParameter )
    {
       inputHints.Clear();
       if ( sizeOrLength > 0 )
-         inputHints.Reserve( sizeOrLength );
+         inputHints.SetLength( sizeOrLength );
    }
    else
       return false;
@@ -914,5 +910,5 @@ size_type HDRCompositionInstance::ParameterLength( const MetaParameter* p, size_
 
 } // pcl
 
-// ****************************************************************************
-// EOF HDRCompositionInstance.cpp - Released 2014/11/14 17:19:21 UTC
+// ----------------------------------------------------------------------------
+// EOF HDRCompositionInstance.cpp - Released 2015/07/31 11:49:48 UTC

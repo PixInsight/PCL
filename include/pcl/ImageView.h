@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ImageView.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ImageView.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_ImageView_h
 #define __PCL_ImageView_h
@@ -144,8 +147,8 @@ public:
     * \param color   True to create an RGB color image; false to create a
     *                grayscale image. The default value is false.
     *
-    * If not empty, the newly created image is initialized with zero pixel
-    * values (black pixels). This includes all nominal and alpha channels.
+    * If not empty, all nominal and alpha channels of the newly created image
+    * are initialized with zero pixel sample values (black pixels).
     */
    ImageView( Control& parent = Control::Null(),
               int width = 0, int height = 0, int numberOfChannels = 1,
@@ -156,6 +159,8 @@ public:
     */
    virtual ~ImageView()
    {
+      if ( m_handlers != nullptr )
+         delete m_handlers, m_handlers = nullptr;
    }
 
    /*!
@@ -1425,10 +1430,28 @@ public:
 
 private:
 
-   ImageView( void* );
-   ImageView( void*, void* );
+   struct EventHandlers
+   {
+      scroll_event_handler onScrollViewport = nullptr;
 
-   scroll_event_handler onScrollViewport;
+      EventHandlers() = default;
+      EventHandlers( const EventHandlers& ) = default;
+      EventHandlers& operator =( const EventHandlers& ) = default;
+   };
+
+   EventHandlers* m_handlers;
+
+protected:
+
+   /*!
+    * \internal
+    */
+   ImageView( void* );
+
+   /*!
+    * \internal
+    */
+   ImageView( void*, void* );
 
    friend class ImageViewEventDispatcher;
 };
@@ -1441,5 +1464,5 @@ private:
 
 #endif   // __PCL_ImageView_h
 
-// ****************************************************************************
-// EOF pcl/ImageView.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ImageView.h - Released 2015/07/30 17:15:18 UTC

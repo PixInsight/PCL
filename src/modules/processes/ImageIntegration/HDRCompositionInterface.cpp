@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard ImageIntegration Process Module Version 01.09.04.0253
-// ****************************************************************************
-// HDRCompositionInterface.cpp - Released 2014/11/14 17:19:21 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard ImageIntegration Process Module Version 01.09.04.0274
+// ----------------------------------------------------------------------------
+// HDRCompositionInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "HDRCompositionInterface.h"
 #include "HDRCompositionProcess.h"
@@ -54,7 +58,7 @@
 #include <pcl/MessageBox.h>
 #include <pcl/PreviewSelectionDialog.h>
 
-#define IMAGELIST_MINHEIGHT( fnt )  (8*fnt.Height() + 2)
+#define IMAGELIST_MINHEIGHT( fnt )  RoundInt( 8.125*fnt.Height() )
 
 namespace pcl
 {
@@ -189,7 +193,7 @@ void HDRCompositionInterface::UpdateInputImagesItem( size_type i )
    node->SetText( 0, String( i+1 ) );
    node->SetAlignment( 0, TextAlign::Right );
 
-   node->SetIcon( 1, Bitmap( String( item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
+   node->SetIcon( 1, Bitmap( ScaledResource( item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
    node->SetAlignment( 1, TextAlign::Left );
 
    if ( GUI->FullPaths_CheckBox.IsChecked() )
@@ -520,6 +524,7 @@ HDRCompositionInterface::GUIData::GUIData( HDRCompositionInterface& w )
    pcl::Font fnt = w.Font();
    int labelWidth1 = fnt.Width( String( "Binarizing threshold:" ) + 'T' );
    int spinWidth1 = fnt.Width( String( '0', 11 ) );
+   int ui4 = w.LogicalPixelsToPhysical( 4 );
 
    //
 
@@ -639,7 +644,7 @@ HDRCompositionInterface::GUIData::GUIData( HDRCompositionInterface& w )
    MaskBinarizingThreshold_NumericControl.label.SetText( "Binarizing threshold:" );
    MaskBinarizingThreshold_NumericControl.label.SetFixedWidth( labelWidth1 );
    MaskBinarizingThreshold_NumericControl.slider.SetRange( 0, 100 );
-   MaskBinarizingThreshold_NumericControl.slider.SetMinWidth( 250 );
+   MaskBinarizingThreshold_NumericControl.slider.SetScaledMinWidth( 250 );
    MaskBinarizingThreshold_NumericControl.SetReal();
    MaskBinarizingThreshold_NumericControl.SetRange( TheHCMaskBinarizingThresholdParameter->MinimumValue(), TheHCMaskBinarizingThresholdParameter->MaximumValue() );
    MaskBinarizingThreshold_NumericControl.SetPrecision( TheHCMaskBinarizingThresholdParameter->Precision() );
@@ -710,7 +715,7 @@ HDRCompositionInterface::GUIData::GUIData( HDRCompositionInterface& w )
       "The computed relative exposures depend exclusively on actual pixel values and their statistical properties.</p>");
    AutoExposures_CheckBox.OnClick( (Button::click_event_handler)&HDRCompositionInterface::__HDRComposition_Click, w );
 
-   AutoExposures_Sizer.AddSpacing( labelWidth1 + 4 );
+   AutoExposures_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    AutoExposures_Sizer.Add( AutoExposures_CheckBox );
    AutoExposures_Sizer.AddStretch();
 
@@ -722,7 +727,7 @@ HDRCompositionInterface::GUIData::GUIData( HDRCompositionInterface& w )
    "binarizing threshold. This option should normally be enabled, as it is by default.</p>" );
    RejectBlack_CheckBox.OnClick( (Button::click_event_handler)&HDRCompositionInterface::__HDRComposition_Click, w );
 
-   RejectBlack_Sizer.AddSpacing( labelWidth1 + 4 );
+   RejectBlack_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    RejectBlack_Sizer.Add( RejectBlack_CheckBox );
    RejectBlack_Sizer.AddStretch();
 
@@ -742,7 +747,7 @@ HDRCompositionInterface::GUIData::GUIData( HDRCompositionInterface& w )
       "final HDR result.</p>");
    Generate64BitResult_CheckBox.OnClick( (Button::click_event_handler)&HDRCompositionInterface::__HDRComposition_Click, w );
 
-   Generate64BitResult_Sizer.AddSpacing( labelWidth1 + 4 );
+   Generate64BitResult_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    Generate64BitResult_Sizer.Add( Generate64BitResult_CheckBox );
    Generate64BitResult_Sizer.AddStretch();
 
@@ -754,7 +759,7 @@ HDRCompositionInterface::GUIData::GUIData( HDRCompositionInterface& w )
       "These masks allow tight control over the HDR composition process.</p>" );
    OutputMasks_CheckBox.OnClick( (Button::click_event_handler)&HDRCompositionInterface::__HDRComposition_Click, w );
 
-   OutputMasks_Sizer.AddSpacing( labelWidth1 + 4 );
+   OutputMasks_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    OutputMasks_Sizer.Add( OutputMasks_CheckBox );
    OutputMasks_Sizer.AddStretch();
 
@@ -766,7 +771,7 @@ HDRCompositionInterface::GUIData::GUIData( HDRCompositionInterface& w )
       "results on the workspace, when the same HDR composition is being tested repeatedly.</p>" );
    ClosePreviousImages_CheckBox.OnClick( (Button::click_event_handler)&HDRCompositionInterface::__HDRComposition_Click, w );
 
-   ClosePreviousImages_Sizer.AddSpacing( labelWidth1 + 4 );
+   ClosePreviousImages_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    ClosePreviousImages_Sizer.Add( ClosePreviousImages_CheckBox );
    ClosePreviousImages_Sizer.AddStretch();
 
@@ -909,5 +914,5 @@ HDRCompositionInterface::GUIData::GUIData( HDRCompositionInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF HDRCompositionInterface.cpp - Released 2014/11/14 17:19:21 UTC
+// ----------------------------------------------------------------------------
+// EOF HDRCompositionInterface.cpp - Released 2015/07/31 11:49:48 UTC

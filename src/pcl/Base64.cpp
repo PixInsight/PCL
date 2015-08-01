@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Base64.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Base64.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/String.h>
 #include <pcl/Exception.h>
@@ -82,7 +85,7 @@ IsoString IsoString::ToBase64( const void* data, size_type length )
    IsoString base64;
    base64.Reserve( n );
 
-   char* p = base64.c_str();
+   char* p = base64.Begin();
    const uint8* d = reinterpret_cast<const uint8*>( data );
    size_type i = 0;
 
@@ -107,7 +110,7 @@ IsoString IsoString::ToBase64( const void* data, size_type length )
       *p++ = '=';
    }
 
-   *p = '\0';
+   base64.SetLength( p - base64.Begin() );
    return base64;
 }
 
@@ -178,5 +181,5 @@ ByteArray IsoString::FromBase64() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/Base64.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Base64.cpp - Released 2015/07/30 17:15:31 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/FileFormatBase.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/FileFormatBase.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_FileFormatBase_h
 #define __PCL_FileFormatBase_h
@@ -211,20 +214,20 @@ public:
    virtual Bitmap SmallIcon() const = 0;
 
    /*!
-    * Returns true if this file format implementation can read an entire image
-    * in a single operation.
+    * Returns true only if this file format implementation can read an entire
+    * image in a single operation.
     */
    virtual bool CanRead() const = 0;
 
    /*!
-    * Returns true if this file format implementation can write an entire image
-    * in a single operation.
+    * Returns true only if this file format implementation can write an entire
+    * image in a single operation.
     */
    virtual bool CanWrite() const = 0;
 
    /*!
-    * Returns true if this file format implementation supports <em>incremental
-    * read</em> operations on image files.
+    * Returns true only if this file format implementation supports
+    * <em>incremental read</em> operations on image files.
     *
     * Incremental read operations allow the PixInsight core application and
     * other modules to load images by successive row strips.
@@ -232,8 +235,8 @@ public:
    virtual bool CanReadIncrementally() const = 0;
 
    /*!
-    * Returns true if this file format implementation supports <em>incremental
-    * write</em> operations on image files.
+    * Returns true only if this file format implementation supports
+    * <em>incremental write</em> operations on image files.
     *
     * Incremental write operations allow the PixInsight core application and
     * other modules to write images by successive row strips.
@@ -241,118 +244,131 @@ public:
    virtual bool CanWriteIncrementally() const = 0;
 
    /*!
-    * Returns true if this file format implementation can read/write 8-bit
-    * integer images
+    * Returns true only if this file format implementation can read/write 8-bit
+    * unsigned integer images
     */
    virtual bool CanStore8Bit() const = 0;
 
    /*!
-    * Returns true if this file format implementation can read/write 16-bit
-    * integer images
+    * Returns true only if this file format implementation can read/write
+    * 16-bit unsigned integer images
     */
    virtual bool CanStore16Bit() const = 0;
 
    /*!
-    * Returns true if this file format implementation can read/write 32-bit
-    * integer images
+    * Returns true only if this file format implementation can read/write
+    * 32-bit unsigned integer images
     */
    virtual bool CanStore32Bit() const = 0;
 
    /*!
-    * Returns true if this file format implementation can read/write 64-bit
-    * integer images
+    * Returns true only if this file format implementation can read/write
+    * 64-bit unsigned integer images
     */
    virtual bool CanStore64Bit() const = 0;
 
    /*!
-    * Returns true if this file format implementation can read/write 32-bit
-    * floating point images (IEEE 754 32-bit <em>single precision</em> format
-    * for pixel sample values).
+    * Returns true only if this file format implementation can read/write
+    * 32-bit floating point real images (IEEE 754 32-bit <em>single
+    * precision</em> format for pixel sample values).
     */
    virtual bool CanStoreFloat() const = 0;
 
    /*!
-    * Returns true if this file format implementation can read/write 64-bit
-    * floating point images (IEEE 754 64-bit <em>double precision</em> format
-    * for pixel sample values).
+    * Returns true only if this file format implementation can read/write
+    * 64-bit floating point real images (IEEE 754 64-bit <em>double
+    * precision</em> format for pixel sample values).
     */
    virtual bool CanStoreDouble() const = 0;
 
    /*!
-    * Returns true if this file format implementation can read/write 32-bit
-    * complex floating point images (IEEE 754 32-bit <em>single precision</em>
-    * format for components of complex pixel sample values).
+    * Returns true only if this file format implementation can read/write
+    * 32-bit complex floating point images (IEEE 754 32-bit <em>single
+    * precision</em> format for components of complex pixel sample values).
     */
    virtual bool CanStoreComplex() const = 0;
 
    /*!
-    * Returns true if this file format implementation can read/write 64-bit
-    * complex floating point images (IEEE 754 64-bit <em>double precision</em>
-    * format for components of complex pixel sample values).
+    * Returns true only if this file format implementation can read/write
+    * 64-bit complex floating point images (IEEE 754 64-bit <em>double
+    * precision</em> format for components of complex pixel sample values).
     */
    virtual bool CanStoreDComplex() const = 0;
 
    /*!
-    * Returns true if this file format implementation can read/write grayscale
-    * pixel data.
+    * Returns true only if this file format implementation can read/write
+    * grayscale pixel data.
     */
    virtual bool CanStoreGrayscale() const = 0;
 
    /*!
-    * Returns true if this file format implementation can read/write RGB color
-    * pixel data.
+    * Returns true only if this file format implementation can read/write RGB
+    * color pixel data.
     */
    virtual bool CanStoreRGBColor() const = 0;
 
    /*!
-    * Returns true if this file format implementation supports alpha channels.
+    * Returns true only if this file format implementation supports alpha
+    * channels.
     */
    virtual bool CanStoreAlphaChannels() const = 0;
 
    /*!
-    * Returns true if this file format implementation can store/retrieve image
-    * resolution data.
+    * Returns true only if this file format implementation can store/retrieve
+    * image resolution data.
     */
    virtual bool CanStoreResolution() const = 0;
 
    /*!
-    * Returns true if this file format implementation can embed/extract FITS
-    * header keyword collections.
+    * Returns true only if this file format implementation can embed/extract
+    * FITS header keyword collections.
     */
    virtual bool CanStoreKeywords() const = 0;
 
    /*!
-    * Returns true if this file format implementation can embed/extract ICC
-    * color profiles.
+    * Returns true only if this file format implementation can embed/extract
+    * ICC color profiles.
     */
    virtual bool CanStoreICCProfiles() const = 0;
 
    /*!
-    * Returns true if this file format implementation can embed/extract image
-    * metadata in a standard XML format.
-    */
-   virtual bool CanStoreMetadata() const = 0;
-
-   /*!
-    * Returns true if this file format implementation can embed/extract
+    * Returns true only if this file format implementation can embed/extract
     * thumbnail images.
     */
    virtual bool CanStoreThumbnails() const = 0;
 
    /*!
-    * Returns true if this file format implementation can store/retrieve data
-    * properties associated with images.
+    * Returns true only if this file format implementation can store/retrieve
+    * data properties associated with images.
     */
    virtual bool CanStoreProperties() const = 0;
 
    /*!
-    * Returns true if this file format implementation supports compression of
-    * pixel data.
+    * Returns true only if this file format implementation can store/retrieve
+    * RGB working space data.
+    */
+   virtual bool CanStoreRGBWS() const = 0;
+
+   /*!
+    * Returns true only if this file format implementation can store/retrieve
+    * display function (aka screen transfer function, or STF) parameters.
+    */
+   virtual bool CanStoreDisplayFunctions() const = 0;
+
+   /*!
+    * Returns true only if this file format implementation can store/retrieve
+    * color filter array (CFA) descriptions.
+    */
+   virtual bool CanStoreColorFilterArrays() const = 0;
+
+   /*!
+    * Returns true only if this file format implementation supports compression
+    * of pixel data.
     *
     * This refers to compression of \e source pixels, not to native compression
     * schemes used by some file formats.
     *
-    * For examle, the compression schemes employed in the JPEG and JPEG2000
+    * For example, the compression schemes employed in the JPEG and JPEG2000
     * formats must \e not cause this member function to return true. The
     * optional ZIP and LZW compressions used in TIFF are the exact kind of
     * compressions that must cause this member function to return true.
@@ -360,8 +376,8 @@ public:
    virtual bool SupportsCompression() const = 0;
 
    /*!
-    * Returns true if this file format implementation supports multiple images
-    * stored in a single file.
+    * Returns true only if this file format implementation supports multiple
+    * images stored in a single file.
     *
     * For example, multiple images (e.g., taken with different filters) can be
     * stored in FITS files by means of FITS image extensions, forming a
@@ -371,8 +387,8 @@ public:
    virtual bool SupportsMultipleImages() const = 0;
 
    /*!
-    * Returns true if this file format implementation allows the user to edit
-    * specific format preferences.
+    * Returns true only if this file format implementation allows the user to
+    * edit specific format preferences.
     *
     * If this function returns true, then the EditPreferences() procedure must
     * be reimplemented in a derived class of MetaFileFormat by the module that
@@ -381,8 +397,8 @@ public:
    virtual bool CanEditPreferences() const = 0;
 
    /*!
-    * Returns true if this file format implementation uses <em>format-specific
-    * data</em>.
+    * Returns true only if this file format implementation uses
+    * <em>format-specific data</em>.
     *
     * Format-specific data are preserved on a per-instance (say per-file) basis
     * by the PixInsight application, who actually knows nothing about them.
@@ -443,5 +459,5 @@ public:
 
 #endif   // __PCL_FileFormatBase_h
 
-// ****************************************************************************
-// EOF pcl/FileFormatBase.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/FileFormatBase.h - Released 2015/07/30 17:15:18 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/SeparableFilter.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/SeparableFilter.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_SeparableFilter_h
 #define __PCL_SeparableFilter_h
@@ -91,7 +94,7 @@ namespace pcl
  * improvements, since separable convolution has O(N*n) complexity, as opposed
  * to O(N*n^2) for non-separable convolution.
  *
- * \sa SeparableConvolution, ATrousWaveletTransform
+ * \sa SeparableConvolution, ATrousWaveletTransform, KernelFilter
  */
 class PCL_CLASS SeparableFilter
 {
@@ -115,7 +118,8 @@ public:
    /*!
     * Constructs an empty %SeparableFilter object with optional \a name.
     */
-   SeparableFilter( const String& name = String() ) : rowFilter(), colFilter(), filterName( name )
+   SeparableFilter( const String& name = String() ) :
+      rowFilter(), colFilter(), filterName( name )
    {
    }
 
@@ -128,7 +132,8 @@ public:
     * (which yields an empty filter), or an odd size >= 3.
     */
    SeparableFilter( int n, const String& name = String() ) :
-   rowFilter( PCL_VALID_KERNEL_SIZE( n ) ), colFilter( PCL_VALID_KERNEL_SIZE( n ) ), filterName( name )
+      rowFilter( PCL_VALID_KERNEL_SIZE( n ) ),
+      colFilter( PCL_VALID_KERNEL_SIZE( n ) ), filterName( name )
    {
       PCL_PRECONDITION( n == 0 || n >= 3 )
       PCL_PRECONDITION( n == 0 || (n & 1) )
@@ -143,7 +148,8 @@ public:
     */
    template <typename T>
    SeparableFilter( int n, const T& x, const String& name = String() ) :
-   rowFilter( x, PCL_VALID_KERNEL_SIZE( n ) ), colFilter( x, PCL_VALID_KERNEL_SIZE( n ) ), filterName( name )
+      rowFilter( x, PCL_VALID_KERNEL_SIZE( n ) ),
+      colFilter( x, PCL_VALID_KERNEL_SIZE( n ) ), filterName( name )
    {
       PCL_PRECONDITION( n == 0 || n >= 3 )
       PCL_PRECONDITION( n == 0 || (n & 1) )
@@ -155,7 +161,7 @@ public:
     * optional \a name.
     */
    SeparableFilter( const coefficient_vector& h, const coefficient_vector& v, const String& name = String() ) :
-   rowFilter( h ), colFilter( v ), filterName( name )
+      rowFilter( h ), colFilter( v ), filterName( name )
    {
       PCL_PRECONDITION( v.Length() == h.Length() )
       PCL_PRECONDITION( v.IsEmpty() || v.Length() >= 3 )
@@ -170,7 +176,8 @@ public:
     */
    template <typename T>
    SeparableFilter( const T* h, const T* v, int n, const String& name = String() ) :
-   rowFilter( h, PCL_VALID_KERNEL_SIZE( n ) ), colFilter( v, PCL_VALID_KERNEL_SIZE( n ) ), filterName( name )
+      rowFilter( h, PCL_VALID_KERNEL_SIZE( n ) ),
+      colFilter( v, PCL_VALID_KERNEL_SIZE( n ) ), filterName( name )
    {
       PCL_PRECONDITION( n == 0 || n >= 3 )
       PCL_PRECONDITION( n == 0 || (n & 1) )
@@ -179,8 +186,17 @@ public:
    /*!
     * Copy constructor.
     */
-   SeparableFilter( const SeparableFilter& f ) :
-   rowFilter( f.rowFilter ), colFilter( f.colFilter ), filterName( f.filterName )
+   SeparableFilter( const SeparableFilter& x ) :
+      rowFilter( x.rowFilter ), colFilter( x.colFilter ), filterName( x.filterName )
+   {
+   }
+
+   /*!
+    * Move constructor.
+    */
+   SeparableFilter( SeparableFilter&& x ) :
+      rowFilter( std::move( x.rowFilter ) ),
+      colFilter( std::move( x.colFilter ) ), filterName( std::move( x.filterName ) )
    {
    }
 
@@ -192,8 +208,8 @@ public:
    }
 
    /*!
-    * Returns a pointer to a dynamically allocated duplicate of this
-    * separable filter.
+    * Returns a pointer to a dynamically allocated duplicate of this separable
+    * filter.
     *
     * \note All derived classes from %SeparableFilter must reimplement this
     * virtual member function.
@@ -204,22 +220,30 @@ public:
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Copy assignment operator. Returns a reference to this object.
     */
-   SeparableFilter& operator =( const SeparableFilter& f )
+   SeparableFilter& operator =( const SeparableFilter& x )
    {
-      if ( &f != this )
-      {
-         rowFilter = f.rowFilter;
-         colFilter = f.colFilter;
-         filterName = f.filterName;
-      }
+      rowFilter = x.rowFilter;
+      colFilter = x.colFilter;
+      filterName = x.filterName;
       return *this;
    }
 
    /*!
-    * Assignment operator. Assigns the specified constant value \a x to all
-    * filter coefficients. Returns a reference to this object.
+    * Move assignment operator. Returns a reference to this object.
+    */
+   SeparableFilter& operator =( SeparableFilter&& x )
+   {
+      rowFilter = std::move( x.rowFilter );
+      colFilter = std::move( x.colFilter );
+      filterName = std::move( x.filterName );
+      return *this;
+   }
+
+   /*!
+    * Assigns the specified scalar \a x to all filter coefficients. Returns a
+    * reference to this object.
     */
    SeparableFilter& operator =( const coefficient& x )
    {
@@ -374,6 +398,16 @@ public:
       colFilter = rowFilter = coefficient_vector();
    }
 
+   /*!
+    * Exchanges two separable filters \a x1 and \a x2.
+    */
+   friend void Swap( SeparableFilter& x1, SeparableFilter& x2 )
+   {
+      pcl::Swap( x1.rowFilter,  x2.rowFilter );
+      pcl::Swap( x1.colFilter,  x2.colFilter );
+      pcl::Swap( x1.filterName, x2.filterName );
+   }
+
 protected:
 
    /*
@@ -395,5 +429,5 @@ protected:
 
 #endif   // __PCL_SeparableFilter_h
 
-// ****************************************************************************
-// EOF pcl/SeparableFilter.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/SeparableFilter.h - Released 2015/07/30 17:15:18 UTC

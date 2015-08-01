@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Sizer.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Sizer.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Sizer_h
 #define __PCL_Sizer_h
@@ -108,9 +111,39 @@ class PCL_CLASS Control;
  * \class Sizer
  * \brief Base class for PixInsight sizer objects.
  *
- * %Sizer allows laying out child controls within their parent controls.
+ * %Sizer allows laying out child controls within their parent controls as
+ * simple one-dimensional stacks with precise control over orientations,
+ * margins, distances between items, and item alignments. By distributing
+ * controls in nested %Sizer objects with horizontal and vertical orientations,
+ * complex albeit clean user interfaces can be easily defined.
  *
- * ### TODO: Write a detailed description for %Sizer.
+ * \b Automatic \b Scaling
+ *
+ * The %Sizer class provides an automatic scaling feature that simplifies the
+ * adaptation of existing and new PCL-based UI generation code to varying
+ * display resolutions. This functionality can be controlled with a Boolean
+ * \a autoScaling parameter available for the following member functions:
+ *
+ * Sizer::SetMargin( int margin, bool autoScaling = true );\n
+ * Sizer::SetSpacing( int spacing, bool autoScaling = true );\n
+ * Sizer::AddSpacing( int spacing, bool autoScaling = true );\n
+ * Sizer::InsertSpacing( int index, int spacing, bool autoScaling = true );\n
+ * int Margin( bool autoScaling = true );\n
+ * int Spacing( bool autoScaling = true );
+ *
+ * As you can see, automatic scaling is always enabled by default. On the
+ * PixInsight platform, the reference display density is 109 dpi, corresponding
+ * to a 27 inch monitor at QHD resolution (2560x1440 physical pixels).
+ *
+ * The automatic scaling feature applies the scaling ratio returned by
+ * Sizer::DisplayPixelRatio() to convert horizontal and vertical spaces between
+ * items from device-independent (or \e logical) pixel units to physical device
+ * pixel units. When this feature is enabled through the corresponding
+ * \a autoScaling parameters, scaling is applied to both automatic and manual
+ * spacings between controls, that is, to spacings defined by SetSpacing(),
+ * SetMargin(), AddSpacing(), and InsertSpacing(). The reverse transformation
+ * is applied from physical pixels to logical units when dimensions are
+ * retrieved by Spacing() and Margin().
  *
  * \sa HorizontalSizer, VerticalSizer
  */
@@ -195,7 +228,7 @@ public:
    /*!
     * Returns true if the specified child sizer \a s belongs to this %Sizer.
     */
-   bool Has( const Sizer& s ) const
+   bool Contains( const Sizer& s ) const
    {
       return IndexOf( s ) >= 0;
    }
@@ -203,7 +236,7 @@ public:
    /*!
     * Returns true if the specified child control \a c belongs to this %Sizer.
     */
-   bool Has( const Control& c ) const
+   bool Contains( const Control& c ) const
    {
       return IndexOf( c ) >= 0;
    }
@@ -265,9 +298,37 @@ public:
    /*!
     * Adds a non-stretchable space of \a size pixels to this %Sizer.
     *
-    * \sa AddStretch(), InsertSpacing(), InsertStretch()
+    * If the \a autoScaling parameter is set to true, the specified \a size
+    * will be converted from logical device-independent pixel units to physical
+    * device pixels automatically. If \a autoScaling is false, the specified
+    * \a size is assumed to be expressed in physical pixel units, and no
+    * automatic scaling will be performed.
+    *
+    * \sa InsertSpacing(), AddStretch(), InsertStretch()
     */
-   void AddSpacing( int size );
+   void AddSpacing( int size, bool autoScaling = true );
+
+   /*!
+    * Adds a non-stretchable space of \a size logical pixels to this %Sizer.
+    * This is a convenience member function equivalent to:
+    *
+    * \code AddSpacing( size, true ); \endcode
+    */
+   void AddScaledSpacing( int size )
+   {
+      AddSpacing( size, true );
+   }
+
+   /*!
+    * Adds a non-stretchable space of \a size physical pixels to this %Sizer.
+    * This is a convenience member function equivalent to:
+    *
+    * \code AddSpacing( size, false ); \endcode
+    */
+   void AddUnscaledSpacing( int size )
+   {
+      AddSpacing( size, false );
+   }
 
    /*!
     * Adds a stretchable space with the specified stretch factor.
@@ -321,9 +382,37 @@ public:
    /*!
     * Inserts a non-stretchable space of \a size pixels in this %Sizer.
     *
-    * \sa InsertStretch(), AddSpacing(), AddStretch()
+    * If the \a autoScaling parameter is set to true, the specified \a size
+    * will be converted from logical device-independent pixel units to physical
+    * device pixels automatically. If \a autoScaling is false, the specified
+    * \a size is assumed to be expressed in physical pixel units, and no
+    * automatic scaling will be performed.
+    *
+    * \sa AddSpacing(), InsertStretch(), AddStretch()
     */
-   void InsertSpacing( int index, int size );
+   void InsertSpacing( int index, int size, bool autoScaling = true );
+
+   /*!
+    * Inserts a non-stretchable space of \a size logical pixels in this %Sizer.
+    * This is a convenience member function equivalent to:
+    *
+    * \code InsertSpacing( index, size, true ); \endcode
+    */
+   void InsertScaledSpacing( int index, int size )
+   {
+      InsertSpacing( index, size, true );
+   }
+
+   /*!
+    * Inserts a non-stretchable space of \a size physical pixels in this
+    * %Sizer. This is a convenience member function equivalent to:
+    *
+    * \code InsertSpacing( index, size, false ); \endcode
+    */
+   void InsertUnscaledSpacing( int index, int size )
+   {
+      InsertSpacing( index, size, false );
+   }
 
    /*!
     * Inserts a stretchable space with the specified stretch factor.
@@ -385,80 +474,99 @@ public:
     * The default margin is always zero pixels for all sizer types, unless
     * explicitly changed with this function.
     *
+    * If the \a autoScaling parameter is set to true, the returned value will
+    * be expressed in logical device-independent pixel units. This means that
+    * the returned value has been converted from physical device pixels
+    * automatically. If \a autoScaling is false, the returned value will be
+    * expressed in physical device pixels, and no automatic scaling is applied.
+    *
     * \sa SetMargin(), Spacing(), SetSpacing()
     */
-   int Margin() const;
+   int Margin( bool autoScaling = true ) const;
 
    /*!
     * Sets the margin in pixels around this sizer.
     *
+    * If the \a autoScaling parameter is set to true, the specified \a margin
+    * will be converted from logical device-independent pixel units to physical
+    * device pixels automatically. If \a autoScaling is false, the specified
+    * \a margin is assumed to be expressed in physical pixel units, and no
+    * automatic scaling will be performed.
+    *
     * \sa Margin(), Spacing(), SetSpacing()
     */
-   void SetMargin( int margin );
+   void SetMargin( int margin, bool autoScaling = true );
 
    /*!
     * Returns the spacing in pixels between items in this %Sizer object.
     *
+    * If the \a autoScaling parameter is set to true, the returned value will
+    * be expressed in logical device-independent pixel units. This means that
+    * the returned value has been converted from physical device pixels
+    * automatically. If \a autoScaling is false, the returned value will be
+    * expressed in physical device pixels, and no automatic scaling is applied.
+    *
     * \sa SetSpacing(), Margin(), SetMargin()
     */
-   int Spacing() const;
+   int Spacing( bool autoScaling = true ) const;
 
    /*!
     * Sets the spacing in pixels between items in this %Sizer object.
     *
+    * If the \a autoScaling parameter is set to true, the specified \a spacing
+    * will be converted from logical device-independent pixel units to physical
+    * device pixels automatically. If \a autoScaling is false, the specified
+    * \a spacing is assumed to be expressed in physical pixel units, and no
+    * automatic scaling will be performed.
+    *
     * \sa Spacing(), Margin(), SetMargin()
     */
-   void SetSpacing( int margin );
+   void SetSpacing( int spacing, bool autoScaling = true );
 
    /*!
-    * Returns true if <em>auto scaling</em> is enabled for this sizer.
+    * Returns the ratio between physical screen pixels and device-independent
+    * logical units for the parent control of this %Sizer object. This ratio is
+    * used as a scaling factor by the LogicalPixelsToPhysical() and PhysicalPixelsToLogical() functions, and
+    * is also applied automatically when \a autoScaling parameters are set to
+    * true in a number of member functions; see the class description for more
+    * information.
     *
-    * The auto scaling feature adjusts horizontal and vertical spaces between
-    * items automatically, depending on the current platform and on the style
-    * and GUI theme selected in the PixInsight core application. Auto
-    * scaling is applied to both automatic and manual spacings between
-    * controls, that is to spacings defined by SetSpacing(), AddSpacing() or
-    * InsertSpacing().
+    * The returned value is greater than or equal to one. Typical pixel ratios
+    * are 2.0 for high-dpi displays such as Retina monitors, or 1.0 for normal
+    * 96 dpi monitors.
     *
-    * Auto scaling is enabled by default in all %Sizer objects. Currently
-    * this feature is only applied in Mac OS X versions of the PixInsight
-    * platform, but it may be used on all platforms in future versions.
-    *
-    * If you need to ensure precise distances in pixels between controls, call
-    * DisableAutoScaling() \e before calling SetSpacing(), or before defining
-    * manual spacings with AddSpacing() or InsertSpacing().
-    *
-    * \sa EnableAutoScaling(), DisableAutoScaling(), SetSpacing(),
-    * AddSpacing(), InsertSpacing()
+    * \sa LogicalPixelsToPhysical(), PhysicalPixelsToLogical()
     */
-   bool IsAutoScalingEnabled() const;
+   double DisplayPixelRatio() const;
 
    /*!
-    * Enables (or disables) <em>auto scaling</em> for this sizer.
+    * Returns the specified \a size in logical device-independent pixel units
+    * converted to physical device pixels.
     *
-    * For a description of the auto scaling sizer feature, see the
-    * documentation for the IsAutoScalingEnabled() member function.
-    *
-    * \sa DisableAutoScaling(), IsAutoScalingEnabled()
+    * \sa DisplayPixelRatio(), PhysicalPixelsToLogical()
     */
-   void EnableAutoScaling( bool enable = true );
-
-   /*!
-    * Disables (or enables) <em>auto scaling</em> for this sizer.
-    *
-    * For a description of the auto scaling sizer feature, see the
-    * documentation for the IsAutoScalingEnabled() member function.
-    *
-    * \sa EnableAutoScaling(), IsAutoScalingEnabled()
-    */
-   void DisableAutoScaling( bool disable = true )
+   int LogicalPixelsToPhysical( int size ) const
    {
-      EnableAutoScaling( !disable );
+      return RoundInt( DisplayPixelRatio()*size );
+   }
+
+   /*!
+    * Returns the specified \a size in physical device pixels converted to
+    * logical device-independent pixel units.
+    *
+    * \sa DisplayPixelRatio(), LogicalPixelsToPhysical()
+    */
+   int PhysicalPixelsToLogical( int size ) const
+   {
+      return RoundInt( size/DisplayPixelRatio() );
    }
 
 private:
 
-   Sizer( void* );
+   Sizer( void* h ) : UIObject( h )
+   {
+   }
+
    virtual void* CloneHandle() const;
 
    friend class Control;
@@ -470,9 +578,7 @@ private:
  * \class HorizontalSizer
  * \brief Client-side interface to a PixInsight horizontal sizer.
  *
- * %HorizontalSizer lays out a sequence of items horizontally.
- *
- * ### TODO: Write a detailed description for %HorizontalSizer.
+ * %HorizontalSizer lays out a sequence of items as a horizontal stack.
  */
 class PCL_CLASS HorizontalSizer : public Sizer
 {
@@ -503,9 +609,7 @@ public:
  * \class VerticalSizer
  * \brief Client-side interface to a PixInsight vertical sizer.
  *
- * %VerticalSizer lays out a sequence of items vertically.
- *
- * ### TODO: Write a detailed description for %VerticalSizer.
+ * %VerticalSizer lays out a sequence of as a vertical stack.
  */
 class PCL_CLASS VerticalSizer : public Sizer
 {
@@ -538,5 +642,5 @@ public:
 
 #endif   // __PCL_Sizer_h
 
-// ****************************************************************************
-// EOF pcl/Sizer.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Sizer.h - Released 2015/07/30 17:15:18 UTC

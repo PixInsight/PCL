@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard FITS File Format Module Version 01.01.00.0282
-// ****************************************************************************
-// FITS.h - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard FITS File Format Module Version 01.01.02.0306
+// ----------------------------------------------------------------------------
+// FITS.h - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_FITS_h
 #define __PCL_FITS_h
@@ -84,16 +88,16 @@ class FITSImageOptions
 {
 public:
 
-   bool unsignedIntegers                  :  1; // Write unsigned integer samples
-   bool writeFixedFloatKeywords           :  1; // Use a fixed-precision exponential format for real keyword values
-   bool writeScalingKeywordsForSignedData :  1; // Write BZERO=0 and BSCALE=1 for signed integer images
-   bool reloadKeywords                    :  1; // Reload header keywords upon file write completion
-   bool bottomUp                          :  1; // When this flag is true, the origin of coordinates is at the lower left corner of
-                                                //   the image. When false, the origin is at the upper left corner
-   bool signedIntegersArePhysical         :  1; // If true, truncate to [0,2^(n/2-1)] and do not rescale.
-                                                //   Otherwise the full range is [-2^(n/2),+2^(n/2-1)]
-   bool cleanupHeaders                    :  1; // Transform header keywords for FITS standard compliance before writing
-   int  __rsv__                           : 25; // Reserved for future extension -- must be zero
+   bool   unsignedIntegers                  :  1; // Write unsigned integer samples
+   bool   writeFixedFloatKeywords           :  1; // Use a fixed-precision exponential format for real keyword values
+   bool   writeScalingKeywordsForSignedData :  1; // Write BZERO=0 and BSCALE=1 for signed integer images
+   bool   reloadKeywords                    :  1; // Reload header keywords upon file write completion
+   bool   bottomUp                          :  1; // When this flag is true, the origin of coordinates is at the lower left corner of
+                                                  //   the image. When false, the origin is at the upper left corner
+   bool   signedIntegersArePhysical         :  1; // If true, truncate to [0,2^(n/2-1)] and do not rescale.
+                                                  //   Otherwise the full range is [-2^(n/2),+2^(n/2-1)]
+   bool   cleanupHeaders                    :  1; // Transform header keywords for FITS standard compliance before writing
+   uint32 __rsv__                           : 25; // Reserved for future extension -- must be zero
 
    double zeroOffset; // Zero offset value of read pixel values
    double scaleRange; // Scaling value of read pixel values
@@ -103,25 +107,9 @@ public:
       Reset();
    }
 
-   FITSImageOptions( const FITSImageOptions& x )
-   {
-      (void)operator =( x );
-   }
+   FITSImageOptions( const FITSImageOptions& ) = default;
 
-   FITSImageOptions& operator =( const FITSImageOptions& x )
-   {
-      unsignedIntegers                  = x.unsignedIntegers;
-      writeFixedFloatKeywords           = x.writeFixedFloatKeywords;
-      writeScalingKeywordsForSignedData = x.writeScalingKeywordsForSignedData;
-      reloadKeywords                    = x.reloadKeywords;
-      bottomUp                          = x.bottomUp;
-      signedIntegersArePhysical         = x.signedIntegersArePhysical;
-      cleanupHeaders                    = x.cleanupHeaders;
-      __rsv__                           = 0;
-      zeroOffset                        = x.zeroOffset;
-      scaleRange                        = x.scaleRange;
-      return *this;
-   }
+   FITSImageOptions& operator =( const FITSImageOptions& ) = default;
 
    void Reset()
    {
@@ -150,125 +138,115 @@ public:
    /*
     * FITS-specific exception class
     */
-   class Exception : public ImageStream::Exception
+   class Error : public File::Error
    {
    public:
 
-      Exception( const String& fn ) : ImageStream::Exception( fn )
+      Error( const String& filePath, const String& message ) :
+         File::Error( filePath, message )
       {
       }
 
-      Exception( const FITS::Exception& x ) : ImageStream::Exception( x )
-      {
-      }
+      Error( const FITS::Error& x ) = default;
 
       virtual String ExceptionClass() const
       {
          return "PCL FITS Format Support";
       }
 
-      virtual String Message() const; // reimplements File::Exception
-
-      virtual String ErrorMessage() const;
-
-   protected:
-
-      virtual String __ErrorMessage() const = 0;
+      virtual String Message() const; // reimplements File::Error
    };
 
-#define PCL_DECLARE_FITS_EXCEPTION( className, errorMessage )                 \
-   class className : public FITS::Exception                                   \
-   {                                                                          \
-   public:                                                                    \
-      className( const String& fn ) : FITS::Exception( fn )                   \
-      {                                                                       \
-      }                                                                       \
-      className( const className& x ) : FITS::Exception( x )                  \
-      {                                                                       \
-      }                                                                       \
-   private:                                                                   \
-      virtual String __ErrorMessage() const                                   \
-      {                                                                       \
-         return errorMessage;                                                 \
-      }                                                                       \
-   }
+#define PCL_DECLARE_FITS_ERROR( className, errorMessage )   \
+   class className : public FITS::Error                     \
+   {                                                        \
+   public:                                                  \
+      className( const String& filePath ) :                 \
+         FITS::Error( filePath, errorMessage )              \
+      {                                                     \
+      }                                                     \
+      className( const className& x ) = default;            \
+   };
 
-   PCL_DECLARE_FITS_EXCEPTION( InvalidFilePath,
-      "Internal error: Invalid file path" );
-   PCL_DECLARE_FITS_EXCEPTION( InvalidReadOperation,
-      "Invalid read operation in FITS file" );
-   PCL_DECLARE_FITS_EXCEPTION( InvalidImage,
-      "Invalid image" );
-   PCL_DECLARE_FITS_EXCEPTION( InvalidNormalizationRange,
-      "Invalid pixel normalization range" );
-   PCL_DECLARE_FITS_EXCEPTION( UnableToAccessCurrentHDU,
-      "Unable to access the current FITS HDU" );
-   PCL_DECLARE_FITS_EXCEPTION( FileReadError,
-      "FITS file read error" );
-   PCL_DECLARE_FITS_EXCEPTION( ReadCoordinatesOutOfRange,
-      "Coordinates out of range in incremental read operation" );
-   PCL_DECLARE_FITS_EXCEPTION( UnableToOpenFile,
-      "Unable to open FITS file" );
-   PCL_DECLARE_FITS_EXCEPTION( UnableToAccessPrimaryHDU,
-      "Unable to access the primary FITS HDU" );
-   PCL_DECLARE_FITS_EXCEPTION( KeywordReadError,
-      "Error reading FITS header keyword" );
-   PCL_DECLARE_FITS_EXCEPTION( NoImageHDU,
-      "The FITS file contains no image HDU" );
-   PCL_DECLARE_FITS_EXCEPTION( NoReadableImage,
-      "The FITS file contains no readable image" );
-   PCL_DECLARE_FITS_EXCEPTION( UnsupportedThumbnailImageDimensions,
-      "Unsupported thumbnail image dimensions" );
-   PCL_DECLARE_FITS_EXCEPTION( InvalidThumbnailImage,
-      "Invalid thumbnail image" );
-   PCL_DECLARE_FITS_EXCEPTION( UnsupportedThumbnailSampleFormat,
-      "Unsupported thumbnail sample format" );
-   PCL_DECLARE_FITS_EXCEPTION( InvalidExtensionHDU,
-      "Invalid FITS extension HDU" );
-   PCL_DECLARE_FITS_EXCEPTION( FileWriteError,
-      "FITS file write error" );
-   PCL_DECLARE_FITS_EXCEPTION( InvalidWriteOperation,
-      "Invalid write operation in FITS file" );
-   PCL_DECLARE_FITS_EXCEPTION( WriteCoordinatesOutOfRange,
-      "Coordinates out of range in incremental write operation" );
-   PCL_DECLARE_FITS_EXCEPTION( UnableToCreateFile,
-      "Unable to create FITS file" );
-   PCL_DECLARE_FITS_EXCEPTION( UnableToCreatePrimaryHDU,
-      "Unable to create primary FITS HDU" );
-   PCL_DECLARE_FITS_EXCEPTION( KeywordWriteError,
-      "Error writing FITS header keyword" );
-   PCL_DECLARE_FITS_EXCEPTION( UnsupportedComplexFITS,
-      "This implementation does not support complex FITS images" );
-   PCL_DECLARE_FITS_EXCEPTION( Unsupported64BitFITS,
-      "This implementation does not support 64-bit integer FITS images" );
-   PCL_DECLARE_FITS_EXCEPTION( UnableToCreateImageHDU,
-      "Unable to create image FITS HDU" );
-   PCL_DECLARE_FITS_EXCEPTION( InvalidCloseImageOperation,
-      "Invalid close operation in FITS file" );
-   PCL_DECLARE_FITS_EXCEPTION( UnableToCreateThumbnailHDU,
-      "Unable to create thumbnail image HDU" );
+   PCL_DECLARE_FITS_ERROR( InvalidFilePath,
+                           "Internal error: Invalid file path" )
+   PCL_DECLARE_FITS_ERROR( InvalidReadOperation,
+                           "Invalid read operation in FITS file" )
+   PCL_DECLARE_FITS_ERROR( InvalidImage,
+                           "Invalid image" )
+   PCL_DECLARE_FITS_ERROR( InvalidNormalizationRange,
+                           "Invalid pixel normalization range" )
+   PCL_DECLARE_FITS_ERROR( UnableToAccessCurrentHDU,
+                           "Unable to access the current FITS HDU" )
+   PCL_DECLARE_FITS_ERROR( FileReadError,
+                           "FITS file read error" )
+   PCL_DECLARE_FITS_ERROR( ReadCoordinatesOutOfRange,
+                           "Coordinates out of range in incremental read operation" )
+   PCL_DECLARE_FITS_ERROR( UnableToOpenFile,
+                           "Unable to open FITS file" )
+   PCL_DECLARE_FITS_ERROR( UnableToAccessPrimaryHDU,
+                           "Unable to access the primary FITS HDU" )
+   PCL_DECLARE_FITS_ERROR( KeywordReadError,
+                           "Error reading FITS header keyword" )
+   PCL_DECLARE_FITS_ERROR( NoImageHDU,
+                           "The FITS file contains no image HDU" )
+   PCL_DECLARE_FITS_ERROR( NoReadableImage,
+                           "The FITS file contains no readable image" )
+   PCL_DECLARE_FITS_ERROR( UnsupportedThumbnailImageDimensions,
+                           "Unsupported thumbnail image dimensions" )
+   PCL_DECLARE_FITS_ERROR( InvalidThumbnailImage,
+                           "Invalid thumbnail image" )
+   PCL_DECLARE_FITS_ERROR( UnsupportedThumbnailSampleFormat,
+                           "Unsupported thumbnail sample format" )
+   PCL_DECLARE_FITS_ERROR( InvalidExtensionHDU,
+                           "Invalid FITS extension HDU" )
+   PCL_DECLARE_FITS_ERROR( FileWriteError,
+                           "FITS file write error" )
+   PCL_DECLARE_FITS_ERROR( InvalidWriteOperation,
+                           "Invalid write operation in FITS file" )
+   PCL_DECLARE_FITS_ERROR( WriteCoordinatesOutOfRange,
+                           "Coordinates out of range in incremental write operation" )
+   PCL_DECLARE_FITS_ERROR( UnableToCreateFile,
+                           "Unable to create FITS file" )
+   PCL_DECLARE_FITS_ERROR( UnableToCreatePrimaryHDU,
+                           "Unable to create primary FITS HDU" )
+   PCL_DECLARE_FITS_ERROR( KeywordWriteError,
+                           "Error writing FITS header keyword" )
+   PCL_DECLARE_FITS_ERROR( UnsupportedComplexFITS,
+                           "This implementation does not support complex FITS images" )
+   PCL_DECLARE_FITS_ERROR( Unsupported64BitFITS,
+                           "This implementation does not support 64-bit integer FITS images" )
+   PCL_DECLARE_FITS_ERROR( UnableToCreateImageHDU,
+                           "Unable to create image FITS HDU" )
+   PCL_DECLARE_FITS_ERROR( InvalidCloseImageOperation,
+                           "Invalid close operation in FITS file" )
+   PCL_DECLARE_FITS_ERROR( UnableToCreateThumbnailHDU,
+                           "Unable to create thumbnail image HDU" )
 
-   FITS() : fileData( 0 )
+   enum
    {
-   }
+      MinThumbnailSize = 32,
+      MaxThumbnailSize = 1024
+   };
+
+   FITS() = default;
 
    virtual ~FITS()
    {
-      __Close();
+      CloseStream();
    }
 
 protected:
 
-   FITSFileData* fileData;
+   FITSFileData* fileData = nullptr;
 
-   bool __IsOpen() const;
-   void __Close(); // ### derived must call base
+   bool IsOpenStream() const;
+   void CloseStream(); // ### derived must call base
 
 private:
 
-   // Disable copy
-   FITS( const FITS& ) { PCL_CHECK( 0 ) }
-   void operator =( const FITS& ) { PCL_CHECK( 0 ) }
+   FITS( const FITS& ) = delete;
+   void operator =( const FITS& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -280,9 +258,7 @@ class FITSReader : public ImageReader, public FITS
 {
 public:
 
-   FITSReader() : ImageReader(), FITS(), data( 0 )
-   {
-   }
+   FITSReader() = default;
 
    virtual ~FITSReader()
    {
@@ -350,11 +326,11 @@ public:
 
 private:
 
-   FITSReaderData* data;
+   FITSReaderData* data = nullptr;
 
    // Image streams are unique
-   FITSReader( const FITSReader& ) { PCL_CHECK( 0 ) }
-   void operator =( const FITSReader& ) { PCL_CHECK( 0 ) }
+   FITSReader( const FITSReader& ) = delete;
+   FITSReader& operator =( const FITSReader& ) = delete;
 
    friend class FITSReaderPrivate;
 };
@@ -368,9 +344,7 @@ class FITSWriter : public ImageWriter, public FITS
 {
 public:
 
-   FITSWriter() : ImageWriter(), FITS(), data( 0 )
-   {
-   }
+   FITSWriter() = default;
 
    virtual ~FITSWriter()
    {
@@ -435,7 +409,6 @@ public:
    /*
     * Image writing
     */
-
    virtual void WriteImage( const FImage& );
    virtual void WriteImage( const DImage& );
    virtual void WriteImage( const UInt8Image& );
@@ -450,7 +423,6 @@ public:
    /*
     * Incremental writing
     */
-
    virtual void CreateImage( const ImageInfo& );
 
    virtual void Write( const FImage::sample* buffer, int startRow, int rowCount, int channel );
@@ -466,14 +438,14 @@ public:
 
 private:
 
-   FITSWriterData* data;
+   FITSWriterData* data = nullptr;
 
    void WriteExtensionHDU( const FITSExtensionData& );
    void CloseImage();
 
    // Image streams are unique.
-   FITSWriter( const FITSWriter& ) { PCL_CHECK( 0 ) }
-   void operator =( const FITSWriter& ) { PCL_CHECK( 0 ) }
+   FITSWriter( const FITSWriter& ) = delete;
+   FITSWriter& operator =( const FITSWriter& ) = delete;
 
    friend class FITSWriterPrivate;
 };
@@ -484,5 +456,5 @@ private:
 
 #endif   // __PCL_FITS_h
 
-// ****************************************************************************
-// EOF FITS.h - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF FITS.h - Released 2015/07/31 11:49:40 UTC

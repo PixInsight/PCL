@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Global Process Module Version 01.02.05.0260
-// ****************************************************************************
-// ColorManagementSetupInstance.cpp - Released 2014/11/14 17:18:47 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Global Process Module Version 01.02.06.0280
+// ----------------------------------------------------------------------------
+// ColorManagementSetupInstance.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "ColorManagementSetupInstance.h"
 #include "ColorManagementSetupParameters.h"
@@ -58,29 +62,29 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 ColorManagementSetupInstance::ColorManagementSetupInstance( const MetaProcess* p ) :
-ProcessImplementation( p ),
-enabled( TheCMSEnabledParameter->DefaultValue() ),
-updateMonitorProfile(),
-defaultRGBProfile(),
-defaultGrayProfile(),
-defaultRenderingIntent( CMSRenderingIntent::DefaultForScreen ),
-onProfileMismatch( CMSOnProfileMismatch::Default ),
-onMissingProfile( CMSOnMissingProfile::Default ),
-defaultEmbedProfilesInRGBImages( TheCMSDefaultEmbedProfilesInRGBImagesParameter->DefaultValue() ),
-defaultEmbedProfilesInGrayscaleImages( TheCMSDefaultEmbedProfilesInGrayscaleImagesParameter->DefaultValue() ),
-proofingProfile(),
-proofingIntent( CMSRenderingIntent::DefaultForProofing ),
-useProofingBPC( TheCMSUseProofingBPCParameter->DefaultValue() ),
-defaultProofingEnabled( TheCMSDefaultProofingEnabledParameter->DefaultValue() ),
-defaultGamutCheckEnabled( TheCMSDefaultGamutCheckEnabledParameter->DefaultValue() ),
-gamutWarningColor( TheCMSGamutWarningColorParameter->DefaultValue() )
-
+   ProcessImplementation( p ),
+   enabled( TheCMSEnabledParameter->DefaultValue() ),
+   updateMonitorProfile(),
+   defaultRGBProfile(),
+   defaultGrayProfile(),
+   defaultRenderingIntent( CMSRenderingIntent::DefaultForScreen ),
+   onProfileMismatch( CMSOnProfileMismatch::Default ),
+   onMissingProfile( CMSOnMissingProfile::Default ),
+   defaultEmbedProfilesInRGBImages( TheCMSDefaultEmbedProfilesInRGBImagesParameter->DefaultValue() ),
+   defaultEmbedProfilesInGrayscaleImages( TheCMSDefaultEmbedProfilesInGrayscaleImagesParameter->DefaultValue() ),
+   proofingProfile(),
+   proofingIntent( CMSRenderingIntent::DefaultForProofing ),
+   useProofingBPC( TheCMSUseProofingBPCParameter->DefaultValue() ),
+   defaultProofingEnabled( TheCMSDefaultProofingEnabledParameter->DefaultValue() ),
+   defaultGamutCheckEnabled( TheCMSDefaultGamutCheckEnabledParameter->DefaultValue() ),
+   gamutWarningColor( TheCMSGamutWarningColorParameter->DefaultValue() )
 {
-   // ### We cannot call PixInsightSettings::GlobalString() if the module has
-   //     not been installed, because it requires communication with the core
-   //     application. The interface class will have to initialize its instance
-   //     member in its reimplementation of Initialize().
-
+   /*
+    * N.B.: We cannot call PixInsightSettings::GlobalString() if the module has
+    * not been installed, because it requires communication with the core
+    * application. The interface class will have to initialize its instance
+    * member in its reimplementation of Initialize().
+    */
    if ( Module->IsInstalled() )
    {
       String profilePath = PixInsightSettings::GlobalString( "ColorManagement/MonitorProfilePath" );
@@ -102,7 +106,7 @@ gamutWarningColor( TheCMSGamutWarningColorParameter->DefaultValue() )
 }
 
 ColorManagementSetupInstance::ColorManagementSetupInstance( const ColorManagementSetupInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
@@ -217,10 +221,8 @@ bool ColorManagementSetupInstance::ExecuteGlobal()
    try
    {
       PixInsightSettings::SetGlobalFlag( "ColorManagement/IsEnabled", enabled );
-#ifdef __PCL_X11
       if ( !updateMonitorProfile.IsEmpty() )
          PixInsightSettings::SetGlobalString( "ColorManagement/UpdateMonitorProfile", updateMonitorProfile );
-#endif
       PixInsightSettings::SetGlobalString( "ColorManagement/DefaultRGBProfilePath", rgbPath );
       PixInsightSettings::SetGlobalString( "ColorManagement/DefaultGrayscaleProfilePath", grayPath );
       PixInsightSettings::SetGlobalInteger( "ColorManagement/DefaultRenderingIntent", defaultRenderingIntent );
@@ -290,25 +292,25 @@ bool ColorManagementSetupInstance::AllocateParameter( size_type sizeOrLength, co
    {
       defaultRGBProfile.Clear();
       if ( sizeOrLength != 0 )
-         defaultRGBProfile.Reserve( sizeOrLength );
+         defaultRGBProfile.SetLength( sizeOrLength );
    }
    else if ( p == TheCMSDefaultGrayProfileParameter )
    {
       defaultGrayProfile.Clear();
       if ( sizeOrLength != 0 )
-         defaultGrayProfile.Reserve( sizeOrLength );
+         defaultGrayProfile.SetLength( sizeOrLength );
    }
    else if ( p == TheCMSProofingProfileParameter )
    {
       proofingProfile.Clear();
       if ( sizeOrLength != 0 )
-         proofingProfile.Reserve( sizeOrLength );
+         proofingProfile.SetLength( sizeOrLength );
    }
    else if ( p == TheCMSUpdateMonitorProfileParameter )
    {
       updateMonitorProfile.Clear();
       if ( sizeOrLength != 0 )
-         updateMonitorProfile.Reserve( sizeOrLength );
+         updateMonitorProfile.SetLength( sizeOrLength );
    }
    else
       return false;
@@ -355,5 +357,5 @@ void ColorManagementSetupInstance::LoadCurrentSettings()
 
 } // pcl
 
-// ****************************************************************************
-// EOF ColorManagementSetupInstance.cpp - Released 2014/11/14 17:18:47 UTC
+// ----------------------------------------------------------------------------
+// EOF ColorManagementSetupInstance.cpp - Released 2015/07/31 11:49:48 UTC

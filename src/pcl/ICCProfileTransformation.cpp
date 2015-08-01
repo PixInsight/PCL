@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ICCProfileTransformation.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ICCProfileTransformation.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/ICCProfileTransformation.h>
 #include <pcl/Thread.h>
@@ -54,28 +57,6 @@
 
 namespace pcl
 {
-
-// ----------------------------------------------------------------------------
-
-ICCProfileTransformation::ICCProfileTransformation() :
-ImageTransformation(),
-m_transformation( 0 ),
-m_profiles(),
-m_intent( ICCRenderingIntent::Perceptual ),
-m_proofingIntent( ICCRenderingIntent::AbsoluteColorimetric ),
-m_blackPointCompensation( false ),
-m_forceFloatingPoint( false ),
-m_highResolutionCLUT( true ),
-m_lowResolutionCLUT( false ),
-m_proofingTransformation( false ),
-m_gamutCheck( false ),
-m_parallel( true ),
-m_maxProcessors( PCL_MAX_PROCESSORS ),
-m_srcRGB( false ),
-m_dstRGB( false ),
-m_floatingPoint( false )
-{
-}
 
 // ----------------------------------------------------------------------------
 
@@ -206,7 +187,7 @@ void ICCProfileTransformation::CreateTransformation( bool floatingPoint ) const
                                        m_intent,
                                        flags );
 
-   if ( m_transformation == 0 )
+   if ( m_transformation == nullptr )
    {
       size_type len;
       (void)(*API->ColorManagement->GetLastErrorMessage)( 0, &len );
@@ -214,9 +195,11 @@ void ICCProfileTransformation::CreateTransformation( bool floatingPoint ) const
       String apiMessage;
       if ( len > 0 )
       {
-         apiMessage.Reserve( len );
+         apiMessage.SetLength( len );
          if ( (*API->ColorManagement->GetLastErrorMessage)( apiMessage.c_str(), &len ) == api_false )
             apiMessage.Clear();
+         else
+            apiMessage.ResizeToNullTerminated();
       }
 
       if ( apiMessage.IsEmpty() )
@@ -232,10 +215,10 @@ void ICCProfileTransformation::CreateTransformation( bool floatingPoint ) const
 
 void ICCProfileTransformation::CloseTransformation() const
 {
-   if ( m_transformation != 0 )
+   if ( m_transformation != nullptr )
    {
       transformation_handle t = m_transformation;
-      m_transformation = 0;
+      m_transformation = nullptr;
       m_floatingPoint = false;
       if ( (*API->ColorManagement->DestroyTransformation)( t ) == api_false )
          throw APIFunctionError( "DestroyTransformation" );
@@ -273,11 +256,11 @@ public:
 
       ThreadData<P> data( image, T, transformation, N );
 
-      PArray<Thread<P, S> > threads;
+      ReferenceArray<Thread<P,S> > threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
-         threads.Add( new Thread<P, S>( data,
-                                        i*rowsPerThread,
-                                        (j < numberOfThreads) ? j*rowsPerThread : h ) );
+         threads.Add( new Thread<P,S>( data,
+                                       i*rowsPerThread,
+                                       (j < numberOfThreads) ? j*rowsPerThread : h ) );
 
       AbstractImage::RunThreads( threads, data );
 
@@ -294,8 +277,8 @@ private:
       ThreadData( GenericImage<P>& a_image,
                   const ICCProfileTransformation& instance,
                   ICCProfileTransformation::transformation_handle t, size_type a_count ) :
-      AbstractImage::ThreadData( a_image, a_count ),
-      image( a_image ), T( instance ), transformation( t )
+         AbstractImage::ThreadData( a_image, a_count ),
+         image( a_image ), T( instance ), transformation( t )
       {
       }
 
@@ -308,7 +291,7 @@ private:
    struct Thread : public pcl::Thread
    {
       Thread( ThreadData<P>& data, int firstRow, int endRow ) :
-      pcl::Thread(), m_data( data ), m_firstRow( firstRow ), m_endRow( endRow )
+         pcl::Thread(), m_data( data ), m_firstRow( firstRow ), m_endRow( endRow )
       {
       }
 
@@ -408,23 +391,23 @@ private:
 
 void ICCProfileTransformation::Apply( pcl::Image& image ) const
 {
-   if ( m_transformation == 0 || !m_floatingPoint )
-      CreateTransformation( true );
+   if ( m_transformation == nullptr || !m_floatingPoint )
+      CreateTransformation( true/*floatingPoint*/ );
 
    PCL_ICCProfileTransformationEngine::Apply( image, (DoublePixelTraits*)0, *this, m_transformation );
 }
 
 void ICCProfileTransformation::Apply( pcl::DImage& image ) const
 {
-   if ( m_transformation == 0 || !m_floatingPoint )
-      CreateTransformation( true );
+   if ( m_transformation == nullptr || !m_floatingPoint )
+      CreateTransformation( true/*floatingPoint*/ );
 
    PCL_ICCProfileTransformationEngine::Apply( image, (DoublePixelTraits*)0, *this, m_transformation );
 }
 
 void ICCProfileTransformation::Apply( pcl::UInt8Image& image ) const
 {
-   if ( m_transformation == 0 )
+   if ( m_transformation == nullptr )
       CreateTransformation( m_forceFloatingPoint );
 
    if ( m_floatingPoint )
@@ -435,7 +418,7 @@ void ICCProfileTransformation::Apply( pcl::UInt8Image& image ) const
 
 void ICCProfileTransformation::Apply( pcl::UInt16Image& image ) const
 {
-   if ( m_transformation == 0 )
+   if ( m_transformation == nullptr )
       CreateTransformation( m_forceFloatingPoint );
 
    if ( m_floatingPoint )
@@ -446,8 +429,8 @@ void ICCProfileTransformation::Apply( pcl::UInt16Image& image ) const
 
 void ICCProfileTransformation::Apply( pcl::UInt32Image& image ) const
 {
-   if ( m_transformation == 0 || !m_floatingPoint )
-      CreateTransformation( true );
+   if ( m_transformation == nullptr || !m_floatingPoint )
+      CreateTransformation( true/*floatingPoint*/ );
 
    PCL_ICCProfileTransformationEngine::Apply( image, (DoublePixelTraits*)0, *this, m_transformation );
 }
@@ -518,5 +501,5 @@ void ICCProofingTransformation::SetGamutWarningColor( RGBA color )
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/ICCProfileTransformation.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ICCProfileTransformation.cpp - Released 2015/07/30 17:15:31 UTC

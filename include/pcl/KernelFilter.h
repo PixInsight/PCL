@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/KernelFilter.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/KernelFilter.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_KernelFilter_h
 #define __PCL_KernelFilter_h
@@ -116,7 +119,8 @@ public:
    /*!
     * Constructs an empty %KernelFilter object with optional \a name.
     */
-   KernelFilter( const String& name = String() ) : coefficients(), filterName( name ), flipped( false )
+   KernelFilter( const String& name = String() ) :
+      coefficients(), filterName( name ), flipped( false )
    {
    }
 
@@ -129,7 +133,7 @@ public:
     * (which yields an empty filter), or an odd size >= 3.
     */
    KernelFilter( int n, const String& name = String() ) :
-   coefficients( PCL_VALID_KERNEL_SIZE( n ), PCL_VALID_KERNEL_SIZE( n ) ), filterName( name ), flipped( false )
+      coefficients( PCL_VALID_KERNEL_SIZE( n ), PCL_VALID_KERNEL_SIZE( n ) ), filterName( name ), flipped( false )
    {
       PCL_PRECONDITION( n == 0 || n >= 3 )
       PCL_PRECONDITION( n == 0 || (n & 1) )
@@ -141,7 +145,7 @@ public:
     */
    template <typename T>
    KernelFilter( int n, const T& x, const String& name = String() ) :
-   coefficients( x, PCL_VALID_KERNEL_SIZE( n ), PCL_VALID_KERNEL_SIZE( n ) ), filterName( name ), flipped( false )
+      coefficients( x, PCL_VALID_KERNEL_SIZE( n ), PCL_VALID_KERNEL_SIZE( n ) ), filterName( name ), flipped( false )
    {
       PCL_PRECONDITION( n == 0 || n >= 3 )
       PCL_PRECONDITION( n == 0 || (n & 1) )
@@ -152,7 +156,7 @@ public:
     * matrix \a F and optional \a name.
     */
    KernelFilter( const coefficient_matrix& F, const String& name = String() ) :
-   coefficients( F ), filterName( name ), flipped( false )
+      coefficients( F ), filterName( name ), flipped( false )
    {
    }
 
@@ -163,7 +167,7 @@ public:
     */
    template <typename T>
    KernelFilter( const T* k, int n, const String& name = String() ) :
-   coefficients( k, PCL_VALID_KERNEL_SIZE( n ), PCL_VALID_KERNEL_SIZE( n ) ), filterName( name ), flipped( false )
+      coefficients( k, PCL_VALID_KERNEL_SIZE( n ), PCL_VALID_KERNEL_SIZE( n ) ), filterName( name ), flipped( false )
    {
       PCL_PRECONDITION( n == 0 || n >= 3 )
       PCL_PRECONDITION( n == 0 || (n & 1) )
@@ -173,7 +177,15 @@ public:
     * Copy constructor.
     */
    KernelFilter( const KernelFilter& f ) :
-   coefficients( f.coefficients ), filterName( f.filterName ), flipped( f.flipped )
+      coefficients( f.coefficients ), filterName( f.filterName ), flipped( f.flipped )
+   {
+   }
+
+   /*!
+    * Move constructor.
+    */
+   KernelFilter( KernelFilter&& f ) :
+      coefficients( std::move( f.coefficients ) ), filterName( std::move( f.filterName ) ), flipped( f.flipped )
    {
    }
 
@@ -185,8 +197,8 @@ public:
    }
 
    /*!
-    * Returns a pointer to a dynamically allocated duplicate of this
-    * kernel filter.
+    * Returns a pointer to a dynamically allocated duplicate of this kernel
+    * filter.
     *
     * \note All derived classes from %KernelFilter must reimplement this
     * virtual member function.
@@ -214,8 +226,7 @@ public:
     * separable filter consisting of the central row and column vectors of the
     * Gaussian filter matrix representation.
     */
-   virtual SeparableFilter AsSeparableFilter(
-      float tolerance = __PCL_DEFAULT_FILTER_SEPARABILITY_TOLERANCE ) const;
+   virtual SeparableFilter AsSeparableFilter( float tolerance = __PCL_DEFAULT_FILTER_SEPARABILITY_TOLERANCE ) const;
 
    /*!
     * Returns true if this filter is separable,
@@ -235,22 +246,30 @@ public:
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Copy assignment operator. Returns a reference to this object.
     */
    KernelFilter& operator =( const KernelFilter& f )
    {
-      if ( &f != this )
-      {
-         coefficients = f.coefficients;
-         filterName = f.filterName;
-         flipped = f.flipped;
-      }
+      coefficients = f.coefficients;
+      filterName = f.filterName;
+      flipped = f.flipped;
       return *this;
    }
 
    /*!
-    * Assignment operator. Assigns the specified filter coefficient matrix
-    * \a F to this object. Returns a reference to this object.
+    * Move assignment operator. Returns a reference to this object.
+    */
+   KernelFilter& operator =( KernelFilter&& f )
+   {
+      coefficients = std::move( f.coefficients );
+      filterName = std::move( f.filterName );
+      flipped = f.flipped;
+      return *this;
+   }
+
+   /*!
+    * Assigns the specified filter coefficient matrix \a F to this object.
+    * Returns a reference to this object.
     *
     * The specified matrix \a F must be either an empty matrix or a square
     * matrix of odd size. If these conditions are not met, this member
@@ -266,8 +285,8 @@ public:
    }
 
    /*!
-    * Assignment operator. Assigns the specified constant value \a x to all
-    * filter coefficients. Returns a reference to this object.
+    * Assigns the specified scalar \a x to all filter coefficients. Returns a
+    * reference to this object.
     */
    KernelFilter& operator =( const coefficient& x )
    {
@@ -330,12 +349,20 @@ public:
    }
 
    /*!
-    * Returns true if this is an empty filter, that is if it has no filter
+    * Returns true if this is an empty filter, that is, if it has no filter
     * coefficients.
     */
    bool IsEmpty() const
    {
       return coefficients.IsEmpty();
+   }
+
+   /*!
+    * Returns true if this is a non-empty filter. Equivalent to !IsEmpty().
+    */
+   operator bool() const
+   {
+      return !IsEmpty();
    }
 
    /*!
@@ -505,6 +532,16 @@ public:
       flipped = false;
    }
 
+   /*!
+    * Exchanges two kernel filters \a x1 and \a x2.
+    */
+   friend void Swap( KernelFilter& x1, KernelFilter& x2 )
+   {
+      pcl::Swap( x1.coefficients, x2.coefficients );
+      pcl::Swap( x1.filterName, x2.filterName );
+      bool b = x1.flipped; x1.flipped = x2.flipped; x2.flipped = b;
+   }
+
 #ifndef __PCL_NO_MATRIX_IMAGE_RENDERING
 
    /*!
@@ -553,7 +590,7 @@ protected:
 
    coefficient_matrix coefficients; // filter coefficients, size*size elements
    String             filterName;   // identifying name
-   bool               flipped;      // flag true when filter rotated
+   bool               flipped : 1;  // flag true when filter rotated
 };
 
 // ----------------------------------------------------------------------------
@@ -562,5 +599,5 @@ protected:
 
 #endif   // __PCL_KernelFilter_h
 
-// ****************************************************************************
-// EOF pcl/KernelFilter.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/KernelFilter.h - Released 2015/07/30 17:15:18 UTC

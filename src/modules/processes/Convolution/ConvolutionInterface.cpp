@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Convolution Process Module Version 01.01.03.0140
-// ****************************************************************************
-// ConvolutionInterface.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Convolution Process Module Version 01.01.03.0159
+// ----------------------------------------------------------------------------
+// ConvolutionInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Convolution PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "ConvolutionDialog.h"
 #include "ConvolutionInterface.h"
@@ -52,7 +56,6 @@
 #include "ConvolutionProcess.h"
 #include "FilterLibrary.h"
 
-#include <pcl/Dialog.h>
 #include <pcl/ErrorHandler.h>
 #include <pcl/FileDialog.h>
 #include <pcl/Graphics.h>
@@ -61,7 +64,7 @@
 #include <pcl/MuteStatus.h>
 #include <pcl/RealTimePreview.h>
 #include <pcl/Settings.h>
-#include <pcl/ViewList.h>
+#include <pcl/ViewSelectionDialog.h>
 
 namespace pcl
 {
@@ -73,97 +76,6 @@ ConvolutionInterface* TheConvolutionInterface = 0;
 // ----------------------------------------------------------------------------
 
 #include "ConvolutionIcon.xpm"
-
-// ----------------------------------------------------------------------------
-
-class ImageSelectionDialog : public Dialog
-{
-public:
-
-   String id;
-
-   ImageSelectionDialog( const String& aId );
-
-private:
-
-   VerticalSizer  Global_Sizer;
-      ViewList          Images_ViewList;
-      CheckBox          IncludeMainViews_CheckBox;
-      CheckBox          IncludePreviews_CheckBox;
-      HorizontalSizer   Buttons_Sizer;
-         PushButton        OK_PushButton;
-         PushButton        Cancel_PushButton;
-
-   void __ViewSelected( ViewList& sender, View& view );
-   void __Option_Click( Button& sender, bool checked );
-   void __Button_Click( Button& sender, bool checked );
-};
-
-ImageSelectionDialog::ImageSelectionDialog( const String& aId ) : Dialog(), id( aId )
-{
-   Images_ViewList.GetAll();
-   Images_ViewList.SelectView( View::ViewById( id ) );
-   Images_ViewList.SetMinWidth( Font().Width( String( 'M', 40 ) ) );
-   Images_ViewList.OnViewSelected( (ViewList::view_event_handler)&ImageSelectionDialog::__ViewSelected, *this );
-
-   IncludeMainViews_CheckBox.SetText( "Include main views" );
-   IncludeMainViews_CheckBox.OnClick( (Button::click_event_handler)&ImageSelectionDialog::__Option_Click, *this );
-   IncludeMainViews_CheckBox.SetChecked();
-
-   IncludePreviews_CheckBox.SetText( "Include previews" );
-   IncludePreviews_CheckBox.OnClick( (Button::click_event_handler)&ImageSelectionDialog::__Option_Click, *this );
-   IncludePreviews_CheckBox.SetChecked();
-
-   //
-   OK_PushButton.SetText( "OK" );
-   OK_PushButton.SetDefault();
-   OK_PushButton.SetCursor( StdCursor::Checkmark );
-   OK_PushButton.OnClick( (Button::click_event_handler)&ImageSelectionDialog::__Button_Click, *this );
-
-   Cancel_PushButton.SetText( "Cancel" );
-   Cancel_PushButton.SetCursor( StdCursor::Crossmark );
-   Cancel_PushButton.OnClick( (Button::click_event_handler)&ImageSelectionDialog::__Button_Click, *this );
-
-   Buttons_Sizer.SetSpacing( 8 );
-   Buttons_Sizer.AddStretch();
-   Buttons_Sizer.Add( OK_PushButton );
-   Buttons_Sizer.Add( Cancel_PushButton );
-
-   //
-   Global_Sizer.SetMargin( 8 );
-   Global_Sizer.SetSpacing( 6 );
-   Global_Sizer.Add( Images_ViewList );
-   Global_Sizer.Add( IncludeMainViews_CheckBox );
-   Global_Sizer.Add( IncludePreviews_CheckBox );
-   Global_Sizer.Add( Buttons_Sizer );
-
-   SetSizer( Global_Sizer );
-   AdjustToContents();
-   SetFixedHeight();
-
-   SetWindowTitle( "Select Filter Image" );
-}
-
-void ImageSelectionDialog::__ViewSelected( ViewList& sender, View& view )
-{
-   id = view.IsNull() ? String() : String( view.FullId() );
-}
-
-void ImageSelectionDialog::__Option_Click( Button& sender, bool checked )
-{
-   bool includeMainViews = IncludeMainViews_CheckBox.IsChecked();
-   bool includePreviews = IncludePreviews_CheckBox.IsChecked();
-   Images_ViewList.Regenerate( includeMainViews, includePreviews );
-   Images_ViewList.SelectView( View::ViewById( id ) );
-}
-
-void ImageSelectionDialog::__Button_Click( Button& sender, bool checked )
-{
-   if ( sender == OK_PushButton )
-      Ok();
-   else
-      Cancel();
-}
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -787,10 +699,11 @@ void ConvolutionInterface::__Image_Click( Button& sender, bool checked )
 {
    if ( sender == GUI->View_ToolButton )
    {
-      ImageSelectionDialog d( instance.viewId );
+      ViewSelectionDialog d( instance.viewId );
+      d.SetWindowTitle( "Select Filter Image" );
       if ( d.Execute() )
       {
-         instance.viewId = d.id;
+         instance.viewId = d.Id();
          UpdateRealTimePreview();
       }
       UpdateImageFilterControls();
@@ -832,16 +745,16 @@ ConvolutionInterface::GUIData::GUIData( ConvolutionInterface& w )
    Sigma_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&ConvolutionInterface::__Filter_ValueUpdated, w );
 
    // Standard Deviation Coarse Slider
-   SigmaCoarse_Slider.SetMinWidth( 250 );
+   SigmaCoarse_Slider.SetScaledMinWidth( 250 );
    SigmaCoarse_Slider.SetRange( 10, 250 );
-   SigmaCoarse_Slider.SetFixedHeight( RoundI( 0.75*editHeight ) );
+   SigmaCoarse_Slider.SetFixedHeight( RoundInt( 0.75*editHeight ) );
    SigmaCoarse_Slider.SetToolTip( "<p>Standard deviation, coarse adjustment.</p>" );
    SigmaCoarse_Slider.OnValueUpdated( (Slider::value_event_handler)&ConvolutionInterface::__Filter_SliderUpdated, w );
 
    // Standard Deviation Fine Slider
-   SigmaFine_Slider.SetMinWidth( 250 );
+   SigmaFine_Slider.SetScaledMinWidth( 250 );
    SigmaFine_Slider.SetRange( 1, 100 );
-   SigmaFine_Slider.SetFixedHeight( RoundI( 0.75*editHeight ) );
+   SigmaFine_Slider.SetFixedHeight( RoundInt( 0.75*editHeight ) );
    SigmaFine_Slider.SetToolTip( "<p>Standard deviation, fine adjustment.</p>" );
    SigmaFine_Slider.OnValueUpdated( (Slider::value_event_handler)&ConvolutionInterface::__Filter_SliderUpdated, w );
 
@@ -858,7 +771,7 @@ ConvolutionInterface::GUIData::GUIData( ConvolutionInterface& w )
    // Shape NumericControl
    Shape_NumericControl.label.SetText( "Shape:" );
    Shape_NumericControl.label.SetFixedWidth( labelWidth1 );
-   Shape_NumericControl.slider.SetMinWidth( 250 );
+   Shape_NumericControl.slider.SetScaledMinWidth( 250 );
    Shape_NumericControl.slider.SetRange( 0, 120 );
    Shape_NumericControl.SetReal();
    // ### We use a trick to achieve the correct slider stepping (see also the event handler)
@@ -877,7 +790,7 @@ ConvolutionInterface::GUIData::GUIData( ConvolutionInterface& w )
    // Parametric Ration NumericControl
    AspectRatio_NumericControl.label.SetText( "Aspect ratio:" );
    AspectRatio_NumericControl.label.SetFixedWidth( labelWidth1 );
-   AspectRatio_NumericControl.slider.SetMinWidth( 250 );
+   AspectRatio_NumericControl.slider.SetScaledMinWidth( 250 );
    AspectRatio_NumericControl.slider.SetRange( 0, 100 );
    AspectRatio_NumericControl.SetReal();
    AspectRatio_NumericControl.SetRange( TheConAspectRatioParameter->MinimumValue(), TheConAspectRatioParameter->MaximumValue() );
@@ -890,7 +803,7 @@ ConvolutionInterface::GUIData::GUIData( ConvolutionInterface& w )
    // Parametric Angle NumericControl
    RotationAngle_NumericControl.label.SetText( "Rotation:" );
    RotationAngle_NumericControl.label.SetFixedWidth( labelWidth1 );
-   RotationAngle_NumericControl.slider.SetMinWidth( 250 );
+   RotationAngle_NumericControl.slider.SetScaledMinWidth( 250 );
    RotationAngle_NumericControl.slider.SetRange( 0, 180 );
    RotationAngle_NumericControl.SetReal();
    RotationAngle_NumericControl.SetRange( TheConRotationAngleParameter->MinimumValue(), TheConRotationAngleParameter->MaximumValue() );
@@ -919,9 +832,9 @@ ConvolutionInterface::GUIData::GUIData( ConvolutionInterface& w )
    LibraryPath_Edit.SetReadOnly();
    LibraryPath_Edit.SetToolTip( "<p>File path of the current filter library.</p>" );
 
-   LibraryPath_ToolButton.SetIcon( Bitmap( String( ":/icons/select-file.png" ) ) );
+   LibraryPath_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-file.png" ) ) );
    LibraryPath_ToolButton.SetToolTip( "<p>Load a filter library.</p>" );
-   LibraryPath_ToolButton.SetFixedSize( 20, 20 );
+   LibraryPath_ToolButton.SetScaledFixedSize( 20, 20 );
    LibraryPath_ToolButton.OnClick( (Button::click_event_handler)&ConvolutionInterface::__Library_Click, w );
 
    LibraryPath_Sizer.SetSpacing( 4 );
@@ -1012,8 +925,8 @@ ConvolutionInterface::GUIData::GUIData( ConvolutionInterface& w )
    View_Edit.SetReadOnly();
    View_Edit.SetToolTip( "<p>Identifier of a view (main view or preview) to be used as a convolution filter.</p>" );
 
-   View_ToolButton.SetIcon( Bitmap( String( ":/icons/select-view.png" ) ) );
-   View_ToolButton.SetFixedSize( 20, 20 );
+   View_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
+   View_ToolButton.SetScaledFixedSize( 20, 20 );
    View_ToolButton.SetToolTip( "<p>Select view.</p>" );
    View_ToolButton.OnClick( (Button::click_event_handler)&ConvolutionInterface::__Image_Click, w );
 
@@ -1036,7 +949,7 @@ ConvolutionInterface::GUIData::GUIData( ConvolutionInterface& w )
    FilterMode_TabBox.AddPage( Image_Control, "Image" );
    FilterMode_TabBox.OnPageSelected( (TabBox::page_event_handler)&ConvolutionInterface::__Filter_PageSelected, w );
 
-   FilterThumbnail_Control.SetFixedSize( 160, 160 );
+   FilterThumbnail_Control.SetScaledFixedSize( 160, 160 );
    FilterThumbnail_Control.SetToolTip( "<p>Thumbnail preview of the current convolution filter.</p>"
       "<p>Positive or zero filter coefficients are rendered as grayscale pixels on the thumbnail. "
       "Negative filter coefficients are rendered as red pixels.</p>" );
@@ -1045,8 +958,8 @@ ConvolutionInterface::GUIData::GUIData( ConvolutionInterface& w )
    FilterInfo_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
    FilterInfo_Label.SetToolTip( "<p>Current filter dimensions in pixels.</p>" );
 
-   RenderFilter_ToolButton.SetIcon( Bitmap( String( ":/icons/camera.png" ) ) );
-   RenderFilter_ToolButton.SetFixedSize( 20, 20 );
+   RenderFilter_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/camera.png" ) ) );
+   RenderFilter_ToolButton.SetScaledFixedSize( 20, 20 );
    RenderFilter_ToolButton.SetToolTip( "<p>Render the current filter as a new image.</p>" );
    RenderFilter_ToolButton.OnClick( (Button::click_event_handler)&ConvolutionInterface::__Library_Click, w );
 
@@ -1080,5 +993,5 @@ ConvolutionInterface::GUIData::GUIData( ConvolutionInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF ConvolutionInterface.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF ConvolutionInterface.cpp - Released 2015/07/31 11:49:48 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.14.0695
-// ****************************************************************************
-// pcl/File.cpp - Released 2015/02/06 08:48:06 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/File.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2015, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/Defs.h>
 
@@ -73,8 +76,6 @@
 #include <pcl/Math.h>
 #include <pcl/Random.h>
 
-#define THROW( x )   throw x( FilePath() )
-
 #define CHECK_OPEN_FILE( fp )                                                                         \
    if ( !IsOpen() )                                                                                   \
       throw File::Error( String(), "File::" + String( fp ) + "(): File must be open." )
@@ -96,11 +97,11 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-static const File::handle invalid_handle =
+const File::handle File::s_invalidHandle =
 #ifdef __PCL_WINDOWS
    File::handle( INVALID_HANDLE_VALUE );
 #else
-   File::handle( (FILE*)0 );
+   File::handle( (FILE*)nullptr );
 #endif
 
 // ----------------------------------------------------------------------------
@@ -214,7 +215,7 @@ fpos_type File::Position() const
    {
       if ( errno != 0 )
          throw File::Error( FilePath(), "File seek error: " + String( ::strerror( errno ) ) );
-      THROW( SeekError );
+      throw File::Error( FilePath(), "File seek error" );
    }
 
    return p;
@@ -251,7 +252,7 @@ void File::SetPosition( fpos_type pos )
 
    if ( errno != 0 )
       throw File::Error( FilePath(), "File seek error: " + String( ::strerror( errno ) ) );
-   THROW( SeekError );
+   throw File::Error( FilePath(), "File seek error" );
 
 #endif
 }
@@ -305,7 +306,7 @@ fpos_type File::Seek( fpos_type delta, File::seek_mode origin )
 
    if ( errno != 0 )
       throw File::Error( FilePath(), "File seek error: " + String( ::strerror( errno ) ) );
-   THROW( SeekError );
+   throw File::Error( FilePath(), "File seek error" );
 
 #endif
 }
@@ -328,14 +329,14 @@ fsize_type File::Size() const
 
 #else
 
-   IsoString utf8_fn = FilePath().ToUTF8();
+   IsoString utf8 = FilePath().ToUTF8();
    errno = 0;
    struct stat s;
-   if ( ::stat( utf8_fn.c_str(), &s ) != 0 )
+   if ( ::stat( utf8.c_str(), &s ) != 0 )
    {
       if ( errno != 0 )
          throw File::Error( FilePath(), "File access error: " + String( ::strerror( errno ) ) );
-      THROW( AccessError );
+      throw File::Error( FilePath(), "File/directory access error" );
    }
 
    return s.st_size;
@@ -359,7 +360,7 @@ void File::Resize( fsize_type sz )
    {
       if ( errno != 0 )
          throw File::Error( FilePath(), "Unable to set file size: " + String( ::strerror( errno ) ) );
-      THROW( UnableToResizeFile );
+      throw File::Error( FilePath(), "Unable to resize file" );
    }
 #endif
 }
@@ -397,7 +398,7 @@ void File::Read( void* b, fsize_type sz )
                   throw File::Error( FilePath(), "File read error: " + String( ::strerror( errno ) ) );
 #endif
                if ( size_type( nr ) != thisBlockSz )
-                  THROW( UnexpectedEndOfFile );
+                  throw File::Error( FilePath(), "Unexpected end of file" );
             }
 
             if ( i == blockCount )
@@ -414,7 +415,7 @@ void File::Read( void* b, fsize_type sz )
          if ( errno != 0 )
             throw File::Error( FilePath(), "File read error: " + String( ::strerror( errno ) ) );
          if ( fsize_type( nr ) != sz )
-            THROW( UnexpectedEndOfFile );
+            throw File::Error( FilePath(), "Unexpected end of file" );
       }
 #endif
    }
@@ -451,7 +452,7 @@ void File::Write( const void* b, fsize_type sz )
                   throw File::Error( FilePath(), "File write error: " + String( ::strerror( errno ) ) );
 #endif
                if ( size_type( nw ) != thisBlockSz )
-                  THROW( IncompleteWriteOperation );
+                  throw File::Error( FilePath(), "Incomplete file write operation" );
             }
 
             if ( i == blockCount )
@@ -468,7 +469,7 @@ void File::Write( const void* b, fsize_type sz )
          if ( errno != 0 )
             throw File::Error( FilePath(), "File write error: " + String( ::strerror( errno ) ) );
          if ( fsize_type( nw ) != sz )
-            THROW( IncompleteWriteOperation );
+            throw File::Error( FilePath(), "Incomplete file write operation" );
       }
 #endif
    }
@@ -478,8 +479,7 @@ void File::Write( const void* b, fsize_type sz )
 
 void File::Read( IsoString& s )
 {
-   s.Empty();
-
+   s.Clear();
    uint32 len;
    Read( len );
    if ( len == 0xffffffffu )
@@ -488,27 +488,21 @@ void File::Read( IsoString& s )
       if ( len != 0 )
       {
          String u;
-         u.Reserve( size_type( len ) );
+         u.SetLength( size_type( len ) );
          Read( (void*)u.c_str(), size_type( len )*u.BytesPerChar() );
-         u[len] = CharTraits::Null();
          s = u;
       }
    }
-   else
+   else if ( len > 0 )
    {
-      if ( len != 0 )
-      {
-         s.Reserve( size_type( len ) );
-         Read( (void*)s.c_str(), size_type( len ) );
-         s[len] = IsoCharTraits::Null();
-      }
+      s.SetLength( size_type( len ) );
+      Read( (void*)s.c_str(), size_type( len ) );
    }
 }
 
 void File::Read( String& s )
 {
-   s.Empty();
-
+   s.Clear();
    uint32 len;
    Read( len );
    if ( len == 0xffffffffu )
@@ -516,98 +510,46 @@ void File::Read( String& s )
       Read( len );
       if ( len != 0 )
       {
-         s.Reserve( size_type( len ) );
+         s.SetLength( size_type( len ) );
          Read( (void*)s.c_str(), size_type( len )*s.BytesPerChar() );
-         s[len] = CharTraits::Null();
       }
    }
-   else
+   else if ( len > 0 )
    {
-      if ( len != 0 )
-      {
-         IsoString u;
-         u.Reserve( size_type( len ) );
-         Read( (void*)u.c_str(), size_type( len ) );
-         u[len] = IsoCharTraits::Null();
-         s = u;
-      }
+      IsoString u;
+      u.SetLength( size_type( len ) );
+      Read( (void*)u.c_str(), size_type( len ) );
+      s = u;
    }
 }
 
-void File::Write( const char16_type* s )
+void File::Write( const char* i, const char* j )
 {
-   size_type len = CharTraits::Length( s );
+   size_type len = (i < j) ? size_type( j - i ) : size_type( 0 );
+   if ( len > 0xfffffff0u )
+   {
+      String t( i, j );
+      Write( t.Begin(), t.End() );
+   }
+   else
+   {
+      Write( uint32( len ) );
+      if ( len > 0 )
+         Write( (const void*)i, len );
+   }
+}
+
+void File::Write( const char16_type* i, const char16_type* j )
+{
+   size_type len = (i < j) ? size_type( j - i ) : size_type( 0 );
    if ( len == 0 )
       Write( uint32( 0 ) );
    else
    {
       Write( uint32( 0xffffffffu ) );
       Write( uint32( len ) );
-      Write( (const void*)s, len << 1 );
+      Write( (const void*)i, len << 1 );
    }
-}
-
-void File::Write( const char* s )
-{
-   size_type len = ::strlen( s );
-   if ( len > 0xfffffff0u )
-   {
-      String t( s );
-      Write( t );
-   }
-   else
-   {
-      Write( uint32( len ) );
-      if ( len != 0 )
-         Write( (const void*)s, len );
-   }
-}
-
-// ----------------------------------------------------------------------------
-
-void File::OutText( const char16_type* s )
-{
-   if ( s != 0 )
-      for ( ; *s != CharTraits::Null(); )
-      {
-         const char16_type* r = s;
-         for ( ;; )
-         {
-            if ( *r == '\n' )
-               break;
-
-            if ( *++r == CharTraits::Null() )
-            {
-               Write( (const void*)s, (r - s) << 1 );
-               return;
-            }
-         }
-
-         Write( (const void*)s, (r - s) << 1 );
-         Write( char16_type( '\n' ) );
-
-         s = r + 1;
-      }
-}
-
-void File::OutText( const char* s )
-{
-   if ( s != 0 )
-      for ( ; *s != '\0'; )
-      {
-         const char* r = ::strchr( s, '\n' );
-
-         if ( r == 0 )
-         {
-            Write( (const void*)s, ::strlen( s ) );
-            break;
-         }
-
-         Write( (const void*)s, r-s );
-         Write( '\n' );
-
-         s = r+1;
-      }
 }
 
 // ----------------------------------------------------------------------------
@@ -625,7 +567,7 @@ void File::Flush()
    {
       if ( errno != 0 )
          throw File::Error( FilePath(), "File flush failed: " + String( ::strerror( errno ) ) );
-      THROW( FlushFailed );
+      throw File::Error( FilePath(), "File flush operation failed" );
    }
 #endif
 }
@@ -638,7 +580,7 @@ void File::Open( const String& filePath, FileModes mode )
       Close();
 
    if ( filePath.IsEmpty() )
-      THROW( InvalidFileName );
+      throw File::Error( FilePath(), "Invalid or empty file name" );
 
    if ( !mode.IsFlagSet( FileMode::OpenMode ) ) // no open mode specified ?
       mode |= FileMode::Open;
@@ -692,7 +634,6 @@ void File::Open( const String& filePath, FileModes mode )
 #else // !__PCL_WINDOWS
 
    IsoString howToOpen;
-
    if ( mode.IsFlagSet( FileMode::Open ) )
    {
       if ( mode.IsFlagSet( FileMode::Create ) )
@@ -714,7 +655,6 @@ void File::Open( const String& filePath, FileModes mode )
       if ( mode.IsFlagSet( FileMode::Read ) )
          howToOpen += '+';
    }
-
    howToOpen += 'b'; // always in binary mode
 
    /*
@@ -728,8 +668,8 @@ void File::Open( const String& filePath, FileModes mode )
    */
 
    errno = 0;
-   IsoString utf8_fn = filePath.ToUTF8();
-   m_fileHandle = (handle)::fopen( utf8_fn.c_str(), howToOpen.c_str() );
+   IsoString utf8 = filePath.ToUTF8();
+   m_fileHandle = (handle)::fopen( utf8.c_str(), howToOpen.c_str() );
 
 #endif // __PCL_WINDOWS
 
@@ -748,8 +688,8 @@ void File::Open( const String& filePath, FileModes mode )
                                         "Unable to create file: " : "Unable to open file: ")
                                         + String( ::strerror( errno ) ) );
       if ( mode.IsFlagSet( FileMode::Create ) )
-         THROW( UnableToCreateFile );
-      THROW( UnableToOpenFile );
+         throw File::Error( FilePath(), "Unable to create file" );
+      throw File::Error( FilePath(), "Unable to open file" );
 #endif
    }
 }
@@ -769,10 +709,12 @@ void File::Close()
       {
          if ( errno != 0 )
             throw File::Error( FilePath(), "Unable to close file: " + String( ::strerror( errno ) ) );
-         THROW( UnableToCloseFile );
+         throw File::Error( FilePath(), "Unable to close file" );
       }
 #endif
-      m_fileHandle = invalid_handle;
+      // NB: We don't clear m_filePath when a file is closed. This allows us to
+      // reopen the file with the same File instance.
+      m_fileHandle = s_invalidHandle;
       m_fileMode = FileMode::Zero;
    }
 }
@@ -782,7 +724,7 @@ void File::Close()
 void File::Remove( const String& filePath )
 {
    if ( filePath.IsEmpty() )
-      throw InvalidFileName( filePath );
+      throw File::Error( filePath, "Invalid or empty file name" );
 
 #ifdef __PCL_WINDOWS
    String wfn( UnixPathToWindows( filePath ) );
@@ -790,12 +732,12 @@ void File::Remove( const String& filePath )
       throw File::Error( filePath, "Unable to delete file: " + WinErrorMessage() );
 #else
    errno = 0;
-   IsoString utf8_fn = filePath.ToUTF8();
-   if ( ::remove( utf8_fn.c_str() ) != 0 )
+   IsoString utf8 = filePath.ToUTF8();
+   if ( ::remove( utf8.c_str() ) != 0 )
    {
       if ( errno != 0 )
          throw File::Error( filePath, "Unable to delete file: " + String( ::strerror( errno ) ) );
-      throw UnableToDeleteFile( filePath );
+      throw File::Error( filePath, "Unable to delete file" );
    }
 #endif
 }
@@ -813,12 +755,12 @@ static void DoCreateDirectory( const String& dirPath )
       throw File::Error( dirPath, "Unable to create directory: " + WinErrorMessage() );
 #else
    errno = 0;
-   IsoString utf8_dp = dirPath.ToUTF8();
-   if ( ::mkdir( utf8_dp.c_str(), 0775 ) != 0 )
+   IsoString utf8 = dirPath.ToUTF8();
+   if ( ::mkdir( utf8.c_str(), 0775 ) != 0 )
    {
       if ( errno != 0 )
          throw File::Error( dirPath, "Unable to create directory: " + String( ::strerror( errno ) ) );
-      throw File::UnableToCreateDirectory( dirPath );
+      throw File::Error( dirPath, "Unable to create directory" );
    }
 #endif
 }
@@ -826,7 +768,7 @@ static void DoCreateDirectory( const String& dirPath )
 void File::CreateDirectory( const String& dirPath, bool createIntermediateDirectories )
 {
    if ( dirPath.IsEmpty() )
-      throw InvalidFileName( dirPath );
+      throw File::Error( dirPath, "Invalid or empty directory name" );
 
 #ifdef __PCL_WINDOWS
    String dir = WindowsPathToUnix( dirPath );
@@ -890,7 +832,7 @@ void File::CreateDirectory( const String& dirPath, bool createIntermediateDirect
 void File::RemoveDirectory( const String& dirPath )
 {
    if ( dirPath.IsEmpty() )
-      throw InvalidFileName( dirPath );
+      throw File::Error( dirPath, "Invalid or empty directory name" );
 
 #ifdef __PCL_WINDOWS
    String wdp( UnixPathToWindows( dirPath ) );
@@ -898,12 +840,12 @@ void File::RemoveDirectory( const String& dirPath )
       throw File::Error( dirPath, "Unable to remove directory: " + WinErrorMessage() );
 #else
    errno = 0;
-   IsoString utf8_dp = dirPath.ToUTF8();
-   if ( ::rmdir( utf8_dp.c_str() ) != 0 )
+   IsoString utf8 = dirPath.ToUTF8();
+   if ( ::rmdir( utf8.c_str() ) != 0 )
    {
       if ( errno != 0 )
          throw File::Error( dirPath, "Unable to remove directory: " + String( ::strerror( errno ) ) );
-      throw UnableToRemoveDirectory( dirPath );
+      throw File::Error( dirPath, "Unable to remove directory" );
    }
 #endif
 }
@@ -913,7 +855,7 @@ void File::RemoveDirectory( const String& dirPath )
 void File::Move( const String& filePath, const String& newFilePath )
 {
    if ( filePath.IsEmpty() || newFilePath.IsEmpty() )
-      throw InvalidFileName( filePath );
+      throw File::Error( filePath, "Invalid or empty file name" );
 
 #ifdef __PCL_WINDOWS
    String wold( UnixPathToWindows( filePath ) );
@@ -922,17 +864,17 @@ void File::Move( const String& filePath, const String& newFilePath )
    // ### NB: MoveFileEx() is not available under Win98/Me
    if ( !::MoveFileExW( (LPCWSTR)wold.c_str(), (LPCWSTR)wnew.c_str(),
                         MOVEFILE_COPY_ALLOWED|MOVEFILE_WRITE_THROUGH ) )
-      throw File::Error( filePath, "Unable to rename file: " + WinErrorMessage() );
+      throw File::Error( filePath, "Unable to move or rename file: " + WinErrorMessage() );
 #else
    // copy *not* allowed for std file i/o
    errno = 0;
-   IsoString utf8_old = filePath.ToUTF8();
-   IsoString utf8_new = newFilePath.ToUTF8();
-   if ( ::rename( utf8_old.c_str(), utf8_new.c_str() ) != 0 )
+   IsoString utf8Old = filePath.ToUTF8();
+   IsoString utf8New = newFilePath.ToUTF8();
+   if ( ::rename( utf8Old.c_str(), utf8New.c_str() ) != 0 )
    {
       if ( errno != 0 )
-         throw File::Error( filePath, "Unable to rename file: " + String( ::strerror( errno ) ) );
-      throw UnableToMoveFile( filePath );
+         throw File::Error( filePath, "Unable to move or rename file: " + String( ::strerror( errno ) ) );
+      throw File::Error( filePath, "Unable to move or rename file" );
    }
 #endif
 }
@@ -942,7 +884,7 @@ void File::Move( const String& filePath, const String& newFilePath )
 bool File::Exists( const String& filePath )
 {
    if ( filePath.IsEmpty() )
-      throw InvalidFileName( filePath );
+      throw File::Error( filePath, "Invalid or empty file name" );
 
 #ifdef __PCL_WINDOWS
 
@@ -953,18 +895,18 @@ bool File::Exists( const String& filePath )
 #else
 
    errno = 0;
-   IsoString utf8_fn = FullPath( filePath ).ToUTF8();
-   if ( ::access( utf8_fn.c_str(), F_OK ) == 0 ) // check for existence only
+   IsoString utf8 = FullPath( filePath ).ToUTF8();
+   if ( ::access( utf8.c_str(), F_OK ) == 0 ) // check for existence only
    {
       struct stat s;
-      if ( ::stat( utf8_fn.c_str(), &s ) == 0 )
+      if ( ::stat( utf8.c_str(), &s ) == 0 )
          return (s.st_mode & S_IFMT) == S_IFREG; // regular file
    }
    if ( errno == ENOENT )
       return false;
    if ( errno != 0 )
       throw File::Error( filePath, "File access error: " + String( ::strerror( errno ) ) );
-   throw AccessError( filePath );
+   throw File::Error( filePath, "File access error" );
 
 #endif
 }
@@ -974,7 +916,7 @@ bool File::Exists( const String& filePath )
 bool File::DirectoryExists( const String& dirPath )
 {
    if ( dirPath.IsEmpty() )
-      throw InvalidFileName( dirPath );
+      throw File::Error( dirPath, "Invalid or empty directory name" );
 
 #ifdef __PCL_WINDOWS
 
@@ -985,18 +927,18 @@ bool File::DirectoryExists( const String& dirPath )
 #else
 
    errno = 0;
-   IsoString utf8_dp = FullPath( dirPath ).ToUTF8();
-   if ( ::access( utf8_dp.c_str(), F_OK ) == 0 ) // check for existence only
+   IsoString utf8 = FullPath( dirPath ).ToUTF8();
+   if ( ::access( utf8.c_str(), F_OK ) == 0 ) // check for existence only
    {
       struct stat s;
-      if ( ::stat( utf8_dp.c_str(), &s ) == 0 )
+      if ( ::stat( utf8.c_str(), &s ) == 0 )
          return (s.st_mode & S_IFMT) == S_IFDIR; // directory
    }
    if ( errno == ENOENT )
       return false;
    if ( errno != 0 )
       throw File::Error( dirPath, "File access error: " + String( ::strerror( errno ) ) );
-   throw AccessError( dirPath );
+   throw File::Error( dirPath, "File access error" );
 
 #endif
 }
@@ -1006,7 +948,7 @@ bool File::DirectoryExists( const String& dirPath )
 bool File::IsReadOnly( const String& filePath )
 {
    if ( filePath.IsEmpty() )
-      throw InvalidFileName( filePath );
+      throw File::Error( filePath, "Invalid or empty file name" );
 
 #ifdef __PCL_WINDOWS
 
@@ -1014,18 +956,18 @@ bool File::IsReadOnly( const String& filePath )
    DWORD attr = ::GetFileAttributesW( (LPCWSTR)wfn.c_str() );
 
    if ( attr == INVALID_FILE_ATTRIBUTES )
-      throw FileDoesNotExist( filePath );
+      throw File::Error( filePath, "No such file or directory" );
 
    return (attr & FILE_ATTRIBUTE_READONLY) != 0;
 
 #else
 
    errno = 0;
-   IsoString utf8_fn = filePath.ToUTF8();
-   if ( ::access( utf8_fn.c_str(), 2 ) == 0 ) // check for write permission
+   IsoString utf8 = filePath.ToUTF8();
+   if ( ::access( utf8.c_str(), 2 ) == 0 ) // check for write permission
       return false;
    //if ( errno == ENOENT )
-   //   throw FileDoesNotExist( filePath );
+   //   throw File::Error( filePath, "No such file or directory" );
    if ( errno != 0 )
       throw File::Error( filePath, "File access error: " + String( ::strerror( errno ) ) );
    return true;
@@ -1038,7 +980,7 @@ bool File::IsReadOnly( const String& filePath )
 void File::SetReadOnly( const String& filePath, bool rdOnly )
 {
    if ( filePath.IsEmpty() )
-      throw InvalidFileName( filePath );
+      throw File::Error( filePath, "Invalid or empty file name" );
 
 #ifdef __PCL_WINDOWS
 
@@ -1046,7 +988,7 @@ void File::SetReadOnly( const String& filePath, bool rdOnly )
    DWORD attr = ::GetFileAttributesW( (LPCWSTR)wfn.c_str() );
 
    if ( attr == INVALID_FILE_ATTRIBUTES )
-      throw FileDoesNotExist( filePath );
+      throw File::Error( filePath, "No such file or directory" );
 
    if ( ((attr & FILE_ATTRIBUTE_READONLY) != 0) != rdOnly )
    {
@@ -1062,14 +1004,14 @@ void File::SetReadOnly( const String& filePath, bool rdOnly )
 #else
 
    errno = 0;
-   IsoString utf8_fn = filePath.ToUTF8();
-   if( ::chmod( utf8_fn.c_str(), rdOnly ? S_IREAD : S_IREAD|S_IWRITE ) != 0 )
+   IsoString utf8 = filePath.ToUTF8();
+   if( ::chmod( utf8.c_str(), rdOnly ? S_IREAD : S_IREAD|S_IWRITE ) != 0 )
    {
       //if ( errno == ENOENT )
-      //   throw FileDoesNotExist( filePath );
+      //   throw File::Error( filePath, "No such file or directory" );
       if ( errno != 0 )
          throw File::Error( filePath, "Unable to set file attributes: " + String( ::strerror( errno ) ) );
-      throw UnableToSetFileAttributes( filePath );
+      throw File::Error( filePath, "Unable to set file attributes" );
    }
 
 #endif
@@ -1088,7 +1030,10 @@ static String WinLongPathName( const String& path )
       longPath.Reserve( n );
       DWORD n1 = ::GetLongPathNameW( (LPCWSTR)path.c_str(), (LPWSTR)longPath.c_str(), n );
       if ( n1 != 0 && n1 <= n )
+      {
+         longPath.SetLength( n1 );
          return longPath;
+      }
    }
    return path;
 }
@@ -1175,27 +1120,25 @@ static void POSIXFindDataToPCL( pcl::FindFileInfo& info, const ::dirent* data, c
 {
    info.name = String::UTF8ToUTF16( data->d_name );
 
-   IsoString utf8_path;
-
+   IsoString utf8;
    if ( !dir.IsEmpty() )
    {
-      utf8_path = dir.ToUTF8();
+      utf8 = dir.ToUTF8();
       if ( !dir.EndsWith( '/' ) )
-         utf8_path += '/';
+         utf8 += '/';
    }
-
-   utf8_path += data->d_name;
+   utf8 += data->d_name;
 
    struct stat s;
-   if ( ::lstat( utf8_path.c_str(), &s ) != 0 )
-      throw File::AccessError( utf8_path );
+   if ( ::lstat( utf8.c_str(), &s ) != 0 )
+      throw File::Error( utf8, "File or directory access error" );
 
    info.attributes.Clear();
 
    POSIXAttrToPCL( info.attributes, s.st_mode );
 
    // emulated flags
-   info.attributes.SetFlag( FileAttribute::Hidden,   info.name.BeginsWith( '.' ) );
+   info.attributes.SetFlag( FileAttribute::Hidden,   info.name.StartsWith( '.' ) );
    info.attributes.SetFlag( FileAttribute::ReadOnly, info.attributes.IsFlagSet( FileAttribute::Write ) );
 
    info.size          = s.st_size;
@@ -1215,50 +1158,49 @@ void File::Find::Begin( const String& path )
    End();
 
    if ( path.IsEmpty() )
-      throw File::InvalidSearchPath( path );
+      throw File::Error( path, "Invalid or empty directory search path" );
 
-   searchPath = path;
+   m_searchPath = path;
 
 #ifdef __PCL_WINDOWS
 
-   String wpath( UnixPathToWindows( path ) );
+   String wpath( UnixPathToWindows( m_searchPath ) );
    WIN32_FIND_DATAW data;
    HANDLE h = ::FindFirstFileW( (LPCWSTR)wpath.c_str(), &data );
 
    if ( h != INVALID_HANDLE_VALUE )
    {
-      WinFindDataToPCL( info, data );
-      handle = (void*)h;
+      WinFindDataToPCL( m_info, data );
+      m_handle = (void*)h;
    }
 
 #else
 
-   searchDir = File::ExtractDirectory( path );
+   m_searchDir = File::ExtractDirectory( m_searchPath );
 
-   searchName = File::ExtractName( path ) + File::ExtractExtension( path );
-   if ( searchName.IsEmpty() )
-      searchName = "*";
+   m_searchName = File::ExtractName( m_searchPath ) + File::ExtractExtension( m_searchPath );
+   if ( m_searchName.IsEmpty() )
+      m_searchName = "*";
 
-   IsoString utf8_sd = searchDir.ToUTF8();
-   DIR* d = ::opendir( searchDir.IsEmpty() ? "." : utf8_sd.c_str() );
-
-   if ( d != 0 )
+   IsoString utf8 = m_searchDir.ToUTF8();
+   DIR* d = ::opendir( m_searchDir.IsEmpty() ? "." : utf8.c_str() );
+   if ( d != nullptr )
       for ( ;; )
       {
          errno = 0;
          dirent* data = ::readdir( d );
-         if ( data == 0 )
+         if ( data == nullptr )
          {
             if ( errno != 0 && errno != ENOENT )
-               throw File::Error( searchPath, "Directory search error: " + String( ::strerror( errno ) ) );
+               throw File::Error( m_searchPath, "Directory search error: " + String( ::strerror( errno ) ) );
             ::closedir( d );
             break;
          }
 
-         if ( MatchesWildSpecification( String::UTF8ToUTF16( data->d_name ), searchName ) )
+         if ( String::UTF8ToUTF16( data->d_name ).WildMatch( m_searchName ) )
          {
-            POSIXFindDataToPCL( info, data, searchDir );
-            handle = (void*)d;
+            POSIXFindDataToPCL( m_info, data, m_searchDir );
+            m_handle = (void*)d;
             break;
          }
       }
@@ -1266,25 +1208,25 @@ void File::Find::Begin( const String& path )
 #endif
 }
 
-bool File::Find::NextItem( FindFileInfo& _info )
+bool File::Find::NextItem( FindFileInfo& info )
 {
-   if ( handle == 0 )
+   if ( m_handle == nullptr )
       return false;
 
-   _info = info;
+   info = m_info;
 
 #ifdef __PCL_WINDOWS
 
    WIN32_FIND_DATAW data;
 
-   if ( ::FindNextFileW( (HANDLE)handle, &data ) )
-      WinFindDataToPCL( info, data );
+   if ( ::FindNextFileW( (HANDLE)m_handle, &data ) )
+      WinFindDataToPCL( m_info, data );
    else
    {
       DWORD error = ::GetLastError();
       End();
       if ( error != ERROR_NO_MORE_FILES )
-         throw File::Error( searchPath, "Directory search error: " + WinErrorMessage() );
+         throw File::Error( m_searchPath, "Directory search error: " + WinErrorMessage() );
    }
 
 #else
@@ -1292,18 +1234,18 @@ bool File::Find::NextItem( FindFileInfo& _info )
    for ( ;; )
    {
       errno = 0;
-      dirent* data = ::readdir( (DIR*)handle );
-      if ( data == 0 )
+      dirent* data = ::readdir( (DIR*)m_handle );
+      if ( data == nullptr )
       {
          End();
          if ( errno != 0 && errno != ENOENT )
-            throw File::Error( searchPath, "Directory search error: " + String( ::strerror( errno ) ) );
+            throw File::Error( m_searchPath, "Directory search error: " + String( ::strerror( errno ) ) );
          break;
       }
 
-      if ( MatchesWildSpecification( String::UTF8ToUTF16( data->d_name ), searchName ) )
+      if ( String::UTF8ToUTF16( data->d_name ).WildMatch( m_searchName ) )
       {
-         POSIXFindDataToPCL( info, data, searchDir );
+         POSIXFindDataToPCL( m_info, data, m_searchDir );
          break;
       }
    }
@@ -1315,14 +1257,14 @@ bool File::Find::NextItem( FindFileInfo& _info )
 
 void File::Find::End()
 {
-   if ( handle != 0 )
+   if ( m_handle != nullptr )
    {
 #ifdef __PCL_WINDOWS
-      ::FindClose( (HANDLE)handle );
+      ::FindClose( (HANDLE)m_handle );
 #else
-      ::closedir( (DIR*)handle );
+      ::closedir( (DIR*)m_handle );
 #endif
-      handle = 0;
+      m_handle = nullptr;
    }
 }
 
@@ -1351,6 +1293,46 @@ void File::WriteFile( const String& filePath, const ByteArray& contents )
    f.CreateForWriting( filePath );
    if ( !contents.IsEmpty() )
       f.Write( reinterpret_cast<const void*>( contents.Begin() ), fsize_type( contents.Length() ) );
+   f.Flush();
+   f.Close();
+}
+
+void File::WriteFile( const String& filePath, const ByteArray& contents, size_type start, size_type size )
+{
+   File f;
+   f.CreateForWriting( filePath );
+   if ( start < contents.Length() )
+      f.Write( reinterpret_cast<const void*>( contents.At( start ) ),
+               fsize_type( pcl::Min( size, contents.Length()-start ) ) );
+   f.Flush();
+   f.Close();
+}
+
+// ----------------------------------------------------------------------------
+
+IsoString File::ReadTextFile( const String& filePath )
+{
+   File f;
+   f.OpenForReading( filePath );
+   IsoString text;
+   fsize_type size = f.Size();
+   if ( size > 0 )
+   {
+      text.SetLength( size_type( size ) );
+      f.Read( reinterpret_cast<void*>( text.Begin() ), size );
+   }
+   f.Close();
+   return text;
+}
+
+// ----------------------------------------------------------------------------
+
+void File::WriteTextFile( const String& filePath, const IsoString& text )
+{
+   File f;
+   f.CreateForWriting( filePath );
+   if ( !text.IsEmpty() )
+      f.Write( reinterpret_cast<const void*>( text.Begin() ), fsize_type( text.Length() ) );
    f.Flush();
    f.Close();
 }
@@ -1442,14 +1424,14 @@ void File::CopyTimesAndPermissions( const String& targetPath, const String& sour
 
 void File::CopyLink( const String& targetLinkPath, const String& sourceLinkPath )
 {
-   IsoString sourceLinkPath8 = sourceLinkPath.ToUTF8();
-   IsoString targetLinkPath8 = targetLinkPath.ToUTF8();
+   IsoString utf8SourceLinkPath = sourceLinkPath.ToUTF8();
+   IsoString utf8TargetLinkPath = targetLinkPath.ToUTF8();
    char buf[ 4096 ];
-   int len = ::readlink( sourceLinkPath8.c_str(), buf, sizeof( buf )-1 );
+   int len = ::readlink( utf8SourceLinkPath.c_str(), buf, sizeof( buf )-1 );
    if ( len < 0 )
       throw File::Error( sourceLinkPath, "Unable to read symbolic link contents: " + String( ::strerror( errno ) ) );
    buf[len] = '\0';
-   if ( ::symlink( buf, targetLinkPath8.c_str() ) < 0 )
+   if ( ::symlink( buf, utf8TargetLinkPath.c_str() ) < 0 )
       throw File::Error( targetLinkPath, "Unable to create symbolic link: " + String( ::strerror( errno ) ) );
 }
 
@@ -1460,11 +1442,11 @@ void File::CopyLink( const String& targetLinkPath, const String& sourceLinkPath 
 void File::CopyFile( const String& targetFilePath, const String& sourceFilePath, File::Progress* progress )
 {
    if ( FileInfo( targetFilePath ).Exists() )
-      throw File::Error( targetFilePath, "The target file already exists" );
+      throw File::Error( targetFilePath, "In file copy operation: The target file already exists" );
 
    FileInfo sourceInfo( sourceFilePath );
    if ( !sourceInfo.Exists() )
-      throw File::Error( sourceFilePath, "The source file does not exist" );
+      throw File::Error( sourceFilePath, "In file copy operation: The source file does not exist" );
 #ifndef __PCL_WINDOWS
    if ( sourceInfo.IsSymbolicLink() )
    {
@@ -1555,11 +1537,11 @@ void File::CopyFile( const String& targetFilePath, const String& sourceFilePath,
 void File::MoveFile( const String& targetFilePath, const String& sourceFilePath, File::Progress* progress )
 {
    if ( FileInfo( targetFilePath ).Exists() )
-      throw File::Error( targetFilePath, "The target file already exists" );
+      throw File::Error( targetFilePath, "In file move operation: The target file already exists" );
 
    FileInfo sourceInfo( sourceFilePath );
    if ( !sourceInfo.Exists() )
-      throw File::Error( sourceFilePath, "The source file does not exist" );
+      throw File::Error( sourceFilePath, "In file move operation: The source file does not exist" );
 
    /*
     * Check if source and target are in the same device.
@@ -1722,22 +1704,16 @@ bool File::SameFile( const String& path1, const String& path2 )
 
 // ----------------------------------------------------------------------------
 
-static void AddLineHelper( IsoStringList& lines, const char* p, const ReadTextOptions& options )
+static void AddLineHelper( const char* p, const char* q, IsoStringList& lines, const ReadTextOptions& options )
 {
-   IsoString line( p );
-
+   if ( options.IsFlagSet( ReadTextOption::TrimLeadingSpaces ) )
+      p = IsoCharTraits::SearchTrimLeft( p, q );
    if ( options.IsFlagSet( ReadTextOption::TrimTrailingSpaces ) )
-   {
-      if ( options.IsFlagSet( ReadTextOption::TrimLeadingSpaces ) )
-         line.Trim();
-      else
-         line.TrimRight();
-   }
-   else if ( options.IsFlagSet( ReadTextOption::TrimLeadingSpaces ) )
-      line.TrimLeft();
-
-   if ( !line.IsEmpty() || !options.IsFlagSet( ReadTextOption::RemoveEmptyLines ) )
-      lines.Add( line );
+      q = IsoCharTraits::SearchTrimRight( p, q );
+   if ( p == q )
+      if ( options.IsFlagSet( ReadTextOption::RemoveEmptyLines ) )
+         return;
+   lines.Add( IsoString( p, q ) );
 }
 
 IsoStringList File::ReadLines( const String& filePath, ReadTextOptions options )
@@ -1752,48 +1728,55 @@ IsoStringList File::ReadLines( const String& filePath, ReadTextOptions options )
       return IsoStringList();
    }
 
-   Array<char> buffer( fileSize + 16 );
+   Array<char> buffer( fileSize + 1 ); // + terminating null char
 
    fin.Read( reinterpret_cast<void*>( buffer.Begin() ), fileSize );
    fin.Close();
 
    char* p = buffer.Begin();
-   char* p1 = buffer.At( fileSize );
-   *p1 = '\0';
+   char* end = buffer.At( fileSize );
+   *end = IsoCharTraits::Null();
 
    IsoStringList lines;
 
    for ( ;; )
    {
-      char* npos = ::strchr( p, '\n' );
-      char* rpos = ::strchr( p, '\r' );
-      char* eol = (npos == 0) ? rpos : ((rpos == 0) ? npos : Min( npos, rpos ));
-      if ( eol == 0 )
+      char* npos = ::strchr( p, IsoCharTraits::LF() ); // UNIX
+      char* rpos = ::strchr( p, IsoCharTraits::CR() ); // Windows or legacy Mac
+      char* eol = (npos == nullptr) ? rpos : ((rpos == nullptr) ? npos : Min( npos, rpos ));
+      if ( eol == nullptr )
          break;
-      *eol = '\0';
-      AddLineHelper( lines, p, options );
+      char nl = *eol;
+      *eol = IsoCharTraits::Null();
+      AddLineHelper( p, eol, lines, options );
       p = eol + 1;
-      if ( p == p1 || *eol == '\r' && *p == '\n' && ++p == p1 )
+      if ( p == end ) // end of file ?
          break;
+      if ( nl == IsoCharTraits::CR() && *p == IsoCharTraits::LF() ) // Windows CR+LF ?
+         if ( ++p == end )
+            break;
    }
 
-   if ( p != p1 )
-      AddLineHelper( lines, p, options );
+   // If this file does not end with a newline character, pretend it does by
+   // processing the remaining tail of text as a line.
+   if ( p < end )
+      AddLineHelper( p, end, lines, options );
 
    return lines;
 }
 
 // ----------------------------------------------------------------------------
 
-static int ScanLineHelper( char*& p, char*& p1, bool (*callback)( char*, void* ), void* data, const ReadTextOptions& options )
+static int ScanLineHelper( char*& p, char*& q, bool (*callback)( char*, void* ), void* data, const ReadTextOptions& options )
 {
-   if ( options.IsFlagSet( ReadTextOption::TrimTrailingSpaces ) )
-      for ( ; p1 > p && IsoCharTraits::IsTrimable( p1[-1] ); --p1 ) {}
    if ( options.IsFlagSet( ReadTextOption::TrimLeadingSpaces ) )
-      for ( ; p < p1 && IsoCharTraits::IsTrimable( *p ); ++p ) {}
-   if ( p == p1 && options.IsFlagSet( ReadTextOption::RemoveEmptyLines ) )
-      return 0;
-   *p1 = '\0';
+      p = IsoCharTraits::SearchTrimLeft( p, q );
+   if ( options.IsFlagSet( ReadTextOption::TrimTrailingSpaces ) )
+      q = IsoCharTraits::SearchTrimRight( p, q );
+   if ( p == q )
+      if ( options.IsFlagSet( ReadTextOption::RemoveEmptyLines ) )
+         return 0;
+   *q = IsoCharTraits::Null();
    return (*callback)( p, data ) ? 1 : -1;
 }
 
@@ -1809,40 +1792,43 @@ size_type File::ScanLines( const String& filePath, bool (*callback)( char*, void
       return 0;
    }
 
-   Array<char> buffer( fileSize + 16 );
+   Array<char> buffer( fileSize + 1 ); // + terminating null char
 
    fin.Read( reinterpret_cast<void*>( buffer.Begin() ), fileSize );
    fin.Close();
 
    char* p = buffer.Begin();
-   char* p1 = buffer.At( fileSize );
-   *p1 = '\0';
+   char* end = buffer.At( fileSize );
+   *end = IsoCharTraits::Null();
 
    size_type n = 0;
 
    for ( ;; )
    {
-      char* npos = ::strchr( p, '\n' );
-      char* rpos = ::strchr( p, '\r' );
-      char* eol = (npos == 0) ? rpos : ((rpos == 0) ? npos : Min( npos, rpos ));
-      if ( eol == 0 )
+      char* npos = ::strchr( p, IsoCharTraits::LF() ); // UNIX
+      char* rpos = ::strchr( p, IsoCharTraits::CR() ); // Windows or legacy Mac
+      char* eol = (npos == nullptr) ? rpos : ((rpos == nullptr) ? npos : Min( npos, rpos ));
+      if ( eol == nullptr )
          break;
-      *eol = '\0';
+      char nl = *eol;
       int r = ScanLineHelper( p, eol, callback, data, options );
       if ( r < 0 )
          return n;
       n += r;
       p = eol + 1;
-      if ( p == p1 || *eol == '\r' && *p == '\n' && ++p == p1 )
+      if ( p == end ) // end of file ?
          break;
+      if ( nl == IsoCharTraits::CR() && *p == IsoCharTraits::LF() ) // Windows CR+LF ?
+         if ( ++p == end )
+            break;
    }
 
-   if ( p != p1 )
+   if ( p < end )
    {
-      int r = ScanLineHelper( p, p1, callback, data, options );
-      if ( r < 0 )
-         return n;
-      n += r;
+      // This file does not end with a newline character - pretend it does.
+      int r = ScanLineHelper( p, end, callback, data, options );
+      if ( r > 0 )
+         ++n;
    }
 
    return n;
@@ -2016,26 +2002,35 @@ String File::FullPath( const String& filePath )
       return path;
 
    String fullPath;
-   fullPath.Reserve( n += 8 );
+   fullPath.Reserve( n );
    LPWSTR dum;
    DWORD n1 = ::GetFullPathNameW( (LPCWSTR)winPath.c_str(), n, (LPWSTR)fullPath.c_str(), &dum );
-
-   return (n1 != 0 && n1 <= n) ? WindowsPathToUnix( WinLongPathName( fullPath ) ) : path;
+   if ( n1 != 0 && n1 <= n )
+   {
+      fullPath.SetLength( n1 );
+      return WindowsPathToUnix( WinLongPathName( fullPath ) );
+   }
+   return path;
 
 #else
 
-   if ( path.BeginsWith( '/' ) ) // absolute path
+   if ( path.StartsWith( '/' ) ) // absolute path
       return CleanPath( path );
 
    IsoString curDir;
-   curDir.Reserve( PATH_MAX );
-   if( ::getcwd( curDir.c_str(), PATH_MAX ) == 0 || curDir.IsEmpty() )  // ???!!! this can't happen
-      throw pcl::Error( "Unable to retrieve the current directory" );
+   curDir.Reserve( PATH_MAX*3 ); // UTF-8, worst case
+   if ( ::getcwd( curDir.c_str(), PATH_MAX*3+1 ) != 0 )
+   {
+      curDir.ResizeToNullTerminated();
+      if ( !curDir.IsEmpty() )
+      {
+         if ( !curDir.EndsWith( '/' ) )
+            curDir += '/';
+         return CleanPath( curDir.UTF8ToUTF16() + path );
+      }
+   }
 
-   if ( !curDir.EndsWith( '/' ) )
-      curDir += '/';
-
-   return CleanPath( curDir.UTF8ToUTF16() + path );
+   throw pcl::Error( "Unable to retrieve the current directory" );
 
 #endif
 }
@@ -2055,7 +2050,10 @@ String File::SystemTempDirectory()
       temp.Reserve( n );
       DWORD n1 = ::GetTempPathW( n, (LPWSTR)temp.c_str() );
       if ( n1 != 0 && n1 <= n )
+      {
+         temp.SetLength( n1 );
          tempDir = WindowsPathToUnix( WinLongPathName( temp ) );
+      }
    }
 
 #endif
@@ -2086,7 +2084,6 @@ String File::SystemTempDirectory()
                      if ( tempDir.IsEmpty() )
                      {
                         tempDir = ::getenv( "home" );
-
                         if ( tempDir.IsEmpty() )
                            return FullPath( "./" );
                      }
@@ -2120,7 +2117,6 @@ String File::SystemTempDirectory()
 String File::WindowsPathToUnix( const String& path )
 {
    String unixPath( path );
-
    for ( String::iterator i = unixPath.Begin(); i != unixPath.End(); ++i )
       if ( *i == '\\' )
       {
@@ -2132,59 +2128,48 @@ String File::WindowsPathToUnix( const String& path )
                *i = '/';
          break;
       }
-
    return unixPath;
 }
 
 String File::UnixPathToWindows( const String& path )
 {
-   String unixPath( path );
-
-   for ( String::iterator i = unixPath.Begin(); i != unixPath.End(); ++i )
+   String windowsPath( path );
+   for ( String::iterator i = windowsPath.Begin(); i != windowsPath.End(); ++i )
       if ( *i == '/' )
       {
-         size_type n = pcl::Distance( unixPath.Begin(), i );
-         unixPath.SetUnique();
-         i = unixPath.Begin() + n;
-         for ( *i++ = '\\'; i != unixPath.End(); ++i )
+         size_type n = pcl::Distance( windowsPath.Begin(), i );
+         windowsPath.SetUnique();
+         i = windowsPath.Begin() + n;
+         for ( *i++ = '\\'; i != windowsPath.End(); ++i )
             if ( *i == '/' )
                *i = '\\';
          break;
       }
-
-   return unixPath;
+   return windowsPath;
 }
 
 // ----------------------------------------------------------------------------
 
 String File::UniqueFileName( const String& directory, int n, const String& prefix, const String& postfix )
 {
-   // Use only uppercase characters to avoid case ambiguity in file names (Windows).
-   static const char* C = "A9B0CD8E1F7GH2I6J3K5L4MN4O5P3QR6S2T7U1V8WX0Y9Z";
-
-   String filePath;
-   RandomNumberGenerator R( ::strlen( C ) - 1 );
-
-   if ( n < 5 )
-      n = 5;
-
    String baseDir = directory;
    if ( baseDir.IsEmpty() )
       baseDir = "./";
    else if ( !baseDir.EndsWith( '/' ) )
       baseDir += '/';
 
-   do
-   {
-      filePath = baseDir;
-      filePath += prefix;
-      for ( int i = 0; i < n; ++i )
-         filePath += C[RoundI( R() )];
-      filePath += postfix;
-   }
-   while ( FileInfo( filePath ).Exists() );
+   if ( n < 5 )
+      n = 5;
 
-   return File::FullPath( filePath );
+   for ( String filePath; ; )
+   {
+      filePath = File::FullPath(   baseDir
+                                 + prefix
+                                 + String::Random( n, RandomizationOption::Uppercase|RandomizationOption::Digits )
+                                 + postfix );
+      if ( !FileInfo( filePath ).Exists() )
+         return filePath;
+   }
 }
 
 // ----------------------------------------------------------------------------
@@ -2228,21 +2213,17 @@ uint64 File::GetAvailableSpace( const String& dirPath, uint64* argTotalBytes, ui
    if ( dir.Length() > 1 && dir.EndsWith( '/' ) )
       dir.DeleteRight( dir.Length()-1 );
 
-   IsoString utf8_dir = File::FullPath( dir ).ToUTF8();
-
+   IsoString utf8 = File::FullPath( dir ).ToUTF8();
    errno = 0;
    struct statvfs buf;
-
-   if ( ::statvfs( utf8_dir.c_str(), &buf ) == 0 )
+   if ( ::statvfs( utf8.c_str(), &buf ) == 0 )
    {
       // f_frsize is not guaranteed to be supported.
       unsigned long blockSize = buf.f_frsize ? buf.f_frsize : buf.f_bsize;
-
       if ( argTotalBytes != 0 )
          *argTotalBytes = uint64( buf.f_blocks ) * blockSize;
       if ( argFreeBytes != 0 )
          *argFreeBytes = uint64( buf.f_bfree ) * blockSize;
-
       return uint64( buf.f_bavail ) * blockSize;
    }
 
@@ -2253,7 +2234,6 @@ uint64 File::GetAvailableSpace( const String& dirPath, uint64* argTotalBytes, ui
       *argTotalBytes = 0;
    if ( argFreeBytes != 0 )
       *argFreeBytes = 0;
-
    return 0;
 
 #endif
@@ -2354,9 +2334,9 @@ String File::ExtractDirectory( const String& path )
    size_type p0 = 0;
    if ( path.Length() > 1 && path[1] == ':' )
       p0 = 2;
-   return path.SubString( p0, (p1 == p0) ? 1 : p1-p0 );
+   return path.Substring( p0, (p1 == p0) ? 1 : p1-p0 );
 #else
-   return path.SubString( 0, (p1 == 0) ? 1 : p1 );
+   return path.Substring( 0, (p1 == 0) ? 1 : p1 );
 #endif
 }
 
@@ -2367,28 +2347,28 @@ String File::ExtractName( const String& path )
    size_type p = FindName( path );
    if ( p == String::notFound )
       return String();
-   return path.SubString( p, FindExtension( path )-p );
+   return path.Substring( p, FindExtension( path )-p );
 }
 
 // ----------------------------------------------------------------------------
 
 String File::ExtractExtension( const String& path )
 {
-   return path.SubString( FindExtension( path ) );
+   return path.Substring( FindExtension( path ) );
 }
 
 // ----------------------------------------------------------------------------
 
 String File::ExtractCompleteSuffix( const String& path )
 {
-   return path.SubString( FindCompleteSuffix( path ) );
+   return path.Substring( FindCompleteSuffix( path ) );
 }
 
 // ----------------------------------------------------------------------------
 
 String File::ExtractNameAndExtension( const String& path )
 {
-   return path.SubString( FindName( path ) );
+   return path.Substring( FindName( path ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -2403,32 +2383,32 @@ String File::ChangeExtension( const String& path, const String& ext )
 String File::AppendToName( const String& path, const String& postfix )
 {
    size_type p = FindExtension( path );
-   return path.Left( p ) + postfix + path.SubString( p );
+   return path.Left( p ) + postfix + path.Substring( p );
 }
 
 String File::PrependToName( const String& path, const String& prefix )
 {
    size_type p = FindName( path );
-   return path.Left( p ) + prefix + path.SubString( p );
+   return path.Left( p ) + prefix + path.Substring( p );
 }
 
 // ----------------------------------------------------------------------------
 
 void File::Initialize()
 {
-   m_fileHandle = invalid_handle;
-   m_filePath.Empty();
+   m_fileHandle = s_invalidHandle;
+   m_filePath.Clear();
    m_fileMode = FileMode::Zero;
 }
 
 bool File::IsValidHandle( handle h ) const
 {
-   return h != invalid_handle;
+   return h != s_invalidHandle;
 }
 
 // ----------------------------------------------------------------------------
 
 }  // pcl
 
-// ****************************************************************************
-// EOF pcl/File.cpp - Released 2015/02/06 08:48:06 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/File.cpp - Released 2015/07/30 17:15:31 UTC

@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard IntensityTransformations Process Module Version 01.07.00.0287
-// ****************************************************************************
-// HistogramTransformationInterface.cpp - Released 2014/11/14 17:19:22 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard IntensityTransformations Process Module Version 01.07.00.0306
+// ----------------------------------------------------------------------------
+// HistogramTransformationInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "CurvesTransformationInterface.h"
 #include "HistogramTransformationInterface.h"
@@ -70,19 +74,11 @@ HistogramTransformationInterface* TheHistogramTransformationInterface = 0;
 // ----------------------------------------------------------------------------
 
 #include "HistogramTransformationIcon.xpm"
-#include "zoom_in_cursor.xpm"
-#include "zoom_out_cursor.xpm"
-#include "pan_cursor.xpm"
 #include "raw_rgb.xpm"
 #include "lock_output.xpm"
 #include "show_curve.xpm"
 #include "show_grid.xpm"
-#include "red_channel.xpm"
-#include "green_channel.xpm"
-#include "blue_channel.xpm"
 #include "reject_saturated.xpm"
-#include "rgbk_channel.xpm"
-#include "alpha_channel.xpm"
 #include "auto_zero_shadows.xpm"
 #include "auto_zero_highlights.xpm"
 #include "auto_clip_shadows.xpm"
@@ -116,51 +112,51 @@ static const int s_maxZoom = 999;
 // ----------------------------------------------------------------------------
 
 HistogramTransformationInterface::HistogramTransformationInterface() :
-ProcessInterface(),
-m_instance( TheHistogramTransformationProcess ),
-m_realTimeThread( 0 ),
-GUI( 0 ),
-m_plotResolution( 256 ),
-m_mode( ReadoutMode ),
-m_savedMode( NoMode ),
-m_readoutMode( NormalReadout ),
-m_channel( 3 ), // 3=RGB/K
-m_graphStyle( LineStyle ),
-m_shadowsAutoClipping( 0.01 ),
-m_highlightsAutoClipping( 0.01 ),
-m_shadowsCount( uint64( 0 ), 5 ),
-m_highlightsCount( uint64( 0 ), 5 ),
-m_readoutActive( false ),
-m_inputReadouts( 0.0, 5 ),
-m_outputReadouts( 0.0, 5 ),
-m_inputZoomX( 1 ),
-m_inputZoomY( 1 ),
-m_outputZoomX( 1 ),
-m_outputZoomY( 1 ),
-m_rejectSaturated( true ),
-m_rawRGBInput( true ),
-m_lockOutputChannel( true ),
-m_showMTF( true ),
-m_showGrid( true ),
-m_sliderBeingDragged( NoSlider ),
-m_panning( 0 ),
-m_panOrigin( 0 ),
-m_cursorStatus( NoCursor ),
-m_cursorPos( -1 ),
-m_histogramPos( 0 ),
-m_inputBitmap( Bitmap::Null() ),
-m_inputDirty( true ),
-m_outputBitmap( Bitmap::Null() ),
-m_outputDirty( true ),
-m_slidersBitmap( Bitmap::Null() ),
-m_slidersDirty( true ),
-m_outputSectionVisible( true ),
-m_rangeSectionVisible( false ),
-m_channelColors( 5 ),
-m_minHistogramWidth( 400 ),
-m_minHistogramHeight( 200 ),
-m_sliderControlSize( 12 ),
-m_settingUp( false )
+   ProcessInterface(),
+   m_instance( TheHistogramTransformationProcess ),
+   m_realTimeThread( 0 ),
+   GUI( 0 ),
+   m_plotResolution( 256 ),
+   m_mode( ReadoutMode ),
+   m_savedMode( NoMode ),
+   m_readoutMode( NormalReadout ),
+   m_channel( 3 ), // 3=RGB/K
+   m_graphStyle( LineStyle ),
+   m_shadowsAutoClipping( 0.01 ),
+   m_highlightsAutoClipping( 0.01 ),
+   m_shadowsCount( uint64( 0 ), 5 ),
+   m_highlightsCount( uint64( 0 ), 5 ),
+   m_readoutActive( false ),
+   m_inputReadouts( 0.0, 5 ),
+   m_outputReadouts( 0.0, 5 ),
+   m_inputZoomX( 1 ),
+   m_inputZoomY( 1 ),
+   m_outputZoomX( 1 ),
+   m_outputZoomY( 1 ),
+   m_rejectSaturated( true ),
+   m_rawRGBInput( true ),
+   m_lockOutputChannel( true ),
+   m_showMTF( true ),
+   m_showGrid( true ),
+   m_sliderBeingDragged( NoSlider ),
+   m_panning( 0 ),
+   m_panOrigin( 0 ),
+   m_cursorStatus( NoCursor ),
+   m_cursorPos( -1 ),
+   m_histogramPos( 0 ),
+   m_inputBitmap( Bitmap::Null() ),
+   m_inputDirty( true ),
+   m_outputBitmap( Bitmap::Null() ),
+   m_outputDirty( true ),
+   m_slidersBitmap( Bitmap::Null() ),
+   m_slidersDirty( true ),
+   m_outputSectionVisible( true ),
+   m_rangeSectionVisible( false ),
+   m_channelColors( 5 ),
+   m_minHistogramWidth( 400 ),
+   m_minHistogramHeight( 200 ),
+   m_sliderControlSize( 12 ),
+   m_settingUp( false )
 {
    TheHistogramTransformationInterface = this;
 
@@ -642,7 +638,8 @@ void HistogramTransformationInterface::RealTimePreviewOwnerChanged( ProcessInter
 
 void HistogramTransformationInterface::SaveSettings() const
 {
-   String key = KEY_HT;
+   IsoString key = KEY_HT;
+
    Settings::Write( key + "PlotResolution", m_plotResolution );
    Settings::Write( key + "GraphStyle", m_graphStyle );
    Settings::Write( key + "RejectSaturated", m_rejectSaturated );
@@ -658,7 +655,7 @@ void HistogramTransformationInterface::SaveSettings() const
 
 void HistogramTransformationInterface::LoadSettings()
 {
-   String key = KEY_HT;
+   IsoString key = KEY_HT;
 
    int newPlotResolution = m_plotResolution;
    Settings::Read( key + "PlotResolution", newPlotResolution );
@@ -805,8 +802,8 @@ void HistogramTransformationInterface::CalculateClippingCounts()
    {
       int r = m_sourceData[c].Resolution();
       int cc = image->IsColor() ? c : 3;
-      int i0 = RoundI( m_instance.ShadowsClipping( cc )*(r - 1) );
-      int i1 = RoundI( m_instance.HighlightsClipping( cc )*(r - 1) );
+      int i0 = RoundInt( m_instance.ShadowsClipping( cc )*(r - 1) );
+      int i1 = RoundInt( m_instance.HighlightsClipping( cc )*(r - 1) );
 
       for ( int i = 0; i < i0; ++i )
          m_shadowsCount[cc] += m_sourceData[c].Count( i );
@@ -822,8 +819,8 @@ void HistogramTransformationInterface::CalculateClippingCounts()
       for ( int c = 0; c < image->NumberOfNominalChannels(); ++c )
       {
          int r = m_outputRGBData[c].Resolution();
-         int i0 = RoundI( m_instance.ShadowsClipping( 3 )*(r - 1) );
-         int i1 = RoundI( m_instance.HighlightsClipping( 3 )*(r - 1) );
+         int i0 = RoundInt( m_instance.ShadowsClipping( 3 )*(r - 1) );
+         int i1 = RoundInt( m_instance.HighlightsClipping( 3 )*(r - 1) );
 
          for ( int i = 0; i < i0; ++i )
             m_shadowsCount[3] += m_outputRGBData[c].Count( i );
@@ -836,8 +833,8 @@ void HistogramTransformationInterface::CalculateClippingCounts()
    {
       int c = image->NumberOfNominalChannels();
       int r = m_sourceData[c].Resolution();
-      int i0 = RoundI( m_instance.ShadowsClipping( 4 )*(r - 1) );
-      int i1 = RoundI( m_instance.HighlightsClipping( 4 )*(r - 1) );
+      int i0 = RoundInt( m_instance.ShadowsClipping( 4 )*(r - 1) );
+      int i1 = RoundInt( m_instance.HighlightsClipping( 4 )*(r - 1) );
 
       for ( int i = 0; i < i0; ++i )
          m_shadowsCount[4] += m_sourceData[c].Count( i );
@@ -1014,8 +1011,9 @@ void HistogramTransformationInterface::SetInputZoom( int hz, int vz, const Point
    int visibleWidth = GUI->InputHistogram_ScrollBox.Viewport().Width();
    int visibleHeight = GUI->InputHistogram_ScrollBox.Viewport().Height();
 
+   int sliderControlSize = RoundInt( LogicalPixelsToPhysical( m_sliderControlSize ) );
    int contentsWidth = visibleWidth * m_inputZoomX;
-   int contentsHeight = (visibleHeight - m_sliderControlSize) * m_inputZoomY + m_sliderControlSize;
+   int contentsHeight = (visibleHeight - sliderControlSize) * m_inputZoomY + sliderControlSize;
 
    if ( hsb )
    {
@@ -1256,7 +1254,7 @@ void HistogramTransformationInterface::UpdateHistogramInfo()
       GUI->InputHistogramPlot_Control.Width()*m_inputZoomX :
       GUI->OutputHistogram_ScrollBox.Viewport().Width()*m_outputZoomX;
 
-   int dx = Max( 1, RoundI( double( m_plotResolution )/w ) );
+   int dx = Max( 1, RoundInt( double( m_plotResolution )/w ) );
 
    double x = m_histogramPos.x*(m_plotResolution - 1);
    int i = int( x );
@@ -1358,7 +1356,7 @@ void HistogramTransformationInterface::ToggleOutputHistogram()
    if ( m_outputSectionVisible )
    {
       GUI->OutputHistogram_ScrollBox.Hide();
-      GUI->ShowOutput_ToolButton.SetIcon( Bitmap( ":/process-interface/contract-vert.png" ) );
+      GUI->ShowOutput_ToolButton.SetIcon( ScaledResource( ":/process-interface/contract-vert.png" ) );
       GUI->ShowOutput_ToolButton.SetToolTip( "Show Output Histograms" );
       GUI->OutputHorizontalZoom_SpinBox.Disable();
       GUI->OutputVerticalZoom_SpinBox.Disable();
@@ -1367,14 +1365,14 @@ void HistogramTransformationInterface::ToggleOutputHistogram()
    else
    {
       GUI->OutputHistogram_ScrollBox.Show();
-      GUI->ShowOutput_ToolButton.SetIcon( Bitmap( ":/process-interface/expand-vert.png" ) );
+      GUI->ShowOutput_ToolButton.SetIcon( ScaledResource( ":/process-interface/expand-vert.png" ) );
       GUI->ShowOutput_ToolButton.SetToolTip( "Hide Output Histograms" );
       GUI->OutputHorizontalZoom_SpinBox.Enable();
       GUI->OutputVerticalZoom_SpinBox.Enable();
       m_outputSectionVisible = true;
    }
 
-   ProcessInterface::ProcessEvents();
+   ProcessEvents();
 
    AdjustToContents();
    EnableUpdates();
@@ -1389,19 +1387,19 @@ void HistogramTransformationInterface::ToggleRangeControls()
    if ( m_rangeSectionVisible )
    {
       GUI->RangeSection_Control.Hide();
-      GUI->ShowRangeControls_ToolButton.SetIcon( Bitmap( ":/process-interface/expand-vert.png" ) );
+      GUI->ShowRangeControls_ToolButton.SetIcon( ScaledResource( ":/process-interface/expand-vert.png" ) );
       GUI->ShowRangeControls_ToolButton.SetToolTip( "Show Dynamic Range Expansion Controls" );
       m_rangeSectionVisible = false;
    }
    else
    {
       GUI->RangeSection_Control.Show();
-      GUI->ShowRangeControls_ToolButton.SetIcon( Bitmap( ":/process-interface/contract-vert.png" ) );
+      GUI->ShowRangeControls_ToolButton.SetIcon( ScaledResource( ":/process-interface/contract-vert.png" ) );
       GUI->ShowRangeControls_ToolButton.SetToolTip( "Hide Dynamic Range Expansion Controls" );
       m_rangeSectionVisible = true;
    }
 
-   ProcessInterface::ProcessEvents();
+   ProcessEvents();
 
    AdjustToContents();
    EnableUpdates();
@@ -1427,13 +1425,12 @@ void HistogramTransformationInterface::PlotGrid(
    int w = r.Width();
    int h = r.Height();
 
-   Pen p0( m_gridColor0, 0, PenStyle::Solid );
-   Pen p1( m_gridColor1, 0, PenStyle::Dot );
+   Pen p0( m_gridColor0, DisplayPixelRatio(), PenStyle::Solid );
+   Pen p1( m_gridColor1, DisplayPixelRatio(), PenStyle::Dot );
 
    for ( int i = ix0; i <= ix1; ++i )
    {
-      int x = RoundI( dx*i ) - r.x0;
-
+      int x = RoundInt( dx*i ) - r.x0;
       if ( x >= w )
          break;
 
@@ -1443,8 +1440,7 @@ void HistogramTransformationInterface::PlotGrid(
 
    for ( int i = iy0; i <= iy1; ++i )
    {
-      int y = RoundI( dy*i ) - r.y0;
-
+      int y = RoundInt( dy*i ) - r.y0;
       if ( y >= h )
          break;
 
@@ -1461,11 +1457,10 @@ void HistogramTransformationInterface::PlotHistogram(
    int i1 = Min( H.Resolution()-1, int( Ceil( r.x1/dx ) ) );
 
    Array<Point> points;
-
    for ( int i = i0, x0 = 0, y0 = 0; i <= i1; ++i )
    {
-      int x = RoundI( i*dx ) - r.x0;
-      int y = Max( -1, RoundI( (height - 1)*(1 - double( H.Count( i ) )/peak) ) - r.y0 ); // -1 to allow clipping at top
+      int x = RoundInt( i*dx ) - r.x0;
+      int y = Max( -1, RoundInt( (height - 1)*(1 - double( H.Count( i ) )/peak) ) - r.y0 ); // -1 to allow clipping at top
 
       if ( i == i0 || i == i1 || x != x0 ) // always put both extreme points
          points.Add( Point( x0 = x, y0 = y ) );
@@ -1532,10 +1527,10 @@ RGBA HistogramTransformationInterface::HandlerColor( double v ) const
 
 void HistogramTransformationInterface::PlotHandler( Graphics& g, double v, int x0, int width )
 {
-   int h = m_sliderControlSize;
+   int h = RoundInt( LogicalPixelsToPhysical( m_sliderControlSize ) );
    int h2 = (h >> 1) + 1;
 
-   int x = RoundI( v*(width - 1) ) - x0;
+   int x = RoundInt( v*(width - 1) ) - x0;
 
    GenericVector<Point> notch( 4 );
    notch[0] = Point( x,      h-h2 );
@@ -1543,22 +1538,22 @@ void HistogramTransformationInterface::PlotHandler( Graphics& g, double v, int x
    notch[2] = Point( x+h2-1, h-1  );
    notch[3] = Point( x,      h-h2 );
 
-   g.SetPen( HandlerColor( v ) );
+   g.SetPen( HandlerColor( v ), DisplayPixelRatio() );
    g.DrawLine( x, 0, x, h-h2-1 );
    g.DrawPolyline( notch );
 }
 
 void HistogramTransformationInterface::PlotMidtonesTransferCurve( Graphics& g, const Rect& r, int width, int height )
 {
-   int xc0 = RoundI( m_instance.ShadowsClipping( m_channel )*(width - 1) );
+   int xc0 = RoundInt( m_instance.ShadowsClipping( m_channel )*(width - 1) );
    if ( xc0 >= r.x1 )
       return;
 
-   int xc1 = RoundI( m_instance.HighlightsClipping( m_channel )*(width - 1) );
+   int xc1 = RoundInt( m_instance.HighlightsClipping( m_channel )*(width - 1) );
    if ( xc1 < r.x0 )
       return;
 
-   g.SetPen( m_channelColors[m_channel] );
+   g.SetPen( m_channelColors[m_channel], DisplayPixelRatio() );
 
    if ( xc1 - xc0 < 2 )
    {
@@ -1577,40 +1572,48 @@ void HistogramTransformationInterface::PlotMidtonesTransferCurve( Graphics& g, c
    for ( int xi = px0, x0 = -1, y0 = -1; xi < px1; ++xi )
    {
       int x = xi - r.x0;
-      int y = RoundI( (height - 1)*(1 - HistogramTransformation::MTF( m, (xi - xc0)*dx )) ) - r.y0;
+      int y = RoundInt( (height - 1)*(1 - HistogramTransformation::MTF( m, (xi - xc0)*dx )) ) - r.y0;
       if ( x != x0 || y != y0 )
          points.Add( Point( x0 = x, y0 = y ) );
    }
 
    points.Add( Point( px1 - r.x0,
-                      RoundI( (height - 1)*(1 - HistogramTransformation::MTF( m, (px1 - xc0)*dx )) ) - r.y0 ) );
+                      RoundInt( (height - 1)*(1 - HistogramTransformation::MTF( m, (px1 - xc0)*dx )) ) - r.y0 ) );
 
    g.DrawPolyline( points );
 }
 
-void HistogramTransformationInterface::PlotReadouts( Bitmap& bmp, const Rect& r, const DVector& readouts, int width, int height )
+void HistogramTransformationInterface::PlotReadouts( Graphics& g,
+                        const Bitmap& bmp, const Rect& r, const DVector& readouts, int width, int height )
 {
    int w = bmp.Width();
    int h = bmp.Height();
+   float d = DisplayPixelRatio();
 
    if ( m_channel == 3 )
    {
       for ( int c = 0; c < 3; ++c )
       {
-         int x = RoundI( readouts[c]*(width - 1) ) - r.x0;
+         int x = RoundInt( readouts[c]*(width - 1) ) - r.x0;
          if ( x >= 0 && x < w )
-            bmp.Xor( Rect( x, 0, x+1, h ), m_channelColors[c] );
+         {
+            g.SetPen( m_channelColors[c], d );
+            g.DrawLine( x, 0, x, h );
+         }
       }
    }
    else
    {
-      int x = RoundI( readouts[m_channel]*(width - 1) ) - r.x0;
+      int x = RoundInt( readouts[m_channel]*(width - 1) ) - r.x0;
       if ( x >= 0 && x < w )
-         bmp.Xor( Rect( x, 0, x+1, h ), m_channelColors[m_channel] );
+      {
+         g.SetPen( m_channelColors[m_channel], d );
+         g.DrawLine( x, 0, x, h );
+      }
    }
 }
 
-void HistogramTransformationInterface::PlotCursor( Bitmap& bmp, const Rect& r )
+void HistogramTransformationInterface::PlotCursor( Graphics& g, const Rect& r )
 {
    int w = r.Width();
    int h = r.Height();
@@ -1619,25 +1622,32 @@ void HistogramTransformationInterface::PlotCursor( Bitmap& bmp, const Rect& r )
 
    if ( m_mode == ReadoutMode )
    {
+      g.SetPen( 0xffffffff, DisplayPixelRatio() );
       if ( x >= 0 && x < w )
-         bmp.Invert( Rect( x, 0, x+1, h ) );
+         g.DrawLine( x, 0, x, h );
       if ( y >= 0 && y < h )
-         bmp.Invert( Rect( 0, y, w, y+1 ) );
+         g.DrawLine( 0, y, w, y );
    }
    else
    {
-      const char** xpm;
-
+      String resource;
       switch ( m_mode )
       {
-      case ZoomInMode:  xpm = zoom_in_cursor_XPM; break;
-      case ZoomOutMode: xpm = zoom_out_cursor_XPM; break;
-      case PanMode:     xpm = pan_cursor_XPM; break;
-      default: xpm = (const char**)0; break;
+      case ZoomInMode:
+         resource = ":/cursors/view/zoom_in.png";
+         break;
+      case ZoomOutMode:
+         resource = ":/cursors/view/zoom_out.png";
+         break;
+      case PanMode:
+         resource = m_panning ? ":/cursors/view/bidi_pan.png" : ":/cursors/view/pan.png";
+         break;
+      default: // ?!
+         return;
       }
 
-      Bitmap csr( xpm );
-      bmp.Xor( Point( x - (csr.Width() >> 1), y - (csr.Height() >> 1) ), csr );
+      Bitmap csr( ScaledResource( resource ) );
+      g.DrawBitmap( x - (csr.Width() >> 1), y - (csr.Height() >> 1), csr );
    }
 }
 
@@ -1647,11 +1657,10 @@ void HistogramTransformationInterface::RegenerateInputViewport()
    int w0 = r0.Width();
    int h0 = r0.Height();
 
-   if ( m_inputBitmap.IsNull() )
-      m_inputBitmap = Bitmap( w0, h0, BitmapFormat::RGB32 );
-
    m_inputDirty = false;
 
+   if ( m_inputBitmap.IsNull() )
+      m_inputBitmap = Bitmap( w0, h0, BitmapFormat::RGB32 );
    m_inputBitmap.Fill( m_backgroundColor );
 
    Rect r( r0 + GUI->InputHistogram_ScrollBox.ScrollPosition() );
@@ -1661,6 +1670,7 @@ void HistogramTransformationInterface::RegenerateInputViewport()
    if ( m_showGrid )
    {
       Graphics g( m_inputBitmap );
+      g.EnableAntialiasing();
       PlotGrid( g, r, w, h, m_inputZoomX, m_inputZoomY );
    }
 
@@ -1688,53 +1698,50 @@ void HistogramTransformationInterface::RegenerateInputViewport()
    {
       ImageVariant image = m_currentView.Image();
 
-      Bitmap bmp1( w0, h0 );
-      bmp1.Fill( 0xFF000000 );
-
-      if ( m_channel == 3 )
+      Bitmap bmp( w0, h0, BitmapFormat::RGB32 );
       {
-         count_type peak = 0;
-         if ( m_rejectSaturated )
-            for ( size_type i = 0; i < H.Length(); ++i )
-               peak = Max( peak, H[i].PeakCount( 1, H[i].Resolution()-2 ) );
-         if ( !m_rejectSaturated || peak == 0 )
-            for ( size_type i = 0; i < H.Length(); ++i )
-               peak = Max( peak, H[i].PeakCount() );
+         bmp.Fill( 0xFF000000 );
+         Graphics g( bmp );
+         g.EnableAntialiasing();
+         g.SetCompositionOperator( CompositionOp::Screen );
 
-         for ( int c = 0; c < image->NumberOfNominalChannels(); ++c )
+         if ( m_channel == 3 )
          {
-            Bitmap bmp( w0, h0 );
-            bmp.Fill( 0xFF000000 );
-            Graphics g( bmp );
-            g.SetPen( m_channelColors[image->IsColor() ? c : 3] );
-            PlotHistogram( g, r, H[c], peak, w, h, m_inputZoomX, m_inputZoomY );
-            g.EndPaint();
-            bmp1.Or( bmp );
-         }
-      }
-      else
-      {
-         if ( m_channel < 3 && image->IsColor() || m_channel == 4 && image->HasAlphaChannels() )
-         {
-            int c = (m_channel < 3) ? m_channel : image->NumberOfNominalChannels();
-
             count_type peak = 0;
             if ( m_rejectSaturated )
-               peak = H[c].PeakCount( 1, H[c].Resolution()-2 );
+               for ( size_type i = 0; i < H.Length(); ++i )
+                  peak = Max( peak, H[i].PeakCount( 1, H[i].Resolution()-2 ) );
             if ( !m_rejectSaturated || peak == 0 )
-               peak = H[c].PeakCount();
+               for ( size_type i = 0; i < H.Length(); ++i )
+                  peak = Max( peak, H[i].PeakCount() );
 
-            Bitmap bmp( w0, h0 );
-            bmp.Fill( 0xFF000000 );
-            Graphics g( bmp );
-            g.SetPen( m_channelColors[m_channel] );
-            PlotHistogram( g, r, H[c], peak, w, h, m_inputZoomX, m_inputZoomY );
-            g.EndPaint();
-            bmp1.Or( bmp );
+            for ( int c = 0; c < image->NumberOfNominalChannels(); ++c )
+            {
+               g.SetPen( m_channelColors[image->IsColor() ? c : 3], DisplayPixelRatio() );
+               PlotHistogram( g, r, H[c], peak, w, h, m_inputZoomX, m_inputZoomY );
+            }
+         }
+         else
+         {
+            if ( m_channel < 3 && image->IsColor() || m_channel == 4 && image->HasAlphaChannels() )
+            {
+               int c = (m_channel < 3) ? m_channel : image->NumberOfNominalChannels();
+
+               count_type peak = 0;
+               if ( m_rejectSaturated )
+                  peak = H[c].PeakCount( 1, H[c].Resolution()-2 );
+               if ( !m_rejectSaturated || peak == 0 )
+                  peak = H[c].PeakCount();
+
+               g.SetPen( m_channelColors[m_channel], DisplayPixelRatio() );
+               PlotHistogram( g, r, H[c], peak, w, h, m_inputZoomX, m_inputZoomY );
+            }
          }
       }
 
-      m_inputBitmap.Xor( bmp1 );
+      Graphics g( m_inputBitmap );
+      g.SetCompositionOperator( CompositionOp::Difference );
+      g.DrawBitmap( 0, 0, bmp );
    }
 }
 
@@ -1744,11 +1751,10 @@ void HistogramTransformationInterface::RegenerateOutputViewport()
    int w0 = r0.Width();
    int h0 = r0.Height();
 
-   if ( m_outputBitmap.IsNull() )
-      m_outputBitmap = Bitmap( w0, h0, BitmapFormat::RGB32 );
-
    m_outputDirty = false;
 
+   if ( m_outputBitmap.IsNull() )
+      m_outputBitmap = Bitmap( w0, h0, BitmapFormat::RGB32 );
    m_outputBitmap.Fill( m_backgroundColor );
 
    Rect r( r0 + GUI->OutputHistogram_ScrollBox.ScrollPosition() );
@@ -1758,6 +1764,7 @@ void HistogramTransformationInterface::RegenerateOutputViewport()
    if ( m_showGrid )
    {
       Graphics g( m_outputBitmap );
+      g.EnableAntialiasing();
       PlotGrid( g, r, w, h, m_outputZoomX, m_outputZoomY );
    }
 
@@ -1771,53 +1778,50 @@ void HistogramTransformationInterface::RegenerateOutputViewport()
    {
       ImageVariant image = m_currentView.Image();
 
-      Bitmap bmp1( w0, h0 );
-      bmp1.Fill( 0xFF000000 );
-
-      if ( m_channel == 3 || m_lockOutputChannel && m_channel != 4 )
+      Bitmap bmp( w0, h0, BitmapFormat::RGB32 );
       {
-         count_type peak = 0;
-         if ( m_rejectSaturated )
-            for ( size_type i = 0; i < m_outputData.Length(); ++i )
-               peak = Max( peak, m_outputData[i].PeakCount( 1, m_outputData[i].Resolution()-2 ) );
-         if ( !m_rejectSaturated || peak == 0 )
-            for ( size_type i = 0; i < m_outputData.Length(); ++i )
-               peak = Max( peak, m_outputData[i].PeakCount() );
+         bmp.Fill( 0xFF000000 );
+         Graphics g( bmp );
+         g.EnableAntialiasing();
+         g.SetCompositionOperator( CompositionOp::Screen );
 
-         for ( int c = 0; c < image->NumberOfNominalChannels(); ++c )
+         if ( m_channel == 3 || m_lockOutputChannel && m_channel != 4 )
          {
-            Bitmap bmp( w0, h0 );
-            bmp.Fill( 0xFF000000 );
-            Graphics g( bmp );
-            g.SetPen( m_channelColors[image->IsColor() ? c : 3] );
-            PlotHistogram( g, r, m_outputData[c], peak, w, h, m_outputZoomX, m_outputZoomY );
-            g.EndPaint();
-            bmp1.Or( bmp );
-         }
-      }
-      else
-      {
-         if ( m_channel < 3 && image->IsColor() || m_channel == 4 && image->HasAlphaChannels() )
-         {
-            int c = (m_channel < 3) ? m_channel : image->NumberOfNominalChannels();
-
             count_type peak = 0;
             if ( m_rejectSaturated )
-               peak = m_outputData[c].PeakCount( 1, m_outputData[c].Resolution()-2 );
+               for ( size_type i = 0; i < m_outputData.Length(); ++i )
+                  peak = Max( peak, m_outputData[i].PeakCount( 1, m_outputData[i].Resolution()-2 ) );
             if ( !m_rejectSaturated || peak == 0 )
-               peak = m_outputData[c].PeakCount();
+               for ( size_type i = 0; i < m_outputData.Length(); ++i )
+                  peak = Max( peak, m_outputData[i].PeakCount() );
 
-            Bitmap bmp( w0, h0 );
-            bmp.Fill( 0xFF000000 );
-            Graphics g( bmp );
-            g.SetPen( m_channelColors[m_channel] );
-            PlotHistogram( g, r, m_outputData[c], peak, w, h, m_outputZoomX, m_outputZoomY );
-            g.EndPaint();
-            bmp1.Or( bmp );
+            for ( int c = 0; c < image->NumberOfNominalChannels(); ++c )
+            {
+               g.SetPen( m_channelColors[image->IsColor() ? c : 3], DisplayPixelRatio() );
+               PlotHistogram( g, r, m_outputData[c], peak, w, h, m_outputZoomX, m_outputZoomY );
+            }
+         }
+         else
+         {
+            if ( m_channel < 3 && image->IsColor() || m_channel == 4 && image->HasAlphaChannels() )
+            {
+               int c = (m_channel < 3) ? m_channel : image->NumberOfNominalChannels();
+
+               count_type peak = 0;
+               if ( m_rejectSaturated )
+                  peak = m_outputData[c].PeakCount( 1, m_outputData[c].Resolution()-2 );
+               if ( !m_rejectSaturated || peak == 0 )
+                  peak = m_outputData[c].PeakCount();
+
+               g.SetPen( m_channelColors[m_channel], DisplayPixelRatio() );
+               PlotHistogram( g, r, m_outputData[c], peak, w, h, m_outputZoomX, m_outputZoomY );
+            }
          }
       }
 
-      m_outputBitmap.Xor( bmp1 );
+      Graphics g( m_outputBitmap );
+      g.SetCompositionOperator( CompositionOp::Difference );
+      g.DrawBitmap( 0, 0, bmp );
    }
 }
 
@@ -1833,10 +1837,8 @@ void HistogramTransformationInterface::RegenerateSlidersViewport()
    m_slidersDirty = false;
 
    Graphics g( m_slidersBitmap );
-
    Rect r( r0 );
    r += GUI->InputHistogram_ScrollBox.ScrollPosition();
-
    PlotScale( g, r, w0*m_inputZoomX );
 }
 
@@ -1868,38 +1870,30 @@ void HistogramTransformationInterface::__Histogram_Paint( Control& sender, const
 
       if ( m_showMTF || m_readoutActive || m_cursorStatus == InputCursor )
       {
-         Bitmap bmp1 = m_inputBitmap.Subimage( updateRect );
-
-         Bitmap bmp( updateRect.Width(), updateRect.Height() );
-         bmp.Fill( 0xFF000000 );
-
-         if ( m_showMTF || m_readoutActive )
+         Bitmap bmp = m_inputBitmap.Subimage( updateRect );
          {
-            Rect r0 = sender.ClientRect();
-            int w = r0.Width()*m_inputZoomX;
-            int h = r0.Height()*m_inputZoomY;
+            Graphics g( bmp );
+            g.EnableAntialiasing();
+            g.SetCompositionOperator( CompositionOp::Difference );
 
-            Rect r( updateRect + GUI->InputHistogram_ScrollBox.ScrollPosition() );
-
-            if ( m_showMTF )
+            if ( m_showMTF || m_readoutActive )
             {
-               Graphics g( bmp );
-               //g.EnableAntialiasing();
-               PlotMidtonesTransferCurve( g, r, w, h );
+               Rect r0 = sender.ClientRect();
+               int w = r0.Width()*m_inputZoomX;
+               int h = r0.Height()*m_inputZoomY;
+               Rect r( updateRect + GUI->InputHistogram_ScrollBox.ScrollPosition() );
+               if ( m_showMTF )
+                  PlotMidtonesTransferCurve( g, r, w, h );
+               if ( m_readoutActive )
+                  PlotReadouts( g, bmp, r, m_inputReadouts, w, h );
             }
 
-            if ( m_readoutActive )
-               PlotReadouts( bmp, r, m_inputReadouts, w, h );
+            if ( m_cursorStatus == InputCursor )
+               PlotCursor( g, updateRect );
          }
 
-         if ( m_cursorStatus == InputCursor )
-            PlotCursor( bmp, updateRect );
-
-         bmp1.Xor( bmp );
-         bmp1.SetPixelFormat( BitmapFormat::RGB32 );
-
          Graphics g( sender );
-         g.DrawBitmap( updateRect.LeftTop(), bmp1 );
+         g.DrawBitmap( updateRect.LeftTop(), bmp );
       }
       else
       {
@@ -1914,30 +1908,26 @@ void HistogramTransformationInterface::__Histogram_Paint( Control& sender, const
 
       if ( m_readoutActive || m_cursorStatus == OutputCursor )
       {
-         Bitmap bmp1 = m_outputBitmap.Subimage( updateRect );
-
-         Bitmap bmp( updateRect.Width(), updateRect.Height() );
-         bmp.Fill( 0xFF000000 );
-
-         if ( m_readoutActive )
+         Bitmap bmp = m_outputBitmap.Subimage( updateRect );
          {
-            Rect r0 = sender.ClientRect();
-            int w = r0.Width()*m_outputZoomX;
-            int h = r0.Height()*m_outputZoomY;
+            Graphics g( bmp );
+            g.EnableAntialiasing();
 
-            Rect r( updateRect + GUI->OutputHistogram_ScrollBox.ScrollPosition() );
+            if ( m_readoutActive )
+            {
+               Rect r0 = sender.ClientRect();
+               int w = r0.Width()*m_outputZoomX;
+               int h = r0.Height()*m_outputZoomY;
+               Rect r( updateRect + GUI->OutputHistogram_ScrollBox.ScrollPosition() );
+               PlotReadouts( g, bmp, r, m_outputReadouts, w, h );
+            }
 
-            PlotReadouts( bmp, r, m_outputReadouts, w, h );
+            if ( m_cursorStatus == OutputCursor )
+               PlotCursor( g, updateRect );
          }
 
-         if ( m_cursorStatus == OutputCursor )
-            PlotCursor( bmp, updateRect );
-
-         bmp1.Xor( bmp );
-         bmp1.SetPixelFormat( BitmapFormat::RGB32 );
-
          Graphics g( sender );
-         g.DrawBitmap( updateRect.LeftTop(), bmp1 );
+         g.DrawBitmap( updateRect.LeftTop(), bmp );
       }
       else
       {
@@ -1952,9 +1942,6 @@ void HistogramTransformationInterface::__Sliders_Paint( Control& sender, const p
    if ( m_slidersDirty )
       RegenerateSlidersViewport();
 
-   Graphics g( sender );
-   g.DrawBitmapRect( updateRect.LeftTop(), m_slidersBitmap, updateRect );
-
    double c0 = m_instance.ShadowsClipping( m_channel );
    double m = m_instance.MidtonesBalance( m_channel );
    double c1 = m_instance.HighlightsClipping( m_channel );
@@ -1962,6 +1949,9 @@ void HistogramTransformationInterface::__Sliders_Paint( Control& sender, const p
    int w = sender.Width()*m_inputZoomX;
    int x0 = GUI->InputHistogram_ScrollBox.HorizontalScrollPosition();
 
+   Graphics g( sender );
+   g.EnableAntialiasing();
+   g.DrawBitmapRect( updateRect.LeftTop(), m_slidersBitmap, updateRect );
    PlotHandler( g, c0, x0, w );
    PlotHandler( g, c0 + m*(c1 - c0), x0, w );
    PlotHandler( g, c1, x0, w );
@@ -2092,13 +2082,18 @@ void HistogramTransformationInterface::__Histogram_MouseMove(
 
       for ( int i = 0; i < 2; ++i )
       {
+         double f = DisplayPixelRatio();
          if ( m_mode == ReadoutMode )
          {
-            sender.Update( m_cursorPos.x, 0, m_cursorPos.x+1, h );
-            sender.Update( 0, m_cursorPos.y, w, m_cursorPos.y+1 );
+            int ui1 = RoundInt( f );
+            sender.Update( m_cursorPos.x-ui1, 0, m_cursorPos.x+ui1, h );
+            sender.Update( 0, m_cursorPos.y-ui1, w, m_cursorPos.y+ui1 );
          }
          else
-            sender.Update( m_cursorPos.x-16, m_cursorPos.y-16, m_cursorPos.x+16+1, m_cursorPos.y+16+1 );
+         {
+            int ui16 = RoundInt( f*16 );
+            sender.Update( m_cursorPos.x-ui16, m_cursorPos.y-ui16, m_cursorPos.x+ui16, m_cursorPos.y+ui16 );
+         }
 
          if ( i == 0 )
             m_cursorPos = pos;
@@ -2233,6 +2228,8 @@ void HistogramTransformationInterface::__Sliders_MouseMove(
          v = Round( v, TheHighlightsClippingParameter->Precision() );
          SetClippingParameters( Min( c0, v ), v );
       }
+
+      ProcessEvents();
    }
 }
 
@@ -2615,20 +2612,17 @@ void HistogramTransformationInterface::__UpdateRealTimePreview_Timer( Timer& sen
 
 HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInterface& w )
 {
+   int ui16 = w.LogicalPixelsToPhysical( 16 );
+   int ui32 = w.LogicalPixelsToPhysical( 32 );
    pcl::Font font = w.Font();
    int labelWidth = font.Width( "High range:" ) + font.Width( 'T' );
-   int channelLabelWidth = 24 + font.Width( 'M' ) + 4;
-   int rgbkLabelWidth = 24 + font.Width( "RGB/K" )
-#if defined( __PCL_WINDOWS ) || defined( __PCL_MACOSX )
-      + 10;
-#else
-      + 7;
-#endif
+   int channelLabelWidth = ui32 + font.Width( 'M' );
+   int rgbkLabelWidth = ui32 + font.Width( "RGB/K" );
 
    //
 
    OutputHistogram_ScrollBox.DisableAutoScroll();
-   OutputHistogram_ScrollBox.SetMinSize( w.m_minHistogramWidth, w.m_minHistogramHeight );
+   OutputHistogram_ScrollBox.SetScaledMinSize( w.m_minHistogramWidth, w.m_minHistogramHeight );
    OutputHistogram_ScrollBox.OnHorizontalScrollPosUpdated( (ScrollBox::pos_event_handler)&HistogramTransformationInterface::__Histogram_ScrollPosUpdated, w );
    OutputHistogram_ScrollBox.OnVerticalScrollPosUpdated( (ScrollBox::pos_event_handler)&HistogramTransformationInterface::__Histogram_ScrollPosUpdated, w );
 
@@ -2647,15 +2641,15 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
 
    //
 
-   ReadoutMode_ToolButton.SetIcon( Bitmap( ":/toolbar/image-mode-readout.png" ) );
-   ReadoutMode_ToolButton.SetFixedSize( 20, 20 );
+   ReadoutMode_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-mode-readout.png" ) );
+   ReadoutMode_ToolButton.SetScaledFixedSize( 20, 20 );
    ReadoutMode_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ReadoutMode_ToolButton.SetToolTip( "Readout mode" );
    ReadoutMode_ToolButton.SetCheckable();
    ReadoutMode_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__Mode_ButtonClick, w );
 
-   ZoomInMode_ToolButton.SetIcon( Bitmap( ":/toolbar/image-mode-zoom-in.png" ) );
-   ZoomInMode_ToolButton.SetFixedSize( 20, 20 );
+   ZoomInMode_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-mode-zoom-in.png" ) );
+   ZoomInMode_ToolButton.SetScaledFixedSize( 20, 20 );
    ZoomInMode_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ZoomInMode_ToolButton.SetToolTip( "Zoom In mode "
 #ifdef __PCL_MACOSX
@@ -2666,8 +2660,8 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
    ZoomInMode_ToolButton.SetCheckable();
    ZoomInMode_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__Mode_ButtonClick, w );
 
-   ZoomOutMode_ToolButton.SetIcon( Bitmap( ":/toolbar/image-mode-zoom-out.png" ) );
-   ZoomOutMode_ToolButton.SetFixedSize( 20, 20 );
+   ZoomOutMode_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-mode-zoom-out.png" ) );
+   ZoomOutMode_ToolButton.SetScaledFixedSize( 20, 20 );
    ZoomOutMode_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ZoomOutMode_ToolButton.SetToolTip( "Zoom Out mode "
 #ifdef __PCL_MACOSX
@@ -2678,8 +2672,8 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
    ZoomOutMode_ToolButton.SetCheckable();
    ZoomOutMode_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__Mode_ButtonClick, w );
 
-   PanMode_ToolButton.SetIcon( Bitmap( ":/toolbar/image-mode-pan.png" ) );
-   PanMode_ToolButton.SetFixedSize( 20, 20 );
+   PanMode_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-mode-pan.png" ) );
+   PanMode_ToolButton.SetScaledFixedSize( 20, 20 );
    PanMode_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    PanMode_ToolButton.SetToolTip( "Pan mode [Spacebar]" );
    PanMode_ToolButton.SetCheckable();
@@ -2693,14 +2687,14 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
    VerticalZoom_SpinBox.SetToolTip( "Vertical zoom, input histogram" );
    VerticalZoom_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&HistogramTransformationInterface::__Zoom_ValueUpdated, w );
 
-   Zoom11_ToolButton.SetIcon( Bitmap( ":/toolbar/view-zoom-1-1.png" ) );
-   Zoom11_ToolButton.SetFixedSize( 20, 20 );
+   Zoom11_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/view-zoom-1-1.png" ) );
+   Zoom11_ToolButton.SetScaledFixedSize( 20, 20 );
    Zoom11_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    Zoom11_ToolButton.SetToolTip( "Zoom 1:1" );
    Zoom11_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__Zoom_ButtonClick, w );
 
-   ShowOutput_ToolButton.SetIcon( Bitmap( ":/process-interface/expand-vert.png" ) );
-   ShowOutput_ToolButton.SetFixedSize( 20, 20 );
+   ShowOutput_ToolButton.SetIcon( w.ScaledResource( ":/process-interface/expand-vert.png" ) );
+   ShowOutput_ToolButton.SetScaledFixedSize( 20, 20 );
    ShowOutput_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ShowOutput_ToolButton.SetToolTip( "Hide output histogram" );
    ShowOutput_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__ToggleExtension_ButtonClick, w );
@@ -2741,7 +2735,7 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
 
    HistogramSliders_Control.EnableMouseTracking();
    HistogramSliders_Control.SetCursor( StdCursor::UpArrow );
-   HistogramSliders_Control.SetFixedHeight( w.m_sliderControlSize );
+   HistogramSliders_Control.SetScaledFixedHeight( w.m_sliderControlSize );
    HistogramSliders_Control.OnPaint( (Control::paint_event_handler)&HistogramTransformationInterface::__Sliders_Paint, w );
    HistogramSliders_Control.OnResize( (Control::resize_event_handler)&HistogramTransformationInterface::__Histogram_Resize, w );
    HistogramSliders_Control.OnMouseMove( (Control::mouse_event_handler)&HistogramTransformationInterface::__Sliders_MouseMove, w );
@@ -2752,7 +2746,7 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
    InputHistogramViewport_Sizer.Add( HistogramSliders_Control );
 
    InputHistogram_ScrollBox.DisableAutoScroll();
-   InputHistogram_ScrollBox.SetMinSize( w.m_minHistogramWidth, w.m_minHistogramHeight+w.m_sliderControlSize );
+   InputHistogram_ScrollBox.SetScaledMinSize( w.m_minHistogramWidth, w.m_minHistogramHeight+w.m_sliderControlSize );
    InputHistogram_ScrollBox.OnHorizontalScrollPosUpdated( (ScrollBox::pos_event_handler)&HistogramTransformationInterface::__Histogram_ScrollPosUpdated, w );
    InputHistogram_ScrollBox.OnVerticalScrollPosUpdated( (ScrollBox::pos_event_handler)&HistogramTransformationInterface::__Histogram_ScrollPosUpdated, w );
 
@@ -2778,36 +2772,36 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
    GraphStyle_ComboBox.SetToolTip( "Graph style" );
    GraphStyle_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&HistogramTransformationInterface::__GraphStyle_ItemSelected, w );
 
-   RejectSaturated_ToolButton.SetIcon( Bitmap( reject_saturated_XPM ) );
-   RejectSaturated_ToolButton.SetFixedSize( 20, 20 );
+   RejectSaturated_ToolButton.SetIcon( Bitmap( reject_saturated_XPM ).ScaledToSize( ui16, ui16 ) );
+   RejectSaturated_ToolButton.SetScaledFixedSize( 20, 20 );
    RejectSaturated_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    RejectSaturated_ToolButton.SetToolTip( "Reject saturated pixels for histogram representations" );
    RejectSaturated_ToolButton.SetCheckable();
    RejectSaturated_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__RejectSaturated_ButtonClick, w );
 
-   ShowRawRGB_ToolButton.SetIcon( Bitmap( raw_rgb_XPM ) );
-   ShowRawRGB_ToolButton.SetFixedSize( 20, 20 );
+   ShowRawRGB_ToolButton.SetIcon( Bitmap( raw_rgb_XPM ).ScaledToSize( ui16, ui16 ) );
+   ShowRawRGB_ToolButton.SetScaledFixedSize( 20, 20 );
    ShowRawRGB_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ShowRawRGB_ToolButton.SetToolTip( "Show raw RGB histograms" );
    ShowRawRGB_ToolButton.SetCheckable();
    ShowRawRGB_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__ShowRawRGB_ButtonClick, w );
 
-   LockOutput_ToolButton.SetIcon( Bitmap( lock_output_XPM ) );
-   LockOutput_ToolButton.SetFixedSize( 20, 20 );
+   LockOutput_ToolButton.SetIcon( Bitmap( lock_output_XPM ).ScaledToSize( ui16, ui16 ) );
+   LockOutput_ToolButton.SetScaledFixedSize( 20, 20 );
    LockOutput_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    LockOutput_ToolButton.SetToolTip( "Lock output histogram channel" );
    LockOutput_ToolButton.SetCheckable();
    LockOutput_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__LockOutput_ButtonClick, w );
 
-   ShowCurve_ToolButton.SetIcon( Bitmap( show_curve_XPM ) );
-   ShowCurve_ToolButton.SetFixedSize( 20, 20 );
+   ShowCurve_ToolButton.SetIcon( Bitmap( show_curve_XPM ).ScaledToSize( ui16, ui16 ) );
+   ShowCurve_ToolButton.SetScaledFixedSize( 20, 20 );
    ShowCurve_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ShowCurve_ToolButton.SetToolTip( "Show MTF curve" );
    ShowCurve_ToolButton.SetCheckable();
    ShowCurve_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__ShowCurve_ButtonClick, w );
 
-   ShowGrid_ToolButton.SetIcon( Bitmap( show_grid_XPM ) );
-   ShowGrid_ToolButton.SetFixedSize( 20, 20 );
+   ShowGrid_ToolButton.SetIcon( Bitmap( show_grid_XPM ).ScaledToSize( ui16, ui16 ) );
+   ShowGrid_ToolButton.SetScaledFixedSize( 20, 20 );
    ShowGrid_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ShowGrid_ToolButton.SetToolTip( "Show grids" );
    ShowGrid_ToolButton.SetCheckable();
@@ -2829,7 +2823,7 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
 
    //
 
-   R_ToolButton.SetIcon( Bitmap( red_channel_XPM ) );
+   R_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-display-red.png" ) );
    R_ToolButton.SetText( "R" );
    R_ToolButton.SetFixedWidth( channelLabelWidth );
    R_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
@@ -2837,7 +2831,7 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
    R_ToolButton.SetCheckable();
    R_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__Channel_ButtonClick, w );
 
-   G_ToolButton.SetIcon( Bitmap( green_channel_XPM ) );
+   G_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-display-green.png" ) );
    G_ToolButton.SetText( "G" );
    G_ToolButton.SetFixedWidth( channelLabelWidth );
    G_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
@@ -2845,7 +2839,7 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
    G_ToolButton.SetCheckable();
    G_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__Channel_ButtonClick, w );
 
-   B_ToolButton.SetIcon( Bitmap( blue_channel_XPM ) );
+   B_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-display-blue.png" ) );
    B_ToolButton.SetText( "B" );
    B_ToolButton.SetFixedWidth( channelLabelWidth );
    B_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
@@ -2853,7 +2847,7 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
    B_ToolButton.SetCheckable();
    B_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__Channel_ButtonClick, w );
 
-   RGBK_ToolButton.SetIcon( Bitmap( rgbk_channel_XPM ) );
+   RGBK_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-display-rgb.png" ) );
    RGBK_ToolButton.SetText( "RGB/K" );
    RGBK_ToolButton.SetFixedWidth( rgbkLabelWidth );
    RGBK_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
@@ -2861,7 +2855,7 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
    RGBK_ToolButton.SetCheckable();
    RGBK_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__Channel_ButtonClick, w );
 
-   A_ToolButton.SetIcon( Bitmap( alpha_channel_XPM ) );
+   A_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-display-alpha.png" ) );
    A_ToolButton.SetText( "A" );
    A_ToolButton.SetFixedWidth( channelLabelWidth );
    A_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
@@ -2869,29 +2863,29 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
    A_ToolButton.SetCheckable();
    A_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__Channel_ButtonClick, w );
 
-   NormalReadout_ToolButton.SetIcon( Bitmap( ":/toolbar/image-mode-readout-normal.png" ) );
-   NormalReadout_ToolButton.SetFixedSize( 20, 20 );
+   NormalReadout_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-mode-readout-normal.png" ) );
+   NormalReadout_ToolButton.SetScaledFixedSize( 20, 20 );
    NormalReadout_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    NormalReadout_ToolButton.SetToolTip( "Normal readout mode" );
    NormalReadout_ToolButton.SetCheckable();
    NormalReadout_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__ReadoutMode_ButtonClick, w );
 
-   BlackPointReadout_ToolButton.SetIcon( Bitmap( ":/toolbar/image-mode-readout-shadows.png" ) );
-   BlackPointReadout_ToolButton.SetFixedSize( 20, 20 );
+   BlackPointReadout_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-mode-readout-shadows.png" ) );
+   BlackPointReadout_ToolButton.SetScaledFixedSize( 20, 20 );
    BlackPointReadout_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    BlackPointReadout_ToolButton.SetToolTip( "Black point readout mode" );
    BlackPointReadout_ToolButton.SetCheckable();
    BlackPointReadout_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__ReadoutMode_ButtonClick, w );
 
-   MidtonesReadout_ToolButton.SetIcon( Bitmap( ":/toolbar/image-mode-readout-midtones.png" ) );
-   MidtonesReadout_ToolButton.SetFixedSize( 20, 20 );
+   MidtonesReadout_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-mode-readout-midtones.png" ) );
+   MidtonesReadout_ToolButton.SetScaledFixedSize( 20, 20 );
    MidtonesReadout_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    MidtonesReadout_ToolButton.SetToolTip( "Midtones readout mode" );
    MidtonesReadout_ToolButton.SetCheckable();
    MidtonesReadout_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__ReadoutMode_ButtonClick, w );
 
-   WhitePointReadout_ToolButton.SetIcon( Bitmap( ":/toolbar/image-mode-readout-highlights.png" ) );
-   WhitePointReadout_ToolButton.SetFixedSize( 20, 20 );
+   WhitePointReadout_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-mode-readout-highlights.png" ) );
+   WhitePointReadout_ToolButton.SetScaledFixedSize( 20, 20 );
    WhitePointReadout_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    WhitePointReadout_ToolButton.SetToolTip( "White point readout mode" );
    WhitePointReadout_ToolButton.SetCheckable();
@@ -2924,20 +2918,20 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
    ShadowsClippingCount_Label.SetStyle( FrameStyle::Sunken );
    ShadowsClippingCount_Label.SetFixedHeight( CanonicalControlHeight( Edit ) );
 
-   ShadowsClippingAutoZero_ToolButton.SetIcon( Bitmap( auto_zero_shadows_XPM ) );
-   ShadowsClippingAutoZero_ToolButton.SetFixedSize( 20, 20 );
+   ShadowsClippingAutoZero_ToolButton.SetIcon( Bitmap( auto_zero_shadows_XPM ).ScaledToSize( ui16, ui16 ) );
+   ShadowsClippingAutoZero_ToolButton.SetScaledFixedSize( 20, 20 );
    ShadowsClippingAutoZero_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ShadowsClippingAutoZero_ToolButton.SetToolTip( "Auto zero shadows" );
    ShadowsClippingAutoZero_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__AutoZero_ButtonClick, w );
 
-   ShadowsClippingAutoClip_ToolButton.SetIcon( Bitmap( auto_clip_shadows_XPM ) );
-   ShadowsClippingAutoClip_ToolButton.SetFixedSize( 20, 20 );
+   ShadowsClippingAutoClip_ToolButton.SetIcon( Bitmap( auto_clip_shadows_XPM ).ScaledToSize( ui16, ui16 ) );
+   ShadowsClippingAutoClip_ToolButton.SetScaledFixedSize( 20, 20 );
    ShadowsClippingAutoClip_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    //ShadowsClippingAutoClip_ToolButton.SetToolTip( "Auto Clip Shadows" );
    ShadowsClippingAutoClip_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__AutoClip_ButtonClick, w );
 
-   ShadowsClippingReset_ToolButton.SetIcon( Bitmap( ":/icons/clear.png" ) );
-   ShadowsClippingReset_ToolButton.SetFixedSize( 20, 20 );
+   ShadowsClippingReset_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/clear.png" ) ) );
+   ShadowsClippingReset_ToolButton.SetScaledFixedSize( 20, 20 );
    ShadowsClippingReset_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ShadowsClippingReset_ToolButton.SetToolTip( "Reset shadows clipping" );
    ShadowsClippingReset_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__Reset_ButtonClick, w );
@@ -2964,20 +2958,20 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
    HighlightsClippingCount_Label.SetStyle( FrameStyle::Sunken );
    HighlightsClippingCount_Label.SetFixedHeight( CanonicalControlHeight( Edit ) );
 
-   HighlightsClippingAutoZero_ToolButton.SetIcon( Bitmap( auto_zero_highlights_XPM ) );
-   HighlightsClippingAutoZero_ToolButton.SetFixedSize( 20, 20 );
+   HighlightsClippingAutoZero_ToolButton.SetIcon( Bitmap( auto_zero_highlights_XPM ).ScaledToSize( ui16, ui16 ) );
+   HighlightsClippingAutoZero_ToolButton.SetScaledFixedSize( 20, 20 );
    HighlightsClippingAutoZero_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    HighlightsClippingAutoZero_ToolButton.SetToolTip( "Auto zero highlights" );
    HighlightsClippingAutoZero_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__AutoZero_ButtonClick, w );
 
-   HighlightsClippingAutoClip_ToolButton.SetIcon( Bitmap( auto_clip_highlights_XPM ) );
-   HighlightsClippingAutoClip_ToolButton.SetFixedSize( 20, 20 );
+   HighlightsClippingAutoClip_ToolButton.SetIcon( Bitmap( auto_clip_highlights_XPM ).ScaledToSize( ui16, ui16 ) );
+   HighlightsClippingAutoClip_ToolButton.SetScaledFixedSize( 20, 20 );
    HighlightsClippingAutoClip_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    //HighlightsClippingAutoClip_ToolButton.SetToolTip( "Auto Clip Highlights" );
    HighlightsClippingAutoClip_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__AutoClip_ButtonClick, w );
 
-   HighlightsClippingReset_ToolButton.SetIcon( Bitmap( ":/icons/clear.png" ) );
-   HighlightsClippingReset_ToolButton.SetFixedSize( 20, 20 );
+   HighlightsClippingReset_ToolButton.SetIcon( w.ScaledResource( ":/icons/clear.png" ) );
+   HighlightsClippingReset_ToolButton.SetScaledFixedSize( 20, 20 );
    HighlightsClippingReset_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    HighlightsClippingReset_ToolButton.SetToolTip( "Reset highlights clipping" );
    HighlightsClippingReset_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__Reset_ButtonClick, w );
@@ -2999,8 +2993,8 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
    MidtonesBalance_NumericEdit.SetToolTip( "Midtones balance" );
    MidtonesBalance_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&HistogramTransformationInterface::__HistogramParameter_ValueUpdated, w );
 
-   MidtonesBalanceReset_ToolButton.SetIcon( Bitmap( ":/icons/clear.png" ) );
-   MidtonesBalanceReset_ToolButton.SetFixedSize( 20, 20 );
+   MidtonesBalanceReset_ToolButton.SetIcon( w.ScaledResource( ":/icons/clear.png" ) );
+   MidtonesBalanceReset_ToolButton.SetScaledFixedSize( 20, 20 );
    MidtonesBalanceReset_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    MidtonesBalanceReset_ToolButton.SetToolTip( "Reset midtones balance" );
    MidtonesBalanceReset_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__Reset_ButtonClick, w );
@@ -3010,8 +3004,8 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
    AutoClipSetup_PushButton.SetFocusStyle( FocusStyle::NoFocus );
    AutoClipSetup_PushButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__AutoClipSetup_ButtonClick, w );
 
-   ShowRangeControls_ToolButton.SetIcon( Bitmap( ":/process-interface/expand-vert.png" ) );
-   ShowRangeControls_ToolButton.SetFixedSize( 20, 20 );
+   ShowRangeControls_ToolButton.SetIcon( w.ScaledResource( ":/process-interface/expand-vert.png" ) );
+   ShowRangeControls_ToolButton.SetScaledFixedSize( 20, 20 );
    ShowRangeControls_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ShowRangeControls_ToolButton.SetToolTip( "Show dynamic range expansion controls" );
    ShowRangeControls_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__ToggleExtension_ButtonClick, w );
@@ -3035,8 +3029,8 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
    LowRange_NumericControl.SetToolTip( "Dynamic range expansion, lower bound" );
    LowRange_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&HistogramTransformationInterface::__HistogramParameter_ValueUpdated, w );
 
-   LowRangeReset_ToolButton.SetIcon( Bitmap( ":/icons/clear.png" ) );
-   LowRangeReset_ToolButton.SetFixedSize( 20, 20 );
+   LowRangeReset_ToolButton.SetIcon( w.ScaledResource( ":/icons/clear.png" ) );
+   LowRangeReset_ToolButton.SetScaledFixedSize( 20, 20 );
    LowRangeReset_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    LowRangeReset_ToolButton.SetToolTip( "Reset low dynamic range expansion" );
    LowRangeReset_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__Reset_ButtonClick, w );
@@ -3057,8 +3051,8 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
    HighRange_NumericControl.SetToolTip( "Dynamic range expansion, upper bound" );
    HighRange_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&HistogramTransformationInterface::__HistogramParameter_ValueUpdated, w );
 
-   HighRangeReset_ToolButton.SetIcon( Bitmap( ":/icons/clear.png" ) );
-   HighRangeReset_ToolButton.SetFixedSize( 20, 20 );
+   HighRangeReset_ToolButton.SetIcon( w.ScaledResource( ":/icons/clear.png" ) );
+   HighRangeReset_ToolButton.SetScaledFixedSize( 20, 20 );
    HighRangeReset_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    HighRangeReset_ToolButton.SetToolTip( "Reset high dynamic range expansion" );
    HighRangeReset_ToolButton.OnClick( (ToolButton::click_event_handler)&HistogramTransformationInterface::__Reset_ButtonClick, w );
@@ -3108,5 +3102,5 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
 
 } // pcl
 
-// ****************************************************************************
-// EOF HistogramTransformationInterface.cpp - Released 2014/11/14 17:19:22 UTC
+// ----------------------------------------------------------------------------
+// EOF HistogramTransformationInterface.cpp - Released 2015/07/31 11:49:48 UTC

@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Debayer Process Module Version 01.04.03.0146
-// ****************************************************************************
-// DebayerInterface.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Debayer Process Module Version 01.04.03.0165
+// ----------------------------------------------------------------------------
+// DebayerInterface.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/Settings.h>
 
@@ -252,7 +256,7 @@ DebayerInterface::GUIData::GUIData( DebayerInterface& w )
    EvaluateNoiseCheckBox.OnClick( (Button::click_event_handler)&DebayerInterface::__ButtonClicked, w );
 
    EvaluateNoiseSizer.SetSpacing( 4 );
-   EvaluateNoiseSizer.AddSpacing( labelWidth1 + 4 );
+   EvaluateNoiseSizer.AddUnscaledSpacing( labelWidth1 + w.LogicalPixelsToPhysical( 4 ) );
    EvaluateNoiseSizer.Add( EvaluateNoiseCheckBox );
    EvaluateNoiseSizer.AddStretch();
 
@@ -333,5 +337,5 @@ void DebayerInterface::LoadSettings()
 
 } // pcl
 
-// ****************************************************************************
-// EOF DebayerInterface.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF DebayerInterface.cpp - Released 2015/07/31 11:49:49 UTC

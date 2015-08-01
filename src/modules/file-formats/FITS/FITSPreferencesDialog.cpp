@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard FITS File Format Module Version 01.01.00.0282
-// ****************************************************************************
-// FITSPreferencesDialog.cpp - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard FITS File Format Module Version 01.01.02.0306
+// ----------------------------------------------------------------------------
+// FITSPreferencesDialog.cpp - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "FITSPreferencesDialog.h"
 
@@ -55,13 +59,17 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-FITSPreferencesDialog::FITSPreferencesDialog(
-   const FITSFormat::OutOfRangePolicyOptions& r, const FITSFormat::EmbeddingOverrides& o, const FITSImageOptions& f ) :
-Dialog(), outOfRange( r ), overrides( o ), fitsOptions( f )
+FITSPreferencesDialog::FITSPreferencesDialog( const FITSFormat::OutOfRangePolicyOptions& r,
+                                              const FITSFormat::EmbeddingOverrides& o, const FITSImageOptions& f ) :
+   Dialog(),
+   outOfRange( r ),
+   overrides( o ),
+   fitsOptions( f )
 {
    pcl::Font fnt = Font();
    int labelWidth = fnt.Width( String( "Default integer signedness:" ) + 'M' );
    int editWidth = fnt.Width( String( '0', 30 ) );
+   int ui4 = LogicalPixelsToPhysical( 4 );
 
    //
 
@@ -101,11 +109,11 @@ Dialog(), outOfRange( r ), overrides( o ), fitsOptions( f )
    //
 
    const char* readRangeModeToolTip =
-   "<p>This parameter specifies how to proceed when pixel values in a read "
-   "FITS image exceed the default input range.</p>"
-   "<p><b>** Important **</b> If the 'Ignore' option is selected for 'Action' "
-   "(see below), this option will be ignored (not applied). Please read the tooltip "
-   "information provided for the 'Action' combo box below.</p>";
+      "<p>This parameter specifies how to proceed when pixel values in a read "
+      "FITS image exceed the default input range.</p>"
+      "<p><b>** Important **</b> If the 'Ignore' option is selected for 'Action' "
+      "(see below), this option will be ignored (not applied). Please read the tooltip "
+      "information provided for the 'Action' combo box below.</p>";
 
    ReadRangeMode_Label.SetText( "How to proceed:" );
    ReadRangeMode_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
@@ -123,13 +131,13 @@ Dialog(), outOfRange( r ), overrides( o ), fitsOptions( f )
    ReadRangeMode_Sizer.Add( ReadRangeMode_ComboBox, 100 );
 
    const char* readRescaleModeToolTip =
-   "<p>This parameter specifies how to fix input pixel samples that "
-   "exceed the default input range in a read FITS image.</p>"
-   "<p><b>** Warning **</b> If you select the 'Ignore' option, out-of-range pixel "
-   "values will not be fixed. Images with out-of-range pixels will not be "
-   "rendered correctly on the screen and may cause problems with some tools."
-   "If you select this option, platform stability is not guaranteed. Use this "
-   "option <b><u>at your own risk.</u></b></p>";
+      "<p>This parameter specifies how to fix input pixel samples that "
+      "exceed the default input range in a read FITS image.</p>"
+      "<p><b>** Warning **</b> If you select the 'Ignore' option, out-of-range pixel "
+      "values will not be fixed. Images with out-of-range pixels will not be "
+      "rendered correctly on the screen and may cause problems with some tools."
+      "If you select this option, platform stability is not guaranteed. Use this "
+      "option <b><u>at your own risk.</u></b></p>";
 
    ReadRescaleMode_Label.SetText( "Action:" );
    ReadRescaleMode_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
@@ -158,12 +166,12 @@ Dialog(), outOfRange( r ), overrides( o ), fitsOptions( f )
    //
 
    const char* coordinateOriginToolTip =
-   "<p>This parameter specifies the growing direction of vertical "
-   "coordinates when reading and writing FITS images. Data acquired with most "
-   "professional instruments (HST, Gemini, Subaru, etc.) and high-end CCD camera "
-   "control software packages normally follow the lower left origin convention.</p>"
-   "<p>The upper left origin is coherent with the rest of image file formats, and "
-   "is used by some amateur CCD camera control and image processing software packages.</p>";
+      "<p>This parameter specifies the growing direction of vertical "
+      "coordinates when reading and writing FITS images. Data acquired with most "
+      "professional instruments (HST, Gemini, Subaru, etc.) and high-end CCD camera "
+      "control software packages normally follow the lower left origin convention.</p>"
+      "<p>The upper left origin is coherent with the rest of image file formats, and "
+      "is used by some amateur CCD camera control and image processing software packages.</p>";
 
    CoordinateOrigin_Label.SetText( "Coordinate origin:" );
    CoordinateOrigin_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
@@ -180,15 +188,15 @@ Dialog(), outOfRange( r ), overrides( o ), fitsOptions( f )
    CoordinateOrigin_Sizer.Add( CoordinateOrigin_ComboBox, 100 );
 
    const char* integerSignednessToolTip =
-   "<p>The FITS standard does not support unsigned integers as one of its "
-   "<i>native</i> data types. However, a special FITS header keyword, namely BZERO, "
-   "can be used to store integer values with arbitrary zero offsets.</p>"
-   "<p>If the corresponding option is selected, newly created integer FITS images will "
-   "store unsigned integers by default (unless otherwise specified) through the BZERO "
-   "convention: For 16-bit unsigned integers, the value BZERO=32768 (2<sup>15</sup>) will "
-   "be used; for 32-bit unsigned integers, BZERO=2147483648 (2<sup>31</sup>). In both "
-   "cases the keyword BSCALE=1 will also be included in the header of the corresponding "
-   "FITS HDU (header/data unit).</p>";
+      "<p>The FITS standard does not support unsigned integers as one of its "
+      "<i>native</i> data types. However, a special FITS header keyword, namely BZERO, "
+      "can be used to store integer values with arbitrary zero offsets.</p>"
+      "<p>If the corresponding option is selected, newly created integer FITS images will "
+      "store unsigned integers by default (unless otherwise specified) through the BZERO "
+      "convention: For 16-bit unsigned integers, the value BZERO=32768 (2<sup>15</sup>) will "
+      "be used; for 32-bit unsigned integers, BZERO=2147483648 (2<sup>31</sup>). In both "
+      "cases the keyword BSCALE=1 will also be included in the header of the corresponding "
+      "FITS HDU (header/data unit).</p>";
 
    IntegerSignedness_Label.SetText( "Default integer signedness:" );
    IntegerSignedness_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
@@ -214,7 +222,7 @@ Dialog(), outOfRange( r ), overrides( o ), fitsOptions( f )
       "seem to need them. This option is enabled by default.</p>" );
    WriteScalingKeywordsForSignedData_CheckBox.SetChecked( fitsOptions.writeScalingKeywordsForSignedData );
 
-   WriteScalingKeywordsForSignedData_Sizer.AddSpacing( labelWidth + 4 );
+   WriteScalingKeywordsForSignedData_Sizer.AddUnscaledSpacing( labelWidth + ui4 );
    WriteScalingKeywordsForSignedData_Sizer.Add( WriteScalingKeywordsForSignedData_CheckBox );
    WriteScalingKeywordsForSignedData_Sizer.AddStretch();
 
@@ -230,7 +238,7 @@ Dialog(), outOfRange( r ), overrides( o ), fitsOptions( f )
       "PixInsight will not be loaded correctly. This option is disabled by default.</p>" );
    SignedIntegersArePhysical_CheckBox.SetChecked( fitsOptions.signedIntegersArePhysical );
 
-   SignedIntegersArePhysical_Sizer.AddSpacing( labelWidth + 4 );
+   SignedIntegersArePhysical_Sizer.AddUnscaledSpacing( labelWidth + ui4 );
    SignedIntegersArePhysical_Sizer.Add( SignedIntegersArePhysical_CheckBox );
    SignedIntegersArePhysical_Sizer.AddStretch();
 
@@ -249,7 +257,7 @@ Dialog(), outOfRange( r ), overrides( o ), fitsOptions( f )
       "three-character sequence \'(C)\'. This option is disabled by default.</p>" );
    CleanupHeaders_CheckBox.SetChecked( fitsOptions.cleanupHeaders );
 
-   CleanupHeaders_Sizer.AddSpacing( labelWidth + 4 );
+   CleanupHeaders_Sizer.AddUnscaledSpacing( labelWidth + ui4 );
    CleanupHeaders_Sizer.Add( CleanupHeaders_CheckBox );
    CleanupHeaders_Sizer.AddStretch();
 
@@ -273,12 +281,6 @@ Dialog(), outOfRange( r ), overrides( o ), fitsOptions( f )
    ICCProfile_CheckBox.SetState( overrides.overrideICCProfileEmbedding ?
       (overrides.embedICCProfiles ? CheckState::Checked : CheckState::Unchecked) : CheckState::ThirdState );
 
-   Metadata_CheckBox.SetText( "Metadata" );
-   Metadata_CheckBox.SetTristateMode();
-   Metadata_CheckBox.SetToolTip( "Override global core application settings for embedded XML metadata." );
-   Metadata_CheckBox.SetState( overrides.overrideMetadataEmbedding ?
-      (overrides.embedMetadata ? CheckState::Checked : CheckState::Unchecked) : CheckState::ThirdState );
-
    Properties_CheckBox.SetText( "Properties" );
    Properties_CheckBox.SetTristateMode();
    Properties_CheckBox.SetToolTip( "Override global core application settings for embedded image properties." );
@@ -287,7 +289,6 @@ Dialog(), outOfRange( r ), overrides( o ), fitsOptions( f )
 
    EmbeddedDataLeft_Sizer.SetSpacing( 4 );
    EmbeddedDataLeft_Sizer.Add( ICCProfile_CheckBox );
-   EmbeddedDataLeft_Sizer.Add( Metadata_CheckBox );
    EmbeddedDataLeft_Sizer.Add( Properties_CheckBox );
    //EmbeddedDataLeft_Sizer.AddStretch();
 
@@ -339,11 +340,12 @@ Dialog(), outOfRange( r ), overrides( o ), fitsOptions( f )
    //
 
    Global_Sizer.SetMargin( 8 );
-   Global_Sizer.SetSpacing( 12 );
+   Global_Sizer.SetSpacing( 8 );
    Global_Sizer.Add( ReadRange_GroupBox );
    Global_Sizer.Add( ReadRangeOptions_GroupBox );
    Global_Sizer.Add( MiscellaneousOptions_GroupBox );
    Global_Sizer.Add( EmbeddedData_GroupBox );
+   Global_Sizer.SetSpacing( 12 );
    Global_Sizer.Add( BottomSection_Sizer );
 
    SetSizer( Global_Sizer );
@@ -367,7 +369,6 @@ void FITSPreferencesDialog::Button_Click( Button& sender, bool checked )
       ReadRescaleMode_ComboBox.SetCurrentItem( FITSFormat::OutOfRangeFix_Default );
 
       ICCProfile_CheckBox.SetState( CheckState::ThirdState );
-      Metadata_CheckBox.SetState( CheckState::ThirdState );
       Thumbnail_CheckBox.SetState( CheckState::ThirdState );
 
       FITSImageOptions o;
@@ -397,9 +398,6 @@ void FITSPreferencesDialog::Dialog_Return( Dialog& sender, int retVal )
       overrides.overrideICCProfileEmbedding = ICCProfile_CheckBox.State() != CheckState::ThirdState;
       overrides.embedICCProfiles = ICCProfile_CheckBox.IsChecked();
 
-      overrides.overrideMetadataEmbedding = Metadata_CheckBox.State() != CheckState::ThirdState;
-      overrides.embedMetadata = Metadata_CheckBox.IsChecked();
-
       overrides.overrideThumbnailEmbedding = Thumbnail_CheckBox.State() != CheckState::ThirdState;
       overrides.embedThumbnails = Thumbnail_CheckBox.IsChecked();
 
@@ -419,5 +417,5 @@ void FITSPreferencesDialog::Dialog_Return( Dialog& sender, int retVal )
 
 } // pcl
 
-// ****************************************************************************
-// EOF FITSPreferencesDialog.cpp - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF FITSPreferencesDialog.cpp - Released 2015/07/31 11:49:40 UTC

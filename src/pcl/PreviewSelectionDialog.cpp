@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/PreviewSelectionDialog.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/PreviewSelectionDialog.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/PreviewSelectionDialog.h>
 
@@ -53,49 +56,46 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-PreviewSelectionDialog::PreviewSelectionDialog( const String& id ) : Dialog(), m_id( id )
+PreviewSelectionDialog::PreviewSelectionDialog( const IsoString& id ) : Dialog(), m_id( id )
 {
-   Images_ViewList.GetPreviews();
-   Images_ViewList.SelectView( View::ViewById( m_id ) );
-   Images_ViewList.SetMinWidth( Font().Width( String( 'M', 40 ) ) );
-   Images_ViewList.OnViewSelected( (ViewList::view_event_handler)&PreviewSelectionDialog::__ViewSelected, *this );
+   SetSizer( Global_Sizer );
 
-   //
-
-   OK_PushButton.SetText( "OK" );
-   OK_PushButton.SetDefault();
-   OK_PushButton.SetCursor( StdCursor::Checkmark );
-   OK_PushButton.OnClick( (Button::click_event_handler)&PreviewSelectionDialog::__ButtonClick, *this );
-
-   Cancel_PushButton.SetText( "Cancel" );
-   Cancel_PushButton.SetCursor( StdCursor::Crossmark );
-   Cancel_PushButton.OnClick( (Button::click_event_handler)&PreviewSelectionDialog::__ButtonClick, *this );
+   Global_Sizer.SetMargin( 8 );
+   Global_Sizer.SetSpacing( 6 );
+   Global_Sizer.Add( Images_ViewList );
+   Global_Sizer.AddSpacing( 6 );
+   Global_Sizer.Add( Buttons_Sizer );
 
    Buttons_Sizer.SetSpacing( 8 );
    Buttons_Sizer.AddStretch();
    Buttons_Sizer.Add( OK_PushButton );
    Buttons_Sizer.Add( Cancel_PushButton );
 
-   //
+   Images_ViewList.GetPreviews();
+   Images_ViewList.SelectView( View::ViewById( m_id ) );
+   Images_ViewList.SetMinWidth( Font().Width( String( 'M', 40 ) ) );
+   Images_ViewList.OnViewSelected( (ViewList::view_event_handler)&PreviewSelectionDialog::ViewSelected, *this );
 
-   Global_Sizer.SetMargin( 8 );
-   Global_Sizer.SetSpacing( 6 );
-   Global_Sizer.Add( Images_ViewList );
-   Global_Sizer.Add( Buttons_Sizer );
+   OK_PushButton.SetText( "OK" );
+   OK_PushButton.SetDefault();
+   OK_PushButton.SetCursor( StdCursor::Checkmark );
+   OK_PushButton.OnClick( (Button::click_event_handler)&PreviewSelectionDialog::ButtonClick, *this );
 
-   SetSizer( Global_Sizer );
-   AdjustToContents();
-   SetFixedHeight();
+   Cancel_PushButton.SetText( "Cancel" );
+   Cancel_PushButton.SetCursor( StdCursor::Crossmark );
+   Cancel_PushButton.OnClick( (Button::click_event_handler)&PreviewSelectionDialog::ButtonClick, *this );
 
    SetWindowTitle( "Select Preview" );
+
+   OnShow( (Control::event_handler)&PreviewSelectionDialog::ControlShow, *this );
 }
 
-void PreviewSelectionDialog::__ViewSelected( ViewList& sender, View& view )
+void PreviewSelectionDialog::ViewSelected( ViewList& sender, View& view )
 {
-   m_id = view.IsNull() ? String() : String( view.FullId() );
+   m_id = view.IsNull() ? IsoString() : view.FullId();
 }
 
-void PreviewSelectionDialog::__ButtonClick( Button& sender, bool checked )
+void PreviewSelectionDialog::ButtonClick( Button& sender, bool checked )
 {
    if ( sender == OK_PushButton )
       Ok();
@@ -103,9 +103,16 @@ void PreviewSelectionDialog::__ButtonClick( Button& sender, bool checked )
       Cancel();
 }
 
+void PreviewSelectionDialog::ControlShow( Control& sender )
+{
+   AdjustToContents();
+   SetMinWidth();
+   SetFixedHeight();
+}
+
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/PreviewSelectionDialog.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/PreviewSelectionDialog.cpp - Released 2015/07/30 17:15:31 UTC

@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Geometry Process Module Version 01.01.00.0247
-// ****************************************************************************
-// CropInterface.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Geometry Process Module Version 01.01.00.0266
+// ----------------------------------------------------------------------------
+// CropInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "CropInterface.h"
 #include "CropParameters.h"
@@ -918,32 +922,34 @@ void CropInterface::__ColorSample_Paint( Control& sender, const Rect& updateRect
 
    if ( Alpha( color ) != 0 )
    {
-      g.SetBrush( Bitmap( ":/image-window/transparent-small.png" ) );
+      g.SetBrush( Bitmap( sender.ScaledResource( ":/image-window/transparent-small.png" ) ) );
       g.SetPen( Pen::Null() );
       g.DrawRect( sender.BoundsRect() );
    }
 
    g.SetBrush( color );
-   g.SetPen( RGBAColor( 0, 0, 0 ) );
+   g.SetPen( 0xff000000, sender.DisplayPixelRatio() );
    g.DrawRect( sender.BoundsRect() );
 }
 
 // ----------------------------------------------------------------------------
 
 CropInterface::GUIData::GUIData( CropInterface& w ) :
-   L_Bitmap( ":/icons/move-left.png" ),
-   R_Bitmap( ":/icons/move-right.png" ),
-   T_Bitmap( ":/icons/move-up.png" ),
-   B_Bitmap( ":/icons/move-down.png" ),
-   TL_Bitmap( ":/icons/move-left-up.png" ),
-   TR_Bitmap( ":/icons/move-right-up.png" ),
-   BL_Bitmap( ":/icons/move-left-down.png" ),
-   BR_Bitmap( ":/icons/move-right-down.png" )
+   L_Bitmap( w.ScaledResource( ":/icons/move-left.png" ) ),
+   R_Bitmap( w.ScaledResource( ":/icons/move-right.png" ) ),
+   T_Bitmap( w.ScaledResource( ":/icons/move-up.png" ) ),
+   B_Bitmap( w.ScaledResource( ":/icons/move-down.png" ) ),
+   TL_Bitmap( w.ScaledResource( ":/icons/move-left-up.png" ) ),
+   TR_Bitmap( w.ScaledResource( ":/icons/move-right-up.png" ) ),
+   BL_Bitmap( w.ScaledResource( ":/icons/move-left-down.png" ) ),
+   BR_Bitmap( w.ScaledResource( ":/icons/move-right-down.png" ) )
 {
    pcl::Font fnt = w.Font();
    int labelWidth1 = fnt.Width( String( "Height:" ) + 'M' );
    int labelWidth2 = fnt.Width( String( "Crop Mode:" ) + 'M' );
    int editWidth1 = fnt.Width( String( '0', 12 ) );
+   int ui4 = w.LogicalPixelsToPhysical( 4 );
+   int ui6 = w.LogicalPixelsToPhysical( 6 );
 
    // -------------------------------------------------------------------------
 
@@ -972,13 +978,13 @@ CropInterface::GUIData::GUIData( CropInterface& w ) :
    LeftMargin_NumericEdit.edit.SetFixedWidth( editWidth1 );
    LeftMargin_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&CropInterface::__Margin_ValueUpdated, w );
 
-   TL_ToolButton.SetFixedSize( 20, 20 );
+   TL_ToolButton.SetScaledFixedSize( 20, 20 );
    TL_ToolButton.OnClick( (Button::click_event_handler)&CropInterface::__Anchor_ButtonClick, w );
 
-   TM_ToolButton.SetFixedSize( 20, 20 );
+   TM_ToolButton.SetScaledFixedSize( 20, 20 );
    TM_ToolButton.OnClick( (Button::click_event_handler)&CropInterface::__Anchor_ButtonClick, w );
 
-   TR_ToolButton.SetFixedSize( 20, 20 );
+   TR_ToolButton.SetScaledFixedSize( 20, 20 );
    TR_ToolButton.OnClick( (Button::click_event_handler)&CropInterface::__Anchor_ButtonClick, w );
 
    AnchorRow1_Sizer.SetSpacing( 2 );
@@ -986,13 +992,13 @@ CropInterface::GUIData::GUIData( CropInterface& w ) :
    AnchorRow1_Sizer.Add( TM_ToolButton );
    AnchorRow1_Sizer.Add( TR_ToolButton );
 
-   ML_ToolButton.SetFixedSize( 20, 20 );
+   ML_ToolButton.SetScaledFixedSize( 20, 20 );
    ML_ToolButton.OnClick( (Button::click_event_handler)&CropInterface::__Anchor_ButtonClick, w );
 
-   MM_ToolButton.SetFixedSize( 20, 20 );
+   MM_ToolButton.SetScaledFixedSize( 20, 20 );
    MM_ToolButton.OnClick( (Button::click_event_handler)&CropInterface::__Anchor_ButtonClick, w );
 
-   MR_ToolButton.SetFixedSize( 20, 20 );
+   MR_ToolButton.SetScaledFixedSize( 20, 20 );
    MR_ToolButton.OnClick( (Button::click_event_handler)&CropInterface::__Anchor_ButtonClick, w );
 
    AnchorRow2_Sizer.SetSpacing( 2 );
@@ -1000,13 +1006,13 @@ CropInterface::GUIData::GUIData( CropInterface& w ) :
    AnchorRow2_Sizer.Add( MM_ToolButton );
    AnchorRow2_Sizer.Add( MR_ToolButton );
 
-   BL_ToolButton.SetFixedSize( 20, 20 );
+   BL_ToolButton.SetScaledFixedSize( 20, 20 );
    BL_ToolButton.OnClick( (Button::click_event_handler)&CropInterface::__Anchor_ButtonClick, w );
 
-   BM_ToolButton.SetFixedSize( 20, 20 );
+   BM_ToolButton.SetScaledFixedSize( 20, 20 );
    BM_ToolButton.OnClick( (Button::click_event_handler)&CropInterface::__Anchor_ButtonClick, w );
 
-   BR_ToolButton.SetFixedSize( 20, 20 );
+   BR_ToolButton.SetScaledFixedSize( 20, 20 );
    BR_ToolButton.OnClick( (Button::click_event_handler)&CropInterface::__Anchor_ButtonClick, w );
 
    AnchorRow3_Sizer.SetSpacing( 2 );
@@ -1077,7 +1083,7 @@ CropInterface::GUIData::GUIData( CropInterface& w ) :
    TargetInches_Label.SetFixedWidth( editWidth1 );
 
    DimensionsRow1_Sizer.SetSpacing( 6 );
-   DimensionsRow1_Sizer.AddSpacing( labelWidth1 + 6 );
+   DimensionsRow1_Sizer.AddUnscaledSpacing( labelWidth1 + ui6 );
    DimensionsRow1_Sizer.Add( SourcePixels_Label );
    DimensionsRow1_Sizer.Add( TargetPixels_Label );
    DimensionsRow1_Sizer.Add( TargetPercent_Label );
@@ -1186,7 +1192,7 @@ CropInterface::GUIData::GUIData( CropInterface& w ) :
 
    SizeInfo_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
 
-   DimensionsRow4_Sizer.AddSpacing( labelWidth1 + 6 );
+   DimensionsRow4_Sizer.AddUnscaledSpacing( labelWidth1 + ui6 );
    DimensionsRow4_Sizer.Add( SizeInfo_Label, 100 );
 
    Dimensions_Sizer.SetSpacing( 4 );
@@ -1231,7 +1237,7 @@ CropInterface::GUIData::GUIData( CropInterface& w ) :
    ForceResolution_CheckBox.OnClick( (Button::click_event_handler)&CropInterface::__ForceResolution_ButtonClick, w );
 
    ResolutionRow2_Sizer.SetSpacing( 8 );
-   ResolutionRow2_Sizer.AddSpacing( labelWidth2 + 4 );
+   ResolutionRow2_Sizer.AddUnscaledSpacing( labelWidth2 + ui4 );
    ResolutionRow2_Sizer.Add( CentimeterUnits_RadioButton );
    ResolutionRow2_Sizer.Add( InchUnits_RadioButton );
    ResolutionRow2_Sizer.Add( ForceResolution_CheckBox );
@@ -1302,7 +1308,7 @@ CropInterface::GUIData::GUIData( CropInterface& w ) :
    Alpha_NumericControl.SetPrecision( 6 );
    Alpha_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&CropInterface::__FilColor_ValueUpdated, w );
 
-   ColorSample_Control.SetFixedHeight( 20 );
+   ColorSample_Control.SetScaledFixedHeight( 20 );
    ColorSample_Control.OnPaint( (Control::paint_event_handler)&CropInterface::__ColorSample_Paint, w );
 
    FillColor_Sizer.SetSpacing( 4 );
@@ -1345,5 +1351,5 @@ CropInterface::GUIData::GUIData( CropInterface& w ) :
 
 } // pcl
 
-// ****************************************************************************
-// EOF CropInterface.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF CropInterface.cpp - Released 2015/07/31 11:49:48 UTC

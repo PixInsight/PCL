@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Annotation Process Module Version 01.00.00.0097
-// ****************************************************************************
-// AnnotationParameters.h - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Annotation Process Module Version 01.00.00.0116
+// ----------------------------------------------------------------------------
+// AnnotationParameters.h - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Annotation PixInsight module.
 //
-// Copyright (c) 2010-2014 Zbynek Vrastil
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2010-2015 Zbynek Vrastil
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,7 +49,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __AnnotationParameters_h
 #define __AnnotationParameters_h
@@ -254,5 +258,5 @@ PCL_END_LOCAL
 
 #endif   // __AnnotationParameters_h
 
-// ****************************************************************************
-// EOF AnnotationParameters.h - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF AnnotationParameters.h - Released 2015/07/31 11:49:49 UTC

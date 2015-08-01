@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/FileFormatInstance.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/FileFormatInstance.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_FileFormatInstance_h
 #define __PCL_FileFormatInstance_h
@@ -73,16 +76,15 @@
 #include <pcl/FITSHeaderKeyword.h>
 #endif
 
-#ifndef __PCL_ICCProfile_h
-#include <pcl/ICCProfile.h>
-#endif
-
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
+class PCL_CLASS ColorFilterArray;
+class PCL_CLASS DisplayFunction;
 class PCL_CLASS FileFormat;
+class PCL_CLASS ICCProfile;
 
 /*!
  * \class FileFormatInstance
@@ -106,6 +108,13 @@ public:
    FileFormatInstance( const FileFormat& fmt );
 
    /*!
+    * Move constructor.
+    */
+   FileFormatInstance( FileFormatInstance&& x ) : UIObject( std::move( x ) )
+   {
+   }
+
+   /*!
     * Destroys a file format instance.
     *
     * After destruction of this instance, the server-side object is also
@@ -118,11 +127,20 @@ public:
    }
 
    /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   FileFormatInstance& operator =( FileFormatInstance&& x )
+   {
+      Transfer( x );
+      return *this;
+   }
+
+   /*!
     * Ensures that the server-side object managed by this instance is uniquely
     * referenced.
     *
-    * Since file format instances are unique objects by definition, calling
-    * this member function has no effect.
+    * Since file format instances are unique objects, calling this member
+    * function has no effect.
     */
    virtual void SetUnique()
    {
@@ -202,6 +220,12 @@ public:
    bool Open( ImageDescriptionArray& images,
               const String& filePath, const IsoString& hints = IsoString() );
 
+   template <class S>
+   bool Open( ImageDescriptionArray& images, const String& filePath, const S& hints )
+   {
+      return Open( images, filePath, IsoString( hints ) );
+   }
+
    /*!
     * Selects the image at the specified zero-based \a index in this file.
     *
@@ -275,20 +299,6 @@ public:
    bool Extract( ICCProfile& icc );
 
    /*!
-    * Extraction of embedded metadata for the current image in this file.
-    *
-    * If the current image embeds metadata, the address of a newly allocated
-    * copy of them will be assigned to the specified \a data pointer, and its
-    * length in bytes will be assigned to the specified \a length variable. If
-    * the current image embeds no metadata, zero is assigned to both \a data
-    * and \a length.
-    *
-    * Returns true if the file access operation was successful, even if no
-    * metadata were extracted. Returns false in the event of error.
-    */
-   bool Extract( void*& data, size_type& length );
-
-   /*!
     * Extraction of an embedded thumbnail for the current image in this file.
     *
     * If the current image embeds a thumbnail image, it will be assigned to the
@@ -320,7 +330,7 @@ public:
     *
     * This is a convenience member function, equivalent to the following code:
     *
-    * \code Properties().Has( property ); \endcode
+    * \code Properties().Contains( property ); \endcode
     *
     * To prevent runtime errors, you should only call this member function for
     * instances of file formats supporting data properties. See
@@ -328,7 +338,13 @@ public:
     */
    bool HasProperty( const IsoString& property )
    {
-      return Properties().Has( property );
+      return Properties().Contains( property );
+   }
+
+   template <class S>
+   bool HasProperty( const S& property )
+   {
+      return HasProperty( IsoString( property ) );
    }
 
    /*!
@@ -350,6 +366,12 @@ public:
       return *i;
    }
 
+   template <class S>
+   ImagePropertyDescription PropertyDescription( const S& property )
+   {
+      return PropertyDescription( IsoString( property ) );
+   }
+
    /*!
     * Extraction of a data property with the specified unique identifier.
     *
@@ -361,6 +383,12 @@ public:
     * FileFormat::CanStoreProperties().
     */
    Variant ReadProperty( const IsoString& property );
+
+   template <class S>
+   Variant ReadProperty( const S& property )
+   {
+      return ReadProperty( IsoString( property ) );
+   }
 
    /*!
     * Specifies a data property to be embedded in the next image written or
@@ -377,6 +405,98 @@ public:
     * FileFormat::CanStoreProperties().
     */
    bool WriteProperty( const IsoString& property, const Variant& value );
+
+   template <class S>
+   bool WriteProperty( const S& property, const Variant& value )
+   {
+      return WriteProperty( IsoString( property ), value );
+   }
+
+   /*!
+    * Extraction of the RGB working space associated with the current image in
+    * this file.
+    *
+    * Returns true if the file access operation was successful, even if no
+    * RGBWS was extracted. Returns false in the event of error.
+    *
+    * If no RGBWS is defined for the current image, this function will assign a
+    * default-constructed RGBColorSystem object to \a rgbws (see
+    * RGBColorSystem::sRGB).
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting RGB working spaces. See
+    * FileFormat::CanStoreRGBWS().
+    */
+   bool ReadRGBWS( RGBColorSystem& rgbws );
+
+   /*!
+    * Specifies the parameters of an RGB working space that will be embedded in
+    * the next image written or created in this file.
+    *
+    * Returns true only if the embedding operation was successful.
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting RGB working spaces. See
+    * FileFormat::CanStoreRGBWS().
+    */
+   bool WriteRGBWS( const RGBColorSystem& rgbws );
+
+   /*!
+    * Extraction of the display function associated with the current image in
+    * this file.
+    *
+    * Returns true if the file access operation was successful, even if no
+    * display function was extracted. Returns false in the event of error.
+    *
+    * If no display function is defined for the current image, this function
+    * will assign an identity display function to \a df (see DisplayFunction's
+    * default constructor).
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting display functions. See
+    * FileFormat::CanStoreDisplayFunctions().
+    */
+   bool ReadDisplayFunction( DisplayFunction& df );
+
+   /*!
+    * Specifies a display function that will be embedded in the next image
+    * written or created in this file.
+    *
+    * Returns true only if the embedding operation was successful.
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting display functions. See
+    * FileFormat::CanStoreDisplayFunctions().
+    */
+   bool WriteDisplayFunction( const DisplayFunction& df );
+
+   /*!
+    * Extraction of the color filter array (CFA) for the current image in this
+    * file.
+    *
+    * Returns true if the file access operation was successful, even if no CFA
+    * was extracted. Returns false in the event of error.
+    *
+    * If no CFA is defined for the current image, this function will assign an
+    * empty CFA to \a cfa (see ColorFilterArray's default constructor).
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting color filter arrays. See
+    * FileFormat::CanStoreColorFilterArrays().
+    */
+   bool ReadColorFilterArray( ColorFilterArray& cfa );
+
+   /*!
+    * Specifies a color filter array (CFA) that will be embedded in the next
+    * image written or created in this file.
+    *
+    * Returns true only if the embedding operation was successful.
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting color filter arrays. See
+    * FileFormat::CanStoreColorFilterArrays().
+    */
+   bool WriteColorFilterArray( const ColorFilterArray& cfa );
 
    /*!
     * Reads the current image in 32-bit floating point format. Returns true if
@@ -540,6 +660,12 @@ public:
     */
    bool Create( const String& filePath, const IsoString& hints = IsoString(), int numberOfImages = 1 );
 
+   template <class S>
+   bool Create( const String& filePath, const S& hints, int numberOfImages = 1 )
+   {
+      return Create( filePath, IsoString( hints ), numberOfImages );
+   }
+
    /*!
     * Specifies an identifier for the next image that will be written or
     * created in this file.
@@ -551,6 +677,12 @@ public:
     * and simply ignore a call to this function, reporting success.
     */
    bool SetId( const IsoString& id );
+
+   template <class S>
+   bool SetId( const S& id )
+   {
+      return SetId( IsoString( id ) );
+   }
 
    /*!
     * Specifies a set of format-independent image \a options for the next image
@@ -611,19 +743,6 @@ public:
     * the image; false in the event of error.
     */
    bool Embed( const ICCProfile& icc );
-
-   /*!
-    * Specifies a metadata block to be embedded in the next image written or
-    * created in this file.
-    *
-    * \param data    Starting address of the source metadata block.
-    *
-    * \param length  Length in bytes of the source metadata block.
-    *
-    * Returns true if the specified metadata were successfully embedded in the
-    * image; false in the event of error.
-    */
-   bool Embed( const void* data, size_type length );
 
    /*!
     * Specifies a thumbnail \a image to be embedded in the next image written
@@ -750,7 +869,9 @@ public:
 
 private:
 
-   FileFormatInstance( void* );
+   FileFormatInstance( void* h ) : UIObject( h )
+   {
+   }
 
    virtual void* CloneHandle() const;
 
@@ -765,5 +886,5 @@ private:
 
 #endif   // __PCL_FileFormatInstance_h
 
-// ****************************************************************************
-// EOF pcl/FileFormatInstance.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/FileFormatInstance.h - Released 2015/07/30 17:15:18 UTC

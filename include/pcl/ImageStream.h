@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ImageStream.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ImageStream.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_ImageStream_h
 #define __PCL_ImageStream_h
@@ -63,10 +66,6 @@
 #include <pcl/String.h>
 #endif
 
-#ifndef __PCL_Exception_h
-#include <pcl/Exception.h>
-#endif
-
 #ifndef __PCL_File_h
 #include <pcl/File.h>
 #endif
@@ -81,6 +80,10 @@
 
 #ifndef __PCL_ImageDescription_h
 #include <pcl/ImageDescription.h>
+#endif
+
+#ifndef __PCL_FITSHeaderKeyword_h
+#include <pcl/FITSHeaderKeyword.h>
 #endif
 
 namespace pcl
@@ -114,42 +117,9 @@ class PCL_CLASS ImageStream
 public:
 
    /*!
-    * \class Exception
-    * \brief %Image I/O specific exception class
-    */
-   class PCL_CLASS Exception : public File::Exception
-   {
-   public:
-
-      Exception( const String& fn ) : File::Exception( fn )
-      {
-      }
-
-      Exception( const ImageStream::Exception& x ) : File::Exception( x )
-      {
-      }
-
-      virtual String ExceptionClass() const = 0;
-      virtual String ErrorMessage() const = 0;
-   };
-
-   // -------------------------------------------------------------------------
-
-   /*!
-    * Defines the range of valid dimensions for embedded thumbnail images.
-    */
-   enum
-   {
-      MinThumbnailSize = 32, //!< Minimum thumbnail size in pixels
-      MaxThumbnailSize = 256 //!< Maximum thumbnail size in pixels
-   };
-
-   /*!
     * Constructs an %ImageStream object.
     */
-   ImageStream() : path()
-   {
-   }
+   ImageStream() = default;
 
    /*!
     * Destroys an %ImageStream object. If this object represents an open
@@ -209,9 +179,9 @@ protected:
 
 private:
 
-   // Image streams are unique objects
-   ImageStream( const ImageStream& ) { PCL_CHECK( 0 ) }
-   void operator =( const ImageStream& ) { PCL_CHECK( 0 ) }
+   // Image streams are unique objects.
+   ImageStream( const ImageStream& ) = delete;
+   ImageStream& operator =( const ImageStream& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -365,7 +335,7 @@ public:
     * Extracts a list of FITS header keywords from the current image in this
     * input stream. Returns true if the extraction operation was successful.
     */
-   virtual bool Extract( IndirectArray<FITSHeaderKeyword>& keywords )
+   virtual bool Extract( FITSKeywordArray& keywords )
    {
       throw NotImplemented( *this, "Extract embedded FITS keywords" );
    }
@@ -377,15 +347,6 @@ public:
    virtual bool Extract( ICCProfile& iccProfile )
    {
       throw NotImplemented( *this, "Extract embedded ICC profiles" );
-   }
-
-   /*!
-    * Extracts metadata from the current image in this input stream. Returns
-    * true if the extraction operation was successful.
-    */
-   virtual bool Extract( ByteArray& data )
-   {
-      throw NotImplemented( *this, "Extract metadata" );
    }
 
    /*!
@@ -579,9 +540,9 @@ protected:
 
 private:
 
-   // Image streams are unique objects
-   ImageReader( const ImageReader& ) { PCL_CHECK( 0 ) }
-   void operator =( const ImageReader& ) { PCL_CHECK( 0 ) }
+   // Image streams are unique objects.
+   ImageReader( const ImageReader& ) = delete;
+   ImageReader& operator =( const ImageReader& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -725,7 +686,7 @@ public:
     * Embeds a set of %FITS header keywords in the current image of this image
     * writer.
     */
-   virtual void Embed( const IndirectArray<FITSHeaderKeyword>& keywords )
+   virtual void Embed( const FITSKeywordArray& keywords )
    {
       throw NotImplemented( *this, "Embed FITS keywords" );
    }
@@ -736,14 +697,6 @@ public:
    virtual void Embed( const ICCProfile& iccProfile )
    {
       throw NotImplemented( *this, "Embed ICC profiles" );
-   }
-
-   /*!
-    * Embeds metadata in the current image of this image writer.
-    */
-   virtual void Embed( const ByteArray& data )
-   {
-      throw NotImplemented( *this, "Embed metadata" );
    }
 
    /*!
@@ -945,9 +898,9 @@ protected:
 
 private:
 
-   // Image streams are unique objects
-   ImageWriter( const ImageWriter& ) { PCL_CHECK( 0 ) }
-   void operator =( const ImageWriter& ) { PCL_CHECK( 0 ) }
+   // Image streams are unique objects.
+   ImageWriter( const ImageWriter& ) = delete;
+   ImageWriter& operator =( const ImageWriter& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -956,5 +909,5 @@ private:
 
 #endif   // __PCL_ImageStream_h
 
-// ****************************************************************************
-// EOF pcl/ImageStream.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ImageStream.h - Released 2015/07/30 17:15:18 UTC

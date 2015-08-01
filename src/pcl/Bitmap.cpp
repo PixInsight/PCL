@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Bitmap.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Bitmap.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/AutoLock.h>
 #include <pcl/Bitmap.h>
@@ -59,7 +62,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 Bitmap::Bitmap() :
-UIObject( (*API->Bitmap->CreateEmptyBitmap)( ModuleHandle() ) )
+   UIObject( (*API->Bitmap->CreateEmptyBitmap)( ModuleHandle() ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CreateEmptyBitmap" );
@@ -68,7 +71,7 @@ UIObject( (*API->Bitmap->CreateEmptyBitmap)( ModuleHandle() ) )
 // ----------------------------------------------------------------------------
 
 Bitmap::Bitmap( int w, int h, pixel_format fmt ) :
-UIObject( (*API->Bitmap->CreateBitmap)( ModuleHandle(), w, h, 0 ) )
+   UIObject( (*API->Bitmap->CreateBitmap)( ModuleHandle(), w, h, 0 ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CreateBitmap" );
@@ -79,7 +82,7 @@ UIObject( (*API->Bitmap->CreateBitmap)( ModuleHandle(), w, h, 0 ) )
 // ----------------------------------------------------------------------------
 
 Bitmap::Bitmap( const char** xpm ) :
-UIObject( (*API->Bitmap->CreateBitmapXPM)( ModuleHandle(), xpm ) )
+   UIObject( (*API->Bitmap->CreateBitmapXPM)( ModuleHandle(), xpm ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CreateBitmapXPM" );
@@ -88,7 +91,7 @@ UIObject( (*API->Bitmap->CreateBitmapXPM)( ModuleHandle(), xpm ) )
 // ----------------------------------------------------------------------------
 
 Bitmap::Bitmap( const String& filePath ) :
-UIObject( (*API->Bitmap->CreateBitmapFromFile)( ModuleHandle(), filePath.c_str() ) )
+   UIObject( (*API->Bitmap->CreateBitmapFromFile)( ModuleHandle(), filePath.c_str() ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CreateBitmapFromFile" );
@@ -97,7 +100,7 @@ UIObject( (*API->Bitmap->CreateBitmapFromFile)( ModuleHandle(), filePath.c_str()
 // ----------------------------------------------------------------------------
 
 Bitmap::Bitmap( const char* filePath ) :
-UIObject( (*API->Bitmap->CreateBitmapFromFile8)( ModuleHandle(), filePath ) )
+   UIObject( (*API->Bitmap->CreateBitmapFromFile8)( ModuleHandle(), filePath ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CreateBitmapFromFile8" );
@@ -106,7 +109,7 @@ UIObject( (*API->Bitmap->CreateBitmapFromFile8)( ModuleHandle(), filePath ) )
 // ----------------------------------------------------------------------------
 
 Bitmap::Bitmap( const IsoString& filePath ) :
-UIObject( (*API->Bitmap->CreateBitmapFromFile8)( ModuleHandle(), filePath.c_str() ) )
+   UIObject( (*API->Bitmap->CreateBitmapFromFile8)( ModuleHandle(), filePath.c_str() ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CreateBitmapFromFile8" );
@@ -115,7 +118,7 @@ UIObject( (*API->Bitmap->CreateBitmapFromFile8)( ModuleHandle(), filePath.c_str(
 // ----------------------------------------------------------------------------
 
 Bitmap::Bitmap( const void* data, size_type size, const char* format, uint32 flags ) :
-UIObject( (*API->Bitmap->CreateBitmapFromData)( ModuleHandle(), data, size, format, flags ) )
+   UIObject( (*API->Bitmap->CreateBitmapFromData)( ModuleHandle(), data, size, format, flags ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CreateBitmapFromData" );
@@ -124,7 +127,7 @@ UIObject( (*API->Bitmap->CreateBitmapFromData)( ModuleHandle(), data, size, form
 // ----------------------------------------------------------------------------
 
 Bitmap::Bitmap( const Bitmap& bmp, const pcl::Rect& r ) :
-UIObject( (*API->Bitmap->CloneBitmapRect)( ModuleHandle(), bmp.handle, r.x0, r.y0, r.x1, r.y1 ) )
+   UIObject( (*API->Bitmap->CloneBitmapRect)( ModuleHandle(), bmp.handle, r.x0, r.y0, r.x1, r.y1 ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CloneBitmapRect" );
@@ -133,7 +136,7 @@ UIObject( (*API->Bitmap->CloneBitmapRect)( ModuleHandle(), bmp.handle, r.x0, r.y
 // ----------------------------------------------------------------------------
 
 Bitmap::Bitmap( const Bitmap& bmp, int x0, int y0, int x1, int y1 ) :
-UIObject( (*API->Bitmap->CloneBitmapRect)( ModuleHandle(), bmp.handle, x0, y0, x1, y1 ) )
+   UIObject( (*API->Bitmap->CloneBitmapRect)( ModuleHandle(), bmp.handle, x0, y0, x1, y1 ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CloneBitmapRect" );
@@ -141,18 +144,12 @@ UIObject( (*API->Bitmap->CloneBitmapRect)( ModuleHandle(), bmp.handle, x0, y0, x
 
 // ----------------------------------------------------------------------------
 
-Bitmap::Bitmap( void* h ) : UIObject( h )
-{
-}
-
-// ----------------------------------------------------------------------------
-
 Bitmap& Bitmap::Null()
 {
-   static Bitmap* nullBitmap = 0;
+   static Bitmap* nullBitmap = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullBitmap == 0 )
+   if ( nullBitmap == nullptr )
       nullBitmap = new Bitmap( reinterpret_cast<void*>( 0 ) );
    return *nullBitmap;
 }
@@ -466,5 +463,5 @@ void* Bitmap::CloneHandle() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/Bitmap.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Bitmap.cpp - Released 2015/07/30 17:15:31 UTC

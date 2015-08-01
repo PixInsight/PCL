@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ProcessParameter.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ProcessParameter.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/AutoLock.h>
 #include <pcl/Process.h>
@@ -65,16 +68,16 @@ public:
    meta_parameter_handle handle;
    Process*              process;
 
-   ProcessParameterPrivate() : handle( 0 ), process( 0 )
+   ProcessParameterPrivate() : handle( nullptr ), process( nullptr )
    {
    }
 
-   ProcessParameterPrivate( meta_parameter_handle hParam ) : handle( 0 ), process( 0 )
+   ProcessParameterPrivate( meta_parameter_handle hParam ) : handle( nullptr ), process( nullptr )
    {
-      if ( hParam != 0 )
+      if ( hParam != nullptr )
       {
          meta_process_handle hProcess = (*API->Process->GetParameterProcess)( hParam );
-         if ( hProcess == 0 )
+         if ( hProcess == nullptr )
             throw Error( "ProcessParameter: Internal error: Invalid process handle" );
 
          handle = hParam;
@@ -84,9 +87,9 @@ public:
 
    ~ProcessParameterPrivate()
    {
-      if ( process != 0 )
-         delete process, process = 0;
-      handle = 0;
+      if ( process != nullptr )
+         delete process, process = nullptr;
+      handle = nullptr;
    }
 };
 
@@ -100,10 +103,10 @@ api_bool InternalParameterEnumerator::ParameterCallback( meta_parameter_handle h
 
 // ----------------------------------------------------------------------------
 
-ProcessParameter::ProcessParameter( const Process& process, const IsoString& paramId ) :
-data( new ProcessParameterPrivate( (*API->Process->GetParameterByName)( process.Handle(), paramId.c_str() ) ) )
+ProcessParameter::ProcessParameter( const Process& process, const IsoString& paramId ) : data( nullptr )
 {
-   if ( data->handle == 0 )
+   data = new ProcessParameterPrivate( (*API->Process->GetParameterByName)( process.Handle(), paramId.c_str() ) );
+   if ( data->handle == nullptr )
    {
       if ( paramId.IsEmpty() )
          throw Error( "ProcessParameter: Empty process parameter identifier specified" );
@@ -115,10 +118,10 @@ data( new ProcessParameterPrivate( (*API->Process->GetParameterByName)( process.
    }
 }
 
-ProcessParameter::ProcessParameter( const ProcessParameter& table, const IsoString& colId ) :
-data( new ProcessParameterPrivate( (*API->Process->GetTableColumnByName)( table.data->handle, colId.c_str() ) ) )
+ProcessParameter::ProcessParameter( const ProcessParameter& table, const IsoString& colId ) : data( nullptr )
 {
-   if ( data->handle == 0 )
+   data = new ProcessParameterPrivate( (*API->Process->GetTableColumnByName)( table.data->handle, colId.c_str() ) );
+   if ( data->handle == nullptr )
    {
       if ( table.IsNull() )
          throw Error( "ProcessParameter: Null table parameter" );
@@ -136,35 +139,35 @@ data( new ProcessParameterPrivate( (*API->Process->GetTableColumnByName)( table.
    }
 }
 
-ProcessParameter::ProcessParameter( const ProcessParameter& p ) :
-data( new ProcessParameterPrivate( p.data->handle ) )
+ProcessParameter::ProcessParameter( const ProcessParameter& p ) : data( nullptr )
 {
+   data = new ProcessParameterPrivate( p.data->handle );
 }
 
-ProcessParameter::ProcessParameter( const void* hParam ) :
-data( new ProcessParameterPrivate( hParam ) )
+ProcessParameter::ProcessParameter( const void* hParam ) : data( nullptr )
 {
+   data = new ProcessParameterPrivate( hParam );
 }
 
 ProcessParameter::~ProcessParameter()
 {
-   if ( data != 0 )
-      delete data, data = 0;
+   if ( data != nullptr )
+      delete data, data = nullptr;
 }
 
 // ----------------------------------------------------------------------------
 
 bool ProcessParameter::IsNull() const
 {
-   return data->handle == 0;
+   return data->handle == nullptr;
 }
 
 ProcessParameter& ProcessParameter::Null()
 {
-   static ProcessParameter* nullParameter = 0;
+   static ProcessParameter* nullParameter = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullParameter == 0 )
+   if ( nullParameter == nullptr )
       nullParameter = new ProcessParameter( (const void*)0 );
    return *nullParameter;
 }
@@ -173,7 +176,7 @@ ProcessParameter& ProcessParameter::Null()
 
 Process& ProcessParameter::ParentProcess() const
 {
-   if ( data->process == 0 )
+   if ( data->process == nullptr )
       throw Error( "ProcessParameter::ParentProcess(): Invoked for a null ProcessParameter object" );
    return *data->process;
 }
@@ -191,14 +194,13 @@ IsoString ProcessParameter::Id() const
    (*API->Process->GetParameterIdentifier)( data->handle, 0, &len );
 
    IsoString id;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      id.Reserve( len );
+      id.SetLength( len );
       if ( (*API->Process->GetParameterIdentifier)( data->handle, id.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetParameterIdentifier" );
+      id.ResizeToNullTerminated();
    }
-
    return id;
 }
 
@@ -210,17 +212,15 @@ IsoStringList ProcessParameter::Aliases() const
    (*API->Process->GetParameterAliasIdentifiers)( data->handle, 0, &len );
 
    IsoStringList aliases;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
       IsoString csAliases;
-      csAliases.Reserve( len );
+      csAliases.SetLength( len );
       if ( (*API->Process->GetParameterAliasIdentifiers)( data->handle, csAliases.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetParameterAliasIdentifiers" );
-
+      csAliases.ResizeToNullTerminated();
       csAliases.Break( aliases, ',' );
    }
-
    return aliases;
 }
 
@@ -246,14 +246,13 @@ String ProcessParameter::Description() const
    (*API->Process->GetParameterDescription)( data->handle, 0, &len );
 
    String description;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      description.Reserve( len );
+      description.SetLength( len );
       if ( (*API->Process->GetParameterDescription)( data->handle, description.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetParameterDescription" );
+      description.ResizeToNullTerminated();
    }
-
    return description;
 }
 
@@ -265,14 +264,13 @@ String ProcessParameter::ScriptComment() const
    (*API->Process->GetParameterScriptComment)( data->handle, 0, &len );
 
    String comment;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      comment.Reserve( len );
+      comment.SetLength( len );
       if ( (*API->Process->GetParameterScriptComment)( data->handle, comment.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetParameterScriptComment" );
+      comment.ResizeToNullTerminated();
    }
-
    return comment;
 }
 
@@ -283,11 +281,11 @@ ProcessParameter::data_type ProcessParameter::Type() const
    if ( IsNull() )
       return ProcessParameterType::Invalid;
 
-   uint32 apiType = (*API->Process->GetParameterType)( data->handle ) & PTYPE_TYPE_MASK;
+   uint32 apiType = (*API->Process->GetParameterType)( data->handle );
    if ( apiType == 0 )
       throw APIFunctionError( "GetParameterType" );
 
-   switch ( apiType )
+   switch ( apiType & PTYPE_TYPE_MASK )
    {
    case PTYPE_UINT8:  return ProcessParameterType::UInt8;
    case PTYPE_INT8:   return ProcessParameterType::Int8;
@@ -304,8 +302,7 @@ ProcessParameter::data_type ProcessParameter::Type() const
    case PTYPE_STRING: return ProcessParameterType::String;
    case PTYPE_TABLE:  return ProcessParameterType::Table;
    case PTYPE_BLOCK:  return ProcessParameterType::Block;
-   default:
-      throw Error( "ProcessParameter::Type(): Internal error: Unknown parameter type" );
+   default:           throw Error( "ProcessParameter::Type(): Internal error: Unknown parameter type" );
    }
 }
 
@@ -314,11 +311,11 @@ ProcessParameter::data_type ProcessParameter::DataInterpretation() const
    if ( !IsBlock() )
       return ProcessParameterType::Invalid;
 
-   uint32 apiType = (*API->Process->GetParameterType)( data->handle ) & PTYPE_BLOCK_INTERPRETATION;
+   uint32 apiType = (*API->Process->GetParameterType)( data->handle );
    if ( apiType == 0 )
       throw APIFunctionError( "GetParameterType" );
 
-   switch ( apiType )
+   switch ( apiType & PTYPE_BLOCK_INTERPRETATION )
    {
    case PTYPE_BLOCK_UI8:    return ProcessParameterType::UInt8;
    case PTYPE_BLOCK_I8:     return ProcessParameterType::Int8;
@@ -330,8 +327,7 @@ ProcessParameter::data_type ProcessParameter::DataInterpretation() const
    case PTYPE_BLOCK_I64:    return ProcessParameterType::Int64;
    case PTYPE_BLOCK_FLOAT:  return ProcessParameterType::Float;
    case PTYPE_BLOCK_DOUBLE: return ProcessParameterType::Double;
-   default:
-      throw Error( "ProcessParameter::DataInterpretation(): Internal error: Unknown parameter type" );
+   default:                 throw Error( "ProcessParameter::DataInterpretation(): Internal error: Unknown parameter type" );
    }
 }
 
@@ -342,9 +338,11 @@ Variant ProcessParameter::DefaultValue() const
    if ( IsNull() )
       return Variant();
 
-   uint32 apiType = (*API->Process->GetParameterType)( data->handle ) & PTYPE_TYPE_MASK;
+   uint32 apiType = (*API->Process->GetParameterType)( data->handle );
    if ( apiType == 0 )
       throw APIFunctionError( "GetParameterType" );
+
+   apiType &= PTYPE_TYPE_MASK;
 
    if ( apiType == PTYPE_TABLE )
       throw Error( "ProcessParameter::DefaultValue(): Invoked for a table parameter" );
@@ -358,14 +356,13 @@ Variant ProcessParameter::DefaultValue() const
       (*API->Process->GetParameterDefaultValue)( data->handle, 0, &len );
 
       String value;
-
-      if ( len != 0 )
+      if ( len > 0 )
       {
-         value.Reserve( len );
+         value.SetLength( len );
          if ( (*API->Process->GetParameterDefaultValue)( data->handle, value.c_str(), &len ) == api_false )
             throw APIFunctionError( "GetParameterDefaultValue" );
+         value.ResizeToNullTerminated();
       }
-
       return value;
    }
 
@@ -408,7 +405,7 @@ Variant ProcessParameter::DefaultValue() const
    case PTYPE_INT64:  return value.i64;
    case PTYPE_FLOAT:  return value.f;
    case PTYPE_DOUBLE: return value.d;
-   case PTYPE_BOOL:   return value.b;
+   case PTYPE_BOOL:   return value.b != api_false;
    default:
       throw Error( "ProcessParameter::DefaultValue(): Internal error: Unknown parameter type" );
    }
@@ -434,7 +431,6 @@ int ProcessParameter::Precision() const
 {
    if ( !IsReal() )
       return 0;
-
    return (*API->Process->GetParameterPrecision)( data->handle );
 }
 
@@ -444,7 +440,6 @@ bool ProcessParameter::ScientificNotation() const
 {
    if ( !IsReal() )
       return false;
-
    return (*API->Process->GetParameterScientificNotation)( data->handle ) != api_false;
 }
 
@@ -481,18 +476,20 @@ ProcessParameter::enumeration_element_list ProcessParameter::EnumerationElements
       (*API->Process->GetParameterElementIdentifier)( data->handle, i, 0, &len );
       if ( len == 0 )
          throw APIFunctionError( "GetParameterElementIdentifier" );
-      elements[i].id.Reserve( len );
+      elements[i].id.SetLength( len );
       if ( (*API->Process->GetParameterElementIdentifier)( data->handle, i, elements[i].id.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetParameterElementIdentifier" );
+      elements[i].id.ResizeToNullTerminated();
 
       len = 0;
       (*API->Process->GetParameterElementAliasIdentifiers)( data->handle, i, 0, &len );
       if ( len > 0 )
       {
          IsoString aliases;
-         aliases.Reserve( len );
+         aliases.SetLength( len );
          if ( (*API->Process->GetParameterElementAliasIdentifiers)( data->handle, i, aliases.c_str(), &len ) == api_false )
             throw APIFunctionError( "GetParameterElementAliasIdentifiers" );
+         aliases.ResizeToNullTerminated();
          aliases.Break( elements[i].aliases, ',' );
       }
 
@@ -513,11 +510,12 @@ String ProcessParameter::AllowedCharacters() const
       size_type len = 0;
       (*API->Process->GetParameterAllowedCharacters)( data->handle, 0, &len );
 
-      if ( len != 0 )
+      if ( len > 0 )
       {
-         allowed.Reserve( len );
+         allowed.SetLength( len );
          if ( (*API->Process->GetParameterAllowedCharacters)( data->handle, allowed.c_str(), &len ) == api_false )
             throw APIFunctionError( "GetParameterAllowedCharacters" );
+         allowed.ResizeToNullTerminated();
       }
    }
 
@@ -547,5 +545,5 @@ const void* ProcessParameter::Handle() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/ProcessParameter.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ProcessParameter.cpp - Released 2015/07/30 17:15:31 UTC

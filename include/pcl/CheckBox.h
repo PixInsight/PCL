@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/CheckBox.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/CheckBox.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_CheckBox_h
 #define __PCL_CheckBox_h
@@ -106,14 +109,14 @@ public:
    }
 
    /*!
-    * Returns \c true if this check box can have three states.
+    * Returns \c true only if this check box can have three states.
     */
    bool IsTristateMode() const;
 
    /*!
-    * Enables or disables <em>tristate mode</em>. In tristate mode, a check box
-    * can have three states: checked, unchecked, and <em>semi-checked</em>
-    * (also called <em>third state</em>).
+    * Enables or disables \e tristate \e mode. In tristate mode, a check box
+    * can have three states: checked, unchecked, and \e semi-checked (also
+    * called \e third \e state).
     */
    void SetTristateMode( bool = true );
 };
@@ -126,5 +129,5 @@ public:
 
 #endif   // __PCL_CheckBox_h
 
-// ****************************************************************************
-// EOF pcl/CheckBox.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/CheckBox.h - Released 2015/07/30 17:15:18 UTC

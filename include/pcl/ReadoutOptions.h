@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ReadoutOptions.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ReadoutOptions.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_ReadoutOptions_h
 #define __PCL_ReadoutOptions_h
@@ -83,7 +86,7 @@ namespace ReadoutData
 {
    enum value_type
    {
-      RGBK = 0,        // RGB components or grayscale
+      RGBK,            // RGB components or grayscale
       RGBL,            // RGB components + CIE L*
       RGBY,            // RGB components + CIE Y
       CIEXYZ,          // CIE XYZ unit vectors
@@ -129,19 +132,19 @@ namespace ReadoutMode
  * %ReadoutOptions holds a set of parameters that define how PixInsight
  * calculates and presents numerical pixel data obtained directly from images.
  *
- * Readouts are generated dynamically when the user moves the mouse cursor over
- * an image in PixInsight; generated data are shown on the %Readout toolbar,
- * usually located at the bottom row of the core application's main window, and
- * are also shown on popup windows when the user clicks on the image.
- * Furthermore, when the user presses the mouse over an image, readout values
- * are sent to interface windows that request them (see
+ * Readouts are generated dynamically when the user moves a pointing device
+ * cursor over an image in PixInsight. Generated readout data are shown on the
+ * %Readout toolbar, normally located at the bottom of the core application's
+ * main window, and are also shown on popup windows when the user clicks on the
+ * image. Furthermore, when the user presses the mouse over an image, readout
+ * values are sent to interface windows that request them (see
  * \ref readout_notifications). When those interfaces receive readout values,
  * they usually provide some visual feedback, or use them to modify their
  * behavior, as appropriate.
  *
- * With %ReadoutOptions you can specify two sets of parameters: a set that
- * defines how readout values are calcualted, and a second set that indicates
- * how the obtained numerical readout values are presented to the user.
+ * With %ReadoutOptions you can specify two sets of parameters: a first set
+ * that defines how readout values are calcualted, and a second set that
+ * indicates how the numerical readout values are presented to the user.
  *
  * The first parameter set includes the color space in which data is generated
  * (e.g. RGB, HSV, CIE Lab, etc), the calculation mode used (average, median,
@@ -195,32 +198,31 @@ public:
     * Constructs a default %ReadoutOptions object.
     */
    ReadoutOptions() :
-   data( ReadoutData::RGBK ), mode( ReadoutMode::Mean ),
-   probeSize( 1 ), previewSize( 25 ), previewZoom( 8 ), precision( 4 ), range( uint16_max ),
-   showAlpha( true ), showMask( true ), showPreview( true ), previewCenter( true ),
-   broadcast( true ), real( true )
+      data( ReadoutData::RGBK ),
+      mode( ReadoutMode::Mean ),
+      probeSize( 1 ),
+      previewSize( 25 ),
+      previewZoom( 8 ),
+      precision( 4 ),
+      range( uint16_max ),
+      showAlpha( true ),
+      showMask( true ),
+      showPreview( true ),
+      previewCenter( true ),
+      broadcast( true ),
+      real( true )
    {
    }
 
    /*!
     * Copy constructor.
     */
-   ReadoutOptions( const ReadoutOptions& x ) :
-   data( x.data ), mode( x.mode ),
-   probeSize( x.probeSize ), previewSize( x.previewSize ), previewZoom( x.previewZoom ),
-   precision( x.precision ), range( x.range ),
-   showAlpha( x.showAlpha ), showMask( x.showMask ),
-   showPreview( x.showPreview ), previewCenter( x.previewCenter ),
-   broadcast( x.broadcast ), real( x.real )
-   {
-   }
+   ReadoutOptions( const ReadoutOptions& ) = default;
 
    /*!
-    * Destroys a %ReadoutOptions object.
+    * Copy assignment operator. Returns a reference to this object.
     */
-   virtual ~ReadoutOptions()
-   {
-   }
+   ReadoutOptions& operator =( const ReadoutOptions& ) = default;
 
    /*!
     * Returns the current readout options from the PixInsight core application.
@@ -568,19 +570,19 @@ protected:
 private:
 #endif
 
-   readout_data   data;
-   readout_mode   mode;
-   int            probeSize;     // size of the square probe - must be an odd number
-   int            previewSize;   // size of the square preview - must be an odd number
-   int            previewZoom;   // readout preview zoom factor >= 1
-   int            precision;     // number of decimal digits if real==true
-   unsigned       range;         // maximum discrete value if real==false
-   bool           showAlpha      : 1;  // show alpha channel readouts?
-   bool           showMask       : 1;  // show mask channel readouts?
-   bool           showPreview    : 1;  // show real-time readout previews?
-   bool           previewCenter  : 1;  // draw center crosshairs on readout previews?
-   bool           broadcast      : 1;  // broadcast readouts?
-   bool           real           : 1;  // true=real, false=integer
+   readout_data data;
+   readout_mode mode;
+   int          probeSize;    // size of the square probe - must be an odd number
+   int          previewSize;  // size of the square preview - must be an odd number
+   int          previewZoom;  // readout preview zoom factor >= 1
+   int          precision;    // number of decimal digits if real==true
+   unsigned     range;        // maximum discrete value if real==false
+   bool         showAlpha     : 1;  // show alpha channel readouts?
+   bool         showMask      : 1;  // show mask channel readouts?
+   bool         showPreview   : 1;  // show real-time readout previews?
+   bool         previewCenter : 1;  // draw center crosshairs on readout previews?
+   bool         broadcast     : 1;  // broadcast readouts?
+   bool         real          : 1;  // true=real, false=integer
 };
 
 // ----------------------------------------------------------------------------
@@ -589,5 +591,5 @@ private:
 
 #endif   // __PCL_ReadoutOptions_h
 
-// ****************************************************************************
-// EOF pcl/ReadoutOptions.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ReadoutOptions.h - Released 2015/07/30 17:15:18 UTC

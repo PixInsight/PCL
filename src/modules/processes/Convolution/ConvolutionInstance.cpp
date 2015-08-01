@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Convolution Process Module Version 01.01.03.0140
-// ****************************************************************************
-// ConvolutionInstance.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Convolution Process Module Version 01.01.03.0159
+// ----------------------------------------------------------------------------
+// ConvolutionInstance.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Convolution PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "ConvolutionInstance.h"
 #include "ConvolutionParameters.h"
@@ -346,13 +350,13 @@ bool ConvolutionInstance::AllocateParameter( size_type sizeOrLength, const MetaP
    {
       viewId.Clear();
       if ( sizeOrLength > 0 )
-         viewId.Reserve( sizeOrLength );
+         viewId.SetLength( sizeOrLength );
    }
    else if ( p == TheConSourceCodeParameter )
    {
       sourceCode.Clear();
       if ( sizeOrLength > 0 )
-         sourceCode.Reserve( sizeOrLength );
+         sourceCode.SetLength( sizeOrLength );
    }
    else
       return false;
@@ -482,5 +486,5 @@ bool ConvolutionInstance::CreateFilterImage( Image& filter ) const
 
 } // pcl
 
-// ****************************************************************************
-// EOF ConvolutionInstance.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF ConvolutionInstance.cpp - Released 2015/07/31 11:49:48 UTC

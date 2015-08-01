@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/API.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/API.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/ErrorHandler.h>
 #include <pcl/MetaModule.h>
@@ -61,11 +64,11 @@ namespace pcl
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-PCL_DATA const APIInterface* API = 0;
+PCL_DATA const APIInterface* API = nullptr;
 
-static api_handle s_moduleHandle = 0;
+static api_handle s_moduleHandle = nullptr;
 
-api_handle ModuleHandle()
+api_handle PCL_FUNC ModuleHandle()
 {
    return s_moduleHandle;
 }
@@ -78,7 +81,7 @@ api_handle ModuleHandle()
 
 void APIError::GetAPIErrorCode()
 {
-   if ( API != 0 && API->Global != 0 && API->Global->LastError != 0 )
+   if ( API != nullptr && API->Global != nullptr && API->Global->LastError != 0 )
       apiErrorCode = (*API->Global->LastError)();
    else
       apiErrorCode = 0;
@@ -93,16 +96,15 @@ String APIError::FormatInfo() const
       info += String().Format( "\nAPI error code = %u", apiErrorCode );
 
       String apiMessage;
-
       if ( apiErrorCode != 0 )
       {
          size_type len = 0;
          (*API->Global->ErrorMessage)( apiErrorCode, 0, &len );
-
-         if ( len != 0 )
+         if ( len > 0 )
          {
-            apiMessage.Reserve( len );
+            apiMessage.SetLength( len );
             (*API->Global->ErrorMessage)( apiErrorCode, apiMessage.c_str(), &len );
+            apiMessage.ResizeToNullTerminated();
          }
       }
 
@@ -134,17 +136,17 @@ public:
    {
       try
       {
-         if ( API != 0 )
+         if ( API != nullptr )
             HackingError( "Unexpected API module initialization call." );
 
-         if ( R == 0 )
+         if ( R == nullptr )
             HackingError( "Invalid API function resolver address." );
 
          if ( apiVersion < PCL_API_Version )
             throw Error( String().Format( "Unsupported API version %X (expected >= %X).",
                                           apiVersion, PCL_API_Version ) );
 
-         if ( Module == 0 )
+         if ( Module == nullptr )
             throw Error( "Module metadata not available. "
                          "Please instantiate a MetaModule descendant upon module installation." );
 
@@ -156,10 +158,10 @@ public:
       }
 
       ERROR_CLEANUP(
-         if ( API != 0 )
+         if ( API != nullptr )
          {
             delete API;
-            API = 0;
+            API = nullptr;
          }
       )
       return 1;
@@ -169,10 +171,10 @@ public:
    {
       try
       {
-         if ( description != 0 )
+         if ( description != nullptr )
             HackingError( "Invalid API identification call." );
 
-         if ( Module == 0 )
+         if ( Module == nullptr )
             throw Error( "Module metadata not available. "
                          "Please instantiate a MetaModule descendant upon module installation." );
 
@@ -208,26 +210,26 @@ public:
    {
       try
       {
-         if ( description == 0 )
+         if ( description == nullptr )
             HackingError( "Invalid API identification call." );
 
-         if ( description->name != 0 )
+         if ( description->name != nullptr )
             delete [] description->name;
-         if ( description->description != 0 )
+         if ( description->description != nullptr )
             delete [] description->description;
-         if ( description->company != 0 )
+         if ( description->company != nullptr )
             delete [] description->company;
-         if ( description->author != 0 )
+         if ( description->author != nullptr )
             delete [] description->author;
-         if ( description->copyright != 0 )
+         if ( description->copyright != nullptr )
             delete [] description->copyright;
-         if ( description->tradeMarks != 0 )
+         if ( description->tradeMarks != nullptr )
             delete [] description->tradeMarks;
-         if ( description->originalFileName != 0 )
+         if ( description->originalFileName != nullptr )
             delete [] description->originalFileName;
 
          delete description;
-         description = 0;
+         description = nullptr;
 
          return 0; // ok
       }
@@ -240,10 +242,10 @@ public:
    {
       try
       {
-         if ( description == 0 )
+         if ( description == nullptr )
             HackingError( "Invalid API identification call." );
 
-         if ( d == 0 )
+         if ( d == nullptr )
             HackingError( "Invalid API module description structure." );
 
          *d = description;
@@ -261,7 +263,7 @@ private:
 
 }; // APIInitializer
 
-api_module_description* APIInitializer::description = 0;
+api_module_description* APIInitializer::description = nullptr;
 
 } // pcl
 
@@ -317,5 +319,5 @@ InitializePixInsightModule( api_handle        hModule,
    return APIInitializer::InitAPI( R, apiVersion );
 }
 
-// ****************************************************************************
-// EOF pcl/API.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/API.cpp - Released 2015/07/30 17:15:31 UTC

@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Annotation Process Module Version 01.00.00.0097
-// ****************************************************************************
-// AnnotationInterface.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Annotation Process Module Version 01.00.00.0116
+// ----------------------------------------------------------------------------
+// AnnotationInterface.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Annotation PixInsight module.
 //
-// Copyright (c) 2010-2014 Zbynek Vrastil
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2010-2015 Zbynek Vrastil
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,7 +49,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "AnnotationInterface.h"
 #include "AnnotationProcess.h"
@@ -882,7 +886,7 @@ AnnotationInterface::GUIData::GUIData( AnnotationInterface& w )
    AnnotationFontShadow_CheckBox.OnCheck( (Button::check_event_handler)&AnnotationInterface::__FontOptionCheckBoxChecked, w );
 
    AnnotationFontOptions_Sizer.SetSpacing( 4 );
-   AnnotationFontOptions_Sizer.AddSpacing( labelWidth1+4 );
+   AnnotationFontOptions_Sizer.AddUnscaledSpacing( labelWidth1 + w.LogicalPixelsToPhysical( 4 ) );
    AnnotationFontOptions_Sizer.Add( AnnotationFontBold_CheckBox );
    AnnotationFontOptions_Sizer.Add( AnnotationFontItalic_CheckBox );
    AnnotationFontOptions_Sizer.Add( AnnotationFontUnderline_CheckBox );
@@ -900,7 +904,7 @@ AnnotationInterface::GUIData::GUIData( AnnotationInterface& w )
    AnnotationColor_ComboBox.SetToolTip( "<p>The annotation color.</p>" );
    AnnotationColor_ComboBox.OnColorSelected( (ColorComboBox::color_event_handler)&AnnotationInterface::__ColorComboBoxColorSelected, w );
 
-   AnnotationColor_CustomColorSample.SetMinWidth( 30 );
+   AnnotationColor_CustomColorSample.SetScaledMinWidth( 30 );
    AnnotationColor_CustomColorSample.SetToolTip( "<p>Click to define custom color.</p>" );
    AnnotationColor_CustomColorSample.SetCursor( StdCursor::UpArrow );
    AnnotationColor_CustomColorSample.OnPaint( (Control::paint_event_handler)&AnnotationInterface::__ColorSample_Paint, w );
@@ -944,5 +948,5 @@ AnnotationInterface::GUIData::GUIData( AnnotationInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF AnnotationInterface.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF AnnotationInterface.cpp - Released 2015/07/31 11:49:49 UTC

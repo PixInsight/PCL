@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard IntensityTransformations Process Module Version 01.07.00.0287
-// ****************************************************************************
-// ColorSaturationInstance.cpp - Released 2014/11/14 17:19:23 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard IntensityTransformations Process Module Version 01.07.00.0306
+// ----------------------------------------------------------------------------
+// ColorSaturationInstance.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "ColorSaturationInstance.h"
 
@@ -56,7 +60,7 @@
 #include <pcl/LinearInterpolation.h>
 #include <pcl/MuteStatus.h>
 #include <pcl/Mutex.h>
-#include <pcl/PArray.h>
+#include <pcl/ReferenceArray.h>
 #include <pcl/StdStatus.h>
 #include <pcl/Thread.h>
 #include <pcl/Vector.h>
@@ -85,7 +89,7 @@ void ColorSaturationInstance::Assign( const ProcessImplementation& p )
    const ColorSaturationInstance* x = dynamic_cast<const ColorSaturationInstance*>( &p );
    if ( x != 0 )
    {
-      C.Assign( x->C );
+      C = x->C;
       hueShift = x->hueShift;
    }
 }
@@ -153,7 +157,7 @@ public:
       if ( useLUT )
          data.lut = MakeLUT( instance );
 
-      PArray<ColorSaturationThread<P> > threads;
+      ReferenceArray<ColorSaturationThread<P> > threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new ColorSaturationThread<P>( instance, data, image,
                                                     i*pixelsPerThread,
@@ -356,5 +360,5 @@ size_type ColorSaturationInstance::ParameterLength( const MetaParameter* /*p*/, 
 
 } // pcl
 
-// ****************************************************************************
-// EOF ColorSaturationInstance.cpp - Released 2014/11/14 17:19:23 UTC
+// ----------------------------------------------------------------------------
+// EOF ColorSaturationInstance.cpp - Released 2015/07/31 11:49:48 UTC

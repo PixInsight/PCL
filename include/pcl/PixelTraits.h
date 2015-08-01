@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/PixelTraits.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/PixelTraits.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_PixelTraits_h
 #define __PCL_PixelTraits_h
@@ -275,7 +278,7 @@ public:
       PCL_PRECONDITION( f != 0 && g != 0 )                        \
       for ( T* fn = f+n; f < fn; ++f, ++g )                       \
       {                                                           \
-         register T h; FromSample( h, *g );                       \
+         T h; FromSample( h, *g );                                \
          if ( h < *f )                                            \
             *f = h;                                               \
       }                                                           \
@@ -295,7 +298,7 @@ public:
       PCL_PRECONDITION( f != 0 && g != 0 )                        \
       for ( sample* fn = f+n; f < fn; ++f, ++g )                  \
       {                                                           \
-         register sample h = ToSample( *g );                      \
+         sample h = ToSample( *g );                               \
          if ( h < *f )                                            \
             *f = h;                                               \
       }                                                           \
@@ -315,7 +318,7 @@ public:
       PCL_PRECONDITION( f != 0 && g != 0 )                        \
       for ( T* fn = f+n; f < fn; ++f, ++g )                       \
       {                                                           \
-         register T h; FromSample( h, *g );                       \
+         T h; FromSample( h, *g );                                \
          if ( *f < h )                                            \
             *f = h;                                               \
       }                                                           \
@@ -335,7 +338,7 @@ public:
       PCL_PRECONDITION( f != 0 && g != 0 )                        \
       for ( sample* fn = f+n; f < fn; ++f, ++g )                  \
       {                                                           \
-         register sample h = ToSample( *g );                      \
+         sample h = ToSample( *g );                               \
          if ( *f < h )                                            \
             *f = h;                                               \
       }                                                           \
@@ -3090,11 +3093,31 @@ public:
    }
 
    /*!
+    * Conversion of a 32-bit floating point value to a pixel sample value. This
+    * function guarantees that the result will never overflow as a result of an
+    * out-of-range argument value.
+    */
+   static sample ToSampleConstrained( float x )
+   {
+      return FloatToSample( pcl::Range( x, 0.0F, 1.0F )*uint8_max );
+   }
+
+   /*!
     * Conversion of a 64-bit floating point value to a pixel sample value.
     */
    static sample ToSample( double x )
    {
       return FloatToSample( x*uint8_max );
+   }
+
+   /*!
+    * Conversion of a 64-bit floating point value to a pixel sample value. This
+    * function guarantees that the result will never overflow as a result of an
+    * out-of-range argument value.
+    */
+   static sample ToSampleConstrained( double x )
+   {
+      return FloatToSample( pcl::Range( x, 0.0, 1.0 )*uint8_max );
    }
 
    /*!
@@ -3907,11 +3930,31 @@ public:
    }
 
    /*!
+    * Conversion of a 32-bit floating point value to a pixel sample value. This
+    * function guarantees that the result will never overflow as a result of an
+    * out-of-range argument value.
+    */
+   static sample ToSampleConstrained( float x )
+   {
+      return FloatToSample( pcl::Range( x, 0.0F, 1.0F )*uint16_max );
+   }
+
+   /*!
     * Conversion of a 64-bit floating point value to a pixel sample value.
     */
    static sample ToSample( double x )
    {
       return FloatToSample( x*uint16_max );
+   }
+
+   /*!
+    * Conversion of a 64-bit floating point value to a pixel sample value. This
+    * function guarantees that the result will never overflow as a result of an
+    * out-of-range argument value.
+    */
+   static sample ToSampleConstrained( double x )
+   {
+      return FloatToSample( pcl::Range( x, 0.0, 1.0 )*uint16_max );
    }
 
    /*!
@@ -4732,11 +4775,31 @@ public:
    }
 
    /*!
+    * Conversion of a 32-bit floating point value to a pixel sample value. This
+    * function guarantees that the result will never overflow as a result of an
+    * out-of-range argument value.
+    */
+   static sample ToSampleConstrained( float x )
+   {
+      return FloatToSample( pcl::Range( double( x ), 0.0, 1.0 )*uint32_max );
+   }
+
+   /*!
     * Conversion of a 64-bit floating point value to a pixel sample value.
     */
    static sample ToSample( double x )
    {
       return FloatToSample( x*uint32_max );
+   }
+
+   /*!
+    * Conversion of a 64-bit floating point value to a pixel sample value. This
+    * function guarantees that the result will never overflow as a result of an
+    * out-of-range argument value.
+    */
+   static sample ToSampleConstrained( double x )
+   {
+      return FloatToSample( pcl::Range( x, 0.0, 1.0 )*uint32_max );
    }
 
    /*!
@@ -5540,11 +5603,31 @@ public:
    }
 
    /*!
+    * Conversion of a 32-bit floating point value to a pixel sample value. This
+    * function guarantees that the result will never overflow as a result of an
+    * out-of-range argument value.
+    */
+   static sample ToSampleConstrained( float x )
+   {
+      return FloatToSample( pcl::Range( x, 0.0F, 1.0F )*uint20_max );
+   }
+
+   /*!
     * Conversion of a 64-bit floating point value to a pixel sample value.
     */
    static sample ToSample( double x )
    {
       return FloatToSample( x*uint20_max );
+   }
+
+   /*!
+    * Conversion of a 64-bit floating point value to a pixel sample value. This
+    * function guarantees that the result will never overflow as a result of an
+    * out-of-range argument value.
+    */
+   static sample ToSampleConstrained( double x )
+   {
+      return FloatToSample( pcl::Range( x, 0.0, 1.0 )*uint20_max );
    }
 
    /*!
@@ -5814,7 +5897,17 @@ public:
     */
    static sample ToSample( float x )
    {
-      return FloatToSample( x*uint24_max );
+      return FloatToSample( double( x )*uint24_max );
+   }
+
+   /*!
+    * Conversion of a 32-bit floating point value to a pixel sample value. This
+    * function guarantees that the result will never overflow as a result of an
+    * out-of-range argument value.
+    */
+   static sample ToSampleConstrained( float x )
+   {
+      return FloatToSample( pcl::Range( double( x ), 0.0, 1.0 )*uint24_max );
    }
 
    /*!
@@ -5823,6 +5916,16 @@ public:
    static sample ToSample( double x )
    {
       return FloatToSample( x*uint24_max );
+   }
+
+   /*!
+    * Conversion of a 32-bit floating point value to a pixel sample value. This
+    * function guarantees that the result will never overflow as a result of an
+    * out-of-range argument value.
+    */
+   static sample ToSampleConstrained( double x )
+   {
+      return FloatToSample( pcl::Range( x, 0.0, 1.0 )*uint24_max );
    }
 
    /*!
@@ -5947,5 +6050,5 @@ public:
 
 #endif   // __PCL_PixelTraits_h
 
-// ****************************************************************************
-// EOF pcl/PixelTraits.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/PixelTraits.h - Released 2015/07/30 17:15:18 UTC

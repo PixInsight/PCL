@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Geometry Process Module Version 01.01.00.0247
-// ****************************************************************************
-// IntegerResampleInterface.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Geometry Process Module Version 01.01.00.0266
+// ----------------------------------------------------------------------------
+// IntegerResampleInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "IntegerResampleInterface.h"
 #include "IntegerResampleProcess.h"
@@ -376,6 +380,8 @@ IntegerResampleInterface::GUIData::GUIData( IntegerResampleInterface& w )
    int labelWidth2 = fnt.Width( String( "Horizontal:" ) + 'M' );
    int labelWidth3 = fnt.Width( String( "Resample Factor:" ) + 'M' );
    int editWidth1 = fnt.Width( String( '0', 12 ) );
+   int ui4 = w.LogicalPixelsToPhysical( 4 );
+   int ui6 = w.LogicalPixelsToPhysical( 6 );
 
    // -------------------------------------------------------------------------
 
@@ -412,13 +418,13 @@ IntegerResampleInterface::GUIData::GUIData( IntegerResampleInterface& w )
    Downsample_RadioButton.SetText( "Downsample" );
    Downsample_RadioButton.OnClick( (Button::click_event_handler)&IntegerResampleInterface::__ResampleType_ButtonClick, w );
 
-   IntegerResampleRow2_Sizer.AddSpacing( labelWidth3 + 4 );
+   IntegerResampleRow2_Sizer.AddUnscaledSpacing( labelWidth3 + ui4 );
    IntegerResampleRow2_Sizer.Add( Downsample_RadioButton );
 
    Upsample_RadioButton.SetText( "Upsample" );
    Upsample_RadioButton.OnClick( (Button::click_event_handler)&IntegerResampleInterface::__ResampleType_ButtonClick, w );
 
-   IntegerResampleRow3_Sizer.AddSpacing( labelWidth3 + 4 );
+   IntegerResampleRow3_Sizer.AddUnscaledSpacing( labelWidth3 + ui4 );
    IntegerResampleRow3_Sizer.Add( Upsample_RadioButton );
 
    IntegerResample_Sizer.Add( IntegerResampleRow1_Sizer );
@@ -450,7 +456,7 @@ IntegerResampleInterface::GUIData::GUIData( IntegerResampleInterface& w )
    TargetInches_Label.SetFixedWidth( editWidth1 );
 
    DimensionsRow1_Sizer.SetSpacing( 6 );
-   DimensionsRow1_Sizer.AddSpacing( labelWidth1 + 6 );
+   DimensionsRow1_Sizer.AddUnscaledSpacing( labelWidth1 + ui6 );
    DimensionsRow1_Sizer.Add( SourcePixels_Label );
    DimensionsRow1_Sizer.Add( TargetPixels_Label );
    DimensionsRow1_Sizer.Add( TargetCentimeters_Label );
@@ -540,7 +546,7 @@ IntegerResampleInterface::GUIData::GUIData( IntegerResampleInterface& w )
 
    SizeInfo_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
 
-   DimensionsRow4_Sizer.AddSpacing( labelWidth1 + 6 );
+   DimensionsRow4_Sizer.AddUnscaledSpacing( labelWidth1 + ui6 );
    DimensionsRow4_Sizer.Add( SizeInfo_Label, 100 );
 
    Dimensions_Sizer.SetSpacing( 4 );
@@ -585,7 +591,7 @@ IntegerResampleInterface::GUIData::GUIData( IntegerResampleInterface& w )
    ForceResolution_CheckBox.OnClick( (Button::click_event_handler)&IntegerResampleInterface::__ForceResolution_ButtonClick, w );
 
    ResolutionRow2_Sizer.SetSpacing( 8 );
-   ResolutionRow2_Sizer.AddSpacing( labelWidth2 + 4 );
+   ResolutionRow2_Sizer.AddUnscaledSpacing( labelWidth2 + ui4 );
    ResolutionRow2_Sizer.Add( CentimeterUnits_RadioButton );
    ResolutionRow2_Sizer.Add( InchUnits_RadioButton );
    ResolutionRow2_Sizer.Add( ForceResolution_CheckBox );
@@ -620,5 +626,5 @@ IntegerResampleInterface::GUIData::GUIData( IntegerResampleInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF IntegerResampleInterface.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF IntegerResampleInterface.cpp - Released 2015/07/31 11:49:48 UTC

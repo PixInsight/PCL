@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ComboBox.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ComboBox.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/ComboBox.h>
 
@@ -56,87 +59,16 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-#define sender    (reinterpret_cast<ComboBox*>( hSender ))
-#define receiver  (reinterpret_cast<Control*>( hReceiver ))
-
-class ComboBoxEventDispatcher
-{
-public:
-
-   static void api_func ItemSelected( control_handle hSender, control_handle hReceiver, int32 itemIndex )
-   {
-      if ( sender->onItemSelected != 0 )
-         (receiver->*sender->onItemSelected)( *sender, itemIndex );
-   }
-
-   static void api_func ItemHighlighted( control_handle hSender, control_handle hReceiver, int32 itemIndex )
-   {
-      if ( sender->onItemHighlighted != 0 )
-         (receiver->*sender->onItemHighlighted)( *sender, itemIndex );
-   }
-
-   static void api_func EditTextUpdated( control_handle hSender, control_handle hReceiver )
-   {
-      if ( sender->onEditTextUpdated != 0 )
-         (receiver->*sender->onEditTextUpdated)( *sender );
-   }
-}; // ComboBoxEventDispatcher
-
-#undef sender
-#undef receiver
-
-// ----------------------------------------------------------------------------
-
 #ifdef _MSC_VER
 #  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
 #endif
 
 ComboBox::ComboBox( Control& parent ) :
-Control( (*API->ComboBox->CreateComboBox)( ModuleHandle(), this, parent.handle, 0 /*flags*/ ) ),
-onItemSelected( 0 ),
-onItemHighlighted( 0 ),
-onEditTextUpdated( 0 )
+   Control( (*API->ComboBox->CreateComboBox)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) ),
+   m_handlers( nullptr )
 {
-   if ( handle == 0 )
+   if ( handle == nullptr )
       throw APIFunctionError( "CreateComboBox" );
-}
-
-// ----------------------------------------------------------------------------
-
-void ComboBox::OnItemSelected( item_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onItemSelected = 0;
-   if ( (*API->ComboBox->SetComboBoxItemSelectedEventRoutine)( handle, &receiver,
-        (f != 0) ? ComboBoxEventDispatcher::ItemSelected : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetComboBoxItemSelectedEventRoutine" );
-   }
-   onItemSelected = f;
-}
-
-void ComboBox::OnItemHighlighted( item_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onItemHighlighted = 0;
-   if ( (*API->ComboBox->SetComboBoxItemHighlightedEventRoutine)( handle, &receiver,
-        (f != 0) ? ComboBoxEventDispatcher::ItemHighlighted : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetComboBoxItemHighlightedEventRoutine" );
-   }
-   onItemHighlighted = f;
-}
-
-void ComboBox::OnEditTextUpdated( edit_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onEditTextUpdated = 0;
-   if ( (*API->ComboBox->SetComboBoxEditTextUpdatedEventRoutine)( handle, &receiver,
-        (f != 0) ? ComboBoxEventDispatcher::EditTextUpdated : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetComboBoxEditTextUpdatedEventRoutine" );
-   }
-   onEditTextUpdated = f;
 }
 
 // ----------------------------------------------------------------------------
@@ -196,15 +128,13 @@ String ComboBox::ItemText( int idx ) const
    (*API->ComboBox->GetComboBoxItemText)( handle, idx, 0, &len );
 
    String text;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      text.Reserve( len );
-
+      text.SetLength( len );
       if ( (*API->ComboBox->GetComboBoxItemText)( handle, idx, text.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetComboBoxItemText" );
+      text.ResizeToNullTerminated();
    }
-
    return text;
 }
 
@@ -251,15 +181,13 @@ String ComboBox::EditText() const
    (*API->ComboBox->GetComboBoxEditText)( handle, 0, &len );
 
    String text;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      text.Reserve( len );
-
+      text.SetLength( len );
       if ( (*API->ComboBox->GetComboBoxEditText)( handle, text.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetComboBoxEditText" );
+      text.ResizeToNullTerminated();
    }
-
    return text;
 }
 
@@ -342,7 +270,76 @@ void ComboBox::HideList()
 
 // ----------------------------------------------------------------------------
 
+#define sender    (reinterpret_cast<ComboBox*>( hSender ))
+#define receiver  (reinterpret_cast<Control*>( hReceiver ))
+#define handlers  sender->m_handlers
+
+class ComboBoxEventDispatcher
+{
+public:
+
+   static void api_func ItemSelected( control_handle hSender, control_handle hReceiver, int32 itemIndex )
+   {
+      if ( handlers->onItemSelected != nullptr )
+         (receiver->*handlers->onItemSelected)( *sender, itemIndex );
+   }
+
+   static void api_func ItemHighlighted( control_handle hSender, control_handle hReceiver, int32 itemIndex )
+   {
+      if ( handlers->onItemHighlighted != nullptr )
+         (receiver->*handlers->onItemHighlighted)( *sender, itemIndex );
+   }
+
+   static void api_func EditTextUpdated( control_handle hSender, control_handle hReceiver )
+   {
+      if ( handlers->onEditTextUpdated != nullptr )
+         (receiver->*handlers->onEditTextUpdated)( *sender );
+   }
+}; // ComboBoxEventDispatcher
+
+#undef sender
+#undef receiver
+#undef handlers
+
+// ----------------------------------------------------------------------------
+
+#define INIT_EVENT_HANDLERS()    \
+   __PCL_NO_ALIAS_HANDLERS;      \
+   if ( m_handlers == nullptr )  \
+      m_handlers = new EventHandlers
+
+void ComboBox::OnItemSelected( item_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->ComboBox->SetComboBoxItemSelectedEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? ComboBoxEventDispatcher::ItemSelected : 0 ) == api_false )
+      throw APIFunctionError( "SetComboBoxItemSelectedEventRoutine" );
+   m_handlers->onItemSelected = f;
+}
+
+void ComboBox::OnItemHighlighted( item_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->ComboBox->SetComboBoxItemHighlightedEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? ComboBoxEventDispatcher::ItemHighlighted : 0 ) == api_false )
+      throw APIFunctionError( "SetComboBoxItemHighlightedEventRoutine" );
+   m_handlers->onItemHighlighted = f;
+}
+
+void ComboBox::OnEditTextUpdated( edit_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->ComboBox->SetComboBoxEditTextUpdatedEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? ComboBoxEventDispatcher::EditTextUpdated : 0 ) == api_false )
+      throw APIFunctionError( "SetComboBoxEditTextUpdatedEventRoutine" );
+   m_handlers->onEditTextUpdated = f;
+}
+
+#undef INIT_EVENT_HANDLERS
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/ComboBox.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ComboBox.cpp - Released 2015/07/30 17:15:31 UTC

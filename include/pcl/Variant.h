@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Variant.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Variant.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Variant_h
 #define __PCL_Variant_h
@@ -103,50 +106,83 @@ namespace pcl
  * Currently %Variant supports the following data types:
  *
  * <table border="1" cellpadding="4" cellspacing="0">
- * <tr><td>VariantType::Bool</td>       <td>A Boolean value, equivalent to the \c bool standard C++ type.</td></tr>
+ * <tr><td>VariantType::Bool</td>       <td>A Boolean value, equivalent to the \c bool C++ type.</td></tr>
  * <tr><td>VariantType::Boolean</td>    <td>A synonym for VariantType::Bool.</td></tr>
- * <tr><td>VariantType::Int8</td>       <td>Signed 8-bit integer (\c char).</td></tr>
- * <tr><td>VariantType::Int16</td>      <td>Signed 16-bit integer (\c short).</td></tr>
- * <tr><td>VariantType::Int32</td>      <td>Signed 32-bit integer (\c int).</td></tr>
+ * <tr><td>VariantType::Int8</td>       <td>Signed 8-bit integer (int8).</td></tr>
+ * <tr><td>VariantType::Char</td>       <td>A synonym for VariantType::Int8.</td></tr>
+ * <tr><td>VariantType::Int16</td>      <td>Signed 16-bit integer (int16).</td></tr>
+ * <tr><td>VariantType::Short</td>      <td>A synonym for VariantType::Int16.</td></tr>
+ * <tr><td>VariantType::Int32</td>      <td>Signed 32-bit integer (int32).</td></tr>
  * <tr><td>VariantType::Integer</td>    <td>A synonym for VariantType::Int32.</td></tr>
- * <tr><td>VariantType::Int64</td>      <td>Signed 64-bit integer ( \c long \c long).</td></tr>
- * <tr><td>VariantType::UInt8</td>      <td>Unsigned 8-bit integer (\c unsigned \c char).</td></tr>
+ * <tr><td>VariantType::Int64</td>      <td>Signed 64-bit integer (int64).</td></tr>
+ * <tr><td>VariantType::UInt8</td>      <td>Unsigned 8-bit integer (uint8).</td></tr>
  * <tr><td>VariantType::Byte</td>       <td>A synonym for VariantType::UInt8.</td></tr>
- * <tr><td>VariantType::UInt16</td>     <td>Unsigned 16-bit integer (\c unsigned \c short).</td></tr>
- * <tr><td>VariantType::UInt32</td>     <td>Unsigned 32-bit integer (\c unsigned \c int).</td></tr>
+ * <tr><td>VariantType::UInt16</td>     <td>Unsigned 16-bit integer (uint16).</td></tr>
+ * <tr><td>VariantType::UShort</td>     <td>A synonym for VariantType::UInt16.</td></tr>
+ * <tr><td>VariantType::UInt32</td>     <td>Unsigned 32-bit integer (uint32).</td></tr>
  * <tr><td>VariantType::UInt</td>       <td>A synonym for VariantType::UInt32.</td></tr>
- * <tr><td>VariantType::UInt64</td>     <td>Unsigned 64-bit integer (\c unsigned \c long \c long).</td></tr>
- * <tr><td>VariantType::Float</td>      <td>32-bit floating point real value (\c float).</td></tr>
- * <tr><td>VariantType::Double</td>     <td>64-bit floating point real value (\c double).</td></tr>
+ * <tr><td>VariantType::UInt64</td>     <td>Unsigned 64-bit integer (uint64).</td></tr>
+ * <tr><td>VariantType::Float32</td>    <td>32-bit floating point real value (\c float).</td></tr>
+ * <tr><td>VariantType::Float</td>      <td>A synonym for VariantType::Float32.</td></tr>
+ * <tr><td>VariantType::Float64</td>    <td>64-bit floating point real value (\c float).</td></tr>
+ * <tr><td>VariantType::Double</td>     <td>A synonym for VariantType::Float64.</td></tr>
  * <tr><td>VariantType::Real</td>       <td>A synonym for VariantType::Double.</td></tr>
- * <tr><td>VariantType::FComplex</td>   <td>32-bit floating point complex value (fcomplex).</td></tr>
- * <tr><td>VariantType::DComplex</td>   <td>64-bit floating point complex value (dcomplex).</td></tr>
+ * <tr><td>VariantType::Complex32</td>  <td>32-bit floating point complex value (fcomplex).</td></tr>
+ * <tr><td>VariantType::FComplex</td>   <td>A synonym for VariantType::Complex32.</td></tr>
+ * <tr><td>VariantType::Complex64</td>  <td>64-bit floating point complex value (dcomplex).</td></tr>
+ * <tr><td>VariantType::DComplex</td>   <td>A synonym for VariantType::Complex64.</td></tr>
  * <tr><td>VariantType::Complex</td>    <td>A synonym for VariantType::DComplex.</td></tr>
- * <tr><td>VariantType::Point</td>      <td>Two-dimensional point with integer coordinates (Point).</td></tr>
- * <tr><td>VariantType::FPoint</td>     <td>Two-dimensional point with \c float coordinates (FPoint).</td></tr>
- * <tr><td>VariantType::DPoint</td>     <td>Two-dimensional point with \c double coordinates (DPoint).</td></tr>
- * <tr><td>VariantType::Rect</td>       <td>Two-dimensional rectangle with integer coordinates (Rect).</td></tr>
- * <tr><td>VariantType::FRect</td>      <td>Two-dimensional rectangle with \c float coordinates (FRect).</td></tr>
- * <tr><td>VariantType::DRect</td>      <td>Two-dimensional rectangle with \c double coordinates (DRect).</td></tr>
- * <tr><td>VariantType::CharVector</td> <td>Vector of 8-bit signed integer components (CharVector).</td></tr>
- * <tr><td>VariantType::ByteVector</td> <td>Vector of 8-bit unsigned integer components (ByteVector).</td></tr>
- * <tr><td>VariantType::IVector</td>    <td>Vector of integer components (IVector).</td></tr>
- * <tr><td>VariantType::UIVector</td>   <td>Vector of unsigned integer components (UIVector).</td></tr>
- * <tr><td>VariantType::I64Vector</td>  <td>Vector of 64-bit integer components (I64Vector).</td></tr>
+ * <tr><td>VariantType::I32Point</td>   <td>Two-dimensional point with 32-bit integer coordinates (Point).</td></tr>
+ * <tr><td>VariantType::Point</td>      <td>A synonym for VariantType::I32Point.</td></tr>
+ * <tr><td>VariantType::F32Point</td>   <td>Two-dimensional point with 32-bit floating point coordinates (FPoint).</td></tr>
+ * <tr><td>VariantType::FPoint</td>     <td>A synonym for VariantType::F32Point.</td></tr>
+ * <tr><td>VariantType::F64Point</td>   <td>Two-dimensional point with 64-bit floating point coordinates (DPoint).</td></tr>
+ * <tr><td>VariantType::DPoint</td>     <td>A synonym for VariantType::F64Point.</td></tr>
+ * <tr><td>VariantType::I32Rect</td>    <td>Rectangle with 32-bit integer coordinates (Rect).</td></tr>
+ * <tr><td>VariantType::Rect</td>       <td>A synonym for VariantType::I32Rect.</td></tr>
+ * <tr><td>VariantType::F32Rect</td>    <td>Rectangle with 32-bit floating point coordinates (FRect).</td></tr>
+ * <tr><td>VariantType::FRect</td>      <td>A synonym for VariantType::F32Rect.</td></tr>
+ * <tr><td>VariantType::F64Rect</td>    <td>Rectangle with 64-bit floating point coordinates (DRect).</td></tr>
+ * <tr><td>VariantType::DRect</td>      <td>A synonym for VariantType::F64Rect.</td></tr>
+ * <tr><td>VariantType::I8Vector</td>   <td>Vector of 8-bit signed integer components (I8Vector).</td></tr>
+ * <tr><td>VariantType::CharVector</td> <td>A synonym for VariantType::I8Vector</td></tr>
+ * <tr><td>VariantType::UI8Vector</td>  <td>Vector of 8-bit unsigned integer components (UI8Vector).</td></tr>
+ * <tr><td>VariantType::ByteVector</td> <td>A synonym for VariantType::UI8Vector</td></tr>
+ * <tr><td>VariantType::I16Vector</td>  <td>Vector of 16-bit signed integer components (I16Vector).</td></tr>
+ * <tr><td>VariantType::UI16Vector</td> <td>Vector of 16-bit unsigned integer components (UI16Vector).</td></tr>
+ * <tr><td>VariantType::I32Vector</td>  <td>Vector of 32-bit signed integer components (I32Vector).</td></tr>
+ * <tr><td>VariantType::IVector</td>    <td>A synonym for VariantType::I32Vector</td></tr>
+ * <tr><td>VariantType::UI32Vector</td> <td>Vector of 32-bit unsigned integer components (UI32Vector).</td></tr>
+ * <tr><td>VariantType::UIVector</td>   <td>A synonym for VariantType::UI32Vector</td></tr>
+ * <tr><td>VariantType::I64Vector</td>  <td>Vector of 64-bit signed integer components (I64Vector).</td></tr>
  * <tr><td>VariantType::UI64Vector</td> <td>Vector of 64-bit unsigned integer components (UI64Vector).</td></tr>
- * <tr><td>VariantType::FVector</td>    <td>Vector of \c float components (FVector).</td></tr>
- * <tr><td>VariantType::DVector</td>    <td>Vector of \c double components (DVector).</td></tr>
- * <tr><td>VariantType::CharMatrix</td> <td>Matrix of 8-bit signed integer components (CharMatrix).</td></tr>
- * <tr><td>VariantType::ByteMatrix</td> <td>Matrix of 8-bit unsigned integer components (ByteMatrix).</td></tr>
- * <tr><td>VariantType::IMatrix</td>    <td>Matrix of integer elements (IMatrix).</td></tr>
- * <tr><td>VariantType::UIMatrix</td>   <td>Matrix of unsigned integer components (UIMatrix).</td></tr>
- * <tr><td>VariantType::I64Matrix</td>  <td>Matrix of 64-bit integer components (I64Matrix).</td></tr>
- * <tr><td>VariantType::UI64Matrix</td> <td>Matrix of 64-bit unsigned integer components (UI64Matrix).</td></tr>
- * <tr><td>VariantType::FMatrix</td>    <td>Matrix of \c float elements (FMatrix).</td></tr>
- * <tr><td>VariantType::DMatrix</td>    <td>Matrix of \c double elements (DMatrix).</td></tr>
+ * <tr><td>VariantType::F32Vector</td>  <td>Vector of 32-bit floating point real components (F32Vector).</td></tr>
+ * <tr><td>VariantType::FVector</td>    <td>A synonym for VariantType::F32Vector</td></tr>
+ * <tr><td>VariantType::F64Vector</td>  <td>Vector of 64-bit floating point real components (F64Vector).</td></tr>
+ * <tr><td>VariantType::DVector</td>    <td>A synonym for VariantType::F64Vector</td></tr>
+ * <tr><td>VariantType::C32Vector</td>  <td>Vector of 32-bit floating point complex components (C32Vector).</td></tr>
+ * <tr><td>VariantType::C64Vector</td>  <td>Vector of 64-bit floating point complex components (C64Vector).</td></tr>
+ * <tr><td>VariantType::I8Matrix</td>   <td>Matrix of 8-bit signed integer elements (I8Matrix).</td></tr>
+ * <tr><td>VariantType::CharMatrix</td> <td>A synonym for VariantType::I8Matrix</td></tr>
+ * <tr><td>VariantType::UI8Matrix</td>  <td>Matrix of 8-bit unsigned integer elements (UI8Matrix).</td></tr>
+ * <tr><td>VariantType::ByteMatrix</td> <td>A synonym for VariantType::UI8Matrix</td></tr>
+ * <tr><td>VariantType::I16Matrix</td>  <td>Matrix of 16-bit signed integer elements (I16Matrix).</td></tr>
+ * <tr><td>VariantType::UI16Matrix</td> <td>Matrix of 16-bit unsigned integer elements (UI16Matrix).</td></tr>
+ * <tr><td>VariantType::I32Matrix</td>  <td>Matrix of 32-bit signed integer elements (I32Matrix).</td></tr>
+ * <tr><td>VariantType::IMatrix</td>    <td>A synonym for VariantType::I32Matrix</td></tr>
+ * <tr><td>VariantType::UI32Matrix</td> <td>Matrix of 32-bit unsigned integer elements (UI32Matrix).</td></tr>
+ * <tr><td>VariantType::UIMatrix</td>   <td>A synonym for VariantType::UI32Matrix</td></tr>
+ * <tr><td>VariantType::I64Matrix</td>  <td>Matrix of 64-bit signed integer elements (I64Matrix).</td></tr>
+ * <tr><td>VariantType::UI64Matrix</td> <td>Matrix of 64-bit unsigned integer elements (UI64Matrix).</td></tr>
+ * <tr><td>VariantType::F32Matrix</td>  <td>Matrix of 32-bit floating point real elements (F32Matrix).</td></tr>
+ * <tr><td>VariantType::FMatrix</td>    <td>A synonym for VariantType::F32Matrix</td></tr>
+ * <tr><td>VariantType::F64Matrix</td>  <td>Matrix of 64-bit floating point real elements (F64Matrix).</td></tr>
+ * <tr><td>VariantType::DMatrix</td>    <td>A synonym for VariantType::F64Matrix</td></tr>
+ * <tr><td>VariantType::C32Matrix</td>  <td>Matrix of 32-bit floating point complex elements (C32Matrix).</td></tr>
+ * <tr><td>VariantType::C64Matrix</td>  <td>Matrix of 64-bit floating point complex elements (C64Matrix).</td></tr>
  * <tr><td>VariantType::ByteArray</td>  <td>Dynamic array of unsigned 8-bit integers (ByteArray).</td></tr>
  * <tr><td>VariantType::String</td>     <td>UTF-16 Unicode string (String).</td></tr>
- * <tr><td>VariantType::IsoString</td>  <td>8-bit ISO 8859-1 or UTF-8 Unicode string (IsoString).</td></tr>
+ * <tr><td>VariantType::IsoString</td>  <td>8-bit ISO/IEC 8859-1 or UTF-8 Unicode string (IsoString).</td></tr>
  * <tr><td>VariantType::StringList</td>            <td>Dynamic list of UTF-16 Unicode strings (StringList).</td></tr>
  * <tr><td>VariantType::IsoStringList</td>         <td>Dynamic list of 8-bit strings (IsoStringList).</td></tr>
  * <tr><td>VariantType::StringKeyValue</td>        <td>Key/value pair of UTF-16 Unicode strings (StringKeyValue).</td></tr>
@@ -163,52 +199,98 @@ namespace VariantType
 
       Bool,
       Boolean = Bool,
+
       Int8,
+      Char = Int8,
       Int16,
+      Short = Int16,
       Int32,
       Integer = Int32,
       Int64,
+
       UInt8,
       Byte = UInt8,
       UInt16,
+      UShort = UInt16,
       UInt32,
       UInt = UInt32,
       UInt64,
-      Float,
-      Double,
+
+      Float32,
+      Float = Float32,
+      Float64,
+      Double = Float64,
       Real = Double,
-      FComplex,
-      DComplex,
+
+      Complex32,
+      FComplex = Complex32,
+      Complex64,
+      DComplex = Complex64,
       Complex = DComplex,
-      Point,
-      FPoint,
-      DPoint,
-      Rect,
-      FRect,
-      DRect,
-      CharVector,
-      ByteVector,
-      IVector,
-      UIVector,
+
+      I32Point,
+      Point = I32Point,
+      F32Point,
+      FPoint = F32Point,
+      F64Point,
+      DPoint = F64Point,
+
+      I32Rect,
+      Rect = I32Rect,
+      F32Rect,
+      FRect = F32Rect,
+      F64Rect,
+      DRect = F64Rect,
+
+      I8Vector,
+      CharVector = I8Vector,
+      UI8Vector,
+      ByteVector = UI8Vector,
+      I16Vector,
+      UI16Vector,
+      I32Vector,
+      IVector = I32Vector,
+      UI32Vector,
+      UIVector = UI32Vector,
       I64Vector,
       UI64Vector,
-      FVector,
-      DVector,
-      CharMatrix,
-      ByteMatrix,
-      IMatrix,
-      UIMatrix,
+      F32Vector,
+      FVector = F32Vector,
+      F64Vector,
+      DVector = F64Vector,
+      C32Vector,
+      C64Vector,
+
+      I8Matrix,
+      CharMatrix = I8Matrix,
+      UI8Matrix,
+      ByteMatrix = UI8Matrix,
+      I16Matrix,
+      UI16Matrix,
+      I32Matrix,
+      IMatrix = I32Matrix,
+      UI32Matrix,
+      UIMatrix = UI32Matrix,
       I64Matrix,
       UI64Matrix,
-      FMatrix,
-      DMatrix,
+      F32Matrix,
+      FMatrix = F32Matrix,
+      F64Matrix,
+      DMatrix = F64Matrix,
+      C32Matrix,
+      C64Matrix,
+
       ByteArray,
+
       String,
       IsoString,
+
       StringList,
       IsoStringList,
+
       StringKeyValue,
       IsoStringKeyValue,
+
       StringKeyValueList,
       IsoStringKeyValueList,
 
@@ -284,6 +366,7 @@ public:
     */
    Variant() : m_type( VariantType::Invalid )
    {
+      m_data.anyValue = 0;
    }
 
    /*!
@@ -364,7 +447,7 @@ public:
     */
    Variant( float f ) : m_type( VariantType::Float )
    {
-      m_data.floatValue = f;
+      m_data.float32Value = f;
    }
 
    /*!
@@ -373,7 +456,7 @@ public:
     */
    Variant( double d ) : m_type( VariantType::Double )
    {
-      m_data.doubleValue = d;
+      m_data.float64Value = d;
    }
 
    /*!
@@ -382,7 +465,7 @@ public:
     */
    Variant( fcomplex fc ) : m_type( VariantType::FComplex )
    {
-      m_data.fcomplexValue = new fcomplex( fc );
+      m_data.complex32Value = new fcomplex( fc );
    }
 
    /*!
@@ -391,7 +474,7 @@ public:
     */
    Variant( dcomplex dc ) : m_type( VariantType::DComplex )
    {
-      m_data.dcomplexValue = new dcomplex( dc );
+      m_data.complex64Value = new dcomplex( dc );
    }
 
    /*!
@@ -400,7 +483,7 @@ public:
     */
    Variant( const Point& p ) : m_type( VariantType::Point )
    {
-      m_data.pointValue = new Point( p );
+      m_data.i32PointValue = new Point( p );
    }
 
    /*!
@@ -409,7 +492,7 @@ public:
     */
    Variant( const FPoint& fp ) : m_type( VariantType::FPoint )
    {
-      m_data.fpointValue = new FPoint( fp );
+      m_data.f32PointValue = new FPoint( fp );
    }
 
    /*!
@@ -418,7 +501,7 @@ public:
     */
    Variant( const DPoint& dp ) : m_type( VariantType::DPoint )
    {
-      m_data.dpointValue = new DPoint( dp );
+      m_data.f64PointValue = new DPoint( dp );
    }
 
    /*!
@@ -427,7 +510,7 @@ public:
     */
    Variant( const Rect& r ) : m_type( VariantType::Rect )
    {
-      m_data.rectValue = new Rect( r );
+      m_data.i32RectValue = new Rect( r );
    }
 
    /*!
@@ -436,7 +519,7 @@ public:
     */
    Variant( const FRect& fr ) : m_type( VariantType::FRect )
    {
-      m_data.frectValue = new FRect( fr );
+      m_data.f32RectValue = new FRect( fr );
    }
 
    /*!
@@ -445,7 +528,7 @@ public:
     */
    Variant( const DRect& dr ) : m_type( VariantType::DRect )
    {
-      m_data.drectValue = new DRect( dr );
+      m_data.f64RectValue = new DRect( dr );
    }
 
    /*!
@@ -454,7 +537,7 @@ public:
     */
    Variant( const CharVector& cv ) : m_type( VariantType::CharVector )
    {
-      m_data.charVectorValue = new CharVector( cv );
+      m_data.i8VectorValue = new CharVector( cv );
    }
 
    /*!
@@ -463,29 +546,47 @@ public:
     */
    Variant( const ByteVector& bv ) : m_type( VariantType::ByteVector )
    {
-      m_data.byteVectorValue = new ByteVector( bv );
+      m_data.ui8VectorValue = new ByteVector( bv );
    }
 
    /*!
-    * Constructs a %Variant instance to store a vector of integer components
-    * (IVector).
+    * Constructs a %Variant instance to store a vector of 16-bit signed integer
+    * components (I16Vector).
+    */
+   Variant( const I16Vector& i16v ) : m_type( VariantType::I16Vector )
+   {
+      m_data.i16VectorValue = new I16Vector( i16v );
+   }
+
+   /*!
+    * Constructs a %Variant instance to store a vector of 16-bit unsigned
+    * integer components (UI16Vector).
+    */
+   Variant( const UI16Vector& ui16v ) : m_type( VariantType::UI16Vector )
+   {
+      m_data.ui16VectorValue = new UI16Vector( ui16v );
+   }
+
+   /*!
+    * Constructs a %Variant instance to store a vector of 32-bit signed integer
+    * components (IVector).
     */
    Variant( const IVector& iv ) : m_type( VariantType::IVector )
    {
-      m_data.iVectorValue = new IVector( iv );
+      m_data.i32VectorValue = new IVector( iv );
    }
 
    /*!
-    * Constructs a %Variant instance to store a vector of unsigned integer
-    * components (UIVector).
+    * Constructs a %Variant instance to store a vector of 32-bit unsigned
+    * integer components (UIVector).
     */
    Variant( const UIVector& uiv ) : m_type( VariantType::UIVector )
    {
-      m_data.uiVectorValue = new UIVector( uiv );
+      m_data.ui32VectorValue = new UIVector( uiv );
    }
 
    /*!
-    * Constructs a %Variant instance to store a vector of 64-bit integer
+    * Constructs a %Variant instance to store a vector of 64-bit signed integer
     * components (I64Vector).
     */
    Variant( const I64Vector& i64v ) : m_type( VariantType::I64Vector )
@@ -503,21 +604,39 @@ public:
    }
 
    /*!
-    * Constructs a %Variant instance to store a vector of \c float components
-    * (FVector).
+    * Constructs a %Variant instance to store a vector of 32-bit floating point
+    * real components (FVector).
     */
    Variant( const FVector& fv ) : m_type( VariantType::FVector )
    {
-      m_data.fVectorValue = new FVector( fv );
+      m_data.f32VectorValue = new FVector( fv );
    }
 
    /*!
-    * Constructs a %Variant instance to store a vector of \c double components
-    * (DVector).
+    * Constructs a %Variant instance to store a vector of 64-bit floating point
+    * real components (DVector).
     */
    Variant( const DVector& dv ) : m_type( VariantType::DVector )
    {
-      m_data.dVectorValue = new DVector( dv );
+      m_data.f64VectorValue = new DVector( dv );
+   }
+
+   /*!
+    * Constructs a %Variant instance to store a vector of 32-bit floating point
+    * complex components (C32Vector).
+    */
+   Variant( const C32Vector& c32v ) : m_type( VariantType::C32Vector )
+   {
+      m_data.c32VectorValue = new C32Vector( c32v );
+   }
+
+   /*!
+    * Constructs a %Variant instance to store a vector of 64-bit floating point
+    * complex components (C64Vector).
+    */
+   Variant( const C64Vector& c64v ) : m_type( VariantType::C64Vector )
+   {
+      m_data.c64VectorValue = new C64Vector( c64v );
    }
 
    /*!
@@ -526,7 +645,7 @@ public:
     */
    Variant( const CharMatrix& cm ) : m_type( VariantType::CharMatrix )
    {
-      m_data.charMatrixValue = new CharMatrix( cm );
+      m_data.i8MatrixValue = new CharMatrix( cm );
    }
 
    /*!
@@ -535,25 +654,43 @@ public:
     */
    Variant( const ByteMatrix& bm ) : m_type( VariantType::ByteMatrix )
    {
-      m_data.byteMatrixValue = new ByteMatrix( bm );
+      m_data.ui8MatrixValue = new ByteMatrix( bm );
    }
 
    /*!
-    * Constructs a %Variant instance to store a matrix of integer elements
-    * (IMatrix).
+    * Constructs a %Variant instance to store a matrix of 16-bit signed integer
+    * elements (I16Matrix).
+    */
+   Variant( const I16Matrix& i16m ) : m_type( VariantType::I16Matrix )
+   {
+      m_data.i16MatrixValue = new I16Matrix( i16m );
+   }
+
+   /*!
+    * Constructs a %Variant instance to store a matrix of 16-bit unsigned
+    * integer elements (UI16Matrix).
+    */
+   Variant( const UI16Matrix& ui16m ) : m_type( VariantType::UI16Matrix )
+   {
+      m_data.ui16MatrixValue = new UI16Matrix( ui16m );
+   }
+
+   /*!
+    * Constructs a %Variant instance to store a matrix of 32-bit signed integer
+    * elements (IMatrix).
     */
    Variant( const IMatrix& im ) : m_type( VariantType::IMatrix )
    {
-      m_data.iMatrixValue = new IMatrix( im );
+      m_data.i32MatrixValue = new IMatrix( im );
    }
 
    /*!
-    * Constructs a %Variant instance to store a matrix of unsigned integer
-    * elements (UIMatrix).
+    * Constructs a %Variant instance to store a matrix of 32-bit unsigned
+    * integer elements (UIMatrix).
     */
    Variant( const UIMatrix& uim ) : m_type( VariantType::UIMatrix )
    {
-      m_data.uiMatrixValue = new UIMatrix( uim );
+      m_data.ui32MatrixValue = new UIMatrix( uim );
    }
 
    /*!
@@ -575,21 +712,39 @@ public:
    }
 
    /*!
-    * Constructs a %Variant instance to store a matrix of \c float elements
-    * (FMatrix).
+    * Constructs a %Variant instance to store a matrix of 32-bit floating point
+    * real elements (FMatrix).
     */
    Variant( const FMatrix& fm ) : m_type( VariantType::FMatrix )
    {
-      m_data.fMatrixValue = new FMatrix( fm );
+      m_data.f32MatrixValue = new FMatrix( fm );
    }
 
    /*!
-    * Constructs a %Variant instance to store a matrix of \c double elements
-    * (DMatrix).
+    * Constructs a %Variant instance to store a matrix of 64-bit floating point
+    * real elements (DMatrix).
     */
    Variant( const DMatrix& dm ) : m_type( VariantType::DMatrix )
    {
-      m_data.dMatrixValue = new DMatrix( dm );
+      m_data.f64MatrixValue = new DMatrix( dm );
+   }
+
+   /*!
+    * Constructs a %Variant instance to store a matrix of 32-bit floating point
+    * complex elements (C32Matrix).
+    */
+   Variant( const C32Matrix& c32m ) : m_type( VariantType::C32Matrix )
+   {
+      m_data.c32MatrixValue = new C32Matrix( c32m );
+   }
+
+   /*!
+    * Constructs a %Variant instance to store a matrix of 64-bit floating point
+    * complex elements (C64Matrix).
+    */
+   Variant( const C64Matrix& c64m ) : m_type( VariantType::C64Matrix )
+   {
+      m_data.c64MatrixValue = new C64Matrix( c64m );
    }
 
    /*!
@@ -613,9 +768,9 @@ public:
     * Constructs a %Variant instance to store an 8-bit ISO/IEC 8859-1 or UTF-8
     * Unicode string (IsoString).
     */
-   Variant( const IsoString& is ) : m_type( VariantType::IsoString )
+   Variant( const IsoString& s8 ) : m_type( VariantType::IsoString )
    {
-      m_data.isoStringValue = new IsoString( is );
+      m_data.isoStringValue = new IsoString( s8 );
    }
 
    /*!
@@ -691,6 +846,16 @@ public:
    }
 
    /*!
+    * Move constructor.
+    */
+   Variant( Variant&& x )
+   {
+      m_type = x.m_type;
+      m_data.anyValue = x.m_data.anyValue;
+      x.m_type = VariantType::Invalid;
+   }
+
+   /*!
     * Virtual destructor. The object stored in this %Variant will be destroyed.
     */
    virtual ~Variant()
@@ -699,17 +864,65 @@ public:
    }
 
    /*!
-    * Assignment operator. This %Variant will store a copy of the object stored
-    * in another %Variant \a x. Returns a reference to this object.
+    * Copy assignment operator. This %Variant will store a copy of the object
+    * stored in another %Variant \a x. Returns a reference to this object.
     */
    Variant& operator =( const Variant& x )
+   {
+      Assign( x );
+      return *this;
+   }
+
+   /*!
+    * Causes this %Variant to store a copy of the object stored in another
+    * %Variant \a x.
+    */
+   void Assign( const Variant& x )
    {
       if ( &x != this )
       {
          Clear();
          Copy( x );
       }
+   }
+
+   /*!
+    * Move assignment operator.
+    */
+   Variant& operator =( Variant&& x )
+   {
+      Transfer( x );
       return *this;
+   }
+
+   /*!
+    * Transfers the object stored in another %Variant \a x to this %Variant.
+    * The source object \a x is left empty/invalid.
+    */
+   void Transfer( Variant& x )
+   {
+      if ( &x != this )
+      {
+         Clear();
+         m_type = x.m_type;
+         m_data.anyValue = x.m_data.anyValue;
+         x.m_type = VariantType::Invalid;
+      }
+   }
+
+   /*!
+    * Transfers the object stored in another %Variant \a x to this %Variant.
+    * The source object \a x is left empty/invalid.
+    */
+   void Transfer( Variant&& x )
+   {
+      if ( &x != this )
+      {
+         Clear();
+         m_type = x.m_type;
+         m_data.anyValue = x.m_data.anyValue;
+         x.m_type = VariantType::Invalid;
+      }
    }
 
    /*!
@@ -966,6 +1179,24 @@ public:
    ByteVector ToByteVector() const;
 
    /*!
+    * Converts the object stored in this %Variant to a vector of 16-bit signed
+    * integer components, and returns the result of the conversion.
+    *
+    * Throws an Error exception if a conversion to the I16Vector class is not
+    * possible for the object currently stored in this %Variant.
+    */
+   I16Vector ToI16Vector() const;
+
+   /*!
+    * Converts the object stored in this %Variant to a vector of 16-bit
+    * unsigned integer components, and returns the result of the conversion.
+    *
+    * Throws an Error exception if a conversion to the UI16Vector class is not
+    * possible for the object currently stored in this %Variant.
+    */
+   UI16Vector ToUI16Vector() const;
+
+   /*!
     * Converts the object stored in this %Variant to a vector of integer
     * components, and returns the result of the conversion.
     *
@@ -1028,6 +1259,26 @@ public:
    }
 
    /*!
+    * Converts the object stored in this %Variant to a vector of 32-bit
+    * floating point complex components, and returns the result of the
+    * conversion.
+    *
+    * Throws an Error exception if a conversion to the C32Vector class is not
+    * possible for the object currently stored in this %Variant.
+    */
+   C32Vector ToC32Vector() const;
+
+   /*!
+    * Converts the object stored in this %Variant to a vector of 64-bit
+    * floating point complex components, and returns the result of the
+    * conversion.
+    *
+    * Throws an Error exception if a conversion to the C64Vector class is not
+    * possible for the object currently stored in this %Variant.
+    */
+   C64Vector ToC64Vector() const;
+
+   /*!
     * Converts the object stored in this %Variant to a matrix of 8-bit signed
     * integer elements, and returns the result of the conversion.
     *
@@ -1044,6 +1295,24 @@ public:
     * possible for the object currently stored in this %Variant.
     */
    ByteMatrix ToByteMatrix() const;
+
+   /*!
+    * Converts the object stored in this %Variant to a matrix of 16-bit signed
+    * integer elements, and returns the result of the conversion.
+    *
+    * Throws an Error exception if a conversion to the I16Matrix class is not
+    * possible for the object currently stored in this %Variant.
+    */
+   I16Matrix ToI16Matrix() const;
+
+   /*!
+    * Converts the object stored in this %Variant to a matrix of 16-bit
+    * unsigned integer elements, and returns the result of the conversion.
+    *
+    * Throws an Error exception if a conversion to the UI16Matrix class is not
+    * possible for the object currently stored in this %Variant.
+    */
+   UI16Matrix ToUI16Matrix() const;
 
    /*!
     * Converts the object stored in this %Variant to a matrix of integer
@@ -1106,6 +1375,26 @@ public:
    {
       return ToDMatrix();
    }
+
+   /*!
+    * Converts the object stored in this %Variant to a matrix of 32-bit
+    * floating point complex elements, and returns the result of the
+    * conversion.
+    *
+    * Throws an Error exception if a conversion to the C32Matrix class is not
+    * possible for the object currently stored in this %Variant.
+    */
+   C32Matrix ToC32Matrix() const;
+
+   /*!
+    * Converts the object stored in this %Variant to a matrix of 64-bit
+    * floating point complex elements, and returns the result of the
+    * conversion.
+    *
+    * Throws an Error exception if a conversion to the C64Matrix class is not
+    * possible for the object currently stored in this %Variant.
+    */
+   C64Matrix ToC64Matrix() const;
 
    /*!
     * Converts the object stored in this %Variant to a dynamic array of
@@ -1194,8 +1483,8 @@ public:
     * Returns a pointer to the immutable block of data stored in this %Variant
     * object.
     *
-    * For scalar data types (as for example bool, int32, float, etc.), this
-    * member function returns a pointer to the transported object.
+    * For scalar and complex data types (bool, int32, float, fcomplex, etc.),
+    * this member function returns a pointer to the transported object.
     *
     * For vector, matrix and string types, this function returns the starting
     * address of the contiguous data block stored by the transported object.
@@ -1230,18 +1519,27 @@ public:
    Rect MatrixDimensions() const;
 
    /*!
-    * Returns the size in bytes of the scalar, vector or matrix object
-    * transported by this %Variant object.
+    * Returns the size in bytes of the scalar, complex, point, rectangle,
+    * vector or matrix object transported by this %Variant object.
     *
     * The value returned by this function can be used along with
     * InternalBlockAddress() for object serialization purposes.
     *
-    * If this %Variant does not transport a scalar, vector-like or matrix
-    * object, this member function throws an Error exception.
+    * If this %Variant does not transport a scalar, complex, vector-like or
+    * matrix object, this member function throws an Error exception.
     */
    size_type BlockSize() const;
 
-   /*
+   /*!
+    * Returns the length in bytes of a block element, if this %Variant object
+    * transports a scalar, complex, vector, matrix or string object.
+    *
+    * If this %Variant does not transport a scalar, complex, vector-like or
+    * matrix object, this function throws an Error exception.
+    */
+   int BytesPerBlockElement() const;
+
+   /*!
     * Returns true only if the specified \a type is a scalar %Variant type:
     * bool, int8, int16, int32, int64, uint8, uint16, uint32, uint64, float or
     * double.
@@ -1256,6 +1554,21 @@ public:
    bool IsScalar() const
    {
       return IsScalarType( m_type );
+   }
+
+   /*!
+    * Returns true only if the specified \a type is a complex %Variant type:
+    * Complex32 or Complex64.
+    */
+   static bool IsComplexType( int type );
+
+   /*!
+    * Returns true only if the object transported by this %Variant is of a
+    * complex type: Complex32 or Complex64.
+    */
+   bool IsComplex() const
+   {
+      return IsComplexType( m_type );
    }
 
    /*!
@@ -1290,6 +1603,21 @@ public:
    bool IsMatrix() const
    {
       return IsMatrixType( m_type );
+   }
+
+   /*!
+    * Returns true only if the specified \a type is a character string %Variant
+    * type: String or IsoString.
+    */
+   static bool IsStringType( int type );
+
+   /*!
+    * Returns true only if the object transported by this %Variant is of a
+    * character string type: String or IsoString.
+    */
+   bool IsString() const
+   {
+      return IsStringType( m_type );
    }
 
    /*!
@@ -1337,37 +1665,45 @@ private:
       uint32      uint32Value;
       uint64      uint64Value;
 
-      float       floatValue;
-      double      doubleValue;
+      float       float32Value;
+      double      float64Value;
 
-      fcomplex*   fcomplexValue;
-      dcomplex*   dcomplexValue;
+      fcomplex*   complex32Value;
+      dcomplex*   complex64Value;
 
-      Point*      pointValue;
-      FPoint*     fpointValue;
-      DPoint*     dpointValue;
+      I32Point*   i32PointValue;
+      F32Point*   f32PointValue;
+      F64Point*   f64PointValue;
 
-      Rect*       rectValue;
-      FRect*      frectValue;
-      DRect*      drectValue;
+      I32Rect*    i32RectValue;
+      F32Rect*    f32RectValue;
+      F64Rect*    f64RectValue;
 
-      CharVector* charVectorValue;
-      ByteVector* byteVectorValue;
-      IVector*    iVectorValue;
-      UIVector*   uiVectorValue;
+      I8Vector*   i8VectorValue;
+      UI8Vector*  ui8VectorValue;
+      I16Vector*  i16VectorValue;
+      UI16Vector* ui16VectorValue;
+      I32Vector*  i32VectorValue;
+      UI32Vector* ui32VectorValue;
       I64Vector*  i64VectorValue;
       UI64Vector* ui64VectorValue;
-      FVector*    fVectorValue;
-      DVector*    dVectorValue;
+      F32Vector*  f32VectorValue;
+      F64Vector*  f64VectorValue;
+      C32Vector*  c32VectorValue;
+      C64Vector*  c64VectorValue;
 
-      CharMatrix* charMatrixValue;
-      ByteMatrix* byteMatrixValue;
-      IMatrix*    iMatrixValue;
-      UIMatrix*   uiMatrixValue;
+      I8Matrix*   i8MatrixValue;
+      UI8Matrix*  ui8MatrixValue;
+      I16Matrix*  i16MatrixValue;
+      UI16Matrix* ui16MatrixValue;
+      I32Matrix*  i32MatrixValue;
+      UI32Matrix* ui32MatrixValue;
       I64Matrix*  i64MatrixValue;
       UI64Matrix* ui64MatrixValue;
-      FMatrix*    fMatrixValue;
-      DMatrix*    dMatrixValue;
+      F32Matrix*  f32MatrixValue;
+      F64Matrix*  f64MatrixValue;
+      C32Matrix*  c32MatrixValue;
+      C64Matrix*  c64MatrixValue;
 
       ByteArray*  byteArrayValue;
 
@@ -1382,6 +1718,8 @@ private:
 
       StringKeyValueList*    stringKeyValueListValue;
       IsoStringKeyValueList* isoStringKeyValueListValue;
+
+      uint64 anyValue;
    };
 
    Data m_data;
@@ -1389,6 +1727,26 @@ private:
 
    // Internal
    void Copy( const Variant& );
+
+   friend class PCL_AssertVariantSize;
+};
+
+class PCL_AssertVariantSize
+{
+#ifndef _MSC_VER
+# ifdef __clang__
+   _Pragma("clang diagnostic push")
+   _Pragma("clang diagnostic ignored \"-Wunused-private-field\"")
+# endif
+   Variant* v;
+   static_assert( sizeof( v->m_data ) == sizeof( uint64 ), "Invalid sizeof( Variant::m_data )" );
+   static_assert( sizeof( v->m_data.anyValue ) == sizeof( v->m_data ), "Invalid sizeof( Variant::m_data.anyValue )" );
+# ifdef __clang__
+   _Pragma("clang diagnostic pop")
+# endif
+#else
+   static_assert( sizeof( Variant::Data ) == sizeof( uint64 ), "Invalid sizeof( Variant::m_data )" );
+#endif
 };
 
 // ----------------------------------------------------------------------------
@@ -1401,12 +1759,12 @@ private:
 struct api_property_value;
 namespace pcl
 {
-Variant VariantFromAPIPropertyValue( const api_property_value& );
-void APIPropertyValueFromVariant( api_property_value&, const Variant& );
-Variant::data_type VariantTypeFromAPIPropertyType( uint64 );
+   Variant VariantFromAPIPropertyValue( const api_property_value& );
+   void APIPropertyValueFromVariant( api_property_value&, const Variant& );
+   Variant::data_type VariantTypeFromAPIPropertyType( uint64 );
 } // pcl
 
 #endif   // __PCL_Variant_h
 
-// ****************************************************************************
-// EOF pcl/Variant.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Variant.h - Released 2015/07/30 17:15:18 UTC

@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Geometry Process Module Version 01.01.00.0247
-// ****************************************************************************
-// RotationInterface.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Geometry Process Module Version 01.01.00.0266
+// ----------------------------------------------------------------------------
+// RotationInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "RotationInterface.h"
 #include "RotationProcess.h"
@@ -236,19 +240,22 @@ void RotationInterface::__OptimizeFast_Click( Button& sender, bool checked )
 
 void RotationInterface::__AngleDial_Paint( Control& sender, const Rect& updateRect )
 {
-   Graphics g( sender );
-
    Rect r( sender.BoundsRect() );
 
    int w = r.Width();
    int h = r.Height();
-   int x0 = w >> 1;
-   int y0 = h >> 1;
+   double x0 = w/2.0;
+   double y0 = h/2.0;
+   double f = sender.DisplayPixelRatio();
 
-   g.FillRect( r, RGBAColor( 0, 0, 0 ) );
+   VectorGraphics g( sender );
+   if ( f > 1 )
+      g.EnableAntialiasing();
+
+   g.FillRect( r, 0xff000000 );
 
    g.SetBrush( Brush::Null() );
-   g.SetPen( RGBAColor( 127, 127, 127 ) );
+   g.SetPen( 0xff7f7f7f, f );
    g.DrawLine( x0, 0, x0, h );
    g.DrawLine( 0, y0, w, y0 );
 
@@ -257,21 +264,22 @@ void RotationInterface::__AngleDial_Paint( Control& sender, const Rect& updateRe
 
    double sa, ca;
    SinCos( instance.p_angle, sa, ca );
-   int x1 = RoundI( x0 + 0.5F*w*ca );
-   int y1 = RoundI( y0 - 0.5F*h*sa );
+   double x1 = x0 + 0.5*w*ca;
+   double y1 = y0 - 0.5*h*sa;
 
-   g.SetPen( RGBAColor( 255, 255, 255 ) );
-   g.SetBrush( RGBAColor( 255, 255, 255 ) );
+   g.SetPen( 0xffffffff, f );
+   g.SetBrush( 0xffffffff );
    g.DrawLine( x0, y0, x1, y1 );
-   g.DrawRect( x1-2, y1-2, x1+3, y1+3 );
+   double d3 = f*3;
+   g.DrawRect( x1-d3, y1-d3, x1+d3, y1+d3 );
 }
 
 void RotationInterface::__AngleDial_MouseMove( Control& sender, const pcl::Point& pos, unsigned buttons, unsigned modifiers )
 {
    if ( dragging )
    {
-      double a = Round( Deg( ArcTan( double( (sender.ClientHeight() >> 1) - pos.y ),
-                                     double( pos.x - (sender.ClientWidth() >> 1) ) ) ), 3 );
+      double a = Round( Deg( ArcTan( sender.ClientHeight()/2.0 - pos.y,
+                                     pos.x - sender.ClientWidth()/2.0 ) ), 3 );
       instance.p_angle = Rad( a );
       UpdateNumericControls();
    }
@@ -334,13 +342,13 @@ void RotationInterface::__ColorSample_Paint( Control& sender, const Rect& update
 
    if ( Alpha( color ) != 0 )
    {
-      g.SetBrush( Bitmap( ":/image-window/transparent-small.png" ) );
+      g.SetBrush( Bitmap( sender.ScaledResource( ":/image-window/transparent-small.png" ) ) );
       g.SetPen( Pen::Null() );
       g.DrawRect( sender.BoundsRect() );
    }
 
    g.SetBrush( color );
-   g.SetPen( RGBAColor( 0, 0, 0 ) );
+   g.SetPen( 0xff000000, sender.DisplayPixelRatio() );
    g.DrawRect( sender.BoundsRect() );
 }
 
@@ -394,7 +402,7 @@ RotationInterface::GUIData::GUIData( RotationInterface& w )
    RotationLeft_Sizer.Add( OptimizeFast_Sizer );
 
    Dial_Control.SetBackgroundColor( StringToRGBAColor( "black" ) );
-   Dial_Control.SetFixedSize( 80, 80 );
+   Dial_Control.SetScaledFixedSize( 80, 80 );
    Dial_Control.OnPaint( (Control::paint_event_handler)&RotationInterface::__AngleDial_Paint, w );
    Dial_Control.OnMousePress( (Control::mouse_button_event_handler)&RotationInterface::__AngleDial_MousePress, w );
    Dial_Control.OnMouseRelease( (Control::mouse_button_event_handler)&RotationInterface::__AngleDial_MouseRelease, w );
@@ -498,7 +506,7 @@ RotationInterface::GUIData::GUIData( RotationInterface& w )
    Alpha_NumericControl.SetPrecision( 6 );
    Alpha_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&RotationInterface::__FilColor_ValueUpdated, w );
 
-   ColorSample_Control.SetFixedHeight( 20 );
+   ColorSample_Control.SetScaledFixedHeight( 20 );
    ColorSample_Control.OnPaint( (Control::paint_event_handler)&RotationInterface::__ColorSample_Paint, w );
 
    FillColor_Sizer.SetSpacing( 4 );
@@ -533,5 +541,5 @@ RotationInterface::GUIData::GUIData( RotationInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF RotationInterface.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF RotationInterface.cpp - Released 2015/07/31 11:49:48 UTC

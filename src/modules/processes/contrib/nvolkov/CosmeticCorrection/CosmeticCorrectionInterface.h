@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard CosmeticCorrection Process Module Version 01.02.04.0080
-// ****************************************************************************
-// CosmeticCorrectionInterface.h - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard CosmeticCorrection Process Module Version 01.02.05.0101
+// ----------------------------------------------------------------------------
+// CosmeticCorrectionInterface.h - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard CosmeticCorrection PixInsight module.
 //
-// Copyright (c) 2011-2014 Nikolay Volkov
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2015 Nikolay Volkov
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,13 +49,12 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __CosmeticCorrectionInterface_h
 #define __CosmeticCorrectionInterface_h
 
 #include <pcl/ProcessInterface.h>
-
 #include <pcl/Sizer.h>
 #include <pcl/SectionBar.h>
 #include <pcl/ToolButton.h>
@@ -119,7 +122,7 @@ private:
 
       VerticalSizer  Global_Sizer;
 
-      SectionBar         TargetImages_SectionBar;
+      SectionBar        TargetImages_SectionBar;
       Control           TargetImages_Control;
       HorizontalSizer   TargetImages_Sizer;
          TreeBox           TargetImages_TreeBox;
@@ -132,27 +135,31 @@ private:
             PushButton        Clear_PushButton;
             CheckBox          FullPaths_CheckBox;
 
-      SectionBar         Output_SectionBar;
+      SectionBar        Output_SectionBar;
       Control           Output_Control;
       VerticalSizer     Output_Sizer;
          HorizontalSizer   OutputDir_Sizer;
+            Label             OutputDir_Label;
             Edit              OutputDir_Edit;
             ToolButton        OutputDir_SelectButton;
-            ToolButton         OutputDir_ClearButton;
+            ToolButton        OutputDir_ClearButton;
          HorizontalSizer   OutputChunks_Sizer;
-            CheckBox          CFA_CheckBox;
-            CheckBox          Overwrite_CheckBox;
+            Label             OutputExtension_Label;
+            Edit              OutputExtension_Edit;
             Label             Prefix_Label;
             Edit              Prefix_Edit;
             Label             Postfix_Label;
             Edit              Postfix_Edit;
-         HorizontalSizer   Amount_Sizer;
-            NumericControl    Amount_NumericControl;
+         HorizontalSizer   CFA_Sizer;
+            CheckBox          CFA_CheckBox;
+         HorizontalSizer   Overwrite_Sizer;
+            CheckBox          Overwrite_CheckBox;
+         NumericControl    Amount_NumericControl;
 
       // detect via MasterDark section
       SectionBar        UseMasterDark_SectionBar;
       Control           UseMasterDark_Control;
-      VerticalSizer      UseMasterDark_Sizer;
+      VerticalSizer     UseMasterDark_Sizer;
 
          GroupBox          MasterDark_GroupBox;
          VerticalSizer     MasterDark_Sizer;
@@ -240,13 +247,13 @@ private:
 
    // Workbench
 
-   DarkImg* m_md;                                      // masterDark image
-   int      m_channels;                                // qty channels in MasterDark image
-   View::histogram_list m_H;                      // histogram, native PI's resolution
-   double   m_Mean;                                    // average mean of all chanels
-   double   m_StdDev;                                  // average StdDev of all chanels
-   int      m_MinSlider;                               // Slider range <= minimum
-   int      m_MaxSlider;                               // Slider range >= maximum
+   DarkImg*         m_md;                              // masterDark image
+   int              m_channels;                        // qty channels in MasterDark image
+   Array<Histogram> m_H;                               // histograms, native PI's resolution
+   double           m_Mean;                            // average mean of all chanels
+   double           m_StdDev;                          // average StdDev of all chanels
+   int              m_MinSlider;                       // Slider range <= minimum
+   int              m_MaxSlider;                       // Slider range >= maximum
 
    // Main routines
    void   SelectDir();                                 // Select output directory
@@ -323,5 +330,5 @@ PCL_END_LOCAL
 
 #endif   // __CosmeticCorrectionInterface_h
 
-// ****************************************************************************
-// EOF CosmeticCorrectionInterface.h - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF CosmeticCorrectionInterface.h - Released 2015/07/31 11:49:49 UTC

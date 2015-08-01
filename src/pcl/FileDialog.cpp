@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/FileDialog.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/FileDialog.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/FileDialog.h>
 #include <pcl/GlobalSettings.h>
@@ -80,9 +83,9 @@ public:
       return apiFilters;
    }
 
-   void LoadFiltersFromGlobalString( const String& globalKey )
+   void LoadFiltersFromGlobalString( const IsoString& globalKey )
    {
-      filters.Remove();
+      filters.Clear();
 
       String s = PixInsightSettings::GlobalString( globalKey  );
       if ( !s.IsEmpty() )
@@ -97,7 +100,7 @@ public:
             if ( p2 == String::notFound )
                break;
 
-            String extStr = s.SubString( p1, p2-p1 );
+            String extStr = s.Substring( p1, p2-p1 );
             if ( !extStr.IsEmpty() )
             {
                StringList extLst;
@@ -110,12 +113,12 @@ public:
                   {
                      size_type d = i->Find( '.' );
                      if ( d != String::notFound )
-                        filter.AddExtension( i->SubString( d ) );
+                        filter.AddExtension( i->Substring( d ) );
                   }
 
                   if ( !filter.Extensions().IsEmpty() )
                   {
-                     String desc = s.SubString( p, p1-p );
+                     String desc = s.Substring( p, p1-p );
                      desc.Trim();
                      filter.SetDescription( desc );
 
@@ -158,18 +161,18 @@ void FileFilter::SetDescription( const String& dsc )
 void FileFilter::AddExtension( const String& ext )
 {
    String x = ext.Trimmed();
-   if ( !x.BeginsWith( '.' ) )
-      if ( !x.BeginsWith( '*' ) )
+   if ( !x.StartsWith( '.' ) )
+      if ( !x.StartsWith( '*' ) )
          x = '*' + x;
-   x.ToLowerCase(); // use case-insensitive file extensions
-   if ( !extensions.Has( x ) )
+   x.ToLowercase(); // case-insensitive file extensions
+   if ( !extensions.Contains( x ) )
       extensions.Add( x );
 }
 
 void FileFilter::Clear()
 {
-   description.Empty();
-   extensions.Remove();
+   description.Clear();
+   extensions.Clear();
 }
 
 String FileFilter::MakeAPIFilter() const
@@ -190,7 +193,7 @@ String FileFilter::MakeAPIFilter() const
       {
          if ( i != extensions.Begin() )
             filter += ' '; // also legal are ';' and ','
-         if ( i->BeginsWith( '.' ) )
+         if ( i->StartsWith( '.' ) )
             filter += '*';
          filter += *i;
       }
@@ -204,14 +207,15 @@ String FileFilter::MakeAPIFilter() const
 
 // ----------------------------------------------------------------------------
 
-FileDialog::FileDialog() : p( new FileDialogPrivate() )
+FileDialog::FileDialog() : p( nullptr )
 {
+   p = new FileDialogPrivate();
 }
 
 FileDialog::~FileDialog()
 {
-   if ( p != 0 )
-      delete p, p = 0;
+   if ( p != nullptr )
+      delete p, p = nullptr;
 }
 
 String FileDialog::Caption() const
@@ -268,15 +272,16 @@ public:
    StringList fileNames;
 };
 
-OpenFileDialog::OpenFileDialog() : FileDialog(), q( new OpenFileDialogPrivate() )
+OpenFileDialog::OpenFileDialog() : FileDialog(), q( nullptr )
 {
+   q = new OpenFileDialogPrivate();
    p->caption = "Open File";
 }
 
 OpenFileDialog::~OpenFileDialog()
 {
-   if ( q != 0 )
-      delete q, q = 0;
+   if ( q != nullptr )
+      delete q, q = nullptr;
 }
 
 void OpenFileDialog::LoadImageFilters()
@@ -295,15 +300,15 @@ void OpenFileDialog::EnableMultipleSelections( bool enable )
 }
 
 // This is a file_enumeration_callback function as per APIDefs.h
-static uint32 __AddFileNameToList( const char16_type* fileName, void* list )
+static uint32 AddFileNameToList( const char16_type* fileName, void* list )
 {
-   reinterpret_cast<StringList*>( list )->Add( fileName );
+   reinterpret_cast<StringList*>( list )->Add( String( fileName ) );
    return api_true;
 }
 
 bool OpenFileDialog::Execute()
 {
-   q->fileNames.Remove();
+   q->fileNames.Clear();
 
    String apiFilters = p->MakeAPIFilters();
 
@@ -313,8 +318,8 @@ bool OpenFileDialog::Execute()
 
    if ( q->multipleSelections )
    {
-      if ( (*API->Dialog->ExecuteOpenMultipleFilesDialog)( fileName.Begin(),
-               __AddFileNameToList, &q->fileNames,
+      if ( (*API->Dialog->ExecuteOpenMultipleFilesDialog)( fileName.c_str(),
+               AddFileNameToList, &q->fileNames,
                p->caption.c_str(),
                p->initialPath.c_str(), apiFilters.c_str(), p->fileExtension.c_str() ) == api_false )
       {
@@ -323,13 +328,14 @@ bool OpenFileDialog::Execute()
    }
    else
    {
-      if ( (*API->Dialog->ExecuteOpenFileDialog)( fileName.Begin(),
+      if ( (*API->Dialog->ExecuteOpenFileDialog)( fileName.c_str(),
                p->caption.c_str(),
                p->initialPath.c_str(), apiFilters.c_str(), p->fileExtension.c_str() ) == api_false )
       {
          return false;
       }
 
+      fileName.ResizeToNullTerminated();
       if ( !fileName.IsEmpty() )
          q->fileNames.Add( fileName );
    }
@@ -367,15 +373,16 @@ public:
    String fileName;
 };
 
-SaveFileDialog::SaveFileDialog() : FileDialog(), q( new SaveFileDialogPrivate() )
+SaveFileDialog::SaveFileDialog() : FileDialog(), q( nullptr )
 {
+   q = new SaveFileDialogPrivate();
    p->caption = "Save File As";
 }
 
 SaveFileDialog::~SaveFileDialog()
 {
-   if ( q != 0 )
-      delete q, q = 0;
+   if ( q != nullptr )
+      delete q, q = nullptr;
 }
 
 void SaveFileDialog::LoadImageFilters()
@@ -400,11 +407,12 @@ bool SaveFileDialog::Execute()
    q->fileName.Reserve( 8192 );
    *q->fileName.c_str() = CharTraits::Null();
 
-   if ( (*API->Dialog->ExecuteSaveFileDialog)( q->fileName.Begin(),
+   if ( (*API->Dialog->ExecuteSaveFileDialog)( q->fileName.c_str(),
                p->caption.c_str(),
                p->initialPath.c_str(), apiFilters.c_str(), p->fileExtension.c_str(),
                q->overwritePrompt ) != api_false )
    {
+      q->fileName.ResizeToNullTerminated();
       if ( !q->fileName.IsEmpty() )
       {
          p->fileExtension = File::ExtractExtension( q->fileName );
@@ -433,15 +441,16 @@ public:
    String directory;
 };
 
-GetDirectoryDialog::GetDirectoryDialog() : FileDialog(), q( new GetDirectoryDialogPrivate() )
+GetDirectoryDialog::GetDirectoryDialog() : FileDialog(), q( nullptr )
 {
+   q = new GetDirectoryDialogPrivate();
    p->caption = "Select Directory";
 }
 
 GetDirectoryDialog::~GetDirectoryDialog()
 {
-   if ( q != 0 )
-      delete q, q = 0;
+   if ( q != nullptr )
+      delete q, q = nullptr;
 }
 
 bool GetDirectoryDialog::Execute()
@@ -449,9 +458,10 @@ bool GetDirectoryDialog::Execute()
    q->directory.Reserve( 8192 );
    *q->directory.c_str() = CharTraits::Null();
 
-   if ( (*API->Dialog->ExecuteGetDirectoryDialog)( q->directory.Begin(),
+   if ( (*API->Dialog->ExecuteGetDirectoryDialog)( q->directory.c_str(),
                         p->caption.c_str(), p->initialPath.c_str() ) != api_false )
    {
+      q->directory.ResizeToNullTerminated();
       return !q->directory.IsEmpty();
    }
 
@@ -467,5 +477,5 @@ String GetDirectoryDialog::Directory() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/FileDialog.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/FileDialog.cpp - Released 2015/07/30 17:15:31 UTC

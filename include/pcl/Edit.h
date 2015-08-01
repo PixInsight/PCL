@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Edit.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Edit.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Edit_h
 #define __PCL_Edit_h
@@ -87,6 +90,8 @@ public:
     */
    virtual ~Edit()
    {
+      if ( m_handlers != nullptr )
+         delete m_handlers, m_handlers = nullptr;
    }
 
    /*!
@@ -359,13 +364,22 @@ public:
     */
    void OnSelectionUpdated( selection_event_handler, Control& );
 
-protected:
+private:
 
-   edit_event_handler      onEditCompleted;
-   edit_event_handler      onReturnPressed;
-   text_event_handler      onTextUpdated;
-   caret_event_handler     onCaretPositionUpdated;
-   selection_event_handler onSelectionUpdated;
+   struct EventHandlers
+   {
+      edit_event_handler      onEditCompleted        = nullptr;
+      edit_event_handler      onReturnPressed        = nullptr;
+      text_event_handler      onTextUpdated          = nullptr;
+      caret_event_handler     onCaretPositionUpdated = nullptr;
+      selection_event_handler onSelectionUpdated     = nullptr;
+
+      EventHandlers() = default;
+      EventHandlers( const EventHandlers& ) = default;
+      EventHandlers& operator =( const EventHandlers& ) = default;
+   };
+
+   EventHandlers* m_handlers;
 
    friend class EditEventDispatcher;
 };
@@ -378,5 +392,5 @@ protected:
 
 #endif   // __PCL_Edit_h
 
-// ****************************************************************************
-// EOF pcl/Edit.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Edit.h - Released 2015/07/30 17:15:18 UTC

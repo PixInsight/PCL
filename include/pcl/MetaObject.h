@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/MetaObject.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/MetaObject.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_MetaObject_h
 #define __PCL_MetaObject_h
@@ -61,8 +64,8 @@
 #include <pcl/Diagnostics.h>
 #endif
 
-#ifndef __PCL_Array_h
-#include <pcl/Array.h>
+#ifndef __PCL_IndirectArray_h
+#include <pcl/IndirectArray.h>
 #endif
 
 namespace pcl
@@ -97,12 +100,12 @@ public:
    typedef IndirectArray<MetaObject>   children_list;
 
    /*!
-    * Constructs a %MetaObject as a child of the specified parent object \a p.
+    * Constructs a %MetaObject as a child of the specified \a parent object.
     */
-   MetaObject( MetaObject* p ) : parent( p ), children()
+   MetaObject( MetaObject* parent ) : m_parent( parent ), m_children()
    {
-      if ( parent != 0 )
-         parent->children.Add( this );
+      if ( m_parent != nullptr )
+         m_parent->m_children.Add( this );
    }
 
    /*!
@@ -110,7 +113,7 @@ public:
     */
    virtual ~MetaObject()
    {
-      children.Destroy();
+      m_children.Destroy();
    }
 
    /*!
@@ -118,20 +121,23 @@ public:
     */
    size_type Length() const
    {
-      return children.Length();
+      return m_children.Length();
+   }
+
+   /*!
+    * Returns a pointer to the unmodifiable parent %MetaObject.
+    */
+   const MetaObject* Parent() const
+   {
+      return m_parent;
    }
 
    /*!
     * Returns a pointer to the parent %MetaObject.
     */
-   const MetaObject* Parent() const
-   {
-      return parent;
-   }
-
    MetaObject* Parent()
    {
-      return parent;
+      return m_parent;
    }
 
    /*!
@@ -140,18 +146,25 @@ public:
     */
    const MetaObject* operator[]( size_type i ) const
    {
-      return children[i];
+      return m_children[i];
    }
 
 protected:
 
-   MetaObject*        parent;
-   children_list children;
+   MetaObject*   m_parent;
+   children_list m_children;
 
-   // MetaObject instances are unique objects by definition.
-   MetaObject( const MetaObject& ) { PCL_CHECK( 0 ) }
-   void operator =( const MetaObject& ) { PCL_CHECK( 0 ) }
+   // Copy semantics disabled because MetaObjects are unique.
+   MetaObject( const MetaObject& ) = delete;
+   void operator =( const MetaObject& ) = delete;
 
+   // Move semantics disabled because of parent-child object relations.
+   MetaObject( MetaObject&& x ) = delete;
+   MetaObject& operator =( MetaObject&& x ) = delete;
+
+   /*!
+    * \internal
+    */
    virtual void PerformAPIDefinitions() const = 0;
 
    friend class MetaModule;
@@ -165,5 +178,5 @@ protected:
 
 #endif   // __PCL_MetaObject_h
 
-// ****************************************************************************
-// EOF pcl/MetaObject.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/MetaObject.h - Released 2015/07/30 17:15:18 UTC

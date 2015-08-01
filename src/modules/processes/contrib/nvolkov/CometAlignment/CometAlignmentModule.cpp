@@ -1,9 +1,13 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.06.0070
-// ****************************************************************************
-// CometAlignmentModule.cpp - Released 2015/03/04 19:50:08 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard CometAlignment Process Module Version 01.02.06.0089
+// ----------------------------------------------------------------------------
+// CometAlignmentModule.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard CometAlignment PixInsight module.
 //
 // Copyright (c) 2012-2015 Nikolay Volkov
@@ -45,17 +49,17 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     02
 #define MODULE_VERSION_REVISION  06
-#define MODULE_VERSION_BUILD     0070
+#define MODULE_VERSION_BUILD     0089
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2015
-#define MODULE_RELEASE_MONTH     3
-#define MODULE_RELEASE_DAY       4
+#define MODULE_RELEASE_MONTH     7
+#define MODULE_RELEASE_DAY       31
 
 #include "CometAlignmentModule.h"
 #include "CometAlignmentProcess.h"
@@ -164,5 +168,5 @@ int InstallPixInsightModule( int mode )
    return 0;
 }
 
-// ****************************************************************************
-// EOF CometAlignmentModule.cpp - Released 2015/03/04 19:50:08 UTC
+// ----------------------------------------------------------------------------
+// EOF CometAlignmentModule.cpp - Released 2015/07/31 11:49:49 UTC

@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard SplitCFA Process Module Version 01.00.05.0037
-// ****************************************************************************
-// SplitCFAInstance.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard SplitCFA Process Module Version 01.00.05.0056
+// ----------------------------------------------------------------------------
+// SplitCFAInstance.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard SplitCFA PixInsight module.
 //
-// Copyright (c) 2013-2014 Nikolay Volkov
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2013-2015 Nikolay Volkov
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,13 +49,14 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "SplitCFAInstance.h"
 #include "SplitCFAModule.h" // for ReadableVersion()
 
 #include <pcl/ErrorHandler.h>
 #include <pcl/FileFormat.h>
+#include <pcl/ICCProfile.h>
 #include <pcl/ProcessInterface.h> // for ProcessEvents()
 #include <pcl/StdStatus.h>
 //#include <pcl/Translation.h>
@@ -266,20 +271,15 @@ inline static void Engine( ImageVariant& t, ImageVariant& s, int i)
 // ----------------------------------------------------------------------------
 struct FileData
 {
-   FileFormat*      format;   // the file format of retrieved data
-   const void*      fsData;   // format-specific data
-   ImageOptions     options;  // currently used for resolution only
-   FITSKeywordArray keywords; // FITS keywords
-   ICCProfile       profile;  // ICC profile
-   ByteArray        metadata; // XML metadata
+   FileFormat*      format = nullptr;  // the file format of retrieved data
+   const void*      fsData = nullptr;  // format-specific data
+   ImageOptions     options;           // currently used for resolution only
+   FITSKeywordArray keywords;          // FITS keywords
+   ICCProfile       profile;           // ICC profile
 
-   FileData() :
-   format( 0 ), fsData( 0 ), options(), keywords(), profile(), metadata()
-   {
-   }
+   FileData() = default;
 
-   FileData( FileFormatInstance& file, const ImageOptions& o ) :
-   format( 0 ), fsData( 0 ), options( o ), keywords(), profile(), metadata()
+   FileData( FileFormatInstance& file, const ImageOptions& o ) : options( o )
    {
       format = new FileFormat( file.Format() );
 
@@ -291,27 +291,15 @@ struct FileData
 
       if ( format->CanStoreICCProfiles() )
          file.Extract( profile );
-
-      if ( format->CanStoreMetadata() )
-      {
-         void* p = 0;
-         size_t n = 0;
-         file.Extract( p, n );
-         if ( p != 0 )
-         {
-            metadata = ByteArray( ByteArray::iterator( p ), ByteArray::iterator( p )+n );
-            delete (uint8*)p;
-         }
-      }
    }
 
    ~FileData()
    {
-      if ( format != 0 )
+      if ( format != nullptr )
       {
-         if ( fsData != 0 )
-            format->DisposeFormatSpecificData( const_cast<void*>( fsData ) ), fsData = 0;
-         delete format, format = 0;
+         if ( fsData != nullptr )
+            format->DisposeFormatSpecificData( const_cast<void*>( fsData ) ), fsData = nullptr;
+         delete format, format = nullptr;
       }
    }
 };
@@ -611,10 +599,6 @@ void SplitCFAInstance::SaveImage( const SplitCFAThread* t )
       if ( outputFormat.CanStoreICCProfiles() ) outputFile.Embed( data.profile );
       else console.WarningLn( "** Warning: The output format cannot store ICC profiles - original profile not embedded." );
 
-   if ( !data.metadata.IsEmpty() )
-      if ( outputFormat.CanStoreMetadata() ) outputFile.Embed( data.metadata.Begin(), data.metadata.Length() );
-      else console.WarningLn( "** Warning: The output format cannot store metadata - original metadata not embedded." );
-
    SaveImageFile( *t->TargetImage(i), outputFile );
 
 
@@ -700,7 +684,7 @@ bool SplitCFAInstance::ExecuteGlobal()
 
             if ( i == 0 )                                                   // all CPU IsActive or no new images
             {
-               pcl::Sleep( 0.1 );
+               pcl::Sleep( 100 );
                continue;
             }
 
@@ -804,27 +788,27 @@ bool SplitCFAInstance::AllocateParameter( size_type sizeOrLength, const MetaPara
    else if ( p == TheTargetFramePathParameter )
    {
       p_targetFrames[tableRow].path.Clear();
-      if ( sizeOrLength > 0 ) p_targetFrames[tableRow].path.Reserve( sizeOrLength );
+      if ( sizeOrLength > 0 ) p_targetFrames[tableRow].path.SetLength( sizeOrLength );
    }
    else if ( p == TheTargetFrameFolderParameter )
    {
       p_targetFrames[tableRow].folder.Clear();
-      if ( sizeOrLength > 0 ) p_targetFrames[tableRow].folder.Reserve( sizeOrLength );
+      if ( sizeOrLength > 0 ) p_targetFrames[tableRow].folder.SetLength( sizeOrLength );
    }
    else if ( p == TheOutputDirParameter )
    {
       p_outputDir.Clear();
-      if ( sizeOrLength > 0 ) p_outputDir.Reserve( sizeOrLength );
+      if ( sizeOrLength > 0 ) p_outputDir.SetLength( sizeOrLength );
    }
    else if ( p == ThePrefixParameter )
    {
       p_prefix.Clear();
-      if ( sizeOrLength > 0 ) p_prefix.Reserve( sizeOrLength );
+      if ( sizeOrLength > 0 ) p_prefix.SetLength( sizeOrLength );
    }
    else if ( p == ThePostfixParameter )
    {
       p_postfix.Clear();
-      if ( sizeOrLength > 0 ) p_postfix.Reserve( sizeOrLength );
+      if ( sizeOrLength > 0 ) p_postfix.SetLength( sizeOrLength );
    }
    else
       return false;
@@ -847,5 +831,5 @@ size_type SplitCFAInstance::ParameterLength( const MetaParameter* p, size_type t
 
 } // pcl
 
-// ****************************************************************************
-// EOF SplitCFAInstance.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF SplitCFAInstance.cpp - Released 2015/07/31 11:49:49 UTC

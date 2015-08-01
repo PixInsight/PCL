@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Label.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Label.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/Label.h>
 
@@ -61,9 +64,9 @@ namespace pcl
 #endif
 
 Label::Label( const String& text, Control& parent ) :
-Frame( (*API->Label->CreateLabel)( ModuleHandle(), this, text.c_str(), parent.handle, 0 /*flags*/ ) )
+   Frame( (*API->Label->CreateLabel)( ModuleHandle(), this, text.c_str(), parent.handle, 0/*flags*/ ) )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateLabel" );
 }
 
@@ -75,15 +78,13 @@ String Label::Text() const
    (*API->Label->GetLabelText)( handle, 0, &len );
 
    String text;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      text.Reserve( len );
-
+      text.SetLength( len );
       if ( (*API->Label->GetLabelText)( handle, text.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetLabelText" );
+      text.ResizeToNullTerminated();
    }
-
    return text;
 }
 
@@ -154,5 +155,5 @@ void Label::EnableRichText( bool enable )
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/Label.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Label.cpp - Released 2015/07/30 17:15:31 UTC

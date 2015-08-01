@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard FITS File Format Module Version 01.01.00.0282
-// ****************************************************************************
-// FITSRangeOptionsDialog.cpp - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard FITS File Format Module Version 01.01.02.0306
+// ----------------------------------------------------------------------------
+// FITSRangeOptionsDialog.cpp - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "FITSRangeOptionsDialog.h"
 
@@ -115,8 +119,8 @@ Dialog(), outOfRange( r )
    ReadRescaleMode_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    ReadRescaleMode_Label.SetMinWidth( labelWidth );
 
-   ReadRescaleMode_ComboBox.AddItem( " Rescale image to the specified range " );
-   ReadRescaleMode_ComboBox.AddItem( " Truncate all out-of-range values " );
+   ReadRescaleMode_ComboBox.AddItem( "Rescale image to the specified range" );
+   ReadRescaleMode_ComboBox.AddItem( "Truncate all out-of-range values" );
    ReadRescaleMode_ComboBox.SetToolTip( "<p>This parameter tells how to fix input pixel samples whose values "
                                         "exceed the specified input range.</p>" );
    ReadRescaleMode_ComboBox.SetCurrentItem( outOfRange.outOfRangeFixMode );
@@ -155,9 +159,10 @@ Dialog(), outOfRange( r )
    //
 
    Global_Sizer.SetMargin( 8 );
-   Global_Sizer.SetSpacing( 12 );
+   Global_Sizer.SetSpacing( 8 );
    Global_Sizer.Add( Info_Label );
    Global_Sizer.Add( ReadRange_GroupBox );
+   Global_Sizer.AddSpacing( 8 );
    Global_Sizer.Add( BottomSection_Sizer );
 
    SetSizer( Global_Sizer );
@@ -195,5 +200,5 @@ void FITSRangeOptionsDialog::Dialog_Return( Dialog& sender, int retVal )
 
 } // pcl
 
-// ****************************************************************************
-// EOF FITSRangeOptionsDialog.cpp - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF FITSRangeOptionsDialog.cpp - Released 2015/07/31 11:49:40 UTC

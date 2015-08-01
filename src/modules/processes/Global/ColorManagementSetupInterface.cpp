@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Global Process Module Version 01.02.05.0260
-// ****************************************************************************
-// ColorManagementSetupInterface.cpp - Released 2014/11/14 17:18:47 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Global Process Module Version 01.02.06.0280
+// ----------------------------------------------------------------------------
+// ColorManagementSetupInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,17 +48,16 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "ColorManagementSetupInterface.h"
-#include "ColorManagementSetupProcess.h"
 #include "ColorManagementSetupParameters.h"
+#include "ColorManagementSetupProcess.h"
 
-#include <pcl/ICCProfile.h>
-#include <pcl/GlobalSettings.h>
-#include <pcl/Graphics.h>
 #include <pcl/ColorDialog.h>
 #include <pcl/ErrorHandler.h>
+#include <pcl/GlobalSettings.h>
+#include <pcl/Graphics.h>
 
 namespace pcl
 {
@@ -103,13 +106,14 @@ InterfaceFeatures ColorManagementSetupInterface::Features() const
 
 void ColorManagementSetupInterface::Initialize()
 {
-   // ### We need to initialize the instance here because it couldn't be
-   //     completely initialized in the class constructor. This is because
-   //     ColorManagementSetupInstance needs to invoke member functions of the
-   //     PixInsightSettings class to retrieve the current values of global
-   //     settings variables.
-   //     See also the constructor of ColorManagementSetupInstance.
-
+   /*
+    * N.B.: We need to initialize the instance here because it couldn't be
+    * completely initialized in the class constructor. This is because
+    * ColorManagementSetupInstance needs to invoke member functions of the
+    * PixInsightSettings class to retrieve the current values of global
+    * settings variables. See also the constructor of
+    * ColorManagementSetupInstance.
+    */
    instance = ColorManagementSetupInstance( TheColorManagementSetupProcess );
 }
 
@@ -126,7 +130,6 @@ void ColorManagementSetupInterface::ResetInstance()
 
 bool ColorManagementSetupInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
    if ( GUI == 0 )
    {
       GUI = new GUIData( *this );
@@ -146,7 +149,6 @@ ProcessImplementation* ColorManagementSetupInterface::NewProcess() const
 bool ColorManagementSetupInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
    const ColorManagementSetupInstance* r = dynamic_cast<const ColorManagementSetupInstance*>( &p );
-
    if ( r == 0 )
    {
       whyNot = "Not a ColorManagementSetup instance.";
@@ -184,10 +186,8 @@ void ColorManagementSetupInterface::UpdateControls()
 
    GUI->RenderingIntent_ComboBox.SetCurrentItem( instance.defaultRenderingIntent );
 
-#ifdef __PCL_X11
    GUI->NewMonitorProfile_Edit.SetText( instance.updateMonitorProfile );
    GUI->NewMonitorProfile_ComboBox.SetCurrentItem( 0 );
-#endif
 
    GUI->RGBProfileId_Edit.SetText( instance.defaultRGBProfile );
    GUI->RGBProfile_ComboBox.SetCurrentItem( 0 );
@@ -230,16 +230,13 @@ void ColorManagementSetupInterface::RefreshProfiles()
 
    GUI->RGBProfile_ComboBox.Clear();
    GUI->RGBProfile_ComboBox.AddItem( String().Format( "--> Available RGB ICC Profiles (%u) <--", rgbProfiles.Length() ) );
-#ifdef __PCL_X11
    GUI->NewMonitorProfile_ComboBox.Clear();
    GUI->NewMonitorProfile_ComboBox.AddItem( String().Format( "--> Available RGB ICC Profiles (%u) <--", rgbProfiles.Length() ) );
-#endif
+   GUI->NewMonitorProfile_ComboBox.AddItem( "<reset-profiles>" );
    for ( ICCProfile::profile_list::const_iterator i = rgbProfiles.Begin(); i != rgbProfiles.End(); ++i )
    {
       GUI->RGBProfile_ComboBox.AddItem( i->description );
-#ifdef __PCL_X11
       GUI->NewMonitorProfile_ComboBox.AddItem( i->description );
-#endif
    }
 
    grayProfiles = ICCProfile::FindProfilesByColorSpace( ICCColorSpace::Gray|ICCColorSpace::RGB );
@@ -294,16 +291,17 @@ void ColorManagementSetupInterface::__Profile_ItemSelected( ComboBox& sender, in
          UpdateControls();
       }
    }
-#ifdef __PCL_X11
    else if ( sender == GUI->NewMonitorProfile_ComboBox )
    {
-      if ( itemIndex > 0 && itemIndex <= int( rgbProfiles.Length() ) ) // first item is title
+      if ( itemIndex > 0 && itemIndex <= int( rgbProfiles.Length()+1 ) ) // first item is title, 2nd item is <reset-profiles>
       {
-         instance.updateMonitorProfile = rgbProfiles[itemIndex-1].description; // skip the first title item
+         if ( itemIndex > 1 )
+            instance.updateMonitorProfile = rgbProfiles[itemIndex-2].description; // skip the first two items
+         else
+            instance.updateMonitorProfile = sender.ItemText( itemIndex ).Trimmed(); // <reset-profiles>
          UpdateControls();
       }
    }
-#endif
 }
 
 void ColorManagementSetupInterface::__Profile_EditCompleted( Edit& sender )
@@ -317,10 +315,8 @@ void ColorManagementSetupInterface::__Profile_EditCompleted( Edit& sender )
       instance.defaultGrayProfile = txt;
    else if ( sender == GUI->ProofingProfileId_Edit )
       instance.proofingProfile = txt;
-#ifdef __PCL_X11
    else if ( sender == GUI->NewMonitorProfile_Edit )
       instance.updateMonitorProfile = txt;
-#endif
 
    UpdateControls();
 }
@@ -370,8 +366,9 @@ void ColorManagementSetupInterface::__ColorSelected( ColorComboBox& /*sender*/, 
 void ColorManagementSetupInterface::__ColorSample_Paint( Control& sender, const Rect& /*updateRect*/ )
 {
    Graphics g( sender );
+   g.EnableAntialiasing();
    g.SetBrush( instance.gamutWarningColor );
-   g.SetPen( RGBAColor( 0, 0, 0 ) );
+   g.SetPen( 0xff000000, sender.DisplayPixelRatio() );
    g.DrawRect( sender.BoundsRect() );
 }
 
@@ -419,8 +416,38 @@ ColorManagementSetupInterface::GUIData::GUIData( ColorManagementSetupInterface& 
    pcl::Font fnt = w.Font();
    int editWidth1 = fnt.Width( String( 'M', 50 ) );
    int labelWidth1 = fnt.Width( "Rendering intent:" );
+   int ui4 = w.LogicalPixelsToPhysical( 4 );
 
-   // -------------------------------------------------------------------------
+   //
+
+   const char* renderingIntentTip =
+      "<p>A <i>rendering intent</i> is a method to map out-of-gamut colors to the color space of the output "
+      "device being used, such as a monitor or a printer/paper combination. Device gamuts are characterized "
+      "by the color profiles associated to each device involved in a color management transformation.</p>"
+
+      "<p>The <i>relative colorimetric</i> rendering intent is the default option for printers and proofing "
+      "devices. It matches the white point in the image color space to the white point in the output device "
+      "color space, which means that pure white is not printed at all (no ink), but represented by the white "
+      "of the paper. Out-of-gamut colors are replaced by the nearest in-gamut colors. Relative colorimetric "
+      "is in general the best balanced option for the sake of color accuracy in both the <i>numerical</i> and "
+      "<i>perceptual</i> senses.</p>"
+
+      "<p>The <i>absolute colorimetric</i> intent also replaces out-of-gamut colors by their nearest matches "
+      "in the output color space, but it doesn't try to match white points. If the white points in the image "
+      "and output device spaces don't match, you'll get a color cast in the highlights. However, since this "
+      "intent doesn't alter any in-gamut colors, it is the best option in terms of numeric color accuracy.</p>"
+
+      "<p>The <i>perceptual</i> intent maps all colors in the image space to the output device space. This is "
+      "the default option for monitors. With the perceptual intent, no out-of-gamut color is clipped, as "
+      "happens with colorimetric intents, but all colors can be altered, and the changes can be significant if "
+      "the image space is much wider than the output space. In general, relative colorimetric is preferred for "
+      "printed media, but perceptual can yield more vibrant results that may be desirable in some cases.</p>"
+
+      "<p>Finally, the <i>saturation</i> intent tries to maximize color saturation in the represented image, "
+      "at the cost of sacrifying color accuracy, if necessary. This intent can be a good option for synthetic "
+      "graphics and illustrations, but not for reproduction of photographic images.</p>";
+
+   //
 
    MonitorProfile_SectionBar.SetTitle( "Monitor Profile" );
    MonitorProfile_SectionBar.SetSection( MonitorProfile_Control );
@@ -436,11 +463,13 @@ ColorManagementSetupInterface::GUIData::GUIData( ColorManagementSetupInterface& 
    RenderingIntent_Label.SetText( "Rendering intent:" );
    RenderingIntent_Label.SetMinWidth( labelWidth1 );
    RenderingIntent_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   RenderingIntent_Label.SetToolTip( renderingIntentTip );
 
    RenderingIntent_ComboBox.AddItem( "Perceptual (photographic images)" );
    RenderingIntent_ComboBox.AddItem( "Saturation (graphics)" );
    RenderingIntent_ComboBox.AddItem( "Relative Colorimetric (match white points)" );
    RenderingIntent_ComboBox.AddItem( "Absolute Colorimetric (proofing)" );
+   RenderingIntent_ComboBox.SetToolTip( renderingIntentTip );
    RenderingIntent_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&ColorManagementSetupInterface::__RenderingIntent_ItemSelected, w );
 
    RenderingIntent_Sizer.SetSpacing( 4 );
@@ -456,21 +485,22 @@ ColorManagementSetupInterface::GUIData::GUIData( ColorManagementSetupInterface& 
 
    MonitorProfile_Control.SetSizer( MonitorProfile_Sizer );
 
-   // -------------------------------------------------------------------------
+   //
 
-#ifdef __PCL_X11
-
-   SystemSettings_SectionBar.SetTitle( "System Settings (X11 Only)" );
+   SystemSettings_SectionBar.SetTitle( "System Settings" );
    SystemSettings_SectionBar.SetSection( SystemSettings_Control );
 
    //
 
    const char* newMonitorProfileTip =
-      "<p>This section allows you to change the current monitor ICC profile (Linux/UNIX only). If "
-      "you change this item, a new monitor profile will be scheduled for installation upon "
-      "application restart.</p>"
-      "<p><b>Warning: Setting an incorrect monitor profile will invalidate the results of the "
-      "whole color management subsystem. Change this setting only if you know what you are doing.</b></p>";
+      "<p>This section allows you to change the current monitor profile manually. If you change this item, "
+      "a new monitor profile will be scheduled for installation upon application restart.</p>"
+      "<p>You can select the &lt;reset-profiles&gt; option to schedule a reset of all working color profiles. "
+      "This procedure is useful to detect and load a system monitor profile automatically on all supported "
+      "platforms.</p>"
+      "<p><b>* Warning * An incorrect monitor profile will invalidate the results of the whole color management "
+      "subsystem. Note that this can lead to much worse problems than not having color management at all. "
+      "Change this setting only if you really know what you are doing.</b></p>";
 
    NewMonitorProfile_Edit.SetMinWidth( editWidth1 );
    NewMonitorProfile_Edit.SetToolTip( newMonitorProfileTip );
@@ -493,9 +523,7 @@ ColorManagementSetupInterface::GUIData::GUIData( ColorManagementSetupInterface& 
 
    SystemSettings_Control.SetSizer( SystemSettings_Sizer );
 
-#endif   // __PCL_X11
-
-   // -------------------------------------------------------------------------
+   //
 
    DefaultProfiles_SectionBar.SetTitle( "Default Profiles" );
    DefaultProfiles_SectionBar.SetSection( DefaultProfiles_Control );
@@ -550,7 +578,7 @@ ColorManagementSetupInterface::GUIData::GUIData( ColorManagementSetupInterface& 
 
    DefaultProfiles_Control.SetSizer( DefaultProfiles_Sizer );
 
-   // -------------------------------------------------------------------------
+   //
 
    DefaultPolicies_SectionBar.SetTitle( "Default Policies" );
    DefaultPolicies_SectionBar.SetSection( DefaultPolicies_Control );
@@ -637,7 +665,7 @@ ColorManagementSetupInterface::GUIData::GUIData( ColorManagementSetupInterface& 
 
    DefaultPolicies_Control.SetSizer( DefaultPolicies_Sizer );
 
-   // -------------------------------------------------------------------------
+   //
 
    Proofing_SectionBar.SetTitle( "Color Proofing" );
    Proofing_SectionBar.SetSection( Proofing_Control );
@@ -668,11 +696,13 @@ ColorManagementSetupInterface::GUIData::GUIData( ColorManagementSetupInterface& 
    ProofingIntent_Label.SetText( "Proofing intent:" );
    ProofingIntent_Label.SetMinWidth( labelWidth1 );
    ProofingIntent_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   ProofingIntent_Label.SetToolTip( renderingIntentTip );
 
-   ProofingIntent_ComboBox.AddItem( " Perceptual (photographic images) " );
-   ProofingIntent_ComboBox.AddItem( " Saturation (graphics) " );
-   ProofingIntent_ComboBox.AddItem( " Relative Colorimetric (match white points) " );
-   ProofingIntent_ComboBox.AddItem( " Absolute Colorimetric (proofing) " );
+   ProofingIntent_ComboBox.AddItem( "Perceptual (photographic images)" );
+   ProofingIntent_ComboBox.AddItem( "Saturation (graphics)" );
+   ProofingIntent_ComboBox.AddItem( "Relative Colorimetric (match white points)" );
+   ProofingIntent_ComboBox.AddItem( "Absolute Colorimetric (proofing)" );
+   ProofingIntent_ComboBox.SetToolTip( renderingIntentTip );
    ProofingIntent_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&ColorManagementSetupInterface::__RenderingIntent_ItemSelected, w );
 
    ProofingIntent_Sizer.SetSpacing( 4 );
@@ -687,7 +717,7 @@ ColorManagementSetupInterface::GUIData::GUIData( ColorManagementSetupInterface& 
       "Usually BPC helps in preserving shadow detail.</p>" );
    UseProofingBPC_CheckBox.OnClick( (Button::click_event_handler)&ColorManagementSetupInterface::__ProofingOptions_ButtonClick, w );
 
-   UseProofingBPC_Sizer.AddSpacing( labelWidth1 + 4 );
+   UseProofingBPC_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    UseProofingBPC_Sizer.Add( UseProofingBPC_CheckBox, 100 );
 
    //
@@ -698,7 +728,7 @@ ColorManagementSetupInterface::GUIData::GUIData( ColorManagementSetupInterface& 
       "the <i>color proofing</i> feature enabled by default.</p>" );
    DefaultProofingEnabled_CheckBox.OnClick( (Button::click_event_handler)&ColorManagementSetupInterface::__ProofingOptions_ButtonClick, w );
 
-   DefaultProofingEnabled_Sizer.AddSpacing( labelWidth1 + 4 );
+   DefaultProofingEnabled_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    DefaultProofingEnabled_Sizer.Add( DefaultProofingEnabled_CheckBox, 100 );
 
    //
@@ -709,7 +739,7 @@ ColorManagementSetupInterface::GUIData::GUIData( ColorManagementSetupInterface& 
       "the <i>gamut check</i> feature enabled by default.</p>" );
    DefaultGamutCheckEnabled_CheckBox.OnClick( (Button::click_event_handler)&ColorManagementSetupInterface::__ProofingOptions_ButtonClick, w );
 
-   DefaultGamutCheckEnabled_Sizer.AddSpacing( labelWidth1 + 4 );
+   DefaultGamutCheckEnabled_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    DefaultGamutCheckEnabled_Sizer.Add( DefaultGamutCheckEnabled_CheckBox, 100 );
 
    //
@@ -726,7 +756,7 @@ ColorManagementSetupInterface::GUIData::GUIData( ColorManagementSetupInterface& 
    GamutWarningColor_ComboBox.OnColorSelected( (ColorComboBox::color_event_handler)&ColorManagementSetupInterface::__ColorSelected, w );
    GamutWarningColor_ComboBox.SetToolTip( gamutWarningTip );
 
-   GamutWarningColor_Control.SetMinWidth( 30 );
+   GamutWarningColor_Control.SetScaledMinWidth( 30 );
    GamutWarningColor_Control.SetCursor( StdCursor::UpArrow );
    GamutWarningColor_Control.SetToolTip(gamutWarningTip );
    GamutWarningColor_Control.OnPaint( (Control::paint_event_handler)&ColorManagementSetupInterface::__ColorSample_Paint, w );
@@ -749,7 +779,7 @@ ColorManagementSetupInterface::GUIData::GUIData( ColorManagementSetupInterface& 
 
    Proofing_Control.SetSizer( Proofing_Sizer );
 
-   // -------------------------------------------------------------------------
+   //
 
    GlobalOptions_SectionBar.SetTitle( "Global Options" );
    GlobalOptions_SectionBar.SetSection( GlobalOptions_Control );
@@ -810,10 +840,8 @@ ColorManagementSetupInterface::GUIData::GUIData( ColorManagementSetupInterface& 
    Global_Sizer.SetSpacing( 6 );
    Global_Sizer.Add( MonitorProfile_SectionBar );
    Global_Sizer.Add( MonitorProfile_Control );
-#ifdef __PCL_X11
    Global_Sizer.Add( SystemSettings_SectionBar );
    Global_Sizer.Add( SystemSettings_Control );
-#endif
    Global_Sizer.Add( DefaultProfiles_SectionBar );
    Global_Sizer.Add( DefaultProfiles_Control );
    Global_Sizer.Add( DefaultPolicies_SectionBar );
@@ -824,10 +852,7 @@ ColorManagementSetupInterface::GUIData::GUIData( ColorManagementSetupInterface& 
    Global_Sizer.Add( GlobalOptions_Control );
    Global_Sizer.Add( GlobalActions_Sizer );
 
-#ifdef __PCL_X11
    SystemSettings_Control.Hide();
-#endif
-
    DefaultPolicies_Control.Hide();
 
    w.SetSizer( Global_Sizer );
@@ -839,5 +864,5 @@ ColorManagementSetupInterface::GUIData::GUIData( ColorManagementSetupInterface& 
 
 } // pcl
 
-// ****************************************************************************
-// EOF ColorManagementSetupInterface.cpp - Released 2014/11/14 17:18:47 UTC
+// ----------------------------------------------------------------------------
+// EOF ColorManagementSetupInterface.cpp - Released 2015/07/31 11:49:48 UTC

@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Global Process Module Version 01.02.05.0260
-// ****************************************************************************
-// PreferencesInstance.h - Released 2014/11/14 17:18:47 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Global Process Module Version 01.02.06.0280
+// ----------------------------------------------------------------------------
+// PreferencesInstance.h - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PreferencesInstance_h
 #define __PreferencesInstance_h
@@ -70,6 +74,14 @@ struct ApplicationPreferences
    String      resourceFile08;
    String      resourceFile09;
    String      resourceFile10;
+
+   pcl_bool    autoUIScaling;
+   double      uiScalingFactor; // in [1,4]
+   int32       fontResolution;  // in dpi
+   String      lowResFont;
+   String      highResFont;
+   String      lowResMonoFont;
+   String      highResMonoFont;
 };
 
 struct MainWindowPreferences
@@ -111,7 +123,6 @@ struct ImageWindowPreferences
    double      defaultHorizontalResolution;
    double      defaultVerticalResolution;
    pcl_bool    defaultMetricResolution;
-   pcl_bool    defaultEmbedMetadata;
    pcl_bool    defaultEmbedThumbnails;
    pcl_bool    defaultEmbedProperties;
    String      defaultFileExtension;
@@ -127,6 +138,7 @@ struct ImageWindowPreferences
    int32       fastScreenRenditionThreshold;
    pcl_bool    default24BitScreenLUT;
    StringList  swapDirectories;
+   pcl_bool    swapCompression;
    String      downloadsDirectory;
    pcl_bool    followDownloadLocations;
    pcl_bool    verboseNetworkOperations;
@@ -235,5 +247,5 @@ private:
 
 #endif   // __PreferencesInstance_h
 
-// ****************************************************************************
-// EOF PreferencesInstance.h - Released 2014/11/14 17:18:47 UTC
+// ----------------------------------------------------------------------------
+// EOF PreferencesInstance.h - Released 2015/07/31 11:49:48 UTC

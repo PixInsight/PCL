@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard GradientDomain Process Module Version 00.06.04.0098
-// ****************************************************************************
-// GradientsHdrInterface.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard GradientDomain Process Module Version 00.06.04.0117
+// ----------------------------------------------------------------------------
+// GradientsHdrInterface.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard GradientDomain PixInsight module.
 //
-// Copyright (c) Georg Viehoever, 2011-2014. Licensed under LGPL 2.1
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) Georg Viehoever, 2011-2015. Licensed under LGPL 2.1
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -22,7 +26,7 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "GradientsHdrInterface.h"
 #include "GradientsHdrProcess.h"
@@ -284,7 +288,7 @@ GradientsHdrInterface::GUIData::GUIData( GradientsHdrInterface& w )
 
    expGradient_NumericControl.label.SetText( "Exponent gradient:" );
    expGradient_NumericControl.label.SetFixedWidth( labelWidth1 );
-   expGradient_NumericControl.slider.SetMinWidth( 250 );
+   expGradient_NumericControl.slider.SetScaledMinWidth( 250 );
    expGradient_NumericControl.slider.SetRange( 0, 100 );
    expGradient_NumericControl.SetReal();
    expGradient_NumericControl.SetRange( TheGradientsHdrParameterExpGradient->MinimumValue(), TheGradientsHdrParameterExpGradient->MaximumValue() );
@@ -298,7 +302,7 @@ GradientsHdrInterface::GUIData::GUIData( GradientsHdrInterface& w )
 
    logMaxGradient_NumericControl.label.SetText( "Max. log10(gradient):" );
    logMaxGradient_NumericControl.label.SetFixedWidth( labelWidth1 );
-   logMaxGradient_NumericControl.slider.SetMinWidth( 250 );
+   logMaxGradient_NumericControl.slider.SetScaledMinWidth( 250 );
    logMaxGradient_NumericControl.slider.SetRange( 0, 100 );
    logMaxGradient_NumericControl.SetReal();
    logMaxGradient_NumericControl.SetRange( TheGradientsHdrParameterLogMaxGradient->MinimumValue(), TheGradientsHdrParameterLogMaxGradient->MaximumValue() );
@@ -311,7 +315,7 @@ GradientsHdrInterface::GUIData::GUIData( GradientsHdrInterface& w )
 
    logMinGradient_NumericControl.label.SetText( "Min. log10(gradient):" );
    logMinGradient_NumericControl.label.SetFixedWidth( labelWidth1 );
-   logMinGradient_NumericControl.slider.SetMinWidth( 250 );
+   logMinGradient_NumericControl.slider.SetScaledMinWidth( 250 );
    logMinGradient_NumericControl.slider.SetRange( 0, 100 );
    logMinGradient_NumericControl.SetReal();
    logMinGradient_NumericControl.SetRange( TheGradientsHdrParameterLogMinGradient->MinimumValue(), TheGradientsHdrParameterLogMinGradient->MaximumValue() );
@@ -374,5 +378,5 @@ GradientsHdrInterface::GUIData::GUIData( GradientsHdrInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF GradientsHdrInterface.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF GradientsHdrInterface.cpp - Released 2015/07/31 11:49:49 UTC

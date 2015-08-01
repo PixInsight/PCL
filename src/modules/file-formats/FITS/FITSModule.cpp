@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard FITS File Format Module Version 01.01.00.0282
-// ****************************************************************************
-// FITSModule.cpp - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard FITS File Format Module Version 01.01.02.0306
+// ----------------------------------------------------------------------------
+// FITSModule.cpp - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,17 +48,17 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     01
-#define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0282
+#define MODULE_VERSION_REVISION  02
+#define MODULE_VERSION_BUILD     0306
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2014
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       14
+#define MODULE_RELEASE_YEAR      2015
+#define MODULE_RELEASE_MONTH     7
+#define MODULE_RELEASE_DAY       31
 
 #include "FITSModule.h"
 #include "FITSFormat.h"
@@ -99,7 +103,7 @@ String FITSModule::Author() const
 
 String FITSModule::Copyright() const
 {
-   return "Copyright (c) 2005-2014, Pleiades Astrophoto";
+   return "Copyright (c) 2005-2015, Pleiades Astrophoto";
 }
 
 String FITSModule::TradeMarks() const
@@ -165,5 +169,5 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
    return 0;
 }
 
-// ****************************************************************************
-// EOF FITSModule.cpp - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF FITSModule.cpp - Released 2015/07/31 11:49:40 UTC

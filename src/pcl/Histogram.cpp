@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Histogram.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Histogram.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/Histogram.h>
 #include <pcl/Thread.h>
@@ -96,7 +99,7 @@ public:
       double min = 0, max = 1;
       if ( image.IsFloatSample() )
       {
-         PArray<RealMinMaxThread> threads;
+         ReferenceArray<RealMinMaxThread> threads;
          for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
             threads.Add( new RealMinMaxThread( image, r, channel, i*rowsPerThread, (j < numberOfThreads) ? j*rowsPerThread : height ) );
 
@@ -131,7 +134,7 @@ public:
 
       image->Status() += N1;
 
-      PArray<HistogramThread> threads;
+      ReferenceArray<HistogramThread> threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new HistogramThread( image, r, channel, histogram.Length(), min, max,
                                            i*rowsPerThread, (j < numberOfThreads) ? j*rowsPerThread : height ) );
@@ -341,5 +344,5 @@ const pcl::ImageVariant& Histogram::operator <<( const pcl::ImageVariant& v )
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/Histogram.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Histogram.cpp - Released 2015/07/30 17:15:31 UTC

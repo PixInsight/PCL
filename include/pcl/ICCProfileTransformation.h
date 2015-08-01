@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ICCProfileTransformation.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ICCProfileTransformation.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_ICCProfileTransformation_h
 #define __PCL_ICCProfileTransformation_h
@@ -145,7 +148,77 @@ public:
    /*!
     * Constructs an empty %ICCPRofileTransformation object.
     */
-   ICCProfileTransformation();
+   ICCProfileTransformation() :
+      ImageTransformation(),
+      m_transformation( nullptr ),
+      m_profiles(),
+      m_intent( ICCRenderingIntent::Perceptual ),
+      m_proofingIntent( ICCRenderingIntent::AbsoluteColorimetric ),
+      m_blackPointCompensation( false ),
+      m_forceFloatingPoint( false ),
+      m_highResolutionCLUT( true ),
+      m_lowResolutionCLUT( false ),
+      m_proofingTransformation( false ),
+      m_gamutCheck( false ),
+      m_parallel( true ),
+      m_maxProcessors( PCL_MAX_PROCESSORS ),
+      m_srcRGB( false ),
+      m_dstRGB( false ),
+      m_floatingPoint( false )
+   {
+   }
+
+   /*!
+    * Move constructor.
+    */
+   ICCProfileTransformation( ICCProfileTransformation&& x ) :
+      ImageTransformation( x ),
+      m_transformation( x.m_transformation ),
+      m_profiles( std::move( x.m_profiles ) ),
+      m_intent( x.m_intent ),
+      m_proofingIntent( x.m_proofingIntent ),
+      m_blackPointCompensation( x.m_blackPointCompensation ),
+      m_forceFloatingPoint( x.m_forceFloatingPoint ),
+      m_highResolutionCLUT( x.m_highResolutionCLUT ),
+      m_lowResolutionCLUT( x.m_lowResolutionCLUT ),
+      m_proofingTransformation( x.m_proofingTransformation ),
+      m_gamutCheck( x.m_gamutCheck ),
+      m_parallel( x.m_parallel ),
+      m_maxProcessors( x.m_maxProcessors ),
+      m_srcRGB( x.m_srcRGB ),
+      m_dstRGB( x.m_dstRGB ),
+      m_floatingPoint( x.m_floatingPoint )
+   {
+      x.m_transformation = nullptr;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   ICCProfileTransformation& operator =( ICCProfileTransformation&& x )
+   {
+      (void)ImageTransformation::operator =( x );
+      m_transformation = x.m_transformation;
+      m_profiles = std::move( x.m_profiles );
+      m_intent = x.m_intent;
+      m_proofingIntent = x.m_proofingIntent;
+      m_blackPointCompensation = x.m_blackPointCompensation;
+      m_forceFloatingPoint = x.m_forceFloatingPoint;
+      m_highResolutionCLUT = x.m_highResolutionCLUT;
+      m_lowResolutionCLUT = x.m_lowResolutionCLUT;
+      m_proofingTransformation = x.m_proofingTransformation;
+      m_gamutCheck = x.m_gamutCheck;
+      m_parallel = x.m_parallel;
+      m_maxProcessors = x.m_maxProcessors;
+      m_srcRGB = x.m_srcRGB;
+      m_dstRGB = x.m_dstRGB;
+      m_floatingPoint = x.m_floatingPoint;
+      x.m_transformation = nullptr;
+      return *this;
+   }
+
+   ICCProfileTransformation( const ICCProfileTransformation& ) = delete;
+   ICCProfileTransformation& operator =( const ICCProfileTransformation& ) = delete;
 
    /*!
     * Destroys an %ICCPRofileTransformation object.
@@ -183,7 +256,7 @@ public:
     */
    bool IsValid() const
    {
-      return m_transformation != 0;
+      return m_transformation != nullptr;
    }
 
    /*!
@@ -504,17 +577,17 @@ protected:
     * The ICC profiles and rendering intent that define this color
     * transformation.
     */
-   profile_list                  m_profiles;
-   rendering_intent              m_intent;
-   rendering_intent              m_proofingIntent;
-   bool                          m_blackPointCompensation : 1;
-   bool                          m_forceFloatingPoint     : 1;
-   bool                          m_highResolutionCLUT     : 1;
-   bool                          m_lowResolutionCLUT      : 1;
-   bool                          m_proofingTransformation : 1;
-   bool                          m_gamutCheck             : 1;
-   bool                          m_parallel               : 1;
-   unsigned                      m_maxProcessors          : PCL_MAX_PROCESSORS_BITCOUNT;
+   profile_list     m_profiles;
+   rendering_intent m_intent;
+   rendering_intent m_proofingIntent;
+   bool             m_blackPointCompensation : 1;
+   bool             m_forceFloatingPoint     : 1;
+   bool             m_highResolutionCLUT     : 1;
+   bool             m_lowResolutionCLUT      : 1;
+   bool             m_proofingTransformation : 1;
+   bool             m_gamutCheck             : 1;
+   bool             m_parallel               : 1;
+   unsigned         m_maxProcessors          : PCL_MAX_PROCESSORS_BITCOUNT;
 
    /*
     * Flags indicating source and destination color spaces.
@@ -522,14 +595,14 @@ protected:
     * buffers, *not* to the color spaces of the profiles involved in the
     * transformation.
     */
-   mutable bool                  m_srcRGB                 : 1;
-   mutable bool                  m_dstRGB                 : 1;
+   mutable bool     m_srcRGB                 : 1;
+   mutable bool     m_dstRGB                 : 1;
 
    /*
     * Flag indicating whether the current transformation (if any) has been
     * created forcing floating point arithmetics.
     */
-   mutable bool                  m_floatingPoint          : 1;
+   mutable bool     m_floatingPoint          : 1;
 
    void AddAt( size_type, const String& );
    void AddAt( size_type, const ICCProfile& );
@@ -579,12 +652,21 @@ class PCL_CLASS ICCProofingTransformation : public ICCProfileTransformation
 public:
 
    /*!
-    * Constructs an %ICCProofingTransformation object.
+    * Constructs a default %ICCProofingTransformation object.
     */
-   ICCProofingTransformation() : ICCProfileTransformation()
+   ICCProofingTransformation() :
+      ICCProfileTransformation()
    {
       m_proofingTransformation = true;
-      m_profiles.Add( (const ICCProfile::handle)0, 3 );
+      m_profiles.Add( static_cast<ICCProfile::handle>( nullptr ), 3 );
+   }
+
+   /*!
+    * Move constructor.
+    */
+   ICCProofingTransformation( ICCProofingTransformation&& x ) :
+      ICCProfileTransformation( std::move( x ) )
+   {
    }
 
    /*!
@@ -592,6 +674,15 @@ public:
     */
    virtual ~ICCProofingTransformation()
    {
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   ICCProofingTransformation& operator =( ICCProofingTransformation&& x )
+   {
+      (void)ICCProfileTransformation::operator =( std::move( x ) );
+      return *this;
    }
 
    /*!
@@ -724,5 +815,5 @@ public:
 
 #endif   // __PCL_ICCProfileTransformation_h
 
-// ****************************************************************************
-// EOF pcl/ICCProfileTransformation.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ICCProfileTransformation.h - Released 2015/07/30 17:15:18 UTC

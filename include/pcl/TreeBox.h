@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/TreeBox.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/TreeBox.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_TreeBox_h
 #define __PCL_TreeBox_h
@@ -73,8 +76,8 @@
 #include <pcl/Font.h>
 #endif
 
-#ifndef __PCL_Array_h
-#include <pcl/Array.h>  // for TreeBox::SelectedNodes()
+#ifndef __PCL_IndirectArray_h
+#include <pcl/IndirectArray.h>  // for TreeBox::SelectedNodes()
 #endif
 
 namespace pcl
@@ -114,15 +117,18 @@ public:
        */
       Node( TreeBox& parentTree, int index = -1 );
 
-      /*! #
+      /*!
+       * Destroys a %TreeBox::Node object.
        */
-      virtual ~Node();
+      virtual ~Node()
+      {
+      }
 
       /*! #
        */
       static Node Null()
       {
-         return Node( 0 );
+         return Node( nullptr );
       }
 
       /*! #
@@ -301,14 +307,6 @@ public:
        */
       pcl::Font Font( int col ) const;
 
-      /*!
-       * \deprecated Use TreeBox::Node::Font() in newly produced code.
-       */
-      pcl::Font GetFont( int col ) const
-      {
-         return this->Font( col );
-      }
-
       /*! #
        */
       void SetFont( int col, const pcl::Font& );
@@ -329,57 +327,18 @@ public:
        */
       void SetTextColor( int col, RGBA );
 
-      /*!
-       * \deprecated This member function will be removed in a future version
-       * of PCL - do not use it in newly produced code. If you need to store
-       * custom data along with TreeBox nodes, write a derived class of
-       * TreeBox::Node.
-       */
-      const void* Data() const
-      {
-         return data;
-      }
-
-      /*!
-       * \deprecated This member function will be removed in a future version
-       * of PCL - do not use it in newly produced code. If you need to store
-       * custom data along with TreeBox nodes, write a derived class of
-       * TreeBox::Node.
-       */
-      void* Data()
-      {
-         return data;
-      }
-
-      /*!
-       * \deprecated This member function will be removed in a future version
-       * of PCL - do not use it in newly produced code. If you need to store
-       * custom data along with TreeBox nodes, write a derived class of
-       * TreeBox::Node.
-       */
-      void* ReleaseData()
-      {
-         void* wasData = data;
-         data = 0;
-         return wasData;
-      }
-
-      /*!
-       * \deprecated This member function will be removed in a future version
-       * of PCL - do not use it in newly produced code. If you need to store
-       * custom data along with TreeBox nodes, write a derived class of
-       * TreeBox::Node.
-       */
-      void SetData( void* newData )
-      {
-         data = newData;
-      }
-
    protected:
 
-      void* data; // ### Deprecated - REMOVEME
+      /*!
+       * \internal
+       */
+      Node( void* h ) : UIObject( h )
+      {
+      }
 
-      Node( void* );
+      /*!
+       * \internal
+       */
       virtual void* CloneHandle() const;
 
       friend class TreeBox;
@@ -397,6 +356,8 @@ public:
     */
    virtual ~TreeBox()
    {
+      if ( m_handlers != nullptr )
+         delete m_handlers, m_handlers = nullptr;
    }
 
    /*! #
@@ -496,17 +457,6 @@ public:
     * Returns a dynamic array of pointers to all selected nodes in this tree.
     * If this tree has no selected nodes, an empty array is returned.
     *
-    * \deprecated Use Treebox::SelectedNodes() instead.
-    */
-   void GetSelectedNodes( IndirectArray<Node>& a ) const
-   {
-      a = SelectedNodes();
-   }
-
-   /*!
-    * Returns a dynamic array of pointers to all selected nodes in this tree.
-    * If this tree has no selected nodes, an empty array is returned.
-    *
     * The returned object is an instantiation of IndirectArray for the
     * TreeBox::Node class: IndirectArray\<TreeBox::Node\>.
     */
@@ -594,6 +544,20 @@ public:
 
    /*! #
     */
+   int ScaledColumnWidth( int col ) const
+   {
+      return PhysicalPixelsToLogical( ColumnWidth( col ) );
+   }
+
+   /*! #
+    */
+   void SetScaledColumnWidth( int col, int width )
+   {
+      SetColumnWidth( col, LogicalPixelsToPhysical( width ) );
+   }
+
+   /*! #
+    */
    void AdjustColumnWidthToContents( int col );
 
    //
@@ -650,6 +614,20 @@ public:
    /*! #
     */
    void SetIndentSize( int );
+
+   /*! #
+    */
+   int ScaledIndentSize() const
+   {
+      return PhysicalPixelsToLogical( IndentSize() );
+   }
+
+   /*! #
+    */
+   void SetScaledIndentSize( int size )
+   {
+      SetIndentSize( LogicalPixelsToPhysical( size ) );
+   }
 
    //
 
@@ -752,6 +730,42 @@ public:
       SetIconSize( size, size );
    }
 
+   /*! #
+    */
+   void GetScaledIconSize( int& width, int& height ) const
+   {
+      GetIconSize( width, height ); width = PhysicalPixelsToLogical( width ); height = PhysicalPixelsToLogical( height );
+   }
+
+   /*! #
+    */
+   int ScaledIconWidth() const
+   {
+      int width, dum; GetIconSize( width, dum ); return PhysicalPixelsToLogical( width );
+   }
+
+   /*! #
+    */
+   int ScaledIconHeight() const
+   {
+      int dum, height; GetIconSize( dum, height ); return PhysicalPixelsToLogical( height );
+   }
+
+   /*! #
+    */
+   void SetScaledIconSize( int width, int height )
+   {
+      SetIconSize( LogicalPixelsToPhysical( width ), LogicalPixelsToPhysical( height ) );
+   }
+
+   /*! #
+    */
+   void SetScaledIconSize( int size )
+   {
+      size = LogicalPixelsToPhysical( size );
+      SetIconSize( size, size );
+   }
+
    //
 
    /*! #
@@ -788,28 +802,6 @@ public:
    void DisableNodeDragging( bool disable = true )
    {
       EnableNodeDragging( !disable );
-   }
-
-   //
-
-   /*!
-    * \deprecated This member function will be removed in a future version of
-    * PCL - do not use it in newly produced code. If you need to store custom
-    * data along with TreeBox nodes, write a derived class of TreeBox::Node.
-    */
-   bool OwnsData() const
-   {
-      return ownsData;
-   }
-
-   /*!
-    * \deprecated This member function will be removed in a future version of
-    * PCL - do not use it in newly produced code. If you need to store custom
-    * data along with TreeBox nodes, write a derived class of TreeBox::Node.
-    */
-   void SetDataOwnership( bool owns = true )
-   {
-      ownsData = owns;
    }
 
    // -------------------------------------------------------------------------
@@ -885,23 +877,26 @@ public:
     */
    void OnNodeSelectionUpdated( tree_event_handler, Control& );
 
-protected:
-
-   node_navigation_event_handler onCurrentNodeUpdated;
-   node_event_handler            onNodeActivated;
-   node_event_handler            onNodeUpdated;
-   node_event_handler            onNodeEntered;
-   node_event_handler            onNodeClicked;
-   node_event_handler            onNodeDoubleClicked;
-   node_expand_event_handler     onNodeExpanded;
-   node_expand_event_handler     onNodeCollapsed;
-   tree_event_handler            onNodeSelectionUpdated;
-
-   bool ownsData; // (### Deprecated - REMOVEME) true if tree owns node data
-
 private:
 
-   TreeBox( void* ); // for internal node usage only
+   struct EventHandlers
+   {
+      node_navigation_event_handler onCurrentNodeUpdated   = nullptr;
+      node_event_handler            onNodeActivated        = nullptr;
+      node_event_handler            onNodeUpdated          = nullptr;
+      node_event_handler            onNodeEntered          = nullptr;
+      node_event_handler            onNodeClicked          = nullptr;
+      node_event_handler            onNodeDoubleClicked    = nullptr;
+      node_expand_event_handler     onNodeExpanded         = nullptr;
+      node_expand_event_handler     onNodeCollapsed        = nullptr;
+      tree_event_handler            onNodeSelectionUpdated = nullptr;
+
+      EventHandlers() = default;
+      EventHandlers( const EventHandlers& ) = default;
+      EventHandlers& operator =( const EventHandlers& ) = default;
+   };
+
+   EventHandlers* m_handlers;
 
    static pcl::Font FontFromHandle( void* h )
    {
@@ -923,6 +918,15 @@ private:
       return p.handle;
    }
 
+protected:
+
+   /*!
+    * \internal
+    */
+   TreeBox( void* h ) : ScrollBox( h, nullptr ), m_handlers( nullptr )
+   {
+   }
+
    friend class Node;
    friend class TreeBoxEventDispatcher;
 };
@@ -935,5 +939,5 @@ private:
 
 #endif   // __PCL_TreeBox_h
 
-// ****************************************************************************
-// EOF pcl/TreeBox.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/TreeBox.h - Released 2015/07/30 17:15:18 UTC

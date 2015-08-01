@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/UIObject.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/UIObject.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/Array.h>
 #include <pcl/AutoLock.h>
@@ -64,31 +67,36 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
+class UIEventDispatcher
+{
+public:
+
+#ifdef __PCL_DEBUG_UIOBJECT_INDEX
+   static void api_func HandleDestroyed( api_handle );
+#endif
+};
+
+// ----------------------------------------------------------------------------
+
 class UIObjectIndex
 {
 public:
 
    struct IndexItem
    {
-      api_handle       handle;
-      Array<UIObject*> objects;
+      api_handle  handle;
+      size_type   count;
 
-      IndexItem( UIObject* object ) : handle( object->handle ), objects()
+      IndexItem( UIObject* object ) : handle( object->handle ), count( 0 )
       {
          Add( object );
       }
 
-      IndexItem( api_handle h, int ) : handle( h ), objects()
+      IndexItem( api_handle h, int ) : handle( h ), count( 0 )
       {
       }
 
-      IndexItem( const IndexItem& item ) : handle( item.handle ), objects( item.objects )
-      {
-      }
-
-      ~IndexItem()
-      {
-      }
+      IndexItem( const IndexItem& ) = default;
 
       bool operator ==( const IndexItem& item ) const
       {
@@ -102,15 +110,15 @@ public:
 
       bool IsEmpty() const
       {
-         return objects.IsEmpty();
+         return count == 0;
       }
 
       void Add( UIObject* object )
       {
-         if ( object == 0 )
+         if ( object == nullptr )
          {
 #ifdef __PCL_DEBUG_UIOBJECT_INDEX
-            std::cerr << "\n** Warning: UIObjectIndex::IndexItem::Add() : Null object pointer\n"
+            std::cerr << "\n** Warning: UIObjectIndex::IndexItem::Add() : Null object pointer.\n"
                       << std::flush;
 #endif
             return;
@@ -126,34 +134,44 @@ public:
             return;
          }
 
-         if ( objects.Has( object ) )
-         {
-#ifdef __PCL_DEBUG_UIOBJECT_INDEX
-            std::cerr << "\n** Warning: UIObjectIndex::IndexItem::Add() : Duplicate object (" << object->ObjectType() << ") "
-                      << IsoString().Format( "at address %p with handle %p\n", (void*)object, handle )
-                      << std::flush;
-#endif
-            return;
-         }
-
-         object->alias = !objects.IsEmpty();
-         objects.Add( object );
+         object->alias = count > 0;
+         ++count;
       }
 
       void Remove( UIObject* object )
       {
-         if ( object == 0 )
+         if ( object == nullptr )
          {
 #ifdef __PCL_DEBUG_UIOBJECT_INDEX
-            std::cerr << "\n** Warning: UIObjectIndex::IndexItem::Remove() : Null object pointer\n"
+            std::cerr << "\n** Warning: UIObjectIndex::IndexItem::Remove() : Null object pointer.\n"
                       << std::flush;
 #endif
             return;
          }
 
-         objects.Remove( object );
-         object->handle = 0;
+         if ( object->handle != handle )
+         {
+#ifdef __PCL_DEBUG_UIOBJECT_INDEX
+            std::cerr << "\n** Warning: UIObjectIndex::IndexItem::Remove() : Invalid object (" << object->ObjectType() << ") "
+                      << IsoString().Format( "at address %p with handle %p, expected %p\n", (void*)object, object->handle, handle )
+                      << std::flush;
+#endif
+            return;
+         }
+
+         object->handle = nullptr;
          object->alias = false;
+
+         if ( count == 0 )
+         {
+#ifdef __PCL_DEBUG_UIOBJECT_INDEX
+            std::cerr << "\n** Warning: UIObjectIndex::IndexItem::Remove() : Empty index item.\n"
+                      << std::flush;
+#endif
+            return;
+         }
+
+         --count;
       }
    };
 
@@ -161,20 +179,14 @@ public:
    typedef index_implementation::iterator       iterator;
    typedef index_implementation::const_iterator const_iterator;
 
-   UIObjectIndex() : m_index(), m_mutex()
-   {
-   }
-
-   virtual ~UIObjectIndex()
-   {
-   }
+   UIObjectIndex() = default;
 
    void Add( UIObject* object )
    {
-      if ( object == 0 )
+      if ( object == nullptr )
       {
 #ifdef __PCL_DEBUG_UIOBJECT_INDEX
-         std::cerr << "\n** Warning: UIObjectIndex::Add() : Null object pointer\n"
+         std::cerr << "\n** Warning: UIObjectIndex::Add() : Null object pointer.\n"
                    << std::flush;
 #endif
          return;
@@ -198,14 +210,18 @@ public:
          else
             m_index.Add( IndexItem( object ) );
       }
+
+#ifdef __PCL_DEBUG_UIOBJECT_INDEX
+      (*API->UI->SetHandleDestroyedEventRoutine)( object->handle, UIEventDispatcher::HandleDestroyed );
+#endif
    }
 
    void Remove( UIObject* object )
    {
-      if ( object == 0 )
+      if ( object == nullptr )
       {
 #ifdef __PCL_DEBUG_UIOBJECT_INDEX
-         std::cerr << "\n** Warning: UIObjectIndex::Remove() : Null object pointer\n"
+         std::cerr << "\n** Warning: UIObjectIndex::Remove() : Null object pointer.\n"
                    << std::flush;
 #endif
          return;
@@ -237,52 +253,25 @@ public:
 #ifdef __PCL_DEBUG_UIOBJECT_INDEX
    void HandleDestroyed( api_handle handle )
    {
-      if ( handle == 0 )
+      if ( handle == nullptr )
       {
-         std::cerr << "\n** Warning: UIObjectIndex::HandleDestroyed() : Invalid zero handle\n" << std::flush;
+         std::cerr << "\n** Warning: UIObjectIndex::HandleDestroyed() : Invalid zero handle.\n" << std::flush;
          return;
       }
 
       {
          volatile AutoLock lock( m_mutex );
          const_iterator i = m_index.Search( IndexItem( handle, 0 ) );
-         if ( i == m_index.End() )
-            return;
-
-         iterator m = m_index.MutableIterator( i );
-         for ( Array<UIObject*>::iterator o = m->objects.Begin(); o != m->objects.End(); ++o )
-            if ( *o != 0 ) // cannot happen
-            {
-               if ( (*o)->handle == handle )
-                  (*o)->HandleDestroyed();
-               else
-                  std::cerr << "\n** Warning: UIObjectIndex::HandleDestroyed() : Invalid object (" << (*o)->ObjectType() << ") "
-                            << IsoString().Format( "at address %p with handle %p, expected %p\n", (void*)*o, (*o)->handle, handle )
-                            << std::flush;
-            }
-
-         m_index.Remove( m );
+         if ( i != m_index.End() )
+         {
+            std::cerr << "\n** Warning: UIObjectIndex::HandleDestroyed() : "
+                      << IsoString().Format( "handle %p invalidates %u existing object(s)\n", handle, i->count )
+                      << std::flush;
+            m_index.Remove( m_index.MutableIterator( i ) );
+         }
       }
    }
 #endif
-
-   UIObject* ObjectByHandle( api_handle handle )
-   {
-      if ( handle != 0 )
-      {
-         volatile AutoLock lock( m_mutex );
-         const_iterator i = m_index.Search( IndexItem( handle, 0 ) );
-         if ( i != m_index.End() )
-            if ( !i->IsEmpty() )
-            {
-               iterator m = m_index.MutableIterator( i );
-               if ( m->objects[0] != 0 )
-                  if ( m->objects[0]->handle == handle )
-                     return m->objects[0];
-            }
-      }
-      return 0;
-   }
 
 private:
 
@@ -292,42 +281,36 @@ private:
 
 static UIObjectIndex s_objects;
 
-// ----------------------------------------------------------------------------
-
-class UIEventDispatcher
-{
-public:
-
 #ifdef __PCL_DEBUG_UIOBJECT_INDEX
-   static void api_func HandleDestroyed( api_handle hUI )
-   {
-      s_objects.HandleDestroyed( hUI );
-   }
+void api_func UIEventDispatcher::HandleDestroyed( api_handle handle )
+{
+   s_objects.HandleDestroyed( handle );
+}
 #endif
-};
 
 // ----------------------------------------------------------------------------
 
 UIObject::UIObject( void* h ) : handle( h ), alias( false )
 {
-   if ( handle != 0 )
-   {
+   if ( handle != nullptr )
       s_objects.Add( this );
-#ifdef __PCL_DEBUG_UIOBJECT_INDEX
-      (*API->UI->SetHandleDestroyedEventRoutine)( handle, UIEventDispatcher::HandleDestroyed );
-#endif
-   }
+}
+
+UIObject::UIObject( const void* h ) : handle( const_cast<void*>( h ) ), alias( false )
+{
+   if ( handle != nullptr )
+      s_objects.Add( this );
 }
 
 // ----------------------------------------------------------------------------
 
 UIObject::UIObject( const UIObject& x ) : handle( x.handle ), alias( false )
 {
-   if ( handle != 0 )
+   if ( handle != nullptr )
    {
       if ( (*API->UI->AttachToUIObject)( ModuleHandle(), handle ) == api_false )
       {
-         handle = 0;
+         handle = nullptr;
          throw APIFunctionError( "AttachToUIObject" );
       }
 
@@ -339,7 +322,7 @@ UIObject::UIObject( const UIObject& x ) : handle( x.handle ), alias( false )
 
 UIObject::~UIObject()
 {
-   if ( handle != 0 )
+   if ( handle != nullptr )
    {
       api_handle theHandle = handle;
 
@@ -355,11 +338,11 @@ UIObject::~UIObject()
 
 UIObject& UIObject::Null()
 {
-   static UIObject* nullUIObject = 0;
+   static UIObject* nullUIObject = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullUIObject == 0 )
-      nullUIObject = new UIObject( reinterpret_cast<void*>( 0 ) );
+   if ( nullUIObject == nullptr )
+      nullUIObject = new UIObject( nullptr );
    return *nullUIObject;
 }
 
@@ -367,14 +350,14 @@ UIObject& UIObject::Null()
 
 size_type UIObject::RefCount() const
 {
-   return (handle != 0) ? (*API->UI->GetUIObjectRefCount)( handle ) : size_type( 0 );
+   return (handle != nullptr) ? (*API->UI->GetUIObjectRefCount)( handle ) : size_type( 0 );
 }
 
 // ----------------------------------------------------------------------------
 
 void UIObject::SetUnique()
 {
-   if ( handle != 0 )
+   if ( handle != nullptr )
       if ( !IsUnique() )
          SetHandle( CloneHandle() );
 }
@@ -383,19 +366,19 @@ void UIObject::SetUnique()
 
 IsoString UIObject::ObjectType() const
 {
-   if ( handle == 0 )
+   if ( handle == nullptr )
       return "Null";
 
    size_type len = 0;
-   (*API->UI->GetUIObjectType)( handle, 0, &len );
+   (*API->UI->GetUIObjectType)( handle, nullptr, &len );
    if ( len == 0 )
       throw APIFunctionError( "GetUIObjectType" );
 
    IsoString objType;
-   objType.Reserve( len );
+   objType.SetLength( len );
    if ( (*API->UI->GetUIObjectType)( handle, objType.c_str(), &len ) == api_false )
       throw APIFunctionError( "GetUIObjectType" );
-
+   objType.ResizeToNullTerminated();
    return objType;
 }
 
@@ -403,21 +386,20 @@ IsoString UIObject::ObjectType() const
 
 String UIObject::ObjectId() const
 {
+   if ( handle == nullptr )
+      return String();
+
+   size_type len = 0;
+   (*API->UI->GetUIObjectId)( handle, nullptr, &len );
+
    String objId;
-
-   if ( handle != 0 )
+   if ( len > 0 )
    {
-      size_type len = 0;
-      (*API->UI->GetUIObjectId)( handle, 0, &len );
-
-      if ( len != 0 )
-      {
-         objId.Reserve( len );
-         if ( (*API->UI->GetUIObjectId)( handle, objId.c_str(), &len ) == api_false )
-            throw APIFunctionError( "GetUIObjectId" );
-      }
+      objId.SetLength( len );
+      if ( (*API->UI->GetUIObjectId)( handle, objId.c_str(), &len ) == api_false )
+         throw APIFunctionError( "GetUIObjectId" );
+      objId.ResizeToNullTerminated();
    }
-
    return objId;
 }
 
@@ -431,19 +413,11 @@ void UIObject::SetObjectId( const String& id )
 
 // ----------------------------------------------------------------------------
 
-UIObject& UIObject::ObjectByHandle( void* handle )
-{
-   UIObject* object = s_objects.ObjectByHandle( handle );
-   return object ? *object : Null();
-}
-
-// ----------------------------------------------------------------------------
-
 void UIObject::SetHandle( void* newHandle )
 {
    if ( newHandle != handle )
    {
-      if ( handle != 0 )
+      if ( handle != nullptr )
       {
          api_handle oldHandle = handle;
 
@@ -454,16 +428,13 @@ void UIObject::SetHandle( void* newHandle )
                throw APIFunctionError( "DetachFromUIObject" );
       }
 
-      if ( newHandle != 0 )
+      if ( newHandle != nullptr )
       {
          if ( (*API->UI->AttachToUIObject)( ModuleHandle(), newHandle ) == api_false )
             throw APIFunctionError( "AttachToUIObject" );
 
          handle = newHandle;
          s_objects.Add( this );
-#ifdef __PCL_DEBUG_UIOBJECT_INDEX
-         (*API->UI->SetHandleDestroyedEventRoutine)( handle, UIEventDispatcher::HandleDestroyed );
-#endif
       }
    }
 }
@@ -474,7 +445,7 @@ void UIObject::TransferHandle( void* newHandle )
 {
    if ( newHandle != handle )
    {
-      if ( handle != 0 )
+      if ( handle != nullptr )
       {
          api_handle oldHandle = handle;
 
@@ -485,41 +456,17 @@ void UIObject::TransferHandle( void* newHandle )
                throw APIFunctionError( "DetachFromUIObject" );
       }
 
-      if ( newHandle != 0 )
+      if ( newHandle != nullptr )
       {
          handle = newHandle;
          s_objects.Add( this );
-#ifdef __PCL_DEBUG_UIOBJECT_INDEX
-         (*API->UI->SetHandleDestroyedEventRoutine)( handle, UIEventDispatcher::HandleDestroyed );
-#endif
       }
    }
 }
 
 // ----------------------------------------------------------------------------
 
-void UIObject::HandleDestroyed()
-{
-   /*
-    * This virtual function is called when a server handle becomes invalid.
-    * (debug mode only)
-    */
-}
-
-// ----------------------------------------------------------------------------
-
-void* UIObject::CloneHandle() const
-{
-   /*
-    * This virtual function is called to construct object duplicates.
-    * Derived classes must reimplement this function.
-    */
-   return 0;
-}
-
-// ----------------------------------------------------------------------------
-
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/UIObject.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/UIObject.cpp - Released 2015/07/30 17:15:31 UTC

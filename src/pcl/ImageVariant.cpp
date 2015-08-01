@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ImageVariant.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ImageVariant.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,20 +47,25 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/AutoLock.h>
+#include <pcl/AutoPointer.h>
+#include <pcl/Compression.h>
+#include <pcl/ElapsedTime.h>
 #include <pcl/ImageVariant.h>
 #include <pcl/MetaModule.h> // MetaModule::ProcessEvents()
-#include <pcl/PArray.h>
+#include <pcl/ReferenceArray.h>
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-// Masking buffer length in bytes.
-// 8 MB seems a reasonable size to fit into a hard disk internal buffer.
+/*
+ * Masking buffer length in bytes for uncompressed raw pixel data.
+ * 8 MB seems a reasonable size to fit into a hard disk internal buffer.
+ */
 const size_type maskBufSize = 0x800000u;
 
 #define SWAP_FILE_MAGIC    0x726177696D616765ull   // 'rawimage'
@@ -67,44 +75,69 @@ const size_type maskBufSize = 0x800000u;
 
 struct SwapFileHeader
 {
-   uint64   magic;   // SWAP_FILE_MAGIC
-   uint32   version; // SWAP_FILE_VERSION
+   uint64 magic            = SWAP_FILE_MAGIC;
+   uint32 version          = SWAP_FILE_VERSION;
+   uint8  validImage       = 0;
+   uint8  floatSample      = 0;
+   uint8  complexSample    = 0;
+   uint8  bitsPerSample    = 0;
+   uint8  sRGB             = 0;
+   uint8  sRGBGamma        = 0;
+#ifndef _MSC_VER
+   uint8  rsv1[ 10 ]       = {}; // reserved
+#else
+   uint8  rsv1[ 10 ];
+#endif
+   int32  width            = 0;
+   int32  height           = 0;
+   int32  numberOfChannels = 0;
+   int32  colorSpace       = 0;
+   float  gamma            = 0;
+#ifndef _MSC_VER
+   float  Y[ 3 ]           = {};
+   float  x[ 3 ]           = {};
+   float  y[ 3 ]           = {};
+   uint8  rsv2[ 20 ]       = {}; // reserved
+#else
+   float  Y[ 3 ];
+   float  x[ 3 ];
+   float  y[ 3 ];
+   uint8  rsv2[ 20 ];
+#endif
+   int32  numberOfThreads  = 0;
+   uint8  compression      = SwapCompression::None;
+#ifndef _MSC_VER
+   uint8  rsv3[ 19 ]       = {}; // reserved
+#else
+   uint8  rsv3[ 19 ];
+#endif
 
-   uint8    isImage;
-   uint8    isFloatSample;
-   uint8    isComplexSample;
-   uint8    bitsPerSample;
-   uint8    isSRGB;
-   uint8    isSRGBGamma;
-   uint8    __r1__[ 10 ]; // reserved
-
-   int32    width;
-   int32    height;
-   int32    numberOfChannels;
-   int32    colorSpace;
-   float    gamma;
-   float    Y[ 3 ];
-   float    x[ 3 ];
-   float    y[ 3 ];
-   uint8    __r2__[ 20 ]; // reserved
-   int32    numberOfThreads;
-   uint8    __r3__[ 20 ]; // reserved
-
+#ifndef _MSC_VER
+   SwapFileHeader() = default;
+#else
    SwapFileHeader()
    {
-      Initialize();
+      ::memset( rsv1, 0, sizeof( rsv1 ) );
+      ::memset( rsv2, 0, sizeof( rsv2 ) );
+      ::memset( rsv3, 0, sizeof( rsv3 ) );
+      Y[0] = Y[1] = Y[2] =
+      x[0] = x[1] = x[2] =
+      y[0] = y[1] = y[2] = 0;
    }
+#endif
+
+   SwapFileHeader( const SwapFileHeader& ) = default;
 
    SwapFileHeader( const ImageVariant& image )
    {
-      Initialize();
+      *this = SwapFileHeader();
 
-      isImage = image ? 1 : 0;
-      isFloatSample = image.IsFloatSample() ? 1 : 0;
-      isComplexSample = image.IsComplexSample() ? 1 : 0;
+      validImage = image ? 1 : 0;
+      floatSample = image.IsFloatSample() ? 1 : 0;
+      complexSample = image.IsComplexSample() ? 1 : 0;
       bitsPerSample = uint8( image.BitsPerSample() );
 
-      if ( isImage )
+      if ( validImage )
       {
          width = image->Width();
          height = image->Height();
@@ -112,32 +145,16 @@ struct SwapFileHeader
          colorSpace = image->ColorSpace();
 
          const RGBColorSystem& rgbws = image->RGBWorkingSpace();
-
-         isSRGB = (rgbws == RGBColorSystem::sRGB) ? 1 : 0;
-         if ( !isSRGB )
+         sRGB = (rgbws == RGBColorSystem::sRGB) ? 1 : 0;
+         if ( !sRGB )
          {
-            isSRGBGamma = rgbws.IsSRGB() ? 1 : 0;
+            sRGBGamma = rgbws.IsSRGB() ? 1 : 0;
             gamma = rgbws.Gamma();
             memcpy( x, *rgbws.ChromaticityXCoordinates(), sizeof( x ) );
             memcpy( y, *rgbws.ChromaticityYCoordinates(), sizeof( y ) );
             memcpy( Y, *rgbws.LuminanceCoefficients(), sizeof( Y ) );
          }
       }
-   }
-
-   void Initialize()
-   {
-      magic = SWAP_FILE_MAGIC;
-      version = SWAP_FILE_VERSION;
-      isImage = isFloatSample = isComplexSample = isSRGB = isSRGBGamma = false;
-      bitsPerSample = 0;
-      width = height = numberOfChannels = colorSpace = 0;
-      gamma = 0;
-      Y[0] = Y[1] = Y[2] = x[0] = x[1] = x[2] = y[0] = y[1] = y[2] = 0;
-      numberOfThreads = 0;
-      memset( __r1__, 0, sizeof( __r1__ ) );
-      memset( __r2__, 0, sizeof( __r2__ ) );
-      memset( __r3__, 0, sizeof( __r3__ ) );
    }
 };
 
@@ -147,63 +164,212 @@ class SwapFileThread : public Thread
 {
 public:
 
-   typedef PArray<SwapFileThread>   thread_list;
+   typedef ReferenceArray<SwapFileThread>   thread_list;
 
    SwapFileThread( const String& path, size_type offsetBegin, size_type offsetEnd, bool hasHeader ) :
-   m_path( path ), m_offsetBegin( offsetBegin ), m_offsetEnd( offsetEnd ), m_hasHeader( hasHeader )
+      m_path( path ),
+      m_offsetBegin( offsetBegin ),
+      m_offsetEnd( offsetEnd ),
+      m_hasHeader( hasHeader )
    {
-      if ( m_error != 0 )
-         delete m_error, m_error = 0;
    }
 
-   static void ConsumeThreads( thread_list& threads, bool processEvents )
+   static void ConsumeThreads( thread_list& threads, bool processEvents,
+                               const ImageVariant& image, Compression::Performance* perf = nullptr )
    {
-      if ( threads.Length() == 1 )
-      {
-         if ( processEvents )
-         {
-            threads[0].Start( ThreadPriority::DefaultMax );
-            while ( !threads[0].Wait( 0.25 ) )
-               Module->ProcessEvents();
-         }
-         else
-            threads[0].Run();
-      }
-      else
+      m_errors.Clear();
+
+      if ( threads.Length() > 1 )
       {
          for ( thread_list::iterator i = threads.Begin(); i != threads.End(); ++i )
             i->Start( ThreadPriority::DefaultMax, Distance( threads.Begin(), i ) );
          if ( processEvents )
             for ( thread_list::iterator i = threads.Begin(); i != threads.End(); ++i )
-               while ( !i->Wait( 0.25 ) )
+               while ( !i->Wait( 250 ) )
                   Module->ProcessEvents();
          else
             for ( thread_list::iterator i = threads.Begin(); i != threads.End(); ++i )
                i->Wait();
       }
+      else
+      {
+         if ( processEvents )
+         {
+            threads[0].Start( ThreadPriority::DefaultMax );
+            while ( !threads[0].Wait( 250 ) )
+               Module->ProcessEvents();
+         }
+         else
+            threads[0].Run();
+      }
+
+      if ( perf != nullptr )
+      {
+         size_type transferSize = 0;
+         double compressorTime = 0;
+         for ( thread_list::iterator i = threads.Begin(); i != threads.End(); ++i )
+         {
+            transferSize += i->TransferSize();
+            compressorTime += i->CompressorTime();
+         }
+
+         size_type size = image.ImageSize();
+         perf->sizeReduction = double( size - transferSize )/size;
+         perf->throughput = size/compressorTime/1024/1024; // MiB/s
+         perf->numberOfThreads = int( threads.Length() );
+      }
 
       threads.Destroy();
 
-      if ( m_error )
-      {
-         Error e( *m_error );
-         delete m_error, m_error = 0;
-         throw e;
-      }
+      if ( !m_errors.IsEmpty() )
+         throw String().ToSeparated( m_errors, '\n' );
+   }
+
+   virtual size_type TransferSize() const
+   {
+      return 0;
+   }
+
+   virtual double CompressorTime() const
+   {
+      return 0;
    }
 
 protected:
 
-          String    m_path;
-          size_type m_offsetBegin;
-          size_type m_offsetEnd;
-          bool      m_hasHeader;
-   static Mutex     m_mutex;
-   static Error*    m_error;
+          String     m_path;
+          size_type  m_offsetBegin;
+          size_type  m_offsetEnd;
+          bool       m_hasHeader;
+   static Mutex      m_mutex;
+   static StringList m_errors;
+
+   static size_type WriteSubblock( File& f, Compression::subblock_list::const_iterator i )
+   {
+      f.WriteUI64( i->compressedData.Length() );
+      f.WriteUI64( i->uncompressedSize );
+      f.WriteUI64( i->checksum );
+      f.WriteUI64( 0u ); // reserved
+      f.Write( reinterpret_cast<const void*>( i->compressedData.Begin() ), fsize_type( i->compressedData.Length() ) );
+      return i->compressedData.Length() + 4 * sizeof( uint64 );
+   }
+
+   static size_type ReadSubblock( File& f, Compression::subblock_list::iterator i )
+   {
+      size_type compressedSize = 0;
+      f.ReadUI64( compressedSize );
+      i->compressedData = ByteArray( compressedSize );
+      f.ReadUI64( i->uncompressedSize );
+      f.ReadUI64( i->checksum );
+#ifndef _MSC_VER
+      volatile uint64 rsv;
+#else
+      uint64 rsv;
+#endif
+      f.ReadUI64( rsv ); // reserved
+      f.Read( reinterpret_cast<void*>( i->compressedData.Begin() ), fsize_type( compressedSize ) );
+      return compressedSize + 4 * sizeof( uint64 );
+   }
+
+   static size_type WriteData( File& f,
+                               const Compression* compressor, double& compressionTimeAcc,
+                               const void* data, size_type size )
+   {
+      if ( compressor != nullptr )
+      {
+         ElapsedTime T;
+         Compression::subblock_list subblocks = compressor->Compress( data, size );
+         compressionTimeAcc += T();
+         f.WriteUI32( subblocks.Length() );
+         if ( !subblocks.IsEmpty() )
+         {
+            // Data compressed.
+            size_type compressedSize = 0;
+            for ( Compression::subblock_list::const_iterator i = subblocks.Begin(); i != subblocks.End(); ++i )
+               compressedSize += WriteSubblock( f, i );
+            return compressedSize;
+         }
+      }
+
+      // Either no compression, or the data is not compressible.
+      f.Write( data, fsize_type( size ) );
+      return size;
+   }
+
+   static size_type ReadData( File& f,
+                              const Compression* compressor, double& decompressionTimeAcc,
+                              void* data, size_type size )
+   {
+      if ( compressor != nullptr )
+      {
+         size_type subblockCount = 0;
+         f.ReadUI32( subblockCount );
+         if ( subblockCount > 0 )
+         {
+            // Compressed data.
+            Compression::subblock_list subblocks( subblockCount );
+            size_type compressedSize = 0;
+            for ( Compression::subblock_list::iterator i = subblocks.Begin(); i != subblocks.End(); ++i )
+               compressedSize += ReadSubblock( f, i );
+            ElapsedTime T;
+            (void)compressor->Uncompress( data, size, subblocks );
+            decompressionTimeAcc += T();
+            return compressedSize;
+         }
+      }
+
+      // Either no compression, or data was not compressible.
+      f.Read( data, fsize_type( size ) );
+      return size;
+   }
+
+   class IncrementalReader
+   {
+   public:
+
+      IncrementalReader( File& f, const Compression* compressor, size_type size ) : m_file( f )
+      {
+         if ( compressor != nullptr )
+         {
+            size_type subblockCount = 0;
+            m_file.ReadUI32( subblockCount );
+            if ( subblockCount > 0 )
+            {
+               // Compressed data.
+               Compression::subblock_list subblocks( subblockCount );
+               for ( Compression::subblock_list::iterator i = subblocks.Begin(); i != subblocks.End(); ++i )
+                  ReadSubblock( f, i );
+               m_data = ByteArray( size );
+               compressor->Uncompress( m_data.Begin(), size, subblocks );
+            }
+         }
+      }
+
+      void operator ()( void* data, size_type size )
+      {
+         if ( m_data.IsEmpty() )
+         {
+            // Either no compression, or data was not compressible.
+            m_file.Read( data, fsize_type( size ) );
+         }
+         else
+         {
+            // Data was compressed.
+            ::memcpy( data, m_data.At( m_bytesRead ), size );
+         }
+         m_bytesRead += size;
+      }
+
+   private:
+
+      File&     m_file;
+      ByteArray m_data;
+      size_type m_bytesRead = 0;
+   };
 };
 
-Mutex  SwapFileThread::m_mutex;
-Error* SwapFileThread::m_error = 0;
+Mutex      SwapFileThread::m_mutex;
+StringList SwapFileThread::m_errors;
 
 // ----------------------------------------------------------------------------
 
@@ -212,9 +378,18 @@ class SwapWriterThread : public SwapFileThread
 {
 public:
 
-   SwapWriterThread( const GenericImage<P>& image, const String& path,
-                     size_type offsetBegin, size_type offsetEnd, const SwapFileHeader* header ) :
-   SwapFileThread( path, offsetBegin, offsetEnd, header != 0 ), m_image( image ), m_header( header )
+   SwapWriterThread( const GenericImage<P>& image,
+                     const String& path,
+                     size_type offsetBegin, size_type offsetEnd,
+                     const Compression* compressor,
+                     const SwapFileHeader* header ) :
+
+      SwapFileThread( path, offsetBegin, offsetEnd, header != nullptr ),
+      m_image( image ),
+      m_compressor( compressor ),
+      m_header( header ),
+      m_outputSize( 0 ),
+      m_compressionTime( 0 )
    {
    }
 
@@ -225,12 +400,15 @@ public:
          File f;
          f.CreateForWriting( m_path );
 
-         if ( m_header != 0 )
+         if ( m_header != nullptr )
             f.Write( *m_header );
 
-         size_type byteCount = (m_offsetEnd - m_offsetBegin)*P::BytesPerSample();
+         m_outputSize = 0;
+         m_compressionTime = 0;
+         size_type blockSize = (m_offsetEnd - m_offsetBegin)*P::BytesPerSample();
          for ( int c = 0; c < m_image.NumberOfChannels(); ++c )
-            f.Write( reinterpret_cast<const void*>( m_image[c] + m_offsetBegin ), byteCount );
+            m_outputSize += WriteData( f, m_compressor, m_compressionTime,
+                                       reinterpret_cast<const void*>( m_image[c] + m_offsetBegin ), blockSize );
 
          f.Close();
       }
@@ -238,28 +416,42 @@ public:
       {
          volatile AutoLock lock( m_mutex );
 
-         if ( m_error == 0 )
+         try
          {
-            try
-            {
-               throw;
-            }
-            catch ( File::Exception& x )
-            {
-               m_error = new Error( "File write error: " + m_path + ": " + x.ErrorMessage() );
-            }
-            catch ( ... )
-            {
-               m_error = new Error( "File write error: " + m_path );
-            }
+            throw;
+         }
+         catch ( File::Error& x )
+         {
+            m_errors << x.ErrorMessage() + ": " + m_path;
+         }
+         catch ( Exception& x )
+         {
+            m_errors << "File write error: " + m_path + ": " + x.Message();
+         }
+         catch ( ... )
+         {
+            m_errors << "File write error: " + m_path;
          }
       }
+   }
+
+   virtual size_type TransferSize() const
+   {
+      return m_outputSize;
+   }
+
+   virtual double CompressorTime() const
+   {
+      return m_compressionTime;
    }
 
 private:
 
    const GenericImage<P>& m_image;
+   const Compression*     m_compressor;
    const SwapFileHeader*  m_header;
+         size_type        m_outputSize;
+         double           m_compressionTime;
 };
 
 // ----------------------------------------------------------------------------
@@ -269,9 +461,17 @@ class SwapReaderThread : public SwapFileThread
 {
 public:
 
-   SwapReaderThread( GenericImage<P>& image, const String& path,
-                     size_type offsetBegin, size_type offsetEnd, bool hasHeader ) :
-   SwapFileThread( path, offsetBegin, offsetEnd, hasHeader ), m_image( image )
+   SwapReaderThread( GenericImage<P>& image,
+                     const String& path,
+                     size_type offsetBegin, size_type offsetEnd,
+                     const Compression* compressor,
+                     bool hasHeader ) :
+
+      SwapFileThread( path, offsetBegin, offsetEnd, hasHeader ),
+      m_image( image ),
+      m_compressor( compressor ),
+      m_inputSize( 0 ),
+      m_decompressionTime( 0 )
    {
    }
 
@@ -285,9 +485,12 @@ public:
          if ( m_hasHeader )
             f.SetPosition( sizeof( SwapFileHeader ) );
 
-         size_type byteCount = (m_offsetEnd - m_offsetBegin)*P::BytesPerSample();
+         m_inputSize = 0;
+         m_decompressionTime = 0;
+         size_type blockSize = (m_offsetEnd - m_offsetBegin)*P::BytesPerSample();
          for ( int c = 0; c < m_image.NumberOfChannels(); ++c )
-            f.Read( reinterpret_cast<void*>( m_image[c] + m_offsetBegin ), byteCount );
+            m_inputSize += ReadData( f, m_compressor, m_decompressionTime,
+                                     reinterpret_cast<void*>( m_image[c] + m_offsetBegin ), blockSize );
 
          f.Close();
       }
@@ -295,27 +498,41 @@ public:
       {
          volatile AutoLock lock( m_mutex );
 
-         if ( m_error == 0 )
+         try
          {
-            try
-            {
-               throw;
-            }
-            catch ( File::Exception& x )
-            {
-               m_error = new Error( "File read error: " + m_path + ": " + x.ErrorMessage() );
-            }
-            catch ( ... )
-            {
-               m_error = new Error( "File read error: " + m_path );
-            }
+            throw;
+         }
+         catch ( File::Error& x )
+         {
+            m_errors << x.ErrorMessage() + ": " + m_path;
+         }
+         catch ( Exception& x )
+         {
+            m_errors << "File read error: " + m_path + ": " + x.Message();
+         }
+         catch ( ... )
+         {
+            m_errors << "File read error: " + m_path;
          }
       }
    }
 
+   virtual size_type TransferSize() const
+   {
+      return m_inputSize;
+   }
+
+   virtual double CompressorTime() const
+   {
+      return m_decompressionTime;
+   }
+
 private:
 
-   GenericImage<P>& m_image;
+         GenericImage<P>& m_image;
+   const Compression*     m_compressor;
+         size_type        m_inputSize;
+         double           m_decompressionTime;
 };
 
 // ----------------------------------------------------------------------------
@@ -325,9 +542,18 @@ class SwapMaskerThread : public SwapFileThread
 {
 public:
 
-   SwapMaskerThread( GenericImage<P>& image, const String& srcPath, const GenericImage<M>& mask, bool invert,
-                     size_type offsetBegin, size_type offsetEnd, bool hasHeader ) :
-   SwapFileThread( srcPath, offsetBegin, offsetEnd, hasHeader ), m_image( image ), m_mask( mask ), m_invert( invert )
+   SwapMaskerThread( GenericImage<P>& image,
+                     const String& srcPath,
+                     const GenericImage<M>& mask, bool invert,
+                     size_type offsetBegin, size_type offsetEnd,
+                     const Compression* compressor,
+                     bool hasHeader ) :
+
+      SwapFileThread( srcPath, offsetBegin, offsetEnd, hasHeader ),
+      m_image( image ),
+      m_mask( mask ),
+      m_invert( invert ),
+      m_compressor( compressor )
    {
    }
 
@@ -335,23 +561,25 @@ public:
    {
       try
       {
-         size_type totalPixels = m_offsetEnd - m_offsetBegin;
-         size_type blockPixels = maskBufSize/P::BytesPerSample();
-         size_type numberOfBlocks = totalPixels/blockPixels;
-         size_type remainderPixels = totalPixels%blockPixels;
-
-         Array<typename P::sample> buffer( blockPixels + remainderPixels );
-
          File f;
          f.OpenForReading( m_path );
 
          if ( m_hasHeader )
             f.SetPosition( sizeof( SwapFileHeader ) );
 
+         size_type totalPixels = m_offsetEnd - m_offsetBegin;
+         size_type blockPixels = maskBufSize/P::BytesPerSample();
+         size_type numberOfBlocks = totalPixels/blockPixels;
+         size_type remainderPixels = totalPixels%blockPixels;
+
+         Array<typename P::sample> buffer( Max( blockPixels, remainderPixels ) );
+
          for ( int c = 0; c < m_image.NumberOfNominalChannels(); ++c )
          {
-                  typename P::sample* b = m_image.PixelData( c ) + m_offsetBegin;
-            const typename M::sample* m = m_mask.PixelData( m_mask.IsColor() ? c : 0 ) + m_offsetBegin;
+                  typename P::sample* b = m_image[c] + m_offsetBegin;
+            const typename M::sample* m = m_mask[m_mask.IsColor() ? c : 0] + m_offsetBegin;
+
+            IncrementalReader read( f, m_compressor, totalPixels*P::BytesPerSample() );
 
             for ( size_type i = 0; i <= numberOfBlocks; ++i )
             {
@@ -359,7 +587,7 @@ public:
                if ( thisBlockPixels == 0 ) // last block and no remainder pixels?
                   break;
 
-               f.Read( reinterpret_cast<void*>( buffer.Begin() ), thisBlockPixels*P::BytesPerSample() );
+               read( buffer.Begin(), thisBlockPixels*P::BytesPerSample() );
 
                for ( const typename P::sample* a  = buffer.Begin(),
                                              * a1 = a + thisBlockPixels;
@@ -381,20 +609,21 @@ public:
       {
          volatile AutoLock lock( m_mutex );
 
-         if ( m_error == 0 )
+         try
          {
-            try
-            {
-               throw;
-            }
-            catch ( File::Exception& x )
-            {
-               m_error = new Error( "File read error (masking): " + m_path + ": " + x.ErrorMessage() );
-            }
-            catch ( ... )
-            {
-               m_error = new Error( "File read error (masking): " + m_path );
-            }
+            throw;
+         }
+         catch ( File::Error& x )
+         {
+            m_errors << x.ErrorMessage() + ": " + m_path;
+         }
+         catch ( Exception& x )
+         {
+            m_errors << "File read error: " + m_path + ": " + x.Message();
+         }
+         catch ( ... )
+         {
+            m_errors << "File read error: " + m_path;
          }
       }
    }
@@ -404,6 +633,7 @@ private:
          GenericImage<P>& m_image;
    const GenericImage<M>& m_mask;
          bool             m_invert;
+   const Compression*     m_compressor;
 };
 
 // ----------------------------------------------------------------------------
@@ -448,7 +678,6 @@ static void ValidateSwapFileParameters( const String& routine, const String& fil
 static int NumberOfThreads( const AbstractImage& image, const StringList& directories )
 {
    const size_type overheadLimit = 4096;
-
    size_type L = directories.Length();
    if ( L > 1 )
    {
@@ -456,7 +685,6 @@ static int NumberOfThreads( const AbstractImage& image, const StringList& direct
       if ( N > overheadLimit )
          return Max( 1, int( Min( L, N/Max( overheadLimit, N/L ) ) ) );
    }
-
    return 1;
 }
 
@@ -466,6 +694,7 @@ template <class P>
 static SwapFileThread::thread_list
 CreateSwapWriterThreads( const GenericImage<P>& image,
                          const String& fileName, const StringList& directories,
+                         const Compression* compressor,
                          SwapFileHeader& header )
 {
    header.numberOfThreads = NumberOfThreads( image, directories );
@@ -479,14 +708,14 @@ CreateSwapWriterThreads( const GenericImage<P>& image,
    String rootDirectory = directories[0];
    StringList sortedDirectories = directories;
 #ifdef __PCL_WINDOWS
-   rootDirectory.ToUpperCase();
+   rootDirectory.ToUppercase();
    for ( StringList::iterator i = sortedDirectories.Begin(); i != sortedDirectories.End(); ++i )
-      i->ToUpperCase();
+      i->ToUppercase();
 #endif
    sortedDirectories.Sort();
    for ( int i = 0, j = 1; i < header.numberOfThreads; i = j, ++j )
    {
-      while ( j < header.numberOfThreads && sortedDirectories[j].BeginsWith( sortedDirectories[i] ) )
+      while ( j < header.numberOfThreads && sortedDirectories[j].StartsWith( sortedDirectories[i] ) )
          ++j;
 
       size_type begin = i*pixelsPerThread;
@@ -508,15 +737,16 @@ CreateSwapWriterThreads( const GenericImage<P>& image,
     * Create writer threads
     */
    SwapFileThread::thread_list threads;
-
    for ( int i = 0, j = 1; i < header.numberOfThreads; ++i, ++j )
    {
       String path = SwapThreadFilePath( fileName, directories, i );
       size_type begin = i*pixelsPerThread;
       size_type end = (j < header.numberOfThreads) ? j*pixelsPerThread : numberOfPixels;
-      threads.Add( new SwapWriterThread<P>( image, path, begin, end, (i == 0) ? &header : 0 ) );
+      threads.Add( new SwapWriterThread<P>( image, path,
+                                            begin, end,
+                                            compressor,
+                                            (i == 0) ? &header : nullptr ) );
    }
-
    return threads;
 }
 
@@ -524,17 +754,19 @@ template <class P>
 static SwapFileThread::thread_list
 CreateSwapReaderThreads( GenericImage<P>& image,
                          int numberOfThreads,
-                         const String& fileName, const StringList& directories )
+                         const String& fileName, const StringList& directories,
+                         const Compression* compressor )
 {
    size_type numberOfPixels = image.NumberOfPixels();
    size_type pixelsPerThread = numberOfPixels/numberOfThreads;
 
    SwapFileThread::thread_list threads;
-
    for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
       threads.Add( new SwapReaderThread<P>( image, SwapThreadFilePath( fileName, directories, i ),
                                             i*pixelsPerThread,
-                                            (j < numberOfThreads) ? j*pixelsPerThread : numberOfPixels, i == 0 ) );
+                                            (j < numberOfThreads) ? j*pixelsPerThread : numberOfPixels,
+                                            compressor,
+                                            i == 0 ) );
    return threads;
 }
 
@@ -542,18 +774,20 @@ template <class P, class M>
 static SwapFileThread::thread_list
 CreateSwapMaskerThreads( GenericImage<P>& image, const GenericImage<M>& mask, bool invert,
                          int numberOfThreads,
-                         const String& fileName, const StringList& directories )
+                         const String& fileName, const StringList& directories,
+                         const Compression* compressor )
 {
    size_type numberOfPixels = image.NumberOfPixels();
    size_type pixelsPerThread = numberOfPixels/numberOfThreads;
 
    SwapFileThread::thread_list threads;
-
    for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
       threads.Add( new SwapMaskerThread<P,M>( image, SwapThreadFilePath( fileName, directories, i ),
                                               mask, invert,
                                               i*pixelsPerThread,
-                                              (j < numberOfThreads) ? j*pixelsPerThread : numberOfPixels, i == 0 ) );
+                                              (j < numberOfThreads) ? j*pixelsPerThread : numberOfPixels,
+                                              compressor,
+                                              i == 0 ) );
    return threads;
 }
 
@@ -561,41 +795,49 @@ template <class P>
 static SwapFileThread::thread_list
 CreateSwapMaskerThreads( GenericImage<P>& image, const ImageVariant& mask, bool invert,
                          int numberOfThreads,
-                         const String& fileName, const StringList& directories )
+                         const String& fileName, const StringList& directories,
+                         const Compression* compressor )
 {
    SwapFileThread::thread_list threads;
 
    if ( mask.IsFloatSample() )
       switch ( mask.BitsPerSample() )
       {
-      case 32 : threads = CreateSwapMaskerThreads( image, static_cast<const Image&>( *mask ),
-                                                   invert, numberOfThreads, fileName, directories );
+      case 32:
+         threads = CreateSwapMaskerThreads( image, static_cast<const Image&>( *mask ),
+                                            invert, numberOfThreads, fileName, directories, compressor );
          break;
-      case 64 : threads = CreateSwapMaskerThreads( image, static_cast<const DImage&>( *mask ),
-                                                   invert, numberOfThreads, fileName, directories );
+      case 64:
+         threads = CreateSwapMaskerThreads( image, static_cast<const DImage&>( *mask ),
+                                            invert, numberOfThreads, fileName, directories, compressor );
          break;
       }
    else if ( mask.IsComplexSample() )
       switch ( mask.BitsPerSample() )
       {
-      case 32 : threads = CreateSwapMaskerThreads( image, static_cast<const ComplexImage&>( *mask ),
-                                                   invert, numberOfThreads, fileName, directories );
+      case 32:
+         threads = CreateSwapMaskerThreads( image, static_cast<const ComplexImage&>( *mask ),
+                                            invert, numberOfThreads, fileName, directories, compressor );
          break;
-      case 64 : threads = CreateSwapMaskerThreads( image, static_cast<const DComplexImage&>( *mask ),
-                                                   invert, numberOfThreads, fileName, directories );
+      case 64:
+         threads = CreateSwapMaskerThreads( image, static_cast<const DComplexImage&>( *mask ),
+                                            invert, numberOfThreads, fileName, directories, compressor );
          break;
       }
    else
       switch ( mask.BitsPerSample() )
       {
-      case  8 : threads = CreateSwapMaskerThreads( image, static_cast<const UInt8Image&>( *mask ),
-                                                   invert, numberOfThreads, fileName, directories );
+      case  8:
+         threads = CreateSwapMaskerThreads( image, static_cast<const UInt8Image&>( *mask ),
+                                            invert, numberOfThreads, fileName, directories, compressor );
          break;
-      case 16 : threads = CreateSwapMaskerThreads( image, static_cast<const UInt16Image&>( *mask ),
-                                                   invert, numberOfThreads, fileName, directories );
+      case 16:
+         threads = CreateSwapMaskerThreads( image, static_cast<const UInt16Image&>( *mask ),
+                                            invert, numberOfThreads, fileName, directories, compressor );
          break;
-      case 32 : threads = CreateSwapMaskerThreads( image, static_cast<const UInt32Image&>( *mask ),
-                                                   invert, numberOfThreads, fileName, directories );
+      case 32:
+         threads = CreateSwapMaskerThreads( image, static_cast<const UInt32Image&>( *mask ),
+                                            invert, numberOfThreads, fileName, directories, compressor );
          break;
       }
 
@@ -604,7 +846,49 @@ CreateSwapMaskerThreads( GenericImage<P>& image, const ImageVariant& mask, bool 
 
 // ----------------------------------------------------------------------------
 
-void ImageVariant::WriteSwapFiles( const String& fileName, const StringList& directories, bool processEvents ) const
+Compression* ImageVariant::NewCompression( swap_compression algorithm, int itemSize )
+{
+   Compression* compressor = nullptr;
+   switch ( algorithm )
+   {
+   case SwapCompression::None:
+      break;
+   case SwapCompression::ZLib:
+   case SwapCompression::ZLib_SH:
+      compressor = new ZLibCompression;
+      break;
+   case SwapCompression::LZ4:
+   case SwapCompression::LZ4_SH:
+      compressor = new LZ4Compression;
+      break;
+   case SwapCompression::LZ4HC:
+   case SwapCompression::LZ4HC_SH:
+      compressor = new LZ4HCCompression;
+      break;
+   default:
+      throw Error( String().Format( "Unsupported raw image storage compression %x", int( algorithm ) ) );
+   }
+   switch ( algorithm )
+   {
+   case SwapCompression::ZLib_SH:
+   case SwapCompression::LZ4_SH:
+   case SwapCompression::LZ4HC_SH:
+      compressor->EnableByteShuffling();
+      compressor->SetItemSize( itemSize );
+      break;
+   default:
+      if ( compressor )
+         compressor->DisableByteShuffling();
+      break;
+   }
+   return compressor;
+}
+
+// ----------------------------------------------------------------------------
+
+void ImageVariant::WriteSwapFiles( const String& fileName, const StringList& directories,
+                                   swap_compression compression, Compression::Performance* perf,
+                                   bool processEvents ) const
 {
    ValidateSwapFileParameters( "WriteSwapFiles", fileName, directories );
 
@@ -613,53 +897,75 @@ void ImageVariant::WriteSwapFiles( const String& fileName, const StringList& dir
 
    SwapFileHeader h( *this );
 
+   AutoPointer<Compression> compressor( NewCompression( compression, BytesPerSample() ) );
+   if ( compressor )
+      h.compression = uint8( compression );
+
    SwapFileThread::thread_list threads;
 
    if ( IsFloatSample() )
       switch ( BitsPerSample() )
       {
-      case 32 : threads = CreateSwapWriterThreads( static_cast<const Image&>( **this ),
-                                                   fileName, directories, h );
+      case 32:
+         threads = CreateSwapWriterThreads( static_cast<const Image&>( **this ),
+                                            fileName, directories, compressor, h );
          break;
-      case 64 : threads = CreateSwapWriterThreads( static_cast<const DImage&>( **this ),
-                                                   fileName, directories, h );
+      case 64:
+         threads = CreateSwapWriterThreads( static_cast<const DImage&>( **this ),
+                                            fileName, directories, compressor, h );
          break;
       }
    else if ( IsComplexSample() )
       switch ( BitsPerSample() )
       {
-      case 32 : threads = CreateSwapWriterThreads( static_cast<const ComplexImage&>( **this ),
-                                                   fileName, directories, h );
+      case 32:
+         threads = CreateSwapWriterThreads( static_cast<const ComplexImage&>( **this ),
+                                            fileName, directories, compressor, h );
          break;
-      case 64 : threads = CreateSwapWriterThreads( static_cast<const DComplexImage&>( **this ),
-                                                   fileName, directories, h );
+      case 64:
+         threads = CreateSwapWriterThreads( static_cast<const DComplexImage&>( **this ),
+                                            fileName, directories, compressor, h );
          break;
       }
    else
       switch ( BitsPerSample() )
       {
-      case  8 : threads = CreateSwapWriterThreads( static_cast<const UInt8Image&>( **this ),
-                                                   fileName, directories, h );
+      case  8:
+         threads = CreateSwapWriterThreads( static_cast<const UInt8Image&>( **this ),
+                                            fileName, directories, compressor, h );
          break;
-      case 16 : threads = CreateSwapWriterThreads( static_cast<const UInt16Image&>( **this ),
-                                                   fileName, directories, h );
+      case 16:
+         threads = CreateSwapWriterThreads( static_cast<const UInt16Image&>( **this ),
+                                            fileName, directories, compressor, h );
          break;
-      case 32 : threads = CreateSwapWriterThreads( static_cast<const UInt32Image&>( **this ),
-                                                   fileName, directories, h );
+      case 32:
+         threads = CreateSwapWriterThreads( static_cast<const UInt32Image&>( **this ),
+                                            fileName, directories, compressor, h );
          break;
       }
 
    if ( threads.IsEmpty() )
       throw Error( "WriteSwapFiles(): Invalid image!" );
 
-   SwapFileThread::ConsumeThreads( threads, processEvents );
+   if ( compressor )
+   {
+      int numberOfSubthreads = Thread::NumberOfThreads( PCL_MAX_PROCESSORS, 1 );
+      compressor->SetSubblockSize( Range( ImageSize()/numberOfSubthreads,
+                                          size_type( 0x100000u ), size_type( 0x80000000u ) ) );
+      compressor->SetMaxProcessors( pcl::Max( 1, numberOfSubthreads/int( threads.Length() ) ) );
+   }
+
+   SwapFileThread::ConsumeThreads( threads, processEvents, *this, perf );
 }
 
-void ImageVariant::WriteSwapFile( const String& filePath, bool processEvents ) const
+void ImageVariant::WriteSwapFile( const String& filePath,
+                                  swap_compression compression, Compression::Performance* perf,
+                                  bool processEvents ) const
 {
    StringList directories;
    directories.Add( File::ExtractDrive( filePath ) + File::ExtractDirectory( filePath ) );
-   WriteSwapFiles( File::ExtractName( filePath ) + File::ExtractExtension( filePath ), directories, processEvents );
+   WriteSwapFiles( File::ExtractName( filePath ) + File::ExtractExtension( filePath ), directories,
+                   compression, perf, processEvents );
 }
 
 // ----------------------------------------------------------------------------
@@ -678,11 +984,11 @@ static void ReadSwapFileHeader( SwapFileHeader& h, const String& fileName, const
    if ( h.version != SWAP_FILE_VERSION )
       throw Error( "Unsupported PCL swap image file version: " + swapFilePath );
 
-   if ( h.isImage )
+   if ( h.validImage )
    {
       // Check sample data type
 
-      if ( h.isFloatSample || h.isComplexSample )
+      if ( h.floatSample || h.complexSample )
       {
          if ( h.bitsPerSample != 32 && h.bitsPerSample != 64 )
             throw Error( String( "Invalid swap image file data: " ) + "Unsupported floating-point sample type: " + swapFilePath );
@@ -710,7 +1016,14 @@ static void ReadSwapFileHeader( SwapFileHeader& h, const String& fileName, const
    }
 }
 
-void ImageVariant::ReadSwapFiles( const String& fileName, const StringList& directories, bool processEvents )
+static Compression* NewCompressionFromHeader( const SwapFileHeader& h )
+{
+   return ImageVariant::NewCompression( ImageVariant::swap_compression( h.compression ), h.bitsPerSample >> 3 );
+}
+
+void ImageVariant::ReadSwapFiles( const String& fileName, const StringList& directories,
+                                  Compression::Performance* perf,
+                                  bool processEvents )
 {
    ValidateSwapFileParameters( "ReadSwapFiles", fileName, directories );
 
@@ -719,24 +1032,28 @@ void ImageVariant::ReadSwapFiles( const String& fileName, const StringList& dire
    SwapFileHeader h;
    ReadSwapFileHeader( h, fileName, directories );
 
-   if ( !h.isImage ) // this should not happen!
+   if ( !h.validImage ) // this should not happen!
       return;
+
+   // Data compression
+
+   AutoPointer<Compression> compressor( NewCompressionFromHeader( h ) );
 
    // Create and allocate the image
 
-   CreateImage( h.isFloatSample != 0, h.isComplexSample != 0, h.bitsPerSample );
+   CreateImage( h.floatSample != 0, h.complexSample != 0, h.bitsPerSample );
    AllocateImage( h.width, h.height, h.numberOfChannels, ColorSpace::value_type( h.colorSpace ) );
 
    // Set RGB Working Space
 
-   if ( h.isSRGB )
+   if ( h.sRGB )
    {
       if ( RGBWorkingSpace() != RGBColorSystem::sRGB )
          SetRGBWorkingSpace( RGBColorSystem::sRGB );
    }
    else
    {
-      RGBColorSystem rgbws( h.gamma, h.isSRGBGamma != 0, h.x, h.y, h.Y );
+      RGBColorSystem rgbws( h.gamma, h.sRGBGamma != 0, h.x, h.y, h.Y );
       SetRGBWorkingSpace( rgbws );
    }
 
@@ -747,48 +1064,55 @@ void ImageVariant::ReadSwapFiles( const String& fileName, const StringList& dire
    if ( IsFloatSample() )
       switch ( BitsPerSample() )
       {
-      case 32 : threads = CreateSwapReaderThreads( static_cast<Image&>( **this ),
-                                                   h.numberOfThreads, fileName, directories );
+      case 32:
+         threads = CreateSwapReaderThreads( static_cast<Image&>( **this ),
+                                            h.numberOfThreads, fileName, directories, compressor );
          break;
-      case 64 : threads = CreateSwapReaderThreads( static_cast<DImage&>( **this ),
-                                                   h.numberOfThreads, fileName, directories );
+      case 64:
+         threads = CreateSwapReaderThreads( static_cast<DImage&>( **this ),
+                                            h.numberOfThreads, fileName, directories, compressor );
          break;
       }
    else if ( IsComplexSample() )
       switch ( BitsPerSample() )
       {
-      case 32 : threads = CreateSwapReaderThreads( static_cast<ComplexImage&>( **this ),
-                                                   h.numberOfThreads, fileName, directories );
+      case 32:
+         threads = CreateSwapReaderThreads( static_cast<ComplexImage&>( **this ),
+                                            h.numberOfThreads, fileName, directories, compressor );
          break;
-      case 64 : threads = CreateSwapReaderThreads( static_cast<DComplexImage&>( **this ),
-                                                   h.numberOfThreads, fileName, directories );
+      case 64:
+         threads = CreateSwapReaderThreads( static_cast<DComplexImage&>( **this ),
+                                            h.numberOfThreads, fileName, directories, compressor );
          break;
       }
    else
       switch ( BitsPerSample() )
       {
-      case  8 : threads = CreateSwapReaderThreads( static_cast<UInt8Image&>( **this ),
-                                                   h.numberOfThreads, fileName, directories );
+      case  8:
+         threads = CreateSwapReaderThreads( static_cast<UInt8Image&>( **this ),
+                                            h.numberOfThreads, fileName, directories, compressor );
          break;
-      case 16 : threads = CreateSwapReaderThreads( static_cast<UInt16Image&>( **this ),
-                                                   h.numberOfThreads, fileName, directories );
+      case 16:
+         threads = CreateSwapReaderThreads( static_cast<UInt16Image&>( **this ),
+                                            h.numberOfThreads, fileName, directories, compressor );
          break;
-      case 32 : threads = CreateSwapReaderThreads( static_cast<UInt32Image&>( **this ),
-                                                   h.numberOfThreads, fileName, directories );
+      case 32:
+         threads = CreateSwapReaderThreads( static_cast<UInt32Image&>( **this ),
+                                            h.numberOfThreads, fileName, directories, compressor );
          break;
       }
 
    if ( threads.IsEmpty() )
       throw Error( "ReadSwapFiles(): Internal error!" );
 
-   SwapFileThread::ConsumeThreads( threads, processEvents );
+   SwapFileThread::ConsumeThreads( threads, processEvents, *this, perf );
 }
 
-void ImageVariant::ReadSwapFile( const String& filePath, bool processEvents )
+void ImageVariant::ReadSwapFile( const String& filePath, Compression::Performance* perf, bool processEvents )
 {
    StringList directories;
    directories.Add( File::ExtractDrive( filePath ) + File::ExtractDirectory( filePath ) );
-   ReadSwapFiles( File::ExtractName( filePath ) + File::ExtractExtension( filePath ), directories, processEvents );
+   ReadSwapFiles( File::ExtractNameAndSuffix( filePath ), directories, perf, processEvents );
 }
 
 // ----------------------------------------------------------------------------
@@ -813,63 +1137,72 @@ void ImageVariant::MaskFromSwapFiles( const String& fileName, const StringList& 
    SwapFileHeader h;
    ReadSwapFileHeader( h, fileName, directories );
 
-   if ( !h.isImage ) // this should not happen!
+   if ( !h.validImage ) // this should not happen!
       throw Error( String( "MaskFromSwapFiles(): " ) + "Empty source image: " + fileName );
 
-   if ( (h.isFloatSample != 0) != IsFloatSample() ||
-        (h.isComplexSample != 0) != IsComplexSample() || h.bitsPerSample != BitsPerSample() )
+   if ( (h.floatSample != 0) != IsFloatSample() ||
+        (h.complexSample != 0) != IsComplexSample() || h.bitsPerSample != BitsPerSample() )
       throw Error( String( "MaskFromSwapFiles(): " ) + "Incompatible source data type: " + fileName );
 
    if ( h.width != Width() || h.height != Height() || h.numberOfChannels < NumberOfNominalChannels() )
       throw Error( String( "MaskFromSwapFiles(): " ) + "Incompatible source geometry: " + fileName );
+
+   AutoPointer<Compression> compressor( NewCompressionFromHeader( h ) );
 
    SwapFileThread::thread_list threads;
 
    if ( IsFloatSample() )
       switch ( BitsPerSample() )
       {
-      case 32 : threads = CreateSwapMaskerThreads( static_cast<Image&>( **this ),
-                                                   mask, invert, h.numberOfThreads, fileName, directories );
+      case 32:
+         threads = CreateSwapMaskerThreads( static_cast<Image&>( **this ),
+                                            mask, invert, h.numberOfThreads, fileName, directories, compressor );
          break;
-      case 64 : threads = CreateSwapMaskerThreads( static_cast<DImage&>( **this ),
-                                                   mask, invert, h.numberOfThreads, fileName, directories );
+      case 64:
+         threads = CreateSwapMaskerThreads( static_cast<DImage&>( **this ),
+                                            mask, invert, h.numberOfThreads, fileName, directories, compressor );
          break;
       }
    else if ( IsComplexSample() )
       switch ( BitsPerSample() )
       {
-      case 32 : threads = CreateSwapMaskerThreads( static_cast<ComplexImage&>( **this ),
-                                                   mask, invert, h.numberOfThreads, fileName, directories );
+      case 32:
+         threads = CreateSwapMaskerThreads( static_cast<ComplexImage&>( **this ),
+                                            mask, invert, h.numberOfThreads, fileName, directories, compressor );
          break;
-      case 64 : threads = CreateSwapMaskerThreads( static_cast<DComplexImage&>( **this ),
-                                                   mask, invert, h.numberOfThreads, fileName, directories );
+      case 64:
+         threads = CreateSwapMaskerThreads( static_cast<DComplexImage&>( **this ),
+                                            mask, invert, h.numberOfThreads, fileName, directories, compressor );
          break;
       }
    else
       switch ( BitsPerSample() )
       {
-      case  8 : threads = CreateSwapMaskerThreads( static_cast<UInt8Image&>( **this ),
-                                                   mask, invert, h.numberOfThreads, fileName, directories );
+      case  8:
+         threads = CreateSwapMaskerThreads( static_cast<UInt8Image&>( **this ),
+                                            mask, invert, h.numberOfThreads, fileName, directories, compressor );
          break;
-      case 16 : threads = CreateSwapMaskerThreads( static_cast<UInt16Image&>( **this ),
-                                                   mask, invert, h.numberOfThreads, fileName, directories );
+      case 16:
+         threads = CreateSwapMaskerThreads( static_cast<UInt16Image&>( **this ),
+                                            mask, invert, h.numberOfThreads, fileName, directories, compressor );
          break;
-      case 32 : threads = CreateSwapMaskerThreads( static_cast<UInt32Image&>( **this ),
-                                                   mask, invert, h.numberOfThreads, fileName, directories );
+      case 32:
+         threads = CreateSwapMaskerThreads( static_cast<UInt32Image&>( **this ),
+                                            mask, invert, h.numberOfThreads, fileName, directories, compressor );
          break;
       }
 
    if ( threads.IsEmpty() )
       throw Error( String( "MaskFromSwapFiles(): " ) + "Internal error!" );
 
-   SwapFileThread::ConsumeThreads( threads, processEvents );
+   SwapFileThread::ConsumeThreads( threads, processEvents, *this );
 }
 
 void ImageVariant::MaskFromSwapFile( const String& filePath, const ImageVariant& mask, bool invert, bool processEvents )
 {
    StringList directories;
    directories.Add( File::ExtractDrive( filePath ) + File::ExtractDirectory( filePath ) );
-   MaskFromSwapFiles( File::ExtractName( filePath ) + File::ExtractExtension( filePath ), directories, mask, invert, processEvents );
+   MaskFromSwapFiles( File::ExtractNameAndSuffix( filePath ), directories, mask, invert, processEvents );
 }
 
 // ----------------------------------------------------------------------------
@@ -903,7 +1236,7 @@ void ImageVariant::DeleteSwapFile( const String& filePath )
    if ( dir.IsEmpty() )
       throw Error( String( "DeleteSwapFile(): " ) + "No directory specified." );
 
-   String name = File::ExtractName( filePath ) + File::ExtractExtension( filePath );
+   String name = File::ExtractNameAndSuffix( filePath );
    if ( dir.IsEmpty() )
       throw Error( String( "DeleteSwapFile(): " ) + "No file name specified." );
 
@@ -922,14 +1255,12 @@ uint64 ImageVariant::SwapFilesSize( const String& fileName, const StringList& di
    ReadSwapFileHeader( h, fileName, directories );
 
    uint64 totalSize = sizeof( SwapFileHeader );
-
-   if ( h.isImage )
+   if ( h.validImage )
    {
       totalSize += uint64( h.width ) * h.height * h.numberOfChannels * (h.bitsPerSample >> 3);
-      if ( h.isComplexSample )
+      if ( h.complexSample )
          totalSize *= 2;
    }
-
    return totalSize;
 }
 
@@ -937,7 +1268,7 @@ uint64 ImageVariant::SwapFileSize( const String& filePath )
 {
    StringList directories;
    directories.Add( File::ExtractDrive( filePath ) + File::ExtractDirectory( filePath ) );
-   return SwapFilesSize( File::ExtractName( filePath ) + File::ExtractExtension( filePath ), directories );
+   return SwapFilesSize( File::ExtractNameAndSuffix( filePath ), directories );
 }
 
 // ----------------------------------------------------------------------------
@@ -974,27 +1305,34 @@ void MaskImage1( GenericImage<P>& image, const GenericImage<P>& src, const Image
    if ( mask.IsFloatSample() )
       switch ( mask.BitsPerSample() )
       {
-      case 32: MaskImage2( image, src, static_cast<const Image&>( *mask ), invert );
+      case 32:
+         MaskImage2( image, src, static_cast<const Image&>( *mask ), invert );
          break;
-      case 64: MaskImage2( image, src, static_cast<const DImage&>( *mask ), invert );
+      case 64:
+         MaskImage2( image, src, static_cast<const DImage&>( *mask ), invert );
          break;
       }
    else if ( mask.IsComplexSample() )
       switch ( mask.BitsPerSample() )
       {
-      case 32: MaskImage2( image, src, static_cast<const ComplexImage&>( *mask ), invert );
+      case 32:
+         MaskImage2( image, src, static_cast<const ComplexImage&>( *mask ), invert );
          break;
-      case 64: MaskImage2( image, src, static_cast<const DComplexImage&>( *mask ), invert );
+      case 64:
+         MaskImage2( image, src, static_cast<const DComplexImage&>( *mask ), invert );
          break;
       }
    else
       switch ( mask.BitsPerSample() )
       {
-      case  8: MaskImage2( image, src, static_cast<const UInt8Image&>( *mask ), invert );
+      case  8:
+         MaskImage2( image, src, static_cast<const UInt8Image&>( *mask ), invert );
          break;
-      case 16: MaskImage2( image, src, static_cast<const UInt16Image&>( *mask ), invert );
+      case 16:
+         MaskImage2( image, src, static_cast<const UInt16Image&>( *mask ), invert );
          break;
-      case 32: MaskImage2( image, src, static_cast<const UInt32Image&>( *mask ), invert );
+      case 32:
+         MaskImage2( image, src, static_cast<const UInt32Image&>( *mask ), invert );
          break;
       }
 }
@@ -1029,34 +1367,34 @@ void ImageVariant::MaskImage( const ImageVariant& src, const ImageVariant& mask,
    if ( IsFloatSample() )
       switch ( BitsPerSample() )
       {
-      case 32: MaskImage1( static_cast<Image&>( **this ),
-                           static_cast<const Image&>( *src ), mask, invert );
+      case 32:
+         MaskImage1( static_cast<Image&>( **this ), static_cast<const Image&>( *src ), mask, invert );
          break;
-      case 64: MaskImage1( static_cast<DImage&>( **this ),
-                           static_cast<const DImage&>( *src ), mask, invert );
+      case 64:
+         MaskImage1( static_cast<DImage&>( **this ), static_cast<const DImage&>( *src ), mask, invert );
          break;
       }
    else if ( IsComplexSample() )
       switch ( BitsPerSample() )
       {
-      case 32: MaskImage1( static_cast<ComplexImage&>( **this ),
-                           static_cast<const ComplexImage&>( *src ), mask, invert );
+      case 32:
+         MaskImage1( static_cast<ComplexImage&>( **this ), static_cast<const ComplexImage&>( *src ), mask, invert );
          break;
-      case 64: MaskImage1( static_cast<DComplexImage&>( **this ),
-                           static_cast<const DComplexImage&>( *src ), mask, invert );
+      case 64:
+         MaskImage1( static_cast<DComplexImage&>( **this ), static_cast<const DComplexImage&>( *src ), mask, invert );
          break;
       }
    else
       switch ( BitsPerSample() )
       {
-      case  8: MaskImage1( static_cast<UInt8Image&>( **this ),
-                           static_cast<const UInt8Image&>( *src ), mask, invert );
+      case  8:
+         MaskImage1( static_cast<UInt8Image&>( **this ), static_cast<const UInt8Image&>( *src ), mask, invert );
          break;
-      case 16: MaskImage1( static_cast<UInt16Image&>( **this ),
-                           static_cast<const UInt16Image&>( *src ), mask, invert );
+      case 16:
+         MaskImage1( static_cast<UInt16Image&>( **this ), static_cast<const UInt16Image&>( *src ), mask, invert );
          break;
-      case 32: MaskImage1( static_cast<UInt32Image&>( **this ),
-                           static_cast<const UInt32Image&>( *src ), mask, invert );
+      case 32:
+         MaskImage1( static_cast<UInt32Image&>( **this ), static_cast<const UInt32Image&>( *src ), mask, invert );
          break;
       }
 }
@@ -1065,5 +1403,5 @@ void ImageVariant::MaskImage( const ImageVariant& src, const ImageVariant& mask,
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/ImageVariant.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ImageVariant.cpp - Released 2015/07/30 17:15:31 UTC

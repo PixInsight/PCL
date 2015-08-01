@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Convolution.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Convolution.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Convolution_h
 #define __PCL_Convolution_h
@@ -99,10 +102,10 @@ public:
     * used before explicit association with a KernelFilter instance.
     */
    Convolution() :
-   InterlacedTransformation(), ThresholdedTransformation(),
-   m_filter( 0 ), m_weight( 0 ),
-   m_highPass( false ), m_rawHighPass( false ), m_rescaleHighPass( false ),
-   m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      InterlacedTransformation(), ThresholdedTransformation(),
+      m_filter( nullptr ), m_weight( 0 ),
+      m_highPass( false ), m_rawHighPass( false ), m_rescaleHighPass( false ),
+      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
    }
 
@@ -116,24 +119,37 @@ public:
     *                reference-counted class).
     */
    Convolution( const KernelFilter& filter ) :
-   InterlacedTransformation(), ThresholdedTransformation(),
-   m_filter( filter.Clone() ), m_weight( 0 ),
-   m_highPass( false ), m_rawHighPass( false ), m_rescaleHighPass( false ),
-   m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      InterlacedTransformation(), ThresholdedTransformation(),
+      m_filter( nullptr ), m_weight( 0 ),
+      m_highPass( false ), m_rawHighPass( false ), m_rescaleHighPass( false ),
+      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
-      PCL_CHECK( !m_filter->IsEmpty() )
-      CacheFilterProperties();
+      SetFilter( filter );
    }
 
    /*!
     * Copy constructor.
     */
    Convolution( const Convolution& x ) :
-   InterlacedTransformation( x ), ThresholdedTransformation( x ),
-   m_filter( x.m_filter->Clone() ), m_weight( x.m_weight ),
-   m_highPass( x.m_highPass ), m_rawHighPass( x.m_rawHighPass ), m_rescaleHighPass( x.m_rescaleHighPass ),
-   m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
+      InterlacedTransformation( x ), ThresholdedTransformation( x ),
+      m_filter( nullptr ), m_weight( x.m_weight ),
+      m_highPass( x.m_highPass ), m_rawHighPass( x.m_rawHighPass ), m_rescaleHighPass( x.m_rescaleHighPass ),
+      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
    {
+      if ( x.m_filter != nullptr )
+         m_filter = x.m_filter->Clone();
+   }
+
+   /*!
+    * Move constructor.
+    */
+   Convolution( Convolution&& x ) :
+      InterlacedTransformation( x ), ThresholdedTransformation( x ),
+      m_filter( x.m_filter ), m_weight( x.m_weight ),
+      m_highPass( x.m_highPass ), m_rawHighPass( x.m_rawHighPass ), m_rescaleHighPass( x.m_rescaleHighPass ),
+      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
+   {
+      x.m_filter = nullptr;
    }
 
    /*!
@@ -141,41 +157,63 @@ public:
     */
    virtual ~Convolution()
    {
-      DestroyFilter();
+      Destroy();
    }
 
    /*!
-    * Assignment operator.
+    * Copy assignment operator. Returns a reference to this object.
     */
    Convolution& operator =( const Convolution& x )
    {
       if ( &x != this )
       {
-         DestroyFilter();
-         m_filter          = x.m_filter->Clone();
-         m_weight          = x.m_weight;
-         m_highPass        = x.m_highPass;
-         m_rawHighPass     = x.m_rawHighPass;
-         m_rescaleHighPass = x.m_rescaleHighPass;
-         m_parallel        = x.m_parallel;
-         m_maxProcessors   = x.m_maxProcessors;
          (void)InterlacedTransformation::operator =( x );
          (void)ThresholdedTransformation::operator =( x );
+         Destroy();
+         if ( x.m_filter != nullptr )
+            m_filter = x.m_filter->Clone();
+         m_weight = x.m_weight;
+         m_highPass = x.m_highPass;
+         m_rawHighPass = x.m_rawHighPass;
+         m_rescaleHighPass = x.m_rescaleHighPass;
+         m_parallel = x.m_parallel;
+         m_maxProcessors = x.m_maxProcessors;
       }
       return *this;
    }
 
    /*!
-    * Returns a constant reference to the kernel filter currently associated
-    * with this %Convolution object.
+    * Move assignment operator. Returns a reference to this object.
+    */
+   Convolution& operator =( Convolution&& x )
+   {
+      if ( &x != this )
+      {
+         (void)InterlacedTransformation::operator =( x );
+         (void)ThresholdedTransformation::operator =( x );
+         DestroyFilter();
+         m_filter = x.m_filter;
+         m_weight = x.m_weight;
+         m_highPass = x.m_highPass;
+         m_rawHighPass = x.m_rawHighPass;
+         m_rescaleHighPass = x.m_rescaleHighPass;
+         m_parallel = x.m_parallel;
+         m_maxProcessors = x.m_maxProcessors;
+         x.m_filter = nullptr;
+      }
+      return *this;
+   }
+
+   /*!
+    * Returns a reference to the kernel filter currently associated with this
+    * %Convolution object.
     *
-    * \note If this object has not been initialized, this member function
-    * throws an Error exception.
+    * If this object has not been initialized, this member function returns an
+    * empty kernel filter.
     */
    const KernelFilter& Filter() const
    {
-      PCL_PRECONDITION( m_filter != 0 )
-      ValidateFilter();
+      PCL_PRECONDITION( m_filter != nullptr )
       return *m_filter;
    }
 
@@ -186,7 +224,6 @@ public:
    {
       DestroyFilter();
       m_filter = filter.Clone();
-      PCL_CHECK( !m_filter->IsEmpty() )
       CacheFilterProperties();
    }
 
@@ -202,17 +239,6 @@ public:
    double FilterWeight() const
    {
       return m_weight;
-   }
-
-   /*!
-    * Returns the current filter weight.
-    *
-    * \deprecated This member function is kept for compatibility with existing
-    * code. Use FilterWeight() instead of this function in newly produced code.
-    */
-   double KernelWeight() const
-   {
-      return FilterWeight();
    }
 
    /*!
@@ -314,7 +340,7 @@ public:
     */
    int OverlappingDistance() const
    {
-      ValidateFilter();
+      PCL_PRECONDITION( m_filter != nullptr )
       return m_filter->Size() + (m_filter->Size() - 1)*(InterlacingDistance() - 1);
    }
 
@@ -400,16 +426,16 @@ protected:
    /*
     * Cached filter properties.
     */
-   double   m_weight;              // filter weight for low-pass normalization
-   bool     m_highPass        : 1; // true if this is a high-pass filter
+   double        m_weight;              // filter weight for low-pass normalization
+   bool          m_highPass        : 1; // true if this is a high-pass filter
 
    /*
     * User-selectable options
     */
-   bool     m_rawHighPass     : 1; // neither truncate nor normalize out-of-range values
-   bool     m_rescaleHighPass : 1; // truncate out-of-range values instead of normalize
-   bool     m_parallel        : 1; // use multiple threads
-   unsigned m_maxProcessors   : PCL_MAX_PROCESSORS_BITCOUNT; // Maximum number of processors allowed
+   bool          m_rawHighPass     : 1; // neither truncate nor normalize out-of-range values
+   bool          m_rescaleHighPass : 1; // truncate out-of-range values instead of normalize
+   bool          m_parallel        : 1; // use multiple threads
+   unsigned      m_maxProcessors   : PCL_MAX_PROCESSORS_BITCOUNT; // Maximum number of processors allowed
 
    /*
     * In-place 2-D nonseparable convolution algorithm in the spatial domain.
@@ -422,15 +448,9 @@ protected:
 
 private:
 
-   void ValidateFilter() const
-   {
-      if ( m_filter == 0 )
-         throw Error( "Invalid access to uninitialized convolution" );
-   }
-
    void CacheFilterProperties()
    {
-      PCL_PRECONDITION( m_filter != 0 )
+      PCL_PRECONDITION( m_filter != nullptr )
       PCL_PRECONDITION( !m_filter->IsEmpty() )
       ValidateFilter();
       m_highPass = m_filter->IsHighPassFilter();
@@ -439,11 +459,18 @@ private:
          m_weight = 1;
    }
 
+   void Destroy()
+   {
+      DestroyFilter();
+   }
+
    void DestroyFilter()
    {
-      if ( m_filter != 0 )
-         delete m_filter, m_filter = 0;
+      if ( m_filter != nullptr )
+         delete m_filter, m_filter = nullptr;
    }
+
+   void ValidateFilter() const;
 };
 
 // ----------------------------------------------------------------------------
@@ -452,5 +479,5 @@ private:
 
 #endif   // __PCL_Convolution_h
 
-// ****************************************************************************
-// EOF pcl/Convolution.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Convolution.h - Released 2015/07/30 17:15:18 UTC

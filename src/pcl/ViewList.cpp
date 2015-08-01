@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ViewList.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ViewList.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/ViewList.h>
 
@@ -56,75 +59,16 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-#define sender    (reinterpret_cast<ViewList*>( hSender ))
-#define receiver  (reinterpret_cast<Control*>( hReceiver ))
-
-class ViewListEventDispatcher
-{
-public:
-
-   static void api_func ViewSelected( control_handle hSender, control_handle hReceiver, view_handle hView )
-   {
-      if ( sender->onViewSelected != 0 )
-      {
-         View view( hView );
-         (receiver->*sender->onViewSelected)( *sender, view );
-      }
-   }
-
-   static void api_func CurrentViewUpdated( control_handle hSender, control_handle hReceiver, view_handle hView )
-   {
-      if ( sender->onCurrentViewUpdated != 0 )
-      {
-         View view( hView );
-         (receiver->*sender->onCurrentViewUpdated)( *sender, view );
-      }
-   }
-
-}; // ViewListEventDispatcher
-
-#undef sender
-#undef receiver
-
-// ----------------------------------------------------------------------------
-
 #ifdef _MSC_VER
 #  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
 #endif
 
 ViewList::ViewList( Control& parent ) :
-Control( (*API->ViewList->CreateViewList)( ModuleHandle(), this, parent.handle, 0 /*flags*/ ) ),
-onViewSelected( 0 ),
-onCurrentViewUpdated( 0 )
+   Control( (*API->ViewList->CreateViewList)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) ),
+   m_handlers( nullptr )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateViewList" );
-}
-
-// ----------------------------------------------------------------------------
-
-void ViewList::OnViewSelected( view_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onViewSelected = 0;
-   if ( (*API->ViewList->SetViewListViewSelectedEventRoutine)( handle, &receiver,
-        (f != 0) ? ViewListEventDispatcher::ViewSelected : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetViewListViewSelectedEventRoutine" );
-   }
-   onViewSelected = f;
-}
-
-void ViewList::OnCurrentViewUpdated( view_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onCurrentViewUpdated = 0;
-   if ( (*API->ViewList->SetViewListCurrentViewUpdatedEventRoutine)( handle, &receiver,
-        (f != 0) ? ViewListEventDispatcher::CurrentViewUpdated : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetViewListCurrentViewUpdatedEventRoutine" );
-   }
-   onCurrentViewUpdated = f;
 }
 
 // ----------------------------------------------------------------------------
@@ -205,7 +149,68 @@ void ViewList::RemoveView( const View& v )
 
 // ----------------------------------------------------------------------------
 
+#define sender    (reinterpret_cast<ViewList*>( hSender ))
+#define receiver  (reinterpret_cast<Control*>( hReceiver ))
+#define handlers  sender->m_handlers
+
+class ViewListEventDispatcher
+{
+public:
+
+   static void api_func ViewSelected( control_handle hSender, control_handle hReceiver, view_handle hView )
+   {
+      if ( handlers->onViewSelected != nullptr )
+      {
+         View view( hView );
+         (receiver->*handlers->onViewSelected)( *sender, view );
+      }
+   }
+
+   static void api_func CurrentViewUpdated( control_handle hSender, control_handle hReceiver, view_handle hView )
+   {
+      if ( handlers->onCurrentViewUpdated != nullptr )
+      {
+         View view( hView );
+         (receiver->*handlers->onCurrentViewUpdated)( *sender, view );
+      }
+   }
+
+}; // ViewListEventDispatcher
+
+#undef sender
+#undef receiver
+#undef handlers
+
+// ----------------------------------------------------------------------------
+
+#define INIT_EVENT_HANDLERS()    \
+   __PCL_NO_ALIAS_HANDLERS;      \
+   if ( m_handlers == nullptr )  \
+      m_handlers = new EventHandlers
+
+void ViewList::OnViewSelected( view_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->ViewList->SetViewListViewSelectedEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? ViewListEventDispatcher::ViewSelected : 0 ) == api_false )
+      throw APIFunctionError( "SetViewListViewSelectedEventRoutine" );
+   m_handlers->onViewSelected = f;
+}
+
+void ViewList::OnCurrentViewUpdated( view_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->ViewList->SetViewListCurrentViewUpdatedEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? ViewListEventDispatcher::CurrentViewUpdated : 0 ) == api_false )
+      throw APIFunctionError( "SetViewListCurrentViewUpdatedEventRoutine" );
+   m_handlers->onCurrentViewUpdated = f;
+}
+
+#undef INIT_EVENT_HANDLERS
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/ViewList.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ViewList.cpp - Released 2015/07/30 17:15:31 UTC

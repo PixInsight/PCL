@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Rotation.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Rotation.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,8 +47,9 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
+#include <pcl/AutoPointer.h>
 #include <pcl/Rotation.h>
 
 namespace pcl
@@ -105,8 +109,8 @@ public:
 
       image.SetUnique();
 
-      typename P::sample* f = 0;
-      typename P::sample** f0 = 0;
+      typename P::sample* f = nullptr;
+      typename P::sample** f0 = nullptr;
 
       int n = image.NumberOfChannels();
       typename GenericImage<P>::color_space cs0 = image.ColorSpace();
@@ -139,10 +143,10 @@ public:
             data.f = f = image.Allocator().AllocatePixels( size_type( width )*size_type( height ) );
             data.fillValue = (c < rotation.FillValues().Length()) ? P::ToSample( rotation.FillValues()[c] ) : P::MinSampleValue();
 
-            PArray<Thread<P> > threads;
+            ReferenceArray<Thread<P> > threads;
             for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
                threads.Add( new Thread<P>( data,
-                                           rotation.Interpolation().NewInterpolator( (P*)0, f0[c], w0, h0 ),
+                                           rotation.Interpolation().NewInterpolator<P>( f0[c], w0, h0 ),
                                            i*rowsPerThread,
                                            (j < numberOfThreads) ? j*rowsPerThread : height ) );
 
@@ -152,7 +156,7 @@ public:
 
             image.Allocator().Deallocate( f0[c] );
             f0[c] = f;
-            f = 0;
+            f = nullptr;
 
             status = data.status;
          }
@@ -161,12 +165,12 @@ public:
       }
       catch ( ... )
       {
-         if ( f != 0 )
+         if ( f != nullptr )
             image.Allocator().Deallocate( f );
-         if ( f0 != 0 )
+         if ( f0 != nullptr )
          {
             for ( int c = 0; c < n; ++c )
-               if ( f0[c] != 0 )
+               if ( f0[c] != nullptr )
                   image.Allocator().Deallocate( f0[c] );
             image.Allocator().Deallocate( f0 );
          }
@@ -182,10 +186,10 @@ private:
    {
       ThreadData( double sinA, double cosA, const DPoint& a_center, const DPoint& a_origin,
                   int urWidth, int urHeight, int width, const StatusMonitor& a_status, size_type a_count ) :
-      AbstractImage::ThreadData( a_status, a_count ),
-      f( 0 ), fillValue( P::MinSampleValue() ),
-      sa( sinA ), ca( cosA ), center( a_center ), origin( a_origin ),
-      w0( urWidth ), h0( urHeight ), width( width )
+         AbstractImage::ThreadData( a_status, a_count ),
+         f( nullptr ), fillValue( P::MinSampleValue() ),
+         sa( sinA ), ca( cosA ), center( a_center ), origin( a_origin ),
+         w0( urWidth ), h0( urHeight ), width( width )
       {
       }
 
@@ -204,16 +208,12 @@ private:
    {
    public:
 
-      Thread( ThreadData<P>& data, PixelInterpolation::Interpolator<P>* interpolator, int firstRow, int endRow ) :
-      pcl::Thread(),
-      m_data( data ), m_firstRow( firstRow ), m_endRow( endRow ), m_interpolator( interpolator )
-      {
-      }
+      typedef PixelInterpolation::Interpolator<P>  interpolator_type;
 
-      virtual ~Thread()
+      Thread( ThreadData<P>& data, interpolator_type* interpolator, int firstRow, int endRow ) :
+         pcl::Thread(),
+         m_data( data ), m_firstRow( firstRow ), m_endRow( endRow ), m_interpolator( interpolator )
       {
-         if ( m_interpolator != 0 )
-            delete m_interpolator, m_interpolator = 0;
       }
 
       virtual void Run()
@@ -239,10 +239,10 @@ private:
 
    private:
 
-      ThreadData<P>&                       m_data;
-      int                                  m_firstRow;
-      int                                  m_endRow;
-      PixelInterpolation::Interpolator<P>* m_interpolator;
+      ThreadData<P>&                 m_data;
+      int                            m_firstRow;
+      int                            m_endRow;
+      AutoPointer<interpolator_type> m_interpolator;
    };
 };
 
@@ -277,5 +277,5 @@ void Rotation::Apply( pcl::UInt32Image& image ) const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/Rotation.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Rotation.cpp - Released 2015/07/30 17:15:31 UTC

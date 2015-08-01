@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard IntensityTransformations Process Module Version 01.07.00.0287
-// ****************************************************************************
-// STFAutoStretchAction.cpp - Released 2014/11/14 17:19:23 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard IntensityTransformations Process Module Version 01.07.00.0306
+// ----------------------------------------------------------------------------
+// STFAutoStretchAction.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "STFAutoStretchAction.h"
 #include "ScreenTransferFunctionInterface.h"
@@ -61,7 +65,8 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 STFAutoStretchActionBase::STFAutoStretchActionBase( bool boost, const String& menuItem, const Bitmap& icon ) :
-Action( menuItem, icon ), m_boost( boost )
+   Action( menuItem, icon ),
+   m_boost( boost )
 {
 }
 
@@ -97,14 +102,18 @@ bool STFAutoStretchActionBase::IsEnabled( ActionInfo info ) const
 // ----------------------------------------------------------------------------
 
 STFAutoStretchAction::STFAutoStretchAction() :
-STFAutoStretchActionBase( false, "Image > STF AutoStretch", Bitmap( ":/toolbar/image-stf-auto.png" ) )
+   STFAutoStretchActionBase( false,
+                             "Image > STF AutoStretch",
+                             Bitmap( Control::Null().ScaledResource( ":/toolbar/image-stf-auto.png" ) ) )
 {
    SetAccelerator( KeyModifier::Control, KeyCode::A );
    SetToolTip( "STF AutoStretch" );
 }
 
 STFAutoStretchBoostAction::STFAutoStretchBoostAction() :
-STFAutoStretchActionBase( true, "Image > STF AutoStretch (boosted)", Bitmap( ":/toolbar/image-stf-auto-boost.png" ) )
+   STFAutoStretchActionBase( true,
+                             "Image > STF AutoStretch (boosted)",
+                             Bitmap( Control::Null().ScaledResource( ":/toolbar/image-stf-auto-boost.png" ) ) )
 {
    SetToolTip( "STF AutoStretch (Boosted)" );
 }
@@ -112,7 +121,8 @@ STFAutoStretchActionBase( true, "Image > STF AutoStretch (boosted)", Bitmap( ":/
 // ----------------------------------------------------------------------------
 
 STFAutoStretchToolBarActionBase::STFAutoStretchToolBarActionBase( bool boost, const Bitmap& icon, const String& toolBar ) :
-Action( String(), icon, toolBar ), m_boost( boost )
+   Action( String(), icon, toolBar ),
+   m_boost( boost )
 {
 }
 
@@ -174,13 +184,17 @@ String STFAutoStretchToolBarActionBase::AdditionalInformation()
 // ----------------------------------------------------------------------------
 
 STFAutoStretchToolBarAction::STFAutoStretchToolBarAction() :
-STFAutoStretchToolBarActionBase( false, Bitmap( ":/toolbar/image-stf-auto.png" ), "> Screen Transfer Functions" ) // > = add separator
+   STFAutoStretchToolBarActionBase( false,
+                                    Bitmap( Control::Null().ScaledResource( ":/toolbar/image-stf-auto.png" ) ),
+                                    "> Screen Transfer Functions" ) // > = add separator
 {
    SetToolTip( "<p>STF AutoStretch</p>" + AdditionalInformation() );
 }
 
 STFAutoStretchToolBarBoostAction::STFAutoStretchToolBarBoostAction() :
-STFAutoStretchToolBarActionBase( true, Bitmap( ":/toolbar/image-stf-auto-boost.png" ), "Screen Transfer Functions" )
+   STFAutoStretchToolBarActionBase( true,
+                                    Bitmap( Control::Null().ScaledResource( ":/toolbar/image-stf-auto-boost.png" ) ),
+                                    "Screen Transfer Functions" )
 {
    SetToolTip( "<p>STF AutoStretch (Boosted)</p>" + AdditionalInformation() );
 }
@@ -189,5 +203,5 @@ STFAutoStretchToolBarActionBase( true, Bitmap( ":/toolbar/image-stf-auto-boost.p
 
 } // pcl
 
-// ****************************************************************************
-// EOF STFAutoStretchAction.cpp - Released 2014/11/14 17:19:23 UTC
+// ----------------------------------------------------------------------------
+// EOF STFAutoStretchAction.cpp - Released 2015/07/31 11:49:48 UTC

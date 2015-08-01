@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/BidimensionalInterpolation.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/BidimensionalInterpolation.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_BidimensionalInterpolation_h
 #define __PCL_BidimensionalInterpolation_h
@@ -84,7 +87,7 @@ public:
     * Constructs a %BidimensionalInterpolation object.
     */
    BidimensionalInterpolation() :
-   m_data( 0 ), m_width( 0 ), m_height( 0 ), m_fillValue( T( 0 ) ), m_fillBorder( false )
+      m_data( nullptr ), m_width( 0 ), m_height( 0 ), m_fillValue( T( 0 ) ), m_fillBorder( false )
    {
    }
 
@@ -109,7 +112,7 @@ public:
     */
    virtual void Initialize( const T* data, int width, int height )
    {
-      if ( data == 0 )
+      if ( data == nullptr )
          throw Error( "Null data pointer in BidimensionalInterpolation::Initialize()" );
       if ( width <= 0 || height <= 0 )
          throw Error( "Invalid dimensions in BidimensionalInterpolation::Initialize()" );
@@ -130,7 +133,7 @@ public:
     */
    virtual void Clear()
    {
-      m_data = 0;
+      m_data = nullptr;
       m_width = m_height = 0;
    }
 
@@ -232,5 +235,5 @@ protected:
 
 #endif  // __PCL_BidimensionalInterpolation_h
 
-// ****************************************************************************
-// EOF pcl/BidimensionalInterpolation.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/BidimensionalInterpolation.h - Released 2015/07/30 17:15:18 UTC

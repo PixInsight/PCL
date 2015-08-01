@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Version.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Version.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/MetaModule.h>
 #include <pcl/Version.h>
@@ -63,17 +66,17 @@ int Version::Major()
 
 int Version::Minor()
 {
-   return 0;
+   return 1;
 }
 
 int Version::Release()
 {
-   return 13;
+   return 0;
 }
 
 int Version::Build()
 {
-   return 692;
+   return 749;
 }
 
 int Version::BetaRelease()
@@ -96,15 +99,15 @@ String Version::AsString()
 
 // ----------------------------------------------------------------------------
 
-static int piMajor = 0;
-static int piMinor = 0;
-static int piRelease = 0;
-static int piBuild = 0;
-static int piBetaRelease = 0;
-static bool piConfidentialRelease = false;
-static bool piLEVersion = false;
-static String piLanguageCode;
-static String codename;
+static int s_major = 0;
+static int s_minor = 0;
+static int s_release = 0;
+static int s_build = 0;
+static int s_beta = 0;
+static bool s_confidential = false;
+static bool s_le = false;
+static String s_language;
+static String s_codename;
 
 /*
  * This function is called by GlobalContextDispatcher
@@ -116,20 +119,20 @@ void PixInsightVersion::Initialize()
 
    (*API->Global->GetPixInsightVersion)( &M, &m, &r, &b, &beta, &conf, &le, lang );
 
-   piMajor = int( M );
-   piMinor = int( m );
-   piRelease = int( r );
-   piBuild = int( b );
-   piBetaRelease = int( beta );
-   piConfidentialRelease = conf != 0;
-   piLEVersion = le != 0;
-   piLanguageCode = lang;
+   s_major = int( M );
+   s_minor = int( m );
+   s_release = int( r );
+   s_build = int( b );
+   s_beta = int( beta );
+   s_confidential = conf != 0;
+   s_le = le != 0;
+   s_language = lang;
 
 #if ( PCL_API_Version >= 0x0126 )
    char16_type* s = (*API->Global->GetPixInsightCodename)( ModuleHandle() );
    if ( s != 0 )
    {
-      codename = String( s );
+      s_codename = String( s );
       Module->Deallocate( s );
    }
 #endif
@@ -137,47 +140,47 @@ void PixInsightVersion::Initialize()
 
 int PixInsightVersion::Major()
 {
-   return piMajor;
+   return s_major;
 }
 
 int PixInsightVersion::Minor()
 {
-   return piMinor;
+   return s_minor;
 }
 
 int PixInsightVersion::Release()
 {
-   return piRelease;
+   return s_release;
 }
 
 int PixInsightVersion::Build()
 {
-   return piBuild;
+   return s_build;
 }
 
 int PixInsightVersion::BetaRelease() // > 0 = beta, < 0 = RC, 0 = Release
 {
-   return piBetaRelease;
+   return s_beta;
 }
 
 bool PixInsightVersion::Confidential()
 {
-   return piConfidentialRelease;
+   return s_confidential;
 }
 
 bool PixInsightVersion::LE()
 {
-   return piLEVersion;
+   return s_le;
 }
 
 String PixInsightVersion::LanguageCode()
 {
-   return piLanguageCode;  // ISO 639.2 language code
+   return s_language;  // ISO 639.2 language code
 }
 
 String PixInsightVersion::Codename()
 {
-   return codename;
+   return s_codename;
 }
 
 String PixInsightVersion::AsString( bool withCodename )
@@ -197,5 +200,5 @@ String PixInsightVersion::AsString( bool withCodename )
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/Version.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Version.cpp - Released 2015/07/30 17:15:31 UTC

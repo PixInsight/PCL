@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Cursor.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Cursor.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Cursor_h
 #define __PCL_Cursor_h
@@ -203,6 +206,13 @@ public:
    }
 
    /*!
+    * Move constructor.
+    */
+   Cursor( Cursor&& x ) : UIObject( std::move( x ) )
+   {
+   }
+
+   /*!
     * Destroys a %Cursor object. If this object references an existing cursor
     * in the PixInsight core application, its reference count is decremented.
     * If it becomes unreferenced, it will be garbage-collected.
@@ -212,7 +222,7 @@ public:
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Copy assignment operator. Returns a reference to this object.
     *
     * Makes this object reference the same server-side cursor as the specified
     * instance \a c. If the previous cursor becomes unreferenced, it will be
@@ -221,6 +231,15 @@ public:
    Cursor& operator =( const Cursor& c )
    {
       SetHandle( c.handle );
+      return *this;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   Cursor& operator =( Cursor&& x )
+   {
+      Transfer( x );
       return *this;
    }
 
@@ -264,7 +283,10 @@ public:
 
 private:
 
-   Cursor( void* );
+   Cursor( void* h ) : UIObject( h )
+   {
+   }
+
    virtual void* CloneHandle() const;
 
    friend class Control;
@@ -278,5 +300,5 @@ private:
 
 #endif   // __PCL_Cursor_h
 
-// ****************************************************************************
-// EOF pcl/Cursor.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Cursor.h - Released 2015/07/30 17:15:18 UTC

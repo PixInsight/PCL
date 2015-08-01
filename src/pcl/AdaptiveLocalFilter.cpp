@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/AdaptiveLocalFilter.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/AdaptiveLocalFilter.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/AdaptiveLocalFilter.h>
 #include <pcl/MultiVector.h>
@@ -84,43 +87,29 @@ public:
 
       ThreadData<P> data( image, filter, N );
 
-      PArray<Thread<P> > threads;
-      for ( int i = 0, y0 = image.SelectedRectangle().y0; i < numberOfThreads; ++i )
-      {
-         int firstRow = y0 + i*rowsPerThread;
-         GenericImage<P>* upperOvRgn = (i > 0) ? new GenericImage<P> : 0;
-
-         int endRow;
-         GenericImage<P>* lowerOvRgn;
-         if ( i < numberOfThreads-1 )
-         {
-            endRow = y0 + (i + 1)*rowsPerThread;
-            lowerOvRgn = new GenericImage<P>;
-         }
-         else
-         {
-            endRow = y0 + numberOfRows;
-            lowerOvRgn = 0;
-         }
-
-         threads.Add( new Thread<P>( data, firstRow, endRow, upperOvRgn, lowerOvRgn ) );
-      }
+      ReferenceArray<Thread<P> > threads;
+      for ( int i = 0, j = 1, y0 = image.SelectedRectangle().y0; i < numberOfThreads; ++i, ++j )
+         threads.Add( new Thread<P>( data,
+                                     y0 + i*rowsPerThread,
+                                     y0 + ((j < numberOfThreads) ? j*rowsPerThread : numberOfRows),
+                                     i > 0,
+                                     j < numberOfThreads ) );
 
       AbstractImage::RunThreads( threads, data );
 
-      image.SetStatusCallback( 0 );
+      image.SetStatusCallback( nullptr );
 
       int c0 = image.SelectedChannel();
       Point p0 = image.SelectedRectangle().LeftTop();
 
-      for ( int i = 0; i < numberOfThreads; ++i )
+      for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
       {
          if ( i > 0 )
-            image.Mov( *threads[i].UpperOverlayRegion(),
+            image.Mov( threads[i].UpperOverlappingRegion(),
                        Point( p0.x, p0.y + i*rowsPerThread ), c0 );
-         if ( i < numberOfThreads-1 )
-            image.Mov( *threads[i].LowerOverlayRegion(),
-                       Point( p0.x, p0.y + (i + 1)*rowsPerThread - threads[i].LowerOverlayRegion()->Height() ), c0 );
+         if ( j < numberOfThreads )
+            image.Mov( threads[i].LowerOverlappingRegion(),
+                       Point( p0.x, p0.y + j*rowsPerThread - threads[i].LowerOverlappingRegion().Height() ), c0 );
       }
 
       threads.Destroy();
@@ -134,10 +123,10 @@ private:
    struct ThreadData : public AbstractImage::ThreadData
    {
       ThreadData( GenericImage<P>& a_image, const AdaptiveLocalFilter& a_filter, size_type a_count ) :
-      AbstractImage::ThreadData( a_image, a_count ),
-      image( a_image ),
-      filter( a_filter ),
-      noise( filter.UsingMAD() ? filter.Sigma() : filter.Sigma()*filter.Sigma() )
+         AbstractImage::ThreadData( a_image, a_count ),
+         image( a_image ),
+         filter( a_filter ),
+         noise( filter.UsingMAD() ? filter.Sigma() : filter.Sigma()*filter.Sigma() )
       {
       }
 
@@ -151,18 +140,16 @@ private:
    {
    public:
 
-      Thread( ThreadData<P>& data, int firstRow, int endRow, GenericImage<P>* upperOvRgn, GenericImage<P>* lowerOvRgn ) :
-      pcl::Thread(),
-      m_data( data ), m_firstRow( firstRow ), m_endRow( endRow ), m_upperOvRgn( upperOvRgn ), m_lowerOvRgn( lowerOvRgn )
-      {
-      }
+      typedef GenericImage<P>                         region;
 
-      virtual ~Thread()
+      typedef GenericVector<typename P::sample>       raw_vector;
+
+      typedef GenericMultiVector<typename P::sample>  raw_data;
+
+      Thread( ThreadData<P>& data, int firstRow, int endRow, bool upperOvRgn, bool lowerOvRgn ) :
+         pcl::Thread(),
+         m_data( data ), m_firstRow( firstRow ), m_endRow( endRow ), m_haveUpperOvRgn( upperOvRgn ), m_haveLowerOvRgn( lowerOvRgn )
       {
-         if ( m_upperOvRgn != 0 )
-            delete m_upperOvRgn, m_upperOvRgn = 0;
-         if ( m_lowerOvRgn != 0 )
-            delete m_lowerOvRgn, m_lowerOvRgn = 0;
       }
 
       virtual void Run()
@@ -180,29 +167,29 @@ private:
          int N1 = N - 1;
 
          int o0 = m_firstRow;
-         if ( m_upperOvRgn != 0 )
+         if ( m_haveUpperOvRgn )
          {
-            m_upperOvRgn->AllocateData( w, n2, m_data.image.NumberOfSelectedChannels() );
+            m_upperOvRgn.AllocateData( w, n2, m_data.image.NumberOfSelectedChannels() );
             o0 += n2;
          }
 
          int o1 = m_endRow;
-         if ( m_lowerOvRgn != 0 )
+         if ( m_haveLowerOvRgn )
          {
-            m_lowerOvRgn->AllocateData( w, n2, m_data.image.NumberOfSelectedChannels() );
+            m_lowerOvRgn.AllocateData( w, n2, m_data.image.NumberOfSelectedChannels() );
             o1 -= n2;
          }
 
-         GenericVector<typename P::sample> fm;
+         raw_vector fm;
          if ( m_data.filter.UsingMAD() )
-            fm = GenericVector<typename P::sample>( N );
+            fm = raw_vector( N );
 
-         GenericMultiVector<typename P::sample> f0( P::MinSampleValue(), n, nf0 );
+         raw_data f0( P::MinSampleValue(), n, nf0 );
 
          for ( int c = m_data.image.FirstSelectedChannel(), cn = 0; c <= m_data.image.LastSelectedChannel(); ++c, ++cn )
          {
             typename P::sample* f = m_data.image.PixelAddress( r.x0, m_firstRow, c );
-            typename P::sample* g = (m_upperOvRgn != 0) ? m_upperOvRgn->PixelData( cn ) : 0;
+            typename P::sample* g = m_haveUpperOvRgn ? m_upperOvRgn[cn] : nullptr;
 
             for ( int i = 0, i0 = m_firstRow-n2, i1 = m_firstRow+n2-1; i < n2; ++i, ++i0, --i1 )
                ::memcpy( f0[i].At( n2 ), m_data.image.PixelAddress( r.x0, (i0 < 0) ? i1 : i0, c ), w*P::BytesPerSample() );
@@ -212,8 +199,8 @@ private:
 
             for ( int i = 0; i < n; ++i )
             {
-               typename P::sample* f0i = *f0[i];
-               typename P::sample* f1i = f0i + n2+n2;
+               typename raw_data::vector_iterator f0i = *f0[i];
+               typename raw_data::vector_iterator f1i = f0i + n2+n2;
                do
                   *f0i++ = *f1i--;
                while ( f0i < f1i );
@@ -234,7 +221,7 @@ private:
                   if ( m_data.filter.UsingMAD() )
                   {
                      for ( int i = 0, j = 0; i < n; ++i )
-                        for ( const typename P::sample* fx = f0[i].At( x ), * fn = fx + n; fx < fn; ++fx )
+                        for ( typename raw_data::const_vector_iterator fx = f0[i].At( x ), fn = fx + n; fx < fn; ++fx )
                            fm[j++] = *fx;
                      m = fm.Median();
                      r = 1.4826*fm.MAD( m );
@@ -243,12 +230,12 @@ private:
                   {
                      m = 0;
                      for ( int i = 0; i < n; ++i )
-                        for ( const typename P::sample* fx = f0[i].At( x ), * fn = fx + n; fx < fn; ++fx )
+                        for ( typename raw_data::const_vector_iterator fx = f0[i].At( x ), fn = fx + n; fx < fn; ++fx )
                            m += *fx;
                      m /= N;
                      double eps = 0;
                      for ( int i = 0; i < n; ++i )
-                        for ( const typename P::sample* fx = f0[i].At( x ), * fn = fx + n; fx < fn; ++fx )
+                        for ( typename raw_data::const_vector_iterator fx = f0[i].At( x ), fn = fx + n; fx < fn; ++fx )
                         {
                            double d = *fx - m;
                            r += d*d;
@@ -260,14 +247,14 @@ private:
                   if ( 1 + r != 1 )
                   {
                      r = *f - Min( 1.0, m_data.noise/r ) * (*f - m);
-                     if ( g == 0 )
+                     if ( g == nullptr )
                         *f = P::FloatToSample( r );
                      else
                         *g++ = P::FloatToSample( r );
                   }
                   else
                   {
-                     if ( g != 0 )
+                     if ( g != nullptr )
                         *g++ = *f;
                   }
 
@@ -281,15 +268,16 @@ private:
 
                f += dw;
 
-               if ( g == 0 )
+               if ( g == nullptr )
                {
-                  if ( y == o1 )
-                     g = m_lowerOvRgn->PixelData( cn );
+                  if ( m_haveLowerOvRgn )
+                     if ( y == o1 )
+                        g = m_lowerOvRgn[cn];
                }
                else
                {
                   if ( y == o0 )
-                     g = 0;
+                     g = nullptr;
                }
 
                for ( int i = 1; i < n; ++i )
@@ -299,8 +287,8 @@ private:
                {
                   ::memcpy( f0[n-1].At( n2 ), m_data.image.PixelAddress( r.x0, y+n2, c ), w*P::BytesPerSample() );
 
-                  typename P::sample* f0n = *f0[n-1];
-                  typename P::sample* f1n = f0n + n2+n2;
+                  typename raw_data::vector_iterator f0n = *f0[n-1];
+                  typename raw_data::vector_iterator f1n = f0n + n2+n2;
                   do
                      *f0n++ = *f1n--;
                   while ( f0n < f1n );
@@ -324,23 +312,25 @@ private:
          }
       }
 
-      const GenericImage<P>* UpperOverlayRegion() const
+      const GenericImage<P>& UpperOverlappingRegion() const
       {
          return m_upperOvRgn;
       }
 
-      const GenericImage<P>* LowerOverlayRegion() const
+      const GenericImage<P>& LowerOverlappingRegion() const
       {
          return m_lowerOvRgn;
       }
 
    private:
 
-      ThreadData<P>&   m_data;
-      int              m_firstRow;
-      int              m_endRow;
-      GenericImage<P>* m_upperOvRgn; // upper overlapping region
-      GenericImage<P>* m_lowerOvRgn; // lower overlapping region
+      ThreadData<P>& m_data;
+      int            m_firstRow;
+      int            m_endRow;
+      region         m_upperOvRgn;
+      region         m_lowerOvRgn;
+      bool           m_haveUpperOvRgn : 1;
+      bool           m_haveLowerOvRgn : 1;
    };
 };
 
@@ -375,5 +365,5 @@ void AdaptiveLocalFilter::Apply( UInt32Image& image ) const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/AdaptiveLocalFilter.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/AdaptiveLocalFilter.cpp - Released 2015/07/30 17:15:31 UTC

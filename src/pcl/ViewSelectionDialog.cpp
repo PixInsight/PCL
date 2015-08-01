@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ViewSelectionDialog.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ViewSelectionDialog.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/ViewSelectionDialog.h>
 
@@ -53,52 +56,12 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ViewSelectionDialog::ViewSelectionDialog( const String& id, bool allowPreviews ) :
+ViewSelectionDialog::ViewSelectionDialog( const IsoString& id, bool allowPreviews ) :
    Dialog(),
-   m_id( id ), m_allowPreviews( allowPreviews )
+   m_id( id ),
+   m_allowPreviews( allowPreviews )
 {
-   if ( m_allowPreviews )
-      Images_ViewList.GetAll();
-   else
-      Images_ViewList.GetMainViews();
-
-   Images_ViewList.SelectView( View::ViewById( m_id ) );
-   Images_ViewList.SetMinWidth( Font().Width( String( 'M', 40 ) ) );
-   Images_ViewList.OnViewSelected( (ViewList::view_event_handler)&ViewSelectionDialog::__ViewSelected, *this );
-
-   if ( m_allowPreviews )
-   {
-      IncludeMainViews_CheckBox.SetText( "Include main views" );
-      IncludeMainViews_CheckBox.OnClick( (Button::click_event_handler)&ViewSelectionDialog::__OptionClick, *this );
-      IncludeMainViews_CheckBox.SetChecked();
-
-      IncludePreviews_CheckBox.SetText( "Include previews" );
-      IncludePreviews_CheckBox.OnClick( (Button::click_event_handler)&ViewSelectionDialog::__OptionClick, *this );
-      IncludePreviews_CheckBox.SetChecked();
-   }
-   else
-   {
-      IncludeMainViews_CheckBox.Hide();
-      IncludePreviews_CheckBox.Hide();
-   }
-
-   //
-
-   OK_PushButton.SetText( "OK" );
-   OK_PushButton.SetDefault();
-   OK_PushButton.SetCursor( StdCursor::Checkmark );
-   OK_PushButton.OnClick( (Button::click_event_handler)&ViewSelectionDialog::__ButtonClick, *this );
-
-   Cancel_PushButton.SetText( "Cancel" );
-   Cancel_PushButton.SetCursor( StdCursor::Crossmark );
-   Cancel_PushButton.OnClick( (Button::click_event_handler)&ViewSelectionDialog::__ButtonClick, *this );
-
-   Buttons_Sizer.SetSpacing( 8 );
-   Buttons_Sizer.AddStretch();
-   Buttons_Sizer.Add( OK_PushButton );
-   Buttons_Sizer.Add( Cancel_PushButton );
-
-   //
+   SetSizer( Global_Sizer );
 
    Global_Sizer.SetMargin( 8 );
    Global_Sizer.SetSpacing( 6 );
@@ -110,21 +73,59 @@ ViewSelectionDialog::ViewSelectionDialog( const String& id, bool allowPreviews )
       Global_Sizer.Add( IncludePreviews_CheckBox );
    }
 
+   Global_Sizer.AddSpacing( 6 );
    Global_Sizer.Add( Buttons_Sizer );
 
-   SetSizer( Global_Sizer );
-   AdjustToContents();
-   SetFixedHeight();
+   Buttons_Sizer.SetSpacing( 8 );
+   Buttons_Sizer.AddStretch();
+   Buttons_Sizer.Add( OK_PushButton );
+   Buttons_Sizer.Add( Cancel_PushButton );
 
-   SetWindowTitle( "Select Reference Image" );
+   if ( m_allowPreviews )
+      Images_ViewList.GetAll();
+   else
+      Images_ViewList.GetMainViews();
+
+   Images_ViewList.SelectView( View::ViewById( m_id ) );
+   Images_ViewList.SetMinWidth( Font().Width( String( 'M', 40 ) ) );
+   Images_ViewList.OnViewSelected( (ViewList::view_event_handler)&ViewSelectionDialog::ViewSelected, *this );
+
+   if ( m_allowPreviews )
+   {
+      IncludeMainViews_CheckBox.SetText( "Include main views" );
+      IncludeMainViews_CheckBox.OnClick( (Button::click_event_handler)&ViewSelectionDialog::OptionClick, *this );
+      IncludeMainViews_CheckBox.SetChecked();
+
+      IncludePreviews_CheckBox.SetText( "Include previews" );
+      IncludePreviews_CheckBox.OnClick( (Button::click_event_handler)&ViewSelectionDialog::OptionClick, *this );
+      IncludePreviews_CheckBox.SetChecked();
+   }
+   else
+   {
+      IncludeMainViews_CheckBox.Hide();
+      IncludePreviews_CheckBox.Hide();
+   }
+
+   OK_PushButton.SetText( "OK" );
+   OK_PushButton.SetDefault();
+   OK_PushButton.SetCursor( StdCursor::Checkmark );
+   OK_PushButton.OnClick( (Button::click_event_handler)&ViewSelectionDialog::ButtonClick, *this );
+
+   Cancel_PushButton.SetText( "Cancel" );
+   Cancel_PushButton.SetCursor( StdCursor::Crossmark );
+   Cancel_PushButton.OnClick( (Button::click_event_handler)&ViewSelectionDialog::ButtonClick, *this );
+
+   SetWindowTitle( "Select View" );
+
+   OnShow( (Control::event_handler)&ViewSelectionDialog::ControlShow, *this );
 }
 
-void ViewSelectionDialog::__ViewSelected( ViewList& sender, View& view )
+void ViewSelectionDialog::ViewSelected( ViewList& sender, View& view )
 {
-   m_id = view.IsNull() ? String() : String( view.FullId() );
+   m_id = view.IsNull() ? IsoString() : view.FullId();
 }
 
-void ViewSelectionDialog::__OptionClick( Button& sender, bool checked )
+void ViewSelectionDialog::OptionClick( Button& sender, bool checked )
 {
    bool includeMainViews = !m_allowPreviews || IncludeMainViews_CheckBox.IsChecked();
    bool includePreviews = m_allowPreviews && IncludePreviews_CheckBox.IsChecked();
@@ -132,7 +133,7 @@ void ViewSelectionDialog::__OptionClick( Button& sender, bool checked )
    Images_ViewList.SelectView( View::ViewById( m_id ) );
 }
 
-void ViewSelectionDialog::__ButtonClick( Button& sender, bool checked )
+void ViewSelectionDialog::ButtonClick( Button& sender, bool checked )
 {
    if ( sender == OK_PushButton )
       Ok();
@@ -140,9 +141,16 @@ void ViewSelectionDialog::__ButtonClick( Button& sender, bool checked )
       Cancel();
 }
 
+void ViewSelectionDialog::ControlShow( Control& sender )
+{
+   AdjustToContents();
+   SetMinWidth();
+   SetFixedHeight();
+}
+
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/ViewSelectionDialog.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ViewSelectionDialog.cpp - Released 2015/07/30 17:15:31 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Vector.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Vector.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Vector_h
 #define __PCL_Vector_h
@@ -85,6 +88,12 @@
 # endif
 #endif
 
+#ifndef __PCL_NO_VECTOR_INSTANTIATE
+# ifndef __PCL_Complex_h
+#  include <pcl/Complex.h>
+# endif
+#endif
+
 namespace pcl
 {
 
@@ -97,8 +106,9 @@ namespace pcl
  * %GenericVector is a lightweight template class implementing a vector of
  * arbitrary length. This class provides the following main features:
  *
- * \li Reference counted. %GenericVector instances can safely be passed as
- * function return values and by-value function arguments.
+ * \li Implicit data sharing with reference counting and copy-on-write
+ * functionality. %GenericVector instances can safely be passed as function
+ * return values and by-value function arguments.
  *
  * \li Thread-safe. %GenericVector instances can safely be accessed from
  * multiple threads. The reference counter implements atomic reference and
@@ -107,8 +117,8 @@ namespace pcl
  * \li Efficient vector storage and access to vector elements. Vector
  * elements are allocated as a single, contiguous memory block.
  *
- * \li Support for basic vector operations, including scalar-to-vector and
- * vector-to-vector arithmetic operations, dot and cross products.
+ * \li Support for a large set of vector operations, including scalar-to-vector
+ * and vector-to-vector arithmetic operations, dot and cross products.
  *
  * \sa GenericMatrix, \ref vector_operators, \ref vector_types
  */
@@ -120,29 +130,30 @@ public:
    /*!
     * Represents a scalar.
     */
-   typedef T         scalar;
+   typedef T                        scalar;
 
    /*!
     * Represents a vector component.
     */
-   typedef T         component;
+   typedef T                        component;
 
    /*!
     * Represents a mutable vector iterator.
     */
-   typedef T*        iterator;
+   typedef T*                       iterator;
 
    /*!
     * Represents an immutable vector iterator.
     */
-   typedef const T*  const_iterator;
+   typedef const T*                 const_iterator;
 
    /*!
     * Constructs an empty vector.
     * An empty vector has no component and zero length.
     */
-   GenericVector() : data( new Data( 0 ) )
+   GenericVector() : m_data( nullptr )
    {
+      m_data = new Data( 0 );
    }
 
    /*!
@@ -153,8 +164,9 @@ public:
     * This constructor does not initialize vector components. The newly created
     * vector will contain unpredictable values.
     */
-   GenericVector( int len ) : data( new Data( len ) )
+   GenericVector( int len ) : m_data( nullptr )
    {
+      m_data = new Data( len );
    }
 
    /*!
@@ -163,9 +175,10 @@ public:
     * \param x       Initial value for all vector components.
     * \param len     Number of vector components (>= 0).
     */
-   GenericVector( const T& x, int len ) : data( new Data( len ) )
+   GenericVector( const component& x, int len ) : m_data( nullptr )
    {
-      for ( iterator i = Begin(), j = End(); i < j; ++i )
+      m_data = new Data( len );
+      for ( iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i )
          *i = x;
    }
 
@@ -179,10 +192,12 @@ public:
     * \param len     Number of vector components (>= 0).
     */
    template <typename T1>
-   GenericVector( const T1* a, int len ) : data( new Data( len ) )
+   GenericVector( const T1* a, int len ) : m_data( nullptr )
    {
-      for ( iterator i = Begin(), j = End(); i < j; ++i )
-         *i = T( *a++ );
+      m_data = new Data( len );
+      if ( a != nullptr )
+         for ( iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i )
+            *i = component( *a++ );
    }
 
    /*!
@@ -190,10 +205,13 @@ public:
     * \a x, \a y and \a z values.
     */
    template <typename T1>
-   GenericVector( const T1& x, const T1& y, const T1& z ) : data( new Data( 3 ) )
+   GenericVector( const T1& x, const T1& y, const T1& z ) : m_data( nullptr )
    {
-      T* v = data->Begin();
-      *v++ = T( x ); *v++ = T( y ); *v = T( z );
+      m_data = new Data( 3 );
+      iterator v = m_data->Begin();
+      *v++ = component( x );
+      *v++ = component( y );
+      *v   = component( z );
    }
 
    /*!
@@ -201,20 +219,31 @@ public:
     * \a x, \a y, \a z and \a t values.
     */
    template <typename T1>
-   GenericVector( const T1& x, const T1& y, const T1& z, const T1& t ) : data( new Data( 4 ) )
+   GenericVector( const T1& x, const T1& y, const T1& z, const T1& t ) : m_data( nullptr )
    {
-      T* v = data->Begin();
-      *v++ = T( x ); *v++ = T( y ); *v++ = T( z ); *v = T( t );
+      m_data = new Data( 4 );
+      iterator v = m_data->Begin();
+      *v++ = component( x );
+      *v++ = component( y );
+      *v++ = component( z );
+      *v   = component( t );
    }
 
    /*!
     * Copy constructor. This object references the same data that is being
     * referenced by the specified vector \a x.
     */
-   GenericVector( const GenericVector<T>& x ) : data( x.data )
+   GenericVector( const GenericVector& x ) : m_data( x.m_data )
    {
-      if ( data != 0 )
-         data->Attach();
+      m_data->Attach();
+   }
+
+   /*!
+    * Move constructor.
+    */
+   GenericVector( GenericVector&& x ) : m_data( x.m_data )
+   {
+      x.m_data = nullptr;
    }
 
    /*!
@@ -224,11 +253,11 @@ public:
     */
    virtual ~GenericVector()
    {
-      if ( data != 0 )
+      if ( m_data != nullptr )
       {
-         if ( !data->Detach() )
-            delete data;
-         data = 0;
+         if ( !m_data->Detach() )
+            delete m_data;
+         m_data = nullptr;
       }
    }
 
@@ -237,50 +266,108 @@ public:
     */
    void Clear()
    {
-      if ( data != 0 )
-         if ( data->IsUnique() )
-            data->Deallocate();
+      if ( !IsEmpty() )
+         if ( m_data->IsUnique() )
+            m_data->Deallocate();
          else
          {
-            data->Detach();
-            data = new Data( 0 );
+            m_data->Detach();
+            m_data = nullptr;
+            m_data = new Data( 0 );
          }
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Copy assignment operator. Returns a reference to this object.
     *
-    * If this instance and the specified source instance \a x reference
-    * different vector data, then the previously referenced data is
-    * dereferenced and the new data (which is being referenced by \a x) is
-    * referenced by this object. If the previous data becomes unreferenced
-    * (garbage), then it is destroyed and deallocated immediately.
-    *
-    * If this instance and the specified source instance \a x reference the
-    * same vector data, then this function does nothing.
+    * See the Assign() member function for more information.
     */
-   GenericVector& operator =( const GenericVector<T>& x )
+   GenericVector& operator =( const GenericVector& x )
    {
-      if ( x.data != data )
-      {
-         x.data->Attach();
-         if ( data != 0 )
-            if ( !data->Detach() )
-               delete data;
-         data = x.data;
-      }
+      Assign( x );
       return *this;
    }
 
    /*!
-    * Exchanges two vectors \a a and \a b.
+    * Assigns a vector \a x to this object.
+    *
+    * If this instance and the specified source instance \a x reference
+    * different vector data, the data previously referenced by this object is
+    * dereferenced. If the previous data becomes unreferenced, it is destroyed
+    * and deallocated. Then the data being referenced by \a x is also
+    * referenced by this object.
+    *
+    * If this instance and the specified source instance \a x already reference
+    * the same vector data, then this function does nothing.
+    */
+   void Assign( const GenericVector& x )
+   {
+      x.m_data->Attach();
+      if ( !m_data->Detach() )
+         delete m_data;
+      m_data = x.m_data;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    *
+    * See the Transfer() member function for more information.
+    */
+   GenericVector& operator =( GenericVector&& x )
+   {
+      Transfer( x );
+      return *this;
+   }
+
+   /*!
+    * Transfers data from another vector \a x to this object.
+    *
+    * Decrements the reference counter of the current vector data. If the data
+    * becomes unreferenced, it is destroyed and deallocated. The vector data
+    * referenced by the source object \a x is then transferred to this object,
+    * and the source object \a x is left as an invalid empty vector.
+    *
+    * \warning The source vector \a x will be an invalid object after calling
+    * this function, and hence should be destroyed immediately. Any attempt to
+    * access an invalid object will most likely lead to a crash.
+    */
+   void Transfer( GenericVector& x )
+   {
+      if ( !m_data->Detach() )
+         delete m_data;
+      m_data = x.m_data;
+      x.m_data = nullptr;
+   }
+
+   /*!
+    * Transfers data from another vector \a x to this object.
+    *
+    * Decrements the reference counter of the current vector data. If the data
+    * becomes unreferenced, it is destroyed and deallocated. The vector data
+    * referenced by the source object \a x is then transferred to this object,
+    * and the source object \a x is left as an invalid empty vector.
+    *
+    * \warning The source vector \a x will be an invalid object after calling
+    * this function, and hence should be destroyed immediately. Any attempt to
+    * access an invalid object will most likely lead to a crash.
+    */
+   void Transfer( GenericVector&& x )
+   {
+      if ( !m_data->Detach() )
+         delete m_data;
+      m_data = x.m_data;
+      x.m_data = nullptr;
+   }
+
+   /*!
+    * Exchanges two vectors \a x1 and \a x2.
     *
     * This function is efficient because it simply swaps the internal vector
-    * data pointers owned by both objects.
+    * data pointers owned by the objects.
     */
-   friend void Swap( GenericVector<T>& a, GenericVector<T>& b )
+   friend void Swap( GenericVector& x1, GenericVector& x2 )
    {
-      Swap( a.data, b.data );
+      pcl::Swap( x1.m_data, x2.m_data );
    }
 
    /*!
@@ -291,17 +378,16 @@ public:
     * ensures that this instance uniquely references its vector data,
     * generating a new vector data block if necessary.
     */
-   GenericVector& operator =( const T& x )
+   GenericVector& operator =( const scalar& x )
    {
       if ( !IsUnique() )
       {
-         Data* newData = new Data( data->Length() );
-         if ( !data->Detach() )
-            delete data;
-         data = newData;
+         Data* newData = new Data( m_data->Length() );
+         m_data->Detach();
+         m_data = newData;
       }
 
-      for ( iterator i = Begin(), j = End(); i < j; ++i )
+      for ( iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i )
          *i = x;
       return *this;
    }
@@ -319,13 +405,13 @@ public:
     * (because the length of \a x is less than the length of this object), this
     * function throws an appropriate Error exception.
     */
-   GenericVector& operator +=( const GenericVector<T>& x )
+   GenericVector& operator +=( const GenericVector& x )
    {
       if ( x.Length() < Length() )
          throw Error( "Invalid vector addition." );
       SetUnique();
       const_iterator s = x.Begin();
-      for ( iterator i = Begin(), j = End(); i < j; ++i, ++s )
+      for ( iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i, ++s )
          *i += *s;
       return *this;
    }
@@ -343,13 +429,13 @@ public:
     * (because the length of \a x is less than the length of this object), this
     * function throws an appropriate Error exception.
     */
-   GenericVector& operator -=( const GenericVector<T>& x )
+   GenericVector& operator -=( const GenericVector& x )
    {
       if ( x.Length() < Length() )
          throw Error( "Invalid vector subtraction." );
       SetUnique();
       const_iterator s = x.Begin();
-      for ( iterator i = Begin(), j = End(); i < j; ++i, ++s )
+      for ( iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i, ++s )
          *i -= *s;
       return *this;
    }
@@ -367,13 +453,13 @@ public:
     * (because the length of \a x is less than the length of this object), this
     * function throws an appropriate Error exception.
     */
-   GenericVector& operator *=( const GenericVector<T>& x )
+   GenericVector& operator *=( const GenericVector& x )
    {
       if ( x.Length() < Length() )
          throw Error( "Invalid vector multiplication." );
       SetUnique();
       const_iterator s = x.Begin();
-      for ( iterator i = Begin(), j = End(); i < j; ++i, ++s )
+      for ( iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i, ++s )
          *i *= *s;
       return *this;
    }
@@ -393,34 +479,33 @@ public:
     *
     * \note Make sure that no component of the specified divisor vector \a x is
     * zero or insignificant, or calling this member function will lead to
-    * (possibly multiple) divisions by zero.
+    * division(s) by zero.
     */
-   GenericVector& operator /=( const GenericVector<T>& x )
+   GenericVector& operator /=( const GenericVector& x )
    {
       if ( x.Length() < Length() )
          throw Error( "Invalid vector multiplication." );
       SetUnique();
       const_iterator s = x.Begin();
-      for ( iterator i = Begin(), j = End(); i < j; ++i, ++s )
+      for ( iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i, ++s )
          *i /= *s;
       return *this;
    }
 
-#define IMPLEMENT_SCALAR_ASSIGN_OP( op )                                                           \
-      if ( IsUnique() )                                                                            \
-      {                                                                                            \
-         for ( iterator i = Begin(), j = End(); i < j; ++i )                                       \
-            *i op##= x;                                                                            \
-      }                                                                                            \
-      else                                                                                         \
-      {                                                                                            \
-         Data* newData = new Data( data->Length() );                                               \
-         for ( T* i = data->Begin(), * j = data->End(), * k = newData->Begin(); i < j; ++i, ++k )  \
-            *k = *i op x;                                                                          \
-         if ( !data->Detach() )                                                                    \
-            delete data;                                                                           \
-         data = newData;                                                                           \
-      }                                                                                            \
+#define IMPLEMENT_SCALAR_ASSIGN_OP( op )                                      \
+      if ( IsUnique() )                                                       \
+      {                                                                       \
+         for ( iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i )  \
+            *i op##= x;                                                       \
+      }                                                                       \
+      else                                                                    \
+      {                                                                       \
+         Data* newData = new Data( m_data->Length() );                        \
+         for ( iterator i = m_data->Begin(), j = m_data->End(), k = newData->Begin(); i < j; ++i, ++k ) \
+            *k = *i op x;                                                     \
+         m_data->Detach();                                                    \
+         m_data = newData;                                                    \
+      }                                                                       \
       return *this;
 
    /*!
@@ -431,7 +516,7 @@ public:
     * ensures that this instance uniquely references its vector data,
     * generating a duplicate if necessary.
     */
-   GenericVector& operator +=( const T& x )
+   GenericVector& operator +=( const scalar& x )
    {
       IMPLEMENT_SCALAR_ASSIGN_OP( + )
    }
@@ -444,7 +529,7 @@ public:
     * function ensures that this instance uniquely references its vector data,
     * generating a duplicate if necessary.
     */
-   GenericVector& operator -=( const T& x )
+   GenericVector& operator -=( const scalar& x )
    {
       IMPLEMENT_SCALAR_ASSIGN_OP( - )
    }
@@ -457,7 +542,7 @@ public:
     * function ensures that this instance uniquely references its vector data,
     * generating a duplicate if necessary.
     */
-   GenericVector& operator *=( const T& x )
+   GenericVector& operator *=( const scalar& x )
    {
       IMPLEMENT_SCALAR_ASSIGN_OP( * )
    }
@@ -470,7 +555,7 @@ public:
     * ensures that this instance uniquely references its vector data,
     * generating a duplicate if necessary.
     */
-   GenericVector& operator /=( const T& x )
+   GenericVector& operator /=( const scalar& x )
    {
       IMPLEMENT_SCALAR_ASSIGN_OP( / )
    }
@@ -483,21 +568,20 @@ public:
     * ensures that this instance uniquely references its vector data,
     * generating a duplicate if necessary.
     */
-   GenericVector& operator ^=( const T& x )
+   GenericVector& operator ^=( const scalar& x )
    {
       if ( IsUnique() )
       {
-         for ( iterator i = Begin(), j = End(); i < j; ++i )
+         for ( iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i )
             *i = pcl::Pow( *i, x );
       }
       else
       {
-         Data* newData = new Data( data->Length() );
-         for ( T* i = data->Begin(), * j = data->End(), * k = newData->Begin(); i < j; ++i, ++k )
+         Data* newData = new Data( m_data->Length() );
+         for ( iterator i = m_data->Begin(), j = m_data->End(), k = newData->Begin(); i < j; ++i, ++k )
             *k = pcl::Pow( *i, x );
-         if ( !data->Detach() )
-            delete data;
-         data = newData;
+         m_data->Detach();
+         m_data = newData;
       }
       return *this;
    }
@@ -511,9 +595,9 @@ public:
     */
    GenericVector Sqr() const
    {
-      GenericVector<T> R( data->Length() );
+      GenericVector R( m_data->Length() );
       iterator r = R.Begin();
-      for ( const_iterator i = Begin(), j = End(); i < j; ++i )
+      for ( const_iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i )
          *r++ = *i * *i;
       return R;
    }
@@ -528,17 +612,16 @@ public:
    {
       if ( IsUnique() )
       {
-         for ( iterator i = Begin(), j = End(); i < j; ++i )
+         for ( iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i )
             *i *= *i;
       }
       else
       {
-         Data* newData = new Data( data->Length() );
-         for ( T* i = data->Begin(), * j = data->End(), * k = newData->Begin(); i < j; ++i, ++k )
+         Data* newData = new Data( m_data->Length() );
+         for ( iterator i = m_data->Begin(), j = m_data->End(), k = newData->Begin(); i < j; ++i, ++k )
             *k = *i * *i;
-         if ( !data->Detach() )
-            delete data;
-         data = newData;
+         m_data->Detach();
+         m_data = newData;
       }
    }
 
@@ -549,9 +632,9 @@ public:
     */
    GenericVector Sqrt() const
    {
-      GenericVector<T> R( data->Length() );
+      GenericVector R( m_data->Length() );
       iterator r = R.Begin();
-      for ( const_iterator i = Begin(), j = End(); i < j; ++i )
+      for ( const_iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i )
          *r++ = pcl::Sqrt( *i );
       return R;
    }
@@ -566,17 +649,16 @@ public:
    {
       if ( IsUnique() )
       {
-         for ( iterator i = Begin(), j = End(); i < j; ++i )
+         for ( iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i )
             *i = pcl::Sqrt( *i );
       }
       else
       {
-         Data* newData = new Data( data->Length() );
-         for ( T* i = data->Begin(), * j = data->End(), * k = newData->Begin(); i < j; ++i, ++k )
+         Data* newData = new Data( m_data->Length() );
+         for ( iterator i = m_data->Begin(), j = m_data->End(), k = newData->Begin(); i < j; ++i, ++k )
             *k = pcl::Sqrt( *i );
-         if ( !data->Detach() )
-            delete data;
-         data = newData;
+         m_data->Detach();
+         m_data = newData;
       }
    }
 
@@ -587,9 +669,9 @@ public:
     */
    GenericVector Abs() const
    {
-      GenericVector<T> R( data->Length() );
+      GenericVector R( m_data->Length() );
       iterator r = R.Begin();
-      for ( const_iterator i = Begin(), j = End(); i < j; ++i )
+      for ( const_iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i )
          *r++ = pcl::Abs( *i );
       return R;
    }
@@ -604,17 +686,16 @@ public:
    {
       if ( IsUnique() )
       {
-         for ( iterator i = Begin(), j = End(); i < j; ++i )
+         for ( iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i )
             *i = pcl::Abs( *i );
       }
       else
       {
-         Data* newData = new Data( data->Length() );
-         for ( T* i = data->Begin(), * j = data->End(), * k = newData->Begin(); i < j; ++i, ++k )
+         Data* newData = new Data( m_data->Length() );
+         for ( iterator i = m_data->Begin(), j = m_data->End(), k = newData->Begin(); i < j; ++i, ++k )
             *k = pcl::Abs( *i );
-         if ( !data->Detach() )
-            delete data;
-         data = newData;
+         m_data->Detach();
+         m_data = newData;
       }
    }
 
@@ -623,7 +704,18 @@ public:
     */
    void Sort()
    {
-      pcl::Sort( data->Begin(), data->End() );
+      SetUnique();
+      pcl::Sort( m_data->Begin(), m_data->End() );
+   }
+
+   /*!
+    * Returns a sorted copy of this vector.
+    */
+   GenericVector Sorted() const
+   {
+      GenericVector R( *this );
+      R.Sort();
+      return R;
    }
 
    /*!
@@ -635,17 +727,30 @@ public:
    template <class BP>
    void Sort( BP p )
    {
-      pcl::Sort( data->Begin(), data->End(), p );
+      SetUnique();
+      pcl::Sort( m_data->Begin(), m_data->End(), p );
+   }
+
+   /*!
+    * Returns a sorted copy of this vector, where ordering of vector components
+    * is defined by the specified binary predicate \a p. See Sort( BP p ).
+    */
+   template <class BP>
+   GenericVector Sorted( BP p ) const
+   {
+      GenericVector R( *this );
+      R.Sort( p );
+      return R;
    }
 
    /*!
     * Returns the index of the first vector element with the specified value
     * \a x, or -1 if this vector does not contain such value.
     */
-   int Find( const T& x ) const
+   int Find( const component& x ) const
    {
-      const T* p = pcl::LinearSearch( data->Begin(), data->End(), x );
-      return (p != data->End()) ? int( p - data->Begin() ) : -1;
+      const_iterator p = pcl::LinearSearch( m_data->Begin(), m_data->End(), x );
+      return (p != m_data->End()) ? int( p - m_data->Begin() ) : -1;
    }
 
    /*!
@@ -653,7 +758,7 @@ public:
     * \a x, or -1 if this vector does not contain such value.
     * This function is an alias to Find().
     */
-   int FindFirst( const T& x ) const
+   int FindFirst( const component& x ) const
    {
       return Find( x );
    }
@@ -662,18 +767,18 @@ public:
     * Returns the index of the last vector element with the specified value
     * \a x, or -1 if this vector does not contain such value.
     */
-   int FindLast( const T& x ) const
+   int FindLast( const component& x ) const
    {
-      const T* p = pcl::LinearSearchLast( data->Begin(), data->End(), x );
-      return (p != data->End()) ? int( p - data->Begin() ) : -1;
+      const_iterator p = pcl::LinearSearchLast( m_data->Begin(), m_data->End(), x );
+      return (p != m_data->End()) ? int( p - m_data->Begin() ) : -1;
    }
 
    /*!
     * Returns true if this vector contains the specified value \a x.
     */
-   bool Has( const T& x ) const
+   bool Contains( const component& x ) const
    {
-      return pcl::LinearSearch( data->Begin(), data->End(), x ) != data->End();
+      return pcl::LinearSearch( m_data->Begin(), m_data->End(), x ) != m_data->End();
    }
 
 #ifndef __PCL_NO_VECTOR_STATISTICS
@@ -682,22 +787,22 @@ public:
     * Returns the value of the smallest vector component.
     * For empty vectors, this function returns zero.
     */
-   T MinComponent() const
+   component MinComponent() const
    {
-      if ( data->Length() > 0 )
-         return *pcl::MinItem( data->Begin(), data->End() );
-      return T( 0 );
+      if ( m_data->Length() > 0 )
+         return *pcl::MinItem( m_data->Begin(), m_data->End() );
+      return component( 0 );
    }
 
    /*!
     * Returns the value of the largest vector component.
     * For empty vectors, this function returns zero.
     */
-   T MaxComponent() const
+   component MaxComponent() const
    {
-      if ( data->Length() > 0 )
-         return *pcl::MaxItem( data->Begin(), data->End() );
-      return T( 0 );
+      if ( m_data->Length() > 0 )
+         return *pcl::MaxItem( m_data->Begin(), m_data->End() );
+      return component( 0 );
    }
 
    /*!
@@ -706,7 +811,7 @@ public:
     */
    double Sum() const
    {
-      return pcl::Sum( data->Begin(), data->End() );
+      return pcl::Sum( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -717,7 +822,7 @@ public:
     */
    double StableSum() const
    {
-      return pcl::StableSum( data->Begin(), data->End() );
+      return pcl::StableSum( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -726,7 +831,7 @@ public:
     */
    double Modulus() const
    {
-      return pcl::Modulus( data->Begin(), data->End() );
+      return pcl::Modulus( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -737,7 +842,7 @@ public:
     */
    double StableModulus() const
    {
-      return pcl::StableModulus( data->Begin(), data->End() );
+      return pcl::StableModulus( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -746,7 +851,7 @@ public:
     */
    double SumOfSquares() const
    {
-      return pcl::SumOfSquares( data->Begin(), data->End() );
+      return pcl::SumOfSquares( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -757,7 +862,7 @@ public:
     */
    double StableSumOfSquares() const
    {
-      return pcl::StableSumOfSquares( data->Begin(), data->End() );
+      return pcl::StableSumOfSquares( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -766,7 +871,7 @@ public:
     */
    double Mean() const
    {
-      return pcl::Mean( data->Begin(), data->End() );
+      return pcl::Mean( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -777,7 +882,7 @@ public:
     */
    double StableMean() const
    {
-      return pcl::StableMean( data->Begin(), data->End() );
+      return pcl::StableMean( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -787,7 +892,7 @@ public:
     */
    double Variance() const
    {
-      return pcl::Variance( data->Begin(), data->End() );
+      return pcl::Variance( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -798,7 +903,7 @@ public:
     */
    double StdDev() const
    {
-      return pcl::StdDev( data->Begin(), data->End() );
+      return pcl::StdDev( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -816,7 +921,7 @@ public:
    double Median()
    {
       SetUnique();
-      return pcl::Median( data->Begin(), data->End() );
+      return pcl::Median( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -833,7 +938,7 @@ public:
     */
    double Median() const
    {
-      return GenericVector<T>( *this ).Median();
+      return GenericVector( *this ).Median();
    }
 
    /*!
@@ -852,7 +957,7 @@ public:
     */
    double AvgDev( double center ) const
    {
-      return pcl::AvgDev( data->Begin(), data->End(), center );
+      return pcl::AvgDev( m_data->Begin(), m_data->End(), center );
    }
 
    /*!
@@ -872,7 +977,7 @@ public:
     */
    double StableAvgDev( double center ) const
    {
-      return pcl::StableAvgDev( data->Begin(), data->End(), center );
+      return pcl::StableAvgDev( m_data->Begin(), m_data->End(), center );
    }
 
    /*!
@@ -889,7 +994,7 @@ public:
     */
    double AvgDev() const
    {
-      return pcl::AvgDev( data->Begin(), data->End() );
+      return pcl::AvgDev( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -907,7 +1012,7 @@ public:
     */
    double StableAvgDev() const
    {
-      return pcl::StableAvgDev( data->Begin(), data->End() );
+      return pcl::StableAvgDev( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -923,7 +1028,7 @@ public:
     */
    double MAD( double center ) const
    {
-      return pcl::MAD( data->Begin(), data->End(), center );
+      return pcl::MAD( m_data->Begin(), m_data->End(), center );
    }
 
    /*!
@@ -938,7 +1043,7 @@ public:
     */
    double MAD() const
    {
-      return pcl::MAD( data->Begin(), data->End() );
+      return pcl::MAD( m_data->Begin(), m_data->End() );
    }
 
    /*!
@@ -962,12 +1067,12 @@ public:
     *
     * \b References
     *
-    * Rand R. Wilcox (2012), <em>Introduction to Robust Estimation and Hypothesis
-    * Testing, 3rd Edition</em>, Elsevier Inc., Section 3.12.1.
+    * Rand R. Wilcox (2012), <em>Introduction to Robust Estimation and
+    * Hypothesis Testing, 3rd Edition</em>, Elsevier Inc., Section 3.12.1.
     */
    double BiweightMidvariance( double center, double sigma, int k = 9 ) const
    {
-      return pcl::BiweightMidvariance( data->Begin(), data->End(), center, sigma, k );
+      return pcl::BiweightMidvariance( m_data->Begin(), m_data->End(), center, sigma, k );
    }
 
    /*!
@@ -985,14 +1090,14 @@ public:
     *
     * \b References
     *
-    * Rand R. Wilcox (2012), <em>Introduction to Robust Estimation and Hypothesis
-    * Testing, 3rd Edition</em>, Elsevier Inc., Section 3.12.1.
+    * Rand R. Wilcox (2012), <em>Introduction to Robust Estimation and
+    * Hypothesis Testing, 3rd Edition</em>, Elsevier Inc., Section 3.12.1.
     */
    double BiweightMidvariance( int k = 9 ) const
    {
       double center = Median();
       double sigma = 1.4826*MAD( center );
-      return pcl::BiweightMidvariance( data->Begin(), data->End(), center, sigma, k );
+      return pcl::BiweightMidvariance( m_data->Begin(), m_data->End(), center, sigma, k );
    }
 
    /*!
@@ -1014,12 +1119,12 @@ public:
     *
     * \b References
     *
-    * Rand R. Wilcox (2012), <em>Introduction to Robust Estimation and Hypothesis
-    * Testing, 3rd Edition</em>, Elsevier Inc., Section 3.12.3.
+    * Rand R. Wilcox (2012), <em>Introduction to Robust Estimation and
+    * Hypothesis Testing, 3rd Edition</em>, Elsevier Inc., Section 3.12.3.
     */
    double BendMidvariance( double center, double beta = 0.2 ) const
    {
-      return pcl::BendMidvariance( data->Begin(), data->End(), center, beta );
+      return pcl::BendMidvariance( m_data->Begin(), m_data->End(), center, beta );
    }
 
    /*!
@@ -1038,12 +1143,12 @@ public:
     *
     * \b References
     *
-    * Rand R. Wilcox (2012), <em>Introduction to Robust Estimation and Hypothesis
-    * Testing, 3rd Edition</em>, Elsevier Inc., Section 3.12.3.
+    * Rand R. Wilcox (2012), <em>Introduction to Robust Estimation and
+    * Hypothesis Testing, 3rd Edition</em>, Elsevier Inc., Section 3.12.3.
     */
    double BendMidvariance( double beta = 0.2 ) const
    {
-      return pcl::BendMidvariance( data->Begin(), data->End(), Median(), beta );
+      return pcl::BendMidvariance( m_data->Begin(), m_data->End(), Median(), beta );
    }
 
    /*!
@@ -1063,13 +1168,13 @@ public:
     *
     * \b References
     *
-    * P.J. Rousseeuw and C. Croux (1993), <em>Alternatives to the Median Absolute
-    * Deviation,</em> Journal of the American Statistical Association, Vol. 88,
-    * pp. 1273-1283.
+    * P.J. Rousseeuw and C. Croux (1993), <em>Alternatives to the Median
+    * Absolute Deviation,</em> Journal of the American Statistical Association,
+    * Vol. 88, pp. 1273-1283.
     */
    double Sn() const
    {
-      GenericVector<T> v( *this );
+      GenericVector v( *this );
       return pcl::Sn( v.Begin(), v.End() );
    }
 
@@ -1089,33 +1194,68 @@ public:
     *
     * \b References
     *
-    * P.J. Rousseeuw and C. Croux (1993), <em>Alternatives to the Median Absolute
-    * Deviation,</em> Journal of the American Statistical Association, Vol. 88,
-    * pp. 1273-1283.
+    * P.J. Rousseeuw and C. Croux (1993), <em>Alternatives to the Median
+    * Absolute Deviation,</em> Journal of the American Statistical Association,
+    * Vol. 88, pp. 1273-1283.
     */
    double Qn() const
    {
-      GenericVector<T> v( *this );
+      GenericVector v( *this );
       return pcl::Qn( v.Begin(), v.End() );
    }
 
 #endif   // !__PCL_NO_VECTOR_STATISTICS
 
    /*!
+    * Returns a 64-bit non-cryptographic hash value computed for this vector.
+    *
+    * This function calls pcl::Hash64() for the internal vector data.
+    *
+    * The \a seed parameter can be used to generate repeatable hash values. It
+    * can also be set to a random value in compromised environments.
+    */
+   uint64 Hash64( uint64 seed = 0 ) const
+   {
+      return pcl::Hash64( m_data->Begin(), m_data->Size(), seed );
+   }
+
+   /*!
+    * Returns a 32-bit non-cryptographic hash value computed for this vector.
+    *
+    * This function calls pcl::Hash32() for the internal vector data.
+    *
+    * The \a seed parameter can be used to generate repeatable hash values. It
+    * can also be set to a random value in compromised environments.
+    */
+   uint32 Hash32( uint32 seed = 0 ) const
+   {
+      return pcl::Hash32( m_data->Begin(), m_data->Size(), seed );
+   }
+
+   /*!
+    * Returns a non-cryptographic hash value computed for this vector. This
+    * function is a synonym for Hash64().
+    */
+   uint64 Hash( uint64 seed = 0 ) const
+   {
+      return Hash64( seed );
+   }
+
+   /*!
     * Returns true if this instance uniquely references its vector data.
     */
    bool IsUnique() const
    {
-      return data->IsUnique();
+      return m_data->IsUnique();
    }
 
    /*!
     * Returns true if this instance references (shares) the same vector data as
     * another instance \a x.
     */
-   bool IsAliasOf( const GenericVector<T>& x ) const
+   bool IsAliasOf( const GenericVector& x ) const
    {
-      return data == x.data;
+      return m_data == x.m_data;
    }
 
    /*!
@@ -1129,13 +1269,12 @@ public:
    {
       if ( !IsUnique() )
       {
-         Data* newData = new Data( data->Length() );
-         const_iterator a = data->Begin();
+         Data* newData = new Data( m_data->Length() );
+         const_iterator a = m_data->Begin();
          for ( iterator i = newData->Begin(), j = newData->End(); i < j; ++i, ++a )
-            *i = T( *a );
-         if ( !data->Detach() )
-            delete data;
-         data = newData;
+            *i = component( *a );
+         m_data->Detach();
+         m_data = newData;
       }
    }
 
@@ -1145,7 +1284,7 @@ public:
     */
    int Length() const
    {
-      return data->Length();
+      return m_data->Length();
    }
 
    /*!
@@ -1154,7 +1293,26 @@ public:
     */
    size_type Size() const
    {
-      return data->Size();
+      return m_data->Size();
+   }
+
+   /*!
+    * Returns true only if this vector is valid. A vector is valid if it
+    * references an internal vector structure, even if it is an empty vector.
+    *
+    * In general, all %GenericVector objects are valid with only two
+    * exceptions:
+    *
+    * \li Objects that have been move-copied or move-assigned to other vectors.
+    * \li Objects that have been invalidated explicitly by calling Transfer().
+    *
+    * An invalid vector object cannot be used and should be destroyed
+    * immediately. Invalid vectors are always destroyed automatically during
+    * move construction and move assignment operations.
+    */
+   bool IsValid() const
+   {
+      return m_data != nullptr;
    }
 
    /*!
@@ -1181,7 +1339,7 @@ public:
     * \a x. Two vectors are equal if both have the same length and identical
     * component values.
     */
-   bool operator ==( const GenericVector<T>& x ) const
+   bool operator ==( const GenericVector& x ) const
    {
       return IsAliasOf( x ) || SameLength( x ) && pcl::Equal( Begin(), x.Begin(), x.End() );
    }
@@ -1195,7 +1353,7 @@ public:
     * or until the end of one of the vectors is reached. In the latter case,
     * the shortest vector is the lesser one.
     */
-   bool operator <( const GenericVector<T>& x ) const
+   bool operator <( const GenericVector& x ) const
    {
       return !IsAliasOf( x ) && pcl::Compare( Begin(), End(), x.Begin(), x.End() ) < 0;
    }
@@ -1203,7 +1361,7 @@ public:
    /*!
     * Returns true if this vector has the same length as other vector \a x.
     */
-   bool SameLength( const GenericVector<T>& x ) const
+   bool SameLength( const GenericVector& x ) const
    {
       return Length() == x.Length();
    }
@@ -1218,7 +1376,7 @@ public:
    iterator At( int i )
    {
       SetUnique();
-      return data->At( i );
+      return m_data->At( i );
    }
 
    /*!
@@ -1227,7 +1385,7 @@ public:
     */
    const_iterator At( int i ) const
    {
-      return data->At( i );
+      return m_data->At( i );
    }
 
    /*!
@@ -1243,7 +1401,7 @@ public:
    iterator Begin()
    {
       SetUnique();
-      return data->Begin();
+      return m_data->Begin();
    }
 
    /*!
@@ -1255,7 +1413,7 @@ public:
     */
    const_iterator Begin() const
    {
-      return data->Begin();
+      return m_data->Begin();
    }
 
    /*!
@@ -1294,7 +1452,7 @@ public:
    iterator End()
    {
       SetUnique();
-      return data->End();
+      return m_data->End();
    }
 
    /*!
@@ -1307,7 +1465,7 @@ public:
     */
    const_iterator End() const
    {
-      return data->End();
+      return m_data->End();
    }
 
    /*!
@@ -1317,7 +1475,7 @@ public:
     * Before returning, this function ensures that this instance uniquely
     * references its vector data.
     */
-   T& operator []( int i )
+   component& operator []( int i )
    {
       return *At( i );
    }
@@ -1326,7 +1484,7 @@ public:
     * Returns a reference to the immutable vector component at the specified
     * index \a i. Vector indices are relative to zero.
     */
-   const T& operator []( int i ) const
+   const component& operator []( int i ) const
    {
       return *At( i );
    }
@@ -1344,24 +1502,146 @@ public:
     * the value returned by this function will apply to all instances sharing
     * the same vector data.
     *
-    * This function can be used to perform fast operations on vector components,
+    * This function can be used to perform fast operations on vector components
     * avoiding the overhead caused by deep copies of vector data, when such
     * copies are not necessary. Typically this happens when two or more threads
-    * work simultaneously over non-overlapping regions of the same vector.
+    * work simultaneously on non-overlapping regions of the same vector.
     */
-   T* DataPtr()
+   component* DataPtr()
    {
-      return data->v;
+      return m_data->v;
+   }
+
+   /*!
+    * Generates a sequence of string tokens separated with the specified
+    * \a separator string. Returns a reference to the target string \a s.
+    *
+    * For each vector component, this function appends a string representation
+    * (known as a \e token) to the target string \a s. If the vector has more
+    * than one component, successive tokens are separated with the specified
+    * \a separator.
+    *
+    * The string type S must have a meaningful %Append() member function and
+    * type conversion semantics to transform a vector component to a string.
+    * The standard String and IsoString PCL classes provide the required
+    * functionality for most scalar types, although it is probably better to
+    * use String::ToSeparated() and IsoString::ToSeparated() instead of calling
+    * these functions directly.
+    */
+   template <class S, typename SP>
+   S& ToSeparated( S& s, SP separator ) const
+   {
+      const_iterator i = m_data->Begin(), j = m_data->End();
+      if ( i < j )
+      {
+         s.Append( S( *i ) );
+         if ( ++i < j )
+         {
+            S p( separator );
+            do
+            {
+               s.Append( p );
+               s.Append( S( *i ) );
+            }
+            while ( ++i < j );
+         }
+      }
+      return s;
+   }
+
+   /*!
+    * Generates a sequence of string tokens separated with the specified
+    * \a separator string by calling an \a append function. Returns a reference
+    * to the target string \a s.
+    *
+    * For each vector component x, this function appends a string
+    * representation (known as a \e token) to the target string \a s by calling
+    * the \a append function:
+    *
+    *\code append( s, S( x ) ); \endcode
+    *
+    * If the vector has more than one component, successive tokens are
+    * separated by calling:
+    *
+    * \code append( s, S( separator ) ); \endcode
+    *
+    * The string type S must have type conversion semantics to transform a
+    * vector component to a string. The standard String and IsoString PCL
+    * classes provide the required functionality for most scalar types,
+    * although it is probably better to use String::ToSeparated() and
+    * IsoString::ToSeparated() instead of calling these functions directly.
+    */
+   template <class S, typename SP, class AF>
+   S& ToSeparated( S& s, SP separator, AF append ) const
+   {
+      const_iterator i = m_data->Begin(), j = m_data->End();
+      if ( i < j )
+      {
+         append( s, S( *i ) );
+         if ( ++i < j )
+         {
+            S p( separator );
+            do
+            {
+               append( s, p );
+               append( s, S( *i ) );
+            }
+            while ( ++i < j );
+         }
+      }
+      return s;
+   }
+
+   /*!
+    * Generates a comma-separated sequence of string tokens. Returns a
+    * reference to the target string \a s.
+    *
+    * This function is equivalent to:
+    *
+    * \code ToSeparated( s, ',' ); \endcode
+    */
+   template <class S>
+   S& ToCommaSeparated( S& s ) const
+   {
+      return ToSeparated( s, ',' );
+   }
+
+   /*!
+    * Generates a space-separated sequence of string tokens. Returns a
+    * reference to the target string \a s.
+    *
+    * This function is equivalent to:
+    *
+    * \code ToSeparated( s, ' ' ); \endcode
+    */
+   template <class S>
+   S& ToSpaceSeparated( S& s ) const
+   {
+      return ToSeparated( s, ' ' );
+   }
+
+   /*!
+    * Generates a tabulator-separated sequence of string tokens. Returns a
+    * reference to the target string \a s.
+    *
+    * This function is equivalent to:
+    *
+    * \code ToSeparated( s, '\t' ); \endcode
+    */
+   template <class S>
+   S& ToTabSeparated( S& s ) const
+   {
+      return ToSeparated( s, '\t' );
    }
 
 private:
 
    struct Data : public ReferenceCounter
    {
-      int n; // vector length
-      T*  v; // vector elements
+      int        n; // the vector length
+      component* v; // the vector components
 
-      Data( int len ) : ReferenceCounter(), n( 0 ), v( 0 )
+      Data( int len ) : ReferenceCounter(), n( 0 ), v( nullptr )
       {
          if ( len > 0 )
             Allocate( len );
@@ -1379,38 +1659,38 @@ private:
 
       size_type Size() const
       {
-         return size_type( n )*sizeof( T );
+         return size_type( n )*sizeof( component );
       }
 
-      T* At( int i ) const
+      iterator At( int i ) const
       {
          return v + i;
       }
 
-      T* Begin() const
+      iterator Begin() const
       {
          return v;
       }
 
-      T* End() const
+      iterator End() const
       {
          return v + n;
       }
 
       void Allocate( int len )
       {
-         v = new T[ n = len ];
+         v = new component[ n = len ];
       }
 
       void Deallocate()
       {
          PCL_PRECONDITION( refCount == 0 )
-         if ( v != 0 )
-            delete [] v, v = 0, n = 0;
+         if ( v != nullptr )
+            delete [] v, v = nullptr, n = 0;
       }
    };
 
-   Data* data;
+   Data* m_data;
 };
 
 // ----------------------------------------------------------------------------
@@ -1425,10 +1705,8 @@ private:
 /*!
  * Returns the sum of two vectors \a A and \a B.
  *
- * If the specified vectors are incompatible for vector addition (because
- * their lengths are different), this function throws an appropriate Error
- * exception.
- *
+ * If the specified vectors are incompatible for vector addition (because \a B
+ * has less components than \a A), this function throws an Error exception.
  * \ingroup vector_operators
  */
 template <typename T> inline
@@ -1445,8 +1723,50 @@ GenericVector<T> operator +( const GenericVector<T>& A, const GenericVector<T>& 
 }
 
 /*!
- * Returns the sum of a vector \a A and a scalar \a x.
+ * Returns the sum of two vectors \a A (rvalue reference) and \a B.
  *
+ * If the specified vectors are incompatible for vector addition (because \a B
+ * has less components than \a A), this function throws an Error exception.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator +( GenericVector<T>&& A, const GenericVector<T>& B )
+{
+   A += B;
+   return A;
+}
+
+/*!
+ * Returns the sum of two vectors \a A and \a B (rvalue reference).
+ *
+ * If the specified vectors are incompatible for vector addition (because \a B
+ * has less components than \a A), this function throws an Error exception.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator +( const GenericVector<T>& A, GenericVector<T>&& B )
+{
+   B += A;
+   return B;
+}
+
+/*!
+ * Returns the sum of two vectors \a A (rvalue reference) and \a B (rvalue
+ * reference).
+ *
+ * If the specified vectors are incompatible for vector addition (because \a B
+ * has less components than \a A), this function throws an Error exception.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator +( GenericVector<T>&& A, GenericVector<T>&& B )
+{
+   A += B;
+   return A;
+}
+
+/*!
+ * Returns the sum of a vector \a A and a scalar \a x.
  * \ingroup vector_operators
  */
 template <typename T> inline
@@ -1460,11 +1780,21 @@ GenericVector<T> operator +( const GenericVector<T>& A, const T& x )
 }
 
 /*!
+ * Returns the sum of a vector \a A (rvalue reference) and a scalar \a x.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator +( GenericVector<T>&& A, const T& x )
+{
+   A += x;
+   return A;
+}
+
+/*!
  * Returns the sum of a scalar \a x and a vector \a A.
  *
  * This function exists to implement the commutative property of
- * scalar-to-vector addition. It is equivalent to A + x.
- *
+ * scalar-to-vector addition; it is equivalent to A + x.
  * \ingroup vector_operators
  */
 template <typename T> inline
@@ -1473,15 +1803,27 @@ GenericVector<T> operator +( const T& x, const GenericVector<T>& A )
    return A + x;
 }
 
+/*!
+ * Returns the sum of a scalar \a x and a vector \a A (rvalue reference).
+ *
+ * This function exists to implement the commutative property of
+ * scalar-to-vector addition; it is equivalent to A + x.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator +( const T& x, GenericVector<T>&& A )
+{
+   A += x;
+   return A;
+}
+
 // ----------------------------------------------------------------------------
 
 /*!
  * Returns the result of subtracting a vector \a B from another vector \a A.
  *
- * If the specified vectors are incompatible for vector subtraction (because
- * their lengths are different), this function throws an appropriate Error
- * exception.
- *
+ * If the specified vectors are incompatible for vector addition (because \a B
+ * has less components than \a A), this function throws an Error exception.
  * \ingroup vector_operators
  */
 template <typename T> inline
@@ -1498,8 +1840,56 @@ GenericVector<T> operator -( const GenericVector<T>& A, const GenericVector<T>& 
 }
 
 /*!
- * Returns the subtraction of a scalar \a x from a vector \a A.
+ * Returns the result of subtracting a vector \a B from another vector \a A
+ * (rvalue reference).
  *
+ * If the specified vectors are incompatible for vector addition (because \a B
+ * has less components than \a A), this function throws an Error exception.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator -( GenericVector<T>&& A, const GenericVector<T>& B )
+{
+   A -= B;
+   return A;
+}
+
+/*!
+ * Returns the result of subtracting a vector \a B (rvalue reference) from
+ * another vector \a A.
+ *
+ * If the specified vectors are incompatible for vector addition (because \a A
+ * has less components than \a B), this function throws an Error exception.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator -( const GenericVector<T>& A, GenericVector<T>&& B )
+{
+   if ( A.Length() < B.Length() )
+      throw Error( "Invalid vector subtraction." );
+   typename GenericVector<T>::const_iterator a = A.Begin();
+   for ( typename GenericVector<T>::iterator b = B.Begin(), b1 = B.End(); b < b1; ++a, ++b )
+      *b = *a - *b;
+   return B;
+}
+
+/*!
+ * Returns the result of subtracting a vector \a B (rvalue reference) from
+ * another vector \a A (rvalue reference).
+ *
+ * If the specified vectors are incompatible for vector addition (because \a B
+ * has less components than \a A), this function throws an Error exception.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator -( GenericVector<T>&& A, GenericVector<T>&& B )
+{
+   A -= B;
+   return A;
+}
+
+/*!
+ * Returns the subtraction of a scalar \a x from a vector \a A.
  * \ingroup vector_operators
  */
 template <typename T> inline
@@ -1513,12 +1903,23 @@ GenericVector<T> operator -( const GenericVector<T>& A, const T& x )
 }
 
 /*!
+ * Returns the subtraction of a scalar \a x from a vector \a A (rvalue
+ * reference).
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator -( GenericVector<T>&& A, const T& x )
+{
+   A -= x;
+   return A;
+}
+
+/*!
  * Returns the subtraction of a vector \a A from a scalar \a x.
  *
  * This function exists because scalar-to-vector subtraction is not a
  * commutative operation. A - x is not equal to x - A (the resulting vector
  * components have the same magnitudes but opposite signs).
- *
  * \ingroup vector_operators
  */
 template <typename T> inline
@@ -1531,6 +1932,23 @@ GenericVector<T> operator -( const T& x, const GenericVector<T>& A )
    return R;
 }
 
+/*!
+ * Returns the subtraction of a vector \a A (rvalue reference) from a scalar
+ * \a x.
+ *
+ * This function exists because scalar-to-vector subtraction is not a
+ * commutative operation. A - x is not equal to x - A (the resulting vector
+ * components have the same magnitudes but opposite signs).
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator -( const T& x, GenericVector<T>&& A )
+{
+   for ( typename GenericVector<T>::iterator a = A.Begin(), a1 = A.End(); a < a1; ++a )
+      *a = x - *a;
+   return A;
+}
+
 // ----------------------------------------------------------------------------
 
 /*!
@@ -1538,7 +1956,6 @@ GenericVector<T> operator -( const T& x, const GenericVector<T>& A )
  *
  * The cross product is only defined for vectors of three components. For
  * performance reasons, this function does not check vector lengths.
- *
  * \ingroup vector_operators
  */
 template <typename T> inline
@@ -1551,11 +1968,67 @@ GenericVector<T> operator ^( const GenericVector<T>& A, const GenericVector<T>& 
 }
 
 /*!
+ * Returns the cross product of two vectors \a A (rvalue reference) and \a B.
+ *
+ * The cross product is only defined for vectors of three components. For
+ * performance reasons, this function does not check vector lengths.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator ^( GenericVector<T>&& A, const GenericVector<T>& B )
+{
+   T x = A[1]*B[2] - A[2]*B[1],
+     y = A[2]*B[0] - A[0]*B[2],
+     z = A[0]*B[1] - A[1]*B[0];
+   typename GenericVector<T>::iterator a = A.Begin();
+   a[0] = x; a[1] = y; a[2] = z;
+   return A;
+}
+
+/*!
+ * Returns the cross product of two vectors \a A and \a B (rvalue reference).
+ *
+ * The cross product is only defined for vectors of three components. For
+ * performance reasons, this function does not check vector lengths.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator ^( const GenericVector<T>& A, GenericVector<T>&& B )
+{
+   T x = A[1]*B[2] - A[2]*B[1],
+     y = A[2]*B[0] - A[0]*B[2],
+     z = A[0]*B[1] - A[1]*B[0];
+   typename GenericVector<T>::iterator b = B.Begin();
+   b[0] = x; b[1] = y; b[2] = z;
+   return B;
+}
+
+/*!
+ * Returns the cross product of two vectors \a A (rvalue reference) and \a B
+ * (rvalue reference).
+ *
+ * The cross product is only defined for vectors of three components. For
+ * performance reasons, this function does not check vector lengths.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator ^( GenericVector<T>&& A, GenericVector<T>&& B )
+{
+   T x = A[1]*B[2] - A[2]*B[1],
+     y = A[2]*B[0] - A[0]*B[2],
+     z = A[0]*B[1] - A[1]*B[0];
+   typename GenericVector<T>::iterator a = A.Begin();
+   a[0] = x; a[1] = y; a[2] = z;
+   return A;
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
  * Returns the dot product of two vectors \a A and \a B.
  *
  * For performance reasons, this function does not check whether the specified
  * vectors have compatible lengths.
- *
  * \ingroup vector_operators
  */
 template <typename T> inline
@@ -1568,9 +2041,10 @@ T operator *( const GenericVector<T>& A, const GenericVector<T>& B )
    return r;
 }
 
+// ----------------------------------------------------------------------------
+
 /*!
  * Returns the product of a vector \a A by a scalar \a x.
- *
  * \ingroup vector_operators
  */
 template <typename T> inline
@@ -1584,11 +2058,21 @@ GenericVector<T> operator *( const GenericVector<T>& A, const T& x )
 }
 
 /*!
+ * Returns the product of a vector \a A (rvalue reference) by a scalar \a x.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator *( GenericVector<T>&& A, const T& x )
+{
+   A *= x;
+   return A;
+}
+
+/*!
  * Returns the product of a scalar \a x and a vector \a A.
  *
  * This function exists to implement the commutative property of
  * scalar-to-vector multiplication. It is equivalent to A * x.
- *
  * \ingroup vector_operators
  */
 template <typename T> inline
@@ -1597,11 +2081,24 @@ GenericVector<T> operator *( const T& x, const GenericVector<T>& A )
    return A * x;
 }
 
+/*!
+ * Returns the product of a scalar \a x and a vector \a A (rvalue reference).
+ *
+ * This function exists to implement the commutative property of
+ * scalar-to-vector multiplication. It is equivalent to A * x.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator *( const T& x, GenericVector<T>&& A )
+{
+   A *= x;
+   return A;
+}
+
 // ----------------------------------------------------------------------------
 
 /*!
  * Returns the result of dividing a vector \a A by a scalar \a x.
- *
  * \ingroup vector_operators
  */
 template <typename T> inline
@@ -1615,11 +2112,22 @@ GenericVector<T> operator /( const GenericVector<T>& A, const T& x )
 }
 
 /*!
+ * Returns the result of dividing a vector \a A (rvalue reference) by a scalar
+ * \a x.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator /( GenericVector<T>&& A, const T& x )
+{
+   A /= x;
+   return A;
+}
+
+/*!
  * Returns the result of dividing a scalar \a x by a vector \a A.
  *
  * This function exists because scalar-to-vector division is not a
  * commutative operation. A/x is not equal to x/A.
- *
  * \ingroup vector_operators
  */
 template <typename T> inline
@@ -1632,11 +2140,26 @@ GenericVector<T> operator /( const T& x, const GenericVector<T>& A )
    return R;
 }
 
+/*!
+ * Returns the result of dividing a scalar \a x by a vector \a A (rvalue
+ * reference).
+ *
+ * This function exists because scalar-to-vector division is not a
+ * commutative operation. A/x is not equal to x/A.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator /( const T& x, GenericVector<T>&& A )
+{
+   for ( typename GenericVector<T>::iterator a = A.Begin(), a1 = A.End(); a < a1; ++a )
+      *a = x / *a;
+   return A;
+}
+
 // ----------------------------------------------------------------------------
 
 /*!
  * Returns the result of raising a vector \a A to a scalar \a x.
- *
  * \ingroup vector_operators
  */
 template <typename T> inline
@@ -1650,11 +2173,22 @@ GenericVector<T> operator ^( const GenericVector<T>& A, const T& x )
 }
 
 /*!
+ * Returns the result of raising a vector \a A (rvalue reference) to a scalar
+ * \a x.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator ^( GenericVector<T>&& A, const T& x )
+{
+   A ^= x;
+   return A;
+}
+
+/*!
  * Returns the result of raising a scalar \a x to a vector \a A.
  *
  * This function exists because scalar-to-vector exponentiation is not a
  * commutative operation. A^x is not equal to x^A.
- *
  * \ingroup vector_operators
  */
 template <typename T> inline
@@ -1667,6 +2201,22 @@ GenericVector<T> operator ^( const T& x, const GenericVector<T>& A )
    return R;
 }
 
+/*!
+ * Returns the result of raising a scalar \a x to a vector \a A (rvalue
+ * reference).
+ *
+ * This function exists because scalar-to-vector exponentiation is not a
+ * commutative operation. A^x is not equal to x^A.
+ * \ingroup vector_operators
+ */
+template <typename T> inline
+GenericVector<T> operator ^( const T& x, GenericVector<T>&& A )
+{
+   for ( typename GenericVector<T>::iterator a = A.Begin(), a1 = A.End(); a < a1; ++a )
+      *a = pcl::Pow( x, *a );
+   return A;
+}
+
 // ----------------------------------------------------------------------------
 
 #ifndef __PCL_NO_VECTOR_INSTANTIATE
@@ -1676,59 +2226,98 @@ GenericVector<T> operator ^( const T& x, const GenericVector<T>& A )
  */
 
 /*!
- * \class pcl::DVector
+ * \class pcl::I8Vector
  * \ingroup vector_types
- * \brief 64-bit floating point real vector.
+ * \brief 8-bit signed integer vector.
  *
- * %DVector is a template instantiation of GenericVector for \c double.
+ * %I8Vector is a template instantiation of GenericVector for \c int8.
  */
-typedef GenericVector<double>       DVector;
-
-/*!
- * \class pcl::FVector
- * \ingroup vector_types
- * \brief 32-bit floating point real vector.
- *
- * %FVector is a template instantiation of GenericVector for \c float.
- */
-typedef GenericVector<float>        FVector;
+typedef GenericVector<int8>         I8Vector;
 
 /*!
  * \class pcl::CharVector
  * \ingroup vector_types
  * \brief 8-bit signed integer vector.
  *
- * %CharVector is a template instantiation of GenericVector for \c int8.
+ * %CharVector is an alias for I8Vector. It is a template instantiation of
+ * GenericVector for \c int8.
  */
-typedef GenericVector<int8>         CharVector;
+typedef I8Vector                    CharVector;
+
+/*!
+ * \class pcl::UI8Vector
+ * \ingroup vector_types
+ * \brief 8-bit unsigned integer vector.
+ *
+ * %UI8Vector is a template instantiation of GenericVector for \c uint8.
+ */
+typedef GenericVector<uint8>        UI8Vector;
 
 /*!
  * \class pcl::ByteVector
  * \ingroup vector_types
  * \brief 8-bit unsigned integer vector.
  *
- * %ByteVector is a template instantiation of GenericVector for \c uint8.
+ * %ByteVector is an alias for UI8Vector. It is a template instantiation of
+ * GenericVector for \c uint8.
  */
-typedef GenericVector<uint8>        ByteVector;
+typedef UI8Vector                   ByteVector;
+
+/*!
+ * \class pcl::I16Vector
+ * \ingroup vector_types
+ * \brief 16-bit signed integer vector.
+ *
+ * %I16Vector is a template instantiation of GenericVector for \c int16.
+ */
+typedef GenericVector<int16>        I16Vector;
+
+/*!
+ * \class pcl::UI16Vector
+ * \ingroup vector_types
+ * \brief 16-bit unsigned integer vector.
+ *
+ * %UI16Vector is a template instantiation of GenericVector for \c uint16.
+ */
+typedef GenericVector<uint16>       UI16Vector;
+
+/*!
+ * \class pcl::I32Vector
+ * \ingroup vector_types
+ * \brief 32-bit signed integer vector.
+ *
+ * %I32Vector is a template instantiation of GenericVector for \c int32.
+ */
+typedef GenericVector<int32>        I32Vector;
 
 /*!
  * \class pcl::IVector
  * \ingroup vector_types
- * \brief Integer vector.
+ * \brief 32-bit signed integer vector.
  *
- * %IVector is a template instantiation of GenericVector for the \c int type.
+ * %IVector is an alias for I32Vector. It is a template instantiation of
+ * GenericVector for \c int32.
  */
-typedef GenericVector<int>          IVector;
+typedef I32Vector                   IVector;
+
+/*!
+ * \class pcl::UI32Vector
+ * \ingroup vector_types
+ * \brief 32-bit unsigned integer vector.
+ *
+ * %UI32Vector is a template instantiation of GenericVector for \c uint32.
+ */
+typedef GenericVector<uint32>       UI32Vector;
 
 /*!
  * \class pcl::UIVector
  * \ingroup vector_types
- * \brief Unsigned integer vector.
+ * \brief 32-bit unsigned integer vector.
  *
- * %UIVector is a template instantiation of GenericVector for the
- * \c unsigned \c int type.
+ * %UIVector is an alias for UI32Vector. It is a template instantiation of
+ * GenericVector for \c uint32.
  */
-typedef GenericVector<unsigned int> UIVector;
+typedef UI32Vector                  UIVector;
 
 /*!
  * \class pcl::I64Vector
@@ -1744,10 +2333,47 @@ typedef GenericVector<int64>        I64Vector;
  * \ingroup vector_types
  * \brief 64-bit unsigned integer components.
  *
- * %UI64Vector is a template instantiation of GenericVector for the \c uint64
- * type.
+ * %UI64Vector is a template instantiation of GenericVector for \c uint64.
  */
 typedef GenericVector<uint64>       UI64Vector;
+
+/*!
+ * \class pcl::F32Vector
+ * \ingroup vector_types
+ * \brief 32-bit floating point real vector.
+ *
+ * %F32Vector is a template instantiation of GenericVector for \c float.
+ */
+typedef GenericVector<float>        F32Vector;
+
+/*!
+ * \class pcl::FVector
+ * \ingroup vector_types
+ * \brief 32-bit floating point real vector.
+ *
+ * %FVector is an alias for F32Vector. It is a template instantiation of
+ * GenericVector for \c float.
+ */
+typedef F32Vector                   FVector;
+
+/*!
+ * \class pcl::F64Vector
+ * \ingroup vector_types
+ * \brief 64-bit floating point real vector.
+ *
+ * %F64Vector is a template instantiation of GenericVector for \c double.
+ */
+typedef GenericVector<double>       F64Vector;
+
+/*!
+ * \class pcl::DVector
+ * \ingroup vector_types
+ * \brief 64-bit floating point real vector.
+ *
+ * %DVector is an alias for F64Vector. It is a template instantiation of
+ * GenericVector for \c double.
+ */
+typedef F64Vector                   DVector;
 
 /*!
  * \class pcl::Vector
@@ -1755,9 +2381,27 @@ typedef GenericVector<uint64>       UI64Vector;
  * \brief 64-bit floating point real vector.
  *
  * %Vector is an alias for DVector. It is a template instantiation of
- * GenericVector for the \c double type.
+ * GenericVector for \c double.
  */
 typedef DVector                     Vector;
+
+/*!
+ * \class pcl::C32Vector
+ * \ingroup vector_types
+ * \brief 32-bit floating point complex vector.
+ *
+ * %C32Vector is a template instantiation of GenericVector for \c Complex32.
+ */
+typedef GenericVector<Complex32>    C32Vector;
+
+/*!
+ * \class pcl::C64Vector
+ * \ingroup vector_types
+ * \brief 64-bit floating point complex vector.
+ *
+ * %C64Vector is a template instantiation of GenericVector for \c Complex64.
+ */
+typedef GenericVector<Complex64>    C64Vector;
 
 #endif   // !__PCL_NO_VECTOR_INSTANTIATE
 
@@ -1767,5 +2411,5 @@ typedef DVector                     Vector;
 
 #endif   // __PCL_Vector_h
 
-// ****************************************************************************
-// EOF pcl/Vector.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Vector.h - Released 2015/07/30 17:15:18 UTC

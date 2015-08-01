@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/DrizzleDataDecoder.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/DrizzleDataDecoder.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_DrizzleDataDecoder_h
 #define __PCL_DrizzleDataDecoder_h
@@ -147,7 +150,7 @@ public:
                if ( !FilterBlock( itemId ) )
                {
                   filtered.Append( itemId );
-                  filtered.Append( s.SubString( blockStart, i-blockStart+1 ) );
+                  filtered.Append( s.Substring( blockStart, i-blockStart+1 ) );
                }
                itemId.Clear();
             }
@@ -211,7 +214,7 @@ protected:
 
    static DVector ParseListOfRealValues( const IsoString& s, int start, int end, int minItems = 0, int maxItems = 0 )
    {
-      IsoString t = s.SubString( start, end-start );
+      IsoString t = s.Substring( start, end-start );
       Array<double> v;
       for ( size_type i = 0, j, n = t.Length(); i < n; ++i )
       {
@@ -235,7 +238,7 @@ protected:
 
    static IVector ParseListOfIntegerValues( const IsoString& s, int start, int end, int minItems = 0, int maxItems = 0 )
    {
-      IsoString t = s.SubString( start, end-start );
+      IsoString t = s.Substring( start, end-start );
       Array<int> v;
       for ( size_type i = 0, j, n = t.Length(); i < n; ++i )
       {
@@ -260,7 +263,7 @@ protected:
    static double ParseRealValue( const IsoString& s, int start, int end )
    {
       double x;
-      if ( !s.SubString( start, end-start ).TryToDouble( x ) )
+      if ( !s.Substring( start, end-start ).TryToDouble( x ) )
          throw Error( "At offset=" + IsoString( start ) + ": Invalid floating point numeric literal \'" + s + "\'" );
       return x;
    }
@@ -268,7 +271,7 @@ protected:
    static int ParseIntegerValue( const IsoString& s, int start, int end )
    {
       int x;
-      if ( !s.SubString( start, end-start ).TryToInt( x ) )
+      if ( !s.Substring( start, end-start ).TryToInt( x ) )
          throw Error( "At offset=" + IsoString( start ) + ": Invalid integer numeric literal \'" + s + "\'" );
       return x;
    }
@@ -311,7 +314,7 @@ private:
    {
       if ( itemId == "T" )
       {
-         m_targetPath = s.SubString( start, end-start ).Trimmed().UTF8ToUTF16();
+         m_targetPath = s.Substring( start, end-start ).Trimmed().UTF8ToUTF16();
          if ( m_targetPath.IsEmpty() )
             throw Error( "At offset=" + String( start ) + ": Empty file path defined." );
       }
@@ -540,13 +543,13 @@ protected:
    {
       if ( itemId == "P" ) // drizzle source image
       {
-         m_filePath = s.SubString( start, end-start ).Trimmed().UTF8ToUTF16();
+         m_filePath = s.Substring( start, end-start ).Trimmed().UTF8ToUTF16();
          if ( m_filePath.IsEmpty() )
             throw Error( "At offset=" + String( start ) + ": Empty file path defined." );
       }
       else if ( itemId == "T" ) // alignment target image (optional)
       {
-         m_targetPath = s.SubString( start, end-start ).Trimmed().UTF8ToUTF16();
+         m_targetPath = s.Substring( start, end-start ).Trimmed().UTF8ToUTF16();
          if ( m_targetPath.IsEmpty() )
             throw Error( "At offset=" + String( start ) + ": Empty file path defined." );
       }
@@ -687,5 +690,5 @@ protected:
 
 #endif   // __PCL_DrizzleDataDecoder_h
 
-// ****************************************************************************
-// EOF pcl/DrizzleDataDecoder.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/DrizzleDataDecoder.h - Released 2015/07/30 17:15:18 UTC

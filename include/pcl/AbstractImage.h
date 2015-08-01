@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/AbstractImage.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/AbstractImage.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_AbstractImage_h
 #define __PCL_AbstractImage_h
@@ -69,6 +72,10 @@
 
 #ifndef __PCL_Array_h
 #include <pcl/Array.h>
+#endif
+
+#ifndef __PCL_ReferenceArray_h
+#include <pcl/ReferenceArray.h>
 #endif
 
 #ifndef __PCL_StatusMonitor_h
@@ -119,13 +126,12 @@ namespace pcl
  * rectangular selection (also known as <em>region of interest</em>, or ROI), a
  * channel range, and an anchor point. Image selections can be stored in a
  * local stack for quick retrieval (see PushSelections() and PopSelections()).
- *
  * Note that image selections are implemented as \c mutable data members, so
- * modifying selections is possible for constant %AbstractImage instances.
+ * modifying selections is possible for unmodifiable %AbstractImage instances.
  *
- * Finally, %AbstractImage provides member functions and properties to manage
- * status monitoring of images. The status monitoring mechanism can be used to
- * provide feedback to the user about the progress of a running process. Status
+ * Finally, %AbstractImage provides function and data members to manage status
+ * monitoring of images. The status monitoring mechanism can be used to provide
+ * feedback to the user about the progress of a running process. Status
  * monitoring is implemented through the StatusMonitor and StatusCallback
  * classes. See the Status(), StatusCallback() and SetStatusCallback() member
  * functions for more information.
@@ -901,12 +907,11 @@ public:
     * Runs a set of threads with synchronized status monitoring and task
     * abortion.
     *
-    * \param threads    Reference to a PArray container of threads. %PArray
-    *                   contains pointers to objects and allows direct
-    *                   iteration and access by reference. It cannot contain
-    *                   invalid pointers (e.g. null pointers). Each %PArray
-    *                   element must be an instance of a derived class of
-    *                   Thread.
+    * \param threads    Reference to a ReferenceArray container of threads.
+    *                   %ReferenceArray contains pointers to objects and allows
+    *                   direct iteration and access by reference. It cannot
+    *                   contain null pointers. Each %ReferenceArray element
+    *                   must be an instance of a derived class of Thread.
     *
     * \param data       Reference to a ThreadData object for synchronization.
     *
@@ -936,10 +941,10 @@ public:
     * The threads can be aborted asynchronously with the standard
     * Thread::Abort() mechanism, or through StatusMonitor/StatusCallback. If
     * one or more threads are aborted, this function destroys all the threads
-    * by calling PArray::Destroy(), and then throws a ProcessAborted exception.
-    * Otherwise, if all threads complete execution normally, the \a threads
-    * array is left intact and the function returns. The caller is then
-    * responsible for destroying the threads, when appropriate.
+    * by calling ReferenceArray::Destroy(), and then throws a ProcessAborted
+    * exception. Otherwise, if all threads complete execution normally, the
+    * \a threads array is left intact and the function returns. The caller is
+    * then responsible for destroying the threads, when appropriate.
     *
     * \warning Do not call this function from a high-priority thread. Doing so
     * can lead to a significant performance loss because this function will
@@ -947,7 +952,7 @@ public:
     * you should call this function from normal priority threads.
     */
    template <class thread>
-   static void RunThreads( PArray<thread>& threads, ThreadData& data, bool useAffinity = true )
+   static void RunThreads( ReferenceArray<thread>& threads, ThreadData& data, bool useAffinity = true )
    {
       if ( threads.IsEmpty() )
          return;
@@ -956,14 +961,15 @@ public:
          if ( threads.Length() == 1 || !Thread::IsRootThread() )
             useAffinity = false;
 
-      for ( typename PArray<thread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( typename ReferenceArray<thread>::iterator i = threads.Begin(); i != threads.End(); ++i )
          i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
 
-      double waitTime = 0.6*StatusMonitor::RefreshRate();
+      uint32 waitTime = StatusMonitor::RefreshRate() >> 1;
+      waitTime += waitTime >> 2; // waitTime = 0.625 * StatusMonitor::RefreshRate()
 
       for ( size_type lastCount = 0; ; )
       {
-         for ( typename PArray<thread>::iterator i = threads.Begin(); ; )
+         for ( typename ReferenceArray<thread>::iterator i = threads.Begin(); ; )
          {
             if ( !i->Wait( waitTime ) )
                break;
@@ -993,9 +999,9 @@ public:
             catch ( ... )
             {
                data.mutex.Unlock();
-               for ( typename PArray<thread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+               for ( typename ReferenceArray<thread>::iterator i = threads.Begin(); i != threads.End(); ++i )
                   i->Abort();
-               for ( typename PArray<thread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+               for ( typename ReferenceArray<thread>::iterator i = threads.Begin(); i != threads.End(); ++i )
                   i->Wait();
                threads.Destroy();
                throw ProcessAborted();
@@ -1019,24 +1025,9 @@ protected:
    {
    }
 
-   AbstractImage( const AbstractImage& x ) :
-      ImageGeometry( x ), ImageColor( x ),
-      m_selected( x.m_selected ), m_savedSelections( x.m_savedSelections ), m_status( x.m_status ),
-      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
-   {
-   }
+   AbstractImage( const AbstractImage& ) = default;
 
-   AbstractImage& operator =( const AbstractImage& x )
-   {
-      (void)ImageGeometry::operator =( x );
-      (void)ImageColor::operator =( x );
-      m_selected = x.m_selected;
-      m_savedSelections = x.m_savedSelections;
-      m_status = x.m_status;
-      m_parallel = x.m_parallel;
-      m_maxProcessors = x.m_maxProcessors;
-      return *this;
-   }
+   AbstractImage& operator =( const AbstractImage& ) = default;
 
    void Swap( AbstractImage& image )
    {
@@ -1183,7 +1174,7 @@ protected:
  * FooThreadData data;
  * ... initialize thread data here
  *
- * PArray<FooThread> threads;
+ * ReferenceArray<FooThread> threads;
  * ... create and construct the threads here
  *
  * AbstractImage::RunThreads( threads, data );
@@ -1286,5 +1277,5 @@ protected:
 
 #endif   // __PCL_AbstractImage_h
 
-// ****************************************************************************
-// EOF pcl/AbstractImage.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/AbstractImage.h - Released 2015/07/30 17:15:18 UTC

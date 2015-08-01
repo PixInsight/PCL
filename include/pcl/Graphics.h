@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Graphics.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Graphics.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Graphics_h
 #define __PCL_Graphics_h
@@ -264,25 +267,41 @@ public:
    GraphicsContextBase( SVG& svg );
 
    /*!
+    * Move constructor.
+    */
+   GraphicsContextBase( GraphicsContextBase&& x ) : UIObject( std::move( x ) )
+   {
+   }
+
+   /*!
     * Destroys a %GraphicsContextBase object. If this graphics context is
     * active, it is terminated upon destruction.
     */
    virtual ~GraphicsContextBase()
    {
-      if ( IsPainting() )
-         EndPaint();
+      if ( !IsNull() )
+         if ( IsPainting() )
+            EndPaint();
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   GraphicsContextBase& operator =( GraphicsContextBase&& x )
+   {
+      Transfer( x );
+      return *this;
    }
 
    /*!
     * Ensures that the server-side object managed by this instance is uniquely
     * referenced.
     *
-    * Since graphics contexts are unique objects by definition, calling this
-    * member function has no effect.
+    * Since graphics contexts are unique objects, calling this member function
+    * has no effect.
     */
    virtual void SetUnique()
    {
-      // Graphics contexts are unique objects by definition
    }
 
    /*!
@@ -573,6 +592,13 @@ public:
 
    /*! #
     */
+   void SetPen( RGBA color, float width )
+   {
+      SetPen( pcl::Pen( color, width ) );
+   }
+
+   /*! #
+    */
    pcl::Brush Brush() const;
 
    /*!
@@ -613,7 +639,12 @@ public:
 
 protected:
 
-   GraphicsContextBase( void* );
+   /*!
+    * \internal
+    */
+   GraphicsContextBase( void* h ) : UIObject( h )
+   {
+   }
 
 private:
 
@@ -680,11 +711,27 @@ public:
    }
 
    /*!
+    * Move constructor.
+    */
+   Graphics( Graphics&& x ) : GraphicsContextBase( std::move( x ) )
+   {
+   }
+
+   /*!
     * Destroys a %Graphics object. If this graphics context is active, it is
     * terminated upon destruction.
     */
    virtual ~Graphics()
    {
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   Graphics& operator =( Graphics&& x )
+   {
+      Transfer( x );
+      return *this;
    }
 
    /*!
@@ -1478,11 +1525,27 @@ public:
    }
 
    /*!
+    * Move constructor.
+    */
+   VectorGraphics( VectorGraphics&& x ) : GraphicsContextBase( std::move( x ) )
+   {
+   }
+
+   /*!
     * Destroys a %VectorGraphics object. If this graphics context is active, it
     * is terminated upon destruction.
     */
    virtual ~VectorGraphics()
    {
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   VectorGraphics& operator =( VectorGraphics&& x )
+   {
+      Transfer( x );
+      return *this;
    }
 
    /*!
@@ -1498,7 +1561,8 @@ public:
 
    /*! #
     */
-   void SetClipRect( const pcl::DRect& r )
+   template <class R>
+   void SetClipRect( const R& r )
    {
       SetClipRect( r.x0, r.y0, r.x1, r.y1 );
    }
@@ -1509,7 +1573,8 @@ public:
 
    /*! #
     */
-   void IntersectClipRect( const pcl::DRect& r )
+   template <class R>
+   void IntersectClipRect( const R& r )
    {
       SetClipRect( ClipRect().Intersection( r ) );
    }
@@ -1523,7 +1588,8 @@ public:
 
    /*! #
     */
-   void UniteClipRect( const pcl::DRect& r )
+   template <class R>
+   void UniteClipRect( const R& r )
    {
       SetClipRect( ClipRect().Union( r ) );
    }
@@ -1541,7 +1607,8 @@ public:
 
    /*! #
     */
-   void SetBrushOrigin( const pcl::DPoint& p )
+   template <class P>
+   void SetBrushOrigin( const P& p )
    {
       SetBrushOrigin( p.x, p.y );
    }
@@ -1552,7 +1619,8 @@ public:
 
    /*! #
     */
-   void DrawPoint( const pcl::DPoint& p )
+   template <class P>
+   void DrawPoint( const P& p )
    {
       DrawPoint( p.x, p.y );
    }
@@ -1563,7 +1631,8 @@ public:
 
    /*! #
     */
-   void DrawLine( const pcl::DPoint& p0, const pcl::DPoint& p1 )
+   template <class P0, class P1>
+   void DrawLine( const P0& p0, const P1& p1 )
    {
       DrawLine( p0.x, p0.y, p1.x, p1.y );
    }
@@ -1578,7 +1647,8 @@ public:
 
    /*! #
     */
-   void DrawRect( const pcl::DRect& r )
+   template <class R>
+   void DrawRect( const R& r )
    {
       DrawRect( r.x0, r.y0, r.x1, r.y1 );
    }
@@ -1589,7 +1659,8 @@ public:
 
    /*! #
     */
-   void StrokeRect( const pcl::DRect& r, const pcl::Pen& pen = pcl::Pen::Null() )
+   template <class R>
+   void StrokeRect( const R& r, const pcl::Pen& pen = pcl::Pen::Null() )
    {
       StrokeRect( r.x0, r.y0, r.x1, r.y1, pen );
    }
@@ -1600,7 +1671,8 @@ public:
 
    /*! #
     */
-   void FillRect( const pcl::DRect& r, const pcl::Brush& brush = pcl::Brush::Null() )
+   template <class R>
+   void FillRect( const R& r, const pcl::Brush& brush = pcl::Brush::Null() )
    {
       FillRect( r.x0, r.y0, r.x1, r.y1, brush );
    }
@@ -1614,7 +1686,8 @@ public:
 
    /*! #
     */
-   void EraseRect( const pcl::DRect& r )
+   template <class R>
+   void EraseRect( const R& r )
    {
       EraseRect( r.x0, r.y0, r.x1, r.y1 );
    }
@@ -1632,14 +1705,16 @@ public:
 
    /*! #
     */
-   void DrawRoundedRect( const pcl::DRect& r, double rx, double ry )
+   template <class R>
+   void DrawRoundedRect( const R& r, double rx, double ry )
    {
       DrawRoundedRect( r.x0, r.y0, r.x1, r.y1, rx, ry );
    }
 
    /*! #
     */
-   void DrawRoundedRect( const pcl::DRect& r, double rxy = 25 )
+   template <class R>
+   void DrawRoundedRect( const R& r, double rxy = 25 )
    {
       DrawRoundedRect( r.x0, r.y0, r.x1, r.y1, rxy, rxy );
    }
@@ -1657,14 +1732,16 @@ public:
 
    /*! #
     */
-   void StrokeRoundedRect( const pcl::DRect& r, double rx, double ry, const pcl::Pen& pen = pcl::Pen::Null() )
+   template <class R>
+   void StrokeRoundedRect( const R& r, double rx, double ry, const pcl::Pen& pen = pcl::Pen::Null() )
    {
       StrokeRoundedRect( r.x0, r.y0, r.x1, r.y1, rx, ry, pen );
    }
 
    /*! #
     */
-   void StrokeRoundedRect( const pcl::DRect& r, double rxy = 25, const pcl::Pen& pen = pcl::Pen::Null() )
+   template <class R>
+   void StrokeRoundedRect( const R& r, double rxy = 25, const pcl::Pen& pen = pcl::Pen::Null() )
    {
       StrokeRoundedRect( r.x0, r.y0, r.x1, r.y1, rxy, rxy, pen );
    }
@@ -1682,14 +1759,16 @@ public:
 
    /*! #
     */
-   void FillRoundedRect( const pcl::DRect& r, double rx, double ry, const pcl::Brush& brush = pcl::Brush::Null() )
+   template <class R>
+   void FillRoundedRect( const R& r, double rx, double ry, const pcl::Brush& brush = pcl::Brush::Null() )
    {
       FillRoundedRect( r.x0, r.y0, r.x1, r.y1, rx, ry, brush );
    }
 
    /*! #
     */
-   void FillRoundedRect( const pcl::DRect& r, double rxy = 25, const pcl::Brush& brush = pcl::Brush::Null() )
+   template <class R>
+   void FillRoundedRect( const R& r, double rxy = 25, const pcl::Brush& brush = pcl::Brush::Null() )
    {
       FillRoundedRect( r.x0, r.y0, r.x1, r.y1, rxy, rxy, brush );
    }
@@ -1710,14 +1789,16 @@ public:
 
    /*! #
     */
-   void EraseRoundedRect( const pcl::DRect& r, double rx, double ry )
+   template <class R>
+   void EraseRoundedRect( const R& r, double rx, double ry )
    {
       EraseRoundedRect( r.x0, r.y0, r.x1, r.y1, rx, ry );
    }
 
    /*! #
     */
-   void EraseRoundedRect( const pcl::DRect& r, double rxy = 25 )
+   template <class R>
+   void EraseRoundedRect( const R& r, double rxy = 25 )
    {
       EraseRoundedRect( r.x0, r.y0, r.x1, r.y1, rxy, rxy );
    }
@@ -1728,7 +1809,8 @@ public:
 
    /*! #
     */
-   void DrawEllipse( const pcl::DRect& r )
+   template <class R>
+   void DrawEllipse( const R& r )
    {
       DrawEllipse( r.x0, r.y0, r.x1, r.y1 );
    }
@@ -1739,7 +1821,8 @@ public:
 
    /*! #
     */
-   void StrokeEllipse( const pcl::DRect& r, const pcl::Pen& pen = pcl::Pen::Null() )
+   template <class R>
+   void StrokeEllipse( const R& r, const pcl::Pen& pen = pcl::Pen::Null() )
    {
       StrokeEllipse( r.x0, r.y0, r.x1, r.y1, pen );
    }
@@ -1750,7 +1833,8 @@ public:
 
    /*! #
     */
-   void FillEllipse( const pcl::DRect& r, const pcl::Brush& brush = pcl::Brush::Null() )
+   template <class R>
+   void FillEllipse( const R& r, const pcl::Brush& brush = pcl::Brush::Null() )
    {
       FillEllipse( r.x0, r.y0, r.x1, r.y1, brush );
    }
@@ -1764,7 +1848,8 @@ public:
 
    /*! #
     */
-   void EraseEllipse( const pcl::DRect& r )
+   template <class R>
+   void EraseEllipse( const R& r )
    {
       EraseEllipse( r.x0, r.y0, r.x1, r.y1 );
    }
@@ -1778,7 +1863,8 @@ public:
 
    /*! #
     */
-   void DrawCircle( const pcl::DPoint& c, double r )
+   template <class P>
+   void DrawCircle( const P& c, double r )
    {
       DrawCircle( c.x, c.y, r );
    }
@@ -1792,7 +1878,8 @@ public:
 
    /*! #
     */
-   void StrokeCircle( const pcl::DPoint& c, double r, const pcl::Pen& pen = pcl::Pen::Null() )
+   template <class P>
+   void StrokeCircle( const P& c, double r, const pcl::Pen& pen = pcl::Pen::Null() )
    {
       StrokeCircle( c.x, c.y, r, pen );
    }
@@ -1806,7 +1893,8 @@ public:
 
    /*! #
     */
-   void FillCircle( const pcl::DPoint& c, double r, const pcl::Brush& brush = pcl::Brush::Null() )
+   template <class P>
+   void FillCircle( const P& c, double r, const pcl::Brush& brush = pcl::Brush::Null() )
    {
       FillCircle( c.x, c.y, r, brush );
    }
@@ -1820,7 +1908,8 @@ public:
 
    /*! #
     */
-   void EraseCircle( const pcl::DPoint& c, double r )
+   template <class P>
+   void EraseCircle( const P& c, double r )
    {
       EraseCircle( c.x, c.y, r );
    }
@@ -1894,7 +1983,8 @@ public:
 
    /*! #
     */
-   void DrawEllipticArc( const pcl::DRect& r, double start, double span )
+   template <class R>
+   void DrawEllipticArc( const R& r, double start, double span )
    {
       DrawEllipticArc( r.x0, r.y0, r.x1, r.y1, start, span );
    }
@@ -1908,7 +1998,8 @@ public:
 
    /*! #
     */
-   void DrawArc( const pcl::DPoint& c, double r, double start, double span )
+   template <class P>
+   void DrawArc( const P& c, double r, double start, double span )
    {
       DrawArc( c.x, c.y, r, start, span );
    }
@@ -1919,7 +2010,8 @@ public:
 
    /*! #
     */
-   void DrawEllipticChord( const pcl::DRect& r, double start, double span )
+   template <class R>
+   void DrawEllipticChord( const R& r, double start, double span )
    {
       DrawEllipticChord( r.x0, r.y0, r.x1, r.y1, start, span );
    }
@@ -1930,7 +2022,8 @@ public:
 
    /*! #
     */
-   void StrokeEllipticChord( const pcl::DRect& r, double start, double span, const pcl::Pen& pen = pcl::Pen::Null() )
+   template <class R>
+   void StrokeEllipticChord( const R& r, double start, double span, const pcl::Pen& pen = pcl::Pen::Null() )
    {
       StrokeEllipticChord( r.x0, r.y0, r.x1, r.y1, start, span, pen );
    }
@@ -1941,7 +2034,8 @@ public:
 
    /*! #
     */
-   void FillEllipticChord( const pcl::DRect& r, double start, double span, const pcl::Brush& brush = pcl::Brush::Null() )
+   template <class R>
+   void FillEllipticChord( const R& r, double start, double span, const pcl::Brush& brush = pcl::Brush::Null() )
    {
       FillEllipticChord( r.x0, r.y0, r.x1, r.y1, start, span, brush );
    }
@@ -1955,7 +2049,8 @@ public:
 
    /*! #
     */
-   void EraseEllipticChord( const pcl::DRect& r, double start, double span )
+   template <class R>
+   void EraseEllipticChord( const R& r, double start, double span )
    {
       EraseEllipticChord( r.x0, r.y0, r.x1, r.y1, start, span );
    }
@@ -1969,7 +2064,8 @@ public:
 
    /*! #
     */
-   void DrawChord( const pcl::DPoint& c, double r, double start, double span )
+   template <class P>
+   void DrawChord( const P& c, double r, double start, double span )
    {
       DrawChord( c.x, c.y, r, start, span );
    }
@@ -1983,7 +2079,8 @@ public:
 
    /*! #
     */
-   void StrokeChord( const pcl::DPoint& c, double r, double start, double span, const pcl::Pen& pen = pcl::Pen::Null() )
+   template <class P>
+   void StrokeChord( const P& c, double r, double start, double span, const pcl::Pen& pen = pcl::Pen::Null() )
    {
       StrokeChord( c.x, c.y, r, start, span, pen );
    }
@@ -1997,7 +2094,8 @@ public:
 
    /*! #
     */
-   void FillChord( const pcl::DPoint& c, double r, double start, double span, const pcl::Brush& brush = pcl::Brush::Null() )
+   template <class P>
+   void FillChord( const P& c, double r, double start, double span, const pcl::Brush& brush = pcl::Brush::Null() )
    {
       FillChord( c.x, c.y, r, start, span, brush );
    }
@@ -2011,7 +2109,8 @@ public:
 
    /*! #
     */
-   void EraseChord( const pcl::DPoint& c, double r, double start, double span )
+   template <class P>
+   void EraseChord( const P& c, double r, double start, double span )
    {
       EraseChord( c.x, c.y, r, start, span );
    }
@@ -2022,7 +2121,8 @@ public:
 
    /*! #
     */
-   void DrawEllipticPie( const pcl::DRect& r, double start, double span )
+   template <class R>
+   void DrawEllipticPie( const R& r, double start, double span )
    {
       DrawEllipticPie( r.x0, r.y0, r.x1, r.y1, start, span );
    }
@@ -2033,7 +2133,8 @@ public:
 
    /*! #
     */
-   void StrokeEllipticPie( const pcl::DRect& r, double start, double span, const pcl::Pen& pen = pcl::Pen::Null() )
+   template <class R>
+   void StrokeEllipticPie( const R& r, double start, double span, const pcl::Pen& pen = pcl::Pen::Null() )
    {
       StrokeEllipticPie( r.x0, r.y0, r.x1, r.y1, start, span, pen );
    }
@@ -2044,7 +2145,8 @@ public:
 
    /*! #
     */
-   void FillEllipticPie( const pcl::DRect& r, double start, double span, const pcl::Brush& brush = pcl::Brush::Null() )
+   template <class R>
+   void FillEllipticPie( const R& r, double start, double span, const pcl::Brush& brush = pcl::Brush::Null() )
    {
       FillEllipticPie( r.x0, r.y0, r.x1, r.y1, start, span, brush );
    }
@@ -2058,7 +2160,8 @@ public:
 
    /*! #
     */
-   void EraseEllipticPie( const pcl::DRect& r, double start, double span )
+   template <class R>
+   void EraseEllipticPie( const R& r, double start, double span )
    {
       EraseEllipticPie( r.x0, r.y0, r.x1, r.y1, start, span );
    }
@@ -2072,7 +2175,8 @@ public:
 
    /*! #
     */
-   void DrawPie( const pcl::DPoint& c, double r, double start, double span )
+   template <class P>
+   void DrawPie( const P& c, double r, double start, double span )
    {
       DrawPie( c.x, c.y, r, start, span );
    }
@@ -2086,7 +2190,8 @@ public:
 
    /*! #
     */
-   void StrokePie( const pcl::DPoint& c, double r, double start, double span, const pcl::Pen& pen = pcl::Pen::Null() )
+   template <class P>
+   void StrokePie( const P& c, double r, double start, double span, const pcl::Pen& pen = pcl::Pen::Null() )
    {
       StrokePie( c.x, c.y, r, start, span, pen );
    }
@@ -2100,7 +2205,8 @@ public:
 
    /*! #
     */
-   void FillPie( const pcl::DPoint& c, double r, double start, double span, const pcl::Brush& brush = pcl::Brush::Null() )
+   template <class P>
+   void FillPie( const P& c, double r, double start, double span, const pcl::Brush& brush = pcl::Brush::Null() )
    {
       FillPie( c.x, c.y, r, start, span, brush );
    }
@@ -2114,7 +2220,8 @@ public:
 
    /*! #
     */
-   void ErasePie( const pcl::DPoint& c, double r, double start, double span )
+   template <class P>
+   void ErasePie( const P& c, double r, double start, double span )
    {
       ErasePie( c.x, c.y, r, start, span );
    }
@@ -2125,7 +2232,8 @@ public:
 
    /*! #
     */
-   void DrawBitmap( const pcl::DPoint& p, const Bitmap& bm )
+   template <class P>
+   void DrawBitmap( const P& p, const Bitmap& bm )
    {
       DrawBitmap( p.x, p.y, bm );
    }
@@ -2136,7 +2244,8 @@ public:
 
    /*! #
     */
-   void DrawBitmapRect( const pcl::DPoint& p, const Bitmap& bm, const pcl::DRect& r )
+   template <class P, class R>
+   void DrawBitmapRect( const P& p, const Bitmap& bm, const R& r )
    {
       DrawBitmapRect( p.x, p.y, bm, r.x0, r.y0, r.x1, r.y1 );
    }
@@ -2147,7 +2256,8 @@ public:
 
    /*! #
     */
-   void DrawScaledBitmap( const pcl::DRect& r, const Bitmap& bm )
+   template <class R>
+   void DrawScaledBitmap( const R& r, const Bitmap& bm )
    {
       DrawScaledBitmap( r.x0, r.y0, r.x1, r.y1, bm );
    }
@@ -2158,7 +2268,8 @@ public:
 
    /*! #
     */
-   void DrawScaledBitmapRect( const pcl::DRect& dst, const Bitmap& bm, const pcl::DRect& src )
+   template <class R1, class R2>
+   void DrawScaledBitmapRect( const R1& dst, const Bitmap& bm, const R2& src )
    {
       DrawScaledBitmapRect( dst.x0, dst.y0, dst.x1, dst.y1, bm, src.x0, src.y0, src.x1, src.y1 );
    }
@@ -2169,7 +2280,8 @@ public:
 
    /*! #
     */
-   void DrawTiledBitmap( const pcl::DRect& r, const Bitmap& bm, const pcl::DPoint& offset = pcl::DPoint() )
+   template <class R, class P>
+   void DrawTiledBitmap( const R& r, const Bitmap& bm, const P& offset = P() )
    {
       DrawTiledBitmap( r.x0, r.y0, r.x1, r.y1, bm, offset.x, offset.y );
    }
@@ -2180,7 +2292,8 @@ public:
 
    /*! #
     */
-   void DrawText( const pcl::DPoint& p, const String& s )
+   template <class P>
+   void DrawText( const P& p, const String& s )
    {
       DrawText( p.x, p.y, s );
    }
@@ -2191,7 +2304,8 @@ public:
 
    /*! #
     */
-   void DrawTextRect( const pcl::DRect r, const String& s, TextAlignmentFlags a = TextAlign::Default )
+   template <class R>
+   void DrawTextRect( const R& r, const String& s, TextAlignmentFlags a = TextAlign::Default )
    {
       DrawTextRect( r.x0, r.y0, r.x1, r.y1, s, a );
    }
@@ -2202,7 +2316,8 @@ public:
 
    /*! #
     */
-   pcl::DRect TextRect( const pcl::DRect r, const String& s, TextAlignmentFlags a = TextAlign::Default )
+   template <class R>
+   pcl::DRect TextRect( const R& r, const String& s, TextAlignmentFlags a = TextAlign::Default )
    {
       return TextRect( r.x0, r.y0, r.x1, r.y1, s, a );
    }
@@ -2224,5 +2339,5 @@ private:
 
 #endif   // __PCL_Graphics_h
 
-// ****************************************************************************
-// EOF pcl/Graphics.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Graphics.h - Released 2015/07/30 17:15:18 UTC

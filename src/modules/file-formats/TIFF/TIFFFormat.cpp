@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard TIFF File Format Module Version 01.00.05.0229
-// ****************************************************************************
-// TIFFFormat.cpp - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard TIFF File Format Module Version 01.00.06.0248
+// ----------------------------------------------------------------------------
+// TIFFFormat.cpp - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard TIFF PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "TIFFFormat.h"
 #include "TIFFInstance.h"
@@ -69,19 +73,13 @@ IsoString TIFFFormat::Name() const
 
 StringList TIFFFormat::FileExtensions() const
 {
-   StringList exts;
-   exts.Add( ".tif" ); exts.Add( ".tiff" );
-   return exts;
+   return StringList() << ".tif" << ".tiff";
 }
 
 IsoStringList TIFFFormat::MimeTypes() const
 {
-   IsoStringList mimes;
-   mimes.Add( "image/tiff" ); // RFC3302
-   mimes.Add( "image/tif" );
-   mimes.Add( "application/tiff" );
-   mimes.Add( "application/tif" );
-   return mimes;
+   // RFC3302
+   return IsoStringList() << "image/tiff" << "image/tif" << "application/tiff" << "application/tif";
 }
 
 uint32 TIFFFormat::Version() const
@@ -109,7 +107,7 @@ String TIFFFormat::Implementation() const
    "Copyright (c) 1991-1997 Silicon Graphics, Inc.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2014, Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2015, Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -141,16 +139,6 @@ bool TIFFFormat::CanStoreResolution() const
 bool TIFFFormat::CanStoreICCProfiles() const
 {
    return true;
-}
-
-bool TIFFFormat::CanStoreMetadata() const
-{
-   return false; // true; ### TODO
-}
-
-bool TIFFFormat::CanStoreThumbnails() const
-{
-   return false; // true; ### TODO
 }
 
 bool TIFFFormat::SupportsCompression() const
@@ -230,10 +218,6 @@ bool TIFFFormat::EditPreferences() const
 
       Settings::Write ( "TIFFOverrideICCProfileEmbedding", overrides.overrideICCProfileEmbedding );
       Settings::Write ( "TIFFEmbedICCProfiles",            overrides.embedICCProfiles );
-      Settings::Write ( "TIFFOverrideMetadataEmbedding",   overrides.overrideMetadataEmbedding );
-      Settings::Write ( "TIFFEmbedMetadata",               overrides.embedMetadata );
-      Settings::Write ( "TIFFOverrideThumbnailEmbedding",  overrides.overrideThumbnailEmbedding );
-      Settings::Write ( "TIFFEmbedThumbnails",             overrides.embedThumbnails );
 
       return true;
    }
@@ -287,10 +271,6 @@ TIFFFormat::EmbeddingOverrides TIFFFormat::DefaultEmbeddingOverrides()
 
    Settings::Read( "TIFFOverrideICCProfileEmbedding", overrides.overrideICCProfileEmbedding );
    Settings::Read( "TIFFEmbedICCProfiles",            overrides.embedICCProfiles );
-   Settings::Read( "TIFFOverrideMetadataEmbedding",   overrides.overrideMetadataEmbedding );
-   Settings::Read( "TIFFEmbedMetadata",               overrides.embedMetadata );
-   Settings::Read( "TIFFOverrideThumbnailEmbedding",  overrides.overrideThumbnailEmbedding );
-   Settings::Read( "TIFFEmbedThumbnails",             overrides.embedThumbnails );
 
    return overrides;
 }
@@ -323,5 +303,5 @@ TIFFFormat::FormatOptions* TIFFFormat::FormatOptions::FromGenericDataBlock( cons
 
 } // pcl
 
-// ****************************************************************************
-// EOF TIFFFormat.cpp - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF TIFFFormat.cpp - Released 2015/07/31 11:49:40 UTC

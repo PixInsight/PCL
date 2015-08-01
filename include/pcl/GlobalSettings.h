@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/GlobalSettings.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/GlobalSettings.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_GlobalSettings_h
 #define __PCL_GlobalSettings_h
@@ -121,6 +124,7 @@ namespace GlobalVariableType
  * <h3>Global Flags</h3>
  *
  * <table border="1" cellpadding="4" cellspacing="0">
+ * <tr><td>Application/AutoUIScaling</td>                             <td></td></tr>
  * <tr><td>MainWindow/MaximizeAtStartup</td>                          <td></td></tr>
  * <tr><td>MainWindow/FullScreenAtStartup</td>                        <td></td></tr>
  * <tr><td>MainWindow/ShowSplashAtStartup</td>                        <td></td></tr>
@@ -149,7 +153,6 @@ namespace GlobalVariableType
  * <tr><td>ImageWindow/BackupFiles</td>                               <td></td></tr>
  * <tr><td>ImageWindow/DefaultMasksShown</td>                         <td></td></tr>
  * <tr><td>ImageWindow/DefaultMetricResolution</td>                   <td></td></tr>
- * <tr><td>ImageWindow/DefaultEmbedMetadata</td>                      <td></td></tr>
  * <tr><td>ImageWindow/DefaultEmbedThumbnails</td>                    <td></td></tr>
  * <tr><td>ImageWindow/DefaultEmbedProperties</td>                    <td></td></tr>
  * <tr><td>ImageWindow/FollowDownloadLocations</td>                   <td></td></tr>
@@ -187,13 +190,14 @@ namespace GlobalVariableType
  * <h3>Global Integers</h3>
  *
  * <table border="1" cellpadding="4" cellspacing="0">
+ * <tr><td>Application/FontResolution</td>                            <td></td>Font resolution in dots per inch (dpi).</tr>
  * <tr><td>MainWindow/MaxRecentFiles</td>                             <td></td></tr>
  * <tr><td>ImageWindow/DefaultMaskMode</td>                           <td>See the pcl::MaskMode namespace.</td></tr>
  * <tr><td>ImageWindow/DefaultTransparencyMode</td>                   <td>See the pcl::TransparencyMode namespace.</td></tr>
  * <tr><td>ImageWindow/CursorTolerance</td>                           <td>In device pixels.</td></tr>
  * <tr><td>ImageWindow/FastScreenRenditionThreshold</td>              <td>In MiB.</td></tr>
- * <tr><td>Workspace/PrimaryScreenCenterX</td>                        <td>Read-only. In device pixels.</td></tr>
- * <tr><td>Workspace/PrimaryScreenCenterY</td>                        <td>Read-only. In device pixels.</td></tr>
+ * <tr><td>Workspace/PrimaryScreenCenterX</td>                        <td>Read-only. In physical device pixels.</td></tr>
+ * <tr><td>Workspace/PrimaryScreenCenterY</td>                        <td>Read-only. In physical device pixels.</td></tr>
  * <tr><td>TransparencyBrush/Brush</td>                               <td>See the pcl::BackgroundBrush namespace.</td></tr>
  * <tr><td>ColorManagement/DefaultRenderingIntent</td>                <td>See the pcl::ICCRenderingIntent namespace.</td></tr>
  * <tr><td>ColorManagement/ProofingIntent</td>                        <td>See the pcl::ICCRenderingIntent namespace.</td></tr>
@@ -211,6 +215,7 @@ namespace GlobalVariableType
  *
  * <table border="1" cellpadding="4" cellspacing="0">
  * <tr><td>Application/StartUTC</td>                                  <td>Read-only</td></tr>
+ * <tr><td>Application/UIScalingFactor</td>                           <td>In the range [1.0,4.0].</td></tr>
  * <tr><td>ImageWindow/DefaultHorizontalResolution</td>               <td>In device pixels per resolution unit. See the ImageWindow/DefaultMetricResolution global variable.</td></tr>
  * <tr><td>ImageWindow/DefaultVerticalResolution</td>                 <td>In device pixels per resolution unit. See the ImageWindow/DefaultMetricResolution global variable.</td></tr>
  * <tr><td>ImageWindow/PinchSensitivity</td>                          <td>In device pixels.</td></tr>
@@ -260,6 +265,10 @@ namespace GlobalVariableType
  * <tr><td>Application/ResourceFile08</td>                            <td></td></tr>
  * <tr><td>Application/ResourceFile09</td>                            <td></td></tr>
  * <tr><td>Application/ResourceFile10</td>                            <td></td></tr>
+ * <tr><td>Application/LowResFont</td>                                <td>Font family for automatic style sheet replacement on low-dpi displays.</td></tr>
+ * <tr><td>Application/HighResFont</td>                               <td>Font family for automatic style sheet replacement on high-dpi displays.</td></tr>
+ * <tr><td>Application/LowResMonoFont</td>                            <td>Monospaced font family for automatic style sheet replacement on low-dpi displays.</td></tr>
+ * <tr><td>Application/HighResMonoFont</td>                           <td>Monospaced font family for automatic style sheet replacement on high-dpi displays.</td></tr>
  * <tr><td>Workspace/Prefix</td>                                      <td></td></tr>
  * <tr><td>ImageWindow/Prefix</td>                                    <td></td></tr>
  * <tr><td>Preview/Prefix</td>                                        <td></td></tr>
@@ -407,10 +416,11 @@ public:
 
 private:
 
-   // Not an instantiable class
-   PixInsightSettings() { PCL_CHECK( 0 ) }
-   PixInsightSettings ( const PixInsightSettings& ) { PCL_CHECK( 0 ) }
-   virtual ~PixInsightSettings() {}
+   // Not an instantiable class.
+   PixInsightSettings() = delete;
+   PixInsightSettings( const PixInsightSettings& ) = delete;
+   void operator =( const PixInsightSettings& ) = delete;
+   virtual ~PixInsightSettings() = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -419,5 +429,5 @@ private:
 
 #endif   // __PCL_GlobalSettings_h
 
-// ****************************************************************************
-// EOF pcl/GlobalSettings.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/GlobalSettings.h - Released 2015/07/30 17:15:18 UTC

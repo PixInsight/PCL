@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard IntensityTransformations Process Module Version 01.07.00.0287
-// ****************************************************************************
-// CurveBase.h - Released 2014/11/14 17:19:23 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard IntensityTransformations Process Module Version 01.07.00.0306
+// ----------------------------------------------------------------------------
+// CurveBase.h - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __CurveBase_h
 #define __CurveBase_h
@@ -69,26 +73,18 @@ public:
 
    typedef UnidimensionalInterpolation<double>  interpolator;
 
-   CurveBase() : x(), y(), type( CurveType::Default )
+   CurveBase() :
+      x(),
+      y(),
+      type( CurveType::Default )
    {
    }
 
-   CurveBase( const CurveBase& c ) : x( c.x ), y( c.y ), type( c.type )
-   {
-   }
+   CurveBase( const CurveBase& ) = default;
+   CurveBase& operator =( const CurveBase& ) = default;
 
    virtual ~CurveBase()
    {
-   }
-
-   void Assign( const CurveBase& c )
-   {
-      if ( &c != this )
-      {
-         x.Assign( c.x );
-         y.Assign( c.y );
-         type = c.type;
-      }
    }
 
    size_type Length() const
@@ -126,23 +122,18 @@ public:
       return y.Begin();
    }
 
-   void Initialize()
-   {
-      Reset();
-   }
-
    void Reset()
    {
       x.Clear();
       y.Clear();
-      __Initialize();
+      Initialize();
    }
 
    void Remove( size_type i )
    {
       if ( i > 0 && i < Length()-1 )
       {
-         x.Remove( x.At( i ) );
+         x.Remove( x.MutableAt( i ) );
          y.Remove( y.At( i ) );
       }
    }
@@ -190,7 +181,7 @@ protected:
    output_list y;
    int32       type;
 
-   virtual void __Initialize() = 0;
+   virtual void Initialize() = 0;
 
    friend class CurvesTransformationInstance;
    friend class ColorSaturationInstance;
@@ -202,5 +193,5 @@ protected:
 
 #endif   // __CurveBase_h
 
-// ****************************************************************************
-// EOF CurveBase.h - Released 2014/11/14 17:19:23 UTC
+// ----------------------------------------------------------------------------
+// EOF CurveBase.h - Released 2015/07/31 11:49:48 UTC

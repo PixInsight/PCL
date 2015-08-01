@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard LocalHistogramEqualization Process Module Version 01.00.00.0094
-// ****************************************************************************
-// LocalHistogramEqualizationInterface.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard LocalHistogramEqualization Process Module Version 01.00.00.0113
+// ----------------------------------------------------------------------------
+// LocalHistogramEqualizationInterface.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard LocalHistogramEqualization PixInsight module.
 //
-// Copyright (c) 2011-2014 Zbynek Vrastil
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2015 Zbynek Vrastil
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,7 +49,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "LocalHistogramEqualizationInterface.h"
 #include "LocalHistogramEqualizationProcess.h"
@@ -327,7 +331,7 @@ LocalHistogramEqualizationInterface::GUIData::GUIData( LocalHistogramEqualizatio
 
    Radius_NumericControl.label.SetText( "Kernel Radius:" );
    Radius_NumericControl.label.SetFixedWidth( labelWidth1 );
-   Radius_NumericControl.slider.SetMinWidth( 250 );
+   Radius_NumericControl.slider.SetScaledMinWidth( 250 );
    Radius_NumericControl.slider.SetRange( 0, 248 );
    Radius_NumericControl.SetReal();
    Radius_NumericControl.SetRange( TheLHERadiusParameter->MinimumValue(), TheLHERadiusParameter->MaximumValue() );
@@ -356,7 +360,7 @@ LocalHistogramEqualizationInterface::GUIData::GUIData( LocalHistogramEqualizatio
 
    SlopeLimit_NumericControl.label.SetText( "Contrast Limit:" );
    SlopeLimit_NumericControl.label.SetFixedWidth( labelWidth1 );
-   SlopeLimit_NumericControl.slider.SetMinWidth( 250 );
+   SlopeLimit_NumericControl.slider.SetScaledMinWidth( 250 );
    SlopeLimit_NumericControl.slider.SetRange( 0, 126 );
    SlopeLimit_NumericControl.SetReal();
    SlopeLimit_NumericControl.SetRange( TheLHESlopeLimitParameter->MinimumValue(), TheLHESlopeLimitParameter->MaximumValue() );
@@ -370,7 +374,7 @@ LocalHistogramEqualizationInterface::GUIData::GUIData( LocalHistogramEqualizatio
 
    Amount_NumericControl.label.SetText( "Amount:" );
    Amount_NumericControl.label.SetFixedWidth( labelWidth1 );
-   Amount_NumericControl.slider.SetMinWidth( 250 );
+   Amount_NumericControl.slider.SetScaledMinWidth( 250 );
    Amount_NumericControl.slider.SetRange( 0, 200 );
    Amount_NumericControl.SetReal();
    Amount_NumericControl.SetRange( TheLHEAmountParameter->MinimumValue(), TheLHEAmountParameter->MaximumValue() );
@@ -416,5 +420,5 @@ LocalHistogramEqualizationInterface::GUIData::GUIData( LocalHistogramEqualizatio
 
 } // pcl
 
-// ****************************************************************************
-// EOF LocalHistogramEqualizationInterface.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF LocalHistogramEqualizationInterface.cpp - Released 2015/07/31 11:49:49 UTC

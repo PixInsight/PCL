@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Sort.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Sort.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Sort_h
 #define __PCL_Sort_h
@@ -88,7 +91,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 template <class BI, class T> inline
-void __insertion_sort__( BI i, BI j, const T* )
+void __pcl_insertion_sort__( BI i, BI j, const T* )
 {
    if ( i != j )
    {
@@ -111,22 +114,22 @@ void __insertion_sort__( BI i, BI j, const T* )
 /*!
  * Generic insertion sort algorithm.
  *
- * Sorts a range [i,j[ in ascending order by the <em>insertion sort</em>
+ * Sorts a range [i,j) in ascending order by the <em>insertion sort</em>
  * algorithm. Ordering of elements is defined such that for any pair a, b of
- * elements in [i,j[ a < b is true if a precedes b.
+ * elements in [i,j) a < b is true if a precedes b.
  *
  * \ingroup sorting_algorithms
  */
 template <class BI> inline
 void InsertionSort( BI i, BI j )
 {
-   __insertion_sort__( i, j, ItemType( i ) );
+   __pcl_insertion_sort__( i, j, ItemType( i ) );
 }
 
 // ----------------------------------------------------------------------------
 
 template <class BI, class BP, class T> inline
-void __insertion_sort__( BI i, BI j, BP p, const T* )
+void __pcl_insertion_sort__( BI i, BI j, BP p, const T* )
 {
    if ( i != j )
    {
@@ -149,22 +152,22 @@ void __insertion_sort__( BI i, BI j, BP p, const T* )
 /*!
  * Generic insertion sort algorithm.
  *
- * Sorts a range [i,j[ in ascending order by the <em>insertion sort</em>
+ * Sorts a range [i,j) in ascending order by the <em>insertion sort</em>
  * algorithm. Ordering of elements is defined such that for any pair a, b of
- * elements in [i,j[ the binary predicate p(a,b) is true if a precedes b.
+ * elements in [i,j) the binary predicate p(a,b) is true if a precedes b.
  *
  * \ingroup sorting_algorithms
  */
 template <class BI, class BP> inline
 void InsertionSort( BI i, BI j, BP p )
 {
-   __insertion_sort__( i, j, p, ItemType( i ) );
+   __pcl_insertion_sort__( i, j, p, ItemType( i ) );
 }
 
 // ----------------------------------------------------------------------------
 
 template <class RI, class T> inline
-void __quick_sort__( RI i, RI j, T* )
+void __pcl_quick_sort__( RI i, RI j, T* )
 {
    distance_type n = j - i;
    if ( n < 2 )
@@ -244,22 +247,22 @@ void __quick_sort__( RI i, RI j, T* )
 /*!
  * Generic quick sort algorithm.
  *
- * Sorts a range [i,j[ in ascending order by the <em>quick sort</em> algorithm
+ * Sorts a range [i,j) in ascending order by the <em>quick sort</em> algorithm
  * (median of three variant). Ordering of elements is defined such that for any
- * pair a, b of elements in [i,j[ a < b is true if a precedes b.
+ * pair a, b of elements in [i,j) a < b is true if a precedes b.
  *
  * \ingroup sorting_algorithms
  */
 template <class RI> inline
 void QuickSort( RI i, RI j )
 {
-   __quick_sort__( i, j, ItemType( i ) );
+   __pcl_quick_sort__( i, j, ItemType( i ) );
 }
 
 // ----------------------------------------------------------------------------
 
 template <class RI, class BP, class T> inline
-void __quick_sort__( RI i, RI j, BP p, T* )
+void __pcl_quick_sort__( RI i, RI j, BP p, T* )
 {
    distance_type n = j - i;
    if ( n < 2 )
@@ -339,9 +342,9 @@ void __quick_sort__( RI i, RI j, BP p, T* )
 /*!
  * Generic quick sort algorithm.
  *
- * Sorts a range [i,j[ in ascending order by the <em>quick sort</em> algorithm
+ * Sorts a range [i,j) in ascending order by the <em>quick sort</em> algorithm
  * (median of three variant). Ordering of elements is defined such that for any
- * pair a, b of elements in [i,j[ the binary predicate p(a,b) is true if a
+ * pair a, b of elements in [i,j) the binary predicate p(a,b) is true if a
  * precedes b.
  *
  * \ingroup sorting_algorithms
@@ -349,13 +352,13 @@ void __quick_sort__( RI i, RI j, BP p, T* )
 template <class RI, class BP> inline
 void QuickSort( RI i, RI j, BP p )
 {
-   __quick_sort__( i, j, p, ItemType( i ) );
+   __pcl_quick_sort__( i, j, p, ItemType( i ) );
 }
 
 // ----------------------------------------------------------------------------
 
 template <class RI, class T> inline
-void __heap_sort__( RI i, RI j, T* )
+void __pcl_heap_sort__( RI i, RI j, T* )
 {
    distance_type dj = j - i;
    if ( dj < 2 )
@@ -366,7 +369,7 @@ void __heap_sort__( RI i, RI j, T* )
 
    for ( i += di-1, --j; ; )
    {
-      if ( 1 < di )
+      if ( di > 1 )
       {
          v = *--i;
          --di;
@@ -376,7 +379,7 @@ void __heap_sort__( RI i, RI j, T* )
          v = *j;
          *j = *i;
 
-         if ( 0 == --dj )
+         if ( --dj == 0 )
          {
             *i = v;
             break;
@@ -414,22 +417,22 @@ void __heap_sort__( RI i, RI j, T* )
 /*!
  * Generic heap sort algorithm.
  *
- * Sorts a range [i,j[ in ascending order by the <em>heap sort</em> algorithm.
+ * Sorts a range [i,j) in ascending order by the <em>heap sort</em> algorithm.
  * Ordering of elements is defined such that for any pair a, b of elements in
- * [i,j[ a < b is true if a precedes b.
+ * [i,j) a < b is true if a precedes b.
  *
  * \ingroup sorting_algorithms
  */
 template <class RI> inline
 void HeapSort( RI i, RI j )
 {
-   __heap_sort__( i, j, ItemType( i ) );
+   __pcl_heap_sort__( i, j, ItemType( i ) );
 }
 
 // ----------------------------------------------------------------------------
 
 template <class RI, class BP, class T> inline
-void __heap_sort__( RI i, RI j, BP p, T* )
+void __pcl_heap_sort__( RI i, RI j, BP p, T* )
 {
    distance_type dj = j - i;
    if ( dj < 2 )
@@ -440,7 +443,7 @@ void __heap_sort__( RI i, RI j, BP p, T* )
 
    for ( i += di-1, --j; ; )
    {
-      if ( 1 < di )
+      if ( di > 1 )
       {
          v = *--i;
          --di;
@@ -450,7 +453,7 @@ void __heap_sort__( RI i, RI j, BP p, T* )
          v = *j;
          *j = *i;
 
-         if ( 0 == --dj )
+         if ( --dj == 0 )
          {
             *i = v;
             break;
@@ -488,28 +491,28 @@ void __heap_sort__( RI i, RI j, BP p, T* )
 /*!
  * Generic heap sort algorithm.
  *
- * Sorts a range [i,j[ in ascending order by the <em>heap sort</em> algorithm.
+ * Sorts a range [i,j) in ascending order by the <em>heap sort</em> algorithm.
  * Ordering of elements is defined such that for any pair a, b of elements in
- * [i,j[ the binary predicate p(a,b) is true if a precedes b.
+ * [i,j) the binary predicate p(a,b) is true if a precedes b.
  *
  * \ingroup sorting_algorithms
  */
 template <class RI, class BP> inline
 void HeapSort( RI i, RI j, BP p )
 {
-   __heap_sort__( i, j, p, ItemType( i ) );
+   __pcl_heap_sort__( i, j, p, ItemType( i ) );
 }
 
 // ----------------------------------------------------------------------------
 
 template <class BI> inline
-void __sort__( BI i, BI j, BidirectionalIterator )
+void __pcl_sort__( BI i, BI j, BidirectionalIterator )
 {
    InsertionSort( i, j );
 }
 
 template <class RI> inline
-void __sort__( RI i, RI j, RandomAccessIterator )
+void __pcl_sort__( RI i, RI j, RandomAccessIterator )
 {
 #ifdef __PCL_PREFER_HEAPSORT
    HeapSort( i, j );
@@ -521,32 +524,35 @@ void __sort__( RI i, RI j, RandomAccessIterator )
 /*!
  * Generic sort algorithm.
  *
- * Sorts a range [i,j[ in ascending order. Ordering of elements is defined such
- * that for any pair a, b of elements in [i,j[ a < b is true if a precedes b.
+ * Sorts a range [i,j) in ascending order. Ordering of elements is defined such
+ * that for any pair a, b of elements in [i,j) a < b is true if a precedes b.
  *
  * This function sorts the specified input sequence employing the fastest
  * (known) sorting algorithm for the iterator class BI. Insertion sort is
  * used for bidirectional iterators without random access, and the quick sort
  * algorithm (median of three variant) is used for random access iterators.
  *
+ * If you want to use the heap sort algorithm instead of quick sort (e.g. for
+ * performance testing purposes), #define the __PCL_PREFER_HEAPSORT macro.
+ *
  * \ingroup sorting_algorithms
  */
 template <class BI> inline
 void Sort( BI i, BI j )
 {
-   __sort__( i, j, IteratorClass( i ) );
+   __pcl_sort__( i, j, IteratorClass( i ) );
 }
 
 // ----------------------------------------------------------------------------
 
 template <class BI, class BP> inline
-void __sort__( BI i, BI j, BP p, BidirectionalIterator )
+void __pcl_sort__( BI i, BI j, BP p, BidirectionalIterator )
 {
    InsertionSort( i, j, p );
 }
 
 template <class RI, class BP> inline
-void __sort__( RI i, RI j, BP p, RandomAccessIterator )
+void __pcl_sort__( RI i, RI j, BP p, RandomAccessIterator )
 {
 #ifdef __PCL_PREFER_HEAPSORT
    HeapSort( i, j, p );
@@ -558,8 +564,8 @@ void __sort__( RI i, RI j, BP p, RandomAccessIterator )
 /*!
  * Generic sort algorithm.
  *
- * Sorts a range [i,j[ in ascending order. Ordering of elements is defined such
- * that for any pair a, b of elements in [i,j[ the binary predicate p(a,b) is
+ * Sorts a range [i,j) in ascending order. Ordering of elements is defined such
+ * that for any pair a, b of elements in [i,j) the binary predicate p(a,b) is
  * true if a precedes b.
  *
  * This function sorts the specified input sequence employing the fastest
@@ -567,12 +573,15 @@ void __sort__( RI i, RI j, BP p, RandomAccessIterator )
  * used for bidirectional iterators without random access, and the quick sort
  * algorithm (median of three variant) is used for random access iterators.
  *
+ * If you want to use the heap sort algorithm instead of quick sort (e.g. for
+ * performance testing purposes), #define the __PCL_PREFER_HEAPSORT macro.
+ *
  * \ingroup sorting_algorithms
  */
 template <class BI, class BP> inline
 void Sort( BI i, BI j, BP p )
 {
-   __sort__( i, j, p, IteratorClass( i ) );
+   __pcl_sort__( i, j, p, IteratorClass( i ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -581,5 +590,5 @@ void Sort( BI i, BI j, BP p )
 
 #endif  // __PCL_Sort_h
 
-// ****************************************************************************
-// EOF pcl/Sort.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Sort.h - Released 2015/07/30 17:15:18 UTC

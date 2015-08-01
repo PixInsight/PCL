@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ColorComboBox.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ColorComboBox.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_ColorComboBox_h
 #define __PCL_ColorComboBox_h
@@ -98,7 +101,7 @@ public:
    /*!
     * Constructs a %ColorComboBox as a child control of \a parent.
     *
-    * A standard set of %ComboBox items is created for the full set of CCS3
+    * A standard set of %ComboBox items is created for the full set of CSS3
     * colors. This includes 143 color items.
     */
    ColorComboBox( Control& parent = Control::Null() );
@@ -106,7 +109,11 @@ public:
    /*!
     * Destroys a %ColorComboBox control.
     */
-   virtual ~ColorComboBox();
+   virtual ~ColorComboBox()
+   {
+      if ( m_handlers != nullptr )
+         delete m_handlers, m_handlers = nullptr;
+   }
 
    /*!
     * Returns the RGB color value that corresponds to the currently selected
@@ -141,7 +148,7 @@ public:
     */
    RGBA CustomColor() const
    {
-      return customColor;
+      return m_customColor;
    }
 
    /*!
@@ -227,23 +234,29 @@ public:
     */
    void OnCustomColorDefined( color_event_handler handler, Control& receiver );
 
-protected:
-
-   color_event_handler  onColorSelected;
-   Control*             onColorSelectedReceiver;
-
-   color_event_handler  onColorHighlighted;
-   Control*             onColorHighlightedReceiver;
-
-   color_event_handler  onCustomColorDefined;
-   Control*             onCustomColorDefinedReceiver;
-
 private:
 
-   RGBA customColor;
+   struct EventHandlers
+   {
+      color_event_handler onColorSelected              = nullptr;
+      Control*            onColorSelectedReceiver      = nullptr;
 
-   void __ItemSelected( ComboBox&, int );
-   void __ItemHighlighted( ComboBox&, int );
+      color_event_handler onColorHighlighted           = nullptr;
+      Control*            onColorHighlightedReceiver   = nullptr;
+
+      color_event_handler onCustomColorDefined         = nullptr;
+      Control*            onCustomColorDefinedReceiver = nullptr;
+
+      EventHandlers() = default;
+      EventHandlers( const EventHandlers& ) = default;
+      EventHandlers& operator =( const EventHandlers& ) = default;
+   };
+
+   EventHandlers* m_handlers;
+   RGBA           m_customColor;
+
+   void ItemSelected( ComboBox&, int );
+   void ItemHighlighted( ComboBox&, int );
 };
 
 // ----------------------------------------------------------------------------
@@ -254,5 +267,5 @@ private:
 
 #endif   // __PCL_ColorComboBox_h
 
-// ****************************************************************************
-// EOF pcl/ColorComboBox.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ColorComboBox.h - Released 2015/07/30 17:15:18 UTC

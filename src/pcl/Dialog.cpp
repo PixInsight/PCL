@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Dialog.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Dialog.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/Dialog.h>
 
@@ -56,68 +59,16 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-#define sender    (reinterpret_cast<Dialog*>( hSender ))
-#define receiver  (reinterpret_cast<Control*>( hReceiver ))
-
-class DialogEventDispatcher
-{
-public:
-
-   static void Executed( control_handle hSender, control_handle hReceiver )
-   {
-      if ( sender->onExecute != 0 )
-         (receiver->*sender->onExecute)( *sender );
-   }
-
-   static void Returned( control_handle hSender, control_handle hReceiver, int32 retVal )
-   {
-      if ( sender->onReturn != 0 )
-         (receiver->*sender->onReturn)( *sender, retVal );
-   }
-}; // DialogEventDispatcher
-
-#undef sender
-#undef receiver
-
-// ----------------------------------------------------------------------------
-
 #ifdef _MSC_VER
 #  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
 #endif
 
 Dialog::Dialog( Control& parent ) :
-Control( (*API->Dialog->CreateDialog)( ModuleHandle(), this, parent.handle, 0 /*flags*/ ) ),
-onExecute( 0 ),
-onReturn( 0 )
+   Control( (*API->Dialog->CreateDialog)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) ),
+   m_handlers( nullptr )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateDialog" );
-}
-
-// ----------------------------------------------------------------------------
-
-void Dialog::OnExecute( execute_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onExecute = 0;
-   if ( (*API->Dialog->SetExecuteDialogEventRoutine)( handle, &receiver,
-        (f != 0) ? DialogEventDispatcher::Executed : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetExecuteDialogEventRoutine" );
-   }
-   onExecute = f;
-}
-
-void Dialog::OnReturn( return_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onReturn = 0;
-   if ( (*API->Dialog->SetReturnDialogEventRoutine)( handle, &receiver,
-        (f != 0) ? DialogEventDispatcher::Returned : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetReturnDialogEventRoutine" );
-   }
-   onReturn = f;
 }
 
 // ----------------------------------------------------------------------------
@@ -157,7 +108,61 @@ void Dialog::EnableUserResizing( bool enable )
 
 // ----------------------------------------------------------------------------
 
+#define sender    (reinterpret_cast<Dialog*>( hSender ))
+#define receiver  (reinterpret_cast<Control*>( hReceiver ))
+#define handlers  sender->m_handlers
+
+class DialogEventDispatcher
+{
+public:
+
+   static void Executed( control_handle hSender, control_handle hReceiver )
+   {
+      if ( handlers->onExecute != nullptr )
+         (receiver->*handlers->onExecute)( *sender );
+   }
+
+   static void Returned( control_handle hSender, control_handle hReceiver, int32 retVal )
+   {
+      if ( handlers->onReturn != nullptr )
+         (receiver->*handlers->onReturn)( *sender, retVal );
+   }
+}; // DialogEventDispatcher
+
+#undef sender
+#undef receiver
+#undef handlers
+
+// ----------------------------------------------------------------------------
+
+#define INIT_EVENT_HANDLERS()    \
+   __PCL_NO_ALIAS_HANDLERS;      \
+   if ( m_handlers == nullptr )  \
+      m_handlers = new EventHandlers
+
+void Dialog::OnExecute( execute_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->Dialog->SetExecuteDialogEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? DialogEventDispatcher::Executed : 0 ) == api_false )
+      throw APIFunctionError( "SetExecuteDialogEventRoutine" );
+   m_handlers->onExecute = f;
+}
+
+void Dialog::OnReturn( return_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->Dialog->SetReturnDialogEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? DialogEventDispatcher::Returned : 0 ) == api_false )
+      throw APIFunctionError( "SetReturnDialogEventRoutine" );
+   m_handlers->onReturn = f;
+}
+
+#undef INIT_EVENT_HANDLERS
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/Dialog.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Dialog.cpp - Released 2015/07/30 17:15:31 UTC

@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard CosmeticCorrection Process Module Version 01.02.04.0080
-// ****************************************************************************
-// CosmeticCorrectionInstance.h - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard CosmeticCorrection Process Module Version 01.02.05.0101
+// ----------------------------------------------------------------------------
+// CosmeticCorrectionInstance.h - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard CosmeticCorrection PixInsight module.
 //
-// Copyright (c) 2011-2014 Nikolay Volkov
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2015 Nikolay Volkov
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,7 +49,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __CosmeticCorrectionInstance_h
 #define __CosmeticCorrectionInstance_h
@@ -57,7 +61,7 @@
 
 #include "CosmeticCorrectionParameters.h"
 
-#define debug 0
+//#define debug 1
 
 namespace pcl
 {
@@ -125,7 +129,6 @@ private:
 
 #define MapImg UInt8Image
 #define DarkImg UInt16Image
-#define outputExtension ".fit"
 
     typedef Array<ImageItem> image_list;
     typedef Array<DefectItem> defect_list;
@@ -137,6 +140,7 @@ private:
     // instance ---------------------------------------------------------------
     image_list  p_targetFrames;
     String      p_outputDir;
+    String      p_outputExtension;
     pcl_bool    p_overwrite;
     String      p_prefix;
     String      p_postfix;
@@ -182,5 +186,5 @@ private:
 
 #endif   // __CosmeticCorrectionInstance_h
 
-// ****************************************************************************
-// EOF CosmeticCorrectionInstance.h - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF CosmeticCorrectionInstance.h - Released 2015/07/31 11:49:49 UTC

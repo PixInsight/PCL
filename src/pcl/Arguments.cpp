@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Arguments.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Arguments.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/Arguments.h>
 #include <pcl/Exception.h>
@@ -118,7 +121,7 @@ void Argument::Parse( const char16_type* argv )
          if ( c == '\"' )
             ++pos;
 
-         asString = a.SubString( pos );
+         asString = a.Substring( pos );
 
          if ( c == '\"' )
          {
@@ -163,10 +166,10 @@ static void SearchDirectory_Recursive( StringList& fileNames, const String& file
 
    for ( File::Find f( fileName ); f.NextItem( info ); )
       if ( !info.IsDirectory() )
-         if ( MatchesWildSpecification( info.name, wildSpec ) ) // apply our own matching criteria
+         if ( info.name.WildMatch( wildSpec ) )
          {
             String path = fileDir + '/' + info.name;
-            if ( !fileNames.Has( path ) )
+            if ( !fileNames.Contains( path ) )
                fileNames.Add( path );
          }
 
@@ -206,25 +209,20 @@ void SetRecursiveDirSearchArgument( const String& argId )
 
 // ----------------------------------------------------------------------------
 
-static inline bool IsWild( const String& s )
-{
-   return s.Has( '*' ) || s.Has( '?' );
-}
-
 static void AddView( StringList& items, const View& v )
 {
    String id( v.FullId() );
-   if ( !items.Has( id ) )
+   if ( !items.Contains( id ) )
       items.Add( id );
 }
 
 static void FindPreviews( StringList& items, const ImageWindow& w, const String& previewId )
 {
-   if ( IsWild( previewId ) )
+   if ( previewId.HasWildcards() )
    {
       Array<View> P = w.Previews();
       for ( size_type i = 0; i < P.Length(); ++i )
-         if ( MatchesWildSpecification( String( P[i].Id() ), previewId ) )
+         if ( String( P[i].Id() ).WildMatch( previewId ) )
             AddView( items, P[i] );
    }
    else
@@ -238,11 +236,11 @@ static void FindPreviews( StringList& items, const ImageWindow& w, const String&
 
 static void FindPreviews( StringList& items, const String& imageId, const String& previewId )
 {
-   if ( IsWild( imageId ) )
+   if ( imageId.HasWildcards() )
    {
       Array<ImageWindow> W = ImageWindow::AllWindows();
       for ( size_type i = 0; i < W.Length(); ++i )
-         if ( MatchesWildSpecification( String( W[i].MainView().Id() ), imageId ) )
+         if ( String( W[i].MainView().Id() ).WildMatch( imageId ) )
             FindPreviews( items, W[i], previewId );
    }
    else
@@ -275,7 +273,7 @@ ArgumentList ExtractArguments( const StringList& argv, argument_item_mode mode, 
 
    for ( StringList::const_iterator i = argv.Begin(); i != argv.End(); ++i )
    {
-      if ( i->BeginsWith( '-' ) )
+      if ( i->StartsWith( '-' ) )
       {
          Argument arg( i->At( 1 ) );
 
@@ -301,7 +299,7 @@ ArgumentList ExtractArguments( const StringList& argv, argument_item_mode mode, 
          if ( itemsAsFiles )
          {
             String fileName = *i;
-            if ( fileName.BeginsWith( '\"' ) )
+            if ( fileName.StartsWith( '\"' ) )
                fileName.Delete( 0 );
             if ( fileName.EndsWith( '\"' ) )
                fileName.Delete( fileName.UpperBound() );
@@ -312,7 +310,7 @@ ArgumentList ExtractArguments( const StringList& argv, argument_item_mode mode, 
 
             fileName = File::FullPath( fileName );
 
-            if ( IsWild( fileName ) ) // wild path ?
+            if ( fileName.HasWildcards() )
             {
                if ( !allowWildcards )
                   throw ParseError( "Wildcards not allowed", fileName );
@@ -326,8 +324,9 @@ ArgumentList ExtractArguments( const StringList& argv, argument_item_mode mode, 
          {
             String viewId = *i;
 
-            if ( !allowWildcards && IsWild( viewId ) )
-               throw ParseError( "Wildcards not allowed", viewId );
+            if ( !allowWildcards )
+               if ( viewId.HasWildcards() )
+                  throw ParseError( "Wildcards not allowed", viewId );
 
             size_type p = viewId.Find( "->" );
 
@@ -340,7 +339,7 @@ ArgumentList ExtractArguments( const StringList& argv, argument_item_mode mode, 
                if ( imageId.IsEmpty() )
                   throw ParseError( "Missing image identifier", viewId );
 
-               String previewId = viewId.SubString( p+2 );
+               String previewId = viewId.Substring( p+2 );
                if ( previewId.IsEmpty() )
                   throw ParseError( "Missing preview identifier", viewId );
 
@@ -348,13 +347,13 @@ ArgumentList ExtractArguments( const StringList& argv, argument_item_mode mode, 
             }
             else
             {
-               if ( IsWild( viewId ) )
+               if ( viewId.HasWildcards() )
                {
                   Array<ImageWindow> W = ImageWindow::AllWindows();
                   for ( size_type i = 0; i < W.Length(); ++i )
                   {
                      View v = W[i].MainView();
-                     if ( MatchesWildSpecification( String( v.Id() ), viewId ) )
+                     if ( String( v.Id() ).WildMatch( viewId ) )
                         AddView( items, v );
                   }
                }
@@ -376,50 +375,6 @@ ArgumentList ExtractArguments( const StringList& argv, argument_item_mode mode, 
    }
 
    return arguments;
-}
-
-// ----------------------------------------------------------------------------
-
-bool MatchesWildSpecification( const String& string, const String& pattern )
-{
-   if ( string.IsEmpty() )
-      return pattern.IsEmpty();
-
-   for ( String::const_iterator i = string.Begin(), j = pattern.Begin(); ; ++i, ++j )
-   {
-      if ( j == pattern.End() )
-         return i == string.End();
-
-      if ( *j == '*' )
-      {
-         do
-         {
-            if ( ++j == pattern.End() )
-               return true;
-         }
-         while ( *j == '?' || *j == '*' );
-
-         if ( i == string.End() )
-            return false;
-
-         for ( String::const_iterator i1 = string.End(); ; )
-         {
-            if ( *--i1 == *j )
-            {
-               i = i1;
-               break;
-            }
-
-            if ( i1 == i )
-               return false;
-         }
-      }
-      else
-      {
-         if ( i == string.End() || *j != '?' && *i != *j )
-            return false;
-      }
-   }
 }
 
 // ----------------------------------------------------------------------------
@@ -450,7 +405,7 @@ String ReplaceEnvironmentVariables( const String& s0 )
             break;
       }
 
-      String var( s.SubString( p+1, p1-p-1 ) );
+      String var( s.Substring( p+1, p1-p-1 ) );
       if ( !var.IsEmpty() )
       {
          IsoString v8( var );
@@ -467,5 +422,5 @@ String ReplaceEnvironmentVariables( const String& s0 )
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/Arguments.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Arguments.cpp - Released 2015/07/30 17:15:31 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/VariableShapeFilter.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/VariableShapeFilter.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_VariableShapeFilter_h
 #define __PCL_VariableShapeFilter_h
@@ -65,6 +68,10 @@
 
 #ifndef __PCL_PixelInterpolation_h
 #include <pcl/PixelInterpolation.h>
+#endif
+
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
 #endif
 
 namespace pcl
@@ -115,8 +122,9 @@ public:
     * Constructs an empty %VariableShapeFilter object with default functional
     * parameters: sigma=2, shape=2, epsilon=0.01, rho=1, theta=0.
     */
-   VariableShapeFilter() : KernelFilter(),
-   m_sigma( 2 ), m_shape( 2 ), m_rho( 1 ), m_theta( 0 ), m_epsilon( 0.01F )
+   VariableShapeFilter() :
+      KernelFilter(),
+      m_sigma( 2 ), m_shape( 2 ), m_rho( 1 ), m_theta( 0 ), m_epsilon( 0.01F )
    {
    }
 
@@ -125,7 +133,8 @@ public:
     * \a sigma > 0, \a shape > 0, and coefficient truncation \a epsilon > 0.
     * Assigns an optional \a name to the new filter object.
     */
-   VariableShapeFilter( float sigma, float shape = 2, float epsilon = 0.01, const String& name = String() ) : KernelFilter()
+   VariableShapeFilter( float sigma, float shape = 2, float epsilon = 0.01, const String& name = String() ) :
+      KernelFilter()
    {
       Initialize( sigma, shape, epsilon, 1, 0 );
       Rename( name );
@@ -137,7 +146,8 @@ public:
     * aspect ratio 0 <= \a rho <= 1, and rotation angle 0 <= \a theta <= PI in
     * radians. Assigns an optional \a name to the new filter object.
     */
-   VariableShapeFilter( float sigma, float shape, float epsilon, float rho, float theta = 0, const String& name = String() ) : KernelFilter()
+   VariableShapeFilter( float sigma, float shape, float epsilon, float rho, float theta = 0, const String& name = String() ) :
+      KernelFilter()
    {
       Initialize( sigma, shape, epsilon, rho, theta );
       Rename( name );
@@ -148,7 +158,8 @@ public:
     * \a n >= 3, \a shape > 0, and coefficient truncation error \a epsilon > 0.
     * Assigns an optional \a name to the new filter object.
     */
-   VariableShapeFilter( int n, float shape = 2, float epsilon = 0.01, const String& name = String() ) : KernelFilter()
+   VariableShapeFilter( int n, float shape = 2, float epsilon = 0.01, const String& name = String() ) :
+      KernelFilter()
    {
       Initialize( n, shape, epsilon, 1, 0 );
       Rename( name );
@@ -160,7 +171,8 @@ public:
     * ratio 0 <= \a rho <= 1, and rotation angle 0 <= \a theta <= PI in
     * radians. Assigns an optional \a name to the new filter object.
     */
-   VariableShapeFilter( int n, float shape, float epsilon, float rho, float theta = 0, const String& name = String() ) : KernelFilter()
+   VariableShapeFilter( int n, float shape, float epsilon, float rho, float theta = 0, const String& name = String() ) :
+      KernelFilter()
    {
       Initialize( n, shape, epsilon, rho, theta );
       Rename( name );
@@ -169,12 +181,24 @@ public:
    /*!
     * Copy constructor.
     */
-   VariableShapeFilter( const VariableShapeFilter& g ) : KernelFilter( g ),
-   m_sigma( g.m_sigma ), m_shape( g.m_shape ), m_rho( g.m_rho ), m_theta( g.m_theta ), m_epsilon( g.m_epsilon )
+   VariableShapeFilter( const VariableShapeFilter& x ) :
+      KernelFilter( x ),
+      m_sigma( x.m_sigma ), m_shape( x.m_shape ), m_rho( x.m_rho ), m_theta( x.m_theta ), m_epsilon( x.m_epsilon )
    {
    }
 
    /*!
+    * Move constructor.
+    */
+   VariableShapeFilter( VariableShapeFilter&& x ) :
+      KernelFilter( std::move( x ) ),
+      m_sigma( x.m_sigma ), m_shape( x.m_shape ), m_rho( x.m_rho ), m_theta( x.m_theta ), m_epsilon( x.m_epsilon )
+   {
+   }
+
+   /*!
+    * Returns a pointer to a dynamically allocated duplicate of this kernel
+    * filter.
     */
    virtual KernelFilter* Clone() const
    {
@@ -182,7 +206,8 @@ public:
    }
 
    /*!
-    * Returns a separable filter equivalent to this %VariableShapeFilter object.
+    * Returns a separable filter equivalent to this %VariableShapeFilter
+    * object.
     *
     * A %VariableShapeFilter is separable when it represents an undistorted
     * Gaussian distribution. This is only true when shape=2 and the filter is
@@ -200,7 +225,7 @@ public:
    }
 
    /*!
-    * Returns true if this filter is separable,
+    * Returns true if this filter is separable.
     *
     * A %VariableShapeFilter is separable only when it represents an undistorted
     * Gaussian distribution. This is only true when shape=2 and the filter is
@@ -212,19 +237,30 @@ public:
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Copy assignment operator. Returns a reference to this object.
     */
    VariableShapeFilter& operator =( const VariableShapeFilter& g )
    {
-      if ( &g != this )
-      {
-         (void)KernelFilter::operator =( g );
-         m_sigma = g.m_sigma;
-         m_shape = g.m_shape;
-         m_rho = g.m_rho;
-         m_theta = g.m_theta;
-         m_epsilon = g.m_epsilon;
-      }
+      (void)KernelFilter::operator =( g );
+      m_sigma = g.m_sigma;
+      m_shape = g.m_shape;
+      m_rho = g.m_rho;
+      m_theta = g.m_theta;
+      m_epsilon = g.m_epsilon;
+      return *this;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   VariableShapeFilter& operator =( VariableShapeFilter&& g )
+   {
+      (void)KernelFilter::operator =( std::move( g ) );
+      m_sigma = g.m_sigma;
+      m_shape = g.m_shape;
+      m_rho = g.m_rho;
+      m_theta = g.m_theta;
+      m_epsilon = g.m_epsilon;
       return *this;
    }
 
@@ -496,32 +532,29 @@ private:
 
       if ( m_rho != 1 )
       {
-         coefficient_matrix ctemp( coefficients );
-         ctemp.SetUnique(); // because we need invariant *ctemp for interpolation
-
          BicubicPixelInterpolation B;
-         PixelInterpolation::Interpolator<FloatPixelTraits>* interpolator =
-            B.NewInterpolator( (FloatPixelTraits*)0, *ctemp, size, size );
 
-         h = *coefficients;
-         float r = Max( 0.5F/size, m_rho );
-         for ( int n2 = size >> 1, i = -n2; i <= n2; ++i )
          {
-            float y = float( i )/r + n2;
-            for ( int x = 0; x < size; ++x )
-               *h++ = (y < 0 || y >= size) ? 0.0F : (*interpolator)( float( x ), y );
+            coefficient_matrix ctemp( coefficients );
+            ctemp.SetUnique(); // because we need invariant *ctemp for interpolation
+            AutoPointer<PixelInterpolation::Interpolator<FloatPixelTraits> >
+               interpolator( B.NewInterpolator<FloatPixelTraits>( *ctemp, size, size ) );
+            h = *coefficients;
+            float r = Max( 0.5F/size, m_rho );
+            for ( int n2 = size >> 1, i = -n2; i <= n2; ++i )
+            {
+               float y = float( i )/r + n2;
+               for ( int x = 0; x < size; ++x )
+                  *h++ = (y < 0 || y >= size) ? 0.0F : (*interpolator)( float( x ), y );
+            }
          }
-
-         delete interpolator;
 
          if ( m_theta != 0 )
          {
             coefficient_matrix ctemp( coefficients );
             ctemp.SetUnique(); // because we need invariant *ctemp for interpolation
-
-            PixelInterpolation::Interpolator<FloatPixelTraits>* interpolator =
-               B.NewInterpolator( (FloatPixelTraits*)0, *ctemp, size, size );
-
+            AutoPointer<PixelInterpolation::Interpolator<FloatPixelTraits> >
+               interpolator( B.NewInterpolator<FloatPixelTraits>( *ctemp, size, size ) );
             h = *coefficients;
             float sa, ca;
             SinCos( -m_theta, sa, ca );
@@ -532,8 +565,6 @@ private:
                   float y = -sa*j + ca*i + n2;
                   *h++ = (x < 0 || y < 0 || x >= size || y >= size) ? 0.0F : (*interpolator)( x, y );
                }
-
-            delete interpolator;
          }
       }
    }
@@ -545,5 +576,5 @@ private:
 
 #endif   // __PCL_VariableShapeFilter_h
 
-// ****************************************************************************
-// EOF pcl/VariableShapeFilter.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/VariableShapeFilter.h - Released 2015/07/30 17:15:18 UTC

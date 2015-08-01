@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard JPEG File Format Module Version 01.00.01.0228
-// ****************************************************************************
-// JPEGInstance.cpp - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard JPEG File Format Module Version 01.00.03.0249
+// ----------------------------------------------------------------------------
+// JPEGInstance.cpp - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard JPEG PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "JPEGInstance.h"
 #include "JPEGFormat.h"
@@ -59,7 +63,12 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 JPEGInstance::JPEGInstance( const JPEGFormat* f ) :
-FileFormatImplementation( f ), reader( 0 ), writer( 0 ), queriedOptions( false ), embeddedICCProfile( 0 )
+   FileFormatImplementation( f ),
+   reader( 0 ),
+   writer( 0 ),
+   readCount( 0 ),
+   queriedOptions( false ),
+   embeddedICCProfile( 0 )
 {
 }
 
@@ -121,6 +130,7 @@ void JPEGInstance::Close()
       delete writer, writer = 0;
    if ( embeddedICCProfile != 0 )
       delete embeddedICCProfile, embeddedICCProfile = 0;
+   readCount = 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -178,39 +188,63 @@ void JPEGInstance::Extract( ICCProfile& icc )
 // ----------------------------------------------------------------------------
 
 template <class P>
-static void ReadJPEGImage( GenericImage<P>& image, JPEGReader* reader )
+static void ReadJPEGImage( GenericImage<P>& image, JPEGReader* reader, int& readCount )
 {
    if ( reader == 0 || !reader->IsOpen() )
       throw Error( "JPEG format: Attempt to read an image before opening a file" );
 
-   StandardStatus status;
-   image.SetStatusCallback( &status );
-   reader->ReadImage( image );
+   try
+   {
+      /*
+       * The readCount thing is a trick to allow reading the same JPEG image
+       * multiple times from the same format instance. Ugly but heck, it works.
+       */
+      if ( readCount )
+      {
+         String filePath = reader->Path();
+         reader = new JPEGReader;
+         reader->Open( filePath );
+      }
+
+      StandardStatus status;
+      image.SetStatusCallback( &status );
+      reader->ReadImage( image );
+
+      if ( readCount )
+         delete reader;
+      ++readCount;
+   }
+   catch ( ... )
+   {
+      if ( readCount )
+         delete reader;
+      throw;
+   }
 }
 
 void JPEGInstance::ReadImage( Image& img )
 {
-   ReadJPEGImage( img, reader );
+   ReadJPEGImage( img, reader, readCount );
 }
 
 void JPEGInstance::ReadImage( DImage& img )
 {
-   ReadJPEGImage( img, reader );
+   ReadJPEGImage( img, reader, readCount );
 }
 
 void JPEGInstance::ReadImage( UInt8Image& img )
 {
-   ReadJPEGImage( img, reader );
+   ReadJPEGImage( img, reader, readCount );
 }
 
 void JPEGInstance::ReadImage( UInt16Image& img )
 {
-   ReadJPEGImage( img, reader );
+   ReadJPEGImage( img, reader, readCount );
 }
 
 void JPEGInstance::ReadImage( UInt32Image& img )
 {
-   ReadJPEGImage( img, reader );
+   ReadJPEGImage( img, reader, readCount );
 }
 
 // ----------------------------------------------------------------------------
@@ -249,12 +283,6 @@ bool JPEGInstance::QueryOptions( Array<ImageOptions>& imageOptions, Array<void*>
 
    if ( overrides.overrideICCProfileEmbedding )
       options.embedICCProfile = overrides.embedICCProfiles;
-
-   if ( overrides.overrideMetadataEmbedding )
-      options.embedMetadata = overrides.embedMetadata;
-
-   if ( overrides.overrideThumbnailEmbedding )
-      options.embedThumbnail = overrides.embedThumbnails;
 
    JPEGOptionsDialog dlg( options, jpeg->options );
 
@@ -339,12 +367,6 @@ void JPEGInstance::SetOptions( const ImageOptions& options )
 
       if ( overrides.overrideICCProfileEmbedding )
          writer->Options().embedICCProfile = overrides.embedICCProfiles;
-
-      if ( overrides.overrideMetadataEmbedding )
-         writer->Options().embedMetadata = overrides.embedMetadata;
-
-      if ( overrides.overrideThumbnailEmbedding )
-         writer->Options().embedThumbnail = overrides.embedThumbnails;
    }
 }
 
@@ -422,5 +444,5 @@ bool JPEGInstance::WasLossyWrite() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF JPEGInstance.cpp - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF JPEGInstance.cpp - Released 2015/07/31 11:49:40 UTC

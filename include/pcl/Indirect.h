@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Indirect.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Indirect.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Indirect_h
 #define __PCL_Indirect_h
@@ -98,7 +101,7 @@ public:
     */
    void operator()( TPtr ptr ) const
    {
-      if ( ptr != 0 )
+      if ( ptr != nullptr )
          function( *ptr );
    }
 
@@ -149,7 +152,7 @@ public:
     */
    void operator()( T1Ptr ptr1, T2Ptr ptr2 ) const
    {
-      if ( ptr1 != 0 && ptr2 != 0 )
+      if ( ptr1 != nullptr && ptr2 != nullptr )
          function( *ptr1, *ptr2 );
    }
 
@@ -199,7 +202,7 @@ public:
     */
    bool operator()( TPtr ptr ) const
    {
-      return ptr != 0 && predicate( *ptr );
+      return ptr != nullptr && predicate( *ptr );
    }
 
 private:
@@ -249,7 +252,7 @@ public:
     */
    bool operator()( T1Ptr ptr1, T2Ptr ptr2 ) const
    {
-      return ptr1 != 0 && ptr2 != 0 && predicate( *ptr1, *ptr2 );
+      return ptr1 != nullptr && ptr2 != nullptr && predicate( *ptr1, *ptr2 );
    }
 
 private:
@@ -261,14 +264,15 @@ private:
 
 /*!
  * \class IndirectEqual
- * \brief A functional class that tests two pointers for equality of the pointed objects.
+ * \brief A functional class that tests two pointers for equality of the
+ *        pointed objects.
  */
 template <class TPtr>
 struct PCL_CLASS IndirectEqual
 {
    bool operator ()( TPtr ptr1, TPtr ptr2 ) const
    {
-      return (ptr1 != 0 && ptr2 != 0) ? *ptr1 == *ptr2 : ptr1 == ptr2;
+      return (ptr1 != nullptr && ptr2 != nullptr) ? *ptr1 == *ptr2 : ptr1 == ptr2;
    }
 };
 
@@ -284,7 +288,7 @@ struct PCL_CLASS IndirectLess
 {
    bool operator ()( TPtr ptr1, TPtr ptr2 ) const
    {
-      return ptr1 != 0 && (ptr2 == 0 || *ptr1 < *ptr2);
+      return ptr1 != nullptr && (ptr2 == nullptr || *ptr1 < *ptr2);
    }
 };
 
@@ -294,5 +298,5 @@ struct PCL_CLASS IndirectLess
 
 #endif  // __PCL_Indirect_h
 
-// ****************************************************************************
-// EOF pcl/Indirect.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Indirect.h - Released 2015/07/30 17:15:18 UTC

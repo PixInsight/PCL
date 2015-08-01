@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard TIFF File Format Module Version 01.00.05.0229
-// ****************************************************************************
-// TIFF.h - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard TIFF File Format Module Version 01.00.06.0248
+// ----------------------------------------------------------------------------
+// TIFF.h - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard TIFF PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_TIFF_h
 #define __PCL_TIFF_h
@@ -83,8 +87,8 @@ struct TIFFFileData;
 // ----------------------------------------------------------------------------
 
 /*
-   Supported TIFF compression algorithms
-*/
+ * Supported TIFF compression algorithms
+ */
 namespace TIFFCompression
 {
    enum value_type
@@ -99,8 +103,8 @@ namespace TIFFCompression
 // ----------------------------------------------------------------------------
 
 /*
-   TIFF-specific image file options
-*/
+ * TIFF-specific image file options
+ */
 class TIFFImageOptions
 {
 public:
@@ -122,22 +126,9 @@ public:
       Reset();
    }
 
-   TIFFImageOptions( const TIFFImageOptions& x )
-   {
-      (void)operator =( x );
-   }
+   TIFFImageOptions( const TIFFImageOptions& ) = default;
 
-   TIFFImageOptions& operator =( const TIFFImageOptions& x )
-   {
-      compression        = x.compression;
-      planar             = x.planar;
-      associatedAlpha    = x.associatedAlpha;
-      premultipliedAlpha = x.premultipliedAlpha;
-      software           = x.software;
-      imageDescription   = x.imageDescription;
-      copyright          = x.copyright;
-      return *this;
-   }
+   TIFFImageOptions& operator =( const TIFFImageOptions& ) = default;
 
    void Reset()
    {
@@ -155,83 +146,73 @@ public:
 // ----------------------------------------------------------------------------
 
 /*
-   Base class for the TIFFReader and TIFFWriter classes.
-*/
+ * Base class for the TIFFReader and TIFFWriter classes.
+ */
 class TIFF
 {
 public:
 
    /*
-      TIFF-specific exception class
-   */
-   class Exception : public ImageStream::Exception
+    * TIFF-specific exception class
+    */
+   class Error : public File::Error
    {
    public:
 
-      Exception( const String& fn ) : ImageStream::Exception( fn )
+      Error( const String& filePath, const String& message ) :
+         File::Error( filePath, message )
       {
       }
 
-      Exception( const TIFF::Exception& x ) : ImageStream::Exception( x )
-      {
-      }
+      Error( const TIFF::Error& x ) = default;
 
       virtual String ExceptionClass() const
       {
          return "PCL TIFF Format Support";
       }
-
-      virtual String ErrorMessage() const = 0;
    };
 
-#define PCL_DECLARE_TIFF_EXCEPTION( className, errorMessage )                 \
-   class className : public TIFF::Exception                                   \
-   {                                                                          \
-   public:                                                                    \
-      className( const String& fn ) : TIFF::Exception( fn )                   \
-      {                                                                       \
-      }                                                                       \
-      className( const className& x ) : TIFF::Exception( x )                  \
-      {                                                                       \
-      }                                                                       \
-      virtual String ErrorMessage() const                                     \
-      {                                                                       \
-         return errorMessage;                                                 \
-      }                                                                       \
-   }
+#define PCL_DECLARE_TIFF_ERROR( className, errorMessage )   \
+   class className : public TIFF::Error                     \
+   {                                                        \
+   public:                                                  \
+      className( const String& filePath ) :                 \
+         TIFF::Error( filePath, errorMessage )              \
+      {                                                     \
+      }                                                     \
+      className( const className& x ) = default;            \
+   };
 
-   PCL_DECLARE_TIFF_EXCEPTION( InvalidFilePath,
-      "Internal error: Invalid file path" );
-   PCL_DECLARE_TIFF_EXCEPTION( WriterNotInitialized,
-      "Internal error: TIFFWriter instance not initialized" );
-   PCL_DECLARE_TIFF_EXCEPTION( UnableToOpenFile,
-      "Unable to open TIFF file" );
-   PCL_DECLARE_TIFF_EXCEPTION( UnableToCreateFile,
-      "Unable to create TIFF file" );
-   PCL_DECLARE_TIFF_EXCEPTION( FileReadError,
-      "Error reading TIFF file" );
-   PCL_DECLARE_TIFF_EXCEPTION( FileWriteError,
-      "Error writing TIFF file" );
-   PCL_DECLARE_TIFF_EXCEPTION( UnsupportedColorSpace,
-      "Unsupported TIFF color space -- must be either grayscale or RGB color" );
-   PCL_DECLARE_TIFF_EXCEPTION( UnsupportedBitsPerSample,
-      "Unsupported TIFF bits per sample -- must be 8/16/32/64 bits" );
-   PCL_DECLARE_TIFF_EXCEPTION( UnsupportedSampleFormat,
-      "Unsupported TIFF sample format -- must be 8/16/32-bit integers or 32/64-bit IEEE floating point" );
-   PCL_DECLARE_TIFF_EXCEPTION( InvalidNormalizationRange,
-      "Internal error: Invalid TIFF normalization range" );
-   PCL_DECLARE_TIFF_EXCEPTION( InvalidReadOperation,
-      "Internal error: Invalid TIFF read operation" );
-   PCL_DECLARE_TIFF_EXCEPTION( InvalidWriteOperation,
-      "Internal error: Invalid TIFF write operation" );
+   PCL_DECLARE_TIFF_ERROR( InvalidFilePath,
+                           "Internal error: Invalid file path" )
+   PCL_DECLARE_TIFF_ERROR( WriterNotInitialized,
+                           "Internal error: TIFFWriter instance not initialized" )
+   PCL_DECLARE_TIFF_ERROR( UnableToOpenFile,
+                           "Unable to open TIFF file" )
+   PCL_DECLARE_TIFF_ERROR( UnableToCreateFile,
+                           "Unable to create TIFF file" )
+   PCL_DECLARE_TIFF_ERROR( FileReadError,
+                           "Error reading TIFF file" )
+   PCL_DECLARE_TIFF_ERROR( FileWriteError,
+                           "Error writing TIFF file" )
+   PCL_DECLARE_TIFF_ERROR( UnsupportedColorSpace,
+                           "Unsupported TIFF color space: Must be either grayscale or RGB color" )
+   PCL_DECLARE_TIFF_ERROR( UnsupportedBitsPerSample,
+                           "Unsupported TIFF bits per sample: Must be 8|16|32|64 bits" )
+   PCL_DECLARE_TIFF_ERROR( UnsupportedSampleFormat,
+                           "Unsupported TIFF sample format: Must be 8|16|32-bit integers or 32|64-bit IEEE floating point" )
+   PCL_DECLARE_TIFF_ERROR( InvalidNormalizationRange,
+                           "Internal error: Invalid TIFF normalization range" )
+   PCL_DECLARE_TIFF_ERROR( InvalidReadOperation,
+                           "Internal error: Invalid TIFF read operation" )
+   PCL_DECLARE_TIFF_ERROR( InvalidWriteOperation,
+                           "Internal error: Invalid TIFF write operation" )
 
-   TIFF() : tiffOptions(), fileData( 0 )
-   {
-   }
+   TIFF() = default;
 
    virtual ~TIFF()
    {
-      __Close();
+      CloseStream();
    }
 
    const TIFFImageOptions& TIFFOptions() const
@@ -252,36 +233,33 @@ public:
 
 protected:
 
-   TIFFImageOptions tiffOptions;
-   TIFFFileData*    fileData;
+   TIFFImageOptions tiffOptions = TIFFImageOptions();
+   TIFFFileData*    fileData = nullptr;
 
-   void __Close(); // ### derived must call base
+   void CloseStream(); // ### derived must call base
 
 private:
 
-   // Disable copy
-   TIFF( const TIFF& ) { PCL_CHECK( 0 ) }
-   void operator =( const TIFF& ) { PCL_CHECK( 0 ) }
+   TIFF( const TIFF& ) = delete;
+   TIFF& operator =( const TIFF& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
 
 /*
-   TIFF image file reader
-*/
+ * TIFF image file reader
+ */
 class TIFFReader : public ImageReader, public TIFF
 {
 public:
 
    TIFFReader() : ImageReader(), TIFF()
    {
-      // Make room for an image description
-      images.Add( ImageDescription() );
+      images.Add( ImageDescription() ); // make room for an image description
    }
 
    virtual ~TIFFReader()
    {
-      // TIFF does the job.
    }
 
    virtual bool IsOpen() const;
@@ -312,26 +290,23 @@ public:
 private:
 
    // Image streams are unique
-   TIFFReader( const TIFFReader& ) { PCL_CHECK( 0 ) }
-   void operator =( const TIFFReader& ) { PCL_CHECK( 0 ) }
+   TIFFReader( const TIFFReader& ) = delete;
+   TIFFReader& operator =( const TIFFReader& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
 
 /*
-   TIFF image file writer.
-*/
+ * TIFF image file writer.
+ */
 class TIFFWriter : public ImageWriter, public TIFF
 {
 public:
 
-   TIFFWriter() : ImageWriter(), TIFF(), icc()
-   {
-   }
+   TIFFWriter() = default;
 
    virtual ~TIFFWriter()
    {
-      // TIFF does the job.
    }
 
    virtual bool IsOpen() const;
@@ -373,29 +348,28 @@ public:
    }
 
    /*
-      Returns the strip size for TIFF image file transference in bytes.
-   */
+    * Returns the strip size for TIFF image file I/O in bytes.
+    */
    static size_type StripSize();
 
    /*
-      Sets the strip size in bytes for TIFF image file transference.
-
-      The default strip size is 4 kilobytes. Too low or high sizes can affect
-      performance adversely.
-   */
+    * Sets the strip size in bytes for TIFF image file I/O.
+    *
+    * The default strip size is 4 kilobytes. Too low or high sizes can affect
+    * performance adversely.
+    */
    static void SetStripSize( size_type sz );
 
 protected:
 
-   // Embedded data.
+   // Embedded data
    ICCProfile icc;
-   // ### TODO: XML metadata
 
 private:
 
    // Image streams are unique
-   TIFFWriter( const TIFFWriter& ) { PCL_CHECK( 0 ) }
-   void operator =( const TIFFWriter& ) { PCL_CHECK( 0 ) }
+   TIFFWriter( const TIFFWriter& ) = delete;
+   TIFFWriter& operator =( const TIFFWriter& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -404,5 +378,5 @@ private:
 
 #endif   // __PCL_TIFF_h
 
-// ****************************************************************************
-// EOF TIFF.h - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF TIFF.h - Released 2015/07/31 11:49:40 UTC

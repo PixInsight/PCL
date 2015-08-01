@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/CharTraits.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/CharTraits.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_CharTraits_h
 #define __PCL_CharTraits_h
@@ -116,6 +119,15 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
+char16_type PCL_FUNC PCL_ToCaseFolded( char16_type );
+char16_type PCL_FUNC PCL_ToLowercase( char16_type );
+char16_type PCL_FUNC PCL_ToUppercase( char16_type );
+
+extern const uint8* PCL_DATA PCL_toLowercaseLatin1;
+extern const uint8* PCL_DATA PCL_toUppercaseLatin1;
+
+// ----------------------------------------------------------------------------
+
 /*!
  * \defgroup char_trait_classes Character Traits Classes
  *
@@ -126,6 +138,198 @@ namespace pcl
  * the building blocks of more complex structures such as character strings and
  * other text-oriented containers.
  */
+
+// ----------------------------------------------------------------------------
+
+#define PCL_COMPARE_CODE_POINTS()                                             \
+   PCL_PRECONDITION( n1 == 0 || n2 == 0 || s1 != nullptr && s2 != nullptr )   \
+   if ( caseSensitive )                                                       \
+   {                                                                          \
+      for ( size_type n = pcl::Min( n1, n2 ); n > 0; --n, ++s1, ++s2 )        \
+         if ( *s1 != *s2 )                                                    \
+            return (*s1 < *s2) ? -1 : +1;                                     \
+   }                                                                          \
+   else                                                                       \
+   {                                                                          \
+      for ( size_type n = pcl::Min( n1, n2 ); n > 0; --n, ++s1, ++s2 )        \
+      {                                                                       \
+         char_type c1 = ToCaseFolded( *s1 ), c2 = ToCaseFolded( *s2 );        \
+         if ( c1 != c2 )                                                      \
+            return (c1 < c2) ? -1 : +1;                                       \
+      }                                                                       \
+   }                                                                          \
+   return (n1 == n2) ? 0 : ((n1 < n2) ? -1 : +1)
+
+// ----------------------------------------------------------------------------
+
+/*
+ * Wildcard string matching algorithm adapted from:
+ *
+ * Kirk J. Krauss (2014): Matching Wildcards: An Empirical Way to Tame an
+ * Algorithm, Dr. Dobb's Magazine, October 7, 2014.
+ *
+ * http://www.drdobbs.com/architecture-and-design/matching-wildcards-an-empirical-way-to-t/240169123
+ */
+
+template <typename Tt, typename Tp> inline
+bool WildMatch( const Tt* t, size_type nt, const Tp* p, size_type np )
+{
+   PCL_PRECONDITION( nt == 0 || np == 0 || t != nullptr && p != nullptr )
+
+   if ( nt == 0 || np == 0 )
+      return false;
+
+   const Tt* et = t + nt;
+   const Tp* ep = p + np;
+   const Tt* bt = nullptr;
+   const Tp* bp = nullptr;
+
+   for ( ;; )
+   {
+      Tp c = *p;
+
+      if ( c == Tp( '*' ) )
+      {
+         do
+            if ( ++p == ep )
+               return true;
+         while ( (c = *p) == Tp( '*' ) );
+
+         if ( c != Tp( '?' ) )
+            while ( Tt( c ) != *t )
+               if ( ++t == et )
+                  return false;
+
+         bp = p;
+         bt = t;
+      }
+      else if ( Tt( c ) != *t && c != Tp( '?' ) )
+      {
+         if ( bp != nullptr )
+         {
+            if ( p != bp )
+            {
+               p = bp;
+
+               if ( Tt( *p ) != *t )
+               {
+                  t = ++bt;
+                  continue;
+               }
+
+               ++p;
+            }
+
+            if ( t < et )
+            {
+               ++t;
+               continue;
+            }
+         }
+
+         return false;
+      }
+
+      ++t;
+      ++p;
+
+      if ( t == et )
+      {
+         if ( p == ep )
+            return true;
+
+         while ( *p == Tp( '*' ) )
+            if ( ++p == ep )
+               return true;
+
+         return false;
+      }
+   }
+}
+
+template <typename Tt, typename Tp, class Ut, class Up> inline
+bool WildMatchIC( const Tt* t, size_type nt, const Tp* p, size_type np, Ut ut, Up up )
+{
+   PCL_PRECONDITION( nt == 0 || np == 0 || t != nullptr && p != nullptr && ut != nullptr && up != nullptr )
+
+   if ( nt == 0 || np == 0 )
+      return false;
+
+   const Tt* et = t + nt;
+   const Tp* ep = p + np;
+   const Tt* bt = nullptr;
+   const Tp* bp = nullptr;
+
+   for ( ;; )
+   {
+      Tp c = *p;
+
+      if ( c == Tp( '*' ) )
+      {
+         do
+            if ( ++p == ep )
+               return true;
+         while ( (c = *p) == Tp( '*' ) );
+
+         if ( c != Tp( '?' ) )
+         {
+            c = up( c );
+            while ( Tt( c ) != ut( *t ) )
+               if ( ++t == et )
+                  return false;
+         }
+
+         bp = p;
+         bt = t;
+      }
+      else if ( c != Tp( '?' ) )
+      {
+         Tt ft = ut( *t );
+
+         if ( Tt( up( c ) ) != ft )
+         {
+            if ( bp != nullptr )
+            {
+               if ( p != bp )
+               {
+                  p = bp;
+
+                  if ( Tt( up( *p ) ) != ft )
+                  {
+                     t = ++bt;
+                     continue;
+                  }
+
+                  ++p;
+               }
+
+               if ( t < et )
+               {
+                  ++t;
+                  continue;
+               }
+            }
+
+            return false;
+         }
+      }
+
+      ++t;
+      ++p;
+
+      if ( t == et )
+      {
+         if ( p == ep )
+            return true;
+
+         while ( *p == Tp( '*' ) )
+            if ( ++p == ep )
+               return true;
+
+         return false;
+      }
+   }
+}
 
 // ----------------------------------------------------------------------------
 
@@ -170,19 +374,18 @@ public:
    }
 
    /*!
-    * Returns the length of a string in characters (\e not bytes).
+    * Returns the length of a null-terminated string in characters (\e not
+    * bytes).
     *
-    * All PCL strings are null-terminated, so the computed length is the
-    * length of the initial contiguous sequence of characters that are not
-    * equal to Null().
+    * The returned value is the length of the initial contiguous sequence of
+    * characters that are not equal to Null().
     */
-   static size_type Length( const T* s )
+   static size_type Length( const char_type* s )
    {
-      if ( s == 0 )
-         return 0;
-      for ( size_type n = 0; ; ++n, ++s )
-         if ( *s == Null() )
-            return n;
+      const char_type* t = s;
+      if ( s != nullptr )
+         for ( ; *t != Null(); ++t ) {}
+      return size_type( t - s );
    }
 
    /*!
@@ -192,9 +395,9 @@ public:
     * \param c    Constant value to fill with.
     * \param n    Number of characters to fill.
     */
-   static void Fill( T* s, T c, size_type n )
+   static void Fill( char_type* s, char_type c, size_type n )
    {
-      PCL_PRECONDITION( s != 0 )
+      PCL_PRECONDITION( n == 0 || s != nullptr )
       for ( ; n > 0; --n )
          *s++ = c;
    }
@@ -208,13 +411,12 @@ public:
     * \param n    Number of characters to copy.
     *
     * If the source and destination regions overlap, this routine will produce
-    * an unpredictable result.
+    * an unpredictable result. CopyOverlapped() should be used in these cases.
     */
-   static void Copy( T* dst, const T* src, size_type n )
+   static void Copy( char_type* dst, const char_type* src, size_type n )
    {
-      PCL_PRECONDITION( dst != 0 && src != 0 )
-      for ( ; n > 0; --n )
-         *dst++ = *src++;
+      PCL_PRECONDITION( n == 0 || dst != nullptr && src != nullptr )
+      ::memcpy( dst, src, n*sizeof( char_type ) );
    }
 
    /*!
@@ -225,24 +427,42 @@ public:
     * \param src  Initial address of the sequence of source characters.
     * \param n    Number of characters to copy.
     */
-   static void CopyOverlapped( T* dst, const T* src, size_type n )
+   static void CopyOverlapped( char_type* dst, const char_type* src, size_type n )
    {
-      PCL_PRECONDITION( dst != 0 && src != 0 )
-      if ( n > 0 )
-         if ( dst < src || src+n <= dst )
-            for ( ;; )
-            {
-               *dst++ = *src++;
-               if ( --n == 0 )
-                  break;
-            }
-         else
-            for ( dst += n, src += n; ; )
-            {
-               *--dst = *--src;
-               if ( --n == 0 )
-                  break;
-            }
+      PCL_PRECONDITION( n == 0 || dst != nullptr && src != nullptr )
+      ::memmove( dst, src, n*sizeof( char_type ) );
+   }
+
+   /*!
+    * Compares numeric character values between two strings.
+    *
+    * \param s1   First string.
+    * \param n1   Length of the first string in characters.
+    * \param s2   Second string.
+    * \param n2   Length of the second string in characters.
+    *
+    * \param caseSensitive    When true, a case-sensitive comparison is
+    *                         performed; otherwise the comparison does not
+    *                         distinguish between lowercase and uppercase
+    *                         characters. The default value of this parameter
+    *                         is true.
+    *
+    * Returns an integer code representing the comparison result:
+    *
+    * \li  0 if \a s1 and \a s2 are equal
+    * \li -1 if \a s1 is less than \a s2
+    * \li +1 if \a s1 is greater than \a s2
+    *
+    * This function compares the numerical values of string characters. For
+    * case-insensitive comparisons, this generic routine is only valid for the
+    * ISO/IEC 8859-1 character set: characters in the ranges 0x41-0x5A,
+    * 0xC0-0xD6 and 0xD8-0xDE are considered identical to its counterparts in
+    * the ranges 0x61-0x7A, 0xE0-0xF6 and 0xF8-0xFE, respectively.
+    */
+   static int CompareCodePoints( const char_type* s1, size_type n1,
+                                 const char_type* s2, size_type n2, bool caseSensitive = true )
+   {
+      PCL_COMPARE_CODE_POINTS();
    }
 
    /*!
@@ -266,179 +486,245 @@ public:
     *                         instantiations.
     *
     * Returns an integer code representing the comparison result:
-    * 0 if \a s1 and \a s2 are equal
-    * -1 if \a s1 is less than \a s2
-    * +1 if \a s1 is greater than \a s2
     *
-    * This default implementation compares only the numerical values of string
-    * characters, so it cannot be localized and can't be aware of user locale
-    * settings. For case-insensitive comparisons, this routine is only valid
-    * for the ISO/IEC 8859-1 character set: each character in the range 'A'-'Z'
-    * is considered identical to its counterpart in the range 'a'-'z', and each
-    * character in the range 0xC0-0xDF is identical to its counterpart in the
-    * range 0xE0-0xFF. For more elaborated and locale-aware implementations of
-    * this static function, see the IsoCharTraits and CharTraits classes.
+    * \li  0 if \a s1 and \a s2 are equal
+    * \li -1 if \a s1 is less than \a s2
+    * \li +1 if \a s1 is greater than \a s2
+    *
+    * This default implementation simply calls CompareCodePoints() to compare
+    * the numerical values of string characters, so it cannot be localized and
+    * can't be aware of user locale settings. For more comprehensive,
+    * locale-aware Unicode implementations of this static function, see the
+    * IsoCharTraits and CharTraits classes.
     */
-   static int Compare( const T* s1, size_type n1, const T* s2, size_type n2,
-                       bool caseSensitive = true, bool localeAware = true )
+   static int Compare( const char_type* s1, size_type n1,
+                       const char_type* s2, size_type n2, bool caseSensitive = true, bool localeAware = true )
    {
-      PCL_PRECONDITION( s1 != 0 && s2 != 0 )
-      if ( caseSensitive )
-      {
-         for ( size_type n = pcl::Min( n1, n2 ); n > 0; --n, ++s1, ++s2 )
-            if ( *s1 != *s2 )
-               return (*s1 < *s2) ? -1 : +1;
-      }
-      else
-      {
-         for ( size_type n = pcl::Min( n1, n2 ); n > 0; --n, ++s1, ++s2 )
-         {
-            T c1 = *s1, c2 = *s2;
-            if ( c1 >= T( 'A' ) && c1 <= T( 'Z' ) || c1 >= T( 0xc0 ) && c1 <= T( 0xdf ) )
-               c1 += 'a' - 'A';
-            if ( c2 >= T( 'A' ) && c2 <= T( 'Z' ) || c2 >= T( 0xc0 ) && c2 <= T( 0xdf ) )
-               c2 += 'a' - 'A';
-            if ( c1 != c2 )
-               return (c1 < c2) ? -1 : +1;
-         }
-      }
-      return (n1 == n2) ? 0 : ((n1 < n2) ? -1 : +1);
+      return CompareCodePoints( s1, n1, s2, n2, caseSensitive );
    }
 
    /*!
-    * Case-insensitive comparison between two generic strings.
+    * Wildcard string matching algorithm.
     *
-    * \param s1   First string
-    * \param n1   Length of the first string in characters
-    * \param s2   Second string
-    * \param n2   Length of the second string in characters
+    * \param t    The string to be matched.
     *
-    * Returns an integer code representing the comparison result:
-    * 0 if \a s1 and \a s2 are equal
-    * -1 if \a s1 is less than \a s2
-    * +1 if \a s1 is greater than \a s2
+    * \param nt   Length of the string to be matched in characters.
     *
-    * \deprecated This function has been deprecated. It is kept as part of PCL
-    * only to allow existing code to continue working. For newly produced code,
-    * use the Compare() function instead by passing \a caseSensitive=false.
+    * \param p    The pattern string. May contain multiple instances of the
+    *             wildcard characters '*' and '?'.
+    *
+    * \param np   Length of the pattern string in characters.
+    *
+    * \param caseSensitive    When true, a case-sensitive comparison is
+    *                         performed; otherwise the comparison does not
+    *                         distinguish between lowercase and uppercase
+    *                         characters. The default value of this parameter
+    *                         is true.
+    *
+    * Returns true if the string \a t matches the specified pattern \a p; false
+    * otherwise. If one of the strings is empty, this function always returns
+    * false conventionally, even if the pattern is a single asterisk '*'.
     */
-   static int CompareIC( const T* s1, size_type n1, const T* s2, size_type n2 )
+   static bool WildMatch( const char_type* t, size_type nt,
+                          const char_type* p, size_type np, bool caseSensitive = true )
    {
-      return Compare( s1, n1, s2, n2, false/*caseSensitive*/ );
+      if ( caseSensitive )
+         return pcl::WildMatch( t, nt, p, np );
+      return pcl::WildMatchIC( t, nt, p, np, ToCaseFolded, ToCaseFolded );
+   }
+
+   /*!
+    * Returns the \e case \e folded equivalent character for the specified
+    * code point \a c.
+    *
+    * Case folding elimitates case differences, which is useful for
+    * case-insensitive string comparisons.
+    *
+    * This default implementation is only valid for the ISO/IEC-8859-1
+    * character set. For a comprehensive Unicode implementation see the
+    * CharTraits class.
+    */
+   static char_type ToCaseFolded( char_type c )
+   {
+      return ToLowercase( c );
+   }
+
+   /*!
+    * Returns the lowercase equivalent character for the specified code point.
+    *
+    * This default implementation is only valid for the ISO/IEC-8859-1
+    * character set. For a comprehensive Unicode implementation see the
+    * CharTraits class.
+    */
+   static char_type ToLowercase( char_type c )
+   {
+      if (    c >= char_type(  65 ) && c <= char_type(  90 )
+           || c >= char_type( 192 ) && c <= char_type( 214 )
+           || c >= char_type( 216 ) && c <= char_type( 222 ) )
+         return c + 32;
+      return c;
+   }
+
+   /*!
+    * Returns the uppercase equivalent character for the specified code point.
+    *
+    * This default implementation is only valid for the ISO/IEC-8859-1
+    * character set. For a comprehensive Unicode implementation see the
+    * CharTraits class.
+    */
+   static char_type ToUppercase( char_type c )
+   {
+      if (    c >= char_type(  97 ) && c <= char_type( 122 )
+           || c >= char_type( 224 ) && c <= char_type( 246 )
+           || c >= char_type( 248 ) && c <= char_type( 254 ) )
+         return c - 32;
+      return c;
    }
 
    /*!
     * Transforms a string to lower case.
     *
-    * \note See the documentation for Compare() for more information on the
-    * default character case comparisons.
+    * This default implementation is only valid for the ISO/IEC-8859-1
+    * character set. For a comprehensive Unicode implementation see the
+    * CharTraits class.
     */
-   static void ToLowerCase( T* s, size_type n )
+   static void ToLowercase( char_type* s, size_type n )
    {
-      PCL_PRECONDITION( s != 0 )
+      PCL_PRECONDITION( n == 0 || s != nullptr )
       for ( ; n > 0; --n, ++s )
-         if ( *s >= T( 'A' ) && *s <= T( 'Z' ) || *s >= T( 0xc0 ) && *s <= T( 0xdf ) )
-            *s += 'a' - 'A';
+         *s = ToLowercase( *s );
    }
 
    /*!
     * Transforms a string to upper case.
     *
-    * \note See the documentation for Compare() for more information on the
-    * default character case comparisons.
+    * This default implementation is only valid for the ISO/IEC-8859-1
+    * character set. For a comprehensive Unicode implementation see the
+    * CharTraits class.
     */
-   static void ToUpperCase( T* s, size_type n )
+   static void ToUppercase( char_type* s, size_type n )
    {
-      PCL_PRECONDITION( s != 0 )
+      PCL_PRECONDITION( n == 0 || s != nullptr )
       for ( ; n > 0; --n, ++s )
-         if ( *s >= T( 'a' ) && *s <= T( 'z' ) || *s >= T( 0xe0 ) && *s <= T( 0xff ) )
-            *s -= 'a' - 'A';
+         *s = ToUppercase( *s );
    }
 
    /*!
-    * Termination null character
+    * Returns the null string termination character '\\0'.
     */
-   static T Null()
+   static char_type Null()
    {
-      return T( 0 );
+      return char_type( 0 );
    }
 
    /*!
-    * Blank space character (white space)
+    * Returns the blank space character (white space).
     */
-   static T Blank()
+   static char_type Blank()
    {
-      return T( ' ' );
+      return char_type( ' ' );
    }
 
    /*!
-    * Horizontal tab
+    * Returns the horizontal tab control character '\\t'.
     */
-   static T Tab()
+   static char_type Tab()
    {
-      return T( '\t' );
+      return char_type( '\t' );
    }
 
    /*!
-    * Carriage Return
+    * Returns the carriage return control character '\\r'.
     */
-   static T CR()
+   static char_type CR()
    {
-      return T( '\r' );
+      return char_type( '\r' );
    }
 
    /*!
-    * Line Feed
+    * Returns the line feed control character '\\n'.
     */
-   static T LF()
+   static char_type LF()
    {
-      return T( '\n' );
+      return char_type( '\n' );
    }
 
    /*!
-    * Plus sign
+    * Returns the comma punctuator character ','.
     */
-   static T PlusSign()
+   static char_type Comma()
    {
-      return T( '+' );
+      return char_type( ',' );
    }
 
    /*!
-    * Minus sign
+    * Returns the colon punctuator character ':'.
     */
-   static T MinusSign()
+   static char_type Colon()
    {
-      return T( '-' );
+      return char_type( ':' );
    }
 
    /*!
-    * Decimal separator
+    * Returns the semicolon punctuator character ';'.
     */
-   static T DecimalSeparator()
+   static char_type Semicolon()
    {
-      return T( '.' );
+      return char_type( ';' );
    }
 
    /*!
-    * Exponent delimiter
+    * Returns the hyphen punctuator character '-'.
     */
-   static T ExponentDelimiter()
+   static char_type Hyphen()
    {
-      return T( 'e' );
+      return char_type( '-' );
    }
 
    /*!
-    * Underscore
+    * Returns the plus sign character '+'.
     */
-   static T Underscore()
+   static char_type PlusSign()
    {
-      return T( '_' );
+      return char_type( '+' );
    }
 
    /*!
-    * Returns true if a character \a c is a valid null terminator.
+    * Returns the minus sign character '-'.
     */
-   static bool IsNull( T c )
+   static char_type MinusSign()
+   {
+      return char_type( '-' );
+   }
+
+   /*!
+    * Returns the decimal separator character '.'.
+    */
+   static char_type DecimalSeparator()
+   {
+      return char_type( '.' );
+   }
+
+   /*!
+    * Returns the exponent delimiter character 'e'.
+    */
+   static char_type ExponentDelimiter()
+   {
+      return char_type( 'e' );
+   }
+
+   /*!
+    * Returns the underscore character '_'.
+    */
+   static char_type Underscore()
+   {
+      return char_type( '_' );
+   }
+
+   /*!
+    * Returns true if a character \a c is a null string terminator.
+    */
+   static bool IsNull( char_type c )
    {
       return c == Null();
    }
@@ -446,76 +732,148 @@ public:
    /*!
     * Returns true if a character \a c is a white space character.
     */
-   static bool IsSpace( T c )
+   static bool IsSpace( char_type c )
    {
       return c == Blank() || c == Tab() || c == CR() || c == LF();
    }
 
    /*!
-    * Returns true if a character \a c is a trimable character.
+    * Returns true if a character \a c is a trimable character. Generally
+    * equivalent to IsSpace().
     */
-   static bool IsTrimable( T c )
+   static bool IsTrimable( char_type c )
    {
       return IsSpace( c );
    }
 
    /*!
-    * Returns true if a character \a c is a valid numerical decimal digit.
+    * Returns true if a character \a c is a decimal digit. Decimal digits are
+    * in the range [0-9].
     */
-   static bool IsDigit( T c )
+   static bool IsDigit( char_type c )
    {
-      return c >= T( '0' ) && c <= T( '9' );
+      return c >= char_type( '0' ) && c <= char_type( '9' );
    }
 
    /*!
-    * Returns true if a character \a c is a valid numerical hexadecimal digit.
+    * Returns true if a character \a c is an hexadecimal digit. Hexadecimal
+    * digits are in the range [a-fA-F].
     */
-   static bool IsHexDigit( T c )
+   static bool IsHexDigit( char_type c )
    {
-      return IsDigit( c ) || c >= T( 'A' ) && c <= T( 'F' ) ||
-                             c >= T( 'a' ) && c <= T( 'f' );
+      return IsDigit( c ) || c >= char_type( 'A' ) && c <= char_type( 'F' ) ||
+                             c >= char_type( 'a' ) && c <= char_type( 'f' );
    }
 
    /*!
-    * Returns true if a character \a c is a valid symbol component.
+    * Returns true if a character \a c is in the range [a-zA-Z].
     */
-   static bool IsSymbolDigit( T c )
+   static bool IsAlpha( char_type c )
    {
-      return c >= T( 'A' ) && c <= T( 'Z' ) ||
-             c >= T( 'a' ) && c <= T( 'z' ) || c == Underscore();
+      return IsLowercaseAlpha( c ) || IsUppercaseAlpha( c );
    }
 
    /*!
-    * Returns true if a character \a c is an underscore.
+    * Returns true if a character \a c is in the range [a-z].
     */
-   static bool IsUnderscore( T c )
+   static bool IsLowercaseAlpha( char_type c )
+   {
+      return c >= char_type( 'a' ) && c <= char_type( 'z' );
+   }
+
+   /*!
+    * Returns true if a character \a c is in the range [A-Z].
+    */
+   static bool IsUppercaseAlpha( char_type c )
+   {
+      return c >= char_type( 'A' ) && c <= char_type( 'Z' );
+   }
+
+   /*!
+    * Returns true if a character \a c is the underscore character '_'.
+    */
+   static bool IsUnderscore( char_type c )
    {
       return c == Underscore();
    }
 
    /*!
-    * Returns true if a character \a c is a numerical sign.
+    * Returns true if a character \a c is a valid symbol element. Symbol digits
+    * are in the range [a-zA-Z0-9_].
     */
-   static bool IsSign( T c )
+   static bool IsSymbolDigit( char_type c )
+   {
+      return IsAlpha( c ) || IsDigit( c ) || IsUnderscore( c );
+   }
+
+   /*!
+    * Returns true if a character \a c is a valid starting symbol digit. A
+    * starting symbol digit is in the range [a-zA-Z_].
+    */
+   static bool IsStartingSymbolDigit( char_type c )
+   {
+      return IsAlpha( c ) || IsUnderscore( c );
+   }
+
+   /*!
+    * Returns true if a character \a c is a numerical sign, either '+' or '-'.
+    */
+   static bool IsSign( char_type c )
    {
       return c == MinusSign() || c == PlusSign();
    }
 
    /*!
-    * Returns true if a character \a c is a decimal separator.
+    * Returns true if a character \a c is the decimal separator '.'.
     */
-   static bool IsDecimalSeparator( T c )
+   static bool IsDecimalSeparator( char_type c )
    {
       return c == DecimalSeparator();
    }
 
    /*!
-    * Returns true if a character \a c can be an exponent delimiter.
+    * Returns true if a character \a c is an exponent delimiter. Exponent
+    * delimiters are in the range [eEdD]. The [dD] pair allows for FORTRAN
+    * compatibility.
     */
-   static bool IsExponentDelimiter( T c )
+   static bool IsExponentDelimiter( char_type c )
    {
-      // We accept FORTRAN 'D'/'d' exponent delimiters.
-      return c == T( 'E' ) || c == T( 'e' ) || c == T( 'D' ) || c == T( 'd' );
+      return c == char_type( 'e' ) || c == char_type( 'E' ) || c == char_type( 'd' ) || c == char_type( 'D' );
+   }
+
+   /*!
+    * Returns true if a character \a c is a wildcard. The wildcards are the
+    * asterisk '*' and question mark '?' characters.
+    */
+   static bool IsWildcard( char_type c )
+   {
+      return c == char_type( '*' ) || c == char_type( '?' );
+   }
+
+   /*!
+    * Returns a pointer to the first non-trimmable character in the sequence of
+    * contiguous characters defined by the range [i,j) of pointers.
+    */
+   template <typename Ptr1, typename Ptr2>
+   static Ptr1 SearchTrimLeft( Ptr1 i, Ptr2 j )
+   {
+      for ( ; i < j && IsTrimable( *i ); ++i ) {}
+      return i;
+   }
+
+   /*!
+    * Returns a pointer to the character \e after the last non-trimmable
+    * character in the sequence of contiguous characters defined by the range
+    * [i,j) of pointers.
+    *
+    * If there are no trimmable characters in the specified sequence, this
+    * function returns the ending pointer \a j.
+    */
+   template <typename Ptr1, typename Ptr2>
+   static Ptr2 SearchTrimRight( Ptr1 i, Ptr2 j )
+   {
+      for ( ; i < j && IsTrimable( *(j-1) ); --j ) {}
+      return j;
    }
 };
 
@@ -533,18 +891,26 @@ class PCL_CLASS IsoCharTraits : public GenericCharTraits<char>
 {
 public:
 
+   /*!
+    * Base class of this char traits class.
+    */
    typedef GenericCharTraits<char>  traits_base;
 
    /*!
-    * Returns the length of a string in characters (\e not bytes).
-    *
-    * All PCL strings are null-terminated, so the computed length is the
-    * length of the initial contiguous sequence of characters that are not
-    * equal to Null().
+    * Represents the character data type used by this traits class.
     */
-   static size_type Length( const char* s )
+   typedef traits_base::char_type   char_type;
+
+   /*!
+    * Returns the length of a null-terminated 8-bit string in characters
+    * (\e not bytes).
+    *
+    * The returned value is the length of the initial contiguous sequence of
+    * characters that are not equal to Null().
+    */
+   static size_type Length( const char_type* s )
    {
-      return (s != 0) ? ::strlen( s ) : 0;
+      return (s != nullptr) ? ::strlen( s ) : 0;
    }
 
    /*!
@@ -554,9 +920,9 @@ public:
     * \param c    Constant value to fill with.
     * \param n    Number of characters to fill.
     */
-   static void Fill( char* s, char c, size_type n )
+   static void Fill( char_type* s, char_type c, size_type n )
    {
-      PCL_PRECONDITION( s != 0 )
+      PCL_PRECONDITION( n == 0 || s != nullptr )
       ::memset( s, c, n );
    }
 
@@ -569,11 +935,11 @@ public:
     * \param n    Number of characters to copy.
     *
     * If the source and destination regions overlap, this routine will produce
-    * an unpredictable result.
+    * an unpredictable result. CopyOverlapped() should be used in these cases.
     */
-   static void Copy( char* dst, const char* src, size_type n )
+   static void Copy( char_type* dst, const char_type* src, size_type n )
    {
-      PCL_PRECONDITION( dst != 0 && src != 0 )
+      PCL_PRECONDITION( n == 0 || dst != nullptr && src != nullptr )
       ::memcpy( dst, src, n );
    }
 
@@ -585,10 +951,36 @@ public:
     * \param src  Initial address of the sequence of source characters.
     * \param n    Number of characters to copy.
     */
-   static void CopyOverlapped( char* dst, const char* src, size_type n )
+   static void CopyOverlapped( char_type* dst, const char_type* src, size_type n )
    {
-      PCL_PRECONDITION( dst != 0 && src != 0 )
+      PCL_PRECONDITION( n == 0 || dst != nullptr && src != nullptr )
       ::memmove( dst, src, n );
+   }
+
+   /*!
+    * Compares numeric character values between two 8-bit strings.
+    *
+    * \param s1   First string.
+    * \param n1   Length of the first string in characters.
+    * \param s2   Second string.
+    * \param n2   Length of the second string in characters.
+    *
+    * \param caseSensitive    When true, a case-sensitive comparison is
+    *                         performed; otherwise the comparison does not
+    *                         distinguish between lowercase and uppercase
+    *                         characters. The default value of this parameter
+    *                         is true.
+    *
+    * Returns an integer code representing the comparison result:
+    *
+    * \li  0 if \a s1 and \a s2 are equal
+    * \li -1 if \a s1 is less than \a s2
+    * \li +1 if \a s1 is greater than \a s2
+    */
+   static int CompareCodePoints( const char_type* s1, size_type n1,
+                                 const char_type* s2, size_type n2, bool caseSensitive = true )
+   {
+      PCL_COMPARE_CODE_POINTS();
    }
 
    /*!
@@ -602,20 +994,24 @@ public:
     * \param caseSensitive    When true, a case-sensitive comparison is
     *                         performed; otherwise the comparison does not
     *                         distinguish between lowercase and uppercase
-    *                         characters (as defined by the selected locale).
+    *                         characters (as defined by the current locale).
     *                         The default value of this parameter is true.
     *
     * \param localeAware      When true, a locale-aware comparison is
     *                         performed which takes into account the currently
     *                         selected user locale (language and variants).
     *                         When false, an invariant comparison is carried
-    *                         out by comparing Unicode code points (which is
-    *                         faster). The default value is true.
+    *                         out by comparing Unicode code points (which may
+    *                         be faster). The default value is true.
     *
     * Returns an integer code representing the comparison result:
-    * 0 if \a s1 and \a s2 are equal
-    * -1 if \a s1 is less than \a s2
-    * +1 if \a s1 is greater than \a s2
+    *
+    * \li  0 if \a s1 and \a s2 are equal
+    * \li -1 if \a s1 is less than \a s2
+    * \li +1 if \a s1 is greater than \a s2
+    *
+    * On OS X and Windows platforms this function invokes system API routines
+    * to perform locale-aware string comparisons.
     *
     * On X11 (FreeBSD and Linux platforms), when the \a localeAware
     * parameter is true, the comparison uses the current locale as reported by
@@ -641,63 +1037,103 @@ public:
     * setlocale( LC_COLLATE, "" );
     * setlocale( LC_CTYPE, "" );
     * \endcode
-    *
-    * Failure to restore the default platform locale on X11 is considered bad
-    * practice and disqualifies a module for certification.
     */
-   static int Compare( const char* s1, size_type n1,
-                       const char* s2, size_type n2, bool caseSensitive = true, bool localeAware = true );
+   static int Compare( const char_type* s1, size_type n1,
+                       const char_type* s2, size_type n2, bool caseSensitive = true, bool localeAware = true );
 
    /*!
-    * Case-insensitive comparison between two 8-bit strings.
+    * Wildcard string matching algorithm.
     *
-    * \param s1   First string
-    * \param n1   Length of the first string in characters
-    * \param s2   Second string
-    * \param n2   Length of the second string in characters
+    * \param t    The string to be matched.
     *
-    * Returns an integer code representing the comparison result:
-    * 0 if \a s1 and \a s2 are equal
-    * -1 if \a s1 is less than \a s2
-    * +1 if \a s1 is greater than \a s2
+    * \param nt   Length of the string to be matched in characters.
     *
-    * \deprecated This function has been deprecated. It is kept as part of PCL
-    * only to allow existing code to continue working. For newly produced code,
-    * use the Compare() function instead by passing \a caseSensitive=false.
+    * \param p    The pattern string. May contain multiple instances of the
+    *             wildcard characters '*' and '?'.
+    *
+    * \param np   Length of the pattern string in characters.
+    *
+    * \param caseSensitive    When true, a case-sensitive comparison is
+    *                         performed; otherwise the comparison does not
+    *                         distinguish between lowercase and uppercase
+    *                         characters. The default value of this parameter
+    *                         is true.
+    *
+    * Returns true if the string \a t matches the specified pattern \a p; false
+    * otherwise. If one of the strings is empty, this function always returns
+    * false conventionally, even if the pattern is a single asterisk '*'.
     */
-   static int CompareIC( const char* s1, size_type n1, const char* s2, size_type n2 )
+   static bool WildMatch( const char_type* t, size_type nt,
+                          const char_type* p, size_type np, bool caseSensitive = true )
    {
-      return Compare( s1, n1, s2, n2, false/*caseSensitive*/ );
+      if ( caseSensitive )
+         return pcl::WildMatch( t, nt, p, np );
+      return pcl::WildMatchIC( t, nt, p, np,
+                               []( char_type c ) { return ToCaseFolded( c ); },
+                               []( char_type c ) { return ToCaseFolded( c ); } );
    }
 
    /*!
-    * Transforms a string to lower case.
+    * Returns the \e case \e folded equivalent character for the specified
+    * ISO/IEC-8859-1 code point \a c.
+    *
+    * Case folding elimitates case differences, which is useful for
+    * case-insensitive string comparisons.
+    *
+    * For more information on case folding, see Section 3.13 Default Case
+    * Algorithms in The Unicode Standard.
     */
-   static void ToLowerCase( char* s, size_type n )
+   static char_type ToCaseFolded( char_type c )
    {
-      PCL_PRECONDITION( s != 0 )
-#ifdef __PCL_WINDOWS
-      ::CharLowerBuffA( s, DWORD( n ) );
-#else
-      for ( ; n > 0 && *s != '\0'; --n, ++s )
-         if ( ::isupper( *s ) )
-            *s = ::tolower( *s );
-#endif
+      return ToLowercase( c );
    }
 
    /*!
-    * Transforms a string to upper case.
+    * Returns the lowercase equivalent character for the specified
+    * ISO/IEC-8859-1 code point \a c.
     */
-   static void ToUpperCase( char* s, size_type n )
+   static char_type ToLowercase( char_type c )
    {
-      PCL_PRECONDITION( s != 0 )
-#ifdef __PCL_WINDOWS
-      ::CharUpperBuffA( s, DWORD( n ) );
-#else
-      for ( ; n > 0 && *s != '\0'; --n, ++s )
-         if ( ::islower( *s ) )
-            *s = ::toupper( *s );
-#endif
+      return char_type( PCL_toLowercaseLatin1[uint8( c )] );
+   }
+
+   /*!
+    * Returns the uppercase equivalent character for the specified
+    * ISO/IEC-8859-1 code point \a c.
+    */
+   static char_type ToUppercase( char_type c )
+   {
+      return char_type( PCL_toUppercaseLatin1[uint8( c )] );
+   }
+
+   /*!
+    * Transforms a string to case folded.
+    */
+   static void ToCaseFolded( char_type* s, size_type n )
+   {
+      PCL_PRECONDITION( n == 0 || s != nullptr )
+      for ( ; n > 0; --n, ++s )
+         *s = ToCaseFolded( *s );
+   }
+
+   /*!
+    * Transforms a string to lowercase.
+    */
+   static void ToLowercase( char_type* s, size_type n )
+   {
+      PCL_PRECONDITION( n == 0 || s != nullptr )
+      for ( ; n > 0; --n, ++s )
+         *s = ToLowercase( *s );
+   }
+
+   /*!
+    * Transforms a string to uppercase.
+    */
+   static void ToUppercase( char_type* s, size_type n )
+   {
+      PCL_PRECONDITION( n == 0 || s != nullptr )
+      for ( ; n > 0; --n, ++s )
+         *s = ToUppercase( *s );
    }
 };
 
@@ -715,19 +1151,27 @@ class PCL_CLASS CharTraits : public GenericCharTraits<char16_type>
 {
 public:
 
+   /*!
+    * Base class of this char traits class.
+    */
    typedef GenericCharTraits<char16_type>    traits_base;
 
    /*!
-    * Returns the length of a string in characters (\e not bytes).
-    *
-    * All PCL strings are null-terminated, so the computed length is the
-    * length of the initial contiguous sequence of characters that are not
-    * equal to Null().
+    * Represents the character data type used by this traits class.
     */
-   static size_type Length( const char16_type* s )
+   typedef traits_base::char_type            char_type;
+
+   /*!
+    * Returns the length of a null-terminated UTF-16 string in characters
+    * (\e not bytes).
+    *
+    * The returned value is the length of the initial contiguous sequence of
+    * characters that are not equal to Null().
+    */
+   static size_type Length( const char_type* s )
    {
 #ifdef __PCL_WINDOWS
-      return (s != 0) ? ::wcslen( reinterpret_cast<const wchar_t*>( s ) ) : 0;
+      return (s != nullptr) ? ::wcslen( reinterpret_cast<const wchar_t*>( s ) ) : 0;
 #else
       return traits_base::Length( s );
 #endif
@@ -742,11 +1186,11 @@ public:
     * \param n    Number of characters to copy.
     *
     * If the source and destination regions overlap, this routine will produce
-    * an unpredictable result.
+    * an unpredictable result. CopyOverlapped() should be used in these cases.
     */
-   static void Copy( char16_type* dst, const char16_type* src, size_type n )
+   static void Copy( char_type* dst, const char_type* src, size_type n )
    {
-      PCL_PRECONDITION( dst != 0 && src != 0 )
+      PCL_PRECONDITION( n == 0 || dst != nullptr && src != nullptr )
       ::memcpy( dst, src, n << 1 );
    }
 
@@ -758,10 +1202,36 @@ public:
     * \param src  Initial address of the sequence of source characters.
     * \param n    Number of characters to copy.
     */
-   static void CopyOverlapped( char16_type* dst, const char16_type* src, size_type n )
+   static void CopyOverlapped( char_type* dst, const char_type* src, size_type n )
    {
-      PCL_PRECONDITION( dst != 0 && src != 0 )
+      PCL_PRECONDITION( n == 0 || dst != nullptr && src != nullptr )
       ::memmove( dst, src, n << 1 );
+   }
+
+   /*!
+    * Compares numeric character values between two Unicode strings.
+    *
+    * \param s1   First string.
+    * \param n1   Length of the first string in characters.
+    * \param s2   Second string.
+    * \param n2   Length of the second string in characters.
+    *
+    * \param caseSensitive    When true, a case-sensitive comparison is
+    *                         performed; otherwise the comparison does not
+    *                         distinguish between lowercase and uppercase
+    *                         characters. The default value of this parameter
+    *                         is true.
+    *
+    * Returns an integer code representing the comparison result:
+    *
+    * \li  0 if \a s1 and \a s2 are equal
+    * \li -1 if \a s1 is less than \a s2
+    * \li +1 if \a s1 is greater than \a s2
+    */
+   static int CompareCodePoints( const char_type* s1, size_type n1,
+                                 const char_type* s2, size_type n2, bool caseSensitive = true )
+   {
+      PCL_COMPARE_CODE_POINTS();
    }
 
    /*!
@@ -782,13 +1252,17 @@ public:
     *                         performed which takes into account the currently
     *                         selected user locale (language and variants).
     *                         When false, an invariant comparison is carried
-    *                         out by comparing Unicode code points (which is
-    *                         faster). The default value is true.
+    *                         out by comparing Unicode code points (which may
+    *                         be faster). The default value is true.
     *
     * Returns an integer code representing the comparison result:
-    * 0 if \a s1 and \a s2 are equal
-    * -1 if \a s1 is less than \a s2
-    * +1 if \a s1 is greater than \a s2
+    *
+    * \li  0 if \a s1 and \a s2 are equal
+    * \li -1 if \a s1 is less than \a s2
+    * \li +1 if \a s1 is greater than \a s2
+    *
+    * On OS X and Windows platforms this function invokes system API routines
+    * to perform locale-aware string comparisons.
     *
     * On X11 (FreeBSD and Linux platforms), when the \a localeAware
     * parameter is true, the comparison uses the current locale as reported by
@@ -814,69 +1288,136 @@ public:
     * setlocale( LC_COLLATE, "" );
     * setlocale( LC_CTYPE, "" );
     * \endcode
-    *
-    * Failure to restore the default platform locale on X11 is considered bad
-    * practice and disqualifies a module for certification.
     */
-   static int Compare( const char16_type* s1, size_type n1,
-                       const char16_type* s2, size_type n2, bool caseSensitive = true, bool localeAware = true );
+   static int Compare( const char_type* s1, size_type n1,
+                       const char_type* s2, size_type n2, bool caseSensitive = true, bool localeAware = true );
 
    /*!
-    * Case-insensitive comparison between two Unicode strings.
+    * Wildcard string matching algorithm.
     *
-    * \param s1   First string
-    * \param n1   Length of the first string in characters
-    * \param s2   Second string
-    * \param n2   Length of the second string in characters
+    * \param t    The string to be matched.
     *
-    * Returns an integer code representing the comparison result:
-    * 0 if \a s1 and \a s2 are equal
-    * -1 if \a s1 is less than \a s2
-    * +1 if \a s1 is greater than \a s2
+    * \param nt   Length of the string to be matched in characters.
     *
-    * \deprecated This function has been deprecated. It is kept as part of PCL
-    * only to allow existing code to continue working. For newly produced code,
-    * use the Compare() function instead by passing \a caseSensitive=false.
+    * \param p    The pattern string. May contain multiple instances of the
+    *             wildcard characters '*' and '?'.
+    *
+    * \param np   Length of the pattern string in characters.
+    *
+    * \param caseSensitive    When true, a case-sensitive comparison is
+    *                         performed; otherwise the comparison does not
+    *                         distinguish between lowercase and uppercase
+    *                         characters. The default value of this parameter
+    *                         is true.
+    *
+    * Returns true if the string \a t matches the specified pattern \a p; false
+    * otherwise. If one of the strings is empty, this function always returns
+    * false conventionally, even if the pattern is a single asterisk '*'.
     */
-   static int CompareIC( const char16_type* s1, size_type n1, const char16_type* s2, size_type n2 )
+   static bool WildMatch( const char_type* t, size_type nt,
+                          const char_type* p, size_type np, bool caseSensitive = true )
    {
-      return Compare( s1, n1, s2, n2, false/*caseSensitive*/ );
+      if ( caseSensitive )
+         return pcl::WildMatch( t, nt, p, np );
+      return pcl::WildMatchIC( t, nt, p, np,
+                               []( char_type c ) { return ToCaseFolded( c ); },
+                               []( char_type c ) { return ToCaseFolded( c ); } );
    }
 
    /*!
-    * Transforms a string to lower case.
+    * Wildcard string matching algorithm - overloaded version with 8-bit
+    * pattern string.
     */
-   static void ToLowerCase( char16_type* s, size_type n )
+   static bool WildMatch( const char_type* t, size_type nt,
+                          const char* p, size_type np, bool caseSensitive = true )
    {
-      PCL_PRECONDITION( s != 0 )
-#ifdef __PCL_WINDOWS
-      ::CharLowerBuffW( (LPWSTR)s, DWORD( n ) );
-#else
-      for ( ; n > 0 && *s != 0; --n, ++s )
-      {
-         wchar_t w( *s );
-         if ( ::iswupper( w ) )
-            *s = char16_type( ::towlower( w ) );
-      }
-#endif
+      if ( caseSensitive )
+         return pcl::WildMatch( t, nt, p, np );
+      return pcl::WildMatchIC( t, nt, p, np,
+                               []( char_type c ) { return ToCaseFolded( c ); },
+                               []( char c ) { return IsoCharTraits::ToCaseFolded( c ); } );
    }
 
    /*!
-    * Transforms a string to upper case.
+    * Returns the \e case \e folded equivalent character for the specified
+    * UTF-16 code point \a c.
+    *
+    * Case folding elimitates case differences, which is useful for
+    * case-insensitive string comparisons.
+    *
+    * We implement the \e simple \e case \e folding Unicode algorithm
+    * exclusively. For more information on case folding, see Section 3.13
+    * Default Case Algorithms in The Unicode Standard.
     */
-   static void ToUpperCase( char16_type* s, size_type n )
+   static char_type ToCaseFolded( char_type c )
    {
-      PCL_PRECONDITION( s != 0 )
-#ifdef __PCL_WINDOWS
-      ::CharUpperBuffW( (LPWSTR)s, DWORD( n ) );
-#else
-      for ( ; n > 0 && *s != 0; --n, ++s )
+      if ( c < 256 )
       {
-         wchar_t w( *s );
-         if ( ::iswlower( w ) )
-            *s = char16_type( ::towupper( w ) );
+         if ( c >= 65 && c <= 90 || c >= 192 && c <= 214 || c >= 216 && c <= 222 )
+            return c + 32;
+         return c;
       }
-#endif
+      return PCL_ToCaseFolded( c );
+   }
+
+   /*!
+    * Returns the lowercase equivalent character for the specified UTF-16 code
+    * point \a c.
+    */
+   static char_type ToLowercase( char_type c )
+   {
+      if ( c < 256 )
+      {
+         if ( c >= 65 && c <= 90 || c >= 192 && c <= 214 || c >= 216 && c <= 222 )
+            return c + 32;
+         return c;
+      }
+      return PCL_ToLowercase( c );
+   }
+
+   /*!
+    * Returns the uppercase equivalent character for the specified UTF-16 code
+    * point \a c.
+    */
+   static char_type ToUppercase( char_type c )
+   {
+      if ( c < 256 )
+      {
+         if ( c >= 97 && c <= 122 || c >= 224 && c <= 246 || c >= 248 && c <= 254 )
+            return c - 32;
+         return c;
+      }
+      return PCL_ToUppercase( c );
+   }
+
+   /*!
+    * Transforms a string to case folded.
+    */
+   static void ToCaseFolded( char_type* s, size_type n )
+   {
+      PCL_PRECONDITION( n == 0 || s != nullptr )
+      for ( ; n > 0; --n, ++s )
+         *s = ToCaseFolded( *s );
+   }
+
+   /*!
+    * Transforms a string to lowercase.
+    */
+   static void ToLowercase( char_type* s, size_type n )
+   {
+      PCL_PRECONDITION( n == 0 || s != nullptr )
+      for ( ; n > 0; --n, ++s )
+         *s = ToLowercase( *s );
+   }
+
+   /*!
+    * Transforms a string to uppercase.
+    */
+   static void ToUppercase( char_type* s, size_type n )
+   {
+      PCL_PRECONDITION( n == 0 || s != nullptr )
+      for ( ; n > 0; --n, ++s )
+         *s = ToUppercase( *s );
    }
 
    /*!
@@ -885,7 +1426,7 @@ public:
     * forming a UTF-32 code point). High surrogates have values between 0xD800
     * and 0xDBFF.
     */
-   static bool IsHighSurrogate( char16_type c16 )
+   static bool IsHighSurrogate( char_type c16 )
    {
       return (c16 & 0xFC00) == 0xD800;
    }
@@ -896,9 +1437,9 @@ public:
     * since surrogates only exist outside the Basic Multilingual Plane of
     * Unicode.
     */
-   static char16_type HighSurrogate( char32_type c32 )
+   static char_type HighSurrogate( char32_type c32 )
    {
-      return char16_type( (c32 >> 10) + 0xD7C0 );
+      return char_type( (c32 >> 10) + 0xD7C0 );
    }
 
    /*!
@@ -907,7 +1448,7 @@ public:
     * forming a UTF-32 code point). Low surrogates have values between 0xDC00
     * and 0xDFFF.
     */
-   static bool IsLowSurrogate( char16_type c16 )
+   static bool IsLowSurrogate( char_type c16 )
    {
       return (c16 & 0xFC00) == 0xDC00;
    }
@@ -918,9 +1459,9 @@ public:
     * since surrogates only exist outside the Basic Multilingual Plane of
     * Unicode.
     */
-   static char16_type LowSurrogate( char32_type c32 )
+   static char_type LowSurrogate( char32_type c32 )
    {
-      return char16_type( (c32%0x400) + 0xDC00 );
+      return char_type( (c32%0x400) + 0xDC00 );
    }
 
    /*!
@@ -928,7 +1469,7 @@ public:
     * specified surrogate words must pertain to a valid Unicode code point
     * outside the Basic Multilingual Plane (from 0x010000 to 0x10FFFF).
     */
-   static char32_type SurrogatePairToUTF32( char16_type high, char16_type low )
+   static char32_type SurrogatePairToUTF32( char_type high, char_type low )
    {
       return (char32_type( high ) << 10) + low - 0x035FDC00;
    }
@@ -940,5 +1481,5 @@ public:
 
 #endif   // __PCL_CharTraits_h
 
-// ****************************************************************************
-// EOF pcl/CharTraits.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/CharTraits.h - Released 2015/07/30 17:15:18 UTC

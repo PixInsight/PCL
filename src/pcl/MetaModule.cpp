@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/MetaModule.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/MetaModule.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,13 +47,14 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/ErrorHandler.h>
 #include <pcl/MetaModule.h>
 #include <pcl/ProcessInterface.h>
 #include <pcl/Version.h>
 
+#include <pcl/api/APIException.h>
 #include <pcl/api/APIInterface.h>
 
 namespace pcl
@@ -58,13 +62,14 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-MetaModule* Module = 0;
+MetaModule* Module = nullptr;
 
 // ----------------------------------------------------------------------------
 
-MetaModule::MetaModule() : MetaObject( 0 )
+MetaModule::MetaModule() :
+   MetaObject( nullptr )
 {
-   if ( pcl::Module != 0 )
+   if ( Module != nullptr )
       throw Error( "MetaModule: Module redefinition not allowed" );
    Module = this;
 }
@@ -72,20 +77,20 @@ MetaModule::MetaModule() : MetaObject( 0 )
 MetaModule::~MetaModule()
 {
    if ( this == Module )
-      Module = 0;
+      Module = nullptr;
 }
 
 /*
- * ### Deprecated function
+ * ### REMOVEME - deprecated function
  */
 const char* MetaModule::UniqueId() const
 {
-   return 0;
+   return nullptr;
 }
 
 bool MetaModule::IsInstalled() const
 {
-   return API != 0;
+   return API != nullptr;
 }
 
 void MetaModule::ProcessEvents()
@@ -162,7 +167,7 @@ void MetaModule::GetVersion( int& major, int& minor, int& release, int& build,
 
    // Optional status word
    if ( tokens.Length() == 6 )
-      status = tokens[5];  // ### TODO: Verify validity of status word
+      status = tokens[5];  // ### TODO: Verify validity of the status word
 }
 
 IsoString MetaModule::ReadableVersion() const
@@ -171,6 +176,20 @@ IsoString MetaModule::ReadableVersion() const
    IsoString dum1, dum2;
    GetVersion( major, minor, release, build, dum1, dum2 );
    return Name() + IsoString().Format( " module version %02d.%02d.%02d.%04d", major, minor, release, build );
+}
+
+// ----------------------------------------------------------------------------
+
+void MetaModule::LoadResource( const String& filePath, const String& rootPath )
+{
+   if ( (*API->Module->LoadResource)( ModuleHandle(), filePath.c_str(), rootPath.c_str() ) == api_false )
+      throw APIFunctionError( "LoadResource" );
+}
+
+void MetaModule::UnloadResource( const String& filePath, const String& rootPath )
+{
+   if ( (*API->Module->UnloadResource)( ModuleHandle(), filePath.c_str(), rootPath.c_str() ) == api_false )
+      throw APIFunctionError( "UnloadResource" );
 }
 
 // ----------------------------------------------------------------------------
@@ -186,8 +205,6 @@ public:
       PixInsightVersion::Initialize();
    }
 
-   // -------------------------------------------------------------------------
-
    static void api_func OnLoad()
    {
       try
@@ -197,20 +214,18 @@ public:
       ERROR_HANDLER
    }
 
-   // -------------------------------------------------------------------------
-
    static void api_func OnUnload()
    {
       try
       {
          Module->OnUnload();
 
-         if ( Module != 0 )
+         if ( Module != nullptr )
             for ( size_type i = 0; i < Module->Length(); ++i )
-               if ( (*Module)[i] != 0 )
+               if ( (*Module)[i] != nullptr )
                {
                   const ProcessInterface* iface = dynamic_cast<const ProcessInterface*>( (*Module)[i] );
-                  if ( iface != 0 && iface->LaunchCount() != 0 )
+                  if ( iface != nullptr && iface->LaunchCount() != 0 )
                   {
                      if ( iface->IsAutoSaveGeometryEnabled() )
                         iface->SaveGeometry();
@@ -221,8 +236,6 @@ public:
       ERROR_HANDLER
    }
 
-   // -------------------------------------------------------------------------
-
    static void* api_func Allocate( size_type sz )
    {
       try
@@ -230,10 +243,8 @@ public:
          return Module->Allocate( sz );
       }
       ERROR_HANDLER
-      return 0;
+      return nullptr;
    }
-
-   // -------------------------------------------------------------------------
 
    static void api_func Deallocate( void* p )
    {
@@ -265,7 +276,7 @@ void MetaModule::PerformAPIDefinitions() const
    for ( size_type i = 0; i < Module->Length(); ++i )
    {
       const MetaObject* o = (*Module)[i];
-      if ( o != 0 )
+      if ( o != nullptr )
          o->PerformAPIDefinitions();
    }
 
@@ -276,5 +287,5 @@ void MetaModule::PerformAPIDefinitions() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/MetaModule.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/MetaModule.cpp - Released 2015/07/30 17:15:31 UTC

@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard SplitCFA Process Module Version 01.00.05.0037
-// ****************************************************************************
-// SplitCFAInstance.h - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard SplitCFA Process Module Version 01.00.05.0056
+// ----------------------------------------------------------------------------
+// SplitCFAInstance.h - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard SplitCFA PixInsight module.
 //
-// Copyright (c) 2013-2014 Nikolay Volkov
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2013-2015 Nikolay Volkov
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,7 +49,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __SplitCFAInstance_h
 #define __SplitCFAInstance_h
@@ -104,7 +108,7 @@ private:
       }
    };
 
-#define outputExtension ".fit"
+#define outputExtension ".xisf"
 
    typedef Array<ImageItem> image_list;
 
@@ -136,5 +140,5 @@ private:
 
 #endif   // __SplitCFAInstance_h
 
-// ****************************************************************************
-// EOF SplitCFAInstance.h - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF SplitCFAInstance.h - Released 2015/07/31 11:49:49 UTC

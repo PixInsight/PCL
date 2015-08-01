@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/GroupBox.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/GroupBox.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/GroupBox.h>
 
@@ -56,50 +59,17 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-#define sender    (reinterpret_cast<GroupBox*>( hSender ))
-#define receiver  (reinterpret_cast<Control*>( hReceiver ))
-
-class GroupBoxEventDispatcher
-{
-public:
-
-   static void api_func Check( control_handle hSender, control_handle hReceiver, int32 state )
-   {
-      if ( sender->onCheck != 0 )
-         (receiver->*sender->onCheck)( *sender, state != 0 );
-   }
-}; // GroupBoxEventDispatcher
-
-#undef sender
-#undef receiver
-
-// ----------------------------------------------------------------------------
-
 #ifdef _MSC_VER
 #  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
 #endif
 
 GroupBox::GroupBox( const String& title, Control& parent ) :
-Control( (*API->GroupBox->CreateGroupBox)(
-            ModuleHandle(), this, title.c_str(), parent.handle, 0 /*flags*/ ) ),
-onCheck( 0 )
+   Control( (*API->GroupBox->CreateGroupBox)(
+            ModuleHandle(), this, title.c_str(), parent.handle, 0/*flags*/ ) ),
+   m_handlers( nullptr )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateGroupBox" );
-}
-
-// ----------------------------------------------------------------------------
-
-void GroupBox::OnCheck( check_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onCheck = 0;
-   if ( (*API->GroupBox->SetGroupBoxCheckEventRoutine)( handle, &receiver,
-            (f != 0) ? GroupBoxEventDispatcher::Check : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetGroupBoxCheckEventRoutine" );
-   }
-   onCheck = f;
 }
 
 // ----------------------------------------------------------------------------
@@ -110,15 +80,13 @@ String GroupBox::Title() const
    (*API->GroupBox->GetGroupBoxTitle)( handle, 0, &len );
 
    String title;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      title.Reserve( len );
-
+      title.SetLength( len );
       if ( (*API->GroupBox->GetGroupBoxTitle)( handle, title.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetGroupBoxTitle" );
+      title.ResizeToNullTerminated();
    }
-
    return title;
 }
 
@@ -159,7 +127,46 @@ void GroupBox::SetChecked( bool checked )
 
 // ----------------------------------------------------------------------------
 
+#define sender    (reinterpret_cast<GroupBox*>( hSender ))
+#define receiver  (reinterpret_cast<Control*>( hReceiver ))
+#define handlers  sender->m_handlers
+
+class GroupBoxEventDispatcher
+{
+public:
+
+   static void api_func Check( control_handle hSender, control_handle hReceiver, int32 state )
+   {
+      if ( handlers->onCheck != nullptr )
+         (receiver->*handlers->onCheck)( *sender, state != 0 );
+   }
+}; // GroupBoxEventDispatcher
+
+#undef sender
+#undef receiver
+#undef handlers
+
+// ----------------------------------------------------------------------------
+
+#define INIT_EVENT_HANDLERS()    \
+   __PCL_NO_ALIAS_HANDLERS;      \
+   if ( m_handlers == nullptr )  \
+      m_handlers = new EventHandlers
+
+void GroupBox::OnCheck( check_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->GroupBox->SetGroupBoxCheckEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? GroupBoxEventDispatcher::Check : 0 ) == api_false )
+      throw APIFunctionError( "SetGroupBoxCheckEventRoutine" );
+   m_handlers->onCheck = f;
+}
+
+#undef INIT_EVENT_HANDLERS
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/GroupBox.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/GroupBox.cpp - Released 2015/07/30 17:15:31 UTC

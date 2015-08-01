@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Blink Process Module Version 01.02.01.0147
-// ****************************************************************************
-// BlinkVideoDialog.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Blink Process Module Version 01.02.01.0166
+// ----------------------------------------------------------------------------
+// BlinkVideoDialog.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
-// Copyright (c) 2011-2014 Nikolay Volkov
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2015 Nikolay Volkov
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,7 +49,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "BlinkVideoDialog.h"
 #include "BlinkInterface.h"
@@ -119,7 +123,7 @@ inline void BlinkVideoDialog::DeleteFrames()
          try
          {
             Console().WriteLn( "<end><cbr><raw>" + f + "</raw>" );
-            File::Delete( f );
+            File::Remove( f );
          }
          catch(...)
          {
@@ -166,7 +170,7 @@ void BlinkVideoDialog::CreateFrames()
       }
 
    if ( allExist )
-      if ( m_framesDone.Has( m_parent->m_frameExtension ) )
+      if ( m_framesDone.Contains( m_parent->m_frameExtension ) )
          return;
 
    m_framesDone.Remove( m_parent->m_frameExtension );
@@ -176,19 +180,14 @@ void BlinkVideoDialog::CreateFrames()
 
    Console().Show();
 
-   View::stf_list stf;
+   View::stf_list stf( 4 );
    bool isSTF = v.AreScreenTransferFunctionsEnabled();
-   if ( isSTF )
-   {
-      // getting STF from blinking screen for apply HT to every image before save it
-      for ( int i = 0; i < 4; ++i )
-         stf.Add( new HistogramTransformation );
+   if ( isSTF ) // Get STF from blink screen to apply HT to every image before saving it
       v.GetScreenTransferFunctions( stf );
-   }
 
    Console().WriteLn( "<end><cbr><br>* Blink: Generating video frames:" );
 
-   int numberOfChannels = v.Image().AnyImage()->NumberOfChannels();
+   int numberOfChannels = v.Image()->NumberOfNominalChannels();
    for ( frame_data_list::const_iterator i = frames.Begin(); i != frames.End(); ++i )
    {
       Console().WriteLn( "<end><cbr><raw>" + i->filePath + "</raw>" );
@@ -202,12 +201,8 @@ void BlinkVideoDialog::CreateFrames()
       {
          for ( int c = 0; c < numberOfChannels; c++ ) // for every channel
          {
-            HistogramTransformation H;
-            H.SetMidtonesBalance( stf[c]->MidtonesBalance() );
-            H.SetClipping( stf[c]->ShadowsClipping(), stf[c]->HighlightsClipping() );
-            H.SetRange( stf[c]->LowRange(), stf[c]->HighRange() );
             image.SelectChannel( c );
-            H >> image; //apply HT
+            stf[c] >> image; //apply HT
          }
          image.ResetChannelRange();
       }
@@ -268,7 +263,7 @@ void BlinkVideoDialog::ExecuteVideoEncoder()
       return;
    }
 
-   if ( !m_parent->m_frameExtension.BeginsWith( '.' ) )
+   if ( !m_parent->m_frameExtension.StartsWith( '.' ) )
    {
       m_parent->m_frameExtension.Prepend( '.' );
       FrameExtension_Edit.SetText( m_parent->m_frameExtension );
@@ -419,7 +414,7 @@ void BlinkVideoDialog::__Edit_Completed( Edit& sender )
    }
    else if ( sender == FrameExtension_Edit )
    {
-      if ( !text.BeginsWith( '.' ) )
+      if ( !text.StartsWith( '.' ) )
          text.Prepend( '.' );
       m_parent->m_frameExtension = text;
    }
@@ -498,24 +493,14 @@ BlinkVideoDialog::BlinkVideoDialog( BlinkInterface* parent ) :
 
    //
 
-   StdOut_TextBox.SetMinSize( 640, 400 );
+   StdOut_TextBox.SetScaledMinSize( 640, 400 );
    StdOut_TextBox.SetReadOnly();
-   StdOut_TextBox.SetObjectId( "CWConsole" ); // inherit style colors from PixInsight's terminal
-   StdOut_TextBox.SetStyleSheet(
+   StdOut_TextBox.SetObjectId( "CWConsole" ); // inherit font and colors from PixInsight's terminal
+   StdOut_TextBox.SetStyleSheet( ScaledStyleSheet(
       "pi--TextBox {"
-#ifdef __PCL_MACOSX
-         "font-family: DejaVu Sans Mono, Courier, Monaco, Monospace;"
-         "font-size: 10pt;"
-#endif
-#ifdef __PCL_WINDOWS
-         "font-family: DejaVu Sans Mono, Courier New, Courier, Monospace;"
+         "font-family: DejaVu Sans Mono, Monospace;"
          "font-size: 8pt;"
-#endif
-#ifdef __PCL_X11
-         "font-family: DejaVu Sans Mono, Vera Sans Mono, Courier New, Courier, Monospace;"
-         "font-size: 8pt;"
-#endif
-      "}" );
+      "}" ) );
 
    StdIn_Edit.OnEditCompleted( (Edit::edit_event_handler)&BlinkVideoDialog::__Edit_Completed, *this );
 
@@ -549,8 +534,8 @@ BlinkVideoDialog::BlinkVideoDialog( BlinkInterface* parent ) :
    OutputDir_Edit.SetToolTip( outputDirToolTip );
    OutputDir_Edit.OnEditCompleted( (Edit::edit_event_handler)&BlinkVideoDialog::__Edit_Completed, *this );
 
-   OutputDir_SelectButton.SetIcon( Bitmap( ":/browser/select-file.png" ) );
-   OutputDir_SelectButton.SetFixedSize( 19, 19 );
+   OutputDir_SelectButton.SetIcon( Bitmap( ScaledResource( ":/browser/select-file.png" ) ) );
+   OutputDir_SelectButton.SetScaledFixedSize( 19, 19 );
    OutputDir_SelectButton.SetToolTip( "<p>Select the output directory.</p>" );
    OutputDir_SelectButton.OnClick( (Button::click_event_handler)&BlinkVideoDialog::__Button_Click, *this );
 
@@ -591,7 +576,7 @@ BlinkVideoDialog::BlinkVideoDialog( BlinkInterface* parent ) :
    Cancel_PushButton.OnClick( (Button::click_event_handler)&BlinkVideoDialog::__Button_Click, *this );
 
    Buttons_Sizer.SetSpacing( 8 );
-   Buttons_Sizer.AddSpacing( labelWidth1 + 4 );
+   Buttons_Sizer.AddUnscaledSpacing( labelWidth1 + LogicalPixelsToPhysical( 4 ) );
    Buttons_Sizer.Add( Load_PushButton );
    Buttons_Sizer.Add( Save_PushButton );
    Buttons_Sizer.AddStretch();
@@ -650,5 +635,5 @@ BlinkVideoDialog::BlinkVideoDialog( BlinkInterface* parent ) :
 
 } // pcl
 
-// ****************************************************************************
-// EOF BlinkVideoDialog.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF BlinkVideoDialog.cpp - Released 2015/07/31 11:49:49 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/MorphologicalTransformation.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/MorphologicalTransformation.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_MorphologicalTransformation_h
 #define __PCL_MorphologicalTransformation_h
@@ -103,9 +106,9 @@ public:
     * MorphologicalOperator and StructuringElement.
     */
    MorphologicalTransformation() :
-   InterlacedTransformation(), ThresholdedTransformation(),
-   m_operator( 0 ), m_structure( 0 ),
-   m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      InterlacedTransformation(), ThresholdedTransformation(),
+      m_operator( nullptr ), m_structure( nullptr ),
+      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
    }
 
@@ -118,26 +121,41 @@ public:
     * own private copies of the specified filter operator and structure.
     */
    MorphologicalTransformation( const MorphologicalOperator& op, const StructuringElement& structure ) :
-   InterlacedTransformation(), ThresholdedTransformation(),
-   m_operator( op.Clone() ), m_structure( structure.Clone() ),
-   m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      InterlacedTransformation(), ThresholdedTransformation(),
+      m_operator( nullptr ), m_structure( nullptr ),
+      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
+      m_operator = op.Clone();
+      m_structure = structure.Clone();
       m_structure->Initialize();
    }
 
    /*!
-    * Constructs a %MorphologicalTransformation object as a copy of an existing
-    * instance.
-    *
-    * The MorphologicalOperator and StructuringElement objects used by both
-    * this object and the source object \a x must remain valid and accessible
-    * as long as at least one of both objects is associated with them.
+    * Copy constructor.
     */
    MorphologicalTransformation( const MorphologicalTransformation& x ) :
-   InterlacedTransformation( x ), ThresholdedTransformation( x ),
-   m_operator( x.m_operator ? x.m_operator->Clone() : 0 ), m_structure( x.m_structure ? x.m_structure->Clone() : 0 ),
-   m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
+      InterlacedTransformation( x ), ThresholdedTransformation( x ),
+      m_operator( nullptr ), m_structure( nullptr ),
+      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
    {
+      if ( x.m_operator != nullptr )
+         if ( x.m_structure != nullptr )
+         {
+            m_operator = x.m_operator->Clone();
+            m_structure = x.m_structure->Clone();
+         }
+   }
+
+   /*!
+    * Move constructor.
+    */
+   MorphologicalTransformation( MorphologicalTransformation&& x ) :
+      InterlacedTransformation( x ), ThresholdedTransformation( x ),
+      m_operator( x.m_operator ), m_structure( x.m_structure ),
+      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
+   {
+      x.m_operator = nullptr;
+      x.m_structure = nullptr;
    }
 
    /*!
@@ -149,49 +167,56 @@ public:
    }
 
    /*!
-    * Assigns an existing %MorphologicalTransformation instance to this object.
-    * Returns a reference to this object.
-    *
-    * After assignment, this object will use the same operator and structuring
-    * element as the source object \a x. The previously used items are simply
-    * forgotten by this object, which will no longer depend on them.
-    *
-    * The MorphologicalOperator and StructuringElement objects used by both
-    * this object and the source object \a x must remain valid and accessible
-    * as long as at least one of both objects is associated with them.
+    * Copy assignment operator. Returns a reference to this object.
     */
    MorphologicalTransformation& operator =( const MorphologicalTransformation& x )
    {
       if ( &x != this )
       {
-         Destroy();
-         m_operator      = x.m_operator->Clone();
-         m_structure     = x.m_structure->Clone();
-         m_parallel      = x.m_parallel;
-         m_maxProcessors = x.m_maxProcessors;
          (void)InterlacedTransformation::operator =( x );
          (void)ThresholdedTransformation::operator =( x );
+         Destroy();
+         m_operator = x.m_operator->Clone();
+         m_structure = x.m_structure->Clone();
+         m_parallel = x.m_parallel;
+         m_maxProcessors = x.m_maxProcessors;
       }
       return *this;
    }
 
    /*!
-    * Returns a constant reference to the morphological operator associated
-    * with this transformation.
+    * Move assignment operator. Returns a reference to this object.
+    */
+   MorphologicalTransformation& operator =( MorphologicalTransformation&& x )
+   {
+      if ( &x != this )
+      {
+         (void)InterlacedTransformation::operator =( x );
+         (void)ThresholdedTransformation::operator =( x );
+         Destroy();
+         m_operator = x.m_operator;
+         m_structure = x.m_structure;
+         m_parallel = x.m_parallel;
+         m_maxProcessors = x.m_maxProcessors;
+         x.m_operator = nullptr;
+         x.m_structure = nullptr;
+      }
+      return *this;
+   }
+
+   /*!
+    * Returns a reference to the morphological operator associated with this
+    * transformation.
     */
    const MorphologicalOperator& Operator() const
    {
-      PCL_PRECONDITION( m_operator != 0 )
-      Validate();
+      PCL_PRECONDITION( m_operator != nullptr )
       return *m_operator;
    }
 
    /*!
-    * Causes this transformation to use the specified morphological
-    * operator.
-    *
-    * The new morphological operator will be used to generate transformed
-    * pixels after calling this function.
+    * Causes this transformation to use a duplicate of the specified
+    * morphological operator.
     */
    void SetOperator( const MorphologicalOperator& op )
    {
@@ -200,21 +225,18 @@ public:
    }
 
    /*!
-    * Returns a constant reference to the structuring element associated with
-    * this transformation.
+    * Returns a reference to the structuring element associated with this
+    * transformation.
     */
    const StructuringElement& Structure() const
    {
-      PCL_PRECONDITION( m_structure != 0 )
-      Validate();
+      PCL_PRECONDITION( m_structure != nullptr )
       return *m_structure;
    }
 
    /*!
-    * Causes this transformation to use the specified structuring element.
-    *
-    * The new structuring element will be used to generate transformed pixels
-    * after calling this function.
+    * Causes this transformation to use a duplicate of the specified
+    * structuring element.
     */
    void SetStructure( const StructuringElement& structure )
    {
@@ -227,11 +249,11 @@ public:
     * Returns the size in pixels of the overlapping regions between adjacent
     * areas processed by parallel execution threads. The overlapping distance
     * is a function of the size of the associated structuring element and the
-    * interlacing distance.
+    * current interlacing distance.
     */
    int OverlappingDistance() const
    {
-      Validate();
+      PCL_PRECONDITION( m_structure != nullptr )
       return m_structure->Size() + (m_structure->Size() - 1)*(InterlacingDistance() - 1);
    }
 
@@ -327,8 +349,6 @@ protected:
 
 private:
 
-   void Validate() const;
-
    void Destroy()
    {
       DestroyOperator();
@@ -337,15 +357,17 @@ private:
 
    void DestroyOperator()
    {
-      if ( m_operator != 0 )
-         delete m_operator, m_operator = 0;
+      if ( m_operator != nullptr )
+         delete m_operator, m_operator = nullptr;
    }
 
    void DestroyStructure()
    {
-      if ( m_structure != 0 )
-         delete m_structure, m_structure = 0;
+      if ( m_structure != nullptr )
+         delete m_structure, m_structure = nullptr;
    }
+
+   void Validate() const;
 };
 
 // ----------------------------------------------------------------------------
@@ -354,5 +376,5 @@ private:
 
 #endif   // __PCL_MorphologicalTransformation_h
 
-// ****************************************************************************
-// EOF pcl/MorphologicalTransformation.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/MorphologicalTransformation.h - Released 2015/07/30 17:15:18 UTC

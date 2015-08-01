@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Search.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Search.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Search_h
 #define __PCL_Search_h
@@ -83,7 +86,7 @@ namespace pcl
 /*!
  * Generic linear search algorithm.
  *
- * Returns the first iterator k in the range [i,j[ such that *k == v. Returns
+ * Returns the first iterator k in the range [i,j) such that *k == v. Returns
  * j if no such occurrence of v is found.
  *
  * \ingroup search_algorithms
@@ -102,7 +105,7 @@ FI LinearSearch( FI i, FI j, const T& v )
 /*!
  * Generic linear search algorithm.
  *
- * Returns the first iterator k in the range [i,j[ such that p( *k, v ) is
+ * Returns the first iterator k in the range [i,j) such that p( *k, v ) is
  * true. Returns j if no such occurrence of v is found.
  *
  * \ingroup search_algorithms
@@ -121,7 +124,7 @@ FI LinearSearch( FI i, FI j, const T& v, BP p )
 /*!
  * Generic linear search algorithm (last occurrence).
  *
- * Returns the last iterator k in the range [i,j[ such that *k == v. Returns
+ * Returns the last iterator k in the range [i,j) such that *k == v. Returns
  * j if no such occurrence of v is found.
  *
  * \ingroup search_algorithms
@@ -140,7 +143,7 @@ BI LinearSearchLast( BI i, BI j, const T& v )
 /*!
  * Generic linear search algorithm (last occurrence).
  *
- * Returns the last iterator k in the range [i,j[ such that *k == v. Returns
+ * Returns the last iterator k in the range [i,j) such that *k == v. Returns
  * j if no such occurrence of v is found.
  *
  * \ingroup search_algorithms
@@ -159,11 +162,11 @@ BI LinearSearchLast( BI i, BI j, const T& v, BP p )
 /*!
  * Generic binary search algorithm.
  *
- * Returns the first iterator k in the range [i,j[ such that *k == v. Returns j
+ * Returns the first iterator k in the range [i,j) such that *k == v. Returns j
  * if no such occurrence of v is found.
  *
- * The sequence [i,j[ must be ordered in ascending order: for every pair a,b in
- * [i,j[ such that i precedes j, *j < *i must be false.
+ * The sequence [i,j) must be ordered in ascending order: for every pair a,b in
+ * [i,j) such that i precedes j, *j < *i must be false.
  *
  * \ingroup search_algorithms
  */
@@ -193,11 +196,11 @@ FI BinarySearch( FI i, FI j, const T& v )
 /*!
  * Generic binary search algorithm.
  *
- * Returns the first iterator k in the range [i,j[ such that both p( *k, v )
+ * Returns the first iterator k in the range [i,j) such that both p( *k, v )
  * and p( v, *k ) are false. Returns j if no such occurrence of v is found.
  *
- * The sequence [i,j[ must be ordered in ascending order: for every pair a,b in
- * [i,j[ such that i precedes j, p( *j, *i ) must be false.
+ * The sequence [i,j) must be ordered in ascending order: for every pair a,b in
+ * [i,j) such that i precedes j, p( *j, *i ) must be false.
  *
  * \ingroup search_algorithms
  */
@@ -227,11 +230,11 @@ FI BinarySearch( FI i, FI j, const T& v, BP p )
 /*!
  * Generic binary search algorithm (last occurrence).
  *
- * Returns the last iterator k in the range [i,j[ such that *k == v. Returns j
+ * Returns the last iterator k in the range [i,j) such that *k == v. Returns j
  * if no such occurrence of v is found.
  *
- * The sequence [i,j[ must be ordered in ascending order: for every pair a,b in
- * [i,j[ such that i precedes j, *j < *i must be false.
+ * The sequence [i,j) must be ordered in ascending order: for every pair a,b in
+ * [i,j) such that i precedes j, *j < *i must be false.
  *
  * \ingroup search_algorithms
  */
@@ -250,11 +253,11 @@ FI BinarySearchLast( FI i, FI j, const T& v )
 /*!
  * Generic binary search algorithm (last occurrence).
  *
- * Returns the last iterator k in the range [i,j[ such that both p( *k, v )
+ * Returns the last iterator k in the range [i,j) such that both p( *k, v )
  * and p( v, *k ) are false. Returns j if no such occurrence of v is found.
  *
- * The sequence [i,j[ must be ordered in ascending order: for every pair a,b in
- * [i,j[ such that i precedes j, p( *j, *i ) must be false.
+ * The sequence [i,j) must be ordered in ascending order: for every pair a,b in
+ * [i,j) such that i precedes j, p( *j, *i ) must be false.
  *
  * \ingroup search_algorithms
  */
@@ -273,11 +276,11 @@ FI BinarySearchLast( FI i, FI j, const T& v, BP p )
 /*!
  * Generic binary search algorithm.
  *
- * Returns the first iterator k in the range [i,j[ such that both p1( *k, v )
+ * Returns the first iterator k in the range [i,j) such that both p1( *k, v )
  * and p2( v, *k ) are false. Returns j if no such occurrence of v is found.
  *
- * The sequence [i,j[ must be ordered in ascending order: for every pair a,b in
- * [i,j[ such that i precedes j, both p1( *j, *i ) and p2( *j, *i ) must be
+ * The sequence [i,j) must be ordered in ascending order: for every pair a,b in
+ * [i,j) such that i precedes j, both p1( *j, *i ) and p2( *j, *i ) must be
  * false.
  *
  * \ingroup search_algorithms
@@ -308,17 +311,17 @@ FI BinarySearch( FI i, FI j, const T& v, BP1 p1, BP2 p2 )
 /*!
  * Generic insertion point algorithm.
  *
- * Returns an iterator k in the range [i,j[ such that:
+ * Returns an iterator k in the range [i,j) such that:
  *
- * \li for all a in [i,j[ that precedes k, v \< *a is false.
+ * \li for all a in [i,j) that precedes k, v \< *a is false.
  *
- * \li for all b in [i,j[ that postcedes k, *b \< v is false.
+ * \li for all b in [i,j) that postcedes k, *b \< v is false.
  *
- * The sequence [i,j[ must be ordered in ascending order: for every pair a,b in
- * [i,j[ such that i precedes j, *j < *i must be false.
+ * The sequence [i,j) must be ordered in ascending order: for every pair a,b in
+ * [i,j) such that i precedes j, *j < *i must be false.
  *
  * The resulting iterator k corresponds to a location where the value \a v could
- * be inserted in the [i,j[ sequence without breaking the existing order of
+ * be inserted in the [i,j) sequence without breaking the existing order of
  * values, as defined by operator <.
  *
  * \ingroup search_algorithms
@@ -349,17 +352,17 @@ FI InsertionPoint( FI i, FI j, const T& v )
 /*!
  * Generic insertion point algorithm.
  *
- * Returns an iterator k in the range [i,j[ such that:
+ * Returns an iterator k in the range [i,j) such that:
  *
- * \li for all a in [i,j[ that precedes k, p( v, *a ) is false.
+ * \li for all a in [i,j) that precedes k, p( v, *a ) is false.
  *
- * \li for all b in [i,j[ that postcedes k, p( *b, v ) is false.
+ * \li for all b in [i,j) that postcedes k, p( *b, v ) is false.
  *
- * The sequence [i,j[ must be ordered in ascending order: for every pair a,b in
- * [i,j[ such that i precedes j, p( *j, *i ) must be false.
+ * The sequence [i,j) must be ordered in ascending order: for every pair a,b in
+ * [i,j) such that i precedes j, p( *j, *i ) must be false.
  *
  * The resulting iterator k corresponds to a location where the value \a v could
- * be inserted in the [i,j[ sequence without breaking the existing order of
+ * be inserted in the [i,j) sequence without breaking the existing order of
  * values, as defined by the binary predicate p.
  *
  * \ingroup search_algorithms
@@ -389,7 +392,7 @@ FI InsertionPoint( FI i, FI j, const T& v, BP p )
 
 /*!
  * Returns the starting iterator of the first subsequence within the range
- * [i1,j1[ that is identical to the sequence [i2,j2[ when compared element by
+ * [i1,j1) that is identical to the sequence [i2,j2) when compared element by
  * element, or j1 if no such subsequence is found.
  *
  * \ingroup search_algorithms
@@ -415,7 +418,7 @@ FI1 Search( FI1 i1, FI1 j1, FI2 i2, FI2 j2 )
 
 /*!
  * Returns the starting iterator of the first subsequence within the range
- * [i1,j1[ that corresponds to the sequence [i2,j2[ when the binary predicate p
+ * [i1,j1) that corresponds to the sequence [i2,j2) when the binary predicate p
  * is applied element by element, or j1 if no such subsequence is found.
  *
  * \ingroup search_algorithms
@@ -441,7 +444,7 @@ FI1 Search( FI1 i1, FI1 j1, FI2 i2, FI2 j2, BP p )
 
 /*!
  * Returns the starting iterator of the last subsequence within the range
- * [i1,j1[ that is identical to the sequence [i2,j2[ when compared element by
+ * [i1,j1) that is identical to the sequence [i2,j2) when compared element by
  * element, or j1 if no such subsequence is found.
  *
  * \ingroup search_algorithms
@@ -473,7 +476,7 @@ BI1 SearchLast( BI1 i1, BI1 j1, FI2 i2, FI2 j2 )
 
 /*!
  * Returns the starting iterator of the last subsequence within the range
- * [i1,j1[ that corresponds to the sequence [i2,j2[ when the binary predicate p
+ * [i1,j1) that corresponds to the sequence [i2,j2) when the binary predicate p
  * is applied element by element, or j1 if no such subsequence is found.
  *
  * \ingroup search_algorithms
@@ -507,5 +510,5 @@ BI1 SearchLast( BI1 i1, BI1 j1, FI2 i2, FI2 j2, BP p )
 
 #endif  // __PCL_Search_h
 
-// ****************************************************************************
-// EOF pcl/Search.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Search.h - Released 2015/07/30 17:15:18 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/MetaFileFormat.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/MetaFileFormat.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_MetaFileFormat_h
 #define __PCL_MetaFileFormat_h
@@ -313,8 +316,8 @@ public:
    virtual Bitmap SmallIcon() const;
 
    /*!
-    * Returns true if this file format implementation can read an entire image
-    * in a single operation.
+    * Returns true only if this file format implementation can read an entire
+    * image in a single operation.
     *
     * The default implementation returns true.
     */
@@ -324,8 +327,8 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can write an entire image
-    * in a single operation.
+    * Returns true only if this file format implementation can write an entire
+    * image in a single operation.
     *
     * The default implementation returns true.
     */
@@ -335,8 +338,8 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation supports <em>incremental
-    * read</em> operations on image files.
+    * Returns true only if this file format implementation supports
+    * <em>incremental read</em> operations on image files.
     *
     * Incremental read operations allow the PixInsight core application and
     * other modules to load images by successive row strips.
@@ -349,8 +352,8 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation supports <em>incremental
-    * write</em> operations on image files.
+    * Returns true only if this file format implementation supports
+    * <em>incremental write</em> operations on image files.
     *
     * Incremental write operations allow the PixInsight core application and
     * other modules to write images by successive row strips.
@@ -363,8 +366,8 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can read/write 8-bit
-    * integer images
+    * Returns true only if this file format implementation can read/write 8-bit
+    * unsigned integer images
     *
     * The default implementation returns true.
     */
@@ -374,8 +377,8 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can read/write 16-bit
-    * integer images
+    * Returns true only if this file format implementation can read/write
+    * 16-bit unsigned integer images
     *
     * The default implementation returns true.
     */
@@ -385,8 +388,8 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can read/write 32-bit
-    * integer images
+    * Returns true only if this file format implementation can read/write
+    * 32-bit unsigned integer images
     *
     * The default implementation returns false.
     */
@@ -396,8 +399,8 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can read/write 64-bit
-    * integer images
+    * Returns true only if this file format implementation can read/write
+    * 64-bit unsigned integer images
     *
     * The default implementation returns false.
     */
@@ -407,9 +410,9 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can read/write 32-bit
-    * floating point images (IEEE 754 32-bit <em>single precision</em> format
-    * for pixel sample values).
+    * Returns true only if this file format implementation can read/write
+    * 32-bit floating point real images (IEEE 754 32-bit <em>single
+    * precision</em> format for pixel sample values).
     *
     * The default implementation returns false.
     */
@@ -419,9 +422,9 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can read/write 64-bit
-    * floating point images (IEEE 754 64-bit <em>double precision</em> format
-    * for pixel sample values).
+    * Returns true only if this file format implementation can read/write
+    * 64-bit floating point real images (IEEE 754 64-bit <em>double
+    * precision</em> format for pixel sample values).
     *
     * The default implementation returns false.
     */
@@ -431,9 +434,9 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can read/write 32-bit
-    * complex floating point images (IEEE 754 32-bit <em>single precision</em>
-    * format for components of complex pixel sample values).
+    * Returns true only if this file format implementation can read/write
+    * 32-bit floating point complex images (IEEE 754 32-bit <em>single
+    * precision</em> format for components of complex pixel sample values).
     *
     * The default implementation returns false.
     */
@@ -443,9 +446,9 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can read/write 64-bit
-    * complex floating point images (IEEE 754 64-bit <em>double precision</em>
-    * format for components of complex pixel sample values).
+    * Returns true only if this file format implementation can read/write
+    * 64-bit floating point complex images (IEEE 754 64-bit <em>double
+    * precision</em> format for components of complex pixel sample values).
     *
     * The default implementation returns false.
     */
@@ -455,8 +458,8 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can read/write grayscale
-    * pixel data.
+    * Returns true only if this file format implementation can read/write
+    * grayscale pixel data.
     *
     * The default implementation returns true.
     */
@@ -466,8 +469,8 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can read/write RGB color
-    * pixel data.
+    * Returns true only if this file format implementation can read/write RGB
+    * color pixel data.
     *
     * The default implementation returns true.
     */
@@ -477,7 +480,8 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation supports alpha channels.
+    * Returns true only if this file format implementation supports alpha
+    * image channels.
     *
     * The default implementation returns true.
     */
@@ -487,8 +491,8 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can store/retrieve image
-    * resolution data.
+    * Returns true only if this file format implementation can store/retrieve
+    * image resolution data.
     *
     * The default implementation returns false.
     */
@@ -498,8 +502,8 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can embed/extract FITS
-    * header keyword collections.
+    * Returns true only if this file format implementation can embed/extract
+    * FITS header keyword collections.
     *
     * The default implementation returns false.
     */
@@ -509,8 +513,8 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can embed/extract ICC
-    * color profiles.
+    * Returns true only if this file format implementation can embed/extract
+    * ICC color profiles.
     *
     * The default implementation returns false.
     */
@@ -520,18 +524,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can embed/extract image
-    * metadata (usually in XML format).
-    *
-    * The default implementation returns false.
-    */
-   virtual bool CanStoreMetadata() const
-   {
-      return false;
-   }
-
-   /*!
-    * Returns true if this file format implementation can embed/extract
+    * Returns true only if this file format implementation can embed/extract
     * thumbnail images.
     *
     * The default implementation returns false.
@@ -542,8 +535,8 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can store image
-    * properties.
+    * Returns true only if this file format implementation can store/retrieve
+    * image properties.
     *
     * The default implementation returns false.
     */
@@ -553,8 +546,41 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation supports compression of
-    * pixel data.
+    * Returns true only if this file format implementation can store/retrieve
+    * RGB working space data.
+    *
+    * The default implementation returns false.
+    */
+   virtual bool CanStoreRGBWS() const
+   {
+      return false;
+   }
+
+   /*!
+    * Returns true only if this file format implementation can store/retrieve
+    * DisplayFunction objects.
+    *
+    * The default implementation returns false.
+    */
+   virtual bool CanStoreDisplayFunctions() const
+   {
+      return false;
+   }
+
+   /*!
+    * Returns true only if this file format implementation can store/retrieve
+    * color filter array (CFA) descriptions.
+    *
+    * The default implementation returns false.
+    */
+   virtual bool CanStoreColorFilterArrays() const
+   {
+      return false;
+   }
+
+   /*!
+    * Returns true only if this file format implementation supports compression
+    * of pixel data.
     *
     * This refers to compression of \e source pixels, not to native compression
     * schemes used by some file formats.
@@ -572,8 +598,8 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation supports multiple images
-    * stored in a single file.
+    * Returns true only if this file format implementation supports multiple
+    * images stored in a single file.
     *
     * For example, multiple images (e.g., taken with different filters) can be
     * stored in FITS files by means of FITS image extensions, forming a
@@ -588,8 +614,8 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation allows the user to edit
-    * specific format preferences.
+    * Returns true only if this file format implementation allows the user to
+    * edit specific format preferences.
     *
     * If this function returns true, then the EditPreferences() procedure must
     * be reimplemented in a derived class.
@@ -602,8 +628,8 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation uses <em>format-specific
-    * data</em>.
+    * Returns true only if this file format implementation uses
+    * <em>format-specific data</em>.
     *
     * Format-specific data are preserved on a per-instance (say per-file) basis
     * by the PixInsight application, who actually knows nothing about them.
@@ -640,7 +666,7 @@ public:
 
    /*!
     * Handles a request to edit format preferences. Returns true if the
-    * preferences were successfully edited.
+    * preferences were successfully edited; returns false otherwise.
     *
     * When implemented, this procedure should open a dialog box to let the
     * user edit format-specific preferences and operating options. This
@@ -654,9 +680,9 @@ public:
 
 private:
 
-   // MetaFileFormat instances are unique by definition.
-   MetaFileFormat( const MetaFileFormat& ) : MetaObject( 0 ), FileFormatBase() { PCL_CHECK( 0 ) }
-   void operator =( const MetaFileFormat& ) { PCL_CHECK( 0 ) }
+   // MetaFileFormat instances are unique objects.
+   MetaFileFormat( const MetaFileFormat& ) = delete;
+   void operator =( const MetaFileFormat& ) = delete;
 
    virtual void PerformAPIDefinitions() const;
 };
@@ -669,5 +695,5 @@ private:
 
 #endif   // __PCL_MetaFileFormat_h
 
-// ****************************************************************************
-// EOF pcl/MetaFileFormat.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/MetaFileFormat.h - Released 2015/07/30 17:15:18 UTC

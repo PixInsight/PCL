@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/View.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/View.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/AutoLock.h>
 #include <pcl/ImageWindow.h>
@@ -58,27 +61,13 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-View::View() : UIObject( 0 )
-{
-}
-
-View::View( void* h ) : UIObject( h )
-{
-}
-
-View::View( const void* h ) : UIObject( const_cast<void*>( h ) )
-{
-}
-
-// ----------------------------------------------------------------------------
-
 View& View::Null()
 {
-   static View* nullView = 0;
+   static View* nullView = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullView == 0 )
-      nullView = new View( reinterpret_cast<void*>( 0 ) );
+   if ( nullView == nullptr )
+      nullView = new View( nullptr );
    return *nullView;
 }
 
@@ -125,15 +114,13 @@ IsoString View::Id() const
    (*API->View->GetViewId)( handle, 0, &len );
 
    IsoString id;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      id.Reserve( len );
-
+      id.SetLength( len );
       if ( (*API->View->GetViewId)( handle, id.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetViewId" );
+      id.ResizeToNullTerminated();
    }
-
    return id;
 }
 
@@ -145,15 +132,13 @@ IsoString View::FullId() const
    (*API->View->GetViewFullId)( handle, 0, &len );
 
    IsoString id;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      id.Reserve( len );
-
+      id.SetLength( len );
       if ( (*API->View->GetViewFullId)( handle, id.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetViewFullId" );
+      id.ResizeToNullTerminated();
    }
-
    return id;
 }
 
@@ -324,127 +309,9 @@ void View::GetSize( int& width, int& height ) const
 
 // ----------------------------------------------------------------------------
 
-bool View::AreHistogramsAvailable() const
-{
-   return (*API->View->GetViewHistogramsAvailable)( handle ) != api_false;
-}
-
-// ----------------------------------------------------------------------------
-
-void View::GetHistograms( histogram_list& C ) const
-{
-   C.Destroy();
-
-   if ( AreHistogramsAvailable() )
-   {
-      int r = (*API->View->GetViewHistogramResolution)( handle );
-      if ( r != 0 )
-      {
-         ImageVariant img = Image();
-
-         for ( int c = 0, n = img->NumberOfChannels(); c < n; ++c )
-         {
-            Histogram* h = new Histogram( r );
-            h->Allocate();
-
-            if ( (*API->View->GetViewHistogram)( handle, c, h->m_histogram.Begin() ) == api_false )
-            {
-               delete h;
-               C.Destroy();
-               throw APIFunctionError( "GetHistograms" );
-            }
-
-            h->UpdatePeakLevel();
-
-            C.Add( h );
-         }
-      }
-   }
-}
-
-// ----------------------------------------------------------------------------
-
-void View::CalculateHistograms( bool notify )
-{
-   if ( (*API->View->CalculateViewHistograms)( handle, notify ) == api_false )
-      throw APIFunctionError( "CalculateHistograms" );
-}
-
-// ----------------------------------------------------------------------------
-
-void View::DestroyHistograms( bool notify )
-{
-   if ( (*API->View->DestroyViewHistograms)( handle, notify ) == api_false )
-      throw APIFunctionError( "DestroyHistograms" );
-}
-
-// ----------------------------------------------------------------------------
-
-bool View::AreStatisticsAvailable() const
-{
-   return (*API->View->GetViewStatisticsAvailable)( handle ) != api_false;
-}
-
-// ----------------------------------------------------------------------------
-
-void View::GetStatistics( statistics_list& C ) const
-{
-   C.Destroy();
-
-   if ( AreStatisticsAvailable() )
-   {
-      ImageVariant img = Image();
-
-      for ( int c = 0, n = img->NumberOfChannels(); c < n; ++c )
-      {
-         api_image_statistics a;
-
-         if ( (*API->View->GetViewStatistics)( handle, c, &a ) == api_false )
-         {
-            C.Destroy();
-            throw APIFunctionError( "GetStatistics" );
-         }
-
-         ImageStatistics* s = new ImageStatistics;
-         s->m_data.count    = a.count;
-         s->m_data.mean     = a.mean;
-         s->m_data.median   = a.median;
-         s->m_data.stdDev   = a.stdDev;
-         s->m_data.avgDev   = a.avgDev;
-         s->m_data.variance = a.variance;
-         s->m_data.minimum  = a.minimum;
-         s->m_data.minPos.x = a.xMin;
-         s->m_data.minPos.y = a.yMin;
-         s->m_data.maximum  = a.maximum;
-         s->m_data.maxPos.x = a.xMax;
-         s->m_data.maxPos.y = a.yMax;
-
-         C.Add( s );
-      }
-   }
-}
-
-// ----------------------------------------------------------------------------
-
-void View::CalculateStatistics( bool notify )
-{
-   if ( (*API->View->CalculateViewStatistics)( handle, notify ) == api_false )
-      throw APIFunctionError( "CalculateStatistics" );
-}
-
-// ----------------------------------------------------------------------------
-
-void View::DestroyStatistics( bool notify )
-{
-   if ( (*API->View->DestroyViewStatistics)( handle, notify ) == api_false )
-      throw APIFunctionError( "DestroyStatistics" );
-}
-
-// ----------------------------------------------------------------------------
-
 void View::GetScreenTransferFunctions( stf_list& stf ) const
 {
-   stf.Destroy();
+   stf.Clear();
 
    double m[ 4 ], c0[ 4 ], c1[ 4 ], r0[ 4 ], r1[ 4 ];
 
@@ -452,7 +319,7 @@ void View::GetScreenTransferFunctions( stf_list& stf ) const
       throw APIFunctionError( "GetScreenTransferFunctions" );
 
    for ( size_type i = 0; i < 4; ++i )
-      stf.Add( new HistogramTransformation( m[i], c0[i], c1[i], r0[i], r1[i] ) );
+      stf.Add( HistogramTransformation( m[i], c0[i], c1[i], r0[i], r1[i] ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -463,15 +330,14 @@ void View::SetScreenTransferFunctions( const stf_list& stf, bool notify )
 
    for ( size_type i = 0; i < 4; ++i )
    {
-      const HistogramTransformation* H = (i < stf.Length()) ? stf[i] : 0;
-
-      if ( H != 0 )
+      if ( i < stf.Length() )
       {
-         m[i]  = H->MidtonesBalance();
-         c0[i] = H->ShadowsClipping();
-         c1[i] = H->HighlightsClipping();
-         r0[i] = H->LowRange();
-         r1[i] = H->HighRange();
+         const HistogramTransformation& H = stf[i];
+         m[i]  = H.MidtonesBalance();
+         c0[i] = H.ShadowsClipping();
+         c1[i] = H.HighlightsClipping();
+         r0[i] = H.LowRange();
+         r1[i] = H.HighRange();
       }
       else
       {
@@ -592,6 +458,7 @@ View View::ViewById( const IsoString& fullId )
 class InternalViewEnumerator
 {
 public:
+
    static api_bool api_func Callback( view_handle hV, void* ptrToArray )
    {
       reinterpret_cast<Array<View>*>( ptrToArray )->Add( View( hV ) );
@@ -617,5 +484,5 @@ Array<View> View::AllPreviews()
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/View.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/View.cpp - Released 2015/07/30 17:15:31 UTC

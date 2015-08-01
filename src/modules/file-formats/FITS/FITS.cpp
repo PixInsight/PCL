@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard FITS File Format Module Version 01.01.00.0282
-// ****************************************************************************
-// FITS.cpp - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard FITS File Format Module Version 01.01.02.0306
+// ----------------------------------------------------------------------------
+// FITS.cpp - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "FITS.h"
 
@@ -64,24 +68,24 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-String FITS::Exception::Message() const
+String FITS::Error::Message() const
 {
-   return ErrorMessage();
-}
-
-String FITS::Exception::ErrorMessage() const
-{
-   String message = __ErrorMessage();
+   String message = ErrorMessage();
 
    String filePath = FilePath();
    if ( !filePath.IsEmpty() )
-      message += ":\n" + filePath;
+   {
+      message += ": ";
+      message += filePath;
+   }
 
    IsoString cfitsioMsgStack;
-   IsoString cfitsioMsg;
-   cfitsioMsg.Reserve( 96 ); // 80 would suffice, acc. to cfitsio's doc.
-   for ( int i = 1; fits_read_errmsg( cfitsioMsg.c_str() ) != 0; ++i )
-      cfitsioMsgStack += IsoString().Format( "\n%02d : ", i ) + cfitsioMsg;
+   char cfitsioMsg[ 96 ]; // 80 would suffice, acc. to cfitsio's doc.
+   for ( int i = 1; fits_read_errmsg( cfitsioMsg ) != 0; ++i )
+   {
+      cfitsioMsgStack += IsoString().Format( "\n%02d : ", i );
+      cfitsioMsgStack += cfitsioMsg;
+   }
    if ( !cfitsioMsgStack.IsEmpty() )
       message += "\nCFITSIO error message stack: " + cfitsioMsgStack;
 
@@ -92,17 +96,15 @@ String FITS::Exception::ErrorMessage() const
 
 struct FITSFileData
 {
-   void* fits;    // CFITSIO's ::fitsfile*
-   int   status;  // CFITSIO's persistent error code
+   void* fits = nullptr; // CFITSIO's ::fitsfile*
+   int   status = 0;     // CFITSIO's persistent error code
 
-   FITSFileData() : fits( 0 ), status( 0 )
-   {
-   }
+   FITSFileData() = default;
 
    ~FITSFileData()
    {
-      if ( fits != 0 )
-         ::fits_close_file( (::fitsfile*)fits, &status ), fits = 0;
+      if ( fits != nullptr )
+         ::fits_close_file( (::fitsfile*)fits, &status ), fits = nullptr;
    }
 };
 
@@ -110,64 +112,45 @@ struct FITSFileData
 
 struct FITSHDUData
 {
-   int       bitpix;           // file sample type
-   int       equivBitpix;      // equivalent sample type
-   int       naxis;            // image dimensions: 0=empty, 2=grayscale, 3=RGBA or 3=gray+alpha
-   long      naxes[ 3 ];       // width, height, number of channels
-   int       colorSpace;       // working safe copy
-   int       hduNumber;        // index of this HDU in the FITS file (zero-based)
-   double    zeroOffset;       // BZERO
-   double    scaleRange;       // BSCALE
-   bool      signedIsPhysical; // signed integer values store physical pixel data
-   IsoString iccExtName;       // name of ICC profile extension
-   IsoString thumbExtName;     // name of thumbnail image extension
-   IsoString xmpExtName;       // name of XMP metadata extension
+   int       bitpix           = 0;           // file sample type
+   int       equivBitpix      = 0;           // equivalent sample type
+   int       naxis            = 0;           // image dimensions: 0=empty, 2=grayscale, 3=RGBA or 3=gray+alpha
+#ifdef _MSC_VER
+   long      naxes[3];
+#else
+   long      naxes[3] = { 0, 0, 0 };         // width, height, number of channels
+#endif
+   int       colorSpace       = ColorSpace::Unknown;  // working safe copy
+   int       hduNumber        = -1;          // index of this HDU in the FITS file (zero-based)
+   double    zeroOffset       = 0;           // BZERO
+   double    scaleRange       = 1;           // BSCALE
+   bool      signedIsPhysical = false;       // signed integer values store physical pixel data
+   IsoString iccExtName;   // name of ICC profile extension
+   IsoString thumbExtName; // name of thumbnail image extension
 
+#ifdef _MSC_VER
+   // ### FIXME: Workaround for VC++'s lack of support for direct
+   // initialization of array class members.
    FITSHDUData()
    {
-      bitpix = 0;
-      equivBitpix = 0;
-      naxis = 0;
-      naxes[0] = naxes[1] = naxes[2] = 0;
-      colorSpace = ColorSpace::Unknown;
-      hduNumber = -1;
-      zeroOffset = 0;
-      scaleRange = 1;
-      signedIsPhysical = false;
+	   naxes[0] = naxes[1] = naxes[2] = 0;
    }
-
-   FITSHDUData( const FITSHDUData& x )
-   {
-      bitpix           = x.bitpix;
-      equivBitpix      = x.equivBitpix;
-      naxis            = x.naxis;
-      naxes[0]         = x.naxes[0];
-      naxes[1]         = x.naxes[1];
-      naxes[2]         = x.naxes[2];
-      colorSpace       = x.colorSpace;
-      hduNumber        = x.hduNumber;
-      zeroOffset       = x.zeroOffset;
-      scaleRange       = x.scaleRange;
-      signedIsPhysical = x.signedIsPhysical;
-      iccExtName       = x.iccExtName;
-      thumbExtName     = x.thumbExtName;
-      xmpExtName       = x.xmpExtName;
-   }
+#endif
 };
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-bool FITS::__IsOpen() const
+bool FITS::IsOpenStream() const
 {
-   return fileData != 0 && fileData->fits != 0;
+   return fileData != nullptr && fileData->fits != nullptr;
 }
 
-void FITS::__Close() // ### derived must call base
+void FITS::CloseStream() // ### derived must call base
 {
    // Close TIFF file stream and clean up libtiff data.
-   if ( fileData != 0 )
-      delete fileData, fileData = 0;
+   if ( fileData != nullptr )
+      delete fileData, fileData = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -183,14 +166,6 @@ struct FITSReaderData
    Array<FITSHDUData>      hdus;
    Array<FITSKeywordArray> keywords;
    Array<FITSImageOptions> fitsOptions;
-
-   FITSReaderData() : hdus(), keywords(), fitsOptions()
-   {
-   }
-
-   ~FITSReaderData()
-   {
-   }
 };
 
 // ----------------------------------------------------------------------------
@@ -230,7 +205,7 @@ public:
 
       FITSFileData* fileData = reader.fileData;
 
-      double* buffer = 0;
+      double* buffer = nullptr;
 
       try
       {
@@ -322,11 +297,11 @@ public:
             }
          }
 
-         delete [] buffer, buffer = 0;
+         delete [] buffer, buffer = nullptr;
       }
       catch ( ... )
       {
-         if ( buffer != 0 )
+         if ( buffer != nullptr )
             delete [] buffer;
          image.FreeData();
          reader.Close();
@@ -358,7 +333,7 @@ public:
 
       FITSFileData* fileData = reader.fileData;
 
-      double* buffer = 0;
+      double* buffer = nullptr;
 
       try
       {
@@ -425,11 +400,11 @@ public:
                for ( int i = t*hdu.naxes[0], j = b*hdu.naxes[0], i1 = i + hdu.naxes[0]; i != i1; ++i, ++j )
                   Swap( f[i], f[j] );
 
-         delete [] buffer, buffer = 0;
+         delete [] buffer, buffer = nullptr;
       }
       catch ( ... )
       {
-         if ( buffer != 0 )
+         if ( buffer != nullptr )
             delete [] buffer;
          reader.Close();
          throw;
@@ -441,15 +416,15 @@ public:
 
 bool FITSReader::IsOpen() const
 {
-   return FITS::__IsOpen();
+   return FITS::IsOpenStream();
 }
 
 void FITSReader::Close()
 {
-   if ( data != 0 )
-      delete data, data = 0;
+   if ( data != nullptr )
+      delete data, data = nullptr;
    index = 0;
-   FITS::__Close();
+   FITS::CloseStream();
 }
 
 void FITSReader::Open( const String& filePath )
@@ -462,10 +437,10 @@ void FITSReader::Open( const String& filePath )
 
    try
    {
-      if ( fileData == 0 )
+      if ( fileData == nullptr )
          fileData = new FITSFileData;
 
-      if ( data == 0 )
+      if ( data == nullptr )
          data = new FITSReaderData;
 
 #ifdef __PCL_WINDOWS
@@ -774,14 +749,6 @@ void FITSReader::Open( const String& filePath )
                if ( extName.IsValidIdentifier() )
                   hdu.thumbExtName = extName;
             }
-            else if ( !k.name.CompareIC( "XMPDATA" ) )
-            {
-               // *** PCL private keyword: XMP metadata extension.
-
-               IsoString extName = k.StripValueDelimiters();
-               if ( extName.IsValidIdentifier() )
-                  hdu.xmpExtName = extName;
-            }
             else if ( !k.name.CompareIC( "XTENSION" ) )
             {
                IsoString extType = k.StripValueDelimiters();
@@ -906,7 +873,7 @@ bool FITSReader::Extract( FITSKeywordArray& k )
       throw InvalidReadOperation( path );
 
    k = keywords[index];
-   return !k.IsEmpty();
+   return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -934,12 +901,9 @@ bool FITSReader::Extract( ICCProfile& icc )
            Extract( iccData, "ICCPROFILE" );
 
    if ( ok )
-   {
       icc.Set( iccData );
-      return true;
-   }
 
-   return false;
+   return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -952,7 +916,7 @@ bool FITSReader::Extract( UInt8Image& image )
       "ThumbnailImage",
       "THUMBNAIL",
       "THUMBNAILIMAGE",
-      0
+      nullptr
    };
 
    if ( !IsOpen() )
@@ -960,6 +924,8 @@ bool FITSReader::Extract( UInt8Image& image )
 
    if ( index >= int( hdus.Length() ) )
       throw InvalidReadOperation( path );
+
+   image.FreeData();
 
    bool ok = false;
 
@@ -970,16 +936,17 @@ bool FITSReader::Extract( UInt8Image& image )
          ok = true;
    }
 
-   for ( const char* x = *extNames; !ok; )
+   for ( const char** x = extNames; !ok; )
    {
-      ::fits_movnam_hdu( fits_handle, IMAGE_HDU, const_cast<char*>( x ), 0, &fitsStatus );
+      IsoString hduName( *x ); // make a temporary copy because fits_movnam_hdu takes a char* instead of const char* (?!)
+      ::fits_movnam_hdu( fits_handle, IMAGE_HDU, hduName.Begin(), 0, &fitsStatus );
       if ( fitsStatus == 0 ) // HDU found ?
          ok = true;
       else
       {
          fitsStatus = 0;  // this is not an actual error condition
-         if ( *++x == 0 ) // no more extension names to look for ?
-            return false;
+         if ( *++x == nullptr ) // no more extension names to look for ?
+            return true;
       }
    }
 
@@ -1078,7 +1045,7 @@ bool FITSReader::Extract( ByteArray& extData, const IsoString& extName )
    if ( fitsStatus != 0 ) // HDU not found ?
    {
       fitsStatus = 0; // this is not an error condition
-      return false;
+      return true;
    }
 
    try
@@ -1169,7 +1136,7 @@ IsoStringList FITSReader::DataExtensionNames() const
             IsoString extName = FITSHeaderKeyword( "EXTNAME", cvalue ).StripValueDelimiters();
             if ( !extName.IsEmpty() ) // anonymous extensions are ignored
                if ( !IsReservedExtensionName( extName ) ) // reserved properties are not listed
-                  if ( !extNames.Has( extName ) ) // duplicate extensions are not allowed (only the 1st one is listed)
+                  if ( !extNames.Contains( extName ) ) // duplicate extensions are not allowed (only the 1st one is listed)
                      extNames.Append( extName );
          }
          else
@@ -1295,15 +1262,11 @@ struct FITSExtensionData
    ByteArray data;
    IsoString name;
 
-   FITSExtensionData() : data(), name()
-   {
-   }
+   FITSExtensionData() = default;
+
+   FITSExtensionData( const FITSExtensionData& x ) = default;
 
    FITSExtensionData( const ByteArray& d, const IsoString& n ) : data( d ), name( n )
-   {
-   }
-
-   FITSExtensionData( const FITSExtensionData& x ) : data( x.data ), name( x.name )
    {
    }
 
@@ -1327,22 +1290,12 @@ struct FITSExtensionData
 
 struct FITSWriterData
 {
-   FITSHDUData*             hdu; // current image HDU
+   FITSHDUData*             hdu = nullptr; // current image HDU
    FITSImageOptions         fitsOptions;
    FITSKeywordArray         keywords;
    ICCProfile               iccProfile;
    UInt8Image               thumbnail;
    Array<FITSExtensionData> extensions;
-   // ### TODO: XML metadata
-
-   FITSWriterData() :
-   hdu( 0 ), fitsOptions(), keywords(), iccProfile(), thumbnail(), extensions()
-   {
-   }
-
-   ~FITSWriterData()
-   {
-   }
 };
 
 // ----------------------------------------------------------------------------
@@ -1367,7 +1320,7 @@ public:
    {
       FITSFileData* fileData = writer.fileData;
 
-      double* buffer = 0;
+      double* buffer = nullptr;
 
       try
       {
@@ -1458,13 +1411,13 @@ public:
             }
          }
 
-         delete [] buffer, buffer = 0;
+         delete [] buffer, buffer = nullptr;
 
          writer.CloseImage();
       }
       catch ( ... )
       {
-         if ( buffer != 0 )
+         if ( buffer != nullptr )
             delete [] buffer;
          fitsStatus = 1; // in case this is a non-CFITSIO error
          writer.Close();
@@ -1489,7 +1442,7 @@ public:
 
       FITSFileData* fileData = writer.fileData;
 
-      double* buffer = 0;
+      double* buffer = nullptr;
 
       try
       {
@@ -1552,11 +1505,11 @@ public:
          if ( fitsStatus != 0 )
             throw FITS::FileWriteError( writer.path );
 
-         delete [] buffer, buffer = 0;
+         delete [] buffer, buffer = nullptr;
       }
       catch ( ... )
       {
-         if ( buffer != 0 )
+         if ( buffer != nullptr )
             delete [] buffer;
          fitsStatus = 1; // in case this is a non-CFITSIO error
          writer.Close();
@@ -1569,7 +1522,7 @@ public:
 
 bool FITSWriter::IsOpen() const
 {
-   return FITS::__IsOpen();
+   return FITS::IsOpenStream();
 }
 
 void FITSWriter::Create( const String& filePath, int count )
@@ -1698,7 +1651,7 @@ const FITSImageOptions& FITSWriter::FITSOptions() const
 
 void FITSWriter::SetFITSOptions( const FITSImageOptions& newOptions )
 {
-   if ( hdu != 0 )
+   if ( hdu != nullptr )
       throw InvalidWriteOperation( path );
    fitsOptions = newOptions;
 }
@@ -1707,28 +1660,28 @@ void FITSWriter::SetFITSOptions( const FITSImageOptions& newOptions )
 
 void FITSWriter::Embed( const FITSKeywordArray& _keywords )
 {
-   if ( hdu != 0 )
+   if ( hdu != nullptr )
       throw InvalidWriteOperation( path );
    keywords = _keywords;
 }
 
 void FITSWriter::Embed( const ICCProfile& _icc )
 {
-   if ( hdu != 0 )
+   if ( hdu != nullptr )
       throw InvalidWriteOperation( path );
    iccProfile = _icc;
 }
 
 void FITSWriter::Embed( const UInt8Image& _thumbnail )
 {
-   if ( hdu != 0 )
+   if ( hdu != nullptr )
       throw InvalidWriteOperation( path );
    thumbnail = _thumbnail;
 }
 
 void FITSWriter::Embed( const ByteArray& extData, const IsoString& extName )
 {
-   if ( hdu != 0 )
+   if ( hdu != nullptr )
       throw InvalidWriteOperation( path );
    extensions.Add( FITSExtensionData( extData, extName ) );
 }
@@ -1764,7 +1717,7 @@ void FITSWriter::WriteImage( const UInt32Image& image )
 
 const FITSKeywordArray& FITSWriter::EmbeddedKeywords() const
 {
-   if ( data != 0 )
+   if ( data != nullptr )
       return keywords;
    static FITSKeywordArray noKeywords;
    return noKeywords;
@@ -1772,12 +1725,12 @@ const FITSKeywordArray& FITSWriter::EmbeddedKeywords() const
 
 const ICCProfile* FITSWriter::EmbeddedICCProfile() const
 {
-   return (data != 0) ? &iccProfile : 0;
+   return (data != nullptr) ? &iccProfile : nullptr;
 }
 
 const UInt8Image* FITSWriter::EmbeddedThumbnail() const
 {
-   return (data != 0) ? &thumbnail : 0;
+   return (data != nullptr) ? &thumbnail : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -1809,8 +1762,7 @@ void FITSWriter::Write( const UInt32Image::sample* f, int startRow, int rowCount
 
 // ----------------------------------------------------------------------------
 
-static
-void CleanupKeywordField( IsoString& k )
+static void CleanupKeywordField( IsoString& k )
 {
    if ( k.IsEmpty() )
       return;
@@ -2267,13 +2219,6 @@ void FITSWriter::CreateImage( const ImageInfo& info )
          }
 
          /*
-         if ( options.embedMetadata && ... )
-         {
-            // ### TODO: XML metadata support
-         }
-         */
-
-         /*
           * Signal presence of a thumbnail image extension, if thumbnail
           * embedding has been requested and a valid thumbnail image has been
           * specified.
@@ -2303,7 +2248,7 @@ void FITSWriter::CreateImage( const ImageInfo& info )
          FITSHeaderKeyword k = *i;
 
          // Take it as uppercase to simplify subsequent comparisons
-         IsoString kname = k.name.UpperCase();
+         IsoString kname = k.name.Uppercase();
 
          /*
           * Do not duplicate mandatory and PCL FITS keywords, and do not
@@ -2312,7 +2257,7 @@ void FITSWriter::CreateImage( const ImageInfo& info )
          if ( !kname.IsEmpty() &&
                kname          != "SIMPLE"    &&
                kname          != "BITPIX"    &&
-              !kname.BeginsWith( "NAXIS" )   && // All NAXISxxx keywords must be caught here
+              !kname.StartsWith( "NAXIS" )   && // All NAXISxxx keywords must be caught here
                kname          != "EXTEND"    &&
                kname          != "NEXTEND"   &&
                kname          != "BSCALE"    &&
@@ -2328,11 +2273,11 @@ void FITSWriter::CreateImage( const ImageInfo& info )
                kname          != "ROOTNAME"  &&
     (!hduNameWritten || kname != "HDUNAME")  && // image ids have precedence over explicit HDUNAME keywords
     (!extNameWritten || kname != "EXTNAME")  && // image ids have precedence over explicit EXTNAME keywords
-              !kname.BeginsWith( "TLMIN" )   &&
-              !kname.BeginsWith( "TLMAX" )   &&
-              !kname.BeginsWith( "TDMIN" )   &&
-              !kname.BeginsWith( "TDMAX" )   &&
-              !kname.BeginsWith( "TDBIN" )   &&
+              !kname.StartsWith( "TLMIN" )   &&
+              !kname.StartsWith( "TLMAX" )   &&
+              !kname.StartsWith( "TDMIN" )   &&
+              !kname.StartsWith( "TDMAX" )   &&
+              !kname.StartsWith( "TDBIN" )   &&
                kname          != "PINSIGHT"  && // obsolete
                kname          != "COLORSPC"  &&
                kname          != "ALPHACHN"  &&
@@ -2462,7 +2407,7 @@ void FITSWriter::CloseImage()
       throw InvalidCloseImageOperation( path );
 
    // hdu != 0 if we have a file currently open
-   if ( hdu == 0 )
+   if ( hdu == nullptr )
       return;
 
    try
@@ -2552,14 +2497,7 @@ void FITSWriter::CloseImage()
       if ( options.embedICCProfile && iccProfile.IsProfile() )
          WriteExtensionHDU( FITSExtensionData( iccProfile.ProfileData(), hdu->iccExtName ) );
 
-      /*
-      if ( options.embedMetadata && ... )
-      {
-         // ### TODO: XML metadata support
-      }
-      */
-
-      delete hdu, hdu = 0;
+      delete hdu, hdu = nullptr;
    }
    catch ( ... )
    {
@@ -2573,7 +2511,7 @@ void FITSWriter::CloseImage()
 
 void FITSWriter::Close()
 {
-   if ( data != 0 )
+   if ( data != nullptr )
    {
       if ( fitsStatus == 0 )
       {
@@ -2587,16 +2525,16 @@ void FITSWriter::Close()
          }
          catch ( ... )
          {
-            delete data, data = 0;
-            FITS::__Close();
+            delete data, data = nullptr;
+            FITS::CloseStream();
             throw;
          }
       }
 
-      delete data, data = 0;
+      delete data, data = nullptr;
    }
 
-   FITS::__Close();
+   FITS::CloseStream();
 }
 
 // ----------------------------------------------------------------------------
@@ -2630,5 +2568,5 @@ void FITSWriter::WriteExtensionHDU( const FITSExtensionData& ext )
 
 } // pcl
 
-// ****************************************************************************
-// EOF FITS.cpp - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF FITS.cpp - Released 2015/07/31 11:49:40 UTC

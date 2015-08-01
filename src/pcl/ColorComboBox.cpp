@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ColorComboBox.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ColorComboBox.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,11 +47,12 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
-#include <pcl/ColorComboBox.h>
 #include <pcl/Bitmap.h>
+#include <pcl/ColorComboBox.h>
 #include <pcl/Graphics.h>
+#include <pcl/ReferenceSortedArray.h>
 
 namespace pcl
 {
@@ -62,12 +66,44 @@ struct ComboColor
 {
    RGBA   value;
    String name;
-   Bitmap icon;
 
-   ComboColor( RGBA, const String& = String() );
-
-   ComboColor( const ComboColor& c ) : value( c.value ), name( c.name ), icon( c.icon )
+   ComboColor( RGBA v, const String& n = String() ) :
+      value( v ),
+      name( n )
    {
+   }
+
+   ComboColor( const ComboColor& ) = delete;
+   ComboColor& operator =( const ComboColor& ) = delete;
+
+   Bitmap Icon( int size, int margin ) const
+   {
+      Bitmap icon( size, size );
+      icon.Fill( 0 ); // make transparent
+      Graphics g( icon );
+      g.EnableAntialiasing();
+      g.SetPen( 0xFF000000, margin/2.0 ); // opaque black pen
+      if ( value != 0 )
+      {
+         g.SetBrush( value );
+         g.DrawRect( margin, margin, size-margin-1, size-margin-1 );
+      }
+      else
+      {
+         g.SetBrush( 0xFFFFFFFF );
+         g.DrawRect( margin, margin, size-margin-1, size-margin-1 );
+         g.DrawLine( margin, margin, size-margin, size-margin );
+         g.DrawLine( size-margin+1, margin, margin+1, size-margin );
+      }
+      g.EndPaint();
+
+      return icon;
+   }
+
+   String Title() const
+   {
+      return name;
+      // + String().Format( " (%d,%d,%d)", Red( value ), Green( value ), Blue( value ) );
    }
 
    double H() const
@@ -122,330 +158,322 @@ struct ComboColor
    }
 };
 
-ComboColor::ComboColor( RGBA v, const String& n ) : value( v ), name( n ), icon( ICONSIZE, ICONSIZE )
+typedef ReferenceSortedArray<ComboColor> combo_color_collection;
+
+static combo_color_collection s_comboColors;
+
+static void InitializeComboColors()
 {
-   name = n;
-   name.AppendFormat( " (%d,%d,%d)", Red( value ), Green( value ), Blue( value ) );
+   s_comboColors.Clear();
 
-   // Make transparent
-   icon.Fill( 0 );
-
-   Graphics G( icon );
-   G.SetPen( 0xFF000000 ); // Opaque black pen
-
-   if ( value != 0 )
-   {
-      G.SetBrush( value );
-      G.DrawRect( ICONMARGIN, ICONMARGIN, ICONSIZE-ICONMARGIN-1, ICONSIZE-ICONMARGIN-1 );
-   }
-   else
-   {
-      G.SetBrush( 0xFFFFFFFF );
-      G.DrawRect( ICONMARGIN, ICONMARGIN, ICONSIZE-ICONMARGIN-1, ICONSIZE-ICONMARGIN-1 );
-      G.DrawLine( ICONMARGIN, ICONMARGIN, ICONSIZE-ICONMARGIN, ICONSIZE-ICONMARGIN );
-      G.DrawLine( ICONSIZE-ICONMARGIN+1, ICONMARGIN, ICONMARGIN+1, ICONSIZE-ICONMARGIN );
-   }
-}
-
-typedef IndirectSortedArray<ComboColor>  combo_color_collection;
-
-static combo_color_collection    comboColors;
-static size_type                 numberOfColorComboBoxes = 0;
-
-static void __InitComboColors()
-{
    /* === This is an alternative short color list ===
-   comboColors.Add( ComboColor( 0x00000000, "Default"   ) );
-   comboColors.Add( ComboColor( 0xFF00FFFF, "Aqua"      ) );
-   comboColors.Add( ComboColor( 0xFF000000, "Black"     ) );
-   comboColors.Add( ComboColor( 0xFF0000FF, "Blue"      ) );
-   comboColors.Add( ComboColor( 0xFF00FFFF, "Cyan"      ) );
-   comboColors.Add( ComboColor( 0xFF808080, "Gray"      ) );
-   comboColors.Add( ComboColor( 0xFF008000, "Green"     ) );
-   comboColors.Add( ComboColor( 0xFFADD8E6, "LightBlue" ) );
-   comboColors.Add( ComboColor( 0xFF00FF00, "Lime"      ) );
-   comboColors.Add( ComboColor( 0xFFFF00FF, "Magenta"   ) );
-   comboColors.Add( ComboColor( 0xFF800000, "Maroon"    ) );
-   comboColors.Add( ComboColor( 0xFF000080, "Navy"      ) );
-   comboColors.Add( ComboColor( 0xFF808000, "Olive"     ) );
-   comboColors.Add( ComboColor( 0xFFFFA500, "Orange"    ) );
-   comboColors.Add( ComboColor( 0xFF800080, "Purple"    ) );
-   comboColors.Add( ComboColor( 0xFFFF0000, "Red"       ) );
-   comboColors.Add( ComboColor( 0xFFC0C0C0, "Silver"    ) );
-   comboColors.Add( ComboColor( 0xFF008080, "Teal"      ) );
-   comboColors.Add( ComboColor( 0xFFEE82EE, "Violet"    ) );
-   comboColors.Add( ComboColor( 0xFFFFFFFF, "White"     ) );
-   comboColors.Add( ComboColor( 0xFFFFFF00, "Yellow"    ) );
+   s_comboColors << new ComboColor( 0x00000000, "Default"   )
+                 << new ComboColor( 0xFF00FFFF, "Aqua"      )
+                 << new ComboColor( 0xFF000000, "Black"     )
+                 << new ComboColor( 0xFF0000FF, "Blue"      )
+                 << new ComboColor( 0xFF00FFFF, "Cyan"      )
+                 << new ComboColor( 0xFF808080, "Gray"      )
+                 << new ComboColor( 0xFF008000, "Green"     )
+                 << new ComboColor( 0xFFADD8E6, "LightBlue" )
+                 << new ComboColor( 0xFF00FF00, "Lime"      )
+                 << new ComboColor( 0xFFFF00FF, "Magenta"   )
+                 << new ComboColor( 0xFF800000, "Maroon"    )
+                 << new ComboColor( 0xFF000080, "Navy"      )
+                 << new ComboColor( 0xFF808000, "Olive"     )
+                 << new ComboColor( 0xFFFFA500, "Orange"    )
+                 << new ComboColor( 0xFF800080, "Purple"    )
+                 << new ComboColor( 0xFFFF0000, "Red"       )
+                 << new ComboColor( 0xFFC0C0C0, "Silver"    )
+                 << new ComboColor( 0xFF008080, "Teal"      )
+                 << new ComboColor( 0xFFEE82EE, "Violet"    )
+                 << new ComboColor( 0xFFFFFFFF, "White"     )
+                 << new ComboColor( 0xFFFFFF00, "Yellow"    );
    */
 
-   comboColors.Add( new ComboColor( 0xFFF0F8FF, "AliceBlue"            ) );
-   comboColors.Add( new ComboColor( 0xFFFAEBD7, "AntiqueWhite"         ) );
-   comboColors.Add( new ComboColor( 0xFF00FFFF, "Aqua"                 ) );
-   comboColors.Add( new ComboColor( 0xFF7FFFD4, "Aquamarine"           ) );
-   comboColors.Add( new ComboColor( 0xFFF0FFFF, "Azure"                ) );
-   comboColors.Add( new ComboColor( 0xFFF5F5DC, "Beige"                ) );
-   comboColors.Add( new ComboColor( 0xFFFFE4C4, "Bisque"               ) );
-   comboColors.Add( new ComboColor( 0xFF000000, "Black"                ) );
-   comboColors.Add( new ComboColor( 0xFFFFEBCD, "BlanchedAlmond"       ) );
-   comboColors.Add( new ComboColor( 0xFF0000FF, "Blue"                 ) );
-   comboColors.Add( new ComboColor( 0xFF8A2BE2, "BlueViolet"           ) );
-   comboColors.Add( new ComboColor( 0xFFA52A2A, "Brown"                ) );
-   comboColors.Add( new ComboColor( 0xFFDEB887, "BurlyWood"            ) );
-   comboColors.Add( new ComboColor( 0xFF5F9EA0, "CadetBlue"            ) );
-   comboColors.Add( new ComboColor( 0xFF7FFF00, "Chartreuse"           ) );
-   comboColors.Add( new ComboColor( 0xFFD2691E, "Chocolate"            ) );
-   comboColors.Add( new ComboColor( 0xFFFF7F50, "Coral"                ) );
-   comboColors.Add( new ComboColor( 0xFF6495ED, "CornflowerBlue"       ) );
-   comboColors.Add( new ComboColor( 0xFFFFF8DC, "Cornsilk"             ) );
-   comboColors.Add( new ComboColor( 0xFFDC143C, "Crimson"              ) );
-   comboColors.Add( new ComboColor( 0xFF00FFFF, "Cyan"                 ) );
-   comboColors.Add( new ComboColor( 0xFF00008B, "DarkBlue"             ) );
-   comboColors.Add( new ComboColor( 0xFF008B8B, "DarkCyan"             ) );
-   comboColors.Add( new ComboColor( 0xFFB8860B, "DarkGoldenRod"        ) );
-   comboColors.Add( new ComboColor( 0xFFA9A9A9, "DarkGray"             ) );
-   comboColors.Add( new ComboColor( 0xFF006400, "DarkGreen"            ) );
-   comboColors.Add( new ComboColor( 0xFFBDB76B, "DarkKhaki"            ) );
-   comboColors.Add( new ComboColor( 0xFF8B008B, "DarkMagenta"          ) );
-   comboColors.Add( new ComboColor( 0xFF556B2F, "DarkOliveGreen"       ) );
-   comboColors.Add( new ComboColor( 0xFFFF8C00, "DarkOrange"           ) );
-   comboColors.Add( new ComboColor( 0xFF9932CC, "DarkOrchid"           ) );
-   comboColors.Add( new ComboColor( 0xFF8B0000, "DarkRed"              ) );
-   comboColors.Add( new ComboColor( 0xFFE9967A, "DarkSalmon"           ) );
-   comboColors.Add( new ComboColor( 0xFF8FBC8F, "DarkSeaGreen"         ) );
-   comboColors.Add( new ComboColor( 0xFF483D8B, "DarkSlateBlue"        ) );
-   comboColors.Add( new ComboColor( 0xFF2F4F4F, "DarkSlateGray"        ) );
-   comboColors.Add( new ComboColor( 0xFF00CED1, "DarkTurquoise"        ) );
-   comboColors.Add( new ComboColor( 0xFF9400D3, "DarkViolet"           ) );
-   comboColors.Add( new ComboColor( 0xFFFF1493, "DeepPink"             ) );
-   comboColors.Add( new ComboColor( 0xFF00BFFF, "DeepSkyBlue"          ) );
-   comboColors.Add( new ComboColor( 0xFF696969, "DimGray"              ) );
-   comboColors.Add( new ComboColor( 0xFF1E90FF, "DodgerBlue"           ) );
-   comboColors.Add( new ComboColor( 0xFFD19275, "Feldspar"             ) );
-   comboColors.Add( new ComboColor( 0xFFB22222, "FireBrick"            ) );
-   comboColors.Add( new ComboColor( 0xFFFFFAF0, "FloralWhite"          ) );
-   comboColors.Add( new ComboColor( 0xFF228B22, "ForestGreen"          ) );
-   comboColors.Add( new ComboColor( 0xFFFF00FF, "Fuchsia"              ) );
-   comboColors.Add( new ComboColor( 0xFFDCDCDC, "Gainsboro"            ) );
-   comboColors.Add( new ComboColor( 0xFFF8F8FF, "GhostWhite"           ) );
-   comboColors.Add( new ComboColor( 0xFFFFD700, "Gold"                 ) );
-   comboColors.Add( new ComboColor( 0xFFDAA520, "GoldenRod"            ) );
-   comboColors.Add( new ComboColor( 0xFF808080, "Gray"                 ) );
-   comboColors.Add( new ComboColor( 0xFF008000, "Green"                ) );
-   comboColors.Add( new ComboColor( 0xFFADFF2F, "GreenYellow"          ) );
-   comboColors.Add( new ComboColor( 0xFFF0FFF0, "HoneyDew"             ) );
-   comboColors.Add( new ComboColor( 0xFFFF69B4, "HotPink"              ) );
-   comboColors.Add( new ComboColor( 0xFFCD5C5C, "IndianRed"            ) );
-   comboColors.Add( new ComboColor( 0xFF4B0082, "Indigo"               ) );
-   comboColors.Add( new ComboColor( 0xFFFFFFF0, "Ivory"                ) );
-   comboColors.Add( new ComboColor( 0xFFF0E68C, "Khaki"                ) );
-   comboColors.Add( new ComboColor( 0xFFE6E6FA, "Lavender"             ) );
-   comboColors.Add( new ComboColor( 0xFFFFF0F5, "LavenderBlush"        ) );
-   comboColors.Add( new ComboColor( 0xFF7CFC00, "LawnGreen"            ) );
-   comboColors.Add( new ComboColor( 0xFFFFFACD, "LemonChiffon"         ) );
-   comboColors.Add( new ComboColor( 0xFFADD8E6, "LightBlue"            ) );
-   comboColors.Add( new ComboColor( 0xFFF08080, "LightCoral"           ) );
-   comboColors.Add( new ComboColor( 0xFFE0FFFF, "LightCyan"            ) );
-   comboColors.Add( new ComboColor( 0xFFFAFAD2, "LightGoldenRodYellow" ) );
-   comboColors.Add( new ComboColor( 0xFFD3D3D3, "LightGrey"            ) );
-   comboColors.Add( new ComboColor( 0xFF90EE90, "LightGreen"           ) );
-   comboColors.Add( new ComboColor( 0xFFFFB6C1, "LightPink"            ) );
-   comboColors.Add( new ComboColor( 0xFFFFA07A, "LightSalmon"          ) );
-   comboColors.Add( new ComboColor( 0xFF20B2AA, "LightSeaGreen"        ) );
-   comboColors.Add( new ComboColor( 0xFF87CEFA, "LightSkyBlue"         ) );
-   comboColors.Add( new ComboColor( 0xFF8470FF, "LightSlateBlue"       ) );
-   comboColors.Add( new ComboColor( 0xFF778899, "LightSlateGray"       ) );
-   comboColors.Add( new ComboColor( 0xFFB0C4DE, "LightSteelBlue"       ) );
-   comboColors.Add( new ComboColor( 0xFFFFFFE0, "LightYellow"          ) );
-   comboColors.Add( new ComboColor( 0xFF00FF00, "Lime"                 ) );
-   comboColors.Add( new ComboColor( 0xFF32CD32, "LimeGreen"            ) );
-   comboColors.Add( new ComboColor( 0xFFFAF0E6, "Linen"                ) );
-   comboColors.Add( new ComboColor( 0xFFFF00FF, "Magenta"              ) );
-   comboColors.Add( new ComboColor( 0xFF800000, "Maroon"               ) );
-   comboColors.Add( new ComboColor( 0xFF66CDAA, "MediumAquaMarine"     ) );
-   comboColors.Add( new ComboColor( 0xFF0000CD, "MediumBlue"           ) );
-   comboColors.Add( new ComboColor( 0xFFBA55D3, "MediumOrchid"         ) );
-   comboColors.Add( new ComboColor( 0xFF9370D8, "MediumPurple"         ) );
-   comboColors.Add( new ComboColor( 0xFF3CB371, "MediumSeaGreen"       ) );
-   comboColors.Add( new ComboColor( 0xFF7B68EE, "MediumSlateBlue"      ) );
-   comboColors.Add( new ComboColor( 0xFF00FA9A, "MediumSpringGreen"    ) );
-   comboColors.Add( new ComboColor( 0xFF48D1CC, "MediumTurquoise"      ) );
-   comboColors.Add( new ComboColor( 0xFFC71585, "MediumVioletRed"      ) );
-   comboColors.Add( new ComboColor( 0xFF191970, "MidnightBlue"         ) );
-   comboColors.Add( new ComboColor( 0xFFF5FFFA, "MintCream"            ) );
-   comboColors.Add( new ComboColor( 0xFFFFE4E1, "MistyRose"            ) );
-   comboColors.Add( new ComboColor( 0xFFFFE4B5, "Moccasin"             ) );
-   comboColors.Add( new ComboColor( 0xFFFFDEAD, "NavajoWhite"          ) );
-   comboColors.Add( new ComboColor( 0xFF000080, "Navy"                 ) );
-   comboColors.Add( new ComboColor( 0xFFFDF5E6, "OldLace"              ) );
-   comboColors.Add( new ComboColor( 0xFF808000, "Olive"                ) );
-   comboColors.Add( new ComboColor( 0xFF6B8E23, "OliveDrab"            ) );
-   comboColors.Add( new ComboColor( 0xFFFFA500, "Orange"               ) );
-   comboColors.Add( new ComboColor( 0xFFFF4500, "OrangeRed"            ) );
-   comboColors.Add( new ComboColor( 0xFFDA70D6, "Orchid"               ) );
-   comboColors.Add( new ComboColor( 0xFFEEE8AA, "PaleGoldenRod"        ) );
-   comboColors.Add( new ComboColor( 0xFF98FB98, "PaleGreen"            ) );
-   comboColors.Add( new ComboColor( 0xFFAFEEEE, "PaleTurquoise"        ) );
-   comboColors.Add( new ComboColor( 0xFFD87093, "PaleVioletRed"        ) );
-   comboColors.Add( new ComboColor( 0xFFFFEFD5, "PapayaWhip"           ) );
-   comboColors.Add( new ComboColor( 0xFFFFDAB9, "PeachPuff"            ) );
-   comboColors.Add( new ComboColor( 0xFFCD853F, "Peru"                 ) );
-   comboColors.Add( new ComboColor( 0xFFFFC0CB, "Pink"                 ) );
-   comboColors.Add( new ComboColor( 0xFFDDA0DD, "Plum"                 ) );
-   comboColors.Add( new ComboColor( 0xFFB0E0E6, "PowderBlue"           ) );
-   comboColors.Add( new ComboColor( 0xFF800080, "Purple"               ) );
-   comboColors.Add( new ComboColor( 0xFFFF0000, "Red"                  ) );
-   comboColors.Add( new ComboColor( 0xFFBC8F8F, "RosyBrown"            ) );
-   comboColors.Add( new ComboColor( 0xFF4169E1, "RoyalBlue"            ) );
-   comboColors.Add( new ComboColor( 0xFF8B4513, "SaddleBrown"          ) );
-   comboColors.Add( new ComboColor( 0xFFFA8072, "Salmon"               ) );
-   comboColors.Add( new ComboColor( 0xFFF4A460, "SandyBrown"           ) );
-   comboColors.Add( new ComboColor( 0xFF2E8B57, "SeaGreen"             ) );
-   comboColors.Add( new ComboColor( 0xFFFFF5EE, "SeaShell"             ) );
-   comboColors.Add( new ComboColor( 0xFFA0522D, "Sienna"               ) );
-   comboColors.Add( new ComboColor( 0xFFC0C0C0, "Silver"               ) );
-   comboColors.Add( new ComboColor( 0xFF87CEEB, "SkyBlue"              ) );
-   comboColors.Add( new ComboColor( 0xFF6A5ACD, "SlateBlue"            ) );
-   comboColors.Add( new ComboColor( 0xFF708090, "SlateGray"            ) );
-   comboColors.Add( new ComboColor( 0xFFFFFAFA, "Snow"                 ) );
-   comboColors.Add( new ComboColor( 0xFF00FF7F, "SpringGreen"          ) );
-   comboColors.Add( new ComboColor( 0xFF4682B4, "SteelBlue"            ) );
-   comboColors.Add( new ComboColor( 0xFFD2B48C, "Tan"                  ) );
-   comboColors.Add( new ComboColor( 0xFF008080, "Teal"                 ) );
-   comboColors.Add( new ComboColor( 0xFFD8BFD8, "Thistle"              ) );
-   comboColors.Add( new ComboColor( 0xFFFF6347, "Tomato"               ) );
-   comboColors.Add( new ComboColor( 0xFF40E0D0, "Turquoise"            ) );
-   comboColors.Add( new ComboColor( 0xFFEE82EE, "Violet"               ) );
-   comboColors.Add( new ComboColor( 0xFFD02090, "VioletRed"            ) );
-   comboColors.Add( new ComboColor( 0xFFF5DEB3, "Wheat"                ) );
-   comboColors.Add( new ComboColor( 0xFFFFFFFF, "White"                ) );
-   comboColors.Add( new ComboColor( 0xFFF5F5F5, "WhiteSmoke"           ) );
-   comboColors.Add( new ComboColor( 0xFFFFFF00, "Yellow"               ) );
-   comboColors.Add( new ComboColor( 0xFF9ACD32, "YellowGreen"          ) );
+   s_comboColors << new ComboColor( 0xFFF0F8FF, "AliceBlue"            )
+                 << new ComboColor( 0xFFFAEBD7, "AntiqueWhite"         )
+                 << new ComboColor( 0xFF00FFFF, "Aqua"                 )
+                 << new ComboColor( 0xFF7FFFD4, "Aquamarine"           )
+                 << new ComboColor( 0xFFF0FFFF, "Azure"                )
+                 << new ComboColor( 0xFFF5F5DC, "Beige"                )
+                 << new ComboColor( 0xFFFFE4C4, "Bisque"               )
+                 << new ComboColor( 0xFF000000, "Black"                )
+                 << new ComboColor( 0xFFFFEBCD, "BlanchedAlmond"       )
+                 << new ComboColor( 0xFF0000FF, "Blue"                 )
+                 << new ComboColor( 0xFF8A2BE2, "BlueViolet"           )
+                 << new ComboColor( 0xFFA52A2A, "Brown"                )
+                 << new ComboColor( 0xFFDEB887, "BurlyWood"            )
+                 << new ComboColor( 0xFF5F9EA0, "CadetBlue"            )
+                 << new ComboColor( 0xFF7FFF00, "Chartreuse"           )
+                 << new ComboColor( 0xFFD2691E, "Chocolate"            )
+                 << new ComboColor( 0xFFFF7F50, "Coral"                )
+                 << new ComboColor( 0xFF6495ED, "CornflowerBlue"       )
+                 << new ComboColor( 0xFFFFF8DC, "Cornsilk"             )
+                 << new ComboColor( 0xFFDC143C, "Crimson"              )
+                 << new ComboColor( 0xFF00FFFF, "Cyan"                 )
+                 << new ComboColor( 0xFF00008B, "DarkBlue"             )
+                 << new ComboColor( 0xFF008B8B, "DarkCyan"             )
+                 << new ComboColor( 0xFFB8860B, "DarkGoldenRod"        )
+                 << new ComboColor( 0xFFA9A9A9, "DarkGray"             )
+                 << new ComboColor( 0xFF006400, "DarkGreen"            )
+                 << new ComboColor( 0xFFBDB76B, "DarkKhaki"            )
+                 << new ComboColor( 0xFF8B008B, "DarkMagenta"          )
+                 << new ComboColor( 0xFF556B2F, "DarkOliveGreen"       )
+                 << new ComboColor( 0xFFFF8C00, "DarkOrange"           )
+                 << new ComboColor( 0xFF9932CC, "DarkOrchid"           )
+                 << new ComboColor( 0xFF8B0000, "DarkRed"              )
+                 << new ComboColor( 0xFFE9967A, "DarkSalmon"           )
+                 << new ComboColor( 0xFF8FBC8F, "DarkSeaGreen"         )
+                 << new ComboColor( 0xFF483D8B, "DarkSlateBlue"        )
+                 << new ComboColor( 0xFF2F4F4F, "DarkSlateGray"        )
+                 << new ComboColor( 0xFF00CED1, "DarkTurquoise"        )
+                 << new ComboColor( 0xFF9400D3, "DarkViolet"           )
+                 << new ComboColor( 0xFFFF1493, "DeepPink"             )
+                 << new ComboColor( 0xFF00BFFF, "DeepSkyBlue"          )
+                 << new ComboColor( 0xFF696969, "DimGray"              )
+                 << new ComboColor( 0xFF1E90FF, "DodgerBlue"           )
+                 << new ComboColor( 0xFFD19275, "Feldspar"             )
+                 << new ComboColor( 0xFFB22222, "FireBrick"            )
+                 << new ComboColor( 0xFFFFFAF0, "FloralWhite"          )
+                 << new ComboColor( 0xFF228B22, "ForestGreen"          )
+                 << new ComboColor( 0xFFFF00FF, "Fuchsia"              )
+                 << new ComboColor( 0xFFDCDCDC, "Gainsboro"            )
+                 << new ComboColor( 0xFFF8F8FF, "GhostWhite"           )
+                 << new ComboColor( 0xFFFFD700, "Gold"                 )
+                 << new ComboColor( 0xFFDAA520, "GoldenRod"            )
+                 << new ComboColor( 0xFF808080, "Gray"                 )
+                 << new ComboColor( 0xFF008000, "Green"                )
+                 << new ComboColor( 0xFFADFF2F, "GreenYellow"          )
+                 << new ComboColor( 0xFFF0FFF0, "HoneyDew"             )
+                 << new ComboColor( 0xFFFF69B4, "HotPink"              )
+                 << new ComboColor( 0xFFCD5C5C, "IndianRed"            )
+                 << new ComboColor( 0xFF4B0082, "Indigo"               )
+                 << new ComboColor( 0xFFFFFFF0, "Ivory"                )
+                 << new ComboColor( 0xFFF0E68C, "Khaki"                )
+                 << new ComboColor( 0xFFE6E6FA, "Lavender"             )
+                 << new ComboColor( 0xFFFFF0F5, "LavenderBlush"        )
+                 << new ComboColor( 0xFF7CFC00, "LawnGreen"            )
+                 << new ComboColor( 0xFFFFFACD, "LemonChiffon"         )
+                 << new ComboColor( 0xFFADD8E6, "LightBlue"            )
+                 << new ComboColor( 0xFFF08080, "LightCoral"           )
+                 << new ComboColor( 0xFFE0FFFF, "LightCyan"            )
+                 << new ComboColor( 0xFFFAFAD2, "LightGoldenRodYellow" )
+                 << new ComboColor( 0xFFD3D3D3, "LightGrey"            )
+                 << new ComboColor( 0xFF90EE90, "LightGreen"           )
+                 << new ComboColor( 0xFFFFB6C1, "LightPink"            )
+                 << new ComboColor( 0xFFFFA07A, "LightSalmon"          )
+                 << new ComboColor( 0xFF20B2AA, "LightSeaGreen"        )
+                 << new ComboColor( 0xFF87CEFA, "LightSkyBlue"         )
+                 << new ComboColor( 0xFF8470FF, "LightSlateBlue"       )
+                 << new ComboColor( 0xFF778899, "LightSlateGray"       )
+                 << new ComboColor( 0xFFB0C4DE, "LightSteelBlue"       )
+                 << new ComboColor( 0xFFFFFFE0, "LightYellow"          )
+                 << new ComboColor( 0xFF00FF00, "Lime"                 )
+                 << new ComboColor( 0xFF32CD32, "LimeGreen"            )
+                 << new ComboColor( 0xFFFAF0E6, "Linen"                )
+                 << new ComboColor( 0xFFFF00FF, "Magenta"              )
+                 << new ComboColor( 0xFF800000, "Maroon"               )
+                 << new ComboColor( 0xFF66CDAA, "MediumAquaMarine"     )
+                 << new ComboColor( 0xFF0000CD, "MediumBlue"           )
+                 << new ComboColor( 0xFFBA55D3, "MediumOrchid"         )
+                 << new ComboColor( 0xFF9370D8, "MediumPurple"         )
+                 << new ComboColor( 0xFF3CB371, "MediumSeaGreen"       )
+                 << new ComboColor( 0xFF7B68EE, "MediumSlateBlue"      )
+                 << new ComboColor( 0xFF00FA9A, "MediumSpringGreen"    )
+                 << new ComboColor( 0xFF48D1CC, "MediumTurquoise"      )
+                 << new ComboColor( 0xFFC71585, "MediumVioletRed"      )
+                 << new ComboColor( 0xFF191970, "MidnightBlue"         )
+                 << new ComboColor( 0xFFF5FFFA, "MintCream"            )
+                 << new ComboColor( 0xFFFFE4E1, "MistyRose"            )
+                 << new ComboColor( 0xFFFFE4B5, "Moccasin"             )
+                 << new ComboColor( 0xFFFFDEAD, "NavajoWhite"          )
+                 << new ComboColor( 0xFF000080, "Navy"                 )
+                 << new ComboColor( 0xFFFDF5E6, "OldLace"              )
+                 << new ComboColor( 0xFF808000, "Olive"                )
+                 << new ComboColor( 0xFF6B8E23, "OliveDrab"            )
+                 << new ComboColor( 0xFFFFA500, "Orange"               )
+                 << new ComboColor( 0xFFFF4500, "OrangeRed"            )
+                 << new ComboColor( 0xFFDA70D6, "Orchid"               )
+                 << new ComboColor( 0xFFEEE8AA, "PaleGoldenRod"        )
+                 << new ComboColor( 0xFF98FB98, "PaleGreen"            )
+                 << new ComboColor( 0xFFAFEEEE, "PaleTurquoise"        )
+                 << new ComboColor( 0xFFD87093, "PaleVioletRed"        )
+                 << new ComboColor( 0xFFFFEFD5, "PapayaWhip"           )
+                 << new ComboColor( 0xFFFFDAB9, "PeachPuff"            )
+                 << new ComboColor( 0xFFCD853F, "Peru"                 )
+                 << new ComboColor( 0xFFFFC0CB, "Pink"                 )
+                 << new ComboColor( 0xFFDDA0DD, "Plum"                 )
+                 << new ComboColor( 0xFFB0E0E6, "PowderBlue"           )
+                 << new ComboColor( 0xFF800080, "Purple"               )
+                 << new ComboColor( 0xFFFF0000, "Red"                  )
+                 << new ComboColor( 0xFFBC8F8F, "RosyBrown"            )
+                 << new ComboColor( 0xFF4169E1, "RoyalBlue"            )
+                 << new ComboColor( 0xFF8B4513, "SaddleBrown"          )
+                 << new ComboColor( 0xFFFA8072, "Salmon"               )
+                 << new ComboColor( 0xFFF4A460, "SandyBrown"           )
+                 << new ComboColor( 0xFF2E8B57, "SeaGreen"             )
+                 << new ComboColor( 0xFFFFF5EE, "SeaShell"             )
+                 << new ComboColor( 0xFFA0522D, "Sienna"               )
+                 << new ComboColor( 0xFFC0C0C0, "Silver"               )
+                 << new ComboColor( 0xFF87CEEB, "SkyBlue"              )
+                 << new ComboColor( 0xFF6A5ACD, "SlateBlue"            )
+                 << new ComboColor( 0xFF708090, "SlateGray"            )
+                 << new ComboColor( 0xFFFFFAFA, "Snow"                 )
+                 << new ComboColor( 0xFF00FF7F, "SpringGreen"          )
+                 << new ComboColor( 0xFF4682B4, "SteelBlue"            )
+                 << new ComboColor( 0xFFD2B48C, "Tan"                  )
+                 << new ComboColor( 0xFF008080, "Teal"                 )
+                 << new ComboColor( 0xFFD8BFD8, "Thistle"              )
+                 << new ComboColor( 0xFFFF6347, "Tomato"               )
+                 << new ComboColor( 0xFF40E0D0, "Turquoise"            )
+                 << new ComboColor( 0xFFEE82EE, "Violet"               )
+                 << new ComboColor( 0xFFD02090, "VioletRed"            )
+                 << new ComboColor( 0xFFF5DEB3, "Wheat"                )
+                 << new ComboColor( 0xFFFFFFFF, "White"                )
+                 << new ComboColor( 0xFFF5F5F5, "WhiteSmoke"           )
+                 << new ComboColor( 0xFFFFFF00, "Yellow"               )
+                 << new ComboColor( 0xFF9ACD32, "YellowGreen"          );
 }
 
 // ----------------------------------------------------------------------------
 
 ColorComboBox::ColorComboBox( Control& parent ) :
-ComboBox( parent ),
-onColorSelected( 0 ), onColorSelectedReceiver( 0 ),
-onColorHighlighted( 0 ), onColorHighlightedReceiver( 0 ),
-onCustomColorDefined( 0 ), onCustomColorDefinedReceiver( 0 ),
-customColor( 0 )
+   ComboBox( parent ),
+   m_handlers( nullptr ),
+   m_customColor( 0 )
 {
-   ++numberOfColorComboBoxes;
+   if ( s_comboColors.IsEmpty() )
+      InitializeComboColors();
 
-   if ( comboColors.IsEmpty() )
-      __InitComboColors();
+   double f = DisplayPixelRatio();
+   int size = RoundInt( f*ICONSIZE );
+   int margin = RoundInt( f*ICONMARGIN );
+   SetIconSize( size );
+   for ( combo_color_collection::const_iterator i = s_comboColors.Begin(); i != s_comboColors.End(); ++i )
+      AddItem( i->Title(), i->Icon( size, margin ) );
 
-   SetIconSize( ICONSIZE, ICONSIZE );
-
-   for ( combo_color_collection::const_iterator i = comboColors.Begin(); i != comboColors.End(); ++i )
-      AddItem( (*i)->name, (*i)->icon );
-
-   OnItemSelected( (ComboBox::item_event_handler)&ColorComboBox::__ItemSelected, *this );
-   OnItemHighlighted( (ComboBox::item_event_handler)&ColorComboBox::__ItemHighlighted, *this );
-}
-
-ColorComboBox::~ColorComboBox()
-{
-   if ( --numberOfColorComboBoxes == 0 )
-      comboColors.Destroy();
+   OnItemSelected( (ComboBox::item_event_handler)&ColorComboBox::ItemSelected, *this );
+   OnItemHighlighted( (ComboBox::item_event_handler)&ColorComboBox::ItemHighlighted, *this );
 }
 
 RGBA ColorComboBox::CurrentColor() const
 {
    int i = CurrentItem();
    if ( i >= NumberOfItems() )
-      return customColor;
-   return comboColors[i]->value;
+      return m_customColor;
+   return s_comboColors[i].value;
 }
 
 void ColorComboBox::SetCurrentColor( RGBA color )
 {
    color |= 0xff000000; // We only deal with opaque colors
 
-   combo_color_collection::const_iterator i = comboColors.Search( ComboColor( color ) );
-   if ( i != comboColors.End() )
-      SetCurrentItem( i - comboColors.Begin() );
+   combo_color_collection::const_iterator i = s_comboColors.Search( ComboColor( color ) );
+   if ( i != s_comboColors.End() )
+      SetCurrentItem( i - s_comboColors.Begin() );
    else
    {
-      if ( color != customColor )
+      if ( color != m_customColor )
       {
-         if ( NumberOfItems() > int( comboColors.Length() ) )
-            RemoveItem( NumberOfItems() - 1 );
+         if ( NumberOfItems() > int( s_comboColors.Length() ) )
+            RemoveItem( NumberOfItems()-1 );
 
-         customColor = color;
+         m_customColor = color;
 
-         ComboColor C( customColor, "Custom" );
-         AddItem( C.name, C.icon );
+         double f = DisplayPixelRatio();
+         ComboColor C( m_customColor, String().Format( "Custom (%d,%d,%d)",
+                           Red( m_customColor ), Green( m_customColor ), Blue( m_customColor ) ) );
+         AddItem( C.Title(), C.Icon( RoundInt( f*ICONSIZE ), RoundInt( f*ICONMARGIN ) ) );
 
-         if ( onCustomColorDefined != 0 )
-            (onCustomColorDefinedReceiver->*onCustomColorDefined)( *this, customColor );
+         if ( m_handlers != nullptr )
+            if ( m_handlers->onCustomColorDefined != nullptr )
+               (m_handlers->onCustomColorDefinedReceiver->*m_handlers->onCustomColorDefined)( *this, m_customColor );
       }
 
-      SetCurrentItem( NumberOfItems() - 1 );
+      SetCurrentItem( NumberOfItems()-1 );
    }
 }
 
+#define INIT_EVENT_HANDLERS()    \
+   __PCL_NO_ALIAS_HANDLERS;      \
+   if ( m_handlers == nullptr )  \
+      m_handlers = new EventHandlers
+
 void ColorComboBox::OnColorSelected( color_event_handler f, Control& c )
 {
-   if ( f == 0 || c.IsNull() )
+   if ( f == nullptr || c.IsNull() )
    {
-      onColorSelected = 0;
-      onColorSelectedReceiver = 0;
+      if ( m_handlers != nullptr )
+      {
+         m_handlers->onColorSelected = nullptr;
+         m_handlers->onColorSelectedReceiver = nullptr;
+      }
    }
    else
    {
-      onColorSelected = f;
-      onColorSelectedReceiver = &c;
+      INIT_EVENT_HANDLERS();
+      m_handlers->onColorSelected = f;
+      m_handlers->onColorSelectedReceiver = &c;
    }
 }
 
 void ColorComboBox::OnColorHighlighted( color_event_handler f, Control& c )
 {
-   if ( f == 0 || c.IsNull() )
+   if ( f == nullptr || c.IsNull() )
    {
-      onColorHighlighted = 0;
-      onColorHighlightedReceiver = 0;
+      if ( m_handlers != nullptr )
+      {
+         m_handlers->onColorHighlighted = nullptr;
+         m_handlers->onColorHighlightedReceiver = nullptr;
+      }
    }
    else
    {
-      onColorHighlighted = f;
-      onColorHighlightedReceiver = &c;
+      INIT_EVENT_HANDLERS();
+      m_handlers->onColorHighlighted = f;
+      m_handlers->onColorHighlightedReceiver = &c;
    }
 }
 
 void ColorComboBox::OnCustomColorDefined( color_event_handler f, Control& c )
 {
-   if ( f == 0 || c.IsNull() )
+   if ( f == nullptr || c.IsNull() )
    {
-      onCustomColorDefined = 0;
-      onCustomColorDefinedReceiver = 0;
+      if ( m_handlers != nullptr )
+      {
+         m_handlers->onCustomColorDefined = nullptr;
+         m_handlers->onCustomColorDefinedReceiver = nullptr;
+      }
    }
    else
    {
-      onCustomColorDefined = f;
-      onCustomColorDefinedReceiver = &c;
+      INIT_EVENT_HANDLERS();
+      m_handlers->onCustomColorDefined = f;
+      m_handlers->onCustomColorDefinedReceiver = &c;
    }
 }
 
-void ColorComboBox::__ItemSelected( ComboBox& sender, int index )
+#undef INIT_EVENT_HANDLERS
+
+void ColorComboBox::ItemSelected( ComboBox& sender, int index )
 {
-   if ( onColorSelected != 0 )
-      (onColorSelectedReceiver->*onColorSelected)( *this,
-            (index < int( comboColors.Length() )) ? comboColors[index]->value : customColor );
+   if ( m_handlers != nullptr )
+      if ( m_handlers->onColorSelected != nullptr )
+         (m_handlers->onColorSelectedReceiver->*m_handlers->onColorSelected)( *this,
+               (index < int( s_comboColors.Length() )) ? s_comboColors[index].value : m_customColor );
 }
 
-void ColorComboBox::__ItemHighlighted( ComboBox& sender, int index )
+void ColorComboBox::ItemHighlighted( ComboBox& sender, int index )
 {
-   if ( onColorHighlighted != 0 )
-      (onColorHighlightedReceiver->*onColorHighlighted)( *this,
-            (index < int( comboColors.Length() )) ? comboColors[index]->value : customColor );
+   if ( m_handlers != nullptr )
+      if ( m_handlers->onColorHighlighted != nullptr )
+         (m_handlers->onColorHighlightedReceiver->*m_handlers->onColorHighlighted)( *this,
+               (index < int( s_comboColors.Length() )) ? s_comboColors[index].value : m_customColor );
 }
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/ColorComboBox.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ColorComboBox.cpp - Released 2015/07/30 17:15:31 UTC

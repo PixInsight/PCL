@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Fourier Process Module Version 01.00.04.0124
-// ****************************************************************************
-// InverseFourierTransformInterface.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Fourier Process Module Version 01.00.04.0143
+// ----------------------------------------------------------------------------
+// InverseFourierTransformInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Fourier PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,16 +48,13 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "InverseFourierTransformInterface.h"
 #include "InverseFourierTransformProcess.h"
 
-#include <pcl/Dialog.h>
-#include <pcl/ViewList.h>
-#include <pcl/CheckBox.h>
-#include <pcl/PushButton.h>
 #include <pcl/ErrorHandler.h>
+#include <pcl/ViewSelectionDialog.h>
 
 namespace pcl
 {
@@ -65,115 +66,6 @@ InverseFourierTransformInterface* TheInverseFourierTransformInterface = 0;
 // ----------------------------------------------------------------------------
 
 #include "InverseFourierTransformIcon.xpm"
-
-// ----------------------------------------------------------------------------
-
-class ImageSelectionDialog : public Dialog
-{
-public:
-
-   String id;
-
-   ImageSelectionDialog( const String& id, const String& title,
-                         bool allowMainViews = true,
-                         bool allowPreviews = true );
-private:
-
-   VerticalSizer  Global_Sizer;
-      ViewList          Images_ViewList;
-      CheckBox          IncludeMainViews_CheckBox;
-      CheckBox          IncludePreviews_CheckBox;
-      HorizontalSizer   Buttons_Sizer;
-         PushButton        OK_PushButton;
-         PushButton        Cancel_PushButton;
-
-   void __ViewSelected( ViewList& sender, View& view );
-   void __Option_Click( Button& sender, bool checked );
-   void __Button_Click( Button& sender, bool checked );
-};
-
-ImageSelectionDialog::ImageSelectionDialog( const String& _id, const String& title,
-                                            bool allowMainViews,
-                                            bool allowPreviews ) : Dialog(), id( _id )
-{
-   Images_ViewList.Regenerate( allowMainViews, allowPreviews );
-   Images_ViewList.SelectView( View::ViewById( id ) );
-   Images_ViewList.SetMinWidth( Font().Width( String( 'M', 40 ) ) );
-   Images_ViewList.OnViewSelected( (ViewList::view_event_handler)&ImageSelectionDialog::__ViewSelected, *this );
-
-   if ( allowMainViews && allowPreviews )
-   {
-      IncludeMainViews_CheckBox.SetText( "Include main views" );
-      IncludeMainViews_CheckBox.OnClick( (Button::click_event_handler)&ImageSelectionDialog::__Option_Click, *this );
-      IncludeMainViews_CheckBox.SetChecked();
-
-      IncludePreviews_CheckBox.SetText( "Include previews" );
-      IncludePreviews_CheckBox.OnClick( (Button::click_event_handler)&ImageSelectionDialog::__Option_Click, *this );
-      IncludePreviews_CheckBox.SetChecked();
-   }
-   else
-   {
-      IncludeMainViews_CheckBox.Hide();
-      IncludePreviews_CheckBox.Hide();
-   }
-
-   //
-
-   OK_PushButton.SetText( "OK" );
-   OK_PushButton.SetDefault();
-   OK_PushButton.SetCursor( StdCursor::Checkmark );
-   OK_PushButton.OnClick( (Button::click_event_handler)&ImageSelectionDialog::__Button_Click, *this );
-
-   Cancel_PushButton.SetText( "Cancel" );
-   Cancel_PushButton.SetCursor( StdCursor::Crossmark );
-   Cancel_PushButton.OnClick( (Button::click_event_handler)&ImageSelectionDialog::__Button_Click, *this );
-
-   Buttons_Sizer.SetSpacing( 8 );
-   Buttons_Sizer.AddStretch();
-   Buttons_Sizer.Add( OK_PushButton );
-   Buttons_Sizer.Add( Cancel_PushButton );
-
-   //
-
-   Global_Sizer.SetMargin( 8 );
-   Global_Sizer.SetSpacing( 6 );
-   Global_Sizer.Add( Images_ViewList );
-
-   if ( allowMainViews && allowPreviews )
-   {
-      Global_Sizer.Add( IncludeMainViews_CheckBox );
-      Global_Sizer.Add( IncludePreviews_CheckBox );
-   }
-
-   Global_Sizer.Add( Buttons_Sizer );
-
-   SetSizer( Global_Sizer );
-   AdjustToContents();
-   SetFixedHeight();
-
-   SetWindowTitle( "title" );
-}
-
-void ImageSelectionDialog::__ViewSelected( ViewList& sender, View& view )
-{
-   id = view.IsNull() ? String() : String( view.FullId() );
-}
-
-void ImageSelectionDialog::__Option_Click( Button& sender, bool checked )
-{
-   bool includeMainViews = IncludeMainViews_CheckBox.IsChecked();
-   bool includePreviews = IncludePreviews_CheckBox.IsChecked();
-   Images_ViewList.Regenerate( includeMainViews, includePreviews );
-   Images_ViewList.SelectView( View::ViewById( id ) );
-}
-
-void ImageSelectionDialog::__Button_Click( Button& sender, bool checked )
-{
-   if ( sender == OK_PushButton )
-      Ok();
-   else
-      Cancel();
-}
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -248,7 +140,7 @@ bool InverseFourierTransformInterface::ValidateProcess( const ProcessImplementat
       return false;
    }
 
-   whyNot.Empty();
+   whyNot.Clear();
    return true;
 }
 
@@ -283,12 +175,10 @@ void InverseFourierTransformInterface::__Click( Button& sender, bool checked )
 
    String* id = firstComponent ? &instance.idOfFirstComponent : &instance.idOfSecondComponent;
 
-   ImageSelectionDialog d( *id, "Select " + String( firstComponent ? "First" : "Second" ) + " DFT Component",
-                           true/*allowMainViews*/,
-                           false/*allowPreviews*/ );
-
+   ViewSelectionDialog d( *id, false/*allowPreviews*/ );
+   d.SetWindowTitle( "Select " + String( firstComponent ? "First" : "Second" ) + " DFT Component" );
    if ( d.Execute() == StdDialogCode::Ok )
-      *id = d.id;
+      *id = d.Id();
 
    UpdateControls();
 }
@@ -334,12 +224,12 @@ InverseFourierTransformInterface::GUIData::GUIData( InverseFourierTransformInter
    FirstComponent_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    FirstComponent_Label.SetToolTip( firstComponentToolTip );
 
-   FirstComponent_Edit.SetMinWidth( 400 );
+   FirstComponent_Edit.SetScaledMinWidth( 400 );
    FirstComponent_Edit.SetToolTip( firstComponentToolTip );
    FirstComponent_Edit.OnEditCompleted( (Edit::edit_event_handler)&InverseFourierTransformInterface::__EditCompleted, w );
 
-   FirstComponent_ToolButton.SetIcon( Bitmap( String( ":/icons/select-view.png" ) ) );
-   FirstComponent_ToolButton.SetFixedSize( 20, 20 );
+   FirstComponent_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
+   FirstComponent_ToolButton.SetScaledFixedSize( 20, 20 );
    FirstComponent_ToolButton.SetToolTip( "<p>Select the first DFT component</p>" );
    FirstComponent_ToolButton.OnClick( (Button::click_event_handler)&InverseFourierTransformInterface::__Click, w );
 
@@ -359,12 +249,12 @@ InverseFourierTransformInterface::GUIData::GUIData( InverseFourierTransformInter
    SecondComponent_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    SecondComponent_Label.SetToolTip( secondComponentToolTip );
 
-   SecondComponent_Edit.SetMinWidth( 400 );
+   SecondComponent_Edit.SetScaledMinWidth( 400 );
    SecondComponent_Edit.SetToolTip( secondComponentToolTip );
    SecondComponent_Edit.OnEditCompleted( (Edit::edit_event_handler)&InverseFourierTransformInterface::__EditCompleted, w );
 
-   SecondComponent_ToolButton.SetIcon( Bitmap( String( ":/icons/select-view.png" ) ) );
-   SecondComponent_ToolButton.SetFixedSize( 20, 20 );
+   SecondComponent_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
+   SecondComponent_ToolButton.SetScaledFixedSize( 20, 20 );
    SecondComponent_ToolButton.SetToolTip( "<p>Select the second DFT component</p>" );
    SecondComponent_ToolButton.OnClick( (Button::click_event_handler)&InverseFourierTransformInterface::__Click, w );
 
@@ -422,5 +312,5 @@ InverseFourierTransformInterface::GUIData::GUIData( InverseFourierTransformInter
 
 } // pcl
 
-// ****************************************************************************
-// EOF InverseFourierTransformInterface.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF InverseFourierTransformInterface.cpp - Released 2015/07/31 11:49:48 UTC

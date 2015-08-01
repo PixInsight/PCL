@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/FileFormatInstance.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/FileFormatInstance.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,11 +47,14 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/AutoLock.h>
+#include <pcl/ColorFilterArray.h>
+#include <pcl/DisplayFunction.h>
 #include <pcl/FileFormat.h>
 #include <pcl/FileFormatInstance.h>
+#include <pcl/ICCProfile.h>
 
 #include <pcl/api/APIException.h>
 #include <pcl/api/APIInterface.h>
@@ -58,78 +64,11 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-static void APIImageInfoToPCL( ImageInfo& info, const api_image_info& i )
-{
-   info.width            = int( i.width );
-   info.height           = int( i.height );
-   info.numberOfChannels = int( i.numberOfChannels );
-   info.colorSpace       = int( i.colorSpace );
-   info.supported        = i.supported;
-}
-
-static void APIImageOptionsToPCL( ImageOptions& opt, const api_image_options& o )
-{
-   opt.bitsPerSample      = o.bitsPerSample;
-   opt.ieeefpSampleFormat = o.ieeefpSampleFormat;
-   opt.complexSample      = o.complexSample;
-   opt.signedIntegers     = o.signedIntegers;
-   opt.metricResolution   = o.metricResolution;
-   opt.readNormalized     = o.readNormalized;
-   opt.embedICCProfile    = o.embedICCProfile;
-   opt.embedMetadata      = o.embedMetadata;
-   opt.embedThumbnail     = o.embedThumbnail;
-   opt.embedProperties    = o.embedProperties;
-   opt.lowerRange         = o.lowerRange;
-   opt.upperRange         = o.upperRange;
-   opt.xResolution        = o.xResolution;
-   opt.yResolution        = o.yResolution;
-   opt.isoSpeed           = o.isoSpeed;
-   opt.exposure           = o.exposure;
-   opt.aperture           = o.aperture;
-   opt.focalLength        = o.focalLength;
-   opt.cfaType            = o.cfaType;
-}
-
-static void PCLImageInfoToAPI( api_image_info& i, const ImageInfo& info )
-{
-   i.width            = uint32( info.width );
-   i.height           = uint32( info.height );
-   i.numberOfChannels = uint32( info.numberOfChannels );
-   i.colorSpace       = uint32( info.colorSpace );
-   i.supported        = info.supported;
-}
-
-static void PCLImageOptionsToAPI( api_image_options& o, const ImageOptions& opt )
-{
-   o.bitsPerSample      = opt.bitsPerSample;
-   o.ieeefpSampleFormat = opt.ieeefpSampleFormat;
-   o.complexSample      = opt.complexSample;
-   o.signedIntegers     = opt.signedIntegers;
-   o.metricResolution   = opt.metricResolution;
-   o.readNormalized     = opt.readNormalized;
-   o.embedICCProfile    = opt.embedICCProfile;
-   o.embedMetadata      = opt.embedMetadata;
-   o.embedThumbnail     = opt.embedThumbnail;
-   o.embedProperties    = opt.embedProperties;
-   o.lowerRange         = opt.lowerRange;
-   o.upperRange         = opt.upperRange;
-   o.xResolution        = opt.xResolution;
-   o.yResolution        = opt.yResolution;
-   o.isoSpeed           = opt.isoSpeed;
-   o.exposure           = opt.exposure;
-   o.aperture           = opt.aperture;
-   o.focalLength        = opt.focalLength;
-   o.cfaType            = opt.cfaType;
-}
-
-// ----------------------------------------------------------------------------
-
 static void APIHackingAttempt( const String& routineId )
 {
    throw Error( "* Warning * Hacking attempt detected in low-level API call: FileFormat->" + routineId );
 }
 
-// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 class FileFormatInstancePrivate
@@ -191,27 +130,21 @@ public:
 // ----------------------------------------------------------------------------
 
 FileFormatInstance::FileFormatInstance( const FileFormat& fmt ) :
-UIObject( (*API->FileFormat->CreateFileFormatInstance)( ModuleHandle(), fmt.Handle() ) )
+   UIObject( (*API->FileFormat->CreateFileFormatInstance)( ModuleHandle(), fmt.Handle() ) )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateFileFormatInstance" );
-}
-
-// ----------------------------------------------------------------------------
-
-FileFormatInstance::FileFormatInstance( void* h ) : UIObject( h )
-{
 }
 
 // ----------------------------------------------------------------------------
 
 FileFormatInstance& FileFormatInstance::Null()
 {
-   static FileFormatInstance* nullInstance = 0;
+   static FileFormatInstance* nullInstance = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullInstance == 0 )
-      nullInstance = new FileFormatInstance( reinterpret_cast<void*>( 0 ) );
+   if ( nullInstance == nullptr )
+      nullInstance = new FileFormatInstance( nullptr );
    return *nullInstance;
 }
 
@@ -244,15 +177,13 @@ String FileFormatInstance::FilePath() const
    (*API->FileFormat->GetImageFilePath)( handle, 0, &len );
 
    String path;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      path.Reserve( len );
-
+      path.SetLength( len );
       if ( (*API->FileFormat->GetImageFilePath)( handle, path.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetImageFilePath" );
+      path.ResizeToNullTerminated();
    }
-
    return path;
 }
 
@@ -261,7 +192,7 @@ String FileFormatInstance::FilePath() const
 bool FileFormatInstance::Open( ImageDescriptionArray& images,
                                const String& filePath, const IsoString& hints )
 {
-   images.Remove();
+   images.Clear();
 
    if ( (*API->FileFormat->OpenImageFileEx)( handle, filePath.c_str(), hints.c_str(), 0/*flags*/ ) == api_false )
       return false;
@@ -271,11 +202,12 @@ bool FileFormatInstance::Open( ImageDescriptionArray& images,
       IsoString id;
       size_type len = 0;
       (*API->FileFormat->GetImageId)( handle, 0, &len, i );
-      if ( len != 0 )
+      if ( len > 0 )
       {
-         id.Reserve( len );
+         id.SetLength( len );
          if ( (*API->FileFormat->GetImageId)( handle, id.c_str(), &len, i ) == api_false )
             throw APIFunctionError( "GetImageId" );
+         id.ResizeToNullTerminated();
       }
 
       api_image_info info;
@@ -321,17 +253,15 @@ String FileFormatInstance::ImageProperties() const
    size_type len = 0;
    (*API->FileFormat->GetImageProperties)( handle, 0, &len );
 
-   String props;
-
-   if ( len != 0 )
+   String properties;
+   if ( len > 0 )
    {
-      props.Reserve( len );
-
-      if ( (*API->FileFormat->GetImageProperties)( handle, props.c_str(), &len ) == api_false )
+      properties.SetLength( len );
+      if ( (*API->FileFormat->GetImageProperties)( handle, properties.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetImageProperties" );
+      properties.ResizeToNullTerminated();
    }
-
-   return props;
+   return properties;
 }
 
 // ----------------------------------------------------------------------------
@@ -356,11 +286,14 @@ bool FileFormatInstance::Extract( FITSKeywordArray& keywords )
                   name.c_str(), value.c_str(), comment.c_str(), 81 ) == api_false )
             throw APIFunctionError( "GetNextKeyword" );
 
+         name.ResizeToNullTerminated();
+         value.ResizeToNullTerminated();
+         comment.ResizeToNullTerminated();
+
          keywords.Add( FITSHeaderKeyword( name, value, comment ) );
       }
 
       (*API->FileFormat->EndKeywordExtraction)( handle );
-
       return true;
    }
    catch ( ... )
@@ -397,38 +330,6 @@ bool FileFormatInstance::Extract( ICCProfile& icc )
 
 // ----------------------------------------------------------------------------
 
-bool FileFormatInstance::Extract( void*& data, size_type& length )
-{
-   try
-   {
-      data = 0;
-      length = 0;
-
-      if ( (*API->FileFormat->BeginMetadataExtraction)( handle ) == api_false )
-         return false;
-
-      uint32 metadataSize;
-      const void* metadata = (*API->FileFormat->GetMetadata)( handle, &metadataSize );
-
-      if ( metadata != 0 && metadataSize != 0 )
-      {
-         data = (void*)new uint8[ length = metadataSize ];
-         ::memcpy( data, metadata, metadataSize );
-      }
-
-      (*API->FileFormat->EndMetadataExtraction)( handle );
-
-      return true;
-   }
-   catch ( ... )
-   {
-      (*API->FileFormat->EndMetadataExtraction)( handle );
-      throw;
-   }
-}
-
-// ----------------------------------------------------------------------------
-
 bool FileFormatInstance::Extract( pcl::UInt8Image& thumbnail )
 {
    try
@@ -452,7 +353,6 @@ bool FileFormatInstance::Extract( pcl::UInt8Image& thumbnail )
       }
 
       (*API->FileFormat->EndThumbnailExtraction)( handle );
-
       return true;
    }
    catch ( ... )
@@ -479,7 +379,7 @@ ImagePropertyDescriptionArray FileFormatInstance::Properties()
    (*API->FileFormat->EnumerateImageProperties)( handle, 0, 0, &len, 0 ); // 1st call to get max identifier length
    if ( len > 0 )
    {
-      id.Reserve( len+16 );
+      id.Reserve( len );
       if ( (*API->FileFormat->EnumerateImageProperties)( handle, APIPropertyEnumerationCallback,
                                                          id.c_str(), &len, &properties ) == api_false )
          throw APIFunctionError( "EnumerateImageProperties" );
@@ -547,6 +447,204 @@ bool FileFormatInstance::WriteProperty( const IsoString& property, const Variant
    catch ( ... )
    {
       (*API->FileFormat->EndPropertyEmbedding)( handle );
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+bool FileFormatInstance::ReadRGBWS( RGBColorSystem& rgbws )
+{
+   try
+   {
+      rgbws = RGBColorSystem();
+
+      if ( (*API->FileFormat->BeginRGBWSExtraction)( handle ) == api_false )
+         return false;
+
+      float gamma = rgbws.Gamma();
+      api_bool issRGB = rgbws.IsSRGB();
+      FVector x = rgbws.ChromaticityXCoordinates();
+      FVector y = rgbws.ChromaticityYCoordinates();
+      FVector Y = rgbws.LuminanceCoefficients();
+
+      bool ok = (*API->FileFormat->GetImageRGBWS)( handle, &gamma, &issRGB, x.Begin(), y.Begin(), Y.Begin() ) != api_false;
+      if ( ok )
+         rgbws = RGBColorSystem( gamma, issRGB, x, y, Y );
+
+      (*API->FileFormat->EndRGBWSExtraction)( handle );
+      return ok;
+   }
+   catch ( ... )
+   {
+      (*API->FileFormat->EndRGBWSExtraction)( handle );
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+bool FileFormatInstance::WriteRGBWS( const RGBColorSystem& rgbws )
+{
+   try
+   {
+      if ( (*API->FileFormat->BeginRGBWSEmbedding)( handle ) == api_false )
+         return false;
+
+      float gamma = rgbws.Gamma();
+      api_bool issRGB = rgbws.IsSRGB();
+      FVector x = rgbws.ChromaticityXCoordinates();
+      FVector y = rgbws.ChromaticityYCoordinates();
+      FVector Y = rgbws.LuminanceCoefficients();
+
+      bool ok = (*API->FileFormat->SetImageRGBWS)( handle, gamma, issRGB, x.Begin(), y.Begin(), Y.Begin() ) != api_false;
+
+      if ( rgbws.Gamma() != gamma ||
+           rgbws.IsSRGB() != (issRGB != api_false) ||
+           rgbws.ChromaticityXCoordinates() != x ||
+           rgbws.ChromaticityYCoordinates() != y ||
+           rgbws.LuminanceCoefficients() != Y )
+      {
+         APIHackingAttempt( "WriteRGBWS" );
+      }
+
+      (*API->FileFormat->EndRGBWSEmbedding)( handle );
+
+      return ok;
+   }
+   catch ( ... )
+   {
+      (*API->FileFormat->EndRGBWSEmbedding)( handle );
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+bool  FileFormatInstance::ReadDisplayFunction( DisplayFunction& df )
+{
+   try
+   {
+      df = DisplayFunction();
+
+      if ( (*API->FileFormat->BeginDisplayFunctionExtraction)( handle ) == api_false )
+         return false;
+
+      DVector m, s, h, l, r;
+      df.GetDisplayFunctionParameters( m, s, h, l, r );
+
+      bool ok = (*API->FileFormat->GetImageDisplayFunction)( handle, m.Begin(), s.Begin(), h.Begin(), l.Begin(), r.Begin() ) != api_false;
+      if ( ok )
+         df = DisplayFunction( m, s, h, l, r );
+
+      (*API->FileFormat->EndDisplayFunctionExtraction)( handle );
+      return ok;
+   }
+   catch ( ... )
+   {
+      (*API->FileFormat->EndDisplayFunctionExtraction)( handle );
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+bool FileFormatInstance::WriteDisplayFunction( const DisplayFunction& df )
+{
+   try
+   {
+      if ( (*API->FileFormat->BeginDisplayFunctionEmbedding)( handle ) == api_false )
+         return false;
+
+      DVector m, s, h, l, r;
+      df.GetDisplayFunctionParameters( m, s, h, l, r );
+
+      bool ok = (*API->FileFormat->SetImageDisplayFunction)( handle, m.Begin(), s.Begin(), h.Begin(), l.Begin(), r.Begin() ) != api_false;
+
+      DVector m1, s1, h1, l1, r1;
+      df.GetDisplayFunctionParameters( m1, s1, h1, l1, r1 );
+      if ( m1 != m || s1 != s || h1 != h || l1 != l || r1 != r )
+         APIHackingAttempt( "WriteDisplayFunction" );
+
+      (*API->FileFormat->EndDisplayFunctionEmbedding)( handle );
+      return ok;
+   }
+   catch ( ... )
+   {
+      (*API->FileFormat->EndDisplayFunctionEmbedding)( handle );
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+bool FileFormatInstance::ReadColorFilterArray( ColorFilterArray& cfa )
+{
+   try
+   {
+      cfa = ColorFilterArray();
+
+      if ( (*API->FileFormat->BeginColorFilterArrayExtraction)( handle ) == api_false )
+         return false;
+
+      size_type patternLen = 0, nameLen = 0;
+      (*API->FileFormat->GetImageColorFilterArray)( handle, 0, &patternLen, 0, 0, 0, &nameLen );
+
+      bool ok = true;
+      if ( patternLen > 0 )
+      {
+         IsoString pattern;
+         pattern.SetLength( patternLen );
+         String name;
+         if ( nameLen > 0 )
+            name.SetLength( nameLen );
+         int32 width, height;
+         ok = (*API->FileFormat->GetImageColorFilterArray)( handle,
+                              pattern.Begin(), &patternLen, &width, &height, name.Begin(), &nameLen ) != api_false;
+         if ( ok )
+         {
+            pattern.ResizeToNullTerminated();
+            name.ResizeToNullTerminated();
+            cfa = ColorFilterArray( pattern, width, height, name );
+         }
+      }
+
+      (*API->FileFormat->EndColorFilterArrayExtraction)( handle );
+      return ok;
+   }
+   catch ( ... )
+   {
+      (*API->FileFormat->EndColorFilterArrayExtraction)( handle );
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+bool FileFormatInstance::WriteColorFilterArray( const ColorFilterArray& cfa )
+{
+   try
+   {
+      if ( (*API->FileFormat->BeginColorFilterArrayEmbedding)( handle ) == api_false )
+         return false;
+
+      IsoString pattern = cfa.Pattern();
+      pattern.SetUnique();
+      String name = cfa.Name();
+      name.SetUnique();
+
+      bool ok = (*API->FileFormat->SetImageColorFilterArray)( handle,
+                           pattern.c_str(), cfa.Width(), cfa.Height(), name.c_str() ) != api_false;
+
+      if ( cfa.Pattern() != pattern || cfa.Name() != name )
+         APIHackingAttempt( "WriteColorFilterArray" );
+
+      (*API->FileFormat->EndColorFilterArrayEmbedding)( handle );
+      return ok;
+   }
+   catch ( ... )
+   {
+      (*API->FileFormat->EndColorFilterArrayEmbedding)( handle );
       throw;
    }
 }
@@ -731,46 +829,6 @@ bool FileFormatInstance::Embed( const ICCProfile& icc )
 
 // ----------------------------------------------------------------------------
 
-bool FileFormatInstance::Embed( const void* data, size_type length )
-{
-   void* safeCopy = 0;
-
-   try
-   {
-      if ( (*API->FileFormat->BeginMetadataEmbedding)( handle ) == api_false )
-         return false;
-
-      bool ok = true;
-
-      if ( data != 0 && length != 0 ) // ### should allow embedding empty metadata ?
-      {
-         safeCopy = new uint8[ length ];
-         ::memcpy( safeCopy, data, length );
-
-         ok = (*API->FileFormat->SetMetadata)( handle, safeCopy, uint32( length ) ) != api_false;
-
-         if ( ::memcmp( safeCopy, data, length ) != 0 )
-            APIHackingAttempt( "SetMetadata" );
-
-         delete [] static_cast<uint8*>( safeCopy );
-         safeCopy = 0;
-      }
-
-      (*API->FileFormat->EndMetadataEmbedding)( handle );
-
-      return ok;
-   }
-   catch ( ... )
-   {
-      if ( safeCopy != 0 )
-         delete [] static_cast<uint8*>( safeCopy );
-      (*API->FileFormat->EndMetadataEmbedding)( handle );
-      throw;
-   }
-}
-
-// ----------------------------------------------------------------------------
-
 bool FileFormatInstance::Embed( const pcl::UInt8Image& thumbnail )
 {
    try
@@ -905,5 +963,5 @@ void* FileFormatInstance::CloneHandle() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/FileFormatInstance.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/FileFormatInstance.cpp - Released 2015/07/30 17:15:31 UTC

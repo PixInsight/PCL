@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/PreviewSelectionDialog.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/PreviewSelectionDialog.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PreviewSelectionDialog_h
 #define __PreviewSelectionDialog_h
@@ -69,7 +72,7 @@ namespace pcl
  * existing previews, and standard OK and Cancel push buttons. This class is a
  * useful helper whenever a process needs access to a user-selected preview.
  *
- * \sa ViewSelectionDialog, Dialog
+ * \sa ViewSelectionDialog, MultiViewSelectionDialog, Dialog
  */
 class PreviewSelectionDialog : public Dialog
 {
@@ -80,19 +83,32 @@ public:
     * argument is specified and a preview exists with that identifier, the
     * dialog will select the corresponding preview upon execution.
     */
-   PreviewSelectionDialog( const String& id = String() );
+   PreviewSelectionDialog( const IsoString& id = IsoString() );
+
+   template <class S>
+   PreviewSelectionDialog( const S& id ) :
+      PreviewSelectionDialog( IsoString( id ) )
+   {
+   }
+
+   /*!
+    * Destroys a %PreviewSelectionDialog object.
+    */
+   virtual ~PreviewSelectionDialog()
+   {
+   }
 
    /*!
     * Returns the identifier of the selected preview.
     */
-   const String& Id() const
+   IsoString Id() const
    {
       return m_id;
    }
 
 private:
 
-   String m_id;
+   IsoString m_id;
 
    VerticalSizer  Global_Sizer;
       ViewList          Images_ViewList;
@@ -100,8 +116,9 @@ private:
          PushButton        OK_PushButton;
          PushButton        Cancel_PushButton;
 
-   void __ViewSelected( ViewList& sender, View& view );
-   void __ButtonClick( Button& sender, bool checked );
+   void ViewSelected( ViewList& sender, View& view );
+   void ButtonClick( Button& sender, bool checked );
+   void ControlShow( Control& sender );
 };
 
 // ----------------------------------------------------------------------------
@@ -110,5 +127,5 @@ private:
 
 #endif   // __PreviewSelectionDialog_h
 
-// ****************************************************************************
-// EOF pcl/PreviewSelectionDialog.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/PreviewSelectionDialog.h - Released 2015/07/30 17:15:18 UTC

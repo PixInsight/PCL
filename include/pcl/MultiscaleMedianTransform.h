@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/MultiscaleMedianTransform.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/MultiscaleMedianTransform.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_MultiscaleMedianTransform_h
 #define __PCL_MultiscaleMedianTransform_h
@@ -168,25 +171,21 @@ public:
     */
    MultiscaleMedianTransform( int n = 4, int d = 0 ) :
       RedundantMultiscaleTransform( n, d ),
-      m_medianWaveletTransform( false ),
-      m_medianWaveletThreshold( 5.0F )
+      m_medianWaveletTransform( false ), m_medianWaveletThreshold( 5.0F )
    {
    }
 
    /*!
     * Copy constructor.
-    *
-    * \note This constructor <em>does not copy the existing transform
-    * layers</em> in the source object \a x. It just creates a duplicate of
-    * current working parameters in \a x: number of layers, layer states and
-    * transform type.
     */
-   MultiscaleMedianTransform( const MultiscaleMedianTransform& x ) :
-      RedundantMultiscaleTransform( x ),
-      m_medianWaveletTransform( x.m_medianWaveletTransform ),
-      m_medianWaveletThreshold( x.m_medianWaveletThreshold )
-   {
-   }
+   MultiscaleMedianTransform( const MultiscaleMedianTransform& ) = default;
+
+   /*!
+    * Move constructor.
+    */
+#ifndef _MSC_VER
+   MultiscaleMedianTransform( MultiscaleMedianTransform&& ) = default;
+#endif
 
    /*!
     * Destroys this %MultiscaleMedianTransform object. All existing transform
@@ -197,14 +196,7 @@ public:
    }
 
    /*!
-    * Assignment operator.
-    *
-    * \note The existing layers in the source transform \a x are <em>not
-    * assigned</em>; only working parameters are assigned: number of layers,
-    * layer states and transform type.
-    *
-    * \note As a consequence of this assignment operator, all existing
-    * multiscale layers in this transform are destroyed.
+    * Copy assignment operator. Returns a reference to this object.
     */
    MultiscaleMedianTransform& operator =( const MultiscaleMedianTransform& x )
    {
@@ -215,19 +207,14 @@ public:
    }
 
    /*!
-    * Copies the specified transform \a x to this object, \e including the
-    * existing transform layers in \a x (unlike the assignment operator and
-    * the copy constructor). The previous contents of this transform are lost.
+    * Move assignment operator. Returns a reference to this object.
     */
-   virtual void CopyTransform( const RedundantMultiscaleTransform& x )
+   MultiscaleMedianTransform& operator =( MultiscaleMedianTransform&& x )
    {
-      RedundantMultiscaleTransform::CopyTransform( x );
-      const MultiscaleMedianTransform* T = dynamic_cast<const MultiscaleMedianTransform*>( &x );
-      if ( T != 0 )
-      {
-         m_medianWaveletTransform = T->m_medianWaveletTransform;
-         m_medianWaveletThreshold = T->m_medianWaveletThreshold;
-      }
+      (void)RedundantMultiscaleTransform::operator =( std::move( x ) );
+      m_medianWaveletTransform = x.m_medianWaveletTransform;
+      m_medianWaveletThreshold = x.m_medianWaveletThreshold;
+      return *this;
    }
 
    /*!
@@ -254,7 +241,7 @@ public:
     */
    void SetMedianWaveletTransform( float threshold = 5 )
    {
-      DeleteLayers();
+      DestroyLayers();
       m_medianWaveletTransform = true;
       m_medianWaveletThreshold = Max( 0.F, threshold );
    }
@@ -275,7 +262,7 @@ public:
     */
    void SetMedianWaveletThreshold( float threshold )
    {
-      DeleteLayers();
+      DestroyLayers();
       m_medianWaveletThreshold = Max( 0.F, threshold );
    }
 
@@ -296,7 +283,7 @@ public:
     */
    void SetMultiscaleMedianTransform()
    {
-      DeleteLayers();
+      DestroyLayers();
       m_medianWaveletTransform = false;
    }
 
@@ -332,5 +319,5 @@ private:
 
 #endif   // __PCL_MultiscaleMedianTransform_h
 
-// ****************************************************************************
-// EOF pcl/MultiscaleMedianTransform.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/MultiscaleMedianTransform.h - Released 2015/07/30 17:15:18 UTC

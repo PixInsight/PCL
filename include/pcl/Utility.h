@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Utility.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Utility.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Utility_h
 #define __PCL_Utility_h
@@ -85,8 +88,8 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns an immutable reference to the minimum of two objects \a a and \a b.
- * Returns \a b if b < a. Returns \a a if a <= b.
+ * Returns a reference to the smaller of two objects \a a and \a b. Returns
+ * \a b if b < a. Returns \a a if a <= b.
  *
  * \ingroup utility_algorithms
  */
@@ -99,9 +102,9 @@ const T& Min( const T& a, const T& b )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns an immutable reference to the minimum of two objects \a a and \a b,
- * as specified by the binary predicate \a p.
- * Returns \a b if p( b, a ) is true; returns \a a otherwise.
+ * Returns a reference to the smallest of two objects \a a and \a b, as
+ * specified by the binary predicate \a p. Returns \a b if p( b, a ) is true;
+ * returns \a a otherwise.
  *
  * \ingroup utility_algorithms
  */
@@ -114,8 +117,8 @@ const T& Min( const T& a, const T& b, BP p )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns an immutable reference to the maximum of two objects \a a and \a b.
- * Returns \a b if a < b. Returns \a a if b <= a.
+ * Returns a reference to the largest of two objects \a a and \a b. Returns
+ * \a b if a < b. Returns \a a if b <= a.
  *
  * \ingroup utility_algorithms
  */
@@ -128,9 +131,9 @@ const T& Max( const T& a, const T& b )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns an immutable reference to the maximum of two objects \a a and \a b,
- * as specified by the binary predicate \a p.
- * Returns \a b if p( a, b ) is true; returns \a a otherwise.
+ * Returns a reference to the largest of two objects \a a and \a b, as
+ * specified by the binary predicate \a p. Returns \a b if p( a, b ) is true;
+ * returns \a a otherwise.
  *
  * \ingroup utility_algorithms
  */
@@ -143,8 +146,7 @@ const T& Max( const T& a, const T& b, BP p )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns an immutable reference to the median of three objects \a a, \a b and
- * \a c. Returns:
+ * Returns a reference to the median of three objects \a a, \a b and \a c:
  *
  * \li \a a if (c <= a < b) || (b <= a < c)
  * \li \a b if (a < b < c) || (c <= b <= a)
@@ -155,16 +157,15 @@ const T& Max( const T& a, const T& b, BP p )
 template <typename T> inline
 const T& Median( const T& a, const T& b, const T& c )
 {
-   return (a < b) ?
-      ((b < c) ? b : ((a < c) ? c : a)) :
-      ((a < c) ? a : ((b < c) ? c : b));
+   return (a < b) ? ((b < c) ? b : ((a < c) ? c : a)) :
+                    ((a < c) ? a : ((b < c) ? c : b));
 }
 
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns an immutable reference to the median of three objects \a a, \a b and
- * \a c, as specified by the binary predicate \a p. Returns:
+ * Returns a reference to the median of three objects \a a, \a b and \a c, as
+ * specified by the binary predicate \a p:
  *
  * \li \a a if p(a,b) && !p(b,c) && !p(a,c) || !p(a,b) && p(a,c)
  * \li \a b if p(a,b) && p(b,c) || !p(a,b) && !p(a,c) && !p(b,c)
@@ -175,17 +176,16 @@ const T& Median( const T& a, const T& b, const T& c )
 template <typename T, class BP> inline
 const T& Median( const T& a, const T& b, const T& c, BP p )
 {
-   return p( a, b ) ?
-      (p( b, c ) ? b : (p( a, c ) ? c : a)) :
-      (p( a, c ) ? a : (p( b, c ) ? c : b));
+   return p( a, b ) ? (p( b, c ) ? b : (p( a, c ) ? c : a)) :
+                      (p( a, c ) ? a : (p( b, c ) ? c : b));
 }
 
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns an immutable reference to the specified object \a x if and only if
- * it belongs to the range [a,b]. Returns an immutable reference to the nearest
- * range bounding object otherwise. Returns:
+ * Returns a reference to the specified object \a x, if and only if it belongs
+ * to the range [a,b]. Returns a reference to the nearest range bounding object
+ * otherwise. Returns:
  *
  * \li \a x if (a <= x <= b)
  * \li \a a if (x < a)
@@ -203,10 +203,9 @@ const T& Range( const T& x, const T& a, const T& b )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns an immutable reference to the specified object \a x if and only if
- * it belongs to the range [a,b], as specified by the binary predicate \a p.
- * Returns an immutable reference to the nearest range bounding object
- * otherwise. Returns:
+ * Returns a reference to the specified object \a x, if and only if it belongs
+ * to the range [a,b], as specified by the binary predicate \a p. Returns a
+ * reference to the nearest range bounding object otherwise. Returns:
  *
  * \li \a x if !p(x,a) && !p(b,x)
  * \li \a a if p(x,a)
@@ -239,17 +238,20 @@ const T& Range( const T& x, const T& a, const T& b, BP p )
  */
 template <typename T> inline
 void Swap( T& a, T& b )
+#ifndef _MSC_VER
+   noexcept( std::is_nothrow_copy_constructible<T>::value
+          && std::is_nothrow_copy_assignable<T>::value
+          && std::is_nothrow_move_assignable<T>::value )
+#endif
 {
-   T tmp = a;
-   a = b;
-   b = tmp;
+   T c( a ); a = b; b = std::move( c );
 }
 
 // ----------------------------------------------------------------------------
 
 /*!
- * Applies a unary function \a f to the range [i,j[. For each iterator t in the
- * range [i,j[ this function performs the function call f(*t).
+ * Applies a unary function \a f to the range [i,j). For each iterator t in the
+ * range [i,j) this function performs the function call f(*t).
  *
  * \ingroup utility_algorithms
  */
@@ -263,8 +265,8 @@ void Apply( FI i, FI j, F f )
 // ----------------------------------------------------------------------------
 
 /*!
- * Applies a binary function \a f to the range [i,j[ with the specified
- * right-hand constant argument \a x. For each iterator t in the range [i,j[
+ * Applies a binary function \a f to the range [i,j) with the specified
+ * right-hand constant argument \a x. For each iterator t in the range [i,j)
  * this function performs the function call f(*t,x).
  *
  * \ingroup utility_algorithms
@@ -279,9 +281,9 @@ void Apply( FI i, FI j, F f, T1 x )
 // ----------------------------------------------------------------------------
 
 /*!
- * Applies a unary function \a f to those elements in the range [i,j[ that
+ * Applies a unary function \a f to those elements in the range [i,j) that
  * satisfy a condition given by a unary predicate \a p. For each iterator t in
- * the range [i,j[ this function performs the function call f(*t) if and only
+ * the range [i,j) this function performs the function call f(*t) if and only
  * if p(*t) is true.
  *
  * \ingroup utility_algorithms
@@ -297,9 +299,9 @@ void ApplyIf( FI i, FI j, F f, UP p )
 // ----------------------------------------------------------------------------
 
 /*!
- * Applies a unary function \a f to those elements in the range [i,j[ that
+ * Applies a unary function \a f to those elements in the range [i,j) that
  * satisfy a condition given by a unary predicate \a p, with right-hand
- * constant argument \a x. For each iterator t in the range [i,j[ this function
+ * constant argument \a x. For each iterator t in the range [i,j) this function
  * performs the function call f(*t,x) if and only if p(*t) is true.
  *
  * \ingroup utility_algorithms
@@ -315,7 +317,7 @@ void ApplyIf( FI i, FI j, F f, UP p, T1 x )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns the first iterator t in the range [i,j[ such that the specified
+ * Returns the first iterator t in the range [i,j) such that the specified
  * unary predicate p(*t) is true, or j if no such iterator exists.
  *
  * \ingroup utility_algorithms
@@ -332,7 +334,7 @@ FI FirstThat( FI i, FI j, UP p )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns the first iterator t in the range [i,j[ such that the specified
+ * Returns the first iterator t in the range [i,j) such that the specified
  * unary predicate p(*t,x) is true, or j if no such iterator exists.
  *
  * \ingroup utility_algorithms
@@ -349,7 +351,7 @@ FI FirstThat( FI i, FI j, UP p, T1 x )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns the last iterator t in the range [i,j[ such that the specified
+ * Returns the last iterator t in the range [i,j) such that the specified
  * unary predicate p(*t) is true, or j if no such iterator exists.
  *
  * \ingroup utility_algorithms
@@ -366,7 +368,7 @@ BI LastThat( BI i, BI j, UP p )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns the last iterator t in the range [i,j[ such that the specified
+ * Returns the last iterator t in the range [i,j) such that the specified
  * unary predicate p(*t,x) is true, or j if no such iterator exists.
  *
  * \ingroup utility_algorithms
@@ -383,7 +385,7 @@ BI LastThat( BI i, BI j, UP p, T1 x )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns the total number of objects in the range [i,j[ that are equal to
+ * Returns the total number of objects in the range [i,j) that are equal to
  * the specified constant object \a v.
  *
  * \ingroup utility_algorithms
@@ -401,9 +403,9 @@ size_type Count( FI i, FI j, const T& v )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns the total number of objects in the range [i,j[ that are equal to
+ * Returns the total number of objects in the range [i,j) that are equal to
  * a constant object \a v, as specified by the binary predicate \a p. For each
- * iterator t in the range [i,j[, counts the number of objects for which
+ * iterator t in the range [i,j), counts the number of objects for which
  * p(*t,v) is true.
  *
  * \ingroup utility_algorithms
@@ -421,9 +423,9 @@ size_type Count( FI i, FI j, const T& v, BP p )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns the total number of objects in the range [i,j[ that satisfy a
+ * Returns the total number of objects in the range [i,j) that satisfy a
  * condition given by a unary predicate \a p. For each iterator t in the range
- * [i,j[, counts the number of objects for which p(*t) is true.
+ * [i,j), counts the number of objects for which p(*t) is true.
  *
  * \ingroup utility_algorithms
  */
@@ -440,8 +442,8 @@ size_type CountIf( FI i, FI j, UP p )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns an iterator m in the range [i,j[ such that *m <= *t for any t != m
- * in [i,j[. Returns j if and only if i == j.
+ * Returns an iterator m in the range [i,j) such that *m <= *t for any t != m
+ * in [i,j). Returns j if and only if i == j.
  *
  * \ingroup utility_algorithms
  */
@@ -459,8 +461,8 @@ FI MinItem( FI i, FI j )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns an iterator m in the range [i,j[ such that p(*t,*m) is false for any
- * t != m in [i,j[. Returns j if and only if i == j.
+ * Returns an iterator m in the range [i,j) such that p(*t,*m) is false for any
+ * t != m in [i,j). Returns j if and only if i == j.
  *
  * \ingroup utility_algorithms
  */
@@ -478,8 +480,8 @@ FI MinItem( FI i, FI j, BP p )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns an iterator m in the range [i,j[ such that *m >= *t for any t != m
- * in [i,j[. Returns j if and only if i == j.
+ * Returns an iterator m in the range [i,j) such that *m >= *t for any t != m
+ * in [i,j). Returns j if and only if i == j.
  *
  * \ingroup utility_algorithms
  */
@@ -497,8 +499,8 @@ FI MaxItem( FI i, FI j )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns an iterator m in the range [i,j[ such that p(*m,*t) is false for any
- * t != m in [i,j[. Returns j if and only if i == j.
+ * Returns an iterator m in the range [i,j) such that p(*m,*t) is false for any
+ * t != m in [i,j). Returns j if and only if i == j.
  *
  * \ingroup utility_algorithms
  */
@@ -516,8 +518,8 @@ FI MaxItem( FI i, FI j, BP p )
 // ----------------------------------------------------------------------------
 
 /*!
- * Finds two iterators n and m in the range [i,j[ such that *n <= *u for any
- * u != n in [i,j[ and *m >= *v for any v != m in [i,j[.
+ * Finds two iterators n and m in the range [i,j) such that *n <= *u for any
+ * u != n in [i,j) and *m >= *v for any v != m in [i,j).
  *
  * \ingroup utility_algorithms
  */
@@ -538,8 +540,8 @@ void FindExtremeItems( FI& kmin, FI& kmax, FI i, FI j )
 // ----------------------------------------------------------------------------
 
 /*!
- * Finds two iterators n and m in the range [i,j[ such that p(*u,*n) is false
- * for any u != n in [i,j[ and p(*m,*v) is false for any v != m in [i,j[.
+ * Finds two iterators n and m in the range [i,j) such that p(*u,*n) is false
+ * for any u != n in [i,j) and p(*m,*v) is false for any v != m in [i,j).
  *
  * \ingroup utility_algorithms
  */
@@ -708,5 +710,5 @@ int Compare( FI1 i1, FI1 j1, FI2 i2, FI2 j2, BP p )
 
 #endif  // __PCL_Utility_h
 
-// ****************************************************************************
-// EOF pcl/Utility.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Utility.h - Released 2015/07/30 17:15:18 UTC

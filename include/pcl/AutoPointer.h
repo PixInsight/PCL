@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/AutoPointer.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/AutoPointer.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_AutoPointer_h
 #define __PCL_AutoPointer_h
@@ -59,6 +62,10 @@
 #include <pcl/Diagnostics.h>
 #endif
 
+#ifndef __PCL_Utility_h
+#include <pcl/Utility.h>
+#endif
+
 namespace pcl
 {
 
@@ -66,7 +73,7 @@ namespace pcl
 
 /*!
  * \class StandardDeleter
- * \brief An object deleter that uses the standard delete operator
+ * \brief An object deleter that uses the standard delete operator.
  *
  * Deleter objects are used by smart pointer classes (e.g., AutoPointer) to
  * destroy and deallocate dynamically allocated objects. A valid deleter class
@@ -76,13 +83,15 @@ namespace pcl
  *
  * \li Copy constructor.
  *
+ * \li Move constructor.
+ *
  * \li Function call operator with a single argument of type T* (pointer to T).
  * This member function will destroy and deallocate the T object pointed to by
  * its argument.
  *
  * \li Function call operator with a single argument of type T[] (array of T).
- * This member function will destroy and deallocate a sequence of objects
- * stored at the location pointed to by its argument.
+ * This member function will destroy and deallocate a contiguous sequence of
+ * objects stored at the location pointed to by its argument.
  *
  * %StandardDeleter implements object and array destruction/deallocation by
  * calling the standard \c delete operator.
@@ -106,26 +115,12 @@ public:
    typedef T*        pointer;
 
    /*!
-    * Default constructor.
-    */
-   StandardDeleter()
-   {
-   }
-
-   /*!
-    * Copy constructor.
-    */
-   StandardDeleter( const StandardDeleter& )
-   {
-   }
-
-   /*!
     * Function call operator. Destroys and deallocates the object pointed to by
     * the specified pointer \a p.
     */
    void operator()( pointer p ) const
    {
-      PCL_PRECONDITION( p != 0 )
+      PCL_PRECONDITION( p != nullptr )
       delete p;
    }
 };
@@ -134,48 +129,53 @@ public:
 
 /*!
  * \class AutoPointer
- * \brief A smart pointer with sole object ownership and automatic object destruction
+ * \brief A smart pointer with sole object ownership and automatic object
+ *        destruction.
  *
  * %AutoPointer stores a pointer to an object of which it is the sole owner.
  * The owned object can optionally be destroyed when the owner %AutoPointer
  * instance is destroyed.
  *
  * The template argument T represents the type of the objects owned by this
- * template instantiation. The template argument D represents a class
+ * template instantiation. The template argument D represents a functor class
  * responsible for deletion of objects of type T. By default, %AutoPointer uses
  * the StandardDeleter template class, which is a simple wrapper for the
- * standard delete operator.
+ * standard \c delete operator.
  *
  * Smart pointers are useful entities to guarantee proper destruction and
  * deallocation of data in a variety of scenarios, such as exception driven
- * code where the same objects have to be destroyed at different locations in
- * the execution workflow. For example, consider the following pseudocode:
+ * code where the same objects have to be destroyed at different points in the
+ * execution workflow. For example, consider the following pseudocode:
  *
  * \code
  * struct Foo { ... };
- * Foo* one = 0, * two = 0;
- * try
+ * void Bar()
  * {
- *    // ... some code that may create new Foo objects ...
- *    if ( condition1 ) one = new Foo;
- *    if ( condition2 ) two = new Foo;
- *    // ... some code that can throw exceptions ...
- *    if ( one != 0 ) delete one;
- *    if ( two != 0 ) delete two;
- * }
- * catch ( ... )
- * {
- *    if ( one != 0 ) delete one;
- *    if ( two != 0 ) delete two;
- *    // ... code to handle exceptions
+ *    Foo* one = nullptr, * two = nullptr;
+ *    try
+ *    {
+ *       // ... some code that may create new Foo objects ...
+ *       if ( condition1 ) one = new Foo;
+ *       if ( condition2 ) two = new Foo;
+ *       // ... some code that can throw exceptions ...
+ *       if ( one != nullptr ) delete one;
+ *       if ( two != nullptr ) delete two;
+ *    }
+ *    catch ( ... )
+ *    {
+ *       if ( one != nullptr ) delete one;
+ *       if ( two != nullptr ) delete two;
+ *       throw;
+ *    }
  * }
  * \endcode
  *
  * Note that the objects pointed to by the \c one and \c two variables have to
  * be destroyed at two locations: at the bottom of the \c try block (normal
  * execution), and when an exception is caught, within the \c catch block. If
- * the routine were more complex, even more deallocations might be necessary at
- * different locations, making the code intricate and prone to memory leaks.
+ * the %Bar() routine were more complex, even more deallocations might be
+ * necessary at different locations, making the code intricate and prone to
+ * memory leaks.
  *
  * All of these complexities and potential problems can be avoided easily with
  * smart pointers. For example, the following snippet would be equivalent to
@@ -183,17 +183,13 @@ public:
  *
  * \code
  * struct Foo { ... };
- * AutoPointer<Foo> one, two;
- * try
+ * void Bar()
  * {
+ *    AutoPointer<Foo> one, two;
  *    // ... some code that may create new Foo objects ...
  *    if ( condition1 ) one = new Foo;
  *    if ( condition2 ) two = new Foo;
  *    // ... some code that can throw exceptions ...
- * }
- * catch ( ... )
- * {
- *    // ... code to handle exceptions
  * }
  * \endcode
  *
@@ -201,7 +197,7 @@ public:
  * allocated objects \c one and \c two: The %AutoPointer objects will destroy
  * and deallocate them automatically when they get out of scope. On the other
  * hand, the %AutoPointer instances behave just like normal pointers allowing
- * indirections, pointer assignments and structure member selections for their
+ * indirections, pointer assignments, and structure member selections for their
  * owned objects transparently. The resulting code is simpler and more robust.
  *
  * By default, when an %AutoPointer instance is destroyed it also destroys the
@@ -292,7 +288,7 @@ public:
     * deleter template argument class.
     */
    AutoPointer( bool autoDelete = true, const deleter& d = deleter() ) :
-   m_pointer( 0 ), m_deleter( d ), m_autoDelete( true )
+      m_pointer( nullptr ), m_deleter( d ), m_autoDelete( autoDelete )
    {
    }
 
@@ -315,13 +311,14 @@ public:
     */
    explicit
    AutoPointer( pointer p, bool autoDelete = true, const deleter& d = deleter() ) :
-   m_pointer( p ), m_deleter( d ), m_autoDelete( autoDelete )
+      m_pointer( nullptr ), m_deleter( d ), m_autoDelete( autoDelete )
    {
+      m_pointer = p;
    }
 
    /*!
-    * Copy constructor. Constructs a smart pointer by transferring the pointer
-    * stored in another smart pointer \a x.
+    * Non-trivial copy constructor. Constructs a smart pointer by transferring
+    * the pointer stored in another smart pointer \a x.
     *
     * The automatic deletion feature for this object will be in the same state
     * as it is currently set for the source object \a x.
@@ -333,10 +330,17 @@ public:
     * no two %AutoPointer instances can share the same pointer accidentally,
     * and hence multiple deletions are not possible.
     */
-   AutoPointer( const AutoPointer& x ) :
-   m_pointer( x.m_pointer ), m_deleter( x.m_deleter ), m_autoDelete( x.m_autoDelete )
+   AutoPointer( AutoPointer& x ) :
+      m_pointer( x.Release() ), m_deleter( x.m_deleter ), m_autoDelete( x.m_autoDelete )
    {
-      const_cast<AutoPointer&>( x ).m_pointer = 0;
+   }
+
+   /*!
+    * Move constructor.
+    */
+   AutoPointer( AutoPointer&& x ) :
+      m_pointer( x.Release() ), m_deleter( std::move( x.m_deleter ) ), m_autoDelete( x.m_autoDelete )
+   {
    }
 
    /*!
@@ -360,11 +364,11 @@ public:
     */
    void SetPointer( pointer p )
    {
-      if ( p != m_pointer )
+      if ( m_pointer != p )
       {
          if ( m_autoDelete )
-            if ( m_pointer != 0 )
-               m_deleter( m_pointer );
+            if ( m_pointer != nullptr )
+               m_deleter( Release() ); // in case m_deleter throws
          m_pointer = p;
       }
    }
@@ -376,11 +380,25 @@ public:
     * and the automatic deletion feature is enabled, the pointed object is
     * destroyed by calling the deleter object.
     *
-    * This member function is a convenience synonym for SetPointer( 0 ).
+    * This member function is functionally equivalent to SetPointer( nullptr ).
     */
    void Reset()
    {
-      SetPointer( 0 );
+      if ( m_pointer != nullptr )
+      {
+         pointer p = Release(); // in case m_deleter throws
+         if ( m_autoDelete )
+            m_deleter( p );
+      }
+   }
+
+   /*!
+    * A synonym for Reset(). Useful to enforce semantics when the smart pointer
+    * owns the pointed object.
+    */
+   void Destroy()
+   {
+      Reset();
    }
 
    /*!
@@ -395,7 +413,7 @@ public:
    pointer Release()
    {
       pointer p = m_pointer;
-      m_pointer = 0;
+      m_pointer = nullptr;
       return p;
    }
 
@@ -417,11 +435,38 @@ public:
    }
 
    /*!
-    * Returns true if this instance stores a null pointer.
+    * Returns a pointer to the immutable object pointed to by this %AutoPointer
+    * instance. This function is a synonym for Pointer() const.
+    */
+   const_pointer Ptr() const
+   {
+      return Pointer();
+   }
+
+   /*!
+    * Returns a copy of the pointer stored in this %AutoPointer instance. This
+    * function is a synonym for Pointer().
+    */
+   pointer Ptr()
+   {
+      return Pointer();
+   }
+
+   /*!
+    * Returns true if this smart pointer object stores a null pointer.
     */
    bool IsNull() const
    {
-      return m_pointer == 0;
+      return m_pointer == nullptr;
+   }
+
+   /*!
+    * Returns true if this smart pointer object stores a non-null pointer.
+    * Equivalent to !IsNull().
+    */
+   bool IsValid() const
+   {
+      return !IsNull();
    }
 
    /*!
@@ -484,7 +529,8 @@ public:
    }
 
    /*!
-    * Transfers the pointer stored in another smart pointer to this object.
+    * Copy assignment operator. Transfers the pointer stored in another smart
+    * pointer to this object.
     *
     * This assignment operator performs the following actions:
     *
@@ -502,14 +548,23 @@ public:
     * This operator function does nothing if the specified %AutoPointer \a x
     * stores the same pointer as this object. This prevents multiple deletions.
     */
-   AutoPointer& operator =( const AutoPointer& x )
+   AutoPointer& operator =( AutoPointer& x )
    {
-      if ( x.m_pointer != m_pointer )
-      {
-         Reset();
-         m_pointer = x.m_pointer;
-         const_cast<AutoPointer&>( x ).m_pointer = 0;
-      }
+      SetPointer( x.Release() );
+      m_deleter = x.m_deleter;
+      m_autoDelete = x.m_autoDelete;
+      return *this;
+   }
+
+   /*!
+    * Move assignment operator. For the %AutoPointer class, this member
+    * function performs the same actions as the copy assignment operator.
+    */
+   AutoPointer& operator =( AutoPointer&& x )
+   {
+      SetPointer( x.Release() );
+      m_deleter = std::move( x.m_deleter );
+      m_autoDelete = x.m_autoDelete;
       return *this;
    }
 
@@ -520,6 +575,9 @@ public:
     * If this instance stores a non-null pointer when this function is called,
     * and the automatic deletion feature is enabled, the pointed object is
     * destroyed by the deleter object.
+    *
+    * If this object already stores the specified pointer \a p, this function
+    * does nothing.
     *
     * This member function is equivalent to:
     *
@@ -559,7 +617,7 @@ public:
     */
    const_pointer operator ->() const
    {
-      PCL_PRECONDITION( m_pointer != 0 )
+      PCL_PRECONDITION( m_pointer != nullptr )
       return Pointer();
    }
 
@@ -569,7 +627,7 @@ public:
     */
    pointer operator ->()
    {
-      PCL_PRECONDITION( m_pointer != 0 )
+      PCL_PRECONDITION( m_pointer != nullptr )
       return Pointer();
    }
 
@@ -579,7 +637,7 @@ public:
     */
    const value_type& operator *() const
    {
-      PCL_PRECONDITION( m_pointer != 0 )
+      PCL_PRECONDITION( m_pointer != nullptr )
       return *Pointer();
    }
 
@@ -589,7 +647,7 @@ public:
     */
    value_type& operator *()
    {
-      PCL_PRECONDITION( m_pointer != 0 )
+      PCL_PRECONDITION( m_pointer != nullptr )
       return *Pointer();
    }
 
@@ -607,6 +665,16 @@ public:
       return !IsNull();
    }
 
+   /*!
+    * Exchanges two smart pointers \a x1 and \a x2.
+    */
+   friend void Swap( AutoPointer& x1, AutoPointer& x2 )
+   {
+      pcl::Swap( x1.m_pointer, x2.m_pointer );
+      pcl::Swap( x1.m_deleter, x2.m_deleter );
+      bool b = x1.m_autoDelete; x1.m_autoDelete = x2.m_autoDelete; x2.m_autoDelete = b;
+   }
+
 private:
 
    pointer m_pointer;
@@ -620,5 +688,5 @@ private:
 
 #endif  // __PCL_AutoPointer_h
 
-// ****************************************************************************
-// EOF pcl/AutoPointer.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/AutoPointer.h - Released 2015/07/30 17:15:18 UTC

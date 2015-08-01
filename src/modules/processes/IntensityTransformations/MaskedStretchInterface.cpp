@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard IntensityTransformations Process Module Version 01.07.00.0287
-// ****************************************************************************
-// MaskedStretchInterface.cpp - Released 2014/11/14 17:19:22 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard IntensityTransformations Process Module Version 01.07.00.0306
+// ----------------------------------------------------------------------------
+// MaskedStretchInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "MaskedStretchInterface.h"
 #include "MaskedStretchParameters.h"
@@ -231,7 +235,7 @@ void MaskedStretchInterface::__EditCompleted( Edit& sender )
          if ( p == String::notFound )
             valid = id.IsValidIdentifier();
          else
-            valid = id.Left( p ).IsValidIdentifier() && id.SubString( p+2 ).IsValidIdentifier();
+            valid = id.Left( p ).IsValidIdentifier() && id.Substring( p+2 ).IsValidIdentifier();
          if ( !valid )
             throw Error( "Invalid identifier: " + id );
       }
@@ -321,7 +325,7 @@ MaskedStretchInterface::GUIData::GUIData( MaskedStretchInterface& w )
    TargetBackground_NumericControl.label.SetText( "Target background:" );
    TargetBackground_NumericControl.label.SetMinWidth( labelWidth1 );
    TargetBackground_NumericControl.slider.SetRange( 0, 200 );
-   TargetBackground_NumericControl.slider.SetMinWidth( 200 );
+   TargetBackground_NumericControl.slider.SetScaledMinWidth( 200 );
    TargetBackground_NumericControl.SetReal();
    TargetBackground_NumericControl.SetToolTip( targetBackgroundToolTip );
    TargetBackground_NumericControl.SetRange( TheMSTargetBackgroundParameter->MinimumValue(), TheMSTargetBackgroundParameter->MaximumValue() );
@@ -372,8 +376,8 @@ MaskedStretchInterface::GUIData::GUIData( MaskedStretchInterface& w )
    ClippingFraction_NumericEdit.edit.SetFixedWidth( editWidth1 );
    ClippingFraction_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&MaskedStretchInterface::__ValueUpdated, w );
 
-   ClippingFractionClear_ToolButton.SetIcon( Bitmap( ":/icons/clear.png" ) );
-   ClippingFractionClear_ToolButton.SetFixedSize( 20, 20 );
+   ClippingFractionClear_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/clear.png" ) ) );
+   ClippingFractionClear_ToolButton.SetScaledFixedSize( 20, 20 );
    ClippingFractionClear_ToolButton.SetToolTip( "<p>Disable/reset auto clipping.</p>" );
    ClippingFractionClear_ToolButton.OnClick( (Button::click_event_handler)&MaskedStretchInterface::__Click, w );
 
@@ -423,8 +427,8 @@ MaskedStretchInterface::GUIData::GUIData( MaskedStretchInterface& w )
    BackgroundReferenceView_Edit.OnGetFocus( (Control::event_handler)&MaskedStretchInterface::__GetFocus, w );
    BackgroundReferenceView_Edit.OnEditCompleted( (Edit::edit_event_handler)&MaskedStretchInterface::__EditCompleted, w );
 
-   BackgroundReferenceView_ToolButton.SetIcon( Bitmap( ":/icons/select-view.png" ) );
-   BackgroundReferenceView_ToolButton.SetFixedSize( 20, 20 );
+   BackgroundReferenceView_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
+   BackgroundReferenceView_ToolButton.SetScaledFixedSize( 20, 20 );
    BackgroundReferenceView_ToolButton.SetToolTip( "<p>Select the background reference image.</p>" );
    BackgroundReferenceView_ToolButton.OnClick( (Button::click_event_handler)&MaskedStretchInterface::__Click, w );
 
@@ -438,7 +442,7 @@ MaskedStretchInterface::GUIData::GUIData( MaskedStretchInterface& w )
    BackgroundLow_NumericControl.label.SetText( "Lower limit:" );
    BackgroundLow_NumericControl.label.SetFixedWidth( labelWidth1 );
    BackgroundLow_NumericControl.slider.SetRange( 0, 100 );
-   BackgroundLow_NumericControl.slider.SetMinWidth( 200 );
+   BackgroundLow_NumericControl.slider.SetScaledMinWidth( 200 );
    BackgroundLow_NumericControl.SetReal();
    BackgroundLow_NumericControl.SetRange( TheMSBackgroundLowParameter->MinimumValue(), TheMSBackgroundLowParameter->MaximumValue() );
    BackgroundLow_NumericControl.SetPrecision( TheMSBackgroundLowParameter->Precision() );
@@ -451,7 +455,7 @@ MaskedStretchInterface::GUIData::GUIData( MaskedStretchInterface& w )
    BackgroundHigh_NumericControl.label.SetText( "Upper limit:" );
    BackgroundHigh_NumericControl.label.SetFixedWidth( labelWidth1 );
    BackgroundHigh_NumericControl.slider.SetRange( 0, 100 );
-   BackgroundHigh_NumericControl.slider.SetMinWidth( 200 );
+   BackgroundHigh_NumericControl.slider.SetScaledMinWidth( 200 );
    BackgroundHigh_NumericControl.SetReal();
    BackgroundHigh_NumericControl.SetRange( TheMSBackgroundHighParameter->MinimumValue(), TheMSBackgroundHighParameter->MaximumValue() );
    BackgroundHigh_NumericControl.SetPrecision( TheMSBackgroundHighParameter->Precision() );
@@ -469,7 +473,7 @@ MaskedStretchInterface::GUIData::GUIData( MaskedStretchInterface& w )
    const char* roiX0ToolTip = "<p>X pixel coordinate of the upper-left corner of the ROI.</p>";
 
    ROIX0_Label.SetText( "Left:" );
-   ROIX0_Label.SetFixedWidth( labelWidth1 - 6 - DELTA_FRAME );
+   ROIX0_Label.SetFixedWidth( labelWidth1 - w.LogicalPixelsToPhysical( 6 + DELTA_FRAME ) );
    ROIX0_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    ROIX0_Label.SetToolTip( roiX0ToolTip );
 
@@ -500,7 +504,7 @@ MaskedStretchInterface::GUIData::GUIData( MaskedStretchInterface& w )
    const char* roiWidthToolTip = "<p>Width of the ROI in pixels.</p>";
 
    ROIWidth_Label.SetText( "Width:" );
-   ROIWidth_Label.SetFixedWidth( labelWidth1 - 6 - DELTA_FRAME );
+   ROIWidth_Label.SetFixedWidth( labelWidth1 - w.LogicalPixelsToPhysical( 6 + DELTA_FRAME ) );
    ROIWidth_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    ROIWidth_Label.SetToolTip( roiWidthToolTip );
 
@@ -564,5 +568,5 @@ MaskedStretchInterface::GUIData::GUIData( MaskedStretchInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF MaskedStretchInterface.cpp - Released 2014/11/14 17:19:22 UTC
+// ----------------------------------------------------------------------------
+// EOF MaskedStretchInterface.cpp - Released 2015/07/31 11:49:48 UTC

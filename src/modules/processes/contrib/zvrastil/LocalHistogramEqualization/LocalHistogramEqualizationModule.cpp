@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard LocalHistogramEqualization Process Module Version 01.00.00.0094
-// ****************************************************************************
-// LocalHistogramEqualizationModule.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard LocalHistogramEqualization Process Module Version 01.00.00.0113
+// ----------------------------------------------------------------------------
+// LocalHistogramEqualizationModule.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard LocalHistogramEqualization PixInsight module.
 //
-// Copyright (c) 2011-2014 Zbynek Vrastil
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2015 Zbynek Vrastil
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,17 +49,17 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0094
+#define MODULE_VERSION_BUILD     0113
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2014
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       14
+#define MODULE_RELEASE_YEAR      2015
+#define MODULE_RELEASE_MONTH     7
+#define MODULE_RELEASE_DAY       31
 
 #include "LocalHistogramEqualizationModule.h"
 #include "LocalHistogramEqualizationProcess.h"
@@ -101,7 +105,7 @@ String LocalHistogramEqualizationModule::Author() const
 
 String LocalHistogramEqualizationModule::Copyright() const
 {
-   return "Copyright (c) 2011-2012, Zbynek Vrastil";
+   return "Copyright (c) 2011-2015, Zbynek Vrastil";
 }
 
 String LocalHistogramEqualizationModule::TradeMarks() const
@@ -170,5 +174,5 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
    return 0;
 }
 
-// ****************************************************************************
-// EOF LocalHistogramEqualizationModule.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF LocalHistogramEqualizationModule.cpp - Released 2015/07/31 11:49:49 UTC

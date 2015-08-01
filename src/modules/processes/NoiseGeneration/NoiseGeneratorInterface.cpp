@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard NoiseGeneration Process Module Version 01.00.02.0208
-// ****************************************************************************
-// NoiseGeneratorInterface.cpp - Released 2014/11/14 17:19:23 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard NoiseGeneration Process Module Version 01.00.02.0227
+// ----------------------------------------------------------------------------
+// NoiseGeneratorInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard NoiseGeneration PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "NoiseGeneratorInterface.h"
 #include "NoiseGeneratorProcess.h"
@@ -187,7 +191,7 @@ NoiseGeneratorInterface::GUIData::GUIData( NoiseGeneratorInterface& w )
 {
    Amount_NumericControl.label.SetText( "Amplitude:" );
    Amount_NumericControl.slider.SetRange( 0, 250 );
-   Amount_NumericControl.slider.SetMinWidth( 250 );
+   Amount_NumericControl.slider.SetScaledMinWidth( 250 );
    Amount_NumericControl.SetReal();
    Amount_NumericControl.SetPrecision( TheNGNoiseAmountParameter->Precision() );
    Amount_NumericControl.SetRange( 0, 1 );
@@ -208,7 +212,7 @@ NoiseGeneratorInterface::GUIData::GUIData( NoiseGeneratorInterface& w )
    ImpulsionalProb_NumericControl.sizer.InsertSpacing( 0, 20 );
    ImpulsionalProb_NumericControl.label.SetText( "Probability:" );
    ImpulsionalProb_NumericControl.slider.SetRange( 0, 100 );
-   ImpulsionalProb_NumericControl.slider.SetMinWidth( 150 );
+   ImpulsionalProb_NumericControl.slider.SetScaledMinWidth( 150 );
    ImpulsionalProb_NumericControl.SetReal();
    ImpulsionalProb_NumericControl.SetPrecision( TheNGImpulsionalNoiseProbabilityParameter->Precision() );
    ImpulsionalProb_NumericControl.SetRange( 0, 1 );
@@ -239,5 +243,5 @@ NoiseGeneratorInterface::GUIData::GUIData( NoiseGeneratorInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF NoiseGeneratorInterface.cpp - Released 2014/11/14 17:19:23 UTC
+// ----------------------------------------------------------------------------
+// EOF NoiseGeneratorInterface.cpp - Released 2015/07/31 11:49:48 UTC

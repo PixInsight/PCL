@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard ColorCalibration Process Module Version 01.02.00.0170
-// ****************************************************************************
-// ColorCalibrationInterface.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard ColorCalibration Process Module Version 01.02.00.0189
+// ----------------------------------------------------------------------------
+// ColorCalibrationInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "ColorCalibrationInterface.h"
 #include "ColorCalibrationProcess.h"
@@ -149,7 +153,7 @@ bool ColorCalibrationInterface::ValidateProcess( const ProcessImplementation& p,
 
    if ( r == 0 )
    {
-      whyNot = "Not an ColorCalibration instance.";
+      whyNot = "Not a ColorCalibration instance.";
       return false;
    }
 
@@ -188,8 +192,8 @@ bool ColorCalibrationInterface::GenerateRealTimePreview( UInt16Image& img, const
 
    UInt16Image wrk;
 
-   double savedRate = StatusMonitor::RefreshRate();
-   StatusMonitor::SetRefreshRate( 0.050 );
+   unsigned savedRate = StatusMonitor::RefreshRate();
+   StatusMonitor::SetRefreshRate( 50 );
 
    bool ok;
 
@@ -347,7 +351,7 @@ void ColorCalibrationInterface::__EditCompleted( Edit& sender )
          if ( p == String::notFound )
             valid = id.IsValidIdentifier();
          else
-            valid = id.Left( p ).IsValidIdentifier() && id.SubString( p+2 ).IsValidIdentifier();
+            valid = id.Left( p ).IsValidIdentifier() && id.Substring( p+2 ).IsValidIdentifier();
          if ( !valid )
             throw Error( "Invalid view identifier: " + id );
       }
@@ -520,6 +524,7 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
                           fnt.Width( String( "Reference image:" ) + 'T' ) );
    int labelWidth2 = fnt.Width( String( "Height:" ) + 'T' );
    int editWidth1 = fnt.Width( String( '0', 12 ) );
+   int ui4 = w.LogicalPixelsToPhysical( 4 );
 
    //
 
@@ -537,8 +542,8 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
    WhiteReferenceView_Edit.OnGetFocus( (Control::event_handler)&ColorCalibrationInterface::__GetFocus, w );
    WhiteReferenceView_Edit.OnEditCompleted( (Edit::edit_event_handler)&ColorCalibrationInterface::__EditCompleted, w );
 
-   WhiteReferenceView_ToolButton.SetIcon( Bitmap( ":/icons/select-view.png" ) );
-   WhiteReferenceView_ToolButton.SetFixedSize( 20, 20 );
+   WhiteReferenceView_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
+   WhiteReferenceView_ToolButton.SetScaledFixedSize( 20, 20 );
    WhiteReferenceView_ToolButton.SetToolTip( "<p>Select the white reference image</p>" );
    WhiteReferenceView_ToolButton.OnClick( (Button::click_event_handler)&ColorCalibrationInterface::__Click, w );
 
@@ -550,7 +555,7 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
    WhiteLow_NumericControl.label.SetText( "Lower limit:" );
    WhiteLow_NumericControl.label.SetFixedWidth( labelWidth1 );
    WhiteLow_NumericControl.slider.SetRange( 0, 100 );
-   WhiteLow_NumericControl.slider.SetMinWidth( 200 );
+   WhiteLow_NumericControl.slider.SetScaledMinWidth( 200 );
    WhiteLow_NumericControl.SetReal();
    WhiteLow_NumericControl.SetRange( TheCCWhiteLowParameter->MinimumValue(), TheCCWhiteLowParameter->MaximumValue() );
    WhiteLow_NumericControl.SetPrecision( TheCCWhiteLowParameter->Precision() );
@@ -563,7 +568,7 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
    WhiteHigh_NumericControl.label.SetText( "Upper limit:" );
    WhiteHigh_NumericControl.label.SetFixedWidth( labelWidth1 );
    WhiteHigh_NumericControl.slider.SetRange( 0, 100 );
-   WhiteHigh_NumericControl.slider.SetMinWidth( 200 );
+   WhiteHigh_NumericControl.slider.SetScaledMinWidth( 200 );
    WhiteHigh_NumericControl.SetReal();
    WhiteHigh_NumericControl.SetRange( TheCCWhiteHighParameter->MinimumValue(), TheCCWhiteHighParameter->MaximumValue() );
    WhiteHigh_NumericControl.SetPrecision( TheCCWhiteHighParameter->Precision() );
@@ -584,7 +589,7 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
    const char* whiteROIX0ToolTip = "<p>X pixel coordinate of the upper-left corner of the ROI, white reference.</p>";
 
    WhiteROIX0_Label.SetText( "Left:" );
-   WhiteROIX0_Label.SetFixedWidth( labelWidth1 - 6 - DELTA_FRAME );
+   WhiteROIX0_Label.SetFixedWidth( labelWidth1 - w.LogicalPixelsToPhysical( 6 + DELTA_FRAME ) );
    WhiteROIX0_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    WhiteROIX0_Label.SetToolTip( whiteROIX0ToolTip );
 
@@ -613,7 +618,7 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
    const char* whiteROIWidthToolTip = "<p>Width of the ROI in pixels, white reference.</p>";
 
    WhiteROIWidth_Label.SetText( "Width:" );
-   WhiteROIWidth_Label.SetFixedWidth( labelWidth1 - 6 - DELTA_FRAME );
+   WhiteROIWidth_Label.SetFixedWidth( labelWidth1 - w.LogicalPixelsToPhysical( 6 + DELTA_FRAME ) );
    WhiteROIWidth_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    WhiteROIWidth_Label.SetToolTip( whiteROIWidthToolTip );
 
@@ -669,7 +674,7 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
       "<p>More layers will use larger image structures for calculation of color calibration factors.</p>";
 
    StructureLayers_Label.SetText( "Structure layers:" );
-   StructureLayers_Label.SetFixedWidth( labelWidth1 - 6 - DELTA_FRAME );
+   StructureLayers_Label.SetFixedWidth( labelWidth1 - w.LogicalPixelsToPhysical( 6 + DELTA_FRAME ) );
    StructureLayers_Label.SetToolTip( structureLayersTip );
    StructureLayers_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
@@ -690,7 +695,7 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
       "to exclude more stars).</p>";
 
    NoiseLayers_Label.SetText( "Noise layers:" );
-   NoiseLayers_Label.SetFixedWidth( labelWidth1 - 6 - DELTA_FRAME );
+   NoiseLayers_Label.SetFixedWidth( labelWidth1 - w.LogicalPixelsToPhysical( 6 + DELTA_FRAME ) );
    NoiseLayers_Label.SetToolTip( noiseLayersTip );
    NoiseLayers_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
@@ -722,9 +727,9 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
       "be allowed to enter the correction factors for red, green and blue, as the next three parameters.</p>" );
 
    ManualRedFactor_NumericControl.label.SetText( "Red:" );
-   ManualRedFactor_NumericControl.label.SetFixedWidth( labelWidth1 - 6 - DELTA_FRAME );
+   ManualRedFactor_NumericControl.label.SetFixedWidth( labelWidth1 - w.LogicalPixelsToPhysical( 6 + DELTA_FRAME ) );
    ManualRedFactor_NumericControl.slider.SetRange( 0, 100 );
-   ManualRedFactor_NumericControl.slider.SetMinWidth( 200 );
+   ManualRedFactor_NumericControl.slider.SetScaledMinWidth( 200 );
    ManualRedFactor_NumericControl.SetReal();
    ManualRedFactor_NumericControl.SetRange( 0, 1 );
    ManualRedFactor_NumericControl.SetPrecision( TheCCManualRedFactorParameter->Precision() );
@@ -733,9 +738,9 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
    ManualRedFactor_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&ColorCalibrationInterface::__EditValueUpdated, w );
 
    ManualGreenFactor_NumericControl.label.SetText( "Green:" );
-   ManualGreenFactor_NumericControl.label.SetFixedWidth( labelWidth1 - 6 - DELTA_FRAME );
+   ManualGreenFactor_NumericControl.label.SetFixedWidth( labelWidth1 - w.LogicalPixelsToPhysical( 6 + DELTA_FRAME ) );
    ManualGreenFactor_NumericControl.slider.SetRange( 0, 100 );
-   ManualGreenFactor_NumericControl.slider.SetMinWidth( 200 );
+   ManualGreenFactor_NumericControl.slider.SetScaledMinWidth( 200 );
    ManualGreenFactor_NumericControl.SetReal();
    ManualGreenFactor_NumericControl.SetRange( 0, 1 );
    ManualGreenFactor_NumericControl.SetPrecision( TheCCManualGreenFactorParameter->Precision() );
@@ -744,9 +749,9 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
    ManualGreenFactor_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&ColorCalibrationInterface::__EditValueUpdated, w );
 
    ManualBlueFactor_NumericControl.label.SetText( "Blue:" );
-   ManualBlueFactor_NumericControl.label.SetFixedWidth( labelWidth1 - 6 - DELTA_FRAME );
+   ManualBlueFactor_NumericControl.label.SetFixedWidth( labelWidth1 - w.LogicalPixelsToPhysical( 6 + DELTA_FRAME ) );
    ManualBlueFactor_NumericControl.slider.SetRange( 0, 100 );
-   ManualBlueFactor_NumericControl.slider.SetMinWidth( 200 );
+   ManualBlueFactor_NumericControl.slider.SetScaledMinWidth( 200 );
    ManualBlueFactor_NumericControl.SetReal();
    ManualBlueFactor_NumericControl.SetRange( 0, 1 );
    ManualBlueFactor_NumericControl.SetPrecision( TheCCManualBlueFactorParameter->Precision() );
@@ -773,7 +778,7 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
       "pixels that you intend to use as a white reference.</p>" );
    OutputWhiteReferenceMask_CheckBox.OnClick( (Button::click_event_handler)&ColorCalibrationInterface::__Click, w );
 
-   OutputWhiteReferenceMask_Sizer.AddSpacing( labelWidth1 + 4 );
+   OutputWhiteReferenceMask_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    OutputWhiteReferenceMask_Sizer.Add( OutputWhiteReferenceMask_CheckBox );
    OutputWhiteReferenceMask_Sizer.AddStretch();
 
@@ -808,8 +813,8 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
    BackgroundReferenceView_Edit.OnGetFocus( (Control::event_handler)&ColorCalibrationInterface::__GetFocus, w );
    BackgroundReferenceView_Edit.OnEditCompleted( (Edit::edit_event_handler)&ColorCalibrationInterface::__EditCompleted, w );
 
-   BackgroundReferenceView_ToolButton.SetIcon( Bitmap( ":/icons/select-view.png" ) );
-   BackgroundReferenceView_ToolButton.SetFixedSize( 20, 20 );
+   BackgroundReferenceView_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
+   BackgroundReferenceView_ToolButton.SetScaledFixedSize( 20, 20 );
    BackgroundReferenceView_ToolButton.SetToolTip( "<p>Select the background reference image.</p>" );
    BackgroundReferenceView_ToolButton.OnClick( (Button::click_event_handler)&ColorCalibrationInterface::__Click, w );
 
@@ -821,7 +826,7 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
    BackgroundLow_NumericControl.label.SetText( "Lower limit:" );
    BackgroundLow_NumericControl.label.SetFixedWidth( labelWidth1 );
    BackgroundLow_NumericControl.slider.SetRange( 0, 100 );
-   BackgroundLow_NumericControl.slider.SetMinWidth( 200 );
+   BackgroundLow_NumericControl.slider.SetScaledMinWidth( 200 );
    BackgroundLow_NumericControl.SetReal();
    BackgroundLow_NumericControl.SetRange( TheCCBackgroundLowParameter->MinimumValue(), TheCCBackgroundLowParameter->MaximumValue() );
    BackgroundLow_NumericControl.SetPrecision( TheCCBackgroundLowParameter->Precision() );
@@ -833,7 +838,7 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
    BackgroundHigh_NumericControl.label.SetText( "Upper limit:" );
    BackgroundHigh_NumericControl.label.SetFixedWidth( labelWidth1 );
    BackgroundHigh_NumericControl.slider.SetRange( 0, 100 );
-   BackgroundHigh_NumericControl.slider.SetMinWidth( 200 );
+   BackgroundHigh_NumericControl.slider.SetScaledMinWidth( 200 );
    BackgroundHigh_NumericControl.SetReal();
    BackgroundHigh_NumericControl.SetRange( TheCCBackgroundHighParameter->MinimumValue(), TheCCBackgroundHighParameter->MaximumValue() );
    BackgroundHigh_NumericControl.SetPrecision( TheCCBackgroundHighParameter->Precision() );
@@ -851,7 +856,7 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
    const char* backgroundROIX0ToolTip = "<p>X pixel coordinate of the upper-left corner of the ROI, background reference.</p>";
 
    BackgroundROIX0_Label.SetText( "Left:" );
-   BackgroundROIX0_Label.SetFixedWidth( labelWidth1 - 6 - DELTA_FRAME );
+   BackgroundROIX0_Label.SetFixedWidth( labelWidth1 - w.LogicalPixelsToPhysical( 6 + DELTA_FRAME ) );
    BackgroundROIX0_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    BackgroundROIX0_Label.SetToolTip( backgroundROIX0ToolTip );
 
@@ -880,7 +885,7 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
    const char* backgroundROIWidthToolTip = "<p>Width of the ROI in pixels, background reference.</p>";
 
    BackgroundROIWidth_Label.SetText( "Width:" );
-   BackgroundROIWidth_Label.SetFixedWidth( labelWidth1 - 6 - DELTA_FRAME );
+   BackgroundROIWidth_Label.SetFixedWidth( labelWidth1 - w.LogicalPixelsToPhysical( 6 + DELTA_FRAME ) );
    BackgroundROIWidth_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    BackgroundROIWidth_Label.SetToolTip( backgroundROIWidthToolTip );
 
@@ -930,7 +935,7 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
       "pixels that you intend to use as background reference.</p>" );
    OutputBackgroundReferenceMask_CheckBox.OnClick( (Button::click_event_handler)&ColorCalibrationInterface::__Click, w );
 
-   OutputBackgroundReferenceMask_Sizer.AddSpacing( labelWidth1 + 4 );
+   OutputBackgroundReferenceMask_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    OutputBackgroundReferenceMask_Sizer.Add( OutputBackgroundReferenceMask_CheckBox );
    OutputBackgroundReferenceMask_Sizer.AddStretch();
 
@@ -971,5 +976,5 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF ColorCalibrationInterface.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF ColorCalibrationInterface.cpp - Released 2015/07/31 11:49:48 UTC

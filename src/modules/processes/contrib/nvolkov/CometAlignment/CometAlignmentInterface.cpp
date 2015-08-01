@@ -1,9 +1,13 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.14.0695
-// Standard CometAlignment Process Module Version 01.02.06.0070
-// ****************************************************************************
-// CometAlignmentInterface.cpp - Released 2015/03/04 19:50:08 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard CometAlignment Process Module Version 01.02.06.0089
+// ----------------------------------------------------------------------------
+// CometAlignmentInterface.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard CometAlignment PixInsight module.
 //
 // Copyright (c) 2012-2015 Nikolay Volkov
@@ -45,7 +49,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "CometAlignmentInterface.h"
 #include "CometAlignmentProcess.h"
@@ -60,7 +64,7 @@
 #include <pcl/MessageBox.h>
 #include <pcl/DrizzleDataDecoder.h>
 
-#define IMAGELIST_MINHEIGHT( fnt )  (8*fnt.Height() + 2)
+#define IMAGELIST_MINHEIGHT( fnt )  RoundInt( 8.125*fnt.Height() )
 
 namespace pcl
 {
@@ -203,7 +207,7 @@ void CometAlignmentInterface::DynamicMousePress (View& view, const DPoint& pos, 
 
       String message;
 
-      for (int ch = 0; ch < img.AnyImage ()->NumberOfNominalChannels (); ++ch)
+      for (int ch = 0; ch < img->NumberOfNominalChannels (); ++ch)
       {
          switch (channel)
          {
@@ -228,7 +232,7 @@ void CometAlignmentInterface::DynamicMousePress (View& view, const DPoint& pos, 
 
          StarDetector D (img, ch, pos, searchRadius, bkgThreshold, autoAperture); // Call Centroid Detection
 
-         Console ().WriteLn ("Channel:" + img.AnyImage ()->ChannelId (ch) + " " + D.star.StatusToString ().UpperCase ());
+         Console ().WriteLn ("Channel:" + img->ChannelId (ch) + " " + D.star.StatusToString ().Uppercase ());
          if (D) // status ?
 
          {
@@ -420,7 +424,7 @@ void CometAlignmentInterface::SetReference (const int index)
    if (int(m_instance.p_reference) == index) return;
 
    GUI->TargetImages_TreeBox.Child (int(m_instance.p_reference))->SetIcon (0, Bitmap ());
-   GUI->TargetImages_TreeBox.Child (int(m_instance.p_reference = index))->SetIcon (0, Bitmap (":/icons/arrow-right.png"));
+   GUI->TargetImages_TreeBox.Child (int(m_instance.p_reference = index))->SetIcon (0, Bitmap( ScaledResource( ":/icons/arrow-right.png" ) ));
 
    if (m_DateDelta != 0) UpdateTargetImagesList ();
    else ( GUI->TargetImages_TreeBox.AdjustColumnWidthToContents (0));
@@ -444,7 +448,7 @@ void CometAlignmentInterface::UpdateSubtractSection ()
    d = (!drizzle || d);
    GUI->DrzSaveSA_CheckBox.Disable(d);
    GUI->DrzSaveCA_CheckBox.Disable(d);
-   
+
 }
 
 void CometAlignmentInterface::UpdateControls ()
@@ -476,10 +480,10 @@ void CometAlignmentInterface::UpdateControls ()
    GUI->LinearFit_CheckBox.SetChecked (m_instance.p_enableLinearFit);
    GUI->RejectLow_NumericControl.SetValue (m_instance.p_rejectLow);
    GUI->RejectHigh_NumericControl.SetValue (m_instance.p_rejectHigh);
-   
+
    UpdateTargetImagesList ();
    UpdateImageSelectionButtons ();
-   
+
    UpdateSubtractSection();
 }
 
@@ -495,16 +499,18 @@ void CometAlignmentInterface::UpdateTargetImageItem (size_type i)
    Console ().WriteLn (String ().Format ("old x:%.3f, y:%.3f", item.x, item.y));
 #endif
 
-   if (i == m_instance.p_reference) node->SetIcon (0, Bitmap (":/icons/arrow-right.png"));
+   double f = DisplayPixelRatio();
+
+   if (i == m_instance.p_reference) node->SetIcon (0, Bitmap (UIScaledResource( f, ":/icons/arrow-right.png" ) ));
    node->SetToolTip (0, "Double Click to set reference");
    node->SetText (0, String (i + 1));
    node->SetAlignment (0, TextAlign::Right);
 
-   node->SetIcon (1, Bitmap (item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png"));
+   node->SetIcon (1, Bitmap (UIScaledResource( f, item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" )));
    node->SetToolTip (1, "Double Click to check/uncheck");
    node->SetAlignment (1, TextAlign::Left);
 
-   node->SetIcon (2, Bitmap (":/browser/document.png"));
+   node->SetIcon (2, Bitmap (UIScaledResource( f, ":/browser/document.png") ));
    String fileText;
    if ( !item.drzPath.IsEmpty() )
       fileText = "<d> ";
@@ -515,14 +521,14 @@ void CometAlignmentInterface::UpdateTargetImageItem (size_type i)
    else
       fileText.Append( File::ExtractNameAndSuffix( item.path ) );
    node->SetText( 2, fileText );
-   
+
    String toolTip = "DoubleClick to open image: " + item.path ;
-   
+
    if ( !item.drzPath.IsEmpty() )
    {
       toolTip.Append( '\n' );
       toolTip.Append( item.drzPath );
-   }   
+   }
    node->SetToolTip (2, toolTip);
    node->SetAlignment (2, TextAlign::Left);
 
@@ -648,7 +654,7 @@ void CometAlignmentInterface::UpdateTargetImagesList ()
 
    GUI->TargetImages_TreeBox.SetColumnWidth (lastColumn, 0); // set width of last column to zero and
    GUI->TargetImages_TreeBox.HideColumn (lastColumn); // hide last column to hide horisontal scroling
-   GUI->TargetImages_TreeBox.SetMinWidth (width + 20);
+   GUI->TargetImages_TreeBox.SetMinWidth (width + LogicalPixelsToPhysical( 20 ));
 
    GUI->TargetImages_TreeBox.EnableUpdates ();
 
@@ -694,7 +700,7 @@ inline bool OperandIsDrizzleIntegration(const String& filePath)//true == Drizzle
 	FileFormat format (File::ExtractExtension (filePath), true, false);
 	FileFormatInstance file (format);
 	ImageDescriptionArray images;
-	if ( !file.Open( images, filePath ) ) 
+	if ( !file.Open( images, filePath ) )
 		throw CatchedException ();
 	FITSKeywordArray keywords; // FITS keywords
 	if (format.CanStoreKeywords ())
@@ -758,11 +764,11 @@ inline bool GetDate (String& date, const String& filePath)
             continue;
          if (date.Length () == 10) // short format DATE-OBS yyyy-mm-dd and TIME-OBS found
          {
-            if(date.SubString (2, 1)=="/") // true == DATE-OBS format dd/mm/yyyy , Iris produce that format
+            if(date.Substring (2, 1)=="/") // true == DATE-OBS format dd/mm/yyyy , Iris produce that format
                //convert dd/mm/yyyy to yyyy-mm-dd
-               date = date.SubString(6,4)          //yyyy
-                       +"-"+date.SubString(3,2)    //mm
-                       +"-"+date.SubString(0,2);   //dd
+               date = date.Substring(6,4)          //yyyy
+                       +"-"+date.Substring(3,2)    //mm
+                       +"-"+date.Substring(0,2);   //dd
 
             date = date + "T" + time; // add TIME-OBS to short DATE-OBS
             return true;
@@ -826,17 +832,7 @@ String CometAlignmentInterface::DrizzleTargetName( const String& filePath )
    /*
     * Load drizzle data file contents.
     */
-   File file;
-   file.OpenForReading( filePath );
-   fsize_type fileSize = file.Size();
-   IsoString text;
-   if ( fileSize > 0 )
-   {
-      text.Reserve( fileSize );
-      file.Read( reinterpret_cast<void*>( text.Begin() ), fileSize );
-      text[fileSize] = '\0';
-   }
-   file.Close();
+   IsoString text = File::ReadTextFile( filePath );
 
    /*
     * If the .drz file includes a target path, return it.
@@ -1069,7 +1065,7 @@ void CometAlignmentInterface::__EditCompleted (Edit& sender)
 
    if ( sender == GUI->OutputExtension_Edit )
    {
-      if ( !text.IsEmpty() && !text.BeginsWith( '.' ) )
+      if ( !text.IsEmpty() && !text.StartsWith( '.' ) )
          text.Prepend( '.' );
       m_instance.p_outputExtension = text;
    }
@@ -1114,7 +1110,7 @@ void CometAlignmentInterface::__Button_Click (Button& sender, bool checked)
    else if (sender == GUI->SubtractStars_RadioButton)
       m_instance.p_subtractMode = !checked;
    else if (sender == GUI->SubtractComet_RadioButton)
-      m_instance.p_subtractMode = checked;   
+      m_instance.p_subtractMode = checked;
    else if (sender == GUI->LinearFit_CheckBox)
       m_instance.p_enableLinearFit = checked;
    else if (sender == GUI->Normalize_CheckBox)
@@ -1211,6 +1207,7 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    int xyLabelWidth = fnt.Width (String ('X', 3));
    int labelWidth1 = fnt.Width (String ("Clamping threshold:") + 'T');
    int editWidth2 = fnt.Width( String( 'M', 5  ) );
+   int ui4 = w.LogicalPixelsToPhysical( 4 );
 
    //
 
@@ -1249,7 +1246,7 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    AddFiles_PushButton.SetText ("Add Files");
    AddFiles_PushButton.SetToolTip ("<p>Add existing image files to the list of target frames.</p>");
    AddFiles_PushButton.OnClick ((Button::click_event_handler) & CometAlignmentInterface::__TargetImages_BottonClick, w);
-   
+
    AddDrizzleFiles_PushButton.SetText( "Add Drizzle Files" );
    AddDrizzleFiles_PushButton.SetToolTip( "<p>Associate existing drizzle data files with input images.</p>"
       "<p>Drizzle data files carry the .drz suffix. Normally you should select .drz files generated by "
@@ -1302,7 +1299,7 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    TargetButtons_Sizer.Add (SelectAll_PushButton);
    TargetButtons_Sizer.Add( AddDrizzleFiles_PushButton );
    TargetButtons_Sizer.Add( ClearDrizzleFiles_PushButton );
-   TargetButtons_Sizer.Add( SetReference_PushButton );   
+   TargetButtons_Sizer.Add( SetReference_PushButton );
    TargetButtons_Sizer.Add (InvertSelection_PushButton);
    TargetButtons_Sizer.Add (ToggleSelected_PushButton);
    TargetButtons_Sizer.Add (RemoveSelected_PushButton);
@@ -1376,8 +1373,8 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    OutputDir_Edit.OnMouseDoubleClick ((Control::mouse_event_handler) & CometAlignmentInterface::__MouseDoubleClick, w);
    OutputDir_Edit.OnEditCompleted ((Edit::edit_event_handler) & CometAlignmentInterface::__EditCompleted, w);
 
-   OutputDir_SelectButton.SetIcon (Bitmap (":/browser/select-file.png"));
-   OutputDir_SelectButton.SetFixedSize (19, 19);
+   OutputDir_SelectButton.SetIcon (Bitmap (w.ScaledResource( ":/browser/select-file.png" )));
+   OutputDir_SelectButton.SetScaledFixedSize (19, 19);
    OutputDir_SelectButton.SetToolTip ("<p>Select output directory</p>");
    OutputDir_SelectButton.OnClick ((Button::click_event_handler) & CometAlignmentInterface::__Button_Click, w);
 
@@ -1448,7 +1445,7 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    Output_Sizer.SetSpacing (4);
    Output_Sizer.Add (OutputDir_Sizer);
    Output_Sizer.Add (OutputChunks_Sizer);
-   
+
 
    Output_Control.SetSizer (Output_Sizer);
    Output_SectionBar.SetTitle ("Output");
@@ -1582,13 +1579,13 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    SubtractFile_Edit.OnMouseDoubleClick ((Control::mouse_event_handler) & CometAlignmentInterface::__MouseDoubleClick, w);
    SubtractFile_Edit.OnEditCompleted ((Edit::edit_event_handler) & CometAlignmentInterface::__EditCompleted, w);
 
-   SubtractFile_SelectButton.SetIcon (Bitmap (":/browser/select-file.png"));
-   SubtractFile_SelectButton.SetFixedSize (19, 19);
+   SubtractFile_SelectButton.SetIcon (Bitmap (w.ScaledResource( ":/browser/select-file.png" )));
+   SubtractFile_SelectButton.SetScaledFixedSize (19, 19);
    SubtractFile_SelectButton.SetToolTip ("<p>Select image file</p>");
    SubtractFile_SelectButton.OnClick ((Button::click_event_handler) & CometAlignmentInterface::__Button_Click, w);
 
-   SubtractFile_ClearButton.SetIcon (Bitmap (":/icons/clear.png"));
-   SubtractFile_ClearButton.SetFixedSize (19, 19);
+   SubtractFile_ClearButton.SetIcon (Bitmap (w.ScaledResource( ":/icons/clear.png" )));
+   SubtractFile_ClearButton.SetScaledFixedSize (19, 19);
    SubtractFile_ClearButton.SetToolTip ("<p>Clear</p>");
    SubtractFile_ClearButton.OnClick ((Button::click_event_handler) & CometAlignmentInterface::__Button_Click, w);
 
@@ -1597,16 +1594,16 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    SubtractFile_Sizer.Add (SubtractFile_Edit, 100);
    SubtractFile_Sizer.Add (SubtractFile_SelectButton);
    SubtractFile_Sizer.Add (SubtractFile_ClearButton);
-      
+
    //
-   
+
    SubtractStars_RadioButton.SetText( "Stars aligned" );
    SubtractStars_RadioButton.SetToolTip( "The Operand image is star aligned to Reference image." );
    SubtractStars_RadioButton.OnClick ((Button::click_event_handler) & CometAlignmentInterface::__Button_Click, w);
 
    SubtractComet_RadioButton.SetText( "Comet aligned" );
    SubtractComet_RadioButton.SetToolTip( "The Operand image is comet aligned to Reference image." );
-   SubtractComet_RadioButton.OnClick ((Button::click_event_handler) & CometAlignmentInterface::__Button_Click, w);  
+   SubtractComet_RadioButton.OnClick ((Button::click_event_handler) & CometAlignmentInterface::__Button_Click, w);
 
    SubtractImgType_Sizer.SetMargin( 6 );
    SubtractImgType_Sizer.SetSpacing( 4 );
@@ -1618,14 +1615,14 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    SubtractImgType_GroupBox.SetSizer( SubtractImgType_Sizer );
    //
 
-   
+
    SubtractII_RadioButton.SetText( "ImageIintegration" );
    SubtractComet_RadioButton.SetToolTip( "The Operand image was created with ImageIintegration process." );
-   SubtractII_RadioButton.OnClick ((Button::click_event_handler) & CometAlignmentInterface::__Button_Click, w); 
+   SubtractII_RadioButton.OnClick ((Button::click_event_handler) & CometAlignmentInterface::__Button_Click, w);
 
    SubtractDI_RadioButton.SetText( "DrizzleIntegration" );
    SubtractDI_RadioButton.SetToolTip( "The Operand image was created with DrizzleIntegration process." );
-   SubtractDI_RadioButton.OnClick ((Button::click_event_handler) & CometAlignmentInterface::__Button_Click, w); 
+   SubtractDI_RadioButton.OnClick ((Button::click_event_handler) & CometAlignmentInterface::__Button_Click, w);
 
    SubtractOrigin_Sizer.SetMargin( 6 );
    SubtractOrigin_Sizer.SetSpacing( 4 );
@@ -1637,16 +1634,16 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    SubtractOrigin_GroupBox.SetSizer( SubtractOrigin_Sizer );
 
    //
-   
+
    const char* ToolTipDrzSave = "<p>When selected .drz and subtraction operand Image, a new not aligned drizzle integrable image will writen."
 	   " i.e. not aligned pure Stars or pure Comet image."
 	   " So we can create new StarsAligned and CometAligned images and ofcourse .drz files. Which can be used for DrizzleIntegration </p>";
    DrzSaveSA_CheckBox.SetText ("Stars aligned");
-   DrzSaveSA_CheckBox.SetToolTip (ToolTipDrzSave);   
+   DrzSaveSA_CheckBox.SetToolTip (ToolTipDrzSave);
    DrzSaveSA_CheckBox.OnClick ((Button::click_event_handler) & CometAlignmentInterface::__Button_Click, w);
 
    DrzSaveCA_CheckBox.SetText ("Comet aligned");
-   DrzSaveCA_CheckBox.SetToolTip (ToolTipDrzSave);   
+   DrzSaveCA_CheckBox.SetToolTip (ToolTipDrzSave);
    DrzSaveCA_CheckBox.OnClick ((Button::click_event_handler) & CometAlignmentInterface::__Button_Click, w);
 
    DrzSave_Sizer.SetMargin( 6 );
@@ -1659,7 +1656,7 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    DrzSave_GroupBox.SetSizer( DrzSave_Sizer );
 
    SubtractImgOption_Sizer.SetSpacing( 4 );
-   SubtractImgOption_Sizer.AddSpacing( labelWidth1 + 4 );
+   SubtractImgOption_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    SubtractImgOption_Sizer.Add (SubtractOrigin_GroupBox);
    SubtractImgOption_Sizer.Add (SubtractImgType_GroupBox);
    SubtractImgOption_Sizer.Add (DrzSave_GroupBox);
@@ -1680,7 +1677,7 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    //
 
    SubtractChekers_Sizer.SetSpacing (20);
-   SubtractChekers_Sizer.AddSpacing( labelWidth1 + 4 );
+   SubtractChekers_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    SubtractChekers_Sizer.Add (LinearFit_CheckBox);
    SubtractChekers_Sizer.Add (Normalize_CheckBox);
    SubtractChekers_Sizer.AddStretch ();
@@ -1690,7 +1687,7 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    RejectLow_NumericControl.label.SetText ("Reject low:");
    RejectLow_NumericControl.label.SetFixedWidth (labelWidth1);
    RejectLow_NumericControl.slider.SetRange (0, 100);
-   RejectLow_NumericControl.slider.SetMinWidth (200);
+   RejectLow_NumericControl.slider.SetScaledMinWidth (200);
    RejectLow_NumericControl.SetReal ();
    RejectLow_NumericControl.SetRange (TheRejectLow->MinimumValue (), TheRejectLow->MaximumValue ());
    RejectLow_NumericControl.SetPrecision (TheRejectLow->Precision ());
@@ -1704,7 +1701,7 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    RejectHigh_NumericControl.label.SetText ("Reject high:");
    RejectHigh_NumericControl.label.SetFixedWidth (labelWidth1);
    RejectHigh_NumericControl.slider.SetRange (0, 100);
-   RejectHigh_NumericControl.slider.SetMinWidth (200);
+   RejectHigh_NumericControl.slider.SetScaledMinWidth (200);
    RejectHigh_NumericControl.SetReal ();
    RejectHigh_NumericControl.SetRange (TheRejectHigh->MinimumValue (), TheRejectHigh->MaximumValue ());
    RejectHigh_NumericControl.SetPrecision (TheRejectHigh->Precision ());
@@ -1712,7 +1709,7 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
                                          "pixels whose values are greater than or equal to this limit. Note that according to that definition, white "
                                          "pixels (pixel values equal to one in the normalized [0,1] range) are always rejected.</p>");
    RejectHigh_NumericControl.OnValueUpdated ((NumericEdit::value_event_handler) & CometAlignmentInterface::__RealValueUpdated, w);
-	
+
    //
 
    Subtract_Sizer.SetSpacing (4);
@@ -1780,7 +1777,7 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    ClampingThreshold_NumericControl.label.SetText ("Clamping threshold:");
    ClampingThreshold_NumericControl.label.SetFixedWidth (labelWidth1);
    ClampingThreshold_NumericControl.slider.SetRange (0, 100);
-   ClampingThreshold_NumericControl.slider.SetMinWidth (200);
+   ClampingThreshold_NumericControl.slider.SetScaledMinWidth (200);
    ClampingThreshold_NumericControl.SetReal ();
    ClampingThreshold_NumericControl.SetRange (TheLinearClampingThresholdParameter->MinimumValue (), TheLinearClampingThresholdParameter->MaximumValue ());
    ClampingThreshold_NumericControl.SetPrecision (TheLinearClampingThresholdParameter->Precision ());
@@ -1833,5 +1830,5 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
 
 } // pcl
 
-// ****************************************************************************
-// EOF CometAlignmentInterface.cpp - Released 2015/03/04 19:50:08 UTC
+// ----------------------------------------------------------------------------
+// EOF CometAlignmentInterface.cpp - Released 2015/07/31 11:49:49 UTC

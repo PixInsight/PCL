@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard SplitCFA Process Module Version 01.00.05.0037
-// ****************************************************************************
-// SplitCFAInterface.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard SplitCFA Process Module Version 01.00.05.0056
+// ----------------------------------------------------------------------------
+// SplitCFAInterface.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard SplitCFA PixInsight module.
 //
-// Copyright (c) 2013-2014 Nikolay Volkov
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2013-2015 Nikolay Volkov
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,7 +49,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "SplitCFAInterface.h"
 #include "SplitCFAProcess.h"
@@ -57,7 +61,7 @@
 //#include <pcl/Graphics.h>
 #include <pcl/StdStatus.h>
 
-#define IMAGELIST_MINHEIGHT( fnt )  (8*fnt.Height() + 2)
+#define IMAGELIST_MINHEIGHT( fnt )  RoundInt( 8.125*fnt.Height() )
 
 namespace pcl
 {
@@ -197,13 +201,16 @@ void SplitCFAInterface::UpdateTargetImagesList()
 
    GUI->Files_TreeBox.ShowHeader( n > 0 );
 
+   Bitmap enabledIcon( ScaledResource( ":/browser/enabled.png" ) );
+   Bitmap disabledIcon( ScaledResource( ":/browser/disabled.png" ) );
+
    for ( size_type i = 0; i < n; ++i )
    {
       String path = m_instance.p_targetFrames[i].path;
 
       TreeBox::Node* node = new TreeBox::Node( GUI->Files_TreeBox ); // add new item in Files_TreeBox
 
-      node->SetIcon( 0, Bitmap( m_instance.p_targetFrames[i].enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) );
+      node->SetIcon( 0, m_instance.p_targetFrames[i].enabled ? enabledIcon : disabledIcon );
       node->SetToolTip( 0, "Double Click to check/uncheck" );
       node->SetAlignment( 0, TextAlign::Left );
 
@@ -275,7 +282,7 @@ void SplitCFAInterface::__TargetImages_NodeActivated( TreeBox& sender, TreeBox::
    case 0:
       // Activate the item's checkmark: toggle item's enabled state.
       item.enabled = !item.enabled;
-      node.SetIcon( 0, Bitmap( item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) );
+      node.SetIcon( 0, Bitmap( ScaledResource( item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
       break;
    case 2:
       // Activate the item's path: open the image.
@@ -354,9 +361,9 @@ void SplitCFAInterface::AddFiles()
 static
 void SearchDirectory_Recursive( StringList& foundFiles, const String& whereToFind, const String& baseDir )
 {
-   if ( whereToFind.Has( ".." ) )
+   if ( whereToFind.Contains( ".." ) )
       throw Error( "Attempt to climb up the filesystem in file search operation: " + whereToFind );
-   if ( !whereToFind.BeginsWith( baseDir ) )
+   if ( !whereToFind.StartsWith( baseDir ) )
       throw Error( "Attempt to walk on a parallel directory tree in file search operation: '" + whereToFind
                  + "'; expected to be rooted at '" + baseDir + "'" );
    if ( !File::DirectoryExists( whereToFind ) )
@@ -376,8 +383,8 @@ void SearchDirectory_Recursive( StringList& foundFiles, const String& whereToFin
       }
       else
       {
-         String ext = File::ExtractExtension( info.name ).LowerCase();
-         if ( ext == ".cr2" || ext == ".fit" || ext == ".fits" || ext == ".fts" || ext == ".nef" || ext == ".dng" )
+         String ext = File::ExtractExtension( info.name ).Lowercase();
+         if ( ext == ".cr2" || ext == ".xisf" || ext == ".fit" || ext == ".fits" || ext == ".fts" || ext == ".nef" || ext == ".dng" )
             foundFiles.Add( currentDir + info.name );
       }
 
@@ -388,13 +395,14 @@ void SearchDirectory_Recursive( StringList& foundFiles, const String& whereToFin
 static
 StringList SearchDirectory( const String& whereToFind )
 {
-   StringList foundFiles;
    try
    {
+      StringList foundFiles;
       SearchDirectory_Recursive( foundFiles, whereToFind, whereToFind );
+      return foundFiles;
    }
    ERROR_HANDLER
-   return foundFiles;
+   return StringList();
 }
 
 void SplitCFAInterface::SearchFile( const String& path, const String& folder ) // Recursiv Search file in sub-folders
@@ -455,7 +463,7 @@ void SplitCFAInterface::__TargetImages_BottonClick( Button& sender, bool checked
             int j = FileInList(GUI->Files_TreeBox[i]->Text(1));
             bool enabled = !m_instance.p_targetFrames[j].enabled;
             m_instance.p_targetFrames[j].enabled = enabled;
-            GUI->Files_TreeBox[i]->SetIcon( 0, Bitmap( enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) );
+            GUI->Files_TreeBox[i]->SetIcon( 0, Bitmap( ScaledResource( enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
          }
       }
    }
@@ -556,7 +564,7 @@ SplitCFAInterface::GUIData::GUIData( SplitCFAInterface& w )
 
    //
 
-   Files_TreeBox.SetMinSize( 400, IMAGELIST_MINHEIGHT( w.Font() ) );
+   Files_TreeBox.SetMinSize( w.LogicalPixelsToPhysical( 400 ), IMAGELIST_MINHEIGHT( w.Font() ) );
    Files_TreeBox.SetNumberOfColumns( 4 ); // plus 1 hidden column for GUI Stretch
    Files_TreeBox.SetHeaderText( 0, "?" );
    Files_TreeBox.SetHeaderText( 1, "Patch" ); //hiden column
@@ -653,13 +661,13 @@ SplitCFAInterface::GUIData::GUIData( SplitCFAInterface& w )
    OutputDir_Edit.OnMouseDoubleClick( (Control::mouse_event_handler)&SplitCFAInterface::__MouseDoubleClick, w );
    OutputDir_Edit.OnEditCompleted( (Edit::edit_event_handler)&SplitCFAInterface::__EditCompleted, w );
 
-   OutputDir_SelectButton.SetIcon( Bitmap( ":/browser/select-file.png" ) );
-   OutputDir_SelectButton.SetFixedSize( 19, 19 );
+   OutputDir_SelectButton.SetIcon( Bitmap( w.ScaledResource( ":/browser/select-file.png" ) ) );
+   OutputDir_SelectButton.SetScaledFixedSize( 19, 19 );
    OutputDir_SelectButton.SetToolTip( "<p>Select output directory</p>" );
    OutputDir_SelectButton.OnClick( (Button::click_event_handler)&SplitCFAInterface::__Button_Click, w );
 
-   OutputDir_ClearButton.SetIcon( Bitmap( ":/icons/clear.png" ) );
-   OutputDir_ClearButton.SetFixedSize( 19, 19 );
+   OutputDir_ClearButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/clear.png" ) ) );
+   OutputDir_ClearButton.SetScaledFixedSize( 19, 19 );
    OutputDir_ClearButton.SetToolTip( "<p>Reset output directory</p>" );
    OutputDir_ClearButton.OnClick( (Button::click_event_handler)&SplitCFAInterface::__Button_Click, w );
 
@@ -735,5 +743,5 @@ SplitCFAInterface::GUIData::GUIData( SplitCFAInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF SplitCFAInterface.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF SplitCFAInterface.cpp - Released 2015/07/31 11:49:49 UTC

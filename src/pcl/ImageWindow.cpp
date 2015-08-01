@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ImageWindow.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ImageWindow.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/AutoLock.h>
 #include <pcl/ImageWindow.h>
@@ -72,38 +75,26 @@ public:
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-ImageWindow::ImageWindow() : UIObject( 0 )
-{
-}
-
 ImageWindow::ImageWindow( int width, int height, int numberOfChannels,
                           int bitsPerSample, bool floatSample, bool color,
                           bool initialProcessing, const IsoString& id ) :
-UIObject( (*API->ImageWindow->CreateImageWindow)(
-            width, height, numberOfChannels, bitsPerSample, floatSample, color,
-            initialProcessing, id.c_str() ) )
+   UIObject( (*API->ImageWindow->CreateImageWindow)(
+                        width, height, numberOfChannels, bitsPerSample, floatSample, color,
+                        initialProcessing, id.c_str() ) )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateImageWindow" );
-}
-
-ImageWindow::ImageWindow( void* h ) : UIObject( h )
-{
-}
-
-ImageWindow::ImageWindow( const void* h ) : UIObject( const_cast<void*>( h ) )
-{
 }
 
 // ----------------------------------------------------------------------------
 
 ImageWindow& ImageWindow::Null()
 {
-   static ImageWindow* nullImageWindow = 0;
+   static ImageWindow* nullImageWindow = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullImageWindow == 0 )
-      nullImageWindow = new ImageWindow( reinterpret_cast<void*>( 0 ) );
+   if ( nullImageWindow == nullptr )
+      nullImageWindow = new ImageWindow( nullptr );
    return *nullImageWindow;
 }
 
@@ -112,12 +103,10 @@ ImageWindow& ImageWindow::Null()
 Array<ImageWindow> ImageWindow::Open( const String& url, const IsoString& id, bool asACopy, bool allowMessages )
 {
    Array<ImageWindow> a;
-
    if ( (*API->ImageWindow->LoadImageWindows)( url.c_str(), id.c_str(),
                                  api_bool( asACopy ), api_bool( allowMessages ),
                                  InternalWindowEnumerator::Callback, &a ) == api_false )
       throw APIFunctionError( "LoadImageWindows" );
-
    return a;
 }
 
@@ -143,15 +132,13 @@ String ImageWindow::FilePath() const
    (*API->ImageWindow->GetImageWindowFilePath)( handle, 0, &len );
 
    String path;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      path.Reserve( len );
-
+      path.SetLength( len );
       if ( (*API->ImageWindow->GetImageWindowFilePath)( handle, path.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetImageWindowFilePath" );
+      path.ResizeToNullTerminated();
    }
-
    return path;
 }
 
@@ -163,15 +150,13 @@ String ImageWindow::FileURL() const
    (*API->ImageWindow->GetImageWindowFileURL)( handle, 0, &len );
 
    String url;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      url.Reserve( len );
-
+      url.SetLength( len );
       if ( (*API->ImageWindow->GetImageWindowFileURL)( handle, url.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetImageWindowFileURL" );
+      url.ResizeToNullTerminated();
    }
-
    return url;
 }
 
@@ -183,22 +168,24 @@ ImageOptions ImageWindow::FileInfo() const
    (*API->ImageWindow->GetImageWindowFileInfo)( handle, &a );
 
    ImageOptions o;
-   o.bitsPerSample      = a.bitsPerSample;
-   o.ieeefpSampleFormat = a.ieeefpSampleFormat;
-   o.complexSample      = a.complexSample;
-   o.signedIntegers     = a.signedIntegers;
-   o.metricResolution   = a.metricResolution;
-   o.embedICCProfile    = a.embedICCProfile;
-   o.embedMetadata      = a.embedMetadata;
-   o.embedThumbnail     = a.embedThumbnail;
-   o.embedProperties    = a.embedProperties;
-   o.xResolution        = a.xResolution;
-   o.yResolution        = a.yResolution;
-   o.isoSpeed           = a.isoSpeed;
-   o.exposure           = a.exposure;
-   o.aperture           = a.aperture;
-   o.focalLength        = a.focalLength;
-   o.cfaType            = a.cfaType;
+   o.bitsPerSample         = a.bitsPerSample;
+   o.ieeefpSampleFormat    = a.ieeefpSampleFormat;
+   o.complexSample         = a.complexSample;
+   o.signedIntegers        = a.signedIntegers;
+   o.metricResolution      = a.metricResolution;
+   o.embedICCProfile       = a.embedICCProfile;
+   o.embedThumbnail        = a.embedThumbnail;
+   o.embedProperties       = a.embedProperties;
+   o.embedRGBWS            = a.embedRGBWS;
+   o.embedDisplayFunction  = a.embedDisplayFunction;
+   o.embedColorFilterArray = a.embedColorFilterArray;
+   o.xResolution           = a.xResolution;
+   o.yResolution           = a.yResolution;
+   o.isoSpeed              = a.isoSpeed;
+   o.exposure              = a.exposure;
+   o.aperture              = a.aperture;
+   o.focalLength           = a.focalLength;
+   o.cfaType               = a.cfaType;
    return o;
 }
 
@@ -239,16 +226,9 @@ void ImageWindow::SelectView( View& v )
 
 // ----------------------------------------------------------------------------
 
-int ImageWindow::PurgeHistograms( bool )
+void ImageWindow::PurgeProperties()
 {
-   return (*API->ImageWindow->PurgeImageWindowHistograms)( handle );
-}
-
-// ----------------------------------------------------------------------------
-
-int ImageWindow::PurgeStatistics( bool )
-{
-   return (*API->ImageWindow->PurgeImageWindowStatistics)( handle );
+   (*API->ImageWindow->PurgeImageWindowProperties)( handle );
 }
 
 // ----------------------------------------------------------------------------
@@ -270,6 +250,7 @@ int ImageWindow::NumberOfPreviews() const
 class InternalPreviewEnumerator
 {
 public:
+
    static api_bool api_func Callback( view_handle hV, void* ptrToArray )
    {
       reinterpret_cast<Array<View>*>( ptrToArray )->Add( View( hV ) );
@@ -537,43 +518,6 @@ void ImageWindow::ResetKeywords()
 
 // ----------------------------------------------------------------------------
 
-ByteArray ImageWindow::Metadata() const
-{
-   size_type sz = (*API->ImageWindow->GetImageWindowMetadataLength)( handle );
-   if ( sz != 0 )
-   {
-      ByteArray a( sz );
-      (*API->ImageWindow->GetImageWindowMetadata)( handle, a.Begin() );
-      return a;
-   }
-
-   return ByteArray();
-}
-
-// ----------------------------------------------------------------------------
-
-void ImageWindow::SetMetadata( const ByteArray& data )
-{
-   if ( data.IsEmpty() )
-      ResetMetadata();
-   else
-      SetMetadata( data.Begin(), data.Length() );
-}
-
-void ImageWindow::SetMetadata( const uint8* data, size_type size )
-{
-   (*API->ImageWindow->SetImageWindowMetadata)( handle, data, uint32( size ) );
-}
-
-// ----------------------------------------------------------------------------
-
-void ImageWindow::ResetMetadata()
-{
-   (*API->ImageWindow->ResetImageWindowMetadata)( handle );
-}
-
-// ----------------------------------------------------------------------------
-
 void ImageWindow::GetResolution( double& xRes, double& yRes, bool& metric ) const
 {
    api_bool m;
@@ -615,13 +559,6 @@ bool ImageWindow::IsDefaultICCProfileEmbeddingEnabledForGrayscaleImages()
 
 // ----------------------------------------------------------------------------
 
-bool ImageWindow::IsDefaultMetadataEmbeddingEnabled()
-{
-   return (*API->ImageWindow->GetDefaultMetadataEmbedding)() != api_false;
-}
-
-// ----------------------------------------------------------------------------
-
 bool ImageWindow::IsDefaultThumbnailEmbeddingEnabled()
 {
    return (*API->ImageWindow->GetDefaultThumbnailEmbedding)() != api_false;
@@ -648,9 +585,10 @@ StringList ImageWindow::SwapDirectories()
          break;
 
       String path;
-      path.Reserve( len );
+      path.SetLength( len );
       if ( (*API->ImageWindow->GetSwapDirectory)( i, path.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetSwapDirectory" );
+      path.ResizeToNullTerminated();
 
       directories.Add( path );
    }
@@ -665,7 +603,6 @@ bool ImageWindow::SetSwapDirectories( const StringList& directories )
    Array<const char16_type*> strings;
    for ( StringList::const_iterator i = directories.Begin(); i != directories.End(); ++i )
       strings.Add( i->c_str() );
-
    return (*API->ImageWindow->SetSwapDirectories)( strings.Begin(), int32( strings.Length() ) ) != api_false;
 }
 
@@ -774,7 +711,6 @@ void ImageWindow::FitWindow()
 void ImageWindow::ZoomToFit( bool allowMagnification )
 {
    (*API->ImageWindow->ZoomImageWindowToFit)( handle, allowMagnification );
-
 }
 
 // ----------------------------------------------------------------------------
@@ -928,6 +864,16 @@ Point ImageWindow::DynamicCursorHotSpot() const
    Point p( 0 );
    (*API->ImageWindow->GetDynamicCursorHotSpot)( handle, &p.x, &p.y );
    return p;
+}
+
+// ----------------------------------------------------------------------------
+
+double ImageWindow::DisplayPixelRatio() const
+{
+   double r;
+   if ( (*API->ImageWindow->GetImageWindowDisplayPixelRatio)( handle, &r ) == api_false )
+      throw APIFunctionError( "GetImageWindowDisplayPixelRatio" );
+   return r;
 }
 
 // ----------------------------------------------------------------------------
@@ -1210,5 +1156,5 @@ Array<ImageWindow> ImageWindow::AllWindows( bool includeIconicWindows )
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/ImageWindow.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ImageWindow.cpp - Released 2015/07/30 17:15:31 UTC

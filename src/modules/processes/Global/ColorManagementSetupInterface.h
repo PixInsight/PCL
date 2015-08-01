@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Global Process Module Version 01.02.05.0260
-// ****************************************************************************
-// ColorManagementSetupInterface.h - Released 2014/11/14 17:18:47 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Global Process Module Version 01.02.06.0280
+// ----------------------------------------------------------------------------
+// ColorManagementSetupInterface.h - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,25 +48,23 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __ColorManagementSetupInterface_h
 #define __ColorManagementSetupInterface_h
 
-#include <pcl/ProcessInterface.h>
-#include <pcl/ICCProfile.h>
-
-#include <pcl/Sizer.h>
-#include <pcl/SectionBar.h>
-#include <pcl/GroupBox.h>
-#include <pcl/Label.h>
-#include <pcl/ComboBox.h>
-#include <pcl/ColorComboBox.h>
 #include <pcl/CheckBox.h>
+#include <pcl/ColorComboBox.h>
+#include <pcl/ComboBox.h>
 #include <pcl/Edit.h>
-#include <pcl/RadioButton.h>
+#include <pcl/GroupBox.h>
+#include <pcl/ICCProfile.h>
+#include <pcl/Label.h>
+#include <pcl/ProcessInterface.h>
 #include <pcl/PushButton.h>
-
+#include <pcl/RadioButton.h>
+#include <pcl/SectionBar.h>
+#include <pcl/Sizer.h>
 #include <pcl/StringList.h>
 
 #include "ColorManagementSetupInstance.h"
@@ -70,8 +72,6 @@
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-// ColorManagementSetupInterface
 // ----------------------------------------------------------------------------
 
 class ColorManagementSetupInterface : public ProcessInterface
@@ -100,8 +100,6 @@ public:
    virtual bool RequiresInstanceValidation() const;
    virtual bool ImportProcess( const ProcessImplementation& );
 
-   // -------------------------------------------------------------------------
-
 private:
 
    ColorManagementSetupInstance instance;
@@ -109,8 +107,6 @@ private:
    ICCProfile::profile_list rgbProfiles;      // RGB only
    ICCProfile::profile_list grayProfiles;     // RGB and grayscale only
    ICCProfile::profile_list proofingProfiles; // any color space
-
-   // -------------------------------------------------------------------------
 
    struct GUIData
    {
@@ -127,7 +123,6 @@ private:
             Label             RenderingIntent_Label;
             ComboBox          RenderingIntent_ComboBox;
 
-#ifdef __PCL_X11
       SectionBar        SystemSettings_SectionBar;
       Control           SystemSettings_Control;
       VerticalSizer     SystemSettings_Sizer;
@@ -135,7 +130,6 @@ private:
          VerticalSizer     NewMonitorProfile_Sizer;
             Edit              NewMonitorProfile_Edit;
             ComboBox          NewMonitorProfile_ComboBox;
-#endif
 
       SectionBar        DefaultProfiles_SectionBar;
       Control           DefaultProfiles_Control;
@@ -233,5 +227,5 @@ PCL_END_LOCAL
 
 #endif   // __ColorManagementSetupInterface_h
 
-// ****************************************************************************
-// EOF ColorManagementSetupInterface.h - Released 2014/11/14 17:18:47 UTC
+// ----------------------------------------------------------------------------
+// EOF ColorManagementSetupInterface.h - Released 2015/07/31 11:49:48 UTC

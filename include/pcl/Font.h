@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Font.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Font.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Font_h
 #define __PCL_Font_h
@@ -254,6 +257,13 @@ public:
    }
 
    /*!
+    * Move constructor.
+    */
+   Font( Font&& x ) : UIObject( std::move( x ) )
+   {
+   }
+
+   /*!
     * Destroys a %Font object. If this object references an existing font in
     * the PixInsight core application, its reference count is decremented. If
     * it becomes unreferenced, it will be garbage-collected.
@@ -263,7 +273,7 @@ public:
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Copy assignment operator. Returns a reference to this object.
     *
     * Makes this object reference the same server-side font as the specified
     * instance \a f. If the previous font becomes unreferenced, it will be
@@ -272,6 +282,15 @@ public:
    Font& operator =( const Font& f )
    {
       SetHandle( f.handle );
+      return *this;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   Font& operator =( Font&& x )
+   {
+      Transfer( x );
       return *this;
    }
 
@@ -514,7 +533,10 @@ public:
 
 private:
 
-   Font( void* );
+   Font( void* h ) : UIObject( h )
+   {
+   }
+
    virtual void* CloneHandle() const;
 
    friend class InternalFontEnumerator;
@@ -531,5 +553,5 @@ private:
 
 #endif   // __PCL_Font_h
 
-// ****************************************************************************
-// EOF pcl/Font.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Font.h - Released 2015/07/30 17:15:18 UTC

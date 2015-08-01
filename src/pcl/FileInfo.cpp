@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/FileInfo.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/FileInfo.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/FileInfo.h>
 
@@ -248,7 +251,7 @@ void FileInfo::Refresh()
    POSIXAttrToPCL( m_attributes, s.st_mode );
 
    // emulated flags
-   m_attributes.SetFlag( FileAttribute::Hidden,   File::ExtractName( m_path ).BeginsWith( '.' ) );
+   m_attributes.SetFlag( FileAttribute::Hidden,   File::ExtractName( m_path ).StartsWith( '.' ) );
    m_attributes.SetFlag( FileAttribute::ReadOnly, m_attributes.IsFlagSet( FileAttribute::Write ) );
 
    m_size              = s.st_size;
@@ -283,7 +286,7 @@ String FileInfo::SymbolicLinkTarget() const
    int len = ::readlink( path8.c_str(), link8.c_str(), 4096-1 );
    if ( len < 0 )
       throw Error( "Unable to read symbolic link contents: " + m_path );
-   link8[len] = '\0';
+   link8.SetLength( len );
    return link8.UTF8ToUTF16();
 #endif
 }
@@ -317,5 +320,5 @@ void FileInfo::ClearData()
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/FileInfo.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/FileInfo.cpp - Released 2015/07/30 17:15:31 UTC

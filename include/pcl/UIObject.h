@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/UIObject.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/UIObject.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_UIObject_h
 #define __PCL_UIObject_h
@@ -100,26 +103,6 @@ class PCL_CLASS UIObject
 public:
 
    /*!
-    * Constructs a null %UIObject instance.
-    *
-    * A null %UIObject does not correspond to an existing object in the
-    * PixInsight core application.
-    */
-   UIObject() : handle( 0 ), alias( false )
-   {
-   }
-
-   /*!
-    * Copy constructor.
-    *
-    * Unless a derived class redefines it otherwise (which is rare), this
-    * constructor does not create a new object in the PixInsight core
-    * application. It simply creates a new %UIObject instance that references
-    * the same server-side object as the source instance \a x.
-    */
-   UIObject( const UIObject& x );
-
-   /*!
     * Destroys a %UIObject instance.
     *
     * After destruction of this %UIObject, the server-side object is also
@@ -136,7 +119,7 @@ public:
     */
    bool IsNull() const
    {
-      return handle == 0;
+      return handle == nullptr;
    }
 
    /*!
@@ -182,13 +165,13 @@ public:
     *
     * \code
     * ImageWindow w1( 256, 256 ); // ImageWindow is an UIObject derived class
-    * ImageWindow w2 = window; // w2 is an alias to w1.
+    * ImageWindow w2 = w1;    // w2 is an alias to w1.
     * bool b1 = w1.IsAlias(); // b1 is now false
     * bool b2 = w2.IsAlias(); // b2 is now true
     * w2.Show(); // OK, shows w1.
     * w1.HideMask();
     * bool b3 = w2.IsMaskVisible(); // b3 is now false
-    * w2.Close(); // OK, the window is destroyed and both w1 and w2 are now null objects.
+    * w2.Close(); // OK, the window is destroyed and both w1 and w2 are now invalid objects.
     * \endcode
     *
     * The only limit specific to aliased objects is the fact that an alias
@@ -299,20 +282,74 @@ public:
     */
    void SetObjectId( const String& id );
 
-   /*!
-    * \internal
-    */
-   static UIObject& ObjectByHandle( void* );
-
 protected:
 
    void* handle;
    bool  alias : 1;
 
    /*!
+    * Constructs a null %UIObject instance.
+    *
+    * A null %UIObject does not correspond to an existing object in the
+    * PixInsight core application.
+    */
+   UIObject() : handle( nullptr ), alias( false )
+   {
+   }
+
+   /*!
+    * Copy constructor.
+    *
+    * Unless a derived class redefines it otherwise (which is rare), this
+    * constructor does not create a new object in the PixInsight core
+    * application. It simply creates an alias %UIObject instance that
+    * references the same server-side object as the source instance \a x.
+    */
+   UIObject( const UIObject& x );
+
+   /*!
+    * Move constructor.
+    */
+   UIObject( UIObject&& x ) : handle( x.handle ), alias( x.alias )
+   {
+      x.handle = nullptr;
+      x.alias = false;
+   }
+
+   /*!
+    * Copy assignment operator. Returns a reference to this object.
+    */
+   UIObject& operator =( const UIObject& x )
+   {
+      Assign( x );
+      return *this;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   UIObject& operator =( UIObject&& x )
+   {
+      Transfer( x );
+      return *this;
+   }
+
+   /*!
     * \internal
     */
    UIObject( void* );
+
+   /*!
+    * \internal
+    */
+   UIObject( const void* );
+
+   /*!
+    * \internal
+    */
+   UIObject( std::nullptr_t ) : handle( nullptr ), alias( false )
+   {
+   }
 
    /*!
     * \internal
@@ -326,13 +363,44 @@ protected:
 
    /*!
     * \internal
+    * This virtual function is called to construct object duplicates. Derived
+    * classes must reimplement this function to return the handle of a newly
+    * constructed UI object.
     */
-   virtual void HandleDestroyed();
+   virtual void* CloneHandle() const
+   {
+      return nullptr;
+   }
 
    /*!
     * \internal
     */
-   virtual void* CloneHandle() const;
+   bool Assign( const UIObject& x )
+   {
+      if ( x.handle != handle )
+      {
+         SetHandle( x.handle );
+         return true;
+      }
+      return false;
+   }
+
+   /*!
+    * \internal
+    */
+   bool Transfer( UIObject& x )
+   {
+      if ( &x != this )
+      {
+         SetHandle( nullptr );
+         handle = x.handle;
+         alias = x.alias;
+         x.handle = nullptr;
+         x.alias = false;
+         return true;
+      }
+      return false;
+   }
 
    friend class UIObjectIndex;
    friend class UIEventDispatcher;
@@ -344,5 +412,5 @@ protected:
 
 #endif   // __PCL_UIObject_h
 
-// ****************************************************************************
-// EOF pcl/UIObject.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/UIObject.h - Released 2015/07/30 17:15:18 UTC

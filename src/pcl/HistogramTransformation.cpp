@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/HistogramTransformation.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/HistogramTransformation.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/Histogram.h>
 #include <pcl/HistogramTransformation.h>
@@ -65,24 +68,19 @@ bool HistogramTransformation::IsIdentityTransformationSet() const
    return true;
 }
 
-void HistogramTransformation::UpdateFlags() const
+void HistogramTransformation::UpdateFlags()
 {
-   m_flags.isClipping = m_clipLow != 0 || m_clipHigh != 1;
-   m_flags.isMTF = m_midtonesBalance != 0.5;
-   m_flags.isRange = m_expandLow != 0 || m_expandHigh != 1;
-
-   m_flags.isDelta = false;
-   if ( m_flags.isClipping )
+   m_flags.hasClipping = m_clipLow != 0 || m_clipHigh != 1;
+   m_flags.hasMTF = m_midtonesBalance != 0.5;
+   m_flags.hasRange = m_expandLow != 0 || m_expandHigh != 1;
+   m_flags.hasDelta = false;
+   if ( m_flags.hasClipping )
    {
       m_flags.d = m_clipHigh - m_clipLow;
-      m_flags.isDelta = 1 + m_flags.d != 1;
+      m_flags.hasDelta = 1 + m_flags.d != 1;
    }
-
-   if ( m_flags.isRange )
+   if ( m_flags.hasRange )
       m_flags.dr = m_expandHigh - m_expandLow;
-
-   for ( transformation_list::const_iterator i = m_transformChain.Begin(); i != m_transformChain.End(); ++i )
-      i->UpdateFlags();
 }
 
 // ----------------------------------------------------------------------------
@@ -92,8 +90,6 @@ void ApplyHistogramTransformation( T* a, size_type n, T x0, T x1, const Histogra
 {
    if ( a == 0 || n == 0 )
       return;
-
-   H.UpdateFlags();
 
    if ( x1 < x0 )
       pcl::Swap( x0, x1 );
@@ -138,8 +134,6 @@ void HistogramTransformation::Apply( float* a, size_type n, float x0, float x1 )
 
 void HistogramTransformation::Apply( Histogram& dstH, const Histogram& srcH ) const
 {
-   UpdateFlags();
-
    dstH.Allocate();
    dstH.m_histogram = 0;
    dstH.m_peakLevel = 0;
@@ -166,8 +160,6 @@ void HistogramTransformation::Make8BitLUT( uint8* lut ) const
    if ( lut == 0 )
       return;
 
-   UpdateFlags();
-
    for ( int i = 0; i <= uint8_max; ++i )
    {
       double f = double( i )/uint8_max;
@@ -185,8 +177,6 @@ void HistogramTransformation::Make16BitLUT( uint8* lut ) const
    if ( lut == 0 )
       return;
 
-   UpdateFlags();
-
    for ( int i = 0; i <= uint16_max; ++i )
    {
       double f = double( i )/uint16_max;
@@ -201,8 +191,6 @@ void HistogramTransformation::Make16BitLUT( uint16* lut ) const
 {
    if ( lut == 0 )
       return;
-
-   UpdateFlags();
 
    for ( int i = 0; i <= uint16_max; ++i )
    {
@@ -221,8 +209,6 @@ void HistogramTransformation::Make20BitLUT( uint8* lut ) const
    if ( lut == 0 )
       return;
 
-   UpdateFlags();
-
    for ( uint32 i = 0; i <= uint20_max; ++i )
    {
       double f = double( i )/uint20_max;
@@ -237,8 +223,6 @@ void HistogramTransformation::Make20BitLUT( uint16* lut ) const
 {
    if ( lut == 0 )
       return;
-
-   UpdateFlags();
 
    for ( uint32 i = 0; i <= uint20_max; ++i )
    {
@@ -257,7 +241,11 @@ class LUT2408Thread : public Thread
 public:
 
    LUT2408Thread( uint8* lut, const HistogramTransformation& transform, int start, int end ) :
-   Thread(), m_lut( lut ), m_T( transform ), m_start( start ), m_end( end )
+      Thread(),
+      m_lut( lut ),
+      m_T( transform ),
+      m_start( start ),
+      m_end( end )
    {
    }
 
@@ -294,13 +282,11 @@ void HistogramTransformation::Make24BitLUT( uint8* lut ) const
    if ( lut == 0 )
       return;
 
-   UpdateFlags();
-
    int numberOfThreads = m_parallel ? Min( int( m_maxProcessors ), Thread::NumberOfThreads( uint24_max+1, 256 ) ) : 1;
    int itemsPerThread = (uint24_max + 1)/numberOfThreads;
    bool useAffinity = m_parallel && Thread::IsRootThread();
 
-   PArray<LUT2408Thread> threads;
+   ReferenceArray<LUT2408Thread> threads;
    for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
       threads.Add( new LUT2408Thread( lut, *this,
                                       i*itemsPerThread, (j < numberOfThreads) ? j*itemsPerThread : uint24_max+1 ) );
@@ -313,6 +299,8 @@ void HistogramTransformation::Make24BitLUT( uint8* lut ) const
    }
    else
       threads[0].Run();
+
+   threads.Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -322,7 +310,11 @@ class LUT2416Thread : public Thread
 public:
 
    LUT2416Thread( uint16* lut, const HistogramTransformation& transform, int start, int end ) :
-   Thread(), m_lut( lut ), m_T( transform ), m_start( start ), m_end( end )
+      Thread(),
+      m_lut( lut ),
+      m_T( transform ),
+      m_start( start ),
+      m_end( end )
    {
    }
 
@@ -359,13 +351,11 @@ void HistogramTransformation::Make24BitLUT( uint16* lut ) const
    if ( lut == 0 )
       return;
 
-   UpdateFlags();
-
    int numberOfThreads = m_parallel ? Min( int( m_maxProcessors ), Thread::NumberOfThreads( uint24_max+1, 256 ) ) : 1;
    int itemsPerThread = (uint24_max + 1)/numberOfThreads;
    bool useAffinity = m_parallel && Thread::IsRootThread();
 
-   PArray<LUT2416Thread> threads;
+   ReferenceArray<LUT2416Thread> threads;
    for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
       threads.Add( new LUT2416Thread( lut, *this,
                                       i*itemsPerThread, (j < numberOfThreads) ? j*itemsPerThread : uint24_max+1 ) );
@@ -378,6 +368,8 @@ void HistogramTransformation::Make24BitLUT( uint16* lut ) const
    }
    else
       threads[0].Run();
+
+   threads.Destroy();
 }
 
 // ----------------------------------------------------------------------------
@@ -401,15 +393,13 @@ public:
       int numberOfThreads = H.IsParallelProcessingEnabled() ? Min( H.MaxProcessors(), pcl::Thread::NumberOfThreads( h, 1 ) ) : 1;
       int rowsPerThread = h/numberOfThreads;
 
-      H.UpdateFlags();
-
       size_type N = image.NumberOfSelectedSamples();
       if ( image.Status().IsInitializationEnabled() )
          image.Status().Initialize( "Histogram transformation", N );
 
       ThreadData<P> data( image, H, N );
 
-      PArray<Thread<P> > threads;
+      ReferenceArray<Thread<P> > threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new Thread<P>( data, i*rowsPerThread, (j < numberOfThreads) ? j*rowsPerThread : h ) );
 
@@ -444,8 +434,9 @@ private:
    struct ThreadData : public AbstractImage::ThreadData
    {
       ThreadData( GenericImage<P>& a_image, const HistogramTransformation& a_transformation, size_type a_count ) :
-      AbstractImage::ThreadData( a_image, a_count ),
-      image( a_image ), transformation( a_transformation )
+         AbstractImage::ThreadData( a_image, a_count ),
+         image( a_image ),
+         transformation( a_transformation )
       {
       }
 
@@ -459,8 +450,10 @@ private:
    public:
 
       Thread( ThreadData<P>& d, int startRow, int endRow ) :
-      pcl::Thread(),
-      m_data( d ), m_firstRow( startRow ), m_endRow( endRow ) // m_firstRow, m_endRow are relative to current image selection
+         pcl::Thread(),
+         m_data( d ),
+         m_firstRow( startRow ), // m_firstRow, m_endRow are relative to the current image selection
+         m_endRow( endRow )
       {
       }
 
@@ -527,5 +520,5 @@ void HistogramTransformation::Apply( pcl::UInt32Image& image ) const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/HistogramTransformation.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/HistogramTransformation.cpp - Released 2015/07/30 17:15:31 UTC

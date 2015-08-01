@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Geometry Process Module Version 01.01.00.0247
-// ****************************************************************************
-// ResampleInterface.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Geometry Process Module Version 01.01.00.0266
+// ----------------------------------------------------------------------------
+// ResampleInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "ResampleInterface.h"
 #include "ResampleProcess.h"
@@ -598,6 +602,8 @@ ResampleInterface::GUIData::GUIData( ResampleInterface& w )
    int labelWidth2 = fnt.Width( String( "Clamping threshold:" ) + 'M' );
    int editWidth1 = fnt.Width( String( '0', 12 ) );
    int comboBoxWidth1 = fnt.Width( String( "Force area in pixels, keep aspect ratio" ) + String( 'M', 5 ) );
+   int ui4 = w.LogicalPixelsToPhysical( 4 );
+   int ui6 = w.LogicalPixelsToPhysical( 6 );
 
    // -------------------------------------------------------------------------
 
@@ -624,7 +630,7 @@ ResampleInterface::GUIData::GUIData( ResampleInterface& w )
    TargetInches_Label.SetTextAlignment( TextAlign::Center|TextAlign::VertCenter );
 
    DimensionsRow1_Sizer.SetSpacing( 6 );
-   DimensionsRow1_Sizer.AddSpacing( labelWidth1 + 6 );
+   DimensionsRow1_Sizer.AddUnscaledSpacing( labelWidth1 + ui6 );
    DimensionsRow1_Sizer.Add( SourcePixels_Label );
    DimensionsRow1_Sizer.Add( TargetPixels_Label );
    DimensionsRow1_Sizer.Add( TargetPercent_Label );
@@ -735,13 +741,13 @@ ResampleInterface::GUIData::GUIData( ResampleInterface& w )
    PreserveAspectRatio_CheckBox.Check(); // default = on
    PreserveAspectRatio_CheckBox.OnClick( (Button::click_event_handler)&ResampleInterface::__PreserveAspectRatio_ButtonClick, w );
 
-   DimensionsRow4_Sizer.AddSpacing( labelWidth1 + 6 );
+   DimensionsRow4_Sizer.AddUnscaledSpacing( labelWidth1 + ui6 );
    DimensionsRow4_Sizer.Add( PreserveAspectRatio_CheckBox );
    DimensionsRow4_Sizer.AddStretch();
 
    SizeInfo_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
 
-   DimensionsRow5_Sizer.AddSpacing( labelWidth1 + 6 );
+   DimensionsRow5_Sizer.AddUnscaledSpacing( labelWidth1 + ui6 );
    DimensionsRow5_Sizer.Add( SizeInfo_Label, 100 );
 
    Dimensions_Sizer.SetSpacing( 4 );
@@ -784,7 +790,7 @@ ResampleInterface::GUIData::GUIData( ResampleInterface& w )
    ClampingThreshold_NumericControl.label.SetText( "Clamping threshold:" );
    ClampingThreshold_NumericControl.label.SetFixedWidth( labelWidth2 );
    ClampingThreshold_NumericControl.slider.SetRange( 0, 100 );
-   ClampingThreshold_NumericControl.slider.SetMinWidth( 250 );
+   ClampingThreshold_NumericControl.slider.SetScaledMinWidth( 250 );
    ClampingThreshold_NumericControl.SetReal();
    ClampingThreshold_NumericControl.SetRange( TheClampingThresholdResampleParameter->MinimumValue(),
                                               TheClampingThresholdResampleParameter->MaximumValue() );
@@ -795,7 +801,7 @@ ResampleInterface::GUIData::GUIData( ResampleInterface& w )
    Smoothness_NumericControl.label.SetText( "Smoothness:" );
    Smoothness_NumericControl.label.SetFixedWidth( labelWidth2 );
    Smoothness_NumericControl.slider.SetRange( 100, 500 );
-   Smoothness_NumericControl.slider.SetMinWidth( 250 );
+   Smoothness_NumericControl.slider.SetScaledMinWidth( 250 );
    Smoothness_NumericControl.SetReal();
    Smoothness_NumericControl.SetRange( TheSmoothnessResampleParameter->MinimumValue(),
                                        TheSmoothnessResampleParameter->MaximumValue() );
@@ -844,7 +850,7 @@ ResampleInterface::GUIData::GUIData( ResampleInterface& w )
    ForceResolution_CheckBox.OnClick( (Button::click_event_handler)&ResampleInterface::__ForceResolution_ButtonClick, w );
 
    ResolutionRow2_Sizer.SetSpacing( 8 );
-   ResolutionRow2_Sizer.AddSpacing( labelWidth2 + 4 );
+   ResolutionRow2_Sizer.AddUnscaledSpacing( labelWidth2 + ui4 );
    ResolutionRow2_Sizer.Add( CentimeterUnits_RadioButton );
    ResolutionRow2_Sizer.Add( InchUnits_RadioButton );
    ResolutionRow2_Sizer.Add( ForceResolution_CheckBox );
@@ -926,5 +932,5 @@ ResampleInterface::GUIData::GUIData( ResampleInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF ResampleInterface.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF ResampleInterface.cpp - Released 2015/07/31 11:49:48 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/QuadTree.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/QuadTree.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_QuadTree_h
 #define __PCL_QuadTree_h
@@ -120,24 +123,30 @@ class QuadTree
 public:
 
    /*!
+    * Represents a two-dimensional point stored in this quadtree.
+    */
+   typedef T                           point;
+
+   /*!
     * Represents a point component.
     */
-   typedef typename T::component component;
+   typedef typename point::component   component;
 
    /*!
     * A list of points. Used for tree build and search operations.
     */
-   typedef Array<T>  point_list;
+   typedef Array<point>                point_list;
 
    /*!
     * A rectangular region. Used for rectangular range search operations.
     */
-   typedef DRect     rectangle;
+   typedef DRect                       rectangle;
 
    /*!
     * Constructs an empty quadtree.
     */
-   QuadTree() : m_root( 0 ), m_bucketCapacity( 0 ), m_length( 0 )
+   QuadTree() :
+      m_root( nullptr ), m_bucketCapacity( 0 ), m_length( 0 )
    {
    }
 
@@ -154,9 +163,33 @@ public:
     * empty quadtree.
     */
    QuadTree( const point_list& points, int bucketCapacity = 40 ) :
-   m_root( 0 ), m_bucketCapacity( 0 ), m_length( 0 )
+      m_root( nullptr ), m_bucketCapacity( 0 ), m_length( 0 )
    {
       Build( points, bucketCapacity );
+   }
+
+   /*!
+    * Move constructor.
+    */
+   QuadTree( QuadTree&& x ) :
+      m_root( x.m_root ), m_bucketCapacity( x.m_bucketCapacity ), m_length( x.m_length )
+   {
+      x.m_root = nullptr;
+      x.m_length = 0;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   QuadTree& operator =( QuadTree&& x )
+   {
+      DestroyTree( m_root );
+      m_root = x.m_root;
+      m_bucketCapacity = x.m_bucketCapacity;
+      m_length = x.m_length;
+      x.m_root = nullptr;
+      x.m_length = 0;
+      return *this;
    }
 
    /*!
@@ -173,7 +206,7 @@ public:
    void Clear()
    {
       DestroyTree( m_root );
-      m_root = 0;
+      m_root = nullptr;
       m_length = 0;
    }
 
@@ -245,7 +278,7 @@ public:
     *
     * The callback function prototype should be:
     *
-    * \code void callback( const T& point, void* data ) \endcode
+    * \code void callback( const point& pt, void* data ) \endcode
     *
     * The callback function will be called once for each point found in the
     * tree within the specified search range.
@@ -259,17 +292,17 @@ public:
    /*!
     * Inserts a new point in this quadtree.
     */
-   void Insert( const T& point )
+   void Insert( const point& pt )
    {
-      InsertTree( point, m_root );
+      InsertTree( pt, m_root );
    }
 
    /*!
-    * Deletes all points in this quadtree equal to the specified \a point.
+    * Deletes all points in this quadtree equal to the specified point.
     */
-   void Delete( const T& point )
+   void Delete( const point& pt )
    {
-      DeleteTree( point, m_root );
+      DeleteTree( pt, m_root );
    }
 
    /*!
@@ -304,7 +337,17 @@ public:
     */
    bool IsEmpty()
    {
-      return m_root == 0;
+      return m_root == nullptr;
+   }
+
+   /*!
+    * Exchanges two %QuadTree objects \a x1 and \a x2.
+    */
+   friend void Swap( QuadTree& x1, QuadTree& x2 )
+   {
+      pcl::Swap( x1.m_root,           x2.m_root );
+      pcl::Swap( x1.m_bucketCapacity, x2.m_bucketCapacity );
+      pcl::Swap( x1.m_length,         x2.m_length );
    }
 
 private:
@@ -317,13 +360,14 @@ private:
       Node*     sw;   // south-west
       Node*     se;   // south-east
 
-      Node( const rectangle& r = rectangle( 0.0 ) ) : rect( r ), nw( 0 ), ne( 0 ), sw( 0 ), se( 0 )
+      Node( const rectangle& r = rectangle( 0.0 ) ) :
+         rect( r ), nw( nullptr ), ne( nullptr ), sw( nullptr ), se( nullptr )
       {
       }
 
       bool IsLeaf() const
       {
-         return nw == 0 && ne == 0 && sw == 0 && se == 0;
+         return nw == nullptr && ne == nullptr && sw == nullptr && se == nullptr;
       }
 
       bool Intersects( const rectangle& r ) const
@@ -332,7 +376,7 @@ private:
                 rect.y1 >= r.y0 && rect.y0 <= r.y1;
       }
 
-      bool Includes( const T& p ) const
+      bool Includes( const point& p ) const
       {
          component x = p[0];
          component y = p[1];
@@ -370,7 +414,7 @@ private:
          return i;
       }
 
-      static bool Lexicographically( const T& a, const T& b )
+      static bool Lexicographically( const point& a, const point& b )
       {
          component ax = a[0], ay = a[1];
          component bx = b[0], by = b[1];
@@ -385,7 +429,7 @@ private:
    Node* BuildTree( const rectangle& rect, const point_list& points )
    {
       if ( points.IsEmpty() )
-         return 0;
+         return nullptr;
 
       if ( points.Length() <= size_type( m_bucketCapacity ) )
       {
@@ -427,7 +471,7 @@ private:
       if ( node->IsLeaf() )
       {
          delete node;
-         return 0;
+         return nullptr;
       }
 
       return node;
@@ -435,14 +479,14 @@ private:
 
    void SearchTree( point_list& found, const rectangle& rect, const Node* node ) const
    {
-      if ( node != 0 )
+      if ( node != nullptr )
          if ( node->Intersects( rect ) )
             if ( node->IsLeaf() )
             {
                const LeafNode* leaf = static_cast<const LeafNode*>( node );
                for ( int i = leaf->Find( rect.x0 ), j = leaf->Find( rect.x1 ); i < j; ++i )
                {
-                  const T& p = leaf->points[i];
+                  const point& p = leaf->points[i];
                   component y = p[1];
                   if ( y >= rect.y0 && y <= rect.y1 )
                      found.Add( p );
@@ -460,14 +504,14 @@ private:
    template <class F>
    void SearchTree( const rectangle& rect, F callback, void* data, const Node* node ) const
    {
-      if ( node != 0 )
+      if ( node != nullptr )
          if ( node->Intersects( rect ) )
             if ( node->IsLeaf() )
             {
                const LeafNode* leaf = static_cast<const LeafNode*>( node );
                for ( int i = leaf->Find( rect.x0 ), j = leaf->Find( rect.x1 ); i < j; ++i )
                {
-                  const T& p = leaf->points[i];
+                  const point& p = leaf->points[i];
                   component y = p[1];
                   if ( y >= rect.y0 && y <= rect.y1 )
                      callback( p, data );
@@ -482,19 +526,22 @@ private:
             }
    }
 
-   void InsertTree( const T& point, Node*& node )
+   void InsertTree( const point& pt, Node*& node )
    {
-      if ( node != 0 )
+      if ( node != nullptr )
       {
-         if ( point.x < node->rect.x0 )
-            node->rect.x0 = point.x;
-         else if ( point.x > node->rect.x1 )
-            node->rect.x1 = point.x;
+         component x = pt[0];
+         component y = pt[1];
 
-         if ( point.y < node->rect.y0 )
-            node->rect.y0 = point.y;
-         else if ( point.y > node->rect.y1 )
-            node->rect.y1 = point.y;
+         if ( x < node->rect.x0 )
+            node->rect.x0 = x;
+         else if ( x > node->rect.x1 )
+            node->rect.x1 = x;
+
+         if ( y < node->rect.y0 )
+            node->rect.y0 = y;
+         else if ( y > node->rect.y1 )
+            node->rect.y1 = y;
 
          if ( node->IsLeaf() )
          {
@@ -502,8 +549,8 @@ private:
             if ( leaf->Length() < m_bucketCapacity )
             {
                typename point_list::iterator i =
-                  pcl::InsertionPoint( leaf->points.Begin(), leaf->points.End(), point, LeafNode::Lexicographically );
-               leaf->points.Insert( i, point );
+                  pcl::InsertionPoint( leaf->points.Begin(), leaf->points.End(), pt, LeafNode::Lexicographically );
+               leaf->points.Insert( i, pt );
             }
             else
             {
@@ -531,21 +578,19 @@ private:
                   }
                }
 
-               component x = point[0];
-               component y = point[1];
                if ( x <= x2 )
                {
                   if ( y <= y2 )
-                     nw.Add( point );
+                     nw.Add( pt );
                   else
-                     sw.Add( point );
+                     sw.Add( pt );
                }
                else
                {
                   if ( y <= y2 )
-                     ne.Add( point );
+                     ne.Add( pt );
                   else
-                     se.Add( point );
+                     se.Add( pt );
                }
 
                delete leaf;
@@ -568,19 +613,19 @@ private:
          {
             double x2 = (node->rect.x0 + node->rect.x1)/2;
             double y2 = (node->rect.y0 + node->rect.y1)/2;
-            if ( point[0] <= x2 )
+            if ( pt[0] <= x2 )
             {
-               if ( point[1] <= y2 )
-                  InsertTree( point, node->nw );
+               if ( pt[1] <= y2 )
+                  InsertTree( pt, node->nw );
                else
-                  InsertTree( point, node->sw );
+                  InsertTree( pt, node->sw );
             }
             else
             {
-               if ( point[1] <= y2 )
-                  InsertTree( point, node->ne );
+               if ( pt[1] <= y2 )
+                  InsertTree( pt, node->ne );
                else
-                  InsertTree( point, node->se );
+                  InsertTree( pt, node->se );
             }
          }
       }
@@ -588,7 +633,7 @@ private:
 
    void DeleteTree( const rectangle& rect, Node*& node )
    {
-      if ( node != 0 )
+      if ( node != nullptr )
          if ( node->Intersects( rect ) )
          {
             if ( node->IsLeaf() )
@@ -607,7 +652,7 @@ private:
                if ( leaf->points.IsEmpty() )
                {
                   delete leaf;
-                  node = 0;
+                  node = nullptr;
                }
             }
             else
@@ -620,22 +665,22 @@ private:
                if ( node->IsLeaf() )
                {
                   delete node;
-                  node = 0;
+                  node = nullptr;
                }
             }
          }
    }
 
-   void DeleteTree( const T& point, Node*& node )
+   void DeleteTree( const point& pt, Node*& node )
    {
-      if ( node != 0 )
-         if ( node->Includes( point ) )
+      if ( node != nullptr )
+         if ( node->Includes( pt ) )
          {
             if ( node->IsLeaf() )
             {
                LeafNode* leaf = static_cast<LeafNode*>( node );
-               component x = point[0];
-               component y = point[1];
+               component x = pt[0];
+               component y = pt[1];
                for ( int i = leaf->Find( x ); i < leaf->Length() && leaf->points[i][0] == x; ++i )
                   if ( leaf->points[i][1] == y )
                   {
@@ -649,20 +694,20 @@ private:
                if ( leaf->points.IsEmpty() )
                {
                   delete leaf;
-                  node = 0;
+                  node = nullptr;
                }
             }
             else
             {
-               DeleteTree( point, node->nw );
-               DeleteTree( point, node->ne );
-               DeleteTree( point, node->sw );
-               DeleteTree( point, node->se );
+               DeleteTree( pt, node->nw );
+               DeleteTree( pt, node->ne );
+               DeleteTree( pt, node->sw );
+               DeleteTree( pt, node->se );
 
                if ( node->IsLeaf() )
                {
                   delete node;
-                  node = 0;
+                  node = nullptr;
                }
             }
          }
@@ -670,7 +715,7 @@ private:
 
    void DestroyTree( Node* node )
    {
-      if ( node != 0 )
+      if ( node != nullptr )
          if ( node->IsLeaf() )
             delete static_cast<LeafNode*>( node );
          else
@@ -690,5 +735,5 @@ private:
 
 #endif   // __PCL_QuadTree_h
 
-// ****************************************************************************
-// EOF pcl/QuadTree.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/QuadTree.h - Released 2015/07/30 17:15:18 UTC

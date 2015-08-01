@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Control.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Control.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Control_h
 #define __PCL_Control_h
@@ -91,6 +94,10 @@
 
 #ifndef __PCL_Font_h
 #include <pcl/Font.h>
+#endif
+
+#ifndef __PCL_UIScaling_h
+#include <pcl/UIScaling.h>
 #endif
 
 #endif   // !__PCL_BUILDING_PIXINSIGHT_APPLICATION
@@ -152,64 +159,19 @@ public:
     * specified, the control will be an independent object not associated (in
     * the hierarchical sense) to any graphical interface element.
     *
-    * The optional \a flags argument is currently not used; it is reserved for
-    * future extensions and must be zero (its default value).
+    * The second \c uint32 argument is not used; it is reserved for future
+    * extensions, and must be zero in current PCL versions.
     */
-   Control( Control& parent = Null(), uint32 flags = 0 );
-
-   /*!
-    * Contructs a %Control object as an alias of an existing \a control object.
-    *
-    * \note    It is very important to point out that this constructor <em>does
-    * not create a new control</em> in the PixInsight core application. It only
-    * creates an \e alias object for an existing control <em>in your
-    * module</em>. The alias and aliased objects are interchangeable; their
-    * behaviors are identical since they refer to a unique object living in the
-    * PixInsight core application.
-    *
-    * \note    Specifying event handlers for an alias %Control object is
-    * incorrect and would have (if allowed) no effect. This is because the
-    * PixInsight core application actually knows nothing about an alias object
-    * constructed in a module (except the fact that the aliased object is being
-    * referenced more than once). Note that this limitation is in effect even
-    * if the aliased object is destroyed and the alias object still lives.
-    * Events are always dispatched to original, non-alias UI objects. To
-    * prevent hard-to-debug errors due to control aliasing, an Error exception
-    * is thrown if an attempt to specify an event handler from an aliased
-    * control is detected. For example:
-    *
-    * \code
-    * Control c1;
-    * Control c2 = c1; // c2 is an alias for c1
-    * c1.OnPaint( myPaintRoutine, myPaintReceiver ); // OK
-    * c2.Move( 100, 100 ); // OK: Moves c1 to {100,100} coordinates
-    * c2.OnShow( handler, receiver ); // Error: aliased controls cannot set event handlers
-    * \endcode
-    */
-   Control( const Control& control );
+   Control( Control& parent = Null(), uint32 = 0 );
 
    /*!
     * Destroys a %Control object.
     */
    virtual ~Control()
    {
+      if ( m_handlers != nullptr )
+         delete m_handlers, m_handlers = nullptr;
    }
-
-   /*!
-    * Assignment operator. Detaches this object from its previously referenced
-    * server-side control object and makes it an alias of the specified
-    * \a control. Returns a reference to this object.
-    *
-    * This object is detached from the previously referenced control, and if it
-    * becomes unreferenced, the server-side control object is destroyed. Then
-    * this object is attached as an alias to the specified \a control. See the
-    * documentation for the Control::Control( const Control& ) copy constructor
-    * for more information on aliased controls.
-    *
-    * This operator resets all event handlers in this object to zero function
-    * pointers. This is because alias controls cannot specify event handlers.
-    */
-   Control& operator =( const Control& control );
 
    /*!
     * Ensures that the server-side object managed by this instance is uniquely
@@ -220,7 +182,6 @@ public:
     */
    virtual void SetUnique()
    {
-      // Controls are unique objects by definition
    }
 
    /*!
@@ -512,6 +473,115 @@ public:
       SetMaxHeight( int_max );
    }
 
+   /*!
+    * Returns the minimum width in pixels of the client rectangle.
+    */
+   int ScaledMinWidth() const
+   {
+      int w, dum; GetMinSize( w, dum ); return PhysicalPixelsToLogical( w );
+   }
+
+   /*!
+    * Returns the minimum height in pixels of the client rectangle.
+    */
+   int ScaledMinHeight() const
+   {
+      int dum, h; GetMinSize( dum, h ); return PhysicalPixelsToLogical( h );
+   }
+
+   /*! #
+    */
+   void GetScaledMinSize( int& w, int& h ) const
+   {
+      GetMinSize( w, h ); w = PhysicalPixelsToLogical( w ); h = PhysicalPixelsToLogical( h );
+   }
+
+   /*! #
+    */
+   void SetScaledMinWidth( int w )
+   {
+      SetMinSize( LogicalPixelsToPhysical( w ), -1 );
+   }
+
+   /*! #
+    */
+   void SetScaledMinHeight( int h )
+   {
+      SetMinSize( -1, LogicalPixelsToPhysical( h ) );
+   }
+
+   /*! #
+    */
+   void SetScaledMinSize( int w, int h )
+   {
+      SetMinSize( LogicalPixelsToPhysical( w ), LogicalPixelsToPhysical( h ) );
+   }
+
+   /*!
+    * Returns the maximum width in pixels of the client rectangle.
+    */
+   int ScaledMaxWidth() const
+   {
+      int w, dum; GetMaxSize( w, dum ); return PhysicalPixelsToLogical( w );
+   }
+
+   /*!
+    * Returns the maximum height in pixels of the client rectangle.
+    */
+   int ScaledMaxHeight() const
+   {
+      int dum, h; GetMaxSize( dum, h ); return PhysicalPixelsToLogical( h );
+   }
+
+   /*! #
+    */
+   void GetScaledMaxSize( int& w, int& h ) const
+   {
+      GetMaxSize( w, h ); w = PhysicalPixelsToLogical( w ); h = PhysicalPixelsToLogical( h );
+   }
+
+   /*! #
+    */
+   void SetScaledMaxWidth( int w )
+   {
+      SetMaxSize( LogicalPixelsToPhysical( w ), -1 );
+   }
+
+   /*! #
+    */
+   void SetScaledMaxHeight( int h )
+   {
+      SetMaxSize( -1, LogicalPixelsToPhysical( h ) );
+   }
+
+   /*! #
+    */
+   void SetScaledMaxSize( int w, int h )
+   {
+      SetMaxSize( LogicalPixelsToPhysical( w ), LogicalPixelsToPhysical( h ) );
+   }
+
+   /*! #
+    */
+   void SetScaledFixedWidth( int w )
+   {
+      SetFixedSize( LogicalPixelsToPhysical( w ), -1 );
+   }
+
+   /*! #
+    */
+   void SetScaledFixedHeight( int h )
+   {
+      SetFixedSize( -1, LogicalPixelsToPhysical( h ) );
+   }
+
+   /*! #
+    */
+   void SetScaledFixedSize( int w, int h )
+   {
+      SetFixedSize( LogicalPixelsToPhysical( w ), LogicalPixelsToPhysical( h ) );
+   }
+
    /*! #
     */
    bool IsHorizontalExpansionEnabled() const;
@@ -691,8 +761,8 @@ public:
    bool IsAncestorOf( const Control& ) const;
 
    /*!
-      Returns a reference to the parent control, or Control::Null() if this
-      control has no parent.
+    * Returns a reference to the parent control, or Control::Null() if this
+    * control has no parent.
     */
    Control& Parent() const;
 
@@ -1167,6 +1237,178 @@ public:
     */
    static String ToolTipText();
 
+   //
+
+   /*!
+    * Returns the ratio between physical screen pixels and device-independent
+    * logical units for the parent top-level window of this %Control object.
+    * This ratio is used as a scaling factor by the LogicalPixelsToPhysical() and PhysicalPixelsToLogical()
+    * functions, which are used internally by <em>automatic size scaling</em>
+    * member functions such as SetScaledFixedSize(), ScaledMinWidth(), etc.
+    *
+    * The returned value is greater than or equal to one. Typical pixel ratios
+    * are 2.0 for high-dpi displays such as Retina monitors, or 1.0 for normal
+    * 96 dpi monitors.
+    *
+    * \sa LogicalPixelsToPhysical(), PhysicalPixelsToLogical()
+    */
+   double DisplayPixelRatio() const;
+
+   /*!
+    * Returns the specified bitmap \a resource path adapted to be represented
+    * with the physical display pixel ratio of this control. Calling this
+    * function is equivalent to:
+    *
+    * \code pcl::UIScaledResource( DisplayPixelRatio(), resource ); \endcode
+    *
+    * Example:
+    *
+    * \code
+    * Dialog dlg;
+    * Bitmap bmp( dlg.ScaledResource( ":/browser/enabled.png" ) );
+    * \endcode
+    *
+    * \ingroup ui_scaling_functions
+    */
+   template <class R>
+   String ScaledResource( R resource ) const
+   {
+      return UIScaledResource( DisplayPixelRatio(), resource );
+   }
+
+   /*!
+    * Returns a CSS source code fragment transformed with scaled dimensions in
+    * pixels and scaled resource file paths, and optionally point sizes
+    * converted to scaled pixel sizes.
+    *
+    * \param scalingFactor    The display scaling factor to apply.
+    *
+    * \param cssCode          A string containing the input CSS source code.
+    *                         The function will return a transformed version of
+    *                         this string.
+    *
+    * \param fontDPI          If greater than zero, this is the font
+    *                         resolution, in dots per inch (dpi), for
+    *                         transformation of point sizes to scaled pixel
+    *                         sizes. If this parameter is zero (the default
+    *                         value), this routine will use the font resolution
+    *                         currently selected in core user preferences
+    *                         (which is the value of the
+    *                         "Application/FontResolution" global integer
+    *                         variable - see PixInsightSettings). If this
+    *                         parameter is a negative integer, no
+    *                         point-to-pixel conversions will be applied.
+    *
+    * Calling this function is equivalent to:
+    *
+    * \code pcl::UIScaledStyleSheet( DisplayPixelRatio(), cssCode, fontDPI ); \endcode
+    *
+    * Example:
+    *
+    * \code
+    * Data_TreeBox.SetStyleSheet( ScaledStyleSheet(
+    *       "QTreeView {"
+    *       "   font-family: DejaVu Sans Mono, Monospace;"
+    *       "   font-size: 10pt;"
+    *       "}"
+    *       "QTreeView::item {"
+    *       "   padding: 4px 8px 4px 8px;"
+    *       "}"
+    *       "QHeaderView::section {"
+    *       "   padding: 2px 8px 2px 8px;"
+    *       "}"
+    *    ) );
+    * \endcode
+    *
+    * If the display pixel ratio of \c Data_TreeBox were 1.5 (for example, on a
+    * 4K monitor), and the current font resolution were 100 dpi, the code above
+    * would be equivalent to:
+    *
+    * \code
+    * Data_TreeBox.SetStyleSheet(
+    *       "QTreeView {"
+    *       "   font-family: DejaVu Sans Mono, Monospace;"
+    *       "   font-size: 21px;"
+    *       "}"
+    *       "QTreeView::item {"
+    *       "   padding: 6px 12px 6px 12px;"
+    *       "}"
+    *       "QHeaderView::section {"
+    *       "   padding: 3px 12px 3px 12px;"
+    *       "}"
+    *    );
+    * \endcode
+    *
+    * \ingroup ui_scaling_functions
+    */
+   template <class S>
+   String ScaledStyleSheet( S cssCode, int fontDPI = 0 ) const
+   {
+      return UIScaledStyleSheet( DisplayPixelRatio(), cssCode, fontDPI );
+   }
+
+   /*!
+    * Returns a cursor hot spot point with coordinates scaled according to the
+    * physical display pixel ratio of this control.
+    *
+    * Standard cursor images in PixInsight are scaled in a special way to
+    * guarantee that cursors always have a unique central pixel, irrespective
+    * of the applied display pixel ratios. This is functionally equivalent to
+    * ensure that cursors always have odd dimensions.
+    *
+    * According to this rule, a standard cursor is a square image with the
+    * following dimensions in pixels:
+    *
+    * 21, 33, 43, 53, 63, 75, 85
+    *
+    * respectively for the standard scaling ratios 1.0, 1.5, 2.0, 2.5, 3.0, 3.5
+    * and 4.0. For dynamic cursors this function must be used to calculate
+    * scaled cursor hot spot coordinates, instead of simply scaling by
+    * multiplication with DisplayPixelRatio() and rounding. This also
+    * guarantees source code compatibility with future versions of PixInsight,
+    * where standard cursor dimensions might change.
+    */
+   Point ScaledCursorHotSpot( int xHot, int yHot ) const
+   {
+      double hotScale = (RoundInt( DisplayPixelRatio()*21 )|1)/21.0;
+      return Point( RoundInt( hotScale*xHot ), RoundInt( hotScale*yHot ) );
+   }
+
+   /*!
+    * Returns a cursor hot spot point with coordinates scaled according to the
+    * physical display pixel ratio of this control.
+    *
+    * This function is equivalent to:
+    *
+    * \code ScaledCursorHotSpot( hotSpot.x, hotSpot.y ); \endcode
+    */
+   Point ScaledCursorHotSpot( const Point& hotSpot ) const
+   {
+      return ScaledCursorHotSpot( hotSpot.x, hotSpot.y );
+   }
+
+   /*!
+    * Returns the specified \a size in logical device-independent pixel units
+    * converted to physical device pixels.
+    *
+    * \sa DisplayPixelRatio(), PhysicalPixelsToLogical()
+    */
+   int LogicalPixelsToPhysical( int size ) const
+   {
+      return RoundInt( DisplayPixelRatio()*size );
+   }
+
+   /*!
+    * Returns the specified \a size in physical device pixels converted to
+    * logical device-independent pixel units.
+    *
+    * \sa DisplayPixelRatio(), LogicalPixelsToPhysical()
+    */
+   int PhysicalPixelsToLogical( int size ) const
+   {
+      return RoundInt( size/DisplayPixelRatio() );
+   }
+
    // -------------------------------------------------------------------------
    // Event handlers
    //
@@ -1312,37 +1554,69 @@ public:
 
    // -------------------------------------------------------------------------
 
+private:
+
+   struct EventHandlers
+   {
+      event_handler              onDestroy          = nullptr;
+      event_handler              onShow             = nullptr;
+      event_handler              onHide             = nullptr;
+      close_event_handler        onClose            = nullptr;
+      event_handler              onGetFocus         = nullptr;
+      event_handler              onLoseFocus        = nullptr;
+      event_handler              onEnter            = nullptr;
+      event_handler              onLeave            = nullptr;
+      move_event_handler         onMove             = nullptr;
+      resize_event_handler       onResize           = nullptr;
+      paint_event_handler        onPaint            = nullptr;
+      keyboard_event_handler     onKeyPress         = nullptr;
+      keyboard_event_handler     onKeyRelease       = nullptr;
+      mouse_event_handler        onMouseMove        = nullptr;
+      mouse_event_handler        onMouseDoubleClick = nullptr;
+      mouse_button_event_handler onMousePress       = nullptr;
+      mouse_button_event_handler onMouseRelease     = nullptr;
+      mouse_wheel_event_handler  onMouseWheel       = nullptr;
+      child_event_handler        onChildCreate      = nullptr;
+      child_event_handler        onChildDestroy     = nullptr;
+
+      EventHandlers() = default;
+      EventHandlers( const EventHandlers& ) = default;
+      EventHandlers& operator =( const EventHandlers& ) = default;
+   };
+
+   EventHandlers* m_handlers = nullptr;
+
+   /*
+    * Copy and move semantics are disabled for UI controls because of
+    * client/server parent-children and event handling relations.
+    */
+   Control( const Control& ) = delete;
+   Control& operator =( const Control& ) = delete;
+   Control( Control&& ) = delete;
+   Control& operator =( Control&& ) = delete;
+
 protected:
 
-   event_handler                 onDestroy;
-   event_handler                 onShow;
-   event_handler                 onHide;
-   close_event_handler           onClose;
-   event_handler                 onGetFocus;
-   event_handler                 onLoseFocus;
-   event_handler                 onEnter;
-   event_handler                 onLeave;
-   move_event_handler            onMove;
-   resize_event_handler          onResize;
-   paint_event_handler           onPaint;
-   keyboard_event_handler        onKeyPress;
-   keyboard_event_handler        onKeyRelease;
-   mouse_event_handler           onMouseMove;
-   mouse_event_handler           onMouseDoubleClick;
-   mouse_button_event_handler    onMousePress;
-   mouse_button_event_handler    onMouseRelease;
-   mouse_wheel_event_handler     onMouseWheel;
-   child_event_handler           onChildCreate;
-   child_event_handler           onChildDestroy;
+   /*!
+    * \internal
+    * Private constructor from a low-level opaque server handle.
+    */
+   Control( void* h ) : UIObject( h ), m_handlers( nullptr )
+   {
+   }
 
-   Control( void* );
-
+   /*!
+    * \internal
+    * Reimplemented from UIObject. Throws an Error exception because Control
+    * objects are unique, and hence cannot be duplicated.
+    */
    virtual void* CloneHandle() const;
 
    friend class BitmapBox;
    friend class CheckBox;
    friend class CodeEditor;
    friend class ComboBox;
+   friend class ControlEventDispatcher;
    friend class Dialog;
    friend class Edit;
    friend class Frame;
@@ -1361,14 +1635,12 @@ protected:
    friend class ToolButton;
    friend class TreeBox;
    friend class ViewList;
-
-   friend class ControlEventDispatcher;
 };
 
 // ----------------------------------------------------------------------------
 
 template <class C> inline
-int CanonicalControlHeightImplementation( C* )
+int CanonicalControlHeightImplementation()
 {
    Control       container;
    VerticalSizer sizer;
@@ -1398,13 +1670,14 @@ int CanonicalControlHeightImplementation( C* )
  *
  * \ingroup aux_control_functions_and_classes
  */
-#define CanonicalControlHeight( control_type )  CanonicalControlHeightImplementation( (control_type*)0 )
+#define CanonicalControlHeight( control_type ) \
+   CanonicalControlHeightImplementation<control_type>()
 
 // ----------------------------------------------------------------------------
 
-#define __PCL_NO_ALIAS_HANDLER                                                \
-   if ( IsAlias() )                                                           \
-      throw Error( "Aliased controls cannot set event handlers" )
+#define __PCL_NO_ALIAS_HANDLERS \
+   if ( IsAlias() )             \
+      throw Error( "Aliased controls cannot set event handlers." )
 
 // ----------------------------------------------------------------------------
 
@@ -1414,5 +1687,5 @@ int CanonicalControlHeightImplementation( C* )
 
 #endif   // __PCL_Control_h
 
-// ****************************************************************************
-// EOF pcl/Control.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Control.h - Released 2015/07/30 17:15:18 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Color.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Color.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Color_h
 #define __PCL_Color_h
@@ -312,6 +315,12 @@ inline RGBA RGBAColor( float r, float g, float b )
  */
 RGBA PCL_FUNC RGBAColor( const IsoString& );
 
+template <class S>
+inline RGBA PCL_FUNC RGBAColor( const S& s )
+{
+   return RGBAColor( IsoString( s ) );
+}
+
 /*!
  * An alias to RGBAColor( const IsoString& ).
  *
@@ -320,6 +329,12 @@ RGBA PCL_FUNC RGBAColor( const IsoString& );
 inline RGBA StringToRGBAColor( const IsoString& colorNameOrHex )
 {
    return RGBAColor( colorNameOrHex );
+}
+
+template <class S>
+inline RGBA StringToRGBAColor( const S& colorNameOrHex )
+{
+   return StringToRGBAColor( IsoString( colorNameOrHex ) );
 }
 
 /*!
@@ -368,5 +383,5 @@ IsoString PCL_FUNC CSSColorName( RGBA );
 
 #endif   // __PCL_Color_h
 
-// ****************************************************************************
-// EOF pcl/Color.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Color.h - Released 2015/07/30 17:15:18 UTC

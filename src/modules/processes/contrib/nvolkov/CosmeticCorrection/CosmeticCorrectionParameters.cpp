@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard CosmeticCorrection Process Module Version 01.02.04.0080
-// ****************************************************************************
-// CosmeticCorrectionParameters.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard CosmeticCorrection Process Module Version 01.02.05.0101
+// ----------------------------------------------------------------------------
+// CosmeticCorrectionParameters.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard CosmeticCorrection PixInsight module.
 //
-// Copyright (c) 2011-2014 Nikolay Volkov
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2015 Nikolay Volkov
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,7 +49,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "CosmeticCorrectionParameters.h"
 
@@ -60,6 +64,7 @@ CCTargetFrameEnabled*   TheTargetFrameEnabled = 0;
 CCTargetFramePath*      TheTargetFramePath = 0;
 
 CCOutputDir*            TheOutputDir = 0;
+CCOutputExtension*      TheOutputExtension = 0;
 CCPrefix*               ThePrefix = 0;
 CCPostfix*              ThePostfix = 0;
 CCOverwrite*            TheOverwrite = 0;
@@ -136,6 +141,22 @@ CCOutputDir::CCOutputDir( MetaProcess* P ) : MetaString( P )
 IsoString CCOutputDir::Id() const
 {
    return "outputDir";
+}
+
+// ----------------------------------------------------------------------------
+CCOutputExtension::CCOutputExtension( MetaProcess* P ) : MetaString( P )
+{
+   TheOutputExtension = this;
+}
+
+IsoString CCOutputExtension::Id() const
+{
+   return "outputExtension";
+}
+
+String CCOutputExtension::DefaultValue() const
+{
+   return ".xisf";
 }
 
 // ----------------------------------------------------------------------------
@@ -556,5 +577,5 @@ IsoString CCDefectEnd::Id() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF CosmeticCorrectionParameters.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF CosmeticCorrectionParameters.cpp - Released 2015/07/31 11:49:49 UTC

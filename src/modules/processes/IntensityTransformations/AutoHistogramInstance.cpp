@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard IntensityTransformations Process Module Version 01.07.00.0287
-// ****************************************************************************
-// AutoHistogramInstance.cpp - Released 2014/11/14 17:19:23 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard IntensityTransformations Process Module Version 01.07.00.0306
+// ----------------------------------------------------------------------------
+// AutoHistogramInstance.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "AutoHistogramInstance.h"
 #include "AutoHistogramParameters.h"
@@ -133,28 +137,28 @@ class AutoHistogramEngine
 public:
 
    static void Apply( ImageVariant& image,
-                      size_type N, const View::histogram_list& H, const View::statistics_list& S,
+                      size_type N, const UI64Matrix& histogram, const DVector& median,
                       const AutoHistogramInstance& instance,
                       bool consoleOutput = true )
    {
       if ( image.IsFloatSample() )
          switch ( image.BitsPerSample() )
          {
-         case 32: Apply( static_cast<pcl::Image&>( *image ), N, H, S, instance, consoleOutput ); break;
-         case 64: Apply( static_cast<pcl::DImage&>( *image ), N, H, S, instance, consoleOutput ); break;
+         case 32: Apply( static_cast<pcl::Image&>( *image ), N, histogram, median, instance, consoleOutput ); break;
+         case 64: Apply( static_cast<pcl::DImage&>( *image ), N, histogram, median, instance, consoleOutput ); break;
          }
       else
          switch ( image.BitsPerSample() )
          {
-         case  8: Apply( static_cast<pcl::UInt8Image&>( *image ), N, H, S, instance, consoleOutput ); break;
-         case 16: Apply( static_cast<pcl::UInt16Image&>( *image ), N, H, S, instance, consoleOutput ); break;
-         case 32: Apply( static_cast<pcl::UInt32Image&>( *image ), N, H, S, instance, consoleOutput ); break;
+         case  8: Apply( static_cast<pcl::UInt8Image&>( *image ), N, histogram, median, instance, consoleOutput ); break;
+         case 16: Apply( static_cast<pcl::UInt16Image&>( *image ), N, histogram, median, instance, consoleOutput ); break;
+         case 32: Apply( static_cast<pcl::UInt32Image&>( *image ), N, histogram, median, instance, consoleOutput ); break;
          }
    }
 
    template <class P>
    static void Apply( GenericImage<P>& image,
-                      size_type N, const View::histogram_list& H, const View::statistics_list& S,
+                      size_type N, const UI64Matrix& histogram, const DVector& a_median,
                       const AutoHistogramInstance& instance,
                       bool consoleOutput = true )
    {
@@ -165,22 +169,23 @@ public:
          // Median of the original image
          double median = 0;
          if ( instance.p_stretch )
-            median = S[c]->Median();
+            median = a_median[c];
 
          /*
           * Auto clip
           */
          if ( instance.p_clip )
          {
-            float c0 = H[c]->NormalizedClipLow( size_type( Round( N * instance.p_clipLow[c]/100 ) ) );
-            float c1 = H[c]->NormalizedClipHigh( size_type( Round( N * instance.p_clipHigh[c]/100 ) ) );
+            Histogram H( histogram.RowVector( c ) );
+            float c0 = H.NormalizedClipLow( size_type( Round( N * instance.p_clipLow[c]/100 ) ) );
+            float c1 = H.NormalizedClipHigh( size_type( Round( N * instance.p_clipHigh[c]/100 ) ) );
             if ( c0 > 0 || c1 < 1 )
             {
                image.Truncate( P::ToSample( c0 ), P::ToSample( c1 ) );
                image.Rescale();
 
                /*
-                * NB: If clipped the histogram, compute the resulting median
+                * N.B.: If clipped the histogram, compute the resulting median
                 * after clipping + rescaling.
                 */
                if ( instance.p_stretch )
@@ -269,56 +274,36 @@ private:
 
 bool AutoHistogramInstance::ExecuteOn( View& view )
 {
-   View::histogram_list H;
-   View::statistics_list S;
-
    AutoViewLock lock( view );
 
-   try
-   {
-      ImageVariant image = view.Image();
+   ImageVariant image = view.Image();
 
-      if ( image.IsComplexSample() )
-         return false;
+   if ( image.IsComplexSample() )
+      return false;
 
-      /*
-       * NB: If our target view is a preview, we want to make sure we get
-       * statistics and histograms for its mother image. Otherwise this
-       * process would not provide consistent results for previews.
-       */
-      View mainView = view.Window().MainView();
+   /*
+    * N.B.: If our target view is a preview, we want to make sure we get
+    * statistics and histograms for its mother image. Otherwise this process
+    * would not provide consistent results for previews.
+    */
+   View mainView = view.Window().MainView();
 
-      if ( p_clip )
-      {
-         if ( !mainView.AreHistogramsAvailable() )
-            mainView.CalculateHistograms();
-         mainView.GetHistograms( H );
-      }
+   UI64Matrix histogram;
+   if ( p_clip )
+      histogram = mainView.ComputeOrFetchProperty( "Histogram16" ).ToUI64Matrix();
 
-      if ( p_stretch )
-      {
-         if ( !mainView.AreStatisticsAvailable() )
-            mainView.CalculateStatistics();
-         mainView.GetStatistics( S );
-      }
+   DVector median;
+   if ( p_stretch )
+      median = mainView.ComputeOrFetchProperty( "Median" ).ToDVector();
 
-      StandardStatus status;
-      image->SetStatusCallback( &status );
+   Console().EnableAbort();
 
-      Console().EnableAbort();
+   StandardStatus status;
+   image->SetStatusCallback( &status );
 
-      AutoHistogramEngine::Apply( image, mainView.Image()->NumberOfPixels(), H, S, *this );
+   AutoHistogramEngine::Apply( image, mainView.Image()->NumberOfPixels(), histogram, median, *this );
 
-      H.Destroy();
-      S.Destroy();
-      return true;
-   }
-   catch ( ... )
-   {
-      H.Destroy();
-      S.Destroy();
-      throw;
-   }
+   return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -360,5 +345,5 @@ void* AutoHistogramInstance::LockParameter( const MetaParameter* p, size_type /*
 
 } // pcl
 
-// ****************************************************************************
-// EOF AutoHistogramInstance.cpp - Released 2014/11/14 17:19:23 UTC
+// ----------------------------------------------------------------------------
+// EOF AutoHistogramInstance.cpp - Released 2015/07/31 11:49:48 UTC

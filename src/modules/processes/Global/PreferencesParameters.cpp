@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Global Process Module Version 01.02.05.0260
-// ****************************************************************************
-// PreferencesParameters.cpp - Released 2014/11/14 17:18:47 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Global Process Module Version 01.02.06.0280
+// ----------------------------------------------------------------------------
+// PreferencesParameters.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "PreferencesParameters.h"
 
@@ -67,6 +71,13 @@ IMPLEMENT_STRING_METAPARAMETER  ( Application, resourceFile07 )
 IMPLEMENT_STRING_METAPARAMETER  ( Application, resourceFile08 )
 IMPLEMENT_STRING_METAPARAMETER  ( Application, resourceFile09 )
 IMPLEMENT_STRING_METAPARAMETER  ( Application, resourceFile10 )
+IMPLEMENT_BOOLEAN_METAPARAMETER ( Application, autoUIScaling )
+IMPLEMENT_DOUBLE_METAPARAMETER  ( Application, uiScalingFactor )
+IMPLEMENT_INT32_METAPARAMETER   ( Application, fontResolution )
+IMPLEMENT_STRING_METAPARAMETER  ( Application, lowResFont )
+IMPLEMENT_STRING_METAPARAMETER  ( Application, highResFont )
+IMPLEMENT_STRING_METAPARAMETER  ( Application, lowResMonoFont )
+IMPLEMENT_STRING_METAPARAMETER  ( Application, highResMonoFont )
 
 // ----------------------------------------------------------------------------
 
@@ -106,7 +117,6 @@ IMPLEMENT_INT32_METAPARAMETER   ( ImageWindow, defaultTransparencyMode )
 IMPLEMENT_DOUBLE_METAPARAMETER  ( ImageWindow, defaultHorizontalResolution )
 IMPLEMENT_DOUBLE_METAPARAMETER  ( ImageWindow, defaultVerticalResolution )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, defaultMetricResolution )
-IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, defaultEmbedMetadata )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, defaultEmbedThumbnails )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, defaultEmbedProperties )
 IMPLEMENT_STRING_METAPARAMETER  ( ImageWindow, defaultFileExtension )
@@ -123,6 +133,7 @@ IMPLEMENT_INT32_METAPARAMETER   ( ImageWindow, fastScreenRenditionThreshold )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, default24BitScreenLUT )
 IMPLEMENT_TABLE_METAPARAMETER   ( ImageWindow, swapDirectories )
 IMPLEMENT_ROW_STRING_METAPARAMETER( ImageWindow, swapDirectory )
+IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, swapCompression )
 IMPLEMENT_STRING_METAPARAMETER  ( ImageWindow, downloadsDirectory )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, followDownloadLocations )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, verboseNetworkOperations )
@@ -171,5 +182,5 @@ IMPLEMENT_BOOLEAN_METAPARAMETER ( Process, alertOnProcessCompleted )
 
 } // pcl
 
-// ****************************************************************************
-// EOF PreferencesParameters.cpp - Released 2014/11/14 17:18:47 UTC
+// ----------------------------------------------------------------------------
+// EOF PreferencesParameters.cpp - Released 2015/07/31 11:49:48 UTC

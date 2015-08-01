@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Resample.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Resample.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Resample_h
 #define __PCL_Resample_h
@@ -161,10 +164,10 @@ public:
     * The resizing mode is set relative to current image dimensions.
     */
    Resample( PixelInterpolation& p, double scale = 1.0 ) :
-   InterpolatingGeometricTransformation( p ), ImageResolution(),
-   m_xSize( scale ), m_ySize( scale ),
-   m_mode( ResizeMode::Default ), m_absMode( AbsoluteResizeMode::Default ),
-   m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      InterpolatingGeometricTransformation( p ), ImageResolution(),
+      m_xSize( scale ), m_ySize( scale ),
+      m_mode( ResizeMode::Default ), m_absMode( AbsoluteResizeMode::Default ),
+      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
    }
 
@@ -179,39 +182,17 @@ public:
     * The resizing mode is set relative to current image dimensions.
     */
    Resample( PixelInterpolation& p, double scaleX, double scaleY ) :
-   InterpolatingGeometricTransformation( p ), ImageResolution(),
-   m_xSize( scaleX ), m_ySize( scaleY ),
-   m_mode( ResizeMode::Default ), m_absMode( AbsoluteResizeMode::Default ),
-   m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      InterpolatingGeometricTransformation( p ), ImageResolution(),
+      m_xSize( scaleX ), m_ySize( scaleY ),
+      m_mode( ResizeMode::Default ), m_absMode( AbsoluteResizeMode::Default ),
+      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
    }
 
    /*!
     * Copy constructor.
     */
-   Resample( const Resample& x ) :
-   InterpolatingGeometricTransformation( x ), ImageResolution( x ),
-   m_xSize( x.m_xSize ), m_ySize( x.m_ySize ),
-   m_mode( x.m_mode ), m_absMode( x.m_absMode ),
-   m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
-   {
-   }
-
-   /*!
-    * Assignment operator. Returns a reference to this object.
-    */
-   Resample& operator =( const Resample& x )
-   {
-      (void)InterpolatingGeometricTransformation::operator =( x );
-      (void)ImageResolution::operator =( x );
-      m_xSize         = x.m_xSize;
-      m_ySize         = x.m_ySize;
-      m_mode          = x.m_mode;
-      m_absMode       = x.m_absMode;
-      m_parallel      = x.m_parallel;
-      m_maxProcessors = x.m_maxProcessors;
-      return *this;
-   }
+   Resample( const Resample& ) = default;
 
    /*!
     * Gets the resampled image \a width and \a height.
@@ -410,7 +391,6 @@ public:
     */
    virtual void GetNewSizes( int& width, int& height ) const;
 
-
    /*!
     * Returns true if this object is allowed to use multiple parallel execution
     * threads (when multiple threads are permitted and available).
@@ -506,5 +486,5 @@ protected:
 
 #endif   // __PCL_Resample_h
 
-// ****************************************************************************
-// EOF pcl/Resample.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Resample.h - Released 2015/07/30 17:15:18 UTC

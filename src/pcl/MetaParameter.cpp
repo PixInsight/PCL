@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/MetaParameter.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/MetaParameter.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/ErrorHandler.h>
 #include <pcl/MetaParameter.h>
@@ -60,7 +63,7 @@ namespace pcl
 
 MetaParameter::MetaParameter( MetaProcess* p ) : MetaObject( p )
 {
-   if ( p == 0 )
+   if ( p == nullptr )
       throw Error( "MetaParameter: Illegal null MetaProcess parent pointer" );
 }
 
@@ -68,7 +71,7 @@ MetaParameter::MetaParameter( MetaProcess* p ) : MetaObject( p )
 
 MetaParameter::MetaParameter( MetaTable* t ) : MetaObject( t )
 {
-   if ( t == 0 )
+   if ( t == nullptr )
       throw Error( "MetaParameter: Illegal null MetaTable parent pointer" );
 }
 
@@ -76,8 +79,8 @@ MetaParameter::MetaParameter( MetaTable* t ) : MetaObject( t )
 
 const MetaParameter* MetaTable::operator[]( size_type i ) const
 {
-   const MetaParameter* p = dynamic_cast<const MetaParameter*>( children[i] );
-   if ( p == 0 )
+   const MetaParameter* p = dynamic_cast<const MetaParameter*>( m_children[i] );
+   if ( p == nullptr )
       throw Error( "MetaTable: Invalid non-parameter table column instance" );
    return p;
 }
@@ -326,7 +329,7 @@ void MetaEnumeration::PerformTypeAPIDefinitions() const
          if ( eq != IsoString::notFound )
          {
             IsoString aliasId = i->Left( eq ).Trimmed();
-            IsoString actualId = i->SubString( eq+1 ).Trimmed();
+            IsoString actualId = i->Substring( eq+1 ).Trimmed();
             if ( !aliasId.IsEmpty() && !actualId.IsEmpty() )
                (*API->ProcessDefinition->DefineEnumerationAlias)( aliasId.c_str(), actualId.c_str() );
          }
@@ -432,5 +435,5 @@ uint32 MetaBlock::APIParType() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/MetaParameter.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/MetaParameter.cpp - Released 2015/07/30 17:15:31 UTC

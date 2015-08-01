@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard TIFF File Format Module Version 01.00.05.0229
-// ****************************************************************************
-// TIFFInstance.cpp - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard TIFF File Format Module Version 01.00.06.0248
+// ----------------------------------------------------------------------------
+// TIFFInstance.cpp - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard TIFF PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "TIFFInstance.h"
 #include "TIFFFormat.h"
@@ -538,12 +542,6 @@ bool TIFFInstance::QueryOptions( Array<ImageOptions>& imageOptions, Array<void*>
    if ( overrides.overrideICCProfileEmbedding )
       options.embedICCProfile = overrides.embedICCProfiles;
 
-   if ( overrides.overrideMetadataEmbedding )
-      options.embedMetadata = overrides.embedMetadata;
-
-   if ( overrides.overrideThumbnailEmbedding )
-      options.embedThumbnail = overrides.embedThumbnails;
-
    TIFFOptionsDialog dlg( options, tiff->options );
 
    if ( dlg.Execute() == StdDialogCode::Ok )
@@ -628,12 +626,6 @@ void TIFFInstance::SetOptions( const ImageOptions& options )
 
       if ( overrides.overrideICCProfileEmbedding )
          writer->Options().embedICCProfile = overrides.embedICCProfiles;
-
-      if ( overrides.overrideMetadataEmbedding )
-         writer->Options().embedMetadata = overrides.embedMetadata;
-
-      if ( overrides.overrideThumbnailEmbedding )
-         writer->Options().embedThumbnail = overrides.embedThumbnails;
    }
 }
 
@@ -705,5 +697,5 @@ void TIFFInstance::WriteImage( const UInt32Image& image )
 
 } // pcl
 
-// ****************************************************************************
-// EOF TIFFInstance.cpp - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF TIFFInstance.cpp - Released 2015/07/31 11:49:40 UTC

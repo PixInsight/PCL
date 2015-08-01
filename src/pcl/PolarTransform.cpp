@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/PolarTransform.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/PolarTransform.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,11 +47,10 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
-
-#include <pcl/PolarTransform.h>
-
 // ----------------------------------------------------------------------------
+
+#include <pcl/AutoPointer.h>
+#include <pcl/PolarTransform.h>
 
 namespace pcl
 {
@@ -140,10 +142,10 @@ public:
       {
          ThreadData<P> data( result, sin, cos, r, center, width, height, image.Status(), N );
 
-         PArray<Thread<P> > threads;
+         ReferenceArray<Thread<P> > threads;
          for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
             threads.Add( new Thread<P>( data,
-                                        T.Interpolation().NewInterpolator( (P*)0, image[c], width, height ),
+                                        T.Interpolation().NewInterpolator<P>( image[c], width, height ),
                                         i*rowsPerThread,
                                         (j < numberOfThreads) ? j*rowsPerThread : height ) );
 
@@ -168,8 +170,8 @@ private:
                   const DVector& a_sin, const DVector& a_cos, const DVector& a_r,
                   const DPoint& a_center, int a_width, int a_height,
                   const StatusMonitor& a_status, size_type a_count ) :
-      AbstractImage::ThreadData( a_status, a_count ),
-      result( a_result ),
+         AbstractImage::ThreadData( a_status, a_count ),
+         result( a_result ),
       sin( a_sin ), cos( a_cos ), r( a_r ), center( a_center ), width( a_width ), height( a_height )
       {
       }
@@ -188,16 +190,12 @@ private:
    {
    public:
 
-      Thread( ThreadData<P>& data, PixelInterpolation::Interpolator<P>* interpolator, int firstRow, int endRow ) :
-      pcl::Thread(),
-      m_data( data ), m_firstRow( firstRow ), m_endRow( endRow ), m_interpolator( interpolator )
-      {
-      }
+      typedef PixelInterpolation::Interpolator<P>  interpolator_type;
 
-      virtual ~Thread()
+      Thread( ThreadData<P>& data, interpolator_type* interpolator, int firstRow, int endRow ) :
+         pcl::Thread(),
+         m_data( data ), m_firstRow( firstRow ), m_endRow( endRow ), m_interpolator( interpolator )
       {
-         if ( m_interpolator != 0 )
-            delete m_interpolator, m_interpolator = 0;
       }
 
       virtual void Run()
@@ -233,10 +231,10 @@ private:
 
    private:
 
-      ThreadData<P>&                       m_data;
-      int                                  m_firstRow;
-      int                                  m_endRow;
-      PixelInterpolation::Interpolator<P>* m_interpolator;
+      ThreadData<P>&                 m_data;
+      int                            m_firstRow;
+      int                            m_endRow;
+      AutoPointer<interpolator_type> m_interpolator;
    };
 };
 
@@ -298,5 +296,5 @@ void LogPolarTransform::Apply( pcl::UInt32Image& image ) const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/PolarTransform.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/PolarTransform.cpp - Released 2015/07/30 17:15:31 UTC

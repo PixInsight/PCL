@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Geometry Process Module Version 01.01.00.0247
-// ****************************************************************************
-// DynamicCropInterface.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Geometry Process Module Version 01.01.00.0266
+// ----------------------------------------------------------------------------
+// DynamicCropInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,14 +48,14 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "DynamicCropInterface.h"
 #include "DynamicCropPreferencesDialog.h"
 #include "DynamicCropProcess.h"
 
-#include <pcl/Graphics.h>
 #include <pcl/ImageWindow.h>
+#include <pcl/MetaModule.h>
 #include <pcl/Settings.h>
 
 namespace pcl
@@ -59,25 +63,8 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-// Dynamic cursors
-#include "cursors/move.xpm"
-#include "cursors/move_drag.xpm"
-#include "cursors/move_point.xpm"
-#include "cursors/move_point_drag.xpm"
-#include "cursors/resize_bottom.xpm"
-#include "cursors/resize_left.xpm"
-#include "cursors/resize_left_bottom.xpm"
-#include "cursors/resize_left_top.xpm"
-#include "cursors/resize_right.xpm"
-#include "cursors/resize_right_bottom.xpm"
-#include "cursors/resize_right_top.xpm"
-#include "cursors/resize_top.xpm"
-#include "cursors/rotate.xpm"
-
-// ----------------------------------------------------------------------------
-
-// Half size of center mark in viewport coordinates
-const int centerSz = 5;
+// Half size of center mark in logical viewport coordinates
+#define CENTER_RADIUS  5
 
 // ----------------------------------------------------------------------------
 
@@ -215,6 +202,7 @@ bool DynamicCropInterface::Launch( const MetaProcess& P, const ProcessImplementa
 {
    if ( GUI == 0 )
    {
+      Module->LoadResource( "@module_resource_dir/cursors.rcc" );
       GUI = new GUIData( *this );
       SetWindowTitle( "DynamicCrop" );
       InitControls();
@@ -237,7 +225,6 @@ ProcessImplementation* DynamicCropInterface::NewProcess() const
 bool DynamicCropInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
    const DynamicCropInstance* r = dynamic_cast<const DynamicCropInstance*>( &p );
-
    if ( r == 0 )
    {
       whyNot = "Not a DynamicCrop instance.";
@@ -260,7 +247,6 @@ bool DynamicCropInterface::RequiresInstanceValidation() const
 bool DynamicCropInterface::ImportProcess( const ProcessImplementation& p )
 {
    const DynamicCropInstance* i = dynamic_cast<const DynamicCropInstance*>( &p );
-
    if ( i == 0 )
       throw Error( "Not a DynamicCrop instance." );
 
@@ -363,7 +349,7 @@ void DynamicCropInterface::DynamicMouseMove( View& v, const DPoint& p, unsigned 
       {
          ImageWindow w = view->Window();
 
-         w.ModifySelection( RoundI( p.x ), RoundI( p.y ) );
+         w.ModifySelection( RoundInt( p.x ), RoundInt( p.y ) );
          //w.CommitPendingUpdates();
 
          rect = w.SelectionRect();
@@ -420,7 +406,7 @@ void DynamicCropInterface::DynamicMousePress( View& v, const DPoint& p, int butt
 
       ImageWindow w = view->Window();
 
-      w.BeginSelection( RoundI( p.x ), RoundI( p.y ) );
+      w.BeginSelection( RoundInt( p.x ), RoundInt( p.y ) );
 
       rect = w.SelectionRect();
 
@@ -515,20 +501,19 @@ bool DynamicCropInterface::RequiresDynamicUpdate( const View& v, const DRect& up
    if ( view == 0 || v != *view || initializing )
       return false;
 
+   ImageWindow w = v.Window();
+
    // Check intersection with current cropping rectangle
-
    DRect r;
-
    if ( instance.p_angle == 0 )
       GetUnrotatedRect( r );
    else
       GetRotatedBounds( r );
-
    if ( r.Intersects( updateRect ) )
       return true;
 
    // Obtain the half-size of center marks in image coordinates
-   double dr = v.Window().ViewportScalarToImage( centerSz+1 ); // add 1 pixel to guard against roundoff errors
+   double dr = w.ViewportScalarToImage( w.DisplayPixelRatio()*CENTER_RADIUS + 1 ); // add 1 pixel to guard against roundoff errors
 
    // Check intersection with the cropping rectangle's center mark
    if ( DRect( center.x-dr, center.y-dr,
@@ -545,7 +530,7 @@ bool DynamicCropInterface::RequiresDynamicUpdate( const View& v, const DRect& up
 
 // ----------------------------------------------------------------------------
 
-void DynamicCropInterface::PaintRect( Graphics& G, ImageWindow& w, const Point& p0 ) const
+void DynamicCropInterface::PaintRect( VectorGraphics& G, ImageWindow& w, const Point& p0 ) const
 {
    // Auxiliary routine to paint the cropping rectangle
 
@@ -554,30 +539,17 @@ void DynamicCropInterface::PaintRect( Graphics& G, ImageWindow& w, const Point& 
       // Optimize for zero rotation
       DRect r;
       GetUnrotatedRect( r );
-      w.ImageToViewport( r.x0, r.y0 );
-      w.ImageToViewport( r.x1, r.y1 );
-
-      G.DrawRect( RoundI( r.x0 )-p0.x, RoundI( r.y0 )-p0.y,
-                  RoundI( r.x1 )-p0.x, RoundI( r.y1 )-p0.y );
+      G.DrawRect( w.ImageToViewport( r ) - p0 );
    }
    else
    {
-      DPoint tl, tr, bl, br;
-      GetRotatedRect( tl, tr, bl, br );
-      w.ImageToViewport( tl.x, tl.y );
-      w.ImageToViewport( tr.x, tr.y );
-      w.ImageToViewport( bl.x, bl.y );
-      w.ImageToViewport( br.x, br.y );
-
-      Array<Point> p( 4 );
-      p[0].x = RoundI( tl.x ); p[0].y = RoundI( tl.y );
-      p[1].x = RoundI( tr.x ); p[1].y = RoundI( tr.y );
-      p[2].x = RoundI( br.x ); p[2].y = RoundI( br.y );
-      p[3].x = RoundI( bl.x ); p[3].y = RoundI( bl.y );
-
+      Array<DPoint> p( 4 );
+      GetRotatedRect( p[0], p[1], p[3], p[2] );
       for ( int i = 0; i < 4; ++i )
+      {
+         w.ImageToViewport( p[i].x, p[i].y );
          p[i] -= p0;
-
+      }
       G.DrawPolygon( p );
    }
 }
@@ -587,84 +559,71 @@ void DynamicCropInterface::DynamicPaint( const View& v, Graphics& g, const DRect
    if ( view == 0 || v != *view )
       return;
 
-   ImageWindow w = view->Window();
+   ImageWindow window = view->Window();
+
+   double f = window.DisplayPixelRatio();
 
    // Update rectangle in real viewport coordinates.
-   DRect vr = w.ImageToViewport( ur );
+   DRect vr = window.ImageToViewport( ur );
 
    // Update rectangle, integer viewport coordinates.
    // N.B.: The bottom-right corner (x1,y1) of a Rect object is *excluded*
    //       from the defined rectangle. For this reason we must extend the
    //       corresponding x1 and y1 coordinates by one unit.
-   Rect r0( TruncI( vr.x0 ), TruncI( vr.y0 ), TruncI( vr.x1 )+1, TruncI( vr.y1 )+1 );
-
-   // Working bitmap
-   Bitmap bmp1( r0.Width(), r0.Height() );
+   Rect r0( TruncInt( vr.x0 ), TruncInt( vr.y0 ), TruncInt( vr.x1 )+1, TruncInt( vr.y1 )+1 );
 
    // Origin of the local bitmap coordinate system in viewport coordinates.
    Point p0 = r0.LeftTop();
 
-   // Initialize the working bitmap with a solid black color. Use a low-level,
-   // high-speed routine instead of a high-level drawing routine.
-   bmp1.Fill( 0xff000000 );
+   // Working bitmap
+   Bitmap bmp1 = window.ViewportBitmap( r0 );
 
    // Create a graphics context associated to our working bitmap.
-   Graphics G;
-   G.BeginPaint( bmp1 );
+   VectorGraphics G( bmp1 );
 
-   // Draw the cropping rectangle
-   G.SetPen( selectionColor );
-   G.SetBrush( Brush::Null() );
-   PaintRect( G, w, p0 );
-
-   // Draw the center of the cropping rectangle
-   DPoint ci = center;
-   w.ImageToViewport( ci.x, ci.y );
-   Point c0( RoundI( ci.x ), RoundI( ci.y ) );
-   c0 -= p0;
-   Point c1( c0.x-centerSz, c0.y-centerSz );
-   Point c2( c0.x+centerSz, c0.y+centerSz );
-   G.SetPen( centerColor );
-   G.DrawLine( c1.x, c1.y, c2.x, c2.y );
-   G.DrawLine( c2.x, c1.y, c1.x, c2.y );
-
-   // Draw the center of rotation
-
-   ci = rotationCenter;
-   w.ImageToViewport( ci.x, ci.y );
-   Point c3( RoundI( ci.x ), RoundI( ci.y ) );
-   c3 -= p0;
-
-   if ( c3 != c0 )
-   {
-      Point c4( c3.x-centerSz, c3.y-centerSz );
-      Point c5( c3.x+centerSz, c3.y+centerSz );
-      G.DrawLine( c3.x, c4.y, c3.x, c5.y );
-      G.DrawLine( c4.x, c3.y, c5.x, c3.y );
-   }
-
-   G.DrawCircle( c3, centerSz );
-
-   G.EndPaint();
-
-   // Viewport bitmap
-   Bitmap bmp2 = w.ViewportBitmap( r0 );
+   G.EnableAntialiasing();
 
    // Draw the translucent cropping rectangle
    if ( Alpha( fillColor ) != 0 )
    {
-      G.BeginPaint( bmp2 );
       G.SetPen( Pen::Null() );
       G.SetBrush( fillColor );
-      PaintRect( G, w, p0 );
-      G.EndPaint();
+      PaintRect( G, window, p0 );
    }
 
-   // Xor-combine our working bitmap with the corresponding viewport bitmap
-   bmp2.Xor( bmp1 );
+   G.SetCompositionOperator( CompositionOp::Difference );
+
+   // Draw the cropping rectangle
+   G.SetPen( selectionColor, f );
+   G.SetBrush( Brush::Null() );
+   PaintRect( G, window, p0 );
+
+   // Center mark radius in physical pixels
+   double dr = f * CENTER_RADIUS;
+
+   // Draw the center of the cropping rectangle
+   DPoint c0 = window.ImageToViewport( center ) - p0;
+   DPoint c1( c0.x-dr, c0.y-dr );
+   DPoint c2( c0.x+dr, c0.y+dr );
+   G.SetPen( centerColor, f );
+   G.DrawLine( c1.x, c1.y, c2.x, c2.y );
+   G.DrawLine( c2.x, c1.y, c1.x, c2.y );
+
+   // Draw the center of rotation
+   DPoint c3 = window.ImageToViewport( rotationCenter ) - p0;
+   if ( c3.ManhattanDistanceTo( c0 ) > 0.5 )
+   {
+      DPoint c4( c3.x-dr, c3.y-dr );
+      DPoint c5( c3.x+dr, c3.y+dr );
+      G.DrawLine( c3.x, c4.y, c3.x, c5.y );
+      G.DrawLine( c4.x, c3.y, c5.x, c3.y );
+   }
+   G.DrawCircle( c3, dr );
+
+   G.EndPaint();
 
    // Render our working bitmap on the viewport
-   g.DrawBitmap( p0, bmp2 );
+   g.DrawBitmap( p0, bmp1 );
 }
 
 // ----------------------------------------------------------------------------
@@ -713,7 +672,7 @@ void DynamicCropInterface::Initialize( const Rect& r )
    width = Max( 1, r.Width() );
    height = Max( 1, r.Height() );
 
-   rect = Rect( TruncI( width ), TruncI( height ) ) + r.Ordered().LeftTop();
+   rect = Rect( TruncInt( width ), TruncInt( height ) ) + r.Ordered().LeftTop();
 
    anchor = center = rotationCenter = DRect( rect ).Center();
    anchorPoint = 4; // center
@@ -809,42 +768,42 @@ DynamicCropInterface::Flags DynamicCropInterface::OperationInfo( const DPoint& p
 
 void DynamicCropInterface::UpdateDynamicCursor() const
 {
-   const char** csr = 0;
+   String csr;
 
    if ( flags.bits.movingCenter )
-      csr = dragging ? move_point_drag_XPM : move_point_XPM;
+      csr = dragging ? "move_point_drag.png" : "move_point.png";
    else if ( flags.bits.resizing )
    {
       if ( flags.bits.resizeLeft )
       {
          if ( flags.bits.resizeTop )
-            csr = resize_left_top_XPM;
+            csr = "resize_left_top.png";
          else if ( flags.bits.resizeBottom )
-            csr = resize_left_bottom_XPM;
+            csr = "resize_left_bottom.png";
          else
-            csr = resize_left_XPM;
+            csr = "resize_left.png";
       }
       else if ( flags.bits.resizeRight )
       {
          if ( flags.bits.resizeTop )
-            csr = resize_right_top_XPM;
+            csr = "resize_right_top.png";
          else if ( flags.bits.resizeBottom )
-            csr = resize_right_bottom_XPM;
+            csr = "resize_right_bottom.png";
          else
-            csr = resize_right_XPM;
+            csr = "resize_right.png";
       }
       else if ( flags.bits.resizeTop )
-         csr = resize_top_XPM;
+         csr = "resize_top.png";
       else if ( flags.bits.resizeBottom )
-         csr = resize_bottom_XPM;
+         csr = "resize_bottom.png";
    }
    else if ( flags.bits.moving )
-      csr = dragging ? move_drag_XPM : move_XPM;
+      csr = dragging ? "move_drag.png" : "move.png";
    else if ( flags.bits.rotating )
-      csr = rotate_XPM;
+      csr = "rotate.png";
 
-   if ( csr != 0 )
-      view->Window().SetDynamicCursor( csr, 10, 10 );
+   if ( !csr.IsEmpty() )
+      view->Window().SetDynamicCursor( ScaledResource( ":/@module_root/" + csr ), ScaledCursorHotSpot( 10, 10 ) );
    else
       view->Window().ResetDynamicCursor();
 }
@@ -1129,7 +1088,6 @@ bool DynamicCropInterface::IsPointNearRect( const DPoint& p ) const
    DPoint d = p;
    Rotate( d, -instance.p_angle, center );
    d -= center;
-
    double t = view->Window().ViewportScalarToImage( double( ImageWindow::CursorTolerance() ) );
    return Abs( d.x ) <= 0.5*width + t && Abs( d.y ) <= 0.5*height + t;
 }
@@ -1140,7 +1098,6 @@ bool DynamicCropInterface::IsPointOnRectEdges( const DPoint& p,
    DPoint d = p;
    Rotate( d, -instance.p_angle, center );
    d -= center;
-
    double t = view->Window().ViewportScalarToImage( double( ImageWindow::CursorTolerance() ) );
    double w2 = 0.5*width;
    double h2 = 0.5*height;
@@ -1148,26 +1105,21 @@ bool DynamicCropInterface::IsPointOnRectEdges( const DPoint& p,
    top    = Abs( d.y + h2 ) <= t;
    right  = Abs( d.x - w2 ) <= t;
    bottom = Abs( d.y - h2 ) <= t;
-
    return left || top || right || bottom;
 }
 
 bool DynamicCropInterface::IsPointOnRectCenter( const DPoint& p ) const
 {
    DPoint d = p - center;
-
    double t = view->Window().ViewportScalarToImage( double( ImageWindow::CursorTolerance() ) );
-   return Abs( d.x ) <= t &&
-          Abs( d.y ) <= t;
+   return Abs( d.x ) <= t && Abs( d.y ) <= t;
 }
 
 bool DynamicCropInterface::IsPointOnRotationCenter( const DPoint& p ) const
 {
    DPoint d = p - rotationCenter;
-
    double t = view->Window().ViewportScalarToImage( double( ImageWindow::CursorTolerance() ) );
-   return Abs( d.x ) <= t &&
-          Abs( d.y ) <= t;
+   return Abs( d.x ) <= t && Abs( d.y ) <= t;
 }
 
 // ----------------------------------------------------------------------------
@@ -1246,9 +1198,9 @@ void DynamicCropInterface::UpdateRotationControls()
 void DynamicCropInterface::UpdateScaleControls()
 {
    GUI->ScaleX_NumericEdit.SetValue( instance.p_scaleX );
-   GUI->ScaledWidth_NumericEdit.SetValue( RoundI( width*instance.p_scaleX ) );
+   GUI->ScaledWidth_NumericEdit.SetValue( RoundInt( width*instance.p_scaleX ) );
    GUI->ScaleY_NumericEdit.SetValue( instance.p_scaleY );
-   GUI->ScaledHeight_NumericEdit.SetValue( RoundI( height*instance.p_scaleY ) );
+   GUI->ScaledHeight_NumericEdit.SetValue( RoundInt( height*instance.p_scaleY ) );
 }
 
 void DynamicCropInterface::UpdateInterpolationControls()
@@ -1277,26 +1229,28 @@ void DynamicCropInterface::UpdateView()
 
    DPoint tl, tr, bl, br;
    GetRotatedRect( tl, tr, bl, br );
-   w.UpdateImageRect( Min( Min( Min( tl.x, tr.x ), bl.x ), br.x ),
-                      Min( Min( Min( tl.y, tr.y ), bl.y ), br.y ),
-                      Max( Max( Max( tl.x, tr.x ), bl.x ), br.x ),
-                      Max( Max( Max( tl.y, tr.y ), bl.y ), br.y ) );
+   double d2 = w.ViewportScalarToImage( w.DisplayPixelRatio()/2 );
+   w.UpdateImageRect( Min( Min( Min( tl.x, tr.x ), bl.x ), br.x )-d2,
+                      Min( Min( Min( tl.y, tr.y ), bl.y ), br.y )-d2,
+                      Max( Max( Max( tl.x, tr.x ), bl.x ), br.x )+d2,
+                      Max( Max( Max( tl.y, tr.y ), bl.y ), br.y )+d2 );
 
    double x = center.x;
    double y = center.y;
    w.ImageToViewport( x, y );
-   int cx = RoundI( x );
-   int cy = RoundI( y );
-   w.UpdateViewportRect( cx-centerSz, cy-centerSz, cx+centerSz, cy+centerSz );
+   int cx = RoundInt( x );
+   int cy = RoundInt( y );
+   int dr = TruncInt( w.DisplayPixelRatio() * CENTER_RADIUS ) + 1;
+   w.UpdateViewportRect( cx-dr, cy-dr, cx+dr, cy+dr );
 
    if ( rotationCenter != center )
    {
       x = rotationCenter.x;
       y = rotationCenter.y;
       w.ImageToViewport( x, y );
-      cx = RoundI( x );
-      cy = RoundI( y );
-      w.UpdateViewportRect( cx-centerSz, cy-centerSz, cx+centerSz, cy+centerSz );
+      cx = RoundInt( x );
+      cy = RoundInt( y );
+      w.UpdateViewportRect( cx-dr, cy-dr, cx+dr, cy+dr );
    }
 }
 
@@ -1395,30 +1349,29 @@ void DynamicCropInterface::__Pos_ValueUpdated( NumericEdit& sender, double value
 
 void DynamicCropInterface::__AnchorSelector_Paint( Control& sender, const Rect& updateRect )
 {
-   Graphics g( sender );
-
    Rect r( sender.BoundsRect() );
 
-   float w3 = r.Width()/3.0F;
-   float h3 = r.Height()/3.0F;
+   double x3 = r.Width()/3.0;
+   double x6 = x3 + x3;
+   double y3 = r.Height()/3.0;
+   double y6 = y3 + y3;
+   double f = sender.DisplayPixelRatio();
 
-   int x3 = RoundI( w3 );
-   int x6 = RoundI( w3+w3 );
-   int y3 = RoundI( h3 );
-   int y6 = RoundI( h3+h3 );
+   VectorGraphics g( sender );
+   if ( f > 1 )
+      g.EnableAntialiasing();
 
    g.FillRect( r, RGBAColor( 0, 0, 0 ) );
 
    g.SetBrush( Brush::Null() );
-   g.SetPen( RGBAColor( 127, 127, 127 ) );
+   g.SetPen( 0xff7f7f7f, f );
 
    g.DrawLine( x3, 0, x3, r.y1 );
    g.DrawLine( x6, 0, x6, r.y1 );
    g.DrawLine( 0, y3, r.x1, y3 );
    g.DrawLine( 0, y6, r.x1, y6 );
 
-   int x0, y0;
-
+   double x0, y0;
    if ( anchorPoint < 3 )
    {
       y0 = 0;
@@ -1435,9 +1388,10 @@ void DynamicCropInterface::__AnchorSelector_Paint( Control& sender, const Rect& 
       x0 = (anchorPoint == 6) ? 0 : ((anchorPoint == 7) ? x3 : x6);
    }
 
-   g.SetPen( RGBAColor( 255, 255, 255 ) );
-   g.DrawLine( x0+3, y0+3, x0+x3-3, y0+y3-3 );
-   g.DrawLine( x0+3, y0+y3-3, x0+x3-3, y0+3 );
+   g.SetPen( 0xffffffff, f );
+   double d3 = f*3;
+   g.DrawLine( x0+d3, y0+d3, x0+x3-d3, y0+y3-d3 );
+   g.DrawLine( x0+d3, y0+y3-d3, x0+x3-d3, y0+d3 );
 }
 
 void DynamicCropInterface::__AnchorSelector_MousePress( Control& sender, const Point& pos, int button, unsigned buttons, unsigned modifiers )
@@ -1446,15 +1400,10 @@ void DynamicCropInterface::__AnchorSelector_MousePress( Control& sender, const P
       return;
 
    Rect r( sender.BoundsRect() );
-
-   float w3 = r.Width()/3.0F;
-   float h3 = r.Height()/3.0F;
-
-   int x3 = RoundI( w3 );
-   int x6 = RoundI( w3+w3 );
-   int y3 = RoundI( h3 );
-   int y6 = RoundI( h3+h3 );
-
+   int x3 = RoundInt( r.Width()/3.0 );
+   int x6 = RoundInt( 2*r.Width()/3.0 );
+   int y3 = RoundInt( r.Height()/3.0 );
+   int y6 = RoundInt( 2*r.Height()/3.0 );
    int row = (pos.y < y3) ? 0 : ((pos.y < y6) ? 1 : 2);
    int col = (pos.x < x3) ? 0 : ((pos.x < x6) ? 1 : 2);
 
@@ -1574,35 +1523,38 @@ void DynamicCropInterface::__OptimizeFast_Click( Button& sender, bool checked )
 
 void DynamicCropInterface::__AngleDial_Paint( Control& sender, const Rect& updateRect )
 {
-   Graphics g( sender );
-
    Rect r( sender.BoundsRect() );
 
    int w = r.Width();
    int h = r.Height();
-   int x0 = w >> 1;
-   int y0 = h >> 1;
+   double x0 = w/2.0;
+   double y0 = h/2.0;
+   double f = sender.DisplayPixelRatio();
 
-   g.FillRect( r, RGBAColor( 0, 0, 0 ) );
+   VectorGraphics g( sender );
+   if ( f > 1 )
+      g.EnableAntialiasing();
+
+   g.FillRect( r, 0xff000000 );
 
    g.SetBrush( Brush::Null() );
-   g.SetPen( RGBAColor( 127, 127, 127 ) );
+   g.SetPen( 0xff7f7f7f, f );
    g.DrawLine( x0, 0, x0, h );
    g.DrawLine( 0, y0, w, y0 );
 
    g.EnableAntialiasing();
-
    g.DrawEllipse( r );
 
    double sa, ca;
    SinCos( instance.p_angle, sa, ca );
-   int x1 = RoundI( x0 + 0.5F*w*ca );
-   int y1 = RoundI( y0 - 0.5F*h*sa );
+   double x1 = x0 + 0.5*w*ca;
+   double y1 = y0 - 0.5*h*sa;
 
-   g.SetPen( RGBAColor( 255, 255, 255 ) );
-   g.SetBrush( RGBAColor( 255, 255, 255 ) );
+   g.SetPen( 0xffffffff, f );
+   g.SetBrush( 0xffffffff );
    g.DrawLine( x0, y0, x1, y1 );
-   g.DrawRect( x1-2, y1-2, x1+3, y1+3 );
+   double d3 = f*3;
+   g.DrawRect( x1-d3, y1-d3, x1+d3, y1+d3 );
 }
 
 void DynamicCropInterface::__AngleDial_MouseMove( Control& sender, const Point& pos, unsigned buttons, unsigned modifiers )
@@ -1635,12 +1587,12 @@ void DynamicCropInterface::__Scale_ValueUpdated( NumericEdit& sender, double val
    if ( sender == GUI->ScaleX_NumericEdit )
    {
       instance.p_scaleX = value;
-      GUI->ScaledWidth_NumericEdit.SetValue( Max( 1, RoundI( value*width ) ) );
+      GUI->ScaledWidth_NumericEdit.SetValue( Max( 1, RoundInt( value*width ) ) );
    }
    else if ( sender == GUI->ScaleY_NumericEdit )
    {
       instance.p_scaleY = value;
-      GUI->ScaledHeight_NumericEdit.SetValue( Max( 1, RoundI( value*height ) ) );
+      GUI->ScaledHeight_NumericEdit.SetValue( Max( 1, RoundInt( value*height ) ) );
    }
 }
 
@@ -1705,17 +1657,17 @@ void DynamicCropInterface::__ColorSample_Paint( Control& sender, const Rect& upd
       color = RGBAColor( L, L, L );
    }
 
-   SetAlpha( color, uint8( RoundI( 255*instance.p_fillColor[3] ) ) );
+   SetAlpha( color, uint8( RoundInt( 255*instance.p_fillColor[3] ) ) );
 
    if ( Alpha( color ) != 0 )
    {
-      g.SetBrush( Bitmap( ":/image-window/transparent-small.png" ) );
+      g.SetBrush( Bitmap( sender.ScaledResource( ":/image-window/transparent-small.png" ) ) );
       g.SetPen( Pen::Null() );
       g.DrawRect( sender.BoundsRect() );
    }
 
    g.SetBrush( color );
-   g.SetPen( RGBAColor( 0, 0, 0 ) );
+   g.SetPen( 0xff000000, sender.DisplayPixelRatio() );
    g.DrawRect( sender.BoundsRect() );
 }
 
@@ -1848,7 +1800,7 @@ DynamicCropInterface::GUIData::GUIData( DynamicCropInterface& w )
    OptimizeFast_CheckBox.SetText( "Use fast rotations" );
    OptimizeFast_CheckBox.OnClick( (Button::click_event_handler)&DynamicCropInterface::__OptimizeFast_Click, w );
 
-   RotationBottom_Sizer.AddSpacing( labelWidth1+4 );
+   RotationBottom_Sizer.AddUnscaledSpacing( labelWidth1 + w.LogicalPixelsToPhysical( 4 ) );
    RotationBottom_Sizer.Add( OptimizeFast_CheckBox, 100 );
 
    Rotation_Sizer.SetSpacing( 4 );
@@ -1996,7 +1948,7 @@ DynamicCropInterface::GUIData::GUIData( DynamicCropInterface& w )
    Alpha_NumericControl.SetPrecision( 6 );
    Alpha_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&DynamicCropInterface::__FilColor_ValueUpdated, w );
 
-   ColorSample_Control.SetFixedHeight( 20 );
+   ColorSample_Control.SetScaledFixedHeight( 20 );
    ColorSample_Control.OnPaint( (Control::paint_event_handler)&DynamicCropInterface::__ColorSample_Paint, w );
 
    FillColor_Sizer.SetSpacing( 4 );
@@ -2040,5 +1992,5 @@ DynamicCropInterface::GUIData::GUIData( DynamicCropInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF DynamicCropInterface.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF DynamicCropInterface.cpp - Released 2015/07/31 11:49:48 UTC

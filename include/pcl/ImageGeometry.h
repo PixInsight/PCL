@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ImageGeometry.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ImageGeometry.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_ImageGeometry_h
 #define __PCL_ImageGeometry_h
@@ -385,23 +388,17 @@ protected:
 
    Geometry* m_geometry;
 
-   ImageGeometry() : m_geometry( 0 )
+   ImageGeometry() : m_geometry( nullptr )
    {
    }
 
-   ImageGeometry( const ImageGeometry& x ) : m_geometry( x.m_geometry )
-   {
-   }
+   ImageGeometry( const ImageGeometry& ) = default;
+
+   ImageGeometry& operator =( const ImageGeometry& ) = default;
 
    virtual ~ImageGeometry()
    {
-      m_geometry = 0;
-   }
-
-   ImageGeometry& operator =( const ImageGeometry& x )
-   {
-      m_geometry = x.m_geometry;
-      return *this;
+      m_geometry = nullptr;
    }
 
    void Swap( ImageGeometry& image )
@@ -422,5 +419,5 @@ protected:
 
 #endif   // __PCL_ImageGeometry_h
 
-// ****************************************************************************
-// EOF pcl/ImageGeometry.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ImageGeometry.h - Released 2015/07/30 17:15:18 UTC

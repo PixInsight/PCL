@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard JPEG File Format Module Version 01.00.01.0228
-// ****************************************************************************
-// JPEG.cpp - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard JPEG File Format Module Version 01.00.03.0249
+// ----------------------------------------------------------------------------
+// JPEG.cpp - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard JPEG PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "JPEG.h"
 
@@ -85,79 +89,75 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-// Custom JPEG error manager.
-// We want to throw a C++ exception when an error occurs within the IJG
-// library. This is done in routine pi_jpeg_error_exit() below.
-
-struct pi_jpeg_error_mgr
+/*
+ * Custom JPEG error manager.
+ * We want to throw a C++ exception when an error occurs within the IJG
+ * library. This is done in routine JPEGErrorExit() below.
+ */
+struct JPEGErrorManager
 {
    // ### Do not change the order of members in this structure.
    //     A pointer to this structure must be castable to ::jpeg_error_mgr*.
-   ::jpeg_error_mgr  error;
-   String            path;
+   ::jpeg_error_mgr error;
+   String           path;
 
-   pi_jpeg_error_mgr( const String& _path ) : path( _path )
+   JPEGErrorManager( const String& _path ) : path( _path )
    {
    }
 };
 
-static void pi_jpeg_error_exit( j_common_ptr cinfo )
+static void JPEGErrorExit( j_common_ptr cinfo )
 {
    const jpeg_error_mgr* e = (const jpeg_error_mgr*)cinfo->err;
-   const pi_jpeg_error_mgr* p = (const pi_jpeg_error_mgr*)e;
-
-   IsoString msg;
-   msg.Reserve( JMSG_LENGTH_MAX );
-   e->format_message( cinfo, msg.c_str() );
-
-   throw JPEG::IJGLibraryError( p->path, String( msg ) );
+   const JPEGErrorManager* p = (const JPEGErrorManager*)e;
+   char msg[ JMSG_LENGTH_MAX+16 ];
+   e->format_message( cinfo, msg );
+   throw JPEG::Error( p->path, String( msg ) );
 }
 
 // ----------------------------------------------------------------------------
 
 struct JPEGFileData
 {
-   FILE*  handle;       // file stream
-   void*  compressor;   // IJG's compression struct
-   void*  decompressor; // IJG's decompression strct
-   void*  errorManager; // custom IJG error mgr
+   FILE*  handle       = nullptr; // file stream
+   void*  compressor   = nullptr; // IJG's compression struct
+   void*  decompressor = nullptr; // IJG's decompression strct
+   void*  errorManager = nullptr; // custom IJG error mgr
 
    double lowerRange;   // safe copies of critical parameters
    double upperRange;
 
-   JPEGFileData() : handle( 0 ), compressor( 0 ), decompressor( 0 ), errorManager( 0 )
-   {
-   }
+   JPEGFileData() = default;
 
    ~JPEGFileData()
    {
-      if ( decompressor != 0 )
+      if ( decompressor != nullptr )
       {
          ::jpeg_destroy_decompress( j_decompress_ptr( decompressor ) );
-         delete j_decompress_ptr( decompressor ), decompressor = 0;
+         delete j_decompress_ptr( decompressor ), decompressor = nullptr;
       }
 
-      if ( handle != 0 )
-         ::fclose( handle ), handle = 0;
+      if ( handle != nullptr )
+         ::fclose( handle ), handle = nullptr;
 
-      if ( compressor != 0 )
+      if ( compressor != nullptr )
       {
          ::jpeg_destroy_compress( j_compress_ptr( compressor ) );
-         delete j_compress_ptr( compressor ), compressor = 0;
+         delete j_compress_ptr( compressor ), compressor = nullptr;
       }
 
-      if ( errorManager != 0 )
-         delete (pi_jpeg_error_mgr*)errorManager, errorManager = 0;
+      if ( errorManager != nullptr )
+         delete (JPEGErrorManager*)errorManager, errorManager = nullptr;
    }
 };
 
 // ----------------------------------------------------------------------------
 
-void JPEG::__Close()
+void JPEG::CloseStream()
 {
    // Close the JPEG file stream and clean up IJG software data.
-   if ( fileData != 0 )
-      delete fileData, fileData = 0;
+   if ( fileData != nullptr )
+      delete fileData, fileData = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -169,12 +169,12 @@ void JPEG::__Close()
 
 bool JPEGReader::IsOpen() const
 {
-   return fileData != 0 && fileData->handle != 0;
+   return fileData != nullptr && fileData->handle != nullptr;
 }
 
 void JPEGReader::Close()
 {
-   JPEG::__Close();
+   JPEG::CloseStream();
 }
 
 #define info      ((*images).info)
@@ -226,11 +226,11 @@ void JPEGReader::Open( const String& _path )
       // Set up normal JPEG error routines, passing a pointer to our custom
       // error handler structure.
       jpeg_decompressor->err = ::jpeg_std_error( (::jpeg_error_mgr*)
-                  (fileData->errorManager = new pi_jpeg_error_mgr( path )) );
+                  (fileData->errorManager = new JPEGErrorManager( path )) );
 
       // Override error_exit. JPEG library errors will be handled by throwing
-      // exceptions from the pi_jpeg_error_exit() routine.
-      ((pi_jpeg_error_mgr*)fileData->errorManager)->error.error_exit = pi_jpeg_error_exit;
+      // exceptions from the JPEGErrorExit() routine.
+      ((JPEGErrorManager*)fileData->errorManager)->error.error_exit = JPEGErrorExit;
 
       // Initialize the JPEG decompression object.
       ::jpeg_create_decompress( jpeg_decompressor );
@@ -289,7 +289,7 @@ void JPEGReader::Open( const String& _path )
 
       jpegOptions.quality = JPEGQuality::Unknown;
 
-      if ( jpeg_decompressor->marker_list != 0 )
+      if ( jpeg_decompressor->marker_list != nullptr )
       {
          const jpeg_marker_struct* m = jpeg_decompressor->marker_list;
 
@@ -309,7 +309,7 @@ void JPEGReader::Open( const String& _path )
                break;
             }
          }
-         while ( (m = m->next) != 0 );
+         while ( (m = m->next) != nullptr );
       }
 
       jpegOptions.progressive = jpeg_decompressor->progressive_mode;
@@ -326,7 +326,6 @@ void JPEGReader::Open( const String& _path )
                                              ColorSpace::Gray : ColorSpace::RGB;
       info.supported = true;
    }
-
    catch ( ... )
    {
       Close();
@@ -343,8 +342,8 @@ bool JPEGReader::Extract( ICCProfile& icc )
    if ( !IsOpen() )
       return false;
 
-   if ( jpeg_decompressor->marker_list == 0 )
-      return false;
+   if ( jpeg_decompressor->marker_list == nullptr )
+      return true;
 
    ByteArray iccData;
    uint32 iccSize = 0;
@@ -377,7 +376,7 @@ bool JPEGReader::Extract( ICCProfile& icc )
             // big endian byte order.
             iccSize = BigToLittleEndian( *(const uint32*)iccChunkData );
             if ( iccSize == 0 )
-               return false;
+               return true;
 
             iccData = ByteArray( size_type( iccSize ) );
          }
@@ -386,7 +385,7 @@ bool JPEGReader::Extract( ICCProfile& icc )
 
          // Guard us against insane ICC profile data.
          if ( iccChunkOffset+iccChunkSize > iccSize )
-            return false;
+            return true;
 
          ::memcpy( iccData.At( iccChunkOffset ), iccChunkData, iccChunkSize );
 
@@ -397,10 +396,7 @@ bool JPEGReader::Extract( ICCProfile& icc )
             break;
       }
    }
-   while ( (m = m->next) != 0 );
-
-   if ( iccData.IsEmpty() )
-      return false;
+   while ( (m = m->next) != nullptr );
 
    icc.Set( iccData );
    return true;
@@ -413,49 +409,43 @@ bool JPEGReader::Extract( IPTCPhotoInfo& iptc )
 {
    iptc.Clear();
 
-   if ( IsOpen() )
+   if ( !IsOpen() )
+      return false;
+
+   if ( jpeg_decompressor->marker_list == nullptr )
+      return true;
+
+   const ::jpeg_marker_struct* m = jpeg_decompressor->marker_list;
+   do
    {
-      if ( jpeg_decompressor->marker_list != 0 )
+      if ( (!STRNCASECMP( (const char*)m->data, "IPTCPhotoInfo", 13 ) ||
+            !STRNCASECMP( (const char*)m->data, "IPTC PhotoInfo", 14 ) ||
+            !STRNCASECMP( (const char*)m->data, "IPTC_PhotoInfo", 14 ) ||
+            !STRNCASECMP( (const char*)m->data, "IPTC Photo Info", 15 ) ||
+            !STRNCASECMP( (const char*)m->data, "IPTC_Photo_Info", 15 )) )
       {
-         const ::jpeg_marker_struct* m = jpeg_decompressor->marker_list;
-
-         do
-         {
-            if ( (!STRNCASECMP( (const char*)m->data, "IPTCPhotoInfo", 13 ) ||
-                  !STRNCASECMP( (const char*)m->data, "IPTC PhotoInfo", 14 ) ||
-                  !STRNCASECMP( (const char*)m->data, "IPTC_PhotoInfo", 14 ) ||
-                  !STRNCASECMP( (const char*)m->data, "IPTC Photo Info", 15 ) ||
-                  !STRNCASECMP( (const char*)m->data, "IPTC_Photo_Info", 15 )) )
-            {
-               // Find beginning of IPTC data block
-               const char* iptcData = (const char*)::memchr( (const char*)m->data, 0x1c, m->data_length );
-
-               if ( iptcData != 0 )
-               {
-                  iptc.GetInfo( iptcData, m->data_length - (iptcData - (const char*)m->data) );
-                  return true;
-               }
-
-               break;
-            }
-         }
-         while ( (m = m->next) != 0 );
+         // Find beginning of IPTC data block
+         const char* iptcData = (const char*)::memchr( (const char*)m->data, 0x1c, m->data_length );
+         if ( iptcData != nullptr )
+            iptc.GetInfo( iptcData, m->data_length - (iptcData - (const char*)m->data) );
+         break;
       }
    }
+   while ( (m = m->next) != nullptr );
 
-   return false;
+   return true;
 }
 */
 // ----------------------------------------------------------------------------
 
-template <class P> inline
-static void __ReadImage( GenericImage<P>& img, JPEGReader& reader, JPEGFileData* fileData )
+template <class P>
+static void ReadJPEGImage( GenericImage<P>& img, JPEGReader& reader, JPEGFileData* fileData )
 {
    if ( !reader.IsOpen() )
       throw JPEG::InvalidReadOperation( String() );
 
-   JSAMPLE* buffer = 0; // one-row sample array for scanline reading
-   typename P::sample** v = 0;   // pointers to destination scan lines
+   JSAMPLE* buffer = nullptr;        // one-row sample array for scanline reading
+   typename P::sample** v = nullptr; // pointers to destination scan lines
 
    try
    {
@@ -511,8 +501,8 @@ static void __ReadImage( GenericImage<P>& img, JPEGReader& reader, JPEGFileData*
       }
 
       // Clean up temporary structures.
-      delete [] v, v = 0;
-      delete [] buffer, buffer = 0;
+      delete [] v, v = nullptr;
+      delete [] buffer, buffer = nullptr;
 
       // Finish decompression.
       ::jpeg_finish_decompress( jpeg_decompressor );
@@ -520,14 +510,13 @@ static void __ReadImage( GenericImage<P>& img, JPEGReader& reader, JPEGFileData*
       // ### TODO --> At this point we might check whether any corrupt-data
       // warnings occurred (test whether jerr.pub.num_warnings is nonzero).
    }
-
    catch ( ... )
    {
       reader.Close();
 
-      if ( buffer != 0 )
+      if ( buffer != nullptr )
          delete [] buffer;
-      if ( v != 0 )
+      if ( v != nullptr )
          delete [] v;
 
       img.FreeData();
@@ -561,29 +550,29 @@ static void __ReadImage( GenericImage<P>& img, JPEGReader& reader, JPEGFileData*
 
 void JPEGReader::ReadImage( FImage& img )
 {
-   __ReadImage( img, *this, fileData );
+   ReadJPEGImage( img, *this, fileData );
    NORMALIZE( FImage )
 }
 
 void JPEGReader::ReadImage( DImage& img )
 {
-   __ReadImage( img, *this, fileData );
+   ReadJPEGImage( img, *this, fileData );
    NORMALIZE( DImage )
 }
 
 void JPEGReader::ReadImage( UInt8Image& img )
 {
-   __ReadImage( img, *this, fileData );
+   ReadJPEGImage( img, *this, fileData );
 }
 
 void JPEGReader::ReadImage( UInt16Image& img )
 {
-   __ReadImage( img, *this, fileData );
+   ReadJPEGImage( img, *this, fileData );
 }
 
 void JPEGReader::ReadImage( UInt32Image& img )
 {
-   __ReadImage( img, *this, fileData );
+   ReadJPEGImage( img, *this, fileData );
 }
 
 // ----------------------------------------------------------------------------
@@ -594,12 +583,12 @@ void JPEGReader::ReadImage( UInt32Image& img )
 
 bool JPEGWriter::IsOpen() const
 {
-   return fileData != 0 && !path.IsEmpty();
+   return fileData != nullptr && !path.IsEmpty();
 }
 
 void JPEGWriter::Close()
 {
-   JPEG::__Close();
+   JPEG::CloseStream();
 }
 
 void JPEGWriter::Create( const String& filePath, int count )
@@ -618,7 +607,7 @@ void JPEGWriter::Create( const String& filePath, int count )
 
    Reset();
 
-   if ( fileData == 0 )
+   if ( fileData == nullptr )
       fileData = new JPEGFileData;
 
 #ifdef __PCL_WINDOWS
@@ -631,8 +620,8 @@ void JPEGWriter::Create( const String& filePath, int count )
 // ----------------------------------------------------------------------------
 
 template <class P> inline
-static void __WriteImage( const GenericImage<P>& img, JPEGWriter& writer,
-                          const ICCProfile& icc, JPEGFileData* fileData )
+static void WriteJPEGImage( const GenericImage<P>& img, JPEGWriter& writer,
+                            const ICCProfile& icc, JPEGFileData* fileData )
 {
    if ( !writer.IsOpen() )
       throw JPEG::WriterNotInitialized( String() );
@@ -679,11 +668,11 @@ static void __WriteImage( const GenericImage<P>& img, JPEGWriter& writer,
       // Set up normal JPEG error routines, passing a pointer to our custom
       // error handler structure.
       jpeg_compressor->err = ::jpeg_std_error(
-         (::jpeg_error_mgr*)(fileData->errorManager = new pi_jpeg_error_mgr( writer.Path() )) );
+         (::jpeg_error_mgr*)(fileData->errorManager = new JPEGErrorManager( writer.Path() )) );
 
       // Override error_exit. JPEG library errors will be handled by throwing
-      // exceptions from the pi_jpeg_error_exit() routine.
-      ((pi_jpeg_error_mgr*)fileData->errorManager)->error.error_exit = pi_jpeg_error_exit;
+      // exceptions from the JPEGErrorExit() routine.
+      ((JPEGErrorManager*)fileData->errorManager)->error.error_exit = JPEGErrorExit;
 
       // Initialize the JPEG compression object.
       ::jpeg_create_compress( jpeg_compressor );
@@ -801,7 +790,7 @@ static void __WriteImage( const GenericImage<P>& img, JPEGWriter& writer,
       // Output IPTC PhotoInfo data.
       // We use an APP13 marker, as recommended by IPTC.
 
-      if ( iptc != 0 )
+      if ( iptc != nullptr )
       {
          size_type byteCount = iptc->MakeInfo( iptcPureData );
 
@@ -810,12 +799,12 @@ static void __WriteImage( const GenericImage<P>& img, JPEGWriter& writer,
             iptcData = new char[ byteCount+14 ];
             ::strcpy( (char*)iptcData, "IPTCPhotoInfo" );
             ::memcpy( ((char*)iptcData)+14, iptcPureData, byteCount );
-            delete (uint8*)iptcPureData, iptcPureData = 0;
+            delete (uint8*)iptcPureData, iptcPureData = nullptr;
 
             ::jpeg_write_marker( jpeg_compressor, JPEG_APP0+13,
                   (const JOCTET *)iptcData, unsigned( byteCount+14 ) );
 
-            delete (uint8*)iptcData, iptcData = 0;
+            delete (uint8*)iptcData, iptcData = nullptr;
          }
       }
       */
@@ -881,48 +870,48 @@ static void __WriteImage( const GenericImage<P>& img, JPEGWriter& writer,
       ::jpeg_finish_compress( jpeg_compressor );
 
       // Close the output file.
-      ::fclose( fileData->handle ), fileData->handle = 0;
+      ::fclose( fileData->handle ), fileData->handle = nullptr;
 
       // Release the JPEG compression object.
       ::jpeg_destroy_compress( jpeg_compressor );
-      delete jpeg_compressor, fileData->compressor = 0;
+      delete jpeg_compressor, fileData->compressor = nullptr;
    }
    catch ( ... )
    {
-      if ( fileData->handle != 0 )
-         ::fclose( fileData->handle ), fileData->handle = 0;
+      if ( fileData->handle != nullptr )
+         ::fclose( fileData->handle ), fileData->handle = nullptr;
       throw;
    }
 }
 
 void JPEGWriter::WriteImage( const FImage& img )
 {
-   __WriteImage( img, *this, icc, fileData );
+   WriteJPEGImage( img, *this, icc, fileData );
 }
 
 void JPEGWriter::WriteImage( const DImage& img )
 {
-   __WriteImage( img, *this, icc, fileData );
+   WriteJPEGImage( img, *this, icc, fileData );
 }
 
 void JPEGWriter::WriteImage( const UInt8Image& img )
 {
-   __WriteImage( img, *this, icc, fileData );
+   WriteJPEGImage( img, *this, icc, fileData );
 }
 
 void JPEGWriter::WriteImage( const UInt16Image& img )
 {
-   __WriteImage( img, *this, icc, fileData );
+   WriteJPEGImage( img, *this, icc, fileData );
 }
 
 void JPEGWriter::WriteImage( const UInt32Image& img )
 {
-   __WriteImage( img, *this, icc, fileData );
+   WriteJPEGImage( img, *this, icc, fileData );
 }
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-// ****************************************************************************
-// EOF JPEG.cpp - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF JPEG.cpp - Released 2015/07/31 11:49:40 UTC

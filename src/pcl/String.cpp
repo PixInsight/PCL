@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/String.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/String.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,56 +47,154 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
-#include <pcl/String.h>
+#include <pcl/AutoLock.h>
 #include <pcl/Exception.h>
+#include <pcl/Random.h>
+#include <pcl/String.h>
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <errno.h>
 
-// Starting length in characters of _vsnprintf buffers used in non-MSVC
-// versions (e.g. GCC) of formatted output routines.
-#ifndef _MSC_VER
-#  ifndef __PCL_VSNPRINTF_BASE_SIZE
-#  define __PCL_VSNPRINTF_BASE_SIZE 80
-#  endif
+/*
+ * Starting buffer length in characters for VFormat() and AppendVFormat().
+ */
+#ifndef __PCL_STRING_VFORMAT_BASE_SIZE
+#  define __PCL_STRING_VFORMAT_BASE_SIZE size_type( 128 )
 #endif
+
+/*
+ * Platform-dependent function signatures.
+ */
+#ifdef __PCL_WINDOWS // VC++ and MinGW
+#  define VSNPRINTF ::_vsnprintf
+#  define VSWPRINTF ::_vsnwprintf
+#else                // GCC and Clang on UNIX/Linux
+#  define VSNPRINTF ::vsnprintf
+#  define VSWPRINTF ::vswprintf
+#endif
+
+/*
+ * Boolean conversions can be formalized as type independent.
+ */
+#define PCL_TO_BOOL_BODY()                                                    \
+   const_iterator p = char_traits::SearchTrimLeft( Begin(), End() );          \
+   if ( p == End() )                                                          \
+      throw ParseError( "Parsing Boolean expression: empty string" );         \
+   switch ( char_traits::SearchTrimRight( p, End() ) - p )                    \
+   {                                                                          \
+   case 1:                                                                    \
+      switch ( *p )                                                           \
+      {                                                                       \
+      case char_type( '0' ):                                                  \
+      case char_type( 'F' ):                                                  \
+      case char_type( 'f' ):                                                  \
+         return false;                                                        \
+      case char_type( '1' ):                                                  \
+      case char_type( 'T' ):                                                  \
+      case char_type( 't' ):                                                  \
+         return true;                                                         \
+      default:                                                                \
+         break;                                                               \
+      }                                                                       \
+      break;                                                                  \
+   case 4:                                                                    \
+      if ( (p[0] == char_type( 't' ) || p[0] == char_type( 'T' )) &&          \
+           (p[1] == char_type( 'r' ) || p[1] == char_type( 'R' )) &&          \
+           (p[2] == char_type( 'u' ) || p[2] == char_type( 'U' )) &&          \
+           (p[3] == char_type( 'e' ) || p[3] == char_type( 'E' )) )           \
+         return true;                                                         \
+      break;                                                                  \
+   case 5:                                                                    \
+      if ( (p[0] == char_type( 'f' ) || p[0] == char_type( 'F' )) &&          \
+           (p[1] == char_type( 'a' ) || p[1] == char_type( 'A' )) &&          \
+           (p[2] == char_type( 'l' ) || p[2] == char_type( 'L' )) &&          \
+           (p[3] == char_type( 's' ) || p[3] == char_type( 'S' )) &&          \
+           (p[4] == char_type( 'e' ) || p[4] == char_type( 'E' )) )           \
+         return false;                                                        \
+      break;                                                                  \
+   default:                                                                   \
+      break;                                                                  \
+   }                                                                          \
+   throw ParseError( "Parsing Boolean expression: invalid Boolean literal: " + *this )
+
+#define PCL_TRY_TO_BOOL_BODY()                                                \
+   const_iterator p = char_traits::SearchTrimLeft( Begin(), End() );          \
+   if ( p == End() )                                                          \
+      return false;                                                           \
+   bool ok = true;                                                            \
+   switch ( char_traits::SearchTrimRight( p, End() ) - p )                    \
+   {                                                                          \
+   case 1:                                                                    \
+      switch ( *p )                                                           \
+      {                                                                       \
+      case char_type( '0' ):                                                  \
+      case char_type( 'F' ):                                                  \
+      case char_type( 'f' ):                                                  \
+         value = false;                                                       \
+         break;                                                               \
+      case char_type( '1' ):                                                  \
+      case char_type( 'T' ):                                                  \
+      case char_type( 't' ):                                                  \
+         value = true;                                                        \
+         break;                                                               \
+      default:                                                                \
+         ok = false;                                                          \
+         break;                                                               \
+      }                                                                       \
+      break;                                                                  \
+   case 4:                                                                    \
+      if ( (p[0] == char_type( 't' ) || p[0] == char_type( 'T' )) &&          \
+           (p[1] == char_type( 'r' ) || p[1] == char_type( 'R' )) &&          \
+           (p[2] == char_type( 'u' ) || p[2] == char_type( 'U' )) &&          \
+           (p[3] == char_type( 'e' ) || p[3] == char_type( 'E' )) )           \
+         value = true;                                                        \
+      else                                                                    \
+         ok = false;                                                          \
+      break;                                                                  \
+   case 5:                                                                    \
+      if ( (p[0] == char_type( 'f' ) || p[0] == char_type( 'F' )) &&          \
+           (p[1] == char_type( 'a' ) || p[1] == char_type( 'A' )) &&          \
+           (p[2] == char_type( 'l' ) || p[2] == char_type( 'L' )) &&          \
+           (p[3] == char_type( 's' ) || p[3] == char_type( 'S' )) &&          \
+           (p[4] == char_type( 'e' ) || p[4] == char_type( 'E' )) )           \
+         value = false;                                                       \
+      else                                                                    \
+         ok = false;                                                          \
+      break;                                                                  \
+   default:                                                                   \
+      ok = false;                                                             \
+      break;                                                                  \
+   }                                                                          \
+   return ok
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-
-/*
- * Unicode conversion routines
- */
-
-static const uint16 ReplacementCharacter = 0xfffd;
-
 // ----------------------------------------------------------------------------
 
-String::string_base String::UTF8ToUTF16( const char* str, size_type p, size_type n )
+String String::UTF8ToUTF16( const char* str, size_type p, size_type n )
 {
-   if ( str == 0 || n == 0 )
-      return string_base();
+   static const char16_type s_replacementCharacter = 0xfffd;
 
-   size_type size = ::strlen( str );
-
+   if ( n == 0 )
+      return String();
+   size_type size = IsoCharTraits::Length( str );
    if ( p >= size )
-      return string_base();
+      return String();
 
    n = pcl::Min( n, size-p );
    str += p;
 
-   string_base result;
+   String result;
    result.Reserve( n ); // worst case
 
    char16_type* s16 = result.Begin();
-
-   uint32 uc = 0;
+   uint32 c32 = 0;
    uint32 ucMin = 0;
 
    int moreChars = 0;
@@ -106,59 +207,59 @@ String::string_base String::UTF8ToUTF16( const char* str, size_type p, size_type
 
    for ( ; i < n; ++i )
    {
-      uint8 ch = uint8( str[i] );
+      uint8 c8 = uint8( str[i] );
 
       if ( moreChars )
       {
-         if ( (ch & 0xc0) == 0x80 )
+         if ( (c8 & 0xc0) == 0x80 )
          {
-            uc = (uc << 6) | (ch & 0x3f);
+            c32 = (c32 << 6) | (c8 & 0x3f);
             if ( --moreChars == 0 )
             {
-               if ( uc > 0xffffU && uc < 0x110000U )
+               if ( c32 > 0xffffU && c32 < 0x110000U )
                {
-                  // surrogate pair
-                  *s16++ = CharTraits::HighSurrogate( uc );
-                  uc = CharTraits::LowSurrogate( uc );
+                  // Surrogate pair
+                  *s16++ = CharTraits::HighSurrogate( c32 );
+                  c32 = CharTraits::LowSurrogate( c32 );
                }
-               else if ( uc < ucMin || uc >= 0xd800 && uc <= 0xdfff || uc >= 0xfffe )
+               else if ( c32 < ucMin || c32 >= 0xd800 && c32 <= 0xdfff || c32 >= 0xfffe )
                {
-                  // Overlong seqence, UTF16 surrogate, or BOM
-                  uc = ReplacementCharacter;
+                  // Overlong sequence, UTF16 surrogate, or BOM
+                  c32 = s_replacementCharacter;
                }
-               *s16++ = uc;
+               *s16++ = char16_type( c32 );
             }
          }
          else
          {
             i = errorIndex;
             moreChars = 0;
-            *s16++ = ReplacementCharacter;
+            *s16++ = s_replacementCharacter;
          }
       }
       else
       {
-         if ( ch < 128 )
+         if ( c8 < 128 )
          {
-            *s16++ = ch;
+            *s16++ = c8;
          }
-         else if ( (ch & 0xe0) == 0xc0 )
+         else if ( (c8 & 0xe0) == 0xc0 )
          {
-            uc = ch & 0x1f;
+            c32 = c8 & 0x1f;
             moreChars = 1;
             errorIndex = i;
             ucMin = 0x80;
          }
-         else if ( (ch & 0xf0) == 0xe0 )
+         else if ( (c8 & 0xf0) == 0xe0 )
          {
-            uc = ch & 0x0f;
+            c32 = c8 & 0x0f;
             moreChars = 2;
             errorIndex = i;
             ucMin = 0x800;
          }
-         else if ( (ch & 0xf8) == 0xf0 )
+         else if ( (c8 & 0xf8) == 0xf0 )
          {
-            uc = ch & 0x07;
+            c32 = c8 & 0x07;
             moreChars = 3;
             errorIndex = i;
             ucMin = 0x10000;
@@ -166,7 +267,7 @@ String::string_base String::UTF8ToUTF16( const char* str, size_type p, size_type
          else
          {
             // Error
-            *s16++ = ReplacementCharacter;
+            *s16++ = s_replacementCharacter;
          }
       }
    }
@@ -175,81 +276,75 @@ String::string_base String::UTF8ToUTF16( const char* str, size_type p, size_type
    {
       // Remaining invalid characters.
       for ( size_type i = errorIndex; i < n; ++i )
-         *s16++ = ReplacementCharacter;
+         *s16++ = s_replacementCharacter;
    }
 
-   *s16 = CharTraits::Null();
-   result.Squeeze();
+   result.SetLength( s16 - result.Begin() );
 
    return result;
 }
 
 // ----------------------------------------------------------------------------
 
-String::sstring_base String::UTF16ToUTF8( const char16_type* str, size_type p, size_type n )
+IsoString String::UTF16ToUTF8( const char16_type* str, size_type p, size_type n )
 {
-   if ( str == 0 || n == 0 )
-      return sstring_base();
-
+   if ( n == 0 )
+      return IsoString();
    size_type size = CharTraits::Length( str );
-
    if ( p >= size )
-      return sstring_base();
+      return IsoString();
 
    n = pcl::Min( n, size-p );
    str += p;
 
-   sstring_base result;
-   result.Reserve( n*3 + 1 );
+   IsoString result;
+   result.Reserve( n*4 ); // worst case
 
-   uint8* cursor = (uint8*)result.Begin();
-
-   const char16_type* ch = str;
+   uint8* s8 = (uint8*)result.Begin();
+   const char16_type* s16 = str;
 
    for ( size_type i = 0; i < n; ++i )
    {
-      char16_type u = *ch;
-
-      if ( u < 0x80 )
-         *cursor++ = uint8( u );
+      char16_type c16 = *s16;
+      if ( c16 < 0x80 )
+         *s8++ = uint8( c16 );
       else
       {
-         if ( u < 0x0800 )
-            *cursor++ = 0xc0 | uint8( u >> 6 );
+         if ( c16 < 0x0800 )
+            *s8++ = 0xc0 | uint8( c16 >> 6 );
          else
          {
-            uint32 c32 = u;
+            uint32 c32 = c16;
 
-            if ( CharTraits::IsHighSurrogate( u ) && i < n-1 )
+            if ( CharTraits::IsHighSurrogate( c16 ) && i < n-1 )
             {
-               char16_type low = ch[1];
+               char16_type low = s16[1];
                if ( CharTraits::IsLowSurrogate( low ) )
                {
-                  ++ch;
+                  ++s16;
                   ++i;
-                  c32 = CharTraits::SurrogatePairToUTF32( u, low );
+                  c32 = CharTraits::SurrogatePairToUTF32( c16, low );
                }
             }
 
             if ( c32 > 0xffff )
             {
-               *cursor++ = 0xf0 | uint8( c32 >> 18 );
-               *cursor++ = 0x80 | (uint8( c32 >> 12 ) & 0x3f);
+               *s8++ = 0xf0 | uint8( c32 >> 18 );
+               *s8++ = 0x80 | (uint8( c32 >> 12 ) & 0x3f);
             }
             else
-               *cursor++ = 0xe0 | uint8( c32 >> 12 );
+               *s8++ = 0xe0 | uint8( c32 >> 12 );
 
-            *cursor++ = 0x80 | (uint8( c32 >> 6 ) & 0x3f);
+            *s8++ = 0x80 | (uint8( c32 >> 6 ) & 0x3f);
          }
 
-         *cursor++ = 0x80 | uint8( u & 0x3f );
+         *s8++ = 0x80 | uint8( c16 & 0x3f );
       }
 
-      ++ch;
+      ++s16;
    }
 
-   *cursor = uint8( IsoCharTraits::Null() );
-   result.Squeeze();
+   result.SetLength( s8 - (uint8*)result.Begin() );
 
    return result;
 }
@@ -258,12 +353,11 @@ String::sstring_base String::UTF16ToUTF8( const char16_type* str, size_type p, s
 
 Array<uint32> String::UTF16ToUTF32( const char16_type* str, size_type p, size_type n )
 {
-   Array<uint32> a;
+   Array<uint32> a32;
 
-   if ( str != 0 && n != 0 )
+   if ( n > 0 )
    {
       size_type size = CharTraits::Length( str );
-
       if ( p < size )
       {
          n = pcl::Min( n, size-p );
@@ -271,64 +365,62 @@ Array<uint32> String::UTF16ToUTF32( const char16_type* str, size_type p, size_ty
 
          for ( size_type i = 0; i < n; ++i )
          {
-            char16_type u = str[i];
+            char16_type c16 = str[i];
 
-            if ( CharTraits::IsHighSurrogate( u ) && i < n-1 )
+            if ( CharTraits::IsHighSurrogate( c16 ) && i < n-1 )
             {
                char16_type low = str[i+1];
                if ( CharTraits::IsLowSurrogate( low ) )
                {
-                  a.Add( CharTraits::SurrogatePairToUTF32( u, low ) );
+                  a32.Add( CharTraits::SurrogatePairToUTF32( c16, low ) );
                   ++i;
                   continue;
                }
             }
 
-            a.Add( uint32( u ) );
+            a32.Add( uint32( c16 ) );
          }
       }
    }
 
-   a.Add( uint32( 0 ) );
+   a32.Add( uint32( 0 ) );
 
-   return a;
+   return a32;
 }
 
 // ----------------------------------------------------------------------------
 
-String::string_base String::UTF32ToUTF16( const uint32* str, size_type p, size_type n )
+String String::UTF32ToUTF16( const uint32* str, size_type p, size_type n )
 {
-   if ( str == 0 || n == 0 )
+   if ( str == nullptr || n == 0 )
       return string_base();
 
    size_type size = 0;
    while ( str[size] != 0 )
       ++size;
-
    if ( p >= size )
       return string_base();
 
    n = pcl::Min( n, size-p );
    str += p;
 
-   string_base result;
+   String result;
    result.Reserve( n*2 ); // worst case
 
    char16_type* c16 = result.Begin();
    for ( size_type i = 0; i < n; ++i )
    {
-      uint32 u = str[i];
-      if ( u > 0xffff )
+      uint32 c32 = str[i];
+      if ( c32 > 0xffff )
       {
          // Decompose into a surrogate pair
-         *c16++ = CharTraits::HighSurrogate( u );
-         u = CharTraits::LowSurrogate( u );
+         *c16++ = CharTraits::HighSurrogate( c32 );
+         c32 = CharTraits::LowSurrogate( c32 );
       }
-      *c16++ = u;
+      *c16++ = char16_type( c32 );
    }
 
-   *c16 = CharTraits::Null();
-   result.Squeeze();
+   result.SetLength( c16 - result.Begin() );
 
    return result;
 }
@@ -336,149 +428,20 @@ String::string_base String::UTF32ToUTF16( const uint32* str, size_type p, size_t
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-IsoString::IsoString( const_wchar_iterator t, size_type p, size_type n ) : string_base()
-{
-   if ( t != 0 && n > 0 )
-   {
-      size_type len = wchar_traits::Length( t );
-
-      if ( p < len ) // index must be valid, and t must be non-empty
-      {
-         Reserve( n = pcl::Min( n, len-p ) );
-
-         iterator j = Begin();
-         for ( t += p; n > 0; ++t, ++j, --n )
-            *j = char( *t & 0xff );
-         *j = char_traits::Null();
-      }
-   }
-}
-
-// ----------------------------------------------------------------------------
-
-IsoString& IsoString::operator =( const_wchar_iterator t )
-{
-   size_type n = (t != 0) ? wchar_traits::Length( t ) : 0;
-
-   if ( n > 0 )
-   {
-      if ( !IsUnique() )
-      {
-         if ( !data->Detach() )
-            delete data;
-         data = new Data;
-      }
-
-      MaybeReallocate( n );
-
-      iterator j = Begin();
-      for ( ; n > 0; ++t, ++j, --n )
-         *j = char( *t & 0xff );
-      *j = char_traits::Null();
-   }
-   else
-      Clear();
-
-   return *this;
-}
-
-// ----------------------------------------------------------------------------
-
-void IsoString::c_copy( char* dst, size_type available, size_type i ) const
-{
-   if ( dst != 0 && available != 0 )
-   {
-      if ( --available != 0 )
-      {
-         size_type len = Length();
-
-         if ( i < len )
-         {
-            size_type n = pcl::Min( available, len-i );
-            char_traits::Copy( dst, c_str()+i, n );
-            dst += n;
-         }
-      }
-
-      *dst = char_traits::Null();
-   }
-}
-
-// ----------------------------------------------------------------------------
-
-#ifdef _MSC_VER
-
-// The MS VC++ compiler has the _vscprintf function, that is very nice to
-// generate formatted output dynamically. This function precalculates the
-// required length of the string buffer without actually performing output.
-
 int IsoString::VFormat( const char* fmt, va_list argsList )
 {
-   // Learn the required space.
-   int count = ::_vscprintf( fmt, argsList );
-
-   if ( count > 0 )
-   {
-      // Ensure that we have at least count characters available (plus null)
-      // N.B.: Reserve() causes this string to be unique.
-      Reserve( count );
-
-      // Do the actual formatted output
-      return ::vsprintf( data->string, fmt, argsList );
-   }
-
-   return count;
-}
-
-int IsoString::AppendVFormat( const char* fmt, va_list argsList )
-{
-   int count = ::_vscprintf( fmt, argsList );
-
-   if ( count > 0 )
-   {
-      size_type len = Length();
-
-      // Ensure we have at least the current length plus count additional
-      // characters available, plus the terminating null.
-      // N.B.: Reserve() causes this string to be unique.
-      Reserve( len + count );
-
-      // Do the actual formatted output at the end of current string.
-      return ::vsprintf( data->string+len, fmt, argsList );
-   }
-
-   return count;
-}
-
-#else    // !_MSC_VER
-
-// The GCC compiler does not have _vscprintf or an equivalent function. In this
-// case we use an iterative approach based on vsnprintf. Indeed, for small
-// strings (output length < 80) this version may be faster since it requires
-// only a formatted output operation. However, for larger strings it may be
-// considerably slower... fortunately small formatted strings are by far much
-// more frequent.
-
-#ifdef __PCL_WINDOWS
-#define VSNPRINTF ::_vsnprintf   // MinGW
-#else
-#define VSNPRINTF ::vsnprintf    // GCC on Linux
-#endif
-
-int IsoString::VFormat( const char* fmt, va_list argsList )
-{
-   if ( fmt == 0 || *fmt == '\0' )
+   if ( fmt == nullptr || *fmt == '\0' )
    {
       Clear();
       return 0;
    }
 
-   int count = pcl::Max( __PCL_VSNPRINTF_BASE_SIZE, 2*int( ::strlen( fmt ) ) );
-
-   for ( ;; )
+   for ( size_type count = Max( __PCL_STRING_VFORMAT_BASE_SIZE, Capacity() ); ; )
    {
-      // Ensure that we have at least count characters available (plus null)
-      // N.B.: Reserve() causes this string to be unique.
+      /*
+       * Ensure that we have at least count characters available (plus null)
+       * N.B.: Reserve() causes this string to be unique.
+       */
       Reserve( count );
 
       va_list args;
@@ -488,48 +451,49 @@ int IsoString::VFormat( const char* fmt, va_list argsList )
       args = argsList;
 #endif
 
-      // Try to perform the formatted output. vsnprintf will return the
-      // number of characters written, -1 or the required space (depending on
-      // glibc version) if the number of characters to write exceeds count.
-      int n = VSNPRINTF( data->string, size_t( count+1 ), fmt, args );
+      /*
+       * Try to perform the formatted output. vsnprintf will return the number
+       * of characters written, -1 or the required space (depending on glibc
+       * versions) if the number of characters to write exceeds count.
+       */
+      int n = VSNPRINTF( m_data->string, count+1, fmt, args );
 
       va_end( args );
 
-      // If n >= 0 and n <= count, then count chars were sufficient and the
-      // formatted output was successful.
-      if ( n >= 0 && n <= count )
-         return n;
-
-      // Try again with more space
-      if ( n < 0 )      // ** glibc 2.0
+      /*
+       * If n >= 0 and n <= count, then count chars were sufficient and the
+       * formatted output was successful.
+       */
+      if ( n >= 0 && size_type( n ) <= count )
       {
-         count <<= 1;   // double the available space
-
-         // We impose a more than reasonable limit of 256 KiB
-         if ( count > 0x40000 )
-         {
-            Clear();
-            return -1;
-         }
+         SetLength( n );
+         return n;
       }
-      else              // ** glibc >= 2.1
-         count = n;     // vsnprintf returns the required length
+
+      /*
+       * Try again with more space.
+       */
+      if ( n < 0 )               // ** VC++ and glibc 2.0
+         count <<= 1;            //    double the available space
+      else                       // ** glibc >= 2.1
+         count = size_type( n ); //    vsnprintf returns the required length
    }
 }
 
 int IsoString::AppendVFormat( const char* fmt, va_list argsList )
 {
-   if ( fmt == 0 || *fmt == '\0' )
+   if ( fmt == nullptr || *fmt == '\0' )
       return 0;
 
-   int count = pcl::Max( __PCL_VSNPRINTF_BASE_SIZE, 2*int( ::strlen( fmt ) ) );
    size_type len = Length();
 
-   for ( ;; )
+   for ( size_type count = Max( __PCL_STRING_VFORMAT_BASE_SIZE, Available() ); ; )
    {
-      // Ensure we have at least the current length plus count additional
-      // characters available, plus the terminating null.
-      // N.B.: Reserve() causes this string to be unique.
+      /*
+       * Ensure that we have at least the current length plus count additional
+       * characters available, plus the terminating null.
+       * N.B.: Reserve() causes this string to be unique.
+       */
       Reserve( len + count );
 
       va_list args;
@@ -539,97 +503,73 @@ int IsoString::AppendVFormat( const char* fmt, va_list argsList )
       args = argsList;
 #endif
 
-      // Try to perform the formatted output at the end of the current
-      // string. vsnprintf will return the number of characters written, -1 or
-      // the required space (depending on glibc version) if the number of
-      // characters to write exceeds count.
-      int n = VSNPRINTF( data->string+len, size_t( count+1 ), fmt, args );
+      /*
+       * Try to perform the formatted output at the end of the current string.
+       * vsnprintf will return the number of characters written, -1 or the
+       * required space (depending on glibc versions) if the number of
+       * characters to write exceeds count.
+       */
+      int n = VSNPRINTF( m_data->string+len, count+1, fmt, args );
 
       va_end( args );
 
-      // If n >= 0 and n <= count, then count chars were sufficient and the
-      // formatted output was successful.
-      if ( n >= 0 && n <= count )
-         return n;
-
-      // Try again with more space
-      if ( n < 0 )      // ** glibc 2.0
+      /*
+       * If n >= 0 and n <= count, then count chars were sufficient and the
+       * formatted output was successful.
+       */
+      if ( n >= 0 && size_type( n ) <= count )
       {
-         count <<= 1;   // double the available space
-
-         // We impose a more than reasonable limit of 256 KiB
-         if ( count > 0x40000 )
-         {
-            Clear();
-            return -1;
-         }
+         SetLength( len + size_type( n ) );
+         return n;
       }
-      else              // ** glibc >= 2.1
-         count = n;     // vsnprintf returns the required length
+
+      /*
+       * Try again with more space.
+       */
+      if ( n < 0 )               // ** VC++ and glibc 2.0
+         count <<= 1;            //    double the available space
+      else                       // ** glibc >= 2.1
+         count = size_type( n ); //    vsnprintf returns the required length
    }
-}
-
-#endif   // _MSC_VER
-
-// ----------------------------------------------------------------------------
-
-IsoString::wstring_base IsoString::ToString() const
-{
-   wstring_base s;
-
-   size_type n = Length();
-   if ( n != 0 )
-   {
-      s.Reserve( n );
-      register wchar_iterator p = s.Begin();
-      register const uint8* j = reinterpret_cast<const uint8*>( Begin() );
-      for ( ; n > 0; ++p, ++j, --n )
-         *p = wchar_type( *j );
-      *p = wchar_traits::Null();
-   }
-
-   return s;
 }
 
 // ----------------------------------------------------------------------------
 
-IsoString::wstring_base IsoString::MBSToWCS() const
+IsoString::ustring_base IsoString::MBSToWCS() const
 {
-   wstring_base s;
+   ustring_base s;
 
    if ( !IsEmpty() )
    {
-      size_t n;
-
 #ifdef __PCL_WINDOWS
 
       // First call to mbstowcs() to learn the required size
-      n = mbstowcs( 0, Begin(), Length()+1 );
+      size_t n = mbstowcs( nullptr, Begin(), Length()+1 );
       if ( n == size_t( -1 ) )   // check for conversion error
-         return wstring_base();
+         return ustring_base();
 
       s.Reserve( n + 16 );
 
       n = mbstowcs( (wchar_t*)s.Begin(), Begin(), s.Capacity() );
       if ( n == size_t( -1 ) )   // check for conversion error
-         return wstring_base();
+         return ustring_base();
 
-      s[n] = wchar_traits::Null();
+      s.SetLength( n );
 
 #else // !__PCL_WINDOWS
 
       Array<wchar_t> w;
 
       // First call to mbstowcs() to learn the required size
-      n = mbstowcs( 0, Begin(), Length()+1 );
+      size_t n = mbstowcs( nullptr, Begin(), Length()+1 );
       if ( n == size_t( -1 ) )   // check for conversion error
-         return wstring_base();
+         return ustring_base();
 
       w.Add( wchar_t( 0 ), n + 16 );
 
       n = mbstowcs( w.Begin(), Begin(), w.Capacity() );
       if ( n == size_t( -1 ) )   // check for conversion error
-         return wstring_base();
+         return ustring_base();
 
       w[n] = wchar_t( 0 );
 
@@ -645,100 +585,85 @@ IsoString::wstring_base IsoString::MBSToWCS() const
 
 bool IsoString::ToBool() const
 {
-   if ( CompareIC( "true" ) == 0 )
-      return true;
-   if ( CompareIC( "false" ) == 0 )
-      return false;
-   if ( Compare( "1" ) == 0 )
-      return true;
-   if ( Compare( "0" ) == 0 )
-      return false;
-   if ( Compare( "T" ) == 0 )
-      return true;
-   if ( Compare( "F" ) == 0 )
-      return false;
-   throw ParseError( "Invalid boolean literal: " + *this );
+   PCL_TO_BOOL_BODY();
 }
 
 bool IsoString::TryToBool( bool& value ) const
 {
-   if ( CompareIC( "true" ) == 0 )
-      value = true;
-   else if ( CompareIC( "false" ) == 0 )
-      value = false;
-   else if ( Compare( "1" ) == 0 )
-      value = true;
-   else if ( Compare( "0" ) == 0 )
-      value = false;
-   else if ( Compare( "T" ) == 0 )
-      value = true;
-   else if ( Compare( "F" ) == 0 )
-      value = false;
-   else
-      return false;
-   return true;
+   PCL_TRY_TO_BOOL_BODY();
+}
+
+// ----------------------------------------------------------------------------
+
+float IsoString::ToFloat() const
+{
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 == End() )
+      throw ParseError( "Parsing 32-bit floating point expression: empty string" );
+   const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+   iterator endptr = nullptr;
+   errno = 0;
+   float val = ::strtof( p1, &endptr );
+   if ( errno == ERANGE )
+      throw ParseError( "Parsing 32-bit floating point expression: out of the representable range", *this );
+   if ( errno != 0 || (endptr != nullptr && endptr != p2) )
+      throw ParseError( "Parsing 32-bit floating point expression: conversion error", *this,
+                        (endptr != nullptr && endptr != p2) ? endptr - Begin() : -1 );
+   return val;
+}
+
+bool IsoString::TryToFloat( float& value ) const
+{
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 < End() )
+   {
+      const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+      iterator endptr = nullptr;
+      errno = 0;
+      float val = ::strtof( p1, &endptr );
+      if ( errno == 0 && (endptr == nullptr || endptr == p2) )
+      {
+         value = val;
+         return true;
+      }
+   }
+   return false;
 }
 
 // ----------------------------------------------------------------------------
 
 double IsoString::ToDouble() const
 {
-   if ( data->string == 0 )
-      throw ParseError( "Parsing floating point expression: empty string" );
-
-   iterator p1 = SearchTrimLeft();
-   if ( char_traits::IsNull( *p1 ) )
-      throw ParseError( "Parsing floating point expression: empty string" );
-
-   iterator p2 = SearchTrimRight();
-
-   iterator endptr = 0;
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 == End() )
+      throw ParseError( "Parsing 64-bit floating point expression: empty string" );
+   const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+   iterator endptr = nullptr;
    errno = 0;
    double val = ::strtod( p1, &endptr );
-
    if ( errno == ERANGE )
-      throw ParseError( "Parsing floating point expression: out of the representable range", *this );
-
-   if ( errno != 0 || (endptr != 0 && endptr != p2) )
-      throw ParseError( "Parsing floating point expression: conversion error", *this,
-                        (endptr != 0 && endptr != p2) ? endptr - Begin() : -1 );
-
+      throw ParseError( "Parsing 64-bit floating point expression: out of the representable range", *this );
+   if ( errno != 0 || (endptr != nullptr && endptr != p2) )
+      throw ParseError( "Parsing 64-bit floating point expression: conversion error", *this,
+                        (endptr != nullptr && endptr != p2) ? endptr - Begin() : -1 );
    return val;
 }
 
 bool IsoString::TryToDouble( double& value ) const
 {
-   if ( data->string == 0 )
-      return false;
-
-   iterator p1 = SearchTrimLeft();
-   if ( char_traits::IsNull( *p1 ) )
-      return false;
-
-   iterator p2 = SearchTrimRight();
-
-   iterator endptr = 0;
-   errno = 0;
-   double val = ::strtod( p1, &endptr );
-
-   if ( errno == 0 && (endptr == 0 || endptr == p2) )
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 < End() )
    {
-      value = val;
-      return true;
+      const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+      iterator endptr = nullptr;
+      errno = 0;
+      double val = ::strtod( p1, &endptr );
+      if ( errno == 0 && (endptr == nullptr || endptr == p2) )
+      {
+         value = val;
+         return true;
+      }
    }
-
-   return false;
-}
-
-bool IsoString::TryToFloat( float& value ) const
-{
-   double d = value;
-   if ( TryToDouble( d ) )
-   {
-      value = d;
-      return true;
-   }
-
    return false;
 }
 
@@ -746,50 +671,35 @@ bool IsoString::TryToFloat( float& value ) const
 
 long IsoString::ToInt( int base ) const
 {
-   if ( data->string == 0 )
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 == End() )
       throw ParseError( "Parsing integer expression: empty string" );
-
-   iterator p1 = SearchTrimLeft();
-   if ( char_traits::IsNull( *p1 ) )
-      throw ParseError( "Parsing integer expression: empty string" );
-
-   iterator p2 = SearchTrimRight();
-
-   iterator endptr = 0;
+   const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+   iterator endptr = nullptr;
    errno = 0;
    long val = ::strtol( p1, &endptr, base );
-
    if ( errno == ERANGE )
       throw ParseError( "Parsing integer expression: out of the representable range", *this );
-
-   if ( errno != 0 || (endptr != 0 && endptr != p2) )
+   if ( errno != 0 || (endptr != nullptr && endptr != p2) )
       throw ParseError( "Parsing integer expression: conversion error", *this,
-                        (endptr != 0 && endptr != p2) ? endptr - Begin() : -1 );
-
+                        (endptr != nullptr && endptr != p2) ? endptr - Begin() : -1 );
    return val;
 }
 
 bool IsoString::TryToInt( int& value, int base ) const
 {
-   if ( data->string == 0 )
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 == End() )
       return false;
-
-   iterator p1 = SearchTrimLeft();
-   if ( char_traits::IsNull( *p1 ) )
-      return false;
-
-   iterator p2 = SearchTrimRight();
-
-   iterator endptr = 0;
+   const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+   iterator endptr = nullptr;
    errno = 0;
    long val = ::strtol( p1, &endptr, base );
-
-   if ( errno == 0 && (endptr == 0 || endptr == p2) )
+   if ( errno == 0 && (endptr == nullptr || endptr == p2) )
    {
       value = int( val );
       return true;
    }
-
    return false;
 }
 
@@ -797,50 +707,35 @@ bool IsoString::TryToInt( int& value, int base ) const
 
 unsigned long IsoString::ToUInt( int base ) const
 {
-   if ( data->string == 0 )
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 == End() )
       throw ParseError( "Parsing unsigned integer expression: empty string" );
-
-   iterator p1 = SearchTrimLeft();
-   if ( char_traits::IsNull( *p1 ) )
-      throw ParseError( "Parsing unsigned integer expression: empty string" );
-
-   iterator p2 = SearchTrimRight();
-
-   iterator endptr = 0;
+   const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+   iterator endptr = nullptr;
    errno = 0;
    unsigned long val = ::strtoul( p1, &endptr, base );
-
    if ( errno == ERANGE )
       throw ParseError( "Parsing unsigned integer expression: out of the representable range", *this );
-
-   if ( errno != 0 || (endptr != 0 && endptr != p2) )
+   if ( errno != 0 || (endptr != nullptr && endptr != p2) )
       throw ParseError( "Parsing unsigned integer expression: conversion error", *this,
-                        (endptr != 0 && endptr != p2) ? endptr - Begin() : -1 );
-
+                        (endptr != nullptr && endptr != p2) ? endptr - Begin() : -1 );
    return val;
 }
 
 bool IsoString::TryToUInt( unsigned& value, int base ) const
 {
-   if ( data->string == 0 )
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 == End() )
       return false;
-
-   iterator p1 = SearchTrimLeft();
-   if ( char_traits::IsNull( *p1 ) )
-      return false;
-
-   iterator p2 = SearchTrimRight();
-
-   iterator endptr = 0;
+   const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+   iterator endptr = nullptr;
    errno = 0;
    unsigned long val = ::strtoul( p1, &endptr, base );
-
-   if ( errno == 0 && (endptr == 0 || endptr == p2) )
+   if ( errno == 0 && (endptr == nullptr || endptr == p2) )
    {
       value = unsigned( val );
       return true;
    }
-
    return false;
 }
 
@@ -848,16 +743,11 @@ bool IsoString::TryToUInt( unsigned& value, int base ) const
 
 long long IsoString::ToInt64( int base ) const
 {
-   if ( data->string == 0 )
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 == End() )
       throw ParseError( "Parsing 64-bit integer expression: empty string" );
-
-   iterator p1 = SearchTrimLeft();
-   if ( char_traits::IsNull( *p1 ) )
-      throw ParseError( "Parsing 64-bit integer expression: empty string" );
-
-   iterator p2 = SearchTrimRight();
-
-   iterator endptr = 0;
+   const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+   iterator endptr = nullptr;
    errno = 0;
    long long val =
 #ifdef _MSC_VER
@@ -865,29 +755,21 @@ long long IsoString::ToInt64( int base ) const
 #else
       ::strtoll( p1, &endptr, base );
 #endif
-
    if ( errno == ERANGE )
       throw ParseError( "Parsing 64-bit integer expression: out of the representable range", *this );
-
-   if ( errno != 0 || (endptr != 0 && endptr != p2) )
+   if ( errno != 0 || (endptr != nullptr && endptr != p2) )
       throw ParseError( "Parsing 64-bit integer expression: conversion error", *this,
-                        (endptr != 0 && endptr != p2) ? endptr - Begin() : -1 );
-
+                        (endptr != nullptr && endptr != p2) ? endptr - Begin() : -1 );
    return val;
 }
 
 bool IsoString::TryToInt64( long long& value, int base ) const
 {
-   if ( data->string == 0 )
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 == End() )
       return false;
-
-   iterator p1 = SearchTrimLeft();
-   if ( char_traits::IsNull( *p1 ) )
-      return false;
-
-   iterator p2 = SearchTrimRight();
-
-   iterator endptr = 0;
+   const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+   iterator endptr = nullptr;
    errno = 0;
    long long val =
 #ifdef _MSC_VER
@@ -895,13 +777,11 @@ bool IsoString::TryToInt64( long long& value, int base ) const
 #else
       ::strtoll( p1, &endptr, base );
 #endif
-
-   if ( errno == 0 && (endptr == 0 || endptr == p2) )
+   if ( errno == 0 && (endptr == nullptr || endptr == p2) )
    {
       value = val;
       return true;
    }
-
    return false;
 }
 
@@ -909,16 +789,11 @@ bool IsoString::TryToInt64( long long& value, int base ) const
 
 unsigned long long IsoString::ToUInt64( int base ) const
 {
-   if ( data->string == 0 )
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 == End() )
       throw ParseError( "Parsing 64-bit unsigned integer expression: empty string" );
-
-   iterator p1 = SearchTrimLeft();
-   if ( char_traits::IsNull( *p1 ) )
-      throw ParseError( "Parsing 64-bit unsigned integer expression: empty string" );
-
-   iterator p2 = SearchTrimRight();
-
-   iterator endptr = 0;
+   const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+   iterator endptr = nullptr;
    errno = 0;
    unsigned long long val =
 #ifdef _MSC_VER
@@ -926,29 +801,21 @@ unsigned long long IsoString::ToUInt64( int base ) const
 #else
       ::strtoull( Begin(), &endptr, base );
 #endif
-
    if ( errno == ERANGE )
       throw ParseError( "Parsing 64-bit unsigned integer expression: out of the representable range", *this );
-
-   if ( errno != 0 || (endptr != 0 && endptr != p2) )
+   if ( errno != 0 || (endptr != nullptr && endptr != p2) )
       throw ParseError( "Parsing 64-bit unsigned integer expression: conversion error", *this,
-                        (endptr != 0 && endptr != p2) ? endptr - Begin() : -1 );
-
+                        (endptr != nullptr && endptr != p2) ? endptr - Begin() : -1 );
    return val;
 }
 
 bool IsoString::TryToUInt64( unsigned long long& value, int base ) const
 {
-   if ( data->string == 0 )
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 == End() )
       return false;
-
-   iterator p1 = SearchTrimLeft();
-   if ( char_traits::IsNull( *p1 ) )
-      return false;
-
-   iterator p2 = SearchTrimRight();
-
-   iterator endptr = 0;
+   const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+   iterator endptr = nullptr;
    errno = 0;
    unsigned long long val =
 #ifdef _MSC_VER
@@ -956,13 +823,11 @@ bool IsoString::TryToUInt64( unsigned long long& value, int base ) const
 #else
       ::strtoull( Begin(), &endptr, base );
 #endif
-
-   if ( errno == 0 && (endptr == 0 || endptr == p2) )
+   if ( errno == 0 && (endptr == nullptr || endptr == p2) )
    {
       value = val;
       return true;
    }
-
    return false;
 }
 
@@ -971,26 +836,15 @@ bool IsoString::TryToUInt64( unsigned long long& value, int base ) const
 
 void String::Assign( const wchar_t* t )
 {
-   size_type n = (t != 0) ? ::wcslen( t ) : 0;
-
-   if ( n != 0 )
+   size_type len = (t != nullptr) ? ::wcslen( t ) : 0;
+   if ( len > 0 )
    {
-      if ( !IsUnique() )
-      {
-         if ( !data->Detach() )
-            delete data;
-         data = new Data;
-      }
-
-      MaybeReallocate( n );
-
+      MaybeReallocate( len );
 #ifdef __PCL_WINDOWS
-      ::memcpy( Begin(), t, (n + 1) << 1 );
+      CharTraits::Copy( m_data->string, (const char16_type*)t, len );
 #else
-      register iterator i = Begin();
-      for ( ; n > 0; ++i, ++t, --n )
+      for ( iterator i = m_data->string; i < m_data->end; ++i, ++t )
          *i = (*t < 0x10000) ? char_type( *t ) : char_type( '?' );
-      *i = char_traits::Null();
 #endif   // __PCL_WINDOWS
    }
    else
@@ -999,176 +853,40 @@ void String::Assign( const wchar_t* t )
 
 void String::Assign( const wchar_t* t, size_type i, size_type n )
 {
-   size_type len = (t != 0) ? ::wcslen( t ) : 0;
-
+   size_type len = (t != nullptr) ? ::wcslen( t ) : 0;
    if ( i < len )
    {
-      if ( !IsUnique() )
-      {
-         if ( !data->Detach() )
-            delete data;
-         data = new Data;
-      }
-
       MaybeReallocate( n = pcl::Min( n, len-i ) );
-
+      t += i;
 #ifdef __PCL_WINDOWS
-      ::memcpy( Begin(), t+i, (n + 1) << 1 );
+      CharTraits::Copy( m_data->string, (const char16_type*)t, n );
 #else
-      register iterator p = Begin();
-      for ( t += i; n > 0; ++p, ++t, --n )
-         *p = (*t < 0x10000) ? char_type( *t ) : char_type( '?' );
-      *p = char_traits::Null();
+      for ( iterator i = m_data->string; i < m_data->end; ++i, ++t )
+         *i = (*t < 0x10000) ? char_type( *t ) : char_type( '?' );
 #endif   // __PCL_WINDOWS
    }
    else
       Clear();
 }
 
-void String::Assign( String::const_schar_iterator t )
-{
-   size_type n = (t != 0) ? schar_traits::Length( t ) : 0;
-
-   if ( n != 0 )
-   {
-      if ( !IsUnique() )
-      {
-         if ( !data->Detach() )
-            delete data;
-         data = new Data;
-      }
-
-      MaybeReallocate( n );
-
-      register iterator p = Begin();
-      register const uint8* j = reinterpret_cast<const uint8*>( t );
-      for ( ; n > 0; ++p, ++j, --n )
-         *p = char_type( *j );
-      *p = char_traits::Null();
-   }
-   else
-      Clear();
-}
-
-void String::Assign( String::const_schar_iterator t, size_type i, size_type n )
-{
-   size_type len = (t != 0) ? schar_traits::Length( t ) : 0;
-
-   if ( i < len )
-   {
-      if ( !IsUnique() )
-      {
-         if ( !data->Detach() )
-            delete data;
-         data = new Data;
-      }
-
-      MaybeReallocate( n = pcl::Min( n, len-i ) );
-
-      register iterator p = Begin();
-      register const uint8* j = reinterpret_cast<const uint8*>( t ) + i;
-      for ( ; n > 0; ++p, ++j, --n )
-         *p = char_type( *j );
-      *p = char_traits::Null();
-   }
-   else
-      Clear();
-}
-
 // ----------------------------------------------------------------------------
-
-void String::c_copy( char16_type* dst, size_type available, size_type i ) const
-{
-   if ( dst != 0 && available != 0 )
-   {
-      if ( --available != 0 )
-      {
-         size_type len = Length();
-
-         if ( i < len )
-         {
-            size_type n = pcl::Min( available, len-i );
-            char_traits::Copy( dst, c_str()+i, n );
-            dst += n;
-         }
-      }
-
-      *dst = char_traits::Null();
-   }
-}
-
-// ----------------------------------------------------------------------------
-
-#ifdef _MSC_VER
-
-// See the comments for the counterparts of these functions in IsoString:
-// The same is true for _vscwprintf and _vsnwprintf.
 
 int String::VFormat( const wchar_t* fmt, va_list argsList )
 {
-   // Learn the required space.
-   int count = ::_vscwprintf( fmt, argsList );
-
-   if ( count > 0 )
-   {
-      // Ensure that we have at least count characters available (plus null)
-      // N.B.: Reserve() causes this string to be unique.
-      Reserve( count );
-
-      // Do the actual formatted output
-      return ::vswprintf( (wchar_t*)data->string, size_t( count+1 ), fmt, argsList );
-   }
-
-   return count;
-}
-
-int String::AppendVFormat( const wchar_t* fmt, va_list argsList )
-{
-   int count = ::_vscwprintf( fmt, argsList );
-
-   if ( count > 0 )
-   {
-      size_type len = Length();
-
-      // Ensure we have at least the current length plus count additional
-      // characters available, plus the terminating null.
-      // N.B.: Reserve() causes this string to be unique.
-      Reserve( len + count );
-
-      // Do the actual formatted output at the end of current string.
-      return ::vswprintf( (wchar_t*)data->string + len, size_t( count+1 ), fmt, argsList );
-   }
-
-   return count;
-}
-
-#else    // !_MSC_VER
-
-// See the comments for the counterparts of these functions in IsoString:
-// The same is true for _vscwprintf and vsnwprintf.
-
-#ifdef __PCL_WINDOWS
-#define VSWPRINTF ::_vsnwprintf  // MinGW
-#else
-#define VSWPRINTF ::vswprintf    // GCC on Linux
-#endif
-
-int String::VFormat( const wchar_t* fmt, va_list argsList )
-{
-   if ( fmt == 0 || *fmt == 0 )
+   if ( fmt == nullptr || *fmt == 0 )
    {
       Clear();
       return 0;
    }
 
-   int count = pcl::Max( __PCL_VSNPRINTF_BASE_SIZE, 2*int( ::wcslen( fmt ) ) );
+#ifdef __PCL_WINDOWS
 
-#  ifdef __PCL_WINDOWS
-
-   for ( ;; )
+   for ( size_type count = Max( __PCL_STRING_VFORMAT_BASE_SIZE, Capacity() ); ; )
    {
-      // Ensure that we have at least count characters available (plus null)
-      // N.B.: Reserve() causes this string to be unique.
+      /*
+       * Ensure that we have at least count characters available (plus null).
+       * N.B.: Reserve() causes this string to be unique.
+       */
       Reserve( count );
 
       va_list args;
@@ -1178,34 +896,40 @@ int String::VFormat( const wchar_t* fmt, va_list argsList )
       args = argsList;
 #endif
 
-      // Try to perform the formatted output. vswprintf will return the
-      // number of characters written, or -1 if the number of characters to
-      // write exceeds count.
-      int n = VSWPRINTF( (wchar_t*)data->string, size_t( count+1 ), fmt, args );
+      /*
+       * Try to perform the formatted output. vswprintf will return the number
+       * of characters written, or -1 if the number of characters to write
+       * exceeds count.
+       */
+      int n = VSWPRINTF( (wchar_t*)m_data->string, count+1, fmt, args );
 
       va_end( args );
 
-      // If n >= 0 and n <= count, then count chars were sufficient and the
-      // formatted output was successful.
-      if ( n >= 0 && n <= count )
-         return n;
-
-      // Try again with more space
-      // We impose a more than reasonable limit of 512 KiB
-      if ( (count <<= 1) > 0x40000 )
+      /*
+       * If n >= 0 and n <= count, then count chars were sufficient and the
+       * formatted output was successful.
+       */
+      if ( n >= 0 && size_type( n ) <= count )
       {
-         Clear();
-         return -1;
+         SetLength( n );
+         return n;
       }
+
+      /*
+       * Try again with more space.
+       */
+      count <<= 1;
    }
 
-#  else  // !__PCL_WINDOWS
+#else  // !__PCL_WINDOWS
 
    Array<wchar_t> wdata;
 
-   for ( ;; )
+   for ( size_type count = Max( __PCL_STRING_VFORMAT_BASE_SIZE, Capacity() ); ; )
    {
-      // Ensure that we have at least count characters available (plus null)
+      /*
+       * Ensure that we have at least count characters available (plus null).
+       */
       wdata.Reserve( count+1 );
 
       va_list args;
@@ -1215,59 +939,58 @@ int String::VFormat( const wchar_t* fmt, va_list argsList )
       args = argsList;
 #endif
 
-      // Try to perform the formatted output. _vsnprintf will return the
-      // number of characters written, or -1 if the number of characters to
-      // write exceeds count.
-      int n = VSWPRINTF( wdata.Begin(), size_t( count+1 ), fmt, args );
+      /*
+       * Try to perform the formatted output. _vsnprintf will return the number
+       * of characters written, or -1 if the number of characters to write
+       * exceeds count.
+       */
+      int n = VSWPRINTF( wdata.Begin(), count+1, fmt, args );
 
       va_end( args );
 
-      // If n >= 0 and n <= count, then count chars were sufficient and the
-      // formatted output was successful.
-      if ( n >= 0 && n <= count )
+      /*
+       * If n >= 0 and n <= count, then count chars were sufficient and the
+       * formatted output was successful.
+       */
+      if ( n >= 0 && size_type( n ) <= count )
       {
-         if ( n == 0 )
-            Clear();
-         else
+         if ( n > 0 )
          {
-            Reserve( n );
-            Array<wchar_t>::const_iterator i = wdata.Begin();
-            iterator j = data->string;
-            while ( *i != 0 )
-               *j++ = (char16_type)*i++;
-            *j = char_traits::Null();
+            MaybeReallocate( n );
+            Array<wchar_t>::const_iterator w = wdata.Begin();
+            for ( iterator i = m_data->string; i < m_data->end; ++i, ++w )
+               *i = char16_type( *w );
          }
-
+         else
+            Clear();
          return n;
       }
 
-      // Try again with more space
-      // We impose a more than reasonable limit of 512 KiB
-      if ( (count <<= 1) > 0x40000 )
-      {
-         Clear();
-         return -1;
-      }
+      /*
+       * Try again with more space.
+       */
+      count <<= 1;
    }
 
-#  endif // __PCL_WINDOWS
+#endif // __PCL_WINDOWS
 }
 
 int String::AppendVFormat( const wchar_t* fmt, va_list argsList )
 {
-   if ( fmt == 0 || *fmt == 0 )
+   if ( fmt == nullptr || *fmt == 0 )
       return 0;
 
-   int count = pcl::Max( __PCL_VSNPRINTF_BASE_SIZE, 2*int( ::wcslen( fmt ) ) );
    size_type len = Length();
 
 #  ifdef __PCL_WINDOWS
 
-   for ( ;; )
+   for ( size_type count = Max( __PCL_STRING_VFORMAT_BASE_SIZE, Available() ); ; )
    {
-      // Ensure we have at least the current length plus count additional
-      // characters available, plus the terminating null.
-      // N.B.: Reserve() causes this string to be unique.
+      /*
+       * Ensure we have at least the current length plus count additional
+       * characters available, plus the terminating null.
+       * N.B.: Reserve() causes this string to be unique.
+       */
       Reserve( len + count );
 
       va_list args;
@@ -1277,34 +1000,40 @@ int String::AppendVFormat( const wchar_t* fmt, va_list argsList )
       args = argsList;
 #endif
 
-      // Try to perform the formatted output at the end of the current
-      // string. _vsnprintf will return the number of characters written, or
-      // -1 if the number of characters to write exceeds count.
-      int n = VSWPRINTF( (wchar_t*)data->string+len, size_t( count+1 ), fmt, args );
+      /*
+       * Try to perform the formatted output at the end of the current string.
+       * _vsnprintf will return the number of characters written, or -1 if the
+       * number of characters to write exceeds count.
+       */
+      int n = VSWPRINTF( (wchar_t*)m_data->string+len, count+1, fmt, args );
 
       va_end( args );
 
-      // If n >= 0 and n <= count, then count chars were sufficient and the
-      // formatted output was successful.
-      if ( n >= 0 && n <= count )
-         return n;
-
-      // Try again with more space
-      // We impose a more than reasonable limit of 512 KiB
-      if ( (count <<= 1) > 0x40000 )
+      /*
+       * If n >= 0 and n <= count, then count chars were sufficient and the
+       * formatted output was successful.
+       */
+      if ( n >= 0 && size_type( n ) <= count )
       {
-         Clear();
-         return -1;
+         SetLength( len + n );
+         return n;
       }
+
+      /*
+       * Try again with more space.
+       */
+      count <<= 1;
    }
 
-#  else  // !__PCL_WINDOWS
+#else  // !__PCL_WINDOWS
 
    Array<wchar_t> wdata;
 
-   for ( ;; )
+   for ( size_type count = Max( __PCL_STRING_VFORMAT_BASE_SIZE, Capacity() ); ; )
    {
-      // Ensure that we have at least count characters available (plus null)
+      /*
+       * Ensure that we have at least count characters available (plus null).
+       */
       wdata.Reserve( count+1 );
 
       va_list args;
@@ -1314,85 +1043,71 @@ int String::AppendVFormat( const wchar_t* fmt, va_list argsList )
       args = argsList;
 #endif
 
-      // Try to perform the formatted output. _vsnprintf will return the
-      // number of characters written, or -1 if the number of characters to
-      // write exceeds count.
-      int n = VSWPRINTF( wdata.Begin(), size_t( count+1 ), fmt, args );
+      /*
+       * Try to perform the formatted output. _vsnprintf will return the number
+       * of characters written, or -1 if the number of characters to write
+       * exceeds count.
+       */
+      int n = VSWPRINTF( wdata.Begin(), count+1, fmt, args );
 
       va_end( args );
 
-      // If n >= 0 and n <= count, then count chars were sufficient and the
-      // formatted output was successful.
-      if ( n >= 0 && n <= count )
+      /*
+       * If n >= 0 and n <= count, then count chars were sufficient and the
+       * formatted output was successful.
+       */
+      if ( n >= 0 && size_type( n ) <= count )
       {
-         if ( n != 0 )
+         if ( n > 0 )
          {
-            Reserve( len + n );
-            Array<wchar_t>::const_iterator i = wdata.Begin();
-            iterator j = data->string + len;
-            while ( *i != 0 )
-               *j++ = (char16_type)*i++;
-            *j = char_traits::Null();
+            SetLength( len + n );
+            Array<wchar_t>::const_iterator w = wdata.Begin();
+            for ( iterator i = m_data->string+len; i < m_data->end; ++i, ++w )
+               *i = char16_type( *w );
          }
-
          return n;
       }
 
-      // Try again with more space
-      // We impose a more than reasonable limit of 512 KiB
-      if ( (count <<= 1) > 0x40000 )
-      {
-         Clear();
-         return -1;
-      }
+      /*
+       * Try again with more space. We impose a reasonable limit of 512 KiB.
+       */
+      count <<= 1;
    }
 
-#  endif // __PCL_WINDOWS
+#endif // __PCL_WINDOWS
 }
-
-#endif   // _MSC_VER
 
 // ----------------------------------------------------------------------------
 
-String::sstring_base String::ToIsoString() const
+IsoString String::ToIsoString() const
 {
-   sstring_base s;
-
+   IsoString s;
    if ( !IsEmpty() )
    {
-      register size_type n = Length();
-      s.Reserve( n );
-      register const_iterator i = Begin();
-      register schar_iterator j = s.Begin();
-      for ( ; n > 0; ++i, ++j, --n )
-         *j = (*i < 0x100) ? schar_type( *i ) : '?';
-      *j = schar_traits::Null();
+      s.SetLength( Length() );
+      char8_iterator r = s.Begin();
+      for ( const_iterator p = m_data->string; p < m_data->end; ++p, ++r )
+         *r = (*p < 0x100) ? char8_type( uint8( *p ) ) : '?';
    }
-
    return s;
 }
 
-String::sstring_base String::To7BitASCII() const
+IsoString String::To7BitASCII() const
 {
-   sstring_base s;
-
+   IsoString s;
    if ( !IsEmpty() )
    {
-      register size_type n = Length();
-      s.Reserve( n );
-      register const_iterator i = Begin();
-      register schar_iterator j = s.Begin();
-      for ( ; n > 0; ++i, ++j, --n )
-         *j = (*i < 0x80) ? schar_type( *i ) : '?';
-      *j = schar_traits::Null();
+      s.SetLength( Length() );
+      char8_iterator r = s.Begin();
+      for ( const_iterator p = m_data->string; p < m_data->end; ++p, ++r )
+         *r = (*p < 0x80) ? char8_type( uint8( *p ) ) : '?';
    }
-
    return s;
 }
 
-String::sstring_base String::ToMBS() const
+IsoString String::ToMBS() const
 {
-   sstring_base s;
+   IsoString s;
 
    if ( !IsEmpty() )
    {
@@ -1401,190 +1116,156 @@ String::sstring_base String::ToMBS() const
 #ifdef __PCL_WINDOWS
 
       // First call to wcstombs() to learn the required size
-      n = wcstombs( 0, (wchar_t*)Begin(), (Length() + 1)*2 );
+      n = wcstombs( nullptr, (const wchar_t*)Begin(), (Length() + 1)*2 );
       if ( n == size_t( -1 ) )   // check for conversion error
-         return sstring_base();
+         return IsoString();
 
       s.Reserve( n + 16 );
 
-      n = wcstombs( s.Begin(), (wchar_t*)Begin(), s.Capacity() );
+      n = wcstombs( s.Begin(), (const wchar_t*)Begin(), s.Capacity() );
       if ( n == size_t( -1 ) )   // check for conversion error
-         return sstring_base();
+         return IsoString();
 
 #else // !__PCL_WINDOWS
 
       Array<uint32> w = ToUTF32();
 
       // First call to wcstombs() to learn the required size
-      n = wcstombs( 0, (wchar_t*)w.Begin(), (w.Length() + 1)*4 );
+      n = wcstombs( nullptr, (const wchar_t*)w.Begin(), (w.Length() + 1)*4 );
       if ( n == size_t( -1 ) )   // check for conversion error
-         return sstring_base();
+         return IsoString();
 
       s.Reserve( n + 16 );
 
-      n = wcstombs( s.Begin(), (wchar_t*)w.Begin(), s.Capacity() );
+      n = wcstombs( s.Begin(), (const wchar_t*)w.Begin(), s.Capacity() );
       if ( n == size_t( -1 ) )   // check for conversion error
-         return sstring_base();
+         return IsoString();
 
 #endif   // __PCL_WINDOWS
 
-      s[n] = schar_traits::Null();
+      s.SetLength( n );
    }
 
    return s;
-}
-
-String::sstring_base String::ToLocal8Bit() const
-{
-#ifdef __PCL_WINDOWS
-   return ToMBS();
-#else
-   return ToUTF8();
-#endif
-}
-
-Array<wchar_t> String::ToWCharArray( size_type p, size_type n ) const
-{
-   Array<wchar_t> a;
-
-   if ( n != 0 )
-   {
-      size_type len = Length();
-      if ( p < len )
-      {
-         n = pcl::Min( n, len-p );
-
-         a.Add( wchar_t( 0 ), n );
-
-#ifdef __PCL_WINDOWS
-         char_traits::Copy( reinterpret_cast<iterator>( a.Begin() ), c_str()+p, n );
-#else
-         const_iterator i = c_str() + p;
-         Array<wchar_t>::iterator j = a.Begin();
-         for ( ; n > 0; ++i, ++j, --n )
-            *j = wchar_t( *i );
-#endif   // __PCL_WINDOWS
-      }
-   }
-
-   a.Add( wchar_t( 0 ) );
-   return a;
 }
 
 // ----------------------------------------------------------------------------
 
 bool String::ToBool() const
 {
-   if ( CompareIC( "true" ) == 0 )
-      return true;
-   if ( CompareIC( "false" ) == 0 )
-      return false;
-   if ( Compare( "1" ) == 0 )
-      return true;
-   if ( Compare( "0" ) == 0 )
-      return false;
-   if ( Compare( "T" ) == 0 )
-      return true;
-   if ( Compare( "F" ) == 0 )
-      return false;
-   throw ParseError( "Invalid boolean literal: " + *this );
+   PCL_TO_BOOL_BODY();
 }
 
 bool String::TryToBool( bool& value ) const
 {
-   if ( CompareIC( "true" ) == 0 )
-      value = true;
-   else if ( CompareIC( "false" ) == 0 )
-      value = false;
-   else if ( Compare( "1" ) == 0 )
-      value = true;
-   else if ( Compare( "0" ) == 0 )
-      value = false;
-   else if ( Compare( "T" ) == 0 )
-      value = true;
-   else if ( Compare( "F" ) == 0 )
-      value = false;
-   else
-      return false;
-   return true;
+   PCL_TRY_TO_BOOL_BODY();
+}
+
+// ----------------------------------------------------------------------------
+
+float String::ToFloat() const
+{
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 == End() )
+      throw ParseError( "Parsing 32-bit floating point expression: empty string" );
+   const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+   wchar_t* endptr = nullptr;
+   errno = 0;
+#ifdef __PCL_WINDOWS
+   float val = ::wcstof( (const wchar_t*)p1, &endptr );
+#else
+   Array<wchar_t> a = ToWCharArray( p1-Begin(), p2-p1 );
+   float val = ::wcstof( a.Begin(), &endptr );
+#endif // __PCL_WINDOWS
+   if ( errno == ERANGE )
+      throw ParseError( "Parsing 32-bit floating point expression: out of the representable range", *this );
+#ifdef __PCL_WINDOWS
+   if ( errno != 0 || (endptr != nullptr && endptr != (const wchar_t*)p2) )
+      throw ParseError( "Parsing 32-bit floating point expression: conversion error", *this,
+                        (endptr != nullptr && endptr != (const wchar_t*)p2) ? endptr - (const wchar_t*)Begin() : -1 );
+#else
+   if ( errno != 0 || (endptr != nullptr && endptr != a.End()-1) )
+      throw ParseError( "Parsing 32-bit floating point expression: conversion error", *this,
+                        (endptr != nullptr && endptr != a.End()-1) ? endptr - a.Begin() : -1 );
+#endif // __PCL_WINDOWS
+   return val;
+}
+
+bool String::TryToFloat( float& value ) const
+{
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 < End() )
+   {
+      const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+      wchar_t* endptr = nullptr;
+      errno = 0;
+#ifdef __PCL_WINDOWS
+      float val = ::wcstof( (const wchar_t*)p1, &endptr );
+      if ( errno == 0 && (endptr == nullptr || endptr == (const wchar_t*)p2) )
+#else
+      Array<wchar_t> a = ToWCharArray( p1-Begin(), p2-p1 );
+      float val = ::wcstof( a.Begin(), &endptr );
+      if ( errno == 0 && (endptr == nullptr || endptr == a.End()-1) )
+#endif // __PCL_WINDOWS
+      {
+         value = val;
+         return true;
+      }
+   }
+   return false;
 }
 
 // ----------------------------------------------------------------------------
 
 double String::ToDouble() const
 {
-#ifdef __PCL_WINDOWS
-
-   if ( data->string == 0 )
-      throw ParseError( "Parsing floating point expression: empty string" );
-
-   iterator p1 = SearchTrimLeft();
-   if ( char_traits::IsNull( *p1 ) )
-      throw ParseError( "Parsing floating point expression: empty string" );
-
-   iterator p2 = SearchTrimRight();
-
-   wchar_t* endptr = 0;
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 == End() )
+      throw ParseError( "Parsing 64-bit floating point expression: empty string" );
+   const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+   wchar_t* endptr = nullptr;
    errno = 0;
-   double val = ::wcstod( (wchar_t*)p1, &endptr );
-
-   if ( errno == ERANGE )
-      throw ParseError( "Parsing floating point expression: out of the representable range", *this );
-
-   if ( errno != 0 || (endptr != 0 && endptr != (wchar_t*)p2) )
-      throw ParseError( "Parsing floating point expression: conversion error", *this,
-                        (endptr != 0 && endptr != (wchar_t*)p2) ? endptr - (const wchar_t*)Begin() : -1 );
-
-   return val;
-
+#ifdef __PCL_WINDOWS
+   double val = ::wcstod( (const wchar_t*)p1, &endptr );
 #else
-
-   return IsoString( *this ).ToDouble();
-
-#endif   // __PCL_WINDOWS
+   Array<wchar_t> a = ToWCharArray( p1-Begin(), p2-p1 );
+   double val = ::wcstod( a.Begin(), &endptr );
+#endif // __PCL_WINDOWS
+   if ( errno == ERANGE )
+      throw ParseError( "Parsing 64-bit floating point expression: out of the representable range", *this );
+#ifdef __PCL_WINDOWS
+   if ( errno != 0 || (endptr != nullptr && endptr != (const wchar_t*)p2) )
+      throw ParseError( "Parsing 64-bit floating point expression: conversion error", *this,
+                        (endptr != nullptr && endptr != (const wchar_t*)p2) ? endptr - (const wchar_t*)Begin() : -1 );
+#else
+   if ( errno != 0 || (endptr != nullptr && endptr != a.End()-1) )
+      throw ParseError( "Parsing 64-bit floating point expression: conversion error", *this,
+                        (endptr != nullptr && endptr != a.End()-1) ? endptr - a.Begin() : -1 );
+#endif // __PCL_WINDOWS
+   return val;
 }
 
 bool String::TryToDouble( double& value ) const
 {
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 < End() )
+   {
+      const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+      wchar_t* endptr = nullptr;
+      errno = 0;
 #ifdef __PCL_WINDOWS
-
-   if ( data->string == 0 )
-      return false;
-
-   iterator p1 = SearchTrimLeft();
-   if ( char_traits::IsNull( *p1 ) )
-      return false;
-
-   iterator p2 = SearchTrimRight();
-
-   wchar_t* endptr = 0;
-   errno = 0;
-   double val = ::wcstod( (wchar_t*)p1, &endptr );
-
-   if ( errno == 0 && (endptr == 0 || endptr == (wchar_t*)p2) )
-   {
-      value = val;
-      return true;
-   }
-
-   return false;
-
+      double val = ::wcstod( (const wchar_t*)p1, &endptr );
+      if ( errno == 0 && (endptr == nullptr || endptr == (const wchar_t*)p2) )
 #else
-
-   return IsoString( *this ).TryToDouble( value );
-
-#endif   // __PCL_WINDOWS
-}
-
-bool String::TryToFloat( float& value ) const
-{
-   double d = value;
-   if ( TryToDouble( d ) )
-   {
-      value = d;
-      return true;
+      Array<wchar_t> a = ToWCharArray( p1-Begin(), p2-p1 );
+      double val = ::wcstod( a.Begin(), &endptr );
+      if ( errno == 0 && (endptr == nullptr || endptr == a.End()-1) )
+#endif // __PCL_WINDOWS
+      {
+         value = val;
+         return true;
+      }
    }
-
    return false;
 }
 
@@ -1592,345 +1273,385 @@ bool String::TryToFloat( float& value ) const
 
 long String::ToInt( int base ) const
 {
-#ifdef __PCL_WINDOWS
-
-   if ( data->string == 0 )
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 == End() )
       throw ParseError( "Parsing integer expression: empty string" );
-
-   iterator p1 = SearchTrimLeft();
-   if ( char_traits::IsNull( *p1 ) )
-      throw ParseError( "Parsing integer expression: empty string" );
-
-   iterator p2 = SearchTrimRight();
-
-   wchar_t* endptr = 0;
+   const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+   wchar_t* endptr = nullptr;
    errno = 0;
-   long val = ::wcstol( (wchar_t*)p1, &endptr, base );
-
+#ifdef __PCL_WINDOWS
+   long val = ::wcstol( (const wchar_t*)p1, &endptr, base );
+#else
+   Array<wchar_t> a = ToWCharArray( p1-Begin(), p2-p1 );
+   long val = ::wcstol( a.Begin(), &endptr, base );
+#endif   // __PCL_WINDOWS
    if ( errno == ERANGE )
       throw ParseError( "Parsing integer expression: out of the representable range", *this );
-
-   if ( errno != 0 || (endptr != 0 && endptr != (wchar_t*)p2) )
+#ifdef __PCL_WINDOWS
+   if ( errno != 0 || (endptr != nullptr && endptr != (const wchar_t*)p2) )
       throw ParseError( "Parsing integer expression: conversion error", *this,
-                        (endptr != 0 && endptr != (wchar_t*)p2) ? endptr - (const wchar_t*)Begin() : -1 );
-
-   return val;
-
+                        (endptr != nullptr && endptr != (const wchar_t*)p2) ? endptr - (const wchar_t*)Begin() : -1 );
 #else
-
-   return IsoString( *this ).ToInt( base );
-
+   if ( errno != 0 || (endptr != nullptr && endptr != a.End()-1) )
+      throw ParseError( "Parsing integer expression: conversion error", *this,
+                        (endptr != nullptr && endptr != a.End()-1) ? endptr - a.Begin() : -1 );
 #endif   // __PCL_WINDOWS
+   return val;
 }
 
 bool String::TryToInt( int& value, int base ) const
 {
-#ifdef __PCL_WINDOWS
-
-   if ( data->string == 0 )
-      return false;
-
-   iterator p1 = SearchTrimLeft();
-   if ( char_traits::IsNull( *p1 ) )
-      return false;
-
-   iterator p2 = SearchTrimRight();
-
-   wchar_t* endptr = 0;
-   errno = 0;
-   long val = ::wcstol( (wchar_t*)p1, &endptr, base );
-
-   if ( errno == 0 && (endptr == 0 || endptr == (wchar_t*)p2) )
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 < End() )
    {
-      value = int( val );
-      return true;
-   }
-
-   return false;
-
+      const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+      wchar_t* endptr = nullptr;
+      errno = 0;
+#ifdef __PCL_WINDOWS
+      long val = ::wcstol( (const wchar_t*)p1, &endptr, base );
+      if ( errno == 0 && (endptr == nullptr || endptr == (const wchar_t*)p2) )
 #else
-
-   return IsoString( *this ).TryToInt( value, base );
-
+      Array<wchar_t> a = ToWCharArray( p1-Begin(), p2-p1 );
+      long val = ::wcstol( a.Begin(), &endptr, base );
+      if ( errno == 0 && (endptr == nullptr || endptr == a.End()-1) )
 #endif   // __PCL_WINDOWS
+      {
+         value = int( val );
+         return true;
+      }
+   }
+   return false;
 }
 
 // ----------------------------------------------------------------------------
 
 unsigned long String::ToUInt( int base ) const
 {
-#ifdef __PCL_WINDOWS
-
-   if ( data->string == 0 )
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 == End() )
       throw ParseError( "Parsing unsigned integer expression: empty string" );
-
-   iterator p1 = SearchTrimLeft();
-   if ( char_traits::IsNull( *p1 ) )
-      throw ParseError( "Parsing unsigned integer expression: empty string" );
-
-   iterator p2 = SearchTrimRight();
-
-   wchar_t* endptr = 0;
+   const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+   wchar_t* endptr = nullptr;
    errno = 0;
-   unsigned long val = ::wcstoul( (wchar_t*)p1, &endptr, base );
-
+#ifdef __PCL_WINDOWS
+   unsigned long val = ::wcstoul( (const wchar_t*)p1, &endptr, base );
+#else
+   Array<wchar_t> a = ToWCharArray( p1-Begin(), p2-p1 );
+   unsigned long val = ::wcstoul( a.Begin(), &endptr, base );
+#endif   // __PCL_WINDOWS
    if ( errno == ERANGE )
       throw ParseError( "Parsing unsigned integer expression: out of the representable range", *this );
-
-   if ( errno != 0 || (endptr != 0 && endptr != (wchar_t*)p2) )
+#ifdef __PCL_WINDOWS
+   if ( errno != 0 || (endptr != nullptr && endptr != (const wchar_t*)p2) )
       throw ParseError( "Parsing unsigned integer expression: conversion error", *this,
-                        (endptr != 0 && endptr != (wchar_t*)p2) ? endptr - (const wchar_t*)Begin() : -1 );
-
-   return val;
-
+                        (endptr != nullptr && endptr != (const wchar_t*)p2) ? endptr - (const wchar_t*)Begin() : -1 );
 #else
-
-   return IsoString( *this ).ToUInt( base );
-
+   if ( errno != 0 || (endptr != nullptr && endptr != a.End()-1) )
+      throw ParseError( "Parsing unsigned integer expression: conversion error", *this,
+                        (endptr != nullptr && endptr != a.End()-1) ? endptr - a.Begin() : -1 );
 #endif   // __PCL_WINDOWS
+   return val;
 }
 
 bool String::TryToUInt( unsigned& value, int base ) const
 {
-#ifdef __PCL_WINDOWS
-
-   if ( data->string == 0 )
-      return false;
-
-   iterator p1 = SearchTrimLeft();
-   if ( char_traits::IsNull( *p1 ) )
-      return false;
-
-   iterator p2 = SearchTrimRight();
-
-   wchar_t* endptr = 0;
-   errno = 0;
-   unsigned long val = ::wcstoul( (wchar_t*)p1, &endptr, base );
-
-   if ( errno == 0 && (endptr == 0 || endptr == (wchar_t*)p2) )
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 < End() )
    {
-      value = unsigned( val );
-      return true;
-   }
-
-   return false;
-
+      const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+      wchar_t* endptr = nullptr;
+      errno = 0;
+#ifdef __PCL_WINDOWS
+      unsigned long val = ::wcstoul( (const wchar_t*)p1, &endptr, base );
+      if ( errno == 0 && (endptr == nullptr || endptr == (const wchar_t*)p2) )
 #else
-
-   return IsoString( *this ).TryToUInt( value, base );
-
+      Array<wchar_t> a = ToWCharArray( p1-Begin(), p2-p1 );
+      unsigned long val = ::wcstoul( a.Begin(), &endptr, base );
+      if ( errno == 0 && (endptr == nullptr || endptr == a.End()-1) )
 #endif   // __PCL_WINDOWS
+      {
+         value = unsigned( val );
+         return true;
+      }
+   }
+   return false;
 }
 
 // ----------------------------------------------------------------------------
 
 long long String::ToInt64( int base ) const
 {
-#ifdef __PCL_WINDOWS
-
-   if ( data->string == 0 )
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 == End() )
       throw ParseError( "Parsing 64-bit integer expression: empty string" );
-
-   iterator p1 = SearchTrimLeft();
-   if ( char_traits::IsNull( *p1 ) )
-      throw ParseError( "Parsing 64-bit integer expression: empty string" );
-
-   iterator p2 = SearchTrimRight();
-
-   wchar_t* endptr = 0;
+   const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+   wchar_t* endptr = nullptr;
    errno = 0;
-
    long long val;
-
-#ifdef _MSC_VER
-   val = ::_wcstoi64( (wchar_t*)p1, &endptr, base );
+#ifdef __PCL_WINDOWS
+   val = ::_wcstoi64( (const wchar_t*)p1, &endptr, base );
 #else
-   size_type p;
-   if ( (p = Find( '.' )) != notFound ||
-        (p = Find( 'e' )) != notFound ||
-        (p = Find( 'E' )) != notFound ||
-        (p = Find( 'd' )) != notFound ||
-        (p = Find( 'D' )) != notFound )
-   {
-      endptr = const_cast<wchar_t*>( (const wchar_t*)(Begin() + p) );
-      val = 0;
-   }
-   else
-      val = int64( ::wcstod( (wchar_t*)p1, &endptr ) );
-#endif   // _MSC_VER
-
+   Array<wchar_t> a = ToWCharArray( p1-Begin(), p2-p1 );
+   val = ::wcstoll( a.Begin(), &endptr, base );
+#endif   // __PCL_WINDOWS
    if ( errno == ERANGE )
       throw ParseError( "Parsing 64-bit integer expression: out of the representable range", *this );
-
-   if ( errno != 0 || (endptr != 0 && endptr != (wchar_t*)p2) )
+#ifdef __PCL_WINDOWS
+   if ( errno != 0 || (endptr != nullptr && endptr != (const wchar_t*)p2) )
       throw ParseError( "Parsing 64-bit integer expression: conversion error", *this,
-                        (endptr != 0 && endptr != (wchar_t*)p2) ? endptr - (const wchar_t*)Begin() : -1 );
-
-   return val;
-
+                        (endptr != nullptr && endptr != (const wchar_t*)p2) ? endptr - (const wchar_t*)Begin() : -1 );
 #else
-
-   return IsoString( *this ).ToInt64( base );
-
+   if ( errno != 0 || (endptr != nullptr && endptr != a.End()-1) )
+      throw ParseError( "Parsing 64-bit integer expression: conversion error", *this,
+                        (endptr != nullptr && endptr != a.End()-1) ? endptr - a.Begin() : -1 );
 #endif   // __PCL_WINDOWS
+   return val;
 }
 
 bool String::TryToInt64( long long& value, int base ) const
 {
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 < End() )
+   {
+      const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+      wchar_t* endptr = nullptr;
+      errno = 0;
+      long long val;
 #ifdef __PCL_WINDOWS
-
-   if ( data->string == 0 )
-      return false;
-
-   iterator p1 = SearchTrimLeft();
-   if ( char_traits::IsNull( *p1 ) )
-      return false;
-
-   iterator p2 = SearchTrimRight();
-
-   wchar_t* endptr = 0;
-   errno = 0;
-
-   long long val;
-
-#ifdef _MSC_VER
-   val = ::_wcstoi64( (wchar_t*)p1, &endptr, base );
+      val = ::_wcstoi64( (const wchar_t*)p1, &endptr, base );
+      if ( errno == 0 && (endptr == nullptr || endptr == (const wchar_t*)p2) )
 #else
-   size_type p;
-   if ( (p = Find( '.' )) != notFound ||
-        (p = Find( 'e' )) != notFound ||
-        (p = Find( 'E' )) != notFound ||
-        (p = Find( 'd' )) != notFound ||
-        (p = Find( 'D' )) != notFound )
-   {
-      return false;
-   }
-
-   val = int64( ::wcstod( (wchar_t*)p1, &endptr ) );
-#endif   // _MSC_VER
-
-   if ( errno == 0 && (endptr == 0 || endptr == (wchar_t*)p2) )
-   {
-      value = val;
-      return true;
-   }
-
-   return false;
-
-#else
-
-   return IsoString( *this ).TryToInt64( value, base );
-
+      Array<wchar_t> a = ToWCharArray( p1-Begin(), p2-p1 );
+      val = ::wcstoll( a.Begin(), &endptr, base );
+      if ( errno == 0 && (endptr == nullptr || endptr == a.End()-1) )
 #endif   // __PCL_WINDOWS
+      {
+         value = val;
+         return true;
+      }
+   }
+   return false;
 }
 
 // ----------------------------------------------------------------------------
 
 unsigned long long String::ToUInt64( int base ) const
 {
-#ifdef __PCL_WINDOWS
-
-   if ( data->string == 0 )
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 == End() )
       throw ParseError( "Parsing 64-bit unsigned integer expression: empty string" );
-
-   iterator p1 = SearchTrimLeft();
-   if ( char_traits::IsNull( *p1 ) )
-      throw ParseError( "Parsing 64-bit unsigned integer expression: empty string" );
-
-   iterator p2 = SearchTrimRight();
-
-   wchar_t* endptr = 0;
+   const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+   wchar_t* endptr = nullptr;
    errno = 0;
-
    unsigned long long val;
-
-#ifdef _MSC_VER
-   val = ::_wcstoui64( (wchar_t*)p1, &endptr, base );
+#ifdef __PCL_WINDOWS
+   val = ::_wcstoui64( (const wchar_t*)p1, &endptr, base );
 #else
-   size_type p;
-   if ( (p = Find( '.' )) != notFound ||
-        (p = Find( '-' )) != notFound ||
-        (p = Find( 'e' )) != notFound ||
-        (p = Find( 'E' )) != notFound ||
-        (p = Find( 'd' )) != notFound ||
-        (p = Find( 'D' )) != notFound )
-   {
-      endptr = const_cast<wchar_t*>( (const wchar_t*)(Begin() + p) );
-      val = 0;
-   }
-   else
-      val = uint64( ::wcstod( (wchar_t*)p1, &endptr ) );
-#endif   // _MSC_VER
-
+   Array<wchar_t> a = ToWCharArray( p1-Begin(), p2-p1 );
+   val = ::wcstoull( a.Begin(), &endptr, base );
+#endif   // __PCL_WINDOWS
    if ( errno == ERANGE )
       throw ParseError( "Parsing 64-bit unsigned integer expression: out of the representable range", *this );
-
-   if ( errno != 0 || (endptr != 0 && endptr != (wchar_t*)p2) )
+#ifdef __PCL_WINDOWS
+   if ( errno != 0 || (endptr != nullptr && endptr != (const wchar_t*)p2) )
       throw ParseError( "Parsing 64-bit unsigned integer expression: conversion error", *this,
-                        (endptr != 0 && endptr != (wchar_t*)p2) ? endptr - (const wchar_t*)Begin() : -1 );
-
-   return val;
-
+                        (endptr != nullptr && endptr != (wchar_t*)p2) ? endptr - (const wchar_t*)Begin() : -1 );
 #else
-
-   return IsoString( *this ).ToUInt64( base );
-
+   if ( errno != 0 || (endptr != nullptr && endptr != a.End()-1) )
+      throw ParseError( "Parsing 64-bit unsigned integer expression: conversion error", *this,
+                        (endptr != nullptr && endptr != a.End()-1) ? endptr - a.Begin() : -1 );
 #endif   // __PCL_WINDOWS
+   return val;
 }
 
 bool String::TryToUInt64( unsigned long long& value, int base ) const
 {
+   const_iterator p1 = char_traits::SearchTrimLeft( Begin(), End() );
+   if ( p1 < End() )
+   {
+      const_iterator p2 = char_traits::SearchTrimRight( p1, End() );
+      wchar_t* endptr = nullptr;
+      errno = 0;
+      unsigned long long val;
 #ifdef __PCL_WINDOWS
-
-   if ( data->string == 0 )
-      return false;
-
-   iterator p1 = SearchTrimLeft();
-   if ( char_traits::IsNull( *p1 ) )
-      return false;
-
-   iterator p2 = SearchTrimRight();
-
-   wchar_t* endptr = 0;
-   errno = 0;
-
-   unsigned long long val;
-
-#ifdef _MSC_VER
-   val = ::_wcstoui64( (wchar_t*)p1, &endptr, base );
+      val = ::_wcstoui64( (const wchar_t*)p1, &endptr, base );
+      if ( errno == 0 && (endptr == nullptr || endptr == (const wchar_t*)p2) )
 #else
-   size_type p;
-   if ( (p = Find( '.' )) != notFound ||
-        (p = Find( '-' )) != notFound ||
-        (p = Find( 'e' )) != notFound ||
-        (p = Find( 'E' )) != notFound ||
-        (p = Find( 'd' )) != notFound ||
-        (p = Find( 'D' )) != notFound )
-   {
-      return false;
-   }
-
-   val = uint64( ::wcstod( (wchar_t*)p1, &endptr ) );
-#endif   // _MSC_VER
-
-   if ( errno == 0 && (endptr == 0 || endptr == (wchar_t*)p2) )
-   {
-      value = val;
-      return true;
-   }
-
-   return false;
-
-#else
-
-   return IsoString( *this ).TryToUInt64( value, base );
-
+      Array<wchar_t> a = ToWCharArray( p1-Begin(), p2-p1 );
+      val = ::wcstoull( a.Begin(), &endptr, base );
+      if ( errno == 0 && (endptr == nullptr || endptr == a.End()-1) )
 #endif   // __PCL_WINDOWS
+      {
+         value = val;
+         return true;
+      }
+   }
+   return false;
+}
+
+// ----------------------------------------------------------------------------
+
+template <typename T>
+static void RandomChars( T* t, size_type n, RandomizationOptions options )
+{
+   static const char* data = //                                             1234567890123456789012 3456789
+   "0123456789abcdefghijklmnopqrstuvwxyzGHIJKLMNOPQRSTUVWXYZABCDEF0123456789!#$%&()*+,-./:;<=>?@[\\]^_{|}~";
+//  1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234 5678901
+//  0        11        2         3      3  4         5      5  6  6      7  7      8         9          0
+//  h         L                         U                   H     D         S                           1
+
+   XorShift1024 rg;
+
+   if ( options.IsFlagSet( RandomizationOption::FullRange ) )
+   {
+      for ( ; n > 0; --n )
+         *t++ = T( 1 + rg.UIN( ~T( 0 ) ) );
+      return;
+   }
+
+   T* s = t;
+   switch ( unsigned( options ) )
+   {
+   case RandomizationOption::Lowercase:
+      for ( ; n > 0; --n )
+         *s++ = T( data[10 + rg.UIN( 26 )] );
+      break;
+   case RandomizationOption::Uppercase:
+      for ( ; n > 0; --n )
+         *s++ = T( data[36 + rg.UIN( 26 )] );
+      break;
+   case RandomizationOption::Alpha:
+      for ( ; n > 0; --n )
+         *s++ = T( data[10 + rg.UIN( 52 )] );
+      break;
+   case RandomizationOption::Digits:
+      for ( ; n > 0; --n )
+         *s++ = T( data[rg.UIN( 10 )] );
+      break;
+   case RandomizationOption::Symbols:
+      for ( ; n > 0; --n )
+         *s++ = T( data[72 + rg.UIN( 29 )] );
+      break;
+   case unsigned( RandomizationOption::Alpha )|unsigned( RandomizationOption::Digits ):
+      for ( ; n > 0; --n )
+         *s++ = T( data[rg.UIN( 62 )] );
+      break;
+   case unsigned( RandomizationOption::Lowercase )|unsigned( RandomizationOption::Digits ):
+      for ( ; n > 0; --n )
+         *s++ = T( data[rg.UIN( 36 )] );
+      break;
+   case unsigned( RandomizationOption::Uppercase )|unsigned( RandomizationOption::Digits ):
+      for ( ; n > 0; --n )
+         *s++ = T( data[36 + rg.UIN( 36 )] );
+      break;
+   case unsigned( RandomizationOption::Digits )|unsigned( RandomizationOption::Symbols ):
+      for ( ; n > 0; --n )
+         *s++ = T( data[62 + rg.UIN( 39 )] );
+      break;
+   default:
+      if ( options.IsFlagSet( RandomizationOption::HexDigits ) )
+      {
+         if ( options.IsFlagSet( RandomizationOption::Uppercase ) )
+            for ( ; n > 0; --n )
+               *s++ = T( data[56 + rg.UIN( 16 )] );
+         else
+            for ( ; n > 0; --n )
+               *s++ = T( data[rg.UIN( 16 )] );
+      }
+      else if ( options.IsFlagSet( RandomizationOption::BinDigits ) )
+      {
+         for ( ; n > 0; --n )
+            *s++ = T( data[rg.UIN( 2 )] );
+      }
+      else
+      {
+         for ( ; n > 0; --n )
+         {
+            char c;
+            for ( ;; ) //
+            {
+               c = data[10 + rg.UIN( 91 )];
+               if (  (options.IsFlagSet( RandomizationOption::Lowercase ) || c < 'a' || c > 'z')
+                  && (options.IsFlagSet( RandomizationOption::Uppercase ) || c < 'A' || c > 'Z')
+                  && (options.IsFlagSet( RandomizationOption::Digits    ) || c < '0' || c > '9')
+                  && (options.IsFlagSet( RandomizationOption::Symbols   ) ||
+                           c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z') )
+                  break;
+            }
+            *s++ = T( c );
+         }
+      }
+      break;
+   }
+
+   for ( size_type i = 4; i < n; ++i )
+   {
+      pcl::Swap( t[rg.UI64N( n )], t[rg.UI64N( n )] );
+      pcl::Swap( t[rg.UI64N( n )], t[rg.UI64N( n )] );
+      pcl::Swap( t[rg.UI64N( n )], t[rg.UI64N( n )] );
+      pcl::Swap( t[rg.UI64N( n )], t[rg.UI64N( n )] );
+   }
+}
+
+String String::Random( size_type n, RandomizationOptions options )
+{
+   String s;
+   s.SetLength( n );
+   RandomChars( s.Begin(), n, options );
+   return s;
+}
+
+IsoString IsoString::Random( size_type n, RandomizationOptions options )
+{
+   IsoString s;
+   s.SetLength( n );
+   RandomChars( s.Begin(), n, options );
+   return s;
+}
+
+// ----------------------------------------------------------------------------
+
+template <typename T>
+static void UUID4Chars( T* uuid )
+{
+// 12345678 1234 1234 1234 123456789012
+// xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+// 012345678901234567890123456789012345
+//           1         2         3
+
+   RandomChars( uuid, 36, RandomizationOption::HexDigits );
+
+   // Set dash separators.
+   uuid[8] = uuid[13] = uuid[18] = uuid[23] = T( '-' );
+
+   // Set UUID version = 4 - truly random generation.
+   uuid[14] = T( '4' );
+
+   // Constrain UUID variant to [89ab].
+   char y = uuid[19];
+   y = (((y < 'a') ? y - '0' : y + 10 - 'a') & 0x03) | 0x08;
+   uuid[19] = T( (y < 10) ? y + '0' : y - 10 + 'a' );
+}
+
+String String::UUID()
+{
+   String uuid;
+   uuid.SetLength( 36 );
+   UUID4Chars( uuid.Begin() );
+   return uuid;
+}
+
+IsoString IsoString::UUID()
+{
+   IsoString uuid;
+   uuid.SetLength( 36 );
+   UUID4Chars( uuid.Begin() );
+   return uuid;
 }
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/String.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/String.cpp - Released 2015/07/30 17:15:31 UTC

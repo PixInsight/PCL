@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Exception.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Exception.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Exception_h
 #define __PCL_Exception_h
@@ -244,7 +247,11 @@ public:
    }
 
    /*!
-    * Returns the error message associated to this %Error object.
+    * Returns descriptive information for this %Error object. The default
+    * implementation returns the message specified upon construction. A derived
+    * class can reimplement this function to provide additional information
+    * items such as file names, object identifiers, source code positions, date
+    * and time representations, etc.
     */
    virtual String Message() const
    {
@@ -338,14 +345,13 @@ public:
     */
    template <typename T>
    NotImplemented( const T& object, const String& notImplemented ) :
-   Error( String(
-      IsoString( typeid( object ).name() )
+      Error( String( IsoString( typeid( object ).name() )
 #ifdef __PCL_WINDOWS
       .MBSToWCS()
 #else
       .UTF8ToUTF16()
 #endif
-      ) + ": Not implemented: " + notImplemented )
+         ) + ": Not implemented: " + notImplemented )
    {
    }
 
@@ -378,7 +384,8 @@ public:
    /*!
     * Constructs an empty %ParseError object.
     */
-   ParseError() : Error(), m_beingParsed(), m_errorPosition( -1 )
+   ParseError() :
+      Error(), m_beingParsed(), m_errorPosition( -1 )
    {
    }
 
@@ -386,7 +393,7 @@ public:
     * Copy constructor.
     */
    ParseError( const ParseError& x ) :
-   Error( x ), m_beingParsed( x.m_beingParsed ), m_errorPosition( x.m_errorPosition )
+      Error( x ), m_beingParsed( x.m_beingParsed ), m_errorPosition( x.m_errorPosition )
    {
    }
 
@@ -403,12 +410,12 @@ public:
     * \param beingParsed   The string being parsed, or an empty string if the
     *             error is not associated to a particular source code string.
     *
-    * \param errorPosition    The position of the first offending character in
-    *             the \a beingParsed string, or < 0 if no specific position can
-    *             be associated with the error.
+    * \param errorPosition   The position >= 0 of the first offending character
+    *             in the string \a beingParsed, or < 0 if no specific position
+    *             can be associated with the error.
     */
    ParseError( const String& message, const String& beingParsed = String(), int errorPosition = -1 ) :
-   Error( message ), m_beingParsed( beingParsed ), m_errorPosition( errorPosition )
+      Error( message ), m_beingParsed( beingParsed ), m_errorPosition( errorPosition )
    {
    }
 
@@ -448,7 +455,8 @@ public:
    /*!
     * Constructs an empty %SourceCodeError object.
     */
-   SourceCodeError() : Error(), m_lineNumber( -1 ), m_columnNumber( -1 )
+   SourceCodeError() :
+      Error(), m_lineNumber( -1 ), m_columnNumber( -1 )
    {
    }
 
@@ -456,7 +464,7 @@ public:
     * Copy constructor.
     */
    SourceCodeError( const SourceCodeError& x ) :
-   Error( x ), m_lineNumber( x.m_lineNumber ), m_columnNumber( x.m_columnNumber )
+      Error( x ), m_lineNumber( x.m_lineNumber ), m_columnNumber( x.m_columnNumber )
    {
    }
 
@@ -468,25 +476,25 @@ public:
     *             the exception is to be represented on a PixInsight console.
     *             HTML entities and console tags are always written literally.
     *             This limitation is necessary to ensure representativeness of
-    *             source code in exception messages.
+    *             source code fragments in exception messages.
     *
     * \param line       The line number (starting from 1) corresponding to the
-    *             position of this error in the source code text, or < 0 if no
+    *             position of this error in the source code text, or <= 0 if no
     *             specific source code line can be associated with this error.
     *             The default value is -1, meaning that no line number is
     *             specified by default.
     *
     * \param column     The column number (starting from 1) corresponding to
-    *             the position of this error in the source code text, or < 0 if
-    *             no specific source code column can be associated with this
+    *             the position of this error in the source code text, or <= 0
+    *             if no specific source code column can be associated with this
     *             error. The default value is -1, meaning that no column number
     *             is specified by default.
     */
    template <typename T1>
    SourceCodeError( const String& message, T1 line = -1, T1 column = -1 ) :
-   Error( message ),
-   m_lineNumber( Range( int( line ), -1, int_max ) ),
-   m_columnNumber( Range( int( column ), -1, int_max ) )
+      Error( message ),
+      m_lineNumber( Range( int( line ), -1, int_max ) ),
+      m_columnNumber( Range( int( column ), -1, int_max ) )
    {
    }
 
@@ -544,9 +552,9 @@ public:
     * Adds the specified \a lines and \a columns (optional) increments to the
     * source code coordinates for this exception.
     *
-    * Valid (meaningful) source code coordinates must be >= 1. When a value < 0
-    * results from a call to this function, the corresponding coordinate is
-    * interpreted to be unavailable for the current exception.
+    * Valid (meaningful) source code coordinates must be >= 1. When a value
+    * <= 0 results from a call to this function, the corresponding coordinate
+    * is interpreted to be unavailable for the current exception.
     *
     * This member function is useful when nested sections of a source code
     * block are being processed recursively; for example in XML decoders.
@@ -668,5 +676,5 @@ PCL_DECLARE_EXCEPTION_CLASS( ProcessAborted, "Process aborted", String() );
 
 #endif   // __PCL_Exception_h
 
-// ****************************************************************************
-// EOF pcl/Exception.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Exception.h - Released 2015/07/30 17:15:18 UTC

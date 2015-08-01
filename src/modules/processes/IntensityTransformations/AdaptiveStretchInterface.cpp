@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard IntensityTransformations Process Module Version 01.07.00.0287
-// ****************************************************************************
-// AdaptiveStretchInterface.cpp - Released 2014/11/14 17:19:22 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard IntensityTransformations Process Module Version 01.07.00.0306
+// ----------------------------------------------------------------------------
+// AdaptiveStretchInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "AdaptiveStretchInterface.h"
 #include "AdaptiveStretchProcess.h"
@@ -436,7 +440,7 @@ AdaptiveStretchInterface::GUIData::GUIData( AdaptiveStretchInterface& w )
    PlotCurveGraph_CheckBox.SetChecked();
    PlotCurveGraph_CheckBox.OnClick( (Button::click_event_handler)&AdaptiveStretchInterface::__Click, w );
 
-   PlotCurveGraph_Sizer.AddSpacing( labelWidth1 + 4 );
+   PlotCurveGraph_Sizer.AddUnscaledSpacing( labelWidth1 + w.LogicalPixelsToPhysical( 4 ) );
    PlotCurveGraph_Sizer.Add( PlotCurveGraph_CheckBox );
    PlotCurveGraph_Sizer.AddStretch();
 
@@ -452,7 +456,7 @@ AdaptiveStretchInterface::GUIData::GUIData( AdaptiveStretchInterface& w )
    ROIX0_NumericEdit.SetInteger();
    ROIX0_NumericEdit.SetRange( 0, int_max );
    ROIX0_NumericEdit.label.SetText( "Left:" );
-   ROIX0_NumericEdit.label.SetFixedWidth( labelWidth1 - 6 ); // minus ROI_Sizer.Margin()
+   ROIX0_NumericEdit.label.SetFixedWidth( labelWidth1 - w.LogicalPixelsToPhysical( 6 ) ); // minus ROI_Sizer.Margin()
    ROIX0_NumericEdit.edit.SetFixedWidth( editWidth1 );
    ROIX0_NumericEdit.SetToolTip( "<p>X pixel coordinate of the upper left corner of the ROI.</p>");
    ROIX0_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&AdaptiveStretchInterface::__ValueUpdated, w );
@@ -473,7 +477,7 @@ AdaptiveStretchInterface::GUIData::GUIData( AdaptiveStretchInterface& w )
    ROIWidth_NumericEdit.SetInteger();
    ROIWidth_NumericEdit.SetRange( 0, int_max );
    ROIWidth_NumericEdit.label.SetText( "Width:" );
-   ROIWidth_NumericEdit.label.SetFixedWidth( labelWidth1 - 6 ); // minus ROI_Sizer.Margin()
+   ROIWidth_NumericEdit.label.SetFixedWidth( labelWidth1 - w.LogicalPixelsToPhysical( 6 ) ); // minus ROI_Sizer.Margin()
    ROIWidth_NumericEdit.edit.SetFixedWidth( editWidth1 );
    ROIWidth_NumericEdit.SetToolTip( "<p>Width of the ROI in pixels.</p>");
    ROIWidth_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&AdaptiveStretchInterface::__ValueUpdated, w );
@@ -530,5 +534,5 @@ AdaptiveStretchInterface::GUIData::GUIData( AdaptiveStretchInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF AdaptiveStretchInterface.cpp - Released 2014/11/14 17:19:22 UTC
+// ----------------------------------------------------------------------------
+// EOF AdaptiveStretchInterface.cpp - Released 2015/07/31 11:49:48 UTC

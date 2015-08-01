@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Translation.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Translation.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Translation_h
 #define __PCL_Translation_h
@@ -86,9 +89,9 @@ public:
     * this object exists.
     */
    Translation( PixelInterpolation& p, double dx = 0, double dy = 0 ) :
-   InterpolatingGeometricTransformation( p ),
-   m_delta( dx, dy ), m_fillValues(),
-   m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      InterpolatingGeometricTransformation( p ),
+      m_delta( dx, dy ), m_fillValues(),
+      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
    }
 
@@ -101,34 +104,16 @@ public:
     * this object exists.
     */
    Translation( PixelInterpolation& p, const DPoint& d ) :
-   InterpolatingGeometricTransformation( p ),
-   m_delta( d ), m_fillValues(),
-   m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      InterpolatingGeometricTransformation( p ),
+      m_delta( d ), m_fillValues(),
+      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
    }
 
    /*!
     * Copy constructor.
     */
-   Translation( const Translation& x ) :
-   InterpolatingGeometricTransformation( x ),
-   m_delta( x.m_delta ), m_fillValues( x.m_fillValues ),
-   m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
-   {
-   }
-
-   /*!
-    * Assignment operator. Returns a reference to this object.
-    */
-   Translation& operator =( const Translation& x )
-   {
-      (void)InterpolatingGeometricTransformation::operator =( x );
-      m_delta         = x.m_delta;
-      m_fillValues    = x.m_fillValues;
-      m_parallel      = x.m_parallel;
-      m_maxProcessors = x.m_maxProcessors;
-      return *this;
-   }
+   Translation( const Translation& ) = default;
 
    /*!
     * Returns the translation increments in pixels for both axes, as the
@@ -302,5 +287,5 @@ protected:
 
 #endif   // __PCL_Translation_h
 
-// ****************************************************************************
-// EOF pcl/Translation.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Translation.h - Released 2015/07/30 17:15:18 UTC

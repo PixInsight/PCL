@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard ImageIntegration Process Module Version 01.09.04.0253
-// ****************************************************************************
-// DrizzleIntegrationInstance.cpp - Released 2014/11/14 17:19:22 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard ImageIntegration Process Module Version 01.09.04.0274
+// ----------------------------------------------------------------------------
+// DrizzleIntegrationInstance.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "DrizzleIntegrationInstance.h"
 
@@ -705,20 +709,8 @@ void DrizzleIntegrationEngine::Perform()
                throw Error( "No such file: " + i->path );
 
             {
-               File file;
-               file.OpenForReading( i->path );
-               fsize_type fileSize = file.Size();
-               IsoString text;
-               if ( fileSize > 0 )
-               {
-                  text.Reserve( fileSize );
-                  file.Read( reinterpret_cast<void*>( text.Begin() ), fileSize );
-                  text[fileSize] = '\0';
-               }
-               file.Close();
-
+               IsoString text = File::ReadTextFile( i->path );
                m_decoder.Decode( text );
-
                if ( !m_instance.p_enableSurfaceSplines || !m_decoder.HasSplines() )
                   if ( !m_decoder.HasMatrix() )
                      throw Error( "Missing alignment matrix definition." );
@@ -807,7 +799,7 @@ void DrizzleIntegrationEngine::Perform()
                   throw Error( file.FilePath() + ": Empty image file." );
 
                if ( images.Length() > 1 )
-                  throw Error( file.FilePath() + ": Integration of multiple image files is not supported." );
+                  Console().NoteLn( String().Format( "<end><cbr>* Ignoring %u additional image(s) in input file.", images.Length()-1 ) );
 
                if ( !images[0].info.supported || images[0].info.NumberOfSamples() == 0 )
                   throw Error( file.FilePath() + ": Invalid or unsupported image." );
@@ -894,7 +886,7 @@ void DrizzleIntegrationEngine::Perform()
             int numberOfThreads = Thread::NumberOfThreads( m_height, Max( 1, 4096/m_width ) );
             int rowsPerThread = m_height/numberOfThreads;
 
-            PArray<DrizzleThread> threads;
+            ReferenceArray<DrizzleThread> threads;
             for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
                threads.Add( new DrizzleThread( threadData,
                                              i*rowsPerThread,
@@ -1231,31 +1223,31 @@ bool DrizzleIntegrationInstance::AllocateParameter( size_type sizeOrLength, cons
    {
       p_inputData[tableRow].path.Clear();
       if ( sizeOrLength > 0 )
-         p_inputData[tableRow].path.Reserve( sizeOrLength );
+         p_inputData[tableRow].path.SetLength( sizeOrLength );
    }
    else if ( p == TheDZInputHintsParameter )
    {
       p_inputHints.Clear();
       if ( sizeOrLength > 0 )
-         p_inputHints.Reserve( sizeOrLength );
+         p_inputHints.SetLength( sizeOrLength );
    }
    else if ( p == TheDZInputDirectoryParameter )
    {
       p_inputDirectory.Clear();
       if ( sizeOrLength > 0 )
-         p_inputDirectory.Reserve( sizeOrLength );
+         p_inputDirectory.SetLength( sizeOrLength );
    }
    else if ( p == TheDZIntegrationImageIdParameter )
    {
       o_output.integrationImageId.Clear();
       if ( sizeOrLength > 0 )
-         o_output.integrationImageId.Reserve( sizeOrLength );
+         o_output.integrationImageId.SetLength( sizeOrLength );
    }
    else if ( p == TheDZWeightImageIdParameter )
    {
       o_output.weightImageId.Clear();
       if ( sizeOrLength > 0 )
-         o_output.weightImageId.Reserve( sizeOrLength );
+         o_output.weightImageId.SetLength( sizeOrLength );
    }
    else if ( p == TheDZImageDataParameter )
    {
@@ -1267,7 +1259,7 @@ bool DrizzleIntegrationInstance::AllocateParameter( size_type sizeOrLength, cons
    {
       o_output.imageData[tableRow].filePath.Clear();
       if ( sizeOrLength > 0 )
-         o_output.imageData[tableRow].filePath.Reserve( sizeOrLength );
+         o_output.imageData[tableRow].filePath.SetLength( sizeOrLength );
    }
    else
       return false;
@@ -1464,5 +1456,5 @@ size_type DrizzleIntegrationInstance::ParameterLength( const MetaParameter* p, s
 
 } // pcl
 
-// ****************************************************************************
-// EOF DrizzleIntegrationInstance.cpp - Released 2014/11/14 17:19:22 UTC
+// ----------------------------------------------------------------------------
+// EOF DrizzleIntegrationInstance.cpp - Released 2015/07/31 11:49:48 UTC

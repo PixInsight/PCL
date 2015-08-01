@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Cryptography.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Cryptography.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Cryptography_h
 #define __PCL_Cryptography_h
@@ -208,6 +211,9 @@ protected:
     */
    virtual void Finalize( void* hash );
 
+   /*!
+    * \internal
+    */
    CryptographicHash( void* h ) : UIObject( h )
    {
    }
@@ -216,8 +222,8 @@ private:
 
    virtual void* CloneHandle() const;
 
-   CryptographicHash( const CryptographicHash& ) { PCL_CHECK( 0 ) }
-   void operator =( const CryptographicHash& ) { PCL_CHECK( 0 ) }
+   CryptographicHash( const CryptographicHash& ) = delete;
+   void operator =( const CryptographicHash& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -366,7 +372,6 @@ public:
     */
    virtual void SetUnique()
    {
-      // Unique by definition
    }
 
    /*!
@@ -500,6 +505,9 @@ public:
 
 protected:
 
+   /*!
+    * \internal
+    */
    Cipher( void* h ) : UIObject( h )
    {
    }
@@ -508,8 +516,8 @@ private:
 
    virtual void* CloneHandle() const;
 
-   Cipher( const Cipher& ) { PCL_CHECK( 0 ) }
-   void operator =( const Cipher& ) { PCL_CHECK( 0 ) }
+   Cipher( const Cipher& ) = delete;
+   void operator =( const Cipher& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -555,7 +563,7 @@ public:
     *                with zeros) by this constructor.
     *
     * \note For enhanced security, this constructor wipes out the specified
-    * cipher \a key, filling it with 32 zero bytes. If you need to preserve the
+    * cipher \a key, filling it with 32 zero bytes. If you want to preserve the
     * key (which in general is a <em>very bad idea</em> for security reasons),
     * make a copy before invoking this constructor.
     */
@@ -574,7 +582,7 @@ public:
     * has 32 characters, or 256 bits).
     *
     * \note For enhanced security, this constructor wipes out the specified
-    * cipher \a key string, filling it with null characters. If you need to
+    * cipher \a key string, filling it with null characters. If you want to
     * preserve the original key (which in general is a <em>very bad idea</em>
     * for security reasons), make a copy before invoking this constructor.
     */
@@ -663,5 +671,5 @@ public:
 
 #endif   // __PCL_Cryptography_h
 
-// ****************************************************************************
-// EOF pcl/Cryptography.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Cryptography.h - Released 2015/07/30 17:15:18 UTC

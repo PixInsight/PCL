@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Graphics.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Graphics.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/AutoLock.h>
 #include <pcl/Bitmap.h>
@@ -63,50 +66,38 @@ namespace pcl
 GraphicsContextBase::GraphicsContextBase() :
 UIObject( (*API->Graphics->CreateGraphics)( ModuleHandle() ) )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateGraphics" );
 }
-
-// ----------------------------------------------------------------------------
 
 GraphicsContextBase::GraphicsContextBase( Control& w ) :
 UIObject( (*API->Graphics->CreateGraphics)( ModuleHandle() ) )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateGraphics" );
 
    if ( (*API->Graphics->BeginControlPaint)( handle, w.handle ) == api_false )
       throw APIFunctionError( "BeginControlPaint" );
 }
 
-// ----------------------------------------------------------------------------
-
 GraphicsContextBase::GraphicsContextBase( Bitmap& bmp ) :
 UIObject( (*API->Graphics->CreateGraphics)( ModuleHandle() ) )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateGraphics" );
 
    if ( (*API->Graphics->BeginBitmapPaint)( handle, bmp.handle ) == api_false )
       throw APIFunctionError( "BeginBitmapPaint" );
 }
 
-// ----------------------------------------------------------------------------
-
 GraphicsContextBase::GraphicsContextBase( SVG& svg ) :
 UIObject( (*API->Graphics->CreateGraphics)( ModuleHandle() ) )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateGraphics" );
 
    if ( (*API->Graphics->BeginSVGPaint)( handle, svg.handle ) == api_false )
       throw APIFunctionError( "BeginSVGPaint" );
-}
-
-// ----------------------------------------------------------------------------
-
-GraphicsContextBase::GraphicsContextBase( void* h ) : UIObject( h )
-{
 }
 
 // ----------------------------------------------------------------------------
@@ -425,11 +416,11 @@ void* GraphicsContextBase::CloneHandle() const
 
 Graphics& Graphics::Null()
 {
-   static Graphics* nullGraphics = 0;
+   static Graphics* nullGraphics = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullGraphics == 0 )
-      nullGraphics = new Graphics( reinterpret_cast<void*>( 0 ) );
+   if ( nullGraphics == nullptr )
+      nullGraphics = new Graphics( nullptr );
    return *nullGraphics;
 }
 
@@ -683,11 +674,11 @@ pcl::Rect Graphics::TextRect( int x0, int y0, int x1, int y1, const String& s, T
 
 VectorGraphics& VectorGraphics::Null()
 {
-   static VectorGraphics* nullGraphics = 0;
+   static VectorGraphics* nullGraphics = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullGraphics == 0 )
-      nullGraphics = new VectorGraphics( reinterpret_cast<void*>( 0 ) );
+   if ( nullGraphics == nullptr )
+      nullGraphics = new VectorGraphics( nullptr );
    return *nullGraphics;
 }
 
@@ -940,5 +931,5 @@ pcl::DRect VectorGraphics::TextRect( double x0, double y0, double x1, double y1,
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/Graphics.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Graphics.cpp - Released 2015/07/30 17:15:31 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/StatusMonitor.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/StatusMonitor.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_StatusMonitor_h
 #define __PCL_StatusMonitor_h
@@ -559,33 +562,31 @@ public:
    }
 
    /*!
-    * Returns the progress monitoring refresh rate in seconds.
+    * Returns the progress monitoring refresh rate in milliseconds.
     *
     * The StatusCallback::Updated() member functions of all active status
     * callback objects are called asynchronously by a low-priority thread. The
-    * refresh rate is the interval in seconds between successive callback
-    * update calls. It can be in the range from 25 milliseconds to one second.
+    * refresh rate is the interval between successive callback update calls. It
+    * can be in the range from 25 to 999 milliseconds.
     */
-   static double RefreshRate()
+   static unsigned RefreshRate()
    {
-      return s_refreshRate;
+      return s_msRefreshRate;
    }
 
    /*!
-    * Sets a new progress monitoring refresh rate in seconds.
+    * Sets a new progress monitoring refresh rate in milliseconds.
     *
-    * \param s    New monitoring refresh rate in seconds. The specified
-    *             value must be between 25 milliseconds and one second. If the
-    *             passed value is outside that range, it is discarded and the
-    *             nearest valid bound is set.
+    * \param ms   New monitoring refresh rate in milliseconds. The specified
+    *             value must be between 25 and 999 milliseconds. If the passed
+    *             value is outside that range, it is discarded and the nearest
+    *             valid bound is set.
     *
-    * \note The default refresh rate is 250 milliseconds (0.25 seconds), or 4
-    * monitoring events per second.
-    *
-    * \note The new refresh rate does take effect immediately, even if there
+    * The default refresh rate is 250 milliseconds, or 4 monitoring events per
+    * second. The new refresh rate does take effect immediately, even if there
     * are active status monitors.
     */
-   static void SetRefreshRate( double s );
+   static void SetRefreshRate( unsigned ms );
 
 private:
 
@@ -600,7 +601,7 @@ private:
    size_type       m_total;
    size_type       m_count;
 
-   static double   s_refreshRate; // seconds
+   static unsigned s_msRefreshRate;
 
    void Reset();
    void Assign( const StatusMonitor& );
@@ -615,5 +616,5 @@ private:
 
 #endif   // __PCL_StatusMonitor_h
 
-// ****************************************************************************
-// EOF pcl/StatusMonitor.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/StatusMonitor.h - Released 2015/07/30 17:15:18 UTC

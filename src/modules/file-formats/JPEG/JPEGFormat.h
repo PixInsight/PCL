@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard JPEG File Format Module Version 01.00.01.0228
-// ****************************************************************************
-// JPEGFormat.h - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard JPEG File Format Module Version 01.00.03.0249
+// ----------------------------------------------------------------------------
+// JPEGFormat.h - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard JPEG PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __JPEGFormat_h
 #define __JPEGFormat_h
@@ -56,8 +60,6 @@
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-// JPEGFormat
 // ----------------------------------------------------------------------------
 
 class JPEGFormat : public MetaFileFormat
@@ -82,8 +84,6 @@ public:
    virtual bool CanStoreAlphaChannels() const;
    virtual bool CanStoreResolution() const;
    virtual bool CanStoreICCProfiles() const;
-   virtual bool CanStoreMetadata() const;
-   virtual bool CanStoreThumbnails() const;
    virtual bool CanEditPreferences() const;
    virtual bool UsesFormatSpecificData() const;
 
@@ -112,19 +112,8 @@ public:
 
    struct EmbeddingOverrides
    {
-      bool overrideICCProfileEmbedding;
-      bool embedICCProfiles;
-      bool overrideMetadataEmbedding;
-      bool embedMetadata;
-      bool overrideThumbnailEmbedding;
-      bool embedThumbnails;
-
-      EmbeddingOverrides() :
-      overrideICCProfileEmbedding( false ), embedICCProfiles( false ),
-      overrideMetadataEmbedding( false ), embedMetadata( false ),
-      overrideThumbnailEmbedding( false ), embedThumbnails( false )
-      {
-      }
+      bool overrideICCProfileEmbedding = false;
+      bool embedICCProfiles            = false;
    };
 
    static EmbeddingOverrides DefaultEmbeddingOverrides();
@@ -136,5 +125,5 @@ public:
 
 #endif   // __JPEGFormat_h
 
-// ****************************************************************************
-// EOF JPEGFormat.h - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF JPEGFormat.h - Released 2015/07/31 11:49:40 UTC

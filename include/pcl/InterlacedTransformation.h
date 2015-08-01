@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/InterlacedTransformation.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/InterlacedTransformation.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_InterlacedTransformation_h
 #define __PCL_InterlacedTransformation_h
@@ -77,20 +80,20 @@ namespace pcl
  * \brief Interlaced image transformation in the spatial domain.
  *
  * %InterlacedTransformation represents an <em>interlaced image
- * transformation</em> in the PCL. An interlaced transformation can be applied
- * to a subset of the pixels in a target image by acting exclusively on
- * selected rows and columns of pixels, distributed at regular intervals.
+ * transformation</em> in PCL. An interlaced transformation can be applied to a
+ * subset of the pixels in a target image by acting exclusively on selected
+ * rows and columns of pixels, distributed at regular intervals.
  *
  * The distance between two consecutive rows or columns of transformed pixels
  * is the <em>interlacing distance</em> that characterizes an interlaced
  * transformation. Intermediate pixels falling between selected rows or columns
  * are ignored during the transformation.
  *
- * In the PCL, convolutions in the spatial domain and morphological
- * transformations have been implemented as interlaced transformations. A good
- * example of interlaced image transformation algorithm is the discrete
- * <em>&agrave; trous</em> wavelet transform, which uses interlaced
- * convolutions to apply a scaling function at growing dimensional scales.
+ * In PCL, convolutions in the spatial domain and morphological transformations
+ * have been implemented as interlaced transformations. A good example of
+ * interlaced image transformation algorithm is the starlet transform (see the
+ * StarletTransform class), which uses interlaced convolutions to perform a
+ * multiscale decomposition.
  */
 class PCL_CLASS InterlacedTransformation : public virtual ImageTransformation
 {
@@ -98,19 +101,21 @@ public:
 
    /*!
     * Constructs an %InterlacedTransformation object with the specified
-    * <em>interlacing distance</em> \a n in pixels.
+    * <em>interlacing distance</em> \a n >= 1 in pixels.
     */
-   InterlacedTransformation( int n = 1 ) : ImageTransformation(), dn( pcl::Max( 1, n ) )
+   InterlacedTransformation( int n = 1 ) :
+      ImageTransformation(),
+      m_distance( pcl::Max( 1, n ) )
    {
       PCL_PRECONDITION( n >= 1 )
    }
 
    /*!
-    * Constructs an %InterlacedTransformation object as a copy of an existing
-    * instance.
+    * Copy constructor.
     */
    InterlacedTransformation( const InterlacedTransformation& x ) :
-   ImageTransformation( x ), dn( x.dn )
+      ImageTransformation( x ),
+      m_distance( x.m_distance )
    {
    }
 
@@ -119,16 +124,6 @@ public:
     */
    virtual ~InterlacedTransformation()
    {
-   }
-
-   /*!
-    * Assigns an existing %InterlacedTransformation instance to this object. Returns
-    * a reference to this object.
-    */
-   InterlacedTransformation& operator =( const InterlacedTransformation& x )
-   {
-      dn = x.dn;
-      return *this;
    }
 
    /*!
@@ -141,7 +136,7 @@ public:
     */
    bool IsInterlaced() const
    {
-      return dn > 1;
+      return m_distance > 1;
    }
 
    /*!
@@ -152,7 +147,7 @@ public:
     */
    int InterlacingDistance() const
    {
-      return dn;
+      return m_distance;
    }
 
    /*!
@@ -168,7 +163,7 @@ public:
    void SetInterlacingDistance( int n )
    {
       PCL_PRECONDITION( n >= 1 )
-      dn = pcl::Max( 1, n );
+      m_distance = pcl::Max( 1, n );
    }
 
    /*!
@@ -183,12 +178,12 @@ public:
       SetInterlacingDistance( 1 );
    }
 
-protected:
+private:
 
    /*
     * Interlacing distance in pixels
     */
-   int dn;
+   int m_distance;
 };
 
 // ----------------------------------------------------------------------------
@@ -197,5 +192,5 @@ protected:
 
 #endif   // __PCL_InterlacedTransformation_h
 
-// ****************************************************************************
-// EOF pcl/InterlacedTransformation.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/InterlacedTransformation.h - Released 2015/07/30 17:15:18 UTC

@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard CosmeticCorrection Process Module Version 01.02.04.0080
-// ****************************************************************************
-// CosmeticCorrectionInterface.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard CosmeticCorrection Process Module Version 01.02.05.0101
+// ----------------------------------------------------------------------------
+// CosmeticCorrectionInterface.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard CosmeticCorrection PixInsight module.
 //
-// Copyright (c) 2011-2014 Nikolay Volkov
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2015 Nikolay Volkov
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,7 +49,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "CosmeticCorrectionInterface.h"
 #include "CosmeticCorrectionProcess.h"
@@ -91,7 +95,6 @@ CosmeticCorrectionInterface::CosmeticCorrectionInterface() : ProcessInterface(),
 GUI( 0 )
 {
    m_md = 0;
-   m_H = View::histogram_list();
    m_Mean = 0.5;
    m_StdDev = 0.01;
    m_MinSlider = 0;
@@ -1168,11 +1171,10 @@ void CosmeticCorrectionInterface::LoadMasterDark( const String& filePath)
    ImageVariant v = w.MainView().Image();
    v.CopyImage(*m_md);
 
-   w.MainView().CalculateHistograms();
-   if ( !w.MainView().AreHistogramsAvailable() ) throw Error( "Can't Calculate Histograms for that frame." );
-
-   w.MainView().GetHistograms( m_H );
-   if ( m_H.IsEmpty() ) throw CatchedException();
+   m_H.Clear();
+   UI64Matrix histogram = w.MainView().ComputeOrFetchProperty( "Histogram16", false/*notify*/ ).ToUI64Matrix();
+   for ( int i = 0; i < histogram.Rows(); ++i )
+      m_H.Add( Histogram( histogram.RowVector( i ) ) );
 
    ImageStatistics ss;
    ss.DisableExtremes();
@@ -1181,7 +1183,7 @@ void CosmeticCorrectionInterface::LoadMasterDark( const String& filePath)
 
    int max = 0;
    m_StdDev = m_Mean = 0;
-   int min = m_H[0]->LastLevel(); //65535
+   int min = m_H[0].LastLevel(); //65535
    for ( int c = 0; c < m_channels; c++ )
    {
       v->SelectChannel(c);
@@ -1189,24 +1191,24 @@ void CosmeticCorrectionInterface::LoadMasterDark( const String& filePath)
       m_Mean += ss.Mean();
       m_StdDev += ss.StdDev();
 
-      max = Max( max , m_H[c]->ClipHigh(0) );
-      min = Min( min , m_H[c]->ClipLow(0) );
+      max = Max( max , m_H[c].ClipHigh(0) );
+      min = Min( min , m_H[c].ClipLow(0) );
 
       #if debug
-      Console().WriteLn("min = H[c]->ClipLow(0):" + String( m_H[c]->ClipLow(0) ));
+      Console().WriteLn("min = H[c].ClipLow(0):" + String( m_H[c].ClipLow(0) ));
       Console().WriteLn("min:" + String( min ));
       Console().WriteLn("max:" + String( max ));
       for( int i = 0; i<min; i++)
       {
-         size_t v = m_H[c]->Count(i);
+         size_t v = m_H[c].Count(i);
          if ( v != 0)
-            Console().WriteLn("H[c]->Count("+String(i)+"):" + String( m_H[c]->Count(i) ));
+            Console().WriteLn("H[c].Count("+String(i)+"):" + String( m_H[c].Count(i) ));
       }
 
-      Console().WriteLn("H[c]->Count():" + String( m_H[c]->Count() ));
-      Console().WriteLn("H[c]->Count( 0, min-1 ):" + String( m_H[c]->Count( 0, min-1 ) ));
-      Console().WriteLn("H[c]->Count( max+1, 65535 ):" + String( m_H[c]->Count( max+1, 65535 ) ));
-      Console().WriteLn("H[c]->Count( min, max ):" + String( m_H[c]->Count( min, max ) ));
+      Console().WriteLn("H[c].Count():" + String( m_H[c].Count() ));
+      Console().WriteLn("H[c].Count( 0, min-1 ):" + String( m_H[c].Count( 0, min-1 ) ));
+      Console().WriteLn("H[c].Count( max+1, 65535 ):" + String( m_H[c].Count( max+1, 65535 ) ));
+      Console().WriteLn("H[c].Count( min, max ):" + String( m_H[c].Count( min, max ) ));
       #endif
    }
    w.Close();
@@ -1255,7 +1257,7 @@ void CosmeticCorrectionInterface::HotQtyUpdated( size_t qty ) //caclulate Level 
    size_t count = 0;
    for ( int i = m_MaxSlider; i >= m_MinSlider; i--)
    {
-      for ( int c = 0; c < m_channels; c++ ) count += m_H[c]->Count(i);
+      for ( int c = 0; c < m_channels; c++ ) count += m_H[c].Count(i);
       if ( count >= qty )
       {
          instance.p_hotDarkLevel = Histogram().NormalizedLevel( i );
@@ -1282,7 +1284,7 @@ void CosmeticCorrectionInterface::HotLevelUpdated( const float value, const bool
    if ( instance.p_hotDarkCheck ) s_requiresDarkHotMapGeneration = true;
 
    size_t count = 0;
-   for ( int c = 0; c < m_channels; c++ ) count += m_H[c]->Count( min, m_MaxSlider );
+   for ( int c = 0; c < m_channels; c++ ) count += m_H[c].Count( min, m_MaxSlider );
 
    GUI->HotDarkQty_NumericControl.SetValue( count );
    HotUpdateGUI( count );
@@ -1311,7 +1313,7 @@ void CosmeticCorrectionInterface::ColdQtyUpdated( size_t qty ) //caclulate Level
 
    for ( int i = min; i <= m_MaxSlider; i++)
    {
-      for ( int c = 0; c < m_channels; c++ ) count += m_H[c]->Count(i);
+      for ( int c = 0; c < m_channels; c++ ) count += m_H[c].Count(i);
       if ( count >= qty )
       {
          instance.p_coldDarkLevel = Histogram().NormalizedLevel( i );
@@ -1344,7 +1346,7 @@ void CosmeticCorrectionInterface::ColdLevelUpdated( const float value, const boo
    instance.p_coldDarkLevel = Histogram().NormalizedLevel( max ); // =float(max/65535)
 
    size_t count = 0;
-   for ( int c = 0; c < m_channels; c++ ) count += m_H[c]->Count( min, max );
+   for ( int c = 0; c < m_channels; c++ ) count += m_H[c].Count( min, max );
 
    GUI->ColdDarkQty_NumericControl.SetValue( count );
    ColdUpdateGUI( count );
@@ -1361,6 +1363,7 @@ void CosmeticCorrectionInterface::ColdSigmaUpdated( const float sigma ) // calcu
 void CosmeticCorrectionInterface::UpdateControls()
 {
    GUI->OutputDir_Edit.SetText( instance.p_outputDir );
+   GUI->OutputExtension_Edit.SetText( instance.p_outputExtension );
    GUI->Postfix_Edit.SetText( instance.p_postfix );
    GUI->Prefix_Edit.SetText( instance.p_prefix );
    GUI->Overwrite_CheckBox.SetChecked( instance.p_overwrite );
@@ -1388,10 +1391,12 @@ void CosmeticCorrectionInterface::UpdateTargetImageItem( size_type i )
    node->SetText( 0, String( i+1 ) );
    node->SetAlignment( 0, TextAlign::Right );
 
-   node->SetIcon( 1, Bitmap( String( item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
+   double f = DisplayPixelRatio();
+
+   node->SetIcon( 1, Bitmap( UIScaledResource( f, item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
    node->SetAlignment( 1, TextAlign::Left );
 
-   node->SetIcon( 2, Bitmap( String( ":/icons/select-file.png" ) ) );
+   node->SetIcon( 2, Bitmap( UIScaledResource( f, ":/icons/select-file.png" ) ) );
    if ( GUI->FullPaths_CheckBox.IsChecked() )
       node->SetText( 2, item.path );
    else
@@ -1640,15 +1645,7 @@ void CosmeticCorrectionInterface::__TargetImages_Click( Button& sender, bool che
    if ( sender == GUI->AddFiles_PushButton )
    {
       OpenFileDialog d;
-
-      FileFilter fitFiles;
-      fitFiles.SetDescription( "Fit Files" );
-      fitFiles.AddExtension( ".fit" );
-      fitFiles.AddExtension( ".fits" );
-      fitFiles.AddExtension( ".fts" );
-      d.Filters().Add( fitFiles );
-
-      //d.LoadImageFilters();
+      d.LoadImageFilters();
       d.EnableMultipleSelections();
       d.SetCaption( "CosmeticCorrection: Select Target Frames" );
       if ( d.Execute() )
@@ -1745,6 +1742,8 @@ void CosmeticCorrectionInterface::__EditCompleted( Edit& sender )
       instance.p_postfix = text;
    else if ( sender == GUI->OutputDir_Edit )
       instance.p_outputDir = text;
+   else if ( sender == GUI->OutputExtension_Edit )
+      instance.p_outputExtension = text.IsEmpty() ? ".xisf" : text;
    else if ( sender == GUI->MasterDarkPath_Edit )
    {
       if ( text.IsEmpty() )
@@ -2017,7 +2016,8 @@ void CosmeticCorrectionInterface::__CheckSection( SectionBar& sender, bool check
 CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
 {
    pcl::Font fnt = w.Font();
-   int labelWidth1 = fnt.Width( String( "Sigma:" ) );
+   int labelWidth1 = fnt.Width( String( "Sigma:" ) + 'M' );
+   int labelWidth2 = fnt.Width( String( "Output extension:" ) + 'M' );
 
    //
 
@@ -2027,6 +2027,7 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
 
    TargetImages_TreeBox.SetNumberOfColumns( 3 );
    TargetImages_TreeBox.HideHeader();
+   TargetImages_TreeBox.SetScaledMinWidth( 300 );
    TargetImages_TreeBox.EnableMultipleSelections();
    TargetImages_TreeBox.DisableRootDecoration();
    TargetImages_TreeBox.EnableAlternateRowColor();
@@ -2091,25 +2092,46 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
       "corresponding target files. In this case, make sure that source directories are writable, or the "
       "CosmeticCorrection process will fail.</p>";
 
+   OutputDir_Label.SetText( "Output directory:" );
+   OutputDir_Label.SetFixedWidth( labelWidth2 );
+   OutputDir_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   OutputDir_Label.SetToolTip( ToolTipOutputDir );
+
    OutputDir_Edit.SetToolTip( ToolTipOutputDir );
    OutputDir_Edit.OnMouseDoubleClick( (Control::mouse_event_handler)&CosmeticCorrectionInterface::__MouseDoubleClick, w );
    OutputDir_Edit.OnEditCompleted( (Edit::edit_event_handler)&CosmeticCorrectionInterface::__EditCompleted, w );
 
-   OutputDir_SelectButton.SetIcon( Bitmap( String( ":/icons/select-file.png" ) ) );
-   OutputDir_SelectButton.SetFixedSize( 20, 20 );
+   OutputDir_SelectButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-file.png" ) ) );
+   OutputDir_SelectButton.SetScaledFixedSize( 20, 20 );
    OutputDir_SelectButton.SetToolTip( "<p>Select output directory</p>" );
    OutputDir_SelectButton.OnClick( (Button::click_event_handler)&CosmeticCorrectionInterface::__Button_Click, w );
 
-   OutputDir_ClearButton.SetIcon( Bitmap( String( ":/icons/clear.png" ) ) );
-   OutputDir_ClearButton.SetFixedSize( 20, 20 );
+   OutputDir_ClearButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/clear.png" ) ) );
+   OutputDir_ClearButton.SetScaledFixedSize( 20, 20 );
    OutputDir_ClearButton.SetToolTip( "<p>Reset output directory</p>" );
    OutputDir_ClearButton.OnClick( (Button::click_event_handler)&CosmeticCorrectionInterface::__Button_Click, w );
 
-   OutputDir_Sizer.SetMargin( 6 );
-   OutputDir_Sizer.SetSpacing( 2 );
+   OutputDir_Sizer.SetSpacing( 4 );
+   OutputDir_Sizer.Add( OutputDir_Label );
    OutputDir_Sizer.Add( OutputDir_Edit, 100 );
    OutputDir_Sizer.Add( OutputDir_SelectButton );
    OutputDir_Sizer.Add( OutputDir_ClearButton );
+
+   const char* ToolTipOutputExtension = "<p>The output file extension determines the file format used to "
+      "generate output (cosmetic-corrected) image files. If this field is left blank, output files will be "
+      "written in the same format as their corresponding input frames.</p>"
+      "<p>Take into account that the selected output format must be a <i>writable</i> one, i.e. a format "
+      "able to generate image files, or the cosmetic correction process will fail upon trying to write the "
+      "first output image.</p>";
+
+   OutputExtension_Label.SetText( "Output extension:" );
+   OutputExtension_Label.SetFixedWidth( labelWidth2 );
+   OutputExtension_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   OutputExtension_Label.SetToolTip( ToolTipOutputExtension );
+
+   OutputExtension_Edit.SetFixedWidth( fnt.Width( String( 'M', 6 ) ) );
+   OutputExtension_Edit.SetToolTip( ToolTipOutputExtension );
+   OutputExtension_Edit.OnEditCompleted( (Edit::edit_event_handler)&CosmeticCorrectionInterface::__EditCompleted, w );
 
    const char* ToolTipPrefix =
       "<p>This is a prefix that will be appended to the file name of each corrected image.</p>";
@@ -2129,11 +2151,27 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
    Postfix_Edit.SetToolTip( ToolTipPostfix );
    Postfix_Edit.OnEditCompleted( (Edit::edit_event_handler)&CosmeticCorrectionInterface::__EditCompleted, w );
 
+   OutputChunks_Sizer.SetSpacing( 4 );
+   OutputChunks_Sizer.Add( OutputExtension_Label );
+   OutputChunks_Sizer.Add( OutputExtension_Edit );
+   OutputChunks_Sizer.AddSpacing( 12 );
+   OutputChunks_Sizer.Add( Prefix_Label );
+   OutputChunks_Sizer.Add( Prefix_Edit );
+   OutputChunks_Sizer.AddSpacing( 12 );
+   OutputChunks_Sizer.Add( Postfix_Label );
+   OutputChunks_Sizer.Add( Postfix_Edit );
+   OutputChunks_Sizer.AddStretch();
+
    CFA_CheckBox.SetText( "CFA" );
    CFA_CheckBox.SetToolTip( "<p>Enable this option if the image has been mosaiced with a "
       "Color Filter Array (CFA) or Bayer matrix (OSC CCD, DSLR camera).<br/>"
       "Disable if the image comes from a monochrome imager or has already been deBayered.</p>" );
    CFA_CheckBox.OnClick( (Button::click_event_handler)&CosmeticCorrectionInterface::__Button_Click, w );
+
+   CFA_Sizer.AddUnscaledSpacing( labelWidth2 );
+   CFA_Sizer.AddSpacing( 4 );
+   CFA_Sizer.Add( CFA_CheckBox );
+   CFA_Sizer.AddStretch();
 
    Overwrite_CheckBox.SetText( "Overwrite" );
    Overwrite_CheckBox.SetToolTip( "<p>If this option is selected, CosmeticCorrection will p_overwrite "
@@ -2142,21 +2180,14 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
       "<p><b>Enable this option <u>at your own risk.</u></b></p>" );
    Overwrite_CheckBox.OnClick( (Button::click_event_handler)&CosmeticCorrectionInterface::__Button_Click, w );
 
-   OutputChunks_Sizer.AddSpacing( 6 );
-   OutputChunks_Sizer.Add( CFA_CheckBox );
-   OutputChunks_Sizer.AddStretch();
-   OutputChunks_Sizer.Add( Overwrite_CheckBox );
-   OutputChunks_Sizer.AddStretch();
-   OutputChunks_Sizer.Add( Prefix_Label );
-   OutputChunks_Sizer.Add( Prefix_Edit );
-   OutputChunks_Sizer.AddStretch();
-   OutputChunks_Sizer.Add( Postfix_Label );
-   OutputChunks_Sizer.Add( Postfix_Edit );
-   OutputChunks_Sizer.AddSpacing( 6 );
+   Overwrite_Sizer.AddUnscaledSpacing( labelWidth2 );
+   Overwrite_Sizer.AddSpacing( 4 );
+   Overwrite_Sizer.Add( Overwrite_CheckBox );
+   Overwrite_Sizer.AddStretch();
 
    const char* ToolTipTransferFunction = "<p>0 = No correction.<br/>1 = 100% corrected.<p>";
    Amount_NumericControl.label.SetText( "Amount:" );
-   Amount_NumericControl.label.SetFixedWidth( fnt.Width( String( "Amount:" ) ) );
+   Amount_NumericControl.label.SetFixedWidth( labelWidth2 );
    Amount_NumericControl.label.SetToolTip( ToolTipTransferFunction );
    Amount_NumericControl.slider.SetRange( TheAmount->MinimumValue(), TheAmount->MaximumValue()*65535 );
    Amount_NumericControl.SetRange( TheAmount->MinimumValue(), TheAmount->MaximumValue() );
@@ -2164,17 +2195,16 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
    Amount_NumericControl.SetToolTip( ToolTipTransferFunction );
    Amount_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&CosmeticCorrectionInterface::__RealValueUpdated, w );
 
-   Amount_Sizer.SetMargin( 4 );
-   Amount_Sizer.Add ( Amount_NumericControl );
-
    //---------------------------------------------------
+   Output_Sizer.SetSpacing( 4 );
    Output_Sizer.Add( OutputDir_Sizer );
    Output_Sizer.Add( OutputChunks_Sizer );
-   Output_Sizer.Add( Amount_Sizer );
+   Output_Sizer.Add( CFA_Sizer );
+   Output_Sizer.Add( Overwrite_Sizer );
+   Output_Sizer.Add( Amount_NumericControl );
 
    Output_Control.SetSizer( Output_Sizer );
    Output_Control.AdjustToContents();
-   Output_Control.SetFixedHeight();
 
    //---------------------------------------------------
    // detect via MasterDark section
@@ -2190,13 +2220,13 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
    MasterDarkPath_Edit.OnEditCompleted( (Edit::edit_event_handler)&CosmeticCorrectionInterface::__EditCompleted, w );
    MasterDarkPath_Edit.OnMouseDoubleClick( (Control::mouse_event_handler)&CosmeticCorrectionInterface::__MouseDoubleClick, w );
 
-   MasterDarkPath_SelectButton.SetIcon( Bitmap( ":/icons/select-file.png" ) );
-   MasterDarkPath_SelectButton.SetFixedSize( 20, 20 );
+   MasterDarkPath_SelectButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-file.png" ) ) );
+   MasterDarkPath_SelectButton.SetScaledFixedSize( 20, 20 );
    MasterDarkPath_SelectButton.SetToolTip( MasterDarkPathToolTip );
    MasterDarkPath_SelectButton.OnClick( (Button::click_event_handler)&CosmeticCorrectionInterface::__Button_Click, w );
 
-   MasterDarkPath_ClearButton.SetIcon( Bitmap( ":/icons/clear.png" ) );
-   MasterDarkPath_ClearButton.SetFixedSize( 20, 20 );
+   MasterDarkPath_ClearButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/clear.png" ) ) );
+   MasterDarkPath_ClearButton.SetScaledFixedSize( 20, 20 );
    MasterDarkPath_ClearButton.SetToolTip( "<p>Reset master dark.</p>" );
    MasterDarkPath_ClearButton.OnClick( (Button::click_event_handler)&CosmeticCorrectionInterface::__Button_Click, w );
 
@@ -2230,7 +2260,7 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
 
    HotDarkLevel_NumericControl.label.SetText( "Level:" );
    HotDarkLevel_NumericControl.label.SetFixedWidth( labelWidth1 );
-   HotDarkLevel_NumericControl.slider.SetMinWidth( 200 );
+   HotDarkLevel_NumericControl.slider.SetScaledMinWidth( 200 );
    HotDarkLevel_NumericControl.slider.SetRange( 0, 0x7fffffff );
    HotDarkLevel_NumericControl.SetPrecision( TheHotLevel->Precision() );
    HotDarkLevel_NumericControl.SetToolTip( String().Format( ToolTipLevel, "hot" ) );
@@ -2238,7 +2268,7 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
 
    HotDarkSigma_NumericControl.label.SetText( "Sigma:" );
    HotDarkSigma_NumericControl.label.SetFixedWidth( labelWidth1 );
-   HotDarkSigma_NumericControl.slider.SetMinWidth( 200 );
+   HotDarkSigma_NumericControl.slider.SetScaledMinWidth( 200 );
    HotDarkSigma_NumericControl.slider.SetRange( 0, 0x7fffffff );
    HotDarkSigma_NumericControl.SetRange( 0, 50 );
    HotDarkSigma_NumericControl.SetPrecision( 5 );
@@ -2247,7 +2277,7 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
 
    HotDarkQty_NumericControl.label.SetText( "Qty:" );
    HotDarkQty_NumericControl.label.SetFixedWidth( labelWidth1 );
-   HotDarkQty_NumericControl.slider.SetMinWidth( 200 );
+   HotDarkQty_NumericControl.slider.SetScaledMinWidth( 200 );
    HotDarkQty_NumericControl.slider.SetRange( 0, 10000 );
    HotDarkQty_NumericControl.SetInteger();
    HotDarkQty_NumericControl.SetRange( 0, 10000 );
@@ -2287,7 +2317,7 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
 
    ColdDarkLevel_NumericControl.label.SetText( "Level:" );
    ColdDarkLevel_NumericControl.label.SetFixedWidth( labelWidth1 );
-   ColdDarkLevel_NumericControl.slider.SetMinWidth( 200 );
+   ColdDarkLevel_NumericControl.slider.SetScaledMinWidth( 200 );
    ColdDarkLevel_NumericControl.slider.SetRange( 0, 0x7fffffff );
    ColdDarkLevel_NumericControl.SetPrecision( TheColdLevel->Precision() );
    ColdDarkLevel_NumericControl.SetToolTip( String().Format( ToolTipLevel, "cold" ) );
@@ -2295,7 +2325,7 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
 
    ColdDarkSigma_NumericControl.label.SetText( "Sigma:" );
    ColdDarkSigma_NumericControl.label.SetFixedWidth( labelWidth1 );
-   ColdDarkSigma_NumericControl.slider.SetMinWidth( 200 );
+   ColdDarkSigma_NumericControl.slider.SetScaledMinWidth( 200 );
    ColdDarkSigma_NumericControl.slider.SetRange( 0, 0x7fffffff );
    ColdDarkSigma_NumericControl.SetRange( 0, 50 );
    ColdDarkSigma_NumericControl.SetPrecision( 5 );
@@ -2304,7 +2334,7 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
 
    ColdDarkQty_NumericControl.label.SetText( "Qty:" );
    ColdDarkQty_NumericControl.label.SetFixedWidth( labelWidth1 );
-   ColdDarkQty_NumericControl.slider.SetMinWidth( 200 );
+   ColdDarkQty_NumericControl.slider.SetScaledMinWidth( 200 );
    ColdDarkQty_NumericControl.slider.SetRange( 0, 10000 );
    ColdDarkQty_NumericControl.SetInteger();
    ColdDarkQty_NumericControl.SetRange( 0, 10000 );
@@ -2352,7 +2382,7 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
 
    const String AutoDetect_toolTip = "<p>How many times (in average deviation units) the value of a pixel must differ "
       "from the surrounding neighbors to be considered as a defective pixel?<p/>";
-   int labelWidth2 = fnt.Width( String( "Cold Sigma:" ) );
+   int labelWidth3 = fnt.Width( String( "Cold Sigma:" ) );
 
    DetectHot_CheckBox.SetToolTip( "Enable/Disable Detection" + AutoDetect_toolTip );
    DetectHot_CheckBox.OnClick( (Button::click_event_handler)&CosmeticCorrectionInterface::__Button_Click, w );
@@ -2360,8 +2390,8 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
    DetectHot_NumericControl.SetPrecision( TheHotAutoValue->Precision() );
    DetectHot_NumericControl.SetToolTip( AutoDetect_toolTip );
    DetectHot_NumericControl.label.SetText( "Hot Sigma:" );
-   DetectHot_NumericControl.label.SetFixedWidth( labelWidth2 );
-   DetectHot_NumericControl.slider.SetMinWidth( 200 );
+   DetectHot_NumericControl.label.SetFixedWidth( labelWidth3 );
+   DetectHot_NumericControl.slider.SetScaledMinWidth( 200 );
    DetectHot_NumericControl.slider.SetRange( 0, 0x7fffffff );
    DetectHot_NumericControl.SetRange( TheHotAutoValue->MinimumValue(), TheHotAutoValue->MaximumValue() );
    DetectHot_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&CosmeticCorrectionInterface::__RealValueUpdated, w );
@@ -2372,8 +2402,8 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
    DetectCold_NumericControl.SetPrecision( TheColdAutoValue->Precision() );
    DetectCold_NumericControl.SetToolTip( AutoDetect_toolTip );
    DetectCold_NumericControl.label.SetText( "Cold Sigma:" );
-   DetectCold_NumericControl.label.SetFixedWidth( labelWidth2 );
-   DetectCold_NumericControl.slider.SetMinWidth( 200 );
+   DetectCold_NumericControl.label.SetFixedWidth( labelWidth3 );
+   DetectCold_NumericControl.slider.SetScaledMinWidth( 200 );
    DetectCold_NumericControl.slider.SetRange( 0, 0x7fffffff );
    DetectCold_NumericControl.SetRange( TheColdAutoValue->MinimumValue(), TheColdAutoValue->MaximumValue() );
    DetectCold_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&CosmeticCorrectionInterface::__RealValueUpdated, w );
@@ -2434,11 +2464,8 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
    SaveList_PushButton.OnClick( (Button::click_event_handler)&CosmeticCorrectionInterface::__Button_Click, w );
 
    DefectListButtons_Sizer.SetSpacing( 4 );
-   DefectListButtons_Sizer.EnableAutoScaling();
-
    DefectListButtons_Sizer.Add( LoadList_PushButton );
    DefectListButtons_Sizer.Add( SaveList_PushButton );
-
    DefectListButtons_Sizer.Add( SelectAllDefect_PushButton );
    DefectListButtons_Sizer.Add( InvertSelectionDefect_PushButton );
    DefectListButtons_Sizer.Add( ToggleSelectedDefect_PushButton );
@@ -2609,7 +2636,6 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
    Global_Sizer.Add( RTP_SectionBar );
    Global_Sizer.Add( RTP_Control );
 
-   Output_Control.Hide();
    UseMasterDark_Control.Hide();
    UseAutoDetect_Control.Hide();
    UseDefectList_Control.Hide();
@@ -2624,5 +2650,5 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF CosmeticCorrectionInterface.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF CosmeticCorrectionInterface.cpp - Released 2015/07/31 11:49:49 UTC

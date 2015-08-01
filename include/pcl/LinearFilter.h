@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/LinearFilter.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/LinearFilter.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_LinearFilter_h
 #define __PCL_LinearFilter_h
@@ -89,7 +92,8 @@ public:
     * Constructs an empty %LinearFilter object with default functional
     * parameters: size=5, centralValue=1, outerValue=0.01.
     */
-   LinearFilter() : KernelFilter(), m_centralValue( 1.0f ), m_outerValue( 0.01f )
+   LinearFilter() :
+      KernelFilter(), m_centralValue( 1.0f ), m_outerValue( 0.01f )
    {
    }
 
@@ -98,7 +102,8 @@ public:
     * central value \a v0, and outer value \a v1. Assigns an optional \a name
     * to the new filter object.
     */
-   LinearFilter( int n, float v0 = 1.0f, float v1 = 0.01f, const String& name = String() ) : KernelFilter( n, name )
+   LinearFilter( int n, float v0 = 1.0f, float v1 = 0.01f, const String& name = String() ) :
+      KernelFilter( n, name )
    {
       Initialize( v0, v1 );
    }
@@ -106,7 +111,16 @@ public:
    /*!
     * Copy constructor.
     */
-   LinearFilter( const LinearFilter& L ) : KernelFilter( L ), m_centralValue( L.m_centralValue ), m_outerValue( L.m_outerValue )
+   LinearFilter( const LinearFilter& x ) :
+      KernelFilter( x ), m_centralValue( x.m_centralValue ), m_outerValue( x.m_outerValue )
+   {
+   }
+
+   /*!
+    * Move constructor.
+    */
+   LinearFilter( LinearFilter&& x ) :
+      KernelFilter( std::move( x ) ), m_centralValue( x.m_centralValue ), m_outerValue( x.m_outerValue )
    {
    }
 
@@ -118,16 +132,24 @@ public:
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Copy assignment operator. Returns a reference to this object.
     */
-   LinearFilter& operator =( const LinearFilter& L )
+   LinearFilter& operator =( const LinearFilter& x )
    {
-      if ( &L != this )
-      {
-         (void)KernelFilter::operator =( L );
-         m_centralValue = L.m_centralValue;
-         m_outerValue = L.m_outerValue;
-      }
+      (void)KernelFilter::operator =( x );
+      m_centralValue = x.m_centralValue;
+      m_outerValue = x.m_outerValue;
+      return *this;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   LinearFilter& operator =( LinearFilter&& x )
+   {
+      (void)KernelFilter::operator =( std::move( x ) );
+      m_centralValue = x.m_centralValue;
+      m_outerValue = x.m_outerValue;
       return *this;
    }
 
@@ -175,6 +197,16 @@ public:
       Initialize( m_centralValue, m_outerValue );
    }
 
+   /*!
+    * Exchanges two linear filters \a x1 and \a x2.
+    */
+   friend void Swap( LinearFilter& x1, LinearFilter& x2 )
+   {
+      pcl::Swap( static_cast<KernelFilter&>( x1 ), static_cast<KernelFilter&>( x2 ) );
+      pcl::Swap( x1.m_centralValue, x2.m_centralValue );
+      pcl::Swap( x1.m_outerValue,   x2.m_outerValue );
+   }
+
 private:
 
    float m_centralValue;
@@ -202,5 +234,5 @@ private:
 
 #endif   // __PCL_LinearFilter_h
 
-// ****************************************************************************
-// EOF pcl/LinearFilter.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/LinearFilter.h - Released 2015/07/30 17:15:18 UTC

@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard XISF File Format Module Version 01.00.00.0023
-// ****************************************************************************
-// XISFFormat.cpp - Released 2014/11/30 10:38:10 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard XISF File Format Module Version 01.00.03.0056
+// ----------------------------------------------------------------------------
+// XISFFormat.cpp - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "XISFFormat.h"
 #include "XISFInstance.h"
@@ -69,18 +73,12 @@ IsoString XISFFormat::Name() const
 
 StringList XISFFormat::FileExtensions() const
 {
-   StringList exts;
-   exts.Add( ".xisf" );
-   exts.Add( ".xis" );
-   return exts;
+   return StringList() << ".xisf";
 }
 
 IsoStringList XISFFormat::MimeTypes() const
 {
-   IsoStringList mimes;
-   mimes.Add( "image/xisf" );
-   mimes.Add( "application/xisf" );
-   return mimes;
+   return IsoStringList();
 }
 
 uint32 XISFFormat::Version() const
@@ -93,7 +91,11 @@ String XISFFormat::Description() const
    return
 
    "<html>"
-   "<p>Extensible Image Serialization Format (XISF)"
+   "<p>XISF - Extensible Image Serialization Format Version 1.0</p>"
+   "<p>This implementation supports a large subset of the XISF Version 1.0 "
+   "Specification DRAFT 7 for monolithic XISF units.</p>"
+   "<p>For the latest XISF specification document, visit:</p>"
+   "<p>http://pixinsight.com/doc/docs/XISF-1.0-spec/XISF-1.0-spec.html</p>"
    "</html>";
 }
 
@@ -105,7 +107,7 @@ String XISFFormat::Implementation() const
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2014, Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2015, Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -169,17 +171,27 @@ bool XISFFormat::CanStoreICCProfiles() const
    return true;
 }
 
-bool XISFFormat::CanStoreMetadata() const
-{
-   return true;
-}
-
 bool XISFFormat::CanStoreThumbnails() const
 {
    return true;
 }
 
 bool XISFFormat::CanStoreProperties() const
+{
+   return true;
+}
+
+bool XISFFormat::CanStoreRGBWS() const
+{
+   return true;
+}
+
+bool XISFFormat::CanStoreDisplayFunctions() const
+{
+   return true;
+}
+
+bool XISFFormat::CanStoreColorFilterArrays() const
 {
    return true;
 }
@@ -206,13 +218,13 @@ bool XISFFormat::UsesFormatSpecificData() const
 
 bool XISFFormat::ValidateFormatSpecificData( const void* data ) const
 {
-   return FormatOptions::FromGenericDataBlock( data ) != 0;
+   return FormatOptions::FromGenericDataBlock( data ) != nullptr;
 }
 
 void XISFFormat::DisposeFormatSpecificData( void* data ) const
 {
    FormatOptions* o = FormatOptions::FromGenericDataBlock( data );
-   if ( o != 0 )
+   if ( o != nullptr )
       delete o;
 }
 
@@ -231,26 +243,29 @@ bool XISFFormat::EditPreferences() const
    if ( dlg.Execute() == StdDialogCode::Ok )
    {
       overrides = dlg.overrides;
-      Settings::Write( "XISFOverrideICCProfileEmbedding", overrides.overrideICCProfileEmbedding );
-      Settings::Write( "XISFEmbedICCProfiles",            overrides.embedICCProfiles );
-      Settings::Write( "XISFOverrideMetadataEmbedding",   overrides.overrideMetadataEmbedding );
-      Settings::Write( "XISFEmbedMetadata",               overrides.embedMetadata );
-      Settings::Write( "XISFOverrideThumbnailEmbedding",  overrides.overrideThumbnailEmbedding );
-      Settings::Write( "XISFEmbedThumbnails",             overrides.embedThumbnails );
-      Settings::Write( "XISFOverridePropertyEmbedding",   overrides.overridePropertyEmbedding );
-      Settings::Write( "XISFEmbedProperties",             overrides.embedProperties );
+      Settings::Write( "XISFOverridePropertyEmbedding",        overrides.overridePropertyEmbedding );
+      Settings::Write( "XISFEmbedProperties",                  overrides.embedProperties );
+      Settings::Write( "XISFOverrideICCProfileEmbedding",      overrides.overrideICCProfileEmbedding );
+      Settings::Write( "XISFEmbedICCProfiles",                 overrides.embedICCProfiles );
+      Settings::Write( "XISFOverrideDisplayFunctionEmbedding", overrides.overrideDisplayFunctionEmbedding );
+      Settings::Write( "XISFEmbedDisplayFunctions",            overrides.embedDisplayFunctions );
+      Settings::Write( "XISFOverrideRGBWorkingSpaceEmbedding", overrides.overrideRGBWorkingSpaceEmbedding );
+      Settings::Write( "XISFEmbedRGBWorkingSpaces",            overrides.embedRGBWorkingSpaces );
+      Settings::Write( "XISFOverrideThumbnailEmbedding",       overrides.overrideThumbnailEmbedding );
+      Settings::Write( "XISFEmbedThumbnails",                  overrides.embedThumbnails );
 
       options = dlg.options;
-      Settings::Write( "XISFStoreFITSKeywords",           options.storeFITSKeywords );
-      Settings::Write( "XISFIgnoreFITSKeywords",          options.ignoreFITSKeywords );
-      Settings::Write( "XISFImportFITSKeywords",          options.importFITSKeywords );
-      Settings::Write( "XISFIgnoreEmbeddedData",          options.ignoreEmbeddedData );
-      Settings::Write( "XISFIgnoreProperties",            options.ignoreProperties );
-      Settings::Write( "XISFAutoMetadata",                options.autoMetadata );
-      Settings::Write( "XISFCompressData",                options.compressData );
-      Settings::Write( "XISFCompressionLevel",            options.compressionLevel );
-      Settings::Write( "XISFBlockAlignmentSize",          options.blockAlignmentSize );
-      Settings::Write( "XISFMaxInlineBlockSize",          options.maxInlineBlockSize );
+      Settings::Write( "XISFStoreFITSKeywords",  options.storeFITSKeywords );
+      Settings::Write( "XISFIgnoreFITSKeywords", options.ignoreFITSKeywords );
+      Settings::Write( "XISFImportFITSKeywords", options.importFITSKeywords );
+      Settings::Write( "XISFIgnoreEmbeddedData", options.ignoreEmbeddedData );
+      Settings::Write( "XISFIgnoreProperties",   options.ignoreProperties );
+      Settings::Write( "XISFAutoMetadata",       options.autoMetadata );
+      Settings::Write( "XISFCompressionCodec",   options.compressionMethod );
+      Settings::Write( "XISFCompressionLevel",   options.compressionLevel );
+      Settings::Write( "XISFChecksums",          options.checksums );
+      Settings::Write( "XISFBlockAlignmentSize", options.blockAlignmentSize );
+      Settings::Write( "XISFMaxInlineBlockSize", options.maxInlineBlockSize );
 
       return true;
    }
@@ -289,13 +304,17 @@ XISFOptions XISFFormat::DefaultOptions()
    Settings::Read( "XISFAutoMetadata", b );
    options.autoMetadata = b;
 
-   b = options.compressData;
-   Settings::Read( "XISFCompressData", b );
-   options.compressData = b;
+   u8 = options.compressionMethod;
+   Settings::ReadU( "XISFCompressionCodec", u8 );
+   options.compressionMethod = u8;
 
    u8 = options.compressionLevel;
    Settings::ReadU( "XISFCompressionLevel", u8 );
    options.compressionLevel = u8;
+
+   b = options.checksums;
+   Settings::Read( "XISFChecksums", b );
+   options.checksums = b;
 
    u16 = options.blockAlignmentSize;
    Settings::ReadU( "XISFBlockAlignmentSize", u16 );
@@ -312,14 +331,16 @@ XISFFormat::EmbeddingOverrides XISFFormat::DefaultEmbeddingOverrides()
 {
    EmbeddingOverrides overrides;
 
-   Settings::Read( "XISFOverrideICCProfileEmbedding", overrides.overrideICCProfileEmbedding );
-   Settings::Read( "XISFEmbedICCProfiles",            overrides.embedICCProfiles );
-   Settings::Read( "XISFOverrideMetadataEmbedding",   overrides.overrideMetadataEmbedding );
-   Settings::Read( "XISFEmbedMetadata",               overrides.embedMetadata );
-   Settings::Read( "XISFOverrideThumbnailEmbedding",  overrides.overrideThumbnailEmbedding );
-   Settings::Read( "XISFEmbedThumbnails",             overrides.embedThumbnails );
-   Settings::Read( "XISFOverridePropertyEmbedding",   overrides.overridePropertyEmbedding );
-   Settings::Read( "XISFEmbedProperties",             overrides.embedProperties );
+   Settings::Read( "XISFOverridePropertyEmbedding",        overrides.overridePropertyEmbedding );
+   Settings::Read( "XISFEmbedProperties",                  overrides.embedProperties );
+   Settings::Read( "XISFOverrideICCProfileEmbedding",      overrides.overrideICCProfileEmbedding );
+   Settings::Read( "XISFEmbedICCProfiles",                 overrides.embedICCProfiles );
+   Settings::Read( "XISFOverrideDisplayFunctionEmbedding", overrides.overrideDisplayFunctionEmbedding );
+   Settings::Read( "XISFEmbedDisplayFunctions",            overrides.embedDisplayFunctions );
+   Settings::Read( "XISFOverrideRGBWorkingSpaceEmbedding", overrides.overrideRGBWorkingSpaceEmbedding );
+   Settings::Read( "XISFEmbedRGBWorkingSpaces",            overrides.embedRGBWorkingSpaces );
+   Settings::Read( "XISFOverrideThumbnailEmbedding",       overrides.overrideThumbnailEmbedding );
+   Settings::Read( "XISFEmbedThumbnails",                  overrides.embedThumbnails );
 
    return overrides;
 }
@@ -329,17 +350,17 @@ XISFFormat::EmbeddingOverrides XISFFormat::DefaultEmbeddingOverrides()
 #define XISF_SIGNATURE  0x58495346u // 'XISF'
 
 XISFFormat::FormatOptions::FormatOptions() :
-options( XISFFormat::DefaultOptions() ), signature( XISF_SIGNATURE )
+   options( XISFFormat::DefaultOptions() ), signature( XISF_SIGNATURE )
 {
 }
 
 XISFFormat::FormatOptions* XISFFormat::FormatOptions::FromGenericDataBlock( const void* data )
 {
-   if ( data == 0 )
-      return 0;
+   if ( data == nullptr )
+      return nullptr;
    const XISFFormat::FormatOptions* o = reinterpret_cast<const XISFFormat::FormatOptions*>( data );
    if ( o->signature != XISF_SIGNATURE )
-      return 0;
+      return nullptr;
    return const_cast<XISFFormat::FormatOptions*>( o );
 }
 
@@ -347,5 +368,5 @@ XISFFormat::FormatOptions* XISFFormat::FormatOptions::FromGenericDataBlock( cons
 
 } // pcl
 
-// ****************************************************************************
-// EOF XISFFormat.cpp - Released 2014/11/30 10:38:10 UTC
+// ----------------------------------------------------------------------------
+// EOF XISFFormat.cpp - Released 2015/07/31 11:49:40 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Action.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Action.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Action_h
 #define __PCL_Action_h
@@ -200,26 +203,41 @@ public:
            const Bitmap& icon = Bitmap::Null(), const String toolBar = String() );
 
    /*!
+    * Move constructor.
+    */
+   Action( Action&& x ) : UIObject( std::move( x ) )
+   {
+   }
+
+   /*!
     * Destroys this %Action object.
     *
-    * \note    This destructor does not destroy the actual action object, which
-    * is part of the PixInsight core application. Only the <em>managed alias</em>
-    * object living in the user-defined module is destroyed.
+    * This destructor does not destroy the actual action object, which is part
+    * of the PixInsight core application. Only the managed alias object living
+    * in the user-defined module is destroyed.
     */
    virtual ~Action()
    {
    }
 
    /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   Action& operator =( Action&& x )
+   {
+      Transfer( x );
+      return *this;
+   }
+
+   /*!
     * Ensures that the server-side object managed by this instance is uniquely
     * referenced.
     *
-    * Since actions are unique objects by definition, calling this member
-    * function has no effect.
+    * Since actions are unique objects, calling this member function has no
+    * effect.
     */
    virtual void SetUnique()
    {
-      // Unique by definition
    }
 
    /*!
@@ -443,5 +461,5 @@ private:
 
 #endif   // __PCL_Action_h
 
-// ****************************************************************************
-// EOF pcl/Action.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Action.h - Released 2015/07/30 17:15:18 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/SpinBox.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/SpinBox.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/SpinBox.h>
 #include <pcl/TextAlign.h>
@@ -57,55 +60,21 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-#define sender    (reinterpret_cast<SpinBox*>( hSender ))
-#define receiver  (reinterpret_cast<Control*>( hReceiver ))
-
-class SpinBoxEventDispatcher
-{
-public:
-
-   static void api_func ValueUpdated( control_handle hSender, control_handle hReceiver, int32 value )
-   {
-      if ( sender->onValueUpdated != 0 )
-         (receiver->*sender->onValueUpdated)( *sender, value );
-   }
-
-}; // SpinBoxEventDispatcher
-
-#undef sender
-#undef receiver
-
-// ----------------------------------------------------------------------------
-
 #ifdef _MSC_VER
 #  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
 #endif
 
 /*
  * ### TODO: Create a new class to encapsulate the common behavior of SpinBox
- *           and Slider. Proposal of class name: RangeControl
+ *           and Slider. Proposed class name: RangeControl
  */
 
 SpinBox::SpinBox( Control& parent ) :
-Control( (*API->SpinBox->CreateSpinBox)( ModuleHandle(), this, parent.handle, 0 /*flags*/ ) ),
-onValueUpdated( 0 )
+   Control( (*API->SpinBox->CreateSpinBox)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) ),
+   m_handlers( nullptr )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateSpinBox" );
-}
-
-// ----------------------------------------------------------------------------
-
-void SpinBox::OnValueUpdated( value_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onValueUpdated = 0;
-   if ( (*API->SpinBox->SetSpinBoxValueUpdatedEventRoutine)( handle, &receiver,
-        (f != 0) ? SpinBoxEventDispatcher::ValueUpdated : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetSpinBoxValueUpdatedEventRoutine" );
-   }
-   onValueUpdated = f;
 }
 
 // ----------------------------------------------------------------------------
@@ -202,15 +171,13 @@ String SpinBox::Prefix() const
    (*API->SpinBox->GetSpinBoxPrefix)( handle, 0, &len );
 
    String prefix;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      prefix.Reserve( len );
-
+      prefix.SetLength( len );
       if ( (*API->SpinBox->GetSpinBoxPrefix)( handle, prefix.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetSpinBoxPrefix" );
+      prefix.ResizeToNullTerminated();
    }
-
    return prefix;
 }
 
@@ -229,15 +196,13 @@ String SpinBox::Suffix() const
    (*API->SpinBox->GetSpinBoxSuffix)( handle, 0, &len );
 
    String suffix;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      suffix.Reserve( len );
-
+      suffix.SetLength( len );
       if ( (*API->SpinBox->GetSpinBoxSuffix)( handle, suffix.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetSpinBoxSuffix" );
+      suffix.ResizeToNullTerminated();
    }
-
    return suffix;
 }
 
@@ -256,15 +221,13 @@ String SpinBox::MinimumValueText() const
    (*API->SpinBox->GetSpinBoxMinimumValueText)( handle, 0, &len );
 
    String text;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      text.Reserve( len );
-
+      text.SetLength( len );
       if ( (*API->SpinBox->GetSpinBoxMinimumValueText)( handle, text.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetSpinBoxMinimumValueText" );
+      text.ResizeToNullTerminated();
    }
-
    return text;
 }
 
@@ -291,7 +254,62 @@ void SpinBox::SetRightAlignment( bool right )
 
 // ----------------------------------------------------------------------------
 
+#define sender    (reinterpret_cast<SpinBox*>( hSender ))
+#define receiver  (reinterpret_cast<Control*>( hReceiver ))
+#define handlers  sender->m_handlers
+
+class SpinBoxEventDispatcher
+{
+public:
+
+   static void api_func ValueUpdated( control_handle hSender, control_handle hReceiver, int32 value )
+   {
+      if ( handlers->onValueUpdated != nullptr )
+         (receiver->*handlers->onValueUpdated)( *sender, value );
+   }
+
+   static void api_func RangeUpdated( control_handle hSender, control_handle hReceiver, int32 minValue, int32 maxValue )
+   {
+      if ( handlers->onRangeUpdated != nullptr )
+         (receiver->*handlers->onRangeUpdated)( *sender, minValue, maxValue );
+   }
+
+}; // SpinBoxEventDispatcher
+
+#undef sender
+#undef receiver
+#undef handlers
+
+// ----------------------------------------------------------------------------
+
+#define INIT_EVENT_HANDLERS()    \
+   __PCL_NO_ALIAS_HANDLERS;      \
+   if ( m_handlers == nullptr )  \
+      m_handlers = new EventHandlers
+
+void SpinBox::OnValueUpdated( value_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->SpinBox->SetSpinBoxValueUpdatedEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? SpinBoxEventDispatcher::ValueUpdated : 0 ) == api_false )
+      throw APIFunctionError( "SetSpinBoxValueUpdatedEventRoutine" );
+   m_handlers->onValueUpdated = f;
+}
+
+void SpinBox::OnRangeUpdated( range_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->SpinBox->SetSpinBoxRangeUpdatedEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? SpinBoxEventDispatcher::RangeUpdated : 0 ) == api_false )
+      throw APIFunctionError( "SetSpinBoxRangeUpdatedEventRoutine" );
+   m_handlers->onRangeUpdated = f;
+}
+
+#undef INIT_EVENT_HANDLERS
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/SpinBox.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/SpinBox.cpp - Released 2015/07/30 17:15:31 UTC

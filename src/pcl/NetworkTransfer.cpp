@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/NetworkTransfer.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/NetworkTransfer.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/AutoLock.h>
 #include <pcl/ErrorHandler.h>
@@ -105,7 +108,7 @@ onDownloadDataAvailable( 0 ),
 onUploadDataRequested( 0 ),
 onTransferProgress( 0 )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateNetworkTransfer" );
 }
 
@@ -122,11 +125,11 @@ onTransferProgress( 0 )
 
 NetworkTransfer& NetworkTransfer::Null()
 {
-   static NetworkTransfer* nullNetworkTransfer = 0;
+   static NetworkTransfer* nullNetworkTransfer = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullNetworkTransfer == 0 )
-      nullNetworkTransfer = new NetworkTransfer( reinterpret_cast<void*>( 0 ) );
+   if ( nullNetworkTransfer == nullptr )
+      nullNetworkTransfer = new NetworkTransfer( nullptr );
    return *nullNetworkTransfer;
 }
 
@@ -207,13 +210,13 @@ String NetworkTransfer::URL() const
    (*API->NetworkTransfer->GetNetworkTransferURL)( handle, 0, &len );
 
    String url;
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      url.Reserve( len );
+      url.SetLength( len );
       if ( (*API->NetworkTransfer->GetNetworkTransferURL)( handle, url.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetNetworkTransferURL" );
+      url.ResizeToNullTerminated();
    }
-
    return url;
 }
 
@@ -225,13 +228,13 @@ String NetworkTransfer::ProxyURL() const
    (*API->NetworkTransfer->GetNetworkTransferProxyURL)( handle, 0, &len );
 
    String url;
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      url.Reserve( len );
+      url.SetLength( len );
       if ( (*API->NetworkTransfer->GetNetworkTransferProxyURL)( handle, url.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetNetworkTransferProxyURL" );
+      url.ResizeToNullTerminated();
    }
-
    return url;
 }
 
@@ -264,13 +267,13 @@ String NetworkTransfer::ContentType() const
    (*API->NetworkTransfer->GetNetworkTransferContentType)( handle, 0, &len );
 
    String contentType;
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      contentType.Reserve( len );
+      contentType.SetLength( len );
       if ( (*API->NetworkTransfer->GetNetworkTransferContentType)( handle, contentType.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetNetworkTransferContentType" );
+      contentType.ResizeToNullTerminated();
    }
-
    return contentType;
 }
 
@@ -307,13 +310,13 @@ String NetworkTransfer::ErrorInformation() const
    (*API->NetworkTransfer->GetNetworkTransferErrorInformation)( handle, 0, &len );
 
    String errorInfo;
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      errorInfo.Reserve( len );
+      errorInfo.SetLength( len );
       if ( (*API->NetworkTransfer->GetNetworkTransferErrorInformation)( handle, errorInfo.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetNetworkTransferErrorInformation" );
+      errorInfo.ResizeToNullTerminated();
    }
-
    return errorInfo;
 }
 
@@ -321,7 +324,7 @@ String NetworkTransfer::ErrorInformation() const
 
 void NetworkTransfer::OnDownloadDataAvailable( download_event_handler handler, Control& receiver )
 {
-   __PCL_NO_ALIAS_HANDLER;
+   __PCL_NO_ALIAS_HANDLERS;
    onDownloadDataAvailable = 0;
    if ( (*API->NetworkTransfer->SetNetworkTransferDownloadEventRoutine)( handle, &receiver,
                      (handler != 0) ? NetworkTransferEventDispatcher::DownloadDataAvailable : 0 ) == api_false )
@@ -333,7 +336,7 @@ void NetworkTransfer::OnDownloadDataAvailable( download_event_handler handler, C
 
 void NetworkTransfer::OnUploadDataRequested( upload_event_handler handler, Control& receiver )
 {
-   __PCL_NO_ALIAS_HANDLER;
+   __PCL_NO_ALIAS_HANDLERS;
    onUploadDataRequested = 0;
    if ( (*API->NetworkTransfer->SetNetworkTransferUploadEventRoutine)( handle, &receiver,
                      (handler != 0) ? NetworkTransferEventDispatcher::UploadDataRequested : 0 ) == api_false )
@@ -345,7 +348,7 @@ void NetworkTransfer::OnUploadDataRequested( upload_event_handler handler, Contr
 
 void NetworkTransfer::OnTransferProgress( progress_event_handler handler, Control& receiver )
 {
-   __PCL_NO_ALIAS_HANDLER;
+   __PCL_NO_ALIAS_HANDLERS;
    onTransferProgress = 0;
    if ( (*API->NetworkTransfer->SetNetworkTransferProgressEventRoutine)( handle, &receiver,
                      (handler != 0) ? NetworkTransferEventDispatcher::TransferProgress : 0 ) == api_false )
@@ -364,5 +367,5 @@ void* NetworkTransfer::CloneHandle() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/NetworkTransfer.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/NetworkTransfer.cpp - Released 2015/07/30 17:15:31 UTC

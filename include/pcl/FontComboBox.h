@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/FontComboBox.h - Released 2014/11/14 17:16:33 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/FontComboBox.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_FontComboBox_h
 #define __PCL_FontComboBox_h
@@ -101,7 +104,11 @@ public:
    /*!
     * Destroys a %FontComboBox control.
     */
-   virtual ~FontComboBox();
+   virtual ~FontComboBox()
+   {
+      if ( m_handlers != nullptr )
+         delete m_handlers, m_handlers = nullptr;
+   }
 
    /*!
     * Returns the face name of the font that corresponds to the currently
@@ -357,18 +364,25 @@ public:
     */
    void OnFontHighlighted( font_event_handler handler, Control& receiver );
 
-protected:
-
-   font_event_handler   onFontSelected;
-   Control*             onFontSelectedReceiver;
-
-   font_event_handler   onFontHighlighted;
-   Control*             onFontHighlightedReceiver;
-
 private:
 
-   void __ItemSelected( ComboBox&, int );
-   void __ItemHighlighted( ComboBox&, int );
+   struct EventHandlers
+   {
+      font_event_handler onFontSelected            = nullptr;
+      Control*           onFontSelectedReceiver    = nullptr;
+
+      font_event_handler onFontHighlighted         = nullptr;
+      Control*           onFontHighlightedReceiver = nullptr;
+
+      EventHandlers() = default;
+      EventHandlers( const EventHandlers& ) = default;
+      EventHandlers& operator =( const EventHandlers& ) = default;
+   };
+
+   EventHandlers* m_handlers;
+
+   void ItemSelected( ComboBox&, int );
+   void ItemHighlighted( ComboBox&, int );
 };
 
 // ----------------------------------------------------------------------------
@@ -379,5 +393,5 @@ private:
 
 #endif   // __PCL_FontComboBox_h
 
-// ****************************************************************************
-// EOF pcl/FontComboBox.h - Released 2014/11/14 17:16:33 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/FontComboBox.h - Released 2015/07/30 17:15:18 UTC

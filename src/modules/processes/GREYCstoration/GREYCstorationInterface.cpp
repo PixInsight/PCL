@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard GREYCstoration Process Module Version 01.00.02.0205
-// ****************************************************************************
-// GREYCstorationInterface.cpp - Released 2014/11/14 17:18:47 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard GREYCstoration Process Module Version 01.00.02.0224
+// ----------------------------------------------------------------------------
+// GREYCstorationInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard GREYCstoration PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 /******************************************************************************
  * CImg Library and GREYCstoration Algorithm:
@@ -248,7 +252,7 @@ GREYCstorationInterface::GUIData::GUIData( GREYCstorationInterface& w )
 
    Amplitude_NumericControl.label.SetText( "Amplitude:" );
    Amplitude_NumericControl.label.SetFixedWidth( labelWidth1 );
-   Amplitude_NumericControl.slider.SetMinWidth( 220 );
+   Amplitude_NumericControl.slider.SetScaledMinWidth( 220 );
    Amplitude_NumericControl.slider.SetRange( 0, 100 );
    Amplitude_NumericControl.SetReal();
    Amplitude_NumericControl.SetRange( TheGREYCsAmplitudeParameter->MinimumValue(), TheGREYCsAmplitudeParameter->MaximumValue() );
@@ -259,7 +263,7 @@ GREYCstorationInterface::GUIData::GUIData( GREYCstorationInterface& w )
 
    Sharpness_NumericControl.label.SetText( "Sharpness:" );
    Sharpness_NumericControl.label.SetFixedWidth( labelWidth1 );
-   Sharpness_NumericControl.slider.SetMinWidth( 220 );
+   Sharpness_NumericControl.slider.SetScaledMinWidth( 220 );
    Sharpness_NumericControl.slider.SetRange( 0, 125 );
    Sharpness_NumericControl.SetReal();
    Sharpness_NumericControl.SetRange( TheGREYCsSharpnessParameter->MinimumValue(), TheGREYCsSharpnessParameter->MaximumValue() );
@@ -270,7 +274,7 @@ GREYCstorationInterface::GUIData::GUIData( GREYCstorationInterface& w )
 
    Anisotropy_NumericControl.label.SetText( "Anisotropy:" );
    Anisotropy_NumericControl.label.SetFixedWidth( labelWidth1 );
-   Anisotropy_NumericControl.slider.SetMinWidth( 220 );
+   Anisotropy_NumericControl.slider.SetScaledMinWidth( 220 );
    Anisotropy_NumericControl.slider.SetRange( 0, 100 );
    Anisotropy_NumericControl.SetReal();
    Anisotropy_NumericControl.SetRange( TheGREYCsAnisotropyParameter->MinimumValue(), TheGREYCsAnisotropyParameter->MaximumValue() );
@@ -281,7 +285,7 @@ GREYCstorationInterface::GUIData::GUIData( GREYCstorationInterface& w )
 
    Alpha_NumericControl.label.SetText( "Noise scale:" );
    Alpha_NumericControl.label.SetFixedWidth( labelWidth1 );
-   Alpha_NumericControl.slider.SetMinWidth( 220 );
+   Alpha_NumericControl.slider.SetScaledMinWidth( 220 );
    Alpha_NumericControl.slider.SetRange( 0, 150 );
    Alpha_NumericControl.SetReal();
    Alpha_NumericControl.SetRange( TheGREYCsAlphaParameter->MinimumValue(), TheGREYCsAlphaParameter->MaximumValue() );
@@ -292,7 +296,7 @@ GREYCstorationInterface::GUIData::GUIData( GREYCstorationInterface& w )
 
    Sigma_NumericControl.label.SetText( "Regularity:" );
    Sigma_NumericControl.label.SetFixedWidth( labelWidth1 );
-   Sigma_NumericControl.slider.SetMinWidth( 220 );
+   Sigma_NumericControl.slider.SetScaledMinWidth( 220 );
    Sigma_NumericControl.slider.SetRange( 0, 150 );
    Sigma_NumericControl.SetReal();
    Sigma_NumericControl.SetRange( TheGREYCsSigmaParameter->MinimumValue(), TheGREYCsSigmaParameter->MaximumValue() );
@@ -303,7 +307,7 @@ GREYCstorationInterface::GUIData::GUIData( GREYCstorationInterface& w )
 
    SpatialStepSize_NumericControl.label.SetText( "Spatial step size:" );
    SpatialStepSize_NumericControl.label.SetFixedWidth( labelWidth1 );
-   SpatialStepSize_NumericControl.slider.SetMinWidth( 220 );
+   SpatialStepSize_NumericControl.slider.SetScaledMinWidth( 220 );
    SpatialStepSize_NumericControl.slider.SetRange( 1, 200 );
    SpatialStepSize_NumericControl.SetReal();
    SpatialStepSize_NumericControl.SetRange( TheGREYCsSpatialStepSizeParameter->MinimumValue(), TheGREYCsSpatialStepSizeParameter->MaximumValue() );
@@ -314,7 +318,7 @@ GREYCstorationInterface::GUIData::GUIData( GREYCstorationInterface& w )
 
    AngularStepSize_NumericControl.label.SetText( "Angular step size:" );
    AngularStepSize_NumericControl.label.SetFixedWidth( labelWidth1 );
-   AngularStepSize_NumericControl.slider.SetMinWidth( 220 );
+   AngularStepSize_NumericControl.slider.SetScaledMinWidth( 220 );
    AngularStepSize_NumericControl.slider.SetRange( 1, 100 );
    AngularStepSize_NumericControl.SetReal();
    AngularStepSize_NumericControl.SetRange( TheGREYCsAngularStepSizeParameter->MinimumValue(), TheGREYCsAngularStepSizeParameter->MaximumValue() );
@@ -325,7 +329,7 @@ GREYCstorationInterface::GUIData::GUIData( GREYCstorationInterface& w )
 
    Precision_NumericControl.label.SetText( "Precision:" );
    Precision_NumericControl.label.SetFixedWidth( labelWidth1 );
-   Precision_NumericControl.slider.SetMinWidth( 220 );
+   Precision_NumericControl.slider.SetScaledMinWidth( 220 );
    Precision_NumericControl.slider.SetRange( 1, 100 );
    Precision_NumericControl.SetReal();
    Precision_NumericControl.SetRange( TheGREYCsPrecisionParameter->MinimumValue(), TheGREYCsPrecisionParameter->MaximumValue() );
@@ -358,7 +362,7 @@ GREYCstorationInterface::GUIData::GUIData( GREYCstorationInterface& w )
    CoupledChannels_CheckBox.SetToolTip( "Enable multichannel GREYCstoration processing for color images" );
    CoupledChannels_CheckBox.OnClick( (pcl::Button::click_event_handler)&GREYCstorationInterface::__Click, w );
 
-   FastApproximation_Sizer.AddSpacing( labelWidth1 + 4 );
+   FastApproximation_Sizer.AddUnscaledSpacing( labelWidth1 + w.LogicalPixelsToPhysical( 4 ) );
    FastApproximation_Sizer.Add( FastApproximation_CheckBox );
    FastApproximation_Sizer.AddSpacing( 12 );
    FastApproximation_Sizer.Add( CoupledChannels_CheckBox );
@@ -389,5 +393,5 @@ GREYCstorationInterface::GUIData::GUIData( GREYCstorationInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF GREYCstorationInterface.cpp - Released 2014/11/14 17:18:47 UTC
+// ----------------------------------------------------------------------------
+// EOF GREYCstorationInterface.cpp - Released 2015/07/31 11:49:48 UTC

@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard XISF File Format Module Version 01.00.00.0023
-// ****************************************************************************
-// XISFOptionsDialog.h - Released 2014/11/30 10:38:10 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard XISF File Format Module Version 01.00.03.0056
+// ----------------------------------------------------------------------------
+// XISFOptionsDialog.h - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,12 +48,13 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
-#ifndef __XISFOptionsDialog_h
-#define __XISFOptionsDialog_h
+#ifndef XISFOptionsDialog_h
+#define XISFOptionsDialog_h
 
 #include <pcl/CheckBox.h>
+#include <pcl/ComboBox.h>
 #include <pcl/Dialog.h>
 //#include <pcl/Edit.h>
 #include <pcl/GroupBox.h>
@@ -66,16 +71,56 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-class XISFOptionsDialog : public Dialog
+class XISFOptionsDialogBase : public Dialog
+{
+public:
+
+   XISFOptions options;
+
+   XISFOptionsDialogBase( const XISFOptions&, const char* labelForWidth = nullptr );
+
+protected:
+
+   int m_labelWidth;
+
+   GroupBox          DataCompression_GroupBox;
+   VerticalSizer     DataCompression_Sizer;
+      HorizontalSizer   CompressionCodec_Sizer;
+         Label             CompressionCodec_Label;
+         ComboBox          CompressionCodec_ComboBox;
+      HorizontalSizer   CompressionLevel_Sizer;
+         Label             CompressionLevel_Label;
+         SpinBox           CompressionLevel_SpinBox;
+      HorizontalSizer   CompressionShuffle_Sizer;
+         CheckBox          CompressionShuffle_CheckBox;
+
+   GroupBox          Security_GroupBox;
+   VerticalSizer     Security_Sizer;
+      HorizontalSizer   Checksums_Sizer;
+         CheckBox          Checksums_CheckBox;
+
+   HorizontalSizer   BottomSection_Sizer;
+      PushButton        OK_PushButton;
+      PushButton        Cancel_PushButton;
+
+   int CompressionMethodToComboBoxItem( int );
+   int ComboBoxItemToCompressionMethod( int );
+
+   void GetBaseParameters();
+
+   void Base_Button_Click( Button& sender, bool checked );
+};
+
+// ----------------------------------------------------------------------------
+
+class XISFOptionsDialog : public XISFOptionsDialogBase
 {
 public:
 
    ImageOptions imageOptions;
-   XISFOptions  xisfOptions;
    IsoString    outputHints;
 
    XISFOptionsDialog( const ImageOptions&, const XISFOptions&, const IsoString& = IsoString() );
-   virtual ~XISFOptionsDialog() = default;
 
 private:
 
@@ -94,13 +139,14 @@ private:
       HorizontalSizer   Double_Sizer;
          RadioButton       Double_RadioButton;
 
-   GroupBox          DataCompression_GroupBox;
-   VerticalSizer     DataCompression_Sizer;
-      HorizontalSizer   Compression_Sizer;
-         CheckBox          Compression_CheckBox;
-      HorizontalSizer   CompressionLevel_Sizer;
-         Label             CompressionLevel_Label;
-         SpinBox           CompressionLevel_SpinBox;
+   /*
+    * ### TODO: Core 1.8.x: Support hints in format queries.
+    *
+   GroupBox          OutputHints_GroupBox;
+   HorizontalSizer   OutputHints_Sizer;
+      Label             OutputHints_Label;
+      Edit              OutputHints_Edit;
+   */
 
    GroupBox          EmbeddedData_GroupBox;
    VerticalSizer     EmbeddedData_Sizer;
@@ -110,34 +156,21 @@ private:
          CheckBox             FITSKeywords_CheckBox;
       HorizontalSizer      ICCProfile_Sizer;
          CheckBox             ICCProfile_CheckBox;
-      HorizontalSizer      Metadata_Sizer;
-         CheckBox             Metadata_CheckBox;
+      HorizontalSizer      DisplayFunction_Sizer;
+         CheckBox             DisplayFunction_CheckBox;
+      HorizontalSizer      RGBWorkingSpace_Sizer;
+         CheckBox             RGBWorkingSpace_CheckBox;
       HorizontalSizer      Thumbnail_Sizer;
          CheckBox             Thumbnail_CheckBox;
 
-   /*
-    * ### TODO: Core 1.8.3.x: Support hints in format queries.
-    *
-   GroupBox          OutputHints_GroupBox;
-   HorizontalSizer   OutputHints_Sizer;
-      Label             OutputHints_Label;
-      Edit              OutputHints_Edit;
-   */
-
-   HorizontalSizer   BottomSection_Sizer;
-      PushButton        OK_PushButton;
-      PushButton        Cancel_PushButton;
-
-   void __Button_Click( Button& sender, bool checked );
-   void __Dialog_Return( Dialog& sender, int retVal );
+   void Dialog_Return( Dialog& sender, int retVal );
 };
-
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-#endif   // __XISFOptionsDialog_h
+#endif   // XISFOptionsDialog_h
 
-// ****************************************************************************
-// EOF XISFOptionsDialog.h - Released 2014/11/30 10:38:10 UTC
+// ----------------------------------------------------------------------------
+// EOF XISFOptionsDialog.h - Released 2015/07/31 11:49:40 UTC

@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Global Process Module Version 01.02.05.0260
-// ****************************************************************************
-// PreferencesParameters.h - Released 2014/11/14 17:18:47 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Global Process Module Version 01.02.06.0280
+// ----------------------------------------------------------------------------
+// PreferencesParameters.h - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,15 +48,15 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PreferencesParameters_h
 #define __PreferencesParameters_h
 
-#include <pcl/MetaParameter.h>
-#include <pcl/ImageWindow.h> // for pcl::BackgroundBrush
-#include <pcl/Thread.h> // for pcl::ThreadPriority
 #include <pcl/Color.h>
+#include <pcl/ImageWindow.h>  // for pcl::BackgroundBrush
+#include <pcl/MetaParameter.h>
+#include <pcl/Thread.h>       // for pcl::ThreadPriority
 
 //
 
@@ -217,21 +221,7 @@ PCL_BEGIN_LOCAL
 
 // ----------------------------------------------------------------------------
 
-#ifdef __PCL_WINDOWS
-// Interestingly, MSVC++ is unable to handle conditional preprocessor
-// directives within macro definitions... g++ does allow them, see below.
-DECLARE_STRING_METAPARAMETER  ( Application, styleSheetFile, String( "win.qss" ) )
-#else
-DECLARE_STRING_METAPARAMETER  ( Application, styleSheetFile,
-#ifdef __PCL_X11
-         String( "x11.qss" )
-#endif
-#ifdef __PCL_MACOSX
-         String( "osx.qss" )
-#endif
-                              )
-#endif
-
+DECLARE_STRING_METAPARAMETER  ( Application, styleSheetFile,                   "core-standard.qss" )
 DECLARE_STRING_METAPARAMETER  ( Application, resourceFile01,                   "core-icons.rcc" )
 DECLARE_STRING_METAPARAMETER  ( Application, resourceFile02,                   "core-compat-1.7.rcc" )
 DECLARE_STRING_METAPARAMETER  ( Application, resourceFile03,                   String() )
@@ -242,6 +232,13 @@ DECLARE_STRING_METAPARAMETER  ( Application, resourceFile07,                   S
 DECLARE_STRING_METAPARAMETER  ( Application, resourceFile08,                   String() )
 DECLARE_STRING_METAPARAMETER  ( Application, resourceFile09,                   String() )
 DECLARE_STRING_METAPARAMETER  ( Application, resourceFile10,                   String() )
+DECLARE_BOOLEAN_METAPARAMETER ( Application, autoUIScaling,                    true )
+DECLARE_DOUBLE_METAPARAMETER  ( Application, uiScalingFactor,                  1.0, 1.0, 4.0 )
+DECLARE_INT32_METAPARAMETER   ( Application, fontResolution,                   100, 1, 1000 )
+DECLARE_STRING_METAPARAMETER  ( Application, lowResFont,                       "DejaVu Sans" )
+DECLARE_STRING_METAPARAMETER  ( Application, highResFont,                      "Open Sans" )
+DECLARE_STRING_METAPARAMETER  ( Application, lowResMonoFont,                   "DejaVu Sans Mono" )
+DECLARE_STRING_METAPARAMETER  ( Application, highResMonoFont,                  "DejaVu Sans Mono" )
 
 // ----------------------------------------------------------------------------
 
@@ -282,13 +279,12 @@ DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, backupFiles,                      f
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, defaultMasksShown,                true )
 DECLARE_INT32_METAPARAMETER   ( ImageWindow, defaultMaskMode,                  MaskMode::Default, 0, MaskMode::NumberOfModes-1 )
 DECLARE_INT32_METAPARAMETER   ( ImageWindow, defaultTransparencyMode,          TransparencyMode::Default, 0, TransparencyMode::NumberOfModes-1 )
-DECLARE_DOUBLE_METAPARAMETER  ( ImageWindow, defaultHorizontalResolution,      72, 1, 10000 )
-DECLARE_DOUBLE_METAPARAMETER  ( ImageWindow, defaultVerticalResolution,        72, 1, 10000 )
+DECLARE_DOUBLE_METAPARAMETER  ( ImageWindow, defaultHorizontalResolution,      72.0, 1.0, 10000.0 )
+DECLARE_DOUBLE_METAPARAMETER  ( ImageWindow, defaultVerticalResolution,        72.0, 1.0, 10000.0 )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, defaultMetricResolution,          false )
-DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, defaultEmbedMetadata,             true )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, defaultEmbedThumbnails,           false )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, defaultEmbedProperties,           true )
-DECLARE_STRING_METAPARAMETER  ( ImageWindow, defaultFileExtension,             ".fit" )
+DECLARE_STRING_METAPARAMETER  ( ImageWindow, defaultFileExtension,             ".xisf" )
 #ifdef __PCL_X11
 /*
  * ### FIXME: Native KDE file dialogs are causing problems, especially an
@@ -304,12 +300,13 @@ DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, strictFileSaveMode,               t
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, useFileNamesAsImageIdentifiers,   true )
 DECLARE_INT32_METAPARAMETER   ( ImageWindow, cursorTolerance,                  3, 1, 16 )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, touchEvents,                      true )
-DECLARE_DOUBLE_METAPARAMETER  ( ImageWindow, pinchSensitivity,                 0.050, 0, 1 )
+DECLARE_DOUBLE_METAPARAMETER  ( ImageWindow, pinchSensitivity,                 0.050, 0.0, 1.0 )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, fastScreenRenditions,             true )
 DECLARE_INT32_METAPARAMETER   ( ImageWindow, fastScreenRenditionThreshold,     6, 0, 64 )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, default24BitScreenLUT,            false )
 DECLARE_TABLE_METAPARAMETER   ( ImageWindow, swapDirectories )
 DECLARE_ROW_STRING_METAPARAMETER( ImageWindow, swapDirectory,                  String() )
+DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, swapCompression,                  false )
 DECLARE_STRING_METAPARAMETER  ( ImageWindow, downloadsDirectory,               String() )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, followDownloadLocations,          false )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, verboseNetworkOperations,         false )
@@ -362,5 +359,5 @@ PCL_END_LOCAL
 
 #endif   // __PreferencesParameters_h
 
-// ****************************************************************************
-// EOF PreferencesParameters.h - Released 2014/11/14 17:18:47 UTC
+// ----------------------------------------------------------------------------
+// EOF PreferencesParameters.h - Released 2015/07/31 11:49:48 UTC

@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Global Process Module Version 01.02.05.0260
-// ****************************************************************************
-// PreferencesProcess.cpp - Released 2014/11/14 17:18:47 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Global Process Module Version 01.02.06.0280
+// ----------------------------------------------------------------------------
+// PreferencesProcess.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "PreferencesProcess.h"
 #include "PreferencesParameters.h"
@@ -84,6 +88,13 @@ PreferencesProcess::PreferencesProcess() : MetaProcess()
    new METAPARAMETER_ID( Application, resourceFile08 )( this );
    new METAPARAMETER_ID( Application, resourceFile09 )( this );
    new METAPARAMETER_ID( Application, resourceFile10 )( this );
+   new METAPARAMETER_ID( Application, autoUIScaling )( this );
+   new METAPARAMETER_ID( Application, uiScalingFactor )( this );
+   new METAPARAMETER_ID( Application, fontResolution )( this );
+   new METAPARAMETER_ID( Application, lowResFont )( this );
+   new METAPARAMETER_ID( Application, highResFont )( this );
+   new METAPARAMETER_ID( Application, lowResMonoFont )( this );
+   new METAPARAMETER_ID( Application, highResMonoFont )( this );
 
    // -------------------------------------------------------------------------
 
@@ -123,7 +134,6 @@ PreferencesProcess::PreferencesProcess() : MetaProcess()
    new METAPARAMETER_ID( ImageWindow, defaultHorizontalResolution )( this );
    new METAPARAMETER_ID( ImageWindow, defaultVerticalResolution )( this );
    new METAPARAMETER_ID( ImageWindow, defaultMetricResolution )( this );
-   new METAPARAMETER_ID( ImageWindow, defaultEmbedMetadata )( this );
    new METAPARAMETER_ID( ImageWindow, defaultEmbedThumbnails )( this );
    new METAPARAMETER_ID( ImageWindow, defaultEmbedProperties )( this );
    new METAPARAMETER_ID( ImageWindow, defaultFileExtension )( this );
@@ -140,6 +150,7 @@ PreferencesProcess::PreferencesProcess() : MetaProcess()
    new METAPARAMETER_ID( ImageWindow, default24BitScreenLUT )( this );
    new METAPARAMETER_ID( ImageWindow, swapDirectories )( this );
    new METAPARAMETER_ID( ImageWindow, swapDirectory )( METAPARAMETER_INSTANCE_ID( ImageWindow, swapDirectories ) );
+   new METAPARAMETER_ID( ImageWindow, swapCompression )( this );
    new METAPARAMETER_ID( ImageWindow, downloadsDirectory )( this );
    new METAPARAMETER_ID( ImageWindow, followDownloadLocations )( this );
    new METAPARAMETER_ID( ImageWindow, verboseNetworkOperations )( this );
@@ -325,5 +336,5 @@ int PreferencesProcess::ProcessCommandLine( const StringList& argv ) const
 
 } // pcl
 
-// ****************************************************************************
-// EOF PreferencesProcess.cpp - Released 2014/11/14 17:18:47 UTC
+// ----------------------------------------------------------------------------
+// EOF PreferencesProcess.cpp - Released 2015/07/31 11:49:48 UTC

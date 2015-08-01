@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.94
-# Copyright (C) 2009-2014 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.95
+# Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Tue, 18 Nov 2014 11:28:30 GMT
+# Automatically generated on Thu, 30 Jul 2015 17:10:23 GMT
 # Project id ...... zlib
 # Project type .... DynamicLibrary
 # Platform ........ MacOSX/g++
@@ -84,7 +84,7 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/libzlib-pxi.dylib: $(OBJ_FILES)
-	clang++ -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.8 -fPIC -headerpad_max_install_names -dynamiclib -install_name @executable_path/libzlib-pxi.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/libzlib-pxi.dylib $(OBJ_FILES) -framework CoreFoundation
+	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -stdlib=libc++ -dynamiclib -install_name @executable_path/libzlib-pxi.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/libzlib-pxi.dylib $(OBJ_FILES) -framework CoreFoundation
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean
@@ -97,6 +97,6 @@ post-build:
 	codesign --deep -s pleiades -f -v --timestamp $(PCLBINDIR64)/libzlib-pxi.dylib
 
 ./x64/Release/%.o: ../../%.c
-	clang -c -pipe -arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.8 -fPIC -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -O2 -mtune=generic -mssse3 -ffast-math -ftree-vectorize -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	clang -c -pipe -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -mtune=generic -mssse3 -O3 -ffast-math -ftree-vectorize -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

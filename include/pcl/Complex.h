@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Complex.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Complex.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Complex_h
 #define __PCL_Complex_h
@@ -76,6 +79,14 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
+/*
+ * ### NB: Template class Complex<T> cannot have virtual member functions.
+ *         This is because sizeof( Complex<T> ) must be equal to 2*sizeof( T ).
+ */
+
+#define PCL_ASSERT_COMPLEX_SIZE() \
+   static_assert( sizeof( *this ) == 2*sizeof( T ), "Invalid sizeof( Complex<> )" )
+
 #define real   C[0]
 #define imag   C[1]
 
@@ -105,6 +116,7 @@ public:
     */
    Complex()
    {
+      PCL_ASSERT_COMPLEX_SIZE();
    }
 
    /*!
@@ -112,6 +124,7 @@ public:
     */
    Complex( T r, T i = 0 )
    {
+      PCL_ASSERT_COMPLEX_SIZE();
       real = r;
       imag = i;
    }
@@ -122,12 +135,13 @@ public:
    template <typename T1>
    Complex( const Complex<T1>& c )
    {
+      PCL_ASSERT_COMPLEX_SIZE();
       real = T( c.Real() );
       imag = T( c.Imag() );
    }
 
    /*!
-    * Returns the real component of this complex number.
+    * Returns a copy of the real component of this complex number.
     */
    T Real() const
    {
@@ -143,7 +157,7 @@ public:
    }
 
    /*!
-    * Returns the imaginary component of this complex number.
+    * Returns a copy of the imaginary component of this complex number.
     */
    T Imag() const
    {
@@ -400,6 +414,8 @@ private:
 
 #undef real
 #undef imag
+
+#undef PCL_ASSERT_COMPLEX_SIZE
 
 // ----------------------------------------------------------------------------
 
@@ -1035,40 +1051,52 @@ S& operator <<( S& s, const Complex<T>& c )
  */
 
 /*!
+ * \class pcl::Complex32
+ * \ingroup complex_types
+ * \brief A complex number whose components are 32-bit floating point real
+ *        numbers.
+ *
+ * Complex32 is a template instantiation of Complex for the \c float type.
+ */
+typedef Complex<float>        Complex32;
+
+/*!
  * \class pcl::fcomplex
  * \ingroup complex_types
- * \brief A complex number whose components are implemented as 32-bit floating
- *        point numbers.
+ * \brief A complex number whose components are 32-bit floating point real
+ *        numbers.
  *
- * complex is a template instantiation of Complex for the \c float type.
+ * fcomplex is an alias for Complex32. It is a template instantiation of
+ * Complex for the \c float type.
  */
-typedef Complex<float>        fcomplex;
+typedef Complex32             fcomplex;
+
+/*!
+ * \class pcl::Complex64
+ * \ingroup complex_types
+ * \brief A complex number whose components are 64-bit floating point real
+ *        numbers.
+ *
+ * Complex64 is a template instantiation of Complex for the \c double type.
+ */
+typedef Complex<double>       Complex64;
 
 /*!
  * \class pcl::dcomplex
  * \ingroup complex_types
- * \brief A complex number whose components are implemented as 64-bit floating
- *        point numbers.
+ * \brief A complex number whose components are 64-bit floating point real
+ *        numbers.
  *
- * dcomplex is a template instantiation of Complex for the \c double type.
+ * dcomplex is an alias for Complex64. It is a template instantiation of
+ * Complex for the \c double type.
  */
-typedef Complex<double>       dcomplex;
-
-/*!
- * \class pcl::lcomplex
- * \ingroup complex_types
- * \brief A complex number whose components are implemented as long double
- *        floating point numbers.
- *
- * complex is a template instantiation of Complex for \c long \c double.
- */
-typedef Complex<long double>  lcomplex;
+typedef Complex64             dcomplex;
 
 /*!
  * \class pcl::complex
  * \ingroup complex_types
- * \brief A complex number whose components are implemented as 64-bit floating
- *        point numbers.
+ * \brief A complex number whose components are 64-bit floating point real
+ *        numbers.
  *
  * complex is an alias for dcomplex. It is a template instantiation of Complex
  * for the \c double type.
@@ -1083,5 +1111,5 @@ typedef dcomplex              complex;
 
 #endif   // __PCL_Complex_h
 
-// ****************************************************************************
-// EOF pcl/Complex.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Complex.h - Released 2015/07/30 17:15:18 UTC

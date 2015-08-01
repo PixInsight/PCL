@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Blink Process Module Version 01.02.01.0147
-// ****************************************************************************
-// BlinkStatisticsDialog.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Blink Process Module Version 01.02.01.0166
+// ----------------------------------------------------------------------------
+// BlinkStatisticsDialog.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
-// Copyright (c) 2011-2014 Nikolay Volkov
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2015 Nikolay Volkov
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,7 +49,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "BlinkStatisticsDialog.h"
 #include "BlinkInterface.h"
@@ -120,7 +124,7 @@ BlinkStatisticsDialog::BlinkStatisticsDialog( BlinkInterface* parent ) : Dialog(
    OutputDir_Edit.OnEditCompleted( (Edit::edit_event_handler)&BlinkStatisticsDialog::__Edit_Completed, *this );
    OutputDir_Edit.SetText( m_outputDir );
 
-   OutputDir_SelectButton.SetIcon( Bitmap( String( ":/icons/select-file.png" ) ) );
+   OutputDir_SelectButton.SetIcon( Bitmap( ScaledResource( ":/icons/select-file.png" ) ) );
    OutputDir_SelectButton.SetToolTip( "<p>Select the output directory.</p>" );
    OutputDir_SelectButton.OnClick( (Button::click_event_handler)&BlinkStatisticsDialog::__Button_Click, *this );
 
@@ -170,7 +174,7 @@ BlinkStatisticsDialog::BlinkStatisticsDialog( BlinkInterface* parent ) : Dialog(
 
    SetSizer( Global_Sizer );
 
-   SetMinWidth( 600 );
+   SetScaledMinWidth( 600 );
 
    SetWindowTitle( DIALOG_TITLE );
    Init();
@@ -769,5 +773,5 @@ void BlinkStatisticsDialog::__Dialog_Return( Dialog& sender, int retVal )
 
 } // pcl
 
-// ****************************************************************************
-// EOF BlinkStatisticsDialog.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF BlinkStatisticsDialog.cpp - Released 2015/07/31 11:49:49 UTC

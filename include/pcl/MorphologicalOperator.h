@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/MorphologicalOperator.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/MorphologicalOperator.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_MorphologicalOperator_h
 #define __PCL_MorphologicalOperator_h
@@ -106,16 +109,12 @@ public:
    /*!
     * Constructs a %MorphologicalOperator object.
     */
-   MorphologicalOperator()
-   {
-   }
+   MorphologicalOperator() = default;
 
    /*!
     * Copy constructor.
     */
-   MorphologicalOperator( const MorphologicalOperator& )
-   {
-   }
+   MorphologicalOperator( const MorphologicalOperator& ) = default;
 
    /*!
     * Destroys a %MorphologicalOperator object.
@@ -227,20 +226,6 @@ class PCL_CLASS ErosionFilter : public MorphologicalOperator
 public:
 
    /*!
-    * Constructs an %ErosionFilter object.
-    */
-   ErosionFilter() : MorphologicalOperator()
-   {
-   }
-
-   /*!
-    * Copy constructor.
-    */
-   ErosionFilter( const ErosionFilter& x ) : MorphologicalOperator( x )
-   {
-   }
-
-   /*!
     */
    virtual MorphologicalOperator* Clone() const
    {
@@ -320,20 +305,6 @@ private:
 class PCL_CLASS DilationFilter : public MorphologicalOperator
 {
 public:
-
-   /*!
-    * Constructs a %DilationFilter object.
-    */
-   DilationFilter() : MorphologicalOperator()
-   {
-   }
-
-   /*!
-    * Copy constructor.
-    */
-   DilationFilter( const DilationFilter& x ) : MorphologicalOperator( x )
-   {
-   }
 
    /*!
     */
@@ -422,20 +393,6 @@ private:
 class PCL_CLASS MedianFilter : public MorphologicalOperator
 {
 public:
-
-   /*!
-    * Constructs a %MedianFilter object.
-    */
-   MedianFilter() : MorphologicalOperator()
-   {
-   }
-
-   /*!
-    * Copy constructor.
-    */
-   MedianFilter( const MedianFilter& x ) : MorphologicalOperator( x )
-   {
-   }
 
    /*!
     */
@@ -1338,7 +1295,8 @@ public:
    /*!
     * Constructs a %SelectionFilter with selection point \a p.
     */
-   SelectionFilter( float p ) : MorphologicalOperator(), k( pcl::Range( p, float( 0 ), float( 1 ) ) )
+   SelectionFilter( float p ) :
+      MorphologicalOperator(), k( pcl::Range( p, float( 0 ), float( 1 ) ) )
    {
       PCL_PRECONDITION( 0 <= p && p <= 1 )
       PCL_CHECK( 0 <= k && k <= 1 )
@@ -1347,7 +1305,8 @@ public:
    /*!
     * Copy constructor.
     */
-   SelectionFilter( const SelectionFilter& x ) : MorphologicalOperator( x ), k( x.k )
+   SelectionFilter( const SelectionFilter& x ) :
+      MorphologicalOperator( x ), k( x.k )
    {
    }
 
@@ -1452,20 +1411,6 @@ class PCL_CLASS MidpointFilter : public MorphologicalOperator
 public:
 
    /*!
-    * Constructs a %MidpointFilter object.
-    */
-   MidpointFilter() : MorphologicalOperator()
-   {
-   }
-
-   /*!
-    * Copy constructor.
-    */
-   MidpointFilter( const MidpointFilter& x ) : MorphologicalOperator( x )
-   {
-   }
-
-   /*!
     */
    virtual MorphologicalOperator* Clone() const
    {
@@ -1555,7 +1500,8 @@ public:
     * Constructs a %AlphaTrimmedMeanFilter object with the specified trimming
     * factor \a t.
     */
-   AlphaTrimmedMeanFilter( float t ) : MorphologicalOperator(), d( pcl::Range( t, float( 0 ), float( 1 ) ) )
+   AlphaTrimmedMeanFilter( float t ) :
+      MorphologicalOperator(), d( pcl::Range( t, float( 0 ), float( 1 ) ) )
    {
       PCL_PRECONDITION( 0 <= t && t <= 1 )
       PCL_CHECK( 0 <= d && d <= 1 )
@@ -1564,7 +1510,8 @@ public:
    /*!
     * Copy constructor.
     */
-   AlphaTrimmedMeanFilter( const AlphaTrimmedMeanFilter& x ) : MorphologicalOperator( x ), d( x.d )
+   AlphaTrimmedMeanFilter( const AlphaTrimmedMeanFilter& x ) :
+      MorphologicalOperator( x ), d( x.d )
    {
    }
 
@@ -1667,5 +1614,5 @@ private:
 
 #endif   // __PCL_MorphologicalOperator_h
 
-// ****************************************************************************
-// EOF pcl/MorphologicalOperator.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/MorphologicalOperator.h - Released 2015/07/30 17:15:18 UTC

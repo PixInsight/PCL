@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard IntensityTransformations Process Module Version 01.07.00.0287
-// ****************************************************************************
-// MaskedStretchInstance.cpp - Released 2014/11/14 17:19:23 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard IntensityTransformations Process Module Version 01.07.00.0306
+// ----------------------------------------------------------------------------
+// MaskedStretchInstance.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "MaskedStretchInstance.h"
 #include "MaskedStretchParameters.h"
@@ -231,7 +235,7 @@ private:
 
       AbstractImage::ThreadData data( image, image.Status().Total() );
 
-      PArray<MaskedStretchThread<P> > threads;
+      ReferenceArray<MaskedStretchThread<P> > threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new MaskedStretchThread<P>( instance, data, image, m,
                                                   i*pixelsPerThread,
@@ -466,7 +470,7 @@ bool MaskedStretchInstance::AllocateParameter( size_type sizeOrLength, const Met
    {
       p_backgroundReferenceViewId.Clear();
       if ( sizeOrLength > 0 )
-         p_backgroundReferenceViewId.Reserve( sizeOrLength );
+         p_backgroundReferenceViewId.SetLength( sizeOrLength );
    }
    else
       return false;
@@ -485,5 +489,5 @@ size_type MaskedStretchInstance::ParameterLength( const MetaParameter* p, size_t
 
 } // pcl
 
-// ****************************************************************************
-// EOF MaskedStretchInstance.cpp - Released 2014/11/14 17:19:23 UTC
+// ----------------------------------------------------------------------------
+// EOF MaskedStretchInstance.cpp - Released 2015/07/31 11:49:48 UTC

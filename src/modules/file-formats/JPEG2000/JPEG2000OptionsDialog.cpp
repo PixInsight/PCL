@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard JPEG2000 File Format Module Version 01.00.01.0214
-// ****************************************************************************
-// JPEG2000OptionsDialog.cpp - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard JPEG2000 File Format Module Version 01.00.01.0233
+// ----------------------------------------------------------------------------
+// JPEG2000OptionsDialog.cpp - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard JPEG2000 PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "JPEG2000OptionsDialog.h"
 
@@ -57,6 +61,8 @@ JPEG2000OptionsDialog::JPEG2000OptionsDialog(
                const ImageOptions& o, const JPEG2000ImageOptions& t, bool isJPC ) :
 Dialog(), options(), jp2Options()
 {
+   int labelWidth1 = Font().Width( String( "Decompression Layers:" ) + 'M' );
+
    Lossless_RadioButton.SetText( "Lossless" );
    Lossless_RadioButton.SetToolTip( "Nondestructive compression" );
    Lossless_RadioButton.OnClick( (pcl::Button::click_event_handler)&JPEG2000OptionsDialog::CompressionMode_Click, *this );
@@ -66,7 +72,8 @@ Dialog(), options(), jp2Options()
    Lossy_RadioButton.OnClick( (pcl::Button::click_event_handler)&JPEG2000OptionsDialog::CompressionMode_Click, *this );
 
    CompressionRate_NumericControl.label.SetText( "Compression Rate:" );
-   CompressionRate_NumericControl.slider.SetMinWidth( 125 );
+   CompressionRate_NumericControl.label.SetMinWidth( labelWidth1 );
+   CompressionRate_NumericControl.slider.SetScaledMinWidth( 125 );
    CompressionRate_NumericControl.slider.SetRange( 1, 999 );
    CompressionRate_NumericControl.SetReal( true );
    CompressionRate_NumericControl.SetRange( 0.01, 0.99 );
@@ -93,9 +100,7 @@ Dialog(), options(), jp2Options()
 
    DecompressionLayers_Label.SetText( "Decompression Layers:" );
    DecompressionLayers_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
-   DecompressionLayers_Label.AdjustToContents();
-
-   CompressionRate_NumericControl.label.SetMinWidth( DecompressionLayers_Label.Width() );
+   DecompressionLayers_Label.SetMinWidth( labelWidth1 );
 
    DecompressionLayers_SpinBox.SetRange( 2, 10 );
    DecompressionLayers_SpinBox.SetMinWidth( Font().Width( "000000" ) );
@@ -107,7 +112,7 @@ Dialog(), options(), jp2Options()
 
    ProgressionOrder_Label.SetText( "Progression Order:" );
    ProgressionOrder_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
-   ProgressionOrder_Label.SetMinWidth( DecompressionLayers_Label.Width() );
+   ProgressionOrder_Label.SetMinWidth( labelWidth1 );
 
    ProgressionOrder_ComboBox.AddItem( "LRCP: Layer-Resolution-Component-Position" );
    ProgressionOrder_ComboBox.AddItem( "RLCP: Resolution-Layer-Component-Position" );
@@ -133,7 +138,7 @@ Dialog(), options(), jp2Options()
    //
 
    TileWidth_NumericEdit.label.SetText( "Tile Width:" );
-   TileWidth_NumericEdit.label.SetMinWidth( DecompressionLayers_Label.Width() );
+   TileWidth_NumericEdit.label.SetMinWidth( labelWidth1 );
    TileWidth_NumericEdit.SetInteger();
    TileWidth_NumericEdit.SetRange( 16, 8192 );
 
@@ -161,13 +166,9 @@ Dialog(), options(), jp2Options()
    Resolution_CheckBox.SetText( "Resolution" );
    Resolution_CheckBox.SetToolTip( "Embed image resolution information" );
 
-   Metadata_CheckBox.SetText( "Metadata" );
-   Metadata_CheckBox.SetToolTip( "Embed XML metadata <* not available *>" );
-
    EmbeddedData_Sizer.SetMargin( 6 );
    EmbeddedData_Sizer.Add( ICCProfile_CheckBox );
    EmbeddedData_Sizer.Add( Resolution_CheckBox );
-   EmbeddedData_Sizer.Add( Metadata_CheckBox );
 
    EmbeddedData_GroupBox.SetTitle( "Embedded Data" );
    EmbeddedData_GroupBox.SetSizer( EmbeddedData_Sizer );
@@ -196,12 +197,12 @@ Dialog(), options(), jp2Options()
    //
 
    Global_Sizer.SetMargin( 8 );
-   Global_Sizer.SetSpacing( 6 );
+   Global_Sizer.SetSpacing( 8 );
    Global_Sizer.Add( Compression_GroupBox );
    Global_Sizer.Add( Progressive_GroupBox );
    Global_Sizer.Add( Tiled_GroupBox );
    Global_Sizer.Add( EmbeddedData_GroupBox );
-   Global_Sizer.AddSpacing( 4 );
+   Global_Sizer.AddSpacing( 8 );
    Global_Sizer.Add( BottomSection_Sizer );
 
    SetSizer( Global_Sizer );
@@ -237,7 +238,6 @@ Dialog(), options(), jp2Options()
 
    ICCProfile_CheckBox.SetChecked( options.embedICCProfile );
    Resolution_CheckBox.SetChecked( jp2Options.resolutionData );
-   Metadata_CheckBox.SetChecked( options.embedMetadata );
 }
 
 // ----------------------------------------------------------------------------
@@ -274,7 +274,6 @@ void JPEG2000OptionsDialog::Dialog_Return( Dialog& /*sender*/, int retVal )
       jp2Options.progressionOrder = ProgressionOrder_ComboBox.CurrentItem();
 
       options.embedICCProfile = ICCProfile_CheckBox.IsChecked();
-      options.embedMetadata = Metadata_CheckBox.IsChecked();
    }
 }
 
@@ -282,5 +281,5 @@ void JPEG2000OptionsDialog::Dialog_Return( Dialog& /*sender*/, int retVal )
 
 } // pcl
 
-// ****************************************************************************
-// EOF JPEG2000OptionsDialog.cpp - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF JPEG2000OptionsDialog.cpp - Released 2015/07/31 11:49:40 UTC

@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Convolution Process Module Version 01.01.03.0140
-// ****************************************************************************
-// ConvolutionDialog.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Convolution Process Module Version 01.01.03.0159
+// ----------------------------------------------------------------------------
+// ConvolutionDialog.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Convolution PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "ConvolutionDialog.h"
 #include "FilterLibrary.h"
@@ -91,7 +95,7 @@ namespace pcl
    ConvolutionFilterCodeDialog::ConvolutionFilterCodeDialog( String mode, const Filter& _filter ) : Dialog(), filter( _filter )
    {
       // ### TextBox
-      FilterCode_TextBox.SetMinSize( 700, 300 );
+      FilterCode_TextBox.SetScaledMinSize( 700, 300 );
       FilterCode_TextBox.OnCaretPositionUpdated( (TextBox::caret_event_handler)&ConvolutionFilterCodeDialog::__TextBox_CaretPosition, *this );
 
       if ( mode == "Edit" )
@@ -265,5 +269,5 @@ namespace pcl
 
 } // pcl
 
-// ****************************************************************************
-// EOF ConvolutionDialog.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF ConvolutionDialog.cpp - Released 2015/07/31 11:49:48 UTC

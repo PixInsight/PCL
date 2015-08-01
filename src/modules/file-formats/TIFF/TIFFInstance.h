@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard TIFF File Format Module Version 01.00.05.0229
-// ****************************************************************************
-// TIFFInstance.h - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard TIFF File Format Module Version 01.00.06.0248
+// ----------------------------------------------------------------------------
+// TIFFInstance.h - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard TIFF PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __TIFFInstance_h
 #define __TIFFInstance_h
@@ -56,12 +60,10 @@
 namespace pcl
 {
 
+// ----------------------------------------------------------------------------
+
 class TIFFFormat;
 class TIFFReadHints;
-
-// ----------------------------------------------------------------------------
-// TIFFInstance
-// ----------------------------------------------------------------------------
 
 class TIFFInstance : public FileFormatImplementation
 {
@@ -80,11 +82,6 @@ public:
    virtual String ImageProperties() const;
 
    virtual void Extract( ICCProfile& icc );
-   /*
-   // ### TODO: XML metadata and thumbnail support
-   virtual void Extract( void*& data, size_type& length );
-   virtual void Extract( pcl::UInt8Image& thumbnail );
-   */
 
    virtual void ReadImage( Image& );
    virtual void ReadImage( DImage& );
@@ -97,19 +94,12 @@ public:
    virtual void SetOptions( const ImageOptions& options );
    virtual void SetFormatSpecificData( const void* data );
    virtual void Embed( const ICCProfile& icc );
-   /*
-   // ### TODO: XML metadata and thumbnail support
-   virtual void Embed( const void* data, size_type length );
-   virtual void Embed( const pcl::UInt8Image& image );
-   */
 
    virtual void WriteImage( const Image& );
    virtual void WriteImage( const DImage& );
    virtual void WriteImage( const UInt8Image& );
    virtual void WriteImage( const UInt16Image& );
    virtual void WriteImage( const UInt32Image& );
-
-   // -------------------------------------------------------------------------
 
 private:
 
@@ -120,7 +110,6 @@ private:
    bool queriedOptions; // did us query options to the user?
 
    ICCProfile* embeddedICCProfile;
-   // ### TODO XML metadata and thumbnail images
 };
 
 // ----------------------------------------------------------------------------
@@ -129,5 +118,5 @@ private:
 
 #endif   // __TIFFInstance_h
 
-// ****************************************************************************
-// EOF TIFFInstance.h - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF TIFFInstance.h - Released 2015/07/31 11:49:40 UTC

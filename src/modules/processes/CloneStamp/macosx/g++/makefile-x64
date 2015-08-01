@@ -1,0 +1,72 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.95
+# Copyright (C) 2009-2015 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Thu, 30 Jul 2015 17:10:36 GMT
+# Project id ...... CloneStamp
+# Project type .... Module
+# Platform ........ MacOSX/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/CloneStamp/macosx/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/CloneStamp-pxm.dylib
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../CloneStampInstance.cpp \
+../../CloneStampInterface.cpp \
+../../CloneStampModule.cpp \
+../../CloneStampParameters.cpp \
+../../CloneStampProcess.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/CloneStampInstance.o \
+./x64/Release/CloneStampInterface.o \
+./x64/Release/CloneStampModule.o \
+./x64/Release/CloneStampParameters.o \
+./x64/Release/CloneStampProcess.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/CloneStampInstance.d \
+./x64/Release/CloneStampInterface.d \
+./x64/Release/CloneStampModule.d \
+./x64/Release/CloneStampParameters.d \
+./x64/Release/CloneStampProcess.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/CloneStamp-pxm.dylib: $(OBJ_FILES)
+	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -stdlib=libc++ -dynamiclib -install_name @executable_path/CloneStamp-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/CloneStamp-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/CloneStamp-pxm.dylib
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/CloneStamp-pxm.dylib $(PCLBINDIR64)
+	codesign --deep -s pleiades -f -v --timestamp $(PCLBINDIR64)/CloneStamp-pxm.dylib
+
+./x64/Release/%.o: ../../%.cpp
+	clang++ -c -pipe -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -mtune=generic -mssse3 -O3 -ffast-math -ftree-vectorize -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

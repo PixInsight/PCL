@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/NumericControl.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/NumericControl.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,65 +47,55 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
-#include <pcl/NumericControl.h>
-#include <pcl/Parser.h>
 #include <pcl/ErrorHandler.h>
+#include <pcl/NumericControl.h>
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-static int ActualPrecision( int precision, double value )
+NumericEdit::NumericEdit( Control& parent ) :
+   Control( parent ),
+   m_handlers( nullptr ),
+   m_value( 0 ),
+   m_lowerBound( 0 ),
+   m_upperBound( 1 ),
+   m_precision( 6 ),
+   m_real( true ),
+   m_autoEditWidth( true ),
+   m_scientific( false ),
+   m_sciTriggerExp( -1 )
 {
-   return Max( 0, precision - Max( 0, TruncI( Log( Abs( value ) ) ) ) );
-}
-
-NumericEdit::NumericEdit( Control& parent ) : Control( parent ),
-value( 0 ),
-lowerBound( 0 ), upperBound( 1 ),
-precision( 6 ),
-isReal( true ),
-autoEditWidth( true ),
-scientific( false ),
-busy( false ),
-sciTriggerExp( -1 ),
-onValueUpdated( 0 ), onValueUpdatedReceiver( 0 )
-{
-   label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
-   label.OnMousePress( (Control::mouse_button_event_handler)&NumericEdit::__MousePress, *this );
-
-   edit.OnEditCompleted( (Edit::edit_event_handler)&NumericEdit::__EditCompleted, *this );
-   edit.OnReturnPressed( (Edit::edit_event_handler)&NumericEdit::__ReturnPressed, *this );
-   edit.OnGetFocus( (Control::event_handler)&NumericEdit::__GetFocus, *this );
-   edit.OnLoseFocus( (Control::event_handler)&NumericEdit::__LoseFocus, *this );
+   SetSizer( sizer );
 
    sizer.SetSpacing( 4 );
    sizer.Add( label );
    sizer.Add( edit );
 
-   SetSizer( sizer );
+   label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   label.OnMousePress( (Control::mouse_button_event_handler)&NumericEdit::MousePress, *this );
+
+   edit.OnEditCompleted( (Edit::edit_event_handler)&NumericEdit::EditCompleted, *this );
+   edit.OnReturnPressed( (Edit::edit_event_handler)&NumericEdit::ReturnPressed, *this );
+   edit.OnGetFocus( (Control::event_handler)&NumericEdit::GetFocus, *this );
+   edit.OnLoseFocus( (Control::event_handler)&NumericEdit::LoseFocus, *this );
+
    AdjustToContents();
 
-#if defined( __PCL_MACOSX ) // ### REMOVEME: This is a workaround for some problematic behavior of QMacStyle
-   SetFixedHeight( int( edit.Font().Height() * 1.7 ) );
-#else
    SetFixedHeight();
-#endif
+   SetBackgroundColor( 0 ); // transparent background
 
    SetChildToFocus( edit );
-
-   // Transparent background
-   SetBackgroundColor( 0 );
 }
 
 // ----------------------------------------------------------------------------
 
 void NumericEdit::SetValue( double v )
 {
-   value = Range( isReal ? v : Round( v ), lowerBound, upperBound );
+   m_value = Range( m_real ? v : Round( v ), m_lowerBound, m_upperBound );
    UpdateControls();
 }
 
@@ -110,27 +103,37 @@ void NumericEdit::SetValue( double v )
 
 String NumericEdit::ValueAsString( double v ) const
 {
-   v = Range( v, lowerBound, upperBound );
+   v = Range( v, m_lowerBound, m_upperBound );
 
    if ( IsReal() )
    {
-      if ( IsScientificNotationEnabled() )
-         if ( sciTriggerExp < 0 || v != 0 && (Abs( v ) > Pow10I<double>()( +sciTriggerExp ) ||
-                                              Abs( v ) < Pow10I<double>()( -sciTriggerExp )) )
-            return String().Format( "%.*e", precision, v );
+      if ( m_scientific )
+         if ( m_sciTriggerExp < 0 || v != 0 && (Abs( v ) > Pow10I<double>()( +m_sciTriggerExp ) ||
+                                                Abs( v ) < Pow10I<double>()( -m_sciTriggerExp )) )
+            return String().Format( "%.*le", int( m_precision ), v );
 
-      return String().Format( "%.*f", ActualPrecision( precision, v ), v );
+      return String().Format( "%.*lf", PrecisionForValue( int( m_precision ), v ), v );
    }
 
-   return String().Format( "%.0f", v );
+   return String().Format( "%.0lf", v );
+}
+
+// ----------------------------------------------------------------------------
+
+int NumericEdit::PrecisionForValue( int precision, double value )
+{
+   value = Abs( value );
+   if ( value < 10 )
+      return precision;
+   return Max( 0, precision - Max( 0, TruncInt( Log( value ) ) ) );
 }
 
 // ----------------------------------------------------------------------------
 
 int NumericEdit::MinEditWidth() const
 {
-   int n = int( Max( ValueAsString( lowerBound ).Length(), ValueAsString( upperBound ).Length() ) );
-   return edit.Font().Width( String( '0', n+1 ) ) + 1+2+2+1;
+   int n = int( Max( ValueAsString( m_lowerBound ).Length(), ValueAsString( m_upperBound ).Length() ) );
+   return edit.Font().Width( String( '0', n+1 ) ) + LogicalPixelsToPhysical( 1+2+2+1 );
 }
 
 // ----------------------------------------------------------------------------
@@ -145,14 +148,14 @@ void NumericEdit::AdjustEditWidth()
 
 void NumericEdit::SetReal( bool real )
 {
-   if ( real != isReal )
+   if ( real != m_real )
    {
-      isReal = real;
-      if ( !isReal )
-         value = Round( value );
-      if ( autoEditWidth )
+      m_real = real;
+      if ( !m_real )
+         m_value = Round( m_value );
+      if ( m_autoEditWidth )
          AdjustEditWidth();
-      SetValue( value );
+      SetValue( m_value );
    }
 }
 
@@ -160,19 +163,19 @@ void NumericEdit::SetReal( bool real )
 
 void NumericEdit::SetRange( double lr, double ur )
 {
-   lowerBound = Min( lr, ur );
-   upperBound = Max( lr, ur );
-   if ( autoEditWidth )
+   m_lowerBound = Min( lr, ur );
+   m_upperBound = Max( lr, ur );
+   if ( m_autoEditWidth )
       AdjustEditWidth();
-   SetValue( value );
+   SetValue( m_value );
 }
 
 // ----------------------------------------------------------------------------
 
 void NumericEdit::SetPrecision( int n )
 {
-   precision = unsigned( Range( n, 0, 15 ) );
-   if ( autoEditWidth )
+   m_precision = unsigned( Range( n, 0, 15 ) );
+   if ( m_autoEditWidth )
       AdjustEditWidth();
    UpdateControls();
 }
@@ -181,8 +184,8 @@ void NumericEdit::SetPrecision( int n )
 
 void NumericEdit::EnableScientificNotation( bool enable )
 {
-   scientific = enable;
-   if ( autoEditWidth )
+   m_scientific = enable;
+   if ( m_autoEditWidth )
       AdjustEditWidth();
    UpdateControls();
 }
@@ -191,28 +194,38 @@ void NumericEdit::EnableScientificNotation( bool enable )
 
 void NumericEdit::SetScientificNotationTriggerExponent( int exp10 )
 {
-   sciTriggerExp = exp10;
-   if ( autoEditWidth )
+   m_sciTriggerExp = exp10;
+   if ( m_autoEditWidth )
       AdjustEditWidth();
    UpdateControls();
 }
 
 // ----------------------------------------------------------------------------
 
+#define INIT_EVENT_HANDLERS()    \
+   __PCL_NO_ALIAS_HANDLERS;      \
+   if ( m_handlers == nullptr )  \
+      m_handlers = new EventHandlers
+
 void NumericEdit::OnValueUpdated( value_event_handler f, Control& c )
 {
-   __PCL_NO_ALIAS_HANDLER;
-   if ( f == 0 || c.IsNull() )
+   if ( f == nullptr || c.IsNull() )
    {
-      onValueUpdated = 0;
-      onValueUpdatedReceiver = 0;
+      if ( m_handlers != nullptr )
+      {
+         m_handlers->onValueUpdated = nullptr;
+         m_handlers->onValueUpdatedReceiver = nullptr;
+      }
    }
    else
    {
-      onValueUpdated = f;
-      onValueUpdatedReceiver = &c;
+      INIT_EVENT_HANDLERS();
+      m_handlers->onValueUpdated = f;
+      m_handlers->onValueUpdatedReceiver = &c;
    }
 }
+
+#undef INIT_EVENT_HANDLERS
 
 // ----------------------------------------------------------------------------
 
@@ -223,63 +236,49 @@ void NumericEdit::UpdateControls()
 
 // ----------------------------------------------------------------------------
 
-void NumericEdit::__EditCompleted( Edit& sender )
+void NumericEdit::EditCompleted( Edit& sender )
 {
-   if ( busy )
-      return;
-
-   if ( sender.IsReadOnly() )
-      return;
-
-   busy = true;
+   PCL_MEMBER_REENTRANCY_GUARDED_BEGIN( EditCompleted )
 
    try
    {
       double newValue;
-      bool hasChanged = false;
-
-      if ( isReal )
+      if ( m_real )
       {
-         double tolerance = Pow10I<double>()( -int( precision + 1 ) );
-         newValue = ParseReal( sender.Text(), lowerBound, upperBound, tolerance );
-         newValue = Round( newValue, ActualPrecision( precision, newValue ) );
-         hasChanged = Sign( newValue ) != Sign( value ) || Abs( newValue - value ) > tolerance;
+         newValue = sender.Text().ToDouble();
+         newValue = Round( newValue, PrecisionForValue( int( m_precision ), newValue ) );
       }
       else
-      {
-         newValue = ParseInteger( sender.Text(), lowerBound, upperBound );
-         hasChanged = newValue != value;
-      }
+         newValue = sender.Text().ToInt();
 
-      if ( hasChanged )
-      {
-         value = newValue;
-         UpdateControls();
-
-         if ( onValueUpdated != 0 )
-            (onValueUpdatedReceiver->*onValueUpdated)( *this, value );
-      }
-      else
-         UpdateControls();
-
-      busy = false;
-
+      if ( m_lowerBound < m_upperBound )
+         if ( newValue < m_lowerBound || newValue > m_upperBound )
+            throw ParseError( String().Format( "Numeric value out of range: %.16lg - "
+                                               "valid range is [%.16lg,%.16lg]", newValue, m_lowerBound, m_upperBound ) );
+      bool changed = newValue != m_value;
+      if ( changed )
+         m_value = newValue;
+      UpdateControls();
+      if ( changed )
+         if ( m_handlers != nullptr )
+            if ( m_handlers->onValueUpdated != nullptr )
+               (m_handlers->onValueUpdatedReceiver->*m_handlers->onValueUpdated)( *this, m_value );
       return;
    }
    ERROR_HANDLER
 
-   busy = false;
-
    UpdateControls();
+
+   PCL_REENTRANCY_GUARDED_END
 }
 
-void NumericEdit::__ReturnPressed( Edit& /*sender*/ )
+void NumericEdit::ReturnPressed( Edit& /*sender*/ )
 {
 }
 
 // ----------------------------------------------------------------------------
 
-void NumericEdit::__GetFocus( Control& /*sender*/ )
+void NumericEdit::GetFocus( Control& /*sender*/ )
 {
    //if ( !edit.IsReadOnly() )
    //   edit.SelectAll();
@@ -287,20 +286,20 @@ void NumericEdit::__GetFocus( Control& /*sender*/ )
 
 // ----------------------------------------------------------------------------
 
-void NumericEdit::__LoseFocus( Control& /*sender*/ )
+void NumericEdit::LoseFocus( Control& /*sender*/ )
 {
    if ( !edit.IsReadOnly() )
-      __EditCompleted( edit );
+      EditCompleted( edit );
 }
 
 // ----------------------------------------------------------------------------
 
-void NumericEdit::__MousePress( Control& sender, const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers )
+void NumericEdit::MousePress( Control& sender, const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers )
 {
    if ( !edit.IsReadOnly() )
       if ( sender == label )
       {
-         __EditCompleted( edit );
+         EditCompleted( edit );
          edit.Focus();
          edit.SelectAll();
       }
@@ -311,17 +310,17 @@ void NumericEdit::__MousePress( Control& sender, const pcl::Point& pos, int butt
 
 NumericControl::NumericControl( Control& parent ) : NumericEdit( parent )
 {
+   sizer.Add( slider, 100 );
+
    slider.SetRange( 0, 50 );
-   slider.SetMinWidth( 50+16 );
+   slider.SetScaledMinWidth( 50+16 );
    slider.SetFixedHeight( Height() );
    slider.SetPageSize( 5 );
    slider.SetTickInterval( 5 );
    slider.SetTickStyle( TickStyle::NoTicks );
    slider.SetFocusStyle( FocusStyle::Click );
-   slider.OnGetFocus( (Control::event_handler)&NumericControl::__GetFocus, *this );
-   slider.OnValueUpdated( (Slider::value_event_handler)&NumericControl::__ValueUpdated, *this );
-
-   sizer.Add( slider, 100 );
+   slider.OnGetFocus( (Control::event_handler)&NumericControl::GetFocus, *this );
+   slider.OnValueUpdated( (Slider::value_event_handler)&NumericControl::ValueUpdated, *this );
 
    AdjustToContents();
 }
@@ -334,33 +333,32 @@ void NumericControl::UpdateControls()
 
    int i0, i1;
    slider.GetRange( i0, i1 );
-   slider.SetValue( i0 + RoundI( (value - lowerBound)/(upperBound - lowerBound)*(i1 - i0) ) );
+   slider.SetValue( i0 + RoundInt( (m_value - m_lowerBound)/(m_upperBound - m_lowerBound)*(i1 - i0) ) );
 }
 
 // ----------------------------------------------------------------------------
 
-void NumericControl::__ValueUpdated( Slider& sender, int v )
+void NumericControl::ValueUpdated( Slider& sender, int v )
 {
    int i0, i1;
    sender.GetRange( i0, i1 );
    double d = i1 - i0;
-   double newValue = Round( lowerBound + (upperBound - lowerBound)*((v - i0)/d),
-                            isReal ? Max( 0, TruncI( Log( d ) ) ) : 0 );
-
-   if ( newValue != value )
+   double newValue = Round( m_lowerBound + (m_upperBound - m_lowerBound)*((v - i0)/d),
+                            m_real ? Max( 0, TruncInt( Log( d ) ) ) : 0 );
+   if ( newValue != m_value )
    {
-      value = newValue;
-
+      m_value = newValue;
       edit.SetText( ValueAsString() );
 
-      if ( onValueUpdated != 0 )
-         (onValueUpdatedReceiver->*onValueUpdated)( *this, value );
+      if ( m_handlers != nullptr )
+         if ( m_handlers->onValueUpdated != nullptr )
+            (m_handlers->onValueUpdatedReceiver->*m_handlers->onValueUpdated)( *this, m_value );
    }
 }
 
 // ----------------------------------------------------------------------------
 
-void NumericControl::__GetFocus( Control& sender )
+void NumericControl::GetFocus( Control& sender )
 {
    if ( sender == slider )
    {
@@ -372,7 +370,7 @@ void NumericControl::__GetFocus( Control& sender )
    }
    else
    {
-      NumericEdit::__GetFocus( sender );
+      NumericEdit::GetFocus( sender );
    }
 }
 
@@ -380,5 +378,5 @@ void NumericControl::__GetFocus( Control& sender )
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/NumericControl.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/NumericControl.cpp - Released 2015/07/30 17:15:31 UTC

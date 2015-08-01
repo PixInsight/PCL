@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard ColorCalibration Process Module Version 01.02.00.0170
-// ****************************************************************************
-// LinearFitInterface.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard ColorCalibration Process Module Version 01.02.00.0189
+// ----------------------------------------------------------------------------
+// LinearFitInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "LinearFitInterface.h"
 #include "LinearFitProcess.h"
@@ -176,7 +180,7 @@ void LinearFitInterface::__EditCompleted( Edit& sender )
          if ( p == String::notFound )
             valid = id.IsValidIdentifier();
          else
-            valid = id.Left( p ).IsValidIdentifier() && id.SubString( p+2 ).IsValidIdentifier();
+            valid = id.Left( p ).IsValidIdentifier() && id.Substring( p+2 ).IsValidIdentifier();
          if ( !valid )
             throw Error( "Invalid identifier: " + id );
       }
@@ -271,8 +275,8 @@ LinearFitInterface::GUIData::GUIData( LinearFitInterface& w )
    ReferenceView_Edit.SetToolTip( referenceViewToolTip );
    ReferenceView_Edit.OnEditCompleted( (Edit::edit_event_handler)&LinearFitInterface::__EditCompleted, w );
 
-   ReferenceView_ToolButton.SetIcon( Bitmap( ":/icons/select-view.png" ) );
-   ReferenceView_ToolButton.SetFixedSize( 20, 20 );
+   ReferenceView_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
+   ReferenceView_ToolButton.SetScaledFixedSize( 20, 20 );
    ReferenceView_ToolButton.SetToolTip( "<p>Select the reference image.</p>" );
    ReferenceView_ToolButton.OnClick( (Button::click_event_handler)&LinearFitInterface::__Click, w );
 
@@ -286,7 +290,7 @@ LinearFitInterface::GUIData::GUIData( LinearFitInterface& w )
    RejectLow_NumericControl.label.SetText( "Reject low:" );
    RejectLow_NumericControl.label.SetFixedWidth( labelWidth1 );
    RejectLow_NumericControl.slider.SetRange( 0, 100 );
-   RejectLow_NumericControl.slider.SetMinWidth( 200 );
+   RejectLow_NumericControl.slider.SetScaledMinWidth( 200 );
    RejectLow_NumericControl.SetReal();
    RejectLow_NumericControl.SetRange( TheLFRejectLowParameter->MinimumValue(), TheLFRejectLowParameter->MaximumValue() );
    RejectLow_NumericControl.SetPrecision( TheLFRejectLowParameter->Precision() );
@@ -300,7 +304,7 @@ LinearFitInterface::GUIData::GUIData( LinearFitInterface& w )
    RejectHigh_NumericControl.label.SetText( "Reject high:" );
    RejectHigh_NumericControl.label.SetFixedWidth( labelWidth1 );
    RejectHigh_NumericControl.slider.SetRange( 0, 100 );
-   RejectHigh_NumericControl.slider.SetMinWidth( 200 );
+   RejectHigh_NumericControl.slider.SetScaledMinWidth( 200 );
    RejectHigh_NumericControl.SetReal();
    RejectHigh_NumericControl.SetRange( TheLFRejectHighParameter->MinimumValue(), TheLFRejectHighParameter->MaximumValue() );
    RejectHigh_NumericControl.SetPrecision( TheLFRejectHighParameter->Precision() );
@@ -329,5 +333,5 @@ LinearFitInterface::GUIData::GUIData( LinearFitInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF LinearFitInterface.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF LinearFitInterface.cpp - Released 2015/07/31 11:49:48 UTC

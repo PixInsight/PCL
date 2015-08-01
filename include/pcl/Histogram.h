@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Histogram.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Histogram.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Histogram_h
 #define __PCL_Histogram_h
@@ -132,6 +135,17 @@ public:
    }
 
    /*!
+    * Move constructor.
+    */
+   Histogram( Histogram&& x ) :
+      m_histogram( std::move( x.m_histogram ) ), m_resolution( x.m_resolution ), m_peakLevel( x.m_peakLevel ),
+      m_rect( x.m_rect ), m_channel( x.m_channel ),
+      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
+   {
+      x.m_peakLevel = 0;
+   }
+
+   /*!
     * Destroys a %Histogram object.
     */
    virtual ~Histogram()
@@ -143,24 +157,37 @@ public:
     */
    void Assign( const Histogram& x )
    {
-      if ( &x != this )
-      {
-         m_histogram = x.m_histogram;
-         m_resolution = x.m_resolution;
-         m_peakLevel = x.m_peakLevel;
-         m_rect = x.m_rect;
-         m_channel = x.m_channel;
-         m_parallel = x.m_parallel;
-         m_maxProcessors = x.m_maxProcessors;
-      }
+      m_histogram = x.m_histogram;
+      m_resolution = x.m_resolution;
+      m_peakLevel = x.m_peakLevel;
+      m_rect = x.m_rect;
+      m_channel = x.m_channel;
+      m_parallel = x.m_parallel;
+      m_maxProcessors = x.m_maxProcessors;
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Copy assignment operator. Returns a reference to this object.
     */
    Histogram& operator =( const Histogram& x )
    {
       Assign( x );
+      return *this;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   Histogram& operator =( Histogram&& x )
+   {
+      m_histogram = std::move( x.m_histogram );
+      m_resolution = x.m_resolution;
+      m_peakLevel = x.m_peakLevel;
+      m_rect = x.m_rect;
+      m_channel = x.m_channel;
+      m_parallel = x.m_parallel;
+      m_maxProcessors = x.m_maxProcessors;
+      x.m_peakLevel = 0;
       return *this;
    }
 
@@ -721,6 +748,20 @@ public:
       m_maxProcessors = unsigned( Range( maxProcessors, 1, PCL_MAX_PROCESSORS ) );
    }
 
+   /*!
+    * Exchanges two %Histogram objects \a x1 and \a x2.
+    */
+   friend void Swap( Histogram& x1, Histogram& x2 )
+   {
+      pcl::Swap( x1.m_histogram,  x2.m_histogram );
+      pcl::Swap( x1.m_resolution, x2.m_resolution );
+      pcl::Swap( x1.m_peakLevel,  x2.m_peakLevel );
+      pcl::Swap( x1.m_rect,       x2.m_rect );
+      pcl::Swap( x1.m_channel,    x2.m_channel );
+      bool b = x1.m_parallel; x1.m_parallel = x2.m_parallel; x2.m_parallel = b;
+      unsigned u = x1.m_maxProcessors; x1.m_maxProcessors = x2.m_maxProcessors; x2.m_maxProcessors = u;
+   }
+
 protected:
 
    histogram_type m_histogram;         // Discrete histogram levels
@@ -741,5 +782,5 @@ protected:
 
 #endif  // __PCL_Histogram_h
 
-// ****************************************************************************
-// EOF pcl/Histogram.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Histogram.h - Released 2015/07/30 17:15:18 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/MetaFileFormat.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/MetaFileFormat.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/ErrorHandler.h>
 #include <pcl/FileFormatImplementation.h>
@@ -58,68 +61,74 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-static void APIImageInfoToPCL( ImageInfo& info, const api_image_info& i )
+void APIImageInfoToPCL( ImageInfo& info, const api_image_info& i )
 {
-   info.width            = int( i.width );
-   info.height           = int( i.height );
-   info.numberOfChannels = int( i.numberOfChannels );
-   info.colorSpace       = int( i.colorSpace );
+   info.width            = i.width;
+   info.height           = i.height;
+   info.numberOfChannels = i.numberOfChannels;
+   info.colorSpace       = i.colorSpace;
    info.supported        = i.supported;
 }
 
-static void APIImageOptionsToPCL( ImageOptions& opt, const api_image_options& o )
+void APIImageOptionsToPCL( ImageOptions& opt, const api_image_options& o )
 {
-   opt.bitsPerSample      = o.bitsPerSample;
-   opt.ieeefpSampleFormat = o.ieeefpSampleFormat;
-   opt.complexSample      = o.complexSample;
-   opt.signedIntegers     = o.signedIntegers;
-   opt.metricResolution   = o.metricResolution;
-   opt.readNormalized     = o.readNormalized;
-   opt.embedICCProfile    = o.embedICCProfile;
-   opt.embedMetadata      = o.embedMetadata;
-   opt.embedThumbnail     = o.embedThumbnail;
-   opt.embedProperties    = o.embedProperties;
-   opt.lowerRange         = o.lowerRange;
-   opt.upperRange         = o.upperRange;
-   opt.xResolution        = o.xResolution;
-   opt.yResolution        = o.yResolution;
-   opt.isoSpeed           = o.isoSpeed;
-   opt.exposure           = o.exposure;
-   opt.aperture           = o.aperture;
-   opt.focalLength        = o.focalLength;
-   opt.cfaType            = o.cfaType;
+   opt.bitsPerSample         = o.bitsPerSample;
+   opt.ieeefpSampleFormat    = o.ieeefpSampleFormat;
+   opt.complexSample         = o.complexSample;
+   opt.signedIntegers        = o.signedIntegers;
+   opt.metricResolution      = o.metricResolution;
+   opt.readNormalized        = o.readNormalized;
+   opt.embedICCProfile       = o.embedICCProfile;
+   opt.embedThumbnail        = o.embedThumbnail;
+   opt.embedProperties       = o.embedProperties;
+   opt.embedRGBWS            = o.embedRGBWS;
+   opt.embedDisplayFunction  = o.embedDisplayFunction;
+   opt.embedColorFilterArray = o.embedColorFilterArray;
+   opt.lowerRange            = o.lowerRange;
+   opt.upperRange            = o.upperRange;
+   opt.xResolution           = o.xResolution;
+   opt.yResolution           = o.yResolution;
+   opt.isoSpeed              = o.isoSpeed;
+   opt.exposure              = o.exposure;
+   opt.aperture              = o.aperture;
+   opt.focalLength           = o.focalLength;
+   opt.cfaType               = o.cfaType;
 }
 
-static void PCLImageInfoToAPI( api_image_info& i, const ImageInfo& info )
+void PCLImageInfoToAPI( api_image_info& i, const ImageInfo& info )
 {
-   i.width            = uint32( info.width );
-   i.height           = uint32( info.height );
-   i.numberOfChannels = uint32( info.numberOfChannels );
-   i.colorSpace       = uint32( info.colorSpace );
+   i.width            = info.width;
+   i.height           = info.height;
+   i.numberOfChannels = info.numberOfChannels;
+   i.colorSpace       = info.colorSpace;
    i.supported        = info.supported;
+   i.__r__            = 0;
 }
 
-static void PCLImageOptionsToAPI( api_image_options& o, const ImageOptions& opt )
+void PCLImageOptionsToAPI( api_image_options& o, const ImageOptions& opt )
 {
-   o.bitsPerSample      = opt.bitsPerSample;
-   o.ieeefpSampleFormat = opt.ieeefpSampleFormat;
-   o.complexSample      = opt.complexSample;
-   o.signedIntegers     = opt.signedIntegers;
-   o.metricResolution   = opt.metricResolution;
-   o.readNormalized     = opt.readNormalized;
-   o.embedICCProfile    = opt.embedICCProfile;
-   o.embedMetadata      = opt.embedMetadata;
-   o.embedThumbnail     = opt.embedThumbnail;
-   o.embedProperties    = opt.embedProperties;
-   o.lowerRange         = opt.lowerRange;
-   o.upperRange         = opt.upperRange;
-   o.xResolution        = opt.xResolution;
-   o.yResolution        = opt.yResolution;
-   o.isoSpeed           = opt.isoSpeed;
-   o.exposure           = opt.exposure;
-   o.aperture           = opt.aperture;
-   o.focalLength        = opt.focalLength;
-   o.cfaType            = opt.cfaType;
+   o.bitsPerSample         = opt.bitsPerSample;
+   o.ieeefpSampleFormat    = opt.ieeefpSampleFormat;
+   o.complexSample         = opt.complexSample;
+   o.signedIntegers        = opt.signedIntegers;
+   o.metricResolution      = opt.metricResolution;
+   o.readNormalized        = opt.readNormalized;
+   o.embedICCProfile       = opt.embedICCProfile;
+   o.embedThumbnail        = opt.embedThumbnail;
+   o.embedProperties       = opt.embedProperties;
+   o.embedRGBWS            = opt.embedRGBWS;
+   o.embedDisplayFunction  = opt.embedDisplayFunction;
+   o.embedColorFilterArray = opt.embedColorFilterArray;
+   o.lowerRange            = opt.lowerRange;
+   o.upperRange            = opt.upperRange;
+   o.xResolution           = opt.xResolution;
+   o.yResolution           = opt.yResolution;
+   o.isoSpeed              = opt.isoSpeed;
+   o.exposure              = opt.exposure;
+   o.aperture              = opt.aperture;
+   o.focalLength           = opt.focalLength;
+   o.cfaType               = opt.cfaType;
+   o.__r__                 = 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -137,7 +146,7 @@ static void __Mandatory( const IsoString& formatName, const char* funcName )
 
 MetaFileFormat::MetaFileFormat() : MetaObject( Module ), FileFormatBase()
 {
-   if ( Module == 0 )
+   if ( Module == nullptr )
       throw Error( "MetaFileFormat: Module not initialized - illegal MetaFileFormat instantiation" );
 }
 
@@ -178,7 +187,7 @@ bool MetaFileFormat::EditPreferences() const
 Bitmap MetaFileFormat::Icon() const
 {
    const char** xpm = IconImageXPM();
-   if ( xpm != 0 )
+   if ( xpm != nullptr )
       return Bitmap( xpm );
 
    String filePath = IconImageFile();
@@ -191,7 +200,7 @@ Bitmap MetaFileFormat::Icon() const
 Bitmap MetaFileFormat::SmallIcon() const
 {
    const char** xpm = SmallIconImageXPM();
-   if ( xpm != 0 )
+   if ( xpm != nullptr )
       return Bitmap( xpm );
 
    String filePath = SmallIconImageFile();
@@ -520,46 +529,6 @@ public:
 
    // -------------------------------------------------------------------------
 
-   static api_bool api_func BeginMetadataExtraction( file_format_handle hf )
-   {
-      try
-      {
-         instance->BeginMetadataExtraction();
-         return api_true;
-      }
-      ERROR_HANDLER
-      return api_false;
-   }
-
-   // -------------------------------------------------------------------------
-
-   static const void* api_func GetMetadata( file_format_handle hf, uint32* size )
-   {
-      try
-      {
-         size_type sz = 0;
-         const void* data = instance->GetMetadata( sz );
-         if ( size != 0 )
-            *size = uint32( sz );
-         return data;
-      }
-      ERROR_HANDLER
-      return 0;
-   }
-
-   // -------------------------------------------------------------------------
-
-   static void api_func EndMetadataExtraction( file_format_handle hf )
-   {
-      try
-      {
-         instance->EndMetadataExtraction();
-      }
-      ERROR_HANDLER
-   }
-
-   // -------------------------------------------------------------------------
-
    static api_bool api_func BeginThumbnailExtraction( file_format_handle hf )
    {
       try
@@ -587,10 +556,10 @@ public:
          if ( isFloat )
             switch ( bitsPerSample )
             {
-            case 32 :
+            case 32:
                pcl::Image( hImage ).Assign( thumbnail );
                break;
-            case 64 :
+            case 64:
                pcl::DImage( hImage ).Assign( thumbnail );
                break;
             default :
@@ -599,16 +568,16 @@ public:
          else
             switch ( bitsPerSample )
             {
-            case  8 :
+            case  8:
                UInt8Image( hImage ).Assign( thumbnail );
                break;
-            case 16 :
+            case 16:
                UInt16Image( hImage ).Assign( thumbnail );
                break;
-            case 32 :
+            case 32:
                UInt32Image( hImage ).Assign( thumbnail );
                break;
-            default :
+            default:
                return api_false;
             }
 
@@ -754,6 +723,299 @@ public:
       try
       {
          instance->EndPropertyEmbedding();
+      }
+      ERROR_HANDLER
+   }
+
+   // -------------------------------------------------------------------------
+
+   static api_bool api_func BeginRGBWSExtraction( file_format_handle hf )
+   {
+      try
+      {
+         instance->BeginRGBWSExtraction();
+         return api_true;
+      }
+      ERROR_HANDLER
+      return api_false;
+   }
+
+   // -------------------------------------------------------------------------
+
+   static api_bool api_func GetImageRGBWS( file_format_handle hf, float* gamma, api_bool* sRGB, float* x, float* y, float* Y )
+   {
+      try
+      {
+         const RGBColorSystem& rgbws = instance->GetRGBWS();
+         if ( gamma != nullptr )
+            *gamma = rgbws.Gamma();
+         if ( sRGB != nullptr )
+            *sRGB = api_bool( rgbws.IsSRGB() );
+         if ( x != nullptr )
+         {
+            FVector v = rgbws.ChromaticityXCoordinates();
+            for ( int i = 0; i < v.Length(); ++i )
+               x[i] = v[i];
+         }
+         if ( y != nullptr )
+         {
+            FVector v = rgbws.ChromaticityYCoordinates();
+            for ( int i = 0; i < v.Length(); ++i )
+               y[i] = v[i];
+         }
+         if ( Y != nullptr )
+         {
+            FVector v = rgbws.LuminanceCoefficients();
+            for ( int i = 0; i < v.Length(); ++i )
+               Y[i] = v[i];
+         }
+         return api_true;
+      }
+      ERROR_HANDLER
+      return api_false;
+   }
+
+   // -------------------------------------------------------------------------
+
+   static void api_func EndRGBWSExtraction( file_format_handle hf )
+   {
+      try
+      {
+         instance->EndRGBWSExtraction();
+      }
+      ERROR_HANDLER
+   }
+
+   // -------------------------------------------------------------------------
+
+   static api_bool api_func BeginRGBWSEmbedding( file_format_handle hf )
+   {
+      try
+      {
+         instance->BeginRGBWSEmbedding();
+         return api_true;
+      }
+      ERROR_HANDLER
+      return api_false;
+   }
+
+   // -------------------------------------------------------------------------
+
+   static api_bool api_func SetImageRGBWS( file_format_handle hf, float gamma, api_bool sRGB, const float* x, const float* y, const float* Y )
+   {
+      try
+      {
+         if ( gamma < 0 || gamma + 1 == 1 || x == nullptr || y == nullptr || Y == nullptr )
+            return api_false;
+         instance->SetRGBWS( RGBColorSystem( gamma, sRGB, x, y, Y ) );
+         return api_true;
+      }
+      ERROR_HANDLER
+      return api_false;
+   }
+
+   // -------------------------------------------------------------------------
+
+   static void api_func EndRGBWSEmbedding( file_format_handle hf )
+   {
+      try
+      {
+         instance->EndRGBWSEmbedding();
+      }
+      ERROR_HANDLER
+   }
+
+   // -------------------------------------------------------------------------
+
+   static api_bool api_func BeginDisplayFunctionExtraction( file_format_handle hf )
+   {
+      try
+      {
+         instance->BeginDisplayFunctionExtraction();
+         return api_true;
+      }
+      ERROR_HANDLER
+      return api_false;
+   }
+
+   // -------------------------------------------------------------------------
+
+   static api_bool api_func GetImageDisplayFunction( file_format_handle hf,
+                                    double* m, double* s, double* h, double* l, double* r )
+   {
+      try
+      {
+         const DisplayFunction& df = instance->GetDisplayFunction();
+         DVector vm, vs, vh, vl, vr;
+         df.GetDisplayFunctionParameters( vm, vs, vh, vl, vr );
+         if ( m != nullptr )
+            for ( int i = 0; i < vm.Length(); ++i )
+               m[i] = vm[i];
+         if ( s != nullptr )
+            for ( int i = 0; i < vs.Length(); ++i )
+               s[i] = vs[i];
+         if ( h != nullptr )
+            for ( int i = 0; i < vh.Length(); ++i )
+               h[i] = vh[i];
+         if ( l != nullptr )
+            for ( int i = 0; i < vl.Length(); ++i )
+               l[i] = vl[i];
+         if ( r != nullptr )
+            for ( int i = 0; i < vr.Length(); ++i )
+               r[i] = vr[i];
+         return api_true;
+      }
+      ERROR_HANDLER
+      return api_false;
+   }
+
+   // -------------------------------------------------------------------------
+
+   static void api_func EndDisplayFunctionExtraction( file_format_handle hf )
+   {
+      try
+      {
+         instance->EndDisplayFunctionExtraction();
+      }
+      ERROR_HANDLER
+   }
+
+   // -------------------------------------------------------------------------
+
+   static api_bool api_func BeginDisplayFunctionEmbedding( file_format_handle hf )
+   {
+      try
+      {
+         instance->BeginDisplayFunctionEmbedding();
+         return api_true;
+      }
+      ERROR_HANDLER
+      return api_false;
+   }
+
+   // -------------------------------------------------------------------------
+
+   static api_bool api_func SetImageDisplayFunction( file_format_handle hf,
+                                    const double* m, const double* s, const double* h, const double* l, const double* r )
+   {
+      try
+      {
+         if ( m == nullptr || s == nullptr || h == nullptr || l == nullptr || r == nullptr )
+            return api_false;
+         DVector vm( m, 4 ), vs( s, 4 ), vh( h, 4 ), vl( l, 4 ), vr( r, 4 );
+         instance->SetDisplayFunction( DisplayFunction( vm, vs, vh, vl, vr ) );
+         return api_true;
+      }
+      ERROR_HANDLER
+      return api_false;
+   }
+
+   // -------------------------------------------------------------------------
+
+   static void api_func EndDisplayFunctionEmbedding( file_format_handle hf )
+   {
+      try
+      {
+         instance->EndDisplayFunctionEmbedding();
+      }
+      ERROR_HANDLER
+   }
+
+   // -------------------------------------------------------------------------
+
+   static api_bool api_func BeginColorFilterArrayExtraction( file_format_handle hf )
+   {
+      try
+      {
+         instance->BeginColorFilterArrayExtraction();
+         return api_true;
+      }
+      ERROR_HANDLER
+      return api_false;
+   }
+
+   // -------------------------------------------------------------------------
+
+   static api_bool api_func GetImageColorFilterArray( file_format_handle hf,
+                  char* pattern, size_type* patternLen, int32* width, int32* height, char16_type* name, size_type* nameLen )
+   {
+      try
+      {
+         const ColorFilterArray& cfa = instance->GetColorFilterArray();
+
+         if ( width != nullptr )
+            *width = cfa.Width();
+         if ( height != nullptr )
+            *height = cfa.Height();
+
+         if ( patternLen == nullptr || nameLen == nullptr )
+            return api_false;
+
+         if ( *patternLen < cfa.Pattern().Length() || *nameLen < cfa.Name().Length() )
+         {
+            *patternLen = cfa.Pattern().Length();
+            *nameLen = cfa.Name().Length();
+            return api_false;
+         }
+
+         if ( pattern != nullptr )
+            cfa.Pattern().c_copy( pattern, *patternLen+1 );
+         if ( name != nullptr )
+            cfa.Name().c_copy( name, *nameLen+1 );
+         return api_true;
+      }
+      ERROR_HANDLER
+      return api_false;
+   }
+
+   // -------------------------------------------------------------------------
+
+   static void api_func EndColorFilterArrayExtraction( file_format_handle hf )
+   {
+      try
+      {
+         instance->EndColorFilterArrayExtraction();
+      }
+      ERROR_HANDLER
+   }
+
+   // -------------------------------------------------------------------------
+
+   static api_bool api_func BeginColorFilterArrayEmbedding( file_format_handle hf )
+   {
+      try
+      {
+         instance->BeginColorFilterArrayEmbedding();
+         return api_true;
+      }
+      ERROR_HANDLER
+      return api_false;
+   }
+
+   // -------------------------------------------------------------------------
+
+   static api_bool api_func SetImageColorFilterArray( file_format_handle hf,
+                                    const char* pattern, int32 width, int32 height, const char16_type* name )
+   {
+      try
+      {
+         ColorFilterArray cfa;
+         if ( pattern != nullptr && width > 0 && height > 0 )
+            cfa = ColorFilterArray( pattern, width, height, name );
+         instance->SetColorFilterArray( cfa );
+         return api_true;
+      }
+      ERROR_HANDLER
+      return api_false;
+   }
+
+   // -------------------------------------------------------------------------
+
+   static void api_func EndColorFilterArrayEmbedding( file_format_handle hf )
+   {
+      try
+      {
+         instance->EndColorFilterArrayEmbedding();
       }
       ERROR_HANDLER
    }
@@ -1033,43 +1295,6 @@ public:
 
    // -------------------------------------------------------------------------
 
-   static api_bool api_func BeginMetadataEmbedding( file_format_handle hf )
-   {
-      try
-      {
-         instance->BeginMetadataEmbedding();
-         return api_true;
-      }
-      ERROR_HANDLER
-      return api_false;
-   }
-
-   // -------------------------------------------------------------------------
-
-   static api_bool api_func SetMetadata( file_format_handle hf, const void* data, uint32 size )
-   {
-      try
-      {
-         instance->SetMetadata( data, size );
-         return api_true;
-      }
-      ERROR_HANDLER
-      return api_false;
-   }
-
-   // -------------------------------------------------------------------------
-
-   static void api_func EndMetadataEmbedding( file_format_handle hf )
-   {
-      try
-      {
-         instance->EndMetadataEmbedding();
-      }
-      ERROR_HANDLER
-   }
-
-   // -------------------------------------------------------------------------
-
    static api_bool api_func BeginThumbnailEmbedding( file_format_handle hf )
    {
       try
@@ -1297,7 +1522,7 @@ void MetaFileFormat::PerformAPIDefinitions() const
          (*API->FileFormatDefinition->SetFileFormatImplementation)( impl.c_str() );
    }
 
-   if ( IconImageXPM() != 0 )
+   if ( IconImageXPM() != nullptr )
       (*API->FileFormatDefinition->SetFileFormatIconImage)( IconImageXPM() );
    else
    {
@@ -1306,7 +1531,7 @@ void MetaFileFormat::PerformAPIDefinitions() const
          (*API->FileFormatDefinition->SetFileFormatIconImageFile)( path.c_str() );
    }
 
-   if ( SmallIconImageXPM() != 0 )
+   if ( SmallIconImageXPM() != nullptr )
       (*API->FileFormatDefinition->SetFileFormatIconSmallImage)( SmallIconImageXPM() );
    else
    {
@@ -1315,7 +1540,7 @@ void MetaFileFormat::PerformAPIDefinitions() const
          (*API->FileFormatDefinition->SetFileFormatIconSmallImageFile)( path.c_str() );
    }
 
-   api_format_caps caps;
+   api_format_capabilities caps;
 
    caps.canRead = CanRead();
    caps.canWrite = CanWrite();
@@ -1335,13 +1560,16 @@ void MetaFileFormat::PerformAPIDefinitions() const
    caps.canStoreResolution = CanStoreResolution();
    caps.canStoreKeywords = CanStoreKeywords();
    caps.canStoreICCProfiles = CanStoreICCProfiles();
-   caps.canStoreMetaData = CanStoreMetadata();
    caps.canStoreThumbnails = CanStoreThumbnails();
    caps.canStoreProperties = CanStoreProperties();
+   caps.canStoreRGBWS = CanStoreRGBWS();
+   caps.canStoreDisplayFunctions = CanStoreDisplayFunctions();
+   caps.canStoreColorFilterArrays = CanStoreColorFilterArrays();
    caps.supportsCompression = SupportsCompression();
    caps.supportsMultipleImages = SupportsMultipleImages();
    caps.usesFormatSpecificData = UsesFormatSpecificData();
    caps.canEditPreferences = CanEditPreferences();
+   caps.__r__ = 0;
 
    (*API->FileFormatDefinition->SetFileFormatCaps)( &caps );
 
@@ -1369,9 +1597,6 @@ void MetaFileFormat::PerformAPIDefinitions() const
    (*API->FileFormatDefinition->SetFileFormatBeginICCProfileExtractionRoutine)( FileFormatDispatcher::BeginICCProfileExtraction );
    (*API->FileFormatDefinition->SetFileFormatGetICCProfileRoutine)( FileFormatDispatcher::GetICCProfile );
    (*API->FileFormatDefinition->SetFileFormatEndICCProfileExtractionRoutine)( FileFormatDispatcher::EndICCProfileExtraction );
-   (*API->FileFormatDefinition->SetFileFormatBeginMetadataExtractionRoutine)( FileFormatDispatcher::BeginMetadataExtraction );
-   (*API->FileFormatDefinition->SetFileFormatGetMetadataRoutine)( FileFormatDispatcher::GetMetadata );
-   (*API->FileFormatDefinition->SetFileFormatEndMetadataExtractionRoutine)( FileFormatDispatcher::EndMetadataExtraction );
    (*API->FileFormatDefinition->SetFileFormatBeginThumbnailExtractionRoutine)( FileFormatDispatcher::BeginThumbnailExtraction );
    (*API->FileFormatDefinition->SetFileFormatGetThumbnailRoutine)( FileFormatDispatcher::GetThumbnail );
    (*API->FileFormatDefinition->SetFileFormatEndThumbnailExtractionRoutine)( FileFormatDispatcher::EndThumbnailExtraction );
@@ -1382,6 +1607,24 @@ void MetaFileFormat::PerformAPIDefinitions() const
    (*API->FileFormatDefinition->SetFileFormatBeginPropertyEmbeddingRoutine)( FileFormatDispatcher::BeginPropertyEmbedding );
    (*API->FileFormatDefinition->SetFileFormatSetImagePropertyRoutine)( FileFormatDispatcher::SetImageProperty );
    (*API->FileFormatDefinition->SetFileFormatEndPropertyEmbeddingRoutine)( FileFormatDispatcher::EndPropertyEmbedding );
+   (*API->FileFormatDefinition->SetFileFormatBeginRGBWSExtractionRoutine)( FileFormatDispatcher::BeginRGBWSExtraction );
+   (*API->FileFormatDefinition->SetFileFormatGetImageRGBWSRoutine)( FileFormatDispatcher::GetImageRGBWS );
+   (*API->FileFormatDefinition->SetFileFormatEndRGBWSExtractionRoutine)( FileFormatDispatcher::EndRGBWSExtraction );
+   (*API->FileFormatDefinition->SetFileFormatBeginRGBWSEmbeddingRoutine)( FileFormatDispatcher::BeginRGBWSEmbedding );
+   (*API->FileFormatDefinition->SetFileFormatSetImageRGBWSRoutine)( FileFormatDispatcher::SetImageRGBWS );
+   (*API->FileFormatDefinition->SetFileFormatEndRGBWSEmbeddingRoutine)( FileFormatDispatcher::EndRGBWSEmbedding );
+   (*API->FileFormatDefinition->SetFileFormatBeginDisplayFunctionExtractionRoutine)( FileFormatDispatcher::BeginDisplayFunctionExtraction );
+   (*API->FileFormatDefinition->SetFileFormatGetImageDisplayFunctionRoutine)( FileFormatDispatcher::GetImageDisplayFunction );
+   (*API->FileFormatDefinition->SetFileFormatEndDisplayFunctionExtractionRoutine)( FileFormatDispatcher::EndDisplayFunctionExtraction );
+   (*API->FileFormatDefinition->SetFileFormatBeginDisplayFunctionEmbeddingRoutine)( FileFormatDispatcher::BeginDisplayFunctionEmbedding );
+   (*API->FileFormatDefinition->SetFileFormatSetImageDisplayFunctionRoutine)( FileFormatDispatcher::SetImageDisplayFunction );
+   (*API->FileFormatDefinition->SetFileFormatEndDisplayFunctionEmbeddingRoutine)( FileFormatDispatcher::EndDisplayFunctionEmbedding );
+   (*API->FileFormatDefinition->SetFileFormatBeginColorFilterArrayExtractionRoutine)( FileFormatDispatcher::BeginColorFilterArrayExtraction );
+   (*API->FileFormatDefinition->SetFileFormatGetImageColorFilterArrayRoutine)( FileFormatDispatcher::GetImageColorFilterArray );
+   (*API->FileFormatDefinition->SetFileFormatEndColorFilterArrayExtractionRoutine)( FileFormatDispatcher::EndColorFilterArrayExtraction );
+   (*API->FileFormatDefinition->SetFileFormatBeginColorFilterArrayEmbeddingRoutine)( FileFormatDispatcher::BeginColorFilterArrayEmbedding );
+   (*API->FileFormatDefinition->SetFileFormatSetImageColorFilterArrayRoutine)( FileFormatDispatcher::SetImageColorFilterArray );
+   (*API->FileFormatDefinition->SetFileFormatEndColorFilterArrayEmbeddingRoutine)( FileFormatDispatcher::EndColorFilterArrayEmbedding );
    (*API->FileFormatDefinition->SetFileFormatReadImageRoutine)( FileFormatDispatcher::ReadImage );
    (*API->FileFormatDefinition->SetFileFormatReadPixelsRoutine)( FileFormatDispatcher::ReadPixels );
    (*API->FileFormatDefinition->SetFileFormatQueryOptionsRoutine)( FileFormatDispatcher::QueryImageFileOptions );
@@ -1395,9 +1638,6 @@ void MetaFileFormat::PerformAPIDefinitions() const
    (*API->FileFormatDefinition->SetFileFormatBeginICCProfileEmbeddingRoutine)( FileFormatDispatcher::BeginICCProfileEmbedding );
    (*API->FileFormatDefinition->SetFileFormatSetICCProfileRoutine)( FileFormatDispatcher::SetICCProfile );
    (*API->FileFormatDefinition->SetFileFormatEndICCProfileEmbeddingRoutine)( FileFormatDispatcher::EndICCProfileEmbedding );
-   (*API->FileFormatDefinition->SetFileFormatBeginMetadataEmbeddingRoutine)( FileFormatDispatcher::BeginMetadataEmbedding );
-   (*API->FileFormatDefinition->SetFileFormatSetMetadataRoutine)( FileFormatDispatcher::SetMetadata );
-   (*API->FileFormatDefinition->SetFileFormatEndMetadataEmbeddingRoutine)( FileFormatDispatcher::EndMetadataEmbedding );
    (*API->FileFormatDefinition->SetFileFormatBeginThumbnailEmbeddingRoutine)( FileFormatDispatcher::BeginThumbnailEmbedding );
    (*API->FileFormatDefinition->SetFileFormatSetThumbnailRoutine)( FileFormatDispatcher::SetThumbnail );
    (*API->FileFormatDefinition->SetFileFormatEndThumbnailEmbeddingRoutine)( FileFormatDispatcher::EndThumbnailEmbedding );
@@ -1415,5 +1655,5 @@ void MetaFileFormat::PerformAPIDefinitions() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/MetaFileFormat.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/MetaFileFormat.cpp - Released 2015/07/30 17:15:31 UTC

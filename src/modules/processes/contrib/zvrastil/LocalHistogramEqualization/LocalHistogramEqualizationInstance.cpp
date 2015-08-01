@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard LocalHistogramEqualization Process Module Version 01.00.00.0094
-// ****************************************************************************
-// LocalHistogramEqualizationInstance.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard LocalHistogramEqualization Process Module Version 01.00.00.0113
+// ----------------------------------------------------------------------------
+// LocalHistogramEqualizationInstance.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard LocalHistogramEqualization PixInsight module.
 //
-// Copyright (c) 2011-2014 Zbynek Vrastil
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2015 Zbynek Vrastil
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,7 +49,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "LocalHistogramEqualizationInstance.h"
 #include "LocalHistogramEqualizationParameters.h"
@@ -54,7 +58,7 @@
 #include <pcl/AutoViewLock.h>
 #include <pcl/Console.h>
 #include <pcl/MuteStatus.h>
-#include <pcl/PArray.h>
+#include <pcl/ReferenceArray.h>
 #include <pcl/StdStatus.h>
 #include <pcl/Thread.h>
 #include <pcl/View.h>
@@ -163,7 +167,7 @@ public:
       AbstractImage::ThreadData data( image, N );
 
       // create processing threads
-      PArray<LocalHistogramEqualizationThread<P> > threads;
+      ReferenceArray<LocalHistogramEqualizationThread<P> > threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new LocalHistogramEqualizationThread<P>( data,
                                  instance,
@@ -643,5 +647,5 @@ int LocalHistogramEqualizationInstance::GetHistogramSize() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF LocalHistogramEqualizationInstance.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF LocalHistogramEqualizationInstance.cpp - Released 2015/07/31 11:49:49 UTC

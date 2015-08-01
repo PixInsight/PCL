@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard IntensityTransformations Process Module Version 01.07.00.0287
-// ****************************************************************************
-// ScreenTransferFunctionInstance.cpp - Released 2014/11/14 17:19:23 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard IntensityTransformations Process Module Version 01.07.00.0306
+// ----------------------------------------------------------------------------
+// ScreenTransferFunctionInstance.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "ScreenTransferFunctionInstance.h"
 
@@ -132,56 +136,44 @@ size_type ScreenTransferFunctionInstance::ParameterLength( const MetaParameter* 
 
 // ----------------------------------------------------------------------------
 
-void ScreenTransferFunctionInstance::GetViewSTF( const View& v )
+void ScreenTransferFunctionInstance::GetViewSTF( const View& view )
 {
-   if ( !v.IsNull() )
+   if ( !view.IsNull() )
    {
       View::stf_list F;
-      v.GetScreenTransferFunctions( F );
-
+      view.GetScreenTransferFunctions( F );
       for ( int c = 0; c < 4; ++c )
       {
          STF& f = stf[c];
-         const HistogramTransformation* H = F[c];
-         f.m = H->MidtonesBalance();
-         f.c0 = H->ShadowsClipping();
-         f.c1 = H->HighlightsClipping();
-         f.r0 = H->LowRange();
-         f.r1 = H->HighRange();
+         const HistogramTransformation& H = F[c];
+         f.m = H.MidtonesBalance();
+         f.c0 = H.ShadowsClipping();
+         f.c1 = H.HighlightsClipping();
+         f.r0 = H.LowRange();
+         f.r1 = H.HighRange();
       }
 
-      interaction = v.IsColor() ? STFInteraction::SeparateChannels : STFInteraction::Grayscale;
+      interaction = view.IsColor() ? STFInteraction::SeparateChannels : STFInteraction::Grayscale;
    }
 }
 
 void ScreenTransferFunctionInstance::ApplyTo( View& view ) const
 {
    View::stf_list F;
-
-   try
+   for ( int c = 0; c < 4; ++c )
    {
-      for ( int c = 0; c < 4; ++c )
-      {
-         const STF& f = stf[c];
-         F.Add( new HistogramTransformation( f.m, f.c0, f.c1, f.r0, f.r1 ) );
-      }
-
-      view.SetScreenTransferFunctions( F );
-      if ( !view.AreScreenTransferFunctionsEnabled() )
-         view.EnableScreenTransferFunctions();
-
-      F.Destroy();
+      const STF& f = stf[c];
+      F.Add( HistogramTransformation( f.m, f.c0, f.c1, f.r0, f.r1 ) );
    }
-   catch ( ... )
-   {
-      F.Destroy();
-      throw;
-   }
+
+   view.SetScreenTransferFunctions( F );
+   if ( !view.AreScreenTransferFunctionsEnabled() )
+      view.EnableScreenTransferFunctions();
 }
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-// ****************************************************************************
-// EOF ScreenTransferFunctionInstance.cpp - Released 2014/11/14 17:19:23 UTC
+// ----------------------------------------------------------------------------
+// EOF ScreenTransferFunctionInstance.cpp - Released 2015/07/31 11:49:48 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/FileFormat.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/FileFormat.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/FileFormat.h>
 
@@ -60,17 +63,18 @@ class FileFormatPrivate
 {
 public:
 
-   meta_format_handle handle;
-   api_format_caps    capabilities;
+   meta_format_handle      handle;
+   api_format_capabilities capabilities;
 
-   FileFormatPrivate() : handle( 0 ), capabilities()
+   FileFormatPrivate() :
+      handle( nullptr )
    {
       ZeroCaps();
    }
 
-   FileFormatPrivate( const FileFormatPrivate* x ) : handle( 0 ), capabilities()
+   FileFormatPrivate( const FileFormatPrivate* x ) : handle( nullptr ), capabilities()
    {
-      if ( x != 0 )
+      if ( x != nullptr )
       {
          handle = x->handle;
          capabilities = x->capabilities;
@@ -102,11 +106,11 @@ public:
 
 private:
 
-   // Strict aliasing safe code:
    void ZeroCaps()
    {
-      //*reinterpret_cast<uint32*>( &capabilities ) = 0;
-      union { api_format_caps capabilities; uint32 u; } v;
+      // Strict aliasing safe code
+      static_assert( sizeof( api_format_capabilities ) <= sizeof( uint64 ), "Invalid sizeof( api_format_capabilities )" );
+      union { api_format_capabilities capabilities; uint64 u; } v;
       v.u = 0u;
       capabilities = v.capabilities;
    }
@@ -115,23 +119,26 @@ private:
 // ----------------------------------------------------------------------------
 
 FileFormat::FileFormat( const String& nameExtOrMime, bool toRead, bool toWrite ) :
-FileFormatBase(), data( new FileFormatPrivate )
+   FileFormatBase(),
+   data( nullptr )
 {
    if ( nameExtOrMime.IsEmpty() )
       throw Error( "FileFormat: Empty format name, file extension or MIME type specified" );
 
-   if ( nameExtOrMime.Has( '/' ) )
+   data = new FileFormatPrivate;
+
+   if ( nameExtOrMime.Contains( '/' ) )
    {
       IsoString mimeType( nameExtOrMime );
       data->handle = (*API->FileFormat->GetFileFormatByMimeType)( ModuleHandle(), mimeType.c_str(), toRead, toWrite );
-      if ( data->handle == 0 )
+      if ( data->handle == nullptr )
          throw Error( "FileFormat: No installed image file format was found "
                       "for the specified MIME type \'" + nameExtOrMime + "\' and access conditions" );
    }
-   else if ( nameExtOrMime.BeginsWith( '.' ) )
+   else if ( nameExtOrMime.StartsWith( '.' ) )
    {
       data->handle = (*API->FileFormat->GetFileFormatByFileExtension)( ModuleHandle(), nameExtOrMime.c_str(), toRead, toWrite );
-      if ( data->handle == 0 )
+      if ( data->handle == nullptr )
          throw Error( "FileFormat: No installed image file format was found "
                       "for the specified file extension \'" + nameExtOrMime + "\'and access conditions" );
    }
@@ -139,7 +146,7 @@ FileFormatBase(), data( new FileFormatPrivate )
    {
       IsoString id( nameExtOrMime );
       data->handle = (*API->FileFormat->GetFileFormatByName)( ModuleHandle(), id.c_str() );
-      if ( data->handle == 0 )
+      if ( data->handle == nullptr )
          throw Error( "FileFormat: No installed image file format was found "
                       "with the specified identifier \'" + nameExtOrMime + '\'' );
    }
@@ -147,13 +154,17 @@ FileFormatBase(), data( new FileFormatPrivate )
    data->GetCapabilities();
 }
 
-FileFormat::FileFormat( const FileFormat& fmt ) : FileFormatBase(), data( new FileFormatPrivate( fmt.data ) )
+FileFormat::FileFormat( const FileFormat& fmt ) :
+   FileFormatBase(),
+   data( new FileFormatPrivate( fmt.data ) )
 {
 }
 
-FileFormat::FileFormat( const void* handle ) : FileFormatBase(), data( new FileFormatPrivate )
+FileFormat::FileFormat( const void* handle ) :
+   FileFormatBase(),
+   data( new FileFormatPrivate )
 {
-   if ( handle == 0 )
+   if ( handle == nullptr )
       throw Error( "FileFormat: Null file format handle" );
    data->handle = handle;
    data->GetCapabilities();
@@ -161,11 +172,8 @@ FileFormat::FileFormat( const void* handle ) : FileFormatBase(), data( new FileF
 
 FileFormat::~FileFormat()
 {
-   if ( data != 0 )
-   {
-      delete data;
-      data = 0;
-   }
+   if ( data != nullptr )
+      delete data, data = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -176,14 +184,13 @@ IsoString FileFormat::Name() const
    (*API->FileFormat->GetFileFormatName)( data->handle, 0, &len );
 
    IsoString name;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      name.Reserve( len );
+      name.SetLength( len );
       if ( (*API->FileFormat->GetFileFormatName)( data->handle, name.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetFileFormatName" );
+      name.ResizeToNullTerminated();
    }
-
    return name;
 }
 
@@ -196,8 +203,7 @@ StringList FileFormat::FileExtensions() const
    (*API->FileFormat->GetFileFormatFileExtensions)( data->handle, 0, &count, &maxLen );
 
    StringList extensions( count );
-
-   if ( count != 0 )
+   if ( count > 0 )
    {
       Array<char16_type*> ptrs;
       for ( size_type i = 0; i < count; ++i )
@@ -208,8 +214,10 @@ StringList FileFormat::FileExtensions() const
 
       if ( (*API->FileFormat->GetFileFormatFileExtensions)( data->handle, ptrs.Begin(), &count, &maxLen ) == api_false )
          throw APIFunctionError( "GetFileFormatFileExtensions" );
-   }
 
+      for ( StringList::iterator i = extensions.Begin(); i != extensions.End(); ++i )
+         i->ResizeToNullTerminated();
+   }
    return extensions;
 }
 
@@ -222,8 +230,7 @@ IsoStringList FileFormat::MimeTypes() const
    (*API->FileFormat->GetFileFormatMimeTypes)( data->handle, 0, &count, &maxLen );
 
    IsoStringList mimeTypes( count );
-
-   if ( count != 0 )
+   if ( count > 0 )
    {
       Array<char*> ptrs;
       for ( size_type i = 0; i < count; ++i )
@@ -234,8 +241,10 @@ IsoStringList FileFormat::MimeTypes() const
 
       if ( (*API->FileFormat->GetFileFormatMimeTypes)( data->handle, ptrs.Begin(), &count, &maxLen ) == api_false )
          throw APIFunctionError( "GetFileFormatMimeTypes" );
-   }
 
+      for ( IsoStringList::iterator i = mimeTypes.Begin(); i != mimeTypes.End(); ++i )
+         i->ResizeToNullTerminated();
+   }
    return mimeTypes;
 }
 
@@ -254,15 +263,13 @@ String FileFormat::Description() const
    (*API->FileFormat->GetFileFormatDescription)( data->handle, 0, &len );
 
    String description;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      description.Reserve( len );
-
+      description.SetLength( len );
       if ( (*API->FileFormat->GetFileFormatDescription)( data->handle, description.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetFileFormatDescription" );
+      description.ResizeToNullTerminated();
    }
-
    return description;
 }
 
@@ -274,15 +281,13 @@ String FileFormat::Implementation() const
    (*API->FileFormat->GetFileFormatImplementation)( data->handle, 0, &len );
 
    String implementation;
-
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      implementation.Reserve( len );
-
+      implementation.SetLength( len );
       if ( (*API->FileFormat->GetFileFormatImplementation)( data->handle, implementation.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetFileFormatImplementation" );
+      implementation.ResizeToNullTerminated();
    }
-
    return implementation;
 }
 
@@ -392,11 +397,6 @@ bool FileFormat::CanStoreICCProfiles() const
    return data->capabilities.canStoreICCProfiles;
 }
 
-bool FileFormat::CanStoreMetadata() const
-{
-   return data->capabilities.canStoreMetaData;
-}
-
 bool FileFormat::CanStoreThumbnails() const
 {
    return data->capabilities.canStoreThumbnails;
@@ -405,6 +405,21 @@ bool FileFormat::CanStoreThumbnails() const
 bool FileFormat::CanStoreProperties() const
 {
    return data->capabilities.canStoreProperties;
+}
+
+bool FileFormat::CanStoreRGBWS() const
+{
+   return data->capabilities.canStoreRGBWS;
+}
+
+bool FileFormat::CanStoreDisplayFunctions() const
+{
+   return data->capabilities.canStoreDisplayFunctions;
+}
+
+bool FileFormat::CanStoreColorFilterArrays() const
+{
+   return data->capabilities.canStoreColorFilterArrays;
 }
 
 bool FileFormat::SupportsCompression() const
@@ -467,5 +482,5 @@ Array<FileFormat> FileFormat::AllFormats()
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/FileFormat.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/FileFormat.cpp - Released 2015/07/30 17:15:31 UTC

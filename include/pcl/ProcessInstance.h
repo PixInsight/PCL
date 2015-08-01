@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ProcessInstance.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ProcessInstance.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_ProcessInstance_h
 #define __PCL_ProcessInstance_h
@@ -315,6 +318,12 @@ public:
     */
    bool ExecuteOn( ImageVariant& image, const IsoString& hints = IsoString() );
 
+   template <class S>
+   bool ExecuteOn( ImageVariant& image, const S& hints )
+   {
+      return ExecuteOn( image, IsoString( hints ) );
+   }
+
    /*!
     * Launches this process instance.
     *
@@ -433,7 +442,7 @@ public:
     * serialization of process instances in the specified language.
     */
    String ToSource( const IsoString& language = "JavaScript",
-                    const IsoString& varId = String(), int indent = 0 ) const;
+                    const IsoString& varId = IsoString(), int indent = 0 ) const;
 
    /*!
     * Returns a process instance generated from the specified \a source code.
@@ -455,6 +464,12 @@ public:
     */
    static ProcessInstance FromIcon( const IsoString& iconId );
 
+   template <class S>
+   static ProcessInstance FromIcon( const S& iconId )
+   {
+      return FromIcon( IsoString( iconId ) );
+   }
+
    /*!
     * Returns a string list with the identifiers of all existing process icons,
     * or an empty list if there are no process icons.
@@ -467,6 +482,12 @@ public:
     * such icons exist.
     */
    static IsoStringList IconsByProcessId( const IsoString& processId );
+
+   template <class S>
+   static IsoStringList IconsByProcessId( const S& processId )
+   {
+      return IconsByProcessId( IsoString( processId ) );
+   }
 
    /*!
     * Returns the value of a process parameter.
@@ -521,6 +542,12 @@ public:
    Variant ParameterValue( const IsoString& parameterId, size_type rowIndex = ~size_type( 0 ) ) const
    {
       return ParameterValue( ProcessParameter( ParentProcess(), parameterId ), rowIndex );
+   }
+
+   template <class S>
+   Variant ParameterValue( const S& parameterId, size_type rowIndex = ~size_type( 0 ) ) const
+   {
+      return ParameterValue( IsoString( parameterId ), rowIndex );
    }
 
    /*!
@@ -585,6 +612,12 @@ public:
       return SetParameterValue( value, ProcessParameter( ParentProcess(), parameterId ), rowIndex );
    }
 
+   template <class S>
+   bool SetParameterValue( const Variant& value, const S& parameterId, size_type rowIndex = ~size_type( 0 ) )
+   {
+      return SetParameterValue( value, IsoString( parameterId ), rowIndex );
+   }
+
    /*!
     * Returns the number of existing rows in a table process parameter.
     *
@@ -607,6 +640,12 @@ public:
    size_type TableRowCount( const IsoString& tableId ) const
    {
       return TableRowCount( ProcessParameter( ParentProcess(), tableId ) );
+   }
+
+   template <class S>
+   size_type TableRowCount( const S& tableId ) const
+   {
+      return TableRowCount( IsoString( tableId ) );
    }
 
    /*!
@@ -645,6 +684,12 @@ public:
       return AllocateTableRows( ProcessParameter( ParentProcess(), tableId ), rowCount );
    }
 
+   template <class S>
+   bool AllocateTableRows( const S& tableId, size_type rowCount )
+   {
+      return AllocateTableRows( IsoString( tableId ), rowCount );
+   }
+
 private:
 
    ProcessInstance( void* );
@@ -662,5 +707,5 @@ private:
 
 #endif   // __PCL_ProcessInstance_h
 
-// ****************************************************************************
-// EOF pcl/ProcessInstance.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ProcessInstance.h - Released 2015/07/30 17:15:18 UTC

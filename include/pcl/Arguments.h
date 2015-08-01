@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Arguments.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Arguments.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Arguments_h
 #define __PCL_Arguments_h
@@ -242,29 +245,12 @@ public:
    /*!
     * Copy constructor.
     */
-   Argument( const Argument& x )
-   {
-      (void)operator =( x );
-   }
+   Argument( const Argument& ) = default;
 
    /*!
-    * Assigns other %Argument instance to this. Returns a reference to this
-    * %Argument object.
+    * Copy assignment operator. Returns a reference to this object.
     */
-   Argument& operator =( const Argument& x )
-   {
-      if ( &x != this )
-      {
-         token = x.token;
-         id = x.id;
-         type = x.type;
-         asItems = x.asItems;
-         asSwitch = x.asSwitch;
-         asNumeric = x.asNumeric;
-         asString = x.asString;
-      }
-      return *this;
-   }
+   Argument& operator =( const Argument& ) = default;
 
    /*!
     * Equality operator. Returns true if this %Argument object is equal to the
@@ -427,15 +413,23 @@ private:
 
    void Initialize()
    {
-      token.Empty();
-      id.Empty();
+      token.Clear();
+      id.Clear();
       type = invalid_arg;
-      asItems.Remove(); asSwitch = false; asNumeric = 0; asString.Empty();
+      asItems.Clear();
+      asSwitch = false;
+      asNumeric = 0;
+      asString.Clear();
    }
 
    void Parse( const char16_type* );
 };
 
+/*!
+ * \class ArgumentList
+ * \brief A dynamic array of command-line arguments
+ * \ingroup argument_parsing
+ */
 typedef Array<Argument> ArgumentList;
 
 // ----------------------------------------------------------------------------
@@ -499,8 +493,8 @@ namespace ArgumentOption
 }
 
 /*!
- * A combination of ArgumentOption flags.
- *
+ * \class ArgumentOptions
+ * \brief A combination of ArgumentOption flags
  * \ingroup argument_parsing
  */
 typedef Flags<ArgumentOption::mask_type>  ArgumentOptions;
@@ -666,15 +660,6 @@ void PCL_FUNC SetRecursiveDirSearchArgument( const String& id );
 StringList PCL_FUNC SearchDirectory( const String& filePath, bool recursive = false );
 
 /*!
- * Returns true if the \a s string matches the specified \a wild pattern.
- * The \a wild pattern can contain any occurrences of the standard '?' and
- * '*' wild characters.
- *
- * \ingroup argument_parsing
- */
-bool PCL_FUNC MatchesWildSpecification( const String& s, const String& wild );
-
-/*!
  * Returns a copy of a source string \a s where all references to environment
  * variables have been replaced with their corresponding values.
  *
@@ -703,5 +688,5 @@ String PCL_FUNC ReplaceEnvironmentVariables( const String& s );
 
 #endif   // __PCL_Arguments_h
 
-// ****************************************************************************
-// EOF pcl/Arguments.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Arguments.h - Released 2015/07/30 17:15:18 UTC

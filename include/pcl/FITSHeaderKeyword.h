@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/FITSHeaderKeyword.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/FITSHeaderKeyword.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_FITSHeaderKeyword_h
 #define __PCL_FITSHeaderKeyword_h
@@ -88,7 +91,18 @@ public:
     * Constructs a %FITSHeaderKeyword object with empty name, value and comment
     * components.
     */
-   FITSHeaderKeyword() : name(), value(), comment()
+   FITSHeaderKeyword() = default;
+
+   /*!
+    * Copy constructor.
+    */
+   FITSHeaderKeyword( const FITSHeaderKeyword& ) = default;
+
+   /*!
+    * Move constructor.
+    */
+   FITSHeaderKeyword( FITSHeaderKeyword&& x ) :
+      name( std::move( x.name ) ), value( std::move( x.value ) ), comment( std::move( x.comment ) )
    {
    }
 
@@ -99,36 +113,22 @@ public:
    FITSHeaderKeyword( const IsoString& a_name,
                       const IsoString& a_value = IsoString(),
                       const IsoString& a_comment = IsoString() ) :
-   name( a_name ), value( a_value ), comment( a_comment )
+      name( a_name ), value( a_value ), comment( a_comment )
+   {
+      Trim();
+   }
+
+   template <class S1, class S2, class S3>
+   FITSHeaderKeyword( const S1& a_name, const S2& a_value, const S3& a_comment ) :
+      name( IsoString( a_name ) ), value( IsoString( a_value ) ), comment( IsoString( a_comment ) )
    {
       Trim();
    }
 
    /*!
-    * Copy constructor.
-    */
-   FITSHeaderKeyword( const FITSHeaderKeyword& k ) :
-   name( k.name ), value( k.value ), comment( k.comment )
-   {
-   }
-
-   /*!
-    * Virtual destructor.
-    */
-   virtual ~FITSHeaderKeyword()
-   {
-   }
-
-   /*!
     * Assignment operator. Returns a reference to this object.
     */
-   FITSHeaderKeyword& operator =( const FITSHeaderKeyword& x )
-   {
-      name    = x.name;
-      value   = x.value;
-      comment = x.comment;
-      return *this;
-   }
+   FITSHeaderKeyword& operator =( const FITSHeaderKeyword& ) = default;
 
    /*!
     * Returns true if this %FITS keyword has no %value (i.e., if the value
@@ -147,7 +147,7 @@ public:
     */
    bool IsString() const
    {
-      return value.BeginsWith( '\'' );
+      return value.StartsWith( '\'' );
    }
 
    /*!
@@ -184,7 +184,8 @@ public:
    {
       if ( value.TryToDouble( v ) )
          return true;
-      v = 0; return false;
+      v = 0;
+      return false;
    }
 
    /*!
@@ -201,7 +202,7 @@ public:
          size_type n = value.Length()-1;
          if ( value[n] == '\'' ) // trailing delimiter ?
             --n;
-         stripped = value.SubString( 1, n );
+         stripped = value.Substring( 1, n );
       }
       else
          stripped = value;
@@ -215,7 +216,9 @@ public:
     */
    void Trim()
    {
-      name.Trim(); value.Trim(); comment.Trim();
+      name.Trim();
+      value.Trim();
+      comment.Trim();
    }
 };
 
@@ -273,5 +276,5 @@ inline bool operator <( const FITSHeaderKeyword& h1, const FITSHeaderKeyword& h2
 
 #endif   // __PCL_FITSHeaderKeyword_h
 
-// ****************************************************************************
-// EOF pcl/FITSHeaderKeyword.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/FITSHeaderKeyword.h - Released 2015/07/30 17:15:18 UTC

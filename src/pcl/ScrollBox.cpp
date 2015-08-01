@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ScrollBox.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ScrollBox.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/ScrollBox.h>
 
@@ -56,135 +59,41 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-#define sender    (reinterpret_cast<ScrollBox*>( hSender ))
-#define receiver  (reinterpret_cast<Control*>( hReceiver ))
-
-class ScrollBoxEventDispatcher
-{
-public:
-
-   static void HorizontalScrollPosUpdated( control_handle hSender, control_handle hReceiver, int32 horzPos )
-   {
-      if ( sender->onHorizontalScrollPosUpdated != 0 )
-         (receiver->*sender->onHorizontalScrollPosUpdated)( *sender, horzPos );
-   }
-
-   static void VerticalScrollPosUpdated( control_handle hSender, control_handle hReceiver, int32 vertPos )
-   {
-      if ( sender->onVerticalScrollPosUpdated != 0 )
-         (receiver->*sender->onVerticalScrollPosUpdated)( *sender, vertPos );
-   }
-
-   static void HorizontalScrollRangeUpdated( control_handle hSender, control_handle hReceiver, int32 minHorzPos, int32 maxHorzPos )
-   {
-      if ( sender->onHorizontalScrollRangeUpdated != 0 )
-         (receiver->*sender->onHorizontalScrollRangeUpdated)( *sender, minHorzPos, maxHorzPos );
-   }
-
-   static void VerticalScrollRangeUpdated( control_handle hSender, control_handle hReceiver, int32 minVertPos, int32 maxVertPos )
-   {
-      if ( sender->onVerticalScrollRangeUpdated != 0 )
-         (receiver->*sender->onVerticalScrollRangeUpdated)( *sender, minVertPos, maxVertPos );
-   }
-}; // ScrollBoxEventDispatcher
-
-#undef sender
-#undef receiver
-
-// ----------------------------------------------------------------------------
-
 #ifdef _MSC_VER
 #  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
 #endif
 
 ScrollBox::ScrollBox( Control& parent ) :
-Frame( (*API->ScrollBox->CreateScrollBox)( ModuleHandle(), this, parent.handle, 0 /*flags*/ ) ),
-onHorizontalScrollPosUpdated( 0 ),
-onVerticalScrollPosUpdated( 0 ),
-onHorizontalScrollRangeUpdated( 0 ),
-onVerticalScrollRangeUpdated( 0 ),
-viewport( 0 )
+   Frame( (*API->ScrollBox->CreateScrollBox)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) ),
+   m_handlers( nullptr ),
+   m_viewport( nullptr )
 {
    if ( IsNull() )
       throw APIFunctionError( "CreateScrollBox" );
 
-   viewport.TransferHandle( (*API->ScrollBox->CreateScrollBoxViewport)( handle, &viewport ) );
-   if ( viewport.IsNull() )
+   m_viewport.TransferHandle( (*API->ScrollBox->CreateScrollBoxViewport)( handle, &m_viewport ) );
+   if ( m_viewport.IsNull() )
       throw APIFunctionError( "CreateScrollBoxViewport" );
 }
 
-ScrollBox::ScrollBox( void* h ) : Frame( h ),
-onHorizontalScrollPosUpdated( 0 ),
-onVerticalScrollPosUpdated( 0 ),
-onHorizontalScrollRangeUpdated( 0 ),
-onVerticalScrollRangeUpdated( 0 ),
-viewport( 0 )
+ScrollBox::ScrollBox( void* h ) :
+   Frame( h ),
+   m_handlers( nullptr ),
+   m_viewport( nullptr )
 {
    if ( !IsNull() )
    {
-      viewport.TransferHandle( (*API->ScrollBox->CreateScrollBoxViewport)( handle, &viewport ) );
-      if ( viewport.IsNull() )
+      m_viewport.TransferHandle( (*API->ScrollBox->CreateScrollBoxViewport)( handle, &m_viewport ) );
+      if ( m_viewport.IsNull() )
          throw APIFunctionError( "CreateScrollBoxViewport" );
    }
 }
 
-ScrollBox::ScrollBox( void* h, void* hV ) : Frame( h ),
-onHorizontalScrollPosUpdated( 0 ),
-onVerticalScrollPosUpdated( 0 ),
-onHorizontalScrollRangeUpdated( 0 ),
-onVerticalScrollRangeUpdated( 0 ),
-viewport( hV )
+ScrollBox::ScrollBox( void* h, void* hV ) :
+   Frame( h ),
+   m_handlers( nullptr ),
+   m_viewport( hV )
 {
-}
-
-// ----------------------------------------------------------------------------
-
-void ScrollBox::OnHorizontalScrollPosUpdated( pos_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onHorizontalScrollPosUpdated = 0;
-   if ( (*API->ScrollBox->SetScrollBoxHorizontalPosUpdatedEventRoutine)( handle, &receiver,
-        (f != 0) ? ScrollBoxEventDispatcher::HorizontalScrollPosUpdated : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetScrollBoxHorizontalPosUpdatedEventRoutine" );
-   }
-   onHorizontalScrollPosUpdated = f;
-}
-
-void ScrollBox::OnVerticalScrollPosUpdated( pos_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onVerticalScrollPosUpdated = 0;
-   if ( (*API->ScrollBox->SetScrollBoxVerticalPosUpdatedEventRoutine)( handle, &receiver,
-      (f != 0) ? ScrollBoxEventDispatcher::VerticalScrollPosUpdated : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetScrollBoxVerticalPosUpdatedEventRoutine" );
-   }
-   onVerticalScrollPosUpdated = f;
-}
-
-void ScrollBox::OnHorizontalScrollRangeUpdated( range_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onHorizontalScrollRangeUpdated = 0;
-   if ( (*API->ScrollBox->SetScrollBoxHorizontalRangeUpdatedEventRoutine)( handle, &receiver,
-      (f != 0) ? ScrollBoxEventDispatcher::HorizontalScrollRangeUpdated : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetScrollBoxHorizontalRangeUpdatedEventRoutine" );
-   }
-   onHorizontalScrollRangeUpdated = f;
-}
-
-void ScrollBox::OnVerticalScrollRangeUpdated( range_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onVerticalScrollRangeUpdated = 0;
-   if ( (*API->ScrollBox->SetScrollBoxVerticalRangeUpdatedEventRoutine)( handle, &receiver,
-      (f != 0) ? ScrollBoxEventDispatcher::VerticalScrollRangeUpdated : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetScrollBoxVerticalRangeUpdatedEventRoutine" );
-   }
-   onVerticalScrollRangeUpdated = f;
 }
 
 // ----------------------------------------------------------------------------
@@ -358,7 +267,91 @@ void ScrollBox::EnableTracking( bool enableHorz, bool enableVert )
 
 // ----------------------------------------------------------------------------
 
+#define sender    (reinterpret_cast<ScrollBox*>( hSender ))
+#define receiver  (reinterpret_cast<Control*>( hReceiver ))
+#define handlers  sender->m_handlers
+
+class ScrollBoxEventDispatcher
+{
+public:
+
+   static void HorizontalScrollPosUpdated( control_handle hSender, control_handle hReceiver, int32 horzPos )
+   {
+      if ( handlers->onHorizontalScrollPosUpdated != nullptr )
+         (receiver->*handlers->onHorizontalScrollPosUpdated)( *sender, horzPos );
+   }
+
+   static void VerticalScrollPosUpdated( control_handle hSender, control_handle hReceiver, int32 vertPos )
+   {
+      if ( handlers->onVerticalScrollPosUpdated != nullptr )
+         (receiver->*handlers->onVerticalScrollPosUpdated)( *sender, vertPos );
+   }
+
+   static void HorizontalScrollRangeUpdated( control_handle hSender, control_handle hReceiver, int32 minHorzPos, int32 maxHorzPos )
+   {
+      if ( handlers->onHorizontalScrollRangeUpdated != nullptr )
+         (receiver->*handlers->onHorizontalScrollRangeUpdated)( *sender, minHorzPos, maxHorzPos );
+   }
+
+   static void VerticalScrollRangeUpdated( control_handle hSender, control_handle hReceiver, int32 minVertPos, int32 maxVertPos )
+   {
+      if ( handlers->onVerticalScrollRangeUpdated != nullptr )
+         (receiver->*handlers->onVerticalScrollRangeUpdated)( *sender, minVertPos, maxVertPos );
+   }
+}; // ScrollBoxEventDispatcher
+
+#undef sender
+#undef receiver
+#undef handlers
+
+// ----------------------------------------------------------------------------
+
+#define INIT_EVENT_HANDLERS()    \
+   __PCL_NO_ALIAS_HANDLERS;      \
+   if ( m_handlers == nullptr )  \
+      m_handlers = new EventHandlers
+
+void ScrollBox::OnHorizontalScrollPosUpdated( pos_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->ScrollBox->SetScrollBoxHorizontalPosUpdatedEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? ScrollBoxEventDispatcher::HorizontalScrollPosUpdated : 0 ) == api_false )
+      throw APIFunctionError( "SetScrollBoxHorizontalPosUpdatedEventRoutine" );
+   m_handlers->onHorizontalScrollPosUpdated = f;
+}
+
+void ScrollBox::OnVerticalScrollPosUpdated( pos_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->ScrollBox->SetScrollBoxVerticalPosUpdatedEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? ScrollBoxEventDispatcher::VerticalScrollPosUpdated : 0 ) == api_false )
+      throw APIFunctionError( "SetScrollBoxVerticalPosUpdatedEventRoutine" );
+   m_handlers->onVerticalScrollPosUpdated = f;
+}
+
+void ScrollBox::OnHorizontalScrollRangeUpdated( range_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->ScrollBox->SetScrollBoxHorizontalRangeUpdatedEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? ScrollBoxEventDispatcher::HorizontalScrollRangeUpdated : 0 ) == api_false )
+      throw APIFunctionError( "SetScrollBoxHorizontalRangeUpdatedEventRoutine" );
+   m_handlers->onHorizontalScrollRangeUpdated = f;
+}
+
+void ScrollBox::OnVerticalScrollRangeUpdated( range_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->ScrollBox->SetScrollBoxVerticalRangeUpdatedEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? ScrollBoxEventDispatcher::VerticalScrollRangeUpdated : 0 ) == api_false )
+      throw APIFunctionError( "SetScrollBoxVerticalRangeUpdatedEventRoutine" );
+   m_handlers->onVerticalScrollRangeUpdated = f;
+}
+
+#undef INIT_EVENT_HANDLERS
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/ScrollBox.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ScrollBox.cpp - Released 2015/07/30 17:15:31 UTC

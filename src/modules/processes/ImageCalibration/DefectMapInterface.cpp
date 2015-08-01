@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard ImageCalibration Process Module Version 01.03.00.0196
-// ****************************************************************************
-// DefectMapInterface.cpp - Released 2014/11/14 17:19:21 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard ImageCalibration Process Module Version 01.03.00.0215
+// ----------------------------------------------------------------------------
+// DefectMapInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,17 +48,17 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "DefectMapInterface.h"
 #include "DefectMapProcess.h"
 
 #include <pcl/ComboBox.h>
-#include <pcl/Dialog.h>
 #include <pcl/ErrorHandler.h>
 #include <pcl/ImageWindow.h>
 #include <pcl/PushButton.h>
 #include <pcl/ViewList.h>
+#include <pcl/ViewSelectionDialog.h>
 
 namespace pcl
 {
@@ -66,76 +70,6 @@ DefectMapInterface* TheDefectMapInterface = 0;
 // ----------------------------------------------------------------------------
 
 #include "DefectMapIcon.xpm"
-
-// ----------------------------------------------------------------------------
-
-class MapIdSelectionDialog : public Dialog
-{
-public:
-
-   MapIdSelectionDialog( const String& id ) : mapId( id )
-   {
-      AllViews_ViewList.Regenerate( true, true, true );
-      AllViews_ViewList.SetMinWidth( Font().Width( String( 'M', 40 ) ) );
-      AllViews_ViewList.OnViewSelected( (ViewList::view_event_handler)&MapIdSelectionDialog::__ViewList_ViewSelected, *this );
-
-      OK_PushButton.SetText( "OK" );
-      OK_PushButton.SetDefault();
-      OK_PushButton.SetCursor( StdCursor::Checkmark );
-      OK_PushButton.OnClick( (Button::click_event_handler)&MapIdSelectionDialog::__Button_Click, *this );
-
-      Cancel_PushButton.SetText( "Cancel" );
-      Cancel_PushButton.SetCursor( StdCursor::Crossmark );
-      Cancel_PushButton.OnClick( (Button::click_event_handler)&MapIdSelectionDialog::__Button_Click, *this );
-
-      Buttons_Sizer.SetSpacing( 8 );
-      Buttons_Sizer.AddStretch();
-      Buttons_Sizer.Add( OK_PushButton );
-      Buttons_Sizer.Add( Cancel_PushButton );
-
-      Global_Sizer.SetMargin( 8 );
-      Global_Sizer.Add( AllViews_ViewList );
-      Global_Sizer.AddSpacing( 4 );
-      Global_Sizer.Add( Buttons_Sizer );
-
-      SetSizer( Global_Sizer );
-      AdjustToContents();
-      SetFixedHeight();
-
-      SetWindowTitle( "Select Defect Map Image" );
-   }
-
-   String MapId() const
-   {
-      return mapId;
-   }
-
-private:
-
-   String mapId;
-
-   VerticalSizer  Global_Sizer;
-      ViewList          AllViews_ViewList;
-      HorizontalSizer   Buttons_Sizer;
-         PushButton        OK_PushButton;
-         PushButton        Cancel_PushButton;
-
-   void __ViewList_ViewSelected( ViewList& sender, View& view )
-   {
-      if ( view.IsNull() )
-         mapId.Clear();
-      else
-         mapId = view.FullId();
-   }
-
-   void __Button_Click( Button& sender, bool checked )
-   {
-      if ( sender == OK_PushButton )
-         Ok();
-      else
-         Cancel();
-   }
-};
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -252,10 +186,11 @@ void DefectMapInterface::__MapImage_EditCompleted( Edit& sender )
 
 void DefectMapInterface::__MapImage_Click( Button& sender, bool checked )
 {
-   MapIdSelectionDialog d( instance.mapId );
+   ViewSelectionDialog d( instance.mapId );
+   d.SetWindowTitle( "Select Defect Map Image" );
    if ( d.Execute() )
    {
-      instance.mapId = d.MapId();
+      instance.mapId = d.Id();
       UpdateControls();
    }
 }
@@ -305,8 +240,8 @@ DefectMapInterface::GUIData::GUIData( DefectMapInterface& w )
    MapImage_Edit.SetMinWidth( editWidth1 );
    MapImage_Edit.OnEditCompleted( (Edit::edit_event_handler)&DefectMapInterface::__MapImage_EditCompleted, w );
 
-   MapImage_ToolButton.SetIcon( Bitmap( ":/icons/select-view.png" ) );
-   MapImage_ToolButton.SetFixedSize( 19, 19 );
+   MapImage_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
+   MapImage_ToolButton.SetScaledFixedSize( 19, 19 );
    MapImage_ToolButton.SetToolTip( "<p>Select the defect map image</p>" );
    MapImage_ToolButton.OnClick( (Button::click_event_handler)&DefectMapInterface::__MapImage_Click, w );
 
@@ -390,5 +325,5 @@ DefectMapInterface::GUIData::GUIData( DefectMapInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF DefectMapInterface.cpp - Released 2014/11/14 17:19:21 UTC
+// ----------------------------------------------------------------------------
+// EOF DefectMapInterface.cpp - Released 2015/07/31 11:49:48 UTC

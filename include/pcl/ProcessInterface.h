@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ProcessInterface.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ProcessInterface.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_ProcessInterface_h
 #define __PCL_ProcessInterface_h
@@ -762,7 +765,7 @@ public:
     */
    size_type LaunchCount() const
    {
-      return launchCount;
+      return m_launchCount;
    }
 
    /*!
@@ -918,7 +921,7 @@ public:
     */
    virtual bool ValidateProcess( const ProcessImplementation& instance, String& whyNot ) const
    {
-      whyNot.Empty();
+      whyNot.Clear();
       return false;  // Force a reimplementation if RequiresInstanceValidation() = true
    }
 
@@ -1854,103 +1857,6 @@ public:
    }
 
    /*!
-    * \defgroup hist_notifications Histogram and Statistics Notification
-    *                              Functions
-    *
-    * The PixInsight core application calls histogram and statistics
-    * notification functions to keep interfaces informed about changes and
-    * events involving shared histogram and statistical data of views.
-    *
-    * For a process interface to receive histogram and statistics
-    * notifications, the corresponding ProcessInterface subclass must
-    * reimplement ProcessInterface::WantsHistogramNotifications() and
-    * ProcessInterface::WantsStatisticsNotifications(), respectively, to
-    * return true.
-    */
-
-   /*!
-    * Returns true if this interface will receive histogram notifications.
-    *
-    * \note The default implementation of this function returns false, so
-    * interfaces don't receive histogram notifications by default.
-    *
-    * \sa \ref hist_notifications "Histogram and Statistics Notification Functions"
-    */
-   virtual bool WantsHistogramNotifications() const
-   {
-      return false;
-   }
-
-   /*!
-    * Notification sent when the histogram functions of a view have been
-    * calculated.
-    *
-    * \param v    Reference to a view whose histograms have been calculated and
-    *             are now available.
-    *
-    * \ingroup hist_notifications
-    * \sa \ref hist_notifications "Histogram and Statistics Notification Functions"
-    */
-   virtual void HistogramsUpdated( const View& v )
-   {
-   }
-
-   /*!
-    * Notification sent when the histogram functions of a view have been
-    * destroyed.
-    *
-    * \param v    Reference to a view whose histograms have been destroyed and
-    *             are no longer available.
-    *
-    * \ingroup hist_notifications
-    * \sa \ref hist_notifications "Histogram and Statistics Notification Functions"
-    */
-   virtual void HistogramsDestroyed( const View& v )
-   {
-   }
-
-   /*!
-    * Returns true if this interface will receive statistics notifications.
-    *
-    * \note The default implementation of this function returns false, so
-    * interfaces don't receive statistics notifications by default.
-    *
-    * \sa \ref hist_notifications "Histogram and Statistics Notification Functions"
-    */
-   virtual bool WantsStatisticsNotifications() const
-   {
-      return false;
-   }
-
-   /*!
-    * Notification sent when the statistical data of a view have been
-    * calculated.
-    *
-    * \param v    Reference to a view whose statistics have been calculated and
-    *             are now available.
-    *
-    * \ingroup hist_notifications
-    * \sa \ref hist_notifications "Histogram and Statistics Notification Functions"
-    */
-   virtual void StatisticsUpdated( const View& v )
-   {
-   }
-
-   /*!
-    * Notification sent when the statistical data of a view have been
-    * destroyed.
-    *
-    * \param v    Reference to a view whose statistics have been destroyed and
-    *             are no longer available.
-    *
-    * \ingroup hist_notifications
-    * \sa \ref hist_notifications "Histogram and Statistics Notification Functions"
-    */
-   virtual void StatisticsDestroyed( const View& v )
-   {
-   }
-
-   /*!
     * \defgroup view_property_notifications View Property Notification Functions
     *
     * The PixInsight core application calls view property notification
@@ -2481,7 +2387,7 @@ public:
     */
    bool IsAutoSaveGeometryEnabled() const
    {
-      return autoSaveGeometry;
+      return m_autoSaveGeometry;
    }
 
    /*!
@@ -2493,7 +2399,7 @@ public:
     */
    void EnableAutoSaveGeometry( bool enable = true )
    {
-      autoSaveGeometry = enable;
+      m_autoSaveGeometry = enable;
    }
 
    /*!
@@ -2549,12 +2455,15 @@ public:
 
 protected:
 
+   /*!
+    * \internal
+    */
    ProcessInterface( int );
 
 private:
 
-   size_type launchCount;
-   bool autoSaveGeometry;
+   size_type m_launchCount;
+   bool      m_autoSaveGeometry : 1;
 
    virtual void PerformAPIDefinitions() const;
 
@@ -2569,5 +2478,5 @@ private:
 
 #endif   // __PCL_ProcessInterface_h
 
-// ****************************************************************************
-// EOF pcl/ProcessInterface.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ProcessInterface.h - Released 2015/07/30 17:15:18 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ImageOptions.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ImageOptions.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_ImageOptions_h
 #define __PCL_ImageOptions_h
@@ -99,17 +102,19 @@ class PCL_CLASS ImageOptions
 {
 public:
 
-   uint8    bitsPerSample      :  8; //!< Number of bits per sample: 8, 16, 32 or 64. The default value is 16.
-   bool     ieeefpSampleFormat :  1; //!< Sample type: IEEE 754 floating point (true) or integers (false). The default value is false.
-   bool     complexSample      :  1; //!< Sample type: Complex (true) or real (false) samples. The default value is false.
-   bool     signedIntegers     :  1; //!< Integer sample values are signed (true) or unsigned (false).
-   bool     metricResolution   :  1; //!< Resolution units: centimeter (true) or inch (false). The default value is false.
-   bool     readNormalized     :  1; //!< Normalize floating-point sample values after reading. The default value is true.
-   bool     embedICCProfile    :  1; //!< Embed an ICC profile (when available). The default value is true.
-   bool     embedMetadata      :  1; //!< Embed metadata (when available). The default value is true.
-   bool     embedThumbnail     :  1; //!< Embed thumbnail images (when available). The default value is false.
-   bool     embedProperties    :  1; //!< Embed data properties (when available). The default value is true.
-   int      __rsv__            : 15; // Reserved for future extensions; must be zero.
+   uint8    bitsPerSample         :  8; //!< Number of bits per sample: 8, 16, 32 or 64. The default value is 16.
+   bool     ieeefpSampleFormat    :  1; //!< Sample type: IEEE 754 floating point (true) or integers (false). The default value is false.
+   bool     complexSample         :  1; //!< Sample type: Complex (true) or real (false) samples. The default value is false.
+   bool     signedIntegers        :  1; //!< Integer sample values are signed (true) or unsigned (false).
+   bool     metricResolution      :  1; //!< Resolution units: centimeter (true) or inch (false). The default value is false.
+   bool     readNormalized        :  1; //!< Normalize floating-point sample values after reading. The default value is true.
+   bool     embedICCProfile       :  1; //!< Embed an ICC profile (when available). The default value is true.
+   bool     embedThumbnail        :  1; //!< Embed thumbnail images (when available). The default value is false.
+   bool     embedProperties       :  1; //!< Embed data properties (when available). The default value is true.
+   bool     embedRGBWS            :  1; //!< Embed RGB working space parameters.
+   bool     embedDisplayFunction  :  1; //!< Embed display function (aka STF) parameters.
+   bool     embedColorFilterArray :  1; //!< Embed color filter array (CFA) description.
+   int      __rsv__               : 13; // Reserved for future extensions; must be zero.
 
    double   lowerRange;    //!< Lower limit to normalize read floating-point samples. The default value is 0.
    double   upperRange;    //!< Upper limit to normalize read floating-point samples. The default value is 1.
@@ -134,63 +139,40 @@ public:
    /*!
     * Copy constructor.
     */
-   ImageOptions( const ImageOptions& x )
-   {
-      (void)operator =( x );
-   }
+   ImageOptions( const ImageOptions& ) = default;
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Copy assignment operator. Returns a reference to this object.
     */
-   ImageOptions& operator =( const ImageOptions& x )
-   {
-      bitsPerSample      = x.bitsPerSample;
-      ieeefpSampleFormat = x.ieeefpSampleFormat;
-      complexSample      = x.complexSample;
-      signedIntegers     = x.signedIntegers;
-      metricResolution   = x.metricResolution;
-      readNormalized     = x.readNormalized;
-      embedICCProfile    = x.embedICCProfile;
-      embedMetadata      = x.embedMetadata;
-      embedThumbnail     = x.embedThumbnail;
-      embedProperties    = x.embedProperties;
-      lowerRange         = x.lowerRange;
-      upperRange         = x.upperRange;
-      xResolution        = x.xResolution;
-      yResolution        = x.yResolution;
-      isoSpeed           = x.isoSpeed;
-      exposure           = x.exposure;
-      aperture           = x.aperture;
-      focalLength        = x.focalLength;
-      cfaType            = x.cfaType;
-      return *this;
-   }
+   ImageOptions& operator =( const ImageOptions& ) = default;
 
    /*!
     * Initializes all data members to default values.
     */
    void Reset()
    {
-      bitsPerSample      = 16;
-      ieeefpSampleFormat = false;
-      complexSample      = false;
-      signedIntegers     = false;
-      metricResolution   = false;
-      readNormalized     = true;
-      embedICCProfile    = true;
-      embedMetadata      = true;
-      embedThumbnail     = false;
-      embedProperties    = true;
-      __rsv__            = 0;
-      lowerRange         = 0;
-      upperRange         = 1;
-      xResolution        = 72;
-      yResolution        = 72;
-      isoSpeed           = 0;
-      exposure           = 0;
-      aperture           = 0;
-      focalLength        = 0;
-      cfaType            = CFAType::None;
+      bitsPerSample         = 16;
+      ieeefpSampleFormat    = false;
+      complexSample         = false;
+      signedIntegers        = false;
+      metricResolution      = false;
+      readNormalized        = true;
+      embedICCProfile       = true;
+      embedThumbnail        = false;
+      embedProperties       = true;
+      embedRGBWS            = true;
+      embedDisplayFunction  = true;
+      embedColorFilterArray = true;
+      __rsv__               = 0;
+      lowerRange            = 0;
+      upperRange            = 1;
+      xResolution           = 72;
+      yResolution           = 72;
+      isoSpeed              = 0;
+      exposure              = 0;
+      aperture              = 0;
+      focalLength           = 0;
+      cfaType               = CFAType::None;
    }
 };
 
@@ -200,5 +182,5 @@ public:
 
 #endif   // __PCL_ImageOptions_h
 
-// ****************************************************************************
-// EOF pcl/ImageOptions.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ImageOptions.h - Released 2015/07/30 17:15:18 UTC

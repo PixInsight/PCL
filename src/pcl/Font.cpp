@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Font.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Font.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/AutoLock.h>
 #include <pcl/Font.h>
@@ -58,36 +61,28 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 Font::Font( family f, double ptSize ) :
-UIObject( (*API->Font->CreateFontByFamily)( ModuleHandle(), f, ptSize ) )
+   UIObject( (*API->Font->CreateFontByFamily)( ModuleHandle(), f, ptSize ) )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateFontByFamily" );
 }
 
-// ----------------------------------------------------------------------------
-
 Font::Font( const String& face, double ptSize ) :
-UIObject( (*API->Font->CreateFontByFace)( ModuleHandle(), face.c_str(), ptSize ) )
+   UIObject( (*API->Font->CreateFontByFace)( ModuleHandle(), face.c_str(), ptSize ) )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateFontByFace" );
-}
-
-// ----------------------------------------------------------------------------
-
-Font::Font( void* h ) : UIObject( h )
-{
 }
 
 // ----------------------------------------------------------------------------
 
 Font& Font::Null()
 {
-   static Font* nullFont = 0;
+   static Font* nullFont = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullFont == 0 )
-      nullFont = new Font( reinterpret_cast<void*>( 0 ) );
+   if ( nullFont == nullptr )
+      nullFont = new Font( nullptr );
    return *nullFont;
 }
 
@@ -100,16 +95,14 @@ String Font::Face() const
 
    size_type len = 0;
    (*API->Font->GetFontFace)( handle, 0, &len );
-
    if ( len == 0 )
       throw APIFunctionError( "GetFontFace" );
 
    String face;
-   face.Reserve( len );
-
+   face.SetLength( len );
    if ( (*API->Font->GetFontFace)( handle, face.c_str(), &len ) == api_false )
       throw APIFunctionError( "GetFontFace" );
-
+   face.ResizeToNullTerminated();
    return face;
 }
 
@@ -368,6 +361,7 @@ Rect Font::TightBoundingRect( const String& s ) const
 class InternalFontEnumerator
 {
 public:
+
    static api_bool api_func FontCallback( const char16_type* item, void* ptrToStringList )
    {
       reinterpret_cast<StringList*>( ptrToStringList )->Add( String( item ) );
@@ -584,5 +578,5 @@ String PCL_FUNC FamilyToFace( value_type family )
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/Font.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Font.cpp - Released 2015/07/30 17:15:31 UTC

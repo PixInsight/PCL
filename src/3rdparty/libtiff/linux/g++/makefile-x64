@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.93
-# Copyright (C) 2009-2014 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.95
+# Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Fri, 14 Nov 2014 17:27:03 GMT
+# Automatically generated on Thu, 30 Jul 2015 17:10:23 GMT
 # Project id ...... libtiff
 # Project type .... DynamicLibrary
 # Platform ........ Linux/g++
@@ -170,7 +170,7 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/liblibtiff-pxi.so: $(OBJ_FILES)
-	g++-4.8.2 -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/liblibtiff-pxi.so $(OBJ_FILES) -ljpeg-pxi -lzlib-pxi
+	g++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/liblibtiff-pxi.so $(OBJ_FILES) -ljpeg-pxi -lzlib-pxi
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean
@@ -182,9 +182,9 @@ post-build:
 	cp $(OBJ_DIR)/liblibtiff-pxi.so $(PCLBINDIR64)
 
 ./x64/Release/%.o: ../../%.cxx
-	g++-4.8.2 -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -D"ZIP_SUPPORT" -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/jpeg" -I"$(PCLSRCDIR)/zlib" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffunction-sections -fdata-sections -fomit-frame-pointer -ffast-math -ftree-vectorize -flto -fwhole-program -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	g++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -D"ZIP_SUPPORT" -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/jpeg" -I"$(PCLSRCDIR)/zlib" -mtune=generic -mssse3 -O3 -minline-all-stringops -ffunction-sections -fdata-sections -fomit-frame-pointer -ffast-math -ftree-vectorize --param vect-max-version-for-alias-checks=1000 --param vect-max-version-for-alignment-checks=1000 -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 ./x64/Release/%.o: ../../%.c
-	gcc-4.8.2 -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -D"ZIP_SUPPORT" -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/jpeg" -I"$(PCLSRCDIR)/zlib" -O2 -mtune=generic -mfpmath=sse -msse3 -minline-all-stringops -ffunction-sections -fdata-sections -fomit-frame-pointer -ffast-math -ftree-vectorize -flto -fwhole-program -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	gcc -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -D"ZIP_SUPPORT" -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/jpeg" -I"$(PCLSRCDIR)/zlib" -mtune=generic -mssse3 -O3 -minline-all-stringops -ffunction-sections -fdata-sections -fomit-frame-pointer -ffast-math -ftree-vectorize --param vect-max-version-for-alias-checks=1000 --param vect-max-version-for-alignment-checks=1000 -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

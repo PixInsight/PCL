@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/FFT1D.h - Released 2014/11/14 17:16:33 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/FFT1D.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_FFT1D_h
 #define __PCL_FFT1D_h
@@ -58,7 +61,7 @@
  * KISS FFT LICENSE INFORMATION
  * ============================
  *
- * Copyright (c) 2003-2009 Mark Borgerding
+ * Copyright (c) 2003-2013 Mark Borgerding
  *
  * All rights reserved.
  *
@@ -198,7 +201,8 @@ public:
    /*!
     * Constructs an %AbstractFFT object of the specified \a length.
     */
-   AbstractFFT( int length ) : m_length( length ), m_handle( 0 ), m_handleInv( 0 ), m_dft()
+   AbstractFFT( int length ) :
+      m_length( length ), m_handle( 0 ), m_handleInv( 0 ), m_dft()
    {
    }
 
@@ -300,13 +304,13 @@ public:
 
 private:
 
-   int           m_length;
+   int m_length;
 
 protected:
 
-   mutable void* m_handle;      // Opaque pointers to internal control structures
-   mutable void* m_handleInv;
-   transform     m_dft;         // DFT of complex or real data
+   mutable void*     m_handle;      // Opaque pointers to internal control structures
+   mutable void*     m_handleInv;
+           transform m_dft;         // DFT of complex or real data
 };
 
 // ----------------------------------------------------------------------------
@@ -835,5 +839,5 @@ typedef FRealFFT                    RealFFT;
 
 #endif   // __PCL_FFT1D_h
 
-// ****************************************************************************
-// EOF pcl/FFT1D.h - Released 2014/11/14 17:16:33 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/FFT1D.h - Released 2015/07/30 17:15:18 UTC

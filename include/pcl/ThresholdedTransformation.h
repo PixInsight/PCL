@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ThresholdedTransformation.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ThresholdedTransformation.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_ThresholdedTransformation_h
 #define __PCL_ThresholdedTransformation_h
@@ -85,21 +88,21 @@ class PCL_CLASS ThresholdedTransformation : public virtual ImageTransformation
 public:
 
    /*!
-    * Constructs a %ThresholdedTransformation object with the specified low and
-    * high threshold values, \a th0 and \a th1 respectively, in the normalized
-    * real range [0,1].
+    * Constructs a %ThresholdedTransformation object with the specified \a low
+    * and \a high threshold values in the normalized real range [0,1].
     */
-   ThresholdedTransformation( double t0 = 0, double t1 = 0 ) :
-   ImageTransformation(), th0( t0 ), th1( t1 )
+   ThresholdedTransformation( double low = 0, double high = 0 ) :
+      ImageTransformation(),
+      m_lowThreshold( low ), m_highThreshold( high )
    {
    }
 
    /*!
-    * Constructs a %ThresholdedTransformation object as a copy of an existing
-    * instance.
+    * Copy constructor.
     */
    ThresholdedTransformation( const ThresholdedTransformation& x ) :
-   ImageTransformation( x ), th0( x.th0 ), th1( x.th1 )
+      ImageTransformation( x ),
+      m_lowThreshold( x.m_lowThreshold ), m_highThreshold( x.m_highThreshold )
    {
    }
 
@@ -111,16 +114,6 @@ public:
    }
 
    /*!
-    * Assigns an existing %ThresholdedTransformation instance to this object.
-    * Returns a reference to this object.
-    */
-   ThresholdedTransformation& operator =( const ThresholdedTransformation& x )
-   {
-      th0 = x.th0; th1 = x.th1;
-      return *this;
-   }
-
-   /*!
     * Returns true if this transformation is currently thresholded.
     *
     * The transformation is thresholded when either threshold (low or high) is
@@ -129,7 +122,7 @@ public:
     */
    bool IsThresholded() const
    {
-      return 1 + th0 != 1 || 1 + th1 != 1;
+      return 1 + m_lowThreshold != 1 || 1 + m_highThreshold != 1;
    }
 
    /*!
@@ -137,7 +130,7 @@ public:
     */
    double LowThreshold() const
    {
-      return th0;
+      return m_lowThreshold;
    }
 
    /*!
@@ -146,7 +139,7 @@ public:
     */
    void SetLowThreshold( double t )
    {
-      th0 = t;
+      m_lowThreshold = t;
    }
 
    /*!
@@ -154,7 +147,7 @@ public:
     */
    double HighThreshold() const
    {
-      return th1;
+      return m_highThreshold;
    }
 
    /*!
@@ -163,16 +156,16 @@ public:
     */
    void SetHighThreshold( double t )
    {
-      th1 = t;
+      m_highThreshold = t;
    }
 
 private:
 
    /*
-    * Low and high threshold values.
+    * Normalized threshold values.
     */
-   double th0;
-   double th1;
+   double m_lowThreshold;
+   double m_highThreshold;
 };
 
 // ----------------------------------------------------------------------------
@@ -181,5 +174,5 @@ private:
 
 #endif   // __PCL_ThresholdedTransformation_h
 
-// ****************************************************************************
-// EOF pcl/ThresholdedTransformation.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ThresholdedTransformation.h - Released 2015/07/30 17:15:18 UTC

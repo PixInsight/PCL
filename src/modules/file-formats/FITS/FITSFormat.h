@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard FITS File Format Module Version 01.01.00.0282
-// ****************************************************************************
-// FITSFormat.h - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard FITS File Format Module Version 01.01.02.0306
+// ----------------------------------------------------------------------------
+// FITSFormat.h - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __FITSFormat_h
 #define __FITSFormat_h
@@ -85,7 +89,6 @@ public:
    virtual bool CanStoreResolution() const;
    virtual bool CanStoreKeywords() const;
    virtual bool CanStoreICCProfiles() const;
-   virtual bool CanStoreMetadata() const;
    virtual bool CanStoreThumbnails() const;
    virtual bool CanStoreProperties() const;
    virtual bool SupportsMultipleImages() const;
@@ -137,16 +140,10 @@ public:
 
    struct OutOfRangePolicyOptions
    {
-      double                lowerRange;
-      double                upperRange;
-      out_of_range_policy   outOfRangePolicy;
-      out_of_range_fix_mode outOfRangeFixMode;
-
-      OutOfRangePolicyOptions() :
-      lowerRange( 0 ), upperRange( 1 ),
-      outOfRangePolicy( OutOfRangePolicy_Default ), outOfRangeFixMode( OutOfRangeFix_Default )
-      {
-      }
+      double                lowerRange        = 0;
+      double                upperRange        = 1;
+      out_of_range_policy   outOfRangePolicy  = OutOfRangePolicy_Default;
+      out_of_range_fix_mode outOfRangeFixMode = OutOfRangeFix_Default;
    };
 
    static OutOfRangePolicyOptions DefaultOutOfRangePolicyOptions();
@@ -154,22 +151,12 @@ public:
    // Overridden embedding options.
    struct EmbeddingOverrides
    {
-      bool overrideICCProfileEmbedding;
-      bool embedICCProfiles;
-      bool overrideMetadataEmbedding;
-      bool embedMetadata;
-      bool overrideThumbnailEmbedding;
-      bool embedThumbnails;
-      bool overridePropertyEmbedding;
-      bool embedProperties;
-
-      EmbeddingOverrides() :
-      overrideICCProfileEmbedding( false ), embedICCProfiles( false ),
-      overrideMetadataEmbedding( false ), embedMetadata( false ),
-      overrideThumbnailEmbedding( false ), embedThumbnails( false ),
-      overridePropertyEmbedding( false ), embedProperties( true )
-      {
-      }
+      bool overrideICCProfileEmbedding = false;
+      bool embedICCProfiles            = false;
+      bool overrideThumbnailEmbedding  = false;
+      bool embedThumbnails             = false;
+      bool overridePropertyEmbedding   = false;
+      bool embedProperties             = true;
    };
 
    static EmbeddingOverrides DefaultEmbeddingOverrides();
@@ -181,5 +168,5 @@ public:
 
 #endif   // __FITSFormat_h
 
-// ****************************************************************************
-// EOF FITSFormat.h - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF FITSFormat.h - Released 2015/07/31 11:49:40 UTC

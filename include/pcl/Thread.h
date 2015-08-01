@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Thread.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Thread.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Thread_h
 #define __PCL_Thread_h
@@ -61,10 +64,6 @@
 
 #ifndef __PCL_String_h
 #include <pcl/String.h>
-#endif
-
-#ifndef __PCL_PArray_h
-#include <pcl/PArray.h>
 #endif
 
 namespace pcl
@@ -337,31 +336,31 @@ public:
     * conditions is met:
     *
     * \li This thread terminates execution, or this thread is not running.
-    * \li The specified time interval \a s in seconds has elapsed.
+    * \li The specified time interval \a ms in milliseconds has elapsed.
     *
     * This member function returns true if this thread has finished execution
-    * before the specified time \a s in seconds has elapsed. It also returns
-    * true if this thread is not running.
+    * before the specified time \a ms in milliseconds has elapsed. It also
+    * returns true if this thread is not running.
     *
     * \note Unlike Wait(), this function cannot crash the calling thread if
-    * this thread is crashed, unless a huge amount of time in seconds is
-    * specified as the function argument.
+    * this thread is crashed, unless a huge amount of time is specified as the
+    * function argument.
     */
-   bool Wait( double s );
+   bool Wait( unsigned ms );
 
    /*!
-    * Suspends execution of this thread during the specified time interval \a s
-    * in seconds.
+    * Suspends execution of this thread during the specified time interval
+    * \a ms in milliseconds.
     */
-   void Sleep( double s );
+   void Sleep( unsigned ms );
 
-   /*!
+   /*
     * Returns a reference to the current thread (the thread from which this
     * member function is invoked), or Thread::Null() if the current thread is
     * either (a) a thread not being controlled by the PixInsight API, or (b) a
     * thread that has been created by another module.
-    */
    static Thread& CurrentThread();
+    */
 
    /*!
     * This member function returns true if and only if it is called from the
@@ -634,13 +633,13 @@ private:
 // ----------------------------------------------------------------------------
 
 /*!
- * Suspends the calling thread from execution until the specified time \a s in
- * seconds has elapsed, or until a signal is delivered to the calling thread
- * that terminates the process or causes activation of a signal-catching
+ * Suspends the calling thread from execution until the specified time \a ms in
+ * milliseconds has elapsed, or until a signal is delivered to the calling
+ * thread that terminates the process or causes activation of a signal-catching
  * routine.
  * \ingroup thread_support
  */
-void PCL_FUNC Sleep( double s );
+void PCL_FUNC Sleep( unsigned ms );
 
 // ----------------------------------------------------------------------------
 
@@ -648,5 +647,5 @@ void PCL_FUNC Sleep( double s );
 
 #endif   // __PCL_Thread_h
 
-// ****************************************************************************
-// EOF pcl/Thread.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Thread.h - Released 2015/07/30 17:15:18 UTC

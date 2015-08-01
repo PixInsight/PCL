@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Fourier Process Module Version 01.00.04.0124
-// ****************************************************************************
-// FourierTransformInterface.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Fourier Process Module Version 01.00.04.0143
+// ----------------------------------------------------------------------------
+// FourierTransformInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Fourier PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "FourierTransformInterface.h"
 #include "FourierTransformProcess.h"
@@ -128,7 +132,7 @@ bool FourierTransformInterface::ValidateProcess( const ProcessImplementation& p,
       return false;
    }
 
-   whyNot.Empty();
+   whyNot.Clear();
    return true;
 }
 
@@ -188,7 +192,7 @@ FourierTransformInterface::GUIData::GUIData( FourierTransformInterface& w )
    Global_Sizer.Add( Radial_CheckBox );
 
    w.SetSizer( Global_Sizer );
-   w.SetMinWidth( 250 );
+   w.SetScaledMinWidth( 250 );
    w.SetFixedSize();
    w.AdjustToContents();
 }
@@ -197,5 +201,5 @@ FourierTransformInterface::GUIData::GUIData( FourierTransformInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF FourierTransformInterface.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF FourierTransformInterface.cpp - Released 2015/07/31 11:49:48 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Button.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Button.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/Button.h>
 
@@ -56,116 +59,19 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-#define sender    (reinterpret_cast<Button*>( hSender ))
-#define receiver  (reinterpret_cast<Control*>( hReceiver ))
-
-class ButtonEventDispatcher
-{
-public:
-
-   static void api_func Click( control_handle hSender, control_handle hReceiver, api_bool checked )
-   {
-      if ( sender->onClick != 0 )
-         (receiver->*sender->onClick)( *sender, checked != api_false );
-   }
-
-   static void api_func Press( control_handle hSender, control_handle hReceiver )
-   {
-      if ( sender->onPress != 0 )
-         (receiver->*sender->onPress)( *sender );
-   }
-
-   static void api_func Release( control_handle hSender, control_handle hReceiver )
-   {
-      if ( sender->onRelease != 0 )
-         (receiver->*sender->onRelease)( *sender );
-   }
-
-   static void api_func Check( control_handle hSender, control_handle hReceiver, int32 state )
-   {
-      if ( sender->onCheck != 0 )
-         (receiver->*sender->onCheck)( *sender, Button::check_state( state ) );
-   }
-}; // ButtonEventDispatcher
-
-#undef sender
-#undef receiver
-
-// ----------------------------------------------------------------------------
-
-Button::Button( void* h ) : Control( h ),
-onClick( 0 ),
-onPress( 0 ),
-onRelease( 0 ),
-onCheck( 0 )
-{
-}
-
-// ----------------------------------------------------------------------------
-
-void Button::OnClick( click_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onClick = 0;
-   if ( (*API->Button->SetButtonClickEventRoutine)( handle, &receiver,
-            (f != 0) ? ButtonEventDispatcher::Click : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetButtonClickEventRoutine" );
-   }
-   onClick = f;
-}
-
-void Button::OnPress( press_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onPress = 0;
-   if ( (*API->Button->SetButtonPressEventRoutine)( handle, &receiver,
-            (f != 0) ? ButtonEventDispatcher::Press : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetButtonPressEventRoutine" );
-   }
-   onPress = f;
-}
-
-void Button::OnRelease( press_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onRelease = 0;
-   if ( (*API->Button->SetButtonReleaseEventRoutine)( handle, &receiver,
-            (f != 0) ? ButtonEventDispatcher::Release : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetButtonReleaseEventRoutine" );
-   }
-   onRelease = f;
-}
-
-void Button::OnCheck( check_event_handler f, Control& receiver )
-{
-   __PCL_NO_ALIAS_HANDLER;
-   onCheck = 0;
-   if ( (*API->Button->SetButtonCheckEventRoutine)( handle, &receiver,
-            (f != 0) ? ButtonEventDispatcher::Check : 0 ) == api_false )
-   {
-      throw APIFunctionError( "SetButtonCheckEventRoutine" );
-   }
-   onCheck = f;
-}
-
-// ----------------------------------------------------------------------------
-
 String Button::Text() const
 {
    size_type len = 0;
    (*API->Button->GetButtonText)( handle, 0, &len );
 
    String text;
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      text.Reserve( len );
+      text.SetLength( len );
       if ( (*API->Button->GetButtonText)( handle, text.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetButtonText" );
+      text.ResizeToNullTerminated();
    }
-
    return text;
 }
 
@@ -185,9 +91,9 @@ Bitmap Button::Icon() const
 
 // ----------------------------------------------------------------------------
 
-void Button::SetIcon( const Bitmap& bmp )
+void Button::SetIcon( const Bitmap& icon )
 {
-   (*API->Button->SetButtonIcon)( handle, bmp.handle );
+   (*API->Button->SetButtonIcon)( handle, icon.handle );
 }
 
 // ----------------------------------------------------------------------------
@@ -248,7 +154,91 @@ void Button::SetState( Button::check_state state )
 
 // ----------------------------------------------------------------------------
 
+#define sender    (reinterpret_cast<Button*>( hSender ))
+#define receiver  (reinterpret_cast<Control*>( hReceiver ))
+#define handlers  sender->m_handlers
+
+class ButtonEventDispatcher
+{
+public:
+
+   static void api_func Click( control_handle hSender, control_handle hReceiver, api_bool checked )
+   {
+      if ( handlers->onClick != nullptr )
+         (receiver->*handlers->onClick)( *sender, checked != api_false );
+   }
+
+   static void api_func Press( control_handle hSender, control_handle hReceiver )
+   {
+      if ( handlers->onPress != nullptr )
+         (receiver->*handlers->onPress)( *sender );
+   }
+
+   static void api_func Release( control_handle hSender, control_handle hReceiver )
+   {
+      if ( handlers->onRelease != nullptr )
+         (receiver->*handlers->onRelease)( *sender );
+   }
+
+   static void api_func Check( control_handle hSender, control_handle hReceiver, int32 state )
+   {
+      if ( handlers->onCheck != nullptr )
+         (receiver->*handlers->onCheck)( *sender, Button::check_state( state ) );
+   }
+}; // ButtonEventDispatcher
+
+#undef sender
+#undef receiver
+#undef handlers
+
+// ----------------------------------------------------------------------------
+
+#define INIT_EVENT_HANDLERS()    \
+   __PCL_NO_ALIAS_HANDLERS;      \
+   if ( m_handlers == nullptr )  \
+      m_handlers = new EventHandlers
+
+void Button::OnClick( click_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->Button->SetButtonClickEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? ButtonEventDispatcher::Click : nullptr ) == api_false )
+      throw APIFunctionError( "SetButtonClickEventRoutine" );
+   m_handlers->onClick = f;
+}
+
+void Button::OnPress( press_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->Button->SetButtonPressEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? ButtonEventDispatcher::Press : nullptr ) == api_false )
+      throw APIFunctionError( "SetButtonPressEventRoutine" );
+   m_handlers->onPress = f;
+}
+
+void Button::OnRelease( press_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->Button->SetButtonReleaseEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? ButtonEventDispatcher::Release : nullptr ) == api_false )
+      throw APIFunctionError( "SetButtonReleaseEventRoutine" );
+   m_handlers->onRelease = f;
+}
+
+void Button::OnCheck( check_event_handler f, Control& receiver )
+{
+   INIT_EVENT_HANDLERS();
+   if ( (*API->Button->SetButtonCheckEventRoutine)( handle, &receiver,
+                  (f != nullptr) ? ButtonEventDispatcher::Check : nullptr ) == api_false )
+      throw APIFunctionError( "SetButtonCheckEventRoutine" );
+   m_handlers->onCheck = f;
+}
+
+#undef INIT_EVENT_HANDLERS
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/Button.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Button.cpp - Released 2015/07/30 17:15:31 UTC

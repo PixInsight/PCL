@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Math.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Math.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Math_h
 #define __PCL_Math_h
@@ -75,10 +78,10 @@
 #include <pcl/Sort.h>
 #endif
 
-#ifndef __stdlib_h
-# include <stdlib.h>
-# ifndef __stdlib_h
-#  define __stdlib_h
+#ifndef __cstdlib
+# include <cstdlib>
+# ifndef __cstdlib
+#  define __cstdlib
 # endif
 #endif
 
@@ -112,6 +115,10 @@
 // MSVC doesn't have sincos() on Windows
 #if !defined( __PCL_MACOSX ) && !defined( __PCL_FREEBSD ) && !defined( __PCL_WINDOWS )
 # define __PCL_HAVE_SINCOS 1
+#endif
+
+#ifdef __PCL_QT_INTERFACE
+#include <QtWidgets/QtWidgets>
 #endif
 
 namespace pcl
@@ -327,29 +334,41 @@ inline long double Abs( long double x )
  */
 inline signed int Abs( signed int x )
 {
-   return (signed int)::abs( x );
+   return ::abs( x );
 }
 
 /*!
  * \ingroup mathematical_functions
  */
+#ifdef __clang__ // turn off warning due to broken cstdlib in Xcode
+_Pragma("clang diagnostic push")
+_Pragma("clang diagnostic ignored \"-Wabsolute-value\"")
+#endif
 inline signed long Abs( signed long x )
 {
-   return (signed long)::abs( x );
+   return ::abs( x );
 }
+#ifdef __clang__
+_Pragma("clang diagnostic pop")
+#endif
 
 /*!
  * \ingroup mathematical_functions
  */
-#ifdef __PCL_WINDOWS
+#if defined( _MSC_VER )
 inline __int64 Abs( __int64 x )
+{
+   return (x < 0) ? -x : +x;
+}
+#elif defined( __clang__ )
+inline signed long long Abs( signed long long x )
 {
    return (x < 0) ? -x : +x;
 }
 #else
 inline signed long long Abs( signed long long x )
 {
-   return (signed long long)::abs( x );
+   return ::abs( x );
 }
 #endif
 
@@ -358,7 +377,7 @@ inline signed long long Abs( signed long long x )
  */
 inline signed short Abs( signed short x )
 {
-   return (signed short)::abs( x );
+   return (signed short)::abs( int( x ) );
 }
 
 /*!
@@ -366,7 +385,7 @@ inline signed short Abs( signed short x )
  */
 inline signed char Abs( signed char x )
 {
-   return (signed char)::abs( x );
+   return (signed char)::abs( int( x ) );
 }
 
 /*!
@@ -374,7 +393,7 @@ inline signed char Abs( signed char x )
  */
 inline wchar_t Abs( wchar_t x )
 {
-   return (wchar_t)::abs( x );
+   return (wchar_t)::abs( int( x ) );
 }
 
 /*!
@@ -494,12 +513,12 @@ template <typename T> inline T ArcTan( T y, T x )
 // ----------------------------------------------------------------------------
 
 /*!
- * Arctangent of y/x, proper quadrant, result in the interval [0,2pi[.
+ * Arctangent of y/x, proper quadrant, result in the interval [0,2pi).
  * \ingroup mathematical_functions
  */
 template <typename T> inline T ArcTan2Pi( T y, T x )
 {
-   register T r = ArcTan( y, x );
+   T r = ArcTan( y, x );
    if ( r < 0 )
       r = static_cast<T>( r + 0.62831853071795864769252867665590058e+01L );
    return r;
@@ -802,7 +821,7 @@ inline long double Pi()
 template <typename T, typename C> inline T Poly( T x, C c, int n )
 {
    PCL_PRECONDITION( n >= 0 )
-   register T y;
+   T y;
    for ( c += n, y = *c; n != 0; --n )
    {
       y *= x;
@@ -1567,8 +1586,8 @@ template <typename T> inline T PowI( T x, int n )
    if ( n == 0 )
       return 1;
 
-   register int i = Abs( n );
-   register T r = x;
+   int i = Abs( n );
+   T r = x;
    if ( i > 1 )
    {
       do
@@ -1710,11 +1729,11 @@ template <typename T> inline T SecRad( T x )
  *
  * \ingroup mathematical_functions
  */
-template <typename T, typename T1, typename T2> inline
-void Rotate( T& x, T& y, T1 sa, T1 ca, T2 xc, T2 yc )
+template <typename T, typename T1, typename T2>
+inline void Rotate( T& x, T& y, T1 sa, T1 ca, T2 xc, T2 yc )
 {
-   register T1 dx = T1( x ) - T1( xc );
-   register T1 dy = T1( y ) - T1( yc );
+   T1 dx = T1( x ) - T1( xc );
+   T1 dy = T1( y ) - T1( yc );
    x = T( T1( xc ) + ca*dx + sa*dy );
    y = T( T1( yc ) - sa*dx + ca*dy );
 }
@@ -1729,11 +1748,11 @@ void Rotate( T& x, T& y, T1 sa, T1 ca, T2 xc, T2 yc )
  *
  * \ingroup mathematical_functions
  */
-template <typename T1, typename T2> inline
-void Rotate( int& x, int& y, T1 sa, T1 ca, T2 xc, T2 yc )
+template <typename T1, typename T2>
+inline void Rotate( int& x, int& y, T1 sa, T1 ca, T2 xc, T2 yc )
 {
-   register T1 dx = T1( x ) - T1( xc );
-   register T1 dy = T1( y ) - T1( yc );
+   T1 dx = T1( x ) - T1( xc );
+   T1 dy = T1( y ) - T1( yc );
    x = RoundI( T1( xc ) + ca*dx + sa*dy );
    y = RoundI( T1( yc ) - sa*dx + ca*dy );
 }
@@ -1748,11 +1767,11 @@ void Rotate( int& x, int& y, T1 sa, T1 ca, T2 xc, T2 yc )
  *
  * \ingroup mathematical_functions
  */
-template <typename T1, typename T2> inline
-void Rotate( long& x, long& y, T1 sa, T1 ca, T2 xc, T2 yc )
+template <typename T1, typename T2>
+inline void Rotate( long& x, long& y, T1 sa, T1 ca, T2 xc, T2 yc )
 {
-   register T1 dx = T1( x ) - T1( xc );
-   register T1 dy = T1( y ) - T1( yc );
+   T1 dx = T1( x ) - T1( xc );
+   T1 dy = T1( y ) - T1( yc );
    x = (long)RoundI( T1( xc ) + ca*dx + sa*dy );
    y = (long)RoundI( T1( yc ) - sa*dx + ca*dy );
 }
@@ -1767,11 +1786,11 @@ void Rotate( long& x, long& y, T1 sa, T1 ca, T2 xc, T2 yc )
  *
  * \ingroup mathematical_functions
  */
-template <typename T1, typename T2> inline
-void Rotate( int64& x, int64& y, T1 sa, T1 ca, T2 xc, T2 yc )
+template <typename T1, typename T2>
+inline void Rotate( int64& x, int64& y, T1 sa, T1 ca, T2 xc, T2 yc )
 {
-   register T1 dx = T1( x ) - T1( xc );
-   register T1 dy = T1( y ) - T1( yc );
+   T1 dx = T1( x ) - T1( xc );
+   T1 dy = T1( y ) - T1( yc );
    x = RoundI64( T1( xc ) + ca*dx + sa*dy );
    y = RoundI64( T1( yc ) - sa*dx + ca*dy );
 }
@@ -1791,8 +1810,8 @@ void Rotate( int64& x, int64& y, T1 sa, T1 ca, T2 xc, T2 yc )
  *
  * \ingroup mathematical_functions
  */
-template <typename T, typename T1, typename T2> inline
-void Rotate( T& x, T& y, T1 a, T2 xc, T2 yc )
+template <typename T, typename T1, typename T2>
+inline void Rotate( T& x, T& y, T1 a, T2 xc, T2 yc )
 {
    T1 sa, ca; SinCos( a, sa, ca ); Rotate( x, y, sa, ca, xc, yc );
 }
@@ -1815,7 +1834,7 @@ void Rotate( T& x, T& y, T1 a, T2 xc, T2 yc )
  *                any integer number.
  *
  * \param dayf    The day fraction. The default value is zero, which computes
- *                the JD at zero hours. Usually in the [0,1[ range but can be
+ *                the JD at zero hours. Usually in the [0,1) range but can be
  *                any real number.
  *
  * This routine, as well as JDToComplexTime(), implement modified versions of
@@ -1854,7 +1873,7 @@ double PCL_FUNC ComplexTimeToJD( int year, int month, int day, double dayf = 0 )
  *                   returned day corresponds to an existing calendar date.
  *
  * \param[out] dayf  On output, this variable receives the day fraction for the
- *                   specified time point, in the [0,1[ range.
+ *                   specified time point, in the [0,1) range.
  *
  * \param jd         The input time point as a Julian day number.
  *
@@ -1872,7 +1891,7 @@ void PCL_FUNC JDToComplexTime( int& year, int& month, int& day, double& dayf, do
  */
 
 /*!
- * Returns the sum of elements in a sequence [i,j[.
+ * Returns the sum of elements in a sequence [i,j).
  *
  * For empty sequences, this function returns zero.
  *
@@ -1894,7 +1913,7 @@ template <typename T> inline double Sum( const T* i, const T* j )
 }
 
 /*!
- * Computes the sum of elements in a sequence [i,j[ using a numerically stable
+ * Computes the sum of elements in a sequence [i,j) using a numerically stable
  * summation algorithm to minimize roundoff error.
  *
  * For empty sequences, this function returns zero.
@@ -1918,41 +1937,8 @@ template <typename T> inline double StableSum( const T* i, const T* j )
    return sum;
 }
 
-/*
- * IMPORTANT NOTE - The routine below is an example of more accurate summation
- *                  implemented with C++11 lambda closures. We still are not
- *                  ready to release a PCL version with C++11 support, but not
- *                  far from it. That will happen during the PCL 2.x cycle.
- */
-
-// #ifdef __PCL_CXX11
-//
-// /*!
-//  * Returns the sum of elements in a sequence [i,j[.
-//  *
-//  * For empty sequences, this function returns zero.
-//  *
-//  * This implementation sums a temporary sorted (in decreasing order of absolute
-//  * value) duplicate of the input set to minimize roundoff errors.
-//  *
-//  * \note This function requires a C++11 compiler and PCL C++11 support enabled.
-//  *
-//  * \ingroup statistical_functions mathematical_functions
-//  */
-// template <typename T> inline double Sum_S( const T* i, const T* j )
-// {
-//    Array<T> v( i, j );
-//    v.Sort( [] ( const T& a, const T& b ) { return Abs( b ) < Abs( a ); }
-//    double sum = 0;
-//    for ( Array<T>::const_iterator i = v.Begin(); i != v.End(); ++i )
-//       sum += double( *i );
-//    return sum;
-// }
-//
-// #endif // __PCL_CXX11
-
 /*!
- * Returns the sum of the absolute values of the elements in a sequence [i,j[.
+ * Returns the sum of the absolute values of the elements in a sequence [i,j).
  *
  * For empty sequences, this function returns zero.
  *
@@ -1971,7 +1957,7 @@ template <typename T> inline double Modulus( const T* i, const T* j )
 }
 
 /*!
- * Computes the sum of the absolute values of the elements in a sequence [i,j[
+ * Computes the sum of the absolute values of the elements in a sequence [i,j)
  * using a numerically stable summation algorithm to minimize roundoff error.
  *
  * For empty sequences, this function returns zero.
@@ -1996,7 +1982,7 @@ template <typename T> inline double StableModulus( const T* i, const T* j )
 }
 
 /*!
- * Returns the sum of the squares of the elements in a sequence [i,j[.
+ * Returns the sum of the squares of the elements in a sequence [i,j).
  *
  * For empty sequences, this function returns zero.
  *
@@ -2015,7 +2001,7 @@ template <typename T> inline double SumOfSquares( const T* i, const T* j )
 }
 
 /*!
- * Computes the sum of the squares of the elements in a sequence [i,j[ using a
+ * Computes the sum of the squares of the elements in a sequence [i,j) using a
  * numerically stable summation algorithm to minimize roundoff error.
  *
  * For empty sequences, this function returns zero.
@@ -2040,7 +2026,7 @@ template <typename T> inline double StableSumOfSquares( const T* i, const T* j )
 }
 
 /*!
- * Returns the arithmetic mean of a sequence [i,j[.
+ * Returns the arithmetic mean of a sequence [i,j).
  *
  * For empty sequences, this function returns zero.
  *
@@ -2059,7 +2045,7 @@ template <typename T> inline double Mean( const T* i, const T* j )
 }
 
 /*!
- * Computes the arithmetic mean of a sequence [i,j[ using a numerically stable
+ * Computes the arithmetic mean of a sequence [i,j) using a numerically stable
  * summation algorithm to minimize roundoff error.
  *
  * For empty sequences, this function returns zero.
@@ -2078,7 +2064,7 @@ template <typename T> inline double StableMean( const T* i, const T* j )
 }
 
 /*!
- * Returns the variance of a sequence [i,j[ with respect to the specified
+ * Returns the variance of a sequence [i,j) with respect to the specified
  * \a center value.
  *
  * For sequences of less than two elements, this function returns zero.
@@ -2110,7 +2096,7 @@ template <typename T> inline double Variance( const T* i, const T* j, double cen
 }
 
 /*!
- * Returns the variance from the mean of a sequence [i,j[.
+ * Returns the variance from the mean of a sequence [i,j).
  *
  * For sequences of less than two elements, this function returns zero.
  *
@@ -2145,7 +2131,7 @@ template <typename T> inline double Variance( const T* i, const T* j )
 }
 
 /*!
- * Returns the standard deviation of a sequence [i,j[ with respect to the
+ * Returns the standard deviation of a sequence [i,j) with respect to the
  * specified \a center value.
  *
  * For sequences of less than two elements, this function returns zero.
@@ -2158,7 +2144,7 @@ template <typename T> inline double StdDev( const T* i, const T* j, double cente
 }
 
 /*!
- * Returns the standard deviation from the mean of a sequence [i,j[.
+ * Returns the standard deviation from the mean of a sequence [i,j).
  *
  * For sequences of less than two elements, this function returns zero.
  *
@@ -2176,7 +2162,7 @@ template <typename T> inline double StdDev( const T* i, const T* j )
    (double( a ) + double( b ))/2
 
 /*!
- * Returns the median value of a sequence [i,j[.
+ * Returns the median value of a sequence [i,j).
  *
  * Use fast, hard-coded selection networks for:
  *
@@ -2209,7 +2195,7 @@ template <typename T> inline double StdDev( const T* i, const T* j )
  * Addison-Wesley Professional, 2011, pp 345-347.
  *
  * \note This is a \e destructive median calculation algorithm: it may alter
- * the initial order of items in the specified [i,j[ sequence.
+ * the initial order of items in the specified [i,j) sequence.
  *
  * \ingroup statistical_functions mathematical_functions
  */
@@ -2295,7 +2281,7 @@ double PCL_FUNC Median( long double* i, long double* j );
    if ( p( i[b], i[a] ) ) pcl::Swap( i[a], i[b] )
 
 /*!
- * Returns the median value of a sequence [i,j[. Element comparison is given by
+ * Returns the median value of a sequence [i,j). Element comparison is given by
  * a binary predicate \a p such that p( a, b ) is true for any pair a, b of
  * elements such that a precedes b.
  *
@@ -2371,7 +2357,7 @@ template <typename T, class BP> inline double Median( T* i, T* j, BP p )
 #undef MEAN
 
 /*!
- * Returns the average absolute deviation of the values in a sequence [i,j[
+ * Returns the average absolute deviation of the values in a sequence [i,j)
  * with respect to the specified \a center value.
  *
  * When the median of the sequence is used as the center value, this function
@@ -2402,7 +2388,7 @@ template <typename T> inline double AvgDev( const T* i, const T* j, double cente
 }
 
 /*!
- * Returns the average absolute deviation of the values in a sequence [i,j[
+ * Returns the average absolute deviation of the values in a sequence [i,j)
  * with respect to the specified \a center value, using a numerically stable
  * summation algorithm to minimize roundoff error.
  *
@@ -2440,7 +2426,7 @@ template <typename T> inline double StableAvgDev( const T* i, const T* j, double
 
 /*!
  * Returns the average absolute deviation from the median of the values in a
- * sequence [i,j[.
+ * sequence [i,j).
  *
  * The average absolute deviation from the median is a well-known estimator of
  * dispersion.
@@ -2474,7 +2460,7 @@ template <typename T> inline double AvgDev( const T* i, const T* j )
 
 /*!
  * Computes the average absolute deviation from the median of the values in a
- * sequence [i,j[ using a numerically stable summation algorithm to minimize
+ * sequence [i,j) using a numerically stable summation algorithm to minimize
  * roundoff error.
  *
  * The average absolute deviation from the median is a well-known estimator of
@@ -2505,7 +2491,7 @@ template <typename T> inline double StableAvgDev( const T* i, const T* j )
 
 /*!
  * Returns the median absolute deviation (MAD) of the values in a sequence
- * [i,j[ with respect to the specified \a center value.
+ * [i,j) with respect to the specified \a center value.
  *
  * The MAD is a well-known robust estimator of scale.
  *
@@ -2530,7 +2516,7 @@ template <typename T> inline double MAD( const T* i, const T* j, double center )
 
 /*!
  * Returns the median absolute deviation from the median (MAD) for the values
- * in a sequence [i,j[.
+ * in a sequence [i,j).
  *
  * The MAD is a well-known robust estimator of scale.
  *
@@ -2558,7 +2544,7 @@ template <typename T> inline double MAD( const T* i, const T* j )
 }
 
 /*!
- * Returns the Sn scale estimator of Rousseeuw and Croux for a sequence [x,xn[:
+ * Returns the Sn scale estimator of Rousseeuw and Croux for a sequence [x,xn):
  *
  * Sn = c * low_median( high_median( |x_i - x_j| ) )
  *
@@ -2576,7 +2562,7 @@ template <typename T> inline double MAD( const T* i, const T* j )
  * consistency with other implementations of scale estimators.
  *
  * \note This is a \e destructive algorithm: it may alter the initial order of
- * items in the specified [x,xn[ sequence.
+ * items in the specified [x,xn) sequence.
  *
  * \ingroup statistical_functions mathematical_functions
  *
@@ -2805,7 +2791,7 @@ inline double __pcl_whimed__( double* a, distance_type* iw, distance_type n,
 }
 
 /*!
- * Returns the Qn scale estimator of Rousseeuw and Croux for a sequence [x,xn[:
+ * Returns the Qn scale estimator of Rousseeuw and Croux for a sequence [x,xn):
  *
  * Qn = c * first_quartile( |x_i - x_j| : i < j )
  *
@@ -2822,7 +2808,7 @@ inline double __pcl_whimed__( double* a, distance_type* iw, distance_type n,
  * with other implementations of scale estimators.
  *
  * \note This is a \e destructive algorithm: it may alter the initial order of
- * items in the specified [x,xn[ sequence.
+ * items in the specified [x,xn) sequence.
  *
  * \ingroup statistical_functions mathematical_functions
  *
@@ -2960,7 +2946,7 @@ template <typename T> double Qn( T* x, T* xn )
 }
 
 /*!
- * Returns a biweight midvariance (BWMV) for the elements in a sequence [x,xn[.
+ * Returns a biweight midvariance (BWMV) for the elements in a sequence [x,xn).
  *
  * \param x, xn   Define a sequence of sample data points for which the BWMV
  *                estimator will be calculated.
@@ -2988,7 +2974,8 @@ template <typename T> double Qn( T* x, T* xn )
  *
  * \ingroup statistical_functions mathematical_functions
  */
-template <typename T> double BiweightMidvariance( const T* x, const T* xn, double center, double sigma, int k = 9 )
+template <typename T>
+double BiweightMidvariance( const T* x, const T* xn, double center, double sigma, int k = 9 )
 {
    distance_type n = xn - x;
    if ( n < 2 )
@@ -3020,7 +3007,7 @@ template <typename T> double BiweightMidvariance( const T* x, const T* xn, doubl
 
 /*!
  * Returns a percentage bend midvariance (PBMV) for the elements in a sequence
- * [x,xn[.
+ * [x,xn).
  *
  * \param x, xn   Define a sequence of sample data points for which the PBWV
  *                estimator will be calculated.
@@ -3046,7 +3033,8 @@ template <typename T> double BiweightMidvariance( const T* x, const T* xn, doubl
  *
  * \ingroup statistical_functions mathematical_functions
  */
-template <typename T> double BendMidvariance( const T* x, const T* xn, double center, double beta = 0.2 )
+template <typename T>
+double BendMidvariance( const T* x, const T* xn, double center, double beta = 0.2 )
 {
    distance_type n = xn - x;
    if ( n < 2 )
@@ -3081,9 +3069,276 @@ template <typename T> double BendMidvariance( const T* x, const T* xn, double ce
 
 // ----------------------------------------------------------------------------
 
+/*!
+ * \defgroup hash_functions Hash Functions
+ */
+
+/*!
+ * Computes a 64-bit non-cryptographic hash function.
+ *
+ * \param data    Address of the first byte of the input data block.
+ *
+ * \param size    Length in bytes of the input data block.
+ *
+ * \param seed    Optional seed value for initialization of the hash function.
+ *                If \a seed is zero or is not specified, the seed will be set
+ *                equal to the length of the data block.
+ *
+ * Returns a 64-bit hash value computed from the input data block.
+ *
+ * Test vector: "The quick brown fox jumps over the lazy dog"
+ * Hash64 checksum = 9a11f5e9468d7425
+ *
+ * Test vector: "" (empty string)\n
+ * Hash64 checksum = ef46db3751d8e999
+ *
+ * This function implements the xxHash algorithm by Yann Collet. Our code is an
+ * adaptation of the original code by the author:
+ *
+ * https://github.com/Cyan4973/xxHash
+ *
+ * Copyright (C) 2012-2014, Yann Collet.
+ * The original code has been released under the BSD 2-Clause License:
+ *
+ * http://www.opensource.org/licenses/bsd-license.php
+ *
+ * \ingroup hash_functions mathematical_functions
+ */
+inline uint64 Hash64( const void* data, size_type size, uint64 seed = 0 )
+{
+#define PRIME64_1 11400714785074694791ULL
+#define PRIME64_2 14029467366897019727ULL
+#define PRIME64_3  1609587929392839161ULL
+#define PRIME64_4  9650029242287828579ULL
+#define PRIME64_5  2870177450012600261ULL
+
+   const uint8* p = (const uint8*)data;
+   const uint8* end = p + size;
+   uint64 h64;
+
+   if ( seed == 0 )
+      seed = size;
+
+   if ( size >= 32 )
+   {
+      const uint8* limit = end - 32;
+      uint64 v1 = seed + PRIME64_1 + PRIME64_2;
+      uint64 v2 = seed + PRIME64_2;
+      uint64 v3 = seed + 0;
+      uint64 v4 = seed - PRIME64_1;
+
+      do
+      {
+         v1 += *(uint64*)p * PRIME64_2;
+         p += 8;
+         v1 = RotL64( v1, 31 );
+         v1 *= PRIME64_1;
+         v2 += *(uint64*)p * PRIME64_2;
+         p += 8;
+         v2 = RotL64( v2, 31 );
+         v2 *= PRIME64_1;
+         v3 += *(uint64*)p * PRIME64_2;
+         p += 8;
+         v3 = RotL64( v3, 31 );
+         v3 *= PRIME64_1;
+         v4 += *(uint64*)p * PRIME64_2;
+         p += 8;
+         v4 = RotL64( v4, 31 );
+         v4 *= PRIME64_1;
+      }
+      while ( p <= limit );
+
+      h64 = RotL64( v1, 1 ) + RotL64( v2, 7 ) + RotL64( v3, 12 ) + RotL64( v4, 18 );
+
+      v1 *= PRIME64_2;
+      v1 = RotL64( v1, 31 );
+      v1 *= PRIME64_1;
+      h64 ^= v1;
+      h64 = h64 * PRIME64_1 + PRIME64_4;
+
+      v2 *= PRIME64_2;
+      v2 = RotL64( v2, 31 );
+      v2 *= PRIME64_1;
+      h64 ^= v2;
+      h64 = h64 * PRIME64_1 + PRIME64_4;
+
+      v3 *= PRIME64_2;
+      v3 = RotL64( v3, 31 );
+      v3 *= PRIME64_1;
+      h64 ^= v3;
+      h64 = h64 * PRIME64_1 + PRIME64_4;
+
+      v4 *= PRIME64_2;
+      v4 = RotL64( v4, 31 );
+      v4 *= PRIME64_1;
+      h64 ^= v4;
+      h64 = h64 * PRIME64_1 + PRIME64_4;
+   }
+   else
+   {
+      h64 = seed + PRIME64_5;
+   }
+
+   h64 += size;
+
+   while ( p+8 <= end )
+   {
+      uint64 k1 = *(uint64*)p;
+      k1 *= PRIME64_2;
+      k1 = RotL64( k1, 31 );
+      k1 *= PRIME64_1;
+      h64 ^= k1;
+      h64 = RotL64( h64, 27 ) * PRIME64_1 + PRIME64_4;
+      p += 8;
+   }
+
+   if ( p+4 <= end )
+   {
+      h64 ^= (uint64)(*(uint32*)p) * PRIME64_1;
+      h64 = RotL64( h64, 23 ) * PRIME64_2 + PRIME64_3;
+      p += 4;
+   }
+
+   while ( p < end )
+   {
+      h64 ^= *p * PRIME64_5;
+      h64 = RotL64( h64, 11 ) * PRIME64_1;
+      ++p;
+   }
+
+   h64 ^= h64 >> 33;
+   h64 *= PRIME64_2;
+   h64 ^= h64 >> 29;
+   h64 *= PRIME64_3;
+   h64 ^= h64 >> 32;
+
+   return h64;
+
+#undef PRIME64_1
+#undef PRIME64_2
+#undef PRIME64_3
+#undef PRIME64_4
+#undef PRIME64_5
+}
+
+/*!
+ * Computes a 32-bit non-cryptographic hash function.
+ *
+ * \param data    Address of the first byte of the input data block.
+ *
+ * \param size    Length in bytes of the input data block.
+ *
+ * \param seed    Optional seed value for initialization of the hash function.
+ *                If \a seed is zero or is not specified, the seed will be set
+ *                equal to the length of the data block.
+ *
+ * Returns a 32-bit hash value computed from the input data block.
+ *
+ * Test vector: "The quick brown fox jumps over the lazy dog"\n
+ * Hash32 checksum = 752cd1b8
+ *
+ * Test vector: "" (empty string)\n
+ * Hash32 checksum = 2cc5d05
+ *
+ * This function implements the xxHash algorithm by Yann Collet. Our code is an
+ * adaptation of the original code by the author:
+ *
+ * https://github.com/Cyan4973/xxHash
+ *
+ * Copyright (C) 2012-2014, Yann Collet.
+ * The original code has been released under the BSD 2-Clause License:
+ *
+ * http://www.opensource.org/licenses/bsd-license.php
+ *
+ * \ingroup hash_functions mathematical_functions
+ */
+inline uint32 Hash32( const void* data, size_type size, uint32 seed = 0 )
+{
+#define PRIME32_1 2654435761U
+#define PRIME32_2 2246822519U
+#define PRIME32_3 3266489917U
+#define PRIME32_4  668265263U
+#define PRIME32_5  374761393U
+
+   const uint8* p = (const uint8*)data;
+   const uint8* end = p + size;
+   uint32 h32;
+
+   if ( seed == 0 )
+      seed = uint32( size );
+
+   if ( size >= 16 )
+   {
+      const uint8* limit = end - 16;
+      uint32 v1 = seed + PRIME32_1 + PRIME32_2;
+      uint32 v2 = seed + PRIME32_2;
+      uint32 v3 = seed + 0;
+      uint32 v4 = seed - PRIME32_1;
+
+      do
+      {
+         v1 += *(uint32*)p * PRIME32_2;
+         v1 = RotL32( v1, 13 );
+         v1 *= PRIME32_1;
+         p += 4;
+         v2 += *(uint32*)p * PRIME32_2;
+         v2 = RotL32( v2, 13 );
+         v2 *= PRIME32_1;
+         p += 4;
+         v3 += *(uint32*)p * PRIME32_2;
+         v3 = RotL32( v3, 13 );
+         v3 *= PRIME32_1;
+         p += 4;
+         v4 += *(uint32*)p * PRIME32_2;
+         v4 = RotL32( v4, 13 );
+         v4 *= PRIME32_1;
+         p += 4;
+      }
+      while ( p <= limit );
+
+      h32 = RotL32( v1, 1 ) + RotL32( v2, 7 ) + RotL32( v3, 12 ) + RotL32( v4, 18 );
+   }
+   else
+   {
+      h32  = seed + PRIME32_5;
+   }
+
+   h32 += (uint32)size;
+
+   while ( p+4 <= end )
+   {
+      h32 += *(uint32*)p * PRIME32_3;
+      h32  = RotL32( h32, 17 ) * PRIME32_4 ;
+      p+=4;
+   }
+
+   while ( p < end )
+   {
+      h32 += *p * PRIME32_5;
+      h32 = RotL32( h32, 11 ) * PRIME32_1 ;
+      ++p;
+   }
+
+   h32 ^= h32 >> 15;
+   h32 *= PRIME32_2;
+   h32 ^= h32 >> 13;
+   h32 *= PRIME32_3;
+   h32 ^= h32 >> 16;
+
+   return h32;
+
+#undef PRIME32_1
+#undef PRIME32_2
+#undef PRIME32_3
+#undef PRIME32_4
+#undef PRIME32_5
+}
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
-#endif  // __PCL_Math_h
+#endif   // __PCL_Math_h
 
-// ****************************************************************************
-// EOF pcl/Math.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Math.h - Released 2015/07/30 17:15:18 UTC

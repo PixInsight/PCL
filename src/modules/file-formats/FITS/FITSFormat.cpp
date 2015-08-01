@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard FITS File Format Module Version 01.01.00.0282
-// ****************************************************************************
-// FITSFormat.cpp - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard FITS File Format Module Version 01.01.02.0306
+// ----------------------------------------------------------------------------
+// FITSFormat.cpp - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "FITSFormat.h"
 #include "FITSInstance.h"
@@ -69,17 +73,13 @@ IsoString FITSFormat::Name() const
 
 StringList FITSFormat::FileExtensions() const
 {
-   StringList exts;
-   exts.Add( ".fit" ); exts.Add( ".fits" ); exts.Add( ".fts" );
-   return exts;
+   return StringList() << ".fit" << ".fits" << ".fts";
 }
 
 IsoStringList FITSFormat::MimeTypes() const
 {
-   IsoStringList mimes;
-   mimes.Add( "image/fits" );       // RFC4047
-   mimes.Add( "application/fits" ); // RFC4047
-   return mimes;
+   // RFC4047
+   return IsoStringList() << "image/fits" << "application/fits";
 }
 
 uint32 FITSFormat::Version() const
@@ -117,7 +117,7 @@ String FITSFormat::Implementation() const
    "National Aeronautics and Space Administration.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2014, Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2015, Pleiades Astrophoto</p>"
    "</html>";
 }
 
@@ -169,11 +169,6 @@ bool FITSFormat::CanStoreKeywords() const
 bool FITSFormat::CanStoreICCProfiles() const
 {
    return true;
-}
-
-bool FITSFormat::CanStoreMetadata() const
-{
-   return false; // ### TODO - should be true
 }
 
 bool FITSFormat::CanStoreThumbnails() const
@@ -254,8 +249,6 @@ bool FITSFormat::EditPreferences() const
 
       Settings::Write ( "FITSOverrideICCProfileEmbedding",       overrides.overrideICCProfileEmbedding );
       Settings::Write ( "FITSEmbedICCProfiles",                  overrides.embedICCProfiles );
-      Settings::Write ( "FITSOverrideMetadataEmbedding",         overrides.overrideMetadataEmbedding );
-      Settings::Write ( "FITSEmbedMetadata",                     overrides.embedMetadata );
       Settings::Write ( "FITSOverrideThumbnailEmbedding",        overrides.overrideThumbnailEmbedding );
       Settings::Write ( "FITSEmbedThumbnails",                   overrides.embedThumbnails );
       Settings::Write ( "FITSOverridePropertyEmbedding",         overrides.overridePropertyEmbedding );
@@ -324,8 +317,6 @@ FITSFormat::EmbeddingOverrides FITSFormat::DefaultEmbeddingOverrides()
 
    Settings::Read( "FITSOverrideICCProfileEmbedding", overrides.overrideICCProfileEmbedding );
    Settings::Read( "FITSEmbedICCProfiles",            overrides.embedICCProfiles );
-   Settings::Read( "FITSOverrideMetadataEmbedding",   overrides.overrideMetadataEmbedding );
-   Settings::Read( "FITSEmbedMetadata",               overrides.embedMetadata );
    Settings::Read( "FITSOverrideThumbnailEmbedding",  overrides.overrideThumbnailEmbedding );
    Settings::Read( "FITSEmbedThumbnails",             overrides.embedThumbnails );
    Settings::Read( "FITSOverridePropertyEmbedding",   overrides.overridePropertyEmbedding );
@@ -336,7 +327,7 @@ FITSFormat::EmbeddingOverrides FITSFormat::DefaultEmbeddingOverrides()
 
 // ----------------------------------------------------------------------------
 
-#define FITS_SIGNATURE  0x46495453u
+#define FITS_SIGNATURE  0x46495453u // 'FITS'
 
 FITSFormat::FormatOptions::FormatOptions() :
 signature( FITS_SIGNATURE ), options( FITSFormat::DefaultOptions() )
@@ -362,5 +353,5 @@ FITSFormat::FormatOptions* FITSFormat::FormatOptions::FromGenericDataBlock( cons
 
 } // pcl
 
-// ****************************************************************************
-// EOF FITSFormat.cpp - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF FITSFormat.cpp - Released 2015/07/31 11:49:40 UTC

@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Brush.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Brush.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/AutoLock.h>
 #include <pcl/Bitmap.h>
@@ -59,30 +62,26 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 Brush::Brush( RGBA color, style style ) :
-UIObject( (*API->Brush->CreateBrush)( ModuleHandle(), color, style ) )
+   UIObject( (*API->Brush->CreateBrush)( ModuleHandle(), color, style ) )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateBrush" );
 }
 
 Brush::Brush( const Bitmap& pm ) :
-UIObject( (*API->Brush->CreateBitmapBrush)( ModuleHandle(), pm.handle ) )
+   UIObject( (*API->Brush->CreateBitmapBrush)( ModuleHandle(), pm.handle ) )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateBitmapBrush" );
-}
-
-Brush::Brush( void* h ) : UIObject( h )
-{
 }
 
 Brush& Brush::Null()
 {
-   static Brush* nullBrush = 0;
+   static Brush* nullBrush = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullBrush == 0 )
-      nullBrush = new Brush( reinterpret_cast<void*>( 0 ) );
+   if ( nullBrush == nullptr )
+      nullBrush = new Brush( nullptr );
    return *nullBrush;
 }
 
@@ -165,7 +164,7 @@ GradientBrush( (*API->Brush->CreateLinearGradientBrush)(
                   ModuleHandle(), x1, y1, x2, y2, spread,
                   reinterpret_cast<const api_gradient_stop*>( stops.Begin() ), stops.Length() ) )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateLinearGradientBrush" );
 }
 
@@ -174,7 +173,7 @@ GradientBrush( (*API->Brush->CreateLinearGradientBrush)(
                   ModuleHandle(), r.x0, r.y0, r.x1, r.y1, spread,
                   reinterpret_cast<const api_gradient_stop*>( stops.Begin() ), stops.Length() ) )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateLinearGradientBrush" );
 }
 
@@ -206,7 +205,7 @@ GradientBrush( (*API->Brush->CreateRadialGradientBrush)(
                   (fx == uint32_max) ? cx : fx, (fy == uint32_max) ? cy : fy,
                   spread, reinterpret_cast<const api_gradient_stop*>( stops.Begin() ), stops.Length() ) )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateRadialGradientBrush" );
 }
 
@@ -216,7 +215,7 @@ GradientBrush( (*API->Brush->CreateRadialGradientBrush)(
                   (f.x == uint32_max) ? c.x : f.x, (f.y == uint32_max) ? c.y : f.y,
                   spread, reinterpret_cast<const api_gradient_stop*>( stops.Begin() ), stops.Length() ) )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateRadialGradientBrush" );
 }
 
@@ -248,7 +247,7 @@ ConicalGradientBrush::ConicalGradientBrush( double cx, double cy, double a, cons
 GradientBrush( (*API->Brush->CreateConicalGradientBrush)( ModuleHandle(), cx, cy, a,
                                  reinterpret_cast<const api_gradient_stop*>( stops.Begin() ), stops.Length() ) )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateConicalGradientBrush" );
 }
 
@@ -256,7 +255,7 @@ ConicalGradientBrush::ConicalGradientBrush( const DPoint& c, double a, const sto
 GradientBrush( (*API->Brush->CreateConicalGradientBrush)( ModuleHandle(), c.x, c.y, a,
                                  reinterpret_cast<const api_gradient_stop*>( stops.Begin() ), stops.Length() ) )
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateConicalGradientBrush" );
 }
 
@@ -282,5 +281,5 @@ void ConicalGradientBrush::GetParameters( double& cx, double& cy, double& a ) co
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/Brush.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Brush.cpp - Released 2015/07/30 17:15:31 UTC

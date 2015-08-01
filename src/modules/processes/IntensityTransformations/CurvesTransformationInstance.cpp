@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard IntensityTransformations Process Module Version 01.07.00.0287
-// ****************************************************************************
-// CurvesTransformationInstance.cpp - Released 2014/11/14 17:19:23 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard IntensityTransformations Process Module Version 01.07.00.0306
+// ----------------------------------------------------------------------------
+// CurvesTransformationInstance.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "CurvesTransformationInstance.h"
 
@@ -56,7 +60,7 @@
 #include <pcl/LinearInterpolation.h>
 #include <pcl/MuteStatus.h>
 #include <pcl/Mutex.h>
-#include <pcl/PArray.h>
+#include <pcl/ReferenceArray.h>
 #include <pcl/StdStatus.h>
 #include <pcl/Thread.h>
 #include <pcl/Vector.h>
@@ -68,8 +72,7 @@ namespace pcl
 
 CurveBase::interpolator* CurveBase::InitInterpolator() const
 {
-   interpolator* i = 0;
-
+   interpolator* i = nullptr;
    switch ( Type() )
    {
    case CurveType::AkimaSubsplines:
@@ -85,12 +88,11 @@ CurveBase::interpolator* CurveBase::InitInterpolator() const
    case CurveType::Linear:
       i = new LinearInterpolation<double>;
       break;
-   default:
+   default: // ?!
       throw Error( "CurveBase: Internal error: Invalid curve type" );
    }
 
    i->Initialize( XVector(), YVector(), Length() );
-
    return i;
 }
 
@@ -114,7 +116,7 @@ void CurvesTransformationInstance::Assign( const ProcessImplementation& p )
    const CurvesTransformationInstance* x = dynamic_cast<const CurvesTransformationInstance*>( &p );
    if ( x != 0 )
       for ( int i = 0; i < CurveIndex::NumberOfCurves; ++i )
-         C[i].Assign( x->C[i] );
+         C[i] = x->C[i];
 }
 
 // ----------------------------------------------------------------------------
@@ -220,14 +222,13 @@ public:
       if ( useLUT )
          data.lut.Generate( image, instance );
 
-      PArray<CurvesThread<P> > threads;
+      ReferenceArray<CurvesThread<P> > threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new CurvesThread<P>( instance, data, image,
                                            i*pixelsPerThread,
                                            (j < numberOfThreads) ? j*pixelsPerThread : N ) );
 
       AbstractImage::RunThreads( threads, data );
-
       threads.Destroy();
 
       image.Status() = data.status;
@@ -932,5 +933,5 @@ size_type CurvesTransformationInstance::ParameterLength( const MetaParameter* p,
 
 } // pcl
 
-// ****************************************************************************
-// EOF CurvesTransformationInstance.cpp - Released 2014/11/14 17:19:23 UTC
+// ----------------------------------------------------------------------------
+// EOF CurvesTransformationInstance.cpp - Released 2015/07/31 11:49:48 UTC

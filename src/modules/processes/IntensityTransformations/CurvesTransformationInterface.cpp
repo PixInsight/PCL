@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard IntensityTransformations Process Module Version 01.07.00.0287
-// ****************************************************************************
-// CurvesTransformationInterface.cpp - Released 2014/11/14 17:19:23 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard IntensityTransformations Process Module Version 01.07.00.0306
+// ----------------------------------------------------------------------------
+// CurvesTransformationInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "CurvesTransformationInterface.h"
 #include "CurvesTransformationProcess.h"
@@ -67,25 +71,8 @@ CurvesTransformationInterface* TheCurvesTransformationInterface = 0;
 // ----------------------------------------------------------------------------
 
 #include "CurvesTransformationIcon.xpm"
-#include "zoom_in_cursor.xpm"
-#include "zoom_out_cursor.xpm"
-#include "pan_cursor.xpm"
 #include "show_all_curves.xpm"
 #include "show_grid.xpm"
-#include "red_small_channel.xpm"
-#include "green_small_channel.xpm"
-#include "blue_small_channel.xpm"
-#include "rgbk_small_channel.xpm"
-#include "alpha_small_channel.xpm"
-#include "L_channel.xpm"
-#include "a_channel.xpm"
-#include "b_channel.xpm"
-#include "c_channel.xpm"
-#include "H_channel.xpm"
-#include "S_channel.xpm"
-#include "store_curve.xpm"
-#include "restore_curve.xpm"
-#include "reverse.xpm"
 #include "akima_interpolation.xpm"
 #include "cubic_spline_interpolation.xpm"
 #include "linear_interpolation.xpm"
@@ -698,8 +685,8 @@ void CurvesTransformationInterface::SelectPoint( size_type p, bool pan )
       int w1 = r.Width()*m_zoomX - 1;
       int h1 = r.Height()*m_zoomY - 1;
       GUI->Curve_ScrollBox.SetScrollPosition(
-               Range( RoundI( CurrentInputValue()*w1 ) - r.Width()/2, 0, w1 ),
-               Range( RoundI( (1 - CurrentOutputValue())*h1 ) - r.Height()/2, 0, h1 ) );
+               Range( RoundInt( CurrentInputValue()*w1 ) - r.Width()/2, 0, w1 ),
+               Range( RoundInt( (1 - CurrentOutputValue())*h1 ) - r.Height()/2, 0, h1 ) );
    }
 
    UpdateCurveControls();
@@ -844,11 +831,10 @@ void CurvesTransformationInterface::RegenerateViewport()
    int w0 = r0.Width();
    int h0 = r0.Height();
 
-   if ( m_viewportBitmap.IsNull() )
-      m_viewportBitmap = Bitmap( w0, h0, BitmapFormat::RGB32 );
-
    m_viewportDirty = false;
 
+   if ( m_viewportBitmap.IsNull() )
+      m_viewportBitmap = Bitmap( w0, h0, BitmapFormat::RGB32 );
    m_viewportBitmap.Fill( m_backgroundColor );
 
    Rect r( r0 + GUI->Curve_ScrollBox.ScrollPosition() );
@@ -858,94 +844,86 @@ void CurvesTransformationInterface::RegenerateViewport()
    if ( m_showGrid )
    {
       Graphics g( m_viewportBitmap );
+      g.EnableAntialiasing();
       PlotScale( g, r, w, h );
       PlotGrid( g, r, w, h, m_zoomX, m_zoomY );
    }
 
-   Bitmap bmp1( w0, h0 );
-   bmp1.Fill( 0xFF000000 );
+   Bitmap bmp( w0, h0, BitmapFormat::RGB32 );
+   {
+      bmp.Fill( 0xFF000000 );
+      Graphics g( bmp );
+      g.EnableAntialiasing();
+      g.SetCompositionOperator( CompositionOp::Screen );
 
-   bool rejectSaturated = TheHistogramTransformationInterface->RejectingSaturated();
-
-   for ( int i = 0; i < CurveIndex::NumberOfCurves; ++i )
-      if ( i == m_channel || m_showAllCurves && !m_instance[i].IsIdentity() )
-      {
-         if ( !m_histograms.IsEmpty() )
-            if ( m_channel == CurveIndex::RGBK )
+      for ( int i = 0; i < CurveIndex::NumberOfCurves; ++i )
+         if ( i == m_channel || m_showAllCurves && !m_instance[i].IsIdentity() )
+         {
+            if ( !m_histograms.IsEmpty() )
             {
-               size_type n = m_histogramColor ? 3 : 1;
-               count_type peak = 0;
-               if ( rejectSaturated )
-                  for ( size_type i = 0; i < n; ++i )
-                     peak = Max( peak, m_histograms[i].PeakCount( 1, m_histograms[i].Resolution()-2 ) );
-               if ( !rejectSaturated || peak == 0 )
-                  for ( size_type i = 0; i < n; ++i )
-                     peak = Max( peak, m_histograms[i].PeakCount() );
+               bool rejectSaturated = TheHistogramTransformationInterface->RejectingSaturated();
 
-               for ( size_type i = 0; i < n; ++i )
+               if ( m_channel == CurveIndex::RGBK )
                {
-                  Bitmap bmp( w0, h0 );
-                  bmp.Fill( 0xFF000000 );
-                  Graphics g( bmp );
-                  g.SetPen( m_channelColor[(n > 1) ? i : CurveIndex::RGBK] );
-                  g.SetOpacity( 0.5 );
-                  TheHistogramTransformationInterface->PlotHistogram( g, r, m_histograms[i], peak, w, h, m_zoomX, m_zoomY );
-                  g.EndPaint();
-                  bmp1.Or( bmp );
-               }
-            }
-            else if ( m_channel < CurveIndex::RGBK )
-            {
-               if ( m_histogramColor )
-               {
+                  size_type n = m_histogramColor ? 3 : 1;
                   count_type peak = 0;
                   if ( rejectSaturated )
-                     peak = m_histograms[m_channel].PeakCount( 1, m_histograms[m_channel].Resolution()-2 );
+                     for ( size_type i = 0; i < n; ++i )
+                        peak = Max( peak, m_histograms[i].PeakCount( 1, m_histograms[i].Resolution()-2 ) );
                   if ( !rejectSaturated || peak == 0 )
-                     peak = m_histograms[m_channel].PeakCount();
+                     for ( size_type i = 0; i < n; ++i )
+                        peak = Max( peak, m_histograms[i].PeakCount() );
 
-                  Bitmap bmp( w0, h0 );
-                  bmp.Fill( 0xFF000000 );
-                  Graphics g( bmp );
-                  g.SetPen( m_channelColor[m_channel] );
                   g.SetOpacity( 0.5 );
-                  TheHistogramTransformationInterface->PlotHistogram( g, r, m_histograms[m_channel], peak, w, h, m_zoomX, m_zoomY );
-                  g.EndPaint();
-                  bmp1.Or( bmp );
+                  for ( size_type i = 0; i < n; ++i )
+                  {
+                     g.SetPen( m_channelColor[(n > 1) ? i : CurveIndex::RGBK], DisplayPixelRatio() );
+                     TheHistogramTransformationInterface->PlotHistogram( g, r, m_histograms[i], peak, w, h, m_zoomX, m_zoomY );
+                  }
+                  g.SetOpacity( 1.0 );
                }
-            }
-            else if ( m_channel == CurveIndex::A )
-            {
-               int c = m_histogramColor ? 3 : 1;
-               if ( m_histograms.Length() > size_type( c ) )
+               else if ( m_channel < CurveIndex::RGBK )
                {
-                  count_type peak = 0;
-                  if ( rejectSaturated )
-                     peak = m_histograms[c].PeakCount( 1, m_histograms[c].Resolution()-2 );
-                  if ( !rejectSaturated || peak == 0 )
-                     peak = m_histograms[c].PeakCount();
+                  if ( m_histogramColor )
+                  {
+                     count_type peak = 0;
+                     if ( rejectSaturated )
+                        peak = m_histograms[m_channel].PeakCount( 1, m_histograms[m_channel].Resolution()-2 );
+                     if ( !rejectSaturated || peak == 0 )
+                        peak = m_histograms[m_channel].PeakCount();
 
-                  Bitmap bmp( w0, h0 );
-                  bmp.Fill( 0xFF000000 );
-                  Graphics g( bmp );
-                  g.SetPen( m_channelColor[4] );
-                  g.SetOpacity( 0.5 );
-                  TheHistogramTransformationInterface->PlotHistogram( g, r, m_histograms[c], peak, w, h, m_zoomX, m_zoomY );
-                  g.EndPaint();
-                  bmp1.Or( bmp );
+                     g.SetPen( m_channelColor[m_channel], DisplayPixelRatio() );
+                     g.SetOpacity( 0.5 );
+                     TheHistogramTransformationInterface->PlotHistogram( g, r, m_histograms[m_channel], peak, w, h, m_zoomX, m_zoomY );
+                     g.SetOpacity( 1.0 );
+                  }
+               }
+               else if ( m_channel == CurveIndex::A )
+               {
+                  int c = m_histogramColor ? 3 : 1;
+                  if ( m_histograms.Length() > size_type( c ) )
+                  {
+                     count_type peak = 0;
+                     if ( rejectSaturated )
+                        peak = m_histograms[c].PeakCount( 1, m_histograms[c].Resolution()-2 );
+                     if ( !rejectSaturated || peak == 0 )
+                        peak = m_histograms[c].PeakCount();
+
+                     g.SetPen( m_channelColor[4], DisplayPixelRatio() );
+                     g.SetOpacity( 0.5 );
+                     TheHistogramTransformationInterface->PlotHistogram( g, r, m_histograms[c], peak, w, h, m_zoomX, m_zoomY );
+                     g.SetOpacity( 1.0 );
+                  }
                }
             }
 
-         Bitmap bmp( w0, h0 );
-         bmp.Fill( 0xFF000000 );
-         Graphics g( bmp );
-         //g.EnableAntialiasing();
-         PlotCurve( g, r, i, w, h, m_zoomX, m_zoomY );
-         g.EndPaint();
-         bmp1.Or( bmp );
-      }
+            PlotCurve( g, r, i, w, h, m_zoomX, m_zoomY );
+         }
+   }
 
-   m_viewportBitmap.Xor( bmp1 );
+   Graphics g( m_viewportBitmap );
+   g.SetCompositionOperator( CompositionOp::Difference );
+   g.DrawBitmap( 0, 0, bmp );
 }
 
 // ----------------------------------------------------------------------------
@@ -966,13 +944,12 @@ void CurvesTransformationInterface::PlotGrid( Graphics& g, const Rect& r, int wi
    int w = r.Width();
    int h = r.Height();
 
-   Pen p0( m_gridColor0, 0, PenStyle::Solid );
-   Pen p1( m_gridColor1, 0, PenStyle::Dot );
+   Pen p0( m_gridColor0, DisplayPixelRatio(), PenStyle::Solid );
+   Pen p1( m_gridColor1, DisplayPixelRatio(), PenStyle::Dot );
 
    for ( int i = ix0; i <= ix1; ++i )
    {
-      int x = RoundI( dx*i ) - r.x0;
-
+      int x = RoundInt( dx*i ) - r.x0;
       if ( x >= w )
          break;
 
@@ -982,8 +959,7 @@ void CurvesTransformationInterface::PlotGrid( Graphics& g, const Rect& r, int wi
 
    for ( int i = iy0; i <= iy1; ++i )
    {
-      int y = RoundI( dy*i ) - r.y0;
-
+      int y = RoundInt( dy*i ) - r.y0;
       if ( y >= h )
          break;
 
@@ -1055,24 +1031,41 @@ RGBA CurvesTransformationInterface::ScaleColor( float f ) const
 
 void CurvesTransformationInterface::PlotScale( Graphics& g, const Rect& r, int width, int height )
 {
+   int ui8 = LogicalPixelsToPhysical( 8 );
+
    int w = r.Width();
    int h = r.Height();
 
    int x0 = -r.x0;
-   int y0 = height - 8 - r.y0;
+   int y0 = height - ui8 - r.y0;
 
-   for ( int x = 0; x < w; ++x )
+   if ( m_channel == CurveIndex::H )
    {
-      RGBA color = ScaleColor( float( x + r.x0 )/(width - 1) );
-      g.SetPen( color );
-      g.DrawLine( x, y0, x, y0+7 );
+      for ( int x = 0; x < w; ++x )
+      {
+         RGBA color = ScaleColor( float( x + r.x0 )/(width - 1) );
+         g.SetPen( color );
+         g.DrawLine( x, y0, x, y0+ui8 );
+      }
+
+      for ( int y = 0; y < h; ++y )
+      {
+         RGBA color = ScaleColor( 1 - float( y + r.y0 )/(height - 1) );
+         g.SetPen( color );
+         g.DrawLine( x0, y, x0+ui8, y );
+      }
    }
-
-   for ( int y = 0; y < h; ++y )
+   else
    {
-      RGBA color = ScaleColor( 1 - float( y + r.y0 )/(height - 1) );
-      g.SetPen( color );
-      g.DrawLine( x0, y, x0+7, y );
+      GradientBrush::stop_list stops;
+      stops.Add( GradientBrush::Stop( 0.0, ScaleColor( float( r.x0 )/(width - 1) ) ) );
+      stops.Add( GradientBrush::Stop( 1.0, ScaleColor( float( w + r.x0 - 1 )/(width - 1) ) ) );
+      g.FillRect( 0, y0, w, y0+ui8, LinearGradientBrush( 0, 0, w, 0, stops ) );
+
+      stops.Clear();
+      stops.Add( GradientBrush::Stop( 0.0, ScaleColor( 1 - float( r.y0 )/(height - 1) ) ) );
+      stops.Add( GradientBrush::Stop( 1.0, ScaleColor( 1 - float( h + r.y0 - 1 )/(height - 1) ) ) );
+      g.FillRect( x0, 0, x0+ui8, h, LinearGradientBrush( 0, 0, 0, h, stops ) );
    }
 }
 
@@ -1084,25 +1077,24 @@ void CurvesTransformationInterface::PlotCurve( Graphics& g, const Rect& r, int c
    Array<Point> points;
    double dx = 1.0/(width - 1);
    for ( int w = r.Width(), x = 0; x < w; ++x )
-      points.Add( Point( x, RoundI( (height - 1)*(1 - (*interpolator)( (x + r.x0)*dx )) ) - r.y0 ) );
+      points.Add( Point( x, RoundInt( (height - 1)*(1 - (*interpolator)( (x + r.x0)*dx )) ) - r.y0 ) );
 
-   g.SetPen( m_channelColor[c] );
-
+   g.SetPen( m_channelColor[c], DisplayPixelRatio() );
    g.DrawPolyline( points );
 
    if ( c == m_channel )
    {
+      int ui2 = LogicalPixelsToPhysical( 2 );
       g.SetBrush( 0xFF000000 );
-
       for ( size_type i = 0; i < curve.Length(); ++i )
       {
-         int x = RoundI( curve.XVector()[i]*(width - 1) ) - r.x0;
-         int y = RoundI( (1 - curve.YVector()[i])*(height - 1) ) - r.y0;
+         int x = RoundInt( curve.XVector()[i]*(width - 1) ) - r.x0;
+         int y = RoundInt( (1 - curve.YVector()[i])*(height - 1) ) - r.y0;
 
          if ( i == m_currentPoint[c] )
             g.SetBrush( m_channelColor[c] );
 
-         g.DrawRect( x-2, y-2, x+3, y+3 );
+         g.DrawRect( x-ui2, y-ui2, x+ui2, y+ui2 );
 
          if ( i == m_currentPoint[c] )
             g.SetBrush( 0xFF000000 );
@@ -1110,24 +1102,27 @@ void CurvesTransformationInterface::PlotCurve( Graphics& g, const Rect& r, int c
    }
 }
 
-void CurvesTransformationInterface::PlotReadouts( Bitmap& bmp, const Rect& r, int width, int height )
+void CurvesTransformationInterface::PlotReadouts( Graphics& g, const Bitmap& bmp, const Rect& r, int width, int height )
 {
    int w = bmp.Width();
    int h = bmp.Height();
+   float d = DisplayPixelRatio();
 
    if ( m_channel == CurveIndex::RGBK )
    {
       for ( int c = 0; c < 3; ++c )
       {
-         int x = RoundI( m_readouts[c]*(width - 1) ) - r.x0;
+         int x = RoundInt( m_readouts[c]*(width - 1) ) - r.x0;
          if ( x >= 0 && x < w )
-            bmp.Xor( Rect( x, 0, x+1, h ), m_channelColor[c] );
+         {
+            g.SetPen( m_channelColor[c], d );
+            g.DrawLine( x, 0, x, h );
+         }
       }
    }
    else
    {
-      double f = 0; // calm compiler
-
+      double f = 0;
       switch ( m_channel )
       {
       case CurveIndex::R:
@@ -1158,14 +1153,16 @@ void CurvesTransformationInterface::PlotReadouts( Bitmap& bmp, const Rect& r, in
          break;
       }
 
-      int x = RoundI( f*(width - 1) ) - r.x0;
-
+      int x = RoundInt( f*(width - 1) ) - r.x0;
       if ( x >= 0 && x < w )
-         bmp.Xor( Rect( x, 0, x+1, h ), m_channelColor[m_channel] );
+      {
+         g.SetPen( m_channelColor[m_channel], d );
+         g.DrawLine( x, 0, x, h );
+      }
    }
 }
 
-void CurvesTransformationInterface::PlotCursor( Bitmap& bmp, const Rect& r )
+void CurvesTransformationInterface::PlotCursor( Graphics& g, const Rect& r )
 {
    int w = r.Width();
    int h = r.Height();
@@ -1174,50 +1171,48 @@ void CurvesTransformationInterface::PlotCursor( Bitmap& bmp, const Rect& r )
 
    if ( m_mode == ZoomInMode || m_mode == ZoomOutMode || m_mode == PanMode )
    {
-      const char** xpm = 0; // calm compiler
-
+      String resource;
       switch ( m_mode )
       {
-      case ZoomInMode:  xpm = zoom_in_cursor_XPM; break;
-      case ZoomOutMode: xpm = zoom_out_cursor_XPM; break;
-      case PanMode:     xpm = pan_cursor_XPM; break;
-      default: break;
+      case ZoomInMode:
+         resource = ":/cursors/view/zoom_in.png";
+         break;
+      case ZoomOutMode:
+         resource = ":/cursors/view/zoom_out.png";
+         break;
+      case PanMode:
+         resource = m_panning ? ":/cursors/view/bidi_pan.png" : ":/cursors/view/pan.png";
+         break;
+      default: // ?!
+         return;
       }
 
-      Bitmap csr( xpm );
-      bmp.Xor( Point( x - (csr.Width() >> 1), y - (csr.Height() >> 1) ), csr );
+      Bitmap csr( ScaledResource( resource ) );
+      g.DrawBitmap( x - (csr.Width() >> 1), y - (csr.Height() >> 1), csr );
    }
    else
    {
+      g.SetPen( 0xffffffff, DisplayPixelRatio() );
+
       if ( x >= 0 && x < w )
-         bmp.Invert( Rect( x, 0, x+1, h ) );
+         g.DrawLine( x, 0, x, h );
       if ( y >= 0 && y < h )
-         bmp.Invert( Rect( 0, y, w, y+1 ) );
+         g.DrawLine( 0, y, w, y );
 
-      if ( m_mode == SelectMode || m_mode == DeleteMode ) // != EditMode
+      if ( m_mode == SelectMode )
       {
-         Bitmap csr( 8+1+8, 8+1+8 );
-         csr.Fill( 0xFF000000 );
-
-         Graphics g( csr );
-         g.SetPen( 0xFFFFFFFF );
-
-         if ( m_mode == SelectMode )
-         {
-            g.SetBrush( Brush::Null() );
-            g.DrawRect( 0, 0, 16+1, 16+1 );
-         }
-         else // DeleteMode
-         {
-            g.DrawLine(  0,  0,  3,  3 );
-            g.DrawLine( 16,  0, 13,  3 );
-            g.DrawLine( 16, 16, 13, 13 );
-            g.DrawLine(  0, 16,  3, 13 );
-         }
-
-         g.EndPaint();
-
-         bmp.Xor( Point( x-8, y-8 ), csr );
+         int ui8 = LogicalPixelsToPhysical( 8 );
+         g.SetBrush( Brush::Null() );
+         g.DrawRect( x-ui8, y-ui8, x+ui8, y+ui8 );
+      }
+      else if ( m_mode == DeleteMode )
+      {
+         int ui8 = LogicalPixelsToPhysical( 8 );
+         int ui5 = LogicalPixelsToPhysical( 5 );
+         g.DrawLine( x-ui8, y-ui8, x-ui5, y-ui5 );
+         g.DrawLine( x+ui8, y-ui8, x+ui5, y-ui5 );
+         g.DrawLine( x-ui8, y+ui8, x-ui5, y+ui5 );
+         g.DrawLine( x+ui8, y+ui8, x+ui5, y+ui5 );
       }
    }
 }
@@ -1232,30 +1227,27 @@ void CurvesTransformationInterface::__Curve_Paint( Control& sender, const pcl::R
 
    if ( m_readoutActive || m_cursorVisible )
    {
-      Bitmap bmp1 = m_viewportBitmap.Subimage( updateRect );
-
-      Bitmap bmp( updateRect.Width(), updateRect.Height() );
-      bmp.Fill( 0xFF000000 );
-
-      if ( m_readoutActive )
+      Bitmap bmp = m_viewportBitmap.Subimage( updateRect );
       {
-         Rect r0 = sender.ClientRect();
-         int w = r0.Width()*m_zoomX;
-         int h = r0.Height()*m_zoomY;
+         Graphics g( bmp );
+         g.EnableAntialiasing();
+         g.SetCompositionOperator( CompositionOp::Difference );
 
-         Rect r( updateRect + GUI->Curve_ScrollBox.ScrollPosition() );
+         if ( m_readoutActive )
+         {
+            Rect r0 = sender.ClientRect();
+            int w = r0.Width()*m_zoomX;
+            int h = r0.Height()*m_zoomY;
+            Rect r( updateRect + GUI->Curve_ScrollBox.ScrollPosition() );
+            PlotReadouts( g, bmp, r, w, h );
+         }
 
-         PlotReadouts( bmp, r, w, h );
+         if ( m_cursorVisible )
+            PlotCursor( g, updateRect );
       }
 
-      if ( m_cursorVisible )
-         PlotCursor( bmp, updateRect );
-
-      bmp1.Xor( bmp );
-      bmp1.SetPixelFormat( BitmapFormat::RGB32 );
-
       Graphics g( sender );
-      g.DrawBitmap( updateRect.LeftTop(), bmp1 );
+      g.DrawBitmap( updateRect.LeftTop(), bmp );
    }
    else
    {
@@ -1330,6 +1322,7 @@ void CurvesTransformationInterface::__Curve_MousePress(
             Rect r = sender.ClientRect();
             int w = r.Width() * m_zoomX;
             int h = r.Height() * m_zoomY;
+            int t = LogicalPixelsToPhysical( CURSOR_TOLERANCE );
 
             Point p = pos + GUI->Curve_ScrollBox.ScrollPosition();
 
@@ -1344,16 +1337,16 @@ void CurvesTransformationInterface::__Curve_MousePress(
                if ( !modifiers )
                {
                   m_dragging = true;
-                  i = CreatePoint( m_channel, m_curvePos, int( CURSOR_TOLERANCE*1.5 ) );
+                  i = CreatePoint( m_channel, m_curvePos, int( t*1.5 ) );
                }
                break;
 
             case SelectMode:
-               i = FindPoint( m_channel, m_curvePos, CURSOR_TOLERANCE );
+               i = FindPoint( m_channel, m_curvePos, t );
                break;
 
             case DeleteMode:
-               i = RemovePoint( m_channel, m_curvePos, CURSOR_TOLERANCE );
+               i = RemovePoint( m_channel, m_curvePos, t );
                break;
 
             default:
@@ -1378,7 +1371,7 @@ void CurvesTransformationInterface::__Curve_MousePress(
    }
    else if ( button == MouseButton::Right )
    {
-      size_type i = RemovePoint( m_channel, m_curvePos, CURSOR_TOLERANCE );
+      size_type i = RemovePoint( m_channel, m_curvePos, LogicalPixelsToPhysical( CURSOR_TOLERANCE ) );
       if ( i != ~size_type( 0 ) )
          SelectPoint( i, false );
    }
@@ -1411,15 +1404,22 @@ void CurvesTransformationInterface::__Curve_MouseMove(
 
       for ( int i = 0; i < 2; ++i )
       {
+         double f = DisplayPixelRatio();
          if ( m_mode == ZoomInMode || m_mode == ZoomOutMode || m_mode == PanMode )
-            sender.Update( m_cursorPos.x-16, m_cursorPos.y-16, m_cursorPos.x+16+1, m_cursorPos.y+16+1 );
+         {
+            int ui16 = RoundInt( f*16 );
+            sender.Update( m_cursorPos.x-ui16, m_cursorPos.y-ui16, m_cursorPos.x+ui16, m_cursorPos.y+ui16 );
+         }
          else
          {
-            sender.Update( m_cursorPos.x, 0, m_cursorPos.x+1, h );
-            sender.Update( 0, m_cursorPos.y, w, m_cursorPos.y+1 );
-
+            int ui1 = RoundInt( f );
+            sender.Update( m_cursorPos.x-ui1, 0, m_cursorPos.x+ui1, h );
+            sender.Update( 0, m_cursorPos.y-ui1, w, m_cursorPos.y+ui1 );
             if ( m_mode == SelectMode || m_mode == DeleteMode )
-               sender.Update( m_cursorPos.x-8, m_cursorPos.y-8, m_cursorPos.x+8+1, m_cursorPos.y+8+1 );
+            {
+               int ui10 = RoundInt( f*10 );
+               sender.Update( m_cursorPos.x-ui10, m_cursorPos.y-ui10, m_cursorPos.x+ui10, m_cursorPos.y+ui10 );
+            }
          }
 
          if ( i == 0 )
@@ -1936,21 +1936,11 @@ void CurvesTransformationInterface::__UpdateRealTimePreview_Timer( Timer& sender
 
 CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& w )
 {
+   int ui16 = w.LogicalPixelsToPhysical( 16 );
+   int ui24 = w.LogicalPixelsToPhysical( 24 );
    int labelWidth = w.Font().Width( String( "Output:" ) + 'M' );
-
-   int channelLabelWidth = 19 + w.Font().Width( 'M' ) +
-#if defined( __PCL_WINDOWS ) || defined( __PCL_MACOSX )
-      + 5;
-#else
-      + 4;
-#endif
-   int rgbkLabelWidth = 19 + w.Font().Width( "RGB/K" )
-#if defined( __PCL_WINDOWS ) || defined( __PCL_MACOSX )
-      + 10;
-#else
-      + 5;
-#endif
-
+   int channelLabelWidth = ui24 + w.Font().Width( 'M' );
+   int rgbkLabelWidth = ui24 + w.Font().Width( "RGB/K" );
    int curveMinSize = 10*channelLabelWidth + rgbkLabelWidth;
 
    //
@@ -1973,29 +1963,29 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
 
    //
 
-   EditPointMode_ToolButton.SetIcon( Bitmap( edit_point_mode_XPM ) );
-   EditPointMode_ToolButton.SetFixedSize( 20, 20 );
+   EditPointMode_ToolButton.SetIcon( Bitmap( edit_point_mode_XPM ).ScaledToSize( ui16, ui16 ) );
+   EditPointMode_ToolButton.SetScaledFixedSize( 20, 20 );
    EditPointMode_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    EditPointMode_ToolButton.SetToolTip( "Edit Point mode" );
    EditPointMode_ToolButton.SetCheckable();
    EditPointMode_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__Mode_ButtonClick, w );
 
-   SelectPointMode_ToolButton.SetIcon( Bitmap( select_point_mode_XPM ) );
-   SelectPointMode_ToolButton.SetFixedSize( 20, 20 );
+   SelectPointMode_ToolButton.SetIcon( Bitmap( select_point_mode_XPM ).ScaledToSize( ui16, ui16 ) );
+   SelectPointMode_ToolButton.SetScaledFixedSize( 20, 20 );
    SelectPointMode_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    SelectPointMode_ToolButton.SetToolTip( "Select Point mode [Shift]" );
    SelectPointMode_ToolButton.SetCheckable();
    SelectPointMode_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__Mode_ButtonClick, w );
 
-   DeletePointMode_ToolButton.SetIcon( Bitmap( delete_point_mode_XPM ) );
-   DeletePointMode_ToolButton.SetFixedSize( 20, 20 );
+   DeletePointMode_ToolButton.SetIcon( Bitmap( delete_point_mode_XPM ).ScaledToSize( ui16, ui16 ) );
+   DeletePointMode_ToolButton.SetScaledFixedSize( 20, 20 );
    DeletePointMode_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    DeletePointMode_ToolButton.SetToolTip( "Delete Point mode [Ctrl]" );
    DeletePointMode_ToolButton.SetCheckable();
    DeletePointMode_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__Mode_ButtonClick, w );
 
-   ZoomInMode_ToolButton.SetIcon( Bitmap( ":/toolbar/image-mode-zoom-in.png" ) );
-   ZoomInMode_ToolButton.SetFixedSize( 20, 20 );
+   ZoomInMode_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-mode-zoom-in.png" ) );
+   ZoomInMode_ToolButton.SetScaledFixedSize( 20, 20 );
    ZoomInMode_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ZoomInMode_ToolButton.SetToolTip( "Zoom In mode "
 #ifdef __PCL_MACOSX
@@ -2006,8 +1996,8 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
    ZoomInMode_ToolButton.SetCheckable();
    ZoomInMode_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__Mode_ButtonClick, w );
 
-   ZoomOutMode_ToolButton.SetIcon( Bitmap( ":/toolbar/image-mode-zoom-out.png" ) );
-   ZoomOutMode_ToolButton.SetFixedSize( 20, 20 );
+   ZoomOutMode_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-mode-zoom-out.png" ) );
+   ZoomOutMode_ToolButton.SetScaledFixedSize( 20, 20 );
    ZoomOutMode_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ZoomOutMode_ToolButton.SetToolTip( "Zoom Out mode "
 #ifdef __PCL_MACOSX
@@ -2018,8 +2008,8 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
    ZoomOutMode_ToolButton.SetCheckable();
    ZoomOutMode_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__Mode_ButtonClick, w );
 
-   PanMode_ToolButton.SetIcon( Bitmap( ":/toolbar/image-mode-pan.png" ) );
-   PanMode_ToolButton.SetFixedSize( 20, 20 );
+   PanMode_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-mode-pan.png" ) );
+   PanMode_ToolButton.SetScaledFixedSize( 20, 20 );
    PanMode_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    PanMode_ToolButton.SetToolTip( "Pan mode [SpaceBar]" );
    PanMode_ToolButton.SetCheckable();
@@ -2029,21 +2019,21 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
    Zoom_SpinBox.SetToolTip( "Zoom" );
    Zoom_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&CurvesTransformationInterface::__Zoom_ValueUpdated, w );
 
-   Zoom11_ToolButton.SetIcon( Bitmap( ":/toolbar/view-zoom-1-1.png" ) );
-   Zoom11_ToolButton.SetFixedSize( 20, 20 );
+   Zoom11_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/view-zoom-1-1.png" ) );
+   Zoom11_ToolButton.SetScaledFixedSize( 20, 20 );
    Zoom11_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    Zoom11_ToolButton.SetToolTip( "Zoom 1:1" );
    Zoom11_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__Zoom_ButtonClick, w );
 
-   ShowAll_ToolButton.SetIcon( Bitmap( show_all_curves_XPM ) );
-   ShowAll_ToolButton.SetFixedSize( 20, 20 );
+   ShowAll_ToolButton.SetIcon( Bitmap( show_all_curves_XPM ).ScaledToSize( ui16, ui16 ) );
+   ShowAll_ToolButton.SetScaledFixedSize( 20, 20 );
    ShowAll_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ShowAll_ToolButton.SetToolTip( "Show all curves" );
    ShowAll_ToolButton.SetCheckable();
    ShowAll_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__ShowAll_ButtonClick, w );
 
-   ShowGrid_ToolButton.SetIcon( Bitmap( show_grid_XPM ) );
-   ShowGrid_ToolButton.SetFixedSize( 20, 20 );
+   ShowGrid_ToolButton.SetIcon( Bitmap( show_grid_XPM ).ScaledToSize( ui16, ui16 ) );
+   ShowGrid_ToolButton.SetScaledFixedSize( 20, 20 );
    ShowGrid_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ShowGrid_ToolButton.SetToolTip( "Show grid" );
    ShowGrid_ToolButton.SetCheckable();
@@ -2070,7 +2060,7 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
 
    //
 
-   R_ToolButton.SetIcon( Bitmap( red_small_channel_XPM ) );
+   R_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-display-red.png" ) );
    R_ToolButton.SetText( "R" );
    R_ToolButton.SetFixedWidth( channelLabelWidth );
    R_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
@@ -2078,7 +2068,7 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
    R_ToolButton.SetCheckable();
    R_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__Channel_ButtonClick, w );
 
-   G_ToolButton.SetIcon( Bitmap( green_small_channel_XPM ) );
+   G_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-display-green.png" ) );
    G_ToolButton.SetText( "G" );
    G_ToolButton.SetFixedWidth( channelLabelWidth );
    G_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
@@ -2086,7 +2076,7 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
    G_ToolButton.SetCheckable();
    G_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__Channel_ButtonClick, w );
 
-   B_ToolButton.SetIcon( Bitmap( blue_small_channel_XPM ) );
+   B_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-display-blue.png" ) );
    B_ToolButton.SetText( "B" );
    B_ToolButton.SetFixedWidth( channelLabelWidth );
    B_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
@@ -2094,7 +2084,7 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
    B_ToolButton.SetCheckable();
    B_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__Channel_ButtonClick, w );
 
-   RGBK_ToolButton.SetIcon( Bitmap( rgbk_small_channel_XPM ) );
+   RGBK_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-display-rgb.png" ) );
    RGBK_ToolButton.SetText( "RGB/K" );
    RGBK_ToolButton.SetFixedWidth( rgbkLabelWidth );
    RGBK_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
@@ -2102,7 +2092,7 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
    RGBK_ToolButton.SetCheckable();
    RGBK_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__Channel_ButtonClick, w );
 
-   A_ToolButton.SetIcon( Bitmap( alpha_small_channel_XPM ) );
+   A_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-display-alpha.png" ) );
    A_ToolButton.SetText( "A" );
    A_ToolButton.SetFixedWidth( channelLabelWidth );
    A_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
@@ -2110,7 +2100,7 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
    A_ToolButton.SetCheckable();
    A_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__Channel_ButtonClick, w );
 
-   L_ToolButton.SetIcon( Bitmap( L_channel_XPM ) );
+   L_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-display-value.png" ) );
    L_ToolButton.SetText( "L" );
    L_ToolButton.SetFixedWidth( channelLabelWidth );
    L_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
@@ -2118,7 +2108,7 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
    L_ToolButton.SetCheckable();
    L_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__Channel_ButtonClick, w );
 
-   a_ToolButton.SetIcon( Bitmap( a_channel_XPM ) );
+   a_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-display-cie-a.png" ) );
    a_ToolButton.SetText( "a" );
    a_ToolButton.SetFixedWidth( channelLabelWidth );
    a_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
@@ -2126,7 +2116,7 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
    a_ToolButton.SetCheckable();
    a_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__Channel_ButtonClick, w );
 
-   b_ToolButton.SetIcon( Bitmap( b_channel_XPM ) );
+   b_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-display-cie-b.png" ) );
    b_ToolButton.SetText( "b" );
    b_ToolButton.SetFixedWidth( channelLabelWidth );
    b_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
@@ -2134,7 +2124,7 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
    b_ToolButton.SetCheckable();
    b_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__Channel_ButtonClick, w );
 
-   c_ToolButton.SetIcon( Bitmap( c_channel_XPM ) );
+   c_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-display-saturation.png" ) );
    c_ToolButton.SetText( "c" );
    c_ToolButton.SetFixedWidth( channelLabelWidth );
    c_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
@@ -2142,7 +2132,7 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
    c_ToolButton.SetCheckable();
    c_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__Channel_ButtonClick, w );
 
-   H_ToolButton.SetIcon( Bitmap( H_channel_XPM ) );
+   H_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-display-hue.png" ) );
    H_ToolButton.SetText( "H" );
    H_ToolButton.SetFixedWidth( channelLabelWidth );
    H_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
@@ -2150,7 +2140,7 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
    H_ToolButton.SetCheckable();
    H_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__Channel_ButtonClick, w );
 
-   S_ToolButton.SetIcon( Bitmap( S_channel_XPM ) );
+   S_ToolButton.SetIcon( w.ScaledResource( ":/toolbar/image-display-saturation.png" ) );
    S_ToolButton.SetText( "S" );
    S_ToolButton.SetFixedWidth( channelLabelWidth );
    S_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
@@ -2180,38 +2170,38 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
    Input_NumericEdit.SetToolTip( "X point coordinate" );
    Input_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&CurvesTransformationInterface::__CurveParameter_ValueUpdated, w );
 
-   PrevPoint_ToolButton.SetIcon( Bitmap( ":/icons/move-left.png" ) );
-   PrevPoint_ToolButton.SetFixedSize( 20, 20 );
+   PrevPoint_ToolButton.SetIcon( w.ScaledResource( ":/icons/move-left.png" ) );
+   PrevPoint_ToolButton.SetScaledFixedSize( 20, 20 );
    PrevPoint_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    PrevPoint_ToolButton.SetToolTip( "Previous point" );
    PrevPoint_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__PointNavigation_ButtonClick, w );
 
-   FirstPoint_ToolButton.SetIcon( Bitmap( ":/icons/move-left-limit.png" ) );
-   FirstPoint_ToolButton.SetFixedSize( 20, 20 );
+   FirstPoint_ToolButton.SetIcon( w.ScaledResource( ":/icons/move-left-limit.png" ) );
+   FirstPoint_ToolButton.SetScaledFixedSize( 20, 20 );
    FirstPoint_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    FirstPoint_ToolButton.SetToolTip( "First point" );
    FirstPoint_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__PointNavigation_ButtonClick, w );
 
-   StoreCurve_ToolButton.SetIcon( Bitmap( store_curve_XPM ) );
-   StoreCurve_ToolButton.SetFixedSize( 20, 20 );
+   StoreCurve_ToolButton.SetIcon( w.ScaledResource( ":/icons/upload.png" ) );
+   StoreCurve_ToolButton.SetScaledFixedSize( 20, 20 );
    StoreCurve_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    StoreCurve_ToolButton.SetToolTip( "Store curve" );
    StoreCurve_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__StoreCurve_ButtonClick, w );
 
-   RestoreCurve_ToolButton.SetIcon( Bitmap( restore_curve_XPM ) );
-   RestoreCurve_ToolButton.SetFixedSize( 20, 20 );
+   RestoreCurve_ToolButton.SetIcon( w.ScaledResource( ":/icons/download.png" ) );
+   RestoreCurve_ToolButton.SetScaledFixedSize( 20, 20 );
    RestoreCurve_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    RestoreCurve_ToolButton.SetToolTip( "Restore curve" );
    RestoreCurve_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__RestoreCurve_ButtonClick, w );
 
-   ReverseCurve_ToolButton.SetIcon( Bitmap( reverse_XPM ) );
-   ReverseCurve_ToolButton.SetFixedSize( 20, 20 );
+   ReverseCurve_ToolButton.SetIcon( w.ScaledResource( ":/icons/picture-flip-vertical" ) );
+   ReverseCurve_ToolButton.SetScaledFixedSize( 20, 20 );
    ReverseCurve_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ReverseCurve_ToolButton.SetToolTip( "Reverse curve" );
    ReverseCurve_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__ReverseCurve_ButtonClick, w );
 
-   ResetCurve_ToolButton.SetIcon( Bitmap( String( ":/icons/delete.png" ) ) );
-   ResetCurve_ToolButton.SetFixedSize( 20, 20 );
+   ResetCurve_ToolButton.SetIcon( w.ScaledResource( ":/icons/delete.png" ) );
+   ResetCurve_ToolButton.SetScaledFixedSize( 20, 20 );
    ResetCurve_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    ResetCurve_ToolButton.SetToolTip( "Reset curve" );
    ResetCurve_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__ResetCurve_ButtonClick, w );
@@ -2236,36 +2226,36 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
    Output_NumericEdit.SetToolTip( "Y point coordinate" );
    Output_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&CurvesTransformationInterface::__CurveParameter_ValueUpdated, w );
 
-   NextPoint_ToolButton.SetIcon( Bitmap( ":/icons/move-right.png" ) );
-   NextPoint_ToolButton.SetFixedSize( 20, 20 );
+   NextPoint_ToolButton.SetIcon( w.ScaledResource( ":/icons/move-right.png" ) );
+   NextPoint_ToolButton.SetScaledFixedSize( 20, 20 );
    NextPoint_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    NextPoint_ToolButton.SetToolTip( "Next point" );
    NextPoint_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__PointNavigation_ButtonClick, w );
 
-   LastPoint_ToolButton.SetIcon( Bitmap( ":/icons/move-right-limit.png" ) );
-   LastPoint_ToolButton.SetFixedSize( 20, 20 );
+   LastPoint_ToolButton.SetIcon( w.ScaledResource( ":/icons/move-right-limit.png" ) );
+   LastPoint_ToolButton.SetScaledFixedSize( 20, 20 );
    LastPoint_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    LastPoint_ToolButton.SetToolTip( "Last point" );
    LastPoint_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__PointNavigation_ButtonClick, w );
 
    CurrentPoint_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
 
-   AkimaSubsplines_ToolButton.SetIcon( Bitmap( akima_interpolation_XPM ) );
-   AkimaSubsplines_ToolButton.SetFixedSize( 20, 20 );
+   AkimaSubsplines_ToolButton.SetIcon( Bitmap( akima_interpolation_XPM ).ScaledToSize( ui16, ui16 ) );
+   AkimaSubsplines_ToolButton.SetScaledFixedSize( 20, 20 );
    AkimaSubsplines_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    AkimaSubsplines_ToolButton.SetToolTip( "Akima subspline interpolation" );
    AkimaSubsplines_ToolButton.SetCheckable();
    AkimaSubsplines_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__Interpolation_ButtonClick, w );
 
-   CubicSpline_ToolButton.SetIcon( Bitmap( cubic_spline_interpolation_XPM ) );
-   CubicSpline_ToolButton.SetFixedSize( 20, 20 );
+   CubicSpline_ToolButton.SetIcon( Bitmap( cubic_spline_interpolation_XPM ).ScaledToSize( ui16, ui16 ) );
+   CubicSpline_ToolButton.SetScaledFixedSize( 20, 20 );
    CubicSpline_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    CubicSpline_ToolButton.SetToolTip( "Cubic spline interpolation" );
    CubicSpline_ToolButton.SetCheckable();
    CubicSpline_ToolButton.OnClick( (ToolButton::click_event_handler)&CurvesTransformationInterface::__Interpolation_ButtonClick, w );
 
-   Linear_ToolButton.SetIcon( Bitmap( linear_interpolation_XPM ) );
-   Linear_ToolButton.SetFixedSize( 20, 20 );
+   Linear_ToolButton.SetIcon( Bitmap( linear_interpolation_XPM ).ScaledToSize( ui16, ui16 ) );
+   Linear_ToolButton.SetScaledFixedSize( 20, 20 );
    Linear_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    Linear_ToolButton.SetToolTip( "Linear interpolation" );
    Linear_ToolButton.SetCheckable();
@@ -2305,5 +2295,5 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
 
 } // pcl
 
-// ****************************************************************************
-// EOF CurvesTransformationInterface.cpp - Released 2014/11/14 17:19:23 UTC
+// ----------------------------------------------------------------------------
+// EOF CurvesTransformationInterface.cpp - Released 2015/07/31 11:49:48 UTC

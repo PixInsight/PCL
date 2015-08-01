@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/FFTRegistration.h - Released 2014/11/14 17:16:33 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/FFTRegistration.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_FFTRegistration_h
 #define __PCL_FFTRegistration_h
@@ -93,18 +96,27 @@ class PCL_CLASS FFTRegistrationEngine
 public:
 
    /*!
-    * Constructs a %FFTRegistrationEngine object.
+    * Constructs an %FFTRegistrationEngine object.
     */
-   FFTRegistrationEngine() : fftReference( 0 )
+   FFTRegistrationEngine() = default;
+
+   /*!
+    * Copy constructor.
+    */
+   FFTRegistrationEngine( const FFTRegistrationEngine& ) = default;
+
+   /*!
+    * Move constructor.
+    */
+   FFTRegistrationEngine( FFTRegistrationEngine&& x ) : m_fftReference( std::move( m_fftReference ) )
    {
    }
 
    /*!
-    * Destroys a %FFTRegistrationEngine object.
+    * Destroys an %FFTRegistrationEngine object.
     */
    virtual ~FFTRegistrationEngine()
    {
-      Reset();
    }
 
    /*!
@@ -112,7 +124,7 @@ public:
     */
    bool IsInitialized() const
    {
-      return fftReference != 0;
+      return !m_fftReference.IsEmpty();
    }
 
    /*!
@@ -128,7 +140,7 @@ public:
    void Initialize( const pcl::GenericImage<P>& image )
    {
       Reset();
-      fftReference = DoInitialize( image );
+      m_fftReference = DoInitialize( image );
    }
 
    /*!
@@ -146,35 +158,35 @@ public:
          if ( image.IsComplexSample() )
             switch ( image.BitsPerSample() )
             {
-            case 32: fftReference = DoInitialize( static_cast<const ComplexImage&>( *image ) ); break;
-            case 64: fftReference = DoInitialize( static_cast<const DComplexImage&>( *image ) ); break;
+            case 32: m_fftReference = DoInitialize( static_cast<const ComplexImage&>( *image ) ); break;
+            case 64: m_fftReference = DoInitialize( static_cast<const DComplexImage&>( *image ) ); break;
             }
          else if ( image.IsFloatSample() )
             switch ( image.BitsPerSample() )
             {
-            case 32: fftReference = DoInitialize( static_cast<const Image&>( *image ) ); break;
-            case 64: fftReference = DoInitialize( static_cast<const DImage&>( *image ) ); break;
+            case 32: m_fftReference = DoInitialize( static_cast<const Image&>( *image ) ); break;
+            case 64: m_fftReference = DoInitialize( static_cast<const DImage&>( *image ) ); break;
             }
          else
             switch ( image.BitsPerSample() )
             {
-            case  8: fftReference = DoInitialize( static_cast<const UInt8Image&>( *image ) ); break;
-            case 16: fftReference = DoInitialize( static_cast<const UInt16Image&>( *image ) ); break;
-            case 32: fftReference = DoInitialize( static_cast<const UInt32Image&>( *image ) ); break;
+            case  8: m_fftReference = DoInitialize( static_cast<const UInt8Image&>( *image ) ); break;
+            case 16: m_fftReference = DoInitialize( static_cast<const UInt16Image&>( *image ) ); break;
+            case 32: m_fftReference = DoInitialize( static_cast<const UInt32Image&>( *image ) ); break;
             }
    }
 
    /*!
-    * Returns a pointer to the discrete Fourier transform of the reference
+    * Returns a reference to the discrete Fourier transform of the reference
     * image.
     *
     * The reference image is the image specified in the last call to
-    * Initialize(). This function returns zero if this registration engine has
-    * not been initialized.
+    * Initialize(). This function returns an empty image if this registration
+    * engine has not been initialized.
     */
-   const ComplexImage* DFTOfReferenceImage() const
+   const ComplexImage& DFTOfReferenceImage() const
    {
-      return fftReference;
+      return m_fftReference;
    }
 
    /*!
@@ -184,8 +196,7 @@ public:
     */
    void Reset()
    {
-      if ( fftReference != 0 )
-         delete fftReference, fftReference = 0;
+      m_fftReference.FreeData();
    }
 
    /*!
@@ -238,15 +249,15 @@ public:
 protected:
 
    // DFT of the reference image.
-   ComplexImage* fftReference;
+   ComplexImage m_fftReference;
 
-   virtual ComplexImage* DoInitialize( const pcl::Image& ) = 0;
-   virtual ComplexImage* DoInitialize( const pcl::DImage& ) = 0;
-   virtual ComplexImage* DoInitialize( const pcl::ComplexImage& ) = 0;
-   virtual ComplexImage* DoInitialize( const pcl::DComplexImage& ) = 0;
-   virtual ComplexImage* DoInitialize( const pcl::UInt8Image& ) = 0;
-   virtual ComplexImage* DoInitialize( const pcl::UInt16Image& ) = 0;
-   virtual ComplexImage* DoInitialize( const pcl::UInt32Image& ) = 0;
+   virtual ComplexImage DoInitialize( const pcl::Image& ) = 0;
+   virtual ComplexImage DoInitialize( const pcl::DImage& ) = 0;
+   virtual ComplexImage DoInitialize( const pcl::ComplexImage& ) = 0;
+   virtual ComplexImage DoInitialize( const pcl::DComplexImage& ) = 0;
+   virtual ComplexImage DoInitialize( const pcl::UInt8Image& ) = 0;
+   virtual ComplexImage DoInitialize( const pcl::UInt16Image& ) = 0;
+   virtual ComplexImage DoInitialize( const pcl::UInt32Image& ) = 0;
 
    virtual void DoEvaluate( const pcl::Image& ) = 0;
    virtual void DoEvaluate( const pcl::DImage& ) = 0;
@@ -266,7 +277,7 @@ protected:
 /*!
  * Initializes a %FFT registration engine or evaluates a target image.
  *
- * \param R    %FFT registration engine.
+ * \param R      %FFT registration engine.
  * \param image  An image or ImageVariant for initialization or evaluation.
  *
  * If the engine has not still been initialized, it is initialized for the
@@ -306,15 +317,16 @@ class PCL_CLASS FFTTranslation : public FFTRegistrationEngine
 public:
 
    /*!
-    * Constructs a %FFTTranslation object.
+    * Constructs an %FFTTranslation object.
     */
    FFTTranslation() :
-   FFTRegistrationEngine(), largeTranslations( false ), delta( 0.0F ), peak( 0.0F )
+      FFTRegistrationEngine(),
+      m_largeTranslations( false ), m_delta( 0.0F ), m_peak( 0.0F )
    {
    }
 
    /*!
-    * Destroys a %FFTTranslation object.
+    * Destroys an %FFTTranslation object.
     */
    virtual ~FFTTranslation()
    {
@@ -329,7 +341,7 @@ public:
     */
    bool AreLargeTranslationsEnabled() const
    {
-      return largeTranslations;
+      return m_largeTranslations;
    }
 
    /*!
@@ -344,10 +356,10 @@ public:
     */
    void EnableLargeTranslations( bool enable = true )
    {
-      if ( enable != largeTranslations )
+      if ( enable != m_largeTranslations )
       {
          Reset();
-         largeTranslations = enable;
+         m_largeTranslations = enable;
       }
    }
 
@@ -380,7 +392,7 @@ public:
     */
    const FPoint& Delta() const
    {
-      return delta;
+      return m_delta;
    }
 
    /*!
@@ -391,7 +403,7 @@ public:
     */
    float DeltaX() const
    {
-      return delta.x;
+      return m_delta.x;
    }
 
    /*!
@@ -402,7 +414,7 @@ public:
     */
    float DeltaY() const
    {
-      return delta.y;
+      return m_delta.y;
    }
 
    /*!
@@ -412,28 +424,28 @@ public:
     */
    float Peak() const
    {
-      return peak;
+      return m_peak;
    }
 
 protected:
 
    // Allow translations > size/2.
    // Warning: a lot of memory may be necessary --four times more.
-   bool     largeTranslations;
+   bool     m_largeTranslations;
 
    // Evaluation result.
-   FPoint   delta;
+   FPoint   m_delta;
 
    // Peak value detected in the phase matrix.
-   float    peak;
+   float    m_peak;
 
-   virtual ComplexImage* DoInitialize( const pcl::Image& );
-   virtual ComplexImage* DoInitialize( const pcl::DImage& );
-   virtual ComplexImage* DoInitialize( const pcl::ComplexImage& );
-   virtual ComplexImage* DoInitialize( const pcl::DComplexImage& );
-   virtual ComplexImage* DoInitialize( const pcl::UInt8Image& );
-   virtual ComplexImage* DoInitialize( const pcl::UInt16Image& );
-   virtual ComplexImage* DoInitialize( const pcl::UInt32Image& );
+   virtual ComplexImage DoInitialize( const pcl::Image& );
+   virtual ComplexImage DoInitialize( const pcl::DImage& );
+   virtual ComplexImage DoInitialize( const pcl::ComplexImage& );
+   virtual ComplexImage DoInitialize( const pcl::DComplexImage& );
+   virtual ComplexImage DoInitialize( const pcl::UInt8Image& );
+   virtual ComplexImage DoInitialize( const pcl::UInt16Image& );
+   virtual ComplexImage DoInitialize( const pcl::UInt32Image& );
 
    virtual void DoEvaluate( const pcl::Image& );
    virtual void DoEvaluate( const pcl::DImage& );
@@ -470,8 +482,8 @@ public:
     * Scaling ratio evaluation (see EvaluatesScaling()) is disabled by default.
     */
    FFTRotationAndScaling() :
-   FFTRegistrationEngine(),
-   evaluateScaling( false ), lowFrequencyCutoff( 1.0F/200 ), rotationAngle( 0 ), scalingRatio( 1 )
+      FFTRegistrationEngine(),
+      m_evaluateScaling( false ), m_lowFrequencyCutoff( 1.0F/200 ), m_rotationAngle( 0 ), m_scalingRatio( 1 )
    {
    }
 
@@ -488,7 +500,7 @@ public:
     */
    bool EvaluatesScaling() const
    {
-      return evaluateScaling;
+      return m_evaluateScaling;
    }
 
    /*!
@@ -496,10 +508,10 @@ public:
     */
    void EnableScalingEvaluation( bool enable = true )
    {
-      if ( enable != evaluateScaling )
+      if ( enable != m_evaluateScaling )
       {
          Reset();
-         evaluateScaling = enable;
+         m_evaluateScaling = enable;
       }
    }
 
@@ -522,7 +534,7 @@ public:
     */
    float LowFrequencyCutoff() const
    {
-      return lowFrequencyCutoff;
+      return m_lowFrequencyCutoff;
    }
 
    /*!
@@ -546,7 +558,7 @@ public:
     */
    void SetLowFrequencyCutoff( float r )
    {
-      lowFrequencyCutoff = Range( r, 0.0F, 0.5F );
+      m_lowFrequencyCutoff = Range( r, 0.0F, 0.5F );
    }
 
    /*!
@@ -557,7 +569,7 @@ public:
     */
    float RotationAngle() const
    {
-      return rotationAngle;
+      return m_rotationAngle;
    }
 
    /*!
@@ -568,28 +580,28 @@ public:
     */
    float ScalingRatio() const
    {
-      return scalingRatio;
+      return m_scalingRatio;
    }
 
 protected:
 
    // Evaluate rotation+scaling, or just rotation?
-   bool     evaluateScaling;
+   bool     m_evaluateScaling;
 
    // Low-frequency cutoff, as a fraction of the DFT radius.
-   float    lowFrequencyCutoff;
+   float    m_lowFrequencyCutoff;
 
    // Evaluation result
-   float    rotationAngle; // radians
-   float    scalingRatio;  // pixels
+   float    m_rotationAngle; // radians
+   float    m_scalingRatio;  // pixels
 
-   virtual ComplexImage* DoInitialize( const pcl::Image& );
-   virtual ComplexImage* DoInitialize( const pcl::DImage& );
-   virtual ComplexImage* DoInitialize( const pcl::ComplexImage& );
-   virtual ComplexImage* DoInitialize( const pcl::DComplexImage& );
-   virtual ComplexImage* DoInitialize( const pcl::UInt8Image& );
-   virtual ComplexImage* DoInitialize( const pcl::UInt16Image& );
-   virtual ComplexImage* DoInitialize( const pcl::UInt32Image& );
+   virtual ComplexImage DoInitialize( const pcl::Image& );
+   virtual ComplexImage DoInitialize( const pcl::DImage& );
+   virtual ComplexImage DoInitialize( const pcl::ComplexImage& );
+   virtual ComplexImage DoInitialize( const pcl::DComplexImage& );
+   virtual ComplexImage DoInitialize( const pcl::UInt8Image& );
+   virtual ComplexImage DoInitialize( const pcl::UInt16Image& );
+   virtual ComplexImage DoInitialize( const pcl::UInt32Image& );
 
    virtual void DoEvaluate( const pcl::Image& );
    virtual void DoEvaluate( const pcl::DImage& );
@@ -606,5 +618,5 @@ protected:
 
 #endif   // __PCL_FFTRegistration_h
 
-// ****************************************************************************
-// EOF pcl/FFTRegistration.h - Released 2014/11/14 17:16:33 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/FFTRegistration.h - Released 2015/07/30 17:15:18 UTC

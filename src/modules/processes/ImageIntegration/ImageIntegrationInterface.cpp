@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard ImageIntegration Process Module Version 01.09.04.0253
-// ****************************************************************************
-// ImageIntegrationInterface.cpp - Released 2014/11/14 17:19:21 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard ImageIntegration Process Module Version 01.09.04.0274
+// ----------------------------------------------------------------------------
+// ImageIntegrationInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "FileDataCachePreferencesDialog.h"
 #include "ImageIntegrationInterface.h"
@@ -57,7 +61,7 @@
 #include <pcl/MessageBox.h>
 #include <pcl/PreviewSelectionDialog.h>
 
-#define IMAGELIST_MINHEIGHT( fnt )  (8*fnt.Height() + 2)
+#define IMAGELIST_MINHEIGHT( fnt )  RoundInt( 8.125*fnt.Height() )
 
 namespace pcl
 {
@@ -201,7 +205,7 @@ void ImageIntegrationInterface::UpdateInputImagesItem( size_type i )
    node->SetText( 0, String( i+1 ) );
    node->SetAlignment( 0, TextAlign::Right );
 
-   node->SetIcon( 1, Bitmap( String( item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
+   node->SetIcon( 1, Bitmap( ScaledResource( item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
    node->SetAlignment( 1, TextAlign::Left );
 
    String fileText;
@@ -461,17 +465,7 @@ String ImageIntegrationInterface::DrizzleTargetName( const String& filePath )
    /*
     * Load drizzle data file contents.
     */
-   File file;
-   file.OpenForReading( filePath );
-   fsize_type fileSize = file.Size();
-   IsoString text;
-   if ( fileSize > 0 )
-   {
-      text.Reserve( fileSize );
-      file.Read( reinterpret_cast<void*>( text.Begin() ), fileSize );
-      text[fileSize] = '\0';
-   }
-   file.Close();
+   IsoString text = File::ReadTextFile( filePath );
 
    /*
     * If the .drz file includes a target path, return it.
@@ -712,7 +706,7 @@ void ImageIntegrationInterface::__Integration_EditCompleted( Edit& sender )
    {
       instance.p_weightKeyword = sender.Text();
       instance.p_weightKeyword.Trim();
-      instance.p_weightKeyword.ToUpperCase();
+      instance.p_weightKeyword.ToUppercase();
       sender.SetText( instance.p_weightKeyword );
    }
 }
@@ -850,6 +844,7 @@ void ImageIntegrationInterface::__ROI_Click( Button& sender, bool checked )
    if ( sender == GUI->SelectPreview_Button )
    {
       PreviewSelectionDialog d;
+      d.SetWindowTitle( "Select ROI Preview" );
       if ( d.Execute() )
          if ( !d.Id().IsEmpty() )
          {
@@ -889,8 +884,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    int editWidth1 = fnt.Width( String( 'M', 16 ) );
    int editWidth2 = fnt.Width( String( '0', 11 ) );
    //int spinWidth1 = fnt.Width( String( '0', 11 ) );
-
-   const int sliderWidth = 250;
+   int ui4 = w.LogicalPixelsToPhysical( 4 );
 
    //
 
@@ -1197,7 +1191,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
       "available).</p>" );
    IgnoreNoiseKeywords_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__Integration_Click, w );
 
-   IgnoreNoiseKeywords_Sizer.AddSpacing( labelWidth1 + 4 );
+   IgnoreNoiseKeywords_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    IgnoreNoiseKeywords_Sizer.Add( IgnoreNoiseKeywords_CheckBox );
    IgnoreNoiseKeywords_Sizer.AddStretch();
 
@@ -1210,7 +1204,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
       "of pixel rejection, you normally are only interested in rejection pixel counts and/or rejection maps.</p>" );
    GenerateIntegratedImage_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__Integration_Click, w );
 
-   GenerateIntegratedImage_Sizer.AddSpacing( labelWidth1 + 4 );
+   GenerateIntegratedImage_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    GenerateIntegratedImage_Sizer.Add( GenerateIntegratedImage_CheckBox );
    GenerateIntegratedImage_Sizer.AddStretch();
 
@@ -1220,7 +1214,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
       "floating point image.</p>" );
    Generate64BitResult_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__Integration_Click, w );
 
-   Generate64BitResult_Sizer.AddSpacing( labelWidth1 + 4 );
+   Generate64BitResult_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    Generate64BitResult_Sizer.Add( Generate64BitResult_CheckBox );
    Generate64BitResult_Sizer.AddStretch();
 
@@ -1232,7 +1226,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
       "the .drz file suffix.</p>" );
    GenerateDrizzleData_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__Integration_Click, w );
 
-   GenerateDrizzleData_Sizer.AddSpacing( labelWidth1 + 4 );
+   GenerateDrizzleData_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    GenerateDrizzleData_Sizer.Add( GenerateDrizzleData_CheckBox );
    GenerateDrizzleData_Sizer.AddStretch();
 
@@ -1245,7 +1239,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
       "best result in terms of signal-to-noise ratio improvement.</p>" );
    EvaluateNoise_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__Integration_Click, w );
 
-   EvaluateNoise_Sizer.AddSpacing( labelWidth1 + 4 );
+   EvaluateNoise_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    EvaluateNoise_Sizer.Add( EvaluateNoise_CheckBox );
    EvaluateNoise_Sizer.AddStretch();
 
@@ -1255,19 +1249,19 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
       "results on the workspace, when the same integration is being tested repeatedly.</p>" );
    ClosePreviousImages_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__Integration_Click, w );
 
-   ClosePreviousImages_Sizer.AddSpacing( labelWidth1 + 4 );
+   ClosePreviousImages_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    ClosePreviousImages_Sizer.Add( ClosePreviousImages_CheckBox );
    ClosePreviousImages_Sizer.AddStretch();
 
-   const char* bufferSizeToolTip = "<p>Buffer size in megabytes (MB).</p>"
+   const char* bufferSizeToolTip =
       "<p>This parameter defines the size of the working buffers used to read pixel rows. There is an "
       "independent buffer per input image. A reasonably large buffer size will improve performance by "
-      "minimizing disk reading operations. The default value of 16 MB is usually quite appropriate.</p>"
+      "minimizing disk reading operations. The default value of 16 MiB is usually quite appropriate.</p>"
       "<p>Decrease this parameter if you experience out-of-memory errors during integration. This may "
       "be necessary for integration of large image sets on systems with low memory resources. The "
       "minimum value is zero, which will use a single row of pixels per input image.</p>";
 
-   BufferSize_Label.SetText( "Buffer size (MB):" );
+   BufferSize_Label.SetText( "Buffer size (MiB):" );
    BufferSize_Label.SetFixedWidth( labelWidth1 );
    BufferSize_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    BufferSize_Label.SetToolTip( bufferSizeToolTip );
@@ -1282,7 +1276,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    BufferSize_Sizer.Add( BufferSize_SpinBox );
    BufferSize_Sizer.AddStretch();
 
-   const char* stackSizeToolTip = "<p>Stack size in megabytes (MB).</p>"
+   const char* stackSizeToolTip =
       "<p>This is the size of the working integration stack structure. In general, the larger this "
       "parameter, the better the performance, especially on multiprocessor/multicore systems.</p>"
       "<p>The best performance is achieved when the whole set of integrated pixels can be loaded at "
@@ -1292,17 +1286,17 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
       "larger than or equal to W*H*(12*N + 4), where W and H are the image width and height in pixels, "
       "respectively, and N is the number of integrated images. For linear fit clipping rejection, "
       "replace 4 with 8 in the above equation. Note that this may require a large amount of RAM "
-      "available for relatively large image sets. As an example, the default stack size of 1024 (1 GB) "
+      "available for relatively large image sets. As an example, the default stack size of 1024 (1 GiB) "
       "is sufficient to integrate 20 2048x2048 monochrome images optimally with the default buffer size "
-      "of 16 MB. With a stack size of 4 GB and a buffer size of 64 MB you could integrate 20 4Kx4K "
+      "of 16 MiB. With a stack size of 4 GiB and a buffer size of 64 MiB you could integrate 20 4Kx4K "
       "monochrome images with optimum performance on a 64-bit version of PixInsight.</p>";
 
-   StackSize_Label.SetText( "Stack size (MB):" );
+   StackSize_Label.SetText( "Stack size (MiB):" );
    StackSize_Label.SetFixedWidth( labelWidth1 );
    StackSize_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    StackSize_Label.SetToolTip( stackSizeToolTip );
 
-   // Limit to one half the parameter's maximum (500 GB) to keep the SpinBox size within editWidth2.
+   // Limit to one half the parameter's maximum (500 GiB) to keep the SpinBox size within editWidth2.
    StackSize_SpinBox.SetRange( int( TheIIStackSizeParameter->MinimumValue() ), int( TheIIStackSizeParameter->MaximumValue() ) >> 1 );
    StackSize_SpinBox.SetToolTip( stackSizeToolTip );
    StackSize_SpinBox.SetFixedWidth( editWidth2 );
@@ -1325,7 +1319,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
       "cache and its options can be controlled with the ImageIntegration Preferences dialog.</p>");
    UseCache_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__Integration_Click, w );
 
-   Cache_Sizer.AddSpacing( labelWidth1 + 4 );
+   Cache_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    Cache_Sizer.Add( UseCache_CheckBox );
    Cache_Sizer.AddStretch();
 
@@ -1449,7 +1443,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
       "rejection parameters.</p>" );
    GenerateRejectionMaps_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__Rejection_Click, w );
 
-   GenerateRejectionMaps_Sizer.AddSpacing( labelWidth1 + 4 );
+   GenerateRejectionMaps_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    GenerateRejectionMaps_Sizer.Add( GenerateRejectionMaps_CheckBox );
    GenerateRejectionMaps_Sizer.AddStretch();
 
@@ -1458,7 +1452,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
       "a pixel stack.</p>" );
    ClipLow_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__Rejection_Click, w );
 
-   ClipLow_Sizer.AddSpacing( labelWidth1 + 4 );
+   ClipLow_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    ClipLow_Sizer.Add( ClipLow_CheckBox );
    ClipLow_Sizer.AddStretch();
 
@@ -1467,7 +1461,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
       "a pixel stack.</p>" );
    ClipHigh_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__Rejection_Click, w );
 
-   ClipHigh_Sizer.AddSpacing( labelWidth1 + 4 );
+   ClipHigh_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    ClipHigh_Sizer.Add( ClipHigh_CheckBox );
    ClipHigh_Sizer.AddStretch();
 
@@ -1476,7 +1470,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
       "<i>low rejection range</i> parameter.</p>" );
    ClipLowRange_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__Rejection_Click, w );
 
-   ClipLowRange_Sizer.AddSpacing( labelWidth1 + 4 );
+   ClipLowRange_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    ClipLowRange_Sizer.Add( ClipLowRange_CheckBox );
    ClipLowRange_Sizer.AddStretch();
 
@@ -1485,7 +1479,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
       "<i>high rejection range</i> parameter.</p>" );
    ClipHighRange_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__Rejection_Click, w );
 
-   ClipHighRange_Sizer.AddSpacing( labelWidth1 + 4 );
+   ClipHighRange_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    ClipHighRange_Sizer.Add( ClipHighRange_CheckBox );
    ClipHighRange_Sizer.AddStretch();
 
@@ -1494,7 +1488,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
       "reported on console summaries.</p>" );
    ReportRangeRejection_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__Rejection_Click, w );
 
-   ReportRangeRejection_Sizer.AddSpacing( labelWidth1 + 4 );
+   ReportRangeRejection_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    ReportRangeRejection_Sizer.Add( ReportRangeRejection_CheckBox );
    ReportRangeRejection_Sizer.AddStretch();
 
@@ -1502,7 +1496,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    MapRangeRejection_CheckBox.SetToolTip( "<p>Include range rejected pixels in pixel rejection maps.</p>" );
    MapRangeRejection_CheckBox.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__Rejection_Click, w );
 
-   MapRangeRejection_Sizer.AddSpacing( labelWidth1 + 4 );
+   MapRangeRejection_Sizer.AddUnscaledSpacing( labelWidth1 + ui4 );
    MapRangeRejection_Sizer.Add( MapRangeRejection_CheckBox );
    MapRangeRejection_Sizer.AddStretch();
 
@@ -1563,7 +1557,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    PercentileLow_NumericControl.label.SetText( "Percentile low:" );
    PercentileLow_NumericControl.label.SetFixedWidth( labelWidth1 );
    PercentileLow_NumericControl.slider.SetRange( 0, 100 );
-   PercentileLow_NumericControl.slider.SetMinWidth( sliderWidth );
+   PercentileLow_NumericControl.slider.SetScaledMinWidth( 250 );
    PercentileLow_NumericControl.SetReal();
    PercentileLow_NumericControl.SetRange( TheIIPercentileLowParameter->MinimumValue(), TheIIPercentileLowParameter->MaximumValue() );
    PercentileLow_NumericControl.SetPrecision( TheIIPercentileLowParameter->Precision() );
@@ -1574,7 +1568,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    PercentileHigh_NumericControl.label.SetText( "Percentile high:" );
    PercentileHigh_NumericControl.label.SetFixedWidth( labelWidth1 );
    PercentileHigh_NumericControl.slider.SetRange( 0, 100 );
-   PercentileHigh_NumericControl.slider.SetMinWidth( sliderWidth );
+   PercentileHigh_NumericControl.slider.SetScaledMinWidth( 250 );
    PercentileHigh_NumericControl.SetReal();
    PercentileHigh_NumericControl.SetRange( TheIIPercentileHighParameter->MinimumValue(), TheIIPercentileHighParameter->MaximumValue() );
    PercentileHigh_NumericControl.SetPrecision( TheIIPercentileHighParameter->Precision() );
@@ -1585,7 +1579,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    SigmaLow_NumericControl.label.SetText( "Sigma low:" );
    SigmaLow_NumericControl.label.SetFixedWidth( labelWidth1 );
    SigmaLow_NumericControl.slider.SetRange( 0, 100 );
-   SigmaLow_NumericControl.slider.SetMinWidth( sliderWidth );
+   SigmaLow_NumericControl.slider.SetScaledMinWidth( 250 );
    SigmaLow_NumericControl.SetReal();
    SigmaLow_NumericControl.SetRange( TheIISigmaLowParameter->MinimumValue(), TheIISigmaLowParameter->MaximumValue() );
    SigmaLow_NumericControl.SetPrecision( TheIISigmaLowParameter->Precision() );
@@ -1597,7 +1591,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    SigmaHigh_NumericControl.label.SetText( "Sigma high:" );
    SigmaHigh_NumericControl.label.SetFixedWidth( labelWidth1 );
    SigmaHigh_NumericControl.slider.SetRange( 0, 100 );
-   SigmaHigh_NumericControl.slider.SetMinWidth( sliderWidth );
+   SigmaHigh_NumericControl.slider.SetScaledMinWidth( 250 );
    SigmaHigh_NumericControl.SetReal();
    SigmaHigh_NumericControl.SetRange( TheIISigmaHighParameter->MinimumValue(), TheIISigmaHighParameter->MaximumValue() );
    SigmaHigh_NumericControl.SetPrecision( TheIISigmaHighParameter->Precision() );
@@ -1609,7 +1603,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    LinearFitLow_NumericControl.label.SetText( "Linear fit low:" );
    LinearFitLow_NumericControl.label.SetFixedWidth( labelWidth1 );
    LinearFitLow_NumericControl.slider.SetRange( 0, 100 );
-   LinearFitLow_NumericControl.slider.SetMinWidth( sliderWidth );
+   LinearFitLow_NumericControl.slider.SetScaledMinWidth( 250 );
    LinearFitLow_NumericControl.SetReal();
    LinearFitLow_NumericControl.SetRange( TheIILinearFitLowParameter->MinimumValue(), TheIILinearFitLowParameter->MaximumValue() );
    LinearFitLow_NumericControl.SetPrecision( TheIILinearFitLowParameter->Precision() );
@@ -1620,7 +1614,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    LinearFitHigh_NumericControl.label.SetText( "Linear fit high:" );
    LinearFitHigh_NumericControl.label.SetFixedWidth( labelWidth1 );
    LinearFitHigh_NumericControl.slider.SetRange( 0, 100 );
-   LinearFitHigh_NumericControl.slider.SetMinWidth( sliderWidth );
+   LinearFitHigh_NumericControl.slider.SetScaledMinWidth( 250 );
    LinearFitHigh_NumericControl.SetReal();
    LinearFitHigh_NumericControl.SetRange( TheIILinearFitHighParameter->MinimumValue(), TheIILinearFitHighParameter->MaximumValue() );
    LinearFitHigh_NumericControl.SetPrecision( TheIILinearFitHighParameter->Precision() );
@@ -1631,7 +1625,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    RangeLow_NumericControl.label.SetText( "Range low:" );
    RangeLow_NumericControl.label.SetFixedWidth( labelWidth1 );
    RangeLow_NumericControl.slider.SetRange( 0, 100 );
-   RangeLow_NumericControl.slider.SetMinWidth( sliderWidth );
+   RangeLow_NumericControl.slider.SetScaledMinWidth( 250 );
    RangeLow_NumericControl.SetReal();
    RangeLow_NumericControl.SetRange( TheIIRangeLowParameter->MinimumValue(), TheIIRangeLowParameter->MaximumValue() );
    RangeLow_NumericControl.SetPrecision( TheIIRangeLowParameter->Precision() );
@@ -1643,7 +1637,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    RangeHigh_NumericControl.label.SetText( "Range high:" );
    RangeHigh_NumericControl.label.SetFixedWidth( labelWidth1 );
    RangeHigh_NumericControl.slider.SetRange( 0, 100 );
-   RangeHigh_NumericControl.slider.SetMinWidth( sliderWidth );
+   RangeHigh_NumericControl.slider.SetScaledMinWidth( 250 );
    RangeHigh_NumericControl.SetReal();
    RangeHigh_NumericControl.SetRange( TheIIRangeHighParameter->MinimumValue(), TheIIRangeHighParameter->MaximumValue() );
    RangeHigh_NumericControl.SetPrecision( TheIIRangeHighParameter->Precision() );
@@ -1676,7 +1670,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    CCDGain_NumericControl.label.SetText( "CCD gain:" );
    CCDGain_NumericControl.label.SetFixedWidth( labelWidth1 );
    CCDGain_NumericControl.slider.SetRange( 0, 100 );
-   CCDGain_NumericControl.slider.SetMinWidth( sliderWidth );
+   CCDGain_NumericControl.slider.SetScaledMinWidth( 250 );
    CCDGain_NumericControl.SetReal();
    CCDGain_NumericControl.SetRange( TheIICCDGainParameter->MinimumValue(), TheIICCDGainParameter->MaximumValue() );
    CCDGain_NumericControl.SetPrecision( TheIICCDGainParameter->Precision() );
@@ -1688,7 +1682,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    CCDReadNoise_NumericControl.label.SetText( "CCD readout noise:" );
    CCDReadNoise_NumericControl.label.SetFixedWidth( labelWidth1 );
    CCDReadNoise_NumericControl.slider.SetRange( 0, 100 );
-   CCDReadNoise_NumericControl.slider.SetMinWidth( sliderWidth );
+   CCDReadNoise_NumericControl.slider.SetScaledMinWidth( 250 );
    CCDReadNoise_NumericControl.SetReal();
    CCDReadNoise_NumericControl.SetRange( TheIICCDReadNoiseParameter->MinimumValue(), TheIICCDReadNoiseParameter->MaximumValue() );
    CCDReadNoise_NumericControl.SetPrecision( TheIICCDReadNoiseParameter->Precision() );
@@ -1700,7 +1694,7 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    CCDScaleNoise_NumericControl.label.SetText( "CCD scale noise:" );
    CCDScaleNoise_NumericControl.label.SetFixedWidth( labelWidth1 );
    CCDScaleNoise_NumericControl.slider.SetRange( 0, 100 );
-   CCDScaleNoise_NumericControl.slider.SetMinWidth( sliderWidth );
+   CCDScaleNoise_NumericControl.slider.SetScaledMinWidth( 250 );
    CCDScaleNoise_NumericControl.SetReal();
    CCDScaleNoise_NumericControl.SetRange( TheIICCDScaleNoiseParameter->MinimumValue(), TheIICCDScaleNoiseParameter->MaximumValue() );
    CCDScaleNoise_NumericControl.SetPrecision( TheIICCDScaleNoiseParameter->Precision() );
@@ -1843,5 +1837,5 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF ImageIntegrationInterface.cpp - Released 2014/11/14 17:19:21 UTC
+// ----------------------------------------------------------------------------
+// EOF ImageIntegrationInterface.cpp - Released 2015/07/31 11:49:48 UTC

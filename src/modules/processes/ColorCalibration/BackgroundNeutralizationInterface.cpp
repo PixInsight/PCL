@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard ColorCalibration Process Module Version 01.02.00.0170
-// ****************************************************************************
-// BackgroundNeutralizationInterface.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard ColorCalibration Process Module Version 01.02.00.0189
+// ----------------------------------------------------------------------------
+// BackgroundNeutralizationInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "BackgroundNeutralizationInterface.h"
 #include "BackgroundNeutralizationProcess.h"
@@ -205,7 +209,7 @@ void BackgroundNeutralizationInterface::__EditCompleted( Edit& sender )
          if ( p == String::notFound )
             valid = id.IsValidIdentifier();
          else
-            valid = id.Left( p ).IsValidIdentifier() && id.SubString( p+2 ).IsValidIdentifier();
+            valid = id.Left( p ).IsValidIdentifier() && id.Substring( p+2 ).IsValidIdentifier();
          if ( !valid )
             throw Error( "Invalid identifier: " + id );
       }
@@ -331,8 +335,8 @@ BackgroundNeutralizationInterface::GUIData::GUIData( BackgroundNeutralizationInt
    BackgroundReferenceView_Edit.OnGetFocus( (Control::event_handler)&BackgroundNeutralizationInterface::__GetFocus, w );
    BackgroundReferenceView_Edit.OnEditCompleted( (Edit::edit_event_handler)&BackgroundNeutralizationInterface::__EditCompleted, w );
 
-   BackgroundReferenceView_ToolButton.SetIcon( Bitmap( ":/icons/select-view.png" ) );
-   BackgroundReferenceView_ToolButton.SetFixedSize( 20, 20 );
+   BackgroundReferenceView_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
+   BackgroundReferenceView_ToolButton.SetScaledFixedSize( 20, 20 );
    BackgroundReferenceView_ToolButton.SetToolTip( "<p>Select the background reference image.</p>" );
    BackgroundReferenceView_ToolButton.OnClick( (Button::click_event_handler)&BackgroundNeutralizationInterface::__Click, w );
 
@@ -344,7 +348,7 @@ BackgroundNeutralizationInterface::GUIData::GUIData( BackgroundNeutralizationInt
    BackgroundLow_NumericControl.label.SetText( "Lower limit:" );
    BackgroundLow_NumericControl.label.SetFixedWidth( labelWidth1 );
    BackgroundLow_NumericControl.slider.SetRange( 0, 100 );
-   BackgroundLow_NumericControl.slider.SetMinWidth( 200 );
+   BackgroundLow_NumericControl.slider.SetScaledMinWidth( 200 );
    BackgroundLow_NumericControl.SetReal();
    BackgroundLow_NumericControl.SetRange( TheBNBackgroundLowParameter->MinimumValue(), TheBNBackgroundLowParameter->MaximumValue() );
    BackgroundLow_NumericControl.SetPrecision( TheBNBackgroundLowParameter->Precision() );
@@ -358,7 +362,7 @@ BackgroundNeutralizationInterface::GUIData::GUIData( BackgroundNeutralizationInt
    BackgroundHigh_NumericControl.label.SetText( "Upper limit:" );
    BackgroundHigh_NumericControl.label.SetFixedWidth( labelWidth1 );
    BackgroundHigh_NumericControl.slider.SetRange( 0, 100 );
-   BackgroundHigh_NumericControl.slider.SetMinWidth( 200 );
+   BackgroundHigh_NumericControl.slider.SetScaledMinWidth( 200 );
    BackgroundHigh_NumericControl.SetReal();
    BackgroundHigh_NumericControl.SetRange( TheBNBackgroundHighParameter->MinimumValue(), TheBNBackgroundHighParameter->MaximumValue() );
    BackgroundHigh_NumericControl.SetPrecision( TheBNBackgroundHighParameter->Precision() );
@@ -404,7 +408,7 @@ BackgroundNeutralizationInterface::GUIData::GUIData( BackgroundNeutralizationInt
    TargetBackground_NumericControl.label.SetText( "Target background:" );
    TargetBackground_NumericControl.label.SetFixedWidth( labelWidth1 );
    TargetBackground_NumericControl.slider.SetRange( 0, 100 );
-   TargetBackground_NumericControl.slider.SetMinWidth( 200 );
+   TargetBackground_NumericControl.slider.SetScaledMinWidth( 200 );
    TargetBackground_NumericControl.SetReal();
    TargetBackground_NumericControl.SetRange( TheBNTargetBackgroundParameter->MinimumValue(), TheBNTargetBackgroundParameter->MaximumValue() );
    TargetBackground_NumericControl.SetPrecision( TheBNTargetBackgroundParameter->Precision() );
@@ -424,7 +428,7 @@ BackgroundNeutralizationInterface::GUIData::GUIData( BackgroundNeutralizationInt
    const char* roiX0ToolTip = "<p>X pixel coordinate of the upper-left corner of the ROI.</p>";
 
    ROIX0_Label.SetText( "Left:" );
-   ROIX0_Label.SetFixedWidth( labelWidth1 - 6 - DELTA_FRAME );
+   ROIX0_Label.SetFixedWidth( labelWidth1 - w.LogicalPixelsToPhysical( 6 + DELTA_FRAME ) );
    ROIX0_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    ROIX0_Label.SetToolTip( roiX0ToolTip );
 
@@ -453,7 +457,7 @@ BackgroundNeutralizationInterface::GUIData::GUIData( BackgroundNeutralizationInt
    const char* roiWidthToolTip = "<p>Width of the ROI in pixels.</p>";
 
    ROIWidth_Label.SetText( "Width:" );
-   ROIWidth_Label.SetFixedWidth( labelWidth1 - 6 - DELTA_FRAME );
+   ROIWidth_Label.SetFixedWidth( labelWidth1 - w.LogicalPixelsToPhysical( 6 + DELTA_FRAME ) );
    ROIWidth_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    ROIWidth_Label.SetToolTip( roiWidthToolTip );
 
@@ -515,5 +519,5 @@ BackgroundNeutralizationInterface::GUIData::GUIData( BackgroundNeutralizationInt
 
 } // pcl
 
-// ****************************************************************************
-// EOF BackgroundNeutralizationInterface.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF BackgroundNeutralizationInterface.cpp - Released 2015/07/31 11:49:48 UTC

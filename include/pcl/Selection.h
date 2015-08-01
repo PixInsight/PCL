@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Selection.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Selection.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Selection_h
 #define __PCL_Selection_h
@@ -85,7 +88,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 template <class RI, typename T> inline
-RI __select__( RI i, RI j, distance_type k, T* )
+RI __pcl_quick_select__( RI i, RI j, distance_type k, T* )
 {
    distance_type n = j - i;
    if ( k < 0 || n < 1 || n <= k )
@@ -139,15 +142,15 @@ RI __select__( RI i, RI j, distance_type k, T* )
 /*!
  * Generic quick selection algorithm.
  *
- * Given a range defined by two random access iterators [i,j[ and a distance k,
+ * Given a range defined by two random access iterators [i,j) and a distance k,
  * such that j-i > k, returns an iterator t whose associated value is the k-th
- * element in the sorted sequence [i,j[ in ascending order.
+ * element in the sorted sequence [i,j) in ascending order.
  *
  * For example, the following call:
  *
  * \code t = Select( i, j, (j - i) >> 1 ); \endcode
  *
- * will return the \e median of the distribution of elements in the [i,j[
+ * will return the \e median of the distribution of elements in the [i,j)
  * sequence: the central value for which the probabilities that a greater and a
  * lesser element exist are equal.
  *
@@ -160,7 +163,7 @@ RI __select__( RI i, RI j, distance_type k, T* )
  * Addison-Wesley Professional, 2011, pp. 345-347.
  *
  * \warning This function performs a <em>destructive selection search</em>:
- * There is no guarantee that the existing order of elements in the [i,j[
+ * There is no guarantee that the existing order of elements in the [i,j)
  * sequence is preserved after calling this function.
  *
  * \ingroup selection_algorithms
@@ -169,13 +172,13 @@ RI __select__( RI i, RI j, distance_type k, T* )
 template <class RI> inline
 RI Select( RI i, RI j, distance_type k )
 {
-   return __select__( i, j, k, ItemType( i ) );
+   return __pcl_quick_select__( i, j, k, ItemType( i ) );
 }
 
 // ----------------------------------------------------------------------------
 
 template <class RI, class BP, class T> inline
-RI __select__( RI i, RI j, distance_type k, BP p, T* )
+RI __pcl_quick_select__( RI i, RI j, distance_type k, BP p, T* )
 {
    distance_type n = j - i;
    if ( k < 0 || n < 1 || n <= k )
@@ -229,9 +232,9 @@ RI __select__( RI i, RI j, distance_type k, BP p, T* )
 /*!
  * Generic quick selection algorithm.
  *
- * Given a range defined by two random access iterators [i,j[ and a distance k,
+ * Given a range defined by two random access iterators [i,j) and a distance k,
  * such that j-i > k, returns an iterator t whose associated value is the k-th
- * element in the sorted sequence [i,j[ in ascending order. Element comparison
+ * element in the sorted sequence [i,j) in ascending order. Element comparison
  * is given by a binary predicate \a p such that p( a, b ) is true for any pair
  * a, b of elements such that a precedes b.
  *
@@ -243,7 +246,7 @@ RI __select__( RI i, RI j, distance_type k, BP p, T* )
 template <class RI, class BP> inline
 RI Select( RI i, RI j, distance_type k, BP p )
 {
-   return __select__( i, j, k, p, ItemType( i ) );
+   return __pcl_quick_select__( i, j, k, p, ItemType( i ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -252,5 +255,5 @@ RI Select( RI i, RI j, distance_type k, BP p )
 
 #endif  // __PCL_Selection_h
 
-// ****************************************************************************
-// EOF pcl/Selection.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Selection.h - Released 2015/07/30 17:15:18 UTC

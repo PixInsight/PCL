@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Thread.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Thread.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/AutoLock.h>
 #include <pcl/Console.h>
@@ -66,14 +69,24 @@
 #endif
 
 #ifdef __PCL_WINDOWS
-# define SLEEP( secs )                                \
-   ::Sleep( DWORD( TruncI( secs*1000 ) ) )
+# define SLEEP( ms )                      \
+   ::Sleep( DWORD( ms ) );
 #else
-# define SLEEP( secs )                                \
-   struct timespec ts;                                \
-   ts.tv_sec = TruncI( secs );                        \
-   ts.tv_nsec = TruncI( Frac( secs )*1000000000 );    \
-   ::nanosleep( &ts, 0 )
+# define SLEEP( ms )                      \
+   {                                      \
+      struct timespec ts;                 \
+      if ( ms < 1000 )                    \
+      {                                   \
+         ts.tv_sec = 0;                   \
+         ts.tv_nsec = ms*1000000;         \
+      }                                   \
+      else                                \
+      {                                   \
+         ts.tv_sec = ms/1000;             \
+         ts.tv_nsec = (ms%1000)*1000000;  \
+      }                                   \
+      ::nanosleep( &ts, 0 );              \
+   }
 #endif
 
 namespace pcl
@@ -117,10 +130,11 @@ public:
 #endif
 
 Thread::Thread() :
-UIObject( (*API->Thread->CreateThread)( ModuleHandle(), this, 0 /*flags*/ ) ),
-m_processorIndex( -1 ), m_consoleOutputText()
+   UIObject( (*API->Thread->CreateThread)( ModuleHandle(), this, 0/*flags*/ ) ),
+   m_processorIndex( -1 ),
+   m_consoleOutputText()
 {
-   if ( handle == 0 )
+   if ( IsNull() )
       throw APIFunctionError( "CreateThread" );
 
    (*API->Thread->SetThreadExecRoutine)( handle, ThreadDispatcher::RunThread );
@@ -138,17 +152,20 @@ m_processorIndex( -1 ), m_consoleOutputText()
    }
 }
 
-Thread::Thread( void* h ) : UIObject( h ), m_processorIndex( -1 ), m_consoleOutputText()
+Thread::Thread( void* h ) :
+   UIObject( h ),
+   m_processorIndex( -1 ),
+   m_consoleOutputText()
 {
 }
 
 Thread& Thread::Null()
 {
-   static Thread* nullThread = 0;
+   static Thread* nullThread = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullThread == 0 )
-      nullThread = new Thread( reinterpret_cast<void*>( 0 ) );
+   if ( nullThread == nullptr )
+      nullThread = new Thread( nullptr );
    return *nullThread;
 }
 
@@ -262,22 +279,23 @@ void Thread::SetPriority( Thread::priority p )
    (*API->Thread->SetThreadPriority)( handle, p );
 }
 
-bool Thread::Wait( double secs )
-{
-   return (*API->Thread->WaitThread)( handle, (uint32)(1000*Round( secs, 3 )) ) != api_false;
-}
-
 void Thread::Wait()
 {
-   (void)(*API->Thread->WaitThread)( handle, ~(uint32)(0) );
+   (void)(*API->Thread->WaitThread)( handle, uint32_max );
 }
 
-void Thread::Sleep( double secs )
+bool Thread::Wait( unsigned ms )
 {
-   //(*API->Thread->SleepThread)( handle, (uint32)(1000*Round( secs, 3 )) );
-   SLEEP( secs );
+   return (*API->Thread->WaitThread)( handle, ms ) != api_false;
 }
 
+void Thread::Sleep( unsigned ms )
+{
+   //(*API->Thread->SleepThread)( handle, ms );
+   SLEEP( ms )
+}
+
+/*
 Thread& Thread::CurrentThread()
 {
    thread_handle handle = (*API->Thread->GetCurrentThread)();
@@ -294,6 +312,7 @@ Thread& Thread::CurrentThread()
       }
    return Null();
 }
+*/
 
 bool Thread::IsRootThread()
 {
@@ -321,13 +340,13 @@ String Thread::ConsoleOutputText() const
    (*API->Thread->GetThreadConsoleOutputText)( handle, 0, &len );
 
    String text;
-   if ( len != 0 )
+   if ( len > 0 )
    {
-      text.Reserve( len );
+      text.SetLength( len );
       if ( (*API->Thread->GetThreadConsoleOutputText)( handle, text.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetThreadConsoleOutputText" );
+      text.ResizeToNullTerminated();
    }
-
    return text;
 }
 
@@ -375,15 +394,15 @@ int Thread::NumberOfThreads( size_type N, size_type overheadLimit )
 
 // ----------------------------------------------------------------------------
 
-void PCL_FUNC Sleep( double secs )
+void PCL_FUNC Sleep( unsigned ms )
 {
-   //(*API->Thread->SleepThread)( 0, (uint32)(1000*Round( secs, 3 )) );
-   SLEEP( secs );
+   //(*API->Thread->SleepThread)( 0, ms );
+   SLEEP( ms )
 }
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/Thread.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Thread.cpp - Released 2015/07/30 17:15:31 UTC

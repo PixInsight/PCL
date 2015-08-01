@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/CodeEditor.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/CodeEditor.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_CodeEditor_h
 #define __PCL_CodeEditor_h
@@ -139,6 +142,8 @@ public:
     */
    virtual ~CodeEditor()
    {
+      if ( m_handlers != nullptr )
+         delete m_handlers, m_handlers = nullptr;
    }
 
    /*!
@@ -160,10 +165,11 @@ public:
    /*!
     * Sets the file path associated with this code editor.
     *
-    * If the specified \a path includes a file suffix (aka extension), the
-    * control will use it to identify a programming language to perform
-    * automatic syntax highlighting of the text in the editor. Currently the
-    * following file suffixes and languages are supported:
+    * If the specified \a path includes a file name suffix (also known as file
+    * name \e extension), the control will use it to identify a programming
+    * language to perform automatic syntax highlighting of the text in the
+    * editor. Currently the following file suffixes and source code languages
+    * are supported:
     *
     * <table border="1" cellpadding="4" cellspacing="0">
     * <tr><td>.js .jsh</td>                                     <td>JavaScript source files</td></tr>
@@ -610,16 +616,6 @@ public:
    void Delete();
 
    /*!
-    * \deprecated This function has been deprecated and should not be used in
-    * newly produced code. It will be removed in a future version of PCL. Use
-    * CodeEditor::Delete() instead of this function.
-    */
-   void Clear() // ### REMOVEME
-   {
-      Delete();
-   }
-
-   /*!
     * Selects all the text in this code editor.
     */
    void SelectAll();
@@ -864,16 +860,24 @@ public:
     */
    void OnDynamicWordWrapModeUpdated( state_event_handler handler, Control& receiver );
 
-protected:
+private:
 
-   editor_event_handler    onTextUpdated;
-   cursor_event_handler    onCursorPositionUpdated;
-   selection_event_handler onSelectionUpdated;
-   state_event_handler     onOverwriteModeUpdated;
-   state_event_handler     onSelectionModeUpdated;
-   state_event_handler     onDynamicWordWrapModeUpdated;
+   struct EventHandlers
+   {
+      editor_event_handler    onTextUpdated                = nullptr;
+      cursor_event_handler    onCursorPositionUpdated      = nullptr;
+      selection_event_handler onSelectionUpdated           = nullptr;
+      state_event_handler     onOverwriteModeUpdated       = nullptr;
+      state_event_handler     onSelectionModeUpdated       = nullptr;
+      state_event_handler     onDynamicWordWrapModeUpdated = nullptr;
 
-   Control m_lineNumbers;
+      EventHandlers() = default;
+      EventHandlers( const EventHandlers& ) = default;
+      EventHandlers& operator =( const EventHandlers& ) = default;
+   };
+
+   EventHandlers* m_handlers;
+   Control        m_lineNumbers;
 
    friend class CodeEditorEventDispatcher;
 };
@@ -886,5 +890,5 @@ protected:
 
 #endif   // __PCL_CodeEditor_h
 
-// ****************************************************************************
-// EOF pcl/CodeEditor.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/CodeEditor.h - Released 2015/07/30 17:15:18 UTC

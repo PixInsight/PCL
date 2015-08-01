@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/MultiscaleLinearTransform.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/MultiscaleLinearTransform.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_MultiscaleLinearTransform_h
 #define __PCL_MultiscaleLinearTransform_h
@@ -146,15 +149,15 @@ public:
 
    /*!
     * Copy constructor.
-    *
-    * \note This constructor <em>does not copy the existing transform
-    * layers</em> in the source object \a x. It just creates a duplicate of
-    * current working parameters in \a x: number of layers and layer states.
     */
-   MultiscaleLinearTransform( const MultiscaleLinearTransform& x ) :
-      RedundantMultiscaleTransform( x )
-   {
-   }
+   MultiscaleLinearTransform( const MultiscaleLinearTransform& ) = default;
+
+   /*!
+    * Move constructor.
+    */
+#ifndef _MSC_VER
+   MultiscaleLinearTransform( MultiscaleLinearTransform&& ) = default;
+#endif
 
    /*!
     * Destroys this %MultiscaleLinearTransform object. All existing transform
@@ -165,18 +168,20 @@ public:
    }
 
    /*!
-    * Assignment operator.
-    *
-    * \note The existing multiscale layers in the source transform \a x are
-    * <em>not assigned</em>; only working parameters are assigned: number of
-    * layers and layer states.
-    *
-    * \note As a consequence of this assignment operator, all existing
-    * multiscale layers in this transform are destroyed.
+    * Copy assignment operator. Returns a reference to this object.
     */
    MultiscaleLinearTransform& operator =( const MultiscaleLinearTransform& x )
    {
       (void)RedundantMultiscaleTransform::operator =( x );
+      return *this;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   MultiscaleLinearTransform& operator =( MultiscaleLinearTransform&& x )
+   {
+      (void)RedundantMultiscaleTransform::operator =( std::move( x ) );
       return *this;
    }
 
@@ -202,5 +207,5 @@ protected:
 
 #endif   // __PCL_MultiscaleLinearTransform_h
 
-// ****************************************************************************
-// EOF pcl/MultiscaleLinearTransform.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/MultiscaleLinearTransform.h - Released 2015/07/30 17:15:18 UTC

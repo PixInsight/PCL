@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard JPEG File Format Module Version 01.00.01.0228
-// ****************************************************************************
-// JPEG.h - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard JPEG File Format Module Version 01.00.03.0249
+// ----------------------------------------------------------------------------
+// JPEG.h - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard JPEG PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_JPEG_h
 #define __PCL_JPEG_h
@@ -71,8 +75,8 @@ struct JPEGFileData; // internal
 // ----------------------------------------------------------------------------
 
 /*
-   Standard JPEG quality values
-*/
+ * Standard JPEG quality values
+ */
 namespace JPEGQuality
 {
    enum value_type
@@ -93,8 +97,8 @@ namespace JPEGQuality
 // ----------------------------------------------------------------------------
 
 /*
-   JPEG-specific image file options.
-*/
+ * JPEG-specific image file options.
+ */
 class JPEGImageOptions
 {
 public:
@@ -103,33 +107,20 @@ public:
    bool     optimizedCoding   : 1; // Optimized coding, baseline otherwise
    bool     arithmeticCoding  : 1; // Arithmetic coding, Huffman otherwise
    bool     progressive       : 1; // Compress for progressive download
-   int      __rsv1__          : 5; // reserved for future extension --must be zero
+   uint32   __rsv1__          : 5; // reserved for future extension --must be zero
    bool     JFIFMarker        : 1; // Include JFIF marker
    uint8    JFIFMajorVersion  : 4; // JFIF main version number
    uint8    JFIFMinorVersion  : 4; // JFIF second version number
-   int      __rsv2__          : 7; // reserved for future extension --must be zero
+   uint32   __rsv2__          : 7; // reserved for future extension --must be zero
 
    JPEGImageOptions()
    {
       Reset();
    }
 
-   JPEGImageOptions( const JPEGImageOptions& x )
-   {
-      (void)operator =( x );
-   }
+   JPEGImageOptions( const JPEGImageOptions& ) = default;
 
-   JPEGImageOptions& operator =( const JPEGImageOptions& x )
-   {
-      quality          = x.quality;
-      optimizedCoding  = x.optimizedCoding;
-      arithmeticCoding = x.arithmeticCoding;
-      progressive      = x.progressive;
-      JFIFMarker       = x.JFIFMarker;
-      JFIFMajorVersion = x.JFIFMajorVersion;
-      JFIFMinorVersion = x.JFIFMinorVersion;
-      return *this;
-   }
+   JPEGImageOptions& operator =( const JPEGImageOptions& ) = default;
 
    void Reset()
    {
@@ -148,99 +139,67 @@ public:
 // ----------------------------------------------------------------------------
 
 /*
-   Base class for the JPEGReader and JPEGWriter classes.
-*/
+ * Base class for the JPEGReader and JPEGWriter classes.
+ */
 class JPEG
 {
 public:
 
    /*
-      JPEG-specific exception class
-   */
-   class Exception : public ImageStream::Exception
+    * JPEG-specific exception class
+    */
+   class Error : public File::Error
    {
    public:
 
-      Exception( const String& fn ) : ImageStream::Exception( fn )
+      Error( const String& filePath, const String& message ) :
+         File::Error( filePath, message )
       {
       }
 
-      Exception( const JPEG::Exception& x ) : ImageStream::Exception( x )
-      {
-      }
+      Error( const JPEG::Error& x ) = default;
 
       virtual String ExceptionClass() const
       {
          return "PCL JPEG Format Support";
       }
-
-      virtual String ErrorMessage() const = 0;
    };
 
-#define PCL_DECLARE_JPEG_EXCEPTION( className, errorMessage )                 \
-   class className : public JPEG::Exception                                   \
-   {                                                                          \
-   public:                                                                    \
-      className( const String& fn ) : JPEG::Exception( fn )                   \
-      {                                                                       \
-      }                                                                       \
-      className( const className& x ) : JPEG::Exception( x )                  \
-      {                                                                       \
-      }                                                                       \
-      virtual String ErrorMessage() const                                     \
-      {                                                                       \
-         return errorMessage;                                                 \
-      }                                                                       \
-   }
-
-   PCL_DECLARE_JPEG_EXCEPTION( InvalidFilePath,
-      "Internal error: Invalid file path" );
-   PCL_DECLARE_JPEG_EXCEPTION( WriterNotInitialized,
-      "Internal error: JPEGWriter instance not initialized" );
-   PCL_DECLARE_JPEG_EXCEPTION( UnableToOpenFile,
-      "Unable to open JPEG file" );
-   PCL_DECLARE_JPEG_EXCEPTION( UnableToCreateFile,
-      "Unable to create JPEG file" );
-   PCL_DECLARE_JPEG_EXCEPTION( InvalidNormalizationRange,
-      "Internal error: Invalid JPEG normalization range" );
-   PCL_DECLARE_JPEG_EXCEPTION( InvalidReadOperation,
-      "Internal error: Invalid JPEG read operation" );
-   PCL_DECLARE_JPEG_EXCEPTION( InvalidWriteOperation,
-      "Internal error: Invalid JPEG write operation" );
-   PCL_DECLARE_JPEG_EXCEPTION( InvalidPixelSelection,
-      "Internal error: Invalid pixel selection in JPEG write operation" );
-   PCL_DECLARE_JPEG_EXCEPTION( InvalidChannelSelection,
-      "Internal error: Invalid channel selection in JPEG write operation" );
-
-   class IJGLibraryError : public JPEG::Exception
-   {
-   public:
-
-      IJGLibraryError( const String& _path, const String& _msg ) :
-      JPEG::Exception( _path ), errorMessage( _msg )
-      {
-      }
-
-      IJGLibraryError( const IJGLibraryError& x ) :
-      JPEG::Exception( x ), errorMessage( x.errorMessage )
-      {
-      }
-
-      virtual String ErrorMessage() const
-      {
-         return errorMessage;
-      }
-
-      String errorMessage;
+#define PCL_DECLARE_JPEG_ERROR( className, errorMessage )   \
+   class className : public JPEG::Error                     \
+   {                                                        \
+   public:                                                  \
+      className( const String& filePath ) :                 \
+         JPEG::Error( filePath, errorMessage )              \
+      {                                                     \
+      }                                                     \
+      className( const className& x ) = default;            \
    };
 
-   JPEG() : jpegOptions(), fileData( 0 )
-   {
-   }
+   PCL_DECLARE_JPEG_ERROR( InvalidFilePath,
+                           "Internal error: Invalid file path" )
+   PCL_DECLARE_JPEG_ERROR( WriterNotInitialized,
+                           "Internal error: JPEGWriter instance not initialized" )
+   PCL_DECLARE_JPEG_ERROR( UnableToOpenFile,
+                           "Unable to open JPEG file" )
+   PCL_DECLARE_JPEG_ERROR( UnableToCreateFile,
+                           "Unable to create JPEG file" )
+   PCL_DECLARE_JPEG_ERROR( InvalidNormalizationRange,
+                           "Internal error: Invalid JPEG normalization range" )
+   PCL_DECLARE_JPEG_ERROR( InvalidReadOperation,
+                           "Internal error: Invalid JPEG read operation" )
+   PCL_DECLARE_JPEG_ERROR( InvalidWriteOperation,
+                           "Internal error: Invalid JPEG write operation" )
+   PCL_DECLARE_JPEG_ERROR( InvalidPixelSelection,
+                           "Internal error: Invalid pixel selection in JPEG write operation" )
+   PCL_DECLARE_JPEG_ERROR( InvalidChannelSelection,
+                           "Internal error: Invalid channel selection in JPEG write operation" )
+
+   JPEG() = default;
 
    virtual ~JPEG()
    {
-      __Close();
+      CloseStream();
    }
 
    const JPEGImageOptions& JPEGOptions() const
@@ -256,35 +215,32 @@ public:
 protected:
 
    JPEGImageOptions jpegOptions;
-   JPEGFileData*    fileData;
+   JPEGFileData*    fileData = nullptr;
 
-   void __Close(); // ### derived must call base
+   void CloseStream(); // ### derived must call base
 
 private:
 
-   // Disable copy
-   JPEG( const JPEG& ) { PCL_CHECK( 0 ) }
-   void operator =( const JPEG& ) { PCL_CHECK( 0 ) }
+   JPEG( const JPEG& ) = delete;
+   JPEG& operator =( const JPEG& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
 
 /*
-   JPEG image file reader
-*/
+ * JPEG image file reader
+ */
 class JPEGReader : public ImageReader, public JPEG
 {
 public:
 
    JPEGReader() : ImageReader(), JPEG()
    {
-      // Make room for an image description
-      images.Add( ImageDescription() );
+      images.Add( ImageDescription() ); // make room for an image description
    }
 
    virtual ~JPEGReader()
    {
-      // JPEG does the job
    }
 
    virtual bool IsOpen() const;
@@ -315,26 +271,23 @@ public:
 private:
 
    // Image streams are unique
-   JPEGReader( const JPEGReader& ) { PCL_CHECK( 0 ) }
-   void operator =( const JPEGReader& ) { PCL_CHECK( 0 ) }
+   JPEGReader( const JPEGReader& ) = delete;
+   JPEGReader& operator =( const JPEGReader& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
 
 /*
-   JPEG image file writer
-*/
+ * JPEG image file writer
+ */
 class JPEGWriter : public ImageWriter, public JPEG
 {
 public:
 
-   JPEGWriter() : ImageWriter(), JPEG(), icc()
-   {
-   }
+   JPEGWriter() = default;
 
    virtual ~JPEGWriter()
    {
-      // JPEG does the job
    }
 
    virtual bool IsOpen() const;
@@ -379,13 +332,12 @@ protected:
 
    // Embedded data
    ICCProfile icc;
-   // ### TODO: XML metadata
 
 private:
 
    // Image streams are unique
-   JPEGWriter( const JPEGWriter& ) { PCL_CHECK( 0 ) }
-   void operator =( const JPEGWriter& ) { PCL_CHECK( 0 ) }
+   JPEGWriter( const JPEGWriter& ) = delete;
+   JPEGWriter& operator =( const JPEGWriter& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -394,5 +346,5 @@ private:
 
 #endif   // __PCL_JPEG_h
 
-// ****************************************************************************
-// EOF JPEG.h - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF JPEG.h - Released 2015/07/31 11:49:40 UTC

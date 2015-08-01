@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/FFTConvolution.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/FFTConvolution.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/FFTConvolution.h>
 #include <pcl/FourierTransform.h>
@@ -63,15 +66,12 @@ public:
    {
       Rect r = image.SelectedRectangle();
 
-      if ( F.m_h == 0 )
-         F.m_h = new ComplexImage;
-
-      if ( F.m_filter != 0 )
-         Initialize( *F.m_h, *F.m_filter, r.Width(), r.Height(), F.IsParallelProcessingEnabled(), F.MaxProcessors() );
+      if ( F.m_filter != nullptr )
+         Initialize( F.m_h, *F.m_filter, r.Width(), r.Height(), F.IsParallelProcessingEnabled(), F.MaxProcessors() );
       else
-         Initialize( *F.m_h, F.m_image, r.Width(), r.Height(), F.IsParallelProcessingEnabled(), F.MaxProcessors() );
+         Initialize( F.m_h, F.m_image, r.Width(), r.Height(), F.IsParallelProcessingEnabled(), F.MaxProcessors() );
 
-      Convolve( image, *F.m_h, F.IsParallelProcessingEnabled(), F.MaxProcessors() );
+      Convolve( image, F.m_h, F.IsParallelProcessingEnabled(), F.MaxProcessors() );
    }
 
 private:
@@ -368,49 +368,49 @@ private:
 
 void FFTConvolution::Apply( pcl::Image& image ) const
 {
-   PCL_PRECONDITION( m_filter != 0 || image )
+   PCL_PRECONDITION( m_filter != nullptr || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
 
 void FFTConvolution::Apply( pcl::DImage& image ) const
 {
-   PCL_PRECONDITION( m_filter != 0 || image )
+   PCL_PRECONDITION( m_filter != nullptr || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
 
 void FFTConvolution::Apply( pcl::UInt8Image& image ) const
 {
-   PCL_PRECONDITION( m_filter != 0 || image )
+   PCL_PRECONDITION( m_filter != nullptr || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
 
 void FFTConvolution::Apply( pcl::UInt16Image& image ) const
 {
-   PCL_PRECONDITION( m_filter != 0 || image )
+   PCL_PRECONDITION( m_filter != nullptr || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
 
 void FFTConvolution::Apply( pcl::UInt32Image& image ) const
 {
-   PCL_PRECONDITION( m_filter != 0 || image )
+   PCL_PRECONDITION( m_filter != nullptr || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
 
 void FFTConvolution::Apply( pcl::ComplexImage& image ) const
 {
-   PCL_PRECONDITION( m_filter != 0 || image )
+   PCL_PRECONDITION( m_filter != nullptr || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
 
 void FFTConvolution::Apply( pcl::DComplexImage& image ) const
 {
-   PCL_PRECONDITION( m_filter != 0 || image )
+   PCL_PRECONDITION( m_filter != nullptr || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
@@ -419,19 +419,19 @@ void FFTConvolution::Apply( pcl::DComplexImage& image ) const
 
 void FFTConvolution::Validate() const
 {
-   if ( m_filter == 0 && !m_image )
+   if ( m_filter == nullptr && !m_image )
       throw Error( "Invalid access to uninitialized FFT-based convolution." );
 }
 
 void FFTConvolution::ValidateFilter() const
 {
-   if ( m_filter == 0 )
-      throw Error( "Invalid access to uninitialized FFT-based convolution." );
+   if ( m_filter == nullptr )
+      throw Error( "Invalid access to nonexistent kernel filter in FFT-based convolution." );
 }
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/FFTConvolution.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/FFTConvolution.cpp - Released 2015/07/30 17:15:31 UTC

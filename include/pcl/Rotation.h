@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Rotation.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Rotation.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Rotation_h
 #define __PCL_Rotation_h
@@ -87,9 +90,9 @@ public:
     * this object exists.
     */
    Rotation( PixelInterpolation& p, float angle = 0, double cx = 0, double cy = 0 ) :
-   InterpolatingGeometricTransformation( p ),
-   m_angle( angle ), m_center( cx, cy ), m_fillValues(),
-   m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      InterpolatingGeometricTransformation( p ),
+      m_angle( angle ), m_center( cx, cy ), m_fillValues(),
+      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
    }
 
@@ -101,36 +104,16 @@ public:
     * this object exists.
     */
    Rotation( PixelInterpolation& p, float angle, const DPoint& center ) :
-   InterpolatingGeometricTransformation( p ),
-   m_angle( angle ), m_center( center ), m_fillValues(),
-   m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      InterpolatingGeometricTransformation( p ),
+      m_angle( angle ), m_center( center ), m_fillValues(),
+      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
    }
 
    /*!
     * Copy constructor.
     */
-   Rotation( const Rotation& x ) :
-   InterpolatingGeometricTransformation( x ),
-   m_angle( x.m_angle ), m_center( x.m_center ),
-   m_fillValues( x.m_fillValues ),
-   m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
-   {
-   }
-
-   /*!
-    * Assignment operator. Returns a reference to this object.
-    */
-   Rotation& operator =( const Rotation& x )
-   {
-      (void)InterpolatingGeometricTransformation::operator =( x );
-      m_angle         = x.m_angle;
-      m_center        = x.m_center;
-      m_fillValues    = x.m_fillValues;
-      m_parallel      = x.m_parallel;
-      m_maxProcessors = x.m_maxProcessors;
-      return *this;
-   }
+   Rotation( const Rotation& ) = default;
 
    /*!
     * Returns the rotation angle in radians.
@@ -314,5 +297,5 @@ protected:
 
 #endif   // __PCL_Rotation_h
 
-// ****************************************************************************
-// EOF pcl/Rotation.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Rotation.h - Released 2015/07/30 17:15:18 UTC

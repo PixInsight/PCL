@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ViewSelectionDialog.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ViewSelectionDialog.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,10 +47,10 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
-#ifndef __PCL_ViewSelectionDialog_h
-#define __PCL_ViewSelectionDialog_h
+#ifndef PCL_ViewSelectionDialog_h
+#define PCL_ViewSelectionDialog_h
 
 /// \file pcl/ViewSelectionDialog.h
 
@@ -69,7 +72,7 @@ namespace pcl
  * existing views, and standard OK and Cancel push buttons. This class is a
  * useful helper whenever a process needs access to a user-selected view.
  *
- * \sa PreviewSelectionDialog, Dialog
+ * \sa MultiViewSelectionDialog, PreviewSelectionDialog, Dialog
  */
 class ViewSelectionDialog : public Dialog
 {
@@ -85,12 +88,25 @@ public:
     *             with main views. For preview-only selections, see the
     *             PreviewSelectionDialog class. The default value is true.
     */
-   ViewSelectionDialog( const String& id = String(), bool allowPreviews = true );
+   ViewSelectionDialog( const IsoString& id = IsoString(), bool allowPreviews = true );
+
+   template <class S>
+   ViewSelectionDialog( const S& id, bool allowPreviews = true ) :
+      ViewSelectionDialog( IsoString( id ), allowPreviews )
+   {
+   }
+
+   /*!
+    * Destroys a %ViewSelectionDialog object.
+    */
+   virtual ~ViewSelectionDialog()
+   {
+   }
 
    /*!
     * Returns the identifier of the selected view.
     */
-   const String& Id() const
+   IsoString Id() const
    {
       return m_id;
    }
@@ -107,8 +123,8 @@ public:
 
 private:
 
-   String m_id;
-   bool   m_allowPreviews : 1;
+   IsoString m_id;
+   bool      m_allowPreviews : 1;
 
    VerticalSizer  Global_Sizer;
       ViewList          Images_ViewList;
@@ -118,16 +134,17 @@ private:
          PushButton        OK_PushButton;
          PushButton        Cancel_PushButton;
 
-   void __ViewSelected( ViewList& sender, View& view );
-   void __OptionClick( Button& sender, bool checked );
-   void __ButtonClick( Button& sender, bool checked );
+   void ViewSelected( ViewList& sender, View& view );
+   void OptionClick( Button& sender, bool checked );
+   void ButtonClick( Button& sender, bool checked );
+   void ControlShow( Control& sender );
 };
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-#endif   // __PCL_ViewSelectionDialog_h
+#endif   // PCL_ViewSelectionDialog_h
 
-// ****************************************************************************
-// EOF pcl/ViewSelectionDialog.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ViewSelectionDialog.h - Released 2015/07/30 17:15:18 UTC

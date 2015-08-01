@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ComboBox.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ComboBox.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_ComboBox_h
 #define __PCL_ComboBox_h
@@ -90,6 +93,8 @@ public:
     */
    virtual ~ComboBox()
    {
+      if ( m_handlers != nullptr )
+         delete m_handlers, m_handlers = nullptr;
    }
 
    /*!
@@ -377,6 +382,42 @@ public:
       SetIconSize( size, size );
    }
 
+   /*! #
+    */
+   void GetScaledIconSize( int& width, int& height ) const
+   {
+      GetIconSize( width, height ); width = PhysicalPixelsToLogical( width ); height = PhysicalPixelsToLogical( height );
+   }
+
+   /*! #
+    */
+   int ScaledIconWidth() const
+   {
+      int width, dum; GetIconSize( width, dum ); return PhysicalPixelsToLogical( width );
+   }
+
+   /*! #
+    */
+   int ScaledIconHeight() const
+   {
+      int dum, height; GetIconSize( dum, height ); return PhysicalPixelsToLogical( height );
+   }
+
+   /*! #
+    */
+   void SetScaledIconSize( int width, int height )
+   {
+      SetIconSize( LogicalPixelsToPhysical( width ), LogicalPixelsToPhysical( height ) );
+   }
+
+   /*! #
+    */
+   void SetScaledIconSize( int size )
+   {
+      size = LogicalPixelsToPhysical( size );
+      SetIconSize( size, size );
+   }
+
    /*!
     * Returns the maximum number of items that can be visible when this combo
     * box control is dropped down, or 0 is no specific limit has been set.
@@ -498,11 +539,20 @@ public:
     */
    void OnEditTextUpdated( edit_event_handler handler, Control& receiver );
 
-protected:
+private:
 
-   item_event_handler   onItemSelected;
-   item_event_handler   onItemHighlighted;
-   edit_event_handler   onEditTextUpdated;
+   struct EventHandlers
+   {
+      item_event_handler onItemSelected    = nullptr;
+      item_event_handler onItemHighlighted = nullptr;
+      edit_event_handler onEditTextUpdated = nullptr;
+
+      EventHandlers() = default;
+      EventHandlers( const EventHandlers& ) = default;
+      EventHandlers& operator =( const EventHandlers& ) = default;
+   };
+
+   EventHandlers* m_handlers;
 
    friend class ComboBoxEventDispatcher;
 };
@@ -515,5 +565,5 @@ protected:
 
 #endif   // __PCL_ComboBox_h
 
-// ****************************************************************************
-// EOF pcl/ComboBox.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ComboBox.h - Released 2015/07/30 17:15:18 UTC

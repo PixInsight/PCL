@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/StructuringElement.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/StructuringElement.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_StructuringElement_h
 #define __PCL_StructuringElement_h
@@ -154,7 +157,7 @@ public:
     * \a size in pixels and number of ways \a n.
     */
    StructuringElement( int size = 3, int n = 1 ) :
-   m_size( Max( 3, size|1 ) ), m_mask( Max( 1, n ) ), m_count( 0, Max( 1, n ) ), m_reflected( false ), m_initialized( 0 )
+      m_size( Max( 3, size|1 ) ), m_mask( Max( 1, n ) ), m_count( 0, Max( 1, n ) ), m_reflected( false ), m_initialized()
    {
       PCL_PRECONDITION( size >= 3 )
       PCL_PRECONDITION( (size & 1) != 0 )
@@ -167,7 +170,7 @@ public:
     * Copy constructor.
     */
    StructuringElement( const StructuringElement& x ) :
-   m_size( x.m_size ), m_mask( x.NumberOfWays() ), m_count( 0, x.NumberOfWays() ), m_reflected( false ), m_initialized( 0 )
+      m_size( x.m_size ), m_mask( x.NumberOfWays() ), m_count( 0, x.NumberOfWays() ), m_reflected( false ), m_initialized()
    {
       for ( int k = 0; k < NumberOfWays(); ++k )
          m_mask[k] = existence_mask( existence_mask_element( 0 ), NumberOfElements() );
@@ -187,7 +190,7 @@ public:
    virtual StructuringElement* Clone() const = 0;
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Copy assignment operator. Returns a reference to this object.
     */
    StructuringElement& operator =( const StructuringElement& x )
    {
@@ -342,19 +345,19 @@ public:
     * StructuringElement (and derived classes) uses a set of precomputed
     * <em>existence tables</em> that greatly improves performance of
     * morphological transformations, especially for complex structures. Calling
-    * this member function forces immediate calculation of existence tables, if
-    * they haven't already calculated previously. If the existence tables
-    * already exist, this function does nothing.
+    * this member function forces the immediate calculation of existence
+    * tables, if they haven't already been calculated previously. If the
+    * existence tables already exist, this function does nothing.
     *
     * You normally should not need to call this member function directly, as
-    * existence tables are automatically calculated when they are required.
+    * existence tables are automatically calculated when required.
     *
     * \note This is a thread-safe routine. It can be safely called from
     * multiple running threads.
     */
    void Initialize() const
    {
-      if ( !m_initialized/*.TestAndSet( 1, 1 )*/ )
+      if ( m_initialized.FetchAndAdd( 0 ) == 0 )
       {
          volatile AutoLock lock( m_mutex );
          if ( !m_initialized )
@@ -383,7 +386,7 @@ public:
 private:
 
    /*
-    * Structure size
+    * Structure size.
     */
    int                           m_size;
 
@@ -399,17 +402,17 @@ private:
    mutable existence_mask_count  m_count;
 
    /*
-    * Flag true when the structure has been reflected
+    * Flag true when the structure has been reflected.
     */
    bool                          m_reflected : 1;
 
    /*
-    * Flag true when existence masks have been initialized
+    * Flag true when existence masks have been calculated.
     */
    mutable AtomicInt             m_initialized;
 
    /*
-    * Thread synchronization
+    * Thread synchronization.
     */
    mutable Mutex                 m_mutex;
 };
@@ -449,18 +452,7 @@ public:
    /*!
     * Copy constructor.
     */
-   BoxStructure( const BoxStructure& x ) : StructuringElement( x )
-   {
-   }
-
-   /*!
-    * Assignment operator. Returns a reference to this object.
-    */
-   BoxStructure& operator =( const BoxStructure& x )
-   {
-      (void)StructuringElement::operator =( x );
-      return *this;
-   }
+   BoxStructure( const BoxStructure& ) = default;
 
    /*!
     */
@@ -523,18 +515,7 @@ public:
    /*!
     * Copy constructor.
     */
-   CircularStructure( const CircularStructure& x ) : StructuringElement( x )
-   {
-   }
-
-   /*!
-    * Assignment operator. Returns a reference to this object.
-    */
-   CircularStructure& operator =( const CircularStructure& x )
-   {
-      (void)StructuringElement::operator =( x );
-      return *this;
-   }
+   CircularStructure( const CircularStructure& ) = default;
 
    /*!
     */
@@ -605,18 +586,7 @@ public:
    /*!
     * Copy constructor.
     */
-   OrthogonalStructure( const OrthogonalStructure& x ) : StructuringElement( x )
-   {
-   }
-
-   /*!
-    * Assignment operator. Returns a reference to this object.
-    */
-   OrthogonalStructure& operator =( const OrthogonalStructure& x )
-   {
-      (void)StructuringElement::operator =( x );
-      return *this;
-   }
+   OrthogonalStructure( const OrthogonalStructure& ) = default;
 
    /*!
     */
@@ -685,18 +655,7 @@ public:
    /*!
     * Copy constructor.
     */
-   DiagonalStructure( const DiagonalStructure& x ) : StructuringElement( x )
-   {
-   }
-
-   /*!
-    * Assignment operator. Returns a reference to this object.
-    */
-   DiagonalStructure& operator =( const DiagonalStructure& x )
-   {
-      (void)StructuringElement::operator =( x );
-      return *this;
-   }
+   DiagonalStructure( const DiagonalStructure& ) = default;
 
    /*!
     */
@@ -767,18 +726,7 @@ public:
    /*!
     * Copy constructor.
     */
-   StarStructure( const StarStructure& x ) : StructuringElement( x )
-   {
-   }
-
-   /*!
-    * Assignment operator. Returns a reference to this object.
-    */
-   StarStructure& operator =( const StarStructure& x )
-   {
-      (void)StructuringElement::operator =( x );
-      return *this;
-   }
+   StarStructure( const StarStructure& ) = default;
 
    /*!
     */
@@ -863,18 +811,7 @@ public:
    /*!
     * Copy constructor.
     */
-   ThreeWayStructure( const ThreeWayStructure& x ) : StructuringElement( x )
-   {
-   }
-
-   /*!
-    * Assignment operator. Returns a reference to this object.
-    */
-   ThreeWayStructure& operator =( const ThreeWayStructure& x )
-   {
-      (void)StructuringElement::operator =( x );
-      return *this;
-   }
+   ThreeWayStructure( const ThreeWayStructure& ) = default;
 
    /*!
     */
@@ -988,9 +925,9 @@ public:
     * \param n          Number of ways in this structure. Must be >= 1.
     */
    BitmapStructure( const char** bitmaps, int size, int n = 1 ) :
-   StructuringElement( size, n ), m_bitmaps()
+      StructuringElement( size, n ), m_bitmaps()
    {
-      PCL_PRECONDITION( bitmaps != 0 )
+      PCL_PRECONDITION( bitmaps != nullptr )
       PCL_PRECONDITION( *bitmaps != '\0' )
       for ( int i = 0; i < NumberOfWays(); ++i )
          m_bitmaps.Add( bitmap( bitmaps[i] ) );
@@ -999,19 +936,7 @@ public:
    /*!
     * Copy constructor.
     */
-   BitmapStructure( const BitmapStructure& x ) : StructuringElement( x ), m_bitmaps( x.m_bitmaps )
-   {
-   }
-
-   /*!
-    * Assignment operator. Returns a reference to this object.
-    */
-   BitmapStructure& operator =( const BitmapStructure& x )
-   {
-      (void)StructuringElement::operator =( x );
-      m_bitmaps = x.m_bitmaps;
-      return *this;
-   }
+   BitmapStructure( const BitmapStructure& ) = default;
 
    /*!
     */
@@ -1041,5 +966,5 @@ protected:
 
 #endif   // __PCL_StructuringElement_h
 
-// ****************************************************************************
-// EOF pcl/StructuringElement.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/StructuringElement.h - Released 2015/07/30 17:15:18 UTC

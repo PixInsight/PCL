@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/FFTRotationAndScaling.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/FFTRotationAndScaling.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/FFTRegistration.h>
 #include <pcl/FourierTransform.h>
@@ -61,7 +64,7 @@ class PCL_FFTRotationAndScalingEngine
 public:
 
    template <class P>
-   static ComplexImage* Initialize( const GenericImage<P>& image, bool evaluateScaling, float lowFrequencyCutoff )
+   static ComplexImage Initialize( const GenericImage<P>& image, bool evaluateScaling, float lowFrequencyCutoff )
    {
       // We work with square matrices.
       return Initialize( image,
@@ -73,38 +76,37 @@ public:
    template <class P>
    static void Evaluate( float& rotationAngle, float& scalingRatio,
                          const GenericImage<P>& image, bool evaluateScaling, float lowFrequencyCutoff,
-                         const ComplexImage* C0 )
+                         const ComplexImage& C0 )
    {
-      ComplexImage* C = 0;
-      bool statusInitialization = image.Status().IsInitializationEnabled();
-
-      rotationAngle = 0;
-      scalingRatio = 1;
+      bool initializationEnabled = image.Status().IsInitializationEnabled();
 
       try
       {
-         int size = C0->Width(); // we work with square matrices
+         rotationAngle = 0;
+         scalingRatio = 1;
 
-         if ( statusInitialization )
+         int size = C0.Width(); // we work with square matrices
+
+         if ( initializationEnabled )
          {
             image.Status().Initialize( evaluateScaling ? "FFT Rotation/Scaling" : "FFT Rotation",
-                                    7*size + 6*size*size );
+                                       7*size + 6*size*size );
             image.Status().DisableInitialization();
          }
 
          // FFT of the polar or log-polar target image
-         C = Initialize( image, evaluateScaling, size, lowFrequencyCutoff );     //*** status += 4*size + 2*size*size
+         ComplexImage C = Initialize( image, evaluateScaling, size, lowFrequencyCutoff ); //*** status += 4*size + 2*size*size
 
          // Phase correlation matrix
-         PhaseCorrelationMatrix( **C, **C+C->NumberOfPixels(), **C0, **C );
+         PhaseCorrelationMatrix( *C, *C + C.NumberOfPixels(), *C0, *C );
 
          // Inverse FFT of phase matrix
-         InPlaceInverseFourierTransform() >> *C;                              //*** status += 2*size
+         InPlaceInverseFourierTransform() >> C;                               //*** status += 2*size
 
          // Working real image to store the absolute value of PCM/CPSM.
-         Image R( *C );
+         Image R( C );
 
-         delete C, C = 0; // C no longer needed
+         C.FreeData(); // no longer needed
 
          // Normalized real PCM or CPSM
          R.Rescale();                                                         //*** size*size
@@ -176,17 +178,12 @@ public:
 
          image.Status() = R.Status();
 
-         R.FreeData();  // R no longer needed
-
-         if ( statusInitialization )
+         if ( initializationEnabled )
             image.Status().EnableInitialization();
       }
-
       catch ( ... )
       {
-         if ( C != 0 )
-            delete C;
-         if ( statusInitialization )
+         if ( initializationEnabled )
             image.Status().EnableInitialization();
          throw;
       }
@@ -195,98 +192,82 @@ public:
 private:
 
    template <class P>
-   static ComplexImage* Initialize( const GenericImage<P>& image, bool evaluateScaling, int size, float lowFrequencyCutoff )
+   static ComplexImage Initialize( const GenericImage<P>& image, bool evaluateScaling, int size, float lowFrequencyCutoff )
    {
-      ComplexImage* C = 0;
 
-      bool statusInitialization = image.Status().IsInitializationEnabled();
+      Rect r = image.SelectedRectangle();
+      int w = Min( r.Width(), size );
+      int h = Min( r.Height(), size );
 
-      try
+      // Place real data centered within our working space
+      ComplexImage C( size, size );
+      C.Zero().Mov( image, Point( (size - w) >> 1, (size - h) >> 1 ) );
+
+      C.Status() = image.Status();
+
+      bool initializationEnabled = image.Status().IsInitializationEnabled();
+      if ( initializationEnabled )
       {
-         Rect r = image.SelectedRectangle();
-         int w = Min( r.Width(), size );
-         int h = Min( r.Height(), size );
-
-         // Place real data centered within our working space
-         C = new ComplexImage( size, size );
-         C->Zero().Mov( image, Point( (size - w) >> 1, (size - h) >> 1 ) );
-
-         C->Status() = image.Status();
-
-         if ( statusInitialization )
-         {
-            C->Status().Initialize( evaluateScaling ? "FFT Rotation/Scaling Reference Matrix" :
-                                                      "FFT Rotation Reference Matrix",
-                                    4*size + 2*size*size );
-            C->Status().DisableInitialization();
-         }
-
-         // Multiply by (-1)^(x+y) to shift the origin of the DFT to the center of the image.
-         // In this way the central pixel will be the dc component of the DFT.
-         for ( int i = 0; i < size; ++i )
-         {
-            fcomplex* c = C->ScanLine( i ) + (i & 1);
-            for ( int j = i & 1; j < size; j += 2, c += 2 )
-               *c = -*c;
-         }
-
-         // DFT of the reference or target image.
-         InPlaceFourierTransform() >> *C;                      //*** status += 2*size
-
-         // Absolute value of the DFT
-         Image img1( *C );
-
-         C->FreeData();
-
-         // Low-frequency cutoff
-         if ( lowFrequencyCutoff > 0 )
-            LowFrequencyCutoff( img1, lowFrequencyCutoff );
-
-         // Normalize
-         img1.Rescale();                                       //***  status += size*size
-
-         // Conversion to polar or log-polar coordinates.
-
-         {
-            // Linear interpolation ensures no artifact will be generated due to
-            // oscillations in presence of wild differences between neighbor pixels.
-            BilinearPixelInterpolation L;
-
-            if ( evaluateScaling )                             //***  status += size*size
-            {
-               LogPolarTransform LPT( L );
-               LPT.SetRotationRange( .0F, Const<float>::pi() );
-               LPT >> img1;
-            }
-            else
-            {
-               PolarTransform PT( L );
-               PT.SetRotationRange( .0F, Const<float>::pi() );
-               PT >> img1;
-            }
-         }
-
-         // DFT of polar or log-polar image.
-         C->Assign( img1 );
-         img1.FreeData(); // img1 no longer needed
-         InPlaceFourierTransform() >> *C;                      //*** status += 2*size
-
-         image.Status() = C->Status();
-
-         if ( statusInitialization )
-            image.Status().EnableInitialization();
-
-         return C;
+         C.Status().Initialize( evaluateScaling ? "FFT Rotation/Scaling Reference Matrix" :
+                                                   "FFT Rotation Reference Matrix",
+                                 4*size + 2*size*size );
+         C.Status().DisableInitialization();
       }
 
-      catch ( ... )
+      // Multiply by (-1)^(x+y) to shift the origin of the DFT to the center of the image.
+      // In this way the central pixel will be the dc component of the DFT.
+      for ( int i = 0; i < size; ++i )
       {
-         if ( C != 0 )
-            delete C;
-         if ( statusInitialization )
-            image.Status().EnableInitialization();
-         throw;
+         fcomplex* c = C.ScanLine( i ) + (i & 1);
+         for ( int j = i & 1; j < size; j += 2, c += 2 )
+            *c = -*c;
       }
+
+      // DFT of the reference or target image.
+      InPlaceFourierTransform() >> C;                       //*** status += 2*size
+
+      // Absolute value of the DFT
+      Image img1( C );
+
+      C.FreeData();
+
+      // Low-frequency cutoff
+      if ( lowFrequencyCutoff > 0 )
+         LowFrequencyCutoff( img1, lowFrequencyCutoff );
+
+      // Normalize
+      img1.Rescale();                                       //***  status += size*size
+
+      // Conversion to polar or log-polar coordinates.
+      {
+         // Linear interpolation ensures no artifact will be generated due to
+         // oscillations in presence of wild differences between neighbor pixels.
+         BilinearPixelInterpolation L;
+
+         if ( evaluateScaling )                             //***  status += size*size
+         {
+            LogPolarTransform LPT( L );
+            LPT.SetRotationRange( .0F, Const<float>::pi() );
+            LPT >> img1;
+         }
+         else
+         {
+            PolarTransform PT( L );
+            PT.SetRotationRange( .0F, Const<float>::pi() );
+            PT >> img1;
+         }
+      }
+
+      // DFT of polar or log-polar image.
+      C.Assign( img1 );
+      img1.FreeData(); // img1 no longer needed
+      InPlaceFourierTransform() >> C;                       //*** status += 2*size
+
+      image.Status() = C.Status();
+      if ( initializationEnabled )
+         image.Status().EnableInitialization();
+
+      return C;
    }
 
    /*
@@ -318,81 +299,88 @@ private:
 
 // ----------------------------------------------------------------------------
 
-ComplexImage* FFTRotationAndScaling::DoInitialize( const pcl::Image& image )
+ComplexImage FFTRotationAndScaling::DoInitialize( const pcl::Image& image )
 {
-   return PCL_FFTRotationAndScalingEngine::Initialize( image, evaluateScaling, lowFrequencyCutoff );
+   return PCL_FFTRotationAndScalingEngine::Initialize( image, m_evaluateScaling, m_lowFrequencyCutoff );
 }
 
-ComplexImage* FFTRotationAndScaling::DoInitialize( const pcl::DImage& image )
+ComplexImage FFTRotationAndScaling::DoInitialize( const pcl::DImage& image )
 {
-   return PCL_FFTRotationAndScalingEngine::Initialize( image, evaluateScaling, lowFrequencyCutoff );
+   return PCL_FFTRotationAndScalingEngine::Initialize( image, m_evaluateScaling, m_lowFrequencyCutoff );
 }
 
-ComplexImage* FFTRotationAndScaling::DoInitialize( const pcl::ComplexImage& image )
+ComplexImage FFTRotationAndScaling::DoInitialize( const pcl::ComplexImage& image )
 {
-   return PCL_FFTRotationAndScalingEngine::Initialize( image, evaluateScaling, lowFrequencyCutoff );
+   return PCL_FFTRotationAndScalingEngine::Initialize( image, m_evaluateScaling, m_lowFrequencyCutoff );
 }
 
-ComplexImage* FFTRotationAndScaling::DoInitialize( const pcl::DComplexImage& image )
+ComplexImage FFTRotationAndScaling::DoInitialize( const pcl::DComplexImage& image )
 {
-   return PCL_FFTRotationAndScalingEngine::Initialize( image, evaluateScaling, lowFrequencyCutoff );
+   return PCL_FFTRotationAndScalingEngine::Initialize( image, m_evaluateScaling, m_lowFrequencyCutoff );
 }
 
-ComplexImage* FFTRotationAndScaling::DoInitialize( const pcl::UInt8Image& image )
+ComplexImage FFTRotationAndScaling::DoInitialize( const pcl::UInt8Image& image )
 {
-   return PCL_FFTRotationAndScalingEngine::Initialize( image, evaluateScaling, lowFrequencyCutoff );
+   return PCL_FFTRotationAndScalingEngine::Initialize( image, m_evaluateScaling, m_lowFrequencyCutoff );
 }
 
-ComplexImage* FFTRotationAndScaling::DoInitialize( const pcl::UInt16Image& image )
+ComplexImage FFTRotationAndScaling::DoInitialize( const pcl::UInt16Image& image )
 {
-   return PCL_FFTRotationAndScalingEngine::Initialize( image, evaluateScaling, lowFrequencyCutoff );
+   return PCL_FFTRotationAndScalingEngine::Initialize( image, m_evaluateScaling, m_lowFrequencyCutoff );
 }
 
-ComplexImage* FFTRotationAndScaling::DoInitialize( const pcl::UInt32Image& image )
+ComplexImage FFTRotationAndScaling::DoInitialize( const pcl::UInt32Image& image )
 {
-   return PCL_FFTRotationAndScalingEngine::Initialize( image, evaluateScaling, lowFrequencyCutoff );
+   return PCL_FFTRotationAndScalingEngine::Initialize( image, m_evaluateScaling, m_lowFrequencyCutoff );
 }
 
 // ----------------------------------------------------------------------------
 
 void FFTRotationAndScaling::DoEvaluate( const pcl::Image& image )
 {
-   PCL_FFTRotationAndScalingEngine::Evaluate( rotationAngle, scalingRatio, image, evaluateScaling, lowFrequencyCutoff, fftReference );
+   PCL_FFTRotationAndScalingEngine::Evaluate( m_rotationAngle, m_scalingRatio,
+                                              image, m_evaluateScaling, m_lowFrequencyCutoff, m_fftReference );
 }
 
 void FFTRotationAndScaling::DoEvaluate( const pcl::DImage& image )
 {
-   PCL_FFTRotationAndScalingEngine::Evaluate( rotationAngle, scalingRatio, image, evaluateScaling, lowFrequencyCutoff, fftReference );
+   PCL_FFTRotationAndScalingEngine::Evaluate( m_rotationAngle, m_scalingRatio,
+                                              image, m_evaluateScaling, m_lowFrequencyCutoff, m_fftReference );
 }
 
 void FFTRotationAndScaling::DoEvaluate( const pcl::ComplexImage& image )
 {
-   PCL_FFTRotationAndScalingEngine::Evaluate( rotationAngle, scalingRatio, image, evaluateScaling, lowFrequencyCutoff, fftReference );
+   PCL_FFTRotationAndScalingEngine::Evaluate( m_rotationAngle, m_scalingRatio,
+                                              image, m_evaluateScaling, m_lowFrequencyCutoff, m_fftReference );
 }
 
 void FFTRotationAndScaling::DoEvaluate( const pcl::DComplexImage& image )
 {
-   PCL_FFTRotationAndScalingEngine::Evaluate( rotationAngle, scalingRatio, image, evaluateScaling, lowFrequencyCutoff, fftReference );
+   PCL_FFTRotationAndScalingEngine::Evaluate( m_rotationAngle, m_scalingRatio,
+                                              image, m_evaluateScaling, m_lowFrequencyCutoff, m_fftReference );
 }
 
 void FFTRotationAndScaling::DoEvaluate( const pcl::UInt8Image& image )
 {
-   PCL_FFTRotationAndScalingEngine::Evaluate( rotationAngle, scalingRatio, image, evaluateScaling, lowFrequencyCutoff, fftReference );
+   PCL_FFTRotationAndScalingEngine::Evaluate( m_rotationAngle, m_scalingRatio,
+                                              image, m_evaluateScaling, m_lowFrequencyCutoff, m_fftReference );
 }
 
 void FFTRotationAndScaling::DoEvaluate( const pcl::UInt16Image& image )
 {
-   PCL_FFTRotationAndScalingEngine::Evaluate( rotationAngle, scalingRatio, image, evaluateScaling, lowFrequencyCutoff, fftReference );
+   PCL_FFTRotationAndScalingEngine::Evaluate( m_rotationAngle, m_scalingRatio,
+                                              image, m_evaluateScaling, m_lowFrequencyCutoff, m_fftReference );
 }
 
 void FFTRotationAndScaling::DoEvaluate( const pcl::UInt32Image& image )
 {
-   PCL_FFTRotationAndScalingEngine::Evaluate( rotationAngle, scalingRatio, image, evaluateScaling, lowFrequencyCutoff, fftReference );
+   PCL_FFTRotationAndScalingEngine::Evaluate( m_rotationAngle, m_scalingRatio,
+                                              image, m_evaluateScaling, m_lowFrequencyCutoff, m_fftReference );
 }
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/FFTRotationAndScaling.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/FFTRotationAndScaling.cpp - Released 2015/07/30 17:15:31 UTC

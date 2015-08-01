@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard GREYCstoration Process Module Version 01.00.02.0205
-// ****************************************************************************
-// GREYCstorationProcess.cpp - Released 2014/11/14 17:18:47 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard GREYCstoration Process Module Version 01.00.02.0224
+// ----------------------------------------------------------------------------
+// GREYCstorationProcess.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard GREYCstoration PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 /******************************************************************************
  * CImg Library and GREYCstoration Algorithm:
@@ -114,7 +118,7 @@ IsoString GREYCstorationProcess::Id() const
 
 IsoString GREYCstorationProcess::Category() const
 {
-   return "NoiseReduction";
+   return "Obsolete,NoiseReduction";
 }
 
 // ----------------------------------------------------------------------------
@@ -398,5 +402,5 @@ int GREYCstorationProcess::ProcessCommandLine( const StringList& argv ) const
 
 } // pcl
 
-// ****************************************************************************
-// EOF GREYCstorationProcess.cpp - Released 2014/11/14 17:18:47 UTC
+// ----------------------------------------------------------------------------
+// EOF GREYCstorationProcess.cpp - Released 2015/07/31 11:49:48 UTC

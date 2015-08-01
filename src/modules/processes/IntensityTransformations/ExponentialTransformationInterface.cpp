@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard IntensityTransformations Process Module Version 01.07.00.0287
-// ****************************************************************************
-// ExponentialTransformationInterface.cpp - Released 2014/11/14 17:19:23 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard IntensityTransformations Process Module Version 01.07.00.0306
+// ----------------------------------------------------------------------------
+// ExponentialTransformationInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "ExponentialTransformationInterface.h"
 #include "ExponentialTransformationProcess.h"
@@ -338,7 +342,7 @@ ExponentialTransformationInterface::GUIData::GUIData( ExponentialTransformationI
 
    Smoothing_NumericControl.label.SetText( "Smoothing:" );
    Smoothing_NumericControl.label.SetFixedWidth( labelWidth );
-   Smoothing_NumericControl.slider.SetMinWidth( 250 );
+   Smoothing_NumericControl.slider.SetScaledMinWidth( 250 );
    Smoothing_NumericControl.slider.SetRange( 0, 200 );
    Smoothing_NumericControl.SetReal();
    Smoothing_NumericControl.SetRange( TheExponentialFunctionSmoothingParameter->MinimumValue(), TheExponentialFunctionSmoothingParameter->MaximumValue() );
@@ -350,7 +354,7 @@ ExponentialTransformationInterface::GUIData::GUIData( ExponentialTransformationI
 
    Order_NumericControl.label.SetText( "Order:" );
    Order_NumericControl.label.SetFixedWidth( labelWidth );
-   Order_NumericControl.slider.SetMinWidth( 250 );
+   Order_NumericControl.slider.SetScaledMinWidth( 250 );
    Order_NumericControl.slider.SetRange( 1, 60 );
    Order_NumericControl.SetReal();
    Order_NumericControl.SetRange( TheExponentialFunctionOrderParameter->MinimumValue(), TheExponentialFunctionOrderParameter->MaximumValue() );
@@ -364,7 +368,7 @@ ExponentialTransformationInterface::GUIData::GUIData( ExponentialTransformationI
    LightnessMask_CheckBox.SetText( "Lightness Mask" );
    LightnessMask_CheckBox.OnClick( (Button::click_event_handler)&ExponentialTransformationInterface::__LightnessMask_ButtonClick, w );
 
-   LightnessMask_Sizer.AddSpacing( labelWidth + 4 );
+   LightnessMask_Sizer.AddUnscaledSpacing( labelWidth + w.LogicalPixelsToPhysical( 4 ) );
    LightnessMask_Sizer.Add( LightnessMask_CheckBox );
 
    //
@@ -389,5 +393,5 @@ ExponentialTransformationInterface::GUIData::GUIData( ExponentialTransformationI
 
 } // pcl
 
-// ****************************************************************************
-// EOF ExponentialTransformationInterface.cpp - Released 2014/11/14 17:19:23 UTC
+// ----------------------------------------------------------------------------
+// EOF ExponentialTransformationInterface.cpp - Released 2015/07/31 11:49:48 UTC

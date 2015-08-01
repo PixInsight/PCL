@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/View.h - Released 2014/11/14 17:16:33 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/View.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_View_h
 #define __PCL_View_h
@@ -187,29 +190,19 @@ class PCL_CLASS View : public UIObject
 public:
 
    /*!
-    * A container of Histogram instances, used to represent the managed
-    * histograms of a view object in the PixInsight core application.
-    */
-   typedef IndirectArray<Histogram>                histogram_list;
-
-   /*!
-    * A container of ImageStatistics instances, used to represent the managed
-    * statistics of a view object in the PixInsight core application.
-    */
-   typedef IndirectArray<ImageStatistics>          statistics_list;
-
-   /*!
-    * A container of HistogramTransformation instances, used to represent the
+    * A container of HistogramTransformation instances used to represent the
     * managed Screen Transfer Functions (STF) of a view object in the core
     * PixInsight application.
     */
-   typedef IndirectArray<HistogramTransformation>  stf_list;
+   typedef Array<HistogramTransformation> stf_list;
 
    /*!
     * Constructs a null view. A null view does not correspond to an existing
     * view in the PixInsight core application.
     */
-   View();
+   View() : UIObject( nullptr )
+   {
+   }
 
    /*!
     * Constructs a %View instance as an alias of an existing %View object.
@@ -314,6 +307,12 @@ public:
     * be sent to all process interfaces.
     */
    void Rename( const IsoString& newId );
+
+   template <class S>
+   void Rename( const S& newId )
+   {
+      Rename( IsoString( newId ) );
+   }
 
    /*!
     * Returns true if this view is not locked for reading.
@@ -525,114 +524,17 @@ public:
    }
 
    /*!
-    * Returns true if the histogram functions have already been calculated for
-    * this view and are available.
-    *
-    * \deprecated This member function has been deprecated - do not use it in
-    * newly produced code. To generate, read and manage view histograms, use
-    * view properties. See HasProperty().
-    */
-   bool AreHistogramsAvailable() const;
-
-   /*!
-    * Retrieves the histogram functions of this view, if they are available, in
-    * the specified container.
-    *
-    * Before calling this function, make sure that the histogram functions are
-    * available by calling AreHistogramsAvailable() and, if necessary,
-    * CalculateHistograms().
-    *
-    * \deprecated This member function has been deprecated - do not use it in
-    * newly produced code. To generate, read and manage view histograms, use
-    * view properties. See ComputeProperty() and PropertyValue().
-    */
-   void GetHistograms( histogram_list& ) const;
-
-   /*!
-    * Calculates the histogram functions for this view. After calling this
-    * function, the histograms will be available for retrieval by the
-    * GetHistograms() function.
-    *
-    * Histograms are recalculated even if they were already available before
-    * calling this function. In general, call AreHistogramsAvailable() to
-    * avoid using this function if the histograms are already available for
-    * your routine.
-    *
-    * \deprecated This member function has been deprecated - do not use it in
-    * newly produced code. To generate, read and manage view histograms, use
-    * view properties. See ComputeProperty() and PropertyValue().
-    */
-   void CalculateHistograms( bool notify = true );
-
-   /*!
-    * Destroys the existing histogram functions for this view.
-    *
-    * \deprecated This member function has been deprecated - do not use it in
-    * newly produced code. To generate, read and manage view histograms, use
-    * view properties. See DeleteProperty().
-    */
-   void DestroyHistograms( bool notify = true );
-
-   /*!
-    * Returns true if statistical data have already been calculated for this
-    * view and are available.
-    *
-    * \deprecated This member function has been deprecated - do not use it in
-    * newly produced code. To generate, read and manage view statistics, use
-    * view properties. See HasProperty().
-    */
-   bool AreStatisticsAvailable() const;
-
-   /*!
-    * Retrieves the statistical data for this view, if they are available, in
-    * the specified container.
-    *
-    * Before calling this function, make sure that the statistical data are
-    * available by calling AreStatisticsAvailable() and, if necessary,
-    * CalculateStatistics().
-    *
-    * \deprecated This member function has been deprecated - do not use it in
-    * newly produced code. To generate, read and manage view statistics, use
-    * view properties. See ComputeProperty() and PropertyValue().
-    */
-   void GetStatistics( statistics_list& ) const;
-
-   /*!
-    * Calculates the statistical data for this view. After calling this
-    * function, the statistical data will be available for retrieval by the
-    * GetStatistics() function.
-    *
-    * Statistical data are recalculated even if they were already available
-    * before calling this function. In general, call AreStatisticsAvailable()
-    * to avoid using this function if the statistics are already available for
-    * your routine.
-    *
-    * \deprecated This member function has been deprecated - do not use it in
-    * newly produced code. To generate, read and manage view statistics, use
-    * view properties. See ComputeProperty() and PropertyValue().
-    */
-   void CalculateStatistics( bool notify = true );
-
-   /*!
-    * Destroys the existing statistical data for this view.
-    *
-    * \deprecated This member function has been deprecated - do not use it in
-    * newly produced code. To generate, read and manage view statistics, use
-    * view properties. See DeleteProperty().
-    */
-   void DestroyStatistics( bool notify = true );
-
-   /*!
     * Retrieves the set of screen transfer functions (STF) for this view in the
     * specified container.
     *
     * The STF container is a dynamic array. Each array element is a
-    * HistogramTransformation object corresponding to the STF for an image channel:
+    * HistogramTransformation object corresponding to the STF for an image
+    * channel or color component:
     *
-    * %Array element #0 = STF for red/gray channels \n
-    * %Array element #1 = STF for the green channel \n
-    * %Array element #2 = STF for the blue channel \n
-    * %Array element #3 = STF for the CIE L* (lightness) or CIE Y (luminance) components
+    * %Array element #0 = Red/gray channels \n
+    * %Array element #1 = Green channel \n
+    * %Array element #2 = Blue channel \n
+    * %Array element #3 = Lightness/brightness/luminance components
     */
    void GetScreenTransferFunctions( stf_list& ) const;
 
@@ -640,12 +542,13 @@ public:
     * Sets the screen transfer functions (STF) for this view.
     *
     * The specified container is a dynamic array. Each array element is a
-    * HistogramTransformation object corresponding to the STF for an image channel:
+    * HistogramTransformation object corresponding to the STF for an image
+    * channel or color component:
     *
-    * %Array element #0 = STF for red/gray channels \n
-    * %Array element #1 = STF for the green channel \n
-    * %Array element #2 = STF for the blue channel \n
-    * %Array element #3 = STF for the CIE L* (lightness) or CIE Y (luminance) components
+    * %Array element #0 = Red/gray channels \n
+    * %Array element #1 = Green channel \n
+    * %Array element #2 = Blue channel \n
+    * %Array element #3 = Lightness/brightness/luminance components
     */
    void SetScreenTransferFunctions( const stf_list&, bool notify = true );
 
@@ -694,6 +597,12 @@ public:
     */
    Variant PropertyValue( const IsoString& property ) const;
 
+   template <class S>
+   Variant PropertyValue( const S& property ) const
+   {
+      return PropertyValue( IsoString( property ) );
+   }
+
    /*!
     * Computes a reserved view property and returns its value.
     *
@@ -721,6 +630,12 @@ public:
     */
    Variant ComputeProperty( const IsoString& property, bool notify = true );
 
+   template <class S>
+   Variant ComputeProperty( const S& property, bool notify = true )
+   {
+      return ComputeProperty( IsoString( property ), notify );
+   }
+
    /*!
     * Returns the value of a reserved view property if it is already available,
     * or computes it otherwise and returns its newly calculated value.
@@ -734,11 +649,13 @@ public:
     *
     * See ComputeProperty() for information on reserved view properties.
     */
-   Variant ComputeOrFetchProperty( const IsoString& property, bool notify = true )
+   template <class S>
+   Variant ComputeOrFetchProperty( const S& property, bool notify = true )
    {
-      if ( HasProperty( property ) )
-         return PropertyValue( property );
-      return ComputeProperty( property, notify );
+      IsoString propertyId( property );
+      if ( HasProperty( propertyId ) )
+         return PropertyValue( propertyId );
+      return ComputeProperty( propertyId, notify );
    }
 
    /*!
@@ -768,6 +685,13 @@ public:
    void SetPropertyValue( const IsoString& property, const Variant& value, bool notify = true,
                           ViewPropertyAttributes attributes = ViewPropertyAttribute::NoChange );
 
+   template <class S>
+   void SetPropertyValue( const S& property, const Variant& value, bool notify = true,
+                          ViewPropertyAttributes attributes = ViewPropertyAttribute::NoChange )
+   {
+      SetPropertyValue( IsoString( property ), value, notify, attributes );
+   }
+
    /*!
     * Returns the data type of an existing \a property in this view.
     *
@@ -782,6 +706,12 @@ public:
     * \ingroup view_properties
     */
    Variant::data_type PropertyType( const IsoString& property ) const;
+
+   template <class S>
+   Variant::data_type PropertyType( const S& property ) const
+   {
+      return PropertyType( IsoString( property ) );
+   }
 
    /*!
     * Returns the set of attributes currently associated with an existing
@@ -798,6 +728,12 @@ public:
     * \ingroup view_properties
     */
    ViewPropertyAttributes PropertyAttributes( const IsoString& property ) const;
+
+   template <class S>
+   ViewPropertyAttributes PropertyAttributes( const S& property ) const
+   {
+      return PropertyAttributes( IsoString( property ) );
+   }
 
    /*!
     * Sets new \a attributes for an existing \a property in this view.
@@ -818,6 +754,12 @@ public:
     */
    void SetPropertyAttributes( const IsoString& property, ViewPropertyAttributes attributes, bool notify = true );
 
+   template <class S>
+   void SetPropertyAttributes( const S& property, ViewPropertyAttributes attributes, bool notify = true )
+   {
+      SetPropertyAttributes( IsoString( property ), attributes, notify );
+   }
+
    /*!
     * Returns true if the specified \a property exists in this view.
     *
@@ -826,6 +768,12 @@ public:
     * \ingroup view_properties
     */
    bool HasProperty( const IsoString& property ) const;
+
+   template <class S>
+   bool HasProperty( const S& property ) const
+   {
+      return HasProperty( IsoString( property ) );
+   }
 
    /*!
     * Deletes the specified \a property and its associated value in this view.
@@ -841,6 +789,12 @@ public:
     */
    void DeleteProperty( const IsoString& property, bool notify = true );
 
+   template <class S>
+   void DeleteProperty( const S& property, bool notify = true )
+   {
+      DeleteProperty( IsoString( property ), notify );
+   }
+
    /*!
     * Returns true if the specified \a id string is a valid view identifier.
     *
@@ -848,13 +802,13 @@ public:
     * "->") to separate between a main view identifier and a preview
     * identifier.
     */
-   template <typename S>
+   template <class S>
    static bool IsValidViewId( const S& id )
    {
       size_type p = id.Find( "->" );
       if ( p == String::notFound )
          return id.IsValidIdentifier();
-      return id.Left( p ).IsValidIdentifier() && id.SubString( p+2 ).IsValidIdentifier();
+      return id.Left( p ).IsValidIdentifier() && id.Substring( p+2 ).IsValidIdentifier();
    }
 
    /*!
@@ -862,6 +816,12 @@ public:
     * the specified identifier, this function returns View::Null().
     */
    static View ViewById( const IsoString& fullId );
+
+   template <class S>
+   static View ViewById( const S& fullId )
+   {
+      return ViewById( IsoString( fullId ) );
+   }
 
    /*!
     * Returns a container with all the existing views. This includes all main
@@ -876,8 +836,17 @@ public:
 
 protected:
 
-   View( void* );
-   View( const void* );
+   View( void* h ) : UIObject( h )
+   {
+   }
+
+   View( const void* h ) : UIObject( h )
+   {
+   }
+
+   View( std::nullptr_t h ) : UIObject( h )
+   {
+   }
 
    friend class ImageWindow;
    friend class ProcessImplementation; // for LaunchOn()
@@ -899,5 +868,5 @@ protected:
 
 #endif   // __PCL_View_h
 
-// ****************************************************************************
-// EOF pcl/View.h - Released 2014/11/14 17:16:33 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/View.h - Released 2015/07/30 17:15:18 UTC

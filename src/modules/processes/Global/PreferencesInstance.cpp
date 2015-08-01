@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Global Process Module Version 01.02.05.0260
-// ****************************************************************************
-// PreferencesInstance.cpp - Released 2014/11/14 17:18:47 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Global Process Module Version 01.02.06.0280
+// ----------------------------------------------------------------------------
+// PreferencesInstance.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "PreferencesInstance.h"
 #include "PreferencesParameters.h"
@@ -115,6 +119,13 @@ bool PreferencesInstance::ExecuteGlobal()
       PixInsightSettings::SetGlobalString ( "Application/ResourceFile08",                 application.resourceFile08 );
       PixInsightSettings::SetGlobalString ( "Application/ResourceFile09",                 application.resourceFile09 );
       PixInsightSettings::SetGlobalString ( "Application/ResourceFile10",                 application.resourceFile10 );
+      PixInsightSettings::SetGlobalFlag   ( "Application/AutoUIScaling",                  application.autoUIScaling );
+      PixInsightSettings::SetGlobalReal   ( "Application/UIScalingFactor",                application.uiScalingFactor );
+      PixInsightSettings::SetGlobalInteger( "Application/FontResolution",                 application.fontResolution );
+      PixInsightSettings::SetGlobalString ( "Application/LowResFont",                     application.lowResFont );
+      PixInsightSettings::SetGlobalString ( "Application/HighResFont",                    application.highResFont );
+      PixInsightSettings::SetGlobalString ( "Application/LowResMonoFont",                 application.lowResMonoFont );
+      PixInsightSettings::SetGlobalString ( "Application/HighResMonoFont",                application.highResMonoFont );
 
       PixInsightSettings::SetGlobalFlag   ( "MainWindow/MaximizeAtStartup",               mainWindow.maximizeAtStartup );
       PixInsightSettings::SetGlobalFlag   ( "MainWindow/FullScreenAtStartup",             mainWindow.fullScreenAtStartup );
@@ -150,7 +161,6 @@ bool PreferencesInstance::ExecuteGlobal()
       PixInsightSettings::SetGlobalReal   ( "ImageWindow/DefaultHorizontalResolution",    imageWindow.defaultHorizontalResolution );
       PixInsightSettings::SetGlobalReal   ( "ImageWindow/DefaultVerticalResolution",      imageWindow.defaultVerticalResolution );
       PixInsightSettings::SetGlobalFlag   ( "ImageWindow/DefaultMetricResolution",        imageWindow.defaultMetricResolution );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/DefaultEmbedMetadata",           imageWindow.defaultEmbedMetadata );
       PixInsightSettings::SetGlobalFlag   ( "ImageWindow/DefaultEmbedThumbnails",         imageWindow.defaultEmbedThumbnails );
       PixInsightSettings::SetGlobalFlag   ( "ImageWindow/DefaultEmbedProperties",         imageWindow.defaultEmbedProperties );
       PixInsightSettings::SetGlobalString ( "ImageWindow/DefaultFileExtension",           imageWindow.defaultFileExtension );
@@ -167,6 +177,7 @@ bool PreferencesInstance::ExecuteGlobal()
       PixInsightSettings::SetGlobalFlag   ( "ImageWindow/Default24BitScreenLUT",          imageWindow.default24BitScreenLUT );
       // Better don't mess during a global settings update - for sanity, we'll do this after EndUpdate()
       //ImageWindow::SetSwapDirectories( imageWindow.swapDirectories);
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/SwapCompression",                imageWindow.swapCompression );
       PixInsightSettings::SetGlobalString ( "ImageWindow/DownloadsDirectory",             imageWindow.downloadsDirectory );
       PixInsightSettings::SetGlobalFlag   ( "ImageWindow/FollowDownloadLocations",        imageWindow.followDownloadLocations );
       PixInsightSettings::SetGlobalFlag   ( "ImageWindow/VerboseNetworkOperations",       imageWindow.verboseNetworkOperations );
@@ -249,6 +260,20 @@ void* PreferencesInstance::LockParameter( const MetaParameter* p, size_type tabl
       return application.resourceFile09.c_str();
    if ( p == METAPARAMETER_INSTANCE_ID( Application, resourceFile10 ) )
       return application.resourceFile10.c_str();
+   if ( p == METAPARAMETER_INSTANCE_ID( Application, autoUIScaling ) )
+      return &application.autoUIScaling;
+   if ( p == METAPARAMETER_INSTANCE_ID( Application, uiScalingFactor ) )
+      return &application.uiScalingFactor;
+   if ( p == METAPARAMETER_INSTANCE_ID( Application, fontResolution ) )
+      return &application.fontResolution;
+   if ( p == METAPARAMETER_INSTANCE_ID( Application, lowResFont ) )
+      return application.lowResFont.c_str();
+   if ( p == METAPARAMETER_INSTANCE_ID( Application, highResFont ) )
+      return application.highResFont.c_str();
+   if ( p == METAPARAMETER_INSTANCE_ID( Application, lowResMonoFont ) )
+      return application.lowResMonoFont.c_str();
+   if ( p == METAPARAMETER_INSTANCE_ID( Application, highResMonoFont ) )
+      return application.highResMonoFont.c_str();
 
    if ( p == METAPARAMETER_INSTANCE_ID( MainWindow, maximizeAtStartup ) )
       return &mainWindow.maximizeAtStartup;
@@ -317,8 +342,6 @@ void* PreferencesInstance::LockParameter( const MetaParameter* p, size_type tabl
       return &imageWindow.defaultVerticalResolution;
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, defaultMetricResolution ) )
       return &imageWindow.defaultMetricResolution;
-   if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, defaultEmbedMetadata ) )
-      return &imageWindow.defaultEmbedMetadata;
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, defaultEmbedThumbnails ) )
       return &imageWindow.defaultEmbedThumbnails;
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, defaultEmbedProperties ) )
@@ -349,6 +372,8 @@ void* PreferencesInstance::LockParameter( const MetaParameter* p, size_type tabl
       return &imageWindow.default24BitScreenLUT;
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, swapDirectory ) )
       return imageWindow.swapDirectories[tableRow].c_str();
+   if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, swapCompression ) )
+      return &imageWindow.swapCompression;
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, downloadsDirectory ) )
       return imageWindow.downloadsDirectory.c_str();
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, followDownloadLocations ) )
@@ -441,7 +466,7 @@ bool PreferencesInstance::AllocateParameter( size_type sizeOrLength, const MetaP
    {
       imageWindow.swapDirectories[tableRow].Clear();
       if ( sizeOrLength > 0 )
-         imageWindow.swapDirectories[tableRow].Reserve( sizeOrLength );
+         imageWindow.swapDirectories[tableRow].SetLength( sizeOrLength );
    }
    else
    {
@@ -450,7 +475,7 @@ bool PreferencesInstance::AllocateParameter( size_type sizeOrLength, const MetaP
          return false;
 
       if ( sizeOrLength != 0 )
-         s->Reserve( sizeOrLength );
+         s->SetLength( sizeOrLength );
       else
          s->Clear();
    }
@@ -488,6 +513,13 @@ void PreferencesInstance::LoadDefaultSettings()
    application.resourceFile08                   =         METAPARAMETER_INSTANCE_ID( Application, resourceFile08                   )->DefaultValue();
    application.resourceFile09                   =         METAPARAMETER_INSTANCE_ID( Application, resourceFile09                   )->DefaultValue();
    application.resourceFile10                   =         METAPARAMETER_INSTANCE_ID( Application, resourceFile10                   )->DefaultValue();
+   application.autoUIScaling                    =         METAPARAMETER_INSTANCE_ID( Application, autoUIScaling                    )->DefaultValue();
+   application.uiScalingFactor                  =         METAPARAMETER_INSTANCE_ID( Application, uiScalingFactor                  )->DefaultValue();
+   application.fontResolution                   =  int32( METAPARAMETER_INSTANCE_ID( Application, fontResolution                   )->DefaultValue() );
+   application.lowResFont                       =         METAPARAMETER_INSTANCE_ID( Application, lowResFont                       )->DefaultValue();
+   application.highResFont                      =         METAPARAMETER_INSTANCE_ID( Application, highResFont                      )->DefaultValue();
+   application.lowResMonoFont                   =         METAPARAMETER_INSTANCE_ID( Application, lowResMonoFont                   )->DefaultValue();
+   application.highResMonoFont                  =         METAPARAMETER_INSTANCE_ID( Application, highResMonoFont                  )->DefaultValue();
 
    mainWindow.maximizeAtStartup                 =         METAPARAMETER_INSTANCE_ID( MainWindow, maximizeAtStartup                 )->DefaultValue();
    mainWindow.fullScreenAtStartup               =         METAPARAMETER_INSTANCE_ID( MainWindow, fullScreenAtStartup               )->DefaultValue();
@@ -523,7 +555,6 @@ void PreferencesInstance::LoadDefaultSettings()
    imageWindow.defaultHorizontalResolution      =         METAPARAMETER_INSTANCE_ID( ImageWindow, defaultHorizontalResolution      )->DefaultValue();
    imageWindow.defaultVerticalResolution        =         METAPARAMETER_INSTANCE_ID( ImageWindow, defaultVerticalResolution        )->DefaultValue();
    imageWindow.defaultMetricResolution          =         METAPARAMETER_INSTANCE_ID( ImageWindow, defaultMetricResolution          )->DefaultValue();
-   imageWindow.defaultEmbedMetadata             =         METAPARAMETER_INSTANCE_ID( ImageWindow, defaultEmbedMetadata             )->DefaultValue();
    imageWindow.defaultEmbedThumbnails           =         METAPARAMETER_INSTANCE_ID( ImageWindow, defaultEmbedThumbnails           )->DefaultValue();
    imageWindow.defaultEmbedProperties           =         METAPARAMETER_INSTANCE_ID( ImageWindow, defaultEmbedProperties           )->DefaultValue();
    imageWindow.defaultFileExtension             =         METAPARAMETER_INSTANCE_ID( ImageWindow, defaultFileExtension             )->DefaultValue();
@@ -537,9 +568,10 @@ void PreferencesInstance::LoadDefaultSettings()
    imageWindow.pinchSensitivity                 =         METAPARAMETER_INSTANCE_ID( ImageWindow, pinchSensitivity                 )->DefaultValue();
    imageWindow.fastScreenRenditions             =         METAPARAMETER_INSTANCE_ID( ImageWindow, fastScreenRenditions             )->DefaultValue();
    imageWindow.fastScreenRenditionThreshold     =  int32( METAPARAMETER_INSTANCE_ID( ImageWindow, fastScreenRenditionThreshold     )->DefaultValue() );
-   imageWindow.default24BitScreenLUT             =        METAPARAMETER_INSTANCE_ID( ImageWindow, default24BitScreenLUT            )->DefaultValue();
+   imageWindow.default24BitScreenLUT            =         METAPARAMETER_INSTANCE_ID( ImageWindow, default24BitScreenLUT            )->DefaultValue();
    imageWindow.swapDirectories.Clear();
    imageWindow.swapDirectories.Add(                File::SystemTempDirectory() );
+   imageWindow.swapCompression                  =         METAPARAMETER_INSTANCE_ID( ImageWindow, swapCompression                  )->DefaultValue();
    imageWindow.downloadsDirectory               =  File::SystemTempDirectory();
    imageWindow.followDownloadLocations          =         METAPARAMETER_INSTANCE_ID( ImageWindow, followDownloadLocations          )->DefaultValue();
    imageWindow.verboseNetworkOperations         =         METAPARAMETER_INSTANCE_ID( ImageWindow, verboseNetworkOperations         )->DefaultValue();
@@ -594,6 +626,13 @@ void PreferencesInstance::LoadCurrentSettings()
    application.resourceFile08                   = PixInsightSettings::GlobalString ( "Application/ResourceFile08" );
    application.resourceFile09                   = PixInsightSettings::GlobalString ( "Application/ResourceFile09" );
    application.resourceFile10                   = PixInsightSettings::GlobalString ( "Application/ResourceFile10" );
+   application.autoUIScaling                    = PixInsightSettings::GlobalFlag   ( "Application/AutoUIScaling" );
+   application.uiScalingFactor                  = PixInsightSettings::GlobalReal   ( "Application/UIScalingFactor" );
+   application.fontResolution                   = PixInsightSettings::GlobalInteger( "Application/FontResolution" );
+   application.lowResFont                       = PixInsightSettings::GlobalString ( "Application/LowResFont" );
+   application.highResFont                      = PixInsightSettings::GlobalString ( "Application/HighResFont" );
+   application.lowResMonoFont                   = PixInsightSettings::GlobalString ( "Application/LowResMonoFont" );
+   application.highResMonoFont                  = PixInsightSettings::GlobalString ( "Application/HighResMonoFont" );
 
    mainWindow.maximizeAtStartup                 = PixInsightSettings::GlobalFlag   ( "MainWindow/MaximizeAtStartup" );
    mainWindow.fullScreenAtStartup               = PixInsightSettings::GlobalFlag   ( "MainWindow/FullScreenAtStartup" );
@@ -629,7 +668,6 @@ void PreferencesInstance::LoadCurrentSettings()
    imageWindow.defaultHorizontalResolution      = PixInsightSettings::GlobalReal   ( "ImageWindow/DefaultHorizontalResolution" );
    imageWindow.defaultVerticalResolution        = PixInsightSettings::GlobalReal   ( "ImageWindow/DefaultVerticalResolution" );
    imageWindow.defaultMetricResolution          = PixInsightSettings::GlobalFlag   ( "ImageWindow/DefaultMetricResolution" );
-   imageWindow.defaultEmbedMetadata             = PixInsightSettings::GlobalFlag   ( "ImageWindow/DefaultEmbedMetadata" );
    imageWindow.defaultEmbedThumbnails           = PixInsightSettings::GlobalFlag   ( "ImageWindow/DefaultEmbedThumbnails" );
    imageWindow.defaultEmbedProperties           = PixInsightSettings::GlobalFlag   ( "ImageWindow/DefaultEmbedProperties" );
    imageWindow.defaultFileExtension             = PixInsightSettings::GlobalString ( "ImageWindow/DefaultFileExtension" );
@@ -645,6 +683,7 @@ void PreferencesInstance::LoadCurrentSettings()
    imageWindow.fastScreenRenditionThreshold     = PixInsightSettings::GlobalInteger( "ImageWindow/FastScreenRenditionThreshold" );
    imageWindow.default24BitScreenLUT            = PixInsightSettings::GlobalFlag   ( "ImageWindow/Default24BitScreenLUT" );
    imageWindow.swapDirectories                  = ImageWindow::SwapDirectories();
+   imageWindow.swapCompression                  = PixInsightSettings::GlobalFlag   ( "ImageWindow/SwapCompression" );
    imageWindow.downloadsDirectory               = PixInsightSettings::GlobalString ( "ImageWindow/DownloadsDirectory" );
    imageWindow.followDownloadLocations          = PixInsightSettings::GlobalFlag   ( "ImageWindow/FollowDownloadLocations" );
    imageWindow.verboseNetworkOperations         = PixInsightSettings::GlobalFlag   ( "ImageWindow/VerboseNetworkOperations" );
@@ -714,10 +753,20 @@ String* PreferencesInstance::StringParameterFromMetaParameter( const MetaParamet
       s = &application.resourceFile09;
    else if ( p == METAPARAMETER_INSTANCE_ID( Application, resourceFile10 ) )
       s = &application.resourceFile10;
+   else if ( p == METAPARAMETER_INSTANCE_ID( Application, lowResFont ) )
+      s = &application.lowResFont;
+   else if ( p == METAPARAMETER_INSTANCE_ID( Application, highResFont ) )
+      s = &application.highResFont;
+   else if ( p == METAPARAMETER_INSTANCE_ID( Application, lowResMonoFont ) )
+      s = &application.lowResMonoFont;
+   else if ( p == METAPARAMETER_INSTANCE_ID( Application, highResMonoFont ) )
+      s = &application.highResMonoFont;
+
    else if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, defaultFileExtension ) )
       s = &imageWindow.defaultFileExtension;
    else if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, downloadsDirectory ) )
       s = &imageWindow.downloadsDirectory;
+
    else if ( p == METAPARAMETER_INSTANCE_ID( Identifiers, workspacePrefix ) )
       s = &identifiers.workspacePrefix;
    else if ( p == METAPARAMETER_INSTANCE_ID( Identifiers, imagePrefix ) )
@@ -749,5 +798,5 @@ String* PreferencesInstance::StringParameterFromMetaParameter( const MetaParamet
 
 } // pcl
 
-// ****************************************************************************
-// EOF PreferencesInstance.cpp - Released 2014/11/14 17:18:47 UTC
+// ----------------------------------------------------------------------------
+// EOF PreferencesInstance.cpp - Released 2015/07/31 11:49:48 UTC

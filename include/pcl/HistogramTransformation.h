@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/HistogramTransformation.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/HistogramTransformation.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_HistogramTransformation_h
 #define __PCL_HistogramTransformation_h
@@ -70,8 +73,6 @@ namespace pcl
 
 class PCL_CLASS Histogram;
 
-// ----------------------------------------------------------------------------
-
 /*!
  * \class HistogramTransformation
  * \brief Multiple histogram transformation.
@@ -88,56 +89,56 @@ public:
    typedef Array<HistogramTransformation> transformation_list;
 
    /*!
-    * \struct pcl::HistogramTransformation::Flags
-    * \brief Characterizes a histogram transformation pertaining to a
-    * histogram transformation chain.
-    */
-   struct Flags
-   {
-      double d;              //!< Total width of the stretched dynamic range
-      double dr;             //!< Total width of the expanded dynamic range
-      bool   isClipping : 1; //!< The transformation defines clipping parameters
-      bool   isMTF      : 1; //!< The transformation defines a midtones transfer function
-      bool   isRange    : 1; //!< The transformation defines dynamic range expansion parameters
-      bool   isDelta    : 1; //!< The transformation defines a stretched range of sample values
-   };
-
-   /*!
     * Constructs a %HistogramTransformation object with the specified
     * parameters.
     *
-    * \param mb   Midtones balance in the range [0,1]. The default value is
-    *             0.5.
+    * \param mb   Midtones balance in the range [0,1].
     *
-    * \param sc   Shadows clipping point in the range [0,1]. The default value
-    *             is zero.
+    * \param sc   Shadows clipping point in the range [0,1].
     *
-    * \param hc   Highlights clipping point in the range [0,1]. The default
-    *             value is one.
+    * \param hc   Highlights clipping point in the range [0,1].
     *
-    * \param lr   Low dynamic range expansion bound in the range [-10,0]. The
-    *             default value is zero.
+    * \param lr   Low dynamic range expansion bound <= 0.
     *
-    * \param hr   High dynamic range expansion bound in the range [1,+10]. The
-    *             defaultc value is one.
+    * \param hr   High dynamic range expansion bound >= 1.
+    *
+    * The default parameter values define an identity transformation:
+    *
+    * mb = 0.5, sc = 0, hc = 1, lr = 0, hr = 1.
     */
    HistogramTransformation( double mb = 0.5,
                             double sc = 0, double hc = 1,
                             double lr = 0, double hr = 1 ) :
-   ImageTransformation(), m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      ImageTransformation(),
+      m_parallel( true ),
+      m_maxProcessors( PCL_MAX_PROCESSORS )
    {
-      SetMidtonesBalance( mb );
-      SetClipping( sc, hc );
-      SetRange( lr, hr );
+      PCL_PRECONDITION( mb >= 0 && mb <= 1 )
+      PCL_PRECONDITION( sc >= 0 && sc <= 1 )
+      PCL_PRECONDITION( hc >= 0 && hc <= 1 )
+      PCL_PRECONDITION( lr <= 0 )
+      PCL_PRECONDITION( hr >= 1 )
+      m_midtonesBalance = pcl::Range( mb, 0.0, 1.0 );
+      m_clipLow = pcl::Range( sc, 0.0, 1.0 );
+      m_clipHigh = pcl::Range( hc, 0.0, 1.0 );
+      if ( m_clipHigh < m_clipLow )
+         pcl::Swap( m_clipLow, m_clipHigh );
+      m_expandLow = Min( 0.0, lr );
+      m_expandHigh = Max( 1.0, hr );
+      UpdateFlags();
    }
 
    /*!
     * Copy constructor.
     */
-   HistogramTransformation( const HistogramTransformation& x ) : ImageTransformation( x )
-   {
-      (void)operator =( x );
-   }
+   HistogramTransformation( const HistogramTransformation& )  = default;
+
+   /*!
+    * Move constructor.
+    */
+#ifndef _MSC_VER
+   HistogramTransformation( HistogramTransformation&& ) = default;
+#endif
 
    /*!
     * Destroys a %HistogramTransformation object.
@@ -147,23 +148,16 @@ public:
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Copy assignment operator. Returns a reference to this object.
     */
-   HistogramTransformation& operator =( const HistogramTransformation& x )
-   {
-      if ( &x != this )
-      {
-         m_midtonesBalance = x.m_midtonesBalance;
-         m_clipLow         = x.m_clipLow;
-         m_clipHigh        = x.m_clipHigh;
-         m_expandLow       = x.m_expandLow;
-         m_expandHigh      = x.m_expandHigh;
-         m_parallel        = x.m_parallel;
-         m_maxProcessors   = x.m_maxProcessors;
-         m_transformChain.Assign( x.m_transformChain );
-      }
-      return *this;
-   }
+   HistogramTransformation& operator =( const HistogramTransformation& ) = default;
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+#ifndef _MSC_VER
+   HistogramTransformation& operator =( HistogramTransformation&& ) = default;
+#endif
 
    /*!
     * Returns the number of histogram transforms in the transformation chain.
@@ -174,7 +168,7 @@ public:
    }
 
    /*!
-    * Returns a constant reference to the transformation at the specified
+    * Returns a reference to the (immutable) transformation at the specified
     * \a index in the current transformation chain.
     */
    const HistogramTransformation& operator []( size_type index ) const
@@ -183,8 +177,8 @@ public:
    }
 
    /*!
-    * Returns a reference to the transformation at the specified \a index in
-    * this transformation chain.
+    * Returns a reference to the (mutable) transformation at the specified
+    * \a index in this transformation chain.
     */
    HistogramTransformation& operator []( size_type index )
    {
@@ -192,8 +186,8 @@ public:
    }
 
    /*!
-    * Returns a constant reference to the first histogram transformation in the
-    * current chain. The returned value is always a constant reference to this
+    * Returns a reference to the (immutable) first histogram transformation in
+    * the current chain. The returned value is always a reference to this
     * object.
     */
    const HistogramTransformation& operator *() const
@@ -202,8 +196,9 @@ public:
    }
 
    /*!
-    * Returns a reference to the first histogram transformation in the current
-    * chain. The returned value is always a reference to this object.
+    * Returns a reference to the (mutable) first histogram transformation in
+    * the current chain. The returned value is always a reference to this
+    * object.
     */
    HistogramTransformation& operator *()
    {
@@ -228,14 +223,6 @@ public:
 
    /*! #
     */
-   void SetMidtonesBalance( double b )
-   {
-      PCL_PRECONDITION( b >= 0 && b <= 1 )
-      m_midtonesBalance = pcl::Range( b, 0.0, 1.0 );
-   }
-
-   /*! #
-    */
    double ShadowsClipping() const
    {
       return m_clipLow;
@@ -246,38 +233,6 @@ public:
    double HighlightsClipping() const
    {
       return m_clipHigh;
-   }
-
-   /*! #
-    */
-   void SetShadowsClipping( double c )
-   {
-      PCL_PRECONDITION( c >= 0 && c <= 1 )
-      m_clipLow = pcl::Range( c, 0.0, 1.0 );
-      if ( m_clipHigh < m_clipLow )
-         pcl::Swap( m_clipLow, m_clipHigh );
-   }
-
-   /*! #
-    */
-   void SetHighlightsClipping( double c )
-   {
-      PCL_PRECONDITION( c >= 0 && c <= 1 )
-      m_clipHigh = pcl::Range( c, 0.0, 1.0 );
-      if ( m_clipHigh < m_clipLow )
-         pcl::Swap( m_clipLow, m_clipHigh );
-   }
-
-   /*! #
-    */
-   void SetClipping( double sc, double hc )
-   {
-      PCL_PRECONDITION( sc >= 0 && sc <= 1 )
-      PCL_PRECONDITION( hc >= 0 && hc <= 1 )
-      m_clipLow = pcl::Range( sc, 0.0, 1.0 );
-      m_clipHigh = pcl::Range( hc, 0.0, 1.0 );
-      if ( m_clipHigh < m_clipLow )
-         pcl::Swap( m_clipLow, m_clipHigh );
    }
 
    /*! #
@@ -296,30 +251,6 @@ public:
 
    /*! #
     */
-   void SetLowRange( double r )
-   {
-      PCL_PRECONDITION( r <= 0 )
-      m_expandLow = Min( 0.0, r );
-   }
-
-   /*! #
-    */
-   void SetHighRange( double r )
-   {
-      PCL_PRECONDITION( r >= 1 )
-      m_expandHigh = Max( 1.0, r );
-   }
-
-   /*! #
-    */
-   void SetRange( double lr, double hr )
-   {
-      SetLowRange( lr );
-      SetHighRange( hr );
-   }
-
-   /*! #
-    */
    bool IsIdentityTransformation() const
    {
       return m_midtonesBalance == 0.5
@@ -333,13 +264,90 @@ public:
 
    /*! #
     */
-   void UpdateFlags() const;
+   void SetMidtonesBalance( double b )
+   {
+      PCL_PRECONDITION( b >= 0 && b <= 1 )
+      m_midtonesBalance = pcl::Range( b, 0.0, 1.0 );
+      UpdateFlags();
+   }
 
    /*! #
     */
-   const Flags& GetFlags() const
+   void SetShadowsClipping( double c )
    {
-      return m_flags;
+      PCL_PRECONDITION( c >= 0 && c <= 1 )
+      m_clipLow = pcl::Range( c, 0.0, 1.0 );
+      if ( m_clipHigh < m_clipLow )
+         pcl::Swap( m_clipLow, m_clipHigh );
+      UpdateFlags();
+   }
+
+   /*! #
+    */
+   void SetHighlightsClipping( double c )
+   {
+      PCL_PRECONDITION( c >= 0 && c <= 1 )
+      m_clipHigh = pcl::Range( c, 0.0, 1.0 );
+      if ( m_clipHigh < m_clipLow )
+         pcl::Swap( m_clipLow, m_clipHigh );
+      UpdateFlags();
+   }
+
+   /*! #
+    */
+   void SetClipping( double sc, double hc )
+   {
+      PCL_PRECONDITION( sc >= 0 && sc <= 1 )
+      PCL_PRECONDITION( hc >= 0 && hc <= 1 )
+      m_clipLow = pcl::Range( sc, 0.0, 1.0 );
+      m_clipHigh = pcl::Range( hc, 0.0, 1.0 );
+      if ( m_clipHigh < m_clipLow )
+         pcl::Swap( m_clipLow, m_clipHigh );
+      UpdateFlags();
+   }
+
+   /*! #
+    */
+   void SetLowRange( double r )
+   {
+      PCL_PRECONDITION( r <= 0 )
+      m_expandLow = Min( 0.0, r );
+      UpdateFlags();
+   }
+
+   /*! #
+    */
+   void SetHighRange( double r )
+   {
+      PCL_PRECONDITION( r >= 1 )
+      m_expandHigh = Max( 1.0, r );
+      UpdateFlags();
+   }
+
+   /*! #
+    */
+   void SetRange( double lr, double hr )
+   {
+      PCL_PRECONDITION( lr <= 0 )
+      PCL_PRECONDITION( hr >= 1 )
+      m_expandLow = Min( 0.0, lr );
+      m_expandHigh = Max( 1.0, hr );
+      UpdateFlags();
+   }
+
+   /*!
+    * Resets all transformation parameters to yield an identity histogram
+    * transformation.
+    */
+   void Reset()
+   {
+      m_midtonesBalance = 0.5;
+      m_clipLow = 0;
+      m_clipHigh = 1;
+      m_expandLow = 0;
+      m_expandHigh = 1;
+      m_transformChain.Clear();
+      UpdateFlags();
    }
 
    // Avoid "hides virtual function in base" warnings by clang
@@ -388,19 +396,14 @@ public:
    /*!
     * Returns the value of the <em>midtones transfer function</em> (MTF) for a
     * given midtones balance \a m and a sample point \a x. Both \a m and \a x
-    * must lie in the range [0,1].
+    * must be in the range [0,1].
     */
    static double MidtonesTransferFunction( double m, double x )
    {
       /*
        * Bulirsch-Stoer algorithm for a diagonal rational interpolation
-       * function with three data points: (0,0) (m,1/2) (1,1)
-       */
-      if ( x == 0 )
-         return 0;
-      if ( x == 1 )
-         return 1;
-      /*
+       * function with three fixed data points: (0,0) (m,1/2) (1,1).
+       *
        * This is the MTF function after direct substitution in the B-S
        * equations:
        *
@@ -417,8 +420,16 @@ public:
        *
        * Finally, precalculating (m - 1) we can save a multiplication:
        */
-      double m1 = m - 1;
-      return m1*x/((m + m1)*x - m);
+      if ( x > 0 ) // guard us against degenerate cases
+      {
+         if ( x < 1 )
+         {
+            double m1 = m - 1;
+            return m1*x/((m + m1)*x - m);
+         }
+         return 1;
+      }
+      return 0;
    }
 
    /*!
@@ -434,11 +445,11 @@ public:
     */
    void Transform( double& value ) const
    {
-      if ( m_flags.isClipping )
-         value = m_flags.isDelta ? ((value <= m_clipLow) ? 0.0 : ((value >= m_clipHigh) ? 1.0 : (value - m_clipLow)/m_flags.d)) : m_clipLow;
-      if ( m_flags.isMTF )
+      if ( m_flags.hasClipping )
+         value = m_flags.hasDelta ? ((value <= m_clipLow) ? 0.0 : ((value >= m_clipHigh) ? 1.0 : (value - m_clipLow)/m_flags.d)) : m_clipLow;
+      if ( m_flags.hasMTF )
          value = HistogramTransformation::MTF( m_midtonesBalance, value );
-      if ( m_flags.isRange )
+      if ( m_flags.hasRange )
          value = (value - m_expandLow)/m_flags.dr;
    }
 
@@ -516,19 +527,36 @@ public:
       m_maxProcessors = unsigned( Range( maxProcessors, 1, PCL_MAX_PROCESSORS ) );
    }
 
-protected:
+private:
 
-           double      m_midtonesBalance;   // midtones balance
-           double      m_clipLow;           // shadows clipping point
-           double      m_clipHigh;          // highlights clipping point
-           double      m_expandLow;         // shadows dynamic range expansion
-           double      m_expandHigh;        // highlights dynamic range expansion
-   mutable Flags       m_flags;             // transformation flags
-           bool        m_parallel      : 1; // use multiple execution threads
-           unsigned    m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT; // Maximum number of processors allowed
+   /*!
+    * \internal
+    * \struct pcl::HistogramTransformation::Flags
+    * \brief Characterizes a histogram transformation pertaining to a
+    * histogram transformation chain.
+    */
+   struct Flags
+   {
+      double d;               //!< Total width of the stretched dynamic range
+      double dr;              //!< Total width of the expanded dynamic range
+      bool   hasClipping : 1; //!< The transformation defines clipping parameters
+      bool   hasMTF      : 1; //!< The transformation defines a midtones transfer function
+      bool   hasRange    : 1; //!< The transformation defines dynamic range expansion parameters
+      bool   hasDelta    : 1; //!< The transformation defines a stretched range of sample values
+   };
+
+   double              m_midtonesBalance;   // midtones balance
+   double              m_clipLow;           // shadows clipping point
+   double              m_clipHigh;          // highlights clipping point
+   double              m_expandLow;         // shadows dynamic range expansion
+   double              m_expandHigh;        // highlights dynamic range expansion
+   Flags               m_flags;             // transformation flags
+   bool                m_parallel      : 1; // use multiple execution threads
+   unsigned            m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT; // Maximum number of processors allowed
    transformation_list m_transformChain;    // more transformations
 
-   // Inherited from ImageTransformation.
+   void UpdateFlags();
+
    virtual void Apply( pcl::Image& ) const;
    virtual void Apply( pcl::DImage& ) const;
    virtual void Apply( pcl::UInt8Image& ) const;
@@ -545,5 +573,5 @@ protected:
 
 #endif   // __PCL_HistogramTransformation_h
 
-// ****************************************************************************
-// EOF pcl/HistogramTransformation.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/HistogramTransformation.h - Released 2015/07/30 17:15:18 UTC

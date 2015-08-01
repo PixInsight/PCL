@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/BicubicFilterInterpolation.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/BicubicFilterInterpolation.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_BicubicFilterInterpolation_h
 #define __PCL_BicubicFilterInterpolation_h
@@ -119,9 +122,9 @@ public:
     * Copy constructor.
     */
    CubicFilter( const CubicFilter& x ) :
-   m_k31( x.m_k31 ), m_k21( x.m_k21 ),                   m_k01( x.m_k01 ),
-   m_k32( x.m_k32 ), m_k22( x.m_k22 ), m_k12( x.m_k12 ), m_k02( x.m_k02 ),
-   m_B( x.m_B ), m_C( x.m_C )
+      m_k31( x.m_k31 ), m_k21( x.m_k21 ),                   m_k01( x.m_k01 ),
+      m_k32( x.m_k32 ), m_k22( x.m_k22 ), m_k12( x.m_k12 ), m_k02( x.m_k02 ),
+      m_B( x.m_B ), m_C( x.m_C )
    {
    }
 
@@ -387,7 +390,7 @@ public:
     *                the interpolation filter.
     */
    BicubicFilterInterpolation( int rx, int ry, const CubicFilter& filter ) :
-   BidimensionalInterpolation<T>(), m_rx( Max( 1, rx ) ), m_ry( Max( 1, ry ) ), m_filter( filter )
+      BidimensionalInterpolation<T>(), m_rx( Max( 1, rx ) ), m_ry( Max( 1, ry ) ), m_filter( filter )
    {
       PCL_PRECONDITION( rx >= 1 )
       PCL_PRECONDITION( ry >= 1 )
@@ -427,7 +430,7 @@ public:
     */
    virtual double operator()( double x, double y ) const
    {
-      PCL_PRECONDITION( m_data != 0 )
+      PCL_PRECONDITION( m_data != nullptr )
       PCL_PRECONDITION( m_width > 0 && m_height > 0 )
       PCL_PRECONDITION( x >= 0 && x < m_width )
       PCL_PRECONDITION( y >= 0 && y < m_height )
@@ -441,7 +444,7 @@ public:
       double dx = x - x0;
       double dy = y - y0;
 
-      int d = (y0 - m_ry)*m_width + x0 - m_rx;
+      int64 d = int64( y0 - m_ry )*m_width + x0 - m_rx;
 
       if ( m_rx >= m_ry )
       {
@@ -468,7 +471,7 @@ public:
                   continue;
                }
 
-               p = m_data + (d - 2*m_width*(y + 1));
+               p = m_data + (d - 2*int64( m_width )*(y + 1));
             }
             else if ( y >= m_height )
             {
@@ -486,11 +489,11 @@ public:
                d += m_width;
             }
 
-            register int x  = x0 - m_rx;
-            register int x2 = x0 + m_rx;
-            register int x1 = Min( x2, m_width-1 );
-            register double sx = 0;
-            register const double* kx = m_k.Begin();
+            int x  = x0 - m_rx;
+            int x2 = x0 + m_rx;
+            int x1 = Min( x2, m_width-1 );
+            double sx = 0;
+            const double* kx = m_k.Begin();
 
             while ( x < 0 )
             {
@@ -557,11 +560,11 @@ public:
             else
                p = m_data + d++;
 
-            register int y  = y0 - m_ry;
-            register int y2 = y0 + m_ry;
-            register int y1 = Min( y2, m_height-1 );
-            register double sy = 0;
-            register const double* ky = m_k.Begin();
+            int y  = y0 - m_ry;
+            int y2 = y0 + m_ry;
+            int y1 = Min( y2, m_height-1 );
+            double sy = 0;
+            const double* ky = m_k.Begin();
 
             while ( y < 0 )
             {
@@ -654,10 +657,10 @@ public:
 
 protected:
 
-   int             m_rx, m_ry; // horizontal and vertical radii
-   double          m_sx, m_sy; // filter scaling ratios
-   mutable DVector m_k;        // workspace for interpolated values
-   CubicFilter     m_filter;
+           int         m_rx, m_ry; // horizontal and vertical radii
+           double      m_sx, m_sy; // filter scaling ratios
+   mutable DVector     m_k;        // workspace for interpolated values
+           CubicFilter m_filter;
 
    void Initialize()
    {
@@ -681,5 +684,5 @@ protected:
 
 #endif   // __PCL_BicubicFilterInterpolation_h
 
-// ****************************************************************************
-// EOF pcl/BicubicFilterInterpolation.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/BicubicFilterInterpolation.h - Released 2015/07/30 17:15:18 UTC

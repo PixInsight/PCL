@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/FileFormatImplementation.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/FileFormatImplementation.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/Exception.h>
 #include <pcl/FileFormatImplementation.h>
@@ -59,24 +62,17 @@ struct FileFormatProperty
    IsoString id;
    Variant   value;
 
-   FileFormatProperty() : id(), value()
+   FileFormatProperty( const IsoString& i, const Variant& v = Variant() ) :
+      id( i ),
+      value( v )
    {
    }
 
-   FileFormatProperty( const IsoString& i, const Variant& v = Variant() ) : id( i ), value( v )
-   {
-   }
+   FileFormatProperty() = default;
 
-   FileFormatProperty( const FileFormatProperty& x ) : id( x.id ), value( x.value )
-   {
-   }
+   FileFormatProperty( const FileFormatProperty& ) = default;
 
-   FileFormatProperty& operator =( const FileFormatProperty& x )
-   {
-      id = x.id;
-      value = x.value;
-      return *this;
-   }
+   FileFormatProperty& operator =( const FileFormatProperty& ) = default;
 
    bool operator ==( const FileFormatProperty& x ) const
    {
@@ -96,29 +92,30 @@ typedef Array<FileFormatProperty> FileFormatPropertyArray;
 struct FileFormatImplementationPrivate
 {
            FITSKeywordArray           keywords;
-   mutable FITSKeywordArray::iterator keywordIterator;
+   mutable FITSKeywordArray::iterator keywordIterator = nullptr;
            ICCProfile                 iccProfile;
-           ByteArray                  metadata;
            UInt8Image                 thumbnail;
            FileFormatPropertyArray    properties;
+           RGBColorSystem             rgbws;
+           DisplayFunction            displayFunction;
+           ColorFilterArray           colorFilterArray;
 
-   FileFormatImplementationPrivate() :
-   keywords(), keywordIterator( 0 ), iccProfile(), metadata( 0 ), thumbnail(), properties()
-   {
-   }
+   FileFormatImplementationPrivate() = default;
 };
 
 // ----------------------------------------------------------------------------
 
 FileFormatImplementation::FileFormatImplementation( const MetaFileFormat* m ) :
-meta( m ), data( 0 ), description()
+   meta( m ),
+   data( nullptr ),
+   description()
 {
 }
 
 FileFormatImplementation::~FileFormatImplementation()
 {
-   if ( data != 0 )
-      delete data, data = 0;
+   if ( data != nullptr )
+      delete data, data = nullptr;
 
    /*
     * The following would only happen upon a catastrophic situation. Under
@@ -215,13 +212,6 @@ void FileFormatImplementation::Extract( ICCProfile& )
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::Extract( void*&, size_type& )
-{
-   MANDATORY( "ExtractMetadata" );
-}
-
-// ----------------------------------------------------------------------------
-
 void FileFormatImplementation::Extract( pcl::UInt8Image& )
 {
    MANDATORY( "ExtractThumbnail" );
@@ -248,6 +238,51 @@ Variant FileFormatImplementation::ReadProperty( const IsoString& property )
 void FileFormatImplementation::WriteProperty( const IsoString& property, const Variant& value )
 {
    MANDATORY( "WriteProperty" );
+}
+
+// ----------------------------------------------------------------------------
+
+RGBColorSystem FileFormatImplementation::ReadRGBWS()
+{
+   MANDATORY( "ReadRGBWS" );
+   return RGBColorSystem();
+}
+
+// ----------------------------------------------------------------------------
+
+void FileFormatImplementation::WriteRGBWS( const RGBColorSystem& rgbws )
+{
+   MANDATORY( "WriteRGBWS" );
+}
+
+// ----------------------------------------------------------------------------
+
+DisplayFunction FileFormatImplementation::ReadDisplayFunction()
+{
+   MANDATORY( "ReadDisplayFunction" );
+   return DisplayFunction();
+}
+
+// ----------------------------------------------------------------------------
+
+void FileFormatImplementation::WriteDisplayFunction( const DisplayFunction& df )
+{
+   MANDATORY( "WriteDisplayFunction" );
+}
+
+// ----------------------------------------------------------------------------
+
+ColorFilterArray FileFormatImplementation::ReadColorFilterArray()
+{
+   MANDATORY( "ReadColorFilterArray" );
+   return ColorFilterArray();
+}
+
+// ----------------------------------------------------------------------------
+
+void FileFormatImplementation::WriteColorFilterArray( const ColorFilterArray& cfa )
+{
+   MANDATORY( "WriteColorFilterArray" );
 }
 
 // ----------------------------------------------------------------------------
@@ -346,13 +381,6 @@ void FileFormatImplementation::Embed( const FITSKeywordArray& )
 void FileFormatImplementation::Embed( const ICCProfile& )
 {
    MANDATORY( "EmbedICCProfile" );
-}
-
-// ----------------------------------------------------------------------------
-
-void FileFormatImplementation::Embed( const void*, size_type )
-{
-   MANDATORY( "EmbedMetadata" );
 }
 
 // ----------------------------------------------------------------------------
@@ -497,30 +525,6 @@ void FileFormatImplementation::EndICCProfileExtraction()
 
 // ----------------------------------------------------------------------------
 
-void FileFormatImplementation::BeginMetadataExtraction()
-{
-   BeginPrivate();
-   data->metadata.Clear();
-   void* metadata = 0;
-   size_type size = 0;
-   Extract( metadata, size );
-   if ( metadata != 0 )
-      data->metadata.Import( reinterpret_cast<uint8*>( metadata ), reinterpret_cast<uint8*>( metadata )+size );
-}
-
-const void* FileFormatImplementation::GetMetadata( size_type& size )
-{
-   size = data->metadata.Length();
-   return data->metadata.Begin();
-}
-
-void FileFormatImplementation::EndMetadataExtraction()
-{
-   data->metadata.Clear();
-}
-
-// ----------------------------------------------------------------------------
-
 void FileFormatImplementation::BeginThumbnailExtraction()
 {
    BeginPrivate();
@@ -559,6 +563,60 @@ const Variant& FileFormatImplementation::GetImageProperty( const IsoString& id )
 void FileFormatImplementation::EndPropertyExtraction()
 {
    data->properties.Clear();
+}
+
+// ----------------------------------------------------------------------------
+
+void FileFormatImplementation::BeginRGBWSExtraction()
+{
+   BeginPrivate();
+   data->rgbws = ReadRGBWS();
+}
+
+const RGBColorSystem& FileFormatImplementation::GetRGBWS() const
+{
+   return data->rgbws;
+}
+
+void FileFormatImplementation::EndRGBWSExtraction()
+{
+   data->rgbws = RGBColorSystem();
+}
+
+// ----------------------------------------------------------------------------
+
+void FileFormatImplementation::BeginDisplayFunctionExtraction()
+{
+   BeginPrivate();
+   data->displayFunction = ReadDisplayFunction();
+}
+
+const DisplayFunction& FileFormatImplementation::GetDisplayFunction() const
+{
+   return data->displayFunction;
+}
+
+void FileFormatImplementation::EndDisplayFunctionExtraction()
+{
+   data->displayFunction = DisplayFunction();
+}
+
+// ----------------------------------------------------------------------------
+
+void FileFormatImplementation::BeginColorFilterArrayExtraction()
+{
+   BeginPrivate();
+   data->colorFilterArray = ReadColorFilterArray();
+}
+
+const ColorFilterArray& FileFormatImplementation::GetColorFilterArray() const
+{
+   return data->colorFilterArray;
+}
+
+void FileFormatImplementation::EndColorFilterArrayExtraction()
+{
+   data->colorFilterArray = ColorFilterArray();
 }
 
 // ----------------------------------------------------------------------------
@@ -602,32 +660,6 @@ void FileFormatImplementation::EndICCProfileEmbedding()
    if ( data->iccProfile.IsProfile() ) // ### should allow embedding empty profiles here?
       Embed( data->iccProfile );
    data->iccProfile.Clear();
-}
-
-// ----------------------------------------------------------------------------
-
-void FileFormatImplementation::BeginMetadataEmbedding()
-{
-   BeginPrivate();
-   data->metadata.Clear();
-}
-
-void FileFormatImplementation::SetMetadata( const void* metadata, size_type size )
-{
-   if ( metadata != 0 && size > 0 )
-   {
-      data->metadata = ByteArray( size );
-      ::memcpy( data->metadata.Begin(), metadata, size );
-   }
-}
-
-void FileFormatImplementation::EndMetadataEmbedding()
-{
-   if ( !data->metadata.IsEmpty() )
-   {
-      Embed( data->metadata.Begin(), data->metadata.Length() );
-      data->metadata.Clear();
-   }
 }
 
 // ----------------------------------------------------------------------------
@@ -683,7 +715,66 @@ void FileFormatImplementation::EndPropertyEmbedding()
 
 // ----------------------------------------------------------------------------
 
+void FileFormatImplementation::BeginRGBWSEmbedding()
+{
+   BeginPrivate();
+   data->rgbws = RGBColorSystem();
+}
+
+void FileFormatImplementation::SetRGBWS( const RGBColorSystem& rgbws )
+{
+   data->rgbws = rgbws;
+}
+
+void FileFormatImplementation::EndRGBWSEmbedding()
+{
+   WriteRGBWS( data->rgbws );
+   data->rgbws = RGBColorSystem();
+}
+
+// ----------------------------------------------------------------------------
+
+void FileFormatImplementation::BeginDisplayFunctionEmbedding()
+{
+   BeginPrivate();
+   data->displayFunction = DisplayFunction();
+}
+
+void FileFormatImplementation::SetDisplayFunction( const DisplayFunction& df )
+{
+   data->displayFunction = df;
+}
+
+void FileFormatImplementation::EndDisplayFunctionEmbedding()
+{
+   if ( !data->displayFunction.IsIdentityTransformation() )
+      WriteDisplayFunction( data->displayFunction );
+   data->displayFunction = DisplayFunction();
+}
+
+// ----------------------------------------------------------------------------
+
+void FileFormatImplementation::BeginColorFilterArrayEmbedding()
+{
+   BeginPrivate();
+   data->colorFilterArray = ColorFilterArray();
+}
+
+void FileFormatImplementation::SetColorFilterArray( const ColorFilterArray& df )
+{
+   data->colorFilterArray = df;
+}
+
+void FileFormatImplementation::EndColorFilterArrayEmbedding()
+{
+   if ( !data->colorFilterArray.IsEmpty() )
+      WriteColorFilterArray( data->colorFilterArray );
+   data->colorFilterArray = ColorFilterArray();
+}
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/FileFormatImplementation.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/FileFormatImplementation.cpp - Released 2015/07/30 17:15:31 UTC

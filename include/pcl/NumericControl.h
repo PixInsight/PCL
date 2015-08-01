@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/NumericControl.h - Released 2014/11/14 17:16:33 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/NumericControl.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,35 +47,39 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
-#ifndef __PCL_NumericControl_h
-#define __PCL_NumericControl_h
+#ifndef PCL_NumericControl_h
+#define PCL_NumericControl_h
 
 /// \file pcl/NumericControl.h
 
-#ifndef __PCL_Defs_h
+#ifndef PCL_Defs_h
 #include <pcl/Defs.h>
 #endif
 
-#ifndef __PCL_Control_h
+#ifndef PCL_Control_h
 #include <pcl/Control.h>
 #endif
 
-#ifndef __PCL_Sizer_h
+#ifndef PCL_Sizer_h
 #include <pcl/Sizer.h>
 #endif
 
-#ifndef __PCL_Label_h
+#ifndef PCL_Label_h
 #include <pcl/Label.h>
 #endif
 
-#ifndef __PCL_Edit_h
+#ifndef PCL_Edit_h
 #include <pcl/Edit.h>
 #endif
 
-#ifndef __PCL_Slider_h
+#ifndef PCL_Slider_h
 #include <pcl/Slider.h>
+#endif
+
+#ifndef PCL_Atomic_h
+#include <pcl/Atomic.h>
 #endif
 
 namespace pcl
@@ -104,16 +111,20 @@ public:
     */
    virtual ~NumericEdit()
    {
+      if ( m_handlers != nullptr )
+         delete m_handlers, m_handlers = nullptr;
    }
 
-   /*! #
+   /*!
+    * Returns the current value of this %NumericEdit object.
     */
    double Value() const
    {
-      return value;
+      return m_value;
    }
 
-   /*! #
+   /*!
+    * Sets the current value of this %NumericEdit object.
     */
    void SetValue( double );
 
@@ -125,7 +136,7 @@ public:
     */
    String ValueAsString() const
    {
-      return ValueAsString( value );
+      return ValueAsString( m_value );
    }
 
    /*! #
@@ -140,7 +151,7 @@ public:
     */
    bool IsReal() const
    {
-      return isReal;
+      return m_real;
    }
 
    /*! #
@@ -158,14 +169,14 @@ public:
     */
    double LowerBound() const
    {
-      return lowerBound;
+      return m_lowerBound;
    }
 
    /*! #
     */
    double UpperBound() const
    {
-      return upperBound;
+      return m_upperBound;
    }
 
    /*! #
@@ -176,7 +187,7 @@ public:
     */
    int Precision() const
    {
-      return int( precision );
+      return int( m_precision );
    }
 
    /*! #
@@ -185,9 +196,9 @@ public:
 
    /*! #
     */
-   bool IsScientificNotationEnabled() const
+   bool IsScientificNotation() const
    {
-      return scientific;
+      return m_scientific;
    }
 
    /*! #
@@ -205,7 +216,7 @@ public:
     */
    int ScientificNotationTriggerExponent() const
    {
-      return sciTriggerExp;
+      return m_sciTriggerExp;
    }
 
    /*! #
@@ -216,14 +227,14 @@ public:
     */
    bool IsAutoAdjustEditWidth() const
    {
-      return autoEditWidth;
+      return m_autoEditWidth;
    }
 
    /*! #
     */
    void EnableAutoAdjustEditWidth( bool enable = true )
    {
-      if ( (autoEditWidth = enable) != false )
+      if ( (m_autoEditWidth = enable) != false )
          AdjustEditWidth();
    }
 
@@ -247,31 +258,40 @@ public:
     */
    void OnValueUpdated( value_event_handler, Control& );
 
-   // -------------------------------------------------------------------------
-
 protected:
 
-   double   value;                  // current value
-   double   lowerBound, upperBound; // valid range
-   unsigned precision      :  4;    // number of decimal digits in non-sci mode, [0,15]
-   bool     isReal         :  1;    // whether this is a real or integer parameter
-   bool     autoEditWidth  :  1;    // set width of edit control automatically
-   bool     scientific     :  1;    // scientific notation enabled?
-   bool     busy           :  1;    // prevent reentrant events
-   int                     : 24;
-   int      sciTriggerExp;          // exponent (of ten) to trigger sci notation
+   struct EventHandlers
+   {
+      value_event_handler onValueUpdated         = nullptr;
+      Control*            onValueUpdatedReceiver = nullptr;
 
-   value_event_handler onValueUpdated;
-   Control*            onValueUpdatedReceiver;
+      EventHandlers() = default;
+      EventHandlers( const EventHandlers& ) = default;
+      EventHandlers& operator =( const EventHandlers& ) = default;
+   };
+
+   EventHandlers* m_handlers;
+
+   double   m_value;             // current value
+   double   m_lowerBound;        // acceptable range, lower bound
+   double   m_upperBound;        // acceptable range, upper bound
+   unsigned m_precision     : 4; // number of decimal digits in non-sci mode, [0,15]
+   bool     m_real          : 1; // whether this is a real or integer parameter
+   bool     m_autoEditWidth : 1; // set width of edit control automatically
+   bool     m_scientific    : 1; // scientific notation enabled?
+   int      m_sciTriggerExp;     // exponent (of ten) to trigger sci notation
+
+   PCL_MEMBER_REENTRANCY_GUARD( EditCompleted )
 
    virtual void UpdateControls();
 
-   virtual void __EditCompleted( Edit& sender );
-   virtual void __ReturnPressed( Edit& sender );
-   virtual void __GetFocus( Control& sender );
-   virtual void __LoseFocus( Control& sender );
-   virtual void __MousePress( Control& sender,
-      const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers );
+   virtual void EditCompleted( Edit& );
+   virtual void ReturnPressed( Edit& );
+   virtual void GetFocus( Control& );
+   virtual void LoseFocus( Control& );
+   virtual void MousePress( Control&, const pcl::Point&, int, unsigned, unsigned );
+
+   static int PrecisionForValue( int, double );
 };
 
 // ----------------------------------------------------------------------------
@@ -304,15 +324,15 @@ protected:
 
    virtual void UpdateControls();
 
-   virtual void __ValueUpdated( Slider& sender, int value );
-   virtual void __GetFocus( Control& sender );
+   virtual void ValueUpdated( Slider&, int );
+   virtual void GetFocus( Control& );
 };
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-#endif   // __PCL_NumericControl_h
+#endif   // PCL_NumericControl_h
 
-// ****************************************************************************
-// EOF pcl/NumericControl.h - Released 2014/11/14 17:16:33 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/NumericControl.h - Released 2015/07/30 17:15:18 UTC

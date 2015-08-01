@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard JPEG2000 File Format Module Version 01.00.01.0214
-// ****************************************************************************
-// JPEG2000Format.h - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard JPEG2000 File Format Module Version 01.00.01.0233
+// ----------------------------------------------------------------------------
+// JPEG2000Format.h - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard JPEG2000 PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __JPEG2000Format_h
 #define __JPEG2000Format_h
@@ -57,10 +61,10 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-// JPCFormat
-// JPEG-2000 Code Stream Format
-// ----------------------------------------------------------------------------
 
+/*
+ * JPEG-2000 Code Stream Format
+ */
 class JPCFormat : public MetaFileFormat
 {
 public:
@@ -89,16 +93,12 @@ public:
 
    virtual bool EditPreferences() const;
 
-   // Default JPC format options.
-
    static JPEG2000ImageOptions DefaultOptions();
 };
 
-// ----------------------------------------------------------------------------
-// JP2Format
-// JPEG-2000 JP2 Format
-// ----------------------------------------------------------------------------
-
+/*
+ * JPEG-2000 JP2 Format
+ */
 class JP2Format : public JPCFormat
 {
 public:
@@ -121,38 +121,20 @@ public:
 
    virtual bool EditPreferences() const;
 
-   // Default JP2 format options.
-
    static JPEG2000ImageOptions DefaultOptions();
-
-   //
 
    struct EmbeddingOverrides
    {
-      bool overrideICCProfileEmbedding;
-      bool embedICCProfiles;
-      bool overrideMetadataEmbedding;
-      bool embedMetadata;
-      /*
-      bool overrideThumbnailEmbedding;
-      bool embedThumbnails;
-      */
-
-      EmbeddingOverrides() :
-      overrideICCProfileEmbedding( false ), embedICCProfiles( false ),
-      overrideMetadataEmbedding( false ), embedMetadata( false ) /*,
-      overrideThumbnailEmbedding( false ), embedThumbnails( false )*/
-      {
-      }
+      bool overrideICCProfileEmbedding = false;
+      bool embedICCProfiles            = false;
    };
 
    static EmbeddingOverrides DefaultEmbeddingOverrides();
 };
 
-// ----------------------------------------------------------------------------
-
-// JPEG-2000 code stream format-specific data
-
+/*
+ * JPEG-2000 code stream format-specific data
+ */
 struct JPEG2000FormatOptions
 {
    uint32               signature;
@@ -170,5 +152,5 @@ struct JPEG2000FormatOptions
 
 #endif   // __JPEG2000Format_h
 
-// ****************************************************************************
-// EOF JPEG2000Format.h - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF JPEG2000Format.h - Released 2015/07/31 11:49:40 UTC

@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard JPEG2000 File Format Module Version 01.00.01.0214
-// ****************************************************************************
-// JPEG2000Instance.h - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard JPEG2000 File Format Module Version 01.00.01.0233
+// ----------------------------------------------------------------------------
+// JPEG2000Instance.h - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard JPEG2000 PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __JPEG2000Instance_h
 #define __JPEG2000Instance_h
@@ -58,17 +62,17 @@
 namespace pcl
 {
 
+// ----------------------------------------------------------------------------
+
 class JPCFormat;
 class JP2Format;
 
-// ----------------------------------------------------------------------------
-// JPEG2000 Format-Specific Data
-// ----------------------------------------------------------------------------
-
-// See JasPer documentation
+/*
+ * JPEG2000 Format-Specific Data
+ */
 struct JPEG2000ProgressionOrder
 {
-   enum { LRCP, RLCP, RPCL, PCRL, CPRL };
+   enum { LRCP, RLCP, RPCL, PCRL, CPRL }; // see JasPer documentation
 };
 
 struct JPEG2000ImageOptions
@@ -88,10 +92,7 @@ struct JPEG2000ImageOptions
       Reset();
    }
 
-   JPEG2000ImageOptions( const JPEG2000ImageOptions& x )
-   {
-      Assign( x );
-   }
+   JPEG2000ImageOptions( const JPEG2000ImageOptions& ) = default;
 
    void Reset()
    {
@@ -105,26 +106,11 @@ struct JPEG2000ImageOptions
       numberOfLayers   = 1;
       progressionOrder = JPEG2000ProgressionOrder::LRCP;
    }
-
-   void Assign( const JPEG2000ImageOptions& x )
-   {
-      lossyCompression = x.lossyCompression;
-      compressionRate = x.compressionRate;
-      signedSample = x.signedSample;
-      resolutionData = x.resolutionData;
-      tiledImage = x.tiledImage;
-      tileWidth = x.tileWidth;
-      tileHeight = x.tileHeight;
-      numberOfLayers = x.numberOfLayers;
-      progressionOrder = x.progressionOrder;
-   }
 };
 
-// ----------------------------------------------------------------------------
-// JPCInstance
-// JPEG-2000 Code Stream Format Instance.
-// ----------------------------------------------------------------------------
-
+/*
+ * JPEG-2000 Code Stream Format Instance.
+ */
 class JPCInstance : public FileFormatImplementation
 {
 public:
@@ -159,8 +145,6 @@ public:
 
    virtual bool WasLossyWrite() const;
 
-   // -------------------------------------------------------------------------
-
 protected:
 
    // Parameters of the image being read/written
@@ -178,14 +162,17 @@ protected:
    // Did us query options to the user?
    bool                 queriedOptions;
 
-   void __CreateImage( const ImageInfo& );
+   void CreateImage( const ImageInfo& );
 
-   virtual bool IsCodeStream() const;
+   virtual bool IsCodeStream() const
+   {
+      return true;
+   }
 };
 
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
-
+/*
+ * JPEG-2000 Format Instance.
+ */
 class JP2Instance : public JPCInstance
 {
 public:
@@ -198,7 +185,10 @@ public:
 
 private:
 
-   virtual bool IsCodeStream() const;
+   virtual bool IsCodeStream() const
+   {
+      return false;
+   }
 };
 
 // ----------------------------------------------------------------------------
@@ -207,5 +197,5 @@ private:
 
 #endif   // __JPEG2000Instance_h
 
-// ****************************************************************************
-// EOF JPEG2000Instance.h - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF JPEG2000Instance.h - Released 2015/07/31 11:49:40 UTC

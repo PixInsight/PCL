@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard SplitCFA Process Module Version 01.00.05.0037
-// ****************************************************************************
-// SplitCFAModule.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard SplitCFA Process Module Version 01.00.05.0056
+// ----------------------------------------------------------------------------
+// SplitCFAModule.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard SplitCFA PixInsight module.
 //
-// Copyright (c) 2013-2014 Nikolay Volkov
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2013-2015 Nikolay Volkov
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,17 +49,17 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  05
-#define MODULE_VERSION_BUILD     0037
+#define MODULE_VERSION_BUILD     0056
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2014
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       14
+#define MODULE_RELEASE_YEAR      2015
+#define MODULE_RELEASE_MONTH     7
+#define MODULE_RELEASE_DAY       31
 
 #include "MergeCFAInterface.h"
 #include "MergeCFAProcess.h"
@@ -103,7 +107,7 @@ String SplitCFAModule::Author() const
 
 String SplitCFAModule::Copyright() const
 {
-   return "Copyright (c) 2013-2014 Nikolay Volkov";
+   return "Copyright (c) 2013-2015 Nikolay Volkov";
 }
 
 String SplitCFAModule::TradeMarks() const
@@ -168,5 +172,5 @@ int InstallPixInsightModule( int mode )
    return 0;
 }
 
-// ****************************************************************************
-// EOF SplitCFAModule.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF SplitCFAModule.cpp - Released 2015/07/31 11:49:49 UTC

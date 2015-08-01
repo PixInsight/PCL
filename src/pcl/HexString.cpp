@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/HexString.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/HexString.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/String.h>
 #include <pcl/Exception.h>
@@ -57,44 +60,33 @@ namespace pcl
 IsoString IsoString::ToHex( const void* data, size_type length )
 {
    IsoString hex;
-
-   if ( length != 0 )
+   hex.SetLength( length << 1 );
+   iterator h = hex.Begin();
+   for ( const uint8* p = reinterpret_cast<const uint8*>( data ); length > 0; ++p, --length )
    {
-      hex.Reserve( length << 1 );
-      iterator h = hex.Begin();
+      // MSN
+      int n = (*p >> 4) & 0x0f;
+      if ( n < 10 )
+         *h = char( n + '0' );
+      else
+         *h = char( n - 10 + 'a' );
+      ++h;
 
-      for ( const uint8* p = reinterpret_cast<const uint8*>( data ), * p1 = p + length; ; )
-      {
-         // MSN
-         int n = (*p >> 4) & 0x0f;
-         if ( n < 10 )
-            *h = char( n + '0' );
-         else
-            *h = char( n - 10 + 'a' );
-         ++h;
-
-         // LSN
-         n = *p & 0x0f;
-         if ( n < 10 )
-            *h = char( n + '0' );
-         else
-            *h = char( n - 10 + 'a' );
-         ++h;
-
-         if ( ++p == p1 )
-         {
-            *h = '\0';
-            break;
-         }
-      }
+      // LSN
+      n = *p & 0x0f;
+      if ( n < 10 )
+         *h = char( n + '0' );
+      else
+         *h = char( n - 10 + 'a' );
+      ++h;
    }
-
    return hex;
 }
 
 // ----------------------------------------------------------------------------
 
-inline int HexDigit( char c )
+inline static
+int HexDigit( char c )
 {
    switch ( c )
    {
@@ -136,14 +128,12 @@ ByteArray IsoString::FromHex() const
 
    ByteArray B( len >> 1 );
    ByteArray::iterator b = B.Begin();
-
-   for ( const_iterator i = Begin(), j = i + len; i != j; )
+   for ( const_iterator i = m_data->string; i < m_data->end; )
    {
       int msb = HexDigit( *i++ ) << 4;
       int lsb = HexDigit( *i++ );
       *b++ = uint8( msb | lsb );
    }
-
    return B;
 }
 
@@ -151,5 +141,5 @@ ByteArray IsoString::FromHex() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/HexString.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/HexString.cpp - Released 2015/07/30 17:15:31 UTC

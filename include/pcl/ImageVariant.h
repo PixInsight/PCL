@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/ImageVariant.h - Released 2014/11/14 17:16:34 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/ImageVariant.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_ImageVariant_h
 #define __PCL_ImageVariant_h
@@ -146,6 +149,41 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
+
+/*!
+ * \namespace SwapCompression
+ * \brief     Compression algorithms for raw image file generation.
+ *
+ * This namespace enumerates the compression algorithms supported by the
+ * ImageVariant::WriteSwapFile() and ImageVariant::WriteSwapFiles() functions.
+ *
+ * Supported compression algorithms:
+ *
+ * <table border="1" cellpadding="4" cellspacing="0">
+ * <tr><td>SwapCompression::None</td>     <td>Do not use compression.</td></tr>
+ * <tr><td>SwapCompression::ZLib</td>     <td>ZLib (deflate) compression.</td></tr>
+ * <tr><td>SwapCompression::ZLib_SH</td>  <td>ZLib (deflate) compression with byte shuffling.</td></tr>
+ * <tr><td>SwapCompression::LZ4</td>      <td>LZ4 fast compression.</td></tr>
+ * <tr><td>SwapCompression::LZ4_SH</td>   <td>LZ4 fast compression with byte shuffling.</td></tr>
+ * <tr><td>SwapCompression::LZ4HC</td>    <td>LZ4-HC compression.</td></tr>
+ * <tr><td>SwapCompression::LZ4HC_SH</td> <td>LZ4-HC compression with byte shuffling.</td></tr>
+ * </table>
+ */
+namespace SwapCompression
+{
+   enum value_type
+   {
+      None,     // Do not use compression.
+      ZLib,     // ZLib (deflate) compression.
+      ZLib_SH,  // ZLib (deflate) compression with byte shuffling.
+      LZ4,      // LZ4 fast compression.
+      LZ4_SH,   // LZ4 fast compression with byte shuffling.
+      LZ4HC,    // LZ4-HC compression.
+      LZ4HC_SH, // LZ4-HC compression with byte shuffling.
+
+      NumberOfAlgorithms
+   };
+}
 
 /*!
  * \class ImageVariant
@@ -292,58 +330,81 @@ public:
     * Valid constants for this enumeration are defined in the ColorSpace
     * namespace.
     */
-   typedef AbstractImage::color_space  color_space;
+   typedef AbstractImage::color_space     color_space;
 
    /*!
     * An enumerated type that represents the set of supported arithmetic and
     * bitwise pixel operations. Valid constants for this enumeration are
     * defined in the ImageOp namespace.
     */
-   typedef ImageOp::value_type         image_op;
+   typedef ImageOp::value_type            image_op;
+
+   /*
+    * An enumerated type that represents a compression algorithm for raw
+    * storage file generation. Valid constants for this enumeration are defined
+    * in the SwapCompression namespace.
+    */
+   typedef SwapCompression::value_type    swap_compression;
 
    /*!
-    * Constructs an %ImageVariant instance that does not transport an image.
+    * Constructs an empty %ImageVariant. An empty %ImageVariant instance does
+    * not transport an image.
     */
-   ImageVariant() : m_data( new Data )
+   ImageVariant() :
+      m_data( nullptr )
 #ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
-      , m_shared( 0 )
+      , m_shared( nullptr )
 #endif
    {
+      m_data = new Data;
    }
 
    /*!
-    * Constructs an %ImageVariant instance that transports the specified
-    * \a image.
+    * Constructs an %ImageVariant instance to transport the specified \a image.
     *
     * By default, the transported image is not owned by %ImageVariant object.
     * To cause %ImageVariant to own the transported image, the SetOwnership()
     * member function must be called explicitly.
     */
    template <class P>
-   ImageVariant( GenericImage<P>* image ) : m_data( new Data )
+   ImageVariant( GenericImage<P>* image ) :
+      m_data( nullptr )
 #ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
-      , m_shared( 0 )
+      , m_shared( nullptr )
 #endif
    {
+      m_data = new Data;
       m_data->Update( image );
    }
 
    /*!
-    * Constructs an %ImageVariant instance as an alias of an existing
-    * %ImageVariant object.
+    * Copy constructor. Constructs an %ImageVariant instance as an alias of an
+    * existing %ImageVariant object.
     *
     * This constructor simply increments the reference counter of the
     * transported image. When all references to a transported image are
     * removed, and the transported image is owned by %ImageVariant, it is
-    * destroyed.
+    * destroyed and deallocated.
     */
-   ImageVariant( const ImageVariant& image ) : m_data( image.m_data )
+   ImageVariant( const ImageVariant& image ) :
+      m_data( image.m_data )
 #ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
-      , m_shared( 0 )
+      , m_shared( nullptr )
 #endif
    {
-      if ( m_data != 0 )
-         m_data->Attach();
+      m_data->Attach();
+   }
+
+   /*!
+    * Move constructor.
+    */
+   ImageVariant( ImageVariant&& x ) :
+      m_data( x.m_data )
+#ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
+      , m_shared( nullptr )
+#endif
+   {
+      x.m_data = nullptr;
    }
 
    /*!
@@ -354,52 +415,16 @@ public:
     */
    virtual ~ImageVariant()
    {
-      if ( m_data != 0 )
+      if ( m_data != nullptr )
       {
          if ( !m_data->Detach() )
             delete m_data;
-         m_data = 0;
+         m_data = nullptr;
       }
    }
 
    /*!
-    * Returns a pointer to the immutable transported image.
-    *
-    * \deprecated This member function has been deprecated and should not be
-    * used in newly produced code. To get access to the image transported by
-    * %ImageVariant, use the indirection and structure member selection
-    * operators:
-    *
-    * operator *() const, operator ->() const
-    *
-    * To get access to the immutable pointer-to-image transported by this
-    * %ImageVariant, use the ImagePtr() const member function.
-    */
-   const AbstractImage* AnyImage() const
-   {
-      return m_data->image;
-   }
-
-   /*!
-    * Returns a pointer to the transported image.
-    *
-    * \deprecated This member function has been deprecated and should not be
-    * used in newly produced code. To get access to the image transported by
-    * %ImageVariant, use the indirection and structure member selection
-    * operators:
-    *
-    * operator *(), operator ->()
-    *
-    * To get access to the pointer-to-image transported by this %ImageVariant,
-    * use the ImagePtr() member function.
-    */
-   AbstractImage* AnyImage()
-   {
-      return m_data->image;
-   }
-
-   /*!
-    * Returns a pointer to the immutable image transported by this
+    * Returns a pointer to the unmodifiable image transported by this
     * %ImageVariant object.
     */
    const AbstractImage* ImagePtr() const
@@ -413,17 +438,6 @@ public:
    AbstractImage* ImagePtr()
    {
       return m_data->image;
-   }
-
-   /*!
-    * Returns true if this %ImageVariant instance transports an image.
-    *
-    * \deprecated This member function has been deprecated and should not be
-    * used in newly produced code. Use ImageVariant::operator bool() const.
-    */
-   bool IsImage() const
-   {
-      return m_data->image != 0;
    }
 
    /*!
@@ -1233,7 +1247,7 @@ public:
     */
    StatusMonitor& Status() const
    {
-      PCL_PRECONDITION( m_data->image != 0 )
+      PCL_PRECONDITION( m_data->image != nullptr )
       return m_data->image->Status();
    }
 
@@ -1244,7 +1258,7 @@ public:
     */
    pcl::StatusCallback* StatusCallback() const
    {
-      return m_data->image ? m_data->image->StatusCallback() : 0;
+      return m_data->image ? m_data->image->StatusCallback() : nullptr;
    }
 
    /*!
@@ -1270,7 +1284,7 @@ public:
     */
    bool IsParallelProcessingEnabled() const
    {
-      return m_data->image != 0 && m_data->image->IsParallelProcessingEnabled();
+      return m_data->image != nullptr && m_data->image->IsParallelProcessingEnabled();
    }
 
    /*!
@@ -1454,7 +1468,7 @@ public:
     */
    const RGBColorSystem& RGBWorkingSpace() const
    {
-      PCL_PRECONDITION( m_data->image != 0 )
+      PCL_PRECONDITION( m_data->image != nullptr )
       return m_data->image->RGBWorkingSpace();
    }
 
@@ -5816,6 +5830,32 @@ public:
 
    // -------------------------------------------------------------------------
 
+#define __COMPRESS( I ) \
+   return static_cast<const pcl::I&>( **this ).Compress( compressor, rect, channel, perf )
+
+   /*!
+    * Compression of pixel samples from the image transported by an
+    * %ImageVariant. Returns a list of compressed sub-blocks.
+    *
+    * If this %ImageVariant object does not transport an image, this function
+    * returns an empty array.
+    *
+    * This member function is a generalized wrapper for
+    * GenericImage::Compress().
+    */
+   Compression::subblock_list Compress( const Compression& compressor,
+                                        const Rect& rect = Rect( 0 ), int channel = -1,
+                                        Compression::Performance* perf = nullptr ) const
+   {
+      if ( *this )
+         SOLVE_TEMPLATE( __COMPRESS )
+      return Compression::subblock_list();
+   }
+
+#undef __COMPRESS
+
+   // -------------------------------------------------------------------------
+
    /*!
     * Returns true if this %ImageVariant object transports an image that is an
     * instance of the same template instantiation of the specified image.
@@ -5838,26 +5878,95 @@ public:
     */
    ImageVariant& Assign( const ImageVariant& image )
    {
-      if ( image.m_data != m_data )
-      {
-         image.m_data->Attach();
-         if ( !m_data->Detach() )
-            delete m_data;
-         m_data = image.m_data;
-      }
+      image.m_data->Attach();
+      if ( !m_data->Detach() )
+         delete m_data;
+      m_data = image.m_data;
       return *this;
    }
 
    /*!
-    * Assigns another instance of %ImageVariant to this object. Returns a
-    * reference to this object.
+    * Copy assignment operator. Returns a reference to this object.
     *
-    * This operator calls Assign() with the specified source image \a image.
+    * This operator calls Assign() with the specified source \a image.
     */
    ImageVariant& operator =( const ImageVariant& image )
    {
-      Assign( image );
-      return *this;
+      return Assign( image );
+   }
+
+#define TRANSFER_BODY()                                                                      \
+   if ( &image != this ) /* N.B.: Self-movement incompatible with server-side SharedImage */ \
+   {                                                                                         \
+      if ( !m_data->Detach() )                                                               \
+         delete m_data;                                                                      \
+      m_data = image.m_data;                                                                 \
+      image.m_data = nullptr;                                                                \
+   }                                                                                         \
+   return *this
+
+   /*!
+    * Transfers the image transported by other %ImageVariant to this object.
+    * Returns a reference to this object.
+    *
+    * If the previously transported image (if any) was owned by %ImageVariant,
+    * and there are no more ImageVariant references to it, then it is destroyed
+    * before assignment.
+    *
+    * After calling this function, the specified source \a image is left in an
+    * invalid state and should be destroyed immediately.
+    */
+   ImageVariant& Transfer( ImageVariant& image )
+   {
+      TRANSFER_BODY();
+   }
+
+   /*!
+    * Transfers the image transported by other %ImageVariant to this object.
+    * Returns a reference to this object.
+    *
+    * If the previously transported image (if any) was owned by %ImageVariant,
+    * and there are no more ImageVariant references to it, then it is destroyed
+    * before assignment.
+    *
+    * After calling this function, the specified source \a image is left in an
+    * invalid state and should be destroyed immediately.
+    */
+   ImageVariant& Transfer( ImageVariant&& image )
+   {
+      TRANSFER_BODY();
+   }
+
+#undef TRANSFER_BODY
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    *
+    * This operator calls Transfer() with the specified source \a image.
+    */
+   ImageVariant& operator =( ImageVariant&& image )
+   {
+      return Transfer( image );
+   }
+
+   /*!
+    * Releases the image transported by this object and forces another
+    * %ImageVariant instance to transport it.
+    *
+    * Unlike move assignment (or, equivalently, the Transfer() member
+    * function), this object will be in a valid empty state after calling this
+    * function.
+    */
+   void ReleaseTo( ImageVariant& image )
+   {
+      if ( &image != this ) // N.B.: Self-release incompatible with server-side SharedImage.
+      {
+         if ( !image.m_data->Detach() )
+            delete image.m_data;
+         image.m_data = m_data;
+         m_data = nullptr;
+         m_data = new Data;
+      }
    }
 
    /*!
@@ -5873,36 +5982,18 @@ public:
    {
       if ( &image != m_data->image )
       {
-         Reset();
+         Free();
          m_data->Update( &image );
       }
       return *this;
    }
 
    /*!
-    * Transfers the image transported by this object to another %ImageVariant
-    * instance.
-    *
-    * After calling this function, this %ImageVariant instance will be empty
-    * (i.e. transporting no image). Calling this function is equivalent to an
-    * assignment to the specified target instance followed by a call to
-    * FreeImage() for this image.
+    * Exchanges two %ImageVariant instances \a x1 and \a x2.
     */
-   void TransferTo( ImageVariant& image )
+   friend void Swap( ImageVariant& x1, ImageVariant& x2 )
    {
-      if ( &image != this ) // prevent cyclic assignments
-      {
-         image = *this;
-         Reset();
-      }
-   }
-
-   /*!
-    * Exchanges this object with another %ImageVariant instance.
-    */
-   void Swap( ImageVariant& image )
-   {
-      pcl::Swap( m_data, image.m_data );
+      pcl::Swap( x1.m_data, x2.m_data );
    }
 
    /*!
@@ -5970,13 +6061,13 @@ public:
    ImageVariant& CreateFloatImage( int bitSize = 32 )
    {
       PCL_PRECONDITION( bitSize == 32 || bitSize == 64 )
-      Reset();
+      Free();
       switch ( bitSize )
       {
       case 32 : CREATE_IMAGE( Image ); break;
       case 64 : CREATE_IMAGE( DImage ); break;
       }
-      m_data->ownsImage = m_data->image != 0;
+      m_data->ownsImage = m_data->image != nullptr;
       return *this;
    }
 
@@ -6007,13 +6098,13 @@ public:
    ImageVariant& CreateComplexImage( int bitSize = 32 )
    {
       PCL_PRECONDITION( bitSize == 32 || bitSize == 64 )
-      Reset();
+      Free();
       switch ( bitSize )
       {
       case 32 : CREATE_IMAGE( ComplexImage ); break;
       case 64 : CREATE_IMAGE( DComplexImage ); break;
       }
-      m_data->ownsImage = m_data->image != 0;
+      m_data->ownsImage = m_data->image != nullptr;
       return *this;
    }
 
@@ -6031,14 +6122,14 @@ public:
    ImageVariant& CreateUIntImage( int bitSize = 16 )
    {
       PCL_PRECONDITION( bitSize == 8 || bitSize == 16 || bitSize == 32 )
-      Reset();
+      Free();
       switch ( bitSize )
       {
       case  8 : CREATE_IMAGE( UInt8Image ); break;
       case 16 : CREATE_IMAGE( UInt16Image ); break;
       case 32 : CREATE_IMAGE( UInt32Image ); break;
       }
-      m_data->ownsImage = m_data->image != 0;
+      m_data->ownsImage = m_data->image != nullptr;
       return *this;
    }
 
@@ -6151,13 +6242,13 @@ public:
    ImageVariant& CreateSharedFloatImage( int bitSize = 32 )
    {
       PCL_PRECONDITION( bitSize == 32 || bitSize == 64 )
-      Reset();
+      Free();
       switch ( bitSize )
       {
       case 32 : CREATE_SHARED_IMAGE( Image ); break;
       case 64 : CREATE_SHARED_IMAGE( DImage ); break;
       }
-      m_data->ownsImage = m_data->image != 0;
+      m_data->ownsImage = m_data->image != nullptr;
       return *this;
    }
 
@@ -6194,13 +6285,13 @@ public:
    ImageVariant& CreateSharedComplexImage( int bitSize = 32 )
    {
       PCL_PRECONDITION( bitSize == 32 || bitSize == 64 )
-      Reset();
+      Free();
       switch ( bitSize )
       {
       case 32 : CREATE_SHARED_IMAGE( ComplexImage ); break;
       case 64 : CREATE_SHARED_IMAGE( DComplexImage ); break;
       }
-      m_data->ownsImage = m_data->image != 0;
+      m_data->ownsImage = m_data->image != nullptr;
       return *this;
    }
 
@@ -6221,14 +6312,14 @@ public:
    ImageVariant& CreateSharedUIntImage( int bitSize = 16 )
    {
       PCL_PRECONDITION( bitSize == 8 || bitSize == 16 || bitSize == 32 )
-      Reset();
+      Free();
       switch ( bitSize )
       {
       case  8 : CREATE_SHARED_IMAGE( UInt8Image ); break;
       case 16 : CREATE_SHARED_IMAGE( UInt16Image ); break;
       case 32 : CREATE_SHARED_IMAGE( UInt32Image ); break;
       }
-      m_data->ownsImage = m_data->image != 0;
+      m_data->ownsImage = m_data->image != nullptr;
       return *this;
    }
 
@@ -6377,12 +6468,14 @@ public:
     *
     * This function is useful to deallocate pixel data without having to
     * resolve the template instantiation of the transported image. The PCL
-    * deallocates pixel data of any supported sample type transparently.
+    * deallocates pixel data of any supported pixel sample type transparently.
+    *
+    * If this %ImageVariant transports no image, this function has no effect.
     *
     * \note   Unlike the Free() member function, this function cannot destroy
-    * the transported image ( if any ), but only its pixel data. Note that this
-    * function destroys pixel data irrespective of whether %ImageVariant owns
-    * the transported image or not.
+    * the transported image, but only its pixel data. Note that this function
+    * destroys pixel data irrespective of whether %ImageVariant owns the
+    * transported image.
     */
    ImageVariant& FreeImage()
    {
@@ -6390,6 +6483,14 @@ public:
          SOLVE_TEMPLATE( FREE_IMAGE )
       return *this;
    }
+
+   /*!
+    * Returns a pointer to a dynamically allocated Compression object. The
+    * returned object implements the specified raw storage compression
+    * \a algorithm for compression of a contiguous sequence of elements with
+    * \a itemSize bytes each.
+    */
+   static Compression* NewCompression( swap_compression algorithm, int itemSize = 1 );
 
 #undef FREE_IMAGE
 
@@ -6399,6 +6500,14 @@ public:
     *
     * \param filePath      A file path specification where the output raw
     *                      storage file will be created.
+    *
+    * \param compression   Compression algorithm. If specified, all stored
+    *                      pixel data will be compressed using this algorithm.
+    *                      Compression is disabled by default
+    *
+    * \param perf          If non-null, pointer to a Compression::Performance
+    *                      structure where compression performance data will be
+    *                      provided if the raw file is compressed.
     *
     * \param processEvents If true, Module->ProcessEvents() will be called at
     *                      regular intervals during the file write operation.
@@ -6414,7 +6523,10 @@ public:
     * template instantiation of the transported image. The PCL writes pixel
     * data of any supported sample type transparently.
     */
-   void WriteSwapFile( const String& filePath, bool processEvents = false ) const;
+   void WriteSwapFile( const String& filePath,
+                       swap_compression compression = SwapCompression::None,
+                       Compression::Performance* perf = nullptr,
+                       bool processEvents = false ) const;
 
    /*!
     * Writes the image transported by this %ImageVariant object to a set of
@@ -6425,6 +6537,16 @@ public:
     * \param directories   A list of directories where the set of raw files
     *                      will be created by this function.
     *
+    * \param compression   Compression algorithm. If specified, all stored
+    *                      pixel data will be compressed using this algorithm.
+    *                      Compression is disabled by default
+    *
+    * \param perf          If non-null, pointer to a Compression::Performance
+    *                      structure where compression performance data will be
+    *                      provided if the raw files are compressed. Output
+    *                      performance values are the averages of the same
+    *                      values computed for all threads.
+    *
     * \param processEvents If true, Module->ProcessEvents() will be called at
     *                      regular intervals during the file write operation.
     *                      This is useful to keep the graphical interface
@@ -6432,32 +6554,30 @@ public:
     *                      value is false.
     *
     * Each string in the \a directories string list must be a full path
-    * specification to an existing directory. The specified directories must be
-    * supported by different and independent \e physical devices ( usually hard
-    * disks ). On each directory, an output file will be created and an
-    * independent execution thread will write the corresponding section of the
-    * pixel data from the image transported by this %ImageVariant. To retrieve
-    * the data, call the ReadSwapFiles() member function with the same base
-    * file name and output directories.
-    *
-    * \warning Do not call this function if two or more directories in the
-    * \a directories list are supported by the same physical device. Along with
-    * causing severe performance degradation, multiple parallel write
-    * operations performed on a single hard disk may be dangerous to the
-    * integrity of the disk drive.
+    * specification to an existing directory. On each directory, an output file
+    * will be created and an independent execution thread will write the
+    * corresponding section of the pixel data from the image transported by
+    * this %ImageVariant. To retrieve the data, call the ReadSwapFiles() member
+    * function with the same base file name and output directories.
     *
     * \warning This function is not thread-safe: it can only be called from the
     * root thread. This function will throw an Error exception if it is called
     * from a local thread.
     */
-   void WriteSwapFiles( const String& fileName, const StringList& directories, bool processEvents = false ) const;
-
+   void WriteSwapFiles( const String& fileName, const StringList& directories,
+                        swap_compression compression = SwapCompression::None,
+                        Compression::Performance* perf = nullptr,
+                        bool processEvents = false ) const;
    /*!
     * Reads the image transported by this %ImageVariant instance from a raw
     * storage file.
     *
     * \param filePath      A file path specification to an existing raw storage
     *                      image file.
+    *
+    * \param perf          If non-null, pointer to a Compression::Performance
+    *                      structure where compression performance data will be
+    *                      provided if the raw file is compressed.
     *
     * \param processEvents If true, Module->ProcessEvents() will be called at
     *                      regular intervals during the file read operation.
@@ -6474,10 +6594,12 @@ public:
     *
     * This function is useful to read pixel data without having to resolve
     * template instantiation, neither of the input file nor of the transported
-    * image. The PCL does all necessary data reading, allocation and
-    * deallocation transparently.
+    * image. PCL does all the necessary data reading, decompression, allocation
+    * and deallocation transparently.
     */
-   void ReadSwapFile( const String& filePath, bool processEvents = false );
+   void ReadSwapFile( const String& filePath,
+                      Compression::Performance* perf = nullptr,
+                      bool processEvents = false );
 
    /*!
     * Reads an image from a set of raw storage files using parallel disk read
@@ -6488,6 +6610,12 @@ public:
     * \param directories   A list of directories where the set of raw files
     *                      have been created by a previous call to
     *                      WriteSwapFiles( const String&, const StringList& ).
+    *
+    * \param perf          If non-null, pointer to a Compression::Performance
+    *                      structure where compression performance data will be
+    *                      provided if the raw files are compressed. Output
+    *                      performance values are the averages of the same
+    *                      values computed for all threads.
     *
     * \param processEvents If true, Module->ProcessEvents() will be called at
     *                      regular intervals during the file read operation.
@@ -6502,16 +6630,15 @@ public:
     *
     * If necessary, the transported image is re-created as an instance of a
     * different template instantiation, to match the sample data type stored
-    * in the input file( s ).
-    *
-    * \warning Read the documentation for WriteSwapFiles() for important
-    * information about parallel disk I/O operations and their risks.
+    * in the input file(s).
     *
     * \warning This function is not thread-safe: it can only be called from the
     * root thread. This function will throw an Error exception if it is called
     * from a local thread.
     */
-   void ReadSwapFiles( const String& fileName, const StringList& directories, bool processEvents = false );
+   void ReadSwapFiles( const String& fileName, const StringList& directories,
+                       Compression::Performance* perf = nullptr,
+                       bool processEvents = false );
 
    /*!
     * Merges the image transported by this object with pixel data read from a
@@ -6548,7 +6675,8 @@ public:
     * in the normalized real range [0,1], where \b 1 represents a saturated
     * (usually white) pixel sample value.
     */
-   void MaskFromSwapFile( const String& filePath, const ImageVariant& mask, bool invert = false, bool processEvents = false );
+   void MaskFromSwapFile( const String& filePath, const ImageVariant& mask, bool invert = false,
+                          bool processEvents = false );
 
    /*!
     * Merges the image transported by this object with pixel data read from a
@@ -6579,15 +6707,13 @@ public:
     * This routine produces exactly the same result as its single-threaded
     * counterpart MaskFromSwapFile().
     *
-    * \warning Read the documentation for WriteSwapFiles() for important
-    * information about parallel disk I/O operations and their risks.
-    *
     * \warning This function is not thread-safe: it can only be called from the
     * root thread. This function will throw an Error exception if it is called
     * from a local thread.
     */
    void MaskFromSwapFiles( const String& fileName, const StringList& directories,
-                           const ImageVariant& mask, bool invert = false, bool processEvents = false );
+                           const ImageVariant& mask, bool invert = false,
+                           bool processEvents = false );
 
    /*!
     * Deletes all raw storage files previously created by a call to the
@@ -6694,15 +6820,14 @@ public:
     */
    ImageVariant& Free()
    {
-      if ( m_data != 0 )
-         if ( !m_data->Detach() )
-         {
-            m_data->Attach();
-            m_data->Free();
-            return *this;
-         }
-
-      m_data = new Data;
+      if ( m_data->IsUniqueAtomic() )
+         m_data->Free();
+      else
+      {
+         m_data->Detach();
+         m_data = nullptr;
+         m_data = new Data;
+      }
       return *this;
    }
 
@@ -6715,7 +6840,7 @@ public:
     */
    const AbstractImage* operator ->() const
    {
-      PCL_PRECONDITION( m_data->image != 0 )
+      PCL_PRECONDITION( m_data->image != nullptr )
       return m_data->image;
    }
 
@@ -6728,7 +6853,7 @@ public:
     */
    AbstractImage* operator ->()
    {
-      PCL_PRECONDITION( m_data->image != 0 )
+      PCL_PRECONDITION( m_data->image != nullptr )
       return m_data->image;
    }
 
@@ -6741,7 +6866,7 @@ public:
     */
    const AbstractImage& operator *() const
    {
-      PCL_PRECONDITION( m_data->image != 0 )
+      PCL_PRECONDITION( m_data->image != nullptr )
       return *m_data->image;
    }
 
@@ -6754,7 +6879,7 @@ public:
     */
    AbstractImage& operator *()
    {
-      PCL_PRECONDITION( m_data->image != 0 )
+      PCL_PRECONDITION( m_data->image != nullptr )
       return *m_data->image;
    }
 
@@ -6763,7 +6888,7 @@ public:
     */
    operator bool() const
    {
-      return m_data->image != 0;
+      return m_data->image != nullptr;
    }
 
 #define __PIXEL_ACCESS_OPERATOR( I ) \
@@ -6813,7 +6938,7 @@ public:
 
    bool IsShared() const
    {
-      return m_shared != 0;
+      return m_shared != nullptr;
    }
 
    // Implemented in SharedImage.cpp
@@ -6832,8 +6957,9 @@ private:
       bool           ownsImage;
 
       Data() :
-      ReferenceCounter(), image( 0 ),
-      isFloatSample( false ), isComplexSample( false ), bitsPerSample( 0 ), ownsImage( false )
+         ReferenceCounter(),
+         image( nullptr ),
+         isFloatSample( false ), isComplexSample( false ), bitsPerSample( 0 ), ownsImage( false )
       {
       }
 
@@ -6853,15 +6979,15 @@ private:
 
       void Free()
       {
-         if ( image != 0 )
+         if ( image != nullptr )
          {
             if ( ownsImage )
                delete image;
-            image = 0;
+            image = nullptr;
          }
          isFloatSample = isComplexSample = false;
          bitsPerSample = 0;
-         //ownsImage = ownsImage; ### NB: Ownership must not change here
+         //ownsImage = ownsImage; ### N.B.: Ownership must *not* change here
       }
    };
 
@@ -6875,24 +7001,14 @@ private:
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
    // Server-side private ctor. used by View
    template <class P>
-   ImageVariant( GenericImage<P>* image, int ) : m_data( new Data )
+   ImageVariant( GenericImage<P>* image, int ) :
+      m_data( nullptr )
    {
+      m_data = new Data;
       m_data->Update( image );
       m_data->ownsImage = true;
    }
 #endif
-
-   void Reset()
-   {
-      if ( m_data->IsUniqueAtomic() )
-         m_data->Free();
-      else
-      {
-         if ( !m_data->Detach() )
-            delete m_data;
-         m_data = new Data;
-      }
-   }
 
 #ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
    friend class pi::SharedImage;
@@ -6901,16 +7017,6 @@ private:
    friend class ImageView;
 #endif
 };
-
-// ----------------------------------------------------------------------------
-
-/*!
- * Exchanges two ImageVariant objects.
- */
-inline void Swap( ImageVariant& img1, ImageVariant& img2 )
-{
-   img1.Swap( img2 );
-}
 
 // ----------------------------------------------------------------------------
 
@@ -6957,5 +7063,5 @@ GenericImage<P>& GenericImage<P>::SetLightness( const ImageVariant& L, const Poi
 
 #endif   // __PCL_ImageVariant_h
 
-// ****************************************************************************
-// EOF pcl/ImageVariant.h - Released 2014/11/14 17:16:34 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/ImageVariant.h - Released 2015/07/30 17:15:18 UTC

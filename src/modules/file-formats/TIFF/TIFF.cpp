@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard TIFF File Format Module Version 01.00.05.0229
-// ****************************************************************************
-// TIFF.cpp - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard TIFF File Format Module Version 01.00.06.0248
+// ----------------------------------------------------------------------------
+// TIFF.cpp - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard TIFF PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,13 +48,15 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "TIFF.h"
 
+#include <pcl/Atomic.h>
+#include <pcl/AutoLock.h>
+#include <pcl/Console.h>
 #include <pcl/ErrorHandler.h>
 #include <pcl/MessageBox.h>
-#include <pcl/Console.h>
 
 #include <libtiff/tiffio.h>
 
@@ -59,17 +65,26 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-// Default TIFF strip size in bytes.
+/*
+ * Default TIFF strip size in bytes.
+ */
 static const size_type defaultStripSize = 4096;
 
-// Maximum size of a TIFF strip in bytes.
-// The default strip size is 4 KB. Too low or high sizes can affect performance.
+/*
+ * Maximum size of a TIFF strip in bytes.
+ * The default strip size is 4 KB. Too low or too high strip sizes may degrade
+ * performance.
+ */
 static size_type stripSize = defaultStripSize;
 
-// Whether to abort file open operations on libtiff errors.
+/*
+ * Whether to abort file open operations on libtiff errors.
+ */
 static bool strictMode = false;
 
-// Whether to show libtiff's warnings.
+/*
+ * Whether to show libtiff's warnings.
+ */
 static bool showWarnings = false;
 
 // ----------------------------------------------------------------------------
@@ -78,7 +93,7 @@ static bool showWarnings = false;
  * TIFF errors are necessarily fatal only in strict mode.
  * In permissive mode, we only show error messages on the console.
  */
-static void __TIFFError( const char* module, const char* fmt, va_list args )
+static void TIFFErrorHandler( const char* module, const char* fmt, va_list args )
 {
    String msg; (void)msg.VFormat( fmt, args );
    if ( strictMode )
@@ -89,7 +104,7 @@ static void __TIFFError( const char* module, const char* fmt, va_list args )
 /*
  * TIFF warnings are shown (console only) when warning messages are enabled.
  */
-static void __TIFFWarning( const char* module, const char* fmt, va_list args )
+static void TIFFWarningHandler( const char* module, const char* fmt, va_list args )
 {
    if ( showWarnings )
    {
@@ -102,8 +117,7 @@ static void __TIFFWarning( const char* module, const char* fmt, va_list args )
 
 struct TIFFFileData
 {
-   //void*    handle; // libtiff's ::TIFF*
-   ::TIFF*  handle;
+   ::TIFF*  handle = nullptr;
    uint32   width;
    uint32   length;
    uint16   bitsPerSample;
@@ -115,32 +129,37 @@ struct TIFFFileData
    double   lowerRange; // safe copies of critical parameters
    double   upperRange;
 
-   TIFFFileData() : handle( 0 )
+   TIFFFileData()
    {
-      static bool firstTime = true;
+      static Mutex     mutex;
+      static AtomicInt initialized;
 
-      if ( firstTime )
+      if ( initialized.FetchAndAdd( 0 ) == 0 )
       {
-         ::TIFFSetErrorHandler( __TIFFError );
-         ::TIFFSetWarningHandler( __TIFFWarning );
-         firstTime = false;
+         volatile AutoLock lock( mutex );
+         if ( !initialized )
+         {
+            ::TIFFSetErrorHandler( TIFFErrorHandler );
+            ::TIFFSetWarningHandler( TIFFWarningHandler );
+            (void)initialized.FetchAndAdd( 1 );
+         }
       }
    }
 
    ~TIFFFileData()
    {
-      if ( handle != 0 )
-         ::TIFFClose( (::TIFF*)handle ), handle = 0;
+      if ( handle != nullptr )
+         ::TIFFClose( (::TIFF*)handle ), handle = nullptr;
    }
 };
 
 // ----------------------------------------------------------------------------
 
-void TIFF::__Close() // ### derived must call base
+void TIFF::CloseStream() // ### derived must call base
 {
    // Close TIFF file stream and clean up libtiff data.
-   if ( fileData != 0 )
-      delete fileData, fileData = 0;
+   if ( fileData != nullptr )
+      delete fileData, fileData = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -161,12 +180,12 @@ void TIFF::__Close() // ### derived must call base
 
 bool TIFFReader::IsOpen() const
 {
-   return fileData != 0 && fileData->handle != 0;
+   return fileData != nullptr && fileData->handle != nullptr;
 }
 
 void TIFFReader::Close()
 {
-   TIFF::__Close();
+   TIFF::CloseStream();
 }
 
 void TIFFReader::Open( const String& _path )
@@ -204,7 +223,7 @@ void TIFFReader::Open( const String& _path )
 #else
          path.ToUTF8();
 #endif
-      if ( (tif = ::TIFFOpen( path8.c_str(), "r" )) == 0 )
+      if ( (tif = ::TIFFOpen( path8.c_str(), "r" )) == nullptr )
          throw UnableToOpenFile( path );
 
       //
@@ -412,7 +431,6 @@ void TIFFReader::Open( const String& _path )
         ::TIFFSetDirectory( tif, dir );
       }
    }
-
    catch ( ... )
    {
       Close();
@@ -426,23 +444,15 @@ bool TIFFReader::Extract( ICCProfile& icc )
 {
    icc.Clear();
 
-   if ( IsOpen() )
-   {
-      uint32 byteCount;
-      void* iccData;
+   if ( !IsOpen() )
+      return false;
 
-      if ( ::TIFFGetField( tif, TIFFTAG_ICCPROFILE, &byteCount, &iccData ) )
-      {
-         try
-         {
-            icc.Set( iccData );
-            return true;
-         }
-         ERROR_HANDLER
-      }
-   }
+   uint32 byteCount;
+   void* iccData;
+   if ( ::TIFFGetField( tif, TIFFTAG_ICCPROFILE, &byteCount, &iccData ) )
+      icc.Set( iccData );
 
-   return false;
+   return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -452,28 +462,25 @@ bool TIFFReader::Extract( IPTCPhotoInfo& iptc )
 {
    iptc.Clear();
 
-   if ( IsOpen() )
-   {
-      uint16 uint32Count;
-      void* iptcData;
+   if ( !IsOpen() )
+      return false;
 
-      // The length of an IPTC PhotoInfo data block is given as a count of
-      // 32-bit integers by the libtiff library.
-      if ( ::TIFFGetField( tif, TIFFTAG_RICHTIFFIPTC, &uint32Count, &iptcData ) )
-      {
-         iptc.GetInfo( iptcData, uint32Count*4 );
-         return true;
-      }
-   }
+   uint16 uint32Count;
+   void* iptcData;
 
-   return false;
+   // The length of an IPTC PhotoInfo data block is given as a count of
+   // 32-bit integers by the libtiff library.
+   if ( ::TIFFGetField( tif, TIFFTAG_RICHTIFFIPTC, &uint32Count, &iptcData ) )
+      iptc.GetInfo( iptcData, uint32Count*4 );
+
+   return true;
 }
 */
 
 // ----------------------------------------------------------------------------
 
-template <class P> inline
-static void __ReadImage( GenericImage<P>& image, TIFFReader& reader, TIFFFileData* fileData )
+template <class P>
+static void ReadTIFFImage( GenericImage<P>& image, TIFFReader& reader, TIFFFileData* fileData )
 {
    if ( !reader.IsOpen() )
       throw TIFF::InvalidReadOperation( String() );
@@ -910,29 +917,29 @@ static void __ReadImage( GenericImage<P>& image, TIFFReader& reader, TIFFFileDat
 
 void TIFFReader::ReadImage( FImage& image )
 {
-   __ReadImage( image, *this, fileData );
+   ReadTIFFImage( image, *this, fileData );
    NORMALIZE( FImage )
 }
 
 void TIFFReader::ReadImage( DImage& image )
 {
-   __ReadImage( image, *this, fileData );
+   ReadTIFFImage( image, *this, fileData );
    NORMALIZE( DImage )
 }
 
 void TIFFReader::ReadImage( UInt8Image& image )
 {
-   __ReadImage( image, *this, fileData );
+   ReadTIFFImage( image, *this, fileData );
 }
 
 void TIFFReader::ReadImage( UInt16Image& image )
 {
-   __ReadImage( image, *this, fileData );
+   ReadTIFFImage( image, *this, fileData );
 }
 
 void TIFFReader::ReadImage( UInt32Image& image )
 {
-   __ReadImage( image, *this, fileData );
+   ReadTIFFImage( image, *this, fileData );
 }
 
 #undef NORMALIZE
@@ -952,7 +959,7 @@ bool TIFFWriter::IsOpen() const
 
 void TIFFWriter::Close()
 {
-   TIFF::__Close();
+   TIFF::CloseStream();
 }
 
 void TIFFWriter::Create( const String& filePath, int count )
@@ -979,9 +986,9 @@ void TIFFWriter::Create( const String& filePath, int count )
 
 // ----------------------------------------------------------------------------
 
-template <class P> inline
-static void __WriteImage( const GenericImage<P>& image, TIFFWriter& writer,
-                          const ICCProfile& icc, TIFFFileData* fileData )
+template <class P>
+static void WriteTIFFImage( const GenericImage<P>& image, TIFFWriter& writer,
+                            const ICCProfile& icc, TIFFFileData* fileData )
 {
    if ( !writer.IsOpen() )
       throw TIFF::WriterNotInitialized( String() );
@@ -1102,8 +1109,7 @@ static void __WriteImage( const GenericImage<P>& image, TIFFWriter& writer,
 #else
          writer.Path().ToUTF8();
 #endif
-      tif = ::TIFFOpen( path8.c_str(), "w" );
-      if ( tif == 0 )
+      if ( (tif = ::TIFFOpen( path8.c_str(), "w" )) == nullptr )
          throw TIFF::UnableToCreateFile( writer.Path() );
 
       //
@@ -1250,13 +1256,6 @@ static void __WriteImage( const GenericImage<P>& image, TIFFWriter& writer,
          if ( byteCount != 0 )
             ::TIFFSetField( tif, TIFFTAG_ICCPROFILE, byteCount, icc.ProfileData().Begin() );
       }
-
-      /*
-      if ( ... && writer.Options().embedMetadata )
-      {
-         // ### TODO: XML metadata support.
-      }
-      */
 
       //
       // Write pixel data.
@@ -1525,39 +1524,39 @@ static void __WriteImage( const GenericImage<P>& image, TIFFWriter& writer,
          }
       }
 
-      ::TIFFClose( tif ), tif = 0;
+      ::TIFFClose( tif ), tif = nullptr;
    }
    catch ( ... )
    {
-      if ( tif != 0 )
-         ::TIFFClose( tif ), tif = 0;
+      if ( tif != nullptr )
+         ::TIFFClose( tif ), tif = nullptr;
       throw;
    }
 }
 
 void TIFFWriter::WriteImage( const FImage& image )
 {
-   __WriteImage( image, *this, icc, fileData );
+   WriteTIFFImage( image, *this, icc, fileData );
 }
 
 void TIFFWriter::WriteImage( const DImage& image )
 {
-   __WriteImage( image, *this, icc, fileData );
+   WriteTIFFImage( image, *this, icc, fileData );
 }
 
 void TIFFWriter::WriteImage( const UInt8Image& image )
 {
-   __WriteImage( image, *this, icc, fileData );
+   WriteTIFFImage( image, *this, icc, fileData );
 }
 
 void TIFFWriter::WriteImage( const UInt16Image& image )
 {
-   __WriteImage( image, *this, icc, fileData );
+   WriteTIFFImage( image, *this, icc, fileData );
 }
 
 void TIFFWriter::WriteImage( const UInt32Image& image )
 {
-   __WriteImage( image, *this, icc, fileData );
+   WriteTIFFImage( image, *this, icc, fileData );
 }
 
 // ----------------------------------------------------------------------------
@@ -1599,5 +1598,5 @@ void TIFF::EnableWarnings( bool enable )
 
 }  // pcl
 
-// ****************************************************************************
-// EOF TIFF.cpp - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF TIFF.cpp - Released 2015/07/31 11:49:40 UTC

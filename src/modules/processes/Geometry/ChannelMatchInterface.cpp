@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Geometry Process Module Version 01.01.00.0247
-// ****************************************************************************
-// ChannelMatchInterface.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Geometry Process Module Version 01.01.00.0266
+// ----------------------------------------------------------------------------
+// ChannelMatchInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "ChannelMatchInterface.h"
 #include "ChannelMatchProcess.h"
@@ -392,13 +396,13 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
    R_XOffset_NumericEdit.SetToolTip( "X-offset, red channel" );
    R_XOffset_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&ChannelMatchInterface::__Channel_Offset_ValueUpdated, w );
 
-   R_Left_ToolButton.SetIcon( Bitmap( ":/icons/move-left.png" ) );
-   R_Left_ToolButton.SetFixedSize( 20, 20 );
+   R_Left_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/move-left.png" ) ) );
+   R_Left_ToolButton.SetScaledFixedSize( 20, 20 );
    R_Left_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    R_Left_ToolButton.OnClick( (ToolButton::click_event_handler)&ChannelMatchInterface::__Channel_Offset_Click, w );
 
-   R_Right_ToolButton.SetIcon( Bitmap( ":/icons/move-right.png" ) );
-   R_Right_ToolButton.SetFixedSize( 20, 20 );
+   R_Right_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/move-right.png" ) ) );
+   R_Right_ToolButton.SetScaledFixedSize( 20, 20 );
    R_Right_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    R_Right_ToolButton.OnClick( (ToolButton::click_event_handler)&ChannelMatchInterface::__Channel_Offset_Click, w );
 
@@ -414,13 +418,13 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
    G_XOffset_NumericEdit.SetToolTip( "X-offset, green channel" );
    G_XOffset_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&ChannelMatchInterface::__Channel_Offset_ValueUpdated, w );
 
-   G_Left_ToolButton.SetIcon( Bitmap( ":/icons/move-left.png" ) );
-   G_Left_ToolButton.SetFixedSize( 20, 20 );
+   G_Left_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/move-left.png" ) ) );
+   G_Left_ToolButton.SetScaledFixedSize( 20, 20 );
    G_Left_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    G_Left_ToolButton.OnClick( (ToolButton::click_event_handler)&ChannelMatchInterface::__Channel_Offset_Click, w );
 
-   G_Right_ToolButton.SetIcon( Bitmap( ":/icons/move-right.png" ) );
-   G_Right_ToolButton.SetFixedSize( 20, 20 );
+   G_Right_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/move-right.png" ) ) );
+   G_Right_ToolButton.SetScaledFixedSize( 20, 20 );
    G_Right_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    G_Right_ToolButton.OnClick( (ToolButton::click_event_handler)&ChannelMatchInterface::__Channel_Offset_Click, w );
 
@@ -436,13 +440,13 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
    B_XOffset_NumericEdit.SetToolTip( "X-offset, blue channel" );
    B_XOffset_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&ChannelMatchInterface::__Channel_Offset_ValueUpdated, w );
 
-   B_Left_ToolButton.SetIcon( Bitmap( ":/icons/move-left.png" ) );
-   B_Left_ToolButton.SetFixedSize( 20, 20 );
+   B_Left_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/move-left.png" ) ) );
+   B_Left_ToolButton.SetScaledFixedSize( 20, 20 );
    B_Left_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    B_Left_ToolButton.OnClick( (ToolButton::click_event_handler)&ChannelMatchInterface::__Channel_Offset_Click, w );
 
-   B_Right_ToolButton.SetIcon( Bitmap( ":/icons/move-right.png" ) );
-   B_Right_ToolButton.SetFixedSize( 20, 20 );
+   B_Right_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/move-right.png" ) ) );
+   B_Right_ToolButton.SetScaledFixedSize( 20, 20 );
    B_Right_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    B_Right_ToolButton.OnClick( (ToolButton::click_event_handler)&ChannelMatchInterface::__Channel_Offset_Click, w );
 
@@ -467,13 +471,13 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
    R_YOffset_NumericEdit.SetToolTip( "Y-offset, red channel" );
    R_YOffset_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&ChannelMatchInterface::__Channel_Offset_ValueUpdated, w );
 
-   R_Up_ToolButton.SetIcon( Bitmap( ":/icons/move-up.png" ) );
-   R_Up_ToolButton.SetFixedSize( 20, 20 );
+   R_Up_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/move-up.png" ) ) );
+   R_Up_ToolButton.SetScaledFixedSize( 20, 20 );
    R_Up_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    R_Up_ToolButton.OnClick( (ToolButton::click_event_handler)&ChannelMatchInterface::__Channel_Offset_Click, w );
 
-   R_Down_ToolButton.SetIcon( Bitmap( ":/icons/move-down.png" ) );
-   R_Down_ToolButton.SetFixedSize( 20, 20 );
+   R_Down_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/move-down.png" ) ) );
+   R_Down_ToolButton.SetScaledFixedSize( 20, 20 );
    R_Down_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    R_Down_ToolButton.OnClick( (ToolButton::click_event_handler)&ChannelMatchInterface::__Channel_Offset_Click, w );
 
@@ -489,13 +493,13 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
    G_YOffset_NumericEdit.SetToolTip( "Y-offset, green channel" );
    G_YOffset_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&ChannelMatchInterface::__Channel_Offset_ValueUpdated, w );
 
-   G_Up_ToolButton.SetIcon( Bitmap( ":/icons/move-up.png" ) );
-   G_Up_ToolButton.SetFixedSize( 20, 20 );
+   G_Up_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/move-up.png" ) ) );
+   G_Up_ToolButton.SetScaledFixedSize( 20, 20 );
    G_Up_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    G_Up_ToolButton.OnClick( (ToolButton::click_event_handler)&ChannelMatchInterface::__Channel_Offset_Click, w );
 
-   G_Down_ToolButton.SetIcon( Bitmap( ":/icons/move-down.png" ) );
-   G_Down_ToolButton.SetFixedSize( 20, 20 );
+   G_Down_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/move-down.png" ) ) );
+   G_Down_ToolButton.SetScaledFixedSize( 20, 20 );
    G_Down_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    G_Down_ToolButton.OnClick( (ToolButton::click_event_handler)&ChannelMatchInterface::__Channel_Offset_Click, w );
 
@@ -511,13 +515,13 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
    B_YOffset_NumericEdit.SetToolTip( "Y-offset, blue channel" );
    B_YOffset_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&ChannelMatchInterface::__Channel_Offset_ValueUpdated, w );
 
-   B_Up_ToolButton.SetIcon( Bitmap( ":/icons/move-up.png" ) );
-   B_Up_ToolButton.SetFixedSize( 20, 20 );
+   B_Up_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/move-up.png" ) ) );
+   B_Up_ToolButton.SetScaledFixedSize( 20, 20 );
    B_Up_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    B_Up_ToolButton.OnClick( (ToolButton::click_event_handler)&ChannelMatchInterface::__Channel_Offset_Click, w );
 
-   B_Down_ToolButton.SetIcon( Bitmap( ":/icons/move-down.png" ) );
-   B_Down_ToolButton.SetFixedSize( 20, 20 );
+   B_Down_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/move-down.png" ) ) );
+   B_Down_ToolButton.SetScaledFixedSize( 20, 20 );
    B_Down_ToolButton.SetFocusStyle( FocusStyle::NoFocus );
    B_Down_ToolButton.OnClick( (ToolButton::click_event_handler)&ChannelMatchInterface::__Channel_Offset_Click, w );
 
@@ -538,7 +542,7 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
    // -------------------------------------------------------------------------
 
    R_Factor_NumericControl.label.Hide();
-   R_Factor_NumericControl.slider.SetMinWidth( 200 );
+   R_Factor_NumericControl.slider.SetScaledMinWidth( 200 );
    R_Factor_NumericControl.slider.SetRange( 0, 100 );
    R_Factor_NumericControl.SetReal();
    R_Factor_NumericControl.SetRange( TheChannelFactorParameter->MinimumValue(), TheChannelFactorParameter->MaximumValue() );
@@ -547,7 +551,7 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
    R_Factor_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&ChannelMatchInterface::__Channel_Factor_ValueUpdated, w );
 
    G_Factor_NumericControl.label.Hide();
-   G_Factor_NumericControl.slider.SetMinWidth( 200 );
+   G_Factor_NumericControl.slider.SetScaledMinWidth( 200 );
    G_Factor_NumericControl.slider.SetRange( 0, 100 );
    G_Factor_NumericControl.SetReal();
    G_Factor_NumericControl.SetRange( TheChannelFactorParameter->MinimumValue(), TheChannelFactorParameter->MaximumValue() );
@@ -556,7 +560,7 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
    G_Factor_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&ChannelMatchInterface::__Channel_Factor_ValueUpdated, w );
 
    B_Factor_NumericControl.label.Hide();
-   B_Factor_NumericControl.slider.SetMinWidth( 200 );
+   B_Factor_NumericControl.slider.SetScaledMinWidth( 200 );
    B_Factor_NumericControl.slider.SetRange( 0, 100 );
    B_Factor_NumericControl.SetReal();
    B_Factor_NumericControl.SetRange( TheChannelFactorParameter->MinimumValue(), TheChannelFactorParameter->MaximumValue() );
@@ -591,5 +595,5 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF ChannelMatchInterface.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF ChannelMatchInterface.cpp - Released 2015/07/31 11:49:48 UTC

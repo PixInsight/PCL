@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/MultiscaleMedianTransform.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/MultiscaleMedianTransform.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/AutoLock.h>
 #include <pcl/Exception.h>
@@ -245,13 +248,13 @@ public:
             if ( T.m_layerEnabled[j0] )
             {
                cj0 -= cj;
-               T.m_transform[j0] = new Image( cj0 );
+               T.m_transform[j0] = Image( cj0 );
             }
 
             if ( j == T.m_numberOfLayers )
             {
                if ( T.m_layerEnabled[j] )
-                  T.m_transform[j] = new Image( cj );
+                  T.m_transform[j] = Image( cj );
                break;
             }
 
@@ -263,7 +266,7 @@ public:
       }
       catch ( ... )
       {
-         T.DeleteLayers();
+         T.DestroyLayers();
          if ( statusInitialized )
             status.EnableInitialization();
          throw;
@@ -357,7 +360,7 @@ private:
 };
 
 #define TRANSFORM_ENTRY             \
-   DeleteLayers();                  \
+   DestroyLayers();                 \
    if ( image.IsEmptySelection() )  \
       return;                       \
 
@@ -414,5 +417,5 @@ void MultiscaleMedianTransform::Transform( const UInt32Image& image )
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/MultiscaleMedianTransform.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/MultiscaleMedianTransform.cpp - Released 2015/07/30 17:15:31 UTC

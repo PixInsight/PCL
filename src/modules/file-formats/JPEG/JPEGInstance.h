@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard JPEG File Format Module Version 01.00.01.0228
-// ****************************************************************************
-// JPEGInstance.h - Released 2014/11/14 17:18:35 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard JPEG File Format Module Version 01.00.03.0249
+// ----------------------------------------------------------------------------
+// JPEGInstance.h - Released 2015/07/31 11:49:40 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard JPEG PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __JPEGInstance_h
 #define __JPEGInstance_h
@@ -56,11 +60,9 @@
 namespace pcl
 {
 
-class JPEGFormat;
+// ----------------------------------------------------------------------------
 
-// ----------------------------------------------------------------------------
-// JPEGInstance
-// ----------------------------------------------------------------------------
+class JPEGFormat;
 
 class JPEGInstance : public FileFormatImplementation
 {
@@ -79,11 +81,6 @@ public:
    virtual String ImageProperties() const;
 
    virtual void Extract( ICCProfile& icc );
-   /*
-   // ### TODO: XML metadata and thumbnail support
-   virtual void Extract( void*& data, size_type& length );
-   virtual void Extract( pcl::UInt8Image& thumbnail );
-   */
 
    virtual void ReadImage( Image& );
    virtual void ReadImage( DImage& );
@@ -96,11 +93,6 @@ public:
    virtual void SetOptions( const ImageOptions& options );
    virtual void SetFormatSpecificData( const void* data );
    virtual void Embed( const ICCProfile& icc );
-   /*
-   // ### TODO: XML metadata and thumbnail support
-   virtual void Embed( const void* data, size_type length );
-   virtual void Embed( const pcl::UInt8Image& image );
-   */
 
    virtual void WriteImage( const Image& );
    virtual void WriteImage( const DImage& );
@@ -110,17 +102,15 @@ public:
 
    virtual bool WasLossyWrite() const;
 
-   // -------------------------------------------------------------------------
-
 private:
 
    JPEGReader* reader;
    JPEGWriter* writer;
 
+   int  readCount;      // how many times did us read the same image
    bool queriedOptions; // did us query options to the user?
 
    ICCProfile* embeddedICCProfile;
-   // ### TODO XML metadata and thumbnail images
 };
 
 // ----------------------------------------------------------------------------
@@ -129,5 +119,5 @@ private:
 
 #endif   // __JPEGInstance_h
 
-// ****************************************************************************
-// EOF JPEGInstance.h - Released 2014/11/14 17:18:35 UTC
+// ----------------------------------------------------------------------------
+// EOF JPEGInstance.h - Released 2015/07/31 11:49:40 UTC

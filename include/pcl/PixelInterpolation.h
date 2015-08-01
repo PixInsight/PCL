@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/PixelInterpolation.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/PixelInterpolation.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_PixelInterpolation_h
 #define __PCL_PixelInterpolation_h
@@ -145,14 +148,13 @@ public:
       /*!
        * Constructs and initializes a new %Interpolator object that
        * interpolates a pixel sample matrix \a f of the specified \a width and
-       * \a height dimensions. The optional \a status object can be used to
-       * monitorize interpolation initialization.
+       * \a height dimensions, using the specified interpolation \a i.
        */
       Interpolator( BidimensionalInterpolation<sample>* i,
-                    const sample* f, int width, int height ) : interpolator( i )
+                    const sample* f, int width, int height ) : m_interpolation( i )
       {
-         if ( interpolator != 0 )
-            interpolator->Initialize( f, width, height );
+         if ( m_interpolation != nullptr )
+            m_interpolation->Initialize( f, width, height );
       }
 
       /*!
@@ -161,28 +163,28 @@ public:
        */
       virtual ~Interpolator()
       {
-         if ( interpolator != 0 )
-            interpolator->Clear(), delete interpolator, interpolator = 0;
+         if ( m_interpolation != nullptr )
+            m_interpolation->Clear(), delete m_interpolation, m_interpolation = nullptr;
       }
 
       /*!
-       * Returns a constant reference to the two-dimensional interpolation
-       * being used by this %Interpolator.
+       * Returns a reference to the immutable two-dimensional interpolation
+       * being used by this %Interpolator object.
        */
-      const BidimensionalInterpolation<sample>& GetInterpolator() const
+      const BidimensionalInterpolation<sample>& Interpolation() const
       {
-         PCL_CHECK( interpolator != 0 )
-         return *interpolator;
+         PCL_CHECK( m_interpolation != nullptr )
+         return *m_interpolation;
       }
 
       /*!
-       * Returns a reference to the two-dimensional interpolation being used by
-       * this %Interpolator.
+       * Returns a reference to the mutable two-dimensional interpolation being
+       * used by this %Interpolator object.
        */
-      BidimensionalInterpolation<sample>& GetInterpolator()
+      BidimensionalInterpolation<sample>& Interpolation()
       {
-         PCL_CHECK( interpolator != 0 )
-         return *interpolator;
+         PCL_CHECK( m_interpolation != nullptr )
+         return *m_interpolation;
       }
 
       /*!
@@ -191,8 +193,8 @@ public:
        */
       sample operator()( double x, double y ) const
       {
-         PCL_CHECK( interpolator != 0 )
-         double r = (*interpolator)( x, y );
+         PCL_CHECK( m_interpolation != nullptr )
+         double r = (*m_interpolation)( x, y );
          return (r < P::MinSampleValue()) ? P::MinSampleValue() :
             ((r > P::MaxSampleValue()) ? P::MaxSampleValue() : P::FloatToSample( r ));
       }
@@ -209,9 +211,9 @@ public:
          return operator()( p.x, p.y );
       }
 
-   protected:
+   private:
 
-      BidimensionalInterpolation<sample>* interpolator;
+      BidimensionalInterpolation<sample>* m_interpolation;
    };
 
    // -------------------------------------------------------------------------
@@ -219,9 +221,7 @@ public:
    /*!
     * Constructs a %PixelInterpolation object.
     */
-   PixelInterpolation()
-   {
-   }
+   PixelInterpolation() = default;
 
    /*!
     * Destroys a %PixelInterpolation object.
@@ -251,12 +251,7 @@ public:
    }
 
    /*!
-    * Creates a new Interpolator object.
-    *
-    * \param p       The type P corresponds to a PixelTraits template
-    *                instantiation for a particular pixel sample type. This
-    *                argument only works to identify a particular type P; its
-    *                value is not used in any way by this function.
+    * Creates a new Interpolator object specialized for a pixel sample type P.
     *
     * \param f       Two-dimensional matrix of pixel sample values that will be
     *                interpolated.
@@ -270,7 +265,7 @@ public:
     * \param status  Optional monitoring of interpolation initialization.
     */
    template <class P, class T>
-   Interpolator<P>* NewInterpolator( const P* p, const T* f, int width, int height ) const
+   Interpolator<P>* NewInterpolator( const T* f, int width, int height ) const
    {
       return new Interpolator<P>( NewInterpolation( f ), f, width, height );
    }
@@ -477,7 +472,7 @@ public:
     * linear clamping feature.
     */
    BicubicSplinePixelInterpolation( double c = __PCL_BICUBIC_SPLINE_CLAMPING_THRESHOLD ) :
-   PixelInterpolation(), clamp( c )
+      PixelInterpolation(), clamp( c )
    {
    }
 
@@ -545,7 +540,7 @@ public:
     * linear clamping feature.
     */
    BicubicPixelInterpolation( double c = __PCL_BICUBIC_SPLINE_CLAMPING_THRESHOLD ) :
-   BicubicSplinePixelInterpolation( c )
+      BicubicSplinePixelInterpolation( c )
    {
    }
 };
@@ -647,7 +642,7 @@ public:
     *
     */
    BicubicFilterPixelInterpolation( int rh, int rv, const CubicFilter& cf ) :
-   PixelInterpolation(), rx( Max( 1, rh ) ), ry( Max( 1, rv ) ), filter( cf.Clone() )
+      PixelInterpolation(), rx( Max( 1, rh ) ), ry( Max( 1, rv ) ), filter( cf.Clone() )
    {
       PCL_PRECONDITION( rh >= 1 )
       PCL_PRECONDITION( rv >= 1 )
@@ -751,7 +746,7 @@ public:
     *                interpolation clamping feature. The default value is 0.3.
     */
    LanczosPixelInterpolation( int n = 3, float clamp = 0.3 ) :
-   PixelInterpolation(), m_n( Max( 1, n ) ), m_clamp( clamp )
+      PixelInterpolation(), m_n( Max( 1, n ) ), m_clamp( clamp )
    {
       PCL_PRECONDITION( n >= 1 )
       PCL_PRECONDITION( clamp < 0 || 0 <= clamp && clamp <= 1 )
@@ -835,7 +830,7 @@ public:
     *                interpolation clamping feature. The default value is 0.3.
     */
    Lanczos3LUTPixelInterpolation( float clamp = 0.3 ) :
-   PixelInterpolation(), m_clamp( clamp )
+      PixelInterpolation(), m_clamp( clamp )
    {
       PCL_PRECONDITION( clamp < 0 || 0 <= clamp && clamp <= 1 )
    }
@@ -917,7 +912,7 @@ public:
     *                interpolation clamping feature. The default value is 0.3.
     */
    Lanczos4LUTPixelInterpolation( float clamp = 0.3 ) :
-   PixelInterpolation(), m_clamp( Range( clamp, 0.0F, 1.0F ) )
+      PixelInterpolation(), m_clamp( Range( clamp, 0.0F, 1.0F ) )
    {
       PCL_PRECONDITION( clamp < 0 || 0 <= clamp && clamp <= 1 )
    }
@@ -999,7 +994,7 @@ public:
     *                interpolation clamping feature. The default value is 0.3.
     */
    Lanczos5LUTPixelInterpolation( float clamp = 0.3 ) :
-   PixelInterpolation(), m_clamp( Range( clamp, 0.0F, 1.0F ) )
+      PixelInterpolation(), m_clamp( Range( clamp, 0.0F, 1.0F ) )
    {
       PCL_PRECONDITION( clamp < 0 || 0 <= clamp && clamp <= 1 )
    }
@@ -1059,5 +1054,5 @@ private:
 
 #endif   // __PCL_PixelInterpolation_h
 
-// ****************************************************************************
-// EOF pcl/PixelInterpolation.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/PixelInterpolation.h - Released 2015/07/30 17:15:18 UTC

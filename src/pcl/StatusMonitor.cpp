@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/StatusMonitor.cpp - Released 2014/11/14 17:17:00 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/StatusMonitor.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,10 +47,10 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
-#include <pcl/Array.h>
 #include <pcl/AutoLock.h>
+#include <pcl/IndirectArray.h>
 #include <pcl/Mutex.h>
 #include <pcl/StatusMonitor.h>
 #include <pcl/Thread.h>
@@ -67,11 +70,9 @@ namespace pcl
 /*
  * Update period
  */
-double StatusMonitor::s_refreshRate = 0.250; // seconds for the frontend
-#ifdef __PCL_WINDOWS
-static DWORD s_msRefreshRate = 250;          // milliseconds on Windows
-#else
-static long s_nsRefreshRate = 250000000;     // nanoseconds on all Unices
+unsigned StatusMonitor::s_msRefreshRate = 250U; // milliseconds for the frontend and Windows
+#ifndef __PCL_WINDOWS
+static long s_nsRefreshRate = 250000000L;       // nanoseconds on Linux and all Unices
 #endif
 
 // ----------------------------------------------------------------------------
@@ -101,9 +102,9 @@ public:
          {
             int activeCount = 0;
             for ( active_monitor_list::iterator i = s_activeMonitors.Begin(); i != s_activeMonitors.End(); ++i )
-               if ( *i != 0 )
+               if ( *i != nullptr )
                   if ( (*i)->IsCompleted() || (*i)->IsAborted() )
-                     *i = 0;
+                     *i = nullptr;
                   else
                   {
                      ++activeCount;
@@ -127,7 +128,7 @@ public:
          }
 
 #ifdef __PCL_WINDOWS
-         ::Sleep( s_msRefreshRate );
+         ::Sleep( StatusMonitor::s_msRefreshRate );
 #else
          struct timespec ts;
          ts.tv_sec = 0;
@@ -138,7 +139,7 @@ public:
    }
 };
 
-static MonitorDispatcherThread* s_thread = 0;
+static MonitorDispatcherThread* s_thread = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -166,7 +167,7 @@ void StatusMonitor::Initialize( const String& s, size_type n )
    m_count = 0;
 
    // Notify monitor initialization, and possibly abort.
-   if ( m_callback != 0 )
+   if ( m_callback != nullptr )
    {
       try
       {
@@ -188,22 +189,18 @@ void StatusMonitor::Initialize( const String& s, size_type n )
    s_mutex.Unlock();
 
    // Initialize the monitor thread.
-   if ( s_thread == 0 )
+   if ( s_thread == nullptr )
       s_thread = new MonitorDispatcherThread;
    if ( !s_thread->IsActive() )
       s_thread->Start( ThreadPriority::Lowest );
 }
 
-void StatusMonitor::SetRefreshRate( double s )
+void StatusMonitor::SetRefreshRate( unsigned ms )
 {
    volatile AutoLock lock( s_mutex );
-
-   s_refreshRate = Range( s, 0.025, 1.0 );
-
-#ifdef __PCL_WINDOWS
-   s_msRefreshRate = DWORD( s_refreshRate * 1000 );
-#else
-   s_nsRefreshRate = Range( long( s_refreshRate * 1000000000L ), 25000000L, 999999999L );
+   s_msRefreshRate = Range( ms, 25U, 999U );
+#ifndef __PCL_WINDOWS
+   s_nsRefreshRate = s_msRefreshRate * 1000000L;
 #endif
 }
 
@@ -215,7 +212,7 @@ void StatusMonitor::Reset()
 
    s_activeMonitors.Remove( this );
 
-   m_callback = 0;
+   m_callback = nullptr;
    m_initialized = m_completed = m_aborted = m_needsUpdate = false;
    m_initDisableCount = m_retVal = 0;
    m_info.Clear();
@@ -239,7 +236,7 @@ void StatusMonitor::Assign( const StatusMonitor& x )
    m_total            = x.m_total;
    m_count            = x.m_count;
 
-   if ( s_activeMonitors.Has( &x ) )
+   if ( s_activeMonitors.Contains( &x ) )
       s_activeMonitors.Add( this );
 }
 
@@ -252,7 +249,7 @@ void StatusMonitor::Update()
       if ( m_count == m_total )
          m_completed = true;
 
-      if ( m_callback != 0 )
+      if ( m_callback != nullptr )
       {
          m_retVal = m_completed ? m_callback->Completed( *this ) :
                                   m_callback->Updated( *this );
@@ -269,5 +266,5 @@ void StatusMonitor::Update()
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/StatusMonitor.cpp - Released 2014/11/14 17:17:00 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/StatusMonitor.cpp - Released 2015/07/30 17:15:31 UTC

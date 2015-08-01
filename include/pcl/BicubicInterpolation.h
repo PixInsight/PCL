@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/BicubicInterpolation.h - Released 2014/11/14 17:16:39 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/BicubicInterpolation.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_BicubicInterpolation_h
 #define __PCL_BicubicInterpolation_h
@@ -127,7 +130,7 @@ protected:
       int j3 = j1 + 2;
       int i3 = i1 + 2;
 
-      const T* fp = m_data + (i0*m_width + j0);
+      const T* fp = m_data + (int64( i0 )*m_width + j0);
 
          // Row 0
 
@@ -196,7 +199,7 @@ __done:
       int j3 = j1 + 2;
       int i3 = i1 + 2;
 
-      const T* fp = m_data + (i0*m_width + j0);
+      const T* fp = m_data + (int64( i0 )*m_width + j0);
 
          // Column 0
 
@@ -395,7 +398,7 @@ public:
     * is appropriate for most linear images.
     */
    BicubicSplineInterpolation( float clamp = __PCL_BICUBIC_SPLINE_CLAMPING_THRESHOLD ) :
-   BicubicInterpolationBase<T>(), m_clamp( Range( clamp, 0.0F, 1.0F ) )
+      BicubicInterpolationBase<T>(), m_clamp( Range( clamp, 0.0F, 1.0F ) )
    {
       PCL_PRECONDITION( 0 <= clamp && clamp <= 1 )
    }
@@ -418,7 +421,7 @@ public:
     */
    virtual double operator()( double x, double y ) const
    {
-      PCL_PRECONDITION( m_data != 0 )
+      PCL_PRECONDITION( m_data != nullptr )
       PCL_PRECONDITION( m_width > 0 && m_height > 0 )
 
       // Initialize grid coordinates and source matrix
@@ -458,7 +461,7 @@ public:
     */
    void InterpolateX( double fx[], double x, double y ) const
    {
-      PCL_PRECONDITION( m_data != 0 )
+      PCL_PRECONDITION( m_data != nullptr )
       PCL_PRECONDITION( m_width > 0 && m_height > 0 )
 
       // Initialize grid coordinates and source matrix
@@ -493,7 +496,7 @@ public:
     */
    void InterpolateY( double fy[], double x, double y ) const
    {
-      PCL_PRECONDITION( m_data != 0 )
+      PCL_PRECONDITION( m_data != nullptr )
       PCL_PRECONDITION( m_width > 0 && m_height > 0 )
 
       // Initialize grid coordinates and source matrix
@@ -587,25 +590,25 @@ private:
    {
       // Unclamped code:
       //return p[0]*C[0] + p[1]*C[1] + p[2]*C[2] + p[3]*C[3];
-      register double f12 = p[1]*C[1] + p[2]*C[2];
-      register double f03 = p[0]*C[0] + p[3]*C[3];
+      double f12 = p[1]*C[1] + p[2]*C[2];
+      double f03 = p[0]*C[0] + p[3]*C[3];
       return (-f03 < f12*m_clamp) ? f12 + f03 : f12/(C[1] + C[2]);
    }
 
    void GetSplineCoefficients( double C[], double dx ) const
    {
-      register double dx2 = dx*dx;
-      register double dx3 = dx2*dx;
+      double dx2 = dx*dx;
+      double dx3 = dx2*dx;
 
 #ifdef __PCL_BICUBIC_SPLINE_A_IS_MINUS_ONE_HALF
       // Optimized code for a = -1/2
       // We *really* need optimization here since this routine is called twice
       // for each interpolated pixel.
-      register double dx1_2 = dx/2;
-      register double dx2_2 = dx2/2;
-      register double dx3_2 = dx3/2;
-      register double dx22 = dx2 + dx2;
-      register double dx315 = dx3 + dx3_2;
+      double dx1_2 = dx/2;
+      double dx2_2 = dx2/2;
+      double dx3_2 = dx3/2;
+      double dx22 = dx2 + dx2;
+      double dx315 = dx3 + dx3_2;
       C[0] =  dx2 - dx3_2 - dx1_2;
       C[1] =  dx315 - dx22 - dx2_2 + 1;
       C[2] =  dx22 - dx315 + dx1_2;
@@ -747,15 +750,15 @@ private:
 
    double B( double x ) const
    {
-      register double fx = (x > 0) ? x*x*x : 0;
+      double fx = (x > 0) ? x*x*x : 0;
 
-      register double fxp1 = x + 1;
+      double fxp1 = x + 1;
       fxp1 = (fxp1 > 0) ? fxp1*fxp1*fxp1 : 0;
 
-      register double fxp2 = x + 2;
+      double fxp2 = x + 2;
       fxp2 = (fxp2 > 0) ? fxp2*fxp2*fxp2 : 0;
 
-      register double fxm1 = x - 1;
+      double fxm1 = x - 1;
       fxm1 = (fxm1 > 0) ? fxm1*fxm1*fxm1 : 0;
 
       return (fxp2 - 4*fxp1 + 6*fx - 4*fxm1)/6;
@@ -781,5 +784,5 @@ private:
 
 #endif   // __PCL_BicubicInterpolation_h
 
-// ****************************************************************************
-// EOF pcl/BicubicInterpolation.h - Released 2014/11/14 17:16:39 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/BicubicInterpolation.h - Released 2015/07/30 17:15:18 UTC

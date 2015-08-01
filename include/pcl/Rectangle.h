@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/Rectangle.h - Released 2014/11/14 17:16:41 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/Rectangle.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_Rectangle_h
 #define __PCL_Rectangle_h
@@ -72,19 +75,10 @@
 #endif
 
 #ifdef __PCL_QT_INTERFACE
-#  include <qglobal.h>
-#  if ( QT_VERSION >= 0x040000 )
-#    include <QtCore/QRect>
-#    ifndef __PCL_QT_NO_RECT_DRAWING_HELPERS
-#      include <QtGui/QPainter>
-#      include <QtGui/QBrush>
-#    endif
-#  else
-#    include <qrect.h>
-#    ifndef __PCL_QT_NO_RECT_DRAWING_HELPERS
-#      include <qpainter.h>
-#      include <qbrush.h>
-#    endif
+#  include <QtCore/QRect>
+#  ifndef __PCL_QT_NO_RECT_DRAWING_HELPERS
+#    include <QtGui/QPainter>
+#    include <QtGui/QBrush>
 #  endif
 #endif
 
@@ -278,19 +272,24 @@ bool IsOrderedRect( T x0, T y0, T x1, T y1 )
 template <typename T> inline
 void OrderRect( T& x0, T& y0, T& x1, T& y1 )
 {
-   if ( x1 < x0 ) pcl::Swap( x0, x1 );
-   if ( y1 < y0 ) pcl::Swap( y0, y1 );
+   if ( x1 < x0 )
+      pcl::Swap( x0, x1 );
+   if ( y1 < y0 )
+      pcl::Swap( y0, y1 );
 }
 
 // ----------------------------------------------------------------------------
 
 /*
- * ### N.B.: The template class GenericRectangle<T> cannot have virtual member
- *           functions. This is because some internal PCL and Core routines
- *           rely on GenericRectangle<int>, GenericRectangle<float> and
- *           GenericRectangle<double> being directly castable to int*, float*
- *           and double*, respectively.
+ * ### NB: Template class GenericRectangle cannot have virtual member
+ *         functions. This is because internal PCL and Core routines rely on
+ *         GenericRectangle<int>, GenericRectangle<float> and
+ *         GenericRectangle<double> to be directly castable to int*, float* and
+ *         double*, respectively. See also the PCL_ASSERT_RECT_SIZE() macro.
  */
+
+#define PCL_ASSERT_RECT_SIZE() \
+   static_assert( sizeof( *this ) == 4*sizeof( T ), "Invalid sizeof( GenericRectangle<> )" )
 
 /*!
  * \class GenericRectangle
@@ -307,8 +306,8 @@ void OrderRect( T& x0, T& y0, T& x1, T& y1 )
  * \a r.x0, \a r.y0, \a r.x1 and \a r.y1 directly to get or set coordinate
  * values.
  *
- * \note    \b Important. In PCL, the right and bottom coordinates of a
- * rectangle (the values of its x1 and y1 members) are \e excluded from the
+ * \b Important - In PCL, the right and bottom coordinates of a rectangle (that
+ * is, the values of its x1 and y1 members) are \e excluded from the
  * corresponding rectangular area. The following holds for any rectangle \a r
  * in PCL:
  *
@@ -331,17 +330,22 @@ public:
    /*!
     * Represents the type of a point or rectangle component.
     */
-   typedef T   component;
+   typedef T                        component;
+
+   /*!
+    * Represents a point on the plane.
+    */
+   typedef GenericPoint<component>  point;
 
    /*
     * Rectangle coordinates: x0=left, y0=top, x1=right, y1=bottom.
     * The x1 (right) and y1 (bottom) coordinates are excluded from the
     * rectangular area, so we always have: width=x1-x0 and height=y1-y0.
     */
-   T  x0; //!< Horizontal coordinate of the upper left corner.
-   T  y0; //!< Vertical coordinate of the upper left corner.
-   T  x1; //!< Horizontal coordinate of the lower right corner.
-   T  y1; //!< Vertical coordinate of the lower right corner.
+   component x0; //!< Horizontal coordinate of the upper left corner.
+   component y0; //!< Vertical coordinate of the upper left corner.
+   component x1; //!< Horizontal coordinate of the lower right corner.
+   component y1; //!< Vertical coordinate of the lower right corner.
 
    /*!
     * Constructs a default %GenericRectangle instance. Rectangle coordinates
@@ -349,6 +353,7 @@ public:
     */
    GenericRectangle()
    {
+      PCL_ASSERT_RECT_SIZE();
    }
 
    /*!
@@ -363,8 +368,10 @@ public:
     */
    template <typename T1>
    GenericRectangle( T1 left, T1 top, T1 right, T1 bottom ) :
-   x0( T( left ) ), y0( T( top ) ), x1( T( right ) ), y1( T( bottom ) )
+      x0( component( left ) ), y0( component( top ) ),
+      x1( component( right ) ), y1( component( bottom ) )
    {
+      PCL_ASSERT_RECT_SIZE();
    }
 
    /*!
@@ -378,8 +385,10 @@ public:
     */
    template <typename T1>
    GenericRectangle( const pcl::GenericPoint<T1>& leftTop, const pcl::GenericPoint<T1>& rightBottom ) :
-   x0( T( leftTop.x ) ), y0( T( leftTop.y ) ), x1( T( rightBottom.x ) ), y1( T( rightBottom.y ) )
+      x0( component( leftTop.x ) ), y0( component( leftTop.y ) ),
+      x1( component( rightBottom.x ) ), y1( component( rightBottom.y ) )
    {
+      PCL_ASSERT_RECT_SIZE();
    }
 
    /*!
@@ -390,9 +399,11 @@ public:
     * x1 = width \n
     * y1 = height
     */
-   GenericRectangle( T width, T height ) :
-   x0( T( 0 ) ), y0( T( 0 ) ), x1( width ), y1( height )
+   GenericRectangle( component width, component height ) :
+      x0( component( 0 ) ), y0( component( 0 ) ),
+      x1( width ), y1( height )
    {
+      PCL_ASSERT_RECT_SIZE();
    }
 
    /*!
@@ -402,9 +413,11 @@ public:
     * The constructed rectangle will have all of its coordinates equal to the
     * scalar \a d.
     */
-   GenericRectangle( T d ) :
-   x0( d ), y0( d ), x1( d ), y1( d )
+   GenericRectangle( component d ) :
+      x0( d ), y0( d ),
+      x1( d ), y1( d )
    {
+      PCL_ASSERT_RECT_SIZE();
    }
 
    /*!
@@ -413,20 +426,25 @@ public:
     */
    template <typename T1>
    GenericRectangle( const GenericRectangle<T1>& r ) :
-   x0( T( r.x0 ) ), y0( T( r.y0 ) ), x1( T( r.x1 ) ), y1( T( r.y1 ) )
+      x0( component( r.x0 ) ), y0( component( r.y0 ) ),
+      x1( component( r.x1 ) ), y1( component( r.y1 ) )
    {
+      PCL_ASSERT_RECT_SIZE();
    }
 
 #ifdef __PCL_QT_INTERFACE
    GenericRectangle( const QRect& r ) :
-   x0( T( r.left() ) ), y0( T( r.top() ) ),
-   x1( T( r.right()+1 ) ), y1( T( r.bottom()+1 ) )
+      x0( component( r.left() ) ), y0( component( r.top() ) ),
+      x1( component( r.right()+1 ) ), y1( component( r.bottom()+1 ) )
    {
+      PCL_ASSERT_RECT_SIZE();
    }
 
    GenericRectangle( const QPoint& p0, const QPoint& p1 ) :
-   x0( T( p0.x() ) ), y0( T( p0.y() ) ), x1( T( p1.x() ) ), y1( T( p1.y() ) )
+      x0( component( p0.x() ) ), y0( component( p0.y() ) ),
+      x1( component( p1.x() ) ), y1( component( p1.y() ) )
    {
+      PCL_ASSERT_RECT_SIZE();
    }
 #endif
 
@@ -434,7 +452,7 @@ public:
     * Returns the left coordinate of this rectangle. This function returns the
     * value of the x0 data member.
     */
-   T Left() const
+   component Left() const
    {
       return x0;
    }
@@ -443,7 +461,7 @@ public:
     * Returns the top coordinate of this rectangle. This function returns the
     * value of the y0 data member.
     */
-   T Top() const
+   component Top() const
    {
       return y0;
    }
@@ -452,7 +470,7 @@ public:
     * Returns the right coordinate of this rectangle. This function returns the
     * value of the x1 data member.
     */
-   T Right() const
+   component Right() const
    {
       return x1;
    }
@@ -461,7 +479,7 @@ public:
     * Returns the bottom coordinate of this rectangle. This function returns
     * the value of the y1 data member.
     */
-   T Bottom() const
+   component Bottom() const
    {
       return y1;
    }
@@ -470,51 +488,51 @@ public:
     * Returns a point with the coordinates of the upper left (left-top) corner
     * of this rectangle.
     */
-   pcl::GenericPoint<T> LeftTop() const
+   point LeftTop() const
    {
-      return pcl::GenericPoint<T>( pcl::Min( x0, x1 ), pcl::Min( y0, y1 ) );
+      return point( pcl::Min( x0, x1 ), pcl::Min( y0, y1 ) );
    }
 
    /*!
     * Returns a point with the coordinates of the upper right (right-top)
     * corner of this rectangle.
     */
-   pcl::GenericPoint<T> RightTop() const
+   point RightTop() const
    {
-      return pcl::GenericPoint<T>( pcl::Max( x0, x1 ), pcl::Min( y0, y1 ) );
+      return point( pcl::Max( x0, x1 ), pcl::Min( y0, y1 ) );
    }
 
    /*!
     * Returns a point with the coordinates of the lower left (left-bottom)
     * corner of this rectangle.
     */
-   pcl::GenericPoint<T> LeftBottom() const
+   point LeftBottom() const
    {
-      return pcl::GenericPoint<T>( pcl::Min( x0, x1 ), pcl::Max( y0, y1 ) );
+      return point( pcl::Min( x0, x1 ), pcl::Max( y0, y1 ) );
    }
 
    /*!
     * Returns a point with the coordinates of the lower right (right-bottom)
     * corner of this rectangle.
     */
-   pcl::GenericPoint<T> RightBottom() const
+   point RightBottom() const
    {
-      return pcl::GenericPoint<T>( pcl::Max( x0, x1 ), pcl::Max( y0, y1 ) );
+      return point( pcl::Max( x0, x1 ), pcl::Max( y0, y1 ) );
    }
 
    /*!
     * Returns a point with the coordinates of the center of this rectangle.
     */
-   pcl::GenericPoint<T> Center() const
+   point Center() const
    {
-      return pcl::GenericPoint<T>( (x0 + x1)/2, (y0 + y1)/2 );
+      return point( (x0 + x1)/2, (y0 + y1)/2 );
    }
 
    /*!
     * Returns the width of this rectangle. The returned value is the absolute
     * difference between the x1 and x0 data members.
     */
-   T Width() const
+   component Width() const
    {
       return pcl::Abs( x1 - x0 );
    }
@@ -523,7 +541,7 @@ public:
     * Returns the height of this rectangle. The returned value is the absolute
     * difference between the y1 and y0 data members.
     */
-   T Height() const
+   component Height() const
    {
       return pcl::Abs( y1 - y0 );
    }
@@ -532,9 +550,9 @@ public:
     * Returns the perimeter of this rectangle. The returned value is equal to
     * twice the width plus twice the height.
     */
-   T Perimeter() const
+   component Perimeter() const
    {
-      register T w = Width(), h = Height();
+      component w = Width(), h = Height();
       return w+w+h+h;
    }
 
@@ -544,7 +562,7 @@ public:
     *
     * The returned value is equal to the width plus the height.
     */
-   T ManhattanDistance() const
+   component ManhattanDistance() const
    {
       return Width() + Height();
    }
@@ -553,7 +571,7 @@ public:
     * Returns the area of this rectangle. The returned value is equal to the
     * width multiplied by the height.
     */
-   T Area() const
+   component Area() const
    {
       return pcl::Abs( (x1 - x0)*(y1 - y0) );
    }
@@ -584,7 +602,7 @@ public:
     */
    double Hypot() const
    {
-      register double w = x1 - x0, h = y1 - y0;
+      double w = x1 - x0, h = y1 - y0;
       return w*w + h*h;
    }
 
@@ -673,9 +691,9 @@ public:
    /*!
     * Returns an ordered rectangle equivalent to this.
     */
-   GenericRectangle<T> Ordered() const
+   GenericRectangle Ordered() const
    {
-      GenericRectangle<T> r = *this;
+      GenericRectangle r = *this;
       r.Order();
       return r;
    }
@@ -829,17 +847,19 @@ public:
    template <typename T1>
    void Unite( T1 left, T1 top, T1 right, T1 bottom )
    {
-      x0 = pcl::Min( x0, T( left ) ); y0 = pcl::Min( y0, T( top ) );
-      x1 = pcl::Max( x1, T( right ) ); y1 = pcl::Max( y1, T( bottom ) );
+      x0 = pcl::Min( x0, component( left ) );
+      y0 = pcl::Min( y0, component( top ) );
+      x1 = pcl::Max( x1, component( right ) );
+      y1 = pcl::Max( y1, component( bottom ) );
    }
 
    /*!
     * Returns a rectangle that includes this one and another rectangle \a r.
     */
    template <typename T1>
-   GenericRectangle<T> Union( const GenericRectangle<T1>& r ) const
+   GenericRectangle Union( const GenericRectangle<T1>& r ) const
    {
-      GenericRectangle<T> r1 = *this;
+      GenericRectangle r1 = *this;
       r1.Unite( r );
       return r1;
    }
@@ -849,7 +869,7 @@ public:
     * coordinates as necessary. Returns a reference to this rectangle.
     */
    template <typename T1>
-   GenericRectangle<T>& operator |=( const GenericRectangle<T1>& r )
+   GenericRectangle& operator |=( const GenericRectangle<T1>& r )
    {
       Unite( r );
       return *this;
@@ -861,14 +881,14 @@ public:
       Unite( r.left(), r.top(), r.right()+1, r.bottom()+1 );
    }
 
-   GenericRectangle<T> Union( const QRect& r ) const
+   GenericRectangle Union( const QRect& r ) const
    {
-      GenericRectangle<T> r1 = *this;
+      GenericRectangle r1 = *this;
       r1.Unite( r );
       return r1;
    }
 
-   GenericRectangle<T>& operator |=( const QRect& r )
+   GenericRectangle& operator |=( const QRect& r )
    {
       Unite( r );
       return *this;
@@ -898,8 +918,10 @@ public:
    template <typename T1>
    bool Intersect( T1 left, T1 top, T1 right, T1 bottom )
    {
-      x0 = pcl::Max( x0, T( left ) ); y0 = pcl::Max( y0, T( top ) );
-      x1 = pcl::Min( x1, T( right ) ); y1 = pcl::Min( y1, T( bottom ) );
+      x0 = pcl::Max( x0, component( left ) );
+      y0 = pcl::Max( y0, component( top ) );
+      x1 = pcl::Min( x1, component( right ) );
+      y1 = pcl::Min( y1, component( bottom ) );
       return IsNormal();
    }
 
@@ -908,9 +930,9 @@ public:
     * another rectangle \a r.
     */
    template <typename T1>
-   GenericRectangle<T> Intersection( const GenericRectangle<T1>& r ) const
+   GenericRectangle Intersection( const GenericRectangle<T1>& r ) const
    {
-      GenericRectangle<T> r1 = *this;
+      GenericRectangle r1 = *this;
       (void)r1.Intersect( r );
       return r1;
    }
@@ -920,7 +942,7 @@ public:
     * rectangle \a r. Returns a reference to this rectangle.
     */
    template <typename T1>
-   GenericRectangle<T>& operator &=( const GenericRectangle<T1>& r )
+   GenericRectangle& operator &=( const GenericRectangle<T1>& r )
    {
       Intersect( r );
       return *this;
@@ -932,14 +954,14 @@ public:
       return Intersect( r.left(), r.top(), r.right()+1, r.bottom()+1 );
    }
 
-   GenericRectangle<T> Intersection( const QRect& r ) const
+   GenericRectangle Intersection( const QRect& r ) const
    {
-      GenericRectangle<T> r1 = *this;
+      GenericRectangle r1 = *this;
       (void)r1.Intersect( r );
       return r1;
    }
 
-   GenericRectangle<T>& operator &=( const QRect& r )
+   GenericRectangle& operator &=( const QRect& r )
    {
       Intersect( r );
       return *this;
@@ -955,8 +977,10 @@ public:
    template <typename T1>
    void Set( T1 left, T1 top, T1 right, T1 bottom )
    {
-      x0 = T( left ); y0 = T( top );
-      x1 = T( right ); y1 = T( bottom );
+      x0 = component( left );
+      y0 = component( top );
+      x1 = component( right );
+      y1 = component( bottom );
    }
 
    /*!
@@ -982,8 +1006,11 @@ public:
    template <typename T1>
    void MoveTo( T1 x, T1 y )
    {
-      register T dx = x1 - x0, dy = y1 - y0;
-      x0 = T( x ); y0 = T( y ); x1 = x0 + dx; y1 = y0 + dy;
+      component dx = x1 - x0, dy = y1 - y0;
+      x0 = component( x );
+      y0 = component( y );
+      x1 = x0 + dx;
+      y1 = y0 + dy;
    }
 
 #ifdef __PCL_QT_INTERFACE
@@ -997,12 +1024,12 @@ public:
     * Returns a rectangle \a r equal to this rectangle moved to the specified
     * location:
     *
-    * \code GenericRectangle<T> r( *this ); r.MoveTo( p ); \endcode
+    * \code GenericRectangle r( *this ); r.MoveTo( p ); \endcode
     */
    template <typename T1>
-   GenericRectangle<T> MovedTo( const pcl::GenericPoint<T1>& p ) const
+   GenericRectangle MovedTo( const pcl::GenericPoint<T1>& p ) const
    {
-      GenericRectangle<T> r( *this );
+      GenericRectangle r( *this );
       r.MoveTo( p );
       return r;
    }
@@ -1014,9 +1041,9 @@ public:
     * \code GenericRectangle<T> r( *this ); r.MoveTo( x, y ); \endcode
     */
    template <typename T1>
-   GenericRectangle<T> MovedTo( T1 x, T1 y ) const
+   GenericRectangle MovedTo( T1 x, T1 y ) const
    {
-      GenericRectangle<T> r( *this );
+      GenericRectangle r( *this );
       r.MoveTo( x, y );
       return r;
    }
@@ -1039,8 +1066,10 @@ public:
    template <typename T1>
    void MoveBy( T1 dx, T1 dy )
    {
-      x0 += T( dx ); y0 += T( dy );
-      x1 += T( dx ); y1 += T( dy );
+      x0 += component( dx );
+      y0 += component( dy );
+      x1 += component( dx );
+      y1 += component( dy );
    }
 
    /*!
@@ -1055,8 +1084,10 @@ public:
    template <typename T1>
    void MoveBy( T1 dxy )
    {
-      x0 += T( dxy ); y0 += T( dxy );
-      x1 += T( dxy ); y1 += T( dxy );
+      x0 += component( dxy );
+      y0 += component( dxy );
+      x1 += component( dxy );
+      y1 += component( dxy );
    }
 
 #ifdef __PCL_QT_INTERFACE
@@ -1073,9 +1104,9 @@ public:
     * \code GenericRectangle<T> r( *this ); r.MoveBy( d ); \endcode
     */
    template <typename T1>
-   GenericRectangle<T> MovedBy( const pcl::GenericPoint<T1>& d ) const
+   GenericRectangle MovedBy( const pcl::GenericPoint<T1>& d ) const
    {
-      GenericRectangle<T> r( *this );
+      GenericRectangle r( *this );
       r.MoveBy( d );
       return r;
    }
@@ -1087,9 +1118,9 @@ public:
     * \code GenericRectangle<T> r( *this ); r.MoveBy( dx, dy ); \endcode
     */
    template <typename T1>
-   GenericRectangle<T> MovedBy( T1 dx, T1 dy ) const
+   GenericRectangle MovedBy( T1 dx, T1 dy ) const
    {
-      GenericRectangle<T> r( *this );
+      GenericRectangle r( *this );
       r.MoveBy( dx, dy );
       return r;
    }
@@ -1108,14 +1139,14 @@ public:
    void ResizeTo( T1 w, T1 h )
    {
       if ( x0 <= x1 )
-         x1 = x0 + T( w );
+         x1 = x0 + component( w );
       else
-         x0 = x1 + T( w );
+         x0 = x1 + component( w );
 
       if ( y0 <= y1 )
-         y1 = y0 + T( h );
+         y1 = y0 + component( h );
       else
-         y0 = y1 + T( h );
+         y0 = y1 + component( h );
    }
 
    /*!
@@ -1125,9 +1156,9 @@ public:
     * \code GenericRectangle<T> r( *this ); r.ResizeTo( w, h ); \endcode
     */
    template <typename T1>
-   GenericRectangle<T> ResizedTo( T1 w, T1 h ) const
+   GenericRectangle ResizedTo( T1 w, T1 h ) const
    {
-      GenericRectangle<T> r( *this );
+      GenericRectangle r( *this );
       r.ResizeTo( w, h );
       return r;
    }
@@ -1147,14 +1178,14 @@ public:
    void ResizeBy( T1 dw, T1 dh )
    {
       if ( x0 <= x1 )
-         x1 += T( dw );
+         x1 += component( dw );
       else
-         x0 += T( dw );
+         x0 += component( dw );
 
       if ( y0 <= y1 )
-         y1 += T( dh );
+         y1 += component( dh );
       else
-         y0 += T( dh );
+         y0 += component( dh );
    }
 
    /*!
@@ -1164,9 +1195,9 @@ public:
     * \code GenericRectangle<T> r( *this ); r.ResizeBy( dw, dh ); \endcode
     */
    template <typename T1>
-   GenericRectangle<T> ResizedBy( T1 dw, T1 dh ) const
+   GenericRectangle ResizedBy( T1 dw, T1 dh ) const
    {
-      GenericRectangle<T> r( *this );
+      GenericRectangle r( *this );
       r.ResizeBy( dw, dh );
       return r;
    }
@@ -1183,9 +1214,9 @@ public:
    void SetWidth( T1 w )
    {
       if ( x0 <= x1 )
-         x1 = x0 + T( w );
+         x1 = x0 + component( w );
       else
-         x0 = x1 + T( w );
+         x0 = x1 + component( w );
    }
 
    /*!
@@ -1200,9 +1231,9 @@ public:
    void SetHeight( T1 h )
    {
       if ( y0 <= y1 )
-         y1 = y0 + T( h );
+         y1 = y0 + component( h );
       else
-         y0 = y1 + T( h );
+         y0 = y1 + component( h );
    }
 
    /*!
@@ -1217,8 +1248,10 @@ public:
          dx = -dx;
       if ( y1 < y0 )
          dy = -dy;
-      x0 -= dx; y0 -= dy;
-      x1 += dx; y1 += dy;
+      x0 -= dx;
+      y0 -= dy;
+      x1 += dx;
+      y1 += dy;
    }
 
    /*!
@@ -1245,9 +1278,9 @@ public:
     * specified \a dx and \a dy increments.
     */
    template <typename T1>
-   GenericRectangle<T> InflatedBy( T1 dx, T1 dy ) const
+   GenericRectangle InflatedBy( T1 dx, T1 dy ) const
    {
-      GenericRectangle<T> r( *this );
+      GenericRectangle r( *this );
       r.InflateBy( dx, dy );
       return r;
    }
@@ -1257,9 +1290,9 @@ public:
     * specified \a d increments on both axes.
     */
    template <typename T1>
-   GenericRectangle<T> InflatedBy( T1 d ) const
+   GenericRectangle InflatedBy( T1 d ) const
    {
-      GenericRectangle<T> r( *this );
+      GenericRectangle r( *this );
       r.InflateBy( d );
       return r;
    }
@@ -1276,8 +1309,10 @@ public:
          dx = -dx;
       if ( y1 < y0 )
          dy = -dy;
-      x0 += dx; y0 += dy;
-      x1 -= dx; y1 -= dy;
+      x0 += dx;
+      y0 += dy;
+      x1 -= dx;
+      y1 -= dy;
    }
 
    /*!
@@ -1304,9 +1339,9 @@ public:
     * \a dx and \a dy increments.
     */
    template <typename T1>
-   GenericRectangle<T> DeflatedBy( T1 dx, T1 dy ) const
+   GenericRectangle DeflatedBy( T1 dx, T1 dy ) const
    {
-      GenericRectangle<T> r( *this );
+      GenericRectangle r( *this );
       r.DeflateBy( dx, dy );
       return r;
    }
@@ -1316,9 +1351,9 @@ public:
     * \a d increment on both axes.
     */
    template <typename T1>
-   GenericRectangle<T> DeflatedBy( T1 d ) const
+   GenericRectangle DeflatedBy( T1 d ) const
    {
-      GenericRectangle<T> r( *this );
+      GenericRectangle r( *this );
       r.DeflateBy( d );
       return r;
    }
@@ -1330,9 +1365,9 @@ public:
     * \code GenericRectangle<T> r( *this ); r.SetWidth( w ); \endcode
     */
    template <typename T1>
-   GenericRectangle<T> WidthSetTo( T1 w ) const
+   GenericRectangle WidthSetTo( T1 w ) const
    {
-      GenericRectangle<T> r( *this );
+      GenericRectangle r( *this );
       r.SetWidth( w );
       return r;
    }
@@ -1344,10 +1379,110 @@ public:
     * \code GenericRectangle<T> r( *this ); r.SetHeight( h ); \endcode
     */
    template <typename T1>
-   GenericRectangle<T> HeightSetTo( T1 h ) const
+   GenericRectangle HeightSetTo( T1 h ) const
    {
-      GenericRectangle<T> r( *this );
+      GenericRectangle r( *this );
       r.SetHeight( h );
+      return r;
+   }
+
+   /*!
+    * Rotates this rectangle in the plane by the specified \a angle in radians,
+    * with respect to a center of rotation given by its coordinates \a xc and
+    * \a yc.
+    */
+   template <typename T1, typename T2>
+   void Rotate( T1 angle, T2 xc, T2 yc )
+   {
+      T1 sa, ca; pcl::SinCos( angle, sa, ca );
+      pcl::Rotate( x0, y0, sa, ca, xc, yc );
+      pcl::Rotate( x1, y1, sa, ca, xc, yc );
+   }
+
+   /*!
+    * Rotates this rectangle in the plane by the specified \a angle in radians,
+    * with respect to the specified \a center of rotation.
+    */
+   template <typename T1, typename T2>
+   void Rotate( T1 angle, const GenericPoint<T2>& center )
+   {
+      Rotate( angle, center.x, center.y );
+   }
+
+   /*!
+    * Rotates this rectangle in the plane by the specified angle, given by its
+    * sine and cosine, \a sa and \a ca respectively, with respect to a center
+    * of rotation given by its coordinates \a xc and \a yc.
+    */
+   template <typename T1, typename T2>
+   void Rotate( T1 sa, T1 ca, T2 xc, T2 yc )
+   {
+      pcl::Rotate( x0, y0, sa, ca, xc, yc );
+      pcl::Rotate( x1, y1, sa, ca, xc, yc );
+   }
+
+   /*!
+    * Rotates this rectangle in the plane by the specified angle, given by its
+    * sine and cosine, \a sa and \a ca respectively, with respect to the
+    * specified \a center of rotation.
+    */
+   template <typename T1, typename T2>
+   void Rotate( T1 sa, T1 ca, const GenericPoint<T2>& center )
+   {
+      Rotate( sa, ca, center.x, center.y );
+   }
+
+   /*!
+    * Returns a rectangle whose coordinates are the coordinates of this object
+    * rotated in the plane by the specified \a angle in radians, with respect
+    * to a center of rotation given by its coordinates \a xc and \a yc.
+    */
+   template <typename T1, typename T2>
+   GenericRectangle Rotated( T1 angle, T2 xc, T2 yc ) const
+   {
+      GenericRectangle r( *this );
+      r.Rotate( angle, xc, yc );
+      return r;
+   }
+
+   /*!
+    * Returns a rectangle whose coordinates are the coordinates of this object
+    * rotated in the plane by the specified \a angle in radians, with respect
+    * to the specified \a center of rotation.
+    */
+   template <typename T1, typename T2>
+   GenericRectangle Rotated( T1 angle, const GenericPoint<T2>& center ) const
+   {
+      GenericRectangle r( *this );
+      r.Rotate( angle, center );
+      return r;
+   }
+
+   /*!
+    * Returns a rectangle whose coordinates are the coordinates of this object
+    * rotated in the plane by the specified angle given by its sine and cosine,
+    * \a sa and \a ca respectively, with respect to a center of rotation given
+    * by its coordinates \a xc and \a yc.
+    */
+   template <typename T1, typename T2>
+   GenericRectangle Rotated( T1 sa, T1 ca, T2 xc, T2 yc ) const
+   {
+      GenericRectangle r( *this );
+      r.Rotate( sa, ca, xc, yc );
+      return r;
+   }
+
+   /*!
+    * Returns a rectangle whose coordinates are the coordinates of this object
+    * rotated in the plane by the specified angle given by its sine and cosine,
+    * \a sa and \a ca respectively, with respect to the specified \a center of
+    * rotation.
+    */
+   template <typename T1, typename T2>
+   GenericRectangle Rotated( T1 sa, T1 ca, const GenericPoint<T2>& center ) const
+   {
+      GenericRectangle r( *this );
+      r.Rotate( sa, ca, center );
       return r;
    }
 
@@ -1357,10 +1492,10 @@ public:
     */
    void Round()
    {
-      x0 = T( pcl::Round( double( x0 ) ) );
-      y0 = T( pcl::Round( double( y0 ) ) );
-      x1 = T( pcl::Round( double( x1 ) ) );
-      y1 = T( pcl::Round( double( y1 ) ) );
+      x0 = component( pcl::Round( double( x0 ) ) );
+      y0 = component( pcl::Round( double( y0 ) ) );
+      x1 = component( pcl::Round( double( x1 ) ) );
+      y1 = component( pcl::Round( double( y1 ) ) );
    }
 
    /*!
@@ -1370,31 +1505,33 @@ public:
    void Round( int n )
    {
       PCL_PRECONDITION( n >= 0 )
-      x0 = T( pcl::Round( double( x0 ), n ) );
-      y0 = T( pcl::Round( double( y0 ), n ) );
-      x1 = T( pcl::Round( double( x1 ), n ) );
-      y1 = T( pcl::Round( double( y1 ), n ) );
+      if ( n < 0 )
+         n = 0;
+      x0 = component( pcl::Round( double( x0 ), n ) );
+      y0 = component( pcl::Round( double( y0 ), n ) );
+      x1 = component( pcl::Round( double( x1 ), n ) );
+      y1 = component( pcl::Round( double( y1 ), n ) );
    }
 
    /*!
     * Returns a rectangle whose coordinates are the coordinates of this object
     * rounded to their nearest integers.
     */
-   GenericRectangle<T> Rounded() const
+   GenericRectangle Rounded() const
    {
-      return GenericRectangle<T>( T( pcl::Round( double( x0 ) ) ), T( pcl::Round( double( y0 ) ) ),
-                                  T( pcl::Round( double( x1 ) ) ), T( pcl::Round( double( y1 ) ) ) );
+      return GenericRectangle( component( pcl::Round( double( x0 ) ) ), component( pcl::Round( double( y0 ) ) ),
+                               component( pcl::Round( double( x1 ) ) ), component( pcl::Round( double( y1 ) ) ) );
    }
 
    /*!
     * Returns a rectangle whose coordinates are the coordinates of this object
     * rounded to \a n fractional digits (\a n >= 0).
     */
-   GenericRectangle<T> Rounded( int n ) const
+   GenericRectangle Rounded( int n ) const
    {
       PCL_PRECONDITION( n >= 0 )
-      return GenericRectangle<T>( T( pcl::Round( double( x0 ), n ) ), T( pcl::Round( double( y0 ), n ) ),
-                                  T( pcl::Round( double( x1 ), n ) ), T( pcl::Round( double( y1 ), n ) ) );
+      return GenericRectangle( component( pcl::Round( double( x0 ), n ) ), component( pcl::Round( double( y0 ), n ) ),
+                               component( pcl::Round( double( x1 ), n ) ), component( pcl::Round( double( y1 ), n ) ) );
    }
 
    /*!
@@ -1403,8 +1540,8 @@ public:
     */
    GenericRectangle<int> RoundedToInt() const
    {
-      return GenericRectangle<int>( pcl::RoundI( double( x0 ) ), pcl::RoundI( double( y0 ) ),
-                                    pcl::RoundI( double( x1 ) ), pcl::RoundI( double( y1 ) ) );
+      return GenericRectangle<int>( pcl::RoundInt( double( x0 ) ), pcl::RoundInt( double( y0 ) ),
+                                    pcl::RoundInt( double( x1 ) ), pcl::RoundInt( double( y1 ) ) );
    }
 
    /*!
@@ -1414,10 +1551,10 @@ public:
     */
    void Truncate()
    {
-      x0 = T( pcl::Trunc( double( x0 ) ) );
-      y0 = T( pcl::Trunc( double( y0 ) ) );
-      x1 = T( pcl::Trunc( double( x1 ) ) );
-      y1 = T( pcl::Trunc( double( y1 ) ) );
+      x0 = component( pcl::Trunc( double( x0 ) ) );
+      y0 = component( pcl::Trunc( double( y0 ) ) );
+      x1 = component( pcl::Trunc( double( x1 ) ) );
+      y1 = component( pcl::Trunc( double( y1 ) ) );
    }
 
    /*!
@@ -1426,10 +1563,10 @@ public:
     * nearest integer coordinates a, b, c, d such that a <= x0, b <= y0,
     * c <= x1, d <= y1.
     */
-   GenericRectangle<T> Truncated() const
+   GenericRectangle Truncated() const
    {
-      return GenericRectangle<T>( T( pcl::Trunc( double( x0 ) ) ), T( pcl::Trunc( double( y0 ) ) ),
-                                  T( pcl::Trunc( double( x1 ) ) ), T( pcl::Trunc( double( y1 ) ) ) );
+      return GenericRectangle( component( pcl::Trunc( double( x0 ) ) ), component( pcl::Trunc( double( y0 ) ) ),
+                               component( pcl::Trunc( double( x1 ) ) ), component( pcl::Trunc( double( y1 ) ) ) );
    }
 
    /*!
@@ -1449,9 +1586,12 @@ public:
     * rectangle.
     */
    template <typename T1>
-   GenericRectangle<T>& operator =( const GenericRectangle<T1>& r )
+   GenericRectangle& operator =( const GenericRectangle<T1>& r )
    {
-      x0 = T( r.x0 ); y0 = T( r.y0 ); x1 = T( r.x1 ); y1 = T( r.y1 );
+      x0 = component( r.x0 );
+      y0 = component( r.y0 );
+      x1 = component( r.x1 );
+      y1 = component( r.y1 );
       return *this;
    }
 
@@ -1463,9 +1603,10 @@ public:
     * horizontal and vertical coordinates of this rectangle.
     */
    template <typename T1>
-   GenericRectangle<T>& operator =( const pcl::GenericPoint<T1>& p )
+   GenericRectangle& operator =( const pcl::GenericPoint<T1>& p )
    {
-      x0 = x1 = T( p.x ); y0 = y1 = T( p.y );
+      x0 = x1 = component( p.x );
+      y0 = y1 = component( p.y );
       return *this;
    }
 
@@ -1475,17 +1616,19 @@ public:
     *
     * The scalar \a d is assigned to the four coordinates of this rectangle.
     */
-   GenericRectangle<T>& operator =( T d )
+   GenericRectangle& operator =( component d )
    {
       x0 = y0 = x1 = y1 = d;
       return *this;
    }
 
 #ifdef __PCL_QT_INTERFACE
-   GenericRectangle<T>& operator =( const QRect& r )
+   GenericRectangle& operator =( const QRect& r )
    {
-      x0 = T( r.left() ); y0 = T( r.top() );
-      x1 = T( r.right()+1 ); y1 = T( r.bottom()+1 );
+      x0 = component( r.left() );
+      y0 = component( r.top() );
+      x1 = component( r.right()+1 );
+      y1 = component( r.bottom()+1 );
       return *this;
    }
 #endif
@@ -1503,9 +1646,12 @@ public:
     * \a s.y1 = \a r1.y1 + \a r2.y1
     */
    template <typename T1>
-   GenericRectangle<T>& operator +=( const GenericRectangle<T1>& r )
+   GenericRectangle& operator +=( const GenericRectangle<T1>& r )
    {
-      x0 += T( r.x0 ); y0 += T( r.y0 ); x1 += T( r.x1 ); y1 += T( r.y1 );
+      x0 += component( r.x0 );
+      y0 += component( r.y0 );
+      x1 += component( r.x1 );
+      y1 += component( r.y1 );
       return *this;
    }
 
@@ -1523,9 +1669,12 @@ public:
     * \a s.y1 = \a r.y1 + \a p.y
     */
    template <typename T1>
-   GenericRectangle<T>& operator +=( const pcl::GenericPoint<T1>& p )
+   GenericRectangle& operator +=( const pcl::GenericPoint<T1>& p )
    {
-      x0 += T( p.x ); y0 += T( p.y ); x1 += T( p.x ); y1 += T( p.y );
+      x0 += component( p.x );
+      y0 += component( p.y );
+      x1 += component( p.x );
+      y1 += component( p.y );
       return *this;
    }
 
@@ -1543,17 +1692,23 @@ public:
     * \a s.x1 = \a r.x1 + \a d \n
     * \a s.y1 = \a r.y1 + \a d
     */
-   GenericRectangle<T>& operator +=( T d )
+   GenericRectangle& operator +=( component d )
    {
-      x0 += d; y0 += d; x1 += d; y1 += d;
+      x0 += d;
+      y0 += d;
+      x1 += d;
+      y1 += d;
       return *this;
    }
 
 #ifdef __PCL_QT_INTERFACE
-   GenericRectangle<T>& operator +=( const QPoint& p )
+   GenericRectangle& operator +=( const QPoint& p )
    {
-      register T dx = T( p.x() ), dy = T( p.y() );
-      x0 += dx; y0 += dy; x1 += dx; y1 += dy;
+      component dx = component( p.x() ), dy = component( p.y() );
+      x0 += dx;
+      y0 += dy;
+      x1 += dx;
+      y1 += dy;
       return *this;
    }
 #endif
@@ -1571,9 +1726,12 @@ public:
     * \a s.y1 = \a r1.y1 - \a r2.y1
     */
    template <typename T1>
-   GenericRectangle<T>& operator -=( const GenericRectangle<T1>& r )
+   GenericRectangle& operator -=( const GenericRectangle<T1>& r )
    {
-      x0 -= T( r.x0 ); y0 -= T( r.y0 ); x1 -= T( r.x1 ); y1 -= T( r.y1 );
+      x0 -= component( r.x0 );
+      y0 -= component( r.y0 );
+      x1 -= component( r.x1 );
+      y1 -= component( r.y1 );
       return *this;
    }
 
@@ -1591,9 +1749,12 @@ public:
     * \a s.y1 = \a r.y1 - \a p.y
     */
    template <typename T1>
-   GenericRectangle<T>& operator -=( const pcl::GenericPoint<T1>& p )
+   GenericRectangle& operator -=( const pcl::GenericPoint<T1>& p )
    {
-      x0 -= T( p.x ); y0 -= T( p.y ); x1 -= T( p.x ); y1 -= T( p.y );
+      x0 -= component( p.x );
+      y0 -= component( p.y );
+      x1 -= component( p.x );
+      y1 -= component( p.y );
       return *this;
    }
 
@@ -1611,17 +1772,23 @@ public:
     * \a s.x1 = \a r.x1 - \a d \n
     * \a s.y1 = \a r.y1 - \a d
     */
-   GenericRectangle<T>& operator -=( T d )
+   GenericRectangle& operator -=( component d )
    {
-      x0 -= d; y0 -= d; x1 -= d; y1 -= d;
+      x0 -= d;
+      y0 -= d;
+      x1 -= d;
+      y1 -= d;
       return *this;
    }
 
 #ifdef __PCL_QT_INTERFACE
-   GenericRectangle<T>& operator -=( const QPoint& p )
+   GenericRectangle& operator -=( const QPoint& p )
    {
-      register T dx = T( p.x() ), dy = T( p.y() );
-      x0 -= dx; y0 -= dy; x1 -= dx; y1 -= dy;
+      component dx = component( p.x() ), dy = component( p.y() );
+      x0 -= dx;
+      y0 -= dy;
+      x1 -= dx;
+      y1 -= dy;
       return *this;
    }
 #endif
@@ -1639,9 +1806,12 @@ public:
     * \a P.y1 = \a r1.y1 * \a r2.y1
     */
    template <typename T1>
-   GenericRectangle<T>& operator *=( const GenericRectangle<T1>& r )
+   GenericRectangle& operator *=( const GenericRectangle<T1>& r )
    {
-      x0 *= T( r.x0 ); y0 *= T( r.y0 ); x1 *= T( r.x1 ); y1 *= T( r.y1 );
+      x0 *= component( r.x0 );
+      y0 *= component( r.y0 );
+      x1 *= component( r.x1 );
+      y1 *= component( r.y1 );
       return *this;
    }
 
@@ -1660,9 +1830,12 @@ public:
     * \a P.y1 = \a r.y1 * \a p.y
     */
    template <typename T1>
-   GenericRectangle<T>& operator *=( const pcl::GenericPoint<T1>& p )
+   GenericRectangle& operator *=( const pcl::GenericPoint<T1>& p )
    {
-      x0 *= T( p.x ); y0 *= T( p.y ); x1 *= T( p.x ); y1 *= T( p.y );
+      x0 *= component( p.x );
+      y0 *= component( p.y );
+      x1 *= component( p.x );
+      y1 *= component( p.y );
       return *this;
    }
 
@@ -1680,16 +1853,19 @@ public:
     * \a P.x1 = \a r.x1 * \a d \n
     * \a P.y1 = \a r.y1 * \a d
     */
-   GenericRectangle<T>& operator *=( T d )
+   GenericRectangle& operator *=( component d )
    {
-      x0 *= d; y0 *= d; x1 *= d; y1 *= d;
+      x0 *= d;
+      y0 *= d;
+      x1 *= d;
+      y1 *= d;
       return *this;
    }
 
 #ifdef __PCL_QT_INTERFACE
-   GenericRectangle<T>& operator *=( const QPoint& p )
+   GenericRectangle& operator *=( const QPoint& p )
    {
-      register T dx = T( p.x() ), dy = T( p.y() );
+      component dx = component( p.x() ), dy = component( p.y() );
       x0 *= dx; y0 *= dy; x1 *= dx; y1 *= dy;
       return *this;
    }
@@ -1708,11 +1884,14 @@ public:
     * \a Q.y1 = \a r1.y1 / \a r2.y1
     */
    template <typename T1>
-   GenericRectangle<T>& operator /=( const GenericRectangle<T1>& r )
+   GenericRectangle& operator /=( const GenericRectangle<T1>& r )
    {
-      PCL_PRECONDITION( T( r.x0 ) != T( 0 ) && T( r.y0 ) != T( 0 ) &&
-                        T( r.x1 ) != T( 0 ) && T( r.y1 ) != T( 0 ) )
-      x0 /= T( r.x0 ); y0 /= T( r.y0 ); x1 /= T( r.x1 ); y1 /= T( r.y1 );
+      PCL_PRECONDITION( component( r.x0 ) != component( 0 ) && component( r.y0 ) != component( 0 ) &&
+                        component( r.x1 ) != component( 0 ) && component( r.y1 ) != component( 0 ) )
+      x0 /= component( r.x0 );
+      y0 /= component( r.y0 );
+      x1 /= component( r.x1 );
+      y1 /= component( r.y1 );
       return *this;
    }
 
@@ -1731,10 +1910,13 @@ public:
     * \a Q.y1 = \a r.y1 / \a p.y
     */
    template <typename T1>
-   GenericRectangle<T>& operator /=( const pcl::GenericPoint<T1>& p )
+   GenericRectangle& operator /=( const pcl::GenericPoint<T1>& p )
    {
-      PCL_PRECONDITION( T( p.x ) != T( 0 ) && T( p.y ) != T( 0 ) )
-      x0 /= T( p.x ); y0 /= T( p.y ); x1 /= T( p.x ); y1 /= T( p.y );
+      PCL_PRECONDITION( component( p.x ) != component( 0 ) && component( p.y ) != component( 0 ) )
+      x0 /= component( p.x );
+      y0 /= component( p.y );
+      x1 /= component( p.x );
+      y1 /= component( p.y );
       return *this;
    }
 
@@ -1752,19 +1934,22 @@ public:
     * \a Q.x1 = \a r.x1 / \a d \n
     * \a Q.y1 = \a r.y1 / \a d
     */
-   GenericRectangle<T>& operator /=( T d )
+   GenericRectangle& operator /=( component d )
    {
-      PCL_PRECONDITION( d != T( 0 ) )
+      PCL_PRECONDITION( d != component( 0 ) )
       x0 /= d; y0 /= d; x1 /= d; y1 /= d;
       return *this;
    }
 
 #ifdef __PCL_QT_INTERFACE
-   GenericRectangle<T>& operator /=( const QPoint& p )
+   GenericRectangle& operator /=( const QPoint& p )
    {
-      PCL_PRECONDITION( T( p.x() ) != T( 0 ) && T( p.y() ) != T( 0 ) )
-      register T dx = T( p.x() ), dy = T( p.y() );
-      x0 /= dx; y0 /= dy; x1 /= dx; y1 /= dy;
+      PCL_PRECONDITION( component( p.x() ) != component( 0 ) && component( p.y() ) != component( 0 ) )
+      component dx = component( p.x() ), dy = component( p.y() );
+      x0 /= dx;
+      y0 /= dy;
+      x1 /= dx;
+      y1 /= dy;
       return *this;
    }
 #endif
@@ -1772,7 +1957,7 @@ public:
    /*!
     * Returns a copy of this rectangle.
     */
-   GenericRectangle<T> operator +() const
+   GenericRectangle operator +() const
    {
       return *this;
    }
@@ -1783,9 +1968,9 @@ public:
     * rectangle so defined is symmetric to this rectangle with respect to the
     * origin of coordinates.
     */
-   GenericRectangle<T> operator -() const
+   GenericRectangle operator -() const
    {
-      return GenericRectangle<T>( -x0, -y0, -x1, -y1 );
+      return GenericRectangle( -x0, -y0, -x1, -y1 );
    }
 
 #ifdef __PCL_QT_INTERFACE
@@ -1851,6 +2036,8 @@ public:
 #endif // __PCL_QT_INTERFACE
 
 }; // GenericRectangle<T>
+
+#undef PCL_ASSERT_RECT_SIZE
 
 // ----------------------------------------------------------------------------
 
@@ -2432,31 +2619,61 @@ void Swap( GenericRectangle<T>& r1, GenericRectangle<T>& r2 )
  */
 
 /*!
+ * \class pcl::I32Rect
+ * \ingroup rect_types_2d
+ * \brief 32-bit integer rectangle on the plane.
+ *
+ * %I32Rect is a template instantiation of GenericRectangle for \c int32.
+ */
+typedef GenericRectangle<int32>     I32Rect;
+
+/*!
  * \class pcl::Rect
  * \ingroup rect_types_2d
- * \brief Discrete (or integer) rectangle in the plane.
+ * \brief 32-bit integer rectangle on the plane.
  *
- * Rect is a template instantiation of GenericRectangle for the \c int type.
+ * %Rect is an alias for I32Rect. It is a template instantiation of
+ * GenericRectangle for \c int32.
  */
-typedef GenericRectangle<int>       Rect;
+typedef I32Rect                     Rect;
+
+/*!
+ * \class pcl::F32Rect
+ * \ingroup rect_types_2d
+ * \brief 32-bit floating-point rectangle in the R^2 space.
+ *
+ * %F32Rect is a template instantiation of GenericRectangle for \c float.
+ */
+typedef GenericRectangle<float>     F32Rect;
 
 /*!
  * \class pcl::FRect
  * \ingroup rect_types_2d
  * \brief 32-bit floating-point rectangle in the R^2 space.
  *
- * FRect is a template instantiation of GenericRectangle for the \c float type.
+ * %FRect is an alias for F32Rect. It is a template instantiation of
+ * GenericRectangle for \c float.
  */
-typedef GenericRectangle<float>     FRect;
+typedef F32Rect                     FRect;
+
+/*!
+ * \class pcl::F64Rect
+ * \ingroup rect_types_2d
+ * \brief 64-bit floating-point rectangle in the R^2 space.
+ *
+ * %F64Rect is a template instantiation of GenericRectangle for \c double.
+ */
+typedef GenericRectangle<double>    F64Rect;
 
 /*!
  * \class pcl::DRect
  * \ingroup rect_types_2d
  * \brief 64-bit floating-point rectangle in the R^2 space.
  *
- * DRect is a template instantiation of GenericRectangle for \c double.
+ * %DRect is an alias for F64Rect. It is a template instantiation of
+ * GenericRectangle for \c double.
  */
-typedef GenericRectangle<double>    DRect;
+typedef F64Rect                     DRect;
 
 #endif
 
@@ -2466,5 +2683,5 @@ typedef GenericRectangle<double>    DRect;
 
 #endif  // __PCL_Rectangle_h
 
-// ****************************************************************************
-// EOF pcl/Rectangle.h - Released 2014/11/14 17:16:41 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/Rectangle.h - Released 2015/07/30 17:15:18 UTC

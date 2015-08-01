@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Convolution Process Module Version 01.01.03.0140
-// ****************************************************************************
-// UnsharpMaskInterface.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Convolution Process Module Version 01.01.03.0159
+// ----------------------------------------------------------------------------
+// UnsharpMaskInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Convolution PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +48,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "UnsharpMaskInterface.h"
 #include "UnsharpMaskParameters.h"
@@ -445,15 +449,15 @@ UnsharpMaskInterface::GUIData::GUIData( UnsharpMaskInterface& w )
    Sigma_NumericEdit.edit.SetFixedWidth( editWidth1 );
    Sigma_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&UnsharpMaskInterface::__Filter_ValueUpdated, w );
 
-   SigmaCoarse_Slider.SetMinWidth( 250 );
+   SigmaCoarse_Slider.SetScaledMinWidth( 250 );
    SigmaCoarse_Slider.SetRange( 10, 250 );
-   SigmaCoarse_Slider.SetFixedHeight( RoundI( 0.75*editHeight ) );
+   SigmaCoarse_Slider.SetFixedHeight( RoundInt( 0.75*editHeight ) );
    SigmaCoarse_Slider.SetToolTip( "<p>StdDev coarse adjustment: From 10 to 250 pixels.</p>" );
    SigmaCoarse_Slider.OnValueUpdated( (Slider::value_event_handler)&UnsharpMaskInterface::__Filter_SliderUpdated, w );
 
-   SigmaFine_Slider.SetMinWidth( 250 );
+   SigmaFine_Slider.SetScaledMinWidth( 250 );
    SigmaFine_Slider.SetRange( 1, 100 );
-   SigmaFine_Slider.SetFixedHeight( RoundI( 0.75*editHeight ) );
+   SigmaFine_Slider.SetFixedHeight( RoundInt( 0.75*editHeight ) );
    SigmaFine_Slider.SetToolTip( "<p>StdDev fine adjustment: From 0.1 to 10.0 pixels.</p>" );
    SigmaFine_Slider.OnValueUpdated( (Slider::value_event_handler)&UnsharpMaskInterface::__Filter_SliderUpdated, w );
 
@@ -469,7 +473,7 @@ UnsharpMaskInterface::GUIData::GUIData( UnsharpMaskInterface& w )
 
    Amount_NumericControl.label.SetText( "Amount:" );
    Amount_NumericControl.label.SetFixedWidth( labelWidth1 );
-   Amount_NumericControl.slider.SetMinWidth( 250 );
+   Amount_NumericControl.slider.SetScaledMinWidth( 250 );
    Amount_NumericControl.slider.SetRange( 0, 110 );
    Amount_NumericControl.SetReal();
    Amount_NumericControl.SetRange( TheUSMAmountParameter->MinimumValue(), TheUSMAmountParameter->MaximumValue() );
@@ -537,7 +541,7 @@ UnsharpMaskInterface::GUIData::GUIData( UnsharpMaskInterface& w )
       "parameters are nonzero.</p>" );
    OutputDeringingMaps_CheckBox.OnClick( (Button::click_event_handler)&UnsharpMaskInterface::__Deringing_Click, w );
 
-   OutputDeringingMaps_Sizer.AddSpacing( labelWidth1 + 4 );
+   OutputDeringingMaps_Sizer.AddUnscaledSpacing( labelWidth1 + w.LogicalPixelsToPhysical( 4 ) );
    OutputDeringingMaps_Sizer.Add( OutputDeringingMaps_CheckBox );
    OutputDeringingMaps_Sizer.AddStretch();
 
@@ -559,7 +563,7 @@ UnsharpMaskInterface::GUIData::GUIData( UnsharpMaskInterface& w )
 
    RangeLow_NumericControl.label.SetText( "Low Range:" );
    RangeLow_NumericControl.label.SetFixedWidth( labelWidth1 );
-   RangeLow_NumericControl.slider.SetMinWidth( 250 );
+   RangeLow_NumericControl.slider.SetScaledMinWidth( 250 );
    RangeLow_NumericControl.slider.SetRange( 0, 100 );
    RangeLow_NumericControl.SetReal();
    RangeLow_NumericControl.SetRange( TheUSMRangeLowParameter->MinimumValue(), TheUSMRangeLowParameter->MaximumValue() );
@@ -570,7 +574,7 @@ UnsharpMaskInterface::GUIData::GUIData( UnsharpMaskInterface& w )
 
    RangeHigh_NumericControl.label.SetText( "High Range:" );
    RangeHigh_NumericControl.label.SetFixedWidth( labelWidth1 );
-   RangeHigh_NumericControl.slider.SetMinWidth( 250 );
+   RangeHigh_NumericControl.slider.SetScaledMinWidth( 250 );
    RangeHigh_NumericControl.slider.SetRange( 0, 100 );
    RangeHigh_NumericControl.SetReal();
    RangeHigh_NumericControl.SetRange( TheUSMRangeHighParameter->MinimumValue(), TheUSMRangeHighParameter->MaximumValue() );
@@ -620,5 +624,5 @@ UnsharpMaskInterface::GUIData::GUIData( UnsharpMaskInterface& w )
 
 } // pcl
 
-// ****************************************************************************
-// EOF UnsharpMaskInterface.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF UnsharpMaskInterface.cpp - Released 2015/07/31 11:49:48 UTC

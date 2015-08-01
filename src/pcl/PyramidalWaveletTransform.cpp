@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/PyramidalWaveletTransform.cpp - Released 2014/11/14 17:17:01 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/PyramidalWaveletTransform.cpp - Released 2015/07/30 17:15:31 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,31 +47,13 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include <pcl/PyramidalWaveletTransform.h>
 #include <pcl/Math.h>
 
 namespace pcl
 {
-
-// ----------------------------------------------------------------------------
-
-void WaveletFilter::Initialize()
-{
-   PCL_CHECK( Kc != 0 && N != 0 )
-
-   Kr = Vector( N );
-   for ( int k = 0, sig = -1; k < N; ++k )
-   {
-      Kr[N - 1 - k] = sig*Kc[k];
-      sig = -sig;
-   }
-
-// ioff = joff = -(N >> 1);
-   ioff = -2;
-   joff = -N + 2;
-}
 
 // ----------------------------------------------------------------------------
 // Predefined wavelet filters
@@ -313,7 +298,7 @@ template <class T>
 inline void StandardWaveletTransform2D( T* a, int width, int height, const WaveletFilter& wf, bool inverse,
                                         StatusMonitor* status )
 {
-   PCL_PRECONDITION( a != 0 )
+   PCL_PRECONDITION( a != nullptr )
    PCL_PRECONDITION( width >= 0 && height >= 0 )
    PCL_PRECONDITION( Frac( Log2( double( width ) ) ) == 0 && Frac( Log2( double( height ) ) ) == 0 )
 
@@ -321,7 +306,7 @@ inline void StandardWaveletTransform2D( T* a, int width, int height, const Wavel
    if ( N == 0 )
       return;
 
-   if ( status != 0 && status->IsInitializationEnabled() )
+   if ( status != nullptr && status->IsInitializationEnabled() )
       status->Initialize( inverse ? "Inverse pyramidal wavelet transform" :
                                     "Pyramidal wavelet transform", width+height );
 
@@ -361,14 +346,14 @@ inline void StandardWaveletTransform2D( T* a, int width, int height, const Wavel
                      a[i3] = wksp[k];
                }
 
-               if ( status != 0 )
+               if ( status != nullptr )
                   ++*status;
             }
          }
       }
       else
       {
-         if ( status != 0 )
+         if ( status != nullptr )
             *status += n;
       }
 
@@ -380,16 +365,16 @@ template <class T>
 inline void NonstandardWaveletTransform2D( T* a, size_type size, const WaveletFilter& wf, bool inverse,
                                            StatusMonitor* status )
 {
-   PCL_PRECONDITION( a != 0 )
+   PCL_PRECONDITION( a != nullptr )
    PCL_PRECONDITION( size >= 0 )
    PCL_PRECONDITION( Frac( Log2( double( size ) ) ) == 0 )
 
    if ( size == 0 )
       return;
 
-      if ( status != 0 && status->IsInitializationEnabled() )
-         status->Initialize( inverse ? "Inverse nonstandard pyramidal wavelet transform" :
-                                       "Nonstandard pyramidal wavelet transform", 4*size - 4 );
+   if ( status != nullptr && status->IsInitializationEnabled() )
+      status->Initialize( inverse ? "Inverse nonstandard pyramidal wavelet transform" :
+                                    "Nonstandard pyramidal wavelet transform", 4*size - 4 );
 
    Array<T> wksp( size );
 
@@ -415,7 +400,7 @@ inline void NonstandardWaveletTransform2D( T* a, size_type size, const WaveletFi
                      a[i1] = wksp[j];
                }
 
-               if ( status != 0 )
+               if ( status != nullptr )
                   ++*status;
             }
    else
@@ -440,14 +425,14 @@ inline void NonstandardWaveletTransform2D( T* a, size_type size, const WaveletFi
                      a[i1] = wksp[j];
                }
 
-               if ( status != 0 )
+               if ( status != nullptr )
                   ++*status;
             }
 }
 
 void PyramidalWaveletTransform::Validate() const
 {
-   if ( scalingFunction == 0 )
+   if ( m_scalingFunction == nullptr )
       throw Error( "Invalid wavelet transform: scaling function not initialized." );
 }
 
@@ -464,16 +449,22 @@ void PyramidalWaveletTransform::DoTransform( StatusMonitor& status )
       if ( status.IsInitializationEnabled() )
       {
          status.Initialize( "Pyramidal wavelet transform",
-                            w->NumberOfChannels()*(nonstandard ? 4*w->Width() - 4 : w->Width()+w->Height()) );
+                            m_transform.NumberOfChannels()
+                          * (m_nonstandard ? 4*m_transform.Width() - 4 : m_transform.Width()+m_transform.Height()) );
          status.DisableInitialization();
          statusInitialized = true;
       }
 
-      for ( int c = 0; c <= w->NumberOfChannels(); ++c )
-         if ( nonstandard )
-            NonstandardWaveletTransform2D( w->PixelData( c ), w->NumberOfPixels(), *scalingFunction, false, &status );
+      for ( int c = 0; c <= m_transform.NumberOfChannels(); ++c )
+         if ( m_nonstandard )
+            NonstandardWaveletTransform2D( m_transform[c],
+                                           m_transform.NumberOfPixels(),
+                                           *m_scalingFunction, false, &status );
          else
-            StandardWaveletTransform2D( w->PixelData( c ), w->Width(), w->Height(), *scalingFunction, false, &status );
+            StandardWaveletTransform2D( m_transform[c],
+                                        m_transform.Width(),
+                                        m_transform.Height(),
+                                        *m_scalingFunction, false, &status );
 
       if ( statusInitialized )
          status.EnableInitialization();
@@ -489,14 +480,12 @@ void PyramidalWaveletTransform::DoTransform( StatusMonitor& status )
 
 #define IMPLEMENT_TRANSFORM                        \
    Validate();                                     \
-   if ( image.IsEmptySelection() )                   \
+   if ( image.IsEmptySelection() )                 \
    {                                               \
       Clear();                                     \
       return;                                      \
    }                                               \
-   if ( w == 0 )                                   \
-      w = new Image;                               \
-   w->Assign( image );                               \
+   m_transform = image;                            \
    DoTransform( (StatusMonitor&)image.Status() );
 
 
@@ -545,7 +534,7 @@ void PyramidalWaveletTransform::Apply( Image& image ) const
 {
    Validate();
 
-   if ( w == 0 )
+   if ( !m_transform )
    {
       image.FreeData();
       return;
@@ -556,22 +545,22 @@ void PyramidalWaveletTransform::Apply( Image& image ) const
 
    try
    {
-      image = *w;
+      image = m_transform;
       image.Status() = sm;
 
       if ( image.Status().IsInitializationEnabled() )
       {
          image.Status().Initialize( "Inverse pyramidal wavelet transform",
-                                  image.NumberOfChannels()*(nonstandard ? 4*image.Width() - 4 : image.Width()+image.Height()) );
+                                  image.NumberOfChannels()*(m_nonstandard ? 4*image.Width() - 4 : image.Width()+image.Height()) );
          image.Status().DisableInitialization();
          statusInitialized = true;
       }
 
       for ( int c = 0; c < image.NumberOfChannels(); ++c )
-         if ( nonstandard )
-            NonstandardWaveletTransform2D( image[c], image.NumberOfPixels(), *scalingFunction, true, &image.Status() );
+         if ( m_nonstandard )
+            NonstandardWaveletTransform2D( image[c], image.NumberOfPixels(), *m_scalingFunction, true, &image.Status() );
          else
-            StandardWaveletTransform2D( image[c], image.Width(), image.Height(), *scalingFunction, true, &image.Status() );
+            StandardWaveletTransform2D( image[c], image.Width(), image.Height(), *m_scalingFunction, true, &image.Status() );
 
       if ( statusInitialized )
          image.Status().EnableInitialization();
@@ -625,5 +614,5 @@ void PyramidalWaveletTransform::Apply( pcl::UInt32Image& image ) const
 
 } // pcl
 
-// ****************************************************************************
-// EOF pcl/PyramidalWaveletTransform.cpp - Released 2014/11/14 17:17:01 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/PyramidalWaveletTransform.cpp - Released 2015/07/30 17:15:31 UTC

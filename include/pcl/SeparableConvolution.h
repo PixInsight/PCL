@@ -1,12 +1,15 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// ****************************************************************************
-// pcl/SeparableConvolution.h - Released 2014/11/14 17:16:40 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// pcl/SeparableConvolution.h - Released 2015/07/30 17:15:18 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,7 +47,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #ifndef __PCL_SeparableConvolution_h
 #define __PCL_SeparableConvolution_h
@@ -101,11 +104,11 @@ public:
     * used before explicit association with a SeparableFilter instance.
     */
    SeparableConvolution() :
-   InterlacedTransformation(),
-   m_filter( 0 ), m_weight( 0 ), m_highPass( false ),
-   m_rawHighPass( false ), m_rescaleHighPass( false ),
-   m_convolveRows( true ), m_convolveCols( true ),
-   m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      InterlacedTransformation(),
+      m_filter( nullptr ), m_weight( 0 ), m_highPass( false ),
+      m_rawHighPass( false ), m_rescaleHighPass( false ),
+      m_convolveRows( true ), m_convolveCols( true ),
+      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
    }
 
@@ -119,26 +122,40 @@ public:
     *                SeparableFilter is a reference-counted class).
     */
    SeparableConvolution( const SeparableFilter& filter ) :
-   InterlacedTransformation(),
-   m_filter( filter.Clone() ), m_weight( 0 ), m_highPass( false ),
-   m_rawHighPass( false ), m_rescaleHighPass( false ),
-   m_convolveRows( true ), m_convolveCols( true ),
-   m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      InterlacedTransformation(),
+      m_filter( nullptr ), m_weight( 0 ), m_highPass( false ),
+      m_rawHighPass( false ), m_rescaleHighPass( false ),
+      m_convolveRows( true ), m_convolveCols( true ),
+      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
-      PCL_CHECK( !m_filter->IsEmpty() )
-      CacheFilterProperties();
+      SetFilter( filter );
    }
 
    /*!
     * Copy constructor.
     */
    SeparableConvolution( const SeparableConvolution& x ) :
-   InterlacedTransformation( x ),
-   m_filter( x.m_filter->Clone() ), m_weight( x.m_weight ), m_highPass( x.m_highPass ),
-   m_rawHighPass( x.m_rawHighPass ), m_rescaleHighPass( x.m_rescaleHighPass ),
-   m_convolveRows( x.m_convolveRows ), m_convolveCols( x.m_convolveCols ),
-   m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
+      InterlacedTransformation( x ),
+      m_filter( nullptr ), m_weight( x.m_weight ), m_highPass( x.m_highPass ),
+      m_rawHighPass( x.m_rawHighPass ), m_rescaleHighPass( x.m_rescaleHighPass ),
+      m_convolveRows( x.m_convolveRows ), m_convolveCols( x.m_convolveCols ),
+      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
    {
+      if ( x.m_filter != nullptr )
+         m_filter = x.m_filter->Clone();
+   }
+
+   /*!
+    * Move constructor.
+    */
+   SeparableConvolution( SeparableConvolution&& x ) :
+      InterlacedTransformation( x ),
+      m_filter( x.m_filter ), m_weight( x.m_weight ), m_highPass( x.m_highPass ),
+      m_rawHighPass( x.m_rawHighPass ), m_rescaleHighPass( x.m_rescaleHighPass ),
+      m_convolveRows( x.m_convolveRows ), m_convolveCols( x.m_convolveCols ),
+      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
+   {
+      x.m_filter = nullptr;
    }
 
    /*!
@@ -146,27 +163,51 @@ public:
     */
    virtual ~SeparableConvolution()
    {
-      DestroyFilter();
+      Destroy();
    }
 
    /*!
-    * Assignment operator.
+    * Copy assignment operator. Returns a reference to this object.
     */
    SeparableConvolution& operator =( const SeparableConvolution& x )
    {
       if ( &x != this )
       {
-         DestroyFilter();
-         m_filter          = x.m_filter->Clone();
-         m_weight          = x.m_weight;
-         m_highPass        = x.m_highPass;
-         m_rawHighPass     = x.m_rawHighPass;
-         m_rescaleHighPass = x.m_rescaleHighPass;
-         m_convolveRows    = x.m_convolveRows;
-         m_convolveCols    = x.m_convolveCols;
-         m_parallel        = x.m_parallel;
-         m_maxProcessors   = x.m_maxProcessors;
          (void)InterlacedTransformation::operator =( x );
+         Destroy();
+         if ( x.m_filter != nullptr )
+            m_filter = x.m_filter->Clone();
+         m_weight = x.m_weight;
+         m_highPass = x.m_highPass;
+         m_rawHighPass = x.m_rawHighPass;
+         m_rescaleHighPass = x.m_rescaleHighPass;
+         m_convolveRows = x.m_convolveRows;
+         m_convolveCols = x.m_convolveCols;
+         m_parallel = x.m_parallel;
+         m_maxProcessors = x.m_maxProcessors;
+      }
+      return *this;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   SeparableConvolution& operator =( SeparableConvolution&& x )
+   {
+      if ( &x != this )
+      {
+         (void)InterlacedTransformation::operator =( x );
+         Destroy();
+         m_filter = x.m_filter;
+         m_weight = x.m_weight;
+         m_highPass = x.m_highPass;
+         m_rawHighPass = x.m_rawHighPass;
+         m_rescaleHighPass = x.m_rescaleHighPass;
+         m_convolveRows = x.m_convolveRows;
+         m_convolveCols = x.m_convolveCols;
+         m_parallel = x.m_parallel;
+         m_maxProcessors = x.m_maxProcessors;
+         x.m_filter = nullptr;
       }
       return *this;
    }
@@ -180,8 +221,7 @@ public:
     */
    const SeparableFilter& Filter() const
    {
-      PCL_PRECONDITION( m_filter != 0 )
-      ValidateFilter();
+      PCL_PRECONDITION( m_filter != nullptr )
       return *m_filter;
    }
 
@@ -196,8 +236,7 @@ public:
     */
    coefficient_vector Filter( int phase ) const
    {
-      PCL_PRECONDITION( m_filter != 0 )
-      ValidateFilter();
+      PCL_PRECONDITION( m_filter != nullptr )
       return m_filter->Filter( phase );
    }
 
@@ -208,7 +247,6 @@ public:
    {
       DestroyFilter();
       m_filter = filter.Clone();
-      PCL_CHECK( !m_filter->IsEmpty() )
       CacheFilterProperties();
    }
 
@@ -379,7 +417,7 @@ public:
     */
    int OverlappingDistance() const
    {
-      ValidateFilter();
+      PCL_PRECONDITION( m_filter != nullptr )
       return m_filter->Size() + (m_filter->Size() - 1)*(InterlacingDistance() - 1);
    }
 
@@ -455,8 +493,6 @@ public:
       m_maxProcessors = unsigned( Range( maxProcessors, 1, PCL_MAX_PROCESSORS ) );
    }
 
-   // -------------------------------------------------------------------------
-
 protected:
 
    /*
@@ -491,15 +527,9 @@ protected:
 
 private:
 
-   void ValidateFilter() const
-   {
-      if ( m_filter == 0 )
-         throw Error( "Invalid access to uninitialized separable convolution" );
-   }
-
    void CacheFilterProperties()
    {
-      PCL_PRECONDITION( m_filter != 0 )
+      PCL_PRECONDITION( m_filter != nullptr )
       PCL_PRECONDITION( !m_filter->IsEmpty() )
       ValidateFilter();
       m_highPass = m_filter->IsHighPassFilter();
@@ -508,11 +538,18 @@ private:
          m_weight = 1;
    }
 
+   void Destroy()
+   {
+      DestroyFilter();
+   }
+
    void DestroyFilter()
    {
-      if ( m_filter != 0 )
-         delete m_filter, m_filter = 0;
+      if ( m_filter != nullptr )
+         delete m_filter, m_filter = nullptr;
    }
+
+   void ValidateFilter() const;
 };
 
 // ----------------------------------------------------------------------------
@@ -521,5 +558,5 @@ private:
 
 #endif   // __PCL_SeparableConvolution_h
 
-// ****************************************************************************
-// EOF pcl/SeparableConvolution.h - Released 2014/11/14 17:16:40 UTC
+// ----------------------------------------------------------------------------
+// EOF pcl/SeparableConvolution.h - Released 2015/07/30 17:15:18 UTC

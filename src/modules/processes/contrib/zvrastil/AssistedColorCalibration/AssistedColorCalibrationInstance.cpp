@@ -1,13 +1,17 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard AssistedColorCalibration Process Module Version 01.00.00.0098
-// ****************************************************************************
-// AssistedColorCalibrationInstance.cpp - Released 2014/11/14 17:19:24 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard AssistedColorCalibration Process Module Version 01.00.00.0117
+// ----------------------------------------------------------------------------
+// AssistedColorCalibrationInstance.cpp - Released 2015/07/31 11:49:49 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard AssistedColorCalibration PixInsight module.
 //
-// Copyright (c) 2010-2014 Zbynek Vrastil
-// Copyright (c) 2003-2014 Pleiades Astrophoto S.L.
+// Copyright (c) 2010-2015 Zbynek Vrastil
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -45,17 +49,18 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "AssistedColorCalibrationInstance.h"
 #include "AssistedColorCalibrationParameters.h"
 
-#include <pcl/View.h>
-#include <pcl/StdStatus.h>
+#include <pcl/AutoViewLock.h>
 #include <pcl/Console.h>
-#include <pcl/Thread.h>
-#include <pcl/Mutex.h>
 #include <pcl/MessageBox.h>
+#include <pcl/Mutex.h>
+#include <pcl/StdStatus.h>
+#include <pcl/Thread.h>
+#include <pcl/View.h>
 
 #define REFRESH_COUNT   65536
 
@@ -113,7 +118,7 @@ bool AssistedColorCalibrationInstance::CanExecuteOn( const View& view, pcl::Stri
       return false;
    }
 
-   if ( !view.Image().AnyImage()->IsColor() )
+   if ( !view.Image()->IsColor() )
    {
       whyNot = "AssistedColorCalibration can only be executed on color images.";
       return false;
@@ -126,30 +131,30 @@ bool AssistedColorCalibrationInstance::CanExecuteOn( const View& view, pcl::Stri
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-static Mutex* mutex = 0;
-static size_type count = 0;
-static bool abort = false;
-
 template <class P>
 class AssistedColorCalibrationThread : public Thread
 {
 public:
 
-   AssistedColorCalibrationThread( const AssistedColorCalibrationInstance& instance, GenericImage<P>& image, bool prev,
-      double* br, double lCorr, size_type p0, size_type p1 ) :
-   Thread(), T( instance ), img( image ), isPreview(prev), backRef(br), luminanceCorrection(lCorr), start( p0 ), end( p1 )
+   AssistedColorCalibrationThread( const AssistedColorCalibrationInstance& instance,
+                                   const AbstractImage::ThreadData& data,
+                                   GenericImage<P>& a_image,
+                                   bool prev, double* br, double lCorr, size_type p0, size_type p1 ) :
+   Thread(),
+   T( instance ), m_data( data ), image( a_image ),
+   isPreview(prev), start( p0 ), end( p1 ), backRef(br), luminanceCorrection(lCorr)
    {
    }
 
    virtual void Run()
    {
-      size_type n = 0, n1 = 0;
+      INIT_THREAD_MONITOR()
 
       // get pointer to image area which we're about to process
-      typename P::sample* pR = img[0] + start;
-      typename P::sample* pG = img[1] + start;
-      typename P::sample* pB = img[2] + start;
-      typename P::sample* pN = img[0] + end;
+      typename P::sample* pR = image[0] + start;
+      typename P::sample* pG = image[1] + start;
+      typename P::sample* pB = image[2] + start;
+      typename P::sample* pN = image[0] + end;
 
       // get white balance coefficents
       double red, green, blue;
@@ -163,7 +168,7 @@ public:
       double saturation = T.GetSaturationBoost();
 
       // get image color working space
-      const RGBColorSystem& rgbws = img.RGBWorkingSpace();
+      const RGBColorSystem& rgbws = image.RGBWorkingSpace();
 
       for ( ;; )
       {
@@ -206,33 +211,20 @@ public:
          *pB = P::ToSample( B );
 
          // go to next pixel
-         if ( ++n1 == REFRESH_COUNT )
-         {
-            n1 = 0;
-            n += REFRESH_COUNT;
-            if ( mutex->TryLock() )
-            {
-               count += n;
-               bool myAbort = abort;
-               mutex->Unlock();
-               if ( myAbort )
-                  break;
-               n = 0;
-            }
-         }
-
          if ( ++pR == pN )
             break;
-
          ++pG;
          ++pB;
+
+         UPDATE_THREAD_MONITOR( 65536 )
       }
    }
 
 private:
 
    const AssistedColorCalibrationInstance& T;
-   GenericImage<P>& img;
+   const AbstractImage::ThreadData& m_data;
+   GenericImage<P>& image;
    bool isPreview;
    size_type start, end;
    double* backRef;
@@ -240,7 +232,7 @@ private:
 };
 
 template <class P>
-static void __AssistedColorCalibration( GenericImage<P>& img, const AssistedColorCalibrationInstance& T, bool isPreview, double* originalMedian )
+static void ApplyAssistedColorCalibration( GenericImage<P>& image, const AssistedColorCalibrationInstance& T, bool isPreview, double* originalMedian )
 {
    // get background reference
    double backRef[3];
@@ -279,69 +271,26 @@ static void __AssistedColorCalibration( GenericImage<P>& img, const AssistedColo
       luminanceCorrection = originalV / processedV;
    }
 
-   if ( mutex == 0 )
-      mutex = new Mutex;
-
    // prepare parallel processing
-   size_type N = img.NumberOfPixels();
+   size_type N = image.NumberOfPixels();
 
    size_type numberOfThreads = Thread::NumberOfThreads( N, 16 );
    size_type pixelsPerThread = N/numberOfThreads;
 
-   img.Status().Initialize( "Assisted color calibration", N );
+   image.Status().Initialize( "Assisted color calibration", N );
 
-   count = 0;
-   abort = false;
-
-   size_type lastCount = 0;
-   double waitTime = 0.75; // seconds
+   AbstractImage::ThreadData data( image, N );
 
    // create processing threads
-   IndirectArray<AssistedColorCalibrationThread<P> > threads;
+   ReferenceArray<AssistedColorCalibrationThread<P> > threads;
    for ( size_type i = 0, p = 0; i < numberOfThreads; ++i, p += pixelsPerThread )
-      threads.Add( new AssistedColorCalibrationThread<P>( T, img, isPreview, backRef, luminanceCorrection, p, Min( p + pixelsPerThread, N ) ) );
+      threads.Add( new AssistedColorCalibrationThread<P>( T, data, image,
+                              isPreview, backRef, luminanceCorrection, p, Min( p + pixelsPerThread, N ) ) );
 
-   // start threads
-   for ( size_type i = 0; i < numberOfThreads; ++i )
-      threads[i]->Start( ThreadPriority::DefaultMax, i );
-
-   // wait for finish or abort
-   for ( ;; )
-   {
-      bool someRunning = false;
-      for ( size_t i = 0; i < numberOfThreads; ++i )
-         if ( !threads[i]->Wait( waitTime ) )
-         {
-            someRunning = true;
-            break;
-         }
-
-      if ( !someRunning )
-         break;
-
-      if ( mutex->TryLock() )
-      {
-         try
-         {
-            img.Status() += count - lastCount;
-            lastCount = count;
-         }
-
-         catch ( ... )
-         {
-            abort = true;
-         }
-
-         mutex->Unlock();
-      }
-   }
-
+   AbstractImage::RunThreads( threads, data );
    threads.Destroy();
 
-   if ( abort )
-      throw ProcessAborted();
-
-   img.Status() += N - img.Status().Count();
+   image.Status() = data.status;
 }
 
 // ----------------------------------------------------------------------------
@@ -350,33 +299,18 @@ static void __AssistedColorCalibration( GenericImage<P>& img, const AssistedColo
 // calculates background reference from given view using median
 void AssistedColorCalibrationInstance::CalculateBackgroundReference( double &red, double &green, double &blue ) const
 {
-   // init background reference to zeros
-   double backRef[3];
-   for (int i = 0; i < 3; i++)
-      backRef[i] = 0.0;
-
-   // if the view has been specified
-   if ( !backgroundReference.IsEmpty() )
-   {
-      // calculate view statistics for each channel
-      View::statistics_list S;
-
-      View view = View::ViewById( backgroundReference );
-      if (view.Image().AnyImage()->NumberOfNominalChannels() == 3)
+   View view = View::ViewById( backgroundReference );
+   if ( !view.IsNull() )
+      if ( view.Image()->NumberOfNominalChannels() == 3 )
       {
-         if ( !view.AreStatisticsAvailable() )
-            view.CalculateStatistics();
-         view.GetStatistics( S );
-
          // get background reference as median for each channel
-         backRef[0] = S[0]->Median();
-         backRef[1] = S[1]->Median();
-         backRef[2] = S[2]->Median();
+         DVector median = view.ComputeOrFetchProperty( "Median", false/*notify*/ ).ToDVector();
+         red   = median[0];
+         green = median[1];
+         blue  = median[2];
+         return;
       }
-   }
-   red = backRef[0];
-   green = backRef[1];
-   blue = backRef[2];
+   red = green = blue = 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -402,90 +336,83 @@ void AssistedColorCalibrationInstance::CorrectBackgroundReference( double &red, 
 
 bool AssistedColorCalibrationInstance::ExecuteOn( View& view )
 {
-   try
+   // check if background reference is color image
+   if ( !backgroundReference.IsEmpty() )
    {
-      // check if background reference is color image
-      if ( !backgroundReference.IsEmpty() )
+      View backRefView = View::ViewById( backgroundReference );
+
+      if ( backRefView.Image().IsComplexSample() )
       {
-         View backRefView = View::ViewById( backgroundReference );
-
-         if ( backRefView.Image().IsComplexSample() )
-         {
-            MessageBox mb("Background Reference cannot be complex image.",
-               "Not executed",
-               StdIcon::Information);
-            mb.Execute();
-            return false;
-         }
-
-         if ( !backRefView.Image().AnyImage()->IsColor() )
-         {
-            MessageBox mb("Background Reference must be a color image.",
-               "Not executed",
-               StdIcon::Information);
-            mb.Execute();
-            return false;
-         }
+         MessageBox mb("Background Reference cannot be complex image.",
+            "Not executed",
+            StdIcon::Information);
+         mb.Execute();
+         return false;
       }
 
-      view.Lock();
-
-      // processing is only applied to previews
-      bool isPreview = view.IsPreview();
-
-      // compute median of original image. this median will be used in preview
-      // processing for normalization of luminance before applying histogram transformation
-      // the goal is to prevent need to update histogram transformation parameters every time
-      // white balance coefficients are changed
-      double originalMedian[3] = { 0.0, 0.0, 0.0 };
-      if ( isPreview )
+      if ( !backRefView.Image()->IsColor() )
       {
-         View::statistics_list S;
-
-         if ( !view.AreStatisticsAvailable() )
-            view.CalculateStatistics();
-         view.GetStatistics( S );
-
-         originalMedian[0] = S[0]->Median();
-         originalMedian[1] = S[1]->Median();
-         originalMedian[2] = S[2]->Median();
+         MessageBox mb("Background Reference must be a color image.",
+            "Not executed",
+            StdIcon::Information);
+         mb.Execute();
+         return false;
       }
-
-      ImageVariant v;
-      v = view.Image();
-
-      StandardStatus status;
-      v.AnyImage()->SetStatusCallback( &status );
-
-      v.AnyImage()->ResetSelections();
-
-      Console().EnableAbort();
-
-      if ( !v.IsComplexSample() )
-         if ( v.IsFloatSample() )
-            switch ( v.BitsPerSample() )
-            {
-            case 32: __AssistedColorCalibration( *static_cast<pcl::Image*>( v.AnyImage() ), *this, isPreview, originalMedian ); break;
-            case 64: __AssistedColorCalibration( *static_cast<pcl::DImage*>( v.AnyImage() ), *this, isPreview, originalMedian ); break;
-            }
-         else
-            switch ( v.BitsPerSample() )
-            {
-            case  8: __AssistedColorCalibration( *static_cast<pcl::UInt8Image*>( v.AnyImage() ), *this, isPreview, originalMedian ); break;
-            case 16: __AssistedColorCalibration( *static_cast<pcl::UInt16Image*>( v.AnyImage() ), *this, isPreview, originalMedian ); break;
-            case 32: __AssistedColorCalibration( *static_cast<pcl::UInt32Image*>( v.AnyImage() ), *this, isPreview, originalMedian ); break;
-            }
-
-      view.Unlock();
-
-      return true;
    }
 
-   catch ( ... )
+   AutoViewLock lock( view );
+
+   // processing is only applied to previews
+   bool isPreview = view.IsPreview();
+
+   // compute median of original image. this median will be used in preview
+   // processing for normalization of luminance before applying histogram transformation
+   // the goal is to prevent need to update histogram transformation parameters every time
+   // white balance coefficients are changed
+   double originalMedian[3] = { 0.0, 0.0, 0.0 };
+   if ( isPreview )
    {
-      view.Unlock(); // Never leave a view locked!
-      throw;
+      DVector median = view.ComputeOrFetchProperty( "Median", false/*notify*/ ).ToDVector();
+      originalMedian[0] = median[0];
+      originalMedian[1] = median[1];
+      originalMedian[2] = median[2];
    }
+
+   ImageVariant image = view.Image();
+
+   Console().EnableAbort();
+
+   StandardStatus status;
+   image->SetStatusCallback( &status );
+
+   image->ResetSelections();
+
+   if ( !image.IsComplexSample() )
+      if ( image.IsFloatSample() )
+         switch ( image.BitsPerSample() )
+         {
+         case 32:
+            ApplyAssistedColorCalibration( static_cast<pcl::Image&>( *image ), *this, isPreview, originalMedian );
+            break;
+         case 64:
+            ApplyAssistedColorCalibration( static_cast<pcl::DImage&>( *image ), *this, isPreview, originalMedian );
+            break;
+         }
+      else
+         switch ( image.BitsPerSample() )
+         {
+         case  8:
+            ApplyAssistedColorCalibration( static_cast<pcl::UInt8Image&>( *image ), *this, isPreview, originalMedian );
+            break;
+         case 16:
+            ApplyAssistedColorCalibration( static_cast<pcl::UInt16Image&>( *image ), *this, isPreview, originalMedian );
+            break;
+         case 32:
+            ApplyAssistedColorCalibration( static_cast<pcl::UInt32Image&>( *image ), *this, isPreview, originalMedian );
+            break;
+         }
+
+   return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -520,7 +447,7 @@ bool AssistedColorCalibrationInstance::AllocateParameter( size_type sizeOrLength
    {
       backgroundReference.Clear();
       if ( sizeOrLength > 0 )
-         backgroundReference.Reserve( sizeOrLength );
+         backgroundReference.SetLength( sizeOrLength );
    }
    else
       return false;
@@ -573,5 +500,5 @@ double AssistedColorCalibrationInstance::GetSaturationBoost() const
 
 } // pcl
 
-// ****************************************************************************
-// EOF AssistedColorCalibrationInstance.cpp - Released 2014/11/14 17:19:24 UTC
+// ----------------------------------------------------------------------------
+// EOF AssistedColorCalibrationInstance.cpp - Released 2015/07/31 11:49:49 UTC

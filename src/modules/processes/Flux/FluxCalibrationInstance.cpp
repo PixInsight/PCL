@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Flux Process Module Version 01.00.00.0066
-// ****************************************************************************
-// FluxCalibrationInstance.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Flux Process Module Version 01.00.00.0085
+// ----------------------------------------------------------------------------
+// FluxCalibrationInstance.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Flux PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,14 +48,15 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "FluxCalibrationInstance.h"
 #include "FluxCalibrationParameters.h"
 
-#include <pcl/View.h>
-#include <pcl/StdStatus.h>
+#include <pcl/AutoViewLock.h>
 #include <pcl/Console.h>
+#include <pcl/StdStatus.h>
+#include <pcl/View.h>
 
 namespace pcl
 {
@@ -255,7 +260,7 @@ bool FluxCalibrationInstance::CanExecuteOn( const View& view, pcl::String& whyNo
       return false;
    }
 
-   if ( view.Image().AnyImage()->IsColor() )
+   if ( view.Image()->IsColor() )
    {
       whyNot = "FluxCalibration cannot be executed on color images.";
       return false;
@@ -278,61 +283,54 @@ bool FluxCalibrationInstance::CanExecuteOn( const View& view, pcl::String& whyNo
 
 bool FluxCalibrationInstance::ExecuteOn( View& view )
 {
-   try
-   {
-      view.Lock();
+   AutoViewLock lock( view );
 
-      ImageVariant v;
-      v = view.Image();
-      AbstractImage* img = v.AnyImage();
+   ImageVariant image = view.Image();
 
-      StandardStatus status;
-      v.AnyImage()->SetStatusCallback( &status );
-      img->Status().Initialize( "Flux calibration", img->NumberOfPixels() );
+   if ( image.IsComplexSample() )
+      throw Error( "FluxCalibration cannot be executed on complex images." );
 
-      Console().EnableAbort();
+   StandardStatus status;
+   image->SetStatusCallback( &status );
+   image->Status().Initialize( "Flux calibration", image->NumberOfPixels() );
 
-      if ( !v.IsComplexSample() )
-         if ( v.IsFloatSample() )
-            switch ( v.BitsPerSample() )
-            {
-            case 32: FluxCalibrationEngine::Apply( *static_cast<Image*>( v.AnyImage() ), view, *this ); break;
-            case 64: FluxCalibrationEngine::Apply( *static_cast<DImage*>( v.AnyImage() ), view, *this ); break;
-            }
-         else
-            switch ( v.BitsPerSample() )
-            {
-            case  8:
-            case 16:
-               {
-                  ImageVariant tmp;
-                  tmp.CreateFloatImage( 32 );
-                  tmp.CopyImage( v );
-                  FluxCalibrationEngine::Apply( *static_cast<Image*>( tmp.AnyImage() ), view, *this );
-                  v.CopyImage( tmp );
-               }
-               break;
-            case 32:
-               {
-                  ImageVariant tmp;
-                  tmp.CreateFloatImage( 64 );
-                  tmp.CopyImage( v );
-                  FluxCalibrationEngine::Apply( *static_cast<DImage*>( tmp.AnyImage() ), view, *this );
-                  v.CopyImage( tmp );
-               }
-               break;
-            }
+   Console().EnableAbort();
 
-      view.Unlock();
+   if ( image.IsFloatSample() )
+      switch ( image.BitsPerSample() )
+      {
+      case 32:
+         FluxCalibrationEngine::Apply( static_cast<Image&>( *image ), view, *this );
+         break;
+      case 64:
+         FluxCalibrationEngine::Apply( static_cast<DImage&>( *image ), view, *this );
+         break;
+      }
+   else
+      switch ( image.BitsPerSample() )
+      {
+      case  8:
+      case 16:
+         {
+            ImageVariant tmp;
+            tmp.CreateFloatImage( 32 );
+            tmp.CopyImage( image );
+            FluxCalibrationEngine::Apply( static_cast<Image&>( *tmp ), view, *this );
+            image.CopyImage( tmp );
+         }
+         break;
+      case 32:
+         {
+            ImageVariant tmp;
+            tmp.CreateFloatImage( 64 );
+            tmp.CopyImage( image );
+            FluxCalibrationEngine::Apply( static_cast<DImage&>( *tmp ), view, *this );
+            image.CopyImage( tmp );
+         }
+         break;
+      }
 
-      return true;
-   }
-
-   catch ( ... )
-   {
-      view.Unlock();
-      throw;
-   }
+   return true;
 }
 
 void* FluxCalibrationInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/ )
@@ -409,55 +407,55 @@ bool FluxCalibrationInstance::AllocateParameter( size_type sizeOrLength, const M
    {
       p_wavelength.keyword.Clear();
       if ( sizeOrLength > 0 )
-         p_wavelength.keyword.Reserve( sizeOrLength );
+         p_wavelength.keyword.SetLength( sizeOrLength );
    }
    else if ( p == TheFCTransmissivityKeywordParameter )
    {
       p_transmissivity.keyword.Clear();
       if ( sizeOrLength > 0 )
-         p_transmissivity.keyword.Reserve( sizeOrLength );
+         p_transmissivity.keyword.SetLength( sizeOrLength );
    }
    else if ( p == TheFCFilterWidthKeywordParameter )
    {
       p_filterWidth.keyword.Clear();
       if ( sizeOrLength > 0 )
-         p_filterWidth.keyword.Reserve( sizeOrLength );
+         p_filterWidth.keyword.SetLength( sizeOrLength );
    }
    else if ( p == TheFCApertureKeywordParameter )
    {
       p_aperture.keyword.Clear();
       if ( sizeOrLength > 0 )
-         p_aperture.keyword.Reserve( sizeOrLength );
+         p_aperture.keyword.SetLength( sizeOrLength );
    }
    else if ( p == TheFCCentralObstructionKeywordParameter )
    {
       p_centralObstruction.keyword.Clear();
       if ( sizeOrLength > 0 )
-         p_centralObstruction.keyword.Reserve( sizeOrLength );
+         p_centralObstruction.keyword.SetLength( sizeOrLength );
    }
    else if ( p == TheFCExposureTimeKeywordParameter )
    {
       p_exposureTime.keyword.Clear();
       if ( sizeOrLength > 0 )
-         p_exposureTime.keyword.Reserve( sizeOrLength );
+         p_exposureTime.keyword.SetLength( sizeOrLength );
    }
    else if ( p == TheFCAtmosphericExtinctionKeywordParameter )
    {
       p_atmosphericExtinction.keyword.Clear();
       if ( sizeOrLength > 0 )
-         p_atmosphericExtinction.keyword.Reserve( sizeOrLength );
+         p_atmosphericExtinction.keyword.SetLength( sizeOrLength );
    }
    else if ( p == TheFCSensorGainKeywordParameter )
    {
       p_sensorGain.keyword.Clear();
       if ( sizeOrLength > 0 )
-         p_sensorGain.keyword.Reserve( sizeOrLength );
+         p_sensorGain.keyword.SetLength( sizeOrLength );
    }
    else if ( p == TheFCQuantumEfficiencyKeywordParameter )
    {
       p_quantumEfficiency.keyword.Clear();
       if ( sizeOrLength > 0 )
-         p_quantumEfficiency.keyword.Reserve( sizeOrLength );
+         p_quantumEfficiency.keyword.SetLength( sizeOrLength );
    }
    else
       return false;
@@ -491,5 +489,5 @@ size_type FluxCalibrationInstance::ParameterLength( const MetaParameter* p, size
 
 } // pcl
 
-// ****************************************************************************
-// EOF FluxCalibrationInstance.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF FluxCalibrationInstance.cpp - Released 2015/07/31 11:49:48 UTC

@@ -1,12 +1,16 @@
-// ****************************************************************************
-// PixInsight Class Library - PCL 02.00.13.0692
-// Standard Flux Process Module Version 01.00.00.0066
-// ****************************************************************************
-// B3EInstance.cpp - Released 2014/11/14 17:18:46 UTC
-// ****************************************************************************
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0749
+// ----------------------------------------------------------------------------
+// Standard Flux Process Module Version 01.00.00.0085
+// ----------------------------------------------------------------------------
+// B3EInstance.cpp - Released 2015/07/31 11:49:48 UTC
+// ----------------------------------------------------------------------------
 // This file is part of the standard Flux PixInsight module.
 //
-// Copyright (c) 2003-2014, Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -44,16 +48,17 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-// ****************************************************************************
+// ----------------------------------------------------------------------------
 
 #include "B3EInstance.h"
 #include "B3EParameters.h"
 
-#include <pcl/View.h>
-#include <pcl/StdStatus.h>
+#include <pcl/AutoViewLock.h>
 #include <pcl/Console.h>
-#include <pcl/Thread.h>
 #include <pcl/Mutex.h>
+#include <pcl/StdStatus.h>
+#include <pcl/Thread.h>
+#include <pcl/View.h>
 
 #include <iostream>
 
@@ -66,15 +71,15 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 B3EInstance::InputViewParameters::InputViewParameters() :
-id(),
-center( 0 ),
-subtractBackground( TheB3ESubstractBackground1Parameter->DefaultValue() ),
-backgroundReferenceViewId(),
-backgroundLow( TheB3EBackgroundLow1Parameter->DefaultValue() ),
-backgroundHigh( TheB3EBackgroundHigh1Parameter->DefaultValue() ),
-backgroundUseROI( TheB3EBackgroundUseROI1Parameter->DefaultValue() ),
-backgroundROI( 0 ),
-outputBackgroundReferenceMask( TheB3EOutputBackgroundReferenceMask1Parameter->DefaultValue() )
+   id(),
+   center( 0 ),
+   subtractBackground( TheB3ESubstractBackground1Parameter->DefaultValue() ),
+   backgroundReferenceViewId(),
+   backgroundLow( TheB3EBackgroundLow1Parameter->DefaultValue() ),
+   backgroundHigh( TheB3EBackgroundHigh1Parameter->DefaultValue() ),
+   backgroundUseROI( TheB3EBackgroundUseROI1Parameter->DefaultValue() ),
+   backgroundROI( 0 ),
+   outputBackgroundReferenceMask( TheB3EOutputBackgroundReferenceMask1Parameter->DefaultValue() )
 {
 }
 
@@ -100,20 +105,20 @@ B3EInstance::InputViewParameters& B3EInstance::InputViewParameters::operator =( 
 // ----------------------------------------------------------------------------
 
 B3EInstance::B3EInstance( const MetaProcess* m ) :
-ProcessImplementation( m ),
-p_outputCenter( 0 ),
-p_intensityUnits( B3EIntensityUnits::Default ),
-p_syntheticImage( TheB3ESyntheticImageParameter->DefaultValue() ),
-p_thermalMap( TheB3EThermalMapParameter->DefaultValue() ),
-p_outOfRangeMask( TheB3EOutOfRangeMaskParameter->DefaultValue() ),
-o_syntheticImageViewId(),
-o_thermalMapViewId(),
-o_outOfRangeMaskViewId()
+   ProcessImplementation( m ),
+   p_outputCenter( 0 ),
+   p_intensityUnits( B3EIntensityUnits::Default ),
+   p_syntheticImage( TheB3ESyntheticImageParameter->DefaultValue() ),
+   p_thermalMap( TheB3EThermalMapParameter->DefaultValue() ),
+   p_outOfRangeMask( TheB3EOutOfRangeMaskParameter->DefaultValue() ),
+   o_syntheticImageViewId(),
+   o_thermalMapViewId(),
+   o_outOfRangeMaskViewId()
 {
 }
 
 B3EInstance::B3EInstance( const B3EInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
@@ -356,8 +361,8 @@ private:
                          << String().Format( "b  = %.6f\n", b )
                          << String().Format( "fa = %.6f\n", fax )
                          << String().Format( "fb = %.6f\n", fbx )
-                         << String().Format( "x  = %d\n", i%m_Ia.Width() )
-                         << String().Format( "y  = %d\n", i/m_Ia.Width() )
+                         << String().Format( "x  = %d\n",   i%m_Ia.Width() )
+                         << String().Format( "y  = %d\n",   i/m_Ia.Width() )
                          << String().Format( "Tp = %.6f\n", m_engine.Tprop )
                          << String().Format( "xa = %.6f\n", m_engine.xa )
                          << String().Format( "xb = %.6f\n", m_engine.xb )
@@ -440,56 +445,14 @@ private:
       monitor.SetCallback( &status );
       monitor.Initialize( "B3E", N );
 
-      count = 0;
-      abort = false;
-
-      size_type lastCount = 0;
-      double waitTime = 0.75; // seconds
-
-      IndirectArray<B3EThread<P1,P2> > threads;
+      AbstractImage::ThreadData data( monitor, N );
+      ReferenceArray<B3EThread<P1,P2> > threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
          threads.Add( new B3EThread<P1,P2>( *this, It, Ic, Im, Ia, ra, ma, ba, Ib, rb, mb, bb, rc,
                                             i*pixelsPerThread,
                                             (j < numberOfThreads) ? j*pixelsPerThread : N ) );
-      for ( int i = 0; i < numberOfThreads; ++i )
-         threads[i]->Start( ThreadPriority::DefaultMax, i );
-
-      for ( ;; )
-      {
-         bool someRunning = false;
-         for ( int i = 0; i < numberOfThreads; ++i )
-            if ( !threads[i]->Wait( waitTime ) )
-            {
-               someRunning = true;
-               break;
-            }
-
-         if ( !someRunning )
-            break;
-
-         if ( mutex.TryLock() )
-         {
-            try
-            {
-               monitor += count - lastCount;
-               lastCount = count;
-            }
-
-            catch ( ... )
-            {
-               abort = true;
-            }
-
-            mutex.Unlock();
-         }
-      }
-
+      AbstractImage::RunThreads( threads, data );
       threads.Destroy();
-
-      if ( abort )
-         throw ProcessAborted();
-
-      monitor += N - monitor.Count();
    }
 
    template <class P1>
@@ -500,15 +463,25 @@ private:
       if ( vb.IsFloatSample() )
          switch ( vb.BitsPerSample() )
          {
-         case 32: B3E( It, Ic, Im, Ia, ra, ma, ba, *static_cast<const Image*>( vb.AnyImage() ), rb, mb, bb, rc ); break;
-         case 64: B3E( It, Ic, Im, Ia, ra, ma, ba, *static_cast<const DImage*>( vb.AnyImage() ), rb, mb, bb, rc ); break;
+         case 32:
+            B3E( It, Ic, Im, Ia, ra, ma, ba, static_cast<const Image&>( *vb ), rb, mb, bb, rc );
+            break;
+         case 64:
+            B3E( It, Ic, Im, Ia, ra, ma, ba, static_cast<const DImage&>( *vb ), rb, mb, bb, rc );
+            break;
          }
       else
          switch ( vb.BitsPerSample() )
          {
-         case  8: B3E( It, Ic, Im, Ia, ra, ma, ba, *static_cast<const UInt8Image*>( vb.AnyImage() ), rb, mb, bb, rc ); break;
-         case 16: B3E( It, Ic, Im, Ia, ra, ma, ba, *static_cast<const UInt16Image*>( vb.AnyImage() ), rb, mb, bb, rc ); break;
-         case 32: B3E( It, Ic, Im, Ia, ra, ma, ba, *static_cast<const UInt32Image*>( vb.AnyImage() ), rb, mb, bb, rc ); break;
+         case  8:
+            B3E( It, Ic, Im, Ia, ra, ma, ba, static_cast<const UInt8Image&>( *vb ), rb, mb, bb, rc );
+            break;
+         case 16:
+            B3E( It, Ic, Im, Ia, ra, ma, ba, static_cast<const UInt16Image&>( *vb ), rb, mb, bb, rc );
+            break;
+         case 32:
+            B3E( It, Ic, Im, Ia, ra, ma, ba, static_cast<const UInt32Image&>( *vb ), rb, mb, bb, rc );
+            break;
          }
    }
 
@@ -519,15 +492,25 @@ private:
       if ( va.IsFloatSample() )
          switch ( va.BitsPerSample() )
          {
-         case 32: B3E( It, Ic, Im, *static_cast<const Image*>( va.AnyImage() ), ra, ma, ba, vb, rb, mb, bb, rc ); break;
-         case 64: B3E( It, Ic, Im, *static_cast<const DImage*>( va.AnyImage() ), ra, ma, ba, vb, rb, mb, bb, rc ); break;
+         case 32:
+            B3E( It, Ic, Im, static_cast<const Image&>( *va ), ra, ma, ba, vb, rb, mb, bb, rc );
+            break;
+         case 64:
+            B3E( It, Ic, Im, static_cast<const DImage&>( *va ), ra, ma, ba, vb, rb, mb, bb, rc );
+            break;
          }
       else
          switch ( va.BitsPerSample() )
          {
-         case  8: B3E( It, Ic, Im, *static_cast<const UInt8Image*>( va.AnyImage() ), ra, ma, ba, vb, rb, mb, bb, rc ); break;
-         case 16: B3E( It, Ic, Im, *static_cast<const UInt16Image*>( va.AnyImage() ), ra, ma, ba, vb, rb, mb, bb, rc ); break;
-         case 32: B3E( It, Ic, Im, *static_cast<const UInt32Image*>( va.AnyImage() ), ra, ma, ba, vb, rb, mb, bb, rc ); break;
+         case  8:
+            B3E( It, Ic, Im, static_cast<const UInt8Image&>( *va ), ra, ma, ba, vb, rb, mb, bb, rc );
+            break;
+         case 16:
+            B3E( It, Ic, Im, static_cast<const UInt16Image&>( *va ), ra, ma, ba, vb, rb, mb, bb, rc );
+            break;
+         case 32:
+            B3E( It, Ic, Im, static_cast<const UInt32Image&>( *va ), ra, ma, ba, vb, rb, mb, bb, rc );
+            break;
          }
    }
 
@@ -597,17 +580,17 @@ static IsoString ValidFullId( const IsoString& id )
 }
 
 template <class P>
-static void MakeBackgroundMask( UInt8Image& mask, const GenericImage<P>& img, float low, float high )
+static void MakeBackgroundMask( UInt8Image& mask, const GenericImage<P>& image, float low, float high )
 {
    mask.Zero();
 
-   Rect r = img.SelectedRectangle();
+   Rect r = image.SelectedRectangle();
 
    for ( int c = 0; c < mask.NumberOfChannels(); ++c )
    {
       for ( int y = r.y0; y < r.y1; ++y )
       {
-         const typename P::sample* p = img.ScanLine( y, c );
+         const typename P::sample* p = image.ScanLine( y, c );
          uint8* m = mask.ScanLine( y, c );
          for ( int x = r.x0; x < r.x1; ++x )
          {
@@ -619,20 +602,30 @@ static void MakeBackgroundMask( UInt8Image& mask, const GenericImage<P>& img, fl
    }
 }
 
-static void MakeBackgroundMask( UInt8Image& mask, const ImageVariant& img, float low, float high )
+static void MakeBackgroundMask( UInt8Image& mask, const ImageVariant& image, float low, float high )
 {
-   if ( img.IsFloatSample() )
-      switch ( img.BitsPerSample() )
+   if ( image.IsFloatSample() )
+      switch ( image.BitsPerSample() )
       {
-      case 32 : MakeBackgroundMask( mask, *static_cast<const Image*>( img.AnyImage() ), low, high ); break;
-      case 64 : MakeBackgroundMask( mask, *static_cast<const DImage*>( img.AnyImage() ), low, high ); break;
+      case 32:
+         MakeBackgroundMask( mask, static_cast<const Image&>( *image ), low, high );
+         break;
+      case 64:
+         MakeBackgroundMask( mask, static_cast<const DImage&>( *image ), low, high );
+         break;
       }
    else
-      switch ( img.BitsPerSample() )
+      switch ( image.BitsPerSample() )
       {
-      case  8 : MakeBackgroundMask( mask, *static_cast<const UInt8Image*>( img.AnyImage() ), low, high ); break;
-      case 16 : MakeBackgroundMask( mask, *static_cast<const UInt16Image*>( img.AnyImage() ), low, high ); break;
-      case 32 : MakeBackgroundMask( mask, *static_cast<const UInt32Image*>( img.AnyImage() ), low, high ); break;
+      case  8:
+         MakeBackgroundMask( mask, static_cast<const UInt8Image&>( *image ), low, high );
+         break;
+      case 16:
+         MakeBackgroundMask( mask, static_cast<const UInt16Image&>( *image ), low, high );
+         break;
+      case 32:
+         MakeBackgroundMask( mask, static_cast<const UInt32Image&>( *image ), low, high );
+         break;
       }
 }
 
@@ -648,77 +641,46 @@ double B3EInstance::EvaluateBackground( const InputViewParameters& imgParams )
    if ( !bkgView.IsColor() )
       throw Error( "The background reference view must be a color image: " + imgParams.backgroundReferenceViewId );
 
-   double bg;
+   AutoViewLock lock( bkgView, false/*lock*/ );
+   if ( bkgView.CanWrite() )
+      bkgView.LockForWrite();
 
-   bool weLock = bkgView.CanWrite();
+   ImageVariant image = bkgView.Image();
 
-   /*
-    * Background Evaluation
-    */
-   StandardStatus status;
    Console console;
-
    console.EnableAbort();
 
-   try
+   if ( imgParams.backgroundUseROI )
    {
-      if ( weLock )
-         bkgView.LockForWrite();
-
-      ImageStatistics S;
-      S.SetRejectionLimits( imgParams.backgroundLow, imgParams.backgroundHigh );
-      S.EnableRejection();
-      S.DisableExtremes();
-      S.DisableVariance();
-      S.DisableMAD();
-      S.DisablePBMV();
-
-      ImageVariant v = bkgView.Image();
-
-      if ( imgParams.backgroundUseROI )
-      {
-         v.AnyImage()->SelectRectangle( imgParams.backgroundROI );
-         Rect r = v.AnyImage()->SelectedRectangle();
-         if ( !r.IsRect() )
-            v.AnyImage()->ResetSelection();
-         console.WriteLn( String().Format( "<end><cbr>Background reference ROI : left=%d, top=%d, width=%d, height=%d",
-                                             r.x0, r.y0, r.Width(), r.Height() ) );
-      }
-
-      v.AnyImage()->SetStatusCallback( &status );
-      v.AnyImage()->Status().Initialize( "Evaluating background", v.AnyImage()->NumberOfSelectedPixels() );
-      v.AnyImage()->Status().DisableInitialization();
-      v.AnyImage()->SelectChannel( 0 );
-      S << v;
-      bg = S.Median();
-
-      if ( imgParams.outputBackgroundReferenceMask )
-      {
-         IsoString id = ValidFullId( bkgView.FullId() ) + "_background";
-         ImageWindow w = ImageWindow( bkgView.Width(), bkgView.Height(), 1, 8, false, false, true, id );
-         if ( w.IsNull() )
-            throw Error( "Unable to create image window: " + id );
-         ImageVariant m = w.MainView().Image();
-         MakeBackgroundMask( *static_cast<UInt8Image*>( m.AnyImage() ), v, imgParams.backgroundLow, imgParams.backgroundHigh );
-         w.Show();
-         w.ZoomToFit();
-      }
-
-      if ( weLock )
-         bkgView.Unlock();
-
-      console.WriteLn( String().Format( "<end><cbr>* Mean background values:\n"
-                                        "B<sub>G</sub> : %.5e", bg ) );
-
-      return bg;
+      image->SelectRectangle( imgParams.backgroundROI );
+      Rect r = image->SelectedRectangle();
+      if ( !r.IsRect() )
+         image->ResetSelection();
+      console.WriteLn( String().Format( "<end><cbr>Background reference ROI : left=%d, top=%d, width=%d, height=%d",
+                                        r.x0, r.y0, r.Width(), r.Height() ) );
    }
 
-   catch ( ... )
+   StandardStatus status;
+   image->SetStatusCallback( &status );
+   image->Status().Initialize( "Evaluating background", image->NumberOfSelectedPixels() );
+   image->Status().DisableInitialization();
+   image->SelectChannel( 0 );
+   double bg = image.Median();
+
+   if ( imgParams.outputBackgroundReferenceMask )
    {
-      if ( weLock )
-         bkgView.Unlock();
-      throw;
+      IsoString maskId = ValidFullId( bkgView.FullId() ) + "_background";
+      ImageWindow maskWindow = ImageWindow( bkgView.Width(), bkgView.Height(), 1, 8, false, false, true, maskId );
+      if ( maskWindow.IsNull() )
+         throw Error( "Unable to create image window: " + maskId );
+      ImageVariant mask = maskWindow.MainView().Image();
+      MakeBackgroundMask( static_cast<UInt8Image&>( *mask ), image, imgParams.backgroundLow, imgParams.backgroundHigh );
+      maskWindow.Show();
+      maskWindow.ZoomToFit();
    }
+
+   console.WriteLn( String().Format( "<end><cbr>* Mean background: %.5g", bg ) );
+   return bg;
 }
 
 bool B3EInstance::ExecuteGlobal()
@@ -735,178 +697,151 @@ bool B3EInstance::ExecuteGlobal()
    if ( inputView2.IsNull() )
       throw Error( "No such view: " + p_inputView[1].id );
 
-   try
+   AutoViewLock lock1( inputView1 );
+   AutoViewLock lock2( inputView2 );
+
+   const ImageVariant inputImage1 = inputView1.Image();
+   const ImageVariant inputImage2 = inputView2.Image();
+
+   if ( inputImage1.IsComplexSample() || inputImage2.IsComplexSample() )
+      throw Error( "B3E cannot work with complex images" );
+
+   if ( inputImage1->Bounds() != inputImage2->Bounds() )
+      throw Error( "Incompatible image geometries" );
+
+   if ( inputImage1->NumberOfNominalChannels() != 1 )
+      throw Error( "B3E requires grayscale (monochrome) images: " + p_inputView[0].id );
+
+   if ( inputImage2->NumberOfNominalChannels() != 1 )
+      throw Error( "B3E requires grayscale (monochrome) images: " + p_inputView[1].id );
+
+   B3EEngine E( *this );
+
+   double flxRange1, flxMin1;
+   GetFluxConversionParameters( flxRange1, flxMin1, inputView1 );
+   double flxRange2, flxMin2;
+   GetFluxConversionParameters( flxRange2, flxMin2, inputView2 );
+
+   B3ETuple limits = E( flxRange1, flxMin1, flxRange2, flxMin2 );
+
+   ImageWindow syntheticImageWindow;
+   ImageWindow outOfRangeMaskWindow;
+   if ( p_syntheticImage )
    {
-      inputView1.Lock();
-      inputView2.Lock();
+      syntheticImageWindow = ImageWindow( inputImage1->Width(),
+                                          inputImage1->Height(),
+                                          1,     /*numberOfChannels*/
+                                          32,    /*bitsPerSample*/
+                                          true,  /*floatSample*/
+                                          false, /*Color*/
+                                          true,  /*initialProcessing*/
+                                          "B3E_synthetic_channel" );
+      if ( syntheticImageWindow.IsNull() )
+         throw Error( "Unable to create synthetic image window" );
 
-      ImageVariant inputVar1 = inputView1.Image();
-      ImageVariant inputVar2 = inputView2.Image();
+      o_syntheticImageViewId = syntheticImageWindow.MainView().Id();
 
-      if ( inputVar1.IsComplexSample() || inputVar2.IsComplexSample() )
-         throw Error( "B3E cannot work with complex images" );
+      SetKeyword( syntheticImageWindow,
+                  "FLXRANGE", limits.f, "FLXRANGE*pixel_value + FLXMIN = erg/cm^2/s/nm" );
+      SetKeyword( syntheticImageWindow,
+                  "FLXMIN", 0.0, "" );
 
-      const AbstractImage* inputImage1 = inputVar1.AnyImage();
-      if ( inputImage1 == 0 )
-         throw Error( "Invalid image: " + p_inputView[0].id );
-
-      const AbstractImage* inputImage2 = inputVar2.AnyImage();
-      if ( inputImage2 == 0 )
-         throw Error( "Invalid image: " + p_inputView[1].id );
-
-      if ( inputImage1->Bounds() != inputImage2->Bounds() )
-         throw Error( "Incompatible image geometries" );
-
-      if ( inputImage1->NumberOfNominalChannels() != 1 )
-         throw Error( "B3E requires grayscale (monochrome) images: " + p_inputView[0].id );
-
-      if ( inputImage2->NumberOfNominalChannels() != 1 )
-         throw Error( "B3E requires grayscale (monochrome) images: " + p_inputView[1].id );
-
-      B3EEngine E( *this );
-
-      double flxRange1, flxMin1;
-      GetFluxConversionParameters( flxRange1, flxMin1, inputView1 );
-      double flxRange2, flxMin2;
-      GetFluxConversionParameters( flxRange2, flxMin2, inputView2 );
-
-      B3ETuple limits = E( flxRange1, flxMin1, flxRange2, flxMin2 );
-
-      ImageWindow syntheticImageWindow;
-      ImageWindow outOfRangeMaskWindow;
-      if ( p_syntheticImage )
+      if ( p_outOfRangeMask )
       {
-         syntheticImageWindow = ImageWindow( inputImage1->Width(),
+         outOfRangeMaskWindow = ImageWindow( inputImage1->Width(),
                                              inputImage1->Height(),
                                              1,     /*numberOfChannels*/
-                                             32,    /*bitsPerSample*/
-                                             true,  /*floatSample*/
+                                             8,     /*bitsPerSample*/
+                                             false, /*floatSample*/
                                              false, /*Color*/
                                              true,  /*initialProcessing*/
-                                             "B3E_synthetic_channel" );
-         if ( syntheticImageWindow.IsNull() )
-            throw Error( "Unable to create synthetic image window" );
+                                             "B3E_out_of_range_mask" );
+         if ( outOfRangeMaskWindow.IsNull() )
+            throw Error( "Unable to create out-of-range mask image window" );
 
-         o_syntheticImageViewId = syntheticImageWindow.MainView().Id();
-
-         SetKeyword( syntheticImageWindow,
-                     "FLXRANGE", limits.f, "FLXRANGE*pixel_value + FLXMIN = erg/cm^2/s/nm" );
-         SetKeyword( syntheticImageWindow,
-                     "FLXMIN", 0.0, "" );
-
-         if ( p_outOfRangeMask )
-         {
-            outOfRangeMaskWindow = ImageWindow( inputImage1->Width(),
-                                                inputImage1->Height(),
-                                                1,     /*numberOfChannels*/
-                                                8,     /*bitsPerSample*/
-                                                false, /*floatSample*/
-                                                false, /*Color*/
-                                                true,  /*initialProcessing*/
-                                                "B3E_out_of_range_mask" );
-            if ( outOfRangeMaskWindow.IsNull() )
-               throw Error( "Unable to create out-of-range mask image window" );
-
-            o_thermalMapViewId = outOfRangeMaskWindow.MainView().Id();
-         }
+         o_thermalMapViewId = outOfRangeMaskWindow.MainView().Id();
       }
-
-      ImageWindow thermalMapWindow;
-      if ( p_thermalMap )
-      {
-         thermalMapWindow = ImageWindow(  inputImage1->Width(),
-                                          inputImage1->Height(),
-                                          1,       /*numberOfChannels*/
-                                          16,      /*bitsPerSample*/
-                                          false,   /*floatSample*/
-                                          false,   /*Color*/
-                                          true,    /*initialProcessing*/
-                                          "B3E_thermal_map" );
-         if ( thermalMapWindow.IsNull() )
-            throw Error( "Unable to create thermal map image window" );
-
-         o_outOfRangeMaskViewId = thermalMapWindow.MainView().Id();
-      }
-
-      ImageVariant syntheticImageVar;
-      Image* syntheticImage = 0;
-      ImageVariant outOfRangeMaskVar;
-      UInt8Image* outOfRangeMask = 0;
-      if ( p_syntheticImage )
-      {
-         syntheticImageVar = syntheticImageWindow.MainView().Image();
-         syntheticImage = static_cast<Image*>( syntheticImageVar.AnyImage() );
-         if ( p_outOfRangeMask )
-         {
-            outOfRangeMaskVar = outOfRangeMaskWindow.MainView().Image();
-            outOfRangeMask = static_cast<UInt8Image*>( outOfRangeMaskVar.AnyImage() );
-         }
-      }
-
-      ImageVariant thermalMapVar;
-      UInt16Image* thermalMapImage = 0;
-      if ( p_thermalMap )
-      {
-         thermalMapVar = thermalMapWindow.MainView().Image();
-         thermalMapImage = static_cast<UInt16Image*>( thermalMapVar.AnyImage() );
-      }
-
-      /*
-       * Compute background references
-       */
-      double bkg1 = 0;
-      if ( p_inputView[0].subtractBackground )
-      {
-         bkg1 = EvaluateBackground( p_inputView[0] );
-      }
-
-      double bkg2 = 0;
-      if ( p_inputView[1].subtractBackground )
-      {
-         bkg2 = EvaluateBackground( p_inputView[1] );
-      }
-
-      E( thermalMapImage, syntheticImage, outOfRangeMask,
-         inputVar1, flxRange1, flxMin1, bkg1,
-         inputVar2, flxRange2, flxMin2, bkg2, limits.f );
-
-      if ( p_thermalMap )
-      {
-         SetKeyword( thermalMapWindow,
-                     "THMAX",
-                     thermalMapImage->MaximumPixelValue(),
-                     "PixInsight (B3E): Thermal map maximum value" );
-      }
-
-      inputView1.Unlock();
-      inputView2.Unlock();
-
-      if ( p_syntheticImage )
-      {
-         syntheticImageWindow.Show();
-         syntheticImageWindow.ZoomToFit();
-         if ( p_outOfRangeMask )
-         {
-            outOfRangeMaskWindow.Show();
-            outOfRangeMaskWindow.ZoomToFit();
-         }
-      }
-
-      if ( p_thermalMap )
-      {
-         thermalMapWindow.Show();
-         thermalMapWindow.ZoomToFit();
-      }
-
-      return true;
    }
 
-   catch( ... )
+   ImageWindow thermalMapWindow;
+   if ( p_thermalMap )
    {
-      inputView1.Unlock();
-      inputView2.Unlock();
-      throw;
+      thermalMapWindow = ImageWindow(  inputImage1->Width(),
+                                       inputImage1->Height(),
+                                       1,       /*numberOfChannels*/
+                                       16,      /*bitsPerSample*/
+                                       false,   /*floatSample*/
+                                       false,   /*Color*/
+                                       true,    /*initialProcessing*/
+                                       "B3E_thermal_map" );
+      if ( thermalMapWindow.IsNull() )
+         throw Error( "Unable to create thermal map image window" );
+
+      o_outOfRangeMaskViewId = thermalMapWindow.MainView().Id();
    }
+
+   ImageVariant syntheticImageVar;
+   Image* syntheticImage = 0;
+   ImageVariant outOfRangeMaskVar;
+   UInt8Image* outOfRangeMask = 0;
+   if ( p_syntheticImage )
+   {
+      syntheticImageVar = syntheticImageWindow.MainView().Image();
+      syntheticImage = static_cast<Image*>( syntheticImageVar.ImagePtr() );
+      if ( p_outOfRangeMask )
+      {
+         outOfRangeMaskVar = outOfRangeMaskWindow.MainView().Image();
+         outOfRangeMask = static_cast<UInt8Image*>( outOfRangeMaskVar.ImagePtr() );
+      }
+   }
+
+   ImageVariant thermalMapVar;
+   UInt16Image* thermalMapImage = 0;
+   if ( p_thermalMap )
+   {
+      thermalMapVar = thermalMapWindow.MainView().Image();
+      thermalMapImage = static_cast<UInt16Image*>( thermalMapVar.ImagePtr() );
+   }
+
+   /*
+    * Compute background references
+    */
+   double bkg1 = 0;
+   if ( p_inputView[0].subtractBackground )
+      bkg1 = EvaluateBackground( p_inputView[0] );
+
+   double bkg2 = 0;
+   if ( p_inputView[1].subtractBackground )
+      bkg2 = EvaluateBackground( p_inputView[1] );
+
+   E( thermalMapImage, syntheticImage, outOfRangeMask,
+      inputImage1, flxRange1, flxMin1, bkg1,
+      inputImage2, flxRange2, flxMin2, bkg2, limits.f );
+
+   if ( p_thermalMap )
+      SetKeyword( thermalMapWindow,
+                  "THMAX",
+                  thermalMapImage->MaximumPixelValue(),
+                  "PixInsight (B3E): Thermal map maximum value" );
+
+   if ( p_syntheticImage )
+   {
+      syntheticImageWindow.Show();
+      syntheticImageWindow.ZoomToFit();
+      if ( p_outOfRangeMask )
+      {
+         outOfRangeMaskWindow.Show();
+         outOfRangeMaskWindow.ZoomToFit();
+      }
+   }
+
+   if ( p_thermalMap )
+   {
+      thermalMapWindow.Show();
+      thermalMapWindow.ZoomToFit();
+   }
+
+   return true;
 }
 
 void* B3EInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/ )
@@ -987,43 +922,43 @@ bool B3EInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter
    {
       p_inputView[0].id.Clear();
       if ( sizeOrLength > 0 )
-         p_inputView[0].id.Reserve( sizeOrLength );
+         p_inputView[0].id.SetLength( sizeOrLength );
    }
    else if ( p == TheB3EInputViewId2Parameter )
    {
       p_inputView[1].id.Clear();
       if ( sizeOrLength > 0 )
-         p_inputView[1].id.Reserve( sizeOrLength );
+         p_inputView[1].id.SetLength( sizeOrLength );
    }
    else if ( p == TheB3ESyntheticImageViewIdParameter )
    {
       o_syntheticImageViewId.Clear();
       if ( sizeOrLength > 0 )
-         o_syntheticImageViewId.Reserve( sizeOrLength );
+         o_syntheticImageViewId.SetLength( sizeOrLength );
    }
    else if ( p == TheB3EThermalMapViewIdParameter )
    {
       o_thermalMapViewId.Clear();
       if ( sizeOrLength > 0 )
-         o_thermalMapViewId.Reserve( sizeOrLength );
+         o_thermalMapViewId.SetLength( sizeOrLength );
    }
    else if ( p == TheB3EOutOfRangeMaskViewIdParameter )
    {
       o_outOfRangeMaskViewId.Clear();
       if ( sizeOrLength > 0 )
-         o_outOfRangeMaskViewId.Reserve( sizeOrLength );
+         o_outOfRangeMaskViewId.SetLength( sizeOrLength );
    }
    else if ( p == TheB3EBackgroundReferenceViewId1Parameter )
    {
       p_inputView[0].backgroundReferenceViewId.Clear();
       if ( sizeOrLength > 0 )
-         p_inputView[0].backgroundReferenceViewId.Reserve( sizeOrLength );
+         p_inputView[0].backgroundReferenceViewId.SetLength( sizeOrLength );
    }
    else if ( p == TheB3EBackgroundReferenceViewId2Parameter )
    {
       p_inputView[1].backgroundReferenceViewId.Clear();
       if ( sizeOrLength > 0 )
-         p_inputView[1].backgroundReferenceViewId.Reserve( sizeOrLength );
+         p_inputView[1].backgroundReferenceViewId.SetLength( sizeOrLength );
    }
    else
       return false;
@@ -1054,5 +989,5 @@ size_type B3EInstance::ParameterLength( const MetaParameter* p, size_type tableR
 
 } // pcl
 
-// ****************************************************************************
-// EOF B3EInstance.cpp - Released 2014/11/14 17:18:46 UTC
+// ----------------------------------------------------------------------------
+// EOF B3EInstance.cpp - Released 2015/07/31 11:49:48 UTC

@@ -72,28 +72,14 @@ Here is a list of subdirectories, along with descriptions of the files therein. 
 **[PCL]/src/modules/processes/[module_name]/linux/g++**
 
 <dl><dd>
-   Makefiles for Linux with GCC ]= 4.7 (4.8.2 or higher recommended)
+   Makefiles for Linux with GCC >= 4.7 (4.8.2 or higher recommended)
 </dd></dl>
 
 **[PCL]/src/modules/file-formats/[module_name]/macosx/g++**<br/>
 **[PCL]/src/modules/processes/[module_name]/macosx/g++**
 
 <dl><dd>
-   Makefiles for Mac OS X ]= 10.8 with clang C++ compiler version ]= 5.0
-</dd></dl>
-
-**[PCL]/src/modules/file-formats/[module_name]/windows/vc10**<br/>
-**[PCL]/src/modules/processes/[module_name]/windows/vc10**
-
-<dl><dd>
-   Project files (.vcxproj) for Microsoft Visual C++ 2010
-</dd></dl>
-
-**[PCL]/src/modules/file-formats/[module_name]/windows/vc11**<br/>
-**[PCL]/src/modules/processes/[module_name]/windows/vc11**
-
-<dl><dd>
-   Project files (.vcxproj) for Microsoft Visual C++ 2012
+   Makefiles for Mac OS X >= 10.8 with clang C++ compiler/Xcode version >= 5.0
 </dd></dl>
 
 **[PCL]/src/modules/file-formats/[module_name]/windows/vc12**<br/>
@@ -122,15 +108,13 @@ Here is a list of subdirectories, along with descriptions of the files therein. 
 The current versions of PCL have been successfully compiled and tested with:
 
    * FreeBSD 10: System clang compiler
-   * Linux: GCC C++ compiler 4.7.4 or higher
-   * Mac OS X 10.8/10.9: Clang C++ compiler - Xcode 5.0.0 or later
-   * Mac OS X 10.6/10.7: Clang C++ compiler - Xcode 3.2 - 4.6.x
-   * Windows XP/Vista/7/8.x: Microsoft Visual C++ 2010, 2012 and 2013
+   * Linux: GCC C++ compiler 4.8.3
+   * Mac OS X 10.10: Clang C++ compiler with Xcode 6.3
+   * Windows XP/Vista/7/8.x: Microsoft Visual C++ 2013
 
 The GCC and clang C++ compilers provide higher conformance to ISO C++ standards and are high quality development tools. On FreeBSD and Mac OS X we rely on the Clang/LLVM compiler included with the latest versions of Xcode and FreeBSD.
 
-On Windows, we provide project files for the Microsoft Visual Studio integrated development environment (.vcproj and .vcxproj files). We support Visual C++ 2010, 2012 and 2013. An excellent option on Windows is Visual C++ Express
-Edition, which is free and includes a full featured development environment with an optimizing compiler. As far as we know, Express editions of Visual C++ can be used to develop commercial products.
+On Windows, we provide project files for the Microsoft Visual Studio integrated development environment (.vcproj and .vcxproj files). As of PCL version 2.1, we only support Visual C++ 2013. An excellent option on Windows is Visual C++ Express Edition, which is free and includes a full featured development environment with an optimizing compiler. As far as we know, Express editions of Visual C++ can be used to develop commercial products.
 
 
 ## Environment Variables

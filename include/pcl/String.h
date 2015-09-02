@@ -3766,7 +3766,7 @@ protected:
             i = len;
          if ( IsUnique() )
          {
-            if ( m_data->capacity - m_data->string < newLen+1 )
+            if ( size_type( m_data->capacity - m_data->string ) < newLen+1 )
             {
                iterator old = m_data->string;
                m_data->Allocate( newLen );
@@ -3997,7 +3997,7 @@ protected:
       {
          if (    endIndex <= startIndex
               || m_patternLength <= 0
-              || endIndex-startIndex < m_patternLength
+              || endIndex-startIndex < size_type( m_patternLength )
               || text == nullptr
               || m_pattern == nullptr )
             return endIndex;

@@ -907,6 +907,9 @@ public:
    /*!
     * Assigns a copy of the null-terminated character sequence stored in the
     * specified array \a t to this string.
+    *
+    * If \a t is a pointer to the contents of this string (or, equivalently, an
+    * iterator on this string), this function invokes undefined behavior.
     */
    void Assign( const_c_string t )
    {
@@ -924,9 +927,12 @@ public:
     * Assigns a copy of the character sequence defined by the range [i,j) to
     * this string.
     *
-    * if \a i is greater than or equal to \a j, this function empties the string
+    * If \a i is greater than or equal to \a j, this function empties the string
     * by calling Clear(). Otherwise this function will assign the specified
     * sequence of characters.
+    *
+    * If \a i and/or \a j are iterators on this string, this function invokes
+    * undefined behavior.
     *
     * \b Important - Note that this function is \e not equivalent to:
     *
@@ -953,8 +959,11 @@ public:
     * Assigns a copy of at most \a n characters stored in the null-terminated
     * sequence \a t, starting from its \a i-th character, to this string.
     *
-    * if \a t is the null pointer, or \a i is greater than the length of \a t,
+    * If \a t is the null pointer, or \a i is greater than the length of \a t,
     * or \a n is zero, this function empties the string by calling Clear().
+    *
+    * If \a t is a pointer to the contents of this string (or, equivalently, an
+    * iterator on this string), this function invokes undefined behavior.
     *
     * The character count \a n will be constrained to copy existing characters
     * from the null-terminated source sequence.
@@ -1573,6 +1582,9 @@ public:
     * Replaces a segment of at most \a n contiguous characters, starting at the
     * \a i-th character in this string, with a copy of a null-terminated
     * sequence \a t.
+    *
+    * If \a t is a pointer to the contents of this string (or, equivalently, an
+    * iterator on this string), this function invokes undefined behavior.
     */
    void Replace( size_type i, size_type n, const_c_string t )
    {
@@ -1738,7 +1750,7 @@ public:
                else
                {
                   if ( i < newLen )
-                     R::Copy( m_data->string+i, m_data->string+i+n, newLen-i );
+                     R::CopyOverlapped( m_data->string+i, m_data->string+i+n, newLen-i );
                   m_data->SetLength( newLen );
                }
             }
@@ -3820,7 +3832,7 @@ protected:
             else
             {
                if ( left != m_data->string ) // trim left
-                  R::Copy( m_data->string, left, len );
+                  R::CopyOverlapped( m_data->string, left, len );
                m_data->SetLength( len );     // trim right
             }
          }

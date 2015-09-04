@@ -53,6 +53,7 @@
 #include "UnsharpMaskInstance.h"
 #include "UnsharpMaskParameters.h"
 
+#include <pcl/AutoPointer.h>
 #include <pcl/AutoViewLock.h>
 #include <pcl/View.h>
 #include <pcl/StdStatus.h>
@@ -221,21 +222,12 @@ private:
        * limit has been determined empirically.
        */
 
-      ImageTransformation* T;
-      SeparableConvolution Csep;
-      FFTConvolution Cfft;
-
       GaussianFilter G( instance.sigma, 0.05F );
-      if ( G.Size() <= 49 )
-      {
-         Csep = SeparableConvolution( G.AsSeparableFilter() );
-         T = &Csep;
-      }
+      AutoPointer<ImageTransformation> T;
+      if ( G.Size() < 49 )
+         T = new SeparableConvolution( G.AsSeparableFilter() );
       else
-      {
-         Cfft = FFTConvolution( G );
-         T = &Cfft;
-      }
+         T = new FFTConvolution( G );
 
       double a = 1 - 0.499*instance.amount;
       double a1 = a/(a+a - 1);

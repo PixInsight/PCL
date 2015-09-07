@@ -59,7 +59,6 @@ namespace pcl
 
 NumericEdit::NumericEdit( Control& parent ) :
    Control( parent ),
-   m_handlers( nullptr ),
    m_value( 0 ),
    m_lowerBound( 0 ),
    m_upperBound( 1 ),
@@ -204,14 +203,14 @@ void NumericEdit::SetScientificNotationTriggerExponent( int exp10 )
 
 #define INIT_EVENT_HANDLERS()    \
    __PCL_NO_ALIAS_HANDLERS;      \
-   if ( m_handlers == nullptr )  \
+   if ( m_handlers.IsNull() )    \
       m_handlers = new EventHandlers
 
 void NumericEdit::OnValueUpdated( value_event_handler f, Control& c )
 {
    if ( f == nullptr || c.IsNull() )
    {
-      if ( m_handlers != nullptr )
+      if ( !m_handlers.IsNull() )
       {
          m_handlers->onValueUpdated = nullptr;
          m_handlers->onValueUpdatedReceiver = nullptr;
@@ -260,7 +259,7 @@ void NumericEdit::EditCompleted( Edit& sender )
          m_value = newValue;
       UpdateControls();
       if ( changed )
-         if ( m_handlers != nullptr )
+         if ( !m_handlers.IsNull() )
             if ( m_handlers->onValueUpdated != nullptr )
                (m_handlers->onValueUpdatedReceiver->*m_handlers->onValueUpdated)( *this, m_value );
       return;
@@ -350,7 +349,7 @@ void NumericControl::ValueUpdated( Slider& sender, int v )
       m_value = newValue;
       edit.SetText( ValueAsString() );
 
-      if ( m_handlers != nullptr )
+      if ( !m_handlers.IsNull() )
          if ( m_handlers->onValueUpdated != nullptr )
             (m_handlers->onValueUpdatedReceiver->*m_handlers->onValueUpdated)( *this, m_value );
    }

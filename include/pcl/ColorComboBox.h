@@ -64,6 +64,10 @@
 #include <pcl/Color.h>
 #endif
 
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
 #ifndef __PCL_ComboBox_h
 #include <pcl/ComboBox.h>
 #endif
@@ -111,8 +115,6 @@ public:
     */
    virtual ~ColorComboBox()
    {
-      if ( m_handlers != nullptr )
-         delete m_handlers, m_handlers = nullptr;
    }
 
    /*!
@@ -252,8 +254,8 @@ private:
       EventHandlers& operator =( const EventHandlers& ) = default;
    };
 
-   EventHandlers* m_handlers;
-   RGBA           m_customColor;
+   AutoPointer<EventHandlers> m_handlers;
+   RGBA                       m_customColor;
 
    void ItemSelected( ComboBox&, int );
    void ItemHighlighted( ComboBox&, int );

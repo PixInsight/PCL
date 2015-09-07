@@ -195,7 +195,7 @@ public:
 
 #define INIT_EVENT_HANDLERS()    \
    __PCL_NO_ALIAS_HANDLERS;      \
-   if ( m_handlers == nullptr )  \
+   if ( m_handlers.IsNull() )    \
       m_handlers = new EventHandlers
 
 void Button::OnClick( click_event_handler f, Control& receiver )

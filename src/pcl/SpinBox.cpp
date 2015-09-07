@@ -70,8 +70,7 @@ namespace pcl
  */
 
 SpinBox::SpinBox( Control& parent ) :
-   Control( (*API->SpinBox->CreateSpinBox)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) ),
-   m_handlers( nullptr )
+   Control( (*API->SpinBox->CreateSpinBox)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) )
 {
    if ( IsNull() )
       throw APIFunctionError( "CreateSpinBox" );
@@ -284,7 +283,7 @@ public:
 
 #define INIT_EVENT_HANDLERS()    \
    __PCL_NO_ALIAS_HANDLERS;      \
-   if ( m_handlers == nullptr )  \
+   if ( m_handlers.IsNull() )    \
       m_handlers = new EventHandlers
 
 void SpinBox::OnValueUpdated( value_event_handler f, Control& receiver )

@@ -60,6 +60,10 @@
 #include <pcl/Defs.h>
 #endif
 
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
 #ifndef __PCL_ProcessBase_h
 #include <pcl/ProcessBase.h>
 #endif
@@ -348,7 +352,7 @@ public:
 
 private:
 
-   ProcessPrivate* data;
+   AutoPointer<ProcessPrivate> m_data;
 
    Process( const void* );
 

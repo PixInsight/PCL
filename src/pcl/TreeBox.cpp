@@ -65,8 +65,7 @@ namespace pcl
 #endif
 
 TreeBox::TreeBox( Control& parent ) :
-   ScrollBox( (*API->TreeBox->CreateTreeBox)( ModuleHandle(), this, parent.handle, 0/*flags*/ ), nullptr ),
-   m_handlers( nullptr )
+   ScrollBox( (*API->TreeBox->CreateTreeBox)( ModuleHandle(), this, parent.handle, 0/*flags*/ ), nullptr )
 {
    if ( IsNull() )
       throw APIFunctionError( "CreateTreeBox" );
@@ -909,14 +908,14 @@ public:
 
 #define INIT_EVENT_HANDLERS()    \
    __PCL_NO_ALIAS_HANDLERS;      \
-   if ( m_handlers == nullptr )  \
+   if ( m_handlers.IsNull() )    \
       m_handlers = new EventHandlers
 
 void TreeBox::OnCurrentNodeUpdated( node_navigation_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->TreeBox->SetTreeBoxCurrentNodeUpdatedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? TreeBoxEventDispatcher::CurrentNodeUpdated : 0 ) == api_false )
+                  (f != nullptr) ? TreeBoxEventDispatcher::CurrentNodeUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetTreeBoxCurrentNodeUpdatedEventRoutine" );
    m_handlers->onCurrentNodeUpdated = f;
 }
@@ -925,7 +924,7 @@ void TreeBox::OnNodeActivated( node_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->TreeBox->SetTreeBoxNodeActivatedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? TreeBoxEventDispatcher::NodeActivated : 0 ) == api_false )
+                  (f != nullptr) ? TreeBoxEventDispatcher::NodeActivated : nullptr ) == api_false )
       throw APIFunctionError( "SetTreeBoxNodeActivatedEventRoutine" );
    m_handlers->onNodeActivated = f;
 }
@@ -934,7 +933,7 @@ void TreeBox::OnNodeUpdated( node_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->TreeBox->SetTreeBoxNodeUpdatedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? TreeBoxEventDispatcher::NodeUpdated : 0 ) == api_false )
+                  (f != nullptr) ? TreeBoxEventDispatcher::NodeUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetTreeBoxNodeUpdatedEventRoutine" );
    m_handlers->onNodeUpdated = f;
 }
@@ -943,7 +942,7 @@ void TreeBox::OnNodeEntered( node_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->TreeBox->SetTreeBoxNodeEnteredEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? TreeBoxEventDispatcher::NodeEntered : 0 ) == api_false )
+                  (f != nullptr) ? TreeBoxEventDispatcher::NodeEntered : nullptr ) == api_false )
       throw APIFunctionError( "SetTreeBoxNodeEnteredEventRoutine" );
    m_handlers->onNodeEntered = f;
 }
@@ -952,7 +951,7 @@ void TreeBox::OnNodeClicked( node_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->TreeBox->SetTreeBoxNodeClickedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? TreeBoxEventDispatcher::NodeClicked : 0 ) == api_false )
+                  (f != nullptr) ? TreeBoxEventDispatcher::NodeClicked : nullptr ) == api_false )
       throw APIFunctionError( "SetTreeBoxNodeClickedEventRoutine" );
    m_handlers->onNodeClicked = f;
 }
@@ -961,7 +960,7 @@ void TreeBox::OnNodeDoubleClicked( node_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->TreeBox->SetTreeBoxNodeDoubleClickedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? TreeBoxEventDispatcher::NodeDoubleClicked : 0 ) == api_false )
+                  (f != nullptr) ? TreeBoxEventDispatcher::NodeDoubleClicked : nullptr ) == api_false )
       throw APIFunctionError( "SetTreeBoxNodeDoubleClickedEventRoutine" );
    m_handlers->onNodeDoubleClicked = f;
 }
@@ -970,7 +969,7 @@ void TreeBox::OnNodeExpanded( node_expand_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->TreeBox->SetTreeBoxNodeExpandedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? TreeBoxEventDispatcher::NodeExpanded : 0 ) == api_false )
+                  (f != nullptr) ? TreeBoxEventDispatcher::NodeExpanded : nullptr ) == api_false )
       throw APIFunctionError( "SetTreeBoxNodeExpandedEventRoutine" );
    m_handlers->onNodeExpanded = f;
 }
@@ -979,7 +978,7 @@ void TreeBox::OnNodeCollapsed( node_expand_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->TreeBox->SetTreeBoxNodeCollapsedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? TreeBoxEventDispatcher::NodeCollapsed : 0 ) == api_false )
+                  (f != nullptr) ? TreeBoxEventDispatcher::NodeCollapsed : nullptr ) == api_false )
       throw APIFunctionError( "SetTreeBoxNodeCollapsedEventRoutine" );
    m_handlers->onNodeCollapsed = f;
 }
@@ -988,7 +987,7 @@ void TreeBox::OnNodeSelectionUpdated( tree_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->TreeBox->SetTreeBoxNodeSelectionUpdatedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? TreeBoxEventDispatcher::NodeSelectionUpdated : 0 ) == api_false )
+                  (f != nullptr) ? TreeBoxEventDispatcher::NodeSelectionUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetTreeBoxNodeSelectionUpdatedEventRoutine" );
    m_handlers->onNodeSelectionUpdated = f;
 }

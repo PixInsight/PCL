@@ -406,7 +406,8 @@ private:
 // ----------------------------------------------------------------------------
 
 RandomNumberGenerator::RandomNumberGenerator( double ymax, uint32 seed ) :
-   m_generator( nullptr ), m_ymax( ymax ), m_normal( false )
+   m_ymax( ymax ),
+   m_normal( false )
 {
    m_generator = new FastMersenneTwister( seed ? seed : RandomSeed32() );
    if ( m_ymax < 0 || 1 + m_ymax == 1 )
@@ -416,8 +417,6 @@ RandomNumberGenerator::RandomNumberGenerator( double ymax, uint32 seed ) :
 
 RandomNumberGenerator::~RandomNumberGenerator()
 {
-   if ( m_generator != nullptr )
-      delete m_generator, m_generator = nullptr;
 }
 
 uint32 RandomNumberGenerator::Rand32()

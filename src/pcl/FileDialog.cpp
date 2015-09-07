@@ -66,10 +66,6 @@ public:
 
    typedef FileDialog::filter_list filter_list;
 
-   FileDialogPrivate() : caption(), initialPath(), filters(), fileExtension()
-   {
-   }
-
    String MakeAPIFilters() const
    {
       String apiFilters;
@@ -140,24 +136,6 @@ public:
 
 // ----------------------------------------------------------------------------
 
-FileFilter::FileFilter() : description(), extensions()
-{
-}
-
-FileFilter::FileFilter( const FileFilter& x ) : description( x.description ), extensions( x.extensions )
-{
-}
-
-FileFilter::~FileFilter()
-{
-}
-
-void FileFilter::SetDescription( const String& dsc )
-{
-   description = dsc;
-}
-
-
 void FileFilter::AddExtension( const String& ext )
 {
    String x = ext.Trimmed();
@@ -207,15 +185,13 @@ String FileFilter::MakeAPIFilter() const
 
 // ----------------------------------------------------------------------------
 
-FileDialog::FileDialog() : p( nullptr )
+FileDialog::FileDialog()
 {
    p = new FileDialogPrivate();
 }
 
 FileDialog::~FileDialog()
 {
-   if ( p != nullptr )
-      delete p, p = nullptr;
 }
 
 String FileDialog::Caption() const
@@ -264,15 +240,11 @@ class OpenFileDialogPrivate
 {
 public:
 
-   OpenFileDialogPrivate() : multipleSelections( false ), fileNames()
-   {
-   }
-
-   bool       multipleSelections;
+   bool       multipleSelections = false;
    StringList fileNames;
 };
 
-OpenFileDialog::OpenFileDialog() : FileDialog(), q( nullptr )
+OpenFileDialog::OpenFileDialog() : FileDialog()
 {
    q = new OpenFileDialogPrivate();
    p->caption = "Open File";
@@ -280,8 +252,6 @@ OpenFileDialog::OpenFileDialog() : FileDialog(), q( nullptr )
 
 OpenFileDialog::~OpenFileDialog()
 {
-   if ( q != nullptr )
-      delete q, q = nullptr;
 }
 
 void OpenFileDialog::LoadImageFilters()
@@ -365,15 +335,11 @@ class SaveFileDialogPrivate
 {
 public:
 
-   SaveFileDialogPrivate() : overwritePrompt( true ), fileName()
-   {
-   }
-
-   bool   overwritePrompt;
+   bool   overwritePrompt = true;
    String fileName;
 };
 
-SaveFileDialog::SaveFileDialog() : FileDialog(), q( nullptr )
+SaveFileDialog::SaveFileDialog() : FileDialog()
 {
    q = new SaveFileDialogPrivate();
    p->caption = "Save File As";
@@ -381,8 +347,6 @@ SaveFileDialog::SaveFileDialog() : FileDialog(), q( nullptr )
 
 SaveFileDialog::~SaveFileDialog()
 {
-   if ( q != nullptr )
-      delete q, q = nullptr;
 }
 
 void SaveFileDialog::LoadImageFilters()
@@ -434,14 +398,10 @@ class GetDirectoryDialogPrivate
 {
 public:
 
-   GetDirectoryDialogPrivate() : directory()
-   {
-   }
-
    String directory;
 };
 
-GetDirectoryDialog::GetDirectoryDialog() : FileDialog(), q( nullptr )
+GetDirectoryDialog::GetDirectoryDialog() : FileDialog()
 {
    q = new GetDirectoryDialogPrivate();
    p->caption = "Select Directory";
@@ -449,8 +409,6 @@ GetDirectoryDialog::GetDirectoryDialog() : FileDialog(), q( nullptr )
 
 GetDirectoryDialog::~GetDirectoryDialog()
 {
-   if ( q != nullptr )
-      delete q, q = nullptr;
 }
 
 bool GetDirectoryDialog::Execute()

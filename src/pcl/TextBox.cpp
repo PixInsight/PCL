@@ -64,8 +64,7 @@ namespace pcl
 #endif
 
 TextBox::TextBox( const String& text, Control& parent ) :
-   Frame( (*API->TextBox->CreateTextBox)( ModuleHandle(), this, text.c_str(), parent.handle, 0/*flags*/ ) ),
-   m_handlers( nullptr )
+   Frame( (*API->TextBox->CreateTextBox)( ModuleHandle(), this, text.c_str(), parent.handle, 0/*flags*/ ) )
 {
    if ( IsNull() )
       throw APIFunctionError( "CreateTextBox" );
@@ -218,7 +217,7 @@ public:
 
 #define INIT_EVENT_HANDLERS()    \
    __PCL_NO_ALIAS_HANDLERS;      \
-   if ( m_handlers == nullptr )  \
+   if ( m_handlers.IsNull() )    \
       m_handlers = new EventHandlers
 
 void TextBox::OnTextUpdated( unicode_event_handler f, Control& receiver )

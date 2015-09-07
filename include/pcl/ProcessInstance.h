@@ -692,7 +692,10 @@ public:
 
 private:
 
-   ProcessInstance( void* );
+   ProcessInstance( void* h ) : UIObject( h )
+   {
+   }
+
    virtual void* CloneHandle() const;
 
    friend class ProcessInstancePrivate;

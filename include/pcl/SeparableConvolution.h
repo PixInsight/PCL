@@ -62,6 +62,10 @@
 #include <pcl/Diagnostics.h>
 #endif
 
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
 #ifndef __PCL_InterlacedTransformation_h
 #include <pcl/InterlacedTransformation.h>
 #endif
@@ -105,8 +109,8 @@ public:
     */
    SeparableConvolution() :
       InterlacedTransformation(),
-      m_filter( nullptr ), m_weight( 0 ), m_highPass( false ),
-      m_rawHighPass( false ), m_rescaleHighPass( false ),
+      m_weight( 0 ),
+      m_highPass( false ), m_rawHighPass( false ), m_rescaleHighPass( false ),
       m_convolveRows( true ), m_convolveCols( true ),
       m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
@@ -123,8 +127,8 @@ public:
     */
    SeparableConvolution( const SeparableFilter& filter ) :
       InterlacedTransformation(),
-      m_filter( nullptr ), m_weight( 0 ), m_highPass( false ),
-      m_rawHighPass( false ), m_rescaleHighPass( false ),
+      m_weight( 0 ),
+      m_highPass( false ), m_rawHighPass( false ), m_rescaleHighPass( false ),
       m_convolveRows( true ), m_convolveCols( true ),
       m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
@@ -136,12 +140,12 @@ public:
     */
    SeparableConvolution( const SeparableConvolution& x ) :
       InterlacedTransformation( x ),
-      m_filter( nullptr ), m_weight( x.m_weight ), m_highPass( x.m_highPass ),
-      m_rawHighPass( x.m_rawHighPass ), m_rescaleHighPass( x.m_rescaleHighPass ),
+      m_weight( x.m_weight ),
+      m_highPass( x.m_highPass ), m_rawHighPass( x.m_rawHighPass ), m_rescaleHighPass( x.m_rescaleHighPass ),
       m_convolveRows( x.m_convolveRows ), m_convolveCols( x.m_convolveCols ),
       m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
    {
-      if ( x.m_filter != nullptr )
+      if ( !x.m_filter.IsNull() )
          m_filter = x.m_filter->Clone();
    }
 
@@ -150,12 +154,13 @@ public:
     */
    SeparableConvolution( SeparableConvolution&& x ) :
       InterlacedTransformation( x ),
-      m_filter( x.m_filter ), m_weight( x.m_weight ), m_highPass( x.m_highPass ),
-      m_rawHighPass( x.m_rawHighPass ), m_rescaleHighPass( x.m_rescaleHighPass ),
+      m_filter( x.m_filter ),
+      m_weight( x.m_weight ),
+      m_highPass( x.m_highPass ), m_rawHighPass( x.m_rawHighPass ), m_rescaleHighPass( x.m_rescaleHighPass ),
       m_convolveRows( x.m_convolveRows ), m_convolveCols( x.m_convolveCols ),
       m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
    {
-      x.m_filter = nullptr;
+      //x.m_filter = nullptr; // already done by AutoPointer
    }
 
    /*!
@@ -163,7 +168,6 @@ public:
     */
    virtual ~SeparableConvolution()
    {
-      Destroy();
    }
 
    /*!
@@ -174,8 +178,9 @@ public:
       if ( &x != this )
       {
          (void)InterlacedTransformation::operator =( x );
-         Destroy();
-         if ( x.m_filter != nullptr )
+         if ( x.m_filter.IsNull() )
+            m_filter.Destroy();
+         else
             m_filter = x.m_filter->Clone();
          m_weight = x.m_weight;
          m_highPass = x.m_highPass;
@@ -197,7 +202,6 @@ public:
       if ( &x != this )
       {
          (void)InterlacedTransformation::operator =( x );
-         Destroy();
          m_filter = x.m_filter;
          m_weight = x.m_weight;
          m_highPass = x.m_highPass;
@@ -207,7 +211,7 @@ public:
          m_convolveCols = x.m_convolveCols;
          m_parallel = x.m_parallel;
          m_maxProcessors = x.m_maxProcessors;
-         x.m_filter = nullptr;
+         //x.m_filter = nullptr; // already done by AutoPointer
       }
       return *this;
    }
@@ -221,7 +225,7 @@ public:
     */
    const SeparableFilter& Filter() const
    {
-      PCL_PRECONDITION( m_filter != nullptr )
+      PCL_PRECONDITION( !m_filter.IsNull() )
       return *m_filter;
    }
 
@@ -236,7 +240,7 @@ public:
     */
    coefficient_vector Filter( int phase ) const
    {
-      PCL_PRECONDITION( m_filter != nullptr )
+      PCL_PRECONDITION( !m_filter.IsNull() )
       return m_filter->Filter( phase );
    }
 
@@ -245,7 +249,6 @@ public:
     */
    void SetFilter( const SeparableFilter& filter )
    {
-      DestroyFilter();
       m_filter = filter.Clone();
       CacheFilterProperties();
    }
@@ -417,7 +420,7 @@ public:
     */
    int OverlappingDistance() const
    {
-      PCL_PRECONDITION( m_filter != nullptr )
+      PCL_PRECONDITION( !m_filter.IsNull() )
       return m_filter->Size() + (m_filter->Size() - 1)*(InterlacingDistance() - 1);
    }
 
@@ -498,7 +501,7 @@ protected:
    /*
     * The response function for convolution is a separable filter.
     */
-   SeparableFilter* m_filter;
+   AutoPointer<SeparableFilter> m_filter;
 
    /*
     * Cached filter properties.
@@ -529,24 +532,13 @@ private:
 
    void CacheFilterProperties()
    {
-      PCL_PRECONDITION( m_filter != nullptr )
+      PCL_PRECONDITION( !m_filter.IsNull() )
       PCL_PRECONDITION( !m_filter->IsEmpty() )
       ValidateFilter();
       m_highPass = m_filter->IsHighPassFilter();
       m_weight = m_filter->Weight();
       if ( pcl::Abs( m_weight ) < __PCL_SEPARABLE_CONVOLUTION_TINY_WEIGHT )
          m_weight = 1;
-   }
-
-   void Destroy()
-   {
-      DestroyFilter();
-   }
-
-   void DestroyFilter()
-   {
-      if ( m_filter != nullptr )
-         delete m_filter, m_filter = nullptr;
    }
 
    void ValidateFilter() const;

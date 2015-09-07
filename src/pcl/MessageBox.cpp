@@ -66,7 +66,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-class MessageBox::MessageBoxPrivate
+class MessageBoxPrivate
 {
    MessageBoxPrivate( const String&           aText,
                       const String&           aCaption,
@@ -104,7 +104,7 @@ MessageBox::MessageBox( const String& text,
                         std_button    button1,
                         std_button    button2,
                         int           defaultButton,
-                        int           escapeButton ) : p( nullptr )
+                        int           escapeButton )
 {
    p = new MessageBoxPrivate( text, caption, icon, button0, button1, button2, defaultButton, escapeButton );
 }
@@ -113,8 +113,6 @@ MessageBox::MessageBox( const String& text,
 
 MessageBox::~MessageBox()
 {
-   if ( p != nullptr )
-      delete p, p = nullptr;
 }
 
 // ----------------------------------------------------------------------------

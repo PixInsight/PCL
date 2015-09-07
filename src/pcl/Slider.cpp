@@ -70,8 +70,7 @@ namespace pcl
  */
 
 Slider::Slider( Control& parent, bool vertical ) :
-   Control( (*API->Slider->CreateSlider)( ModuleHandle(), this, vertical, parent.handle, 0/*flags*/ ) ),
-   m_handlers( nullptr )
+   Control( (*API->Slider->CreateSlider)( ModuleHandle(), this, vertical, parent.handle, 0/*flags*/ ) )
 {
    if ( IsNull() )
       throw APIFunctionError( "CreateSlider" );
@@ -223,7 +222,7 @@ public:
 
 #define INIT_EVENT_HANDLERS()    \
    __PCL_NO_ALIAS_HANDLERS;      \
-   if ( m_handlers == nullptr )  \
+   if ( m_handlers.IsNull() )    \
       m_handlers = new EventHandlers
 
 void Slider::OnValueUpdated( value_event_handler f, Control& receiver )

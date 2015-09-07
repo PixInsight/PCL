@@ -100,10 +100,11 @@ private:
 
 // ----------------------------------------------------------------------------
 
-Process::Process( const IsoString& id ) : ProcessBase(), data( nullptr )
+Process::Process( const IsoString& id ) :
+   ProcessBase()
 {
-   data = new ProcessPrivate( (*API->Process->GetProcessByName)( ModuleHandle(), id.c_str() ) );
-   if ( data->handle == nullptr )
+   m_data = new ProcessPrivate( (*API->Process->GetProcessByName)( ModuleHandle(), id.c_str() ) );
+   if ( m_data->handle == nullptr )
    {
       if ( id.IsEmpty() )
          throw Error( "Process: Empty process identifier specified" );
@@ -114,22 +115,22 @@ Process::Process( const IsoString& id ) : ProcessBase(), data( nullptr )
    }
 }
 
-Process::Process( const Process& p ) : ProcessBase(), data( nullptr )
+Process::Process( const Process& p ) :
+   ProcessBase()
 {
-   data = new ProcessPrivate( p.data->handle );
+   m_data = new ProcessPrivate( p.m_data->handle );
 }
 
-Process::Process( const void* handle ) : ProcessBase(), data( nullptr )
+Process::Process( const void* handle ) :
+   ProcessBase()
 {
-   data = new ProcessPrivate( handle );
-   if ( data->handle == nullptr )
+   m_data = new ProcessPrivate( handle );
+   if ( m_data->handle == nullptr )
       throw Error( "Process: Null process handle" );
 }
 
 Process::~Process()
 {
-   if ( data != nullptr )
-      delete data, data = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -137,13 +138,13 @@ Process::~Process()
 IsoString Process::Id() const
 {
    size_type len = 0;
-   (*API->Process->GetProcessIdentifier)( data->handle, 0, &len );
+   (*API->Process->GetProcessIdentifier)( m_data->handle, 0, &len );
 
    IsoString id;
    if ( len > 0 )
    {
       id.SetLength( len );
-      if ( (*API->Process->GetProcessIdentifier)( data->handle, id.c_str(), &len ) == api_false )
+      if ( (*API->Process->GetProcessIdentifier)( m_data->handle, id.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetProcessIdentifier" );
       id.ResizeToNullTerminated();
    }
@@ -155,14 +156,14 @@ IsoString Process::Id() const
 IsoStringList Process::Aliases() const
 {
    size_type len = 0;
-   (*API->Process->GetProcessAliasIdentifiers)( data->handle, 0, &len );
+   (*API->Process->GetProcessAliasIdentifiers)( m_data->handle, 0, &len );
 
    IsoStringList aliases;
    if ( len > 0 )
    {
       IsoString csAliases;
       csAliases.SetLength( len );
-      if ( (*API->Process->GetProcessAliasIdentifiers)( data->handle, csAliases.c_str(), &len ) == api_false )
+      if ( (*API->Process->GetProcessAliasIdentifiers)( m_data->handle, csAliases.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetProcessAliasIdentifiers" );
       csAliases.ResizeToNullTerminated();
       csAliases.Break( aliases, ',' );
@@ -175,14 +176,14 @@ IsoStringList Process::Aliases() const
 IsoStringList Process::Categories() const
 {
    size_type len = 0;
-   (*API->Process->GetProcessCategory)( data->handle, 0, &len );
+   (*API->Process->GetProcessCategory)( m_data->handle, 0, &len );
 
    IsoStringList categories;
    if ( len > 0 )
    {
       IsoString csCategories;
       csCategories.SetLength( len );
-      if ( (*API->Process->GetProcessCategory)( data->handle, csCategories.c_str(), &len ) == api_false )
+      if ( (*API->Process->GetProcessCategory)( m_data->handle, csCategories.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetProcessCategory" );
       csCategories.ResizeToNullTerminated();
       csCategories.Break( categories, ',' );
@@ -194,7 +195,7 @@ IsoStringList Process::Categories() const
 
 uint32 Process::Version() const
 {
-   return (*API->Process->GetProcessVersion)( data->handle );
+   return (*API->Process->GetProcessVersion)( m_data->handle );
 }
 
 // ----------------------------------------------------------------------------
@@ -202,13 +203,13 @@ uint32 Process::Version() const
 String Process::Description() const
 {
    size_type len = 0;
-   (*API->Process->GetProcessDescription)( data->handle, 0, &len );
+   (*API->Process->GetProcessDescription)( m_data->handle, 0, &len );
 
    String description;
    if ( len > 0 )
    {
       description.SetLength( len );
-      if ( (*API->Process->GetProcessDescription)( data->handle, description.c_str(), &len ) == api_false )
+      if ( (*API->Process->GetProcessDescription)( m_data->handle, description.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetProcessDescription" );
       description.ResizeToNullTerminated();
    }
@@ -220,13 +221,13 @@ String Process::Description() const
 String Process::ScriptComment() const
 {
    size_type len = 0;
-   (*API->Process->GetProcessScriptComment)( data->handle, 0, &len );
+   (*API->Process->GetProcessScriptComment)( m_data->handle, 0, &len );
 
    String comment;
    if ( len > 0 )
    {
       comment.SetLength( len );
-      if ( (*API->Process->GetProcessScriptComment)( data->handle, comment.c_str(), &len ) == api_false )
+      if ( (*API->Process->GetProcessScriptComment)( m_data->handle, comment.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetProcessScriptComment" );
       comment.ResizeToNullTerminated();
    }
@@ -237,112 +238,112 @@ String Process::ScriptComment() const
 
 Bitmap Process::Icon() const
 {
-   return Bitmap( (*API->Process->GetProcessIcon)( data->handle ) );
+   return Bitmap( (*API->Process->GetProcessIcon)( m_data->handle ) );
 }
 
 // ----------------------------------------------------------------------------
 
 Bitmap Process::SmallIcon() const
 {
-   return Bitmap( (*API->Process->GetProcessSmallIcon)( data->handle ) );
+   return Bitmap( (*API->Process->GetProcessSmallIcon)( m_data->handle ) );
 }
 
 // ----------------------------------------------------------------------------
 
 bool Process::CanProcessViews() const
 {
-   return data->properties.canProcessViews;
+   return m_data->properties.canProcessViews;
 }
 
 // ----------------------------------------------------------------------------
 
 bool Process::CanProcessGlobal() const
 {
-   return data->properties.canProcessGlobal;
+   return m_data->properties.canProcessGlobal;
 }
 
 // ----------------------------------------------------------------------------
 
 bool Process::CanProcessImages() const
 {
-   return data->properties.canProcessImages;
+   return m_data->properties.canProcessImages;
 }
 
 // ----------------------------------------------------------------------------
 
 bool Process::CanProcessCommandLines() const
 {
-   return data->properties.canProcessCommandLines;
+   return m_data->properties.canProcessCommandLines;
 }
 
 // ----------------------------------------------------------------------------
 
 bool Process::CanEditPreferences() const
 {
-   return data->properties.canEditPreferences;
+   return m_data->properties.canEditPreferences;
 }
 
 // ----------------------------------------------------------------------------
 
 bool Process::CanBrowseDocumentation() const
 {
-   return data->properties.canBrowseDocumentation;
+   return m_data->properties.canBrowseDocumentation;
 }
 
 // ----------------------------------------------------------------------------
 
 bool Process::IsAssignable() const
 {
-   return data->properties.isAssignable;
+   return m_data->properties.isAssignable;
 }
 
 // ----------------------------------------------------------------------------
 
 bool Process::NeedsInitialization() const
 {
-   return data->properties.needsInitialization;
+   return m_data->properties.needsInitialization;
 }
 
 // ----------------------------------------------------------------------------
 
 bool Process::NeedsValidation() const
 {
-   return data->properties.needsValidation;
+   return m_data->properties.needsValidation;
 }
 
 // ----------------------------------------------------------------------------
 
 bool Process::PrefersGlobalExecution() const
 {
-   return data->properties.prefersGlobalExecution;
+   return m_data->properties.prefersGlobalExecution;
 }
 
 // ----------------------------------------------------------------------------
 
 bool Process::EditPreferences() const
 {
-   return (*API->Process->EditProcessPreferences)( data->handle ) != api_false;
+   return (*API->Process->EditProcessPreferences)( m_data->handle ) != api_false;
 }
 
 // ----------------------------------------------------------------------------
 
 bool Process::BrowseDocumentation() const
 {
-   return (*API->Process->BrowseProcessDocumentation)( data->handle, 0/*flags*/ ) != api_false;
+   return (*API->Process->BrowseProcessDocumentation)( m_data->handle, 0/*flags*/ ) != api_false;
 }
 
 // ----------------------------------------------------------------------------
 
 int Process::RunCommandLine( const String& arguments ) const
 {
-   return int( (*API->Process->RunProcessCommandLine)( data->handle, arguments.c_str() ) );
+   return int( (*API->Process->RunProcessCommandLine)( m_data->handle, arguments.c_str() ) );
 }
 
 // ----------------------------------------------------------------------------
 
 bool Process::Launch() const
 {
-   return (*API->Process->LaunchProcess)( data->handle ) != api_false;
+   return (*API->Process->LaunchProcess)( m_data->handle ) != api_false;
 }
 
 // ----------------------------------------------------------------------------
@@ -350,7 +351,7 @@ bool Process::Launch() const
 Process::parameter_list Process::Parameters() const
 {
    parameter_list parameters;
-   if ( (*API->Process->EnumerateProcessParameters)( data->handle,
+   if ( (*API->Process->EnumerateProcessParameters)( m_data->handle,
                   InternalParameterEnumerator::ParameterCallback, &parameters ) == api_false )
       throw APIFunctionError( "EnumerateProcessParameters" );
    return parameters;
@@ -360,27 +361,27 @@ Process::parameter_list Process::Parameters() const
 
 bool Process::HasParameter( const IsoString& paramId ) const
 {
-   return (*API->Process->GetParameterByName)( data->handle, paramId.c_str() ) != 0;
+   return (*API->Process->GetParameterByName)( m_data->handle, paramId.c_str() ) != 0;
 }
 
 bool Process::HasTableColumn( const IsoString& tableId, const IsoString& colId ) const
 {
-   meta_parameter_handle hTable = (*API->Process->GetParameterByName)( data->handle, tableId.c_str() );
-   return hTable != 0 && (*API->Process->GetTableColumnByName)( data->handle, colId.c_str() ) != 0;
+   meta_parameter_handle hTable = (*API->Process->GetParameterByName)( m_data->handle, tableId.c_str() );
+   return hTable != 0 && (*API->Process->GetTableColumnByName)( m_data->handle, colId.c_str() ) != 0;
 }
 
 // ----------------------------------------------------------------------------
 
 const void* Process::Handle() const
 {
-   return data->handle;
+   return m_data->handle;
 }
 
 // ----------------------------------------------------------------------------
 
-static api_bool CategoryEnumerationCallback( const char* category, void* data )
+static api_bool CategoryEnumerationCallback( const char* category, void* m_data )
 {
-   reinterpret_cast<IsoStringList*>( data )->Add( IsoString( category ) );
+   reinterpret_cast<IsoStringList*>( m_data )->Add( IsoString( category ) );
    return api_true;
 }
 
@@ -403,9 +404,9 @@ IsoStringList Process::AllProcessCategories()
 
 // ----------------------------------------------------------------------------
 
-api_bool InternalProcessEnumerator::ProcessCallback( meta_process_handle handle, void* data )
+api_bool InternalProcessEnumerator::ProcessCallback( meta_process_handle handle, void* m_data )
 {
-   reinterpret_cast<Array<Process>*>( data )->Add( Process( handle ) );
+   reinterpret_cast<Array<Process>*>( m_data )->Add( Process( handle ) );
    return api_true;
 }
 
@@ -429,9 +430,9 @@ struct ProcessesByCategoryEnumerationData
    }
 };
 
-api_bool InternalProcessEnumerator::CategoryCallback( meta_process_handle handle, void* data )
+api_bool InternalProcessEnumerator::CategoryCallback( meta_process_handle handle, void* m_data )
 {
-#define enumeration reinterpret_cast<ProcessesByCategoryEnumerationData*>( data )
+#define enumeration reinterpret_cast<ProcessesByCategoryEnumerationData*>( m_data )
    Process P( handle );
    if ( P.Categories().Contains( enumeration->category ) )
       enumeration->processes.Add( P );

@@ -62,6 +62,10 @@
 #include <pcl/Diagnostics.h>
 #endif
 
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
 #ifndef __PCL_InterlacedTransformation_h
 #include <pcl/InterlacedTransformation.h>
 #endif
@@ -107,7 +111,6 @@ public:
     */
    MorphologicalTransformation() :
       InterlacedTransformation(), ThresholdedTransformation(),
-      m_operator( nullptr ), m_structure( nullptr ),
       m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
    }
@@ -122,7 +125,6 @@ public:
     */
    MorphologicalTransformation( const MorphologicalOperator& op, const StructuringElement& structure ) :
       InterlacedTransformation(), ThresholdedTransformation(),
-      m_operator( nullptr ), m_structure( nullptr ),
       m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
       m_operator = op.Clone();
@@ -135,11 +137,10 @@ public:
     */
    MorphologicalTransformation( const MorphologicalTransformation& x ) :
       InterlacedTransformation( x ), ThresholdedTransformation( x ),
-      m_operator( nullptr ), m_structure( nullptr ),
       m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
    {
-      if ( x.m_operator != nullptr )
-         if ( x.m_structure != nullptr )
+      if ( !x.m_operator.IsNull() )
+         if ( !x.m_structure.IsNull() )
          {
             m_operator = x.m_operator->Clone();
             m_structure = x.m_structure->Clone();
@@ -154,8 +155,8 @@ public:
       m_operator( x.m_operator ), m_structure( x.m_structure ),
       m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
    {
-      x.m_operator = nullptr;
-      x.m_structure = nullptr;
+      //x.m_operator = nullptr;  // already done by AutoPointer
+      //x.m_structure = nullptr;
    }
 
    /*!
@@ -163,7 +164,6 @@ public:
     */
    virtual ~MorphologicalTransformation()
    {
-      Destroy();
    }
 
    /*!
@@ -175,9 +175,16 @@ public:
       {
          (void)InterlacedTransformation::operator =( x );
          (void)ThresholdedTransformation::operator =( x );
-         Destroy();
-         m_operator = x.m_operator->Clone();
-         m_structure = x.m_structure->Clone();
+         if ( !x.m_operator.IsNull() && !x.m_structure.IsNull() )
+         {
+            m_operator = x.m_operator->Clone();
+            m_structure = x.m_structure->Clone();
+         }
+         else
+         {
+            m_operator.Destroy();
+            m_structure.Destroy();
+         }
          m_parallel = x.m_parallel;
          m_maxProcessors = x.m_maxProcessors;
       }
@@ -193,13 +200,12 @@ public:
       {
          (void)InterlacedTransformation::operator =( x );
          (void)ThresholdedTransformation::operator =( x );
-         Destroy();
          m_operator = x.m_operator;
          m_structure = x.m_structure;
          m_parallel = x.m_parallel;
          m_maxProcessors = x.m_maxProcessors;
-         x.m_operator = nullptr;
-         x.m_structure = nullptr;
+         //x.m_operator = nullptr;  // already done by AutoPointer
+         //x.m_structure = nullptr;
       }
       return *this;
    }
@@ -210,7 +216,7 @@ public:
     */
    const MorphologicalOperator& Operator() const
    {
-      PCL_PRECONDITION( m_operator != nullptr )
+      PCL_PRECONDITION( !m_operator.IsNull() )
       return *m_operator;
    }
 
@@ -220,7 +226,6 @@ public:
     */
    void SetOperator( const MorphologicalOperator& op )
    {
-      DestroyOperator();
       m_operator = op.Clone();
    }
 
@@ -230,7 +235,7 @@ public:
     */
    const StructuringElement& Structure() const
    {
-      PCL_PRECONDITION( m_structure != nullptr )
+      PCL_PRECONDITION( !m_structure.IsNull() )
       return *m_structure;
    }
 
@@ -240,7 +245,6 @@ public:
     */
    void SetStructure( const StructuringElement& structure )
    {
-      DestroyStructure();
       m_structure = structure.Clone();
       m_structure->Initialize();
    }
@@ -253,7 +257,7 @@ public:
     */
    int OverlappingDistance() const
    {
-      PCL_PRECONDITION( m_structure != nullptr )
+      PCL_PRECONDITION( !m_structure.IsNull() )
       return m_structure->Size() + (m_structure->Size() - 1)*(InterlacingDistance() - 1);
    }
 
@@ -333,10 +337,10 @@ public:
 
 protected:
 
-   MorphologicalOperator* m_operator;          // morphological operator
-   StructuringElement*    m_structure;         // n-way structuring element
-   bool                   m_parallel      : 1; // use multiple execution threads
-   unsigned               m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT; // Maximum number of processors allowed
+   AutoPointer<MorphologicalOperator> m_operator;          // morphological operator
+   AutoPointer<StructuringElement>    m_structure;         // n-way structuring element
+   bool                               m_parallel      : 1; // use multiple execution threads
+   unsigned                           m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT; // Maximum number of processors allowed
 
    /*
     * In-Place 2-D Morphological Transformation Algorithm.
@@ -348,24 +352,6 @@ protected:
    virtual void Apply( pcl::UInt32Image& ) const;
 
 private:
-
-   void Destroy()
-   {
-      DestroyOperator();
-      DestroyStructure();
-   }
-
-   void DestroyOperator()
-   {
-      if ( m_operator != nullptr )
-         delete m_operator, m_operator = nullptr;
-   }
-
-   void DestroyStructure()
-   {
-      if ( m_structure != nullptr )
-         delete m_structure, m_structure = nullptr;
-   }
 
    void Validate() const;
 };

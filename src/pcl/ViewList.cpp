@@ -64,8 +64,7 @@ namespace pcl
 #endif
 
 ViewList::ViewList( Control& parent ) :
-   Control( (*API->ViewList->CreateViewList)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) ),
-   m_handlers( nullptr )
+   Control( (*API->ViewList->CreateViewList)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) )
 {
    if ( IsNull() )
       throw APIFunctionError( "CreateViewList" );
@@ -185,7 +184,7 @@ public:
 
 #define INIT_EVENT_HANDLERS()    \
    __PCL_NO_ALIAS_HANDLERS;      \
-   if ( m_handlers == nullptr )  \
+   if ( m_handlers.IsNull() )    \
       m_handlers = new EventHandlers
 
 void ViewList::OnViewSelected( view_event_handler f, Control& receiver )

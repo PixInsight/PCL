@@ -416,7 +416,7 @@ void MorphologicalTransformation::Apply( UInt32Image& image ) const
 
 void MorphologicalTransformation::Validate() const
 {
-   if ( m_operator == nullptr || m_structure == nullptr )
+   if ( m_operator.IsNull() || m_structure.IsNull() )
       throw Error( "Invalid access to uninitialized morphological transformation." );
 }
 

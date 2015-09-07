@@ -65,8 +65,7 @@ namespace pcl
 #endif
 
 Control::Control( Control& parent, uint32 flags ) :
-   UIObject( (*API->Control->CreateControl)( ModuleHandle(), this, parent.handle, flags ) ),
-   m_handlers( nullptr )
+   UIObject( (*API->Control->CreateControl)( ModuleHandle(), this, parent.handle, flags ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CreateControl" );
@@ -1163,7 +1162,7 @@ public:
 
 #define INIT_EVENT_HANDLERS()    \
    __PCL_NO_ALIAS_HANDLERS;      \
-   if ( m_handlers == nullptr )  \
+   if ( m_handlers.IsNull() )    \
       m_handlers = new Control::EventHandlers
 
 void Control::OnDestroy( event_handler f, Control& receiver )

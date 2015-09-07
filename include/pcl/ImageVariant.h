@@ -6979,12 +6979,9 @@ private:
 
       void Free()
       {
-         if ( image != nullptr )
-         {
-            if ( ownsImage )
-               delete image;
-            image = nullptr;
-         }
+         if ( ownsImage )
+            delete image;
+         image = nullptr;
          isFloatSample = isComplexSample = false;
          bitsPerSample = 0;
          //ownsImage = ownsImage; ### N.B.: Ownership must *not* change here

@@ -66,7 +66,7 @@ public:
    {
       Rect r = image.SelectedRectangle();
 
-      if ( F.m_filter != nullptr )
+      if ( !F.m_filter.IsNull() )
          Initialize( F.m_h, *F.m_filter, r.Width(), r.Height(), F.IsParallelProcessingEnabled(), F.MaxProcessors() );
       else
          Initialize( F.m_h, F.m_image, r.Width(), r.Height(), F.IsParallelProcessingEnabled(), F.MaxProcessors() );
@@ -368,49 +368,49 @@ private:
 
 void FFTConvolution::Apply( pcl::Image& image ) const
 {
-   PCL_PRECONDITION( m_filter != nullptr || m_image )
+   PCL_PRECONDITION( !m_filter.IsNull() || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
 
 void FFTConvolution::Apply( pcl::DImage& image ) const
 {
-   PCL_PRECONDITION( m_filter != nullptr || m_image )
+   PCL_PRECONDITION( !m_filter.IsNull() || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
 
 void FFTConvolution::Apply( pcl::UInt8Image& image ) const
 {
-   PCL_PRECONDITION( m_filter != nullptr || m_image )
+   PCL_PRECONDITION( !m_filter.IsNull() || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
 
 void FFTConvolution::Apply( pcl::UInt16Image& image ) const
 {
-   PCL_PRECONDITION( m_filter != nullptr || m_image )
+   PCL_PRECONDITION( !m_filter.IsNull() || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
 
 void FFTConvolution::Apply( pcl::UInt32Image& image ) const
 {
-   PCL_PRECONDITION( m_filter != nullptr || m_image )
+   PCL_PRECONDITION( !m_filter.IsNull() || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
 
 void FFTConvolution::Apply( pcl::ComplexImage& image ) const
 {
-   PCL_PRECONDITION( m_filter != nullptr || m_image )
+   PCL_PRECONDITION( !m_filter.IsNull() || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
 
 void FFTConvolution::Apply( pcl::DComplexImage& image ) const
 {
-   PCL_PRECONDITION( m_filter != nullptr || m_image )
+   PCL_PRECONDITION( !m_filter.IsNull() || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
@@ -419,13 +419,13 @@ void FFTConvolution::Apply( pcl::DComplexImage& image ) const
 
 void FFTConvolution::Validate() const
 {
-   if ( m_filter == nullptr && !m_image )
+   if ( m_filter.IsNull() && !m_image )
       throw Error( "Invalid access to uninitialized FFT-based convolution." );
 }
 
 void FFTConvolution::ValidateFilter() const
 {
-   if ( m_filter == nullptr )
+   if ( m_filter.IsNull() )
       throw Error( "Invalid access to nonexistent kernel filter in FFT-based convolution." );
 }
 

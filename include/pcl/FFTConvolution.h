@@ -62,6 +62,10 @@
 #include <pcl/Diagnostics.h>
 #endif
 
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
 #ifndef __PCL_ImageTransformation_h
 #include <pcl/ImageTransformation.h>
 #endif
@@ -100,7 +104,6 @@ public:
     */
    FFTConvolution() :
       ImageTransformation(),
-      m_filter( nullptr ), m_image(),
       m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS ), m_h()
    {
    }
@@ -116,7 +119,6 @@ public:
     */
    FFTConvolution( const KernelFilter& filter ) :
       ImageTransformation(),
-      m_filter( nullptr ), m_image(),
       m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS ), m_h()
    {
       SetFilter( filter );
@@ -137,7 +139,7 @@ public:
     */
    FFTConvolution( const ImageVariant& f ) :
       ImageTransformation(),
-      m_filter( nullptr ), m_image( f ),
+      m_image( f ),
       m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS ), m_h()
    {
       PCL_CHECK( bool( m_image ) )
@@ -148,10 +150,10 @@ public:
     */
    FFTConvolution( const FFTConvolution& x ) :
       ImageTransformation( x ),
-      m_filter( nullptr ), m_image( x.m_image ),
+      m_image( x.m_image ),
       m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors ), m_h()
    {
-      if ( x.m_filter != nullptr )
+      if ( !x.m_filter.IsNull() )
          m_filter = x.m_filter->Clone();
    }
 
@@ -163,7 +165,7 @@ public:
       m_filter( x.m_filter ), m_image( std::move( x.m_image ) ),
       m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors ), m_h( std::move( x.m_h ) )
    {
-      x.m_filter = nullptr;
+      //x.m_filter = nullptr; // already done by AutoPointer
    }
 
    /*!
@@ -183,7 +185,7 @@ public:
       {
          (void)ImageTransformation::operator =( x );
          Destroy();
-         if ( x.m_filter != nullptr )
+         if ( !x.m_filter.IsNull() )
             m_filter = x.m_filter->Clone();
          else
             m_image = x.m_image;
@@ -202,13 +204,12 @@ public:
       if ( &x != this )
       {
          (void)ImageTransformation::operator =( x );
-         DestroyFilter();
          m_filter = x.m_filter;
          m_image = std::move( x.m_image );
          m_parallel = x.m_parallel;
          m_maxProcessors = x.m_maxProcessors;
          m_h = std::move( x.m_h );
-         x.m_filter = nullptr;
+         //x.m_filter = nullptr; // already done by AutoPointer
       }
       return *this;
    }
@@ -219,7 +220,7 @@ public:
     */
    bool UsingFilter() const
    {
-      return m_filter != nullptr;
+      return !m_filter.IsNull();
    }
 
    /*!
@@ -231,7 +232,7 @@ public:
     */
    const KernelFilter& Filter() const
    {
-      PCL_PRECONDITION( m_filter != nullptr )
+      PCL_PRECONDITION( !m_filter.IsNull() )
       return *m_filter;
    }
 
@@ -262,7 +263,7 @@ public:
    {
       Destroy();
       m_filter = filter.Clone();
-      PCL_CHECK( m_filter != nullptr )
+      PCL_CHECK( !m_filter.IsNull() )
    }
 
    /*!
@@ -386,10 +387,10 @@ protected:
     * instance or as an image. In the latter case, the image transported by the
     * ImageVariant must remain valid while this object is actively used.
     */
-   KernelFilter* m_filter;
-   ImageVariant  m_image;
-   bool          m_parallel      : 1;
-   unsigned      m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT; // Maximum number of processors allowed
+   AutoPointer<KernelFilter> m_filter;
+   ImageVariant              m_image;
+   bool                      m_parallel      : 1;
+   unsigned                  m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT; // Maximum number of processors allowed
 
    /*
     * Internal DFT of the response function. Initially zero. This matrix is
@@ -415,15 +416,9 @@ private:
 
    void Destroy()
    {
-      DestroyFilter();
+      m_filter.Destroy();
       m_image.Free();
       m_h.FreeData();
-   }
-
-   void DestroyFilter()
-   {
-      if ( m_filter != nullptr )
-         delete m_filter, m_filter = nullptr;
    }
 
    void Validate() const;

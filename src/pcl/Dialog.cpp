@@ -64,8 +64,7 @@ namespace pcl
 #endif
 
 Dialog::Dialog( Control& parent ) :
-   Control( (*API->Dialog->CreateDialog)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) ),
-   m_handlers( nullptr )
+   Control( (*API->Dialog->CreateDialog)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) )
 {
    if ( IsNull() )
       throw APIFunctionError( "CreateDialog" );
@@ -137,7 +136,7 @@ public:
 
 #define INIT_EVENT_HANDLERS()    \
    __PCL_NO_ALIAS_HANDLERS;      \
-   if ( m_handlers == nullptr )  \
+   if ( m_handlers.IsNull() )    \
       m_handlers = new EventHandlers
 
 void Dialog::OnExecute( execute_event_handler f, Control& receiver )

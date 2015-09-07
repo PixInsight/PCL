@@ -454,35 +454,35 @@ private:
 
 void Convolution::Apply( Image& image ) const
 {
-   PCL_PRECONDITION( m_filter != nullptr )
+   PCL_PRECONDITION( !m_filter.IsNull() )
    ValidateFilter();
    PCL_CorrelationEngine::Apply( image, *this );
 }
 
 void Convolution::Apply( DImage& image ) const
 {
-   PCL_PRECONDITION( m_filter != nullptr )
+   PCL_PRECONDITION( !m_filter.IsNull() )
    ValidateFilter();
    PCL_CorrelationEngine::Apply( image, *this );
 }
 
 void Convolution::Apply( UInt8Image& image ) const
 {
-   PCL_PRECONDITION( m_filter != nullptr )
+   PCL_PRECONDITION( !m_filter.IsNull() )
    ValidateFilter();
    PCL_CorrelationEngine::Apply( image, *this );
 }
 
 void Convolution::Apply( UInt16Image& image ) const
 {
-   PCL_PRECONDITION( m_filter != nullptr )
+   PCL_PRECONDITION( !m_filter.IsNull() )
    ValidateFilter();
    PCL_CorrelationEngine::Apply( image, *this );
 }
 
 void Convolution::Apply( UInt32Image& image ) const
 {
-   PCL_PRECONDITION( m_filter != nullptr )
+   PCL_PRECONDITION( !m_filter.IsNull() )
    ValidateFilter();
    PCL_CorrelationEngine::Apply( image, *this );
 }
@@ -491,7 +491,7 @@ void Convolution::Apply( UInt32Image& image ) const
 
 void Convolution::ValidateFilter() const
 {
-   if ( m_filter == nullptr )
+   if ( m_filter.IsNull() )
       throw Error( "Invalid access to uninitialized convolution" );
 }
 

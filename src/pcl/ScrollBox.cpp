@@ -65,7 +65,6 @@ namespace pcl
 
 ScrollBox::ScrollBox( Control& parent ) :
    Frame( (*API->ScrollBox->CreateScrollBox)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) ),
-   m_handlers( nullptr ),
    m_viewport( nullptr )
 {
    if ( IsNull() )
@@ -78,7 +77,6 @@ ScrollBox::ScrollBox( Control& parent ) :
 
 ScrollBox::ScrollBox( void* h ) :
    Frame( h ),
-   m_handlers( nullptr ),
    m_viewport( nullptr )
 {
    if ( !IsNull() )
@@ -91,7 +89,6 @@ ScrollBox::ScrollBox( void* h ) :
 
 ScrollBox::ScrollBox( void* h, void* hV ) :
    Frame( h ),
-   m_handlers( nullptr ),
    m_viewport( hV )
 {
 }
@@ -308,7 +305,7 @@ public:
 
 #define INIT_EVENT_HANDLERS()    \
    __PCL_NO_ALIAS_HANDLERS;      \
-   if ( m_handlers == nullptr )  \
+   if ( m_handlers.IsNull() )    \
       m_handlers = new EventHandlers
 
 void ScrollBox::OnHorizontalScrollPosUpdated( pos_event_handler f, Control& receiver )

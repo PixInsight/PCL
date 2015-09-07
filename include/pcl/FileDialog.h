@@ -58,6 +58,10 @@
 #include <pcl/Defs.h>
 #endif
 
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
 #ifndef __PCL_StringList_h
 #include <pcl/StringList.h>
 #endif
@@ -95,17 +99,19 @@ public:
    /*!
     * Constructs an empty %FileFilter object.
     */
-   FileFilter();
+   FileFilter() = default;
 
    /*!
     * Copy constructor.
     */
-   FileFilter( const FileFilter& x );
+   FileFilter( const FileFilter& x ) = default;
 
    /*!
     * Destroys a %FileFilter object.
     */
-   virtual ~FileFilter();
+   virtual ~FileFilter()
+   {
+   }
 
    /*!
     * Returns the description of the file type represented by this %FileFilter
@@ -120,7 +126,10 @@ public:
     * Sets the description of the file type represented by this %FileFilter
     * object.
     */
-   void SetDescription( const String& dsc );
+   void SetDescription( const String& dsc )
+   {
+      description = dsc;
+   }
 
    /*!
     * Returns a list of file extensions associated to the file type represented
@@ -245,7 +254,7 @@ public:
 
 protected:
 
-   FileDialogPrivate* p;
+   AutoPointer<FileDialogPrivate> p;
 };
 
 // ----------------------------------------------------------------------------
@@ -344,7 +353,7 @@ public:
 
 private:
 
-   OpenFileDialogPrivate* q;
+   AutoPointer<OpenFileDialogPrivate> q;
 };
 
 // ----------------------------------------------------------------------------
@@ -424,7 +433,7 @@ public:
 
 private:
 
-   SaveFileDialogPrivate* q;
+   AutoPointer<SaveFileDialogPrivate> q;
 };
 
 // ----------------------------------------------------------------------------
@@ -462,7 +471,7 @@ public:
 
 private:
 
-   GetDirectoryDialogPrivate* q;
+   AutoPointer<GetDirectoryDialogPrivate> q;
 };
 
 // ----------------------------------------------------------------------------

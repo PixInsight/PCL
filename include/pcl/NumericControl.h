@@ -58,6 +58,10 @@
 #include <pcl/Defs.h>
 #endif
 
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
 #ifndef PCL_Control_h
 #include <pcl/Control.h>
 #endif
@@ -111,8 +115,6 @@ public:
     */
    virtual ~NumericEdit()
    {
-      if ( m_handlers != nullptr )
-         delete m_handlers, m_handlers = nullptr;
    }
 
    /*!
@@ -270,7 +272,7 @@ protected:
       EventHandlers& operator =( const EventHandlers& ) = default;
    };
 
-   EventHandlers* m_handlers;
+   AutoPointer<EventHandlers> m_handlers;
 
    double   m_value;             // current value
    double   m_lowerBound;        // acceptable range, lower bound

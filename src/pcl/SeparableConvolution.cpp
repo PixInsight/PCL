@@ -195,7 +195,8 @@ private:
    {
       ThreadData( GenericImage<P>& a_image, const SeparableConvolution& a_convolution, size_type a_count ) :
          AbstractImage::ThreadData( a_image, a_count ),
-         image( a_image ), convolution( a_convolution )
+         image( a_image ),
+         convolution( a_convolution )
       {
       }
 
@@ -234,7 +235,8 @@ private:
    public:
 
       RowThread( ThreadData<P>& data, int firstRow, int endRow ) :
-         Thread(), m_data( data ), m_firstRow( firstRow ), m_endRow( endRow )
+         Thread(),
+         m_data( data ), m_firstRow( firstRow ), m_endRow( endRow )
       {
       }
 
@@ -277,7 +279,8 @@ private:
    public:
 
       ColThread( ThreadData<P>& data, int firstCol, int endCol ) :
-         Thread(), m_data( data ), m_firstCol( firstCol ), m_endCol( endCol )
+         Thread(),
+         m_data( data ), m_firstCol( firstCol ), m_endCol( endCol )
       {
       }
 
@@ -328,35 +331,35 @@ private:
 
 void SeparableConvolution::Apply( pcl::Image& image ) const
 {
-   PCL_PRECONDITION( m_filter != nullptr )
+   PCL_PRECONDITION( !m_filter.IsNull() )
    ValidateFilter();
    PCL_SeparableConvolutionEngine::Apply( image, *this );
 }
 
 void SeparableConvolution::Apply( pcl::DImage& image ) const
 {
-   PCL_PRECONDITION( m_filter != nullptr )
+   PCL_PRECONDITION( !m_filter.IsNull() )
    ValidateFilter();
    PCL_SeparableConvolutionEngine::Apply( image, *this );
 }
 
 void SeparableConvolution::Apply( pcl::UInt8Image& image ) const
 {
-   PCL_PRECONDITION( m_filter != nullptr )
+   PCL_PRECONDITION( !m_filter.IsNull() )
    ValidateFilter();
    PCL_SeparableConvolutionEngine::Apply( image, *this );
 }
 
 void SeparableConvolution::Apply( pcl::UInt16Image& image ) const
 {
-   PCL_PRECONDITION( m_filter != nullptr )
+   PCL_PRECONDITION( !m_filter.IsNull() )
    ValidateFilter();
    PCL_SeparableConvolutionEngine::Apply( image, *this );
 }
 
 void SeparableConvolution::Apply( pcl::UInt32Image& image ) const
 {
-   PCL_PRECONDITION( m_filter != nullptr )
+   PCL_PRECONDITION( !m_filter.IsNull() )
    ValidateFilter();
    PCL_SeparableConvolutionEngine::Apply( image, *this );
 }
@@ -365,7 +368,7 @@ void SeparableConvolution::Apply( pcl::UInt32Image& image ) const
 
 void SeparableConvolution::ValidateFilter() const
 {
-   if ( m_filter == nullptr )
+   if ( m_filter.IsNull() )
       throw Error( "Invalid access to uninitialized separable convolution" );
 }
 

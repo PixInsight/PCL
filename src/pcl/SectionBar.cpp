@@ -67,9 +67,7 @@ namespace pcl
 
 SectionBar::SectionBar( Control& parent ) :
    Control( parent ),
-   m_handlers( nullptr ),
-   m_section( nullptr ),
-   Title_CheckBox( nullptr )
+   m_section( nullptr )
 {
    SetObjectId( "IWSectionBar" );
 
@@ -107,15 +105,6 @@ SectionBar::SectionBar( Control& parent ) :
 
 SectionBar::~SectionBar()
 {
-   if ( Title_CheckBox != nullptr )
-   {
-      Title_CheckBox->OnClick( nullptr, Control::Null() );
-      delete Title_CheckBox, Title_CheckBox = nullptr;
-   }
-
-   if ( m_handlers != nullptr )
-      delete m_handlers, m_handlers = nullptr;
-
    if ( m_section != nullptr )
    {
       m_section->OnShow( nullptr, Control::Null() );
@@ -149,20 +138,9 @@ void SectionBar::SetSection( Control& section )
 
 void SectionBar::EnableTitleCheckBox( bool enable )
 {
-   if ( (Title_CheckBox == nullptr) == enable )
+   if ( Title_CheckBox.IsNull() == enable )
    {
-      if ( Title_CheckBox != nullptr )
-      {
-         Title_CheckBox->OnClick( nullptr, Control::Null() );
-         if ( m_handlers != nullptr )
-         {
-            m_handlers->onCheck = nullptr;
-            m_handlers->onCheckReceiver = nullptr;
-         }
-         delete Title_CheckBox;
-         Title_CheckBox = nullptr;
-      }
-      else
+      if ( Title_CheckBox.IsNull() )
       {
          Title_CheckBox = new CheckBox;
          Title_CheckBox->SetFocusStyle( FocusStyle::NoFocus );
@@ -170,6 +148,15 @@ void SectionBar::EnableTitleCheckBox( bool enable )
          Title_CheckBox->OnClick( (Button::click_event_handler)&SectionBar::ButtonClick, *this );
          Title_Sizer.Insert( 1, *Title_CheckBox );
          Title_Sizer.InsertSpacing( 2, 2 );
+      }
+      else
+      {
+         if ( !m_handlers.IsNull() )
+         {
+            m_handlers->onCheck = nullptr;
+            m_handlers->onCheckReceiver = nullptr;
+         }
+         Title_CheckBox.Destroy();
       }
 
       if ( m_section != nullptr )
@@ -181,7 +168,7 @@ void SectionBar::EnableTitleCheckBox( bool enable )
 
 void SectionBar::SetChecked( bool checked )
 {
-   if ( Title_CheckBox != nullptr )
+   if ( !Title_CheckBox.IsNull() )
    {
       if ( m_section != nullptr )
          m_section->Enable( checked );
@@ -195,25 +182,25 @@ void SectionBar::Enable( bool enabled )
 {
    Title_Label.Enable( enabled );
 
-   if ( Title_CheckBox != nullptr )
+   if ( !Title_CheckBox.IsNull() )
       Title_CheckBox->Enable( enabled );
 
    if ( m_section != nullptr )
-      m_section->Enable( enabled && (Title_CheckBox == nullptr || Title_CheckBox->IsChecked()) );
+      m_section->Enable( enabled && (Title_CheckBox.IsNull() || Title_CheckBox->IsChecked()) );
 }
 
 // ----------------------------------------------------------------------------
 
 #define INIT_EVENT_HANDLERS()    \
    __PCL_NO_ALIAS_HANDLERS;      \
-   if ( m_handlers == nullptr )  \
+   if ( m_handlers.IsNull() )    \
       m_handlers = new EventHandlers
 
 void SectionBar::OnToggleSection( section_event_handler f, Control& c )
 {
    if ( f == nullptr || c.IsNull() )
    {
-      if ( m_handlers != nullptr )
+      if ( !m_handlers.IsNull() )
       {
          m_handlers->onToggleSection = nullptr;
          m_handlers->onToggleSectionReceiver = nullptr;
@@ -229,9 +216,9 @@ void SectionBar::OnToggleSection( section_event_handler f, Control& c )
 
 void SectionBar::OnCheck( check_event_handler f, Control& c )
 {
-   if ( Title_CheckBox == nullptr || f == nullptr || c.IsNull() )
+   if ( Title_CheckBox.IsNull() || f == nullptr || c.IsNull() )
    {
-      if ( m_handlers != nullptr )
+      if ( !m_handlers.IsNull() )
       {
          m_handlers->onCheck = nullptr;
          m_handlers->onCheckReceiver = nullptr;
@@ -253,7 +240,7 @@ void SectionBar::ButtonClick( Button& sender, bool checked )
 {
    if ( m_section != nullptr && sender == Title_ToolButton )
    {
-      if ( m_handlers != nullptr )
+      if ( !m_handlers.IsNull() )
          if ( m_handlers->onToggleSection != nullptr )
             (m_handlers->onToggleSectionReceiver->*m_handlers->onToggleSection)( *this, *m_section, true );
 
@@ -300,16 +287,16 @@ void SectionBar::ButtonClick( Button& sender, bool checked )
          p->EnableUpdates();
       }
 
-      if ( m_handlers != nullptr )
+      if ( !m_handlers.IsNull() )
          if ( m_handlers->onToggleSection != nullptr )
             (m_handlers->onToggleSectionReceiver->*m_handlers->onToggleSection)( *this, *m_section, false );
    }
-   else if ( Title_CheckBox != nullptr && sender == *Title_CheckBox )
+   else if ( !Title_CheckBox.IsNull() && sender == *Title_CheckBox )
    {
       if ( m_section != nullptr )
          m_section->Enable( checked );
 
-      if ( m_handlers != nullptr )
+      if ( !m_handlers.IsNull() )
          if ( m_handlers->onCheck != nullptr )
             (m_handlers->onCheckReceiver->*m_handlers->onCheck)( *this, checked );
    }

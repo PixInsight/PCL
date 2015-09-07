@@ -64,8 +64,7 @@ namespace pcl
 #endif
 
 ComboBox::ComboBox( Control& parent ) :
-   Control( (*API->ComboBox->CreateComboBox)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) ),
-   m_handlers( nullptr )
+   Control( (*API->ComboBox->CreateComboBox)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) )
 {
    if ( handle == nullptr )
       throw APIFunctionError( "CreateComboBox" );
@@ -305,7 +304,7 @@ public:
 
 #define INIT_EVENT_HANDLERS()    \
    __PCL_NO_ALIAS_HANDLERS;      \
-   if ( m_handlers == nullptr )  \
+   if ( m_handlers.IsNull() )    \
       m_handlers = new EventHandlers
 
 void ComboBox::OnItemSelected( item_event_handler f, Control& receiver )

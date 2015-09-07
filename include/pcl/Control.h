@@ -64,6 +64,10 @@
 #include <pcl/Flags.h>
 #endif
 
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
 #ifndef __PCL_UIObject_h
 #include <pcl/UIObject.h>
 #endif
@@ -169,8 +173,6 @@ public:
     */
    virtual ~Control()
    {
-      if ( m_handlers != nullptr )
-         delete m_handlers, m_handlers = nullptr;
    }
 
    /*!
@@ -1584,7 +1586,7 @@ private:
       EventHandlers& operator =( const EventHandlers& ) = default;
    };
 
-   EventHandlers* m_handlers = nullptr;
+   AutoPointer<EventHandlers> m_handlers;
 
    /*
     * Copy and move semantics are disabled for UI controls because of
@@ -1601,7 +1603,7 @@ protected:
     * \internal
     * Private constructor from a low-level opaque server handle.
     */
-   Control( void* h ) : UIObject( h ), m_handlers( nullptr )
+   Control( void* h ) : UIObject( h )
    {
    }
 

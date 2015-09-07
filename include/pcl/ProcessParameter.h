@@ -60,8 +60,8 @@
 #include <pcl/Defs.h>
 #endif
 
-#ifndef __PCL_Diagnostics_h
-#include <pcl/Diagnostics.h>
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
 #endif
 
 #ifndef __PCL_Variant_h
@@ -681,7 +681,7 @@ public:
 
 private:
 
-   ProcessParameterPrivate* data;
+   AutoPointer<ProcessParameterPrivate> m_data;
 
    ProcessParameter( const void* );
 

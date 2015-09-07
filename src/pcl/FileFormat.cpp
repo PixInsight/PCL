@@ -72,7 +72,9 @@ public:
       ZeroCaps();
    }
 
-   FileFormatPrivate( const FileFormatPrivate* x ) : handle( nullptr ), capabilities()
+   FileFormatPrivate( const FileFormatPrivate* x ) :
+      handle( nullptr ),
+      capabilities()
    {
       if ( x != nullptr )
       {
@@ -119,61 +121,58 @@ private:
 // ----------------------------------------------------------------------------
 
 FileFormat::FileFormat( const String& nameExtOrMime, bool toRead, bool toWrite ) :
-   FileFormatBase(),
-   data( nullptr )
+   FileFormatBase()
 {
    if ( nameExtOrMime.IsEmpty() )
       throw Error( "FileFormat: Empty format name, file extension or MIME type specified" );
 
-   data = new FileFormatPrivate;
+   m_data = new FileFormatPrivate;
 
    if ( nameExtOrMime.Contains( '/' ) )
    {
       IsoString mimeType( nameExtOrMime );
-      data->handle = (*API->FileFormat->GetFileFormatByMimeType)( ModuleHandle(), mimeType.c_str(), toRead, toWrite );
-      if ( data->handle == nullptr )
+      m_data->handle = (*API->FileFormat->GetFileFormatByMimeType)( ModuleHandle(), mimeType.c_str(), toRead, toWrite );
+      if ( m_data->handle == nullptr )
          throw Error( "FileFormat: No installed image file format was found "
                       "for the specified MIME type \'" + nameExtOrMime + "\' and access conditions" );
    }
    else if ( nameExtOrMime.StartsWith( '.' ) )
    {
-      data->handle = (*API->FileFormat->GetFileFormatByFileExtension)( ModuleHandle(), nameExtOrMime.c_str(), toRead, toWrite );
-      if ( data->handle == nullptr )
+      m_data->handle = (*API->FileFormat->GetFileFormatByFileExtension)( ModuleHandle(), nameExtOrMime.c_str(), toRead, toWrite );
+      if ( m_data->handle == nullptr )
          throw Error( "FileFormat: No installed image file format was found "
                       "for the specified file extension \'" + nameExtOrMime + "\'and access conditions" );
    }
    else
    {
       IsoString id( nameExtOrMime );
-      data->handle = (*API->FileFormat->GetFileFormatByName)( ModuleHandle(), id.c_str() );
-      if ( data->handle == nullptr )
+      m_data->handle = (*API->FileFormat->GetFileFormatByName)( ModuleHandle(), id.c_str() );
+      if ( m_data->handle == nullptr )
          throw Error( "FileFormat: No installed image file format was found "
                       "with the specified identifier \'" + nameExtOrMime + '\'' );
    }
 
-   data->GetCapabilities();
+   m_data->GetCapabilities();
 }
 
 FileFormat::FileFormat( const FileFormat& fmt ) :
-   FileFormatBase(),
-   data( new FileFormatPrivate( fmt.data ) )
+   FileFormatBase()
 {
+   m_data = new FileFormatPrivate( fmt.m_data );
 }
 
 FileFormat::FileFormat( const void* handle ) :
-   FileFormatBase(),
-   data( new FileFormatPrivate )
+   FileFormatBase()
 {
    if ( handle == nullptr )
       throw Error( "FileFormat: Null file format handle" );
-   data->handle = handle;
-   data->GetCapabilities();
+   m_data = new FileFormatPrivate;
+   m_data->handle = handle;
+   m_data->GetCapabilities();
 }
 
 FileFormat::~FileFormat()
 {
-   if ( data != nullptr )
-      delete data, data = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -181,13 +180,13 @@ FileFormat::~FileFormat()
 IsoString FileFormat::Name() const
 {
    size_type len = 0;
-   (*API->FileFormat->GetFileFormatName)( data->handle, 0, &len );
+   (*API->FileFormat->GetFileFormatName)( m_data->handle, 0, &len );
 
    IsoString name;
    if ( len > 0 )
    {
       name.SetLength( len );
-      if ( (*API->FileFormat->GetFileFormatName)( data->handle, name.c_str(), &len ) == api_false )
+      if ( (*API->FileFormat->GetFileFormatName)( m_data->handle, name.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetFileFormatName" );
       name.ResizeToNullTerminated();
    }
@@ -200,7 +199,7 @@ StringList FileFormat::FileExtensions() const
 {
    size_type count = 0;
    size_type maxLen = 0;
-   (*API->FileFormat->GetFileFormatFileExtensions)( data->handle, 0, &count, &maxLen );
+   (*API->FileFormat->GetFileFormatFileExtensions)( m_data->handle, 0, &count, &maxLen );
 
    StringList extensions( count );
    if ( count > 0 )
@@ -212,7 +211,7 @@ StringList FileFormat::FileExtensions() const
          ptrs.Add( extensions[i].c_str() );
       }
 
-      if ( (*API->FileFormat->GetFileFormatFileExtensions)( data->handle, ptrs.Begin(), &count, &maxLen ) == api_false )
+      if ( (*API->FileFormat->GetFileFormatFileExtensions)( m_data->handle, ptrs.Begin(), &count, &maxLen ) == api_false )
          throw APIFunctionError( "GetFileFormatFileExtensions" );
 
       for ( StringList::iterator i = extensions.Begin(); i != extensions.End(); ++i )
@@ -227,7 +226,7 @@ IsoStringList FileFormat::MimeTypes() const
 {
    size_type count = 0;
    size_type maxLen = 0;
-   (*API->FileFormat->GetFileFormatMimeTypes)( data->handle, 0, &count, &maxLen );
+   (*API->FileFormat->GetFileFormatMimeTypes)( m_data->handle, 0, &count, &maxLen );
 
    IsoStringList mimeTypes( count );
    if ( count > 0 )
@@ -239,7 +238,7 @@ IsoStringList FileFormat::MimeTypes() const
          ptrs.Add( mimeTypes[i].c_str() );
       }
 
-      if ( (*API->FileFormat->GetFileFormatMimeTypes)( data->handle, ptrs.Begin(), &count, &maxLen ) == api_false )
+      if ( (*API->FileFormat->GetFileFormatMimeTypes)( m_data->handle, ptrs.Begin(), &count, &maxLen ) == api_false )
          throw APIFunctionError( "GetFileFormatMimeTypes" );
 
       for ( IsoStringList::iterator i = mimeTypes.Begin(); i != mimeTypes.End(); ++i )
@@ -252,7 +251,7 @@ IsoStringList FileFormat::MimeTypes() const
 
 uint32 FileFormat::Version() const
 {
-   return (*API->FileFormat->GetFileFormatVersion)( data->handle );
+   return (*API->FileFormat->GetFileFormatVersion)( m_data->handle );
 }
 
 // ----------------------------------------------------------------------------
@@ -260,13 +259,13 @@ uint32 FileFormat::Version() const
 String FileFormat::Description() const
 {
    size_type len = 0;
-   (*API->FileFormat->GetFileFormatDescription)( data->handle, 0, &len );
+   (*API->FileFormat->GetFileFormatDescription)( m_data->handle, 0, &len );
 
    String description;
    if ( len > 0 )
    {
       description.SetLength( len );
-      if ( (*API->FileFormat->GetFileFormatDescription)( data->handle, description.c_str(), &len ) == api_false )
+      if ( (*API->FileFormat->GetFileFormatDescription)( m_data->handle, description.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetFileFormatDescription" );
       description.ResizeToNullTerminated();
    }
@@ -278,13 +277,13 @@ String FileFormat::Description() const
 String FileFormat::Implementation() const
 {
    size_type len = 0;
-   (*API->FileFormat->GetFileFormatImplementation)( data->handle, 0, &len );
+   (*API->FileFormat->GetFileFormatImplementation)( m_data->handle, 0, &len );
 
    String implementation;
    if ( len > 0 )
    {
       implementation.SetLength( len );
-      if ( (*API->FileFormat->GetFileFormatImplementation)( data->handle, implementation.c_str(), &len ) == api_false )
+      if ( (*API->FileFormat->GetFileFormatImplementation)( m_data->handle, implementation.c_str(), &len ) == api_false )
          throw APIFunctionError( "GetFileFormatImplementation" );
       implementation.ResizeToNullTerminated();
    }
@@ -295,177 +294,177 @@ String FileFormat::Implementation() const
 
 Bitmap FileFormat::Icon() const
 {
-   return Bitmap( (*API->FileFormat->GetFileFormatIcon)( data->handle ) );
+   return Bitmap( (*API->FileFormat->GetFileFormatIcon)( m_data->handle ) );
 }
 
 // ----------------------------------------------------------------------------
 
 Bitmap FileFormat::SmallIcon() const
 {
-   return Bitmap( (*API->FileFormat->GetFileFormatSmallIcon)( data->handle ) );
+   return Bitmap( (*API->FileFormat->GetFileFormatSmallIcon)( m_data->handle ) );
 }
 
 // ----------------------------------------------------------------------------
 
 bool FileFormat::CanRead() const
 {
-   return data->capabilities.canRead;
+   return m_data->capabilities.canRead;
 }
 
 bool FileFormat::CanWrite() const
 {
-   return data->capabilities.canWrite;
+   return m_data->capabilities.canWrite;
 }
 
 bool FileFormat::CanReadIncrementally() const
 {
-   return data->capabilities.canReadIncrementally;
+   return m_data->capabilities.canReadIncrementally;
 }
 
 bool FileFormat::CanWriteIncrementally() const
 {
-   return data->capabilities.canWriteIncrementally;
+   return m_data->capabilities.canWriteIncrementally;
 }
 
 bool FileFormat::CanStore8Bit() const
 {
-   return data->capabilities.canStore8bit;
+   return m_data->capabilities.canStore8bit;
 }
 
 bool FileFormat::CanStore16Bit() const
 {
-   return data->capabilities.canStore16bit;
+   return m_data->capabilities.canStore16bit;
 }
 
 bool FileFormat::CanStore32Bit() const
 {
-   return data->capabilities.canStore32bit;
+   return m_data->capabilities.canStore32bit;
 }
 
 bool FileFormat::CanStore64Bit() const
 {
-   return data->capabilities.canStore64bit;
+   return m_data->capabilities.canStore64bit;
 }
 
 bool FileFormat::CanStoreFloat() const
 {
-   return data->capabilities.canStoreFloat;
+   return m_data->capabilities.canStoreFloat;
 }
 
 bool FileFormat::CanStoreDouble() const
 {
-   return data->capabilities.canStoreDouble;
+   return m_data->capabilities.canStoreDouble;
 }
 
 bool FileFormat::CanStoreComplex() const
 {
-   return data->capabilities.canStoreComplex;
+   return m_data->capabilities.canStoreComplex;
 }
 
 bool FileFormat::CanStoreDComplex() const
 {
-   return data->capabilities.canStoreDComplex;
+   return m_data->capabilities.canStoreDComplex;
 }
 
 bool FileFormat::CanStoreGrayscale() const
 {
-   return data->capabilities.canStoreGrayscale;
+   return m_data->capabilities.canStoreGrayscale;
 }
 
 bool FileFormat::CanStoreRGBColor() const
 {
-   return data->capabilities.canStoreRGBColor;
+   return m_data->capabilities.canStoreRGBColor;
 }
 
 bool FileFormat::CanStoreAlphaChannels() const
 {
-   return data->capabilities.canStoreAlphaChannels;
+   return m_data->capabilities.canStoreAlphaChannels;
 }
 
 bool FileFormat::CanStoreResolution() const
 {
-   return data->capabilities.canStoreResolution;
+   return m_data->capabilities.canStoreResolution;
 }
 
 bool FileFormat::CanStoreKeywords() const
 {
-   return data->capabilities.canStoreKeywords;
+   return m_data->capabilities.canStoreKeywords;
 }
 
 bool FileFormat::CanStoreICCProfiles() const
 {
-   return data->capabilities.canStoreICCProfiles;
+   return m_data->capabilities.canStoreICCProfiles;
 }
 
 bool FileFormat::CanStoreThumbnails() const
 {
-   return data->capabilities.canStoreThumbnails;
+   return m_data->capabilities.canStoreThumbnails;
 }
 
 bool FileFormat::CanStoreProperties() const
 {
-   return data->capabilities.canStoreProperties;
+   return m_data->capabilities.canStoreProperties;
 }
 
 bool FileFormat::CanStoreRGBWS() const
 {
-   return data->capabilities.canStoreRGBWS;
+   return m_data->capabilities.canStoreRGBWS;
 }
 
 bool FileFormat::CanStoreDisplayFunctions() const
 {
-   return data->capabilities.canStoreDisplayFunctions;
+   return m_data->capabilities.canStoreDisplayFunctions;
 }
 
 bool FileFormat::CanStoreColorFilterArrays() const
 {
-   return data->capabilities.canStoreColorFilterArrays;
+   return m_data->capabilities.canStoreColorFilterArrays;
 }
 
 bool FileFormat::SupportsCompression() const
 {
-   return data->capabilities.supportsCompression;
+   return m_data->capabilities.supportsCompression;
 }
 
 bool FileFormat::SupportsMultipleImages() const
 {
-   return data->capabilities.supportsMultipleImages;
+   return m_data->capabilities.supportsMultipleImages;
 }
 
 bool FileFormat::CanEditPreferences() const
 {
-   return data->capabilities.canEditPreferences;
+   return m_data->capabilities.canEditPreferences;
 }
 
 bool FileFormat::UsesFormatSpecificData() const
 {
-   return data->capabilities.usesFormatSpecificData;
+   return m_data->capabilities.usesFormatSpecificData;
 }
 
 // ----------------------------------------------------------------------------
 
 bool FileFormat::ValidateFormatSpecificData( const void* block ) const
 {
-   return (*API->FileFormat->ValidateFormatSpecificData)( data->handle, block ) != api_false;
+   return (*API->FileFormat->ValidateFormatSpecificData)( m_data->handle, block ) != api_false;
 }
 
 void FileFormat::DisposeFormatSpecificData( void* block ) const
 {
-   (*API->FileFormat->DisposeFormatSpecificData)( data->handle, block );
+   (*API->FileFormat->DisposeFormatSpecificData)( m_data->handle, block );
 }
 
 // ----------------------------------------------------------------------------
 
 bool FileFormat::EditPreferences() const
 {
-   return (*API->FileFormat->EditFileFormatPreferences)( data->handle ) != api_false;
+   return (*API->FileFormat->EditFileFormatPreferences)( m_data->handle ) != api_false;
 }
 
 // ----------------------------------------------------------------------------
 
 const void* FileFormat::Handle() const
 {
-   return data->handle;
+   return m_data->handle;
 }
 
 // ----------------------------------------------------------------------------

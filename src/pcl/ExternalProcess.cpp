@@ -121,8 +121,7 @@ public:
 #endif
 
 ExternalProcess::ExternalProcess() :
-   UIObject( (*API->ExternalProcess->CreateExternalProcess)( ModuleHandle(), this ) ),
-   m_handlers( nullptr )
+   UIObject( (*API->ExternalProcess->CreateExternalProcess)( ModuleHandle(), this ) )
 {
    if ( IsNull() )
       throw APIFunctionError( "CreateExternalProcess" );
@@ -131,8 +130,7 @@ ExternalProcess::ExternalProcess() :
 // ----------------------------------------------------------------------------
 
 ExternalProcess::ExternalProcess( void* h ) :
-   UIObject( h ),
-   m_handlers( nullptr )
+   UIObject( h )
 {
 }
 
@@ -545,7 +543,7 @@ public:
 
 #define INIT_EVENT_HANDLERS()    \
    __PCL_NO_ALIAS_HANDLERS;      \
-   if ( m_handlers == nullptr )  \
+   if ( m_handlers.IsNull() )    \
       m_handlers = new EventHandlers
 
 void ExternalProcess::OnStarted( process_event_handler handler, Control& receiver )

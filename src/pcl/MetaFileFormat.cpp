@@ -285,8 +285,7 @@ public:
    {
       try
       {
-         FileFormatImplementation* i = instance;
-         i->description = i->Open( filePath, hints );
+         instance->m_description = instance->Open( filePath, hints );
          return api_true;
       }
       ERROR_HANDLER
@@ -295,16 +294,16 @@ public:
 
    static uint32 api_func GetImageCount( const_file_format_handle hf )
    {
-      return uint32( constInstance->description.Length() );
+      return uint32( constInstance->m_description.Length() );
    }
 
    static api_bool api_func GetImageId( const_file_format_handle hf, char* id, uint32 n, uint32 index )
    {
       try
       {
-         if ( index < constInstance->description.Length() )
+         if ( index < constInstance->m_description.Length() )
          {
-            constInstance->description[index].id.c_copy( id, n );
+            constInstance->m_description[index].id.c_copy( id, n );
             return api_true;
          }
 
@@ -320,10 +319,10 @@ public:
    {
       try
       {
-         if ( index < constInstance->description.Length() )
+         if ( index < constInstance->m_description.Length() )
          {
-            PCLImageInfoToAPI( *info, constInstance->description[index].info );
-            PCLImageOptionsToAPI( *options, constInstance->description[index].options );
+            PCLImageInfoToAPI( *info, constInstance->m_description[index].info );
+            PCLImageOptionsToAPI( *options, constInstance->m_description[index].options );
             return api_true;
          }
 

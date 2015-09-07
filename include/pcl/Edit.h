@@ -60,6 +60,10 @@
 #include <pcl/Defs.h>
 #endif
 
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
 #ifndef __PCL_Frame_h
 #include <pcl/Frame.h>
 #endif
@@ -90,8 +94,6 @@ public:
     */
    virtual ~Edit()
    {
-      if ( m_handlers != nullptr )
-         delete m_handlers, m_handlers = nullptr;
    }
 
    /*!
@@ -379,7 +381,7 @@ private:
       EventHandlers& operator =( const EventHandlers& ) = default;
    };
 
-   EventHandlers* m_handlers;
+   AutoPointer<EventHandlers> m_handlers;
 
    friend class EditEventDispatcher;
 };

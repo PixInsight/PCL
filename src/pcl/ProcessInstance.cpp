@@ -76,24 +76,20 @@ static void APIHackingAttempt( const String& routineId )
 // ----------------------------------------------------------------------------
 
 ProcessInstance::ProcessInstance( const Process& process ) :
-UIObject( (*API->Process->CreateProcessInstance)( ModuleHandle(), process.Handle() ) )
+   UIObject( (*API->Process->CreateProcessInstance)( ModuleHandle(), process.Handle() ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CreateProcessInstance" );
-}
-
-ProcessInstance::ProcessInstance( void* h ) : UIObject( h )
-{
 }
 
 // ----------------------------------------------------------------------------
 
 ProcessInstance& ProcessInstance::Null()
 {
-   static ProcessInstance* nullInstance = 0;
+   static ProcessInstance* nullInstance = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullInstance == 0 )
+   if ( nullInstance == nullptr )
       nullInstance = new ProcessInstance( reinterpret_cast<void*>( 0 ) );
    return *nullInstance;
 }

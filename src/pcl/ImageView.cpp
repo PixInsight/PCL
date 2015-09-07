@@ -64,8 +64,7 @@ namespace pcl
 
 ImageView::ImageView( Control& parent, int width, int height, int numberOfChannels,
                       int bitsPerSample, bool floatSample, bool color ) :
-   ScrollBox( nullptr ),
-   m_handlers( nullptr )
+   ScrollBox( nullptr )
 {
    TransferHandle( (*API->ImageView->CreateImageView)( ModuleHandle(), this, parent.handle, 0/*flags*/,
                                                        width, height, numberOfChannels,
@@ -79,8 +78,7 @@ ImageView::ImageView( Control& parent, int width, int height, int numberOfChanne
 }
 
 ImageView::ImageView( void* h ) :
-   ScrollBox( nullptr ),
-   m_handlers( nullptr )
+   ScrollBox( nullptr )
 {
    TransferHandle( h );
    if ( !IsNull() )
@@ -92,8 +90,7 @@ ImageView::ImageView( void* h ) :
 }
 
 ImageView::ImageView( void* h, void* hV ) :
-   ScrollBox( h, hV ),
-   m_handlers( nullptr )
+   ScrollBox( h, hV )
 {
 }
 
@@ -665,7 +662,7 @@ public:
 
 #define INIT_EVENT_HANDLERS()    \
    __PCL_NO_ALIAS_HANDLERS;      \
-   if ( m_handlers == nullptr )  \
+   if ( m_handlers.IsNull() )    \
       m_handlers = new EventHandlers
 
 void ImageView::OnScrollViewport( scroll_event_handler f, Control& receiver )

@@ -64,6 +64,10 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
 #ifndef __PCL_Control_h
 #include <pcl/Control.h>
 #endif
@@ -142,8 +146,6 @@ public:
     */
    virtual ~CodeEditor()
    {
-      if ( m_handlers != nullptr )
-         delete m_handlers, m_handlers = nullptr;
    }
 
    /*!
@@ -876,8 +878,8 @@ private:
       EventHandlers& operator =( const EventHandlers& ) = default;
    };
 
-   EventHandlers* m_handlers;
-   Control        m_lineNumbers;
+   AutoPointer<EventHandlers> m_handlers;
+   Control                    m_lineNumbers;
 
    friend class CodeEditorEventDispatcher;
 };

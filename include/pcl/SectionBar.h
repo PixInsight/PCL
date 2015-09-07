@@ -170,7 +170,7 @@ public:
     */
    bool HasTitleCheckBox() const
    {
-      return Title_CheckBox != nullptr;
+      return !Title_CheckBox.IsNull();
    }
 
    /*!
@@ -198,7 +198,7 @@ public:
     */
    bool IsChecked() const
    {
-      return Title_CheckBox != nullptr && Title_CheckBox->IsChecked();
+      return !Title_CheckBox.IsNull() && Title_CheckBox->IsChecked();
    }
 
    /*!
@@ -337,14 +337,14 @@ private:
       EventHandlers& operator =( const EventHandlers& ) = default;
    };
 
-   EventHandlers* m_handlers;
-   Control*       m_section;
+   AutoPointer<EventHandlers> m_handlers;
+   Control*                   m_section;
 
-   VerticalSizer   Global_Sizer;
-      HorizontalSizer Title_Sizer;
-         Label          Title_Label;
-         CheckBox*      Title_CheckBox; // non-null for a checkable SectionBar
-         ToolButton     Title_ToolButton;
+   VerticalSizer         Global_Sizer;
+      HorizontalSizer       Title_Sizer;
+         Label                 Title_Label;
+         AutoPointer<CheckBox> Title_CheckBox; // non-null for a checkable SectionBar
+         ToolButton            Title_ToolButton;
 
    void ButtonClick( Button&, bool );
    void MousePress( Control&, const pcl::Point&, int, unsigned, unsigned );

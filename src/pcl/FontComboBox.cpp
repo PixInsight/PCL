@@ -83,8 +83,7 @@ static void SetFaceList( FontComboBox* combo, const C& faces )
 // ----------------------------------------------------------------------------
 
 FontComboBox::FontComboBox( Control& parent ) :
-   ComboBox( parent ),
-   m_handlers( nullptr )
+   ComboBox( parent )
 {
    ResetFonts();
    OnItemSelected( (ComboBox::item_event_handler)&FontComboBox::ItemSelected, *this );
@@ -225,14 +224,14 @@ void FontComboBox::RemoveWritingSystem( const String& writingSystem )
 
 #define INIT_EVENT_HANDLERS()    \
    __PCL_NO_ALIAS_HANDLERS;      \
-   if ( m_handlers == nullptr )  \
+   if ( m_handlers.IsNull() )    \
       m_handlers = new EventHandlers
 
 void FontComboBox::OnFontSelected( font_event_handler f, Control& c )
 {
    if ( f == nullptr || c.IsNull() )
    {
-      if ( m_handlers != nullptr )
+      if ( !m_handlers.IsNull() )
       {
          m_handlers->onFontSelected = nullptr;
          m_handlers->onFontSelectedReceiver = nullptr;
@@ -250,7 +249,7 @@ void FontComboBox::OnFontHighlighted( font_event_handler f, Control& c )
 {
    if ( f == nullptr || c.IsNull() )
    {
-      if ( m_handlers != nullptr )
+      if ( !m_handlers.IsNull() )
       {
          m_handlers->onFontHighlighted = nullptr;
          m_handlers->onFontHighlightedReceiver = nullptr;
@@ -268,7 +267,7 @@ void FontComboBox::OnFontHighlighted( font_event_handler f, Control& c )
 
 void FontComboBox::ItemSelected( ComboBox& sender, int index )
 {
-   if ( m_handlers != nullptr )
+   if ( !m_handlers.IsNull() )
       if ( m_handlers->onFontSelected != nullptr )
       {
          String face = (index < 0) ? String() : ItemText( index ).Trimmed();
@@ -278,7 +277,7 @@ void FontComboBox::ItemSelected( ComboBox& sender, int index )
 
 void FontComboBox::ItemHighlighted( ComboBox& sender, int index )
 {
-   if ( m_handlers != nullptr )
+   if ( !m_handlers.IsNull() )
       if ( m_handlers->onFontHighlighted != nullptr )
       {
          String face = (index < 0) ? String() : ItemText( index ).Trimmed();

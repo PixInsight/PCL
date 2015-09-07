@@ -60,6 +60,10 @@
 #include <pcl/Defs.h>
 #endif
 
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
 #ifndef __PCL_FileFormatBase_h
 #include <pcl/FileFormatBase.h>
 #endif
@@ -345,7 +349,7 @@ public:
 
 private:
 
-   FileFormatPrivate* data;
+   AutoPointer<FileFormatPrivate> m_data;
 
    FileFormat( const void* );
 

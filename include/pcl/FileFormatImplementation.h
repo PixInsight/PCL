@@ -60,6 +60,10 @@
 #include <pcl/Defs.h>
 #endif
 
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
 #ifndef __PCL_MetaFileFormat_h
 #include <pcl/MetaFileFormat.h>
 #endif
@@ -731,9 +735,9 @@ private:
     * Internal stuff to automate low-level C API communication.
     */
 
-   FileFormatImplementationPrivate* data;
+   AutoPointer<FileFormatImplementationPrivate> m_data;
 
-   ImageDescriptionArray description; // used exclusively by FileFormatDispatcher
+   ImageDescriptionArray m_description; // used exclusively by FileFormatDispatcher
 
    void BeginPrivate();
 

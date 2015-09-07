@@ -1685,8 +1685,9 @@ private:
       void Deallocate()
       {
          PCL_PRECONDITION( refCount == 0 )
-         if ( v != nullptr )
-            delete [] v, v = nullptr, n = 0;
+         delete [] v;
+         v = nullptr;
+         n = 0;
       }
    };
 

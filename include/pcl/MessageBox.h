@@ -62,6 +62,10 @@
 #include <pcl/String.h>
 #endif
 
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
 #ifndef __PCL_MSGBOX_DONT_REMOVE_PREVIOUS_DECLARATION
 
 // Removing conflicting identifiers from Win32 SDK headers.
@@ -148,6 +152,8 @@ namespace StdButton
 }
 
 // ----------------------------------------------------------------------------
+
+class MessageBoxPrivate;
 
 /*!
  * \class MessageBox
@@ -326,8 +332,7 @@ public:
 
 private:
 
-   class MessageBoxPrivate;
-   MessageBoxPrivate* p;
+   AutoPointer<MessageBoxPrivate> p;
 };
 
 // ----------------------------------------------------------------------------

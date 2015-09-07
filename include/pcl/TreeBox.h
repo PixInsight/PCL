@@ -60,6 +60,10 @@
 #include <pcl/Defs.h>
 #endif
 
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
 #ifndef __PCL_ScrollBox_h
 #include <pcl/ScrollBox.h>
 #endif
@@ -356,8 +360,6 @@ public:
     */
    virtual ~TreeBox()
    {
-      if ( m_handlers != nullptr )
-         delete m_handlers, m_handlers = nullptr;
    }
 
    /*! #
@@ -896,7 +898,7 @@ private:
       EventHandlers& operator =( const EventHandlers& ) = default;
    };
 
-   EventHandlers* m_handlers;
+   AutoPointer<EventHandlers> m_handlers;
 
    static pcl::Font FontFromHandle( void* h )
    {
@@ -923,7 +925,7 @@ protected:
    /*!
     * \internal
     */
-   TreeBox( void* h ) : ScrollBox( h, nullptr ), m_handlers( nullptr )
+   TreeBox( void* h ) : ScrollBox( h, nullptr )
    {
    }
 

@@ -334,10 +334,10 @@ public:
 
       void Destroy()
       {
-         if ( kernelFilter != nullptr )
-            delete kernelFilter, kernelFilter = nullptr;
-         if ( separableFilter != nullptr )
-            delete separableFilter, separableFilter = nullptr;
+         delete kernelFilter;
+         kernelFilter = nullptr;
+         delete separableFilter;
+         separableFilter = nullptr;
       }
 
       friend class ATrousWaveletTransform;

@@ -339,7 +339,6 @@ static void InitializeComboColors()
 
 ColorComboBox::ColorComboBox( Control& parent ) :
    ComboBox( parent ),
-   m_handlers( nullptr ),
    m_customColor( 0 )
 {
    if ( s_comboColors.IsEmpty() )
@@ -385,7 +384,7 @@ void ColorComboBox::SetCurrentColor( RGBA color )
                            Red( m_customColor ), Green( m_customColor ), Blue( m_customColor ) ) );
          AddItem( C.Title(), C.Icon( RoundInt( f*ICONSIZE ), RoundInt( f*ICONMARGIN ) ) );
 
-         if ( m_handlers != nullptr )
+         if ( !m_handlers.IsNull() )
             if ( m_handlers->onCustomColorDefined != nullptr )
                (m_handlers->onCustomColorDefinedReceiver->*m_handlers->onCustomColorDefined)( *this, m_customColor );
       }
@@ -396,14 +395,14 @@ void ColorComboBox::SetCurrentColor( RGBA color )
 
 #define INIT_EVENT_HANDLERS()    \
    __PCL_NO_ALIAS_HANDLERS;      \
-   if ( m_handlers == nullptr )  \
+   if ( m_handlers.IsNull() )    \
       m_handlers = new EventHandlers
 
 void ColorComboBox::OnColorSelected( color_event_handler f, Control& c )
 {
    if ( f == nullptr || c.IsNull() )
    {
-      if ( m_handlers != nullptr )
+      if ( !m_handlers.IsNull() )
       {
          m_handlers->onColorSelected = nullptr;
          m_handlers->onColorSelectedReceiver = nullptr;
@@ -421,7 +420,7 @@ void ColorComboBox::OnColorHighlighted( color_event_handler f, Control& c )
 {
    if ( f == nullptr || c.IsNull() )
    {
-      if ( m_handlers != nullptr )
+      if ( !m_handlers.IsNull() )
       {
          m_handlers->onColorHighlighted = nullptr;
          m_handlers->onColorHighlightedReceiver = nullptr;
@@ -439,7 +438,7 @@ void ColorComboBox::OnCustomColorDefined( color_event_handler f, Control& c )
 {
    if ( f == nullptr || c.IsNull() )
    {
-      if ( m_handlers != nullptr )
+      if ( !m_handlers.IsNull() )
       {
          m_handlers->onCustomColorDefined = nullptr;
          m_handlers->onCustomColorDefinedReceiver = nullptr;
@@ -457,7 +456,7 @@ void ColorComboBox::OnCustomColorDefined( color_event_handler f, Control& c )
 
 void ColorComboBox::ItemSelected( ComboBox& sender, int index )
 {
-   if ( m_handlers != nullptr )
+   if ( !m_handlers.IsNull() )
       if ( m_handlers->onColorSelected != nullptr )
          (m_handlers->onColorSelectedReceiver->*m_handlers->onColorSelected)( *this,
                (index < int( s_comboColors.Length() )) ? s_comboColors[index].value : m_customColor );
@@ -465,7 +464,7 @@ void ColorComboBox::ItemSelected( ComboBox& sender, int index )
 
 void ColorComboBox::ItemHighlighted( ComboBox& sender, int index )
 {
-   if ( m_handlers != nullptr )
+   if ( !m_handlers.IsNull() )
       if ( m_handlers->onColorHighlighted != nullptr )
          (m_handlers->onColorHighlightedReceiver->*m_handlers->onColorHighlighted)( *this,
                (index < int( s_comboColors.Length() )) ? s_comboColors[index].value : m_customColor );

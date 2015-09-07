@@ -66,6 +66,10 @@
 #include <pcl/Exception.h>
 #endif
 
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
 #ifndef __PCL_String_h
 #include <pcl/String.h>
 #endif
@@ -153,7 +157,7 @@ public:
       Interpolator( BidimensionalInterpolation<sample>* i,
                     const sample* f, int width, int height ) : m_interpolation( i )
       {
-         if ( m_interpolation != nullptr )
+         if ( !m_interpolation.IsNull() )
             m_interpolation->Initialize( f, width, height );
       }
 
@@ -163,8 +167,6 @@ public:
        */
       virtual ~Interpolator()
       {
-         if ( m_interpolation != nullptr )
-            m_interpolation->Clear(), delete m_interpolation, m_interpolation = nullptr;
       }
 
       /*!
@@ -173,7 +175,7 @@ public:
        */
       const BidimensionalInterpolation<sample>& Interpolation() const
       {
-         PCL_CHECK( m_interpolation != nullptr )
+         PCL_PRECONDITION( !m_interpolation.IsNull() )
          return *m_interpolation;
       }
 
@@ -183,7 +185,7 @@ public:
        */
       BidimensionalInterpolation<sample>& Interpolation()
       {
-         PCL_CHECK( m_interpolation != nullptr )
+         PCL_PRECONDITION( !m_interpolation.IsNull() )
          return *m_interpolation;
       }
 
@@ -193,7 +195,7 @@ public:
        */
       sample operator()( double x, double y ) const
       {
-         PCL_CHECK( m_interpolation != nullptr )
+         PCL_PRECONDITION( !m_interpolation.IsNull() )
          double r = (*m_interpolation)( x, y );
          return (r < P::MinSampleValue()) ? P::MinSampleValue() :
             ((r > P::MaxSampleValue()) ? P::MaxSampleValue() : P::FloatToSample( r ));
@@ -213,7 +215,7 @@ public:
 
    private:
 
-      BidimensionalInterpolation<sample>* m_interpolation;
+      AutoPointer<BidimensionalInterpolation<sample> > m_interpolation;
    };
 
    // -------------------------------------------------------------------------
@@ -336,7 +338,8 @@ public:
    /*!
     * Constructs a %NearestNeighborPixelInterpolation object.
     */
-   NearestNeighborPixelInterpolation() : PixelInterpolation()
+   NearestNeighborPixelInterpolation() :
+      PixelInterpolation()
    {
    }
 
@@ -401,7 +404,8 @@ public:
    /*!
     * Constructs a %BilinearPixelInterpolation object.
     */
-   BilinearPixelInterpolation() : PixelInterpolation()
+   BilinearPixelInterpolation() :
+      PixelInterpolation()
    {
    }
 
@@ -466,13 +470,14 @@ public:
    /*!
     * Constructs a %BicubicPixelInterpolation object.
     *
-    * The optional \e c parameter is a <em>linear clamping threshold</em> for
-    * the bicubic spline interpolation algorithm. See the documentation for
+    * The optional \e clamp parameter is a <em>linear clamping threshold</em>
+    * for the bicubic spline interpolation algorithm. See the documentation for
     * BicubicSplineInterpolation for a detailed description of the automatic
     * linear clamping feature.
     */
-   BicubicSplinePixelInterpolation( double c = __PCL_BICUBIC_SPLINE_CLAMPING_THRESHOLD ) :
-      PixelInterpolation(), clamp( c )
+   BicubicSplinePixelInterpolation( double clamp = __PCL_BICUBIC_SPLINE_CLAMPING_THRESHOLD ) :
+      PixelInterpolation(),
+      m_clamp( clamp )
    {
    }
 
@@ -480,41 +485,41 @@ public:
     */
    virtual String Description() const
    {
-      return String().Format( "Bicubic spline interpolation, c=%.2f", clamp );
+      return String().Format( "Bicubic spline interpolation, c=%.2f", m_clamp );
    }
 
 private:
 
-   float clamp;
+   float m_clamp;
 
    virtual BidimensionalInterpolation<FloatPixelTraits::sample>*
                   NewInterpolation( const FloatPixelTraits::sample* ) const
    {
-      return new BicubicSplineInterpolation<FloatPixelTraits::sample>( clamp );
+      return new BicubicSplineInterpolation<FloatPixelTraits::sample>( m_clamp );
    }
 
    virtual BidimensionalInterpolation<DoublePixelTraits::sample>*
                   NewInterpolation( const DoublePixelTraits::sample* ) const
    {
-      return new BicubicSplineInterpolation<DoublePixelTraits::sample>( clamp );
+      return new BicubicSplineInterpolation<DoublePixelTraits::sample>( m_clamp );
    }
 
    virtual BidimensionalInterpolation<UInt8PixelTraits::sample>*
                   NewInterpolation( const UInt8PixelTraits::sample* ) const
    {
-      return new BicubicSplineInterpolation<UInt8PixelTraits::sample>( clamp );
+      return new BicubicSplineInterpolation<UInt8PixelTraits::sample>( m_clamp );
    }
 
    virtual BidimensionalInterpolation<UInt16PixelTraits::sample>*
                   NewInterpolation( const UInt16PixelTraits::sample* ) const
    {
-      return new BicubicSplineInterpolation<UInt16PixelTraits::sample>( clamp );
+      return new BicubicSplineInterpolation<UInt16PixelTraits::sample>( m_clamp );
    }
 
    virtual BidimensionalInterpolation<UInt32PixelTraits::sample>*
                   NewInterpolation( const UInt32PixelTraits::sample* ) const
    {
-      return new BicubicSplineInterpolation<UInt32PixelTraits::sample>( clamp );
+      return new BicubicSplineInterpolation<UInt32PixelTraits::sample>( m_clamp );
    }
 };
 
@@ -566,7 +571,8 @@ public:
    /*!
     * Constructs a %BicubicBSplinePixelInterpolation object.
     */
-   BicubicBSplinePixelInterpolation() : PixelInterpolation()
+   BicubicBSplinePixelInterpolation() :
+      PixelInterpolation()
    {
    }
 
@@ -637,15 +643,17 @@ public:
     *                take place in a rectangular pixel matrix whose dimensions
     *                will be width = 2*rh + 1 and height = 2*rv + 1.
     *
-    * \param cf      Reference to a CubicFilter instance that will be used as
+    * \param filter  Reference to a CubicFilter instance that will be used as
     *                the interpolation filter.
     *
     */
-   BicubicFilterPixelInterpolation( int rh, int rv, const CubicFilter& cf ) :
-      PixelInterpolation(), rx( Max( 1, rh ) ), ry( Max( 1, rv ) ), filter( cf.Clone() )
+   BicubicFilterPixelInterpolation( int rh, int rv, const CubicFilter& filter ) :
+      PixelInterpolation(),
+      m_rh( Max( 1, rh ) ), m_rv( Max( 1, rv ) )
    {
       PCL_PRECONDITION( rh >= 1 )
       PCL_PRECONDITION( rv >= 1 )
+      m_filter = filter.Clone();
    }
 
    /*!
@@ -653,59 +661,57 @@ public:
     */
    virtual ~BicubicFilterPixelInterpolation()
    {
-      if ( filter != 0 )
-         delete filter, filter = 0;
    }
 
    /*!
     */
    virtual String Description() const
    {
-      return "Bicubic interpolation, " + filter->Description() + String().Format( " (%dx%d)", 2*rx + 1, 2*ry + 1 );
+      return "Bicubic interpolation, " + m_filter->Description() + String().Format( " (%dx%d)", 2*m_rh + 1, 2*m_rv + 1 );
    }
 
    /*!
-    * Returns a constant reference to the cubic filter being used by this
+    * Returns a reference to the immutable cubic filter being used by this
     * interpolation.
     */
    const CubicFilter& Filter() const
    {
-      return *filter;
+      return *m_filter;
    }
 
 private:
 
-   int rx, ry;
-   CubicFilter* filter;
+   int                      m_rh, m_rv;
+   AutoPointer<CubicFilter> m_filter;
 
    virtual BidimensionalInterpolation<FloatPixelTraits::sample>*
                   NewInterpolation( const FloatPixelTraits::sample* ) const
    {
-      return new BicubicFilterInterpolation<FloatPixelTraits::sample>( rx, ry, *filter );
+      return new BicubicFilterInterpolation<FloatPixelTraits::sample>( m_rh, m_rv, *m_filter );
    }
 
    virtual BidimensionalInterpolation<DoublePixelTraits::sample>*
                   NewInterpolation( const DoublePixelTraits::sample* ) const
    {
-      return new BicubicFilterInterpolation<DoublePixelTraits::sample>( rx, ry, *filter );
+      return new BicubicFilterInterpolation<DoublePixelTraits::sample>( m_rh, m_rv, *m_filter );
    }
 
    virtual BidimensionalInterpolation<UInt8PixelTraits::sample>*
                   NewInterpolation( const UInt8PixelTraits::sample* ) const
    {
-      return new BicubicFilterInterpolation<UInt8PixelTraits::sample>( rx, ry, *filter );
+      return new BicubicFilterInterpolation<UInt8PixelTraits::sample>( m_rh, m_rv, *m_filter );
    }
 
    virtual BidimensionalInterpolation<UInt16PixelTraits::sample>*
                   NewInterpolation( const UInt16PixelTraits::sample* ) const
    {
-      return new BicubicFilterInterpolation<UInt16PixelTraits::sample>( rx, ry, *filter );
+      return new BicubicFilterInterpolation<UInt16PixelTraits::sample>( m_rh, m_rv, *m_filter );
    }
 
    virtual BidimensionalInterpolation<UInt32PixelTraits::sample>*
                   NewInterpolation( const UInt32PixelTraits::sample* ) const
    {
-      return new BicubicFilterInterpolation<UInt32PixelTraits::sample>( rx, ry, *filter );
+      return new BicubicFilterInterpolation<UInt32PixelTraits::sample>( m_rh, m_rv, *m_filter );
    }
 };
 
@@ -746,7 +752,8 @@ public:
     *                interpolation clamping feature. The default value is 0.3.
     */
    LanczosPixelInterpolation( int n = 3, float clamp = 0.3 ) :
-      PixelInterpolation(), m_n( Max( 1, n ) ), m_clamp( clamp )
+      PixelInterpolation(),
+      m_n( Max( 1, n ) ), m_clamp( clamp )
    {
       PCL_PRECONDITION( n >= 1 )
       PCL_PRECONDITION( clamp < 0 || 0 <= clamp && clamp <= 1 )
@@ -830,7 +837,8 @@ public:
     *                interpolation clamping feature. The default value is 0.3.
     */
    Lanczos3LUTPixelInterpolation( float clamp = 0.3 ) :
-      PixelInterpolation(), m_clamp( clamp )
+      PixelInterpolation(),
+      m_clamp( clamp )
    {
       PCL_PRECONDITION( clamp < 0 || 0 <= clamp && clamp <= 1 )
    }
@@ -912,7 +920,8 @@ public:
     *                interpolation clamping feature. The default value is 0.3.
     */
    Lanczos4LUTPixelInterpolation( float clamp = 0.3 ) :
-      PixelInterpolation(), m_clamp( Range( clamp, 0.0F, 1.0F ) )
+      PixelInterpolation(),
+      m_clamp( Range( clamp, 0.0F, 1.0F ) )
    {
       PCL_PRECONDITION( clamp < 0 || 0 <= clamp && clamp <= 1 )
    }
@@ -994,7 +1003,8 @@ public:
     *                interpolation clamping feature. The default value is 0.3.
     */
    Lanczos5LUTPixelInterpolation( float clamp = 0.3 ) :
-      PixelInterpolation(), m_clamp( Range( clamp, 0.0F, 1.0F ) )
+      PixelInterpolation(),
+      m_clamp( Range( clamp, 0.0F, 1.0F ) )
    {
       PCL_PRECONDITION( clamp < 0 || 0 <= clamp && clamp <= 1 )
    }

@@ -62,9 +62,17 @@
 #include <pcl/Flags.h>
 #endif
 
+#ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
+
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
 #ifndef __PCL_Control_h
 #include <pcl/Control.h>
 #endif
+
+#endif   // __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
 namespace pcl
 {
@@ -136,8 +144,6 @@ public:
     */
    virtual ~Slider()
    {
-      if ( m_handlers != nullptr )
-         delete m_handlers, m_handlers = nullptr;
    }
 
    /*!
@@ -424,7 +430,7 @@ private:
       EventHandlers& operator =( const EventHandlers& ) = default;
    };
 
-   EventHandlers* m_handlers;
+   AutoPointer<EventHandlers> m_handlers;
 
    friend class SliderEventDispatcher;
 };

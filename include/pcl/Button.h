@@ -118,8 +118,6 @@ public:
     */
    virtual ~Button()
    {
-      if ( m_handlers != nullptr )
-         delete m_handlers, m_handlers = nullptr;
    }
 
    /*!
@@ -405,14 +403,14 @@ private:
       EventHandlers& operator =( const EventHandlers& ) = default;
    };
 
-   EventHandlers* m_handlers;
+   AutoPointer<EventHandlers> m_handlers;
 
 protected:
 
    /*!
     * \internal
     */
-   Button( void* h ) : Control( h ), m_handlers( nullptr )
+   Button( void* h ) : Control( h )
    {
    }
 

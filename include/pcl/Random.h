@@ -62,6 +62,10 @@
 #include <pcl/Diagnostics.h>
 #endif
 
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
 #ifndef __PCL_Vector_h
 #include <pcl/Vector.h>
 #endif
@@ -254,12 +258,12 @@ public:
 
 private:
 
-   FastMersenneTwister* m_generator;
-   double               m_ymax;
-   double               m_rmax;
-   bool                 m_normal : 1;
-   double               m_vs;     // second result from Box–Muller transform
-   DVector              m_lambda; // precalculated for current Poisson lambda
+   AutoPointer<FastMersenneTwister> m_generator;
+   double                           m_ymax;
+   double                           m_rmax;
+   bool                             m_normal : 1;
+   double                           m_vs;     // second result from Box–Muller transform
+   DVector                          m_lambda; // precalculated for current Poisson lambda
 };
 
 // ----------------------------------------------------------------------------

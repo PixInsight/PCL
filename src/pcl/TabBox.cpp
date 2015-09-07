@@ -64,8 +64,7 @@ namespace pcl
 #endif
 
 TabBox::TabBox( Control& parent ) :
-   Control( (*API->TabBox->CreateTabBox)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) ),
-   m_handlers( nullptr )
+   Control( (*API->TabBox->CreateTabBox)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) )
 {
    if ( IsNull() )
       throw APIFunctionError( "CreateTabBox" );
@@ -263,7 +262,7 @@ public:
 
 #define INIT_EVENT_HANDLERS()    \
    __PCL_NO_ALIAS_HANDLERS;      \
-   if ( m_handlers == nullptr )  \
+   if ( m_handlers.IsNull() )    \
       m_handlers = new EventHandlers
 
 void TabBox::OnPageSelected( page_event_handler f, Control& receiver )

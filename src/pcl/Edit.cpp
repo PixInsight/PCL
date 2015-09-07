@@ -65,8 +65,7 @@ namespace pcl
 #endif
 
 Edit::Edit( const String& text, Control& parent ) :
-   Frame( (*API->Edit->CreateEdit)( ModuleHandle(), this, text.c_str(), parent.handle, 0/*flags*/ ) ),
-   m_handlers( nullptr )
+   Frame( (*API->Edit->CreateEdit)( ModuleHandle(), this, text.c_str(), parent.handle, 0/*flags*/ ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CreateEdit" );
@@ -305,7 +304,7 @@ public:
 
 #define INIT_EVENT_HANDLERS()    \
    __PCL_NO_ALIAS_HANDLERS;      \
-   if ( m_handlers == nullptr )  \
+   if ( m_handlers.IsNull() )    \
       m_handlers = new EventHandlers
 
 void Edit::OnEditCompleted( edit_event_handler f, Control& receiver )

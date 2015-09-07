@@ -60,6 +60,10 @@
 #include <pcl/Defs.h>
 #endif
 
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
 #ifndef __PCL_Font_h
 #include <pcl/Font.h>
 #endif
@@ -106,8 +110,6 @@ public:
     */
    virtual ~FontComboBox()
    {
-      if ( m_handlers != nullptr )
-         delete m_handlers, m_handlers = nullptr;
    }
 
    /*!
@@ -379,7 +381,7 @@ private:
       EventHandlers& operator =( const EventHandlers& ) = default;
    };
 
-   EventHandlers* m_handlers;
+   AutoPointer<EventHandlers> m_handlers;
 
    void ItemSelected( ComboBox&, int );
    void ItemHighlighted( ComboBox&, int );

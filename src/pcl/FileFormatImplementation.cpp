@@ -106,17 +106,12 @@ struct FileFormatImplementationPrivate
 // ----------------------------------------------------------------------------
 
 FileFormatImplementation::FileFormatImplementation( const MetaFileFormat* m ) :
-   meta( m ),
-   data( nullptr ),
-   description()
+   meta( m )
 {
 }
 
 FileFormatImplementation::~FileFormatImplementation()
 {
-   if ( data != nullptr )
-      delete data, data = nullptr;
-
    /*
     * The following would only happen upon a catastrophic situation. Under
     * normal operation, the PI core application will always close files prior
@@ -472,8 +467,8 @@ void FileFormatImplementation::Write( const UInt32Image::sample*, int, int, int 
 
 void FileFormatImplementation::BeginPrivate()
 {
-   if ( data == 0 )
-      data = new FileFormatImplementationPrivate;
+   if ( m_data.IsNull() )
+      m_data = new FileFormatImplementationPrivate;
 }
 
 // ----------------------------------------------------------------------------
@@ -481,27 +476,27 @@ void FileFormatImplementation::BeginPrivate()
 void FileFormatImplementation::BeginKeywordExtraction()
 {
    BeginPrivate();
-   data->keywords.Clear();
-   Extract( data->keywords );
-   data->keywordIterator = data->keywords.Begin();
+   m_data->keywords.Clear();
+   Extract( m_data->keywords );
+   m_data->keywordIterator = m_data->keywords.Begin();
 }
 
 size_type FileFormatImplementation::NumberOfKeywords() const
 {
-   return data->keywords.Length();
+   return m_data->keywords.Length();
 }
 
 bool FileFormatImplementation::GetNextKeyword( FITSHeaderKeyword& k ) const
 {
-   if ( data->keywordIterator == data->keywords.End() )
+   if ( m_data->keywordIterator == m_data->keywords.End() )
       return false;
-   k = *data->keywordIterator++; // N.B.: mutable keywordIterator
+   k = *m_data->keywordIterator++; // N.B.: mutable keywordIterator
    return true;
 }
 
 void FileFormatImplementation::EndKeywordExtraction()
 {
-   data->keywords.Clear();
+   m_data->keywords.Clear();
 }
 
 // ----------------------------------------------------------------------------
@@ -509,18 +504,18 @@ void FileFormatImplementation::EndKeywordExtraction()
 void FileFormatImplementation::BeginICCProfileExtraction()
 {
    BeginPrivate();
-   data->iccProfile.Clear();
-   Extract( data->iccProfile );
+   m_data->iccProfile.Clear();
+   Extract( m_data->iccProfile );
 }
 
 const ICCProfile& FileFormatImplementation::GetICCProfile() const
 {
-   return data->iccProfile;
+   return m_data->iccProfile;
 }
 
 void FileFormatImplementation::EndICCProfileExtraction()
 {
-   data->iccProfile.Clear();
+   m_data->iccProfile.Clear();
 }
 
 // ----------------------------------------------------------------------------
@@ -528,18 +523,18 @@ void FileFormatImplementation::EndICCProfileExtraction()
 void FileFormatImplementation::BeginThumbnailExtraction()
 {
    BeginPrivate();
-   data->thumbnail.FreeData();
-   Extract( data->thumbnail );
+   m_data->thumbnail.FreeData();
+   Extract( m_data->thumbnail );
 }
 
 const UInt8Image& FileFormatImplementation::GetThumbnail() const
 {
-   return data->thumbnail;
+   return m_data->thumbnail;
 }
 
 void FileFormatImplementation::EndThumbnailExtraction()
 {
-   data->thumbnail.FreeData();
+   m_data->thumbnail.FreeData();
 }
 
 // ----------------------------------------------------------------------------
@@ -547,22 +542,22 @@ void FileFormatImplementation::EndThumbnailExtraction()
 void FileFormatImplementation::BeginPropertyExtraction()
 {
    BeginPrivate();
-   data->properties.Clear();
+   m_data->properties.Clear();
 }
 
 const Variant& FileFormatImplementation::GetImageProperty( const IsoString& id )
 {
    IsoString tid = id.Trimmed();
-   FileFormatPropertyArray::const_iterator i = data->properties.Search( tid );
-   if ( i != data->properties.End() )
+   FileFormatPropertyArray::const_iterator i = m_data->properties.Search( tid );
+   if ( i != m_data->properties.End() )
       return i->value;
-   data->properties.Append( FileFormatProperty( tid, ReadProperty( tid ) ) );
-   return data->properties.Search( tid )->value;
+   m_data->properties.Append( FileFormatProperty( tid, ReadProperty( tid ) ) );
+   return m_data->properties.Search( tid )->value;
 }
 
 void FileFormatImplementation::EndPropertyExtraction()
 {
-   data->properties.Clear();
+   m_data->properties.Clear();
 }
 
 // ----------------------------------------------------------------------------
@@ -570,17 +565,17 @@ void FileFormatImplementation::EndPropertyExtraction()
 void FileFormatImplementation::BeginRGBWSExtraction()
 {
    BeginPrivate();
-   data->rgbws = ReadRGBWS();
+   m_data->rgbws = ReadRGBWS();
 }
 
 const RGBColorSystem& FileFormatImplementation::GetRGBWS() const
 {
-   return data->rgbws;
+   return m_data->rgbws;
 }
 
 void FileFormatImplementation::EndRGBWSExtraction()
 {
-   data->rgbws = RGBColorSystem();
+   m_data->rgbws = RGBColorSystem();
 }
 
 // ----------------------------------------------------------------------------
@@ -588,17 +583,17 @@ void FileFormatImplementation::EndRGBWSExtraction()
 void FileFormatImplementation::BeginDisplayFunctionExtraction()
 {
    BeginPrivate();
-   data->displayFunction = ReadDisplayFunction();
+   m_data->displayFunction = ReadDisplayFunction();
 }
 
 const DisplayFunction& FileFormatImplementation::GetDisplayFunction() const
 {
-   return data->displayFunction;
+   return m_data->displayFunction;
 }
 
 void FileFormatImplementation::EndDisplayFunctionExtraction()
 {
-   data->displayFunction = DisplayFunction();
+   m_data->displayFunction = DisplayFunction();
 }
 
 // ----------------------------------------------------------------------------
@@ -606,17 +601,17 @@ void FileFormatImplementation::EndDisplayFunctionExtraction()
 void FileFormatImplementation::BeginColorFilterArrayExtraction()
 {
    BeginPrivate();
-   data->colorFilterArray = ReadColorFilterArray();
+   m_data->colorFilterArray = ReadColorFilterArray();
 }
 
 const ColorFilterArray& FileFormatImplementation::GetColorFilterArray() const
 {
-   return data->colorFilterArray;
+   return m_data->colorFilterArray;
 }
 
 void FileFormatImplementation::EndColorFilterArrayExtraction()
 {
-   data->colorFilterArray = ColorFilterArray();
+   m_data->colorFilterArray = ColorFilterArray();
 }
 
 // ----------------------------------------------------------------------------
@@ -624,18 +619,18 @@ void FileFormatImplementation::EndColorFilterArrayExtraction()
 void FileFormatImplementation::BeginKeywordEmbedding()
 {
    BeginPrivate();
-   data->keywords.Clear();
+   m_data->keywords.Clear();
 }
 
 void FileFormatImplementation::AddKeyword( const FITSHeaderKeyword& k )
 {
-   data->keywords.Add( k );
+   m_data->keywords.Add( k );
 }
 
 void FileFormatImplementation::EndKeywordEmbedding()
 {
-   Embed( data->keywords );
-   data->keywords.Clear();
+   Embed( m_data->keywords );
+   m_data->keywords.Clear();
 }
 
 // ----------------------------------------------------------------------------
@@ -643,23 +638,23 @@ void FileFormatImplementation::EndKeywordEmbedding()
 void FileFormatImplementation::BeginICCProfileEmbedding()
 {
    BeginPrivate();
-   data->iccProfile.Clear();
+   m_data->iccProfile.Clear();
 }
 
 void FileFormatImplementation::SetICCProfile( const ICCProfile& icc )
 {
    if ( icc.IsProfile() )
    {
-      data->iccProfile = icc;
-      data->iccProfile.SetEmbeddedFlag();
+      m_data->iccProfile = icc;
+      m_data->iccProfile.SetEmbeddedFlag();
    }
 }
 
 void FileFormatImplementation::EndICCProfileEmbedding()
 {
-   if ( data->iccProfile.IsProfile() ) // ### should allow embedding empty profiles here?
-      Embed( data->iccProfile );
-   data->iccProfile.Clear();
+   if ( m_data->iccProfile.IsProfile() ) // ### should allow embedding empty profiles here?
+      Embed( m_data->iccProfile );
+   m_data->iccProfile.Clear();
 }
 
 // ----------------------------------------------------------------------------
@@ -667,21 +662,21 @@ void FileFormatImplementation::EndICCProfileEmbedding()
 void FileFormatImplementation::BeginThumbnailEmbedding()
 {
    BeginPrivate();
-   data->thumbnail.FreeData();
+   m_data->thumbnail.FreeData();
 }
 
 void FileFormatImplementation::SetThumbnail( const UInt8Image& img )
 {
    if ( !img.IsEmpty() )
-      data->thumbnail.Assign( img );
+      m_data->thumbnail.Assign( img );
 }
 
 void FileFormatImplementation::EndThumbnailEmbedding()
 {
-   if ( !data->thumbnail.IsEmpty() )
+   if ( !m_data->thumbnail.IsEmpty() )
    {
-      Embed( data->thumbnail );
-      data->thumbnail.FreeData();
+      Embed( m_data->thumbnail );
+      m_data->thumbnail.FreeData();
    }
 }
 
@@ -690,7 +685,7 @@ void FileFormatImplementation::EndThumbnailEmbedding()
 void FileFormatImplementation::BeginPropertyEmbedding()
 {
    BeginPrivate();
-   data->properties.Clear();
+   m_data->properties.Clear();
 }
 
 void FileFormatImplementation::SetImageProperty( const IsoString& id, const Variant& value )
@@ -698,19 +693,19 @@ void FileFormatImplementation::SetImageProperty( const IsoString& id, const Vari
    IsoString tid = id.Trimmed();
    if ( !tid.IsEmpty() && value.IsValid() )
    {
-      FileFormatPropertyArray::iterator i = data->properties.Search( tid );
-      if ( i != data->properties.End() )
+      FileFormatPropertyArray::iterator i = m_data->properties.Search( tid );
+      if ( i != m_data->properties.End() )
          i->value = value;
       else
-         data->properties.Append( FileFormatProperty( tid, value ) );
+         m_data->properties.Append( FileFormatProperty( tid, value ) );
    }
 }
 
 void FileFormatImplementation::EndPropertyEmbedding()
 {
-   for ( FileFormatPropertyArray::const_iterator i = data->properties.Begin(); i != data->properties.End(); ++i )
+   for ( FileFormatPropertyArray::const_iterator i = m_data->properties.Begin(); i != m_data->properties.End(); ++i )
       WriteProperty( i->id, i->value );
-   data->properties.Clear();
+   m_data->properties.Clear();
 }
 
 // ----------------------------------------------------------------------------
@@ -718,18 +713,18 @@ void FileFormatImplementation::EndPropertyEmbedding()
 void FileFormatImplementation::BeginRGBWSEmbedding()
 {
    BeginPrivate();
-   data->rgbws = RGBColorSystem();
+   m_data->rgbws = RGBColorSystem();
 }
 
 void FileFormatImplementation::SetRGBWS( const RGBColorSystem& rgbws )
 {
-   data->rgbws = rgbws;
+   m_data->rgbws = rgbws;
 }
 
 void FileFormatImplementation::EndRGBWSEmbedding()
 {
-   WriteRGBWS( data->rgbws );
-   data->rgbws = RGBColorSystem();
+   WriteRGBWS( m_data->rgbws );
+   m_data->rgbws = RGBColorSystem();
 }
 
 // ----------------------------------------------------------------------------
@@ -737,19 +732,19 @@ void FileFormatImplementation::EndRGBWSEmbedding()
 void FileFormatImplementation::BeginDisplayFunctionEmbedding()
 {
    BeginPrivate();
-   data->displayFunction = DisplayFunction();
+   m_data->displayFunction = DisplayFunction();
 }
 
 void FileFormatImplementation::SetDisplayFunction( const DisplayFunction& df )
 {
-   data->displayFunction = df;
+   m_data->displayFunction = df;
 }
 
 void FileFormatImplementation::EndDisplayFunctionEmbedding()
 {
-   if ( !data->displayFunction.IsIdentityTransformation() )
-      WriteDisplayFunction( data->displayFunction );
-   data->displayFunction = DisplayFunction();
+   if ( !m_data->displayFunction.IsIdentityTransformation() )
+      WriteDisplayFunction( m_data->displayFunction );
+   m_data->displayFunction = DisplayFunction();
 }
 
 // ----------------------------------------------------------------------------
@@ -757,19 +752,19 @@ void FileFormatImplementation::EndDisplayFunctionEmbedding()
 void FileFormatImplementation::BeginColorFilterArrayEmbedding()
 {
    BeginPrivate();
-   data->colorFilterArray = ColorFilterArray();
+   m_data->colorFilterArray = ColorFilterArray();
 }
 
 void FileFormatImplementation::SetColorFilterArray( const ColorFilterArray& df )
 {
-   data->colorFilterArray = df;
+   m_data->colorFilterArray = df;
 }
 
 void FileFormatImplementation::EndColorFilterArrayEmbedding()
 {
-   if ( !data->colorFilterArray.IsEmpty() )
-      WriteColorFilterArray( data->colorFilterArray );
-   data->colorFilterArray = ColorFilterArray();
+   if ( !m_data->colorFilterArray.IsEmpty() )
+      WriteColorFilterArray( m_data->colorFilterArray );
+   m_data->colorFilterArray = ColorFilterArray();
 }
 
 // ----------------------------------------------------------------------------

@@ -62,7 +62,6 @@ namespace pcl
 
 CodeEditor::CodeEditor( Control& parent ) :
    Control( (*API->CodeEditor->CreateCodeEditor)( ModuleHandle(), this, parent.handle, 0/*flags*/ ) ),
-   m_handlers( nullptr ),
    m_lineNumbers( nullptr )
 {
    if ( handle == nullptr )
@@ -481,7 +480,7 @@ public:
 
 #define INIT_EVENT_HANDLERS()    \
    __PCL_NO_ALIAS_HANDLERS;      \
-   if ( m_handlers == nullptr )  \
+   if ( m_handlers.IsNull() )    \
       m_handlers = new EventHandlers
 
 void CodeEditor::OnTextUpdated( editor_event_handler handler, Control& receiver )

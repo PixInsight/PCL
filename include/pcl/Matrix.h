@@ -2466,10 +2466,10 @@ private:
          PCL_PRECONDITION( refCount == 0 )
          if ( v != nullptr )
          {
-            if ( *v != nullptr )
-               delete [] *v;
+            delete [] *v;
             delete [] v;
-            v = nullptr, n = m = 0;
+            v = nullptr;
+            n = m = 0;
          }
       }
    };

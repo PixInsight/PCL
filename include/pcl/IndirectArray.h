@@ -578,6 +578,40 @@ public:
       m_array.UniquifyIterators( (array_iterator&)i, (array_iterator&)j );
    }
 
+#ifndef __PCL_NO_STL_COMPATIBLE_ITERATORS
+   /*!
+    * STL-compatible iteration. Equivalent to Begin().
+    */
+   iterator begin()
+   {
+      return Begin();
+   }
+
+   /*!
+    * STL-compatible iteration. Equivalent to Begin() const.
+    */
+   const_iterator begin() const
+   {
+      return Begin();
+   }
+
+   /*!
+    * STL-compatible iteration. Equivalent to End().
+    */
+   iterator end()
+   {
+      return End();
+   }
+
+   /*!
+    * STL-compatible iteration. Equivalent to End() const.
+    */
+   const_iterator end() const
+   {
+      return End();
+   }
+#endif   // !__PCL_NO_STL_COMPATIBLE_ITERATORS
+
    /*!
     * Copy assignment operator.
     *

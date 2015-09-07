@@ -382,7 +382,7 @@ public:
    }
 
    /*!
-    * Returns a constant pointer to the beginning of the internal matrix of
+    * Returns a pointer to the beginning of the internal matrix of (immutable)
     * filter coefficients.
     *
     * All filter coefficients are guaranteed to be stored at consecutive
@@ -396,7 +396,7 @@ public:
    }
 
    /*!
-    * Returns a constant pointer to the end of the internal matrix of filter
+    * Returns a pointer to the end of the internal matrix of (immutable) filter
     * coefficients.
     *
     * All filter coefficients are guaranteed to be stored at consecutive
@@ -410,8 +410,26 @@ public:
       return coefficients.End();
    }
 
+#ifndef __PCL_NO_STL_COMPATIBLE_ITERATORS
    /*!
-    * Subscript operator. Returns a constant pointer to the first filter
+    * STL-compatible iteration. Equivalent to Begin() const.
+    */
+   const coefficient* begin() const
+   {
+      return Begin();
+   }
+
+   /*!
+    * STL-compatible iteration. Equivalent to End() const.
+    */
+   const coefficient* end() const
+   {
+      return End();
+   }
+#endif   // !__PCL_NO_STL_COMPATIBLE_ITERATORS
+
+   /*!
+    * Subscript operator. Returns a pointer to the first (immutable) filter
     * coefficient of the specified \a row in this filter. \a row must be a
     * valid vertical index: it must be 0 <= \a row < Size().
     */

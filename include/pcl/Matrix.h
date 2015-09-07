@@ -1121,6 +1121,40 @@ public:
       return m_data->v;
    }
 
+#ifndef __PCL_NO_STL_COMPATIBLE_ITERATORS
+   /*!
+    * STL-compatible iteration. Equivalent to Begin().
+    */
+   block_iterator begin()
+   {
+      return Begin();
+   }
+
+   /*!
+    * STL-compatible iteration. Equivalent to Begin() const.
+    */
+   const_block_iterator begin() const
+   {
+      return Begin();
+   }
+
+   /*!
+    * STL-compatible iteration. Equivalent to End().
+    */
+   block_iterator end()
+   {
+      return End();
+   }
+
+   /*!
+    * STL-compatible iteration. Equivalent to End() const.
+    */
+   const_block_iterator end() const
+   {
+      return End();
+   }
+#endif   // !__PCL_NO_STL_COMPATIBLE_ITERATORS
+
    /*!
     * Returns a vector with the matrix elements at the specified row \a i.
     */

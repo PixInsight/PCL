@@ -62,6 +62,10 @@
 #include <pcl/Diagnostics.h>
 #endif
 
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
 #ifndef __PCL_RedundantMultiscaleTransform_h
 #include <pcl/RedundantMultiscaleTransform.h>
 #endif
@@ -164,52 +168,49 @@ public:
     */
    struct WaveletScalingFunction
    {
+      AutoPointer<KernelFilter>    kernelFilter;    //!< Non-separable kernel filter
+      AutoPointer<SeparableFilter> separableFilter; //!< Separable filter
+
       /*!
        * Default constructor. Constructs an uninitialized instance.
        */
-      WaveletScalingFunction() :
-         kernelFilter( nullptr ), separableFilter( nullptr )
-      {
-      }
+      WaveletScalingFunction() = default;
 
       /*!
        * Non-separable filter constructor. The scaling function will own a
        * duplicate of the specified kernel filter.
        */
-      WaveletScalingFunction( const KernelFilter& f ) :
-         kernelFilter( nullptr ), separableFilter( nullptr )
+      WaveletScalingFunction( const KernelFilter& f )
       {
          kernelFilter = f.Clone();
-         PCL_CHECK( kernelFilter != nullptr )
+         PCL_CHECK( !kernelFilter.IsNull() )
       }
 
       /*!
        * Separable filter constructor. The scaling function will own a
        * duplicate of the specified separable filter.
        */
-      WaveletScalingFunction( const SeparableFilter& f ) :
-         kernelFilter( nullptr ), separableFilter( nullptr )
+      WaveletScalingFunction( const SeparableFilter& f )
       {
          separableFilter = f.Clone();
-         PCL_CHECK( separableFilter != nullptr )
+         PCL_CHECK( !separableFilter.IsNull() )
       }
 
       /*!
        * Copy constructor. The scaling function will own a duplicate of the
        * kernel or separable filter in the source object.
        */
-      WaveletScalingFunction( const WaveletScalingFunction& s ) :
-         kernelFilter( nullptr ), separableFilter( nullptr )
+      WaveletScalingFunction( const WaveletScalingFunction& s )
       {
-         if ( s.kernelFilter != nullptr )
+         if ( !s.kernelFilter.IsNull() )
          {
             kernelFilter = s.kernelFilter->Clone();
-            PCL_CHECK( kernelFilter != nullptr )
+            PCL_CHECK( !kernelFilter.IsNull() )
          }
-         if ( s.separableFilter != nullptr )
+         if ( !s.separableFilter.IsNull() )
          {
             separableFilter = s.separableFilter->Clone();
-            PCL_CHECK( separableFilter != nullptr )
+            PCL_CHECK( !separableFilter.IsNull() )
          }
       }
 
@@ -220,17 +221,14 @@ public:
          kernelFilter( s.kernelFilter ),
          separableFilter( s.separableFilter )
       {
-         s.kernelFilter = nullptr;
-         s.separableFilter = nullptr;
       }
 
       /*!
        * Destroys this scaling function object. Destroys and deallocates the
-       * existing kernel or separable filter in this object, if any.
+       * existing kernel or separable filter in this object.
        */
       virtual ~WaveletScalingFunction()
       {
-         Destroy();
       }
 
       /*!
@@ -238,37 +236,46 @@ public:
        */
       WaveletScalingFunction& operator =( const WaveletScalingFunction& s )
       {
-         if ( &s != this )
+         if ( s.kernelFilter.IsNull() )
+            kernelFilter.Destroy();
+         else
          {
-            Destroy();
-            if ( s.kernelFilter != nullptr )
-            {
-               kernelFilter = s.kernelFilter->Clone();
-               PCL_CHECK( kernelFilter != nullptr )
-            }
-            if ( s.separableFilter != nullptr )
-            {
-               separableFilter = s.separableFilter->Clone();
-               PCL_CHECK( separableFilter != nullptr )
-            }
+            kernelFilter = s.kernelFilter->Clone();
+            PCL_CHECK( !kernelFilter.IsNull() )
          }
+
+         if ( s.separableFilter.IsNull() )
+            separableFilter.Destroy();
+         else
+         {
+            separableFilter = s.separableFilter->Clone();
+            PCL_CHECK( !separableFilter.IsNull() )
+         }
+
          return *this;
       }
 
       /*!
        * Move assignment operator. Returns a reference to this object.
        */
-      WaveletScalingFunction& operator =( WaveletScalingFunction&& s )
+      WaveletScalingFunction& operator =( WaveletScalingFunction&& ) = default;
+
+      /*!
+       * Returns true if this scaling function is a separable filter; false if
+       * it is an invalid or non-separable kernel filter.
+       */
+      bool IsSeparable() const
       {
-         if ( &s != this )
-         {
-            Destroy();
-            kernelFilter = s.kernelFilter;
-            s.kernelFilter = nullptr;
-            separableFilter = s.separableFilter;
-            s.separableFilter = nullptr;
-         }
-         return *this;
+         return !separableFilter.IsNull() && !separableFilter->IsEmpty();
+      }
+
+      /*!
+       * Returns true if this scaling function is a non-separable kernel
+       * filter; false if it is an invalid or separable filter.
+       */
+      bool IsNonseparable() const
+      {
+         return !kernelFilter.IsNull() && !kernelFilter->IsEmpty();
       }
 
       /*!
@@ -277,17 +284,7 @@ public:
        */
       bool IsValid() const
       {
-         return (kernelFilter != nullptr) ? !kernelFilter->IsEmpty() :
-                     ((separableFilter != nullptr) ? !separableFilter->IsEmpty() : false);
-      }
-
-      /*!
-       * Returns true if this scaling function is a separable filter; false if
-       * it is a non-separable kernel filter.
-       */
-      bool IsSeparable() const
-      {
-         return separableFilter != nullptr && !separableFilter->IsEmpty();
+         return IsSeparable() || IsNonseparable();
       }
 
       /*!
@@ -297,9 +294,9 @@ public:
        */
       void Set( const KernelFilter& f )
       {
-         Destroy();
+         separableFilter.Destroy();
          kernelFilter = f.Clone();
-         PCL_CHECK( kernelFilter != nullptr )
+         PCL_CHECK( !kernelFilter.IsNull() )
       }
 
       /*!
@@ -309,9 +306,19 @@ public:
        */
       void Set( const SeparableFilter& f )
       {
-         Destroy();
+         kernelFilter.Destroy();
          separableFilter = f.Clone();
-         PCL_CHECK( separableFilter != nullptr )
+         PCL_CHECK( !separableFilter.IsNull() )
+      }
+
+      /*!
+       * Destroys the kernel and/or separable filter(s) owned by this object,
+       * yielding an invalid instance.
+       */
+      void Clear()
+      {
+         kernelFilter.Destroy();
+         separableFilter.Destroy();
       }
 
       /*!
@@ -320,27 +327,12 @@ public:
        */
       bool operator ==( const WaveletScalingFunction& other ) const
       {
-         if ( kernelFilter != nullptr )
-            return other.kernelFilter != nullptr && *kernelFilter == *other.kernelFilter;
-         if ( separableFilter != nullptr )
-            return other.separableFilter != nullptr && *separableFilter == *other.separableFilter;
-         return other.kernelFilter == nullptr && other.separableFilter == nullptr;
+         if ( !kernelFilter.IsNull() )
+            return !other.kernelFilter.IsNull() && *kernelFilter == *other.kernelFilter;
+         if ( !separableFilter.IsNull() )
+            return !other.separableFilter.IsNull() && *separableFilter == *other.separableFilter;
+         return other.kernelFilter.IsNull() && other.separableFilter.IsNull();
       }
-
-      KernelFilter*    kernelFilter;    //!< Non-separable kernel filter
-      SeparableFilter* separableFilter; //!< Separable filter
-
-   private:
-
-      void Destroy()
-      {
-         delete kernelFilter;
-         kernelFilter = nullptr;
-         delete separableFilter;
-         separableFilter = nullptr;
-      }
-
-      friend class ATrousWaveletTransform;
    };
 
    /*!
@@ -351,10 +343,7 @@ public:
     * (either KernelFilter or SeparableFilter), which will be used as the
     * scaling function of the wavelet transform.
     */
-   ATrousWaveletTransform() :
-      RedundantMultiscaleTransform(), m_scalingFunction()
-   {
-   }
+   ATrousWaveletTransform() = default;
 
    /*!
     * Constructs an %ATrousWaveletTransform instance using the specified
@@ -429,18 +418,12 @@ public:
    /*!
     * Copy constructor.
     */
-   ATrousWaveletTransform( const ATrousWaveletTransform& x ) :
-      RedundantMultiscaleTransform( x ), m_scalingFunction( x.m_scalingFunction )
-   {
-   }
+   ATrousWaveletTransform( const ATrousWaveletTransform& ) = default;
 
    /*!
     * Move constructor.
     */
-   ATrousWaveletTransform( ATrousWaveletTransform&& x ) :
-      RedundantMultiscaleTransform( std::move( x ) ), m_scalingFunction( std::move( x.m_scalingFunction ) )
-   {
-   }
+   ATrousWaveletTransform( ATrousWaveletTransform&& ) = default;
 
    /*!
     * Destroys this %ATrousWaveletTransform object. All existing wavelet layers
@@ -454,22 +437,12 @@ public:
    /*!
     * Copy assignment operator. Returns a reference to this object.
     */
-   ATrousWaveletTransform& operator =( const ATrousWaveletTransform& x )
-   {
-      (void)RedundantMultiscaleTransform::operator =( x );
-      m_scalingFunction = x.m_scalingFunction;
-      return *this;
-   }
+   ATrousWaveletTransform& operator =( const ATrousWaveletTransform& ) = default;
 
    /*!
     * Move assignment operator. Returns a reference to this object.
     */
-   ATrousWaveletTransform& operator =( ATrousWaveletTransform&& x )
-   {
-      (void)RedundantMultiscaleTransform::operator =( std::move( x ) );
-      m_scalingFunction = std::move( x.m_scalingFunction );
-      return *this;
-   }
+   ATrousWaveletTransform& operator =( ATrousWaveletTransform&& ) = default;
 
    /*!
     * Returns a reference to the (immutable) scaling function used by this
@@ -488,7 +461,6 @@ public:
     */
    void SetScalingFunction( const WaveletScalingFunction& f )
    {
-      DestroyScalingFunction();
       DestroyLayers();
       m_scalingFunction = f;
       PCL_CHECK( m_scalingFunction.IsValid() )
@@ -503,7 +475,6 @@ public:
     */
    void SetScalingFunction( const KernelFilter& f )
    {
-      DestroyScalingFunction();
       DestroyLayers();
       m_scalingFunction.Set( f );
       PCL_CHECK( m_scalingFunction.IsValid() )
@@ -518,7 +489,6 @@ public:
     */
    void SetScalingFunction( const SeparableFilter& f )
    {
-      DestroyScalingFunction();
       DestroyLayers();
       m_scalingFunction.Set( f );
       PCL_CHECK( m_scalingFunction.IsValid() )
@@ -691,11 +661,6 @@ private:
    virtual void Transform( const pcl::UInt8Image& );
    virtual void Transform( const pcl::UInt16Image& );
    virtual void Transform( const pcl::UInt32Image& );
-
-   void DestroyScalingFunction()
-   {
-      m_scalingFunction.Destroy();
-   }
 
    void ValidateScalingFunction() const;
 

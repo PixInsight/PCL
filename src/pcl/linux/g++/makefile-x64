@@ -474,6 +474,6 @@ post-build:
 	cp $(OBJ_DIR)/libPCL-pxi.a $(PCLLIBDIR64)
 
 ./x64/Release/%.o: ../../%.cpp
-	g++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -mtune=generic -mssse3 -O3 -minline-all-stringops -ffunction-sections -fdata-sections -fomit-frame-pointer -ffast-math -ftree-vectorize --param vect-max-version-for-alias-checks=1000 --param vect-max-version-for-alignment-checks=1000 -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	g++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -mtune=generic -mssse3 -O3 -rdynamic -minline-all-stringops -ffunction-sections -fdata-sections -fomit-frame-pointer -ffast-math -ftree-vectorize --param vect-max-version-for-alias-checks=1000 --param vect-max-version-for-alignment-checks=1000 -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

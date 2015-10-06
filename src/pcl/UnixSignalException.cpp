@@ -52,11 +52,62 @@
 #if defined( __PCL_LINUX ) || defined( __PCL_FREEBSD ) || defined( __PCL_MACOSX )
 
 #include <pcl/UnixSignalException.h>
-
+#include <pcl/String.h>
+#include <pcl/StringList.h>
+#include <execinfo.h>
+#include <stdio.h>
+#include <cxxabi.h>
 namespace pcl
 {
 
+#define STACK_DEPTH 60
+#define STACK_TRACE_HEADER \
+	"\n\n\n"\
+	"PIXINSIGHT - CRASH \n"\
+	"SIGNAL : %d \n"\
+	"MODULE : %s \n"\
+	"========================================================================================================================\n"\
+
+
+#define STACK_TRACE_BOTTOM \
+	"========================================================================================================================\n" \
+
 // ----------------------------------------------------------------------------
+
+static IsoString getDemangledFunctionName(const char*  symbol, IsoString& addrStr){
+	IsoString symbolStr(symbol);
+	addrStr=IsoString("");
+	// get mangled function name
+	// Example: /opt/PixInsight/bin/lib/libQtGui.so.4(_ZN7QWidget5eventEP6QEvent+0x411) [0x7fa271347811]
+	StringList tokens;
+	symbolStr.Break(tokens,'(',true);
+	if (tokens.Length()!=2){
+		return symbolStr;
+	}
+	// take second token and split again
+	StringList tokens2;
+	tokens[1].Break(tokens2,'+',true);
+    if (tokens2.Length()!=2) {
+	  return symbolStr;
+	}
+    // if there is not function name do not set the addr string
+    if (tokens2[0]!=String("")){
+        addrStr=tokens2[1];
+    }
+
+    // the first token of tokens2 contains the mangled string
+    // demangle
+    size_t funcnameSize = 256;
+    char funcname [funcnameSize];
+    int status;
+
+    char* demangledFuncname = abi::__cxa_demangle(IsoString(tokens2[0]).c_str(),funcname, &funcnameSize, &status);
+
+    if (status!=0){
+    	return symbolStr;
+    }
+	return pcl::IsoString(demangledFuncname);
+}
 
 static void CriticalSignalHandler( int sig_num )
 {
@@ -68,16 +119,45 @@ static void CriticalSignalHandler( int sig_num )
    //sigprocmask( SIG_UNBLOCK, &x, NULL );
    pthread_sigmask( SIG_UNBLOCK, &x, NULL );
 
+   void* addrlist[STACK_DEPTH];
+   size_t addrlen = backtrace(addrlist, sizeof(addrlist) / sizeof(void*));
+   char** symbollist = backtrace_symbols(addrlist, addrlen);
+
+   pcl::IsoString details = IsoString("");
+
+   if (symbollist!=NULL && symbollist[0]!=NULL) {
+	   details = pcl::IsoString().Format(STACK_TRACE_HEADER,sig_num,symbollist[0]);
+	   for (size_t i=1; i<addrlen; i++){
+		   if (symbollist[i]!=NULL){
+			   IsoString addrOffsetStr;
+			   IsoString demangledFuncname=getDemangledFunctionName(symbollist[i],addrOffsetStr);
+			   if (addrOffsetStr==IsoString("")){
+				   details = details + IsoString().Format("%d: %s",addrlen-i,demangledFuncname.c_str()) + IsoString("\n");
+			   } else {
+				   details = details + IsoString().Format("%d: %s(+%s",addrlen-i,demangledFuncname.c_str(),addrOffsetStr.c_str()) + IsoString("\n");
+			   }
+		   }
+	   }
+	   details = details + STACK_TRACE_BOTTOM;
+   }
+
+   // print backtrace to stderr
+   fprintf(stderr,"%s",details.c_str());
+
+   // symbollist must be freed
+   free(symbollist);
+
    switch ( sig_num )
    {
    case SIGSEGV:
-      throw EUnixSegmentationViolation();
+
+      throw EUnixSegmentationViolation(details);
    case SIGBUS:
-      throw EUnixBusError();
+      throw EUnixBusError(details);
    case SIGFPE:
-      throw EUnixFloatingPointException();
+      throw EUnixFloatingPointException(details);
    default:
-      throw UnixSignalException( sig_num );
+      throw UnixSignalException( sig_num,details );
    }
 }
 

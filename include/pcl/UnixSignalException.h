@@ -95,14 +95,18 @@ public:
     * Constructs a new %UnixSignalException object with the specified \a signal
     * number.
     */
-   UnixSignalException( int signal ) : pcl::Exception(), m_signal( signal )
+   UnixSignalException( int signal ) : pcl::Exception(), m_signal( signal ), m_details("")
+   {
+   }
+
+   UnixSignalException(int signal, const String& details) : pcl::Exception(), m_signal(signal), m_details(details)
    {
    }
 
    /*!
     * Copy constructor.
     */
-   UnixSignalException( const UnixSignalException& x ) : pcl::Exception( x ), m_signal( x.m_signal )
+   UnixSignalException( const UnixSignalException& x ) : pcl::Exception( x ), m_signal( x.m_signal ), m_details(x.m_details)
    {
    }
 
@@ -125,12 +129,27 @@ public:
    }
 
    /*!
+    * Returns ...
+    */
+   virtual String Details() const
+   {
+	   return m_details;
+   }
+
+   /*!
+    * Set ...
+    */
+   virtual void SetDetails(const String& details){
+	   m_details = details;
+   }
+
+   /*!
     * Returns a formatted error message with information on this signal
     * exception.
     */
    virtual String FormatInfo() const
    {
-      return String().Format( "Critical signal caught (%d): ", SignalNumber() ) + Message();
+      return String().Format( "Critical signal caught (%d): ", SignalNumber() ) + Message() + m_details;
    }
 
    /*!
@@ -155,7 +174,8 @@ public:
 
 protected:
 
-   int m_signal; // signal number
+   int    m_signal; // signal number
+   String m_details;
 };
 
 // ----------------------------------------------------------------------------
@@ -165,6 +185,9 @@ protected:
    {                                                                          \
    public:                                                                    \
       className() : pcl::UnixSignalException( sigNum )                        \
+      {                                                                       \
+      }                                                                       \
+      className(const String& details) : pcl::UnixSignalException( sigNum,details )\
       {                                                                       \
       }                                                                       \
       className( const className& x ) : pcl::UnixSignalException( x )         \

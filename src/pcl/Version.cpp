@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Version.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/Version.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -49,6 +49,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
+#include <pcl/Atomic.h>
+#include <pcl/AutoLock.h>
 #include <pcl/MetaModule.h>
 #include <pcl/Version.h>
 
@@ -76,7 +78,7 @@ int Version::Release()
 
 int Version::Build()
 {
-   return 749;
+   return 763;
 }
 
 int Version::BetaRelease()
@@ -109,82 +111,101 @@ static bool s_le = false;
 static String s_language;
 static String s_codename;
 
-/*
- * This function is called by GlobalContextDispatcher
- */
-void PixInsightVersion::Initialize()
+static void Initialize()
 {
-   uint32 M, m, r, b, beta, conf, le;
-   char lang[ 8 ];
+   static AtomicInt s_initialized;
+   static Mutex s_mutex;
 
-   (*API->Global->GetPixInsightVersion)( &M, &m, &r, &b, &beta, &conf, &le, lang );
+   if ( !s_initialized )
+   {
+      volatile AutoLock lock( s_mutex );
+      if ( s_initialized.Load() == 0 )
+      {
+         uint32 M, m, r, b, beta, conf, le;
+         char lang[ 8 ];
 
-   s_major = int( M );
-   s_minor = int( m );
-   s_release = int( r );
-   s_build = int( b );
-   s_beta = int( beta );
-   s_confidential = conf != 0;
-   s_le = le != 0;
-   s_language = lang;
+         (*API->Global->GetPixInsightVersion)( &M, &m, &r, &b, &beta, &conf, &le, lang );
+
+         s_major = int( M );
+         s_minor = int( m );
+         s_release = int( r );
+         s_build = int( b );
+         s_beta = int( beta );
+         s_confidential = conf != 0;
+         s_le = le != 0;
+         s_language = lang;
 
 #if ( PCL_API_Version >= 0x0126 )
-   char16_type* s = (*API->Global->GetPixInsightCodename)( ModuleHandle() );
-   if ( s != 0 )
-   {
-      s_codename = String( s );
-      Module->Deallocate( s );
-   }
+         char16_type* s = (*API->Global->GetPixInsightCodename)( ModuleHandle() );
+         if ( s != nullptr )
+         {
+            s_codename = String( s );
+            if ( Module != nullptr )
+               Module->Deallocate( s );
+         }
 #endif
+         s_initialized.Store( 1 );
+      }
+   }
 }
 
 int PixInsightVersion::Major()
 {
+   Initialize();
    return s_major;
 }
 
 int PixInsightVersion::Minor()
 {
+   Initialize();
    return s_minor;
 }
 
 int PixInsightVersion::Release()
 {
+   Initialize();
    return s_release;
 }
 
 int PixInsightVersion::Build()
 {
+   Initialize();
    return s_build;
 }
 
-int PixInsightVersion::BetaRelease() // > 0 = beta, < 0 = RC, 0 = Release
+int PixInsightVersion::BetaRelease() // > 0 = Beta, < 0 = RC, 0 = Release
 {
+   Initialize();
    return s_beta;
 }
 
 bool PixInsightVersion::Confidential()
 {
+   Initialize();
    return s_confidential;
 }
 
 bool PixInsightVersion::LE()
 {
+   Initialize();
    return s_le;
 }
 
 String PixInsightVersion::LanguageCode()
 {
+   Initialize();
    return s_language;  // ISO 639.2 language code
 }
 
 String PixInsightVersion::Codename()
 {
+   Initialize();
    return s_codename;
 }
 
 String PixInsightVersion::AsString( bool withCodename )
 {
+   Initialize();
    String v = String().Format( "PixInsight %s%02d.%02d.%02d.%04d",
                LE() ? "LE " : "", Major(), Minor(), Release(), Build() );
    if ( BetaRelease() != 0 )
@@ -201,4 +222,4 @@ String PixInsightVersion::AsString( bool withCodename )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Version.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/Version.cpp - Released 2015/10/08 11:24:19 UTC

@@ -1,0 +1,182 @@
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0763
+// ----------------------------------------------------------------------------
+// Standard Morphology Process Module Version 01.00.00.0241
+// ----------------------------------------------------------------------------
+// add_structure.xpm - Released 2015/10/08 11:24:40 UTC
+// ----------------------------------------------------------------------------
+// This file is part of the standard Morphology PixInsight module.
+//
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ----------------------------------------------------------------------------
+
+/* XPM */
+static const char* add_structure_XPM[] = {
+/* columns rows colors chars-per-pixel */
+"13 13 108 2",
+"8  c #319631",
+"t  c #A5CEA5",
+"v  c #7CB87C",
+"T  c #2A8F2A",
+"X  c #076A06",
+"y  c #FFFFFF",
+"F  c #6EB36E",
+"b  c #7FBC7F",
+"r  c #1E841F",
+"+  c #147913",
+"e  c #147914",
+":. c #87F087",
+"x  c #197D18",
+"o. c #7DE57D",
+"a  c #4BB14B",
+"R  c #309731",
+"]  c #71DA71",
+"z  c #58C058",
+".. c #71DA72",
+".  c #036703",
+"2  c #44AA44",
+"Y  c #6CD36B",
+"'  c #6CD36C",
+"Z  c #98C798",
+"M  c #8FCC8F",
+"K  c #D5EDD5",
+"-. c #51B951",
+"-  c #066B06",
+"w  c #0B6F0A",
+"h  c #248924",
+"=  c #3DA33E",
+"$  c #248925",
+" . c #65CC65",
+"d  c #0E730F",
+"0  c #45AB44",
+"[  c #77DF77",
+"X. c #77DF78",
+"H  c #AFD8AF",
+"l  c #3EA43D",
+"1  c #3EA43E",
+"c  c #4E9D4E",
+"S  c #66CD66",
+"W  c #B2DCB2",
+"G  c #ADD5AC",
+"N  c #93D193",
+"A  c #9DD99D",
+"&. c #82EB82",
+"<  c #379D37",
+"_  c #5FC65E",
+"E  c #379D38",
+"f  c #147813",
+">  c #1E831F",
+";. c #78E078",
+"C  c #5FC65F",
+";  c #147814",
+"(  c #309630",
+"{  c #309631",
+"}  c #8FD18E",
+"!  c #58BF58",
+"#. c #71D972",
+"V  c #58BF59",
+"Q  c #99D699",
+"+. c #51B851",
+"#  c #1F841F",
+"3  c #0B6E0B",
+"%. c #7EE57D",
+"4  c #137914",
+"&  c #319731",
+"@  c #187D19",
+"/  c #72DA72",
+"=. c #45AA44",
+"m  c #BBDFBB",
+"7  c #4EA24E",
+"I  c #87D486",
+"|  c #87D487",
+"6  c #7CB97C",
+"n  c #CCE5CC",
+"%  c #2A902A",
+"s  c #52B951",
+",  c #2A902B",
+"9  c #3EA33D",
+"i  c #3EA33E",
+"U  c #66CC65",
+"P  c #BCE6BC",
+"5  c #53A054",
+"k  c #89C589",
+"o  c #0A6F0B",
+"q  c #4BB24B",
+":  c #197E19",
+"   c #006400",
+"O  c #0F730F",
+"$. c #78DF77",
+")  c #B5DFB5",
+"L  c #BAE3BA",
+"p  c #44AB44",
+"O. c #44AB45",
+"^  c #6CD46B",
+"@. c #6CD46C",
+"u  c #85C285",
+"D  c #248A24",
+"*. c #3DA43E",
+"`  c #65CD65",
+"~  c #65CD66",
+"g  c #1F831E",
+"*  c #389D37",
+"B  c #6EC56E",
+"j  c #A7D1A7",
+"J  c #DFF0DF",
+/* pixels */
+"  . X o O + @ # $ % & * = ",
+". - o O ; : > $ , & < 1 2 ",
+"- 3 O 4 : 5 6 7 8 * 9 0 q ",
+"w O e : r t y u < i p a s ",
+"d f : g h j y k l p a s z ",
+"; x c v b n y m M N B V C ",
+": r Z y y y y y y y A C S ",
+"> D F G H J y K L P I U Y ",
+"h T R E 1 W y Q ! C ~ ^ / ",
+", ( < l 2 ) y A _ ` ' ] [ ",
+"{ < 1 p q } P |  .Y ..X.o.",
+"* = O.a +.! C ~ @.#.$.%.&.",
+"*.=.a -.! C ` @.#.;.o.&.:."
+};
+
+// ----------------------------------------------------------------------------
+// EOF add_structure.xpm - Released 2015/10/08 11:24:40 UTC

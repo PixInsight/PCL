@@ -1,15 +1,15 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.95
+# PixInsight Makefile Generator Script v1.96
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 30 Jul 2015 17:10:22 GMT
+# Automatically generated on Thu, 08 Oct 2015 11:23:20 GMT
 # Project id ...... cminpack
 # Project type .... StaticLibrary
 # Platform ........ Linux/g++
 # Configuration ... Release/x64
 ######################################################################
 
-OBJ_DIR="$(PCLSRCDIR)/cminpack/linux/g++/x64/Release"
+OBJ_DIR="$(PCLSRCDIR)/3rdparty/cminpack/linux/g++/x64/Release"
 
 .PHONY: all
 all: $(OBJ_DIR)/libcminpack-pxi.a
@@ -126,6 +126,6 @@ post-build:
 	cp $(OBJ_DIR)/libcminpack-pxi.a $(PCLLIBDIR64)
 
 ./x64/Release/%.o: ../../%.c
-	gcc -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -mtune=generic -mssse3 -O3 -minline-all-stringops -ffunction-sections -fdata-sections -fomit-frame-pointer -ffast-math -ftree-vectorize --param vect-max-version-for-alias-checks=1000 --param vect-max-version-for-alignment-checks=1000 -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	gcc -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

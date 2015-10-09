@@ -1,0 +1,220 @@
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0763
+// ----------------------------------------------------------------------------
+// Standard ColorSpaces Process Module Version 01.01.00.0258
+// ----------------------------------------------------------------------------
+// RGBWorkingSpaceIcon.xpm - Released 2015/10/08 11:24:39 UTC
+// ----------------------------------------------------------------------------
+// This file is part of the standard ColorSpaces PixInsight module.
+//
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ----------------------------------------------------------------------------
+
+/* XPM */
+static const char* RGBWorkingSpaceIcon_XPM[] = {
+/* columns rows colors chars-per-pixel */
+"24 24 135 2",
+"&  c #7291FE",
+".  c Black",
+"P  c #5369FE",
+"i  c #8CB2FE",
+"%  c #6D8AFD",
+"$  c #6883FE",
+"s. c #566DFE",
+"5. c #4457FE",
+"q. c #708EFE",
+")  c #252FFE",
+"]  c #5E78FE",
+"(  c #8A94A6",
+"X. c #5971FE",
+"w. c #0E12FF",
+"B  c #475BFE",
+"3. c #3A49FE",
+"Z  c #7392FD",
+"*  c #858DA6",
+"d  c #9FC9FE",
+"&. c #546AFE",
+"n  c #8D98A6",
+"4  c #4254FE",
+"/  c #8086A6",
+"Q  c #6E8BFD",
+"w  c #6E8BFE",
+"%. c #4F63FE",
+"9. c #1116FF",
+"c  c #888B90",
+":. c #767BA6",
+"q  c #6984FE",
+"+  c #576EFE",
+"y  c #83A5FD",
+"~  c #7174A6",
+"O  c #5267FE",
+"v  c #8B95A6",
+"*. c #5A72FE",
+"+. c #1C25FE",
+"_  c #485CFE",
+"1  c #8E99A6",
+"J  c #4355FF",
+"@  c #5D76FE",
+"{  c #89ADFE",
+"u  c #8992A6",
+"2  c #A3CEFD",
+"8  c #586FFE",
+">  c #91B8FD",
+"p  c #91B8FE",
+"7  c #5368FE",
+",. c #7A80A6",
+"-. c #6D6EA7",
+"z  c #878990",
+"-  c #82A6FE",
+";. c #7579A7",
+"#. c #4456FE",
+"=  c #7D9FFD",
+"|  c #4456FF",
+"U  c #5E77FE",
+"}  c #202AFF",
+"r  c #7898FD",
+":  c #8A93A6",
+"5  c #787DA6",
+"!  c #92B9FD",
+"I  c #5970FE",
+">. c #858691",
+"X  c #475AFF",
+"   c None",
+"j  c #7B81A6",
+"3  c #A7D3FD",
+"C  c #7B81A7",
+";  c #88ABFD",
+"8. c #7695FE",
+"f  c #767AA7",
+"o. c #5F78FD",
+"V  c #4D62FF",
+"A  c #7999FE",
+"$. c #797EA7",
+"T  c #2E3AFF",
+"k  c #868790",
+"K  c #485BFF",
+"R  c #FF0000",
+"s  c #8E98A6",
+",  c #96BEFD",
+"a  c #96BEFE",
+"S  c #0000FF",
+"4. c #777BA7",
+"=. c #7FA1FD",
+"2. c #3442FE",
+"#  c #7F86A6",
+"1. c #151AFF",
+"`  c #4E63FE",
+"o  c #7A7FA6",
+"L  c #7A7FA7",
+" . c #495CFE",
+"G  c #7578A7",
+"0  c #637DFE",
+"m  c #8F99A6",
+"e. c #6B88FE",
+"g. c #4C60FE",
+"b  c #8A8C90",
+"<. c #858EA6",
+"Y  c #7393FE",
+".. c #546BFE",
+"N  c #4255FE",
+"t. c #8087A6",
+"0. c #00FF00",
+"u. c #617AFE",
+"<  c #9AC3FE",
+"H  c #3D4EFF",
+"f. c #7B80A6",
+"W  c #6985FD",
+"p. c #5C73FE",
+"r. c #696AA7",
+"6. c #4A5DFE",
+"M  c #3847FE",
+"e  c #838BA6",
+"[  c #647EFD",
+"E  c #647EFE",
+"y. c #0709FF",
+"t  c #7E9FFE",
+"9  c #7E84A6",
+"F  c #3340FF",
+"6  c #4D61FE",
+"a. c #0202FF",
+"x  c #868FA6",
+"h  c #797DA7",
+"d. c #6767A7",
+"l  c #8188A6",
+"D  c #9BC4FE",
+"7. c #5065FE",
+"i. c #0506FF",
+"@. c #3E4FFF",
+"'  c #7C81A6",
+"^  c #7C81A7",
+"O. c #84A7FD",
+"g  c #848690",
+/* pixels */
+"                                                ",
+"  . . . . . . . . . . . . . . . . . . . . . .   ",
+"  . X o O + @ # $ % & * = - ; : > , < 1 2 3 .   ",
+"  . 4 5 6 7 8 9 0 q w e r t y u i p a s d 2 .   ",
+"  . f g h o j k 9 # l z e * x c u : v b n m .   ",
+"  . M f N B V C 8 @ 0 l w Z A S S S S S S D .   ",
+"  . F G H J K L P I U # q w Y S S S S S S , .   ",
+"  . T R R R R R R P I 9 E W Q S S S S S S ! .   ",
+"  . ~ R R R R R R o ^ k 9 / l S S S S S S ( .   ",
+"  . ) R R R R R R _ ` ' I ] [ S S S S S S { .   ",
+"  . } R R R R R R |  .o ..X.o.S S S S S S O..   ",
+"  . +.R R R R R R @.#.$.%.&.*.S S S S S S =..   ",
+"  . -.R R R R R R ;.:.>.$.,.' S S S S S S <..   ",
+"  . 1.R R R R R R 2.3.4.5.6.7.S S S S S S 8..   ",
+"  . 9.R R R R R R 0.0.0.0.0.0.S S S S S S q..   ",
+"  . w.R R R R R R 0.0.0.0.0.0.S S S S S S e..   ",
+"  . r.R R R R R R 0.0.0.0.0.0.S S S S S S t..   ",
+"  . y.R R R R R R 0.0.0.0.0.0.S S S S S S u..   ",
+"  . i.R R R R R R 0.0.0.0.0.0.S S S S S S p..   ",
+"  . a.R R R R R R 0.0.0.0.0.0.S S S S S S s..   ",
+"  . d.R R R R R R 0.0.0.0.0.0.S S S S S S f..   ",
+"  . S R R R R R R 0.0.0.0.0.0.S S S S S S g..   ",
+"  . . . . . . . . . . . . . . . . . . . . . .   ",
+"                                                "
+};
+
+// ----------------------------------------------------------------------------
+// EOF RGBWorkingSpaceIcon.xpm - Released 2015/10/08 11:24:39 UTC

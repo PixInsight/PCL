@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Process.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Process.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -311,13 +311,13 @@ public:
    parameter_list Parameters() const;
 
    /*!
-    * Returns true if this process has a parameter with the specified
+    * Returns true iff this process has a parameter with the specified
     * identifier \a paramId.
     */
    bool HasParameter( const IsoString& paramId ) const;
 
    /*!
-    * Returns true if this process has a table parameter \a tableId with the
+    * Returns true iff this process has a table parameter \a tableId with the
     * specified column parameter \a colId.
     */
    bool HasTableColumn( const IsoString& tableId, const IsoString& colId ) const;
@@ -373,4 +373,4 @@ private:
 #endif   // __PCL_Process_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Process.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Process.h - Released 2015/10/08 11:24:12 UTC

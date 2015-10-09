@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/StructuringElement.h - Released 2015/07/30 17:15:18 UTC
+// pcl/StructuringElement.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -234,7 +234,7 @@ public:
    }
 
    /*!
-    * Returns true if this is a <em>box structure</em>. All elements in a box
+    * Returns true iff this is a <em>box structure</em>. All elements in a box
     * structure are <em>existing elements</em>.
     *
     * The default implementation of this member function returns true if all
@@ -253,7 +253,7 @@ public:
    }
 
    /*!
-    * Returns true if a given element exists in this structure.
+    * Returns true iff a given element exists in this structure.
     *
     * \param i    column position (X-coordinate) of the requested structure
     *             element. Must be 0 <= i < n, where n is the structure size.
@@ -325,7 +325,7 @@ public:
    }
 
    /*!
-    * Returns true if this structure has been reflected. Note that after an
+    * Returns true iff this structure has been reflected. Note that after an
     * even number of successive reflections (which is a no-op) this member
     * function will return false.
     */
@@ -357,10 +357,10 @@ public:
     */
    void Initialize() const
    {
-      if ( m_initialized.FetchAndAdd( 0 ) == 0 )
+      if ( !m_initialized )
       {
          volatile AutoLock lock( m_mutex );
-         if ( !m_initialized )
+         if ( m_initialized.Load() == 0 )
          {
             int N = NumberOfWays();
             for ( int k = 0; k < N; ++k )
@@ -378,7 +378,7 @@ public:
                         *m = 0;
             }
 
-            (void)m_initialized.FetchAndStore( 1 );
+            m_initialized.Store( 1 );
          }
       }
    }
@@ -462,7 +462,7 @@ public:
    }
 
    /*!
-    * Returns true if this is a <em>box structure</em>. All elements in a box
+    * Returns true iff this is a <em>box structure</em>. All elements in a box
     * structure are <em>existing elements</em>.
     *
     * As reimplemented by %BoxStructure, this member function always
@@ -525,7 +525,7 @@ public:
    }
 
    /*!
-    * Returns true if this is a <em>box structure</em>. All elements in a box
+    * Returns true iff this is a <em>box structure</em>. All elements in a box
     * structure are <em>existing elements</em>.
     *
     * As reimplemented by %CircularStructure, this member function always
@@ -596,7 +596,7 @@ public:
    }
 
    /*!
-    * Returns true if this is a <em>box structure</em>. All elements in a box
+    * Returns true iff this is a <em>box structure</em>. All elements in a box
     * structure are <em>existing elements</em>.
     *
     * As reimplemented by %OrthogonalStructure, this member function always
@@ -665,7 +665,7 @@ public:
    }
 
    /*!
-    * Returns true if this is a <em>box structure</em>. All elements in a box
+    * Returns true iff this is a <em>box structure</em>. All elements in a box
     * structure are <em>existing elements</em>.
     *
     * As reimplemented by %DiagonalStructure, this member function always
@@ -736,7 +736,7 @@ public:
    }
 
    /*!
-    * Returns true if this is a <em>box structure</em>. All elements in a box
+    * Returns true iff this is a <em>box structure</em>. All elements in a box
     * structure are <em>existing elements</em>.
     *
     * As reimplemented by %StarStructure, this member function always
@@ -821,7 +821,7 @@ public:
    }
 
    /*!
-    * Returns true if this is a <em>box structure</em>. All elements in a box
+    * Returns true iff this is a <em>box structure</em>. All elements in a box
     * structure are <em>existing elements</em>.
     *
     * As reimplemented by %ThreeWayStructure, this member function always
@@ -967,4 +967,4 @@ protected:
 #endif   // __PCL_StructuringElement_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/StructuringElement.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/StructuringElement.h - Released 2015/10/08 11:24:12 UTC

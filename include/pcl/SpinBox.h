@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/SpinBox.h - Released 2015/07/30 17:15:18 UTC
+// pcl/SpinBox.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -213,7 +213,7 @@ public:
    void SetStepSize( int );
 
    /*!
-    * Returns true if <em>wrapping mode</em> is enabled for this %SpinBox
+    * Returns true iff <em>wrapping mode</em> is enabled for this %SpinBox
     * control.
     *
     * When wrapping is enabled, a %SpinBox can wrap around its minimum
@@ -250,7 +250,7 @@ public:
    }
 
    /*!
-    * Returns true if this %SpinBox control is \e editable.
+    * Returns true iff this %SpinBox control is \e editable.
     *
     * An editable spin box allows the user to enter its current value directly
     * on its Edit part. The value of a non-editable spin box can only be
@@ -356,14 +356,14 @@ public:
    }
 
    /*!
-    * Returns true if the text in this %SpinBox control is right-aligned.
+    * Returns true iff the text in this %SpinBox control is right-aligned.
     *
     * \sa SetRightAlignment(), IsLeftAligned()
     */
    bool IsRightAligned() const;
 
    /*!
-    * Returns true if the text in this %SpinBox control is left-aligned.
+    * Returns true iff the text in this %SpinBox control is left-aligned.
     *
     * This is a convenience member function, equivalent to
     * !IsRightAligned()
@@ -444,6 +444,8 @@ public:
     *
     * \param receiver   The control that will receive spin box value events
     *                   from this %SpinBox.
+    *
+    * \ingroup spin_box_event_handlers
     */
    void OnValueUpdated( value_event_handler handler, Control& receiver );
 
@@ -455,6 +457,8 @@ public:
     *
     * \param receiver   The control that will receive slider range events
     *                   from this %SpinBox.
+    *
+    * \ingroup spin_box_event_handlers
     */
    void OnRangeUpdated( range_event_handler handler, Control& receiver );
 
@@ -484,4 +488,4 @@ private:
 #endif   // __PCL_SpinBox_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SpinBox.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/SpinBox.h - Released 2015/10/08 11:24:12 UTC

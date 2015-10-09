@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/RedundantMultiscaleTransform.h - Released 2015/07/30 17:15:18 UTC
+// pcl/RedundantMultiscaleTransform.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -407,7 +407,7 @@ public:
    }
 
    /*!
-    * Returns true if the layer at layer index \a i exists (0 <= \a i <= \a n,
+    * Returns true iff the layer at layer index \a i exists (0 <= \a i <= \a n,
     * where \a n is the number of generated layers), that is, if the multiscale
     * transform has been generated and the specified layer has been calculated
     * (because it was not disabled) and has not been deleted.
@@ -455,7 +455,7 @@ public:
    }
 
    /*!
-    * Returns true if the layer at index \a i is enabled, false if it is
+    * Returns true iff the layer at index \a i is enabled, false if it is
     * disabled. See the documentation for EnableLayer( int, bool ) for detailed
     * information about disabled layers.
     */
@@ -537,7 +537,7 @@ public:
    }
 
    /*!
-    * Returns true if this object is allowed to use multiple parallel execution
+    * Returns true iff this object is allowed to use multiple parallel execution
     * threads (when multiple threads are permitted and available).
     */
    bool IsParallelProcessingEnabled() const
@@ -681,4 +681,4 @@ protected:
 #endif   // __PCL_RedundantMultiscaleTransform_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/RedundantMultiscaleTransform.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/RedundantMultiscaleTransform.h - Released 2015/10/08 11:24:12 UTC

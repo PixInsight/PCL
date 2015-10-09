@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Graphics.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Graphics.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -300,7 +300,7 @@ public:
     * Since graphics contexts are unique objects, calling this member function
     * has no effect.
     */
-   virtual void SetUnique()
+   virtual void EnsureUnique()
    {
    }
 
@@ -323,7 +323,7 @@ public:
    bool BeginPaint( SVG& svg );
 
    /*!
-    * Returns true if this graphics context is currently active.
+    * Returns true iff this graphics context is currently active.
     */
    bool IsPainting() const;
 
@@ -2340,4 +2340,4 @@ private:
 #endif   // __PCL_Graphics_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Graphics.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Graphics.h - Released 2015/10/08 11:24:12 UTC

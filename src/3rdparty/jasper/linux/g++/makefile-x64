@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.95
+# PixInsight Makefile Generator Script v1.96
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 30 Jul 2015 17:10:22 GMT
+# Automatically generated on Thu, 08 Oct 2015 11:23:21 GMT
 # Project id ...... jasper
 # Project type .... DynamicLibrary
 # Platform ........ Linux/g++
@@ -20,7 +20,7 @@
 # ../../include
 ######################################################################
 
-OBJ_DIR="$(PCLSRCDIR)/jasper/linux/g++/x64/Release"
+OBJ_DIR="$(PCLSRCDIR)/3rdparty/jasper/linux/g++/x64/Release"
 
 .PHONY: all
 all: $(OBJ_DIR)/libjasper-pxi.so
@@ -161,7 +161,7 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/libjasper-pxi.so: $(OBJ_FILES)
-	g++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/libjasper-pxi.so $(OBJ_FILES)
+	g++ -m64 -fPIC -Wl,-fuse-ld=gold -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -s -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/libjasper-pxi.so $(OBJ_FILES)
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean
@@ -173,15 +173,15 @@ post-build:
 	cp $(OBJ_DIR)/libjasper-pxi.so $(PCLBINDIR64)
 
 ./x64/Release/%.o: ../../%.c
-	gcc -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -D"EXCLUDE_JPG_SUPPORT" -D"EXCLUDE_MIF_SUPPORT" -D"EXCLUDE_PNM_SUPPORT" -D"EXCLUDE_RAS_SUPPORT" -D"EXCLUDE_BMP_SUPPORT" -D"EXCLUDE_PGX_SUPPORT" -I"$(PCLINCDIR)" -I"../../include" -mtune=generic -mssse3 -O3 -minline-all-stringops -ffunction-sections -fdata-sections -fomit-frame-pointer -ffast-math -ftree-vectorize --param vect-max-version-for-alias-checks=1000 --param vect-max-version-for-alignment-checks=1000 -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	gcc -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -D"EXCLUDE_JPG_SUPPORT" -D"EXCLUDE_MIF_SUPPORT" -D"EXCLUDE_PNM_SUPPORT" -D"EXCLUDE_RAS_SUPPORT" -D"EXCLUDE_BMP_SUPPORT" -D"EXCLUDE_PGX_SUPPORT" -I"$(PCLINCDIR)" -I"../../include" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 ./x64/Release/base/%.o: ../../base/%.c
-	gcc -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -D"EXCLUDE_JPG_SUPPORT" -D"EXCLUDE_MIF_SUPPORT" -D"EXCLUDE_PNM_SUPPORT" -D"EXCLUDE_RAS_SUPPORT" -D"EXCLUDE_BMP_SUPPORT" -D"EXCLUDE_PGX_SUPPORT" -I"$(PCLINCDIR)" -I"../../include" -mtune=generic -mssse3 -O3 -minline-all-stringops -ffunction-sections -fdata-sections -fomit-frame-pointer -ffast-math -ftree-vectorize --param vect-max-version-for-alias-checks=1000 --param vect-max-version-for-alignment-checks=1000 -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	gcc -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -D"EXCLUDE_JPG_SUPPORT" -D"EXCLUDE_MIF_SUPPORT" -D"EXCLUDE_PNM_SUPPORT" -D"EXCLUDE_RAS_SUPPORT" -D"EXCLUDE_BMP_SUPPORT" -D"EXCLUDE_PGX_SUPPORT" -I"$(PCLINCDIR)" -I"../../include" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 ./x64/Release/jp2/%.o: ../../jp2/%.c
-	gcc -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -D"EXCLUDE_JPG_SUPPORT" -D"EXCLUDE_MIF_SUPPORT" -D"EXCLUDE_PNM_SUPPORT" -D"EXCLUDE_RAS_SUPPORT" -D"EXCLUDE_BMP_SUPPORT" -D"EXCLUDE_PGX_SUPPORT" -I"$(PCLINCDIR)" -I"../../include" -mtune=generic -mssse3 -O3 -minline-all-stringops -ffunction-sections -fdata-sections -fomit-frame-pointer -ffast-math -ftree-vectorize --param vect-max-version-for-alias-checks=1000 --param vect-max-version-for-alignment-checks=1000 -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	gcc -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -D"EXCLUDE_JPG_SUPPORT" -D"EXCLUDE_MIF_SUPPORT" -D"EXCLUDE_PNM_SUPPORT" -D"EXCLUDE_RAS_SUPPORT" -D"EXCLUDE_BMP_SUPPORT" -D"EXCLUDE_PGX_SUPPORT" -I"$(PCLINCDIR)" -I"../../include" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 ./x64/Release/jpc/%.o: ../../jpc/%.c
-	gcc -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -D"EXCLUDE_JPG_SUPPORT" -D"EXCLUDE_MIF_SUPPORT" -D"EXCLUDE_PNM_SUPPORT" -D"EXCLUDE_RAS_SUPPORT" -D"EXCLUDE_BMP_SUPPORT" -D"EXCLUDE_PGX_SUPPORT" -I"$(PCLINCDIR)" -I"../../include" -mtune=generic -mssse3 -O3 -minline-all-stringops -ffunction-sections -fdata-sections -fomit-frame-pointer -ffast-math -ftree-vectorize --param vect-max-version-for-alias-checks=1000 --param vect-max-version-for-alignment-checks=1000 -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	gcc -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -D"EXCLUDE_JPG_SUPPORT" -D"EXCLUDE_MIF_SUPPORT" -D"EXCLUDE_PNM_SUPPORT" -D"EXCLUDE_RAS_SUPPORT" -D"EXCLUDE_BMP_SUPPORT" -D"EXCLUDE_PGX_SUPPORT" -I"$(PCLINCDIR)" -I"../../include" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

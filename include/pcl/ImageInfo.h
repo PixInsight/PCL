@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ImageInfo.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ImageInfo.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -149,7 +149,7 @@ public:
    }
 
    /*!
-    * Returns true if this object describes a valid nonempty image.
+    * Returns true iff this object describes a valid nonempty image.
     */
    bool IsValid() const
    {
@@ -163,7 +163,7 @@ public:
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns true if two ImageInfo structures \a a and \a b are equal.
+ * Returns true iff two ImageInfo structures \a a and \a b are equal.
  */
 inline bool operator ==( const ImageInfo& a, const ImageInfo& b )
 {
@@ -180,4 +180,4 @@ inline bool operator ==( const ImageInfo& a, const ImageInfo& b )
 #endif   // __PCL_ImageInfo_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageInfo.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ImageInfo.h - Released 2015/10/08 11:24:12 UTC

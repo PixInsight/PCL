@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/FileFormatInstance.h - Released 2015/07/30 17:15:18 UTC
+// pcl/FileFormatInstance.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -142,7 +142,7 @@ public:
     * Since file format instances are unique objects, calling this member
     * function has no effect.
     */
-   virtual void SetUnique()
+   virtual void EnsureUnique()
    {
    }
 
@@ -162,12 +162,12 @@ public:
    /*!
     * Closes an image file (after Open() or Create()).
     *
-    * Returns true if the file was successfully closed.
+    * Returns true iff the file was successfully closed.
     */
    bool Close();
 
    /*!
-    * Returns true if this file is currently open.
+    * Returns true iff this file is currently open.
     */
    bool IsOpen() const;
 
@@ -282,7 +282,7 @@ public:
     * left empty. In any case, previous contents of the \a kwywords list will
     * be destroyed.
     *
-    * Returns true if the file access operation was successful, even if no
+    * Returns true iff the file access operation was successful, even if no
     * keyword was extracted. Returns false in the event of error.
     */
    bool Extract( FITSKeywordArray& keywords );
@@ -293,7 +293,7 @@ public:
     * If the current image embeds an ICC profile, it will be assigned to the
     * specified \a icc object. Otherwise, \a icc will be set to a null profile.
     *
-    * Returns true if the file access operation was successful, even if no
+    * Returns true iff the file access operation was successful, even if no
     * ICC profile was extracted. Returns false in the event of error.
     */
    bool Extract( ICCProfile& icc );
@@ -305,7 +305,7 @@ public:
     * specified \a thumbnail 8-bit integer image. Otherwise, a null image will
     * be assigned to \a thumbnail.
     *
-    * Returns true if the file access operation was successful, even if no
+    * Returns true iff the file access operation was successful, even if no
     * thumbnail image was extracted. Returns false in the event of error.
     */
    bool Extract( UInt8Image& thumbnail );
@@ -325,7 +325,7 @@ public:
    ImagePropertyDescriptionArray Properties();
 
    /*!
-    * Returns true if the specified property exists associated with the current
+    * Returns true iff the specified property exists associated with the current
     * image in  this file. Returns false if no such property exists.
     *
     * This is a convenience member function, equivalent to the following code:
@@ -416,7 +416,7 @@ public:
     * Extraction of the RGB working space associated with the current image in
     * this file.
     *
-    * Returns true if the file access operation was successful, even if no
+    * Returns true iff the file access operation was successful, even if no
     * RGBWS was extracted. Returns false in the event of error.
     *
     * If no RGBWS is defined for the current image, this function will assign a
@@ -445,7 +445,7 @@ public:
     * Extraction of the display function associated with the current image in
     * this file.
     *
-    * Returns true if the file access operation was successful, even if no
+    * Returns true iff the file access operation was successful, even if no
     * display function was extracted. Returns false in the event of error.
     *
     * If no display function is defined for the current image, this function
@@ -474,7 +474,7 @@ public:
     * Extraction of the color filter array (CFA) for the current image in this
     * file.
     *
-    * Returns true if the file access operation was successful, even if no CFA
+    * Returns true iff the file access operation was successful, even if no CFA
     * was extracted. Returns false in the event of error.
     *
     * If no CFA is defined for the current image, this function will assign an
@@ -586,7 +586,7 @@ public:
    bool Read( UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
-    * Returns true if the last file read operation was \e inexact.
+    * Returns true iff the last file read operation was \e inexact.
     *
     * This function can be called just after a successful call to ReadImage()
     * or Read(). If a file format instance reads source images inexactly,
@@ -655,7 +655,7 @@ public:
     *          is unknown or cannot be defined at the point of creation. This
     *          parameter defaults to one.
     *
-    * Returns true if the file was successfully created. Returns false in the
+    * Returns true iff the file was successfully created. Returns false in the
     * event of error.
     */
    bool Create( const String& filePath, const IsoString& hints = IsoString(), int numberOfImages = 1 );
@@ -670,7 +670,7 @@ public:
     * Specifies an identifier for the next image that will be written or
     * created in this file.
     *
-    * Returns true if the identifier was successfully assigned. Returns false
+    * Returns true iff the identifier was successfully assigned. Returns false
     * in the event of error.
     *
     * \note Most file format implementations don't support image identifiers
@@ -688,7 +688,7 @@ public:
     * Specifies a set of format-independent image \a options for the next image
     * that will be written or created in this file.
     *
-    * Returns true if the options were successfully assigned. Returns false in
+    * Returns true iff the options were successfully assigned. Returns false in
     * the event of error.
     *
     * \note A file format implementations may ignore any format-independent
@@ -717,7 +717,7 @@ public:
     * corresponding FileFormat::UsesFormatSpecificData() member function
     * returns true.
     *
-    * Returns true if the specified data block was accepted by this instance.
+    * Returns true iff the specified data block was accepted by this instance.
     * Returns false if the data block is invalid, or in the event of error.
     *
     * \a note A module should verify validity of a format-specific data block
@@ -792,7 +792,7 @@ public:
     * image parameters have been specified by previous calls to SetOptions()
     * and SetFormatSpecificData().
     *
-    * Returns true if the image was successfully created.
+    * Returns true iff the image was successfully created.
     *
     * \note This member function should not be invoked for file formats that
     * don't support incremental write operations.
@@ -810,7 +810,7 @@ public:
     *
     * \param channel    Channel index to write.
     *
-    * Returns true if the specified pixel row(s) were successfully written;
+    * Returns true iff the specified pixel row(s) were successfully written;
     * false in the event of error, or if the operation was cancelled.
     *
     * Incremental write operations allow the PixInsight core application and
@@ -858,7 +858,7 @@ public:
    bool Write( const UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
-    * Returns true if the last file write operation in this file was \e lossy.
+    * Returns true iff the last file write operation in this file was \e lossy.
     *
     * This function can ve called just after successful completion of a call to
     * WriteImage() or Write(). If a file format instance writes lossy image
@@ -887,4 +887,4 @@ private:
 #endif   // __PCL_FileFormatInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormatInstance.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/FileFormatInstance.h - Released 2015/10/08 11:24:12 UTC

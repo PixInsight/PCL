@@ -1,0 +1,254 @@
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0763
+// ----------------------------------------------------------------------------
+// Standard ColorSpaces Process Module Version 01.01.00.0258
+// ----------------------------------------------------------------------------
+// LRGBCombinationIcon.xpm - Released 2015/10/08 11:24:39 UTC
+// ----------------------------------------------------------------------------
+// This file is part of the standard ColorSpaces PixInsight module.
+//
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ----------------------------------------------------------------------------
+
+/* XPM */
+static const char* LRGBCombinationIcon_XPM[] = {
+/* columns rows colors chars-per-pixel */
+"24 24 169 2",
+"$. c #B8550E",
+"+. c #7FA0FD",
+"W. c #B8E9FD",
+"D  c #080AFF",
+"W  c #6D8AFE",
+"n  c #946A6A",
+"z. c #1AB168",
+"k  c #0303FF",
+"T. c #A1CCFD",
+"u. c #2A36FE",
+"c  c #6883FE",
+"j. c #A1CCFE",
+"=  c #2A36FF",
+"x  c #566DFE",
+"D. c #6E6EFF",
+"7. c #3131FF",
+"H. c #637CFE",
+"0. c #252FFF",
+"1  c #5166FE",
+"}  c #1319FF",
+"E. c #B6E6FD",
+"&. c #7899FE",
+"o. c #31FF31",
+"6. c #0BBC4E",
+"i. c #3A49FE",
+"R. c #ACDBFD",
+"Q  c #7392FE",
+":  c #3A49FF",
+")  c #9C6351",
+"|  c #9C6352",
+"O  c #090BFF",
+"(  c #9C6355",
+"K  c #A36464",
+"8  c #5C75FE",
+":. c #AA470E",
+"q  c #888888",
+"l. c #576EFE",
+",  c #4558FE",
+"+  c #0C0FFF",
+"Y. c #9DC6FE",
+"f. c #4051FE",
+"7  c #4051FF",
+"c. c #A5D1FD",
+"R  c #FF3F3F",
+"A  c #6784FE",
+"2. c #2129FE",
+";. c #98634C",
+"l  c #9F9F9F",
+"@  c #0F13FF",
+"k. c #3B4AFE",
+"b  c #916E6E",
+"6  c #3B4AFF",
+"G  c #986969",
+"<. c #00B847",
+"_  c #C03F00",
+"$  c #171EFF",
+"X. c #BC4E0B",
+"C. c #6868FF",
+"I. c #89ADFD",
+"y  c #989898",
+"5. c #08C047",
+"5  c #3443FF",
+"^  c #9B645C",
+"H  c #9B6767",
+"4  c #2F3CFF",
+"r  c #919191",
+"~  c #1014FF",
+"M. c #A9D6FD",
+"y. c #97C0FE",
+"!  c #7898FD",
+"O. c #38FF38",
+"g. c #16B362",
+"#. c #9C654E",
+"V. c #7391FE",
+"   c None",
+"S  c #6E8AFE",
+"-  c #303DFE",
+"N. c #6262FF",
+"h  c #5C74FE",
+"9  c #838383",
+",. c #00C03F",
+"K. c #83A7FE",
+"q. c #2B36FE",
+"Z  c #576DFE",
+"g  c #576DFF",
+"{  c #7EA0FD",
+"S. c #7EA0FE",
+"b. c #4557FF",
+"U. c #98C1FD",
+"*  c #262FFF",
+".. c #C04708",
+"A. c #7999FD",
+">  c #4050FE",
+"[  c #7999FE",
+"s  c #4050FF",
+"X  c #0203FF",
+"w  c #8B8B8B",
+"U  c #6783FE",
+"9. c #93BAFD",
+"-. c #1C24FF",
+"4. c #9F4E16",
+"a  c #3B49FF",
+"j  c #627CFE",
+"I  c #FF3838",
+"1. c #8EB3FD",
+"V  c #FF0000",
+"G. c #5066FE",
+"o  c #0507FF",
+"N  c #9F6060",
+"E  c #5D75FE",
+"<  c #4B5FFE",
+"C  c #4B5FFF",
+"Z. c #B0DFFD",
+".  c #0000FF",
+"d  c #4658FE",
+"/  c #9B6358",
+"F  c #946B6B",
+"F. c #B3E3FD",
+"p. c #94531F",
+"J. c #6884FE",
+"m. c #5C5CFF",
+"u  c #9B9B9B",
+"M  c #9B6363",
+"2  c #566EFE",
+"d. c #9CC6FD",
+"e. c #99511A",
+"f  c #5167FE",
+"L. c #B6E7FD",
+"`  c #B84700",
+"n. c #1FB06E",
+"&  c #2029FE",
+"%. c #3FFF3F",
+"0  c #858585",
+"t  c #949494",
+"z  c #3A4AFE",
+"v. c #3A4AFF",
+"x. c #5555FF",
+" . c #9C6450",
+"'  c #00FF00",
+";  c #3543FE",
+"T  c #AA6363",
+"p  c #3543FF",
+"v  c #8E7171",
+"w. c #303CFE",
+">. c #A34A12",
+"i  c #303CFF",
+"P. c #83A6FE",
+"a. c #12B55C",
+"h. c #4E4EFF",
+"B  c #A35C5C",
+"#  c #1418FE",
+"t. c #3F3FFF",
+"L  c #A66363",
+"r. c #0EB855",
+"%  c #1C23FE",
+"J  c #9F6565",
+"]  c #7491FD",
+"B. c #ADDAFD",
+"Y  c #7491FE",
+"m  c #986767",
+"s. c #4747FF",
+"=. c #89AEFE",
+"3. c #A44B12",
+"3  c #7F7F7F",
+"e  c #8E8E8E",
+"*. c #84A7FD",
+"P  c #FF3131",
+"@. c #84A7FE",
+"8. c #3838FF",
+/* pixels */
+"                                                ",
+"  . . . X o O + @ # $ % & * = - ; : > , < 1 2   ",
+"  . 3 3 3 3 3 3 3 3 3 3 3 = 4 5 6 7 , < 1 2 8   ",
+"  . 3 9 0 q w e r t y u 3 i p a s d < f g h j   ",
+"  k 3 0 q w e r t y u l 3 ; z 7 d < 1 x 8 j c   ",
+"  o 3 q w v b n m M N B 3 V V V C f Z 8 j A S   ",
+"  D 3 w e b F G H J K L 3 P I V f Z 8 j U S Y   ",
+"  + 3 e r n G H J K L T 3 I R V 2 E j c W Q !   ",
+"  ~ 3 r t m H J ^ / ( ) 3 _ ` V ' ' ' W ] [ {   ",
+"  } 3 t y M J K / ( |  .3 ..X.V o.O.' Q [ +.@.  ",
+"  $ 3 y u N K L ( |  .#.3 X.$.V O.%.' &.{ *.=.  ",
+"  -.3 u l B L T )  .#.;.3 :.>.V ,.<.' . . . 1.  ",
+"  2.3 3 3 3 3 3 3 3 3 3 3 3.4.V 5.6.' 7.8.. 9.  ",
+"  0.q.w.p V P I _ ..X.:.3.4.e.V 6.r.' 8.t.. y.  ",
+"  u.i p i.V I R ` X.$.>.4.e.p.V r.a.' t.s.. d.  ",
+"  - ; z f.V V V V V V V V V V V a.g.' s.h.. j.  ",
+"  ; k.f., < f l.' o.O.,.5.6.r.a.g.z.' h.x.. c.  ",
+"  v.f.b.< 1 l.8 ' O.%.<.6.r.a.g.z.n.' x.m.. M.  ",
+"  7 , < f x 8 j ' ' ' ' ' ' ' ' ' ' ' m.N.. B.  ",
+"  , C 1 2 E j U S V.[ . 7.8.t.s.h.x.m.N.C.. Z.  ",
+"  < 1 l.8 j U S Q A.S.. 8.t.s.h.x.m.N.C.D.. F.  ",
+"  G.x 8 H.J.S Q [ +.K.. . . . . . . . . . . L.  ",
+"  l.h j U W Q A.{ P.I.1.9.U.Y.T.c.M.R.Z.F.E.W.  ",
+"                                                "
+};
+
+// ----------------------------------------------------------------------------
+// EOF LRGBCombinationIcon.xpm - Released 2015/10/08 11:24:39 UTC

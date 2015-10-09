@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/IndirectArray.h - Released 2015/07/30 17:15:18 UTC
+// pcl/IndirectArray.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -198,7 +198,7 @@ public:
    }
 
    /*!
-    * Returns true if this indirect array uniquely references its contained
+    * Returns true iff this indirect array uniquely references its contained
     * array of pointers to objects.
     */
    bool IsUnique() const
@@ -207,7 +207,7 @@ public:
    }
 
    /*!
-    * Returns true if this indirect array is an alias of the indirect array
+    * Returns true iff this indirect array is an alias of the indirect array
     * \a x.
     *
     * Two objects are aliases if both share the same data. Two indirect
@@ -226,9 +226,9 @@ public:
     * of pointers, references it, and then decrements the reference counter of
     * the original pointer array.
     */
-   void SetUnique()
+   void EnsureUnique()
    {
-      m_array.SetUnique();
+      m_array.EnsureUnique();
    }
 
    /*!
@@ -291,7 +291,7 @@ public:
    }
 
    /*!
-    * Returns true if this indirect array is empty.
+    * Returns true iff this indirect array is empty.
     */
    bool IsEmpty() const
    {
@@ -356,7 +356,7 @@ public:
     * immutable iterator \a i may become invalid. This happens when this
     * function is called for a shared array, since in this case getting a
     * mutable iterator involves a deep copy of the array through an implicit
-    * call to SetUnique().
+    * call to EnsureUnique().
     */
    iterator MutableIterator( const_iterator i )
    {
@@ -554,7 +554,7 @@ public:
    /*!
     * Ensures that the specified iterator points to a uniquely referenced
     * pointer. If necessary, this function builds a new, uniquely referenced
-    * copy of this indirect array by calling SetUnique().
+    * copy of this indirect array by calling EnsureUnique().
     *
     * If the iterator \a i is changed, it is guaranteed to point to the pointer
     * at the same array index it was pointing to before calling this function.
@@ -567,7 +567,7 @@ public:
    /*!
     * Ensures that the specified iterators point to uniquely referenced
     * pointers. If necessary, this function builds a new, uniquely referenced
-    * copy of this indirect array by calling SetUnique().
+    * copy of this indirect array by calling EnsureUnique().
     *
     * If the iterators \a i and \a j are changed, they are guaranteed to point
     * to the pointers at the same array indices they were pointing to before
@@ -1930,4 +1930,4 @@ IndirectArray<T,A>& operator <<( IndirectArray<T,A>&& x1, const IndirectArray<T,
 #endif  // __PCL_IndirectArray_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/IndirectArray.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/IndirectArray.h - Released 2015/10/08 11:24:12 UTC

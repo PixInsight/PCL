@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/UIObject.h - Released 2015/07/30 17:15:18 UTC
+// pcl/UIObject.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -112,7 +112,7 @@ public:
    virtual ~UIObject();
 
    /*!
-    * Returns true if this is a \e null %UIObject instance.
+    * Returns true iff this is a \e null %UIObject instance.
     *
     * A null %UIObject does not represent an existing object in the PixInsight
     * core application.
@@ -141,7 +141,7 @@ public:
    size_type RefCount() const;
 
    /*!
-    * Returns true if the server-side object is uniquely referenced by this
+    * Returns true iff the server-side object is uniquely referenced by this
     * %UIObject instance.
     *
     * A uniquely referenced server-side object will be destroyed or recycled
@@ -153,7 +153,7 @@ public:
    }
 
    /*!
-    * Returns true if this %UIObject instance is an alias to an existing object
+    * Returns true iff this %UIObject instance is an alias to an existing object
     * in the calling module.
     *
     * An alias and its aliased object are interchangeable; other than
@@ -184,7 +184,7 @@ public:
    }
 
    /*!
-    * Returns true if this managed object represents an unreferenced
+    * Returns true iff this managed object represents an unreferenced
     * server-side object. Such objects are said to be 'garbage' in the
     * programming jargon, and are subject to eventual destruction through a
     * process known as \e garbage \e collection.
@@ -195,7 +195,7 @@ public:
    }
 
    /*!
-    * Returns true if this instance and other %UIObject \a o reference the same
+    * Returns true iff this instance and other %UIObject \a o reference the same
     * server-side object.
     *
     * If two %UIObject instances reference the same server-side object, each of
@@ -221,7 +221,7 @@ public:
     * Some derived classes represent object types whose instances are unique by
     * nature. In those cases, calling this member function has no effect.
     */
-   virtual void SetUnique();
+   virtual void EnsureUnique();
 
    /*!
     * A convenience synonym for IsSameObject( o ).
@@ -232,7 +232,7 @@ public:
    }
 
    /*!
-    * Returns true if this %UIObject instance precedes another %UIObject \a o.
+    * Returns true iff this %UIObject instance precedes another %UIObject \a o.
     * Performs a comparison based on the low-level handle internally maintained
     * by each %UIObject.
     *
@@ -413,4 +413,4 @@ protected:
 #endif   // __PCL_UIObject_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/UIObject.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/UIObject.h - Released 2015/10/08 11:24:12 UTC

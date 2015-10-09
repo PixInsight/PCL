@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Button.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Button.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -214,7 +214,7 @@ public:
    }
 
    /*!
-    * Returns true if this button can be <em>pushed down</em>.
+    * Returns true iff this button can be <em>pushed down</em>.
     *
     * \note This is a pure virtual member function that must be reimplemented
     * by derived classes.
@@ -222,7 +222,7 @@ public:
    virtual bool IsPushable() const = 0;
 
    /*!
-    * Returns true if this button is in <em>pushed down</em> state.
+    * Returns true iff this button is in <em>pushed down</em> state.
     */
    bool IsPushed() const;
 
@@ -248,7 +248,7 @@ public:
    }
 
    /*!
-    * Returns true if this button can be <em>checked</em>.
+    * Returns true iff this button can be <em>checked</em>.
     *
     * \note This is a pure virtual member function that must be reimplemented
     * by derived classes.
@@ -256,7 +256,7 @@ public:
    virtual bool IsCheckable() const = 0;
 
    /*!
-    * Returns true if this button is in <em>checked state</em>.
+    * Returns true iff this button is in <em>checked state</em>.
     */
    bool IsChecked() const;
 
@@ -353,6 +353,8 @@ public:
     *
     * \param receiver   The control that will receive click events from this
     *                   button.
+    *
+    * \ingroup button_event_handlers
     */
    void OnClick( click_event_handler handler, Control& receiver );
 
@@ -364,6 +366,8 @@ public:
     *
     * \param receiver   The control that will receive press events from this
     *                   button.
+    *
+    * \ingroup button_event_handlers
     */
    void OnPress( press_event_handler handler, Control& receiver );
 
@@ -375,6 +379,8 @@ public:
     *
     * \param receiver   The control that will receive release events from this
     *                   button.
+    *
+    * \ingroup button_event_handlers
     */
    void OnRelease( press_event_handler handler, Control& receiver );
 
@@ -386,6 +392,8 @@ public:
     *
     * \param receiver   The control that will receive check events from this
     *                   button.
+    *
+    * \ingroup button_event_handlers
     */
    void OnCheck( check_event_handler handler, Control& receiver );
 
@@ -426,4 +434,4 @@ protected:
 #endif   // __PCL_Button_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Button.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Button.h - Released 2015/10/08 11:24:12 UTC

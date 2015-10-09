@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/AutoViewLock.h - Released 2015/07/30 17:15:18 UTC
+// pcl/AutoViewLock.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -190,7 +190,8 @@ public:
     * }
     * \endcode
     */
-   explicit AutoViewLock( View& view, bool lock = true ) : m_view( view ), m_readLock( 0 ), m_writeLock( 0 )
+   explicit AutoViewLock( View& view, bool lock = true ) :
+      m_view( view ), m_readLock( 0 ), m_writeLock( 0 )
    {
       if ( lock )
          Lock();
@@ -305,4 +306,4 @@ private:
 #endif   // __PCL_AutoViewLock_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AutoViewLock.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/AutoViewLock.h - Released 2015/10/08 11:24:12 UTC

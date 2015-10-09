@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ReadoutOptions.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ReadoutOptions.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -267,7 +267,7 @@ public:
    }
 
    /*!
-    * Returns true if this %ReadoutOptions object enables presentation of alpha
+    * Returns true iff this %ReadoutOptions object enables presentation of alpha
     * channel pixel readouts.
     */
    bool IsAlphaChannelEnabled() const
@@ -295,7 +295,7 @@ public:
    }
 
    /*!
-    * Returns true if this %ReadoutOptions object enables presentation of mask
+    * Returns true iff this %ReadoutOptions object enables presentation of mask
     * channel pixel readouts.
     */
    bool IsMaskChannelEnabled() const
@@ -378,7 +378,7 @@ public:
    }
 
    /*!
-    * Returns true if this %ReadoutOptions object enables generation of
+    * Returns true iff this %ReadoutOptions object enables generation of
     * real-time readout previews.
     */
    bool IsPreviewEnabled() const
@@ -403,7 +403,7 @@ public:
    }
 
    /*!
-    * Returns true if this %ReadoutOptions object enables crosshair center
+    * Returns true iff this %ReadoutOptions object enables crosshair center
     * lines on real-time readout previews.
     */
    bool IsPreviewCenterEnabled() const
@@ -428,7 +428,7 @@ public:
    }
 
    /*!
-    * Returns true if this %ReadoutOptions object enables broadcasting of
+    * Returns true iff this %ReadoutOptions object enables broadcasting of
     * <em>readout notifications</em>.
     * \sa \ref readout_notifications "readout notifications"
     */
@@ -456,7 +456,7 @@ public:
    }
 
    /*!
-    * Returns true if this %ReadoutOptions object enables floating point real
+    * Returns true iff this %ReadoutOptions object enables floating point real
     * pixel readouts.
     */
    bool IsReal() const
@@ -473,7 +473,7 @@ public:
    }
 
    /*!
-    * Returns true if this %ReadoutOptions object disables floating point real
+    * Returns true iff this %ReadoutOptions object disables floating point real
     * pixel readouts.
     *
     * This is a convenience function, equivalent to:
@@ -592,4 +592,4 @@ private:
 #endif   // __PCL_ReadoutOptions_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ReadoutOptions.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ReadoutOptions.h - Released 2015/10/08 11:24:12 UTC

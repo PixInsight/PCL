@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/UnixSignalException.h - Released 2015/07/30 17:15:18 UTC
+// pcl/UnixSignalException.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -55,7 +55,7 @@
 /// \file pcl/UnixSignalException.h
 
 #if defined( __PCL_WINDOWS ) || !defined( __PCL_LINUX ) && !defined( __PCL_FREEBSD ) && !defined( __PCL_MACOSX )
-#error UnixSignalException can only be used on Linux, FreeBSD and Mac OS X platforms.
+#error UnixSignalException can only be used on Linux, FreeBSD and OS X platforms.
 #endif
 
 #ifndef __PCL_Defs_h
@@ -77,15 +77,21 @@ namespace pcl
  * \class UnixSignalException
  * \brief A UNIX synchronous signal handler that throws C++ exceptions.
  *
- * This class can only be used on Linux, FreeBSD and Mac OS X platforms. On
- * Windows platforms, including this header file from compilable code raises
- * a compiler error.
+ * This class can only be used on Linux, FreeBSD and OS X platforms. On Windows
+ * platforms, including this header file from compilable code raises a compiler
+ * error.
  *
  * For this handler to work properly, all code that may raise synchronous
  * signals (SIGSEGV and the like) must be compiled with GCC's
  * '-fnon-call-exceptions' flag. Otherwise the exceptions will be thrown
  * but terminate() will be called, which is the default critical signal
  * management behavior.
+ *
+ * To generate a backtrace report (see the UnixSignalException::Details()
+ * member function), the code must be compiled with the '-rdynamic' GCC flag,
+ * which instructs the linker to add all symbols to the dynamic symbol table.
+ * In addition, the generated binaries should not be stripped with the '-s'
+ * linker flag.
  */
 class PCL_CLASS UnixSignalException : public pcl::Exception
 {
@@ -93,22 +99,17 @@ public:
 
    /*!
     * Constructs a new %UnixSignalException object with the specified \a signal
-    * number.
+    * number and optional backtrace \a details.
     */
-   UnixSignalException( int signal ) : pcl::Exception(), m_signal( signal ), m_details("")
-   {
-   }
-
-   UnixSignalException(int signal, const String& details) : pcl::Exception(), m_signal(signal), m_details(details)
+   UnixSignalException( int signal, const IsoString& details = IsoString() ) :
+      pcl::Exception(), m_signal( signal ), m_details( details )
    {
    }
 
    /*!
     * Copy constructor.
     */
-   UnixSignalException( const UnixSignalException& x ) : pcl::Exception( x ), m_signal( x.m_signal ), m_details(x.m_details)
-   {
-   }
+   UnixSignalException( const UnixSignalException& ) = default;
 
    /*!
     * Returns the signal number associated with this object.
@@ -116,6 +117,19 @@ public:
    int SignalNumber() const
    {
       return m_signal;
+   }
+
+   /*!
+    * Returns the backtrace information associated with this exception.
+    *
+    * The returned string will be empty if no backtrace data were available at
+    * the time this signal exception was generated. This happens when the code
+    * has not been compiled and linked with the appropriate options (see the
+    * -rdynamic compiler flag).
+    */
+   const IsoString& Details() const
+   {
+      return m_details;
    }
 
    /*!
@@ -129,27 +143,18 @@ public:
    }
 
    /*!
-    * Returns ...
-    */
-   virtual String Details() const
-   {
-	   return m_details;
-   }
-
-   /*!
-    * Set ...
-    */
-   virtual void SetDetails(const String& details){
-	   m_details = details;
-   }
-
-   /*!
     * Returns a formatted error message with information on this signal
     * exception.
     */
    virtual String FormatInfo() const
    {
-      return String().Format( "Critical signal caught (%d): ", SignalNumber() ) + Message() + m_details;
+      String info = String().Format( "Critical signal caught (%d): ", SignalNumber() ) + Message();
+      if ( !m_details.IsEmpty() )
+      {
+         info.Append( '\n' );
+         info.Append( m_details );
+      }
+      return info;
    }
 
    /*!
@@ -174,8 +179,8 @@ public:
 
 protected:
 
-   int    m_signal; // signal number
-   String m_details;
+   int       m_signal;  // signal number
+   IsoString m_details; // backtrace information
 };
 
 // ----------------------------------------------------------------------------
@@ -184,15 +189,11 @@ protected:
    class PCL_CLASS className : public pcl::UnixSignalException                \
    {                                                                          \
    public:                                                                    \
-      className() : pcl::UnixSignalException( sigNum )                        \
+      className( const IsoString& details = IsoString() ) :                   \
+         pcl::UnixSignalException( sigNum, details )                          \
       {                                                                       \
       }                                                                       \
-      className(const String& details) : pcl::UnixSignalException( sigNum,details )\
-      {                                                                       \
-      }                                                                       \
-      className( const className& x ) : pcl::UnixSignalException( x )         \
-      {                                                                       \
-      }                                                                       \
+      className( const className& ) = default;                                \
       virtual String Message() const                                          \
       {                                                                       \
          return message;                                                      \
@@ -202,13 +203,19 @@ protected:
 // ----------------------------------------------------------------------------
 
 DECLARE_UNIX_SIGNAL_EXCEPTION( EUnixSegmentationViolation, SIGSEGV,
-   "Segmentation violation" );
+                               "Segmentation violation" );
 
 DECLARE_UNIX_SIGNAL_EXCEPTION( EUnixBusError, SIGBUS,
-   "Bus error" );
+                               "Bus error" );
 
 DECLARE_UNIX_SIGNAL_EXCEPTION( EUnixFloatingPointException, SIGFPE,
-   "Floating point exception" );
+                               "Floating point exception" );
+
+DECLARE_UNIX_SIGNAL_EXCEPTION( EUnixIllegalInstructionException, SIGILL,
+                               "Illegal instruction" );
+
+DECLARE_UNIX_SIGNAL_EXCEPTION( EUnixIBrokenPipeException, SIGPIPE,
+                               "Broken pipe" );
 
 // ----------------------------------------------------------------------------
 
@@ -221,4 +228,4 @@ DECLARE_UNIX_SIGNAL_EXCEPTION( EUnixFloatingPointException, SIGFPE,
 #endif   // __PCL_UnixSignalException_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/UnixSignalException.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/UnixSignalException.h - Released 2015/10/08 11:24:12 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Complex.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Complex.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -143,7 +143,7 @@ public:
    /*!
     * Returns a copy of the real component of this complex number.
     */
-   T Real() const
+   constexpr T Real() const
    {
       return real;
    }
@@ -159,7 +159,7 @@ public:
    /*!
     * Returns a copy of the imaginary component of this complex number.
     */
-   T Imag() const
+   constexpr T Imag() const
    {
       return imag;
    }
@@ -173,9 +173,9 @@ public:
    }
 
    /*!
-    * Returns true if the imaginary part of this complex number is zero.
+    * Returns true iff the imaginary part of this complex number is zero.
     */
-   bool IsReal() const
+   constexpr bool IsReal() const
    {
       return imag == 0;
    }
@@ -386,7 +386,7 @@ public:
     * Complex norm.
     * This function is equivalent to: Real()*Real() + Imag()*Imag().
     */
-   T Norm() const
+   constexpr T Norm() const
    {
       return real*real + imag*imag;
    }
@@ -396,7 +396,7 @@ public:
     * Returns the arc whose tangent is Imag()/Real(). When both real and
     * imaginary components are zero, this function returns zero.
     */
-   T Arg() const
+   constexpr T Arg() const
    {
       // Degenerate cases (real=0) are correctly handled by real ArcTan(). For
       // the undefined case real=imag=0, we silently return zero. Should we
@@ -871,7 +871,7 @@ Complex<T> Tanh( const Complex<T>& c )
  */
 
 /*!
- * Returns true if two complex numbers \a c1 and \a c2 are equal.
+ * Returns true iff two complex numbers \a c1 and \a c2 are equal.
  * \ingroup complex_relational_ops
  */
 template <typename T1, class T2> inline
@@ -881,7 +881,7 @@ bool operator ==( const Complex<T1>& c1, const Complex<T2>& c2 )
 }
 
 /*!
- * Returns true if a complex number \a c is equal to a real \a x.
+ * Returns true iff a complex number \a c is equal to a real \a x.
  * \ingroup complex_relational_ops
  */
 template <typename T1, class T2> inline
@@ -891,7 +891,7 @@ bool operator ==( const Complex<T1>& c, T2 x )
 }
 
 /*!
- * Returns true if a real number \a x is equal to a complex \a c.
+ * Returns true iff a real number \a x is equal to a complex \a c.
  * \ingroup complex_relational_ops
  */
 template <typename T1, class T2> inline
@@ -901,7 +901,7 @@ bool operator ==( T1 x, const Complex<T2>& c )
 }
 
 /*!
- * Returns true if a complex number \a c1 is less than other complex \a c2.
+ * Returns true iff a complex number \a c1 is less than other complex \a c2.
  * \ingroup complex_relational_ops
  */
 template <typename T1, class T2> inline
@@ -911,7 +911,7 @@ bool operator <( const Complex<T1>& c1, const Complex<T2>& c2 )
 }
 
 /*!
- * Returns true if a complex number \a c is less than a real number \a x.
+ * Returns true iff a complex number \a c is less than a real number \a x.
  * \ingroup complex_relational_ops
  */
 template <typename T1, class T2> inline
@@ -921,7 +921,7 @@ bool operator <( const Complex<T1>& c, T2 x )
 }
 
 /*!
- * Returns true if a real number \a x is less than a complex number \a c.
+ * Returns true iff a real number \a x is less than a complex number \a c.
  * \ingroup complex_relational_ops
  */
 template <typename T1, class T2> inline
@@ -1112,4 +1112,4 @@ typedef dcomplex              complex;
 #endif   // __PCL_Complex_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Complex.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Complex.h - Released 2015/10/08 11:24:12 UTC

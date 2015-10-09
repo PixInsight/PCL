@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/TextBox.h - Released 2015/07/30 17:15:18 UTC
+// pcl/TextBox.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -142,7 +142,7 @@ public:
    }
 
    /*!
-    * Returns true if this %TextBox control is in read-only state.
+    * Returns true iff this %TextBox control is in read-only state.
     *
     * \sa SetReadOnly(), SetReadWrite()
     */
@@ -215,7 +215,7 @@ public:
    void SetSelection( int selStart, int selEnd );
 
    /*!
-    * Returns true if this %TextBox control has a valid selection.
+    * Returns true iff this %TextBox control has a valid selection.
     */
    bool HasSelection() const
    {
@@ -320,4 +320,4 @@ private:
 #endif   // __PCL_TextBox_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/TextBox.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/TextBox.h - Released 2015/10/08 11:24:12 UTC

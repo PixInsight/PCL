@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/PyramidalWaveletTransform.h - Released 2015/07/30 17:15:18 UTC
+// pcl/PyramidalWaveletTransform.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -419,7 +419,7 @@ public:
    }
 
    /*!
-    * Returns true if this object applies <em>standard wavelet transforms</em>;
+    * Returns true iff this object applies <em>standard wavelet transforms</em>;
     * false if it applies <em>nonstandard wavelet transforms</em>.
     */
    bool IsStandard() const
@@ -546,4 +546,4 @@ protected:
 #endif   // __PCL_PyramidalWaveletTransform_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/PyramidalWaveletTransform.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/PyramidalWaveletTransform.h - Released 2015/10/08 11:24:12 UTC

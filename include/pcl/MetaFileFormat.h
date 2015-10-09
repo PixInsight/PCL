@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/MetaFileFormat.h - Released 2015/07/30 17:15:18 UTC
+// pcl/MetaFileFormat.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -665,8 +665,8 @@ public:
    virtual FileFormatImplementation* Create() const = 0;
 
    /*!
-    * Handles a request to edit format preferences. Returns true if the
-    * preferences were successfully edited; returns false otherwise.
+    * Handles a request to edit format preferences. Returns true iff the
+    * preferences were successfully edited.
     *
     * When implemented, this procedure should open a dialog box to let the
     * user edit format-specific preferences and operating options. This
@@ -696,4 +696,4 @@ private:
 #endif   // __PCL_MetaFileFormat_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaFileFormat.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/MetaFileFormat.h - Released 2015/10/08 11:24:12 UTC

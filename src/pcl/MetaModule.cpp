@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/MetaModule.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/MetaModule.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -200,11 +200,6 @@ class GlobalContextDispatcher
 {
 public:
 
-   static void InitializeVersionData()
-   {
-      PixInsightVersion::Initialize();
-   }
-
    static void api_func OnLoad()
    {
       try
@@ -260,9 +255,6 @@ public:
 
 void MetaModule::PerformAPIDefinitions() const
 {
-   // Initialize PixInsightVersion internal data
-   GlobalContextDispatcher::InitializeVersionData();
-
    (*API->ModuleDefinition->EnterModuleDefinitionContext)();
 
    (*API->ModuleDefinition->SetModuleOnLoadRoutine)( GlobalContextDispatcher::OnLoad );
@@ -288,4 +280,4 @@ void MetaModule::PerformAPIDefinitions() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaModule.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/MetaModule.cpp - Released 2015/10/08 11:24:19 UTC

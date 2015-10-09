@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/BicubicFilterInterpolation.h - Released 2015/07/30 17:15:18 UTC
+// pcl/BicubicFilterInterpolation.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -121,12 +121,7 @@ public:
    /*!
     * Copy constructor.
     */
-   CubicFilter( const CubicFilter& x ) :
-      m_k31( x.m_k31 ), m_k21( x.m_k21 ),                   m_k01( x.m_k01 ),
-      m_k32( x.m_k32 ), m_k22( x.m_k22 ), m_k12( x.m_k12 ), m_k02( x.m_k02 ),
-      m_B( x.m_B ), m_C( x.m_C )
-   {
-   }
+   CubicFilter( const CubicFilter& ) = default;
 
    /*!
     * Virtual destructor.
@@ -138,12 +133,7 @@ public:
    /*!
     * Assignment operator.
     */
-   CubicFilter& operator =( const CubicFilter& x )
-   {
-      m_B = x.m_B; m_C = x.m_C;
-      m_k31 = x.m_k31; m_k21 = x.m_k21; m_k01 = x.m_k01; m_k32 = x.m_k32; m_k22 = x.m_k22; m_k12 = x.m_k12; m_k02 = x.m_k02;
-      return *this;
-   }
+   CubicFilter& operator =( const CubicFilter& ) = default;
 
    /*!
     * Evaluates this cubic filter for \a x.
@@ -155,6 +145,7 @@ public:
     * sacrified strictness for the sake of optimization. This function should
     * never be called for Abs( \a x ) >= 2.
     */
+   PCL_HOT_FUNCTION
    double operator()( double x ) const
    {
       if ( x < 0 )
@@ -224,9 +215,7 @@ public:
    /*!
     * Copy constructor.
     */
-   MitchellNetravaliCubicFilter( const MitchellNetravaliCubicFilter& x ) : CubicFilter( x )
-   {
-   }
+   MitchellNetravaliCubicFilter( const MitchellNetravaliCubicFilter& ) = default;
 
    /*!
     * Virtual destructor.
@@ -273,9 +262,7 @@ public:
    /*!
     * Copy constructor.
     */
-   CatmullRomSplineFilter( const CatmullRomSplineFilter& x ) : CubicFilter( x )
-   {
-   }
+   CatmullRomSplineFilter( const CatmullRomSplineFilter& ) = default;
 
    /*!
     * Virtual destructor.
@@ -322,9 +309,7 @@ public:
    /*!
     * Copy constructor.
     */
-   CubicBSplineFilter( const CubicBSplineFilter& x ) : CubicFilter( x )
-   {
-   }
+   CubicBSplineFilter( const CubicBSplineFilter& ) = default;
 
    /*!
     * Virtual destructor.
@@ -390,7 +375,8 @@ public:
     *                the interpolation filter.
     */
    BicubicFilterInterpolation( int rx, int ry, const CubicFilter& filter ) :
-      BidimensionalInterpolation<T>(), m_rx( Max( 1, rx ) ), m_ry( Max( 1, ry ) ), m_filter( filter )
+      BidimensionalInterpolation<T>(),
+      m_rx( Max( 1, rx ) ), m_ry( Max( 1, ry ) ), m_filter( filter )
    {
       PCL_PRECONDITION( rx >= 1 )
       PCL_PRECONDITION( ry >= 1 )
@@ -428,7 +414,8 @@ public:
     * columns and 2*ry + 1 rows, where rx and ry are the horizontal and
     * vertical interpolation radii, respectively.
     */
-   virtual double operator()( double x, double y ) const
+   virtual PCL_HOT_FUNCTION
+   double operator()( double x, double y ) const
    {
       PCL_PRECONDITION( m_data != nullptr )
       PCL_PRECONDITION( m_width > 0 && m_height > 0 )
@@ -625,7 +612,7 @@ public:
          m_rx = Max( 1, rx );
          m_ry = Max( 1, ry );
 
-         if ( this->data != 0 )
+         if ( this->data != nullptr )
          {
             if ( m_rx > m_width )
                m_rx = m_width;
@@ -685,4 +672,4 @@ protected:
 #endif   // __PCL_BicubicFilterInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/BicubicFilterInterpolation.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/BicubicFilterInterpolation.h - Released 2015/10/08 11:24:12 UTC

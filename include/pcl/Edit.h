@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Edit.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Edit.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -115,7 +115,7 @@ public:
    }
 
    /*!
-    * Returns true if this %Edit control is in read-only mode.
+    * Returns true iff this %Edit control is in read-only mode.
     */
    bool IsReadOnly() const;
 
@@ -136,7 +136,7 @@ public:
    }
 
    /*!
-    * Returns true if the text in this %Edit control has been modified.
+    * Returns true iff the text in this %Edit control has been modified.
     */
    bool IsModified() const;
 
@@ -157,7 +157,7 @@ public:
    }
 
    /*!
-    * Returns true if this %Edit control is in <em>password display mode</em>.
+    * Returns true iff this %Edit control is in <em>password display mode</em>.
     *
     * In password mode, the text in an edit control is always displayed as a
     * sequence of asterisks. This does not affect the actual text; the password
@@ -250,7 +250,7 @@ public:
    void SetSelection( int selStart, int selEnd );
 
    /*!
-    * Returns true if there are one or more selected characters in this %Edit
+    * Returns true iff there are one or more selected characters in this %Edit
     * control.
     */
    bool HasSelection() const
@@ -293,12 +293,12 @@ public:
    }
 
    /*!
-    * Returns true if the text in this %Edit control is right-aligned.
+    * Returns true iff the text in this %Edit control is right-aligned.
     */
    bool IsRightAligned() const;
 
    /*!
-    * Returns true if the text in this %Edit control is left-aligned.
+    * Returns true iff the text in this %Edit control is left-aligned.
     */
    bool IsLeftAligned() const
    {
@@ -395,4 +395,4 @@ private:
 #endif   // __PCL_Edit_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Edit.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Edit.h - Released 2015/10/08 11:24:12 UTC

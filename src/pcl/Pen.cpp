@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Pen.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/Pen.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -94,7 +94,7 @@ float Pen::Width() const
 
 void Pen::SetWidth( float width )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Pen->SetPenWidth)( handle, width );
 }
 
@@ -109,7 +109,7 @@ RGBA Pen::Color() const
 
 void Pen::SetColor( RGBA color )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Pen->SetPenColor)( handle, color );
 }
 
@@ -124,7 +124,7 @@ Pen::style Pen::Style() const
 
 void Pen::SetStyle( Pen::style style )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Pen->SetPenStyle)( handle, style );
 }
 
@@ -139,7 +139,7 @@ Pen::cap Pen::Cap() const
 
 void Pen::SetCap( Pen::cap cap )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Pen->SetPenCap)( handle, cap );
 }
 
@@ -154,7 +154,7 @@ Pen::join Pen::Join() const
 
 void Pen::SetJoin( Pen::join join )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Pen->SetPenJoin)( handle, join );
 }
 
@@ -169,7 +169,7 @@ pcl::Brush Pen::Brush() const
 
 void Pen::SetBrush( const pcl::Brush& brush )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Pen->SetPenBrush)( handle, brush.handle );
 }
 
@@ -185,4 +185,4 @@ void* Pen::CloneHandle() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Pen.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/Pen.cpp - Released 2015/10/08 11:24:19 UTC

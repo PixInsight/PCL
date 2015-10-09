@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Resample.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/Resample.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -123,7 +123,7 @@ void Resample::GetNewSizes( int& width, int& height ) const
             else
                height = RoundInt( y );
             break;
-         default: // calm gcc: 'enumeration value xxx not handled in switch'
+         default:
             break;
          }
       }
@@ -141,6 +141,11 @@ void Resample::GetNewSizes( int& width, int& height ) const
 }
 
 // ----------------------------------------------------------------------------
+
+#ifndef _MSC_VER
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+#endif
 
 class PCL_ResampleEngine
 {
@@ -165,7 +170,7 @@ public:
          return;
       }
 
-      image.SetUnique();
+      image.EnsureUnique();
 
       typename P::sample* f = nullptr;
       typename P::sample** f0 = nullptr;
@@ -260,7 +265,7 @@ private:
       {
       }
 
-      virtual void Run()
+      virtual PCL_HOT_FUNCTION void Run()
       {
          INIT_THREAD_MONITOR()
 
@@ -286,6 +291,10 @@ private:
       AutoPointer<interpolator_type> m_interpolator;
    };
 };
+
+#ifndef _MSC_VER
+#pragma GCC pop_options
+#endif
 
 // ----------------------------------------------------------------------------
 
@@ -319,4 +328,4 @@ void Resample::Apply( pcl::UInt32Image& image ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Resample.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/Resample.cpp - Released 2015/10/08 11:24:19 UTC

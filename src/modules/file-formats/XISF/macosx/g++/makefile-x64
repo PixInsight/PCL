@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.95
+# PixInsight Makefile Generator Script v1.96
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 30 Jul 2015 17:10:35 GMT
+# Automatically generated on Thu, 08 Oct 2015 11:23:32 GMT
 # Project id ...... XISF
 # Project type .... Module
 # Platform ........ MacOSX/g++
@@ -72,7 +72,7 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/XISF-pxm.dylib: $(OBJ_FILES)
-	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -stdlib=libc++ -dynamiclib -install_name @executable_path/XISF-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -L"$(QTDIR64)/qtbase/lib" -F"$(QTDIR64)/qtbase/lib" -o $(OBJ_DIR)/XISF-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -framework QtCore -framework QtXml -lpthread -lPCL-pxi
+	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -stdlib=libc++ -Wl,--gc-sections -s -dynamiclib -install_name @executable_path/XISF-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -L"$(QTDIR64)/qtbase/lib" -F"$(QTDIR64)/qtbase/lib" -o $(OBJ_DIR)/XISF-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lQt5Core -lQt5Xml -lpthread -lPCL-pxi
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean
@@ -82,11 +82,11 @@ clean:
 .PHONY: post-build
 post-build:
 	cp $(OBJ_DIR)/XISF-pxm.dylib $(PCLBINDIR64)
-	install_name_tool -change "QtCore.framework/Versions/5/QtCore" @executable_path/../Frameworks/QtCore.framework/Versions/5/QtCore $(PCLBINDIR64)/XISF-pxm.dylib
-	install_name_tool -change "QtXml.framework/Versions/5/QtXml" @executable_path/../Frameworks/QtXml.framework/Versions/5/QtXml $(PCLBINDIR64)/XISF-pxm.dylib
+	install_name_tool -change $(QTDIR64)/qtbase/lib/Qt5Core.framework/Versions/5/Qt5Core @executable_path/../Frameworks/Qt5Core.framework/Versions/5/Qt5Core $(PCLBINDIR64)/XISF-pxm.dylib
+	install_name_tool -change $(QTDIR64)/qtbase/lib/Qt5Xml.framework/Versions/5/Qt5Xml @executable_path/../Frameworks/Qt5Xml.framework/Versions/5/Qt5Xml $(PCLBINDIR64)/XISF-pxm.dylib
 	codesign --deep -s pleiades -f -v --timestamp $(PCLBINDIR64)/XISF-pxm.dylib
 
 ./x64/Release/%.o: ../../%.cpp
-	clang++ -c -pipe -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -D"__PCL_QT_INTERFACE" -D"_LARGEFILE64_SOURCE" -D"_LARGEFILE_SOURCE" -D"QT_EDITION=QT_EDITION_OPENSOURCE" -D"QT_NO_EXCEPTIONS" -D"QT_NO_DEBUG" -D"QT_SHARED" -D"QT_CORE_LIB" -D"QT_XML_LIB" -I"$(PCLINCDIR)" -I"$(QTDIR64)/qtbase/include" -I"$(QTDIR64)/qtbase/mkspecs/macx-g++" -mtune=generic -mssse3 -O3 -ffast-math -ftree-vectorize -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	clang++ -c -pipe -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -D"__PCL_QT_INTERFACE" -D"_LARGEFILE64_SOURCE" -D"_LARGEFILE_SOURCE" -D"QT_EDITION=QT_EDITION_OPENSOURCE" -D"QT_NO_EXCEPTIONS" -D"QT_NO_DEBUG" -D"QT_SHARED" -D"QT_CORE_LIB" -D"QT_XML_LIB" -I"$(PCLINCDIR)" -I"$(QTDIR64)/qtbase/include" -I"$(QTDIR64)/qtbase/mkspecs/macx-g++" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

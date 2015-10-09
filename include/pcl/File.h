@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/File.h - Released 2015/07/30 17:15:18 UTC
+// pcl/File.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -295,7 +295,7 @@ struct FileTime
    int                   :  6;
 
    /*!
-    * Returns true if this file time is equal to another object \a t.
+    * Returns true iff this file time is equal to another object \a t.
     */
    bool operator ==( const FileTime& t ) const
    {
@@ -305,7 +305,7 @@ struct FileTime
    }
 
    /*!
-    * Returns true if this file time precedes another object \a t.
+    * Returns true iff this file time precedes another object \a t.
     */
    bool operator <( const FileTime& t ) const
    {
@@ -375,7 +375,7 @@ struct FindFileInfo
    FileTime       lastModified;  //!< Time of last change.
 
    /*!
-    * Returns true if this %FindFileInfo structure corresponds to a directory.
+    * Returns true iff this %FindFileInfo structure corresponds to a directory.
     */
    bool IsDirectory() const
    {
@@ -383,7 +383,7 @@ struct FindFileInfo
    }
 
    /*!
-    * Returns true if this %FindFileInfo structure corresponds to a file with the
+    * Returns true iff this %FindFileInfo structure corresponds to a file with the
     * FileAttribute::Archive attribute set.
     */
    bool IsArchive() const
@@ -392,7 +392,7 @@ struct FindFileInfo
    }
 
    /*!
-    * Returns true if this %FindFileInfo structure corresponds to a file with the
+    * Returns true iff this %FindFileInfo structure corresponds to a file with the
     * FileAttribute::Compressed attribute set.
     */
    bool IsCompressed() const
@@ -401,7 +401,7 @@ struct FindFileInfo
    }
 
    /*!
-    * Returns true if this %FindFileInfo structure corresponds to a file with the
+    * Returns true iff this %FindFileInfo structure corresponds to a file with the
     * FileAttribute::Encrypted attribute set.
     */
    bool IsEncrypted() const
@@ -410,7 +410,7 @@ struct FindFileInfo
    }
 
    /*!
-    * Returns true if this %FindFileInfo structure corresponds to a file with the
+    * Returns true iff this %FindFileInfo structure corresponds to a file with the
     * FileAttribute::Hidden attribute set.
     */
    bool IsHidden() const
@@ -419,7 +419,7 @@ struct FindFileInfo
    }
 
    /*!
-    * Returns true if this %FindFileInfo structure corresponds to a file with the
+    * Returns true iff this %FindFileInfo structure corresponds to a file with the
     * FileAttribute::ReadOnly attribute set.
     */
    bool IsReadOnly() const
@@ -428,7 +428,7 @@ struct FindFileInfo
    }
 
    /*!
-    * Returns true if this %FindFileInfo structure corresponds to a file with the
+    * Returns true iff this %FindFileInfo structure corresponds to a file with the
     * FileAttribute::System attribute set.
     */
    bool IsSystem() const
@@ -437,7 +437,7 @@ struct FindFileInfo
    }
 
    /*!
-    * Returns true if this %FindFileInfo structure corresponds to a file with the
+    * Returns true iff this %FindFileInfo structure corresponds to a file with the
     * FileAttribute::Temporary attribute set.
     */
    bool IsTemporary() const
@@ -446,7 +446,7 @@ struct FindFileInfo
    }
 
    /*!
-    * Returns true if this %FindFileInfo structure corresponds to an empty file.
+    * Returns true iff this %FindFileInfo structure corresponds to an empty file.
     */
    bool IsEmpty() const
    {
@@ -787,7 +787,7 @@ public:
       }
 
       /*!
-       * Returns true if this object aborted a running task.
+       * Returns true iff this object aborted a running task.
        */
       bool IsAborted() const
       {
@@ -882,7 +882,7 @@ public:
    }
 
    /*!
-    * Returns true if this %File object represents an open disk file.
+    * Returns true iff this %File object represents an open disk file.
     */
    bool IsOpen() const
    {
@@ -918,7 +918,7 @@ public:
    }
 
    /*!
-    * Returns true if this file allows read access.
+    * Returns true iff this file allows read access.
     */
    virtual bool CanRead() const
    {
@@ -926,7 +926,7 @@ public:
    }
 
    /*!
-    * Returns true if this file allows write access.
+    * Returns true iff this file allows write access.
     */
    virtual bool CanWrite() const
    {
@@ -977,7 +977,7 @@ public:
    }
 
    /*!
-    * Returns true if the file pointer has been moved beyond the end of the
+    * Returns true iff the file pointer has been moved beyond the end of the
     * file.
     */
    bool IsEOF() const
@@ -1125,7 +1125,7 @@ public:
     * Reads a boolean variable.
     *
     * This function reads a 32-bit integer and assigns true to the variable
-    * \a b if the read number is nonzero; false otherwise.
+    * \a b iff the read number is nonzero.
     */
    void Read( bool& b )
    {
@@ -1532,19 +1532,19 @@ public:
    static void Move( const String& filePath, const String& newFilePath );
 
    /*!
-    * Returns true if a file at the specified \a filePath exists.
+    * Returns true iff a file at the specified \a filePath exists.
     * \ingroup file_utilities
     */
    static bool Exists( const String& filePath );
 
    /*!
-    * Returns true if a directory at the specified \a dirPath exists.
+    * Returns true iff a directory at the specified \a dirPath exists.
     * \ingroup file_utilities
     */
    static bool DirectoryExists( const String& dirPath );
 
    /*!
-    * Returns true if the file at \a filePath exists and the current user has
+    * Returns true iff the file at \a filePath exists and the current user has
     * read-only access to it.
     * \ingroup file_utilities
     */
@@ -1784,7 +1784,7 @@ public:
    static void MoveFile( const String& targetFilePath, const String& sourceFilePath, File::Progress* progress = nullptr );
 
    /*!
-    * Returns true if two files or directories are mounted on the same physical
+    * Returns true iff two files or directories are mounted on the same physical
     * device.
     *
     * This is relevant to some critical file operations. For example, moving a
@@ -1801,7 +1801,7 @@ public:
    static bool SameDevice( const String& path1, const String& path2 );
 
    /*!
-    * Returns true if two file path specifications refer to the same file on
+    * Returns true iff two file path specifications refer to the same file on
     * the system.
     *
     * On UNIX and Linux platforms, this function compares the device and inode
@@ -2228,4 +2228,4 @@ protected:
 #endif   // __PCL_File_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/File.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/File.h - Released 2015/10/08 11:24:12 UTC

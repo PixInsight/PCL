@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Utility.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Utility.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -93,7 +93,7 @@ namespace pcl
  *
  * \ingroup utility_algorithms
  */
-template <typename T> inline
+template <typename T> inline constexpr
 const T& Min( const T& a, const T& b )
 {
    return (b < a) ? b : a;
@@ -122,7 +122,7 @@ const T& Min( const T& a, const T& b, BP p )
  *
  * \ingroup utility_algorithms
  */
-template <typename T> inline
+template <typename T> inline constexpr
 const T& Max( const T& a, const T& b )
 {
    return (a < b) ? b : a;
@@ -154,7 +154,7 @@ const T& Max( const T& a, const T& b, BP p )
  *
  * \ingroup utility_algorithms
  */
-template <typename T> inline
+template <typename T> inline constexpr
 const T& Median( const T& a, const T& b, const T& c )
 {
    return (a < b) ? ((b < c) ? b : ((a < c) ? c : a)) :
@@ -193,7 +193,7 @@ const T& Median( const T& a, const T& b, const T& c, BP p )
  *
  * \ingroup utility_algorithms
  */
-template <typename T> inline
+template <typename T> inline constexpr
 const T& Range( const T& x, const T& a, const T& b )
 {
    PCL_PRECONDITION( a < b )
@@ -592,7 +592,7 @@ Association<FI1, FI2> FindNotEqual( FI1 i1, FI2 i2, FI2 j2, BP p )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns true if the objects in the range [i1,Advance(i1,Distance(i2,j2))[
+ * Returns true iff the objects in the range [i1,Advance(i1,Distance(i2,j2))[
  * are equal to the corresponding objects in the range [i2,j2[.
  *
  * \ingroup utility_algorithms
@@ -606,7 +606,7 @@ bool Equal( FI1 i1, FI2 i2, FI2 j2 )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns true if the objects in the range [i1,Advance(i1,Distance(i2,j2))[
+ * Returns true iff the objects in the range [i1,Advance(i1,Distance(i2,j2))[
  * satisfy the condition specified by the binary predicate \a p for the
  * corresponding objects in the range [i2,j2[.
  *
@@ -711,4 +711,4 @@ int Compare( FI1 i1, FI1 j1, FI2 i2, FI2 j2, BP p )
 #endif  // __PCL_Utility_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Utility.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Utility.h - Released 2015/10/08 11:24:12 UTC

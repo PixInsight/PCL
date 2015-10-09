@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/NetworkTransfer.h - Released 2015/07/30 17:15:18 UTC
+// pcl/NetworkTransfer.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -122,7 +122,7 @@ public:
     * Since network transfers are unique objects by definition, calling this
     * member function has no effect.
     */
-   virtual void SetUnique()
+   virtual void EnsureUnique()
    {
       // Unique by definition
    }
@@ -360,7 +360,7 @@ public:
    }
 
    /*!
-    * Returns true if the last network transfer operation was aborted by an
+    * Returns true iff the last network transfer operation was aborted by an
     * event handler. Returns false if the operation was not aborted (whether
     * successful or not), or if no transfer operation has been performed with
     * this object.
@@ -504,6 +504,8 @@ public:
     *                   \a receiver object's class.
     *
     * \param receiver   The control that will receive events from this object.
+    *
+    * \ingroup network_transfer_event_handlers
     */
    void OnDownloadDataAvailable( download_event_handler handler, Control& receiver );
 
@@ -516,6 +518,8 @@ public:
     *                   \a receiver object's class.
     *
     * \param receiver   The control that will receive events from this object.
+    *
+    * \ingroup network_transfer_event_handlers
     */
    void OnUploadDataRequested( upload_event_handler handler, Control& receiver );
 
@@ -528,6 +532,8 @@ public:
     *                   \a receiver object's class.
     *
     * \param receiver   The control that will receive events from this object.
+    *
+    * \ingroup network_transfer_event_handlers
     */
    void OnTransferProgress( progress_event_handler handler, Control& receiver );
 
@@ -555,4 +561,4 @@ private:
 #endif   // __PCL_NetworkTransfer_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/NetworkTransfer.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/NetworkTransfer.h - Released 2015/10/08 11:24:12 UTC

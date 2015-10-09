@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/BicubicInterpolation.h - Released 2015/07/30 17:15:18 UTC
+// pcl/BicubicInterpolation.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -102,9 +102,7 @@ public:
    /*!
     * Constructs a new %BicubicInterpolationBase instance.
     */
-   BicubicInterpolationBase() : BidimensionalInterpolation<T>()
-   {
-   }
+   BicubicInterpolationBase() = default;
 
 protected:
 
@@ -586,6 +584,7 @@ private:
 
    double m_clamp;
 
+   PCL_HOT_FUNCTION
    double Interpolate( const double p[], const double C[] ) const
    {
       // Unclamped code:
@@ -595,6 +594,7 @@ private:
       return (-f03 < f12*m_clamp) ? f12 + f03 : f12/(C[1] + C[2]);
    }
 
+   PCL_HOT_FUNCTION
    void GetSplineCoefficients( double C[], double dx ) const
    {
       double dx2 = dx*dx;
@@ -643,9 +643,7 @@ public:
    /*!
     * Constructs a %BicubicInterpolation instance.
     */
-   BicubicInterpolation() : BicubicSplineInterpolation<T>()
-   {
-   }
+   BicubicInterpolation() = default;
 
    /*!
     * Virtual destructor.
@@ -681,9 +679,7 @@ public:
    /*!
     * Constructs a %BicubicBSplineInterpolation instance.
     */
-   BicubicBSplineInterpolation() : BicubicInterpolationBase<T>()
-   {
-   }
+   BicubicBSplineInterpolation() = default;
 
    /*!
     * Virtual destructor.
@@ -785,4 +781,4 @@ private:
 #endif   // __PCL_BicubicInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/BicubicInterpolation.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/BicubicInterpolation.h - Released 2015/10/08 11:24:12 UTC

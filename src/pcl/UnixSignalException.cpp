@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/UnixSignalException.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/UnixSignalException.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -51,62 +51,65 @@
 
 #if defined( __PCL_LINUX ) || defined( __PCL_FREEBSD ) || defined( __PCL_MACOSX )
 
-#include <pcl/UnixSignalException.h>
-#include <pcl/String.h>
 #include <pcl/StringList.h>
+#include <pcl/UnixSignalException.h>
+#include <pcl/Version.h>
+
+#include <cxxabi.h>
 #include <execinfo.h>
 #include <stdio.h>
-#include <cxxabi.h>
+
+#define STACK_DEPTH 60
+
+#define STACK_TRACE_TITLE     \
+   "\n\n" + IsoString( PixInsightVersion::AsString() ) + " - Critical Signal Backtrace\n"
+
+#define STACK_TRACE_HEADER    \
+   "Signal : %d\n"            \
+   "Module : %s\n"            \
+   "========================================================================================================================\n"
+
+#define STACK_TRACE_BOTTOM    \
+   "========================================================================================================================\n"
+
 namespace pcl
 {
 
-#define STACK_DEPTH 60
-#define STACK_TRACE_HEADER \
-	"\n\n\n"\
-	"PIXINSIGHT - CRASH \n"\
-	"SIGNAL : %d \n"\
-	"MODULE : %s \n"\
-	"========================================================================================================================\n"\
-
-
-#define STACK_TRACE_BOTTOM \
-	"========================================================================================================================\n" \
-
 // ----------------------------------------------------------------------------
 
-static IsoString getDemangledFunctionName(const char*  symbol, IsoString& addrStr){
-	IsoString symbolStr(symbol);
-	addrStr=IsoString("");
-	// get mangled function name
-	// Example: /opt/PixInsight/bin/lib/libQtGui.so.4(_ZN7QWidget5eventEP6QEvent+0x411) [0x7fa271347811]
-	StringList tokens;
-	symbolStr.Break(tokens,'(',true);
-	if (tokens.Length()!=2){
-		return symbolStr;
-	}
-	// take second token and split again
-	StringList tokens2;
-	tokens[1].Break(tokens2,'+',true);
-    if (tokens2.Length()!=2) {
-	  return symbolStr;
-	}
-    // if there is not function name do not set the addr string
-    if (tokens2[0]!=String("")){
-        addrStr=tokens2[1];
-    }
+static IsoString GetDemangledFunctionName( const char* symbol, IsoString& addrStr )
+{
+   IsoString symbolStr( symbol );
+   addrStr.Clear();
 
-    // the first token of tokens2 contains the mangled string
-    // demangle
-    size_t funcnameSize = 256;
-    char funcname [funcnameSize];
-    int status;
+   // Get mangled function name. Example:
+   //    /opt/PixInsight/bin/lib/libQtGui.so.4(_ZN7QWidget5eventEP6QEvent+0x411) [0x7fa271347811]
+   StringList tokens;
+   symbolStr.Break( tokens, '(' , true/*trim*/ );
+   if ( tokens.Length() != 2 )
+      return symbolStr;
 
-    char* demangledFuncname = abi::__cxa_demangle(IsoString(tokens2[0]).c_str(),funcname, &funcnameSize, &status);
+   // Take second token and split again.
+   StringList tokens2;
+   tokens[1].Break( tokens2, '+' , true/*trim*/ );
+   if ( tokens2.Length() != 2 )
+      return symbolStr;
 
-    if (status!=0){
-    	return symbolStr;
-    }
-	return pcl::IsoString(demangledFuncname);
+   // If there is no function name, do not set the addr string.
+   if ( !tokens2[0].IsEmpty() )
+   {
+      addrStr = tokens2[1];
+      addrStr.DeleteChar( '(' );
+      addrStr.DeleteChar( ')' );
+   }
+
+   // The first token of tokens2 contains the mangled string. Demangle it.
+   size_t funcnameSize = 256;
+   char funcname[ funcnameSize ];
+   int status;
+   IsoString token( tokens2[0] );
+   const char* demangledFuncname = abi::__cxa_demangle( token.c_str(), funcname, &funcnameSize, &status );
+   return (status == 0) ? IsoString( demangledFuncname ) : symbolStr;
 }
 
 static void CriticalSignalHandler( int sig_num )
@@ -116,48 +119,60 @@ static void CriticalSignalHandler( int sig_num )
    sigaddset( &x, SIGSEGV );
    sigaddset( &x, SIGBUS );
    sigaddset( &x, SIGFPE );
+   sigaddset( &x, SIGILL );
+   sigaddset( &x, SIGPIPE );
    //sigprocmask( SIG_UNBLOCK, &x, NULL );
    pthread_sigmask( SIG_UNBLOCK, &x, NULL );
 
-   void* addrlist[STACK_DEPTH];
-   size_t addrlen = backtrace(addrlist, sizeof(addrlist) / sizeof(void*));
-   char** symbollist = backtrace_symbols(addrlist, addrlen);
+   void* addrList[ STACK_DEPTH ];
+   size_t addrLen = backtrace( addrList, sizeof( addrList )/sizeof( void* ) );
+   char** symbolList = backtrace_symbols( addrList, addrLen );
+   IsoString details;
+   if ( symbolList != NULL )
+   {
+      if ( symbolList[0] != NULL )
+      {
+         details = STACK_TRACE_TITLE + IsoString().Format( STACK_TRACE_HEADER, sig_num, symbolList[0] );
+         for ( size_t i = 1; i < addrLen; ++i )
+         {
+            if ( symbolList[i] != NULL )
+            {
+               IsoString addrOffsetStr;
+               IsoString demangledFuncname = GetDemangledFunctionName( symbolList[i], addrOffsetStr );
+               details.AppendFormat( "%d: ", addrLen-i );
+               details += demangledFuncname;
+               if ( !addrOffsetStr.IsEmpty() )
+               {
+                  details += "(+";
+                  details += addrOffsetStr;
+                  details += ')';
+               }
+               details += '\n';
+            }
+         }
+         details += STACK_TRACE_BOTTOM;
 
-   pcl::IsoString details = IsoString("");
+         fprintf( stderr, "%s", details.c_str() );
+      }
 
-   if (symbollist!=NULL && symbollist[0]!=NULL) {
-	   details = pcl::IsoString().Format(STACK_TRACE_HEADER,sig_num,symbollist[0]);
-	   for (size_t i=1; i<addrlen; i++){
-		   if (symbollist[i]!=NULL){
-			   IsoString addrOffsetStr;
-			   IsoString demangledFuncname=getDemangledFunctionName(symbollist[i],addrOffsetStr);
-			   if (addrOffsetStr==IsoString("")){
-				   details = details + IsoString().Format("%d: %s",addrlen-i,demangledFuncname.c_str()) + IsoString("\n");
-			   } else {
-				   details = details + IsoString().Format("%d: %s(+%s",addrlen-i,demangledFuncname.c_str(),addrOffsetStr.c_str()) + IsoString("\n");
-			   }
-		   }
-	   }
-	   details = details + STACK_TRACE_BOTTOM;
+      // symbolList must be freed
+      free( symbolList );
    }
-
-   // print backtrace to stderr
-   fprintf(stderr,"%s",details.c_str());
-
-   // symbollist must be freed
-   free(symbollist);
 
    switch ( sig_num )
    {
    case SIGSEGV:
-
-      throw EUnixSegmentationViolation(details);
+      throw EUnixSegmentationViolation( details );
    case SIGBUS:
-      throw EUnixBusError(details);
+      throw EUnixBusError( details );
    case SIGFPE:
-      throw EUnixFloatingPointException(details);
+      throw EUnixFloatingPointException( details );
+   case SIGILL:
+      throw EUnixIllegalInstructionException( details );
+   case SIGPIPE:
+      throw EUnixIBrokenPipeException( details );
    default:
-      throw UnixSignalException( sig_num,details );
+      throw UnixSignalException( sig_num, details );
    }
 }
 
@@ -170,6 +185,8 @@ void UnixSignalException::Initialize()
    sigaction( SIGSEGV, &criticalAction, 0 );
    sigaction( SIGBUS, &criticalAction, 0 );
    sigaction( SIGFPE, &criticalAction, 0 );
+   sigaction( SIGILL, &criticalAction, 0 );
+   sigaction( SIGPIPE, &criticalAction, 0 );
 }
 
 // ----------------------------------------------------------------------------
@@ -179,4 +196,4 @@ void UnixSignalException::Initialize()
 #endif   // __PCL_LINUX || __PCL_FREEBSD || __PCL_MACOSX
 
 // ----------------------------------------------------------------------------
-// EOF pcl/UnixSignalException.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/UnixSignalException.cpp - Released 2015/10/08 11:24:19 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ViewList.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ViewList.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -100,21 +100,21 @@ public:
    }
 
    /*!
-    * Returns true if this %ViewList control includes main views (images).
+    * Returns true iff this %ViewList control includes main views (images).
     *
     * \sa IncludesPreviews(), Regenerate()
     */
    bool IncludesMainViews() const;
 
    /*!
-    * Returns true if this %ViewList control includes previews.
+    * Returns true iff this %ViewList control includes previews.
     *
     * \sa IncludesMainViews(), Regenerate()
     */
    bool IncludesPreviews() const;
 
    /*!
-    * Returns true if this %ViewList control includes the <em>virtual real-time
+    * Returns true iff this %ViewList control includes the <em>virtual real-time
     * preview</em>.
     *
     * See the documentation for Regenerate() for more information about the
@@ -246,7 +246,7 @@ public:
    void SelectView( const View& view );
 
    /*!
-    * Returns true if the specified \a view has been included in the list of
+    * Returns true iff the specified \a view has been included in the list of
     * items of this %ViewList control.
     */
    bool HasView( const View& view );
@@ -271,7 +271,7 @@ public:
     * Defines the prototype of a <em>view event handler</em>.
     *
     * A view event is generated when the user activates a view item on a
-    * %ViewList control, or when (s)he changes the current view item in a
+    * %ViewList control, or when she changes the current view item in a
     * %ViewList control.
     *
     * \param sender  The control that sends a view event.
@@ -291,6 +291,8 @@ public:
     *
     * \param receiver   The control that will receive view selection events
     *                   from this %ViewList.
+    *
+    * \ingroup view_list_event_handlers
     */
    void OnViewSelected( view_event_handler handler, Control& receiver );
 
@@ -303,6 +305,8 @@ public:
     *
     * \param receiver   The control that will receive <em>current view
     *                   updated</em> events from this %ViewList.
+    *
+    * \ingroup view_list_event_handlers
     */
    void OnCurrentViewUpdated( view_event_handler handler, Control& receiver );
 
@@ -332,4 +336,4 @@ private:
 #endif   // __PCL_ViewList_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ViewList.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ViewList.h - Released 2015/10/08 11:24:12 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ProcessImplementation.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ProcessImplementation.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -155,7 +155,7 @@ public:
    virtual void Initialize();
 
    /*!
-    * Returns true if this process instance is currently valid for execution.
+    * Returns true iff this process instance is currently valid for execution.
     *
     * \param[out] info  If this function returns false, it should return also a
     *                   brief text (128 characters maximum) in this string,
@@ -199,7 +199,7 @@ public:
    virtual void Assign( const ProcessImplementation& i );
 
    /*!
-    * Returns true if this process instance could be successfully executed on a
+    * Returns true iff this process instance could be successfully executed on a
     * given \a view.
     *
     * \param view    Reference to a view on which this process is being tested
@@ -234,7 +234,7 @@ public:
    virtual bool CanExecuteOn( const View& view, String& whyNot ) const;
 
    /*!
-    * Returns true if this process instance would require a history update for
+    * Returns true iff this process instance would require a history update for
     * the specified \a view, if it was executed on it.
     *
     * A history update would be required if this instance was modifying the
@@ -251,7 +251,7 @@ public:
    }
 
    /*!
-    * Returns true if this is a <em>maskable process instance</em> for the
+    * Returns true iff this is a <em>maskable process instance</em> for the
     * specified \a view.
     *
     * \param view Reference to a view on which this process is being tested to
@@ -364,7 +364,7 @@ public:
    }
 
    /*!
-    * Returns true if this process instance could be successfully executed on
+    * Returns true iff this process instance could be successfully executed on
     * the passed \a image.
     *
     * \param image   Reference to an ImageVariant object on which this process
@@ -439,7 +439,7 @@ public:
    virtual bool ExecuteOn( ImageVariant& image, const IsoString& hints );
 
    /*!
-    * Returns true if this process instance could be successfully executed in
+    * Returns true iff this process instance could be successfully executed in
     * the global context.
     *
     * \param[out] whyNot   If this function returns false, it should return
@@ -545,7 +545,7 @@ public:
    }
 
    /*!
-    * Returns true if the specified interface is a valid interface for this
+    * Returns true iff the specified interface is a valid interface for this
     * process instance.
     *
     * This function is called when this instance is about to be imported by a
@@ -820,4 +820,4 @@ protected:
 #endif   // __PCL_ProcessImplementation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ProcessImplementation.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ProcessImplementation.h - Released 2015/10/08 11:24:12 UTC

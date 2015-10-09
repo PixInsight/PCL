@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/KeyValue.h - Released 2015/07/30 17:15:18 UTC
+// pcl/KeyValue.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -111,7 +111,7 @@ public:
    }
 
    /*!
-    * Returns true if this key-value association is equal to another object
+    * Returns true iff this key-value association is equal to another object
     * \a x. key-value associations are equal if their respective key and value
     * members are equal.
     */
@@ -121,7 +121,7 @@ public:
    }
 
    /*!
-    * Returns true if this key-value association is less than another object
+    * Returns true iff this key-value association is less than another object
     * \a x. In key-value comparisons, key members have precedence over value
     * members. The comparison algorithm is as follows:
     *
@@ -168,4 +168,4 @@ typedef KeyValue<IsoString, IsoString> IsoStringKeyValue;
 #endif  // __PCL_KeyValue_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/KeyValue.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/KeyValue.h - Released 2015/10/08 11:24:12 UTC

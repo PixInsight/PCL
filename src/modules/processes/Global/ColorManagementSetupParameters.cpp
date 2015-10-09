@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.06.0280
+// Standard Global Process Module Version 01.02.06.0288
 // ----------------------------------------------------------------------------
-// ColorManagementSetupParameters.cpp - Released 2015/07/31 11:49:48 UTC
+// ColorManagementSetupParameters.cpp - Released 2015/10/08 11:24:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -66,6 +66,7 @@ CMSOnProfileMismatch*                     TheCMSOnProfileMismatchParameter = 0;
 CMSOnMissingProfile*                      TheCMSOnMissingProfileParameter = 0;
 CMSDefaultEmbedProfilesInRGBImages*       TheCMSDefaultEmbedProfilesInRGBImagesParameter = 0;
 CMSDefaultEmbedProfilesInGrayscaleImages* TheCMSDefaultEmbedProfilesInGrayscaleImagesParameter = 0;
+CMSUseLowResolutionCLUTs*                 TheCMSUseLowResolutionCLUTsParameter = 0;
 CMSProofingProfile*                       TheCMSProofingProfileParameter = 0;
 CMSProofingIntent*                        TheCMSProofingIntentParameter = 0;
 CMSUseProofingBPC*                        TheCMSUseProofingBPCParameter = 0;
@@ -287,6 +288,23 @@ bool CMSDefaultEmbedProfilesInGrayscaleImages::DefaultValue() const
 
 // ----------------------------------------------------------------------------
 
+CMSUseLowResolutionCLUTs::CMSUseLowResolutionCLUTs( MetaProcess* P ) : MetaBoolean( P )
+{
+   TheCMSUseLowResolutionCLUTsParameter = this;
+}
+
+IsoString CMSUseLowResolutionCLUTs::Id() const
+{
+   return "useLowResolutionCLUTs";
+}
+
+bool CMSUseLowResolutionCLUTs::DefaultValue() const
+{
+   return true;
+}
+
+// ----------------------------------------------------------------------------
+
 CMSProofingProfile::CMSProofingProfile( MetaProcess* P ) : MetaString( P )
 {
    TheCMSProofingProfileParameter = this;
@@ -387,4 +405,4 @@ double CMSGamutWarningColor::DefaultValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ColorManagementSetupParameters.cpp - Released 2015/07/31 11:49:48 UTC
+// EOF ColorManagementSetupParameters.cpp - Released 2015/10/08 11:24:39 UTC

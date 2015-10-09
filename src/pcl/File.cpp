@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/File.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/File.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -1847,7 +1847,7 @@ static String CleanPath( const String& path )
    const int len = int( name.Length() );
 
    String out( name );
-   out.SetUnique();
+   out.EnsureUnique();
 
    for ( int i = 0, last = -1, iwrite = 0; i < len; ++i )
    {
@@ -2121,7 +2121,7 @@ String File::WindowsPathToUnix( const String& path )
       if ( *i == '\\' )
       {
          size_type n = pcl::Distance( unixPath.Begin(), i );
-         unixPath.SetUnique();
+         unixPath.EnsureUnique();
          i = unixPath.Begin() + n;
          for ( *i++ = '/'; i != unixPath.End(); ++i )
             if ( *i == '\\' )
@@ -2138,7 +2138,7 @@ String File::UnixPathToWindows( const String& path )
       if ( *i == '/' )
       {
          size_type n = pcl::Distance( windowsPath.Begin(), i );
-         windowsPath.SetUnique();
+         windowsPath.EnsureUnique();
          i = windowsPath.Begin() + n;
          for ( *i++ = '\\'; i != windowsPath.End(); ++i )
             if ( *i == '/' )
@@ -2411,4 +2411,4 @@ bool File::IsValidHandle( handle h ) const
 }  // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/File.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/File.cpp - Released 2015/10/08 11:24:19 UTC

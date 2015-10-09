@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.06.0280
+// Standard Global Process Module Version 01.02.06.0288
 // ----------------------------------------------------------------------------
-// ColorManagementSetupInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// ColorManagementSetupInterface.cpp - Released 2015/10/08 11:24:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -220,6 +220,8 @@ void ColorManagementSetupInterface::UpdateControls()
    GUI->GamutWarningColor_Control.Update();
 
    GUI->EnableColorManagement_CheckBox.SetChecked( instance.enabled );
+   GUI->UseLowResolutionCLUTs_CheckBox.SetChecked( instance.useLowResolutionCLUTs );
+
    GUI->EmbedProfilesInRGBImages_CheckBox.SetChecked( instance.defaultEmbedProfilesInRGBImages );
    GUI->EmbedProfilesInGrayscaleImages_CheckBox.SetChecked( instance.defaultEmbedProfilesInGrayscaleImages );
 }
@@ -392,6 +394,8 @@ void ColorManagementSetupInterface::__GlobalOptions_ButtonClick( Button& sender,
 {
    if ( sender == GUI->EnableColorManagement_CheckBox )
       instance.enabled = checked;
+   else if ( sender == GUI->UseLowResolutionCLUTs_CheckBox )
+      instance.useLowResolutionCLUTs = checked;
    else if ( sender == GUI->EmbedProfilesInRGBImages_CheckBox )
       instance.defaultEmbedProfilesInRGBImages = checked;
    else if ( sender == GUI->EmbedProfilesInGrayscaleImages_CheckBox )
@@ -786,12 +790,24 @@ ColorManagementSetupInterface::GUIData::GUIData( ColorManagementSetupInterface& 
 
    //
 
-   EnableColorManagement_CheckBox.SetText( "Enable Color Management" );
+   EnableColorManagement_CheckBox.SetText( "Enable color management" );
    EnableColorManagement_CheckBox.SetToolTip(
       "<p>Globally enable or disable color management.</p>"
       "<p>Note that color management can also be enabled/disabled individually "
       "for each image window.</p>" );
    EnableColorManagement_CheckBox.OnClick( (Button::click_event_handler)&ColorManagementSetupInterface::__GlobalOptions_ButtonClick, w );
+
+   UseLowResolutionCLUTs_CheckBox.SetText( "Use low-resolution CLUTs" );
+   UseLowResolutionCLUTs_CheckBox.SetToolTip(
+      "<p>Use a reduced number of grid points for calculation of color transformation lookup tables.</p>"
+      "<p>This option can improve screen rendering performance at the expense of accuracy. It can be useful "
+      "on slow machines with large monitors, but is not recommended under normal conditions, unless you "
+      "really need to speed up screen representations.</p>" );
+   UseLowResolutionCLUTs_CheckBox.OnClick( (Button::click_event_handler)&ColorManagementSetupInterface::__GlobalOptions_ButtonClick, w );
+
+   MiscOptions_Sizer.SetSpacing( 4 );
+   MiscOptions_Sizer.Add( EnableColorManagement_CheckBox );
+   MiscOptions_Sizer.Add( UseLowResolutionCLUTs_CheckBox );
 
    static const char* embedTip =
       "<p>Globally enable or disable default embedding of ICC profiles in newly generated RGB color "
@@ -813,7 +829,7 @@ ColorManagementSetupInterface::GUIData::GUIData( ColorManagementSetupInterface& 
 
    GlobalOptions_Sizer.SetMargin( 6 );
    GlobalOptions_Sizer.SetSpacing( 4 );
-   GlobalOptions_Sizer.Add( EnableColorManagement_CheckBox );
+   GlobalOptions_Sizer.Add( MiscOptions_Sizer );
    GlobalOptions_Sizer.Add( EmbedProfiles_Sizer );
 
    GlobalOptions_Control.SetSizer( GlobalOptions_Sizer );
@@ -865,4 +881,4 @@ ColorManagementSetupInterface::GUIData::GUIData( ColorManagementSetupInterface& 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ColorManagementSetupInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// EOF ColorManagementSetupInterface.cpp - Released 2015/10/08 11:24:39 UTC

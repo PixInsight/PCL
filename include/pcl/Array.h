@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Array.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Array.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -233,14 +233,13 @@ public:
    {
       if ( m_data != nullptr )
       {
-         if ( !m_data->Detach() )
-            delete m_data;
+         DetachFromData();
          m_data = nullptr;
       }
    }
 
    /*!
-    * Returns true if this array uniquely references its contained data.
+    * Returns true iff this array uniquely references its contained data.
     */
    bool IsUnique() const
    {
@@ -248,7 +247,7 @@ public:
    }
 
    /*!
-    * Returns true if this array is an alias of an array \a x.
+    * Returns true iff this array is an alias of an array \a x.
     *
     * Two objects are aliases if both share the same data.
     */
@@ -264,14 +263,14 @@ public:
     * data, references it, and then decrements the reference counter of the
     * original array data.
     */
-   void SetUnique()
+   void EnsureUnique()
    {
       if ( !IsUnique() )
       {
          Data* newData = new Data;
          newData->Allocate( Length() );
          newData->Build( newData->begin, m_data->begin, m_data->end );
-         m_data->Detach();
+         DetachFromData();
          m_data = newData;
       }
    }
@@ -332,7 +331,7 @@ public:
    }
 
    /*!
-    * Returns true if this array is empty.
+    * Returns true iff this array is empty.
     */
    bool IsEmpty() const
    {
@@ -370,7 +369,7 @@ public:
     */
    void SetAllocator( const allocator& a )
    {
-      SetUnique();
+      EnsureUnique();
       m_data->alloc = a;
    }
 
@@ -380,7 +379,7 @@ public:
    iterator At( size_type i )
    {
       PCL_PRECONDITION( !IsEmpty() && i < Length() )
-      SetUnique();
+      EnsureUnique();
       return m_data->begin + i;
    }
 
@@ -401,7 +400,7 @@ public:
     * immutable iterator \a i may become invalid. This happens when this
     * function is called for a shared array, since in this case getting a
     * mutable iterator involves a deep copy of the array through an implicit
-    * call to SetUnique().
+    * call to EnsureUnique().
     */
    iterator MutableIterator( const_iterator i )
    {
@@ -432,7 +431,7 @@ public:
    T& operator *()
    {
       PCL_PRECONDITION( m_data->begin != nullptr )
-      SetUnique();
+      EnsureUnique();
       return *m_data->begin;
    }
 
@@ -450,7 +449,7 @@ public:
     */
    iterator Begin()
    {
-      SetUnique();
+      EnsureUnique();
       return m_data->begin;
    }
 
@@ -475,7 +474,7 @@ public:
     */
    iterator End()
    {
-      SetUnique();
+      EnsureUnique();
       return m_data->end;
    }
 
@@ -504,7 +503,7 @@ public:
    reverse_iterator ReverseBegin()
    {
       PCL_PRECONDITION( m_data->end != nullptr )
-      SetUnique();
+      EnsureUnique();
       return m_data->end - 1;
    }
 
@@ -542,7 +541,7 @@ public:
    reverse_iterator ReverseEnd()
    {
       PCL_PRECONDITION( m_data->begin != nullptr )
-      SetUnique();
+      EnsureUnique();
       return m_data->begin - 1;
    }
 
@@ -575,7 +574,7 @@ public:
    /*!
     * Ensures that the specified iterator points to a uniquely referenced
     * object. If necessary, this function builds a new, uniquely referenced
-    * copy of this array by calling SetUnique().
+    * copy of this array by calling EnsureUnique().
     *
     * If the iterator \a i is changed, it is guaranteed to point to the object
     * at the same array index it was pointing to before calling this function.
@@ -586,7 +585,7 @@ public:
       if ( !IsUnique() )
       {
          distance_type d = i - m_data->begin;
-         SetUnique();
+         EnsureUnique();
          i = m_data->begin + d;
       }
    }
@@ -594,7 +593,7 @@ public:
    /*!
     * Ensures that the specified iterators point to uniquely referenced
     * objects. If necessary, this function builds a new, uniquely referenced
-    * copy of this array by calling SetUnique().
+    * copy of this array by calling EnsureUnique().
     *
     * If the iterators \a i and \a j are changed, they are guaranteed to point
     * to the objects at the same array indices they were pointing to before
@@ -608,7 +607,7 @@ public:
       {
          distance_type d = i - m_data->begin;
          distance_type r = j - i;
-         SetUnique();
+         EnsureUnique();
          j = (i = m_data->begin + d) + r;
       }
    }
@@ -671,8 +670,7 @@ public:
    void Assign( const Array& x )
    {
       x.m_data->Attach();
-      if ( !m_data->Detach() )
-         delete m_data;
+      DetachFromData();
       m_data = x.m_data;
    }
 
@@ -696,8 +694,7 @@ public:
     */
    void Transfer( Array& x )
    {
-      if ( !m_data->Detach() )
-         delete m_data;
+      DetachFromData();
       m_data = x.m_data;
       x.m_data = nullptr;
    }
@@ -713,8 +710,7 @@ public:
     */
    void Transfer( Array&& x )
    {
-      if ( !m_data->Detach() )
-         delete m_data;
+      DetachFromData();
       m_data = x.m_data;
       x.m_data = nullptr;
    }
@@ -729,8 +725,9 @@ public:
       {
          if ( !IsUnique() )
          {
-            m_data->Detach();
-            m_data = new Data;
+            Data* newData = new Data;
+            DetachFromData();
+            m_data = newData;
          }
 
          if ( Capacity() < n )
@@ -764,8 +761,9 @@ public:
       {
          if ( !IsUnique() )
          {
-            m_data->Detach();
-            m_data = new Data;
+            Data* newData = new Data;
+            DetachFromData();
+            m_data = newData;
          }
 
          if ( Capacity() < n )
@@ -802,7 +800,7 @@ public:
          size_type n = size_type( pcl::Distance( i, j ) );
          if ( n > 0 )
          {
-            SetUnique();
+            EnsureUnique();
             m_data->begin = i;
             m_data->end = m_data->available = j;
          }
@@ -823,7 +821,7 @@ public:
     */
    iterator Release()
    {
-      SetUnique();
+      EnsureUnique();
       iterator b = m_data->begin;
       m_data->begin = m_data->end = m_data->available = nullptr;
       return b;
@@ -866,7 +864,7 @@ public:
       if ( &x != this )
          return Insert( i, x.Begin(), x.End() );
       Array t( *this );
-      t.SetUnique();
+      t.EnsureUnique();
       return Insert( i, t.m_data->begin, t.m_data->end );
    }
 
@@ -1116,9 +1114,9 @@ public:
             m_data->Deallocate();
          else
          {
-            m_data->Detach();
-            m_data = nullptr;
-            m_data = new Data;
+            Data* newData = new Data;
+            DetachFromData();
+            m_data = newData;
          }
    }
 
@@ -1140,7 +1138,7 @@ public:
       if ( &x != this )
          return Replace( i, j, x.Begin(), x.End() );
       Array t( *this );
-      t.SetUnique();
+      t.EnsureUnique();
       return Replace( i, j, t.ConstBegin(), t.ConstEnd() );
    }
 
@@ -1252,7 +1250,7 @@ public:
             newData->begin = newData->alloc.Allocate( n = pcl::Max( Length(), n ) );
             newData->end = newData->Build( newData->begin, m_data->begin, m_data->end );
             newData->available = newData->begin + n;
-            m_data->Detach();
+            DetachFromData();
             m_data = newData;
          }
    }
@@ -1290,7 +1288,7 @@ public:
             newData->begin = newData->alloc.Allocate( Length() );
             newData->available = newData->end = newData->Build( newData->begin, m_data->begin, m_data->end );
          }
-         m_data->Detach();
+         DetachFromData();
          m_data = newData;
       }
    }
@@ -1300,7 +1298,7 @@ public:
     */
    void Fill( const T& v )
    {
-      SetUnique();
+      EnsureUnique();
       pcl::Fill( m_data->begin, m_data->end, v );
    }
 
@@ -1311,7 +1309,7 @@ public:
    template <class F>
    void Apply( F f )
    {
-      SetUnique();
+      EnsureUnique();
       pcl::Apply( m_data->begin, m_data->end, f );
    }
 
@@ -1404,7 +1402,7 @@ public:
     */
    void Reverse()
    {
-      SetUnique();
+      EnsureUnique();
       pcl::Reverse( m_data->begin, m_data->end );
    }
 
@@ -1414,7 +1412,7 @@ public:
    {
       if ( Length() > 1 && n != 0 )
       {
-         SetUnique();
+         EnsureUnique();
          if ( (n %= Length()) < 0 )
             n += Length();
          pcl::Rotate( m_data->begin, m_data->begin+n, m_data->end );
@@ -1427,7 +1425,7 @@ public:
    {
       if ( !IsEmpty() && n > 0 )
       {
-         SetUnique();
+         EnsureUnique();
          if ( n >= Length() )
             pcl::Fill( m_data->begin, m_data->end, v );
          else
@@ -1441,7 +1439,7 @@ public:
    {
       if ( !IsEmpty() && n > 0 )
       {
-         SetUnique();
+         EnsureUnique();
          if ( n >= Length() )
             pcl::Fill( m_data->begin, m_data->end, v );
          else
@@ -1598,7 +1596,7 @@ public:
     */
    void Sort()
    {
-      SetUnique();
+      EnsureUnique();
       pcl::QuickSort( m_data->begin, m_data->end );
    }
 
@@ -1607,7 +1605,7 @@ public:
    template <class BP>
    void Sort( BP p )
    {
-      SetUnique();
+      EnsureUnique();
       pcl::QuickSort( m_data->begin, m_data->end, p );
    }
 
@@ -1840,7 +1838,7 @@ private:
       }
 
       /*!
-       * Returns true if the array is empty.
+       * Returns true iff the array is empty.
        */
       bool IsEmpty() const
       {
@@ -1992,9 +1990,20 @@ private:
    };
 
    /*!
+    * \internal
     * The reference-counted array data.
     */
    Data* m_data;
+
+   /*!
+    * \internal
+    * Dereferences array data and disposes it if it becomes garbage.
+    */
+   void DetachFromData()
+   {
+      if ( !m_data->Detach() )
+         delete m_data;
+   }
 };
 
 // ----------------------------------------------------------------------------
@@ -2088,4 +2097,4 @@ Array<T,A>& operator <<( Array<T,A>&& x1, const Array<T,A>& x2 )
 #endif  // __PCL_Array_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Array.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Array.h - Released 2015/10/08 11:24:12 UTC

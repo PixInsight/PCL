@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Thread.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/Thread.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -65,7 +65,6 @@
 #ifdef __PCL_LINUX
 # include <sched.h>
 # include <errno.h>
-# include <iostream>
 #endif
 
 #ifdef __PCL_WINDOWS
@@ -405,4 +404,4 @@ void PCL_FUNC Sleep( unsigned ms )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Thread.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/Thread.cpp - Released 2015/10/08 11:24:19 UTC

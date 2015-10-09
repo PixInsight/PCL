@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/PixelTraits.h - Released 2015/07/30 17:15:18 UTC
+// pcl/PixelTraits.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -203,7 +203,7 @@ public:
    /*!
     * Returns the number of bytes necessary to store a pixel sample.
     */
-   static int BytesPerSample()
+   static constexpr int BytesPerSample()
    {
       return bytesPerSample;
    }
@@ -211,7 +211,7 @@ public:
    /*!
     * Returns the number of bits in a pixel sample.
     */
-   static int BitsPerSample()
+   static constexpr int BitsPerSample()
    {
       return bitsPerSample;
    }
@@ -220,7 +220,7 @@ public:
     * Returns the minimum valid sample value. This is usually a value of zero
     * in the numeric data type represented by \c sample.
     */
-   static sample MinSampleValue()
+   static constexpr sample MinSampleValue()
    {
       return sample( 0 );
    }
@@ -379,10 +379,10 @@ public:
    typedef traits_type::sample         sample;
 
    /*!
-    * Returns true if this pixel traits class corresponds to a floating point
+    * Returns true iff this pixel traits class corresponds to a floating point
     * pixel sample type.
     */
-   static bool IsFloatSample()
+   static constexpr bool IsFloatSample()
    {
       return true;
    }
@@ -391,7 +391,7 @@ public:
     * Returns true if this pixel traits class corresponds to a complex pixel
     * sample type; false if it represents a real pixel sample type.
     */
-   static bool IsComplexSample()
+   static constexpr bool IsComplexSample()
    {
       return false;
    }
@@ -402,7 +402,7 @@ public:
     *
     * For %FloatPixelTraits, this member function returns "Float32".
     */
-   static const char* SampleFormat()
+   static constexpr const char* SampleFormat()
    {
       return "Float32";
    }
@@ -412,7 +412,7 @@ public:
     *
     * For %FloatPixelTraits, this member function returns 1.0F.
     */
-   static sample MaxSampleValue()
+   static constexpr sample MaxSampleValue()
    {
       return 1.0F;
    }
@@ -421,7 +421,7 @@ public:
     * Conversion of any floating point value to a pixel sample value.
     */
    template <typename T>
-   static sample FloatToSample( T x )
+   static constexpr sample FloatToSample( T x )
    {
       return sample( x );
    }
@@ -477,7 +477,7 @@ public:
    /*!
     * Conversion of a 32-bit unsigned integer value to a pixel sample value.
     */
-   static sample ToSample( uint32 x )
+   static constexpr sample ToSample( uint32 x )
    {
       return sample( double( x )/uint32_max );
    }
@@ -485,7 +485,7 @@ public:
    /*!
     * Conversion of a 32-bit signed integer value to a pixel sample value.
     */
-   static sample ToSample( int32 x )
+   static constexpr sample ToSample( int32 x )
    {
       return sample( (double( x ) - int32_min)/uint32_max );
    }
@@ -493,7 +493,7 @@ public:
    /*!
     * Conversion of a 32-bit floating point value to a pixel sample value.
     */
-   static sample ToSample( float x )
+   static constexpr sample ToSample( float x )
    {
       return sample( x );
    }
@@ -501,7 +501,7 @@ public:
    /*!
     * Conversion of a 64-bit floating point value to a pixel sample value.
     */
-   static sample ToSample( double x )
+   static constexpr sample ToSample( double x )
    {
       return sample( x );
    }
@@ -510,7 +510,7 @@ public:
     * Conversion of any complex value to a pixel sample value.
     */
    template <typename T>
-   static sample ToSample( const Complex<T>& x )
+   static constexpr sample ToSample( const Complex<T>& x )
    {
       return sample( pcl::Abs( x ) );
    }
@@ -944,10 +944,10 @@ public:
    typedef traits_type::sample         sample;
 
    /*!
-    * Returns true if this pixel traits class corresponds to a floating point
+    * Returns true iff this pixel traits class corresponds to a floating point
     * pixel sample type.
     */
-   static bool IsFloatSample()
+   static constexpr bool IsFloatSample()
    {
       return true;
    }
@@ -956,7 +956,7 @@ public:
     * Returns true if this pixel traits class corresponds to a complex pixel
     * sample type; false if it represents a real pixel sample type.
     */
-   static bool IsComplexSample()
+   static constexpr bool IsComplexSample()
    {
       return false;
    }
@@ -967,7 +967,7 @@ public:
     *
     * For %DoublePixelTraits, this member function returns "Float64".
     */
-   static const char* SampleFormat()
+   static constexpr const char* SampleFormat()
    {
       return "Float64";
    }
@@ -977,7 +977,7 @@ public:
     *
     * For %DoublePixelTraits, this member function returns 1.0.
     */
-   static sample MaxSampleValue()
+   static constexpr sample MaxSampleValue()
    {
       return 1.0;
    }
@@ -986,7 +986,7 @@ public:
     * Conversion of any floating point value to a pixel sample value.
     */
    template <typename T>
-   static sample FloatToSample( T x )
+   static constexpr sample FloatToSample( T x )
    {
       return sample( x );
    }
@@ -1042,7 +1042,7 @@ public:
    /*!
     * Conversion of a 32-bit unsigned integer value to a pixel sample value.
     */
-   static sample ToSample( uint32 x )
+   static constexpr sample ToSample( uint32 x )
    {
       return sample( x )/uint32_max;
    }
@@ -1050,7 +1050,7 @@ public:
    /*!
     * Conversion of a 32-bit signed integer value to a pixel sample value.
     */
-   static sample ToSample( int32 x )
+   static constexpr sample ToSample( int32 x )
    {
       return (sample( x ) - int32_min)/uint32_max;
    }
@@ -1058,7 +1058,7 @@ public:
    /*!
     * Conversion of a 32-bit floating point value to a pixel sample value.
     */
-   static sample ToSample( float x )
+   static constexpr sample ToSample( float x )
    {
       return sample( x );
    }
@@ -1066,7 +1066,7 @@ public:
    /*!
     * Conversion of a 64-bit floating point value to a pixel sample value.
     */
-   static sample ToSample( double x )
+   static constexpr sample ToSample( double x )
    {
       return sample( x );
    }
@@ -1075,7 +1075,7 @@ public:
     * Conversion of any complex value to a pixel sample value.
     */
    template <typename T>
-   static sample ToSample( const Complex<T>& x )
+   static constexpr sample ToSample( const Complex<T>& x )
    {
       return sample( pcl::Abs( x ) );
    }
@@ -1513,16 +1513,16 @@ public:
     */
    typedef sample::component                    component;
 
-   static int BitsPerSample()
+   static constexpr int BitsPerSample()
    {
       return sizeof( component ) << 3;
    }
 
    /*!
-    * Returns true if this pixel traits class corresponds to a floating point
+    * Returns true iff this pixel traits class corresponds to a floating point
     * real pixel sample type.
     */
-   static bool IsFloatSample()
+   static constexpr bool IsFloatSample()
    {
       return false;
    }
@@ -1531,7 +1531,7 @@ public:
     * Returns true if this pixel traits class corresponds to a complex pixel
     * sample type; false if it represents a real pixel sample type.
     */
-   static bool IsComplexSample()
+   static constexpr bool IsComplexSample()
    {
       return true;
    }
@@ -1542,7 +1542,7 @@ public:
     *
     * For %ComplexPixelTraits, this member function returns "Complex32".
     */
-   static const char* SampleFormat()
+   static constexpr const char* SampleFormat()
    {
       return "Complex32";
    }
@@ -2245,16 +2245,16 @@ public:
 
    /*!
     */
-   static int BitsPerSample()
+   static constexpr int BitsPerSample()
    {
       return sizeof( component ) << 3;
    }
 
    /*!
-    * Returns true if this pixel traits class corresponds to a floating point
+    * Returns true iff this pixel traits class corresponds to a floating point
     * real pixel sample type.
     */
-   static bool IsFloatSample()
+   static constexpr bool IsFloatSample()
    {
       return false;
    }
@@ -2263,7 +2263,7 @@ public:
     * Returns true if this pixel traits class corresponds to a complex pixel
     * sample type; false if it represents a real pixel sample type.
     */
-   static bool IsComplexSample()
+   static constexpr bool IsComplexSample()
    {
       return true;
    }
@@ -2274,7 +2274,7 @@ public:
     *
     * For %DComplexPixelTraits, this member function returns "Complex64".
     */
-   static const char* SampleFormat()
+   static constexpr const char* SampleFormat()
    {
       return "Complex64";
    }
@@ -2976,10 +2976,10 @@ public:
    typedef traits_type::sample         sample;
 
    /*!
-    * Returns true if this pixel traits class corresponds to a floating point
+    * Returns true iff this pixel traits class corresponds to a floating point
     * real pixel sample type.
     */
-   static bool IsFloatSample()
+   static constexpr bool IsFloatSample()
    {
       return false;
    }
@@ -2988,7 +2988,7 @@ public:
     * Returns true if this pixel traits class corresponds to a complex pixel
     * sample type; false if it represents a real pixel sample type.
     */
-   static bool IsComplexSample()
+   static constexpr bool IsComplexSample()
    {
       return false;
    }
@@ -2999,7 +2999,7 @@ public:
     *
     * For %UInt8PixelTraits, this member function returns "UInt8".
     */
-   static const char* SampleFormat()
+   static constexpr const char* SampleFormat()
    {
       return "UInt8";
    }
@@ -3009,7 +3009,7 @@ public:
     *
     * For %UInt8PixelTraits, this member function returns 255.
     */
-   static sample MaxSampleValue()
+   static constexpr sample MaxSampleValue()
    {
       return uint8_max;
    }
@@ -3031,7 +3031,7 @@ public:
    /*!
     * Conversion of an 8-bit unsigned integer value to a pixel sample value.
     */
-   static sample ToSample( uint8 x )
+   static constexpr sample ToSample( uint8 x )
    {
       return sample( x );
    }
@@ -3039,7 +3039,7 @@ public:
    /*!
     * Conversion of an 8-bit signed integer value to a pixel sample value.
     */
-   static sample ToSample( int8 x )
+   static constexpr sample ToSample( int8 x )
    {
       return sample( int32( x ) - int32( int8_min ) );
    }
@@ -3813,10 +3813,10 @@ public:
    typedef traits_type::sample         sample;
 
    /*!
-    * Returns true if this pixel traits class corresponds to a floating point
+    * Returns true iff this pixel traits class corresponds to a floating point
     * real pixel sample type.
     */
-   static bool IsFloatSample()
+   static constexpr bool IsFloatSample()
    {
       return false;
    }
@@ -3825,7 +3825,7 @@ public:
     * Returns true if this pixel traits class corresponds to a complex pixel
     * sample type; false if it represents a real pixel sample type.
     */
-   static bool IsComplexSample()
+   static constexpr bool IsComplexSample()
    {
       return false;
    }
@@ -3836,7 +3836,7 @@ public:
     *
     * For %UInt16PixelTraits, this member function returns "UInt16".
     */
-   static const char* SampleFormat()
+   static constexpr const char* SampleFormat()
    {
       return "UInt16";
    }
@@ -3846,7 +3846,7 @@ public:
     *
     * For %UInt16PixelTraits, this member function returns 65535.
     */
-   static sample MaxSampleValue()
+   static constexpr sample MaxSampleValue()
    {
       return uint16_max;
    }
@@ -3892,7 +3892,7 @@ public:
    /*!
     * Conversion of a 16-bit unsigned integer value to a pixel sample value.
     */
-   static sample ToSample( uint16 x )
+   static constexpr sample ToSample( uint16 x )
    {
       return sample( x );
    }
@@ -3900,7 +3900,7 @@ public:
    /*!
     * Conversion of a 16-bit signed integer value to a pixel sample value.
     */
-   static sample ToSample( int16 x )
+   static constexpr sample ToSample( int16 x )
    {
       return sample( int32( x ) - int32( int16_min ) );
    }
@@ -3961,7 +3961,7 @@ public:
     * Conversion of any complex value to a pixel sample value.
     */
    template <typename T>
-   static sample ToSample( const Complex<T>& x )
+   static constexpr sample ToSample( const Complex<T>& x )
    {
       return ToSample( pcl::Abs( x ) );
    }
@@ -4650,10 +4650,10 @@ public:
    typedef traits_type::sample         sample;
 
    /*!
-    * Returns true if this pixel traits class corresponds to a floating point
+    * Returns true iff this pixel traits class corresponds to a floating point
     * real pixel sample type.
     */
-   static bool IsFloatSample()
+   static constexpr bool IsFloatSample()
    {
       return false;
    }
@@ -4662,7 +4662,7 @@ public:
     * Returns true if this pixel traits class corresponds to a complex pixel
     * sample type; false if it represents a real pixel sample type.
     */
-   static bool IsComplexSample()
+   static constexpr bool IsComplexSample()
    {
       return false;
    }
@@ -4673,7 +4673,7 @@ public:
     *
     * For %UInt32PixelTraits, this member function returns "UInt32".
     */
-   static const char* SampleFormat()
+   static constexpr const char* SampleFormat()
    {
       return "UInt32";
    }
@@ -4683,7 +4683,7 @@ public:
     *
     * For %UInt32PixelTraits, this member function returns 4294967295.
     */
-   static sample MaxSampleValue()
+   static constexpr sample MaxSampleValue()
    {
       return uint32_max;
    }
@@ -4753,7 +4753,7 @@ public:
    /*!
     * Conversion of a 32-bit unsigned integer value to a pixel sample value.
     */
-   static sample ToSample( uint32 x )
+   static constexpr sample ToSample( uint32 x )
    {
       return sample( x );
    }
@@ -4761,7 +4761,7 @@ public:
    /*!
     * Conversion of a 32-bit signed integer value to a pixel sample value.
     */
-   static sample ToSample( int32 x )
+   static constexpr sample ToSample( int32 x )
    {
       return sample( double( x ) - double( int32_min ) );
    }
@@ -5478,10 +5478,10 @@ public:
    typedef traits_type::sample         sample;
 
    /*!
-    * Returns true if this pixel traits class corresponds to a floating point
+    * Returns true iff this pixel traits class corresponds to a floating point
     * real pixel sample type.
     */
-   static bool IsFloatSample()
+   static constexpr bool IsFloatSample()
    {
       return false;
    }
@@ -5490,7 +5490,7 @@ public:
     * Returns true if this pixel traits class corresponds to a complex pixel
     * sample type; false if it represents a real pixel sample type.
     */
-   static bool IsComplexSample()
+   static constexpr bool IsComplexSample()
    {
       return false;
    }
@@ -5501,7 +5501,7 @@ public:
     *
     * For %UInt20PixelTraits, this member function returns "UInt20".
     */
-   static const char* SampleFormat()
+   static constexpr const char* SampleFormat()
    {
       return "UInt20";
    }
@@ -5511,7 +5511,7 @@ public:
     *
     * For %UInt20PixelTraits, this member function returns 1048576.
     */
-   static sample MaxSampleValue()
+   static constexpr sample MaxSampleValue()
    {
       return uint20_max;
    }
@@ -5634,7 +5634,7 @@ public:
     * Conversion of any complex value to a pixel sample value.
     */
    template <typename T>
-   static sample ToSample( const Complex<T>& x )
+   static constexpr sample ToSample( const Complex<T>& x )
    {
       return ToSample( pcl::Abs( x ) );
    }
@@ -5776,10 +5776,10 @@ public:
    typedef traits_type::sample         sample;
 
    /*!
-    * Returns true if this pixel traits class corresponds to a floating point
+    * Returns true iff this pixel traits class corresponds to a floating point
     * real pixel sample type.
     */
-   static bool IsFloatSample()
+   static constexpr bool IsFloatSample()
    {
       return false;
    }
@@ -5788,7 +5788,7 @@ public:
     * Returns true if this pixel traits class corresponds to a complex pixel
     * sample type; false if it represents a real pixel sample type.
     */
-   static bool IsComplexSample()
+   static constexpr bool IsComplexSample()
    {
       return false;
    }
@@ -5799,7 +5799,7 @@ public:
     *
     * For %UInt24PixelTraits, this member function returns "UInt24".
     */
-   static const char* SampleFormat()
+   static constexpr const char* SampleFormat()
    {
       return "UInt24";
    }
@@ -5809,7 +5809,7 @@ public:
     *
     * For %UInt24PixelTraits, this member function returns 1048576.
     */
-   static sample MaxSampleValue()
+   static constexpr sample MaxSampleValue()
    {
       return uint24_max;
    }
@@ -6051,4 +6051,4 @@ public:
 #endif   // __PCL_PixelTraits_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/PixelTraits.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/PixelTraits.h - Released 2015/10/08 11:24:12 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Algebra.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/Algebra.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -61,16 +61,16 @@ namespace pcl
 
 void PCL_FUNC InPlaceGaussJordan( Matrix& A, Matrix& B )
 {
-   A.SetUnique();
-   B.SetUnique();
+   A.EnsureUnique();
+   B.EnsureUnique();
    if ( (*API->Numerical->GaussJordanInPlaceD)( A.DataPtr(), B.DataPtr(), A.Rows(), B.Columns() ) == api_false )
       throw APIFunctionError( "GaussJordanInPlaceD" );
 }
 
 void PCL_FUNC InPlaceGaussJordan( FMatrix& A, FMatrix& B )
 {
-   A.SetUnique();
-   B.SetUnique();
+   A.EnsureUnique();
+   B.EnsureUnique();
    if ( (*API->Numerical->GaussJordanInPlaceF)( A.DataPtr(), B.DataPtr(), A.Rows(), B.Columns() ) == api_false )
       throw APIFunctionError( "GaussJordanInPlaceF" );
 }
@@ -79,7 +79,7 @@ void PCL_FUNC InPlaceGaussJordan( FMatrix& A, FMatrix& B )
 
 void PCL_FUNC InPlaceSVDImplementation( Matrix& A, Vector& W, Matrix& V )
 {
-   A.SetUnique();
+   A.EnsureUnique();
    int m = A.Rows();
    int n = A.Columns();
    W = Vector( n );
@@ -90,7 +90,7 @@ void PCL_FUNC InPlaceSVDImplementation( Matrix& A, Vector& W, Matrix& V )
 
 void PCL_FUNC InPlaceSVDImplementation( FMatrix& A, FVector& W, FMatrix& V )
 {
-   A.SetUnique();
+   A.EnsureUnique();
    int m = A.Rows();
    int n = A.Columns();
    W = FVector( n );
@@ -104,4 +104,4 @@ void PCL_FUNC InPlaceSVDImplementation( FMatrix& A, FVector& W, FMatrix& V )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Algebra.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/Algebra.cpp - Released 2015/10/08 11:24:19 UTC

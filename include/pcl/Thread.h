@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Thread.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Thread.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -161,7 +161,7 @@ public:
     * Since threads are unique objects by nature, calling this member function
     * has no effect.
     */
-   virtual void SetUnique()
+   virtual void EnsureUnique()
    {
       // Threads are unique objects by definition.
    }
@@ -240,7 +240,7 @@ public:
     * physical processors and processor cores, as well as logical processors on
     * systems with hyper-threading technology.
     *
-    * Returns true if the operation was performed correctly. In general, this
+    * Returns true iff the operation was performed correctly. In general, this
     * function returns false if this thread is not running, or if the specified
     * set contains nonexistent processor indices. It can also return false if
     * the calling process does not have the necessary privileges, altough this
@@ -266,7 +266,7 @@ public:
     * processor cores, as well as logical processors on systems with
     * hyper-threading technology.
     *
-    * Returns true if the operation was performed correctly. In general, this
+    * Returns true iff the operation was performed correctly. In general, this
     * function returns false if this thread is not running, or if the specified
     * processor does not exist. It can also return false if the calling process
     * does not have the necessary privileges, altough this should not happen
@@ -297,7 +297,7 @@ public:
    void Kill(); // ### Dangerous - Use at your own risk! ###
 
    /*!
-    * Returns true if this thread is running.
+    * Returns true iff this thread is running.
     */
    bool IsActive() const;
 
@@ -419,7 +419,7 @@ public:
     * Attempts to get the current status of this thread without blocking the
     * caller's execution.
     *
-    * Returns true if the thread status could be retrieved and stored in the
+    * Returns true iff the thread status could be retrieved and stored in the
     * specified \a status variable.
     *
     * Returns false if the status couldn't be read. In this case the value of
@@ -477,7 +477,7 @@ public:
    }
 
    /*!
-    * Returns true if this thread has been aborted. A thread has been aborted
+    * Returns true iff this thread has been aborted. A thread has been aborted
     * if it has received an abort message by a previous call to Abort(), or by
     * setting the high-order bit of its thread status word.
     *
@@ -486,7 +486,7 @@ public:
     *
     * \note This function calls Status() to read the current thread's status.
     * Consequently, it blocks the caller's execution and has the same
-    * performance problems. For a non-blocking alternative see TryIsAborted().
+    * performance problems. For a non-blocking alternative, see TryIsAborted().
     */
    bool IsAborted() const
    {
@@ -494,7 +494,7 @@ public:
    }
 
    /*!
-    * Returns true if this thread has been aborted, and the current thread's
+    * Returns true iff this thread has been aborted, and the current thread's
     * status could be retrieved without blocking the caller's execution.
     *
     * \note This member function is thread-safe. It can be safely called for a
@@ -527,7 +527,7 @@ public:
    String ConsoleOutputText() const;
 
    /*!
-    * Returns true if this thread has any accumulated console output text that
+    * Returns true iff this thread has any accumulated console output text that
     * still has not been flushed or cleared.
     *
     * For information on thread console output, refer to the documentation for
@@ -648,4 +648,4 @@ void PCL_FUNC Sleep( unsigned ms );
 #endif   // __PCL_Thread_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Thread.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Thread.h - Released 2015/10/08 11:24:12 UTC

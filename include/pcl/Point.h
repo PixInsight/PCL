@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Point.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Point.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -776,7 +776,7 @@ public:
  */
 
 /*!
- * Returns true if two points \a p1 and \a p2 are equal. Two points are equal
+ * Returns true iff two points \a p1 and \a p2 are equal. Two points are equal
  * if their homonym coordinates are equal.
  * \ingroup point_functions_2d
  */
@@ -787,7 +787,7 @@ bool operator ==( const GenericPoint<T1>& p1, const GenericPoint<T2>& p2 )
 }
 
 /*!
- * Returns true if a point \a p1 is equal to a scalar \a d2. A point \p is
+ * Returns true iff a point \a p1 is equal to a scalar \a d2. A point \p is
  * equal to a scalar \a d if both coordinates of \a p are equal to \a d.
  * \ingroup point_functions_2d
  */
@@ -798,7 +798,7 @@ bool operator ==( const GenericPoint<T>& p1, T d2 )
 }
 
 /*!
- * Returns true if a scalar \a d1 is equal to a point \a p2. A scalar \a d is
+ * Returns true iff a scalar \a d1 is equal to a point \a p2. A scalar \a d is
  * equal to a point \a p if both coordinates of \a p are equal to \a d.
  * \ingroup point_functions_2d
  */
@@ -809,7 +809,7 @@ bool operator ==( T d1, const GenericPoint<T>& p2 )
 }
 
 /*!
- * Returns true if a point \a p1 is less than another point \a p2.
+ * Returns true iff a point \a p1 is less than another point \a p2.
  *
  * Points in the plane are sorted by ordinates in the PCL. Given two points
  * \a p and \a q in the plane, it holds that:
@@ -825,7 +825,7 @@ bool operator <( const GenericPoint<T1>& p1, const GenericPoint<T2>& p2 )
 }
 
 /*!
- * Returns true if a point \a p1 is less than a scalar \a d2.
+ * Returns true iff a point \a p1 is less than a scalar \a d2.
  *
  * Given a point \a p in the plane and a scalar \a d, it holds that:
  *
@@ -840,7 +840,7 @@ bool operator <( const GenericPoint<T>& p1, T d2 )
 }
 
 /*!
- * Returns true if a scalar \a d1 is less than a point \a p2.
+ * Returns true iff a scalar \a d1 is less than a point \a p2.
  *
  * Given a point \a p in the plane and a scalar \a d, it holds that:
  *
@@ -1264,4 +1264,4 @@ typedef F64Point                    DPoint;
 #endif  // __PCL_Point_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Point.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Point.h - Released 2015/10/08 11:24:12 UTC

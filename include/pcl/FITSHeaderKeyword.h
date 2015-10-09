@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/FITSHeaderKeyword.h - Released 2015/07/30 17:15:18 UTC
+// pcl/FITSHeaderKeyword.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -131,7 +131,7 @@ public:
    FITSHeaderKeyword& operator =( const FITSHeaderKeyword& ) = default;
 
    /*!
-    * Returns true if this %FITS keyword has no %value (i.e., if the value
+    * Returns true iff this %FITS keyword has no %value (i.e., if the value
     * member is an empty string).
     */
    bool IsNull() const
@@ -140,7 +140,7 @@ public:
    }
 
    /*!
-    * Returns true if this %FITS keyword has a string %value.
+    * Returns true iff this %FITS keyword has a string %value.
     *
     * A string %value is assumed if the value component begins with a single
     * quote (').
@@ -151,7 +151,7 @@ public:
    }
 
    /*!
-    * Returns true if this %FITS keyword has a boolean %value.
+    * Returns true iff this %FITS keyword has a boolean %value.
     *
     * A boolean %value is assumed if the value component is equal to 'T' or 'F'
     * for \c true and \c false, respectively.
@@ -162,7 +162,7 @@ public:
    }
 
    /*!
-    * Returns true if this %FITS keyword has a numeric %value.
+    * Returns true iff this %FITS keyword has a numeric %value.
     *
     * A numeric %value is assumed if the value component is a valid
     * representation of an integer or floating point number.
@@ -176,9 +176,9 @@ public:
     * Gets the numeric %value of this %FITS keyword in the specified variable
     * \a v, or zero if this keyword has no numeric %value.
     *
-    * Returns true if this keyword has a valid numeric %value; false otherwise.
-    * This member function does not throw exceptions, even if the keyword's
-    * value contains an illegal numeric representation.
+    * Returns true iff this keyword has a valid numeric %value. This member
+    * function does not throw exceptions, even if the keyword's value contains
+    * an illegal numeric representation.
     */
    bool GetNumericValue( double& v ) const
    {
@@ -236,11 +236,11 @@ typedef Array<FITSHeaderKeyword> FITSKeywordArray;
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup fits_keyword_comparison %FITS Keyword Comparison Functions
+ * \defgroup fits_keyword_comparison FITS Keyword Comparison Functions
  */
 
 /*!
- * Returns true if two %FITS header keywords, \a h1 and \a h2, are equal.
+ * Returns true iff two %FITS header keywords, \a h1 and \a h2, are equal.
  *
  * Two %FITS keywords are equal if their three components (name, value,
  * comment) are equal. However, keyword name comparison is case-insensitive as
@@ -255,7 +255,7 @@ inline bool operator ==( const FITSHeaderKeyword& h1, const FITSHeaderKeyword& h
 }
 
 /*!
- * Returns true if a %FITS header keyword \a h1 is less than other keyword
+ * Returns true iff a %FITS header keyword \a h1 is less than other keyword
  * \a h2.
  *
  * This function compares the components of both keywords. The precedence order
@@ -277,4 +277,4 @@ inline bool operator <( const FITSHeaderKeyword& h1, const FITSHeaderKeyword& h2
 #endif   // __PCL_FITSHeaderKeyword_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FITSHeaderKeyword.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/FITSHeaderKeyword.h - Released 2015/10/08 11:24:12 UTC

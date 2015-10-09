@@ -2,7 +2,7 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
 //
 // This file is part of PixInsight X11 UNIX/Linux Installer
@@ -53,6 +53,7 @@
 
 #include <unistd.h>
 #include <cstdio> // fileno()
+#include <signal.h> // kill()
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -111,6 +112,7 @@ private:
    String m_sourceDir;
    String m_installDir;
    String m_installDesktopDir;
+   String m_installMIMEDir;
    String m_installIconsDir;
    bool   m_createBinLauncher;
    bool   m_removePrevious;
@@ -121,13 +123,19 @@ private:
    String m_binLauncherFile;
 
    /*
-    * Desktop entry file
+    * Desktop entry file:
     * http://standards.freedesktop.org/desktop-entry-spec/latest/
     */
    String m_desktopEntryFile;
 
    /*
-    * Application icons.
+    * Shared MIME info XML file:
+    * http://standards.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html
+    */
+   String m_mimeDescriptionFile;
+
+   /*
+    * Application icons:
     * https://developer.gnome.org/integration-guide/stable/icons.html.en
     */
    String m_icon16x16File;
@@ -297,6 +305,11 @@ PixInsightX11Installer::PixInsightX11Installer( int argc, const char** argv )
    if ( !File::DirectoryExists( m_installDesktopDir ) )
       m_installDesktopDir = "/usr/local/share/applications"; // FreeBSD
 
+   // Default MIME installation directory.
+   m_installMIMEDir = "/usr/share/mime";
+   if ( !File::DirectoryExists( m_installMIMEDir ) )
+      m_installMIMEDir = "/usr/local/share/mime"; // FreeBSD
+
    // Default application icons installation directory.
    m_installIconsDir = "/usr/share/icons/hicolor";
    if ( !File::DirectoryExists( m_installIconsDir ) )
@@ -332,6 +345,8 @@ PixInsightX11Installer::PixInsightX11Installer( int argc, const char** argv )
             m_installDir = i->StringValue();
          else if ( i->Id() == "-install-desktop-dir" )
             m_installDesktopDir = i->StringValue();
+         else if ( i->Id() == "-install-mime-dir" )
+            m_installMIMEDir = i->StringValue();
          else if ( i->Id() == "-install-icons-dir" )
             m_installIconsDir = i->StringValue();
          else
@@ -378,6 +393,8 @@ PixInsightX11Installer::PixInsightX11Installer( int argc, const char** argv )
       m_installDir.Delete( m_installDir.UpperBound() );
    if ( m_installDesktopDir.EndsWith( '/' ) )
       m_installDesktopDir.Delete( m_installDesktopDir.UpperBound() );
+   if ( m_installMIMEDir.EndsWith( '/' ) )
+      m_installMIMEDir.Delete( m_installMIMEDir.UpperBound() );
    if ( m_installIconsDir.EndsWith( '/' ) )
       m_installIconsDir.Delete( m_installIconsDir.UpperBound() );
 
@@ -386,6 +403,9 @@ PixInsightX11Installer::PixInsightX11Installer( int argc, const char** argv )
 
    // Application desktop entry file
    m_desktopEntryFile = m_installDesktopDir + "/PixInsight.desktop";
+
+   // MIME type description file
+   m_mimeDescriptionFile = m_installMIMEDir + "/packages/PixInsight.xml";
 
    // Application icon files
    m_icon16x16File    = m_installIconsDir + "/16x16/apps/PixInsight.png";
@@ -425,7 +445,7 @@ bool PixInsightX11Installer::Perform()
 
 bool PixInsightX11Installer::DoShowVersion()
 {
-   std::cout << '\n' << VersionString() << '\n';
+   std::cout << '\n' << VersionString() << '\n' << '\n';
    return true;
 }
 
@@ -462,6 +482,7 @@ bool PixInsightX11Installer::DoInstall()
    "\nPixInsight Core application ..... " << m_installDir <<
    "\nApplication desktop entry ....... " << m_desktopEntryFile <<
    "\nApplication icons directory ..... " << m_installIconsDir <<
+   "\nMIME type description file ...... " << m_mimeDescriptionFile <<
    "\nCreate /bin launcher script ..... " << (m_createBinLauncher ? "yes" : "no") <<
    "\nRemove previous installation .... " << (m_removePrevious ? "yes" : "no") <<
    "\n";
@@ -499,7 +520,8 @@ bool PixInsightX11Installer::DoInstall()
       throw Error( "Failed to chmod the /bin launcher script: " + m_binLauncherFile );
    }
 
-   // Write the desktop entry file
+   // Write the desktop entry file:
+   // http://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html
    {
       File f;
       f.CreateForWriting( m_desktopEntryFile );
@@ -513,11 +535,33 @@ bool PixInsightX11Installer::DoInstall()
       f.OutTextLn( "MultipleArgs=true" );
       f.OutTextLn( "Type=Application" );
       f.OutTextLn( "Icon=" + m_installDir.ToUTF8() + "/bin/pixinsight-icon.256.png" );
+      f.OutTextLn( "X-KDE-StartupNotify=false" );
       f.OutTextLn( "Categories=Application;Graphics;ImageProcessing;RasterGraphics;Photography;Astronomy;" );
-      f.OutTextLn( "MimeType=image/fits;application/fits;"
-                            "image/tiff;application/tiff;image/tif;application/tif;"
+      f.OutTextLn( "MimeType=application/x-xosm;"
+                            "application/x-xpsm;application/x-psm;"
+                            "image/bmp;application/bmp;"
+                            "image/fits;application/fits;"
+                            "image/gif;"
+                            "image/jp2;image/jpc;"
+                            "image/jpeg;application/jpeg;image/jpg;application/jpg;"
                             "image/png;application/png;application/x-png;"
-                            "image/jpeg;application/jpeg;image/jpg;application/jpg;" );
+                            "image/tiff;application/tiff;image/tif;application/tif;"
+                            "image/svg+xml;"
+                            "image/x-tga;"
+                            "image/x-adobe-dng;"
+                            "image/x-canon-cr2;"
+                            "image/x-canon-crw;"
+                            "image/x-fuji-raf;"
+                            "image/x-kodak-dcr;image/x-kodak-k25;image/x-kodak-kdc;"
+                            "image/x-minolta-mrw;"
+                            "image/x-nikon-nef;"
+                            "image/x-olympus-orf;"
+                            "image/x-panasonic-raw;image/x-panasonic-raw2;"
+                            "image/x-pentax-pef;"
+                            "image/x-sigma-x3f;"
+                            "image/x-sony-arw;image/x-sony-sr2;image/x-sony-srf;"
+                            "image/x-xisf;"
+                            "text/x-pidoc;" );
       f.Close();
    }
 
@@ -536,6 +580,53 @@ bool PixInsightX11Installer::DoInstall()
       CopyFile( m_installIconsDir + "/128x128/apps/PixInsight.png", m_sourceIcon128x128File );
    if ( File::DirectoryExists( m_installIconsDir + "/256x256/apps" ) )
       CopyFile( m_installIconsDir + "/256x256/apps/PixInsight.png", m_sourceIcon256x256File );
+
+   // Write the shared MIME info XML file:
+   // http://standards.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html
+   {
+      IsoString m_icon48x48File8 = m_icon48x48File.ToUTF8();
+      File f;
+      f.CreateForWriting( m_mimeDescriptionFile );
+      f.OutTextLn( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" );
+      f.OutTextLn( "<mime-info xmlns=\"http://www.freedesktop.org/standards/shared-mime-info\">" );
+      f.OutTextLn( "   <mime-type type=\"application/x-xosm\">" );
+      f.OutTextLn( "      <sub-class-of type=\"application/xml\"/>" );
+      f.OutTextLn( "      <icon name=\"" + m_icon48x48File8 + "\"/>" );
+      f.OutTextLn( "      <comment>PixInsight project file</comment>" );
+      f.OutTextLn( "      <glob pattern=\"*.xosm\"/>" );
+      f.OutTextLn( "   </mime-type>" );
+      f.OutTextLn( "   <mime-type type=\"application/x-xpsm\">" );
+      f.OutTextLn( "      <sub-class-of type=\"application/xml\"/>" );
+      f.OutTextLn( "      <icon name=\"" + m_icon48x48File8 + "\"/>" );
+      f.OutTextLn( "      <comment>PixInsight process icon file</comment>" );
+      f.OutTextLn( "      <glob pattern=\"*.xpsm\"/>" );
+      f.OutTextLn( "   </mime-type>" );
+      f.OutTextLn( "   <mime-type type=\"application/x-psm\">" );
+      f.OutTextLn( "      <icon name=\"" + m_icon48x48File8 + "\"/>" );
+      f.OutTextLn( "      <comment>PixInsight process icon file</comment>" );
+      f.OutTextLn( "      <glob pattern=\"*.psm\"/>" );
+      f.OutTextLn( "   </mime-type>" );
+      f.OutTextLn( "   <mime-type type=\"image/x-xisf\">" );
+      f.OutTextLn( "      <icon name=\"" + m_icon48x48File8 + "\"/>" );
+      f.OutTextLn( "      <comment>Extensible image serialization format file</comment>" );
+      f.OutTextLn( "      <glob pattern=\"*.xisf\"/>" );
+      f.OutTextLn( "   </mime-type>" );
+      f.OutTextLn( "   <mime-type type=\"text/x-pidoc\">" );
+      f.OutTextLn( "      <sub-class-of type=\"text/plain\"/>" );
+      f.OutTextLn( "      <icon name=\"" + m_icon48x48File8 + "\"/>" );
+      f.OutTextLn( "      <comment>PixInsight documentation source file</comment>" );
+      f.OutTextLn( "      <glob pattern=\"*.pidoc\"/>" );
+      f.OutTextLn( "   </mime-type>" );
+      f.OutTextLn( "</mime-info>" );
+      f.Close();
+
+      // Update the MIME information database.
+      IsoString installMIMEDir8 = m_installMIMEDir.ToUTF8();
+      IsoString command = "update-mime-database \"" + m_installMIMEDir.ToUTF8() + "\" > /dev/null 2>&1";
+      int ret = system( command.c_str() );
+      if ( ret != 0 )
+         std::cerr << "\n** Warning: Failed to execute the update-mime-database command. Exit code = " << IsoString( ret ) << "\n";
+   }
 
    // If requested, remove a previous installation.
    if ( !oldDir.IsEmpty() )
@@ -595,6 +686,8 @@ bool PixInsightX11Installer::DoUninstall()
 
    RemoveFileIfExists( m_desktopEntryFile );
 
+   RemoveFileIfExists( m_mimeDescriptionFile );
+
    RemoveFileIfExists( m_icon16x16File );
    RemoveFileIfExists( m_icon24x24File );
    RemoveFileIfExists( m_icon32x32File );
@@ -633,6 +726,11 @@ bool PixInsightX11Installer::DoShowHelp()
    "\n      Specifies the desktop entries installation directory."
    "\n      (/usr/share/applications/ or /usr/local/share/applications)"
    "\n"
+   "\n--install-mime-dir=<dir>"
+   "\n"
+   "\n      Specifies the MIME database installation directory."
+   "\n      (/usr/share/mime/ or /usr/local/share/mime)"
+   "\n"
    "\n--install-icons-dir=<dir>"
    "\n"
    "\n      Specifies the icons installation directory."
@@ -663,7 +761,8 @@ bool PixInsightX11Installer::DoShowHelp()
    "\n"
    "\n--version"
    "\n"
-   "\n      Prints the installer version and exits."
+   "\n      Prints the installer version and exits. The installer version is"
+   "\n      the version number of the installed PixInsight Core application."
    "\n"
    "\n--help"
    "\n"
@@ -966,9 +1065,7 @@ int main( int argc, const char** argv )
 
    try
    {
-      if ( PixInsightX11Installer( argc, argv ).Perform() )
-         return EXIT_OK;
-      return EXIT_CANCEL;
+      return PixInsightX11Installer( argc, argv ).Perform() ? EXIT_OK : EXIT_CANCEL;
    }
    catch ( ... )
    {
@@ -997,4 +1094,4 @@ int main( int argc, const char** argv )
 }
 
 // ----------------------------------------------------------------------------
-// EOF pcl/installer.cpp - Released 2015/07/23 17:29:42 UTC
+// EOF pcl/installer.cpp - Released 2015/10/08 11:25:13 UTC

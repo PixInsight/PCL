@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Brush.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/Brush.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -92,7 +92,7 @@ RGBA Brush::Color() const
 
 void Brush::SetColor( RGBA color )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Brush->SetBrushColor)( handle, color );
 }
 
@@ -103,7 +103,7 @@ Brush::style Brush::Style() const
 
 void Brush::SetStyle( Brush::style style )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Brush->SetBrushStyle)( handle, style );
 }
 
@@ -114,7 +114,7 @@ Bitmap Brush::Stipple() const
 
 void Brush::SetStipple( const Bitmap& pm )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Brush->SetBrushBitmap)( handle, pm.handle );
 }
 
@@ -282,4 +282,4 @@ void ConicalGradientBrush::GetParameters( double& cx, double& cy, double& a ) co
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Brush.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/Brush.cpp - Released 2015/10/08 11:24:19 UTC

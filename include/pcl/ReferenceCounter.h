@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ReferenceCounter.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ReferenceCounter.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -113,105 +113,97 @@ public:
     * initialized to one, which means that only one object (the caller) is
     * referencing the data associated with this object.
     */
-   ReferenceCounter() noexcept : m_count( 1 )
+   ReferenceCounter() : m_count( 1 )
    {
    }
 
    /*!
     * Destroys a %ReferenceCounter object.
     */
-   ~ReferenceCounter() noexcept
+   ~ReferenceCounter()
    {
    }
 
    /*!
     * Increments the reference counter by one unit. This happens when a new
-    * aliased object references the data being controlled with this counter.
+    * object references the data being controlled with this counter.
     *
-    * \note This attachment operation is thread-safe: the internal reference
+    * \note This attachment operation is thread-safe: the internal increment
     * operation is atomic.
     *
     * \sa Detach()
     */
-   void Attach() noexcept
+   void Attach()
    {
-      (void)m_count.Reference();
+      m_count.Increment();
    }
 
    /*!
     * Decrements the reference counter by one unit. This happens when an object
     * ceases to reference the data being controlled with this counter.
     *
-    * Returns true if the reference counter is greater than zero; false if the
-    * reference counter becomes zero after decrementing. When the reference
-    * counter is zero, the data being controlled with this counter is no longer
-    * referenced by any object and thus can be safely destroyed.
+    * Returns true if the reference counter is greater than zero after the
+    * decrement; false if the reference counter becomes zero. When the
+    * reference counter is zero, the data being controlled with this counter is
+    * no longer referenced by any object and thus can be safely destroyed.
     *
     * \note This detachment operation is thread-safe: the internal dereference
     * operation is atomic.
     *
     * \sa Attach()
     */
-#ifndef __PCL_REFCOUNT_CHECK_DETACHMENT
-   bool Detach() noexcept
-   {
-      PCL_PRECONDITION( m_count > 0 )
-      return m_count.Dereference();
-   }
-#else
    bool Detach()
    {
-      if ( m_count <= 0 )
-         throw Error( "Detach(): invalid reference counter." );
+      PCL_CHECK( m_count.Load() > 0 )
       return m_count.Dereference();
    }
-#endif   // !__PCL_REFCOUNT_CHECK_DETACHMENT
 
    /*!
-    * Returns true if the data being controlled with this counter is only
-    * referenced by a unique object.
+    * Returns the current value of this reference counter.
     *
-    * \note For a version of this function that performs an atomic integer
-    * comparison of the reference counter, see IsUniqueAtomic().
-    *
-    * \sa IsUniqueAtomic(), Attach(), Detach(), IsGarbage()
+    * \sa RefCountAtomic(), IsUnique()
     */
-   bool IsUnique() const noexcept
+   int RefCount() const
    {
-      return m_count < 2;
+      return m_count;
    }
 
    /*!
-    * Returns true if the data being controlled with this counter is only
-    * referenced by a unique object.
+    * Returns the current value of this reference counter.
+    *
+    * \note This operation is thread-safe: the integer load has been
+    * implemented as an atomic operation.
+    *
+    * \sa RefCount(), IsUniqueAtomic()
+    */
+   int RefCountAtomic() const
+   {
+      return m_count.Load();
+   }
+
+   /*!
+    * Returns true iff the data being controlled with this counter is not being
+    * referenced by more than one object.
+    *
+    * \sa IsUniqueAtomic(), Attach(), Detach()
+    */
+   bool IsUnique() const
+   {
+      return RefCount() < 2;
+   }
+
+   /*!
+    * Returns true iff the data being controlled with this counter is not being
+    * referenced by more than one object.
     *
     * \note This operation is thread-safe: the integer comparison has been
     * implemented as an atomic operation.
     *
-    * \sa IsUnique(), Attach(), Detach(), IsGarbage()
-    */
-   bool IsUniqueAtomic() const noexcept
-   {
-      return m_count.FetchAndAdd( 0 ) < 2;
-      //return m_count.TestAndSet( 1, 1 );
-   }
-
-   /*!
-    * Returns true if the data being controlled with this counter is not
-    * referenced by any object. In such case, the data can be safely destroyed,
-    * since no object depends on it.
-    *
-    * \warning To check if this reference counter is zero (and hence that the
-    * data is no longer referenced) in multithreaded environments, it is much
-    * more efficient and secure to use the value returned by Detach() instead
-    * of this member function. If Detach() returns false, then this counter is
-    * zero just after an atomic dereference operation.
-    *
     * \sa IsUnique(), Attach(), Detach()
     */
-   bool IsGarbage() const noexcept
+   bool IsUniqueAtomic() const
    {
-      return m_count == 0;
+      return RefCountAtomic() < 2;
    }
 
 private:
@@ -229,4 +221,4 @@ private:
 #endif  // __PCL_ReferenceCounter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ReferenceCounter.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ReferenceCounter.h - Released 2015/10/08 11:24:12 UTC

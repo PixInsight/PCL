@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/SeparableConvolution.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/SeparableConvolution.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -94,7 +94,7 @@ private:
       if ( convolution.Filter().IsEmpty() )
          throw Error( "Attempt to perform a separable convolution with an empty filter." );
 
-      image.SetUnique();
+      image.EnsureUnique();
 
       int n = convolution.OverlappingDistance();
       if ( n > image.Height() || n > image.Width() )
@@ -207,24 +207,26 @@ private:
    template <class P>
    struct OneDimensionalConvolution
    {
-      static
-      void Convolve1D( typename P::sample* f, typename P::sample* t, int N, int d, int dn2, const coefficient_vector& H )
+      static PCL_HOT_FUNCTION
+      void Convolve1D( typename P::sample* f, typename P::sample* t, int N, int d, int dn2,
+                       const SeparableFilter::coefficient* H, int n )
       {
-         // dn2 = (n + (n - 1)*(d - 1)) >> 1;
+         // dn2 = (N + (N - 1)*(d - 1)) >> 1;
 
-         for ( int i = 0, j = dn2; i < dn2; ++i )
-            t[i] = f[--j];
+         for ( int i = 0, j = dn2; j > 0; )
+            t[i++] = f[--j];
          ::memcpy( t+dn2, f, N*sizeof( *f ) );
-         for ( int i = N+dn2+dn2, j = N-dn2; j < N; ++j )
-            t[--i] = f[j];
+         for ( int i = N+dn2+dn2, j = N-dn2; j < N; )
+            t[--i] = f[j++];
 
-         for ( int i = 0, n = H.Length(); i < N; ++i )
+         const SeparableFilter::coefficient* Hn = H + n;
+         for ( const typename P::sample* fN = f + N; f < fN; ++f, ++t )
          {
             double r = 0;
-            const typename P::sample* u = t++;
-            for ( int j = 0; j < n; ++j, u += d )
-               r += *u * H[j];
-            *f++ = P::FloatToSample( r );
+            const typename P::sample* u = t;
+            for ( const SeparableFilter::coefficient* h = H; h < Hn; ++h, u += d )
+               r += *u * *h;
+            *f = P::FloatToSample( r );
          }
       }
    };
@@ -240,7 +242,7 @@ private:
       {
       }
 
-      virtual void Run()
+      virtual PCL_HOT_FUNCTION void Run()
       {
          INIT_THREAD_MONITOR()
 
@@ -251,16 +253,20 @@ private:
          int dn = m_data.convolution.OverlappingDistance();
          int dn2 = dn >> 1;
 
-         coefficient_vector H = m_data.convolution.Filter( 0 );
+         GenericVector<typename P::sample> tv( width + dn2+dn2 );
 
-         GenericVector<typename P::sample> t( width + dn2+dn2 );
+         coefficient_vector hv = m_data.convolution.Filter( 0 );
+
+         typename P::sample* t = tv.DataPtr();
+         const SeparableFilter::coefficient* h = hv.DataPtr();
+         int n = hv.Length();
 
          for ( int c = m_data.image.FirstSelectedChannel(); c <= m_data.image.LastSelectedChannel(); ++c )
          {
             typename P::sample* f = m_data.image.PixelAddress( r.x0, m_firstRow, c );
             for ( int i = m_firstRow; i < m_endRow; ++i, f += m_data.image.Width() )
             {
-               this->Convolve1D( f, *t, width, d, dn2, H );
+               this->Convolve1D( f, t, width, d, dn2, h, n );
                UPDATE_THREAD_MONITOR_CHUNK( 65536, width )
             }
          }
@@ -284,7 +290,7 @@ private:
       {
       }
 
-      virtual void Run()
+      virtual PCL_HOT_FUNCTION void Run()
       {
          INIT_THREAD_MONITOR()
 
@@ -296,10 +302,15 @@ private:
          int dn = m_data.convolution.OverlappingDistance();
          int dn2 = dn >> 1;
 
-         coefficient_vector H = m_data.convolution.Filter( 1 );
+         GenericVector<typename P::sample> gv( height );
+         GenericVector<typename P::sample> tv( height + dn2+dn2 );
 
-         GenericVector<typename P::sample> g( height );
-         GenericVector<typename P::sample> t( height + dn2+dn2 );
+         coefficient_vector hv = m_data.convolution.Filter( 1 );
+
+         typename P::sample* g = gv.DataPtr();
+         typename P::sample* t = tv.DataPtr();
+         const SeparableFilter::coefficient* h = hv.DataPtr();
+         int n = hv.Length();
 
          for ( int c = m_data.image.FirstSelectedChannel(); c <= m_data.image.LastSelectedChannel(); ++c )
          {
@@ -309,7 +320,7 @@ private:
                for ( int i = 0, j = 0; i < height; ++i, j += width )
                   g[i] = f[j];
 
-               this->Convolve1D( *g, *t, height, d, dn2, H );
+               this->Convolve1D( g, t, height, d, dn2, h, n );
 
                for ( int i = 0, j = 0; i < height; ++i, j += width )
                   f[j] = g[i];
@@ -377,4 +388,4 @@ void SeparableConvolution::ValidateFilter() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SeparableConvolution.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/SeparableConvolution.cpp - Released 2015/10/08 11:24:19 UTC

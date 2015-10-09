@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Flags.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Flags.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -242,7 +242,7 @@ public:
    }
 
    /*!
-    * Returns true if the specified flag \a e is set in this %Flags object.
+    * Returns true iff the specified flag \a e is set in this %Flags object.
     */
    constexpr bool IsFlagSet( enum_type e ) const
    {
@@ -288,7 +288,7 @@ public:
    }
 
    /*!
-    * Returns true if all flags in this object are zero.
+    * Returns true iff all flags in this object are zero.
     */
    constexpr bool operator !() const
    {
@@ -408,4 +408,4 @@ private:
 #endif   // __PCL_Flags_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Flags.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Flags.h - Released 2015/10/08 11:24:12 UTC

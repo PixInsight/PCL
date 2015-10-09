@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ImageStatistics.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ImageStatistics.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -613,7 +613,7 @@ public:
    }
 
    /*!
-    * Returns true if low sample rejection is enabled in this %ImageStatistics
+    * Returns true iff low sample rejection is enabled in this %ImageStatistics
     * object.
     *
     * When low sample rejection is enabled, sample values less than or equal to
@@ -626,7 +626,7 @@ public:
    }
 
    /*!
-    * Returns true if high sample rejection is enabled in this %ImageStatistics
+    * Returns true iff high sample rejection is enabled in this %ImageStatistics
     * object.
     *
     * When high sample rejection is enabled, sample values greater than or
@@ -663,7 +663,7 @@ public:
    }
 
    /*!
-    * Returns true if calculation of extreme pixel sample values is currently
+    * Returns true iff calculation of extreme pixel sample values is currently
     * enabled for this instance of %ImageStatistics.
     */
    bool IsExtremesEnabled() const
@@ -690,7 +690,7 @@ public:
    }
 
    /*!
-    * Returns true if calculation of the arithmetic mean is currently enabled
+    * Returns true iff calculation of the arithmetic mean is currently enabled
     * for this instance of %ImageStatistics.
     *
     * When arithmetic mean calculation is disabled, the variance (and hence the
@@ -726,7 +726,7 @@ public:
    }
 
    /*!
-    * Returns true if calculation of the sum of squares is currently enabled
+    * Returns true iff calculation of the sum of squares is currently enabled
     * for this instance of %ImageStatistics.
     */
    bool IsSumOfSquaresEnabled() const
@@ -751,7 +751,7 @@ public:
    }
 
    /*!
-    * Returns true if calculation of the variance is currently enabled for this
+    * Returns true iff calculation of the variance is currently enabled for this
     * instance of %ImageStatistics.
     */
    bool IsVarianceEnabled() const
@@ -776,7 +776,7 @@ public:
    }
 
    /*!
-    * Returns true if calculation of the median is currently enabled for this
+    * Returns true iff calculation of the median is currently enabled for this
     * instance of %ImageStatistics.
     *
     * When median calculation is disabled, the average deviation, MAD and
@@ -810,7 +810,7 @@ public:
    }
 
    /*!
-    * Returns true if calculation of the average deviation from the median is
+    * Returns true iff calculation of the average deviation from the median is
     * currently enabled for this instance of %ImageStatistics.
     */
    bool IsAvgDevEnabled() const
@@ -837,7 +837,7 @@ public:
    }
 
    /*!
-    * Returns true if calculation of the median deviation from the median (MAD)
+    * Returns true iff calculation of the median deviation from the median (MAD)
     * is currently enabled for this instance of %ImageStatistics.
     *
     * When MAD calculation is disabled, the biweight midvariance estimator is
@@ -873,7 +873,7 @@ public:
    }
 
    /*!
-    * Returns true if calculation of the biweight midvariance estimator (BWMV)
+    * Returns true iff calculation of the biweight midvariance estimator (BWMV)
     * is currently enabled for this instance of %ImageStatistics.
     */
    bool IsBWMVEnabled() const
@@ -900,7 +900,7 @@ public:
    }
 
    /*!
-    * Returns true if calculation of the percentage bend midvariance estimator
+    * Returns true iff calculation of the percentage bend midvariance estimator
     * (PBMV) is currently enabled for this instance of %ImageStatistics.
     */
    bool IsPBMVEnabled() const
@@ -927,7 +927,7 @@ public:
    }
 
    /*!
-    * Returns true if calculation of the Rousseeuw/Croux Sn estimator of scale
+    * Returns true iff calculation of the Rousseeuw/Croux Sn estimator of scale
     * is currently enabled for this instance of %ImageStatistics.
     *
     * \note The Sn estimator is disabled by default.
@@ -960,7 +960,7 @@ public:
    }
 
    /*!
-    * Returns true if calculation of the Rousseeuw/Croux Qn estimator of scale
+    * Returns true iff calculation of the Rousseeuw/Croux Qn estimator of scale
     * is currently enabled for this instance of %ImageStatistics.
     *
     * \note The Qn estimator is disabled by default.
@@ -1047,7 +1047,7 @@ public:
    }
 
    /*!
-    * Returns true if this object is allowed to use multiple parallel execution
+    * Returns true iff this object is allowed to use multiple parallel execution
     * threads (when multiple threads are permitted and available).
     */
    bool IsParallelProcessingEnabled() const
@@ -1134,4 +1134,4 @@ protected:
 #endif   // __PCL_ImageStatistics_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageStatistics.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ImageStatistics.h - Released 2015/10/08 11:24:12 UTC

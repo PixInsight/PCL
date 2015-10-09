@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/VariableShapeFilter.h - Released 2015/07/30 17:15:18 UTC
+// pcl/VariableShapeFilter.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -212,7 +212,7 @@ public:
     * A %VariableShapeFilter is separable when it represents an undistorted
     * Gaussian distribution. This is only true when shape=2 and the filter is
     * circular (rho=1). Otherwise an empty SeparableFilter object is returned
-    * since this filter is not separable.
+    * because this filter is not separable.
     */
    virtual SeparableFilter AsSeparableFilter( float tolerance = __PCL_DEFAULT_FILTER_SEPARABILITY_TOLERANCE ) const
    {
@@ -225,7 +225,7 @@ public:
    }
 
    /*!
-    * Returns true if this filter is separable.
+    * Returns true iff this filter is separable.
     *
     * A %VariableShapeFilter is separable only when it represents an undistorted
     * Gaussian distribution. This is only true when shape=2 and the filter is
@@ -536,7 +536,7 @@ private:
 
          {
             coefficient_matrix ctemp( coefficients );
-            ctemp.SetUnique(); // because we need invariant *ctemp for interpolation
+            ctemp.EnsureUnique(); // because we need invariant *ctemp for interpolation
             AutoPointer<PixelInterpolation::Interpolator<FloatPixelTraits> >
                interpolator( B.NewInterpolator<FloatPixelTraits>( *ctemp, size, size ) );
             h = *coefficients;
@@ -552,7 +552,7 @@ private:
          if ( m_theta != 0 )
          {
             coefficient_matrix ctemp( coefficients );
-            ctemp.SetUnique(); // because we need invariant *ctemp for interpolation
+            ctemp.EnsureUnique(); // because we need invariant *ctemp for interpolation
             AutoPointer<PixelInterpolation::Interpolator<FloatPixelTraits> >
                interpolator( B.NewInterpolator<FloatPixelTraits>( *ctemp, size, size ) );
             h = *coefficients;
@@ -577,4 +577,4 @@ private:
 #endif   // __PCL_VariableShapeFilter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/VariableShapeFilter.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/VariableShapeFilter.h - Released 2015/10/08 11:24:12 UTC

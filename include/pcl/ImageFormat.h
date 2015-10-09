@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ImageFormat.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ImageFormat.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -122,7 +122,7 @@ public:
    virtual StringList FileExtensions() const = 0;
 
    /*!
-    * Returns true if this file format implementation can read an entire image
+    * Returns true iff this file format implementation can read an entire image
     * in a single operation.
     */
    virtual bool CanRead() const
@@ -131,7 +131,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can write an entire image
+    * Returns true iff this file format implementation can write an entire image
     * in a single operation.
     */
    virtual bool CanWrite() const
@@ -140,7 +140,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation supports <em>incremental
+    * Returns true iff this file format implementation supports <em>incremental
     * read</em> operations on image files.
     *
     * Incremental read allows loading images by successive pixel rows.
@@ -151,7 +151,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation supports <em>incremental
+    * Returns true iff this file format implementation supports <em>incremental
     * write</em> operations on image files.
     *
     * Incremental write allows writing images by successive pixel rows.
@@ -162,7 +162,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can read/write 8-bit
+    * Returns true iff this file format implementation can read/write 8-bit
     * integer images
     */
    virtual bool CanStore8Bit() const
@@ -171,7 +171,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can read/write 16-bit
+    * Returns true iff this file format implementation can read/write 16-bit
     * integer images
     */
    virtual bool CanStore16Bit() const
@@ -180,7 +180,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can read/write 32-bit
+    * Returns true iff this file format implementation can read/write 32-bit
     * integer images
     */
    virtual bool CanStore32Bit() const
@@ -189,7 +189,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can read/write 64-bit
+    * Returns true iff this file format implementation can read/write 64-bit
     * integer images
     */
    virtual bool CanStore64Bit() const
@@ -198,7 +198,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can read/write 32-bit
+    * Returns true iff this file format implementation can read/write 32-bit
     * floating point images (IEEE 754 32-bit <em>single precision</em> format
     * for pixel sample values).
     */
@@ -208,7 +208,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can read/write 64-bit
+    * Returns true iff this file format implementation can read/write 64-bit
     * floating point images (IEEE 754 64-bit <em>double precision</em> format
     * for pixel sample values).
     */
@@ -218,7 +218,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can read/write 32-bit
+    * Returns true iff this file format implementation can read/write 32-bit
     * complex floating point images (IEEE 754 32-bit <em>single precision</em>
     * format for components of complex pixel sample values).
     */
@@ -228,7 +228,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can read/write 64-bit
+    * Returns true iff this file format implementation can read/write 64-bit
     * complex floating point images (IEEE 754 64-bit <em>double precision</em>
     * format for components of complex pixel sample values).
     */
@@ -238,7 +238,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can read/write grayscale
+    * Returns true iff this file format implementation can read/write grayscale
     * pixel data.
     */
    virtual bool CanStoreGrayscale() const
@@ -247,7 +247,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can read/write RGB color
+    * Returns true iff this file format implementation can read/write RGB color
     * pixel data.
     */
    virtual bool CanStoreRGBColor() const
@@ -256,7 +256,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation supports alpha channels.
+    * Returns true iff this file format implementation supports alpha channels.
     */
    virtual bool CanStoreAlphaChannels() const
    {
@@ -264,7 +264,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can store/retrieve image
+    * Returns true iff this file format implementation can store/retrieve image
     * resolution data.
     */
    virtual bool CanStoreResolution() const
@@ -273,7 +273,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can embed/extract FITS
+    * Returns true iff this file format implementation can embed/extract FITS
     * header keyword collections.
     */
    virtual bool CanStoreKeywords() const
@@ -282,7 +282,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can embed/extract ICC
+    * Returns true iff this file format implementation can embed/extract ICC
     * color profiles.
     */
    virtual bool CanStoreICCProfiles() const
@@ -291,7 +291,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation can embed/extract
+    * Returns true iff this file format implementation can embed/extract
     * thumbnail images.
     */
    virtual bool CanStoreThumbnails() const
@@ -300,7 +300,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation supports compression of
+    * Returns true iff this file format implementation supports compression of
     * pixel data.
     *
     * This refers to compression of \e source pixels, not to native compression
@@ -317,7 +317,7 @@ public:
    }
 
    /*!
-    * Returns true if this file format implementation supports multiple images
+    * Returns true iff this file format implementation supports multiple images
     * stored in a single file.
     *
     * For example, multiple images (e.g., taken with different filters) can be
@@ -343,4 +343,4 @@ private:
 #endif   // __PCL_ImageFormat_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageFormat.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ImageFormat.h - Released 2015/10/08 11:24:12 UTC

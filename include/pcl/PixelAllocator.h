@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/PixelAllocator.h - Released 2015/07/30 17:15:18 UTC
+// pcl/PixelAllocator.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -131,7 +131,7 @@ public:
    typedef typename pixel_traits::sample     sample;
 
    /*!
-    * Returns true if this allocator and another instance are working for the
+    * Returns true iff this allocator and another instance are working for the
     * same shared image, or if both of them are working for local images.
     *
     * All local images share a unique internal allocator, but each shared image
@@ -258,4 +258,4 @@ private:
 #endif   // __PCL_PixelAllocator_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/PixelAllocator.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/PixelAllocator.h - Released 2015/10/08 11:24:12 UTC

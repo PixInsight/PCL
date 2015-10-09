@@ -1,0 +1,239 @@
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0763
+// ----------------------------------------------------------------------------
+// Standard ColorSpaces Process Module Version 01.01.00.0258
+// ----------------------------------------------------------------------------
+// ConvertToGrayscaleIcon.xpm - Released 2015/10/08 11:24:39 UTC
+// ----------------------------------------------------------------------------
+// This file is part of the standard ColorSpaces PixInsight module.
+//
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ----------------------------------------------------------------------------
+
+/* XPM */
+static const char* ConvertToGrayscaleIcon_XPM[] = {
+/* columns rows colors chars-per-pixel */
+"24 24 154 2",
+"N. c #F2F3F2",
+"3  c #282929",
+"h. c #E8E8E8",
+"=  c #464747",
+";. c #4B4B4C",
+"W  c #737473",
+"M  c #737474",
+"b. c #B9BBBA",
+"2. c #C3C3C3",
+"x  c #303130",
+"m. c #E1E1E2",
+"e  c #262626",
+"K  c #626261",
+",  c #626262",
+"0. c #949696",
+"B. c #A8A9A8",
+"@. c #A8A9A9",
+"k. c #9E9E9F",
+"s. c #CBCBCB",
+"n. c #DADADB",
+"y  c #383938",
+"8  c #565756",
+"&  c #3D3D3D",
+"`  c #4C4C4B",
+":  c #565757",
+"7  c #4C4C4C",
+"O. c #424141",
+"J  c #424142",
+"h  c #797979",
+"I  c #79797A",
+"C. c #E7E9E8",
+"2  c #222322",
+"j  c #222323",
+"d. c #D3D3D4",
+"Z. c #ECEDEE",
+"f  c #6D6E6D",
+"P  c #6D6E6E",
+"Y  c #8B8C8C",
+"<  c #686767",
+"a. c #C2C4C3",
+"*. c #9F9F9F",
+"g. c #E0E2E2",
+"X  c #202020",
+"s  c #5C5C5C",
+"y. c #B1B2B1",
+"<. c #B1B2B2",
+"x. c #EDEEEE",
+"5  c #414241",
+"u  c #414242",
+"z  c #2D2C2C",
+"p  c #505151",
+"^  c #464646",
+"E  c #505152",
+"r  c #2D2C2D",
+"6  c #464647",
+"g  c #737373",
+"q  c #737374",
+"w. c #D2D4D4",
+"$. c #B9BABB",
+"#  c #303030",
+"O  c #262526",
+"L  c #676867",
+"$  c #353435",
+"d  c #676868",
+"G  c #858685",
+"[  c #858686",
+"8. c #626162",
+"&. c #949596",
+"t. c #807F7F",
+"|  c #A8A8A9",
+"   c None",
+"V  c #292928",
+"+  c #292929",
+"4. c #5B5D5C",
+"C  c #383838",
+"H  c #383839",
+"A  c #474746",
+"v  c #474747",
+"b  c #565656",
+"'  c #565657",
+"u. c #BABBBB",
+"@  c #2C2D2C",
+"M. c #E7E8E9",
+"S. c #F6F7F7",
+"1  c #6D6D6D",
+"0  c #6D6D6E",
+"c. c #959696",
+">. c #8B8B8B",
+".. c #8B8B8C",
+"-. c #C2C3C3",
+")  c #9F9E9F",
+"k  c #252625",
+"4  c #343534",
+"j. c #616261",
+"r. c #616262",
+"7. c #575756",
+"%. c #575757",
+"/  c #7F807F",
+"F  c #7F8080",
+"q. c #A7A9A8",
+".  c #0000FF",
+"#. c #B1B1B1",
+"l. c #CACBCB",
+"o. c #B1B1B2",
+"z. c #E8E9E8",
+"o  c #232322",
+"w  c #232323",
+"~  c #3C3D3D",
+"-  c #4B4C4B",
+"R  c #4B4C4C",
+"*  c #414142",
+"(  c #8C8C8C",
+"6. c #D2D3D3",
+"p. c #E1E2E1",
+"V. c #E1E2E2",
+"m  c #676767",
+"9  c #676768",
+"9. c #858585",
+"}  c #9E9F9F",
+"Q  c #858586",
+"3. c #CBCCCB",
+"5. c #CBCCCC",
+"e. c #DADBDA",
+"f. c #DADBDB",
+"l  c #292828",
+"Z  c #424242",
+">  c #5B5C5C",
+";  c #515151",
+"_  c #474646",
+"D  c #797A79",
+"i  c #474647",
+"N  c #797A7A",
+"v. c #B0B2B2",
+"i. c #D3D4D3",
+"1. c #BABABA",
+"=. c #BABABB",
+"A. c #F1F2F3",
+"]  c #686867",
+"S  c #686868",
+"U  c #868686",
+"!  c #959595",
+"{  c #959596",
+"t  c #343434",
+"T  c #343435",
+"+. c #5C5D5C",
+"%  c #393838",
+"c  c #393839",
+":. c #575656",
+"n  c #616162",
+"a  c #575657",
+" . c #7F7F7F",
+"B  c #7F7F80",
+"X. c #A7A8A8",
+",. c #A7A8A9",
+/* pixels */
+"                                                ",
+"  . . . . . . . . . . . . . . . . . . . . . .   ",
+"  . X X X o O + @ # $ % & * = - ; : > , < 1 .   ",
+"  . X X 2 O 3 @ # 4 % & 5 6 7 ; 8 > , 9 0 q .   ",
+"  . X w e + r # t y & u i - p a s , d f g h .   ",
+"  . j k l z x 4 c & * v - ; b s n m 0 M N B .   ",
+"  . e V @ # t C & Z A 7 ; a s n S f g D F G .   ",
+"  . 3 @ # t H & J 6 7 ; 8 s K L P g I B U Y .   ",
+"  . @ # T H & u = R E b > , m P W D B Q Y ! .   ",
+"  . # t H ~ Z ^ 7 ; b s K L P M I / G ( ! ) .   ",
+"  . t c & Z _ ` ; ' s K ] f M N B [ Y { } | .   ",
+"  . C & Z i 7 ; b s K m P q I  .[ ..! } X.o..   ",
+"  . & O.v 7 ; 8 +.n S 0 q h B [ Y { } @.#.$..   ",
+"  . Z A 7 ; %.> K m 0 W I F G Y &.*.X.o.=.-..   ",
+"  . = ;.; :.> , L 0 g I B Q >.! } ,.<.1.2.3..   ",
+"  . R p ' 4., m 0 g I / [ Y { } X.o.=.2.5.6..   ",
+"  . ; 7.s 8.S 1 q N B 9.( 0.} q.o.$.2.3.w.e..   ",
+"  . 8 s r.m 1 g h t.9.Y &.*.,.y.u.-.3.i.e.p..   ",
+"  . s K d 1 W I / Q Y 0.*.q.y.=.a.s.d.f.g.h..   ",
+"  . j.m 1 M N F U Y { k.| #.u.-.l.d.f.p.z.x..   ",
+"  . 9 0 M D  .9.Y c.} q.v.b.-.5.6.n.m.M.x.N..   ",
+"  . 1 q I B G Y c.k.B.#.=.2.s.i.f.V.C.Z.A.S..   ",
+"  . . . . . . . . . . . . . . . . . . . . . .   ",
+"                                                "
+};
+
+// ----------------------------------------------------------------------------
+// EOF ConvertToGrayscaleIcon.xpm - Released 2015/10/08 11:24:39 UTC

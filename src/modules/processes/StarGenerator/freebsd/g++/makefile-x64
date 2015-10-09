@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.95
+# PixInsight Makefile Generator Script v1.96
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 30 Jul 2015 17:10:45 GMT
+# Automatically generated on Thu, 08 Oct 2015 11:23:41 GMT
 # Project id ...... StarGenerator
 # Project type .... Module
 # Platform ........ FreeBSD/g++
@@ -57,7 +57,7 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/StarGenerator-pxm.so: $(OBJ_FILES)
-	clang++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/StarGenerator-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
+	clang++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -s -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/StarGenerator-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean
@@ -69,6 +69,6 @@ post-build:
 	cp $(OBJ_DIR)/StarGenerator-pxm.so $(PCLBINDIR64)
 
 ./x64/Release/%.o: ../../%.cpp
-	clang++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -I"$(PCLINCDIR)" -mtune=generic -mssse3 -O3 -fomit-frame-pointer -ffast-math -ftree-vectorize --param vect-max-version-for-alias-checks=1000 --param vect-max-version-for-alignment-checks=1000 -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	clang++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -I"$(PCLINCDIR)" -mtune=corei7 -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

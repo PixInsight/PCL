@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Matrix.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Matrix.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -406,8 +406,7 @@ public:
    {
       if ( m_data != nullptr )
       {
-         if ( !m_data->Detach() )
-            delete m_data;
+         DetachFromData();
          m_data = nullptr;
       }
    }
@@ -422,9 +421,9 @@ public:
             m_data->Deallocate();
          else
          {
-            m_data->Detach();
-            m_data = nullptr;
-            m_data = new Data( 0, 0 );
+            Data* newData = new Data( 0, 0 );
+            DetachFromData();
+            m_data = newData;
          }
    }
 
@@ -461,8 +460,7 @@ public:
    void Assign( const GenericMatrix& x )
    {
       x.m_data->Attach();
-      if ( !m_data->Detach() )
-         delete m_data;
+      DetachFromData();
       m_data = x.m_data;
    }
 
@@ -489,8 +487,7 @@ public:
     */
    void Transfer( GenericMatrix& x )
    {
-      if ( !m_data->Detach() )
-         delete m_data;
+      DetachFromData();
       m_data = x.m_data;
       x.m_data = nullptr;
    }
@@ -509,8 +506,7 @@ public:
     */
    void Transfer( GenericMatrix&& x )
    {
-      if ( !m_data->Detach() )
-         delete m_data;
+      DetachFromData();
       m_data = x.m_data;
       x.m_data = nullptr;
    }
@@ -539,7 +535,7 @@ public:
       if ( !IsUnique() )
       {
          Data* newData = new Data( m_data->Rows(), m_data->Cols() );
-         m_data->Detach();
+         DetachFromData();
          m_data = newData;
       }
       pcl::Fill( m_data->Begin(), m_data->End(), x );
@@ -562,7 +558,7 @@ public:
          const_block_iterator c = m_data->Begin();                            \
          for ( ; a < b; ++a, ++c )                                            \
             *a = *c op x;                                                     \
-         m_data->Detach();                                                    \
+         DetachFromData();                                                    \
          m_data = newData;                                                    \
       }                                                                       \
       return *this;
@@ -644,7 +640,7 @@ public:
          const_block_iterator c = m_data->Begin();
          for ( ; a < b; ++a, ++c )
             *a = pcl::Pow( *c, x );
-         m_data->Detach();
+         DetachFromData();
          m_data = newData;
       }
       return *this;
@@ -691,7 +687,7 @@ public:
          const_block_iterator c = m_data->Begin();
          for ( ; a < b; ++a, ++c )
             *a = *c * *c;
-         m_data->Detach();
+         DetachFromData();
          m_data = newData;
       }
    }
@@ -735,7 +731,7 @@ public:
          const_block_iterator c = m_data->Begin();
          for ( ; a < b; ++a, ++c )
             *a = pcl::Sqrt( *c );
-         m_data->Detach();
+         DetachFromData();
          m_data = newData;
       }
    }
@@ -779,13 +775,13 @@ public:
          const_block_iterator c = m_data->Begin();
          for ( ; a < b; ++a, ++c )
             *a = pcl::Abs( *c );
-         m_data->Detach();
+         DetachFromData();
          m_data = newData;
       }
    }
 
    /*!
-    * Returns true if this instance uniquely references its matrix data.
+    * Returns true iff this instance uniquely references its matrix data.
     */
    bool IsUnique() const
    {
@@ -793,7 +789,7 @@ public:
    }
 
    /*!
-    * Returns true if this instance references (shares) the same matrix data as
+    * Returns true iff this instance references (shares) the same matrix data as
     * another instance \a x.
     */
    bool IsAliasOf( const GenericMatrix& x ) const
@@ -808,13 +804,13 @@ public:
     * data, references it, and then decrements the reference counter of the
     * original matrix data.
     */
-   void SetUnique()
+   void EnsureUnique()
    {
       if ( !IsUnique() )
       {
          Data* newData = new Data( m_data->Rows(), m_data->Cols() );
          pcl::Copy( newData->Begin(), m_data->Begin(), m_data->End() );
-         m_data->Detach();
+         DetachFromData();
          m_data = newData;
       }
    }
@@ -869,7 +865,7 @@ public:
    }
 
    /*!
-    * Returns true if this is an empty matrix. An empty matrix has no elements,
+    * Returns true iff this is an empty matrix. An empty matrix has no elements,
     * and hence its dimensions are zero.
     */
    bool IsEmpty() const
@@ -878,7 +874,7 @@ public:
    }
 
    /*!
-    * Returns true if this matrix is not empty. This operator is equivalent to:
+    * Returns true iff this matrix is not empty. This operator is equivalent to:
     *
     * \code !IsEmpty(); \endcode
     */
@@ -932,7 +928,7 @@ public:
    }
 
    /*!
-    * Returns true if this matrix has the same dimensions, i.e. the same number
+    * Returns true iff this matrix has the same dimensions, i.e. the same number
     * of rows and columns, as another matrix \a x.
     */
    bool SameDimensions( const GenericMatrix& x ) const
@@ -941,7 +937,7 @@ public:
    }
 
    /*!
-    * Returns true if this matrix has the same elements as another matrix \a x.
+    * Returns true iff this matrix has the same elements as another matrix \a x.
     *
     * In this member function, matrix comparisons are performed element-wise,
     * irrespective of matrix dimensions. Note that two matrices can have
@@ -972,7 +968,7 @@ public:
     */
    element& Element( int i, int j )
    {
-      SetUnique();
+      EnsureUnique();
       return m_data->Element( i, j );
    }
 
@@ -996,7 +992,7 @@ public:
     */
    block_iterator operator []( int i )
    {
-      SetUnique();
+      EnsureUnique();
       return m_data->v[i];
    }
 
@@ -1025,7 +1021,7 @@ public:
     */
    block_iterator Begin()
    {
-      SetUnique();
+      EnsureUnique();
       return m_data->Begin();
    }
 
@@ -1041,6 +1037,14 @@ public:
    const_block_iterator Begin() const
    {
       return m_data->Begin();
+   }
+
+   /*!
+    * A synonym for Begin() const.
+    */
+   const_block_iterator ConstBegin() const
+   {
+      return Begin();
    }
 
    /*!
@@ -1079,7 +1083,7 @@ public:
     */
    block_iterator End()
    {
-      SetUnique();
+      EnsureUnique();
       return m_data->End();
    }
 
@@ -1096,6 +1100,14 @@ public:
    const_block_iterator End() const
    {
       return m_data->End();
+   }
+
+   /*!
+    * A synonym for End() const.
+    */
+   const_block_iterator ConstEnd() const
+   {
+      return End();
    }
 
    /*!
@@ -1194,7 +1206,7 @@ public:
    template <class V>
    void SetRow( int i, const V& r )
    {
-      SetUnique();
+      EnsureUnique();
       for ( int j = 0; j < m_data->Cols() && j < r.Length(); ++j )
          m_data->v[i][j] = element( r[j] );
    }
@@ -1206,7 +1218,7 @@ public:
    template <class V>
    void SetColumn( int j, const V& c )
    {
-      SetUnique();
+      EnsureUnique();
       for ( int i = 0; i < m_data->Rows() && i < c.Length(); ++i )
          m_data->v[i][j] = element( c[i] );
    }
@@ -1388,7 +1400,7 @@ public:
          if ( Rows() != Cols() || Rows() == 0 )
             throw Error( "Invalid matrix inversion: Non-square or empty matrix." );
          void PCL_FUNC InPlaceGaussJordan( GenericMatrix<T>&, GenericMatrix<T>& );
-         SetUnique();
+         EnsureUnique();
          GenericMatrix B = UnitMatrix( Rows() );
          InPlaceGaussJordan( *this, B );
       }
@@ -1403,7 +1415,7 @@ public:
     */
    void Flip()
    {
-      SetUnique();
+      EnsureUnique();
       pcl::Reverse( m_data->Begin(), m_data->End() );
    }
 
@@ -1432,7 +1444,7 @@ public:
     */
    void Truncate( const element& f0 = element( 0 ), const element& f1 = element( 1 ) )
    {
-      SetUnique();
+      EnsureUnique();
       block_iterator a = m_data->Begin();
       block_iterator b = m_data->End();
       for ( ; a < b; ++a )
@@ -1473,7 +1485,7 @@ public:
       element v1 = MaxElement();
       if ( v0 != f0 || v1 != f1 )
       {
-         SetUnique();
+         EnsureUnique();
          if ( v0 != v1 )
          {
             if ( f0 != f1 )
@@ -1511,7 +1523,7 @@ public:
     */
    void Sort()
    {
-      SetUnique();
+      EnsureUnique();
       pcl::Sort( m_data->Begin(), m_data->End() );
    }
 
@@ -1533,7 +1545,7 @@ public:
    template <class BP>
    void Sort( BP p )
    {
-      SetUnique();
+      EnsureUnique();
       pcl::Sort( m_data->Begin(), m_data->End(), p );
    }
 
@@ -1580,7 +1592,7 @@ public:
    }
 
    /*!
-    * Returns true if this matrix contains the specified value \a x.
+    * Returns true iff this matrix contains the specified value \a x.
     */
    bool Contains( const element& x ) const
    {
@@ -1770,7 +1782,7 @@ public:
     */
    double Median()
    {
-      SetUnique();
+      EnsureUnique();
       return pcl::Median( m_data->Begin(), m_data->End() );
    }
 
@@ -2433,13 +2445,22 @@ public:
 
 private:
 
+   /*!
+    * \struct Data
+    * \internal
+    * Reference-counted matrix data structure.
+    */
    struct Data : public ReferenceCounter
    {
       int             n; // rows
       int             m; // columns
       block_iterator* v; // elements
 
-      Data( int rows, int cols ) : ReferenceCounter(), n( 0 ), m( 0 ), v( nullptr )
+      Data( int rows, int cols ) :
+         ReferenceCounter(),
+         n( 0 ),
+         m( 0 ),
+         v( nullptr )
       {
          if ( rows > 0 && cols > 0 )
             Allocate( rows, cols );
@@ -2508,7 +2529,21 @@ private:
       }
    };
 
+   /*!
+    * \internal
+    * The reference-counted matrix data.
+    */
    Data* m_data;
+
+   /*!
+    * \internal
+    * Dereferences matrix data and disposes it if it becomes garbage.
+    */
+   void DetachFromData()
+   {
+      if ( !m_data->Detach() )
+         delete m_data;
+   }
 };
 
 // ----------------------------------------------------------------------------
@@ -2975,4 +3010,4 @@ typedef GenericMatrix<Complex64>    C64Matrix;
 #endif   // __PCL_Matrix_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Matrix.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Matrix.h - Released 2015/10/08 11:24:12 UTC

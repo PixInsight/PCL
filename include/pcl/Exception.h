@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Exception.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Exception.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -152,7 +152,7 @@ public:
    virtual void Show() const;
 
    /*!
-    * Returns true if console text output is enabled for %Exception.
+    * Returns true iff console text output is enabled for %Exception.
     *
     * When console output is enabled, exception information is presented as
     * text on the PixInsight core application's console.
@@ -181,7 +181,7 @@ public:
    }
 
    /*!
-    * Returns true if GUI output is enabled for %Exception.
+    * Returns true iff GUI output is enabled for %Exception.
     *
     * When GUI output is enabled, exception information is presented through
     * message boxes and other modal, graphical interface elements.
@@ -677,4 +677,4 @@ PCL_DECLARE_EXCEPTION_CLASS( ProcessAborted, "Process aborted", String() );
 #endif   // __PCL_Exception_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Exception.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Exception.h - Released 2015/10/08 11:24:12 UTC

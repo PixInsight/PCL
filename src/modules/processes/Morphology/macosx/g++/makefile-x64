@@ -1,0 +1,78 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.96
+# Copyright (C) 2009-2015 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Thu, 08 Oct 2015 11:23:39 GMT
+# Project id ...... Morphology
+# Project type .... Module
+# Platform ........ MacOSX/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/Morphology/macosx/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/Morphology-pxm.dylib
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../MorphologicalTransformationInstance.cpp \
+../../MorphologicalTransformationInterface.cpp \
+../../MorphologicalTransformationParameters.cpp \
+../../MorphologicalTransformationProcess.cpp \
+../../MorphologyModule.cpp \
+../../Structure.cpp \
+../../StructureManagerDialog.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/MorphologicalTransformationInstance.o \
+./x64/Release/MorphologicalTransformationInterface.o \
+./x64/Release/MorphologicalTransformationParameters.o \
+./x64/Release/MorphologicalTransformationProcess.o \
+./x64/Release/MorphologyModule.o \
+./x64/Release/Structure.o \
+./x64/Release/StructureManagerDialog.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/MorphologicalTransformationInstance.d \
+./x64/Release/MorphologicalTransformationInterface.d \
+./x64/Release/MorphologicalTransformationParameters.d \
+./x64/Release/MorphologicalTransformationProcess.d \
+./x64/Release/MorphologyModule.d \
+./x64/Release/Structure.d \
+./x64/Release/StructureManagerDialog.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/Morphology-pxm.dylib: $(OBJ_FILES)
+	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -stdlib=libc++ -Wl,--gc-sections -s -dynamiclib -install_name @executable_path/Morphology-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/Morphology-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/Morphology-pxm.dylib
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/Morphology-pxm.dylib $(PCLBINDIR64)
+	codesign --deep -s pleiades -f -v --timestamp $(PCLBINDIR64)/Morphology-pxm.dylib
+
+./x64/Release/%.o: ../../%.cpp
+	clang++ -c -pipe -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

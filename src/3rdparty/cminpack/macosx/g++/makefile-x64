@@ -1,15 +1,15 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.95
+# PixInsight Makefile Generator Script v1.96
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 30 Jul 2015 17:10:22 GMT
+# Automatically generated on Thu, 08 Oct 2015 11:23:20 GMT
 # Project id ...... cminpack
 # Project type .... StaticLibrary
 # Platform ........ MacOSX/g++
 # Configuration ... Release/x64
 ######################################################################
 
-OBJ_DIR="$(PCLSRCDIR)/cminpack/macosx/g++/x64/Release"
+OBJ_DIR="$(PCLSRCDIR)/3rdparty/cminpack/macosx/g++/x64/Release"
 
 .PHONY: all
 all: $(OBJ_DIR)/libcminpack-pxi.a
@@ -126,6 +126,6 @@ post-build:
 	cp $(OBJ_DIR)/libcminpack-pxi.a $(PCLLIBDIR64)
 
 ./x64/Release/%.o: ../../%.c
-	clang -c -pipe -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -mtune=generic -mssse3 -O3 -ffast-math -ftree-vectorize -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	clang -c -pipe -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

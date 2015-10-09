@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ProcessInstance.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ProcessInstance.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -193,7 +193,7 @@ public:
    bool Validate( String& whyNot );
 
    /*!
-    * Returns true if this process instance will modify the process history of
+    * Returns true iff this process instance will modify the process history of
     * the specified \a view, in case it is executed on it.
     *
     * If this member function returns false, then this instance can be safely
@@ -203,7 +203,7 @@ public:
    bool IsHistoryUpdater( const View& view ) const;
 
    /*!
-    * Returns true if this process instance can be masked with the specified
+    * Returns true iff this process instance can be masked with the specified
     * image \a window when executed on the specified \a view.
     *
     * When a process is masked, its result is mixed with the image in the state
@@ -214,7 +214,7 @@ public:
 
    /*!
     * Validates execution of this process instance on the specified \a view.
-    * Returns true if this instance can be executed on the view.
+    * Returns true iff this instance can be executed on the view.
     *
     * If this member function returns false, the process should return in the
     * string \a whyNot a description of the reasons why this instance cannot be
@@ -260,7 +260,7 @@ public:
    bool ExecuteOn( View& view, bool swapFile = true );
 
    /*!
-    * Returns true if this process instance can be executed in the global
+    * Returns true iff this process instance can be executed in the global
     * context.
     *
     * If this member function returns false, the process should return in the
@@ -289,7 +289,7 @@ public:
 
    /*!
     * Validates execution of this process instance on the specified \a image.
-    * Returns true if this instance can be executed on the image.
+    * Returns true iff this instance can be executed on the image.
     *
     * If this member function returns false, the process should return in the
     * string \a whyNot a description of the reasons why this instance cannot be
@@ -346,7 +346,7 @@ public:
    bool Launch();
 
    /*!
-    * Returns true if this process instance is able to open and activate a
+    * Returns true iff this process instance is able to open and activate a
     * process interface.
     *
     * Normally, each process has an associated interface that can always be
@@ -585,10 +585,10 @@ public:
     *
     * The \a value must observe the limits imposed by the parent process
     * regarding valid numeric ranges, length limits, acceptable characters,
-    * etc., depending on parameter types. This member function returns true if
-    * the parameter value could be set correctly; false otherwise. If the type
-    * of \a value cannot be converted to the required parameter type, an Error
-    * exception is thrown with the appropriate error message.
+    * etc., depending on parameter types. This member function returns true iff
+    * the parameter value could be set correctly. If the type of \a value
+    * cannot be converted to the required parameter type, an Error exception is
+    * thrown with the appropriate error message.
     *
     * \note To set the values of table column parameters, the necessary table
     * rows must be allocated \e before calling this member function. To
@@ -711,4 +711,4 @@ private:
 #endif   // __PCL_ProcessInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ProcessInstance.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ProcessInstance.h - Released 2015/10/08 11:24:12 UTC

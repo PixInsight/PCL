@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/RealTimePreview.h - Released 2015/07/30 17:15:18 UTC
+// pcl/RealTimePreview.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -118,7 +118,7 @@ public:
    static void Update();
 
    /*!
-    * Returns true if the Real-Time Preview is currently busy, i.e. if there is
+    * Returns true iff the Real-Time Preview is currently busy, i.e. if there is
     * an active real-time rendition process.
     */
    static bool IsUpdating();
@@ -182,7 +182,7 @@ public:
    static void CloseProgressDialog();
 
    /*!
-    * Returns true if a modal progress dialog is currently visible after a call
+    * Returns true iff a modal progress dialog is currently visible after a call
     * to ShowProgressDialog().
     */
    static bool IsProgressDialogVisible();
@@ -229,4 +229,4 @@ private:
 #endif   // __PCL_RealTimePreview_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/RealTimePreview.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/RealTimePreview.h - Released 2015/10/08 11:24:12 UTC

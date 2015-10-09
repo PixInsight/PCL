@@ -1,0 +1,153 @@
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0763
+// ----------------------------------------------------------------------------
+// Standard ColorSpaces Process Module Version 01.01.00.0258
+// ----------------------------------------------------------------------------
+// ConvertToRGBColorIcon.xpm - Released 2015/10/08 11:24:39 UTC
+// ----------------------------------------------------------------------------
+// This file is part of the standard ColorSpaces PixInsight module.
+//
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ----------------------------------------------------------------------------
+
+/* XPM */
+static const char* ConvertToRGBColorIcon_XPM[] = {
+/* columns rows colors chars-per-pixel */
+"24 24 68 1",
+". c Black",
+"t c #00F01D",
+"< c #7E9100",
+"2 c #3DD500",
+"k c #00B35E",
+"s c #00B35F",
+"; c #0BFC00",
+"@ c #B65200",
+"w c #68AA00",
+"o c #F70800",
+"1 c #52C000",
+"C c #002DD6",
+"b c #002DD7",
+", c #9A7100",
+"r c #00FB0C",
+"n c #1AF300",
+"4 c #00FB0D",
+"p c #E61C00",
+"= c #2AE600",
+"A c #0007F8",
+"J c #0007F9",
+"0 c #D03500",
+"g c #009878",
+"5 c #9B7200",
+"* c #3DD400",
+"c c #00B25E",
+"f c #00B25F",
+"V c #0018E9",
+"e c #19F400",
+"% c #68A900",
+"K c #00CC47",
+"  c None",
+"$ c #7F9100",
+"B c #002CD6",
+"G c #002CD7",
+"a c #00E030",
+"y c #00E031",
+"N c #0046C1",
+"S c #0046C2",
+"x c #2AE500",
+"> c #B55200",
+"6 c #67AA00",
+"M c #0060A9",
+"z c #0060AA",
+"X c #FF0000",
+"D c #0000FF",
+"& c #51C000",
+"9 c #00F11D",
+"l c #009778",
+"# c #9B7100",
+"d c #B65300",
+"Z c #0017E9",
+"H c #0017EA",
+"- c #19F300",
+"O c #E51C00",
+"7 c #29E600",
+": c #F70900",
+"m c #00CB46",
+"i c #00CB47",
+"+ c #CF3500",
+"3 c #00FF00",
+"q c #9A7200",
+"u c #00FC0C",
+"8 c #1AF400",
+"v c #0045C1",
+"F c #0045C2",
+"j c #67A900",
+"h c #007C91",
+/* pixels */
+"                        ",
+" ...................... ",
+" .XXXXXXXXoO+@#$%&*=-;. ",
+" .XXXXXXX:O+>,<%12=-;3. ",
+" .XXXXXXoO+@,<%1*=-;34. ",
+" .XXXXXoO+@5<61278;349. ",
+" .XXXX:O0@q$w12=e;3rty. ",
+" .XXX:O+@5<%1*7e;3utyi. ",
+" .XX:p0@q<%1*=e;34tais. ",
+" .Xop+d5<%12=-;3rtaifg. ",
+" .oO0@,<%1*=-;3rtaifgh. ",
+" .p+@#<j1*=-;3rtaiklhz. ",
+" .+d#<%12x-;3r9yiclhzv. ",
+" .@,<j&*7e;349yislhzvb. ",
+" .,<j1*=n;34tamsghMNBV. ",
+" .<%12=-;34tymfghzvCZA. ",
+" .%12=-;3utaisghzSbVAD. ",
+" .12=-;34taisghzFGVADD. ",
+" .*=-;3r9aiflhzvGZADDD. ",
+" .=-;349aisghMFGHJDDDD. ",
+" .-;349aKfghzFbZADDDDD. ",
+" .;3utaisghzFCVADDDDDD. ",
+" ...................... ",
+"                        "
+};
+
+// ----------------------------------------------------------------------------
+// EOF ConvertToRGBColorIcon.xpm - Released 2015/10/08 11:24:39 UTC

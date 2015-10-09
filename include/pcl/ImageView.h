@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ImageView.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ImageView.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -177,7 +177,7 @@ public:
    ImageVariant Image() const;
 
    /*!
-    * Returns true if this %ImageView control holds a color image, false if it
+    * Returns true iff this %ImageView control holds a color image, false if it
     * is a grayscale image.
     */
    bool IsColorImage() const;
@@ -266,7 +266,7 @@ public:
    void SetRGBWS( const RGBColorSystem& rgbws );
 
    /*!
-    * Returns true if color management is active for the image in this
+    * Returns true iff color management is active for the image in this
     * %ImageView control.
     */
    bool IsColorManagementEnabled() const;
@@ -307,7 +307,7 @@ public:
    }
 
    /*!
-    * Returns true if <em>soft-proofing</em> is currently enabled for the image
+    * Returns true iff <em>soft-proofing</em> is currently enabled for the image
     * in this %ImageView control.
     */
    bool IsProofingEnabled() const;
@@ -342,7 +342,7 @@ public:
    }
 
    /*!
-    * Returns true if the <em>gamut check</em> soft-proofing feature is
+    * Returns true iff the <em>gamut check</em> soft-proofing feature is
     * currently enabled for the image in this %ImageView control.
     */
    bool IsGamutCheckEnabled() const;
@@ -480,7 +480,7 @@ public:
    display_channel CurrentChannel() const;
 
    /*!
-    * Returns true if the current display channel for this %ImageView control
+    * Returns true iff the current display channel for this %ImageView control
     * corresponds to an alpha channel of the image.
     */
    bool IsAlphaChannelDisplayed() const
@@ -537,7 +537,7 @@ public:
    RGBA TransparencyColor() const;
 
    /*!
-    * Returns true if transparent image areas are currently visible for this
+    * Returns true iff transparent image areas are currently visible for this
     * %ImageView control.
     *
     * Transparencies are visible if the current rendering mode is not
@@ -1234,7 +1234,7 @@ public:
    void UpdateImageRect( double x0, double y0, double x1, double y1 );
 
    /*!
-    * Returns true if there are pending viewport updates for this %ImageView
+    * Returns true iff there are pending viewport updates for this %ImageView
     * control.
     */
    bool HasPendingUpdates() const;
@@ -1384,7 +1384,7 @@ public:
    Rect SelectionRect( uint32* flags = 0 ) const;
 
    /*!
-    * Returns true if an interactive selection procedure is currently active on
+    * Returns true iff an interactive selection procedure is currently active on
     * the viewport of this %ImageView control.
     */
    bool IsSelection() const;
@@ -1427,6 +1427,8 @@ public:
     *
     * \param receiver   The control that will receive scroll events from this
     *                   %ImageView object.
+    *
+    * \ingroup image_view_event_handlers
     */
    void OnScrollViewport( scroll_event_handler handler, Control& receiver );
 
@@ -1467,4 +1469,4 @@ protected:
 #endif   // __PCL_ImageView_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageView.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ImageView.h - Released 2015/10/08 11:24:12 UTC

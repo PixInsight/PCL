@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Relational.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Relational.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -81,7 +81,7 @@ namespace pcl
  */
 
 /*!
- * Returns true if two objects \a a and \a b are not equal.
+ * Returns true iff two objects \a a and \a b are not equal.
  * \ingroup generic_relational_operators
  */
 template <class T1, class T2> inline
@@ -91,7 +91,7 @@ bool operator !=( const T1& a, const T2& b )
 }
 
 /*!
- * Returns true if an object \a a is less than or equal to another object \a b.
+ * Returns true iff an object \a a is less than or equal to another object \a b.
  * \ingroup generic_relational_operators
  */
 template <class T1, class T2> inline
@@ -101,7 +101,7 @@ bool operator <=( const T1& a, const T2& b )
 }
 
 /*!
- * Returns true if an object \a a is greater than another object \a b.
+ * Returns true iff an object \a a is greater than another object \a b.
  * \ingroup generic_relational_operators
  */
 template <class T1, class T2> inline
@@ -111,7 +111,7 @@ bool operator >( const T1& a, const T2& b )
 }
 
 /*!
- * Returns true if an object \a a is greater than or equal to another object
+ * Returns true iff an object \a a is greater than or equal to another object
  * \a b.
  * \ingroup generic_relational_operators
  */
@@ -128,4 +128,4 @@ bool operator >=( const T1& a, const T2& b )
 #endif  // __PCL_Relational_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Relational.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Relational.h - Released 2015/10/08 11:24:12 UTC

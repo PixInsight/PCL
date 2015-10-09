@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/StatusMonitor.h - Released 2015/07/30 17:15:18 UTC
+// pcl/StatusMonitor.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -357,7 +357,7 @@ public:
    }
 
    /*!
-    * Returns true if monitor initialization has been disabled for this status
+    * Returns true iff monitor initialization has been disabled for this status
     * monitor object.
     *
     * See DisableInitialization() for further information on the initialization
@@ -369,7 +369,7 @@ public:
    }
 
    /*!
-    * Returns true if this status monitor has been initialized.
+    * Returns true iff this status monitor has been initialized.
     *
     * A status monitor is initialized by a call to its Initialize() member
     * function.
@@ -380,7 +380,7 @@ public:
    }
 
    /*!
-    * Returns true if this status monitor has completed a monitoring procedure.
+    * Returns true iff this status monitor has completed a monitoring procedure.
     *
     * A monitoring procedure is completed if the current monitoring counter
     * reaches the total count, or if the Complete() member function is called.
@@ -391,7 +391,7 @@ public:
    }
 
    /*!
-    * Returns true if a monitoring procedure has been aborted.
+    * Returns true iff a monitoring procedure has been aborted.
     *
     * When a monitoring procedure is aborted, the status monitor object throws
     * a ProcessAborted exception.
@@ -617,4 +617,4 @@ private:
 #endif   // __PCL_StatusMonitor_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/StatusMonitor.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/StatusMonitor.h - Released 2015/10/08 11:24:12 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/StdAlloc.h - Released 2015/07/30 17:15:18 UTC
+// pcl/StdAlloc.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -209,7 +209,7 @@ public:
    }
 
    /*!
-    * Returns true if <i>fast growth</i> is currently enabled for this
+    * Returns true iff <i>fast growth</i> is currently enabled for this
     * allocator.
     *
     * When fast growth is enabled, %StandardAllocator provides block sizes
@@ -261,7 +261,7 @@ public:
    }
 
    /*!
-    * Returns true if <i>block shrinking</i> is currently enabled for this
+    * Returns true iff <i>block shrinking</i> is currently enabled for this
     * allocator.
     *
     * When block shrinking is enabled, %StandardAllocator allows size
@@ -364,4 +364,4 @@ inline void operator delete( void* p, void*, pcl::StandardAllocator& )
 #endif  // __PCL_StdAlloc_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/StdAlloc.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/StdAlloc.h - Released 2015/10/08 11:24:12 UTC

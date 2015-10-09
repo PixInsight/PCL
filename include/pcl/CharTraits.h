@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/CharTraits.h - Released 2015/07/30 17:15:18 UTC
+// pcl/CharTraits.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -368,7 +368,7 @@ public:
    /*!
     * Number of bytes per character.
     */
-   static size_type BytesPerChar()
+   static constexpr size_type BytesPerChar()
    {
       return sizeof( char_type );
    }
@@ -521,9 +521,9 @@ public:
     *                         characters. The default value of this parameter
     *                         is true.
     *
-    * Returns true if the string \a t matches the specified pattern \a p; false
-    * otherwise. If one of the strings is empty, this function always returns
-    * false conventionally, even if the pattern is a single asterisk '*'.
+    * Returns true iff the string \a t matches the specified pattern \a p. If
+    * one of the strings is empty, this function always returns false
+    * conventionally, even if the pattern is a single asterisk '*'.
     */
    static bool WildMatch( const char_type* t, size_type nt,
                           const char_type* p, size_type np, bool caseSensitive = true )
@@ -556,13 +556,11 @@ public:
     * character set. For a comprehensive Unicode implementation see the
     * CharTraits class.
     */
-   static char_type ToLowercase( char_type c )
+   static constexpr char_type ToLowercase( char_type c )
    {
-      if (    c >= char_type(  65 ) && c <= char_type(  90 )
+      return (c >= char_type(  65 ) && c <= char_type(  90 )
            || c >= char_type( 192 ) && c <= char_type( 214 )
-           || c >= char_type( 216 ) && c <= char_type( 222 ) )
-         return c + 32;
-      return c;
+           || c >= char_type( 216 ) && c <= char_type( 222 )) ? c + 32 : c;
    }
 
    /*!
@@ -572,13 +570,11 @@ public:
     * character set. For a comprehensive Unicode implementation see the
     * CharTraits class.
     */
-   static char_type ToUppercase( char_type c )
+   static constexpr char_type ToUppercase( char_type c )
    {
-      if (    c >= char_type(  97 ) && c <= char_type( 122 )
+      return (c >= char_type(  97 ) && c <= char_type( 122 )
            || c >= char_type( 224 ) && c <= char_type( 246 )
-           || c >= char_type( 248 ) && c <= char_type( 254 ) )
-         return c - 32;
-      return c;
+           || c >= char_type( 248 ) && c <= char_type( 254 )) ? c - 32 : c;
    }
 
    /*!
@@ -612,7 +608,7 @@ public:
    /*!
     * Returns the null string termination character '\\0'.
     */
-   static char_type Null()
+   static constexpr char_type Null()
    {
       return char_type( 0 );
    }
@@ -620,7 +616,7 @@ public:
    /*!
     * Returns the blank space character (white space).
     */
-   static char_type Blank()
+   static constexpr char_type Blank()
    {
       return char_type( ' ' );
    }
@@ -628,7 +624,7 @@ public:
    /*!
     * Returns the horizontal tab control character '\\t'.
     */
-   static char_type Tab()
+   static constexpr char_type Tab()
    {
       return char_type( '\t' );
    }
@@ -636,7 +632,7 @@ public:
    /*!
     * Returns the carriage return control character '\\r'.
     */
-   static char_type CR()
+   static constexpr char_type CR()
    {
       return char_type( '\r' );
    }
@@ -644,7 +640,7 @@ public:
    /*!
     * Returns the line feed control character '\\n'.
     */
-   static char_type LF()
+   static constexpr char_type LF()
    {
       return char_type( '\n' );
    }
@@ -652,7 +648,7 @@ public:
    /*!
     * Returns the comma punctuator character ','.
     */
-   static char_type Comma()
+   static constexpr char_type Comma()
    {
       return char_type( ',' );
    }
@@ -660,7 +656,7 @@ public:
    /*!
     * Returns the colon punctuator character ':'.
     */
-   static char_type Colon()
+   static constexpr char_type Colon()
    {
       return char_type( ':' );
    }
@@ -668,7 +664,7 @@ public:
    /*!
     * Returns the semicolon punctuator character ';'.
     */
-   static char_type Semicolon()
+   static constexpr char_type Semicolon()
    {
       return char_type( ';' );
    }
@@ -676,7 +672,7 @@ public:
    /*!
     * Returns the hyphen punctuator character '-'.
     */
-   static char_type Hyphen()
+   static constexpr char_type Hyphen()
    {
       return char_type( '-' );
    }
@@ -684,7 +680,7 @@ public:
    /*!
     * Returns the plus sign character '+'.
     */
-   static char_type PlusSign()
+   static constexpr char_type PlusSign()
    {
       return char_type( '+' );
    }
@@ -692,7 +688,7 @@ public:
    /*!
     * Returns the minus sign character '-'.
     */
-   static char_type MinusSign()
+   static constexpr char_type MinusSign()
    {
       return char_type( '-' );
    }
@@ -700,7 +696,7 @@ public:
    /*!
     * Returns the decimal separator character '.'.
     */
-   static char_type DecimalSeparator()
+   static constexpr char_type DecimalSeparator()
    {
       return char_type( '.' );
    }
@@ -708,7 +704,7 @@ public:
    /*!
     * Returns the exponent delimiter character 'e'.
     */
-   static char_type ExponentDelimiter()
+   static constexpr char_type ExponentDelimiter()
    {
       return char_type( 'e' );
    }
@@ -716,136 +712,136 @@ public:
    /*!
     * Returns the underscore character '_'.
     */
-   static char_type Underscore()
+   static constexpr char_type Underscore()
    {
       return char_type( '_' );
    }
 
    /*!
-    * Returns true if a character \a c is a null string terminator.
+    * Returns true iff a character \a c is a null string terminator.
     */
-   static bool IsNull( char_type c )
+   static constexpr bool IsNull( char_type c )
    {
       return c == Null();
    }
 
    /*!
-    * Returns true if a character \a c is a white space character.
+    * Returns true iff a character \a c is a white space character.
     */
-   static bool IsSpace( char_type c )
+   static constexpr bool IsSpace( char_type c )
    {
       return c == Blank() || c == Tab() || c == CR() || c == LF();
    }
 
    /*!
-    * Returns true if a character \a c is a trimable character. Generally
+    * Returns true iff a character \a c is a trimable character. Generally
     * equivalent to IsSpace().
     */
-   static bool IsTrimable( char_type c )
+   static constexpr bool IsTrimable( char_type c )
    {
       return IsSpace( c );
    }
 
    /*!
-    * Returns true if a character \a c is a decimal digit. Decimal digits are
+    * Returns true iff a character \a c is a decimal digit. Decimal digits are
     * in the range [0-9].
     */
-   static bool IsDigit( char_type c )
+   static constexpr bool IsDigit( char_type c )
    {
       return c >= char_type( '0' ) && c <= char_type( '9' );
    }
 
    /*!
-    * Returns true if a character \a c is an hexadecimal digit. Hexadecimal
+    * Returns true iff a character \a c is an hexadecimal digit. Hexadecimal
     * digits are in the range [a-fA-F].
     */
-   static bool IsHexDigit( char_type c )
+   static constexpr bool IsHexDigit( char_type c )
    {
       return IsDigit( c ) || c >= char_type( 'A' ) && c <= char_type( 'F' ) ||
                              c >= char_type( 'a' ) && c <= char_type( 'f' );
    }
 
    /*!
-    * Returns true if a character \a c is in the range [a-zA-Z].
+    * Returns true iff a character \a c is in the range [a-zA-Z].
     */
-   static bool IsAlpha( char_type c )
+   static constexpr bool IsAlpha( char_type c )
    {
       return IsLowercaseAlpha( c ) || IsUppercaseAlpha( c );
    }
 
    /*!
-    * Returns true if a character \a c is in the range [a-z].
+    * Returns true iff a character \a c is in the range [a-z].
     */
-   static bool IsLowercaseAlpha( char_type c )
+   static constexpr bool IsLowercaseAlpha( char_type c )
    {
       return c >= char_type( 'a' ) && c <= char_type( 'z' );
    }
 
    /*!
-    * Returns true if a character \a c is in the range [A-Z].
+    * Returns true iff a character \a c is in the range [A-Z].
     */
-   static bool IsUppercaseAlpha( char_type c )
+   static constexpr bool IsUppercaseAlpha( char_type c )
    {
       return c >= char_type( 'A' ) && c <= char_type( 'Z' );
    }
 
    /*!
-    * Returns true if a character \a c is the underscore character '_'.
+    * Returns true iff a character \a c is the underscore character '_'.
     */
-   static bool IsUnderscore( char_type c )
+   static constexpr bool IsUnderscore( char_type c )
    {
       return c == Underscore();
    }
 
    /*!
-    * Returns true if a character \a c is a valid symbol element. Symbol digits
+    * Returns true iff a character \a c is a valid symbol element. Symbol digits
     * are in the range [a-zA-Z0-9_].
     */
-   static bool IsSymbolDigit( char_type c )
+   static constexpr bool IsSymbolDigit( char_type c )
    {
       return IsAlpha( c ) || IsDigit( c ) || IsUnderscore( c );
    }
 
    /*!
-    * Returns true if a character \a c is a valid starting symbol digit. A
+    * Returns true iff a character \a c is a valid starting symbol digit. A
     * starting symbol digit is in the range [a-zA-Z_].
     */
-   static bool IsStartingSymbolDigit( char_type c )
+   static constexpr bool IsStartingSymbolDigit( char_type c )
    {
       return IsAlpha( c ) || IsUnderscore( c );
    }
 
    /*!
-    * Returns true if a character \a c is a numerical sign, either '+' or '-'.
+    * Returns true iff a character \a c is a numerical sign, either '+' or '-'.
     */
-   static bool IsSign( char_type c )
+   static constexpr bool IsSign( char_type c )
    {
       return c == MinusSign() || c == PlusSign();
    }
 
    /*!
-    * Returns true if a character \a c is the decimal separator '.'.
+    * Returns true iff a character \a c is the decimal separator '.'.
     */
-   static bool IsDecimalSeparator( char_type c )
+   static constexpr bool IsDecimalSeparator( char_type c )
    {
       return c == DecimalSeparator();
    }
 
    /*!
-    * Returns true if a character \a c is an exponent delimiter. Exponent
+    * Returns true iff a character \a c is an exponent delimiter. Exponent
     * delimiters are in the range [eEdD]. The [dD] pair allows for FORTRAN
     * compatibility.
     */
-   static bool IsExponentDelimiter( char_type c )
+   static constexpr bool IsExponentDelimiter( char_type c )
    {
       return c == char_type( 'e' ) || c == char_type( 'E' ) || c == char_type( 'd' ) || c == char_type( 'D' );
    }
 
    /*!
-    * Returns true if a character \a c is a wildcard. The wildcards are the
+    * Returns true iff a character \a c is a wildcard. The wildcards are the
     * asterisk '*' and question mark '?' characters.
     */
-   static bool IsWildcard( char_type c )
+   static constexpr bool IsWildcard( char_type c )
    {
       return c == char_type( '*' ) || c == char_type( '?' );
    }
@@ -908,7 +904,7 @@ public:
     * The returned value is the length of the initial contiguous sequence of
     * characters that are not equal to Null().
     */
-   static size_type Length( const char_type* s )
+   static constexpr size_type Length( const char_type* s )
    {
       return (s != nullptr) ? ::strlen( s ) : 0;
    }
@@ -1059,9 +1055,9 @@ public:
     *                         characters. The default value of this parameter
     *                         is true.
     *
-    * Returns true if the string \a t matches the specified pattern \a p; false
-    * otherwise. If one of the strings is empty, this function always returns
-    * false conventionally, even if the pattern is a single asterisk '*'.
+    * Returns true iff the string \a t matches the specified pattern \a p. If
+    * one of the strings is empty, this function always returns false
+    * conventionally, even if the pattern is a single asterisk '*'.
     */
    static bool WildMatch( const char_type* t, size_type nt,
                           const char_type* p, size_type np, bool caseSensitive = true )
@@ -1310,9 +1306,9 @@ public:
     *                         characters. The default value of this parameter
     *                         is true.
     *
-    * Returns true if the string \a t matches the specified pattern \a p; false
-    * otherwise. If one of the strings is empty, this function always returns
-    * false conventionally, even if the pattern is a single asterisk '*'.
+    * Returns true iff the string \a t matches the specified pattern \a p. If
+    * one of the strings is empty, this function always returns false
+    * conventionally, even if the pattern is a single asterisk '*'.
     */
    static bool WildMatch( const char_type* t, size_type nt,
                           const char_type* p, size_type np, bool caseSensitive = true )
@@ -1421,12 +1417,12 @@ public:
    }
 
    /*!
-    * Returns true if the specified UTF-16 character is a <em>high
+    * Returns true iff the specified UTF-16 character is a <em>high
     * surrogate</em> (the most significant word of a <em>surrogate pair</em>
     * forming a UTF-32 code point). High surrogates have values between 0xD800
     * and 0xDBFF.
     */
-   static bool IsHighSurrogate( char_type c16 )
+   static constexpr bool IsHighSurrogate( char_type c16 )
    {
       return (c16 & 0xFC00) == 0xD800;
    }
@@ -1437,18 +1433,18 @@ public:
     * since surrogates only exist outside the Basic Multilingual Plane of
     * Unicode.
     */
-   static char_type HighSurrogate( char32_type c32 )
+   static constexpr char_type HighSurrogate( char32_type c32 )
    {
       return char_type( (c32 >> 10) + 0xD7C0 );
    }
 
    /*!
-    * Returns true if the specified UTF-16 character is a <em>low
+    * Returns true iff the specified UTF-16 character is a <em>low
     * surrogate</em> (the least significant word of a <em>surrogate pair</em>
     * forming a UTF-32 code point). Low surrogates have values between 0xDC00
     * and 0xDFFF.
     */
-   static bool IsLowSurrogate( char_type c16 )
+   static constexpr bool IsLowSurrogate( char_type c16 )
    {
       return (c16 & 0xFC00) == 0xDC00;
    }
@@ -1459,7 +1455,7 @@ public:
     * since surrogates only exist outside the Basic Multilingual Plane of
     * Unicode.
     */
-   static char_type LowSurrogate( char32_type c32 )
+   static constexpr char_type LowSurrogate( char32_type c32 )
    {
       return char_type( (c32%0x400) + 0xDC00 );
    }
@@ -1469,7 +1465,7 @@ public:
     * specified surrogate words must pertain to a valid Unicode code point
     * outside the Basic Multilingual Plane (from 0x010000 to 0x10FFFF).
     */
-   static char32_type SurrogatePairToUTF32( char_type high, char_type low )
+   static constexpr char32_type SurrogatePairToUTF32( char_type high, char_type low )
    {
       return (char32_type( high ) << 10) + low - 0x035FDC00;
    }
@@ -1482,4 +1478,4 @@ public:
 #endif   // __PCL_CharTraits_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/CharTraits.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/CharTraits.h - Released 2015/10/08 11:24:12 UTC

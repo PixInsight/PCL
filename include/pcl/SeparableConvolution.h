@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/SeparableConvolution.h - Released 2015/07/30 17:15:18 UTC
+// pcl/SeparableConvolution.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -284,7 +284,7 @@ public:
    }
 
    /*!
-    * Returns true if out-of-range values will be rescaled for normalization of
+    * Returns true iff out-of-range values will be rescaled for normalization of
     * images after convolution with a high-pass filter.
     *
     * A high-pass filter has negative coefficients. As a result, some pixels in
@@ -327,7 +327,7 @@ public:
    }
 
    /*!
-    * Returns true if <em>raw high-pass convolution</em> is enabled. When raw
+    * Returns true iff <em>raw high-pass convolution</em> is enabled. When raw
     * high-pass convolution is enabled, out-of-range values after convolution
     * with a high-pass filter are neither truncated nor normalized. Note that
     * this is only relevant to convolution of floating point data.
@@ -360,7 +360,7 @@ public:
    }
 
    /*!
-    * Returns true if this object will convolve pixel rows on target images.
+    * Returns true iff this object will convolve pixel rows on target images.
     */
    bool IsRowConvolutionEnabled() const
    {
@@ -387,7 +387,7 @@ public:
    }
 
    /*!
-    * Returns true if this object will convolve pixel columns on target images.
+    * Returns true iff this object will convolve pixel columns on target images.
     */
    bool IsColumnConvolutionEnabled() const
    {
@@ -425,7 +425,7 @@ public:
    }
 
    /*!
-    * Returns true if this object is allowed to use multiple parallel execution
+    * Returns true iff this object is allowed to use multiple parallel execution
     * threads (when multiple threads are permitted and available).
     */
    bool IsParallelProcessingEnabled() const
@@ -551,4 +551,4 @@ private:
 #endif   // __PCL_SeparableConvolution_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SeparableConvolution.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/SeparableConvolution.h - Released 2015/10/08 11:24:12 UTC

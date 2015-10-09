@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/IndirectSortedArray.h - Released 2015/07/30 17:15:18 UTC
+// pcl/IndirectSortedArray.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -195,7 +195,7 @@ public:
    }
 
    /*!
-    * Returns true if this indirect sorted array uniquely references its
+    * Returns true iff this indirect sorted array uniquely references its
     * contained array of data pointers.
     */
    bool IsUnique() const
@@ -204,7 +204,7 @@ public:
    }
 
    /*!
-    * Returns true if this indirect sorted array is an alias of the indirect
+    * Returns true iff this indirect sorted array is an alias of the indirect
     * sorted array \a x.
     *
     * Two objects are aliases if both share the same data. Two indirect
@@ -223,9 +223,9 @@ public:
     * of pointers, references it, and then decrements the reference counter of
     * the original pointers array.
     */
-   void SetUnique()
+   void EnsureUnique()
    {
-      m_array.SetUnique();
+      m_array.EnsureUnique();
    }
 
    /*!
@@ -422,7 +422,7 @@ public:
    /*!
     * Ensures that the specified iterator points to a uniquely referenced
     * pointer. If necessary, this function builds a new, uniquely referenced
-    * copy of this indirect array by calling SetUnique().
+    * copy of this indirect array by calling EnsureUnique().
     *
     * If the iterator \a i is changed, it is guaranteed to point to the pointer
     * at the same array index it was pointing to before calling this function.
@@ -435,7 +435,7 @@ public:
    /*!
     * Ensures that the specified iterators point to uniquely referenced
     * pointers. If necessary, this function builds a new, uniquely referenced
-    * copy of this indirect array by calling SetUnique().
+    * copy of this indirect array by calling EnsureUnique().
     *
     * If the iterators \a i and \a j are changed, they are guaranteed to point
     * to the pointers at the same array indices they were pointing to before
@@ -634,7 +634,7 @@ public:
    {
       if ( i != j )
       {
-         m_array.SetUnique();
+         m_array.EnsureUnique();
          for ( const_iterator l = m_array.Begin(), r = m_array.End(); ; )
          {
             FI h = i;
@@ -1268,4 +1268,4 @@ IndirectSortedArray<T,A>& operator <<( IndirectSortedArray<T,A>&& x1, const Indi
 #endif  // __PCL_IndirectSortedArray_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/IndirectSortedArray.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/IndirectSortedArray.h - Released 2015/10/08 11:24:12 UTC

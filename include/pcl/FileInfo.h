@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/FileInfo.h - Released 2015/07/30 17:15:18 UTC
+// pcl/FileInfo.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -225,7 +225,7 @@ public:
    }
 
    /*!
-    * Returns true if this object represents an existing file or directory.
+    * Returns true iff this object represents an existing file or directory.
     */
    bool Exists() const
    {
@@ -242,7 +242,7 @@ public:
    }
 
    /*!
-    * Returns true if this object represents an existing directory.
+    * Returns true iff this object represents an existing directory.
     */
    bool IsDirectory() const
    {
@@ -250,7 +250,7 @@ public:
    }
 
    /*!
-    * Returns true if this object represents an existing file.
+    * Returns true iff this object represents an existing file.
     */
    bool IsFile() const
    {
@@ -258,7 +258,7 @@ public:
    }
 
    /*!
-    * Returns true if this object represents a symbolic link.
+    * Returns true iff this object represents a symbolic link.
     *
     * This member function only makes sense on UNIX/Linux platforms. On Windows
     * it always returns false.
@@ -278,7 +278,7 @@ public:
    String SymbolicLinkTarget() const;
 
    /*!
-    * Returns true if this object represents a hidden file or directory.
+    * Returns true iff this object represents a hidden file or directory.
     *
     * On Windows, this member function returns true if the file or directory
     * represented by this object has the hidden attribute set. On UNIX and
@@ -291,7 +291,7 @@ public:
    }
 
    /*!
-    * Returns true if the user id and group id of the caller process have read
+    * Returns true iff the user id and group id of the caller process have read
     * access permission for the item represented by this object.
     */
    bool IsReadable() const
@@ -300,7 +300,7 @@ public:
    }
 
    /*!
-    * Returns true if the user id and group id of the caller process have write
+    * Returns true iff the user id and group id of the caller process have write
     * access permission for the item represented by this object.
     */
    bool IsWritable() const
@@ -309,7 +309,7 @@ public:
    }
 
    /*!
-    * Returns true if the user id and group id of the caller process have
+    * Returns true iff the user id and group id of the caller process have
     * execution access permission for the item represented by this object.
     *
     * This member function only makes sense on UNIX/Linux platforms. On Windows
@@ -444,4 +444,4 @@ private:
 #endif  // __PCL_FileInfo_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileInfo.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/FileInfo.h - Released 2015/10/08 11:24:12 UTC

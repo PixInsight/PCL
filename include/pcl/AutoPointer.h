@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/AutoPointer.h - Released 2015/07/30 17:15:18 UTC
+// pcl/AutoPointer.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -453,7 +453,7 @@ public:
    }
 
    /*!
-    * Returns true if this smart pointer object stores a null pointer.
+    * Returns true iff this smart pointer object stores a null pointer.
     */
    bool IsNull() const
    {
@@ -461,7 +461,7 @@ public:
    }
 
    /*!
-    * Returns true if this smart pointer object stores a non-null pointer.
+    * Returns true iff this smart pointer object stores a non-null pointer.
     * Equivalent to !IsNull().
     */
    bool IsValid() const
@@ -470,7 +470,7 @@ public:
    }
 
    /*!
-    * Returns true if the automatic deletion feature of %AutoPointer is
+    * Returns true iff the automatic deletion feature of %AutoPointer is
     * currently enabled for this object.
     *
     * When automatic deletion is enabled, the object pointed to by this
@@ -652,7 +652,7 @@ public:
    }
 
    /*!
-    * Returns true if this smart pointer stores a non-null pointer. This
+    * Returns true iff this smart pointer stores a non-null pointer. This
     * operator is equivalent to:
     *
     * \code
@@ -689,4 +689,4 @@ private:
 #endif  // __PCL_AutoPointer_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AutoPointer.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/AutoPointer.h - Released 2015/10/08 11:24:12 UTC

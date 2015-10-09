@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Version.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Version.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -185,13 +185,13 @@ public:
    static int BetaRelease();
 
    /*!
-    * Returns true if the PixInsight core is a confidential (pre-release)
+    * Returns true iff the PixInsight core is a confidential (pre-release)
     * edition.
     */
    static bool Confidential();
 
    /*!
-    * Returns true if the PixInsight core is a limited edition (LE) release.
+    * Returns true iff the PixInsight core is a limited edition (LE) release.
     */
    static bool LE();
 
@@ -243,8 +243,6 @@ private:
    void operator =( const PixInsightVersion& ) = delete;
    ~PixInsightVersion() = delete;
 
-   static void Initialize();
-
    friend class GlobalContextDispatcher;
 };
 
@@ -255,4 +253,4 @@ private:
 #endif   // __PCL_Version_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Version.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Version.h - Released 2015/10/08 11:24:12 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/GlobalSettings.h - Released 2015/07/30 17:15:18 UTC
+// pcl/GlobalSettings.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -182,6 +182,7 @@ namespace GlobalVariableType
  * <tr><td>ColorManagement/IsEnabled</td>                             <td></td></tr>
  * <tr><td>ColorManagement/DefaultEmbedProfilesInRGBImages</td>       <td></td></tr>
  * <tr><td>ColorManagement/DefaultEmbedProfilesInGrayscaleImages</td> <td></td></tr>
+ * <tr><td>ColorManagement/UseLowResolutionCLUTs</td>                 <td></td></tr>
  * <tr><td>ColorManagement/UseProofingBPC</td>                        <td></td></tr>
  * <tr><td>ColorManagement/DefaultProofingEnabled</td>                <td></td></tr>
  * <tr><td>ColorManagement/DefaultGamutCheckEnabled</td>              <td></td></tr>
@@ -307,7 +308,7 @@ public:
    static variable_type GlobalVariableType( const IsoString& globalId );
 
    /*!
-    * Returns true if the specified global variable \a globalId is defined in
+    * Returns true iff the specified global variable \a globalId is defined in
     * the current PixInsight platform.
     */
    static bool IsGlobalVariableDefined( const IsoString& globalId )
@@ -430,4 +431,4 @@ private:
 #endif   // __PCL_GlobalSettings_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/GlobalSettings.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/GlobalSettings.h - Released 2015/10/08 11:24:12 UTC

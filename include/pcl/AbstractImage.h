@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/AbstractImage.h - Released 2015/07/30 17:15:18 UTC
+// pcl/AbstractImage.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -180,7 +180,7 @@ public:
    }
 
    /*!
-    * Returns true if this image has one or more alpha channels.
+    * Returns true iff this image has one or more alpha channels.
     *
     * Alpha channels are those in excess of nominal channels, e.g. a fourth
     * channel in a RGB image, or a second channel in a grayscale image.
@@ -411,7 +411,7 @@ public:
    }
 
    /*!
-    * Returns true if the current selection is empty, i.e. if its area is zero.
+    * Returns true iff the current selection is empty, i.e. if its area is zero.
     */
    bool IsEmptySelection() const
    {
@@ -419,7 +419,7 @@ public:
    }
 
    /*!
-    * Returns true if the current rectangular selection comprises the entire
+    * Returns true iff the current rectangular selection comprises the entire
     * image.
     */
    bool IsFullSelection() const
@@ -479,7 +479,7 @@ public:
    }
 
    /*!
-    * Returns true if range clipping is currently enabled for this image.
+    * Returns true iff range clipping is currently enabled for this image.
     *
     * When range clipping is enabled, pixel samples outside the current
     * clipping range:
@@ -656,7 +656,7 @@ public:
    }
 
    /*!
-    * Returns true if one or more selections have been pushed to the internal
+    * Returns true iff one or more selections have been pushed to the internal
     * selection stack, that is, if the PopSelections() function can be called
     * to restore them.
     */
@@ -707,7 +707,7 @@ public:
    // -------------------------------------------------------------------------
 
    /*!
-    * Returns true if this image is allowed to use multiple parallel execution
+    * Returns true iff this image is allowed to use multiple parallel execution
     * threads (when multiple threads are permitted and available) for member
     * functions that support parallel execution.
     */
@@ -1278,4 +1278,4 @@ protected:
 #endif   // __PCL_AbstractImage_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AbstractImage.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/AbstractImage.h - Released 2015/10/08 11:24:12 UTC

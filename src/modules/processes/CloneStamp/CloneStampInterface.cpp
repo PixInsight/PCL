@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// Standard CloneStamp Process Module Version 01.00.02.0238
+// Standard CloneStamp Process Module Version 01.00.02.0246
 // ----------------------------------------------------------------------------
-// CloneStampInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// CloneStampInterface.cpp - Released 2015/10/08 11:24:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard CloneStamp PixInsight module.
 //
@@ -51,15 +51,15 @@
 // ----------------------------------------------------------------------------
 
 #include "CloneStampInterface.h"
-#include "CloneStampProcess.h"
 #include "CloneStampParameters.h"
+#include "CloneStampProcess.h"
 
-#include <pcl/ImageWindow.h>
-#include <pcl/Graphics.h>
 #include <pcl/Color.h>
-#include <pcl/Settings.h>
-#include <pcl/MessageBox.h>
 #include <pcl/ErrorHandler.h>
+#include <pcl/Graphics.h>
+#include <pcl/ImageWindow.h>
+#include <pcl/MessageBox.h>
+#include <pcl/Settings.h>
 
 namespace pcl
 {
@@ -191,31 +191,31 @@ void CloneStampInterface::StoreRect( const Rect& _r )
 }
 
 template <class P>
-static void __RestoreRect( GenericImage<P>& image, const GenericImage<P>& tile )
+static void RestoreTile( GenericImage<P>& image, const GenericImage<P>& tile )
 {
    image.Apply( tile );
 }
 
-static void __RestoreRect( ImageVariant& image, const ImageVariant& tile )
+static void RestoreTile( ImageVariant& image, const ImageVariant& tile )
 {
    if ( image.IsComplexSample() )
       switch ( image.BitsPerSample() )
       {
-      case 32 : __RestoreRect( static_cast<ComplexImage&>( *image ), static_cast<const ComplexImage&>( *tile ) ); break;
-      case 64 : __RestoreRect( static_cast<DComplexImage&>( *image ), static_cast<const DComplexImage&>( *tile ) ); break;
+      case 32: RestoreTile( static_cast<ComplexImage&>( *image ), static_cast<const ComplexImage&>( *tile ) ); break;
+      case 64: RestoreTile( static_cast<DComplexImage&>( *image ), static_cast<const DComplexImage&>( *tile ) ); break;
       }
    else if ( image.IsFloatSample() )
       switch ( image.BitsPerSample() )
       {
-      case 32 : __RestoreRect( static_cast<Image&>( *image ), static_cast<const Image&>( *tile ) ); break;
-      case 64 : __RestoreRect( static_cast<DImage&>( *image ), static_cast<const DImage&>( *tile ) ); break;
+      case 32: RestoreTile( static_cast<Image&>( *image ), static_cast<const Image&>( *tile ) ); break;
+      case 64: RestoreTile( static_cast<DImage&>( *image ), static_cast<const DImage&>( *tile ) ); break;
       }
    else
       switch ( image.BitsPerSample() )
       {
-      case  8 : __RestoreRect( static_cast<UInt8Image&>( *image ), static_cast<const UInt8Image&>( *tile ) ); break;
-      case 16 : __RestoreRect( static_cast<UInt16Image&>( *image ), static_cast<const UInt16Image&>( *tile ) ); break;
-      case 32 : __RestoreRect( static_cast<UInt32Image&>( *image ), static_cast<const UInt32Image&>( *tile ) ); break;
+      case  8: RestoreTile( static_cast<UInt8Image&>( *image ), static_cast<const UInt8Image&>( *tile ) ); break;
+      case 16: RestoreTile( static_cast<UInt16Image&>( *image ), static_cast<const UInt16Image&>( *tile ) ); break;
+      case 32: RestoreTile( static_cast<UInt32Image&>( *image ), static_cast<const UInt32Image&>( *tile ) ); break;
       }
 }
 
@@ -245,7 +245,7 @@ void CloneStampInterface::RestoreRect( const Rect& _r )
                int y0 = i*tileSize;
                image.SelectPoint( Max( r.x0, x0 ), Max( r.y0, y0 ) );
                tile.SelectRectangle( r.x0-x0, r.y0-y0, r.x1-x0, r.y1-y0 );
-               __RestoreRect( image, tile );
+               RestoreTile( image, tile );
 
                if ( tile.IsFullSelection() )
                   tile.Free();
@@ -607,7 +607,7 @@ void CloneStampInterface::UpdateViews()
          }
 
          // Source point
-         double dr = sourceWindow.ViewportScalarToImage( sourceWindow.DisplayPixelRatio()*(CENTER_RADIUS + 1) );
+         double dr = sourceWindow.ViewportScalarToImage( sourceWindow.DisplayPixelRatio()*(CENTER_RADIUS + 2) );
          sourceWindow.UpdateImageRect( DRect( s - dr, s + dr ) );
       }
 
@@ -983,7 +983,6 @@ bool CloneStampInterface::ImportProcess( const ProcessImplementation& p )
       color = instance->color;
       boundsColor = instance->boundsColor;
    }
-
    catch ( ... )
    {
       Reset();
@@ -1489,7 +1488,7 @@ bool CloneStampInterface::RequiresDynamicUpdate( const View& v, const DRect& upd
       if ( sourceView == nullptr || v == *sourceView )
       {
          // Source point (add 1 pixel below to guard against roundoff errors)
-         double dr = sourceWindow.ViewportScalarToImage( sourceWindow.DisplayPixelRatio()*(CENTER_RADIUS + 1) );
+         double dr = sourceWindow.ViewportScalarToImage( sourceWindow.DisplayPixelRatio()*(CENTER_RADIUS + 2) );
          if ( DRect( s - dr, s + dr ).Intersects( updateRect ) )
             return true;
       }
@@ -1904,4 +1903,4 @@ CloneStampInterface::GUIData::GUIData( CloneStampInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CloneStampInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// EOF CloneStampInterface.cpp - Released 2015/10/08 11:24:39 UTC

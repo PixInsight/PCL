@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Control.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Control.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -182,7 +182,7 @@ public:
     * Since server-side controls are unique objects, calling this member
     * function has no effect.
     */
-   virtual void SetUnique()
+   virtual void EnsureUnique()
    {
    }
 
@@ -1283,8 +1283,6 @@ public:
     * pixels and scaled resource file paths, and optionally point sizes
     * converted to scaled pixel sizes.
     *
-    * \param scalingFactor    The display scaling factor to apply.
-    *
     * \param cssCode          A string containing the input CSS source code.
     *                         The function will return a transformed version of
     *                         this string.
@@ -1297,13 +1295,15 @@ public:
     *                         currently selected in core user preferences
     *                         (which is the value of the
     *                         "Application/FontResolution" global integer
-    *                         variable - see PixInsightSettings). If this
+    *                         variable; see PixInsightSettings). If this
     *                         parameter is a negative integer, no
     *                         point-to-pixel conversions will be applied.
     *
     * Calling this function is equivalent to:
     *
-    * \code pcl::UIScaledStyleSheet( DisplayPixelRatio(), cssCode, fontDPI ); \endcode
+    * \code
+    * pcl::UIScaledStyleSheet( DisplayPixelRatio(), cssCode, fontDPI );
+    * \endcode
     *
     * Example:
     *
@@ -1312,6 +1312,7 @@ public:
     *       "QTreeView {"
     *       "   font-family: DejaVu Sans Mono, Monospace;"
     *       "   font-size: 10pt;"
+    *       "   background-image: url(:/image-window/transparent.png);"
     *       "}"
     *       "QTreeView::item {"
     *       "   padding: 4px 8px 4px 8px;"
@@ -1331,6 +1332,7 @@ public:
     *       "QTreeView {"
     *       "   font-family: DejaVu Sans Mono, Monospace;"
     *       "   font-size: 21px;"
+    *       "   background-image: url(:/image-window/1.5/transparent.png);"
     *       "}"
     *       "QTreeView::item {"
     *       "   padding: 6px 12px 6px 12px;"
@@ -1434,123 +1436,157 @@ public:
    // void OnChildCreate( Control& sender, Control& child );
    // void OnChildDestroy( Control& sender, Control& child );
 
+   /*!
+    * \defgroup control_event_handlers Control Event Handlers
+    */
+
    /*! #
+    * \ingroup control_event_handlers
     */
    typedef void (Control::*event_handler)( Control& sender );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    typedef void (Control::*close_event_handler)( Control& sender, bool& allowClose );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    typedef void (Control::*move_event_handler)( Control& sender, const pcl::Point& newPos, const pcl::Point& oldPos );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    typedef void (Control::*resize_event_handler)( Control& sender, int newWidth, int newHeight, int oldWidth, int oldHeight );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    typedef void (Control::*paint_event_handler)( Control& sender, const pcl::Rect& updateRect );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    typedef void (Control::*keyboard_event_handler)( Control& sender, int key, unsigned modifiers, bool& wantsKey );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    typedef void (Control::*mouse_event_handler)( Control& sender, const pcl::Point& pos, unsigned buttons, unsigned modifiers );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    typedef void (Control::*mouse_button_event_handler)( Control& sender, const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    typedef void (Control::*mouse_wheel_event_handler)( Control& sender, const pcl::Point& pos, int delta, unsigned buttons, unsigned modifiers );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    typedef void (Control::*child_event_handler)( Control& sender, Control& child );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    void OnDestroy( event_handler, Control& );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    void OnShow( event_handler, Control& );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    void OnHide( event_handler, Control& );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    void OnClose( close_event_handler, Control& );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    void OnGetFocus( event_handler, Control& );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    void OnLoseFocus( event_handler, Control& );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    void OnEnter( event_handler, Control& );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    void OnLeave( event_handler, Control& );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    void OnMove( move_event_handler, Control& );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    void OnResize( resize_event_handler, Control& );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    void OnPaint( paint_event_handler, Control& );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    void OnKeyPress( keyboard_event_handler, Control& );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    void OnKeyRelease( keyboard_event_handler, Control& );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    void OnMouseMove( mouse_event_handler, Control& );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    void OnMouseDoubleClick( mouse_event_handler, Control& );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    void OnMousePress( mouse_button_event_handler, Control& );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    void OnMouseRelease( mouse_button_event_handler, Control& );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    void OnMouseWheel( mouse_wheel_event_handler, Control& );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    void OnChildCreate( child_event_handler, Control& );
 
    /*! #
+    * \ingroup control_event_handlers
     */
    void OnChildDestroy( child_event_handler, Control& );
 
@@ -1657,8 +1693,7 @@ int CanonicalControlHeightImplementation()
 }
 
 /*!
- * \defgroup aux_control_functions_and_classes Auxiliary Control Functions and
- * Classes
+ * \defgroup aux_control_functions_and_classes Control Helper Functions and Classes
  */
 
 /*!
@@ -1690,4 +1725,4 @@ int CanonicalControlHeightImplementation()
 #endif   // __PCL_Control_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Control.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Control.h - Released 2015/10/08 11:24:12 UTC

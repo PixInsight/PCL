@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/FontComboBox.h - Released 2015/07/30 17:15:18 UTC
+// pcl/FontComboBox.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -335,7 +335,7 @@ public:
     * \param font    The face name of the font that has been selected or
     *                highlighted in the \a sender font combo box.
     *
-    * \ingroup colorcombobox_event_handlers
+    * \ingroup fontcombobox_event_handlers
     */
    typedef void (Control::*font_event_handler)( FontComboBox& sender, const String& font );
 
@@ -349,6 +349,8 @@ public:
     *
     * \param receiver   The control that will receive <em>font selected</em>
     *                   events from this font combo box.
+    *
+    * \ingroup fontcombobox_event_handlers
     */
    void OnFontSelected( font_event_handler handler, Control& receiver );
 
@@ -363,6 +365,8 @@ public:
     *
     * \param receiver   The control that will receive <em>font
     *                   highlighted</em> events from this font combo box.
+    *
+    * \ingroup fontcombobox_event_handlers
     */
    void OnFontHighlighted( font_event_handler handler, Control& receiver );
 
@@ -396,4 +400,4 @@ private:
 #endif   // __PCL_FontComboBox_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FontComboBox.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/FontComboBox.h - Released 2015/10/08 11:24:12 UTC

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.95
+# PixInsight Makefile Generator Script v1.96
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 30 Jul 2015 17:10:35 GMT
+# Automatically generated on Thu, 08 Oct 2015 11:23:31 GMT
 # Project id ...... JPEG2000
 # Project type .... Module
 # Platform ........ Windows/vc12
@@ -20,7 +20,7 @@
 # _CRT_SECURE_NO_WARNINGS
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Additional include search directories:
-# ../../libjasper/include
+# $(PCLSRCDIR)/3rdparty/jasper/include
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Additional libraries:
 # jasper-pxi
@@ -66,63 +66,6 @@
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\JPEG2000PreferencesDialog.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_cm.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_config.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_config2.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_debug.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_fix.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_getopt.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_icc.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_image.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_init.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_malloc.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_math.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_seq.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_stream.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_string.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_tmr.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_tvp.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_types.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_version.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libjasper\include\jasper\jasper.h">
         <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

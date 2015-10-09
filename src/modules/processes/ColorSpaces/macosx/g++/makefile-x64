@@ -1,0 +1,129 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.96
+# Copyright (C) 2009-2015 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Thu, 08 Oct 2015 11:23:33 GMT
+# Project id ...... ColorSpaces
+# Project type .... Module
+# Platform ........ MacOSX/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/modules/processes/ColorSpaces/macosx/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/ColorSpaces-pxm.dylib
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../ChannelCombinationInstance.cpp \
+../../ChannelCombinationInterface.cpp \
+../../ChannelCombinationParameters.cpp \
+../../ChannelCombinationProcess.cpp \
+../../ChannelExtractionInstance.cpp \
+../../ChannelExtractionInterface.cpp \
+../../ChannelExtractionParameters.cpp \
+../../ChannelExtractionProcess.cpp \
+../../ChannelParameters.cpp \
+../../ChannelSourceSelectionDialog.cpp \
+../../ColorSpacesModule.cpp \
+../../ExtractCIELAction.cpp \
+../../GrayscaleRGBActions.cpp \
+../../GrayscaleRGBInstances.cpp \
+../../GrayscaleRGBProcesses.cpp \
+../../LRGBCombinationInstance.cpp \
+../../LRGBCombinationInterface.cpp \
+../../LRGBCombinationParameters.cpp \
+../../LRGBCombinationProcess.cpp \
+../../RGBWorkingSpaceInstance.cpp \
+../../RGBWorkingSpaceInterface.cpp \
+../../RGBWorkingSpaceParameters.cpp \
+../../RGBWorkingSpaceProcess.cpp \
+../../SplitRGBChannelsAction.cpp
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/ChannelCombinationInstance.o \
+./x64/Release/ChannelCombinationInterface.o \
+./x64/Release/ChannelCombinationParameters.o \
+./x64/Release/ChannelCombinationProcess.o \
+./x64/Release/ChannelExtractionInstance.o \
+./x64/Release/ChannelExtractionInterface.o \
+./x64/Release/ChannelExtractionParameters.o \
+./x64/Release/ChannelExtractionProcess.o \
+./x64/Release/ChannelParameters.o \
+./x64/Release/ChannelSourceSelectionDialog.o \
+./x64/Release/ColorSpacesModule.o \
+./x64/Release/ExtractCIELAction.o \
+./x64/Release/GrayscaleRGBActions.o \
+./x64/Release/GrayscaleRGBInstances.o \
+./x64/Release/GrayscaleRGBProcesses.o \
+./x64/Release/LRGBCombinationInstance.o \
+./x64/Release/LRGBCombinationInterface.o \
+./x64/Release/LRGBCombinationParameters.o \
+./x64/Release/LRGBCombinationProcess.o \
+./x64/Release/RGBWorkingSpaceInstance.o \
+./x64/Release/RGBWorkingSpaceInterface.o \
+./x64/Release/RGBWorkingSpaceParameters.o \
+./x64/Release/RGBWorkingSpaceProcess.o \
+./x64/Release/SplitRGBChannelsAction.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/ChannelCombinationInstance.d \
+./x64/Release/ChannelCombinationInterface.d \
+./x64/Release/ChannelCombinationParameters.d \
+./x64/Release/ChannelCombinationProcess.d \
+./x64/Release/ChannelExtractionInstance.d \
+./x64/Release/ChannelExtractionInterface.d \
+./x64/Release/ChannelExtractionParameters.d \
+./x64/Release/ChannelExtractionProcess.d \
+./x64/Release/ChannelParameters.d \
+./x64/Release/ChannelSourceSelectionDialog.d \
+./x64/Release/ColorSpacesModule.d \
+./x64/Release/ExtractCIELAction.d \
+./x64/Release/GrayscaleRGBActions.d \
+./x64/Release/GrayscaleRGBInstances.d \
+./x64/Release/GrayscaleRGBProcesses.d \
+./x64/Release/LRGBCombinationInstance.d \
+./x64/Release/LRGBCombinationInterface.d \
+./x64/Release/LRGBCombinationParameters.d \
+./x64/Release/LRGBCombinationProcess.d \
+./x64/Release/RGBWorkingSpaceInstance.d \
+./x64/Release/RGBWorkingSpaceInterface.d \
+./x64/Release/RGBWorkingSpaceParameters.d \
+./x64/Release/RGBWorkingSpaceProcess.d \
+./x64/Release/SplitRGBChannelsAction.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/ColorSpaces-pxm.dylib: $(OBJ_FILES)
+	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -stdlib=libc++ -Wl,--gc-sections -s -dynamiclib -install_name @executable_path/ColorSpaces-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/ColorSpaces-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/ColorSpaces-pxm.dylib
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/ColorSpaces-pxm.dylib $(PCLBINDIR64)
+	codesign --deep -s pleiades -f -v --timestamp $(PCLBINDIR64)/ColorSpaces-pxm.dylib
+
+./x64/Release/%.o: ../../%.cpp
+	clang++ -c -pipe -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Math.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Math.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -157,13 +157,13 @@ inline int MaxSSEInstructionSetSupported()
    edxFlags = cpuInfo[3];
    ecxFlags = cpuInfo[2];
 #else
-   __asm__( "mov $0x00000001, %%eax;"
-            "cpuid;"
-            "mov %%edx, %0;"
-            "mov %%ecx, %1;"
-            : "=r" (edxFlags), "=r" (ecxFlags)  // output operands
-            :                                   // input operands
-            : "%eax", "%ebx", "%ecx", "%edx" ); // clobbered registers
+   asm volatile( "mov $0x00000001, %%eax\n\t"
+                 "cpuid\n\t"
+                 "mov %%edx, %0\n\t"
+                 "mov %%ecx, %1\n"
+                  : "=r" (edxFlags), "=r" (ecxFlags)  // output operands
+                  :                                   // input operands
+                  : "%eax", "%ebx", "%ecx", "%edx" ); // clobbered registers
 #endif
 
    if ( ecxFlags & (1u << 20) ) // SSE4.2
@@ -190,7 +190,7 @@ inline int MaxSSEInstructionSetSupported()
 #define __PCL_FLOAT_SIGMASK   0x007fffff
 
 /*!
- * Returns true if the specified 32-bit floating point number is \e finite.
+ * Returns true iff the specified 32-bit floating point number is \e finite.
  * A number is finite if it is neither NaN (Not a Number) nor positive or
  * negative infinity.
  *
@@ -204,7 +204,7 @@ inline bool IsFinite( float x )
 }
 
 /*!
- * Returns true if the specified 32-bit floating point number is \e NaN. A NaN
+ * Returns true iff the specified 32-bit floating point number is \e NaN. A NaN
  * (Not A Number) is a special value in the IEEE 754 standard used to represent
  * an undefined or unrepresentable value, such as the result of invalid
  * operations like 0/0, or real operations with complex results as the square
@@ -246,7 +246,7 @@ inline int IsInfinity( float x )
 #define __PCL_DOUBLE_SIGMASK  0x000fffff
 
 /*!
- * Returns true if the specified 64-bit floating point number is \e finite.
+ * Returns true iff the specified 64-bit floating point number is \e finite.
  * A number is finite if it is neither NaN (Not a Number) nor positive or
  * negative infinity.
  *
@@ -260,7 +260,7 @@ inline bool IsFinite( double x )
 }
 
 /*!
- * Returns true if the specified 64-bit floating point number is \e NaN. A NaN
+ * Returns true iff the specified 64-bit floating point number is \e NaN. A NaN
  * (Not A Number) is a special value in the IEEE 754 standard used to represent
  * an undefined or unrepresentable value, such as the result of invalid
  * operations like 0/0, or real operations with complex results as the square
@@ -308,7 +308,7 @@ inline int IsInfinity( double x )
  * Absolute value of \a x.
  * \ingroup mathematical_functions
  */
-inline float Abs( float x )
+inline constexpr float Abs( float x )
 {
    return std::fabs( x );
 }
@@ -316,7 +316,7 @@ inline float Abs( float x )
 /*!
  * \ingroup mathematical_functions
  */
-inline double Abs( double x )
+inline constexpr double Abs( double x )
 {
    return std::fabs( x );
 }
@@ -324,7 +324,7 @@ inline double Abs( double x )
 /*!
  * \ingroup mathematical_functions
  */
-inline long double Abs( long double x )
+inline constexpr long double Abs( long double x )
 {
    return std::fabs( x );
 }
@@ -332,7 +332,7 @@ inline long double Abs( long double x )
 /*!
  * \ingroup mathematical_functions
  */
-inline signed int Abs( signed int x )
+inline constexpr signed int Abs( signed int x )
 {
    return ::abs( x );
 }
@@ -344,7 +344,7 @@ inline signed int Abs( signed int x )
 _Pragma("clang diagnostic push")
 _Pragma("clang diagnostic ignored \"-Wabsolute-value\"")
 #endif
-inline signed long Abs( signed long x )
+inline constexpr signed long Abs( signed long x )
 {
    return ::abs( x );
 }
@@ -361,12 +361,12 @@ inline __int64 Abs( __int64 x )
    return (x < 0) ? -x : +x;
 }
 #elif defined( __clang__ )
-inline signed long long Abs( signed long long x )
+inline constexpr signed long long Abs( signed long long x )
 {
    return (x < 0) ? -x : +x;
 }
 #else
-inline signed long long Abs( signed long long x )
+inline constexpr signed long long Abs( signed long long x )
 {
    return ::abs( x );
 }
@@ -375,7 +375,7 @@ inline signed long long Abs( signed long long x )
 /*!
  * \ingroup mathematical_functions
  */
-inline signed short Abs( signed short x )
+inline constexpr signed short Abs( signed short x )
 {
    return (signed short)::abs( int( x ) );
 }
@@ -383,7 +383,7 @@ inline signed short Abs( signed short x )
 /*!
  * \ingroup mathematical_functions
  */
-inline signed char Abs( signed char x )
+inline constexpr signed char Abs( signed char x )
 {
    return (signed char)::abs( int( x ) );
 }
@@ -391,7 +391,7 @@ inline signed char Abs( signed char x )
 /*!
  * \ingroup mathematical_functions
  */
-inline wchar_t Abs( wchar_t x )
+inline constexpr wchar_t Abs( wchar_t x )
 {
    return (wchar_t)::abs( int( x ) );
 }
@@ -399,7 +399,7 @@ inline wchar_t Abs( wchar_t x )
 /*!
  * \ingroup mathematical_functions
  */
-inline unsigned int Abs( unsigned int x )
+inline constexpr unsigned int Abs( unsigned int x )
 {
    return x;
 }
@@ -407,7 +407,7 @@ inline unsigned int Abs( unsigned int x )
 /*!
  * \ingroup mathematical_functions
  */
-inline unsigned long Abs( unsigned long x )
+inline constexpr unsigned long Abs( unsigned long x )
 {
    return x;
 }
@@ -415,13 +415,13 @@ inline unsigned long Abs( unsigned long x )
 /*!
  * \ingroup mathematical_functions
  */
-#ifdef __PCL_WINDOWS
+#ifdef _MSC_VER
 inline unsigned __int64 Abs( unsigned __int64 x )
 {
    return x;
 }
 #else
-inline unsigned long long Abs( unsigned long long x )
+inline constexpr unsigned long long Abs( unsigned long long x )
 {
    return x;
 }
@@ -430,7 +430,7 @@ inline unsigned long long Abs( unsigned long long x )
 /*!
  * \ingroup mathematical_functions
  */
-inline unsigned short Abs( unsigned short x )
+inline constexpr unsigned short Abs( unsigned short x )
 {
    return x;
 }
@@ -438,7 +438,7 @@ inline unsigned short Abs( unsigned short x )
 /*!
  * \ingroup mathematical_functions
  */
-inline unsigned char Abs( unsigned char x )
+inline constexpr unsigned char Abs( unsigned char x )
 {
    return x;
 }
@@ -449,7 +449,7 @@ inline unsigned char Abs( unsigned char x )
  * Merges a complex angle given by degrees and arcminutes into single degrees.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Angle( int d, T m )
+template <typename T> inline constexpr T Angle( int d, T m )
 {
    return d + m/60;
 }
@@ -459,7 +459,7 @@ template <typename T> inline T Angle( int d, T m )
  * single degrees.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Angle( int d, int m, T s )
+template <typename T> inline constexpr T Angle( int d, int m, T s )
 {
    return Angle( d, m + s/60 );
 }
@@ -470,7 +470,7 @@ template <typename T> inline T Angle( int d, int m, T s )
  * Inverse cosine function (arccosine).
  * \ingroup mathematical_functions
  */
-template <typename T> inline T ArcCos( T x )
+template <typename T> inline constexpr T ArcCos( T x )
 {
    PCL_PRECONDITION( T( -1 ) <= x && x <= T( 1 ) )
    return std::acos( x );
@@ -482,7 +482,7 @@ template <typename T> inline T ArcCos( T x )
  * Inverse sine function (arcsine).
  * \ingroup mathematical_functions
  */
-template <typename T> inline T ArcSin( T x )
+template <typename T> inline constexpr T ArcSin( T x )
 {
    PCL_PRECONDITION( T( -1 ) <= x && x <= T( 1 ) )
    return std::asin( x );
@@ -494,7 +494,7 @@ template <typename T> inline T ArcSin( T x )
  * Inverse tangent function (arctangent).
  * \ingroup mathematical_functions
  */
-template <typename T> inline T ArcTan( T x )
+template <typename T> inline constexpr T ArcTan( T x )
 {
    return std::atan( x );
 }
@@ -505,7 +505,7 @@ template <typename T> inline T ArcTan( T x )
  * Arctangent of y/x, result in the proper quadrant.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T ArcTan( T y, T x )
+template <typename T> inline constexpr T ArcTan( T y, T x )
 {
    return std::atan2( y, x );
 }
@@ -530,7 +530,7 @@ template <typename T> inline T ArcTan2Pi( T y, T x )
  * The ceil function: lowest integer >= x.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Ceil( T x )
+template <typename T> inline constexpr T Ceil( T x )
 {
    return std::ceil( x );
 }
@@ -541,7 +541,7 @@ template <typename T> inline T Ceil( T x )
  * Cosine function.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Cos( T x )
+template <typename T> inline constexpr T Cos( T x )
 {
    return std::cos( x );
 }
@@ -552,7 +552,7 @@ template <typename T> inline T Cos( T x )
  * Hyperbolic Cosine function.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Cosh( T x )
+template <typename T> inline constexpr T Cosh( T x )
 {
    return std::cosh( x );
 }
@@ -563,7 +563,7 @@ template <typename T> inline T Cosh( T x )
  * Cotangent of x, equal to Cos(x)/Sin(x) or 1/Tan(x).
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Cotan( T x )
+template <typename T> inline constexpr T Cotan( T x )
 {
    return T( 1 )/std::tan( x );
 }
@@ -574,7 +574,7 @@ template <typename T> inline T Cotan( T x )
  * Conversion from radians to degrees.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Deg( T x )
+template <typename T> inline constexpr T Deg( T x )
 {
    return static_cast<T>( 0.572957795130823208767981548141051700441964e+02L * x );
 }
@@ -585,7 +585,7 @@ template <typename T> inline T Deg( T x )
  * The exponential function e**x.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Exp( T x )
+template <typename T> inline constexpr T Exp( T x )
 {
    return std::exp( x );
 }
@@ -634,7 +634,7 @@ template <typename T> struct PCL_CLASS Fact
  * The floor function: highest integer <= x.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Floor( T x )
+template <typename T> inline constexpr T Floor( T x )
 {
    return std::floor( x );
 }
@@ -646,7 +646,7 @@ template <typename T> inline T Floor( T x )
  * The returned value is within ]-1,+1[, and has the same sign as x.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Frac( T x )
+template <typename T> inline constexpr T Frac( T x )
 {
    return std::modf( x, &x );
 }
@@ -675,7 +675,7 @@ template <typename T> inline void Frexp( T x, T& m, int& p )
  *
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Hav( T x )
+template <typename T> inline constexpr T Hav( T x )
 {
    return (1 - Cos( x ))/2;
 }
@@ -686,7 +686,7 @@ template <typename T> inline T Hav( T x )
  * Calculates m * 2**p.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Ldexp( T m, int p )
+template <typename T> inline constexpr T Ldexp( T m, int p )
 {
    return std::ldexp( m, p );
 }
@@ -697,7 +697,7 @@ template <typename T> inline T Ldexp( T m, int p )
  * Natural (base e) logarithm of x.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Ln( T x )
+template <typename T> inline constexpr T Ln( T x )
 {
    return std::log( x );
 }
@@ -708,7 +708,7 @@ template <typename T> inline T Ln( T x )
  * Natural (base e) logarithm of two.
  * \ingroup mathematical_functions
  */
-inline long double Ln2()
+inline constexpr long double Ln2()
 {
    return (long double)( 0.6931471805599453094172321214581766e+00L );
 }
@@ -719,7 +719,7 @@ inline long double Ln2()
  * Base 10 Logarithm of x.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Log( T x )
+template <typename T> inline constexpr T Log( T x )
 {
    return std::log10( x );
 }
@@ -730,7 +730,7 @@ template <typename T> inline T Log( T x )
  * Base 10 Logarithm of two.
  * \ingroup mathematical_functions
  */
-inline long double Log2()
+inline constexpr long double Log2()
 {
    // Use the relation:
    //    log10(2) = ln(2)/ln(10)
@@ -743,7 +743,7 @@ inline long double Log2()
  * Base 2 Logarithm of x.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Log2( T x )
+template <typename T> inline constexpr T Log2( T x )
 {
    // Use the relation:
    //    log2(x) = ln(x)/ln(2)
@@ -756,7 +756,7 @@ template <typename T> inline T Log2( T x )
  * Base 2 Logarithm of e.
  * \ingroup mathematical_functions
  */
-inline long double Log2e()
+inline constexpr long double Log2e()
 {
    // Use the relation:
    //    log2(e) = 1/ln(2)
@@ -769,7 +769,7 @@ inline long double Log2e()
  * Base 2 Logarithm of ten.
  * \ingroup mathematical_functions
  */
-inline long double Log2T()
+inline constexpr long double Log2T()
 {
    // Use the relation:
    //    log2(10) = 1/log(2)
@@ -782,7 +782,7 @@ inline long double Log2T()
  * Base \a n logarithm of \a x.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T LogN( T n, T x )
+template <typename T> inline constexpr T LogN( T n, T x )
 {
    return std::log( x )/std::log( n );
 }
@@ -793,7 +793,7 @@ template <typename T> inline T LogN( T n, T x )
  * Remainder of x/y.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Mod( T x, T y )
+template <typename T> inline constexpr T Mod( T x, T y )
 {
    return std::fmod( x, y );
 }
@@ -804,7 +804,7 @@ template <typename T> inline T Mod( T x, T y )
  * The pi constant: 3.141592...
  * \ingroup mathematical_functions
  */
-inline long double Pi()
+inline constexpr long double Pi()
 {
    return (long double)( 0.31415926535897932384626433832795029e+01L );
 }
@@ -841,7 +841,7 @@ template <typename T, typename C> inline T Poly( T x, C c, int n )
  *
  * \ingroup mathematical_functions
  */
-template <typename T> inline int Sign( T x )
+template <typename T> inline constexpr int Sign( T x )
 {
    return (x < 0) ? -1 : ((x > 0) ? +1 : 0);
 }
@@ -857,7 +857,7 @@ template <typename T> inline int Sign( T x )
  *
  * \ingroup mathematical_functions
  */
-template <typename T> inline char SignChar( T x )
+template <typename T> inline constexpr char SignChar( T x )
 {
    return (x < 0) ? '-' : ((x > 0) ? '+' : ' ');
 }
@@ -868,7 +868,7 @@ template <typename T> inline char SignChar( T x )
  * Sine function
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Sin( T x )
+template <typename T> inline constexpr T Sin( T x )
 {
    return std::sin( x );
 }
@@ -879,7 +879,7 @@ template <typename T> inline T Sin( T x )
  * Hyperbolic Sine function.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Sinh( T x )
+template <typename T> inline constexpr T Sinh( T x )
 {
    return std::sinh( x );
 }
@@ -950,7 +950,7 @@ template <typename T> inline void Split( T x, T& i, T& f )
  * Square root function.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Sqrt( T x )
+template <typename T> inline constexpr T Sqrt( T x )
 {
    return std::sqrt( x );
 }
@@ -961,7 +961,7 @@ template <typename T> inline T Sqrt( T x )
  * Tangent function.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Tan( T x )
+template <typename T> inline constexpr T Tan( T x )
 {
    return std::tan( x );
 }
@@ -972,7 +972,7 @@ template <typename T> inline T Tan( T x )
  * Hyperbolic Tangent function.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Tanh( T x )
+template <typename T> inline constexpr T Tanh( T x )
 {
    return std::tanh( x );
 }
@@ -1033,7 +1033,7 @@ template <typename T> inline int TruncInt( T x )
  * TruncI function: Truncated integer part of \a x as a 32-bit signed integer.
  * to a 32-bit signed integer.
  *
- * This function is a convenience synonym for TruncInt().
+ * \deprecated Use TruncInt() in newly produced code.
  *
  * \ingroup mathematical_functions
  */
@@ -1129,7 +1129,7 @@ template <typename T> inline int64 TruncI64( T x )
  *
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Pow( T x, T y )
+template <typename T> inline constexpr T Pow( T x, T y )
 {
    PCL_PRECONDITION( y < T( int_max ) )
    return std::pow( x, y );
@@ -1224,7 +1224,7 @@ inline double Round( double x )
 #    endif
 #  else
    double r;
-   __asm__( "frndint;": "=t" (r) : "0" (x) );
+   asm volatile( "frndint\n": "=t" (r) : "0" (x) );
    return r;
 #  endif
 
@@ -1257,7 +1257,7 @@ inline float Round( float x )
 #    endif
 #  else
    float r;
-   __asm__( "frndint;": "=t" (r) : "0" (x) );
+   asm volatile( "frndint\n": "=t" (r) : "0" (x) );
    return r;
 #  endif
 
@@ -1291,7 +1291,7 @@ inline long double Round( long double x )
 #    endif
 #  else
    long double r;
-   __asm__( "frndint;": "=t" (r) : "0" (x) );
+   asm volatile( "frndint\n": "=t" (r) : "0" (x) );
    return r;
 #  endif
 
@@ -1357,7 +1357,7 @@ template <typename T> inline int RoundInt( T x )
    __asm fld      x
    __asm fistp    dword ptr r
 #  else
-   __asm__ __volatile__( "fistpl %0"  : "=m" (r) : "t" (x) : "st" );
+   asm volatile( "fistpl %0\n" : "=m" (r) : "t" (x) : "st" );
 #  endif
 
    return r;
@@ -1370,7 +1370,7 @@ template <typename T> inline int RoundInt( T x )
  * RoundI function: Rounds \a x to the nearest integer and converts the result
  * to a 32-bit signed integer.
  *
- * This function is a convenience synonym for RoundInt().
+ * \deprecated Use RoundInt() in newly produced code.
  *
  * \ingroup mathematical_functions
  */
@@ -1469,7 +1469,7 @@ inline int64 RoundInt64( double x )
 #    endif
 #  else
    int64 r;
-   __asm__ __volatile__( "fistpll %0"  : "=m" (r) : "t" (x) : "st" );
+   asm volatile( "fistpll %0\n" : "=m" (r) : "t" (x) : "st" );
    return r;
 #  endif
 
@@ -1480,7 +1480,7 @@ inline int64 RoundInt64( double x )
  * RoundI64 function: Rounds \a x to the nearest integer and converts the
  * result to a 64-bit signed integer.
  *
- * This function is a convenience synonym for RoundInt64().
+ * \deprecated Use RoundInt64() in newly produced code.
  */
 inline int64 RoundI64( double x )
 {
@@ -1543,7 +1543,7 @@ template <typename T> inline T Round( T x, int n )
  * The exponential function 2**x.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Pow2( T x )
+template <typename T> inline constexpr T Pow2( T x )
 {
    // Use the relation:
    //    2**x = e**(x*ln(2))
@@ -1609,7 +1609,7 @@ template <typename T> inline T PowI( T x, int n )
  *
  * \ingroup mathematical_functions
  */
-template <typename T> inline T ArcSinh( T x )
+template <typename T> inline constexpr T ArcSinh( T x )
 {
    return Ln( x + Sqrt( 1 + x*x ) );
 }
@@ -1623,10 +1623,9 @@ template <typename T> inline T ArcSinh( T x )
  *
  * \ingroup mathematical_functions
  */
-template <typename T> inline T ArcCosh( T x )
+template <typename T> inline constexpr T ArcCosh( T x )
 {
-   T y = Ln( Sqrt( (x + 1)/2 ) + Sqrt( (x - 1)/2 ) );
-   return y+y;
+   return 2*Ln( Sqrt( (x + 1)/2 ) + Sqrt( (x - 1)/2 ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -1638,7 +1637,7 @@ template <typename T> inline T ArcCosh( T x )
  *
  * \ingroup mathematical_functions
  */
-template <typename T> inline T ArcTanh( T x )
+template <typename T> inline constexpr T ArcTanh( T x )
 {
    return (Ln( 1 + x ) - Ln( 1 - x ))/2;
 }
@@ -1654,10 +1653,9 @@ template <typename T> inline T ArcTanh( T x )
  *
  * \ingroup mathematical_functions
  */
-template <typename T> inline T ArcHav( T x )
+template <typename T> inline constexpr T ArcHav( T x )
 {
-   T y = ArcSin( Sqrt( x ) );
-   return y+y;
+   return 2*ArcSin( Sqrt( x ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -1666,7 +1664,7 @@ template <typename T> inline T ArcHav( T x )
  * Conversion from degrees to radians.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T Rad( T x )
+template <typename T> inline constexpr T Rad( T x )
 {
    return static_cast<T>( 0.174532925199432957692369076848861272222e-01L * x );
 }
@@ -1677,7 +1675,7 @@ template <typename T> inline T Rad( T x )
  * Conversion from radians to arcminutes.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T RadMin( T x )
+template <typename T> inline constexpr T RadMin( T x )
 {
    return Deg( x )*60;
 }
@@ -1688,7 +1686,7 @@ template <typename T> inline T RadMin( T x )
  * Conversion from radians to arcseconds.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T RadSec( T x )
+template <typename T> inline constexpr T RadSec( T x )
 {
    return Deg( x )*3600;
 }
@@ -1699,7 +1697,7 @@ template <typename T> inline T RadSec( T x )
  * Conversion from arcminutes to radians.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T MinRad( T x )
+template <typename T> inline constexpr T MinRad( T x )
 {
    return Rad( x/60 );
 }
@@ -1710,7 +1708,7 @@ template <typename T> inline T MinRad( T x )
  * Conversion from arcseconds to radians.
  * \ingroup mathematical_functions
  */
-template <typename T> inline T SecRad( T x )
+template <typename T> inline constexpr T SecRad( T x )
 {
    return Rad( x/3600 );
 }
@@ -1902,7 +1900,7 @@ void PCL_FUNC JDToComplexTime( int& year, int& month, int& day, double& dayf, do
  * computationally expensive, is a compensated summation algorithm such as
  * Kahan summation, which we have implemented in the StableSum() routine.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  */
 template <typename T> inline double Sum( const T* i, const T* j )
 {
@@ -1921,7 +1919,7 @@ template <typename T> inline double Sum( const T* i, const T* j )
  * In the current PCL versions, this function implements the Kahan summation
  * algorithm to reduce roundoff error to the machine's floating point error.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  */
 template <typename T> inline double StableSum( const T* i, const T* j )
 {
@@ -1946,7 +1944,7 @@ template <typename T> inline double StableSum( const T* i, const T* j )
  * this case. See StableModulus() for a (slow) numerically stable version of
  * this function.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  */
 template <typename T> inline double Modulus( const T* i, const T* j )
 {
@@ -1965,7 +1963,7 @@ template <typename T> inline double Modulus( const T* i, const T* j )
  * In the current PCL versions, this function implements the Kahan summation
  * algorithm to reduce roundoff error to the machine's floating point error.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  */
 template <typename T> inline double StableModulus( const T* i, const T* j )
 {
@@ -1990,7 +1988,7 @@ template <typename T> inline double StableModulus( const T* i, const T* j )
  * this case. See StableSumOfSquares() for a (slow) numerically stable version
  * of this function.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  */
 template <typename T> inline double SumOfSquares( const T* i, const T* j )
 {
@@ -2009,7 +2007,7 @@ template <typename T> inline double SumOfSquares( const T* i, const T* j )
  * In the current PCL versions, this function implements the Kahan summation
  * algorithm to reduce roundoff error to the machine's floating point error.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  */
 template <typename T> inline double StableSumOfSquares( const T* i, const T* j )
 {
@@ -2034,7 +2032,7 @@ template <typename T> inline double StableSumOfSquares( const T* i, const T* j )
  * this case. See StableMean() for a (slow) numerically stable version of this
  * function.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  */
 template <typename T> inline double Mean( const T* i, const T* j )
 {
@@ -2053,7 +2051,7 @@ template <typename T> inline double Mean( const T* i, const T* j )
  * In the current PCL versions, this function implements the Kahan summation
  * algorithm to reduce roundoff error to the machine's floating point error.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  */
 template <typename T> inline double StableMean( const T* i, const T* j )
 {
@@ -2078,7 +2076,7 @@ template <typename T> inline double StableMean( const T* i, const T* j )
  * Computing, Second Edition</em> (1997 reprint) Cambridge University Press,
  * page 613.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  */
 template <typename T> inline double Variance( const T* i, const T* j, double center )
 {
@@ -2109,7 +2107,7 @@ template <typename T> inline double Variance( const T* i, const T* j, double cen
  * Computing, Second Edition</em> (1997 reprint) Cambridge University Press,
  * page 613.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  */
 template <typename T> inline double Variance( const T* i, const T* j )
 {
@@ -2136,7 +2134,7 @@ template <typename T> inline double Variance( const T* i, const T* j )
  *
  * For sequences of less than two elements, this function returns zero.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  */
 template <typename T> inline double StdDev( const T* i, const T* j, double center )
 {
@@ -2148,7 +2146,7 @@ template <typename T> inline double StdDev( const T* i, const T* j, double cente
  *
  * For sequences of less than two elements, this function returns zero.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  */
 template <typename T> inline double StdDev( const T* i, const T* j )
 {
@@ -2197,7 +2195,7 @@ template <typename T> inline double StdDev( const T* i, const T* j )
  * \note This is a \e destructive median calculation algorithm: it may alter
  * the initial order of items in the specified [i,j) sequence.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  */
 template <typename T> inline double Median( T* i, T* j )
 {
@@ -2290,7 +2288,7 @@ double PCL_FUNC Median( long double* i, long double* j );
  *
  * See the documentation of Median( T*, T* ) for references.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  */
 template <typename T, class BP> inline double Median( T* i, T* j, BP p )
 {
@@ -2374,7 +2372,7 @@ template <typename T, class BP> inline double Median( T* i, T* j, BP p )
  * with the standard deviation of a normal distribution, it must be
  * multiplied by the constant 1.2533.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  */
 template <typename T> inline double AvgDev( const T* i, const T* j, double center )
 {
@@ -2405,7 +2403,7 @@ template <typename T> inline double AvgDev( const T* i, const T* j, double cente
  * with the standard deviation of a normal distribution, it must be
  * multiplied by the constant 1.2533.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  */
 template <typename T> inline double StableAvgDev( const T* i, const T* j, double center )
 {
@@ -2441,7 +2439,7 @@ template <typename T> inline double StableAvgDev( const T* i, const T* j, double
  * with the standard deviation of a normal distribution, it must be
  * multiplied by the constant 1.2533.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  */
 template <typename T> inline double AvgDev( const T* i, const T* j )
 {
@@ -2475,7 +2473,7 @@ template <typename T> inline double AvgDev( const T* i, const T* j )
  * with the standard deviation of a normal distribution, it must be
  * multiplied by the constant 1.2533.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  */
 template <typename T> inline double StableAvgDev( const T* i, const T* j )
 {
@@ -2564,7 +2562,7 @@ template <typename T> inline double MAD( const T* i, const T* j )
  * \note This is a \e destructive algorithm: it may alter the initial order of
  * items in the specified [x,xn) sequence.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  *
  * \b References
  *
@@ -2810,7 +2808,7 @@ inline double __pcl_whimed__( double* a, distance_type* iw, distance_type n,
  * \note This is a \e destructive algorithm: it may alter the initial order of
  * items in the specified [x,xn) sequence.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  *
  * \b References
  *
@@ -2972,7 +2970,7 @@ template <typename T> double Qn( T* x, T* xn )
  * Rand R. Wilcox (2012), <em>Introduction to Robust Estimation and Hypothesis
  * Testing, 3rd Edition</em>, Elsevier Inc., Section 3.12.1.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  */
 template <typename T>
 double BiweightMidvariance( const T* x, const T* xn, double center, double sigma, int k = 9 )
@@ -3031,7 +3029,7 @@ double BiweightMidvariance( const T* x, const T* xn, double center, double sigma
  * Rand R. Wilcox (2012), <em>Introduction to Robust Estimation and Hypothesis
  * Testing, 3rd Edition</em>, Elsevier Inc., Section 3.12.3.
  *
- * \ingroup statistical_functions mathematical_functions
+ * \ingroup statistical_functions
  */
 template <typename T>
 double BendMidvariance( const T* x, const T* xn, double center, double beta = 0.2 )
@@ -3070,7 +3068,7 @@ double BendMidvariance( const T* x, const T* xn, double center, double beta = 0.
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup hash_functions Hash Functions
+ * \defgroup hash_functions Non-Cryptographic Hash Functions
  */
 
 /*!
@@ -3102,7 +3100,7 @@ double BendMidvariance( const T* x, const T* xn, double center, double beta = 0.
  *
  * http://www.opensource.org/licenses/bsd-license.php
  *
- * \ingroup hash_functions mathematical_functions
+ * \ingroup hash_functions
  */
 inline uint64 Hash64( const void* data, size_type size, uint64 seed = 0 )
 {
@@ -3250,7 +3248,7 @@ inline uint64 Hash64( const void* data, size_type size, uint64 seed = 0 )
  *
  * http://www.opensource.org/licenses/bsd-license.php
  *
- * \ingroup hash_functions mathematical_functions
+ * \ingroup hash_functions
  */
 inline uint32 Hash32( const void* data, size_type size, uint32 seed = 0 )
 {
@@ -3341,4 +3339,4 @@ inline uint32 Hash32( const void* data, size_type size, uint32 seed = 0 )
 #endif   // __PCL_Math_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Math.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Math.h - Released 2015/10/08 11:24:12 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Arguments.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Arguments.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -275,8 +275,7 @@ public:
    }
 
    /*!
-    * Returns true if this argument has successfully parsed a token string,
-    * false otherwise.
+    * Returns true iff this argument has successfully parsed a token string.
     */
    bool IsValid() const
    {
@@ -304,7 +303,7 @@ public:
    }
 
    /*!
-    * Returns true if this argument has been parsed and it is a
+    * Returns true iff this argument has been parsed and it is a
     * <em>non-parametric argument</em>, also known as an <em>item
     * argument.</em>
     */
@@ -336,8 +335,8 @@ public:
    }
 
    /*!
-    * Returns true if this argument has been parsed and it is a <em>literal
-    * argument</em>, or false otherwise.
+    * Returns true iff this argument has been parsed and it is a <em>literal
+    * argument</em>.
     */
    bool IsLiteral() const
    {
@@ -345,8 +344,8 @@ public:
    }
 
    /*!
-    * Returns true if this argument has been parsed and it is a <em>switch
-    * argument</em>, or false otherwise.
+    * Returns true iff this argument has been parsed and it is a <em>switch
+    * argument</em>.
     */
    bool IsSwitch() const
    {
@@ -363,8 +362,8 @@ public:
    }
 
    /*!
-    * Returns true if this argument has been parsed and it is a <em>numeric
-    * argument</em>, or false otherwise.
+    * Returns true iff this argument has been parsed and it is a <em>numeric
+    * argument</em>.
     */
    bool IsNumeric() const
    {
@@ -373,7 +372,7 @@ public:
 
    /*!
     * Returns the numeric value of this argument, if it has been parsed and it
-    * is a <em>numeric argument</em>, or false otherwise.
+    * is a <em>numeric argument</em>, or zero otherwise.
     */
    double NumericValue() const
    {
@@ -381,8 +380,8 @@ public:
    }
 
    /*!
-    * Returns true if this argument has been parsed and it is a <em>string
-    * argument</em>, or false otherwise.
+    * Returns true iff this argument has been parsed and it is a <em>string
+    * argument</em>.
     */
    bool IsString() const
    {
@@ -391,7 +390,7 @@ public:
 
    /*!
     * Returns the string value of this argument, if it has been parsed and it
-    * is a <em>string argument</em>, or false otherwise.
+    * is a <em>string argument</em>, or an empty string otherwise.
     */
    String StringValue() const
    {
@@ -689,4 +688,4 @@ String PCL_FUNC ReplaceEnvironmentVariables( const String& s );
 #endif   // __PCL_Arguments_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Arguments.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Arguments.h - Released 2015/10/08 11:24:12 UTC

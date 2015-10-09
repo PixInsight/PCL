@@ -1,0 +1,222 @@
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0763
+// ----------------------------------------------------------------------------
+// Standard Morphology Process Module Version 01.00.00.0241
+// ----------------------------------------------------------------------------
+// way_diamond.xpm - Released 2015/10/08 11:24:40 UTC
+// ----------------------------------------------------------------------------
+// This file is part of the standard Morphology PixInsight module.
+//
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ----------------------------------------------------------------------------
+
+/* XPM */
+static const char* way_diamond_XPM[] = {
+/* columns rows colors chars-per-pixel */
+"13 13 148 2",
+"Q  c #657FFE",
+"z. c #5369FE",
+"4. c #1A20FF",
+"F  c #8CB2FE",
+"6  c #080AFE",
+";  c #080AFF",
+"O. c #3441FE",
+"e  c #6D8AFD",
+"D  c #99C1FD",
+"u. c #87ABFD",
+"u  c #4E62FE",
+"<  c #87ABFE",
+"}  c #3C4CFE",
+"N. c #A1CCFD",
+"z  c #566DFE",
+"3  c #3745FE",
+"M  c #708EFE",
+"&  c #3745FF",
+"1. c #3F50FE",
+"-. c #0607FF",
+"I  c #2028FE",
+"l. c #4C5FFE",
+"W  c #7392FE",
+"B  c #546AFE",
+"i. c #8DB3FE",
+">  c #161DFF",
+"%. c #303EFE",
+"l  c #4F63FE",
+"q  c #88ACFE",
+"(  c #0C0FFE",
+"=  c #4558FF",
+"J  c #647DFE",
+"_  c #2630FF",
+"n  c #8BB0FE",
+"6. c #0708FF",
+"1  c #799AFE",
+"@. c #5A72FE",
+"8. c #86A9FD",
+":. c #86A9FE",
+"!  c #485CFE",
+",. c #3B4AFE",
+"c. c #627DFE",
+"$  c #2934FF",
+"R  c #8EB4FD",
+"h. c #8EB4FE",
+"9  c #171EFF",
+"n. c #81A2FE",
+"g  c #6F8CFE",
+"&. c #242DFE",
+"#. c #4B60FF",
+"P  c #2C38FE",
+"A  c #6581FE",
+"[  c #586FFE",
+"7  c #0D10FF",
+"4  c #4659FF",
+"H  c #7290FE",
+"Y  c #6D8CFE",
+"r. c #2731FF",
+"h  c #607AFE",
+"X  c #0809FF",
+"-  c #0305FF",
+"x. c #5B73FE",
+"0  c #94BCFD",
+"*. c #181FFE",
+"a. c #4456FE",
+"m  c #7D9FFE",
+"Z  c #5E77FD",
+"x  c #5E77FE",
+"t  c #3F4FFE",
+"^  c #2D39FE",
+"]  c #6682FE",
+"@  c #92B9FD",
+"K  c #475AFF",
+"9. c #8DB2FD",
+"+  c #161CFF",
+"w  c #7B9CFE",
+" . c #232BFF",
+"m. c #88ABFD",
+"{  c #4A5EFE",
+"O  c #1115FF",
+"C  c #2B36FE",
+"s. c #5269FE",
+"o  c #0C0EFF",
+";. c #7EA0FE",
+"e. c #3341FE",
+"r  c #5F78FD",
+"3. c #262FFF",
+"5  c #4D62FE",
+"0. c #3B4CFF",
+",  c #93BAFD",
+"N  c #627CFE",
+"M. c #9BC5FE",
+"a  c #171DFF",
+"f  c #7C9DFD",
+"<. c #4354FF",
+"X. c #0507FF",
+"s  c #96BEFD",
+"f. c #1216FE",
+"q. c #4B5FFE",
+"8  c #1216FF",
+"   c #0000FF",
+"7. c #7FA1FE",
+">. c #3442FF",
+"#  c #222CFF",
+"U  c #151AFE",
+".  c #0304FF",
+"+. c #6884FD",
+"|  c #2F3BFE",
+"p. c #94BBFE",
+"`  c #82A5FE",
+"'  c #7593FD",
+"V  c #3746FF",
+"v  c #181EFE",
+"k  c #4455FE",
+"2. c #323FFF",
+"b  c #97BFFD",
+"=. c #0E13FF",
+"t. c #1B22FF",
+".. c #0E10FF",
+"G  c #80A2FD",
+"b. c #090CFF",
+"g. c #80A2FE",
+"y  c #4759FF",
+"T  c #9AC3FE",
+"p  c #1117FF",
+"$. c #3D4EFE",
+")  c #0405FF",
+"2  c #303CFE",
+"%  c #303CFF",
+"j. c #95BCFD",
+"y. c #1114FF",
+":  c #0C10FF",
+"S  c #191FFF",
+"j  c #5268FE",
+"w. c #5268FF",
+"o. c #7E9FFE",
+"/  c #212AFE",
+"5. c #0F14FE",
+"~  c #3B4BFE",
+"d. c #1C23FF",
+"i  c #556CFE",
+"E  c #81A3FD",
+"k. c #9BC4FE",
+"c  c #1218FF",
+"d  c #89AEFE",
+"*  c #3E4FFE",
+"v. c #6A86FE",
+"L  c #3948FE",
+/* pixels */
+"  . X o O + @ # $ % & * = ",
+"- ; : O > , < 1 2 3 * 4 5 ",
+"6 7 8 9 0 q w e r t y u i ",
+"7 p a s d f g h j k l z x ",
+"c v b n m M N B = V C Z A ",
+"S D F G H J i K L P I U Y ",
+"T R E W Q z ! ~ ^ / + ( ) ",
+"_ ` ' ] [ { } |  .9 ..X.o.",
+"P O.+.@.#.$.%.&.*.=.-.;.:.",
+">.,.<.5 1.2.3.4.5.6.7.8.9.",
+"0.k q.w.e.r.t.y.; 7.u.i.p.",
+"a.q.s.@.N d.f.; g.< h.j.k.",
+"l.z.x.c.v.H b.n.m.h.j.M.N."
+};
+
+// ----------------------------------------------------------------------------
+// EOF way_diamond.xpm - Released 2015/10/08 11:24:40 UTC

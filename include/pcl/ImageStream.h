@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ImageStream.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ImageStream.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -135,7 +135,7 @@ public:
    // But bloody MSVC does not like them pure and called from the destructor!
 
    /*!
-    * Returns true if this image stream is open.
+    * Returns true iff this image stream is open.
     */
    virtual bool IsOpen() const
    {
@@ -150,7 +150,7 @@ public:
    }
 
    /*!
-    * Returns true if this stream can read image data.
+    * Returns true iff this stream can read image data.
     */
    virtual bool IsReader() const
    {
@@ -158,7 +158,7 @@ public:
    }
 
    /*!
-    * Returns true if this stream can write image data.
+    * Returns true iff this stream can write image data.
     */
    virtual bool IsWriter() const
    {
@@ -342,7 +342,7 @@ public:
 
    /*!
     * Extracts an ICC profile from the current image in this input stream.
-    * Returns true if the extraction operation was successful.
+    * Returns true iff the extraction operation was successful.
     */
    virtual bool Extract( ICCProfile& iccProfile )
    {
@@ -351,7 +351,7 @@ public:
 
    /*!
     * Extracts a thumbnail image from the current image in this input stream.
-    * Returns true if the extraction operation was successful.
+    * Returns true iff the extraction operation was successful.
     */
    virtual bool Extract( UInt8Image& thumbnail )
    {
@@ -910,4 +910,4 @@ private:
 #endif   // __PCL_ImageStream_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageStream.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ImageStream.h - Released 2015/10/08 11:24:12 UTC

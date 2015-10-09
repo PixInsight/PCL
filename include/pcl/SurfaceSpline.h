@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/SurfaceSpline.h - Released 2015/07/30 17:15:18 UTC
+// pcl/SurfaceSpline.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -71,6 +71,10 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
+/*!
+ * \class SurfaceSplineBase
+ * \brief Base class of two-dimensional surface splines.
+ */
 class SurfaceSplineBase
 {
 protected:
@@ -100,7 +104,7 @@ protected:
 
 /*!
  * \class SurfaceSpline
- * \brief Two-dimensional interpolating surface spline (thin plate).
+ * \brief Two-dimensional interpolating/approximating surface spline (thin plate).
  *
  * %SurfaceSpline implements interpolating or smoothing surface splines (also
  * known as <em>thin plates</em>) for arbitrarily distributed input nodes in
@@ -111,58 +115,53 @@ class PCL_CLASS SurfaceSpline : private SurfaceSplineBase
 {
 public:
 
+   /*!
+    * Represents a vector of coordinates or spline coefficients.
+    */
    typedef GenericVector<T>   vector_type;
 
    /*!
-    * Constructs a %SurfaceSpline instance.
+    * Default constructor. Constructs a two-dimensional interpolating surface
+    * spline of second order.
     */
-   SurfaceSpline() : SurfaceSplineBase(), m_order( 2 ), m_smoothing( 0 )
+   SurfaceSpline() :
+      SurfaceSplineBase(), m_order( 2 ), m_smoothing( 0 )
    {
    }
 
    /*!
     * Copy constructor.
     */
-   SurfaceSpline( const SurfaceSpline& S ) : SurfaceSplineBase( S )
-   {
-      Assign( S );
-   }
+   SurfaceSpline( const SurfaceSpline& ) = default;
+
+   /*!
+    * Move constructor.
+    */
+#ifndef _MSC_VER
+   SurfaceSpline( SurfaceSpline&& ) = default;
+#endif
 
    /*!
     * Destroys a %SurfaceSpline instance.
     */
    virtual ~SurfaceSpline()
    {
-      Clear();
    }
 
    /*!
-    * Assigns a copy of the specified object \a S to this object.
+    * Copy assignment operator. Returns a reference to this object.
     */
-   void Assign( const SurfaceSpline& S )
-   {
-      m_x = S.m_x;
-      m_y = S.m_y;
-      m_r0 = S.m_r0;
-      m_x0 = S.m_x0;
-      m_y0 = S.m_y0;
-      m_order = S.m_order;
-      m_smoothing = S.m_smoothing;
-      m_weights = S.m_weights;
-      m_spline = S.m_spline;
-   }
+   SurfaceSpline& operator =( const SurfaceSpline& ) = default;
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Move assignment operator. Returns a reference to this object.
     */
-   SurfaceSpline& operator =( const SurfaceSpline& S )
-   {
-      Assign( S );
-      return *this;
-   }
+#ifndef _MSC_VER
+   SurfaceSpline& operator =( SurfaceSpline&& ) = default;
+#endif
 
    /*!
-    * Returns true if this surface spline is valid. A valid surface spline has
+    * Returns true iff this surface spline is valid. A valid surface spline has
     * been initialized with three or more nodes.
     */
    bool IsValid() const
@@ -220,12 +219,12 @@ public:
     *
     * \param s    Smoothing factor. Must be >= 0.
     *
-    * For \a s = 0, an <em>interpolating spline</em> is generated: all node
-    * values will be included at their respective node coordinates.
+    * For \a s = 0, an interpolating spline will be generated: all node values
+    * will be reproduced exactly at their respective coordinates.
     *
-    * For \a s > 0, a <em>smoothing spline</em> is generated: increasing \a s
-    * values will generate splines closer to the reference plane of the input
-    * node set.
+    * For \a s > 0, a smoothing (or approximating) spline will be generated:
+    * increasing \a s values will generate splines closer to the reference
+    * plane of the input node set.
     */
    void SetSmoothing( float s )
    {
@@ -241,7 +240,7 @@ public:
     *
     * \param y       Y node coordinates.
     *
-    * \param z       %Node values.
+    * \param z       Node values.
     *
     * \param n       Number of nodes. Must be >= 3
     *                (3 nodes * 2 coordinates = six degrees of freedom).
@@ -254,7 +253,7 @@ public:
     *
     * The input nodes can be arbitrarily distributed, and they don't need to
     * follow any specific order. However, all nodes must be distinct with
-    * respect to the machine error number for the floating point type T.
+    * respect to the machine epsilon for the floating point type T.
     */
    void Initialize( const T* x, const T* y, const T* z, int n, const float* weights = 0 )
    {
@@ -329,4 +328,4 @@ protected:
 #endif   // __PCL_SurfaceSpline_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SurfaceSpline.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/SurfaceSpline.h - Released 2015/10/08 11:24:12 UTC

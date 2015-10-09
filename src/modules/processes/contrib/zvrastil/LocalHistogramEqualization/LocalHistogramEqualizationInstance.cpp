@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// Standard LocalHistogramEqualization Process Module Version 01.00.00.0113
+// Standard LocalHistogramEqualization Process Module Version 01.00.00.0121
 // ----------------------------------------------------------------------------
-// LocalHistogramEqualizationInstance.cpp - Released 2015/07/31 11:49:49 UTC
+// LocalHistogramEqualizationInstance.cpp - Released 2015/10/08 11:24:40 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard LocalHistogramEqualization PixInsight module.
 //
@@ -155,7 +155,7 @@ public:
 
       // create copy of the luminance to evaluate histogram from
       GenericImage<P> imageCopy( image );
-      imageCopy.SetUnique(); // really not necessary, but we'll be safer if this is done
+      imageCopy.EnsureUnique(); // really not necessary, but we'll be safer if this is done
 
       size_type N = image.NumberOfPixels();
 
@@ -648,4 +648,4 @@ int LocalHistogramEqualizationInstance::GetHistogramSize() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LocalHistogramEqualizationInstance.cpp - Released 2015/07/31 11:49:49 UTC
+// EOF LocalHistogramEqualizationInstance.cpp - Released 2015/10/08 11:24:40 UTC

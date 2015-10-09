@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Atomic.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Atomic.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -98,67 +98,146 @@ class PCL_CLASS AtomicInt
 public:
 
    /*!
-    * Constructs an %AtomicInt instance with the specified \a value. The
-    * default value is zero.
+    * Constructs an %AtomicInt instance with the specified \a value. When not
+    * explicitly specified, the default value is zero.
     */
-   AtomicInt( int value = 0 ) noexcept : m_value( value )
+   AtomicInt( int value = 0 ) :
+      m_value( value )
    {
-      // ### N.B.
-      // The default zero initialization is *critical* - Do not change it.
+      // ### N.B.:
+      // The default zero initialization is *critical* - DO NOT change it.
    }
 
    /*!
-    * Integer casting operator. Returns the current value of this atomic
-    * integer object.
+    * Copy constructor.
     */
-   operator int() const noexcept
+   AtomicInt( const AtomicInt& ) = default;
+
+   /*!
+    * Copy assignment operator. Returns a reference to this object.
+    */
+   AtomicInt& operator =( const AtomicInt& ) = default;
+
+   /*!
+    * Returns the current value of this atomic integer.
+    *
+    * \note This operation is not guaranteed to be atomic.
+    */
+   operator int() const
    {
       return m_value;
    }
 
    /*!
-    * Logical negation operator. Returns true if this atomic integer is zero;
-    * false if it is nonzero.
+    * Logical negation operator. Returns true iff this atomic integer is zero.
     *
     * \note This operation is not guaranteed to be atomic.
     */
-   bool operator !() const noexcept
+   bool operator !() const
    {
       return m_value == 0;
    }
 
    /*!
-    * Equality operator. Returns true if this atomic integer is equal to
-    * another integer \a x.
+    * Equality operator. Returns true iff this atomic integer is equal to an
+    * integer \a x.
     *
     * \note This operation is not guaranteed to be atomic.
     */
-   bool operator ==( int x ) const noexcept
+   bool operator ==( int x ) const
    {
       return m_value == x;
    }
 
    /*!
-    * Inequality operator. Returns true if this atomic integer is not equal to
-    * another integer \a x.
+    * Inequality operator. Returns true iff this atomic integer is not equal to
+    * an integer \a x.
     *
     * \note This operation is not guaranteed to be atomic.
     */
-   bool operator !=( int x ) const noexcept
+   bool operator !=( int x ) const
    {
       return m_value != x;
    }
 
    /*!
-    * Assignment operator. Assigns the specified integer \a x to this atomic
-    * integer. Returns a reference to this object.
+    * Integer assignment operator. Assigns the specified integer \a x to this
+    * atomic integer. Returns a reference to this object.
     *
     * \note This operation is not guaranteed to be atomic.
     */
-   AtomicInt& operator =( int x ) noexcept
+   AtomicInt& operator =( int x )
    {
       m_value = x;
       return *this;
+   }
+
+   /*!
+    * Atomic load operation.
+    *
+    * Returns the current value of this atomic integer.
+    *
+    * \note The integer load operation is guaranteed to be atomic on all
+    * supported platforms and architectures.
+    */
+   int Load()
+   {
+      return FetchAndAdd( 0 );
+   }
+
+   /*!
+    * Atomic store operation.
+    *
+    * Assigns the specified \a newValue to this object.
+    *
+    * \note The integer store operation is guaranteed to be atomic on all
+    * supported platforms and architectures.
+    */
+   void Store( int newValue )
+   {
+      (void)FetchAndStore( newValue );
+   }
+
+   /*!
+    * Atomic increment operation.
+    *
+    * Increments the value of this object as an atomic operation.
+    *
+    * \note This operation is guaranteed to be atomic on all supported
+    * platforms and architectures.
+    */
+   void Increment()
+   {
+#ifdef __PCL_WINDOWS
+      (void)_InterlockedIncrement( &m_value );
+#else
+      asm volatile( "lock\n\t"
+                    "incl %0\n"
+                     : "=m" (m_value)
+                     : "m" (m_value)
+                     : "memory", "cc" );
+#endif
+   }
+
+   /*!
+    * Atomic decrement operation.
+    *
+    * Decrements the value of this object as an atomic operation.
+    *
+    * \note This operation is guaranteed to be atomic on all supported
+    * platforms and architectures.
+    */
+   void Decrement()
+   {
+#ifdef __PCL_WINDOWS
+      (void)_InterlockedDecrement( &m_value );
+#else
+      asm volatile( "lock\n\t"
+                    "decl %0\n"
+                     : "=m" (m_value)
+                     : "m" (m_value)
+                     : "memory", "cc" );
+#endif
    }
 
    /*!
@@ -170,16 +249,18 @@ public:
     * \note This operation is guaranteed to be atomic on all supported
     * platforms and architectures.
     */
-   bool Reference() noexcept
+   bool Reference()
    {
 #ifdef __PCL_WINDOWS
       return _InterlockedIncrement( &m_value ) != 0;
 #else
       uint8 result;
-      asm volatile( "lock incl %0; setnz %1;"
+      asm volatile( "lock\n\t"
+                    "incl %0\n\t"
+                    "setnz %1\n"
                      : "=m" (m_value), "=qm" (result)
                      : "m" (m_value)
-                     : "memory" );
+                     : "memory", "cc" );
       return result != 0;
 #endif
    }
@@ -193,16 +274,18 @@ public:
     * \note This operation is guaranteed to be atomic on all supported
     * platforms and architectures.
     */
-   bool Dereference() noexcept
+   bool Dereference()
    {
 #ifdef __PCL_WINDOWS
       return _InterlockedDecrement( &m_value ) != 0;
 #else
       uint8 result;
-      asm volatile(  "lock decl %0; setnz %1;"
+      asm volatile( "lock\n\t"
+                    "decl %0\n\t"
+                    "setnz %1\n"
                      : "=m" (m_value), "=qm" (result)
                      : "m" (m_value)
-                     : "memory" );
+                     : "memory", "cc" );
       return result != 0;
 #endif
    }
@@ -218,16 +301,18 @@ public:
     * \note This operation is guaranteed to be atomic on all supported
     * platforms and architectures.
     */
-   bool TestAndSet( int expectedValue, int newValue ) noexcept
+   bool TestAndSet( int expectedValue, int newValue )
    {
 #ifdef __PCL_WINDOWS
       return _InterlockedCompareExchange( &m_value, newValue, expectedValue ) == expectedValue;
 #else
       uint8 result;
-      asm volatile(  "lock cmpxchgl %3,%2; setz %1;"
+      asm volatile( "lock\n\t"
+                    "cmpxchgl %3,%2\n\t"
+                    "setz %1\n"
                      : "=a" (newValue), "=qm" (result), "+m" (m_value)
                      : "r" (newValue), "0" (expectedValue)
-                     : "memory" );
+                     : "memory", "cc" );
       return result != 0;
 #endif
    }
@@ -241,12 +326,12 @@ public:
     * \note This operation is guaranteed to be atomic on all supported
     * platforms and architectures.
     */
-   int FetchAndStore( int newValue ) noexcept
+   int FetchAndStore( int newValue )
    {
 #ifdef __PCL_WINDOWS
       return _InterlockedExchange( &m_value, newValue );
 #else
-      asm volatile(  "xchgl %0,%1"
+      asm volatile( "xchgl %0,%1\n"
                      : "=r" (newValue), "+m" (m_value)
                      : "0" (newValue)
                      : "memory" );
@@ -261,25 +346,26 @@ public:
     * \note This operation is guaranteed to be atomic on all supported
     * platforms and architectures.
     */
-   int FetchAndAdd( int valueToAdd ) noexcept
+   int FetchAndAdd( int valueToAdd )
    {
 #ifdef __PCL_WINDOWS
       return _InterlockedExchangeAdd( &m_value, valueToAdd );
 #else
-      asm volatile(  "lock xaddl %0,%1;"
+      asm volatile( "lock\n\t"
+                    "xaddl %0,%1\n"
                      : "=r" (valueToAdd), "+m" (m_value)
                      : "0" (valueToAdd)
-                     : "memory" );
+                     : "memory", "cc" );
       return valueToAdd;
 #endif
    }
 
 private:
 
-#ifdef __PCL_WINDOWS
-   __declspec(align(16)) long m_value;
+#ifdef _MSC_VER
+   __declspec(align(4)) volatile long m_value;
 #else
-   int m_value __attribute__ ((aligned (16)));
+   volatile int m_value __attribute__ ((aligned (4)));
 #endif
 };
 
@@ -378,7 +464,7 @@ public:
     * PCL_CLASS_REENTRANCY_GUARDED_END to implement per-instance function
     * member protection.
     */
-   AutoReentrancyGuard( AtomicInt& guard ) noexcept : m_guard( guard )
+   AutoReentrancyGuard( AtomicInt& guard ) : m_guard( guard )
    {
       m_guarded = m_guard.TestAndSet( 0, 1 );
    }
@@ -388,17 +474,17 @@ public:
     * the class constructor) was zero when this object was constructed, its
     * value is reset to zero as an atomic operation.
     */
-   ~AutoReentrancyGuard() noexcept
+   ~AutoReentrancyGuard()
    {
       if ( m_guarded )
-         (void)m_guard.FetchAndStore( 0 );
+         m_guard.Store( 0 );
    }
 
    /*!
-    * Returns true if the value of the monitored guard variable (see the class
-    * constructor) was zero when this object was constructed, false otherwise.
+    * Returns true iff the value of the monitored guard variable (see the class
+    * constructor) was zero when this object was constructed.
     */
-   operator bool() const noexcept
+   operator bool() const
    {
       return m_guarded;
    }
@@ -578,4 +664,4 @@ private:
 #endif  // __PCL_Atomic_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Atomic.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Atomic.h - Released 2015/10/08 11:24:12 UTC

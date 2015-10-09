@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Bitmap.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Bitmap.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -499,13 +499,13 @@ public:
    }
 
    /*!
-    * Returns true if this bitmap is empty. An empty bitmap has zero dimensions
+    * Returns true iff this bitmap is empty. An empty bitmap has zero dimensions
     * and does not contain any image.
     */
    bool IsEmpty() const;
 
    /*!
-    * Returns true if this bitmap contains an image, that is, if it is not an
+    * Returns true iff this bitmap contains an image, that is, if it is not an
     * empty bitmap.
     *
     * This is a convenience operator that simply returns !IsEmpty().
@@ -516,10 +516,16 @@ public:
    }
 
    /*!
+    * \defgroup bitmap_pixel_access Bitmap Pixel Access Functions
+    */
+
+   /*!
     * Returns the value of a bitmap pixel.
     *
     * \param x,y  Bitmap coordinates of the pixel to read. Pixel coordinates
     *             can vary in the range from (0,0) to (Width()-1, Height()-1).
+    *
+    * \ingroup bitmap_pixel_access
     */
    RGBA Pixel( int x, int y ) const;
 
@@ -529,6 +535,8 @@ public:
     * \param p    A Point object whose coordinates identify the pixel to read.
     *             Pixel coordinates can vary in the range from (0,0) to
     *             (Width()-1, Height()-1).
+    *
+    * \ingroup bitmap_pixel_access
     */
    RGBA Pixel( const pcl::Point& p ) const
    {
@@ -544,6 +552,8 @@ public:
     * \param v    32-bit pixel value encoded in the AARRGGBB format: AA is the
     *             alpha (transparency) value, RR is the red component, GG is
     *             green and BB is blue. Each element is an 8-bit value.
+    *
+    * \ingroup bitmap_pixel_access
     */
    void SetPixel( int x, int y, RGBA v );
 
@@ -557,6 +567,8 @@ public:
     * \param v    32-bit pixel value encoded in the AARRGGBB format: AA is the
     *             alpha (transparency) value, RR is the red component, GG is
     *             green and BB is blue. Each element is an 8-bit value.
+    *
+    * \ingroup bitmap_pixel_access
     */
    void SetPixel( const pcl::Point& p, RGBA v )
    {
@@ -569,6 +581,8 @@ public:
     *
     * \param y    Vertical coordinate of the row of pixels. Vertical
     *             coordinates can vary in the range from 0 to Height()-1.
+    *
+    * \ingroup bitmap_pixel_access
     */
    const RGBA* ScanLine( int y ) const;
 
@@ -579,11 +593,13 @@ public:
     *             coordinates can vary in the range from 0 to Height()-1.
     *
     * The returned address can be used to modify pixel values.
+    *
+    * \ingroup bitmap_pixel_access
     */
    RGBA* ScanLine( int y );
 
    /*!
-    * \defgroup bitmap_specular_transformations Specular Bitmap Transformations
+    * \defgroup bitmap_specular_transformations Bitmap Specular Transformations
     */
 
    /*!
@@ -611,7 +627,7 @@ public:
    Bitmap MirroredVertically() const;
 
    /*!
-    * \defgroup bitmap_affine_transformations Affine Bitmap Transformations
+    * \defgroup bitmap_affine_transformations Bitmap Affine Transformations
     */
 
    /*!
@@ -1266,12 +1282,18 @@ public:
    }
 
    /*!
+    * \defgroup bitmap_color_replacement Bitmap Color Replacement Functions
+    */
+
+   /*!
     * Replaces all occurrences of a specified pixel value in a rectangular
     * region of this bitmap with a new value.
     *
     * \param rect          Rectangular region.
     * \param replaceThis   Pixel value to be replaced.
     * \param replaceWith   New pixel value for replacement.
+    *
+    * \ingroup bitmap_color_replacement
     */
    void ReplaceColor( const pcl::Rect& rect, RGBA replaceThis, RGBA replaceWith );
 
@@ -1285,6 +1307,8 @@ public:
     * This function is equivalent to:
     *
     * ReplaceColor( Bounds(), replaceThis, replaceWith );
+    *
+    * \ingroup bitmap_color_replacement
     */
    void ReplaceColor( RGBA replaceThis, RGBA replaceWith )
    {
@@ -1297,6 +1321,8 @@ public:
     *
     * \param rect          Rectangular region.
     * \param newAlpha      New alpha (transparency) value in the range [0,255].
+    *
+    * \ingroup bitmap_color_replacement
     */
    void SetAlpha( const pcl::Rect& rect, uint8 newAlpha );
 
@@ -1309,6 +1335,8 @@ public:
     * This function is equivalent to:
     *
     * SetAlpha( Bounds(), newAlpha );
+    *
+    * \ingroup bitmap_color_replacement
     */
    void SetAlpha( uint8 newAlpha )
    {
@@ -1351,4 +1379,4 @@ private:
 #endif   // __PCL_Bitmap_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Bitmap.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Bitmap.h - Released 2015/10/08 11:24:12 UTC

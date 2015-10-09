@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/MetaFileFormat.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/MetaFileFormat.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -364,7 +364,7 @@ public:
       try
       {
          String s = constInstance->FilePath();
-         s.SetUnique();
+         s.EnsureUnique();
          return s.Release(); // the PI app. will invoke the module deallocation routine
       }
       ERROR_HANDLER
@@ -428,7 +428,7 @@ public:
       try
       {
          String s = constInstance->ImageProperties();
-         s.SetUnique();
+         s.EnsureUnique();
          return s.Release(); // the PI app. will invoke the module deallocation routine
       }
       ERROR_HANDLER
@@ -1655,4 +1655,4 @@ void MetaFileFormat::PerformAPIDefinitions() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaFileFormat.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/MetaFileFormat.cpp - Released 2015/10/08 11:24:19 UTC

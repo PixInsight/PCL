@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/MultiscaleMedianTransform.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/MultiscaleMedianTransform.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -165,12 +165,12 @@ static BitmapStructure* S11 = 0;
 static void InitializeStructures()
 {
    static Mutex     mutex;
-   static AtomicInt initialized = 0;
+   static AtomicInt initialized;
 
    if ( !initialized )
    {
       volatile AutoLock lock( mutex );
-      if ( !initialized )
+      if ( initialized.Load() == 0 )
       {
          S03 = new BitmapStructure( B03,  3, 2 );
          S05 = new BitmapStructure( B05,  5, 2 );
@@ -178,7 +178,7 @@ static void InitializeStructures()
          S09 = new BitmapStructure( B09,  9, 2 );
          S11 = new BitmapStructure( B11, 11, 2 );
 
-         (void)initialized.FetchAndStore( 1 );
+         initialized.Store( 1 );
       }
    }
 }
@@ -418,4 +418,4 @@ void MultiscaleMedianTransform::Transform( const UInt32Image& image )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MultiscaleMedianTransform.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/MultiscaleMedianTransform.cpp - Released 2015/10/08 11:24:19 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ICCProfile.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ICCProfile.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -270,7 +270,7 @@ public:
 #endif
 
    /*!
-    * Returns true if this object stores an ICC color profile structure.
+    * Returns true iff this object stores an ICC color profile structure.
     */
    bool IsProfile() const
    {
@@ -296,7 +296,7 @@ public:
    }
 
    /*!
-    * Returns true if the ICC profile stored in this object is identical to the
+    * Returns true iff the ICC profile stored in this object is identical to the
     * profile stored in other %ICCProfile object \a icc.
     *
     * If necessary, this function performs a byte-to-byte comparison between
@@ -358,7 +358,7 @@ public:
    color_space ColorSpace() const;
 
    /*!
-    * Returns true if this object stores a RGB ICC profile.
+    * Returns true iff this object stores a RGB ICC profile.
     */
    bool IsRGB() const
    {
@@ -366,7 +366,7 @@ public:
    }
 
    /*!
-    * Returns true if this object stores a grayscale ICC profile.
+    * Returns true iff this object stores a grayscale ICC profile.
     */
    bool IsGrayscale() const
    {
@@ -374,7 +374,7 @@ public:
    }
 
    /*!
-    * Returns true if this object stores an embedded ICC profile.
+    * Returns true iff this object stores an embedded ICC profile.
     *
     * An embedded ICC profile has the <em>Embedded Profile</em> bit field
     * (header byte #44) set.
@@ -511,29 +511,29 @@ public:
    static void Close( handle h );
 
    /*!
-    * Validates an ICC profile handle. Returns true if the specified handle is
-    * a valid handle to an open ICC profile; false otherwise.
+    * Validates an ICC profile handle. Returns true iff the specified handle is
+    * a valid handle to an open ICC profile.
     */
    static bool IsValidHandle( handle h );
 
    /*!
     * Validates an ICC profile structure stored in a file at \a profilePath.
-    * Returns true if the specified file exists and contains a valid ICC
-    * profile; false otherwise.
+    * Returns true iff the specified file exists and contains a valid ICC
+    * profile.
     */
    static bool IsValidFile( const String& profilePath );
 
    /*!
     * Validates an ICC profile from raw ICC profile data stored at the
-    * specified location. Returns true if the argument points to a valid ICC
-    * profile structure; false otherwise.
+    * specified location. Returns true iff the argument points to a valid ICC
+    * profile structure.
     */
    static bool IsValid( const void* rawdata );
 
    /*!
     * Validates an ICC profile structure stored in the specified ByteArray
-    * container \a icc. Returns true if the container stores a valid ICC
-    * profile; false otherwise.
+    * container \a icc. Returns true iff the container stores a valid ICC
+    * profile.
     */
    static bool IsValid( const ByteArray& icc )
    {
@@ -545,11 +545,12 @@ public:
     * handle \a h.
     *
     * \param language   Optional language code (ISO 639/2) of the requested
-    *             profile description. The default value is "en" for English.
+    *                   profile description. The default value is "en" for
+    *                   English.
     *
     * \param country    Optional country code (ISO 3166) of the requested
-    *             profile description. The default value is "US" for the United
-    *             States.
+    *                   profile description. The default value is "US" for the
+    *                   United States.
     *
     * This routine will always return a valid profile description, even if no
     * localized version is available for the requested language and country.
@@ -594,10 +595,10 @@ public:
     * Gets a list of full paths for every ICC profile on a given directory.
     *
     * \param dirPath    Optional path to a search directory. If no directory is
-    *             specified, or if an empty string is passed, the whole list of
-    *             system profile directories, as returned by the
-    *             ProfileDirectories() member function, will be searched
-    *             recursively.
+    *                   specified, or if an empty string is passed, the whole
+    *                   list of system profile directories, as returned by the
+    *                   ProfileDirectories() member function, will be searched
+    *                   recursively.
     *
     * This routine performs a recursive directory search on the specified
     * directory, or on each system profiles directory if no directory is
@@ -617,12 +618,12 @@ public:
     * \param descriptions  Description of the profile to search for.
     *
     * \param exactMatch    If true, this routine will search for a profile that
-    *             matches the specified \a description exactly, including
-    *             character case. If false, the routine will report any profile
-    *             whose description contains the specified description
-    *             performing case-insensitive comparisons. The default value is
-    *             true, so profile descriptions must be matched exactly by
-    *             default.
+    *                   matches the specified \a description exactly, including
+    *                   character case. If false, the routine will report any
+    *                   profile whose description contains the specified
+    *                   description performing case-insensitive comparisons.
+    *                   The default value is true, so profile descriptions must
+    *                   be matched exactly by default.
     *
     * This function searches the system color directories, as reported by the
     * ProfileDirectories() member function, until it finds an ICC profile with
@@ -735,4 +736,4 @@ private:
 #endif   // __PCL_ICCProfile_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ICCProfile.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ICCProfile.h - Released 2015/10/08 11:24:12 UTC

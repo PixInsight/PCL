@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/FFTConvolution.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/FFTConvolution.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -66,12 +66,13 @@ public:
    {
       Rect r = image.SelectedRectangle();
 
-      if ( !F.m_filter.IsNull() )
-         Initialize( F.m_h, *F.m_filter, r.Width(), r.Height(), F.IsParallelProcessingEnabled(), F.MaxProcessors() );
-      else
-         Initialize( F.m_h, F.m_image, r.Width(), r.Height(), F.IsParallelProcessingEnabled(), F.MaxProcessors() );
+      if ( F.m_h.IsNull() )
+         if ( !F.m_filter.IsNull() )
+            F.m_h = Initialize( *F.m_filter, r.Width(), r.Height(), F.IsParallelProcessingEnabled(), F.MaxProcessors() );
+         else
+            F.m_h = Initialize( F.m_image, r.Width(), r.Height(), F.IsParallelProcessingEnabled(), F.MaxProcessors() );
 
-      Convolve( image, F.m_h, F.IsParallelProcessingEnabled(), F.MaxProcessors() );
+      Convolve( image, *F.m_h, F.IsParallelProcessingEnabled(), F.MaxProcessors() );
    }
 
 private:
@@ -118,8 +119,10 @@ private:
             C.SetStatusCallback( 0 );
             C.Mov( image, Point( dw, dh ), 0, r, ch, ch );
 
-            // Fix boundary artifacts by mirroring the image
-
+            /*
+             * Fix boundary artifacts by mirroring the image (assume Neumann
+             * boundary condition).
+             */
 #define MIRROR_VERTICAL                                                       \
             {                                                                 \
                int i = 0;                                                     \
@@ -134,7 +137,6 @@ private:
                for ( ; i < C.Width(); ++i )                                   \
                   *cd++ = *cs--;                                              \
             }
-
             int x1 = dw + r.Width();
             int y1 = dh + r.Height();
             int j = 0;
@@ -153,11 +155,11 @@ private:
             }
             for ( int y = y1-1; j < C.Height(); ++j, --y )
                MIRROR_VERTICAL
-
 #undef MIRROR_VERTICAL
 
-            // Perform FFT convolution
-
+            /*
+             * Perform FFT convolution
+             */
             C.Status() = image.Status();
             C.Status() += dN;
 
@@ -199,10 +201,11 @@ private:
       }
    }
 
-   static void Initialize( ComplexImage& psfFFT, const KernelFilter& PSF,
-                           int targetWidth, int targetHeight, bool parallel, int maxProcessors )
+   static ComplexImage* Initialize( const KernelFilter& PSF,
+                                    int targetWidth, int targetHeight, bool parallel, int maxProcessors )
    {
       PCL_CHECK( !PSF.IsEmpty() )
+
       int n = PSF.Size();
       if ( n == 0 )
          throw Error( "Attempt to perform an FFT-based convolution with an empty kernel filter." );
@@ -210,13 +213,13 @@ private:
       int w = FFT2D::OptimizedLength( targetWidth + n );
       int h = FFT2D::OptimizedLength( targetHeight + n );
 
-      if ( psfFFT.Width() >= w && psfFFT.Height() >= h )
-         return;
+      ComplexImage* psfFFT = new ComplexImage( w, h );
+      psfFFT->Zero();
 
-      psfFFT.AllocateData( w, h ).Zero();
-
-      // Normalization factor:
-      // the sum of response function elements must be equal to one.
+      /*
+       * Normalization factor: The sum of response function elements must be
+       * equal to one.
+       */
       double k = PSF.Weight();
       if ( 1 + k == 1 )
          k = 1;
@@ -224,34 +227,38 @@ private:
       {
          k = 1.0/k;
          if ( 1 + k == 1 )
-            return;
+            return psfFFT;
       }
 
-      // Store the PSF in wrap-around order
-
+      /*
+       * Normalize PSF and store it in wrap-around order.
+       */
       int n2 = n >> 1;
-
       // 1st quadrant -> 3rd
       for ( int sy = 0, ty = h-n2; sy < n2; ++sy, ++ty )
          for ( int sx = n2, tx = 0; sx < n; ++sx, ++tx )
-            psfFFT( tx, ty ) = k*PSF[sy][sx];
+            (*psfFFT)( tx, ty ) = k*PSF[sy][sx];
       // 2nd quadrant -> 4th
       for ( int sy = 0, ty = h-n2; sy < n2; ++sy, ++ty )
          for ( int sx = 0, tx = w-n2; sx < n2; ++sx, ++tx )
-            psfFFT( tx, ty ) = k*PSF[sy][sx];
+            (*psfFFT)( tx, ty ) = k*PSF[sy][sx];
       // 3rd quadrant -> 1st
       for ( int sy = n2, ty = 0; sy < n; ++sy, ++ty )
          for ( int sx = 0, tx = w-n2; sx < n2; ++sx, ++tx )
-            psfFFT( tx, ty ) = k*PSF[sy][sx];
+            (*psfFFT)( tx, ty ) = k*PSF[sy][sx];
       // 4th quadrant -> 2nd
       for ( int sy = n2, ty = 0; sy < n; ++sy, ++ty )
          for ( int sx = n2, tx = 0; sx < n; ++sx, ++tx )
-            psfFFT( tx, ty ) = k*PSF[sy][sx];
+            (*psfFFT)( tx, ty ) = k*PSF[sy][sx];
 
-      // Calculate the DFT of the wrap-around PSF.
+      /*
+       * Calculate the DFT of the wrap-around normalized PSF.
+       */
       InPlaceFourierTransform FFT;
       FFT.EnableParallelProcessing( parallel, maxProcessors );
-      FFT >> psfFFT;
+      FFT >> *psfFFT;
+
+      return psfFFT;
    }
 
    template <class P>
@@ -286,23 +293,25 @@ private:
    }
 
    template <class P>
-   static void GetWrapAroundPSF( ComplexImage& psfFFT, const GenericImage<P>& PSF )
+   static void GetWrapAroundNormalizedPSF( ComplexImage& psfFFT, const GenericImage<P>& PSF )
    {
-      // Normalization factor:
-      // the sum of response function elements must be equal to one.
+      /*
+       * Normalization factor: The sum of response function elements must be
+       * equal to one.
+       */
       double k = PSFNormalizationFactor( PSF );
       if ( k == 0 )
          return;
 
-      // Store the PSF in wrap-around order
-
+      /*
+       * Normalize PSF and store it in wrap-around order.
+       */
       int w   = psfFFT.Width();
       int h   = psfFFT.Height();
       int nx  = PSF.Width();
       int ny  = PSF.Height();
       int nx2 = nx >> 1;
       int ny2 = ny >> 1;
-
       // 1st quadrant -> 3rd
       for ( int sy = 0, ty = h-ny2; sy < ny2; ++sy, ++ty )
          for ( int sx = nx2, tx = 0; sx < nx; ++sx, ++tx )
@@ -321,8 +330,8 @@ private:
             psfFFT( tx, ty ) = k*PSF( sx, sy );
    }
 
-   static void Initialize( ComplexImage& psfFFT, const ImageVariant& PSF,
-                           int targetWidth, int targetHeight, bool parallel, int maxProcessors )
+   static ComplexImage* Initialize( const ImageVariant& PSF,
+                                    int targetWidth, int targetHeight, bool parallel, int maxProcessors )
    {
       if ( !PSF || PSF->IsEmpty() )
          throw Error( "Attempt to perform an FFT-based convolution with an empty response function image." );
@@ -330,37 +339,40 @@ private:
       int w = FFT2D::OptimizedLength( targetWidth + PSF->Width() );
       int h = FFT2D::OptimizedLength( targetHeight + PSF->Height() );
 
-      if ( psfFFT.Width() >= w && psfFFT.Height() >= h )
-         return;
+      ComplexImage* psfFFT = new ComplexImage( w, h );
+      psfFFT->Zero();
 
-      psfFFT.AllocateData( w, h ).Zero();
-
-      // Store the PSF in wrap-around order
-
+      /*
+       * Get the PSF normalized and in wrap-around order.
+       */
       if ( PSF.IsComplexSample() )
          switch ( PSF.BitsPerSample() )
          {
-         case 32 : GetWrapAroundPSF( psfFFT, static_cast<const ComplexImage&>( *PSF ) ); break;
-         case 64 : GetWrapAroundPSF( psfFFT, static_cast<const DComplexImage&>( *PSF ) ); break;
+         case 32 : GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const ComplexImage&>( *PSF ) ); break;
+         case 64 : GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const DComplexImage&>( *PSF ) ); break;
          }
       else if ( PSF.IsFloatSample() )
          switch ( PSF.BitsPerSample() )
          {
-         case 32 : GetWrapAroundPSF( psfFFT, static_cast<const Image&>( *PSF ) ); break;
-         case 64 : GetWrapAroundPSF( psfFFT, static_cast<const DImage&>( *PSF ) ); break;
+         case 32 : GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const Image&>( *PSF ) ); break;
+         case 64 : GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const DImage&>( *PSF ) ); break;
          }
       else
          switch ( PSF.BitsPerSample() )
          {
-         case  8 : GetWrapAroundPSF( psfFFT, static_cast<const UInt8Image&>( *PSF ) ); break;
-         case 16 : GetWrapAroundPSF( psfFFT, static_cast<const UInt16Image&>( *PSF ) ); break;
-         case 32 : GetWrapAroundPSF( psfFFT, static_cast<const UInt32Image&>( *PSF ) ); break;
+         case  8 : GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const UInt8Image&>( *PSF ) ); break;
+         case 16 : GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const UInt16Image&>( *PSF ) ); break;
+         case 32 : GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const UInt32Image&>( *PSF ) ); break;
          }
 
-      // Calculate the DFT of the wrapped-around PSF.
+      /*
+       * Calculate the DFT of the wrapped-around normalized PSF.
+       */
       InPlaceFourierTransform FFT;
       FFT.EnableParallelProcessing( parallel, maxProcessors );
-      FFT >> psfFFT;
+      FFT >> *psfFFT;
+
+      return psfFFT;
    }
 };
 
@@ -434,4 +446,4 @@ void FFTConvolution::ValidateFilter() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FFTConvolution.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/FFTConvolution.cpp - Released 2015/10/08 11:24:19 UTC

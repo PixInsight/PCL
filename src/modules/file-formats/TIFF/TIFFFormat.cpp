@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// Standard TIFF File Format Module Version 01.00.06.0248
+// Standard TIFF File Format Module Version 01.00.06.0256
 // ----------------------------------------------------------------------------
-// TIFFFormat.cpp - Released 2015/07/31 11:49:40 UTC
+// TIFFFormat.cpp - Released 2015/10/08 11:24:33 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard TIFF PixInsight module.
 //
@@ -99,10 +99,10 @@ String TIFFFormat::Implementation() const
    "<html>"
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
-   "<p>This implementation of the TIFF format is based on the libtiff software, "
+   "<p>This implementation of the TIFF format is based on LibTIFF Software, "
    "written by Sam Leffler at Silicon Graphics Inc.</p>"
 
-   "<p>LIBTIFF Library (Version 4.0.3):<br/>"
+   "<p>LibTIFF Software (Version 4.0.6, released 2015 September 12):<br/>"
    "Copyright (c) 1988-1997 Sam Leffler<br/>"
    "Copyright (c) 1991-1997 Silicon Graphics, Inc.</p>"
 
@@ -304,4 +304,4 @@ TIFFFormat::FormatOptions* TIFFFormat::FormatOptions::FromGenericDataBlock( cons
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF TIFFFormat.cpp - Released 2015/07/31 11:49:40 UTC
+// EOF TIFFFormat.cpp - Released 2015/10/08 11:24:33 UTC

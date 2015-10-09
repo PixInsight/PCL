@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Sizer.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Sizer.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -178,7 +178,7 @@ public:
     * Since sizers are unique objects by definition, calling this member
     * function has no effect.
     */
-   virtual void SetUnique()
+   virtual void EnsureUnique()
    {
       // Sizers are unique objects by definition
    }
@@ -196,12 +196,12 @@ public:
    Control& ParentControl() const;
 
    /*!
-    * Returns true if this %Sizer lays out items vertically.
+    * Returns true iff this %Sizer lays out items vertically.
     */
    bool IsVertical() const;
 
    /*!
-    * Returns true if this %Sizer lays out items horizontally.
+    * Returns true iff this %Sizer lays out items horizontally.
     */
    bool IsHorizontal() const
    {
@@ -226,7 +226,7 @@ public:
    int IndexOf( const Control& c ) const;
 
    /*!
-    * Returns true if the specified child sizer \a s belongs to this %Sizer.
+    * Returns true iff the specified child sizer \a s belongs to this %Sizer.
     */
    bool Contains( const Sizer& s ) const
    {
@@ -234,7 +234,7 @@ public:
    }
 
    /*!
-    * Returns true if the specified child control \a c belongs to this %Sizer.
+    * Returns true iff the specified child control \a c belongs to this %Sizer.
     */
    bool Contains( const Control& c ) const
    {
@@ -643,4 +643,4 @@ public:
 #endif   // __PCL_Sizer_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Sizer.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Sizer.h - Released 2015/10/08 11:24:12 UTC

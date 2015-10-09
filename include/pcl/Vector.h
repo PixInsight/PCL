@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Vector.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Vector.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -255,8 +255,7 @@ public:
    {
       if ( m_data != nullptr )
       {
-         if ( !m_data->Detach() )
-            delete m_data;
+         DetachFromData();
          m_data = nullptr;
       }
    }
@@ -271,9 +270,9 @@ public:
             m_data->Deallocate();
          else
          {
-            m_data->Detach();
-            m_data = nullptr;
-            m_data = new Data( 0 );
+            Data* newData = new Data( 0 );
+            DetachFromData();
+            m_data = newData;
          }
    }
 
@@ -303,8 +302,7 @@ public:
    void Assign( const GenericVector& x )
    {
       x.m_data->Attach();
-      if ( !m_data->Detach() )
-         delete m_data;
+      DetachFromData();
       m_data = x.m_data;
    }
 
@@ -333,8 +331,7 @@ public:
     */
    void Transfer( GenericVector& x )
    {
-      if ( !m_data->Detach() )
-         delete m_data;
+      DetachFromData();
       m_data = x.m_data;
       x.m_data = nullptr;
    }
@@ -353,8 +350,7 @@ public:
     */
    void Transfer( GenericVector&& x )
    {
-      if ( !m_data->Detach() )
-         delete m_data;
+      DetachFromData();
       m_data = x.m_data;
       x.m_data = nullptr;
    }
@@ -383,7 +379,7 @@ public:
       if ( !IsUnique() )
       {
          Data* newData = new Data( m_data->Length() );
-         m_data->Detach();
+         DetachFromData();
          m_data = newData;
       }
 
@@ -409,7 +405,7 @@ public:
    {
       if ( x.Length() < Length() )
          throw Error( "Invalid vector addition." );
-      SetUnique();
+      EnsureUnique();
       const_iterator s = x.Begin();
       for ( iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i, ++s )
          *i += *s;
@@ -433,7 +429,7 @@ public:
    {
       if ( x.Length() < Length() )
          throw Error( "Invalid vector subtraction." );
-      SetUnique();
+      EnsureUnique();
       const_iterator s = x.Begin();
       for ( iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i, ++s )
          *i -= *s;
@@ -457,7 +453,7 @@ public:
    {
       if ( x.Length() < Length() )
          throw Error( "Invalid vector multiplication." );
-      SetUnique();
+      EnsureUnique();
       const_iterator s = x.Begin();
       for ( iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i, ++s )
          *i *= *s;
@@ -485,7 +481,7 @@ public:
    {
       if ( x.Length() < Length() )
          throw Error( "Invalid vector multiplication." );
-      SetUnique();
+      EnsureUnique();
       const_iterator s = x.Begin();
       for ( iterator i = m_data->Begin(), j = m_data->End(); i < j; ++i, ++s )
          *i /= *s;
@@ -503,7 +499,7 @@ public:
          Data* newData = new Data( m_data->Length() );                        \
          for ( iterator i = m_data->Begin(), j = m_data->End(), k = newData->Begin(); i < j; ++i, ++k ) \
             *k = *i op x;                                                     \
-         m_data->Detach();                                                    \
+         DetachFromData();                                                    \
          m_data = newData;                                                    \
       }                                                                       \
       return *this;
@@ -580,7 +576,7 @@ public:
          Data* newData = new Data( m_data->Length() );
          for ( iterator i = m_data->Begin(), j = m_data->End(), k = newData->Begin(); i < j; ++i, ++k )
             *k = pcl::Pow( *i, x );
-         m_data->Detach();
+         DetachFromData();
          m_data = newData;
       }
       return *this;
@@ -620,7 +616,7 @@ public:
          Data* newData = new Data( m_data->Length() );
          for ( iterator i = m_data->Begin(), j = m_data->End(), k = newData->Begin(); i < j; ++i, ++k )
             *k = *i * *i;
-         m_data->Detach();
+         DetachFromData();
          m_data = newData;
       }
    }
@@ -657,7 +653,7 @@ public:
          Data* newData = new Data( m_data->Length() );
          for ( iterator i = m_data->Begin(), j = m_data->End(), k = newData->Begin(); i < j; ++i, ++k )
             *k = pcl::Sqrt( *i );
-         m_data->Detach();
+         DetachFromData();
          m_data = newData;
       }
    }
@@ -694,7 +690,7 @@ public:
          Data* newData = new Data( m_data->Length() );
          for ( iterator i = m_data->Begin(), j = m_data->End(), k = newData->Begin(); i < j; ++i, ++k )
             *k = pcl::Abs( *i );
-         m_data->Detach();
+         DetachFromData();
          m_data = newData;
       }
    }
@@ -704,7 +700,7 @@ public:
     */
    void Sort()
    {
-      SetUnique();
+      EnsureUnique();
       pcl::Sort( m_data->Begin(), m_data->End() );
    }
 
@@ -727,7 +723,7 @@ public:
    template <class BP>
    void Sort( BP p )
    {
-      SetUnique();
+      EnsureUnique();
       pcl::Sort( m_data->Begin(), m_data->End(), p );
    }
 
@@ -774,7 +770,7 @@ public:
    }
 
    /*!
-    * Returns true if this vector contains the specified value \a x.
+    * Returns true iff this vector contains the specified value \a x.
     */
    bool Contains( const component& x ) const
    {
@@ -920,7 +916,7 @@ public:
     */
    double Median()
    {
-      SetUnique();
+      EnsureUnique();
       return pcl::Median( m_data->Begin(), m_data->End() );
    }
 
@@ -1242,7 +1238,7 @@ public:
    }
 
    /*!
-    * Returns true if this instance uniquely references its vector data.
+    * Returns true iff this instance uniquely references its vector data.
     */
    bool IsUnique() const
    {
@@ -1250,7 +1246,7 @@ public:
    }
 
    /*!
-    * Returns true if this instance references (shares) the same vector data as
+    * Returns true iff this instance references (shares) the same vector data as
     * another instance \a x.
     */
    bool IsAliasOf( const GenericVector& x ) const
@@ -1265,7 +1261,7 @@ public:
     * data, references it, and then decrements the reference counter of the
     * original vector data.
     */
-   void SetUnique()
+   void EnsureUnique()
    {
       if ( !IsUnique() )
       {
@@ -1273,7 +1269,7 @@ public:
          const_iterator a = m_data->Begin();
          for ( iterator i = newData->Begin(), j = newData->End(); i < j; ++i, ++a )
             *i = component( *a );
-         m_data->Detach();
+         DetachFromData();
          m_data = newData;
       }
    }
@@ -1316,7 +1312,7 @@ public:
    }
 
    /*!
-    * Returns true if this is an empty vector. An empty vector has no
+    * Returns true iff this is an empty vector. An empty vector has no
     * components, and hence its length is zero.
     */
    bool IsEmpty() const
@@ -1325,7 +1321,7 @@ public:
    }
 
    /*!
-    * Returns true if this vector is not empty. This operator is equivalent to:
+    * Returns true iff this vector is not empty. This operator is equivalent to:
     *
     * \code !IsEmpty(); \endcode
     */
@@ -1359,7 +1355,7 @@ public:
    }
 
    /*!
-    * Returns true if this vector has the same length as other vector \a x.
+    * Returns true iff this vector has the same length as other vector \a x.
     */
    bool SameLength( const GenericVector& x ) const
    {
@@ -1375,7 +1371,7 @@ public:
     */
    iterator At( int i )
    {
-      SetUnique();
+      EnsureUnique();
       return m_data->At( i );
    }
 
@@ -1400,7 +1396,7 @@ public:
     */
    iterator Begin()
    {
-      SetUnique();
+      EnsureUnique();
       return m_data->Begin();
    }
 
@@ -1414,6 +1410,14 @@ public:
    const_iterator Begin() const
    {
       return m_data->Begin();
+   }
+
+   /*!
+    * A synonym for Begin() const.
+    */
+   const_iterator ConstBegin() const
+   {
+      return Begin();
    }
 
    /*!
@@ -1451,7 +1455,7 @@ public:
     */
    iterator End()
    {
-      SetUnique();
+      EnsureUnique();
       return m_data->End();
    }
 
@@ -1466,6 +1470,14 @@ public:
    const_iterator End() const
    {
       return m_data->End();
+   }
+
+   /*!
+    * A synonym for End() const.
+    */
+   const_iterator ConstEnd() const
+   {
+      return End();
    }
 
    /*!
@@ -1670,12 +1682,20 @@ public:
 
 private:
 
+   /*!
+    * \struct Data
+    * \internal
+    * Reference-counted vector data structure.
+    */
    struct Data : public ReferenceCounter
    {
       int        n; // the vector length
       component* v; // the vector components
 
-      Data( int len ) : ReferenceCounter(), n( 0 ), v( nullptr )
+      Data( int len ) :
+         ReferenceCounter(),
+         n( 0 ),
+         v( nullptr )
       {
          if ( len > 0 )
             Allocate( len );
@@ -1725,7 +1745,21 @@ private:
       }
    };
 
+   /*!
+    * \internal
+    * The reference-counted vector data.
+    */
    Data* m_data;
+
+   /*!
+    * \internal
+    * Dereferences vector data and disposes it if it becomes garbage.
+    */
+   void DetachFromData()
+   {
+      if ( !m_data->Detach() )
+         delete m_data;
+   }
 };
 
 // ----------------------------------------------------------------------------
@@ -2447,4 +2481,4 @@ typedef GenericVector<Complex64>    C64Vector;
 #endif   // __PCL_Vector_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Vector.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Vector.h - Released 2015/10/08 11:24:12 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/FileDialog.h - Released 2015/07/30 17:15:18 UTC
+// pcl/FileDialog.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -298,7 +298,7 @@ public:
    void LoadImageFilters();
 
    /*!
-    * Returns true if this dialog accepts multiple selections.
+    * Returns true iff this dialog accepts multiple selections.
     *
     * When multiple selections are enabled, the user can select a list of one
     * or more existing files. When this mode is disabled, only a single
@@ -393,7 +393,7 @@ public:
    void LoadImageFilters();
 
    /*!
-    * Returns true if <em>overwrite prompts</em> are enabled for this dialog.
+    * Returns true iff <em>overwrite prompts</em> are enabled for this dialog.
     *
     * When overwrite prompts are enabled, the dialog will request confirmation
     * if an existing file is selected.
@@ -481,4 +481,4 @@ private:
 #endif   // __PCL_FileDialog_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileDialog.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/FileDialog.h - Released 2015/10/08 11:24:12 UTC

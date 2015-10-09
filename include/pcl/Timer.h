@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Timer.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Timer.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -106,7 +106,7 @@ public:
     * Since timers are unique objects by definition, calling this member
     * function has no effect.
     */
-   virtual void SetUnique()
+   virtual void EnsureUnique()
    {
       // Timers are unique objects by definition
    }
@@ -128,12 +128,12 @@ public:
    void SetInterval( double seconds );
 
    /*!
-    * Returns true if this is a single-shot timer.
+    * Returns true iff this is a single-shot timer.
     */
    bool IsSingleShot() const;
 
    /*!
-    * Returns true if this is a periodic timer.
+    * Returns true iff this is a periodic timer.
     *
     * This is a convenience member function, equivalent to
     * !IsSingleShot()
@@ -157,7 +157,7 @@ public:
    }
 
    /*!
-    * Returns true if this %Timer object is active. An active timer is
+    * Returns true iff this %Timer object is active. An active timer is
     * generating timer events.
     */
    bool IsRunning() const;
@@ -211,6 +211,8 @@ public:
     *
     * \param receiver   The control that will receive timer events from this
     *                   %Timer.
+    *
+    * \ingroup timer_event_handlers
     */
    void OnTimer( timer_event_handler handler, Control& receiver );
 
@@ -235,4 +237,4 @@ private:
 #endif   // __PCL_Timer_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Timer.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Timer.h - Released 2015/10/08 11:24:12 UTC

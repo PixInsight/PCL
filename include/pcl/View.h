@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/View.h - Released 2015/07/30 17:15:18 UTC
+// pcl/View.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -236,19 +236,19 @@ public:
    static View& Null();
 
    /*!
-    * Returns true if this is a main view. A main view holds the entire image
+    * Returns true iff this is a main view. A main view holds the entire image
     * in an image window.
     */
    bool IsMainView() const;
 
    /*!
-    * Returns true if this view corresponds to a preview object. A preview is
+    * Returns true iff this view corresponds to a preview object. A preview is
     * a volatile subimage defined in an image window.
     */
    bool IsPreview() const;
 
    /*!
-    * Returns true if this view is a preview and is in volatile state. A
+    * Returns true iff this view is a preview and is in volatile state. A
     * volatile preview contains a temporary image that can be undone/redone
     * with the <em>Preview > Undo</em> and <em>Preview > Redo</em> core
     * application commands.
@@ -256,7 +256,7 @@ public:
    bool IsVolatilePreview() const;
 
    /*!
-    * Returns true if this view is a preview and has one or more stored states.
+    * Returns true iff this view is a preview and has one or more stored states.
     * When a preview has been stored, it behaves as an independent image with
     * its own processing history. A stored preview does not rely on its mother
     * image to return to a 'base' state.
@@ -315,12 +315,12 @@ public:
    }
 
    /*!
-    * Returns true if this view is not locked for reading.
+    * Returns true iff this view is not locked for reading.
     */
    bool CanRead() const;
 
    /*!
-    * Returns true if this view is not locked for writing.
+    * Returns true iff this view is not locked for writing.
     */
    bool CanWrite() const;
 
@@ -420,7 +420,7 @@ public:
    void RelockForRead( bool notify = true ) const;
 
    /*!
-    * Returns true if this view has been selected as a target of an active
+    * Returns true iff this view has been selected as a target of an active
     * dynamic interface.
     */
    bool IsDynamicTarget() const;
@@ -485,7 +485,7 @@ public:
    }
 
    /*!
-    * Returns true if this view holds a color image, false if it is a
+    * Returns true iff this view holds a color image, false if it is a
     * grayscale image.
     */
    bool IsColor() const;
@@ -558,7 +558,7 @@ public:
    void DestroyScreenTransferFunctions( bool notify = true );
 
    /*!
-    * Returns true if screen transfer functions (STF) are enabled for this
+    * Returns true iff screen transfer functions (STF) are enabled for this
     * view. If STFs are disabled, they are not used for screen renditions.
     */
    bool AreScreenTransferFunctionsEnabled() const;
@@ -761,7 +761,7 @@ public:
    }
 
    /*!
-    * Returns true if the specified \a property exists in this view.
+    * Returns true iff the specified \a property exists in this view.
     *
     * This function is thread-safe.
     *
@@ -796,7 +796,7 @@ public:
    }
 
    /*!
-    * Returns true if the specified \a id string is a valid view identifier.
+    * Returns true iff the specified \a id string is a valid view identifier.
     *
     * A valid view identifier can include a preview separator (the sequence
     * "->") to separate between a main view identifier and a preview
@@ -869,4 +869,4 @@ protected:
 #endif   // __PCL_View_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/View.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/View.h - Released 2015/10/08 11:24:12 UTC

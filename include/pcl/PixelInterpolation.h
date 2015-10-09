@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/PixelInterpolation.h - Released 2015/07/30 17:15:18 UTC
+// pcl/PixelInterpolation.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -238,7 +238,7 @@ public:
    virtual String Description() const = 0;
 
    /*!
-    * Returns true if this interpolation can be safely used in multithreaded
+    * Returns true iff this interpolation can be safely used in multithreaded
     * contexts.
     *
     * A thread-safe interpolator can be used concurrently by multiple threads
@@ -1065,4 +1065,4 @@ private:
 #endif   // __PCL_PixelInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/PixelInterpolation.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/PixelInterpolation.h - Released 2015/10/08 11:24:12 UTC

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// Standard ColorCalibration Process Module Version 01.02.00.0189
+// Standard ColorCalibration Process Module Version 01.02.00.0197
 // ----------------------------------------------------------------------------
-// BackgroundNeutralizationParameters.h - Released 2015/07/31 11:49:48 UTC
+// BackgroundNeutralizationParameters.h - Released 2015/10/08 11:24:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
@@ -242,4 +242,4 @@ PCL_END_LOCAL
 #endif   // __BackgroundNeutralizationParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF BackgroundNeutralizationParameters.h - Released 2015/07/31 11:49:48 UTC
+// EOF BackgroundNeutralizationParameters.h - Released 2015/10/08 11:24:39 UTC

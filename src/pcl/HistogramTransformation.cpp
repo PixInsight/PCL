@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/HistogramTransformation.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/HistogramTransformation.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -85,7 +85,7 @@ void HistogramTransformation::UpdateFlags()
 
 // ----------------------------------------------------------------------------
 
-template <class T> static
+template <class T> static PCL_HOT_FUNCTION
 void ApplyHistogramTransformation( T* a, size_type n, T x0, T x1, const HistogramTransformation& H )
 {
    if ( a == 0 || n == 0 )
@@ -249,7 +249,7 @@ public:
    {
    }
 
-   virtual void Run()
+   virtual PCL_HOT_FUNCTION void Run()
    {
       if ( m_T.m_transformChain.IsEmpty() )
          for ( int i = m_start; i < m_end; ++i )
@@ -318,7 +318,7 @@ public:
    {
    }
 
-   virtual void Run()
+   virtual PCL_HOT_FUNCTION void Run()
    {
       if ( m_T.m_transformChain.IsEmpty() )
          for ( int i = m_start; i < m_end; ++i )
@@ -385,7 +385,7 @@ public:
       if ( image.IsEmptySelection() )
          return;
 
-      image.SetUnique();
+      image.EnsureUnique();
 
       Rect r = image.SelectedRectangle();
       int h = r.Height();
@@ -409,7 +409,7 @@ public:
       image.Status() = data.status;
    }
 
-   template <class P> static
+   template <class P> static PCL_HOT_FUNCTION
    void Apply( GenericImage<P>& image, const typename P::sample* lut )
    {
       if ( image.IsEmptySelection() )
@@ -457,7 +457,7 @@ private:
       {
       }
 
-      virtual void Run()
+      virtual PCL_HOT_FUNCTION void Run()
       {
          INIT_THREAD_MONITOR()
 
@@ -521,4 +521,4 @@ void HistogramTransformation::Apply( pcl::UInt32Image& image ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/HistogramTransformation.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/HistogramTransformation.cpp - Released 2015/10/08 11:24:19 UTC

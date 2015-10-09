@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Brush.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Brush.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -253,7 +253,7 @@ public:
    style Style() const;
 
    /*!
-    * Returns true if this brush is solid, i.e. if its current style is
+    * Returns true iff this brush is solid, i.e. if its current style is
     * BrushStyle::Solid.
     */
    bool IsSolid() const
@@ -262,7 +262,7 @@ public:
    }
 
    /*!
-    * Returns true if this brush is empty (or transparent), i.e. if its current
+    * Returns true iff this brush is empty (or transparent), i.e. if its current
     * style is BrushStyle::Empty. An empty brush produces transparent shapes.
     */
    bool IsEmpty() const
@@ -271,7 +271,7 @@ public:
    }
 
    /*!
-    * Returns true if this brush is transparent. This function is a synonym
+    * Returns true iff this brush is transparent. This function is a synonym
     * for IsEmpty().
     */
    bool IsTransparent() const
@@ -280,7 +280,7 @@ public:
    }
 
    /*!
-    * Returns true if this brush is \e stippled, i.e. if its current style is
+    * Returns true iff this brush is \e stippled, i.e. if its current style is
     * BrushStyle::Stippled. A stippled brush draws a regular pattern
     * consisting of multiple, adjacent copies of a Bitmap image.
     */
@@ -314,7 +314,7 @@ public:
    void SetStipple( const Bitmap& );
 
    /*!
-    * Returns true if this object is a gradient brush.
+    * Returns true iff this object is a gradient brush.
     */
    virtual bool IsGradient() const
    {
@@ -823,4 +823,4 @@ public:
 #endif   // __PCL_Brush_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Brush.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Brush.h - Released 2015/10/08 11:24:12 UTC

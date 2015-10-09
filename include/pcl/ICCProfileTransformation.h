@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ICCProfileTransformation.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ICCProfileTransformation.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -246,7 +246,7 @@ public:
    void Add( const ICCProfile::handle profileHandle );
 
    /*!
-    * Returns true if this object represents a valid color space transformation
+    * Returns true iff this object represents a valid color space transformation
     * based on ICC color profiles.
     *
     * For this member function to return true, the underlying low-level
@@ -289,7 +289,7 @@ public:
    }
 
    /*!
-    * Returns true if this ICC profile transformation applies a <em>black point
+    * Returns true iff this ICC profile transformation applies a <em>black point
     * compensation</em> algorithm.
     */
    bool UsingBlackPointCompensation() const
@@ -323,7 +323,7 @@ public:
    }
 
    /*!
-    * Returns true if this ICC profile transformation forces the use of
+    * Returns true iff this ICC profile transformation forces the use of
     * floating point operations for computation of transformed pixel samples of
     * all numerical data types.
     *
@@ -360,7 +360,7 @@ public:
    }
 
    /*!
-    * Returns true if this ICC profile transformation uses high-resolution
+    * Returns true iff this ICC profile transformation uses high-resolution
     * color lookup tables (CLUTs) for precalculation of device link functions.
     *
     * Disabling high-resolution CLUTs may provide a (usually small) speed
@@ -397,7 +397,7 @@ public:
    }
 
    /*!
-    * Returns true if this ICC profile transformation uses low-resolution color
+    * Returns true iff this ICC profile transformation uses low-resolution color
     * lookup tables (CLUTs) for precalculation of device link functions.
     *
     * Enabling low-resolution CLUTs may provide a (usually small) speed
@@ -434,7 +434,7 @@ public:
    }
 
    /*!
-    * Returns true if this object represents a device proofing transformation.
+    * Returns true iff this object represents a device proofing transformation.
     */
    bool IsProofingTransformation() const
    {
@@ -475,7 +475,7 @@ public:
    void Clear();
 
    /*!
-    * Returns true if the starting ICC profile in this transformation is a RGB
+    * Returns true iff the starting ICC profile in this transformation is a RGB
     * profile.
     */
    bool IsSourceRGBProfile() const
@@ -484,7 +484,7 @@ public:
    }
 
    /*!
-    * Returns true if the target (last) ICC profile in this transformation is a
+    * Returns true iff the target (last) ICC profile in this transformation is a
     * RGB profile.
     */
    bool IsTargetRGBProfile() const
@@ -493,7 +493,7 @@ public:
    }
 
    /*!
-    * Returns true if this object is allowed to use multiple parallel execution
+    * Returns true iff this object is allowed to use multiple parallel execution
     * threads (when multiple threads are permitted and available).
     */
    bool IsParallelProcessingEnabled() const
@@ -761,7 +761,7 @@ public:
    }
 
    /*!
-    * Returns true if <em>gamut check</em> has been enabled for this color
+    * Returns true iff <em>gamut check</em> has been enabled for this color
     * transformation. When gamut check is enabled, out-of-gamut colors in the
     * final rendition are automatically replaced by the current <em>gamut
     * warning color</em> (see the SetGamutWarningColor() member function).
@@ -816,4 +816,4 @@ public:
 #endif   // __PCL_ICCProfileTransformation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ICCProfileTransformation.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ICCProfileTransformation.h - Released 2015/10/08 11:24:12 UTC

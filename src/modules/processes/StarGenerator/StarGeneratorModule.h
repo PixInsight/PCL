@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// Standard StarGenerator Process Module Version 01.01.00.0199
+// Standard StarGenerator Process Module Version 01.01.00.0207
 // ----------------------------------------------------------------------------
-// StarGeneratorModule.h - Released 2015/07/31 11:49:48 UTC
+// StarGeneratorModule.h - Released 2015/10/08 11:24:40 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard StarGenerator PixInsight module.
 //
@@ -86,4 +86,4 @@ public:
 #endif   // __StarGeneratorModule_h
 
 // ----------------------------------------------------------------------------
-// EOF StarGeneratorModule.h - Released 2015/07/31 11:49:48 UTC
+// EOF StarGeneratorModule.h - Released 2015/10/08 11:24:40 UTC

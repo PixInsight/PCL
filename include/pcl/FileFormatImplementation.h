@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/FileFormatImplementation.h - Released 2015/07/30 17:15:18 UTC
+// pcl/FileFormatImplementation.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -154,7 +154,7 @@ public:
    virtual void Close();
 
    /*!
-    * Returns true if this file is currently open.
+    * Returns true iff this file is currently open.
     */
    virtual bool IsOpen() const;
 
@@ -439,7 +439,7 @@ public:
    virtual void Read( UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
-    * Returns true if the last file read operation was \e inexact.
+    * Returns true iff the last file read operation was \e inexact.
     *
     * The PixInsight application invokes this function just after successful
     * completion of a call to ReadImage() or Read(). If a file format instance
@@ -703,7 +703,7 @@ public:
    virtual void Write( const UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
-    * Returns true if the last file write operation in this file was \e lossy.
+    * Returns true iff the last file write operation in this file was \e lossy.
     *
     * The PixInsight core application invokes this function just after
     * successful completion of a call to WriteImage() or Write(). If a file
@@ -810,4 +810,4 @@ private:
 #endif   // __PCL_FileFormat_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormatImplementation.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/FileFormatImplementation.h - Released 2015/10/08 11:24:12 UTC

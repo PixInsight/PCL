@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ImageColor.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ImageColor.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -175,7 +175,7 @@ public:
    }
 
    /*!
-    * Returns true if this is a color image. Returns false if this is a
+    * Returns true iff this is a color image. Returns false if this is a
     * grayscale monochrome image.
     */
    bool IsColor() const
@@ -208,13 +208,13 @@ protected:
       color_space    colorSpace;
       RGBColorSystem RGBWS;
 
-      Color( color_space cs = ColorSpace::Gray ) : colorSpace( cs ), RGBWS( s_defaultRGBWS )
+      Color( color_space cs = ColorSpace::Gray ) :
+         colorSpace( cs ),
+         RGBWS( s_defaultRGBWS )
       {
       }
 
-      Color( const Color& x ) : colorSpace( x.colorSpace ), RGBWS( x.RGBWS )
-      {
-      }
+      Color( const Color& ) = default;
 
       void Assign( const Color& x )
       {
@@ -271,4 +271,4 @@ protected:
 #endif   // __PCL_ImageColor_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageColor.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ImageColor.h - Released 2015/10/08 11:24:12 UTC

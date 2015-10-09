@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ColorDialog.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ColorDialog.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -158,7 +158,7 @@ public:
    }
 
    /*!
-    * Returns true if this dialog allows definition of an alpha (transparency)
+    * Returns true iff this dialog allows definition of an alpha (transparency)
     * color component.
     */
    bool IsAlphaEnabled() const
@@ -167,7 +167,7 @@ public:
    }
 
    /*!
-    * Returns true if this dialog defines a grayscale color, where the three
+    * Returns true iff this dialog defines a grayscale color, where the three
     * individual RGB components are equal.
     */
    bool IsGrayscale() const
@@ -206,4 +206,4 @@ protected:
 #endif   // PCL_ColorDialog_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ColorDialog.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ColorDialog.h - Released 2015/10/08 11:24:12 UTC

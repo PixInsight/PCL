@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/RGBColorSystem.h - Released 2015/07/30 17:15:18 UTC
+// pcl/RGBColorSystem.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -222,23 +222,22 @@ public:
    {
       if ( m_data != nullptr )
       {
-         if ( !m_data->Detach() )
-            delete m_data;
+         DetachFromData();
          m_data = nullptr;
       }
    }
 
    /*!
-    * Returns true if this %RGBColorSystem object uniquely references its RGB
+    * Returns true iff this %RGBColorSystem object uniquely references its RGB
     * working space data.
     */
    bool IsUnique() const
    {
-      return m_data->IsUniqueAtomic();
+      return m_data->IsUnique();
    }
 
    /*!
-    * Returns true if this %RGBColorSystem object is an alias of another
+    * Returns true iff this %RGBColorSystem object is an alias of another
     * %RGBColorSystem instance \a s.
     *
     * Two instances of %RGBColorSystem are aliases if both share the same RGB
@@ -257,14 +256,13 @@ public:
     * working space data, references it, and then decrements the reference
     * counter of the original data.
     */
-   void SetUnique()
+   void EnsureUnique()
    {
       if ( !IsUnique() )
       {
-         Data* oldData = m_data;
-         m_data = new Data( *oldData );
-         if ( !oldData->Detach() )
-            delete oldData;
+         Data* newData = new Data( *m_data );
+         DetachFromData();
+         m_data = newData;
       }
    }
 
@@ -281,7 +279,7 @@ public:
    }
 
    /*!
-    * Returns true if this space uses a sRGB gamma function.
+    * Returns true iff this space uses a sRGB gamma function.
     */
    bool IsSRGB() const
    {
@@ -289,7 +287,7 @@ public:
    }
 
    /*!
-    * Returns true if this space uses a linear gamma function.
+    * Returns true iff this space uses a linear gamma function.
     *
     * A linear RGB space has gamma=1 and doesn't use a sRGB gamma function.
     */
@@ -364,7 +362,7 @@ public:
    }
 
    /*!
-    * Returns true if two %RGBColorSystem instances define the same RGB working
+    * Returns true iff two %RGBColorSystem instances define the same RGB working
     * space. This happens when either both instances are aliases, or if they
     * define exactly the same RGB space parameters.
     */
@@ -377,20 +375,15 @@ public:
     * Causes this %RGBColorSystem instance to reference the same RGB working
     * space as another instance.
     *
-    * The reference count of the previously referenced space is decremented;
-    * the previous space is deleted if it becomes unreferenced (garbage). The
-    * reference count of the new space is incremented.
+    * The reference count of the previously referenced space is decremented,
+    * and the previous space is deleted if it becomes unreferenced. The
+    * reference count of the new space is then incremented.
     */
    void Assign( const RGBColorSystem& s )
    {
-      if ( s.m_data != m_data )
-      {
-         Data* oldData = m_data;
-         s.m_data->Attach();
-         m_data = s.m_data;
-         if ( !oldData->Detach() )
-            delete oldData;
-      }
+      s.m_data->Attach();
+      DetachFromData();
+      m_data = s.m_data;
    }
 
    /*!
@@ -1444,6 +1437,12 @@ protected:
 
    Data* m_data;
 
+   void DetachFromData()
+   {
+      if ( !m_data->Detach() )
+         delete m_data;
+   }
+
    static void XYZLab( sample& x )
    {
       x = (x > CIEEpsilon) ? Pow( x, sample( _1_3 ) ) : sample( CIEKappa116*x + _16_116 );
@@ -1607,4 +1606,4 @@ public:
 #endif   // __PCL_RGBColorSystem_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/RGBColorSystem.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/RGBColorSystem.h - Released 2015/10/08 11:24:12 UTC

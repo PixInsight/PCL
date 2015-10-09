@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/String.h - Released 2015/07/30 17:15:18 UTC
+// pcl/String.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -323,7 +323,7 @@ public:
     * Constructs a string with a copy of the character sequence defined by the
     * range [i,j).
     *
-    * if \a i is greater than or equal to \a j, this constructor creates an
+    * If \a i is greater than or equal to \a j, this constructor creates an
     * empty string. Otherwise it will assign the specified sequence of
     * characters.
     *
@@ -386,16 +386,15 @@ public:
    {
       if ( m_data != nullptr )
       {
-         if ( !m_data->Detach() )
-            Data::Dispose( m_data );
+         DetachFromData();
          m_data = nullptr;
       }
    }
 
    /*!
-    * Returns true if this string uniquely references its string data.
+    * Returns true iff this string uniquely references its string data.
     *
-    * \sa SetUnique(), IsAliasOf()
+    * \sa EnsureUnique(), IsAliasOf()
     */
    bool IsUnique() const
    {
@@ -403,11 +402,11 @@ public:
    }
 
    /*!
-    * Returns true if this string is an alias of another string \a s.
+    * Returns true iff this string is an alias of another string \a s.
     *
     * Two strings are aliases if both share the same string data.
     *
-    * \sa IsUnique(), SetUnique()
+    * \sa IsUnique(), EnsureUnique()
     */
    bool IsAliasOf( const GenericString& s ) const
    {
@@ -423,7 +422,7 @@ public:
     *
     * \sa IsUnique(), IsAliasOf()
     */
-   void SetUnique()
+   void EnsureUnique()
    {
       if ( !IsUnique() )
       {
@@ -431,7 +430,7 @@ public:
          Data* newData = Data::New( len );
          if ( len > 0 )
             R::Copy( newData->string, m_data->string, len );
-         m_data->Detach();
+         DetachFromData();
          m_data = newData;
       }
    }
@@ -576,7 +575,7 @@ public:
     */
    void SetAllocator( const allocator& a )
    {
-      SetUnique();
+      EnsureUnique();
       m_data->alloc = a;
    }
 
@@ -595,7 +594,7 @@ public:
    iterator At( size_type i )
    {
       PCL_PRECONDITION( i < Length() )
-      SetUnique();
+      EnsureUnique();
       return m_data->string + i;
    }
 
@@ -682,7 +681,7 @@ public:
     */
    iterator Begin()
    {
-      SetUnique();
+      EnsureUnique();
       return m_data->string;
    }
 
@@ -712,7 +711,7 @@ public:
     */
    iterator End()
    {
-      SetUnique();
+      EnsureUnique();
       return m_data->end;
    }
 
@@ -744,7 +743,7 @@ public:
     */
    reverse_iterator ReverseBegin()
    {
-      SetUnique();
+      EnsureUnique();
       return (m_data->string < m_data->end) ? m_data->end-1 : nullptr;
    }
 
@@ -778,7 +777,7 @@ public:
     */
    reverse_iterator ReverseEnd()
    {
-      SetUnique();
+      EnsureUnique();
       return (m_data->string < m_data->end) ? m_data->string-1 : nullptr;
    }
 
@@ -832,6 +831,32 @@ public:
 #endif   // !__PCL_NO_STL_COMPATIBLE_ITERATORS
 
    /*!
+    * Returns a pointer to the mutable internal data array of this string. This
+    * member function is equivalent to Begin().
+    *
+    * If this string has no capacity, this function returns \c nullptr.
+    * Otherwise if this string is not unique, it is made unique before this
+    * function returns a pointer to its internal data buffer.
+    */
+   c_string c_str()
+   {
+      return Begin();
+   }
+
+   /*!
+    * Returns a pointer to the immutable internal data array of this string.
+    *
+    * If this string is empty, this member function returns a pointer to a
+    * static, null-terminated, unmodifiable empty string (the "" C string).
+    * This function always returns a valid pointer to existing character data.
+    */
+   const_c_string c_str() const
+   {
+      static const char_type theNullChar = char_traits::Null();
+      return IsEmpty() ? &theNullChar : Begin();
+   }
+
+   /*!
     * Copy assignment operator. Returns a reference to this object.
     *
     * This operator calls Assign() with the specified source string \a s.
@@ -859,8 +884,7 @@ public:
    void Assign( const GenericString& s )
    {
       s.m_data->Attach();
-      if ( !m_data->Detach() )
-         Data::Dispose( m_data );
+      DetachFromData();
       m_data = s.m_data;
    }
 
@@ -890,8 +914,7 @@ public:
     */
    void Transfer( GenericString& s )
    {
-      if ( !m_data->Detach() )
-         Data::Dispose( m_data );
+      DetachFromData();
       m_data = s.m_data;
       s.m_data = nullptr;
    }
@@ -903,8 +926,7 @@ public:
     */
    void Transfer( GenericString&& s )
    {
-      if ( !m_data->Detach() )
-         Data::Dispose( m_data );
+      DetachFromData();
       m_data = s.m_data;
       s.m_data = nullptr;
    }
@@ -1055,7 +1077,7 @@ public:
          if ( !IsUnique() )
          {
             Data* newData = Data::New( len );
-            m_data->Detach();
+            DetachFromData();
             m_data = newData;
          }
          R::Fill( m_data->string, c, len );
@@ -1066,7 +1088,7 @@ public:
     * Fills a segment of at most \a n contiguous characters in this string with
     * the specified character \a c, starting from the \a i-th character.
     *
-    * if \a i is greater than or equal to the length of this string, then
+    * If \a i is greater than or equal to the length of this string, then
     * calling this function has no effect. Otherwise the character count \a n
     * will be constrained to replace existing characters in this string.
     *
@@ -1083,11 +1105,11 @@ public:
       {
          n = pcl::Min( n, len-i );
          if ( n < len )
-            SetUnique();
+            EnsureUnique();
          else if ( !IsUnique() )
          {
             Data* newData = Data::New( len );
-            m_data->Detach();
+            DetachFromData();
             m_data = newData;
          }
          R::Fill( m_data->string+i, c, n );
@@ -1150,11 +1172,11 @@ public:
          else
          {
             size_type len = Length();
-            Data* newData = Data::New(); // ### FIXME: potential leak
+            Data* newData = Data::New(); // ### FIXME: unlikely, but this is a potential leak
             newData->Reserve( len, pcl::Max( len, n ) );
             if ( len > 0 )
                R::Copy( newData->string, m_data->string, len );
-            m_data->Detach();
+            DetachFromData();
             m_data = newData;
          }
    }
@@ -1178,36 +1200,23 @@ public:
       {
          if ( n > 0 )
          {
-            if ( IsUnique() )
-            {
-               if ( m_data->ShouldReallocate( n ) )
-               {
-                  Data* newData = Data::New( n );
-                  size_type m = Capacity();
-                  if ( m > 0 )
-                     R::Copy( newData->string, m_data->string, pcl::Min( n, m ) );
-                  m_data->Detach();
-                  Data::Dispose( m_data );
-                  m_data = newData;
-               }
-               else
-                  m_data->SetLength( n );
-            }
-            else
+            if ( !IsUnique() || m_data->ShouldReallocate( n ) )
             {
                Data* newData = Data::New( n );
                size_type m = Capacity();
                if ( m > 0 )
                   R::Copy( newData->string, m_data->string, pcl::Min( n, m ) );
-               m_data->Detach();
+               DetachFromData();
                m_data = newData;
             }
+            else
+               m_data->SetLength( n );
          }
          else
             Clear();
       }
       else
-         SetUnique();
+         EnsureUnique();
    }
 
    /*!
@@ -1277,7 +1286,7 @@ public:
             {
                Data* newData = Data::New( len, 0 );
                R::Copy( newData->string, m_data->string, len );
-               m_data->Detach();
+               DetachFromData();
                m_data = newData;
             }
          }
@@ -1312,7 +1321,7 @@ public:
     */
    c_string Release()
    {
-      SetUnique();
+      EnsureUnique();
       iterator string = m_data->string;
       m_data->Reset();
       return string;
@@ -1599,7 +1608,7 @@ public:
                   else if ( ns < n )
                      Delete( i, n-ns );
                   else
-                     SetUnique();
+                     EnsureUnique();
 
                   R::Copy( m_data->string+i, s.m_data->string, ns );
                }
@@ -1638,7 +1647,7 @@ public:
                   else if ( nt < n )
                      Delete( i, n-nt );
                   else
-                     SetUnique();
+                     EnsureUnique();
 
                   R::Copy( m_data->string+i, t, nt );
                }
@@ -1672,7 +1681,7 @@ public:
                   else if ( nc < n )
                      Delete( i, n-nc );
                   else
-                     SetUnique();
+                     EnsureUnique();
 
                   R::Fill( m_data->string+i, c, nc );
                }
@@ -1777,8 +1786,7 @@ public:
                      R::Copy( newData->string, m_data->string, i );
                   if ( i < newLen )
                      R::Copy( newData->string+i, m_data->string+i+n, newLen-i );
-                  if ( !m_data->Detach() )
-                     Data::Dispose( m_data );
+                  DetachFromData();
                   m_data = newData;
                }
                else
@@ -1896,9 +1904,9 @@ public:
             m_data->Deallocate();
          else
          {
-            m_data->Detach();
-            m_data = nullptr;
-            m_data = Data::New();
+            Data* newData = Data::New();
+            DetachFromData();
+            m_data = newData;
          }
    }
 
@@ -2387,7 +2395,7 @@ public:
    }
 
    /*!
-    * Returns true if this string begins with the specified substring \a s.
+    * Returns true iff this string begins with the specified substring \a s.
     */
    template <class R1, class A1>
    bool StartsWith( const GenericString<T,R1,A1>& s ) const
@@ -2401,7 +2409,7 @@ public:
    }
 
    /*!
-    * Returns true if this string begins with the specified null-terminated
+    * Returns true iff this string begins with the specified null-terminated
     * sequence \a t.
     */
    bool StartsWith( const_c_string t ) const
@@ -2416,7 +2424,7 @@ public:
    }
 
    /*!
-    * Returns true if this string begins with the specified character \a c.
+    * Returns true iff this string begins with the specified character \a c.
     */
    bool StartsWith( char_type c ) const
    {
@@ -2424,7 +2432,7 @@ public:
    }
 
    /*!
-    * Returns true if this string begins with the specified substring \a s,
+    * Returns true iff this string begins with the specified substring \a s,
     * performing case-insensitive character comparisons.
     */
    template <class R1, class A1>
@@ -2439,7 +2447,7 @@ public:
    }
 
    /*!
-    * Returns true if this string begins with the specified null-terminated
+    * Returns true iff this string begins with the specified null-terminated
     * sequence \a t, performing case-insensitive character comparisons.
     */
    bool StartsWithIC( const_c_string t ) const
@@ -2454,7 +2462,7 @@ public:
    }
 
    /*!
-    * Returns true if this string begins with the specified character \a c,
+    * Returns true iff this string begins with the specified character \a c,
     * performing a case-insensitive character comparison.
     */
    bool StartsWithIC( char_type c ) const
@@ -2463,7 +2471,7 @@ public:
    }
 
    /*!
-    * Returns true if this string ends with the specified substring \a s.
+    * Returns true iff this string ends with the specified substring \a s.
     */
    template <class R1, class A1>
    bool EndsWith( const GenericString<T,R1,A1>& s ) const
@@ -2478,7 +2486,7 @@ public:
    }
 
    /*!
-    * Returns true if this string ends with the specified null-terminated
+    * Returns true iff this string ends with the specified null-terminated
     * string \a t.
     */
    bool EndsWith( const_c_string t ) const
@@ -2493,7 +2501,7 @@ public:
    }
 
    /*!
-    * Returns true if this string ends with the specified character \a c.
+    * Returns true iff this string ends with the specified character \a c.
     */
    bool EndsWith( char_type c ) const
    {
@@ -2501,7 +2509,7 @@ public:
    }
 
    /*!
-    * Returns true if this string ends with the specified substring \a s,
+    * Returns true iff this string ends with the specified substring \a s,
     * performing case-insensitive character comparisons.
     */
    template <class R1, class A1>
@@ -2517,7 +2525,7 @@ public:
    }
 
    /*!
-    * Returns true if this string ends with the specified null-terminated
+    * Returns true iff this string ends with the specified null-terminated
     * string \a t, performing case-insensitive character comparisons.
     */
    bool EndsWithIC( const_c_string t ) const
@@ -2532,7 +2540,7 @@ public:
    }
 
    /*!
-    * Returns true if this string ends with the specified character \a c,
+    * Returns true iff this string ends with the specified character \a c,
     * performing a case-insensitive character comparison.
     */
    bool EndsWithIC( char_type c ) const
@@ -2781,7 +2789,7 @@ public:
    }
 
    /*!
-    * Returns true if this string contains a substring \a s.
+    * Returns true iff this string contains a substring \a s.
     */
    template <class R1, class A1>
    bool Contains( const GenericString<T,R1,A1>& s ) const
@@ -2790,7 +2798,7 @@ public:
    }
 
    /*!
-    * Returns true if this string contains a null-terminated substring \a t.
+    * Returns true iff this string contains a null-terminated substring \a t.
     */
    bool Contains( const_c_string t ) const
    {
@@ -2798,7 +2806,7 @@ public:
    }
 
    /*!
-    * Returns true if this string contains a character \a c.
+    * Returns true iff this string contains a character \a c.
     */
    bool Contains( char_type c ) const
    {
@@ -2806,7 +2814,7 @@ public:
    }
 
    /*!
-    * Returns true if this string contains a substring \a s.
+    * Returns true iff this string contains a substring \a s.
     *
     * This member function performs case-insensitive string comparisons to
     * find an instance of the specified substring \a s.
@@ -2818,7 +2826,7 @@ public:
    }
 
    /*!
-    * Returns true if this string contains a null-terminated substring \a t.
+    * Returns true iff this string contains a null-terminated substring \a t.
     *
     * This member function performs case-insensitive string comparisons to
     * find an instance of the specified substring \a t.
@@ -2829,7 +2837,7 @@ public:
    }
 
    /*!
-    * Returns true if this string contains a character \a c.
+    * Returns true iff this string contains a character \a c.
     *
     * This member function performs case-insensitive character comparisons to
     * find an instance of the specified character \a c.
@@ -3199,10 +3207,9 @@ public:
     *                      distinguish between lowercase and uppercase
     *                      characters. The default value is true.
     *
-    * Returns true if this string matches the specified \a pattern; false
-    * otherwise. If either this string or the pattern is empty, this function
-    * always returns false conventionally, even if the pattern is a single
-    * asterisk '*'.
+    * Returns true iff this string matches the specified \a pattern. If either
+    * this string or the pattern is empty, this function always returns false
+    * conventionally, even if the pattern is a single asterisk '*'.
     */
    template <class R1, class A1>
    bool WildMatch( const GenericString<T,R1,A1>& pattern, bool caseSensitive = true ) const
@@ -3219,10 +3226,9 @@ public:
     * This function performs case-insensitive comparisons between string and
     * non-wild pattern characters.
     *
-    * Returns true if this string matches the specified \a pattern; false
-    * otherwise. If either this string or the pattern is empty, this function
-    * always returns false conventionally, even if the pattern is a single
-    * asterisk '*'.
+    * Returns true iff this string matches the specified \a pattern. If either
+    * this string or the pattern is empty, this function always returns false
+    * conventionally, even if the pattern is a single asterisk '*'.
     */
    template <class R1, class A1>
    bool WildMatchIC( const GenericString<T,R1,A1>& pattern ) const
@@ -3241,10 +3247,9 @@ public:
     *                      distinguish between lowercase and uppercase
     *                      characters. The default value is true.
     *
-    * Returns true if this string matches the specified \a pattern; false
-    * otherwise. If either this string or the pattern is empty, this function
-    * always returns false conventionally, even if the pattern is a single
-    * asterisk '*'.
+    * Returns true iff this string matches the specified \a pattern. If either
+    * this string or the pattern is empty, this function always returns false
+    * conventionally, even if the pattern is a single asterisk '*'.
     */
    bool WildMatch( const_c_string pattern, bool caseSensitive = true ) const
    {
@@ -3261,10 +3266,9 @@ public:
     * This function performs case-insensitive comparisons between string and
     * non-wild pattern characters.
     *
-    * Returns true if this string matches the specified \a pattern; false
-    * otherwise. If either this string or the pattern is empty, this function
-    * always returns false conventionally, even if the pattern is a single
-    * asterisk '*'.
+    * Returns true iff this string matches the specified \a pattern. If either
+    * this string or the pattern is empty, this function always returns false
+    * conventionally, even if the pattern is a single asterisk '*'.
     */
    bool WildMatchIC( const_c_string pattern ) const
    {
@@ -3272,8 +3276,8 @@ public:
    }
 
    /*!
-    * Returns true if this string contains one or more wildcard characters
-    * (asterisk '*' or question mark '?'), false otherwise.
+    * Returns true iff this string contains one or more wildcard characters
+    * (asterisk '*' or question mark '?').
     */
    bool HasWildcards() const
    {
@@ -3292,7 +3296,7 @@ public:
       size_type len = Length();
       if ( len > 0 )
       {
-         SetUnique();
+         EnsureUnique();
          R::ToCaseFolded( m_data->string, len );
       }
    }
@@ -3306,7 +3310,7 @@ public:
       size_type len = Length();
       if ( len > 0 )
       {
-         SetUnique();
+         EnsureUnique();
          R::ToLowercase( m_data->string, len );
       }
    }
@@ -3320,7 +3324,7 @@ public:
       size_type len = Length();
       if ( len > 0 )
       {
-         SetUnique();
+         EnsureUnique();
          R::ToUppercase( m_data->string, len );
       }
    }
@@ -3367,7 +3371,7 @@ public:
    {
       if ( !IsEmpty() )
       {
-         SetUnique();
+         EnsureUnique();
          for ( iterator i = m_data->string, j = m_data->end; i < --j; ++i )
             pcl::Swap( *i, *j );
       }
@@ -3390,7 +3394,7 @@ public:
    {
       if ( !IsEmpty() )
       {
-         SetUnique();
+         EnsureUnique();
          pcl::Sort( m_data->string, m_data->end );
       }
    }
@@ -3416,7 +3420,7 @@ public:
    {
       if ( !IsEmpty() )
       {
-         SetUnique();
+         EnsureUnique();
          pcl::Sort( m_data->string, m_data->end, p );
       }
    }
@@ -3610,7 +3614,7 @@ public:
    }
 
    /*!
-    * Returns true if this string can be interpreted as a numeric literal:
+    * Returns true iff this string can be interpreted as a numeric literal:
     *
     * \li The string is not empty.
     *
@@ -3632,7 +3636,7 @@ public:
    }
 
    /*!
-    * Returns true if this string can be interpreted as a symbol identifier:
+    * Returns true iff this string can be interpreted as a symbol identifier:
     *
     * \li The string is not empty.
     *
@@ -3765,6 +3769,16 @@ protected:
 
    /*!
     * \internal
+    * Dereferences string data and disposes it if it becomes garbage.
+    */
+   void DetachFromData()
+   {
+      if ( !m_data->Detach() )
+         Data::Dispose( m_data );
+   }
+
+   /*!
+    * \internal
     * Internal string reallocation routine.
     *
     * Reallocates if necessary, ignoring current string contents. Reallocation
@@ -3789,7 +3803,7 @@ protected:
       else
       {
          Data* newData = Data::New( len );
-         m_data->Detach();
+         DetachFromData();
          m_data = newData;
       }
    }
@@ -3839,7 +3853,7 @@ protected:
                R::Copy( newData->string, m_data->string, i );
             if ( i < len )
                R::Copy( newData->string+i+n, m_data->string+i, len-i );
-            m_data->Detach();
+            DetachFromData();
             m_data = newData;
          }
       }
@@ -3874,7 +3888,7 @@ protected:
          {
             Data* newData = Data::New( len );
             R::Copy( newData->string, left, len );
-            m_data->Detach();
+            DetachFromData();
             m_data = newData;
          }
       }
@@ -3899,7 +3913,7 @@ protected:
                for ( iterator p = m_data->string + i, p1 = p + n; p < p1; ++p )
                   if ( *p == c1 )
                   {
-                     SetUnique();
+                     EnsureUnique();
                      *p = c2;
                      for ( ; ++p < p1; )
                         if ( *p == c1 )
@@ -3913,7 +3927,7 @@ protected:
                for ( iterator p = m_data->string + i, p1 = p + n; p < p1; ++p )
                   if ( R::ToCaseFolded( *p ) == c1 )
                   {
-                     SetUnique();
+                     EnsureUnique();
                      *p = c2;
                      for ( ; ++p < p1; )
                         if ( R::ToCaseFolded( *p ) == c1 )
@@ -3939,7 +3953,7 @@ protected:
             SearchEngine S( t1, n1, caseSensitive );
             if ( n1 == n2 )
             {
-               SetUnique();
+               EnsureUnique();
                for ( size_type p = i; (p = S( m_data->string, p, len )) < len; p += n1 )
                   R::Copy( m_data->string + p, t2, n2 );
             }
@@ -3972,9 +3986,7 @@ protected:
                      }
                      if ( sourceIndex < len )
                         R::Copy( newData->string+targetIndex, m_data->string+sourceIndex, len-sourceIndex );
-
-                     if ( !m_data->Detach() )
-                        Data::Dispose( m_data );
+                     DetachFromData();
                      m_data = newData;
                   }
                   else
@@ -4383,7 +4395,7 @@ protected:
       }
 
       /*!
-       * Returns true if a reallocation of string data should happen in order
+       * Returns true iff a reallocation of string data should happen in order
        * to change the string's length to \a len characters.
        */
       bool ShouldReallocate( size_type len ) const
@@ -4415,20 +4427,20 @@ protected:
        *
        * This function is thread-safe.
        */
+#ifndef __PCL_NO_STRING_FREE_LIST
       static Data* NextFree()
       {
-#ifndef __PCL_NO_STRING_FREE_LIST
          if ( freeLock.TestAndSet( 0, 1 ) )
          {
             Data* data = freeList;
             if ( data != nullptr )
                freeList = reinterpret_cast<Data*>( data->string );
-            (void)freeLock.FetchAndStore( 0 );
+            freeLock.Store( 0 );
             return data;
          }
-#endif // !__PCL_NO_STRING_FREE_LIST
          return nullptr;
       }
+#endif // !__PCL_NO_STRING_FREE_LIST
 
       /*!
        * Returns a free empty string data structure. Retrieves an existing data
@@ -4500,7 +4512,7 @@ protected:
       static void Dispose( Data* data )
       {
          PCL_PRECONDITION( data != nullptr )
-         PCL_CHECK( data->IsGarbage() )
+         PCL_CHECK( data->RefCount() == 0 )
 #ifndef __PCL_NO_STRING_FREE_LIST
          if ( freeLock.TestAndSet( 0, 1 ) )
          {
@@ -4508,7 +4520,7 @@ protected:
             data->Deallocate();
             data->string = reinterpret_cast<iterator>( freeList );
             freeList = data;
-            (void)freeLock.FetchAndStore( 0 );
+            freeLock.Store( 0 );
          }
          else
 #endif // !__PCL_NO_STRING_FREE_LIST
@@ -4573,7 +4585,7 @@ void Swap( GenericString<T,R,A>& s1, GenericString<T,R,A>& s2 )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns true if two strings \a s1 and \a s2 are equal.
+ * Returns true iff two strings \a s1 and \a s2 are equal.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R1, class A1, class R2, class A2> inline
@@ -4583,7 +4595,7 @@ bool operator ==( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>
 }
 
 /*!
- * Returns true if a string \a s1 is less than a string \a s2.
+ * Returns true iff a string \a s1 is less than a string \a s2.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R1, class A1, class R2, class A2> inline
@@ -4593,7 +4605,7 @@ bool operator  <( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>
 }
 
 /*!
- * Returns true if a string \a s1 is less than or equal to a string \a s2.
+ * Returns true iff a string \a s1 is less than or equal to a string \a s2.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R1, class A1, class R2, class A2> inline
@@ -4603,7 +4615,7 @@ bool operator <=( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>
 }
 
 /*!
- * Returns true if a string \a s1 is greater than a string \a s2.
+ * Returns true iff a string \a s1 is greater than a string \a s2.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R1, class A1, class R2, class A2> inline
@@ -4613,7 +4625,7 @@ bool operator  >( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>
 }
 
 /*!
- * Returns true if a string \a s1 is greater than or equal to a string \a s2.
+ * Returns true iff a string \a s1 is greater than or equal to a string \a s2.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R1, class A1, class R2, class A2> inline
@@ -4625,7 +4637,7 @@ bool operator >=( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns true if a string \a s1 is equal to a null-terminated string \a t2.
+ * Returns true iff a string \a s1 is equal to a null-terminated string \a t2.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
@@ -4635,7 +4647,7 @@ bool operator ==( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
 }
 
 /*!
- * Returns true if a string \a s1 is less than a null-terminated string \a t2.
+ * Returns true iff a string \a s1 is less than a null-terminated string \a t2.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
@@ -4645,7 +4657,7 @@ bool operator  <( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
 }
 
 /*!
- * Returns true if a string \a s1 is less than or equal to a null-terminated
+ * Returns true iff a string \a s1 is less than or equal to a null-terminated
  * string \a t2.
  * \ingroup generic_string_relational_ops
  */
@@ -4656,7 +4668,7 @@ bool operator <=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
 }
 
 /*!
- * Returns true if a string \a s1 is greater than a null-terminated
+ * Returns true iff a string \a s1 is greater than a null-terminated
  * string \a t2.
  * \ingroup generic_string_relational_ops
  */
@@ -4667,7 +4679,7 @@ bool operator  >( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
 }
 
 /*!
- * Returns true if a string \a s1 is greater than or equal to a null-terminated
+ * Returns true iff a string \a s1 is greater than or equal to a null-terminated
  * string \a t2.
  * \ingroup generic_string_relational_ops
  */
@@ -4680,7 +4692,7 @@ bool operator >=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns true if a null-terminated string \a t1 is equal to a string \a s2.
+ * Returns true iff a null-terminated string \a t1 is equal to a string \a s2.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
@@ -4690,7 +4702,7 @@ bool operator ==( typename GenericString<T,R,A>::const_c_string t1, const Generi
 }
 
 /*!
- * Returns true if a null-terminated string \a t1 is less than a string \a s2.
+ * Returns true iff a null-terminated string \a t1 is less than a string \a s2.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
@@ -4700,7 +4712,7 @@ bool operator  <( typename GenericString<T,R,A>::const_c_string t1, const Generi
 }
 
 /*!
- * Returns true if a null-terminated string \a t1 is less than or equal to a
+ * Returns true iff a null-terminated string \a t1 is less than or equal to a
  * string \a s2.
  * \ingroup generic_string_relational_ops
  */
@@ -4711,7 +4723,7 @@ bool operator <=( typename GenericString<T,R,A>::const_c_string t1, const Generi
 }
 
 /*!
- * Returns true if a null-terminated string \a t1 is greater than a
+ * Returns true iff a null-terminated string \a t1 is greater than a
  * string \a s2.
  * \ingroup generic_string_relational_ops
  */
@@ -4722,7 +4734,7 @@ bool operator  >( typename GenericString<T,R,A>::const_c_string t1, const Generi
 }
 
 /*!
- * Returns true if a null-terminated string \a t1 is greater than or equal to a
+ * Returns true iff a null-terminated string \a t1 is greater than or equal to a
  * string \a s2.
  * \ingroup generic_string_relational_ops
  */
@@ -4735,7 +4747,7 @@ bool operator >=( typename GenericString<T,R,A>::const_c_string t1, const Generi
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns true if a string \a s1 is equal to a character \a c2.
+ * Returns true iff a string \a s1 is equal to a character \a c2.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
@@ -4745,7 +4757,7 @@ bool operator ==( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
 }
 
 /*!
- * Returns true if a string \a s1 is less than a character \a c2.
+ * Returns true iff a string \a s1 is less than a character \a c2.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
@@ -4755,7 +4767,7 @@ bool operator  <( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
 }
 
 /*!
- * Returns true if a string \a s1 is less than or equal to a character \a c2.
+ * Returns true iff a string \a s1 is less than or equal to a character \a c2.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
@@ -4765,7 +4777,7 @@ bool operator <=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
 }
 
 /*!
- * Returns true if a string \a s1 is greater than a character \a c2.
+ * Returns true iff a string \a s1 is greater than a character \a c2.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
@@ -4775,7 +4787,7 @@ bool operator  >( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
 }
 
 /*!
- * Returns true if a string \a s1 is greater than or equal to a character \a c2.
+ * Returns true iff a string \a s1 is greater than or equal to a character \a c2.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
@@ -4787,7 +4799,7 @@ bool operator >=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns true if a character \a c1 is equal to a string \a s2.
+ * Returns true iff a character \a c1 is equal to a string \a s2.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
@@ -4797,7 +4809,7 @@ bool operator ==( typename GenericString<T,R,A>::char_type c1, const GenericStri
 }
 
 /*!
- * Returns true if a character \a c1 is less than a string \a s2.
+ * Returns true iff a character \a c1 is less than a string \a s2.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
@@ -4807,7 +4819,7 @@ bool operator  <( typename GenericString<T,R,A>::char_type c1, const GenericStri
 }
 
 /*!
- * Returns true if a character \a c1 is less than or equal to a string \a s2.
+ * Returns true iff a character \a c1 is less than or equal to a string \a s2.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
@@ -4817,7 +4829,7 @@ bool operator <=( typename GenericString<T,R,A>::char_type c1, const GenericStri
 }
 
 /*!
- * Returns true if a character \a c1 is greater than a string \a s2.
+ * Returns true iff a character \a c1 is greater than a string \a s2.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
@@ -4827,7 +4839,7 @@ bool operator  >( typename GenericString<T,R,A>::char_type c1, const GenericStri
 }
 
 /*!
- * Returns true if a character \a c1 is greater than or equal to a string \a s2.
+ * Returns true iff a character \a c1 is greater than or equal to a string \a s2.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
@@ -5559,34 +5571,6 @@ public:
 #endif
 
    /*!
-    * Returns a pointer to the mutable internal data array of this string. This
-    * member function is equivalent to Begin().
-    *
-    * If this string is empty, this function returns \c nullptr.
-    *
-    * If this string is not unique, it is made unique before returning from
-    * this member function.
-    */
-   c_string c_str()
-   {
-      return Begin();
-   }
-
-   /*!
-    * Returns a pointer to the immutable internal data array of this string.
-    *
-    * If this string is empty, this member function returns a pointer to a
-    * static, null-terminated unmodifiable empty string (the "" C string). This
-    * function always returns a valid pointer to existing character data.
-    */
-   const_c_string c_str() const
-   {
-      static const char_type theNullChar = char_traits::Null();
-      const_iterator p = Begin();
-      return (p != nullptr) ? p : &theNullChar;
-   }
-
-   /*!
     * Replaces the contents of this string with a formatted representation of a
     * variable-length set of values. Returns a reference to this string.
     *
@@ -5735,7 +5719,7 @@ public:
     *
     * Returns \c true if this string is equal to "1", "true", "TRUE" or "T".
     * Returns \c false if this string is equal to "0", "false", "FALSE" or "F".
-    * Otherwise, this function throws a ParseError exception.
+    * Otherwise this function throws a ParseError exception.
     *
     * \sa TryToBool( bool& )
     */
@@ -7766,7 +7750,7 @@ public:
                   else if ( nt < n )
                      Delete( i, n-nt );
                   else
-                     SetUnique();
+                     EnsureUnique();
 
                   for ( iterator p = m_data->string+i, q = p+nt; p < q; ++p, ++t )
                      *p = char_type( *t );
@@ -8805,34 +8789,6 @@ public:
 #endif
 
    /*!
-    * Returns a pointer to the mutable internal data array of this string. This
-    * member function is equivalent to Begin().
-    *
-    * If this string is empty, this function returns \c nullptr.
-    *
-    * If this string is not unique, it is made unique before returning from
-    * this member function.
-    */
-   c_string c_str()
-   {
-      return Begin();
-   }
-
-   /*!
-    * Returns a pointer to the immutable internal data array of this string.
-    *
-    * If this string is empty, this member function returns a pointer to a
-    * static, null-terminated unmodifiable empty string. This function always
-    * returns a valid pointer to existing character data.
-    */
-   const_c_string c_str() const
-   {
-      static const char16_type theNullChar = char_traits::Null();
-      const_iterator p = Begin();
-      return (p != nullptr) ? p : &theNullChar;
-   }
-
-   /*!
     * Replaces the contents of this string with a formatted representation of a
     * variable-length set of values. Returns a reference to this string.
     *
@@ -9189,7 +9145,7 @@ public:
     *
     * Returns \c true if this string is equal to "1", "true", "TRUE" or "T".
     * Returns \c false if this string is equal to "0", "false", "FALSE" or "F".
-    * Otherwise, this function throws a ParseError exception.
+    * Otherwise this function throws a ParseError exception.
     *
     * \sa TryToBool( bool& )
     */
@@ -10879,4 +10835,4 @@ inline std::ostream& operator <<( std::ostream& o, const String& s )
 #endif   // __PCL_String_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/String.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/String.h - Released 2015/10/08 11:24:12 UTC

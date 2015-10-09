@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Dialog.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Dialog.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -195,7 +195,7 @@ public:
    }
 
    /*!
-    * Returns true if this dialog is user-resizable. User-resizable dialogs can
+    * Returns true iff this dialog is user-resizable. User-resizable dialogs can
     * be resized interactively with the mouse and standard window controls.
     */
    bool IsUserResizable() const;
@@ -261,6 +261,8 @@ public:
     *
     * \param receiver   The control that will receive execution events from
     *                   this dialog.
+    *
+    * \ingroup dialog_event_handlers
     */
    void OnExecute( execute_event_handler handler, Control& receiver );
 
@@ -272,6 +274,8 @@ public:
     *
     * \param receiver   The control that will receive return events from this
     *                   dialog.
+    *
+    * \ingroup dialog_event_handlers
     */
    void OnReturn( return_event_handler handler, Control& receiver );
 
@@ -301,4 +305,4 @@ private:
 #endif   // __PCL_Dialog_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Dialog.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Dialog.h - Released 2015/10/08 11:24:12 UTC

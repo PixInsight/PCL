@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ColorComboBox.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ColorComboBox.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -154,7 +154,7 @@ public:
    }
 
    /*!
-    * Returns true if a <em>custom color item</em> has been defined in this
+    * Returns true iff a <em>custom color item</em> has been defined in this
     * %ColorComboBox control.
     *
     * This is a convenience member function, equivalent to:
@@ -205,6 +205,8 @@ public:
     *
     * \param receiver   The control that will receive <em>color selected</em>
     *                   events from this color combo box.
+    *
+    * \ingroup colorcombobox_event_handlers
     */
    void OnColorSelected( color_event_handler handler, Control& receiver );
 
@@ -219,6 +221,8 @@ public:
     *
     * \param receiver   The control that will receive <em>color
     *                   highlighted</em> events from this color combo box.
+    *
+    * \ingroup colorcombobox_event_handlers
     */
    void OnColorHighlighted( color_event_handler handler, Control& receiver );
 
@@ -233,6 +237,8 @@ public:
     *
     * \param receiver   The control that will receive <em>custom color
     *                   defined</em> events from this color combo box.
+    *
+    * \ingroup colorcombobox_event_handlers
     */
    void OnCustomColorDefined( color_event_handler handler, Control& receiver );
 
@@ -270,4 +276,4 @@ private:
 #endif   // __PCL_ColorComboBox_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ColorComboBox.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ColorComboBox.h - Released 2015/10/08 11:24:12 UTC

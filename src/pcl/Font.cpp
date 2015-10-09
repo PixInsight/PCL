@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Font.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/Font.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -110,7 +110,7 @@ String Font::Face() const
 
 void Font::SetFace( const String& face )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Font->SetFontFace)( handle, face.c_str() );
 }
 
@@ -132,7 +132,7 @@ int Font::PixelSize() const
 
 void Font::SetPixelSize ( int pxSize )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Font->SetFontPixelSize)( handle, pxSize );
 }
 
@@ -149,7 +149,7 @@ double Font::PointSize() const
 
 void Font::SetPointSize( double ptSize )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Font->SetFontPointSize)( handle, ptSize );
 }
 
@@ -164,7 +164,7 @@ bool Font::IsFixedPitch() const
 
 void Font::SetFixedPitch( bool enable )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Font->SetFontFixedPitch)( handle, enable );
 }
 
@@ -179,7 +179,7 @@ bool Font::IsKerningEnabled() const
 
 void Font::EnableKerning( bool enable )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Font->SetFontKerning)( handle, enable );
 }
 
@@ -187,7 +187,7 @@ void Font::EnableKerning( bool enable )
 
 void Font::DisableKerning( bool disable )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Font->SetFontKerning)( handle, !disable );
 }
 
@@ -202,7 +202,7 @@ int Font::StretchFactor() const
 
 void Font::SetStretchFactor( int stretch )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Font->SetFontStretchFactor)( handle, stretch );
 }
 
@@ -217,7 +217,7 @@ int Font::Weight() const
 
 void Font::SetWeight( int weight )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Font->SetFontWeight)( handle, weight );
 }
 
@@ -232,7 +232,7 @@ bool Font::IsItalic() const
 
 void Font::SetItalic( bool enable )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Font->SetFontItalic)( handle, enable );
 }
 
@@ -247,7 +247,7 @@ bool Font::IsUnderline() const
 
 void Font::SetUnderline( bool enable )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Font->SetFontUnderline)( handle, enable );
 }
 
@@ -262,7 +262,7 @@ bool Font::IsOverline() const
 
 void Font::SetOverline( bool enable )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Font->SetFontOverline)( handle, enable );
 }
 
@@ -277,7 +277,7 @@ bool Font::IsStrikeOut() const
 
 void Font::SetStrikeOut( bool enable )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Font->SetFontStrikeOut)( handle, enable );
 }
 
@@ -579,4 +579,4 @@ String PCL_FUNC FamilyToFace( value_type family )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Font.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/Font.cpp - Released 2015/10/08 11:24:19 UTC

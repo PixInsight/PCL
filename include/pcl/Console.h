@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Console.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Console.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -488,23 +488,23 @@ public:
    String ReadString();
 
    /*!
-    * Returns true if the current processing thread has been suspended by the
+    * Returns true iff the current processing thread has been suspended by the
     * PixInsight core application.
     */
    bool Suspended() const;
 
    /*!
-    * Returns true if the current processing thread is in wait state.
+    * Returns true iff the current processing thread is in wait state.
     */
    bool Waiting() const;
 
    /*!
-    * Returns true if the current processing thread can be aborted by the user.
+    * Returns true iff the current processing thread can be aborted by the user.
     */
    bool AbortEnabled() const;
 
    /*!
-    * Returns true if the user has requested to abort execution of the current
+    * Returns true iff the user has requested to abort execution of the current
     * processing thread.
     */
    bool AbortRequested() const;
@@ -560,13 +560,13 @@ public:
    void Abort();
 
    /*!
-    * Returns true if this is a valid console object associated to an active
+    * Returns true iff this is a valid console object associated to an active
     * processing thread.
     */
    bool IsValid() const;
 
    /*!
-    * Returns true if this console is valid and has been created by the calling
+    * Returns true iff this console is valid and has been created by the calling
     * thread; either by the root thread or by a running Thread object.
     */
    bool IsCurrentThreadConsole() const;
@@ -600,7 +600,7 @@ public:
     *
     * This is a convenience function, equivalent to: Show( !hide )
     *
-    * Returns true if the console could be hidden (or shown) successfully.
+    * Returns true iff the console could be hidden (or shown) successfully.
     * Refer to the Show() member function for more information.
     *
     * \note Calling this function from a running thread has no effect. Console
@@ -705,4 +705,4 @@ inline Console& operator >>( Console& o, String& s )
 #endif   // __PCL_Console_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Console.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Console.h - Released 2015/10/08 11:24:12 UTC

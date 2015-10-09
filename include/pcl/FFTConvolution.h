@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/FFTConvolution.h - Released 2015/07/30 17:15:18 UTC
+// pcl/FFTConvolution.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -104,7 +104,7 @@ public:
     */
    FFTConvolution() :
       ImageTransformation(),
-      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS ), m_h()
+      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
    }
 
@@ -119,7 +119,7 @@ public:
     */
    FFTConvolution( const KernelFilter& filter ) :
       ImageTransformation(),
-      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS ), m_h()
+      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
       SetFilter( filter );
    }
@@ -140,7 +140,7 @@ public:
    FFTConvolution( const ImageVariant& f ) :
       ImageTransformation(),
       m_image( f ),
-      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS ), m_h()
+      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
       PCL_CHECK( bool( m_image ) )
    }
@@ -151,7 +151,7 @@ public:
    FFTConvolution( const FFTConvolution& x ) :
       ImageTransformation( x ),
       m_image( x.m_image ),
-      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors ), m_h()
+      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
    {
       if ( !x.m_filter.IsNull() )
          m_filter = x.m_filter->Clone();
@@ -163,9 +163,10 @@ public:
    FFTConvolution( FFTConvolution&& x ) :
       ImageTransformation( x ),
       m_filter( x.m_filter ), m_image( std::move( x.m_image ) ),
-      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors ), m_h( std::move( x.m_h ) )
+      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors ), m_h( x.m_h )
    {
       //x.m_filter = nullptr; // already done by AutoPointer
+      //x.m_h = nullptr;
    }
 
    /*!
@@ -173,7 +174,6 @@ public:
     */
    virtual ~FFTConvolution()
    {
-      Destroy();
    }
 
    /*!
@@ -184,14 +184,13 @@ public:
       if ( &x != this )
       {
          (void)ImageTransformation::operator =( x );
-         Destroy();
+         DestroyFilter();
          if ( !x.m_filter.IsNull() )
             m_filter = x.m_filter->Clone();
          else
             m_image = x.m_image;
          m_parallel = x.m_parallel;
          m_maxProcessors = x.m_maxProcessors;
-         m_h = x.m_h;
       }
       return *this;
    }
@@ -208,8 +207,9 @@ public:
          m_image = std::move( x.m_image );
          m_parallel = x.m_parallel;
          m_maxProcessors = x.m_maxProcessors;
-         m_h = std::move( x.m_h );
+         m_h = x.m_h;
          //x.m_filter = nullptr; // already done by AutoPointer
+         //x.m_h = nullptr;
       }
       return *this;
    }
@@ -261,7 +261,7 @@ public:
     */
    void SetFilter( const KernelFilter& filter )
    {
-      Destroy();
+      DestroyFilter();
       m_filter = filter.Clone();
       PCL_CHECK( !m_filter.IsNull() )
    }
@@ -278,15 +278,16 @@ public:
     */
    void SetFilter( const ImageVariant& filter )
    {
-      Destroy();
+      DestroyFilter();
       m_image = filter;
       PCL_CHECK( bool( m_image ) )
    }
 
    /*!
-    * Returns a reference to the discrete Fourier transform (DFT) of the
+    * Returns a pointer to the discrete Fourier transform (DFT) of the
     * complex <em>response function</em> used internally by this
-    * %FFTConvolution object.
+    * %FFTConvolution object, or nullptr if the response function has not been
+    * created yet.
     *
     * The internal DFT of the response function is created and initialized the
     * first time this %FFTConvolution object is used to perform a convolution.
@@ -295,21 +296,21 @@ public:
     * otherwise it is re-created on the fly, as necessary. It is destroyed when
     * a new filter is associated with this object.
     *
-    * This function returns a reference to a complex image that stores the DFT
+    * This function returns a pointer to a complex image that stores the DFT
     * of the original filter after transforming it to <em>wrap around
     * order</em>. This means that the original filter data has been splitted,
     * mirrored, and redistributed to occupy the four corners of the complex 2-D
     * matrix prior to calculating its DFT.
     *
-    * If this object has not been initialized, the returned image is empty.
+    * If this object has not been initialized, the returned pointer is nullptr.
     */
-   const ComplexImage& ResponseFunctionDFT() const
+   const ComplexImage* ResponseFunctionDFT() const
    {
       return m_h;
    }
 
    /*!
-    * Returns true if this object is allowed to use multiple parallel execution
+    * Returns true iff this object is allowed to use multiple parallel execution
     * threads (when multiple threads are permitted and available).
     */
    bool IsParallelProcessingEnabled() const
@@ -397,7 +398,7 @@ protected:
     * generated/reused/regenerated as this object is applied to convolve
     * different target images. It is destroyed when a new filter is specified.
     */
-   mutable ComplexImage m_h;
+   mutable AutoPointer<ComplexImage> m_h;
 
    /*
     * In-place Fourier-based 2-D convolution algorithm.
@@ -414,11 +415,11 @@ protected:
 
 private:
 
-   void Destroy()
+   void DestroyFilter()
    {
       m_filter.Destroy();
       m_image.Free();
-      m_h.FreeData();
+      m_h.Destroy();
    }
 
    void Validate() const;
@@ -432,4 +433,4 @@ private:
 #endif   // __PCL_FFTConvolution_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FFTConvolution.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/FFTConvolution.h - Released 2015/10/08 11:24:12 UTC

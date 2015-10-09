@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ImageVariant.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ImageVariant.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -398,13 +398,13 @@ public:
    /*!
     * Move constructor.
     */
-   ImageVariant( ImageVariant&& x ) :
-      m_data( x.m_data )
+   ImageVariant( ImageVariant&& image ) :
+      m_data( image.m_data )
 #ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
       , m_shared( nullptr )
 #endif
    {
-      x.m_data = nullptr;
+      image.m_data = nullptr;
    }
 
    /*!
@@ -417,8 +417,7 @@ public:
    {
       if ( m_data != nullptr )
       {
-         if ( !m_data->Detach() )
-            delete m_data;
+         DetachFromData();
          m_data = nullptr;
       }
    }
@@ -441,7 +440,7 @@ public:
    }
 
    /*!
-    * Returns true if this %ImageVariant transports the same image as another
+    * Returns true iff this %ImageVariant transports the same image as another
     * \a image.
     *
     * This member function also returns true if \e both objects transport no
@@ -453,7 +452,7 @@ public:
    }
 
    /*!
-    * Returns true if this %ImageVariant instance transports a floating point
+    * Returns true iff this %ImageVariant instance transports a floating point
     * image.
     */
    bool IsFloatSample() const
@@ -462,7 +461,7 @@ public:
    }
 
    /*!
-    * Returns true if this %ImageVariant instance transports a complex image.
+    * Returns true iff this %ImageVariant instance transports a complex image.
     */
    bool IsComplexSample() const
    {
@@ -538,7 +537,7 @@ public:
    }
 
    /*!
-    * Returns true if the specified channel index \a c is valid. A valid
+    * Returns true iff the specified channel index \a c is valid. A valid
     * channel index corresponds to an existing channel in this image. Returns
     * false if this object does not transport an image.
     */
@@ -561,7 +560,7 @@ public:
    }
 
    /*!
-    * Returns true if this %ImageVariant object transports an image with one or
+    * Returns true iff this %ImageVariant object transports an image with one or
     * more alpha channels.
     *
     * Alpha channels are those in excess of the nominal channels corresponding
@@ -637,7 +636,7 @@ public:
    }
 
    /*!
-    * Returns true if this image includes the specified point \a p in image
+    * Returns true iff this image includes the specified point \a p in image
     * coordinates.
     *
     * If this object transports no image, this function returns false.
@@ -649,7 +648,7 @@ public:
    }
 
    /*!
-    * Returns true if this image includes the specified rectangle \a r in image
+    * Returns true iff this image includes the specified rectangle \a r in image
     * coordinates.
     *
     * If this object transports no image, this function returns false.
@@ -661,7 +660,7 @@ public:
    }
 
    /*!
-    * Returns true if this image includes a rectangle given by its separate
+    * Returns true iff this image includes a rectangle given by its separate
     * image coordinates.
     *
     * \param x0,y0   Upper left corner coordinates (horizontal, vertical).
@@ -676,7 +675,7 @@ public:
    }
 
    /*!
-    * Returns true if this image includes a point given by its separate image
+    * Returns true iff this image includes a point given by its separate image
     * coordinates.
     *
     * \param x    Horizontal coordinate.
@@ -691,7 +690,7 @@ public:
    }
 
    /*!
-    * Returns true if this image intersects with the specified rectangle \a r
+    * Returns true iff this image intersects with the specified rectangle \a r
     * in image coordinates.
     *
     * If this object transports no image, this function returns false.
@@ -703,7 +702,7 @@ public:
    }
 
    /*!
-    * Returns true if this image intersects with a rectangle given by its
+    * Returns true iff this image intersects with a rectangle given by its
     * separate image coordinates.
     *
     * \param x0,y0  Upper left corner coordinates (horizontal, vertical).
@@ -719,7 +718,7 @@ public:
 
    /*!
     * Constrains a point \a p to stay within the boundaries of this image.
-    * Returns true if the original point location is included in this image.
+    * Returns true iff the original point location is included in this image.
     *
     * If this object transports no image, this function does nothing and
     * returns false.
@@ -737,7 +736,7 @@ public:
     * \param[out] x  Horizontal coordinate of the clipped point.
     * \param[out] y  Vertical coordinate of the clipped point.
     *
-    * Returns true if the original point location is included in this image.
+    * Returns true iff the original point location is included in this image.
     *
     * If this object transports no image, this function does nothing and
     * returns false.
@@ -753,7 +752,7 @@ public:
     * boundaries of this image. Also ensures coherence of clipped rectangular
     * coordinates such that r.x0 <= r.x1 and r.y0 <= r.y1.
     *
-    * Returns true if the original rectangle intersects this image.
+    * Returns true iff the original rectangle intersects this image.
     *
     * If this object transports no image, this function does nothing and
     * returns false.
@@ -775,7 +774,7 @@ public:
     * \param[out] x1,y1   Lower right corner coordinates (horizontal, vertical)
     *             of the rectangle that will be clipped.
     *
-    * Returns true if the original rectangle intersects the image.
+    * Returns true iff the original rectangle intersects the image.
     *
     * If this object transports no image, this function does nothing and
     * returns false.
@@ -990,7 +989,7 @@ public:
    }
 
    /*!
-    * Returns true if the current selection is empty, i.e. if its area is zero.
+    * Returns true iff the current selection is empty, i.e. if its area is zero.
     * Returns false if the current selection is not empty, or if this object
     * does not transport an image.
     */
@@ -1000,7 +999,7 @@ public:
    }
 
    /*!
-    * Returns true if the current rectangular selection comprises the entire
+    * Returns true iff the current rectangular selection comprises the entire
     * image. Returns false if the selection is not complete, or if this object
     * does not transport an image.
     */
@@ -1052,7 +1051,7 @@ public:
    }
 
    /*!
-    * Returns true if range clipping is currently enabled for this image.
+    * Returns true iff range clipping is currently enabled for this image.
     * Returns false if range clipping is disabled, or if this object does not
     * transport an image.
     *
@@ -1275,7 +1274,7 @@ public:
    }
 
    /*!
-    * Returns true if this image is allowed to use multiple parallel execution
+    * Returns true iff this image is allowed to use multiple parallel execution
     * threads (when multiple threads are permitted and available) for member
     * functions that support parallel execution.
     *
@@ -1427,7 +1426,7 @@ public:
    }
 
    /*!
-    * Returns true if this %ImageVariant transports a color image. Returns
+    * Returns true iff this %ImageVariant transports a color image. Returns
     * false if this object transports a grayscale image, or if it does not
     * transport any image.
     */
@@ -3003,7 +3002,7 @@ public:
    result = static_cast<const pcl::I&>( **this ).IsShared()
 
    /*!
-    * Returns true if this %ImageVariant object transports a shared image.
+    * Returns true iff this %ImageVariant object transports a shared image.
     * Returns false if the transported image is local, or if this object
     * transports no image.
     *
@@ -3052,7 +3051,7 @@ public:
    result = static_cast<const pcl::I&>( **this ).IsUnique()
 
    /*!
-    * Returns true if this %ImageVariant object transports an image that
+    * Returns true iff this %ImageVariant object transports an image that
     * uniquely references its pixel data. Returns false if the transported
     * image is sharing its pixel data with other instances, or if this object
     * transports no image.
@@ -4882,8 +4881,8 @@ public:
 
    // -------------------------------------------------------------------------
 
-#define __SET_UNIQUE_IMAGE( I ) \
-   static_cast<pcl::I&>( **this ).SetUnique()
+#define __ENSURE_UNIQUE_IMAGE( I ) \
+   static_cast<pcl::I&>( **this ).EnsureUnique()
 
    /*!
     * Ensures that the image transported by this %ImageVariant object uniquely
@@ -4891,37 +4890,37 @@ public:
     * data if necessary. Returns a reference to this image.
     *
     * This member function is a generalized wrapper for
-    * GenericImage::SetUnique()
+    * GenericImage::EnsureUnique()
     */
-   ImageVariant& SetUniqueImage()
+   ImageVariant& EnsureUniqueImage()
    {
       if ( *this )
-         SOLVE_TEMPLATE( __SET_UNIQUE_IMAGE )
+         SOLVE_TEMPLATE( __ENSURE_UNIQUE_IMAGE )
       return *this;
    }
 
-#undef __SET_UNIQUE_IMAGE
+#undef __ENSURE_UNIQUE_IMAGE
 
    // -------------------------------------------------------------------------
 
-#define __SET_LOCAL_IMAGE( I ) \
-   static_cast<pcl::I&>( **this ).SetLocal()
+#define __ENSURE_LOCAL_IMAGE( I ) \
+   static_cast<pcl::I&>( **this ).EnsureLocal()
 
    /*!
     * Ensures that the image transported by this %ImageVariant object uses
     * local pixel data storage. Returns a reference to this image.
     *
     * This member function is a generalized wrapper for
-    * GenericImage::SetLocal()
+    * GenericImage::EnsureLocal()
     */
-   ImageVariant& SetLocalImage()
+   ImageVariant& EnsureLocalImage()
    {
       if ( *this )
-         SOLVE_TEMPLATE( __SET_LOCAL_IMAGE )
+         SOLVE_TEMPLATE( __ENSURE_LOCAL_IMAGE )
       return *this;
    }
 
-#undef __SET_LOCAL_IMAGE
+#undef __ENSURE_LOCAL_IMAGE
 
    // -------------------------------------------------------------------------
 
@@ -5857,7 +5856,7 @@ public:
    // -------------------------------------------------------------------------
 
    /*!
-    * Returns true if this %ImageVariant object transports an image that is an
+    * Returns true iff this %ImageVariant object transports an image that is an
     * instance of the same template instantiation of the specified image.
     */
    template <class P>
@@ -5879,8 +5878,7 @@ public:
    ImageVariant& Assign( const ImageVariant& image )
    {
       image.m_data->Attach();
-      if ( !m_data->Detach() )
-         delete m_data;
+      DetachFromData();
       m_data = image.m_data;
       return *this;
    }
@@ -5898,8 +5896,7 @@ public:
 #define TRANSFER_BODY()                                                                      \
    if ( &image != this ) /* N.B.: Self-movement incompatible with server-side SharedImage */ \
    {                                                                                         \
-      if ( !m_data->Detach() )                                                               \
-         delete m_data;                                                                      \
+      DetachFromData();                                                                      \
       m_data = image.m_data;                                                                 \
       image.m_data = nullptr;                                                                \
    }                                                                                         \
@@ -5961,11 +5958,10 @@ public:
    {
       if ( &image != this ) // N.B.: Self-release incompatible with server-side SharedImage.
       {
-         if ( !image.m_data->Detach() )
-            delete image.m_data;
+         Data* newData = new Data;
+         image.DetachFromData();
          image.m_data = m_data;
-         m_data = nullptr;
-         m_data = new Data;
+         m_data = newData;
       }
    }
 
@@ -6787,7 +6783,7 @@ public:
    void MaskImage( const ImageVariant& src, const ImageVariant& mask, bool invert = false );
 
    /*!
-    * Returns true if %ImageVariant owns the image transported by this
+    * Returns true iff %ImageVariant owns the image transported by this
     * instance, if any.
     */
    bool OwnsImage() const
@@ -6820,13 +6816,13 @@ public:
     */
    ImageVariant& Free()
    {
-      if ( m_data->IsUniqueAtomic() )
+      if ( m_data->IsUnique() )
          m_data->Free();
       else
       {
-         m_data->Detach();
-         m_data = nullptr;
-         m_data = new Data;
+         Data* newData = new Data;
+         DetachFromData();
+         m_data = newData;
       }
       return *this;
    }
@@ -6884,7 +6880,7 @@ public:
    }
 
    /*!
-    * Returns true if this %ImageVariant instance transports an image.
+    * Returns true iff this %ImageVariant instance transports an image.
     */
    operator bool() const
    {
@@ -6995,6 +6991,12 @@ private:
    pi::SharedImage* m_shared;
 #endif
 
+   void DetachFromData()
+   {
+      if ( !m_data->Detach() )
+         delete m_data;
+   }
+
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
    // Server-side private ctor. used by View
    template <class P>
@@ -7061,4 +7063,4 @@ GenericImage<P>& GenericImage<P>::SetLightness( const ImageVariant& L, const Poi
 #endif   // __PCL_ImageVariant_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageVariant.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ImageVariant.h - Released 2015/10/08 11:24:12 UTC

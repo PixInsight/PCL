@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/SeparableMedianFilter.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/SeparableMedianFilter.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -66,7 +66,7 @@ public:
       if ( image.IsEmptySelection() )
          return;
 
-      image.SetUnique();
+      image.EnsureUnique();
 
       int n = filter.Size();
       if ( n > image.Height() || n > image.Width() )
@@ -132,7 +132,8 @@ private:
 #define WSORT( a, b )  \
       if ( w[b] < w[a] ) Swap( w[a], w[b] )
 
-      void Median1D( typename P::sample* f, typename P::sample* t, typename P::sample* w, int n, int N )
+      void PCL_HOT_FUNCTION
+      Median1D( typename P::sample* f, typename P::sample* t, typename P::sample* w, int n, int N )
       {
          int n2 = n >> 1;
          for ( int i = 0, j = n2; i < n2; ++i )
@@ -239,7 +240,7 @@ private:
       {
       }
 
-      virtual void Run()
+      virtual PCL_HOT_FUNCTION void Run()
       {
          INIT_THREAD_MONITOR()
 
@@ -276,7 +277,7 @@ private:
       {
       }
 
-      virtual void Run()
+      virtual PCL_HOT_FUNCTION void Run()
       {
          INIT_THREAD_MONITOR()
 
@@ -346,4 +347,4 @@ void SeparableMedianFilter::Apply( UInt32Image& image ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SeparableMedianFilter.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/SeparableMedianFilter.cpp - Released 2015/10/08 11:24:19 UTC

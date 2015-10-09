@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Settings.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Settings.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -377,7 +377,7 @@ public:
     * \c int, converts that value to type T, and stores it in the specified
     * variable \a t.
     *
-    * Returns true if the \a key exists and its value can be converted to
+    * Returns true iff the \a key exists and its value can be converted to
     * \c int. If the function fails (if it returns false), the previous value
     * of the \a t variable is not changed.
     *
@@ -398,7 +398,7 @@ public:
     * \c int, converts that value to type T, and stores it in the specified
     * variable \a t.
     *
-    * Returns true if the \a key exists and its value can be converted to
+    * Returns true iff the \a key exists and its value can be converted to
     * \c unsigned \c int. If the function fails (if it returns false), the
     * previous value of the \a t variable is not changed.
     *
@@ -464,7 +464,7 @@ public:
 #endif
 
    /*!
-    * Returns true if the last call to a Read member function successfully
+    * Returns true iff the last call to a Read member function successfully
     * read a settings key.
     */
    static bool LastReadOK();
@@ -838,7 +838,7 @@ public:
    static void RemoveGlobal( const IsoString& key );
 
    /*!
-    * Returns true if the specified \a key can be read from the <em>global
+    * Returns true iff the specified \a key can be read from the <em>global
     * module settings space</em>.
     *
     * By default, a module settings key can be freely read unless its owner
@@ -848,7 +848,7 @@ public:
    static bool CanReadGlobal( const IsoString& key );
 
    /*!
-    * Returns true if the specified \a key can be written from the <em>global
+    * Returns true iff the specified \a key can be written from the <em>global
     * module settings space</em>.
     *
     * By default, global write access to a module settings key is not allowed
@@ -889,4 +889,4 @@ private:
 #endif   // __PCL_Settings_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Settings.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Settings.h - Released 2015/10/08 11:24:12 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/DisplayFunction.h - Released 2015/07/30 17:15:18 UTC
+// pcl/DisplayFunction.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -136,11 +136,11 @@ public:
       m_m( 4 ), m_s( 4 ), m_h( 4 ), m_l( 4 ), m_r( 4 )
    {
       Reset();
-      for ( int i = 0; i < 4 && i < m.Length(); ++i ) m_m[i] = Range( double( m[i] ), 0.0, 1.0 );
-      for ( int i = 0; i < 4 && i < s.Length(); ++i ) m_s[i] = Range( double( s[i] ), 0.0, 1.0 );
-      for ( int i = 0; i < 4 && i < h.Length(); ++i ) m_h[i] = Range( double( h[i] ), 0.0, 1.0 );
-      for ( int i = 0; i < 4 && i < l.Length(); ++i ) m_l[i] = Max( 0.0, double( l[i] ) );
-      for ( int i = 0; i < 4 && i < r.Length(); ++i ) m_r[i] = Min( 1.0, double( r[i] ) );
+      for ( int i = 0; i < 4 && i < int( m.Length() ); ++i ) m_m[i] = Range( double( m[i] ), 0.0, 1.0 );
+      for ( int i = 0; i < 4 && i < int( s.Length() ); ++i ) m_s[i] = Range( double( s[i] ), 0.0, 1.0 );
+      for ( int i = 0; i < 4 && i < int( h.Length() ); ++i ) m_h[i] = Range( double( h[i] ), 0.0, 1.0 );
+      for ( int i = 0; i < 4 && i < int( l.Length() ); ++i ) m_l[i] = Max( 0.0, double( l[i] ) );
+      for ( int i = 0; i < 4 && i < int( r.Length() ); ++i ) m_r[i] = Min( 1.0, double( r[i] ) );
       for ( int i = 0; i < 4; ++i )
          if ( m_h[i] < m_s[i] )
             pcl::Swap( m_s[i], m_h[i] );
@@ -228,7 +228,7 @@ public:
    }
 
    /*!
-    * Returns true if this is an identity display function for the four
+    * Returns true iff this is an identity display function for the four
     * image components (red/gray, green, blue and lightness).
     *
     * An identity display function is a no-op: it does not alter the pixel data
@@ -279,7 +279,7 @@ public:
    }
 
    /*!
-    * Returns true if this transformation will compute a single adaptive
+    * Returns true iff this transformation will compute a single adaptive
     * histogram transformation for the nominal channels of an RGB color image.
     * Returns false if adaptive per-channel transformations will be calculated
     * separately.
@@ -459,4 +459,4 @@ private:
 #endif   // __PCL_DisplayFunction_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/DisplayFunction.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/DisplayFunction.h - Released 2015/10/08 11:24:12 UTC

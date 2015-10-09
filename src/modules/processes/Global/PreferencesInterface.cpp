@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.06.0280
+// Standard Global Process Module Version 01.02.06.0288
 // ----------------------------------------------------------------------------
-// PreferencesInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// PreferencesInterface.cpp - Released 2015/10/08 11:24:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -1223,10 +1223,10 @@ GUIEffectsPreferencesPage::GUIEffectsPreferencesPage( PreferencesInstance& insta
    FadeWindows_Flag.SetToolTip(
       "<p>Enable to allow fading in/out effects for workspace child windows.</p>" );
 
-   FadeAutoHideWindows_Flag.checkBox.SetText( "Fade AutoHide windows" );
+   FadeAutoHideWindows_Flag.checkBox.SetText( "Animate AutoHide windows" );
    FadeAutoHideWindows_Flag.item = &instance.mainWindow.fadeAutoHideWindows;
    FadeAutoHideWindows_Flag.SetToolTip(
-      "<p>Enable to allow fading in/out effects for docked AutoHide windows.</p>" );
+      "<p>Enable to allow sliding animation effects for docked AutoHide windows.</p>" );
 
    FadeWorkspaces_Flag.checkBox.SetText( "Fade workspaces" );
    FadeWorkspaces_Flag.item = &instance.mainWindow.fadeWorkspaces;
@@ -2229,4 +2229,4 @@ void PreferencesInterface::GUIData::InitializeCategories()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInterface.cpp - Released 2015/07/31 11:49:48 UTC
+// EOF PreferencesInterface.cpp - Released 2015/10/08 11:24:39 UTC

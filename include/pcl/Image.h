@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Image.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Image.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -203,7 +203,7 @@ namespace ImageOp
    };
 
    /*!
-    * Returns true if the specified operator \a op is an arithmetic operator.
+    * Returns true iff the specified operator \a op is an arithmetic operator.
     */
    inline bool IsArithmeticOperator( int op )
    {
@@ -211,7 +211,7 @@ namespace ImageOp
    }
 
    /*!
-    * Returns true if the specified operator \a op is a bitwise logical
+    * Returns true iff the specified operator \a op is a bitwise logical
     * operator.
     */
    inline bool IsBitwiseLogicalOperator( int op )
@@ -220,7 +220,7 @@ namespace ImageOp
    }
 
    /*!
-    * Returns true if the specified operator \a op is a move or replace
+    * Returns true iff the specified operator \a op is a move or replace
     * operator.
     */
    inline bool IsMoveOperator( int op )
@@ -229,7 +229,7 @@ namespace ImageOp
    }
 
    /*!
-    * Returns true if the specified operator \a op is a pixel composition
+    * Returns true iff the specified operator \a op is a pixel composition
     * operator.
     */
    inline bool IsPixelCompositionOperator( int op )
@@ -417,7 +417,7 @@ public:
       sample_iterator( image_type& image, int channel = -1 ) :
          m_image( &image ), m_iterator( nullptr ), m_end( nullptr )
       {
-         m_image->SetUnique();
+         m_image->EnsureUnique();
          if ( m_image->ParseChannel( channel ) )
          {
             m_iterator = (*m_image)[channel];
@@ -647,7 +647,7 @@ public:
       }
 
       /*!
-       * Returns true if an iterator \a i and a sample pointer \a j point to
+       * Returns true iff an iterator \a i and a sample pointer \a j point to
        * the same pixel sample.
        */
       friend bool operator ==( const sample_iterator& i, const sample* j )
@@ -656,7 +656,7 @@ public:
       }
 
       /*!
-       * Returns true if a sample pointer \a i and an iterator \a j point to
+       * Returns true iff a sample pointer \a i and an iterator \a j point to
        * the same pixel sample.
        */
       friend bool operator ==( const sample* i, const sample_iterator& j )
@@ -674,7 +674,7 @@ public:
       }
 
       /*!
-       * Returns true if an iterator \a i precedes a sample pointer \a j.
+       * Returns true iff an iterator \a i precedes a sample pointer \a j.
        */
       friend bool operator <( const sample_iterator& i, const sample* j )
       {
@@ -682,7 +682,7 @@ public:
       }
 
       /*!
-       * Returns true if a sample pointer \a i precedes an iterator \a j.
+       * Returns true iff a sample pointer \a i precedes an iterator \a j.
        */
       friend bool operator <( const sample* i, const sample_iterator& j )
       {
@@ -1005,7 +1005,7 @@ public:
       }
 
       /*!
-       * Returns true if an iterator \a i and a sample pointer \a j point to
+       * Returns true iff an iterator \a i and a sample pointer \a j point to
        * the same pixel sample.
        */
       friend bool operator ==( const const_sample_iterator& i, const sample* j )
@@ -1014,7 +1014,7 @@ public:
       }
 
       /*!
-       * Returns true if a sample pointer \a i and an iterator \a j point to
+       * Returns true iff a sample pointer \a i and an iterator \a j point to
        * the same pixel sample.
        */
       friend bool operator ==( const sample* i, const const_sample_iterator& j )
@@ -1032,7 +1032,7 @@ public:
       }
 
       /*!
-       * Returns true if an iterator \a i precedes a sample pointer \a j.
+       * Returns true iff an iterator \a i precedes a sample pointer \a j.
        */
       friend bool operator <( const const_sample_iterator& i, const sample* j )
       {
@@ -1040,7 +1040,7 @@ public:
       }
 
       /*!
-       * Returns true if a sample pointer \a i precedes an iterator \a j.
+       * Returns true iff a sample pointer \a i precedes an iterator \a j.
        */
       friend bool operator <( const sample* i, const const_sample_iterator& j )
       {
@@ -1204,7 +1204,7 @@ public:
        *                an empty iteration range. The default value is -1.
        */
       roi_sample_iterator( image_type& image, const Rect& rect = Rect( 0 ), int channel = -1 ) :
-         iterator_base( image.SetUnique(), rect, channel )
+         iterator_base( image.EnsureUnique(), rect, channel )
       {
       }
 
@@ -1419,7 +1419,7 @@ public:
       }
 
       /*!
-       * Returns true if an iterator \a i and a sample pointer \a j point to
+       * Returns true iff an iterator \a i and a sample pointer \a j point to
        * the same pixel sample.
        */
       friend bool operator ==( const roi_sample_iterator& i, const sample* j )
@@ -1428,7 +1428,7 @@ public:
       }
 
       /*!
-       * Returns true if a sample pointer \a i and an iterator \a j point to
+       * Returns true iff a sample pointer \a i and an iterator \a j point to
        * the same pixel sample.
        */
       friend bool operator ==( const sample* i, const roi_sample_iterator& j )
@@ -1446,7 +1446,7 @@ public:
       }
 
       /*!
-       * Returns true if an iterator \a i precedes a sample pointer \a j.
+       * Returns true iff an iterator \a i precedes a sample pointer \a j.
        */
       friend bool operator <( const roi_sample_iterator& i, const sample* j )
       {
@@ -1454,7 +1454,7 @@ public:
       }
 
       /*!
-       * Returns true if a sample pointer \a i precedes an iterator \a j.
+       * Returns true iff a sample pointer \a i precedes an iterator \a j.
        */
       friend bool operator <( const sample* i, const roi_sample_iterator& j )
       {
@@ -1771,7 +1771,7 @@ public:
       }
 
       /*!
-       * Returns true if an iterator \a i and a sample pointer \a j point to
+       * Returns true iff an iterator \a i and a sample pointer \a j point to
        * the same pixel sample.
        */
       friend bool operator ==( const const_roi_sample_iterator& i, const sample* j )
@@ -1780,7 +1780,7 @@ public:
       }
 
       /*!
-       * Returns true if a sample pointer \a i and an iterator \a j point to
+       * Returns true iff a sample pointer \a i and an iterator \a j point to
        * the same pixel sample.
        */
       friend bool operator ==( const sample* i, const const_roi_sample_iterator& j )
@@ -1798,7 +1798,7 @@ public:
       }
 
       /*!
-       * Returns true if an iterator \a i precedes a sample pointer \a j.
+       * Returns true iff an iterator \a i precedes a sample pointer \a j.
        */
       friend bool operator <( const const_roi_sample_iterator& i, const sample* j )
       {
@@ -1806,7 +1806,7 @@ public:
       }
 
       /*!
-       * Returns true if a sample pointer \a i precedes an iterator \a j.
+       * Returns true iff a sample pointer \a i precedes an iterator \a j.
        */
       friend bool operator <( const sample* i, const const_roi_sample_iterator& j )
       {
@@ -1958,7 +1958,7 @@ public:
        *                an empty iteration range. The default value is -1.
        */
       filter_sample_iterator( image_type& image, const F& filter, int channel = -1 ) :
-         iterator_base( image.SetUnique(), filter, channel )
+         iterator_base( image.EnsureUnique(), filter, channel )
       {
       }
 
@@ -2218,7 +2218,7 @@ public:
       }
 
       /*!
-       * Returns true if an iterator \a i and a sample pointer \a j point to
+       * Returns true iff an iterator \a i and a sample pointer \a j point to
        * the same pixel sample.
        */
       friend bool operator ==( const filter_sample_iterator& i, const sample* j )
@@ -2227,7 +2227,7 @@ public:
       }
 
       /*!
-       * Returns true if a sample pointer \a i and an iterator \a j point to
+       * Returns true iff a sample pointer \a i and an iterator \a j point to
        * the same pixel sample.
        */
       friend bool operator ==( const sample* i, const filter_sample_iterator& j )
@@ -2245,7 +2245,7 @@ public:
       }
 
       /*!
-       * Returns true if an iterator \a i precedes a sample pointer \a j.
+       * Returns true iff an iterator \a i precedes a sample pointer \a j.
        */
       friend bool operator <( const filter_sample_iterator& i, const sample* j )
       {
@@ -2253,7 +2253,7 @@ public:
       }
 
       /*!
-       * Returns true if a sample pointer \a i precedes an iterator \a j.
+       * Returns true iff a sample pointer \a i precedes an iterator \a j.
        */
       friend bool operator <( const sample* i, const filter_sample_iterator& j )
       {
@@ -2640,7 +2640,7 @@ public:
       }
 
       /*!
-       * Returns true if an iterator \a i and a sample pointer \a j point to
+       * Returns true iff an iterator \a i and a sample pointer \a j point to
        * the same pixel sample.
        */
       friend bool operator ==( const const_filter_sample_iterator& i, const sample* j )
@@ -2649,7 +2649,7 @@ public:
       }
 
       /*!
-       * Returns true if a sample pointer \a i and an iterator \a j point to
+       * Returns true iff a sample pointer \a i and an iterator \a j point to
        * the same pixel sample.
        */
       friend bool operator ==( const sample* i, const const_filter_sample_iterator& j )
@@ -2667,7 +2667,7 @@ public:
       }
 
       /*!
-       * Returns true if an iterator \a i precedes a sample pointer \a j.
+       * Returns true iff an iterator \a i precedes a sample pointer \a j.
        */
       friend bool operator <( const const_filter_sample_iterator& i, const sample* j )
       {
@@ -2675,7 +2675,7 @@ public:
       }
 
       /*!
-       * Returns true if a sample pointer \a i precedes an iterator \a j.
+       * Returns true iff a sample pointer \a i precedes an iterator \a j.
        */
       friend bool operator <( const sample* i, const const_filter_sample_iterator& j )
       {
@@ -2816,7 +2816,7 @@ public:
        *                an empty iteration range. The default value is -1.
        */
       roi_filter_sample_iterator( image_type& image, const F& filter, const Rect& rect = Rect( 0 ), int channel = -1 ) :
-         iterator_base( image.SetUnique(), filter, rect, channel )
+         iterator_base( image.EnsureUnique(), filter, rect, channel )
       {
       }
 
@@ -3077,7 +3077,7 @@ public:
       }
 
       /*!
-       * Returns true if an iterator \a i and a sample pointer \a j point to
+       * Returns true iff an iterator \a i and a sample pointer \a j point to
        * the same pixel sample.
        */
       friend bool operator ==( const roi_filter_sample_iterator& i, const sample* j )
@@ -3086,7 +3086,7 @@ public:
       }
 
       /*!
-       * Returns true if a sample pointer \a i and an iterator \a j point to
+       * Returns true iff a sample pointer \a i and an iterator \a j point to
        * the same pixel sample.
        */
       friend bool operator ==( const sample* i, const roi_filter_sample_iterator& j )
@@ -3104,7 +3104,7 @@ public:
       }
 
       /*!
-       * Returns true if an iterator \a i precedes a sample pointer \a j.
+       * Returns true iff an iterator \a i precedes a sample pointer \a j.
        */
       friend bool operator <( const roi_filter_sample_iterator& i, const sample* j )
       {
@@ -3112,7 +3112,7 @@ public:
       }
 
       /*!
-       * Returns true if a sample pointer \a i precedes an iterator \a j.
+       * Returns true iff a sample pointer \a i precedes an iterator \a j.
        */
       friend bool operator <( const sample* i, const roi_filter_sample_iterator& j )
       {
@@ -3456,7 +3456,7 @@ public:
       }
 
       /*!
-       * Returns true if an iterator \a i and a sample pointer \a j point to
+       * Returns true iff an iterator \a i and a sample pointer \a j point to
        * the same pixel sample.
        */
       friend bool operator ==( const const_roi_filter_sample_iterator& i, const sample* j )
@@ -3465,7 +3465,7 @@ public:
       }
 
       /*!
-       * Returns true if a sample pointer \a i and an iterator \a j point to
+       * Returns true iff a sample pointer \a i and an iterator \a j point to
        * the same pixel sample.
        */
       friend bool operator ==( const sample* i, const const_roi_filter_sample_iterator& j )
@@ -3483,7 +3483,7 @@ public:
       }
 
       /*!
-       * Returns true if an iterator \a i precedes a sample pointer \a j.
+       * Returns true iff an iterator \a i precedes a sample pointer \a j.
        */
       friend bool operator <( const const_roi_filter_sample_iterator& i, const sample* j )
       {
@@ -3491,7 +3491,7 @@ public:
       }
 
       /*!
-       * Returns true if a sample pointer \a i precedes an iterator \a j.
+       * Returns true iff a sample pointer \a i precedes an iterator \a j.
        */
       friend bool operator <( const sample* i, const const_roi_filter_sample_iterator& j )
       {
@@ -3543,7 +3543,7 @@ public:
       pixel_iterator( image_type& image ) :
          m_image( &image ), m_iterator(), m_end( nullptr )
       {
-         m_image->SetUnique();
+         m_image->EnsureUnique();
          if ( !m_image->IsEmpty() )
          {
             m_iterator = iterator_type( m_image->NumberOfChannels() );
@@ -4171,7 +4171,7 @@ public:
        *                empty rectangle.
        */
       roi_pixel_iterator( image_type& image, const Rect& rect = Rect( 0 ) ) :
-         iterator_base( image.SetUnique(), rect )
+         iterator_base( image.EnsureUnique(), rect )
       {
       }
 
@@ -4767,7 +4767,7 @@ public:
        *                filter pixels.
        */
       filter_pixel_iterator( image_type& image, const F& filter ) :
-         iterator_base( image.SetUnique(), filter )
+         iterator_base( image.EnsureUnique(), filter )
       {
       }
 
@@ -5471,7 +5471,7 @@ public:
        *                empty rectangle.
        */
       roi_filter_pixel_iterator( image_type& image, const F& filter, const Rect& rect = Rect( 0 ) ) :
-         iterator_base( image.SetUnique(), filter, rect )
+         iterator_base( image.EnsureUnique(), filter, rect )
       {
       }
 
@@ -6036,7 +6036,7 @@ public:
    // -------------------------------------------------------------------------
 
    /*!
-    * Returns true if this %GenericImage template instantiation uses floating
+    * Returns true iff this %GenericImage template instantiation uses floating
     * point pixel samples; returns false if it uses integer samples.
     */
    static bool IsFloatSample()
@@ -6045,7 +6045,7 @@ public:
    }
 
    /*!
-    * Returns true if this %GenericImage template instantiation uses complex
+    * Returns true iff this %GenericImage template instantiation uses complex
     * pixel samples; returns false if it uses real samples.
     */
    static bool IsComplexSample()
@@ -6072,7 +6072,7 @@ public:
    }
 
    /*!
-    * Returns true if this object and another \a image use the same pixel
+    * Returns true iff this object and another \a image use the same pixel
     * sample type:
     *
     * \li Same sample size in bits.
@@ -6161,7 +6161,6 @@ public:
       AbstractImage( image ), m_data( image.m_data )
    {
       image.m_data = nullptr;
-      m_data->Transfer( this );
    }
 
    /*!
@@ -6365,8 +6364,7 @@ public:
    {
       if ( m_data != nullptr )
       {
-         if ( !m_data->Detach() )
-            delete m_data;
+         DetachFromData();
          m_data = nullptr;
       }
    }
@@ -6374,7 +6372,7 @@ public:
    // -------------------------------------------------------------------------
 
    /*!
-    * Returns true if this object is a shared image. Returns false if this is
+    * Returns true iff this object is a shared image. Returns false if this is
     * a local image.
     *
     * Shared images are alias objects referencing actual images living within
@@ -6395,7 +6393,7 @@ public:
    }
 
    /*!
-    * Returns true if this object uniquely references its pixel data. Returns
+    * Returns true iff this object uniquely references its pixel data. Returns
     * false if this object is sharing its pixel data with other %GenericImage
     * instances.
     *
@@ -6406,7 +6404,7 @@ public:
     */
    bool IsUnique() const
    {
-      return m_data->IsUniqueAtomic();
+      return m_data->IsUnique();
    }
 
    /*!
@@ -6420,13 +6418,9 @@ public:
     * dereferences the previously referenced pixel data, and references the
     * newly created local duplicate. Upon returning, this image will uniquely
     * reference its pixel data.
-    *
-    * \note This is a thread-safe routine. It can be safely called from
-    * multiple running threads.
     */
-   GenericImage& SetLocal()
+   GenericImage& EnsureLocal()
    {
-      volatile AutoLock lock( m_mutex );
       if ( m_data->IsShared() )
       {
          GenericImage local;
@@ -6439,10 +6433,8 @@ public:
             P::Copy( local.m_pixelData[c], m_pixelData[c], NumberOfPixels() );
 
          local.m_data->Attach( this );
-         Data* oldData = m_data;
+         DetachFromData();
          m_data = local.m_data;
-         if ( !oldData->Detach() )
-            delete oldData;
       }
       return *this;
    }
@@ -6461,26 +6453,14 @@ public:
     * this object will always be a \e local image after calling this function:
     * newly created duplicates of existing pixel data are always allocated in
     * the local heap of the calling module.
-    *
-    * \note This is a thread-safe routine. It can be safely called from
-    * multiple running threads, either directly, or indirectly as a result of
-    * an attempt to access mutable image data.
     */
-   GenericImage& SetUnique()
+   GenericImage& EnsureUnique()
    {
-      /*
-       * NB: This is a performance-critical routine. DO NOT change it or the
-       *     order of operations if you don't know what you are doing.
-       */
-      if ( !m_data->IsUniqueAtomic() )
+      if ( !m_data->IsUnique() )
       {
-         volatile AutoLock lock( m_mutex );
-         if ( !m_data->IsUnique() )
-         {
-            Data* newData = m_data->Clone( this );
-            m_data->Detach();
-            m_data = newData;
-         }
+         Data* newData = m_data->Clone( this );
+         DetachFromData();
+         m_data = newData;
       }
       return *this;
    }
@@ -6561,12 +6541,11 @@ public:
                                int numberOfChannels = 1,
                                color_space colorSpace = ColorSpace::Gray )
    {
-      volatile AutoLock lock( m_mutex );
       if ( !m_data->IsUnique() )
       {
-         m_data->Detach();
-         m_data = nullptr;
-         m_data = new Data( this );
+         Data* newData = new Data( this );
+         DetachFromData();
+         m_data = newData;
       }
       m_data->Allocate( width, height, numberOfChannels, colorSpace );
       ResetSelections();
@@ -6603,15 +6582,14 @@ public:
     */
    GenericImage& FreeData()
    {
-      volatile AutoLock lock( m_mutex );
       if ( !m_data->IsEmpty() )
          if ( m_data->IsUnique() )
             m_data->Deallocate();
          else
          {
-            m_data->Detach();
-            m_data = nullptr;
-            m_data = new Data( this );
+            Data* newData = new Data( this );
+            DetachFromData();
+            m_data = newData;
          }
       ResetSelections();
       return *this;
@@ -6675,14 +6653,13 @@ public:
    GenericImage& ImportData( sample** data, int width, int height,
                              int numberOfChannels = 1, color_space colorSpace = ColorSpace::Gray )
    {
-      volatile AutoLock lock( m_mutex );
       if ( !m_data->IsUnique() )
       {
          if ( m_data->IsShared() )
             throw Error( "GenericImage::ImportData(): Invalid operation for an aliased shared image" );
-         m_data->Detach();
-         m_data = nullptr;
-         m_data = new Data( this );
+         Data* newData = new Data( this );
+         DetachFromData();
+         m_data = newData;
       }
       m_data->Import( data, width, height, numberOfChannels, colorSpace );
       ResetSelections();
@@ -6725,7 +6702,6 @@ public:
     */
    sample** ReleaseData()
    {
-      volatile AutoLock lock( m_mutex );
       if ( !m_data->IsUnique() )
          throw Error( "GenericImage::ReleaseData(): Invalid operation for an aliased image" );
       sample** data = m_data->Release();
@@ -6801,7 +6777,7 @@ public:
    sample* PixelData( int channel = 0 )
    {
       PCL_PRECONDITION( 0 <= channel && channel < m_numberOfChannels )
-      SetUnique();
+      EnsureUnique();
       return m_pixelData[channel];
    }
 
@@ -6901,7 +6877,7 @@ public:
    {
       PCL_PRECONDITION( 0 <= channel && channel < m_numberOfChannels )
       PCL_PRECONDITION( 0 <= y && y < m_height )
-      SetUnique();
+      EnsureUnique();
       return m_pixelData[channel] + RowOffset( y );
    }
 
@@ -6946,7 +6922,7 @@ public:
       PCL_PRECONDITION( 0 <= channel && channel < m_numberOfChannels )
       PCL_PRECONDITION( 0 <= x && x < m_width )
       PCL_PRECONDITION( 0 <= y && y < m_height )
-      SetUnique();
+      EnsureUnique();
       return m_pixelData[channel] + PixelOffset( x, y );
    }
 
@@ -7149,7 +7125,7 @@ public:
    {
       if ( !IsShared() )
       {
-         SetUnique();
+         EnsureUnique();
          m_RGBWS = RGBWS;
       }
    }
@@ -7284,7 +7260,7 @@ public:
          {
             GenericImage result( image, r, firstChannel, lastChannel ); // ### implicit recursion
             result.m_data->Attach( this );
-            m_data->Detach();
+            DetachFromData();
             m_data = result.m_data;
          }
          ResetSelections();
@@ -7296,9 +7272,7 @@ public:
             if ( completeSelection )
             {
                image.m_data->Attach( this );
-               if ( m_data != nullptr ) // !?
-                  if ( !m_data->Detach() )
-                     delete m_data;
+               DetachFromData();
                m_data = image.m_data;
                ResetSelections();
                return *this;
@@ -7357,16 +7331,14 @@ public:
       return Assign( image );
    }
 
-#define TRANSFER_BODY()                                     \
-      if ( !m_data->Detach() )                              \
-         delete m_data;                                     \
-      m_data = image.m_data;                                \
-      image.m_data = nullptr;                               \
-      if ( m_data != nullptr ) /* if not self-assignment */ \
-      {                                                     \
-         m_data->Transfer( this );                          \
-         (void)AbstractImage::operator =( image );          \
-      }                                                     \
+#define TRANSFER_BODY()                            \
+      if ( m_data != image.m_data )                \
+      {                                            \
+         DetachFromData();                         \
+         m_data = image.m_data;                    \
+         (void)AbstractImage::operator =( image ); \
+         image.m_data = nullptr;                   \
+      }                                            \
       return *this
 
    /*!
@@ -7656,7 +7628,7 @@ public:
    {
       if ( n > 0 && m_numberOfChannels > 0 )
       {
-         SetUnique();
+         EnsureUnique();
          sample** oldData = m_pixelData;
          sample** newData = nullptr;
          try
@@ -7713,7 +7685,7 @@ public:
          CreateAlphaChannels( 1 );
       else if ( m_numberOfChannels > 0 )
       {
-         SetUnique();
+         EnsureUnique();
          sample** oldData = m_pixelData;
          sample** newData = nullptr;
          try
@@ -7817,7 +7789,7 @@ public:
    {
       if ( channel >= 0 && channel < NumberOfAlphaChannels() )
       {
-         SetUnique();
+         EnsureUnique();
          int c = NumberOfNominalChannels() + channel;
          m_allocator.Deallocate( m_pixelData[c] );
          m_pixelData[c] = nullptr;
@@ -7847,7 +7819,7 @@ public:
    {
       if ( channel >= 0 && channel < NumberOfAlphaChannels() )
       {
-         SetUnique();
+         EnsureUnique();
          sample** oldData = m_pixelData;
          sample** newData = m_allocator.AllocateChannelSlots( m_numberOfChannels-1 );
 
@@ -7881,7 +7853,7 @@ public:
       int n = m_numberOfChannels;
       if ( n > n0 )
       {
-         SetUnique();
+         EnsureUnique();
          do
             m_allocator.Deallocate( m_pixelData[--n] ), m_pixelData[n] = nullptr;
          while ( n > n0 );
@@ -7904,7 +7876,7 @@ public:
       int n0 = NumberOfNominalChannels();
       if ( m_numberOfChannels > n0 )
       {
-         SetUnique();
+         EnsureUnique();
          sample** oldData = m_pixelData;
          sample** newData = m_allocator.AllocateChannelSlots( n0 );
 
@@ -7968,7 +7940,7 @@ public:
       if ( !ParseSelection( r, firstChannel, lastChannel ) )
          return *this;
 
-      SetUnique();
+      EnsureUnique();
 
       size_type N = size_type( r.Width() )*size_type( r.Height() );
       if ( m_status.IsInitializationEnabled() )
@@ -8015,7 +7987,7 @@ public:
       if ( !ParseSelection( r, firstChannel, lastChannel ) )
          return *this;
 
-      SetUnique();
+      EnsureUnique();
 
       size_type N = size_type( r.Width() )*size_type( r.Height() );
       if ( m_status.IsInitializationEnabled() )
@@ -8174,7 +8146,7 @@ public:
       if ( !ParseSelection( r, firstChannel, lastChannel ) )
          return *this;
 
-      SetUnique();
+      EnsureUnique();
 
       size_type N = size_type( r.Width() )*size_type( r.Height() );
       if ( m_status.IsInitializationEnabled() )
@@ -8287,7 +8259,7 @@ public:
       if ( !ParseSelection( r, firstChannel, lastChannel ) )
          return *this;
 
-      SetUnique();
+      EnsureUnique();
 
       size_type N = size_type( r.Width() )*size_type( r.Height() );
       if ( m_status.IsInitializationEnabled() )
@@ -8333,7 +8305,7 @@ public:
       if ( !ParseSelection( r, firstChannel, lastChannel ) )
          return *this;
 
-      SetUnique();
+      EnsureUnique();
 
       size_type N = size_type( r.Width() )*size_type( r.Height() );
       if ( m_status.IsInitializationEnabled() )
@@ -8488,7 +8460,7 @@ public:
          return *this;
       }
 
-      SetUnique();
+      EnsureUnique();
 
       double d = 0;
       if ( b0 != b1 )
@@ -8669,7 +8641,7 @@ public:
          return *this;
       }
 
-      SetUnique();
+      EnsureUnique();
 
       double d = 0;
       if ( b0 != b1 )
@@ -8826,7 +8798,7 @@ public:
       if ( !ParseSelection( r, firstChannel, lastChannel ) )
          return *this;
 
-      SetUnique();
+      EnsureUnique();
 
       size_type N = size_type( r.Width() )*size_type( r.Height() );
       if ( m_status.IsInitializationEnabled() )
@@ -8927,7 +8899,7 @@ public:
       if ( !ParseSelection( r, firstChannel, lastChannel ) )
          return *this;
 
-      SetUnique();
+      EnsureUnique();
 
       size_type N = size_type( r.Width() )*size_type( r.Height() );
       if ( m_status.IsInitializationEnabled() )
@@ -8993,7 +8965,7 @@ public:
       if ( !ParseSelection( r, firstChannel, lastChannel ) )
          return *this;
 
-      SetUnique();
+      EnsureUnique();
 
       size_type N = size_type( r.Width() )*size_type( r.Height() );
       if ( m_status.IsInitializationEnabled() )
@@ -9259,7 +9231,7 @@ public:
 
       lastChannel = pcl::Min( lastChannel, firstChannel + m_numberOfChannels - channel - 1 );
 
-      SetUnique();
+      EnsureUnique();
 
       size_type N = size_type( r.Width() )*size_type( r.Height() );
       if ( m_status.IsInitializationEnabled() )
@@ -9588,7 +9560,7 @@ public:
       int w = r.Width();
       int h = r.Height();
 
-      SetUnique();
+      EnsureUnique();
 
       if ( IsColor() )
       {
@@ -10727,8 +10699,8 @@ public:
 
       lastChannel = pcl::Min( lastChannel, firstChannel + m_numberOfChannels - channel - 1 );
 
-      SetUnique();
-      image.SetUnique();
+      EnsureUnique();
+      image.EnsureUnique();
 
       size_type N = size_type( r.Width() )*size_type( r.Height() );
       if ( m_status.IsInitializationEnabled() )
@@ -12976,7 +12948,7 @@ public:
 
       size_type N = size_type( width )*size_type( height );
 
-      SetUnique();
+      EnsureUnique();
 
       if ( m_status.IsInitializationEnabled() )
          m_status.Initialize( String().Format( "Crop margins: %+d, %+d, %+d, %+d",
@@ -13493,7 +13465,7 @@ public:
          return *this;
       }
 
-      SetUnique();
+      EnsureUnique();
 
       if ( m_status.IsInitializationEnabled() )
          m_status.Initialize( "In-place color space conversion: "
@@ -14110,7 +14082,7 @@ public:
 
       size_type N = size_type( r.Width() )*size_type( r.Height() );
 
-      SetUnique();
+      EnsureUnique();
 
       if (   m_colorSpace == ColorSpace::Gray &&
           (Y.ColorSpace() == ColorSpace::Gray || Y.ColorSpace() == ColorSpace::CIEXYZ) )
@@ -14256,7 +14228,7 @@ public:
 
       size_type N = size_type( r.Width() )*size_type( r.Height() );
 
-      SetUnique();
+      EnsureUnique();
 
       if (   m_colorSpace == ColorSpace::Gray &&
           (L.ColorSpace() == ColorSpace::Gray ||
@@ -14371,7 +14343,7 @@ public:
     *                      rectangle is nonempty, this function constrains its
     *                      coordinates to stay within image boundaries.
     *
-    * Returns true if the output rectangle is nonempty.
+    * Returns true iff the output rectangle is nonempty.
     */
    bool ParseRect( Rect& rect ) const
    {
@@ -14394,7 +14366,7 @@ public:
     *                      parameter will be replaced with the currently
     *                      selected channel index in this image.
     *
-    * Returns true if the output channel index is valid.
+    * Returns true iff the output channel index is valid.
     */
    bool ParseChannel( int& channel ) const
    {
@@ -14430,7 +14402,7 @@ public:
     *                      channel index of the current channel range selection
     *                      in this image.
     *
-    * Returns true if the output rectangle is nonempty and the output channel
+    * Returns true iff the output rectangle is nonempty and the output channel
     * range is valid.
     */
    bool ParseSelection( Rect& rect, int& firstChannel, int& lastChannel ) const
@@ -14467,7 +14439,7 @@ public:
     *                      parameter will be replaced with the currently
     *                      selected channel index in this image.
     *
-    * Returns true if the output rectangle is nonempty and the output channel
+    * Returns true iff the output rectangle is nonempty and the output channel
     * index is valid.
     */
    bool ParseSelection( Rect& rect, int& channel ) const
@@ -14479,9 +14451,14 @@ public:
 
 private:
 
+   /*!
+    * \struct Data
+    * \internal
+    * Reference-counted image data structure.
+    */
    struct Data : public ReferenceCounter
    {
-      /*
+      /*!
        * Pixel data
        *
        * Each element in the data array points to a contiguous block of pixel
@@ -14490,7 +14467,7 @@ private:
        */
       sample**        data;
 
-      /*
+      /*!
        * Pixel allocator
        *
        * The allocator is responsible for all allocations and deallocations of
@@ -14502,40 +14479,43 @@ private:
        */
       pixel_allocator allocator;
 
-      /*
+      /*!
        * Image geometry
        */
       Geometry        geometry;
 
-      /*
+      /*!
        * Image color
        */
       Color           color;
 
-      /*
+      /*!
        * Constructs an empty local image.
        */
       Data( GenericImage* image ) :
-         ReferenceCounter(), data( nullptr ), allocator(), geometry(), color()
+         ReferenceCounter(),
+         data( nullptr ), allocator(), geometry(), color()
       {
          LinkWithClientImage( image );
       }
 
-      /*
+      /*!
        * Constructs an aliased shared image.
        */
       Data( GenericImage* image, void* handle ) :
-         ReferenceCounter(), data( nullptr ), allocator( handle ), geometry(), color()
+         ReferenceCounter(),
+         data( nullptr ), allocator( handle ), geometry(), color()
       {
          SynchronizeWithSharedImage();
          LinkWithClientImage( image );
       }
 
-      /*
+      /*!
        * Constructs a newly created shared image.
        */
       Data( GenericImage* image, int width, int height, int numberOfChannels, int colorSpace ) :
-         ReferenceCounter(), data( nullptr ), allocator( width, height, numberOfChannels, colorSpace ), geometry(), color()
+         ReferenceCounter(),
+         data( nullptr ), allocator( width, height, numberOfChannels, colorSpace ), geometry(), color()
       {
          SynchronizeWithSharedImage();
          LinkWithClientImage( image );
@@ -14544,11 +14524,6 @@ private:
       void Attach( GenericImage* image )
       {
          ReferenceCounter::Attach();
-         LinkWithClientImage( image );
-      }
-
-      void Transfer( GenericImage* image )
-      {
          LinkWithClientImage( image );
       }
 
@@ -14674,11 +14649,14 @@ private:
             }
             catch ( ... )
             {
-               for ( int i = 0; i < numberOfChannels; ++i )
-                  if ( data[i] != nullptr )
-                     allocator.Deallocate( data[i] ), data[i] = nullptr;
-               allocator.Deallocate( data );
-               Reset();
+               if ( data != nullptr )
+               {
+                  for ( int i = 0; i < numberOfChannels; ++i )
+                     if ( data[i] != nullptr )
+                        allocator.Deallocate( data[i] ), data[i] = nullptr;
+                  allocator.Deallocate( data );
+                  Reset();
+               }
                throw;
             }
          }
@@ -14698,7 +14676,7 @@ private:
          {
             Deallocate();
 
-            if ( newData != 0 && width > 0 && height > 0 && numberOfChannels > 0 )
+            if ( newData != nullptr && width > 0 && height > 0 && numberOfChannels > 0 )
             {
                if ( numberOfChannels < ColorSpace::NumberOfNominalChannels( colorSpace ) )
                   throw Error( "GenericImage::Data::Import(): Insufficient number of channels" );
@@ -14763,7 +14741,10 @@ private:
          catch ( ... )
          {
             if ( clone != nullptr )
+            {
                clone->Deallocate();
+               delete clone;
+            }
             throw;
          }
       }
@@ -14791,26 +14772,37 @@ private:
 
    private:
 
-      Data() : ReferenceCounter(), data( nullptr ), allocator(), geometry(), color()
+      Data() :
+         ReferenceCounter(),
+         data( nullptr ), allocator(), geometry(), color()
       {
       }
 
       void LinkWithClientImage( GenericImage* image )
       {
-         image->m_geometry = &geometry;
-         image->m_color = &color;
+         if ( image != nullptr )
+         {
+            image->m_geometry = &geometry;
+            image->m_color = &color;
+         }
       }
    };
 
+   /*!
+    * \internal
+    * The reference-counted image data.
+    */
    Data* m_data;
 
-   /*
-    * Access synchronization
-    *
-    * Some critical code must be protected to synchronize implicit sharing of
-    * pixel data. For a clear example, see SetUnique().
+   /*!
+    * \internal
+    * Dereferences image data and disposes it if it becomes garbage.
     */
-   Mutex m_mutex;
+   void DetachFromData()
+   {
+      if ( !m_data->Detach() )
+         delete m_data;
+   }
 
    // -------------------------------------------------------------------------
 
@@ -16656,4 +16648,4 @@ typedef FComplexImage                     ComplexImage;
 #endif   // __PCL_Image_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Image.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Image.h - Released 2015/10/08 11:24:12 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ProcessParameter.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ProcessParameter.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -124,7 +124,7 @@ namespace ProcessParameterType
     */
 
    /*!
-    * Returns true if the specified \a type corresponds to a numeric parameter
+    * Returns true ifff the specified \a type corresponds to a numeric parameter
     * data type.
     * \ingroup process_parameter_classification
     */
@@ -134,8 +134,8 @@ namespace ProcessParameterType
    }
 
    /*!
-    * Returns true if the specified \a type corresponds to an integer parameter
-    * data type.
+    * Returns true ifff the specified \a type corresponds to an integer
+    * parameter data type.
     * \ingroup process_parameter_classification
     */
    inline static bool IsInteger( int type )
@@ -144,7 +144,7 @@ namespace ProcessParameterType
    }
 
    /*!
-    * Returns true if the specified \a type corresponds to a floating point
+    * Returns true ifff the specified \a type corresponds to a floating point
     * real parameter data type.
     * \ingroup process_parameter_classification
     */
@@ -154,7 +154,7 @@ namespace ProcessParameterType
    }
 
    /*!
-    * Returns true if the specified \a type corresponds to a variable-length
+    * Returns true ifff the specified \a type corresponds to a variable-length
     * parameter data type.
     * \ingroup process_parameter_classification
     */
@@ -306,7 +306,7 @@ public:
    virtual ~ProcessParameter();
 
    /*!
-    * Returns true if this is a \e null %ProcessParameter object.
+    * Returns true iff this is a \e null %ProcessParameter object.
     *
     * A null %ProcessParameter does not correspond to an existing parameter of
     * an installed process in the PixInsight core application.
@@ -372,7 +372,7 @@ public:
    IsoStringList Aliases() const;
 
    /*!
-    * Returns true if this process parameter is required to build new process
+    * Returns true iff this process parameter is required to build new process
     * instances. Returns false if a default value can be valid for this process
     * parameter when an actual value is not available.
     *
@@ -439,7 +439,7 @@ public:
    data_type DataInterpretation() const;
 
    /*!
-    * Returns true if this object represents a Boolean process parameter.
+    * Returns true iff this object represents a Boolean process parameter.
     */
    bool IsBoolean() const
    {
@@ -447,7 +447,7 @@ public:
    }
 
    /*!
-    * Returns true if this object represents a numeric process parameter.
+    * Returns true iff this object represents a numeric process parameter.
     */
    bool IsNumeric() const
    {
@@ -455,7 +455,7 @@ public:
    }
 
    /*!
-    * Returns true if this object represents an integer process parameter.
+    * Returns true iff this object represents an integer process parameter.
     */
    bool IsInteger() const
    {
@@ -463,7 +463,7 @@ public:
    }
 
    /*!
-    * Returns true if this object represents a floating point real process
+    * Returns true iff this object represents a floating point real process
     * parameter.
     */
    bool IsReal() const
@@ -472,7 +472,7 @@ public:
    }
 
    /*!
-    * Returns true if this object represents an enumerated process parameter.
+    * Returns true iff this object represents an enumerated process parameter.
     */
    bool IsEnumeration() const
    {
@@ -480,7 +480,7 @@ public:
    }
 
    /*!
-    * Returns true if this object represents a variable-length process
+    * Returns true iff this object represents a variable-length process
     * parameter.
     */
    bool IsVariableLength() const
@@ -489,7 +489,7 @@ public:
    }
 
    /*!
-    * Returns true if this object represents a string process parameter.
+    * Returns true iff this object represents a string process parameter.
     */
    bool IsString() const
    {
@@ -497,7 +497,7 @@ public:
    }
 
    /*!
-    * Returns true if this object represents a block process parameter.
+    * Returns true iff this object represents a block process parameter.
     */
    bool IsBlock() const
    {
@@ -505,7 +505,7 @@ public:
    }
 
    /*!
-    * Returns true if this object represents a table process parameter.
+    * Returns true iff this object represents a table process parameter.
     */
    bool IsTable() const
    {
@@ -600,7 +600,7 @@ public:
    int Precision() const;
 
    /*!
-    * Returns true if this floating point process parameter requires scientific
+    * Returns true iff this floating point process parameter requires scientific
     * notation for literal representations. Returns false if this parameter
     * requires fixed point notation, or if this is a null object.
     *
@@ -700,4 +700,4 @@ private:
 #endif   // __PCL_ProcessParameter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ProcessParameter.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ProcessParameter.h - Released 2015/10/08 11:24:12 UTC

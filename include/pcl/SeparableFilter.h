@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/SeparableFilter.h - Released 2015/07/30 17:15:18 UTC
+// pcl/SeparableFilter.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -253,7 +253,7 @@ public:
    }
 
    /*!
-    * Returns true if this %SeparableFilter object is equal to another instance
+    * Returns true iff this %SeparableFilter object is equal to another instance
     * \a f. Two %SeparableFilter instances are equal if their name and filter
     * coefficients are equal.
     */
@@ -303,7 +303,7 @@ public:
    }
 
    /*!
-    * Returns true if this is an empy filter, i.e. if it has no coefficients.
+    * Returns true iff this is an empy filter, i.e. if it has no coefficients.
     */
    bool IsEmpty() const
    {
@@ -381,7 +381,7 @@ public:
    }
 
    /*!
-    * Returns true if this %SeparableFilter object has the same filter
+    * Returns true iff this %SeparableFilter object has the same filter
     * coefficients as another instance \a f.
     */
    bool SameCoefficients( const SeparableFilter& f ) const
@@ -430,4 +430,4 @@ protected:
 #endif   // __PCL_SeparableFilter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SeparableFilter.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/SeparableFilter.h - Released 2015/10/08 11:24:12 UTC

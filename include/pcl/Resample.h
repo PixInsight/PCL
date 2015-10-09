@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Resample.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Resample.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -343,7 +343,7 @@ public:
    }
 
    /*!
-    * Returns true if this %Resample object resizes images relative to their
+    * Returns true iff this %Resample object resizes images relative to their
     * current dimensions, i.e. when Mode() is equal to
     * ResizeMode::RelativeDimensions.
     */
@@ -353,7 +353,7 @@ public:
    }
 
    /*!
-    * Returns true if this %Resample object resizes images to fixed dimensions,
+    * Returns true iff this %Resample object resizes images to fixed dimensions,
     * i.e. when Mode() is not equal to ResizeMode::RelativeDimensions.
     */
    bool IsAbsolute() const
@@ -392,7 +392,7 @@ public:
    virtual void GetNewSizes( int& width, int& height ) const;
 
    /*!
-    * Returns true if this object is allowed to use multiple parallel execution
+    * Returns true iff this object is allowed to use multiple parallel execution
     * threads (when multiple threads are permitted and available).
     */
    bool IsParallelProcessingEnabled() const
@@ -487,4 +487,4 @@ protected:
 #endif   // __PCL_Resample_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Resample.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Resample.h - Released 2015/10/08 11:24:12 UTC

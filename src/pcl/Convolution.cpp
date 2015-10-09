@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Convolution.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/Convolution.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -103,7 +103,7 @@ private:
       if ( convolution.Filter().IsEmpty() )
          throw Error( "Attempt to perform a convolution with an empty kernel filter." );
 
-      image.SetUnique();
+      image.EnsureUnique();
 
       int n = convolution.OverlappingDistance();
       if ( n > image.Height() || n > image.Width() )
@@ -237,7 +237,7 @@ private:
       {
       }
 
-      virtual void Run()
+      virtual PCL_HOT_FUNCTION void Run()
       {
          INIT_THREAD_MONITOR()
 
@@ -310,7 +310,7 @@ private:
                {
                   {
                      const KernelFilter::coefficient* h = m_data.convolution.Filter().Begin();
-                     DVector::component* f = hf.Begin();
+                     DVector::component* f = hf.DataPtr();
                      if ( compactFilter )
                      {
                         for ( typename raw_data::const_iterator i = f0.Begin(); i < f0.End(); ++i )
@@ -335,9 +335,7 @@ private:
                      }
                   }
 
-                  double r = 0;
-                  for ( int k = 0; k < nc; ++k )
-                     r += hf[k];
+                  double r = hf.Sum();
                   if ( !unitWeight )
                      r /= m_data.convolution.FilterWeight();
 
@@ -419,8 +417,8 @@ private:
                {
                   ::memcpy( *f0[n-1], *f0[n-2], nf0*P::BytesPerSample() );
                   /*
-                   * ### N.B.: Cannot use an assignment operator here because all
-                   * the f0 vectors must be unique.
+                   * ### N.B.: Cannot use an assignment operator here because
+                   * all the f0 vectors must be unique.
                    */
                   //f0[n-1] = f0[n-2];
                }
@@ -500,4 +498,4 @@ void Convolution::ValidateFilter() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Convolution.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/Convolution.cpp - Released 2015/10/08 11:24:19 UTC

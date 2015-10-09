@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Variant.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Variant.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -926,7 +926,7 @@ public:
    }
 
    /*!
-    * Returns true if this %Variant stores an object. Returns false if this is
+    * Returns true iff this %Variant stores an object. Returns false if this is
     * an invalid %Variant object.
     */
    bool IsValid() const
@@ -981,7 +981,7 @@ public:
    int Compare( const Variant& x ) const;
 
    /*!
-    * Returns true if the object stored in this %Variant is equal to the object
+    * Returns true iff the object stored in this %Variant is equal to the object
     * in another %Variant \a x.
     *
     * This operator is equivalent to:
@@ -994,7 +994,7 @@ public:
    }
 
    /*!
-    * Returns true if the object stored in this %Variant precedes the object
+    * Returns true iff the object stored in this %Variant precedes the object
     * in another %Variant \a x.
     *
     * This operator is equivalent to:
@@ -1767,4 +1767,4 @@ namespace pcl
 #endif   // __PCL_Variant_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Variant.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Variant.h - Released 2015/10/08 11:24:12 UTC

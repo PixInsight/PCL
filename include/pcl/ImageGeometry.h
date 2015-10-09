@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ImageGeometry.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ImageGeometry.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -131,7 +131,7 @@ public:
    }
 
    /*!
-    * Returns true if the specified channel index \a c is valid. A valid
+    * Returns true iff the specified channel index \a c is valid. A valid
     * channel index corresponds to an existing channel in this image.
     */
    bool IsValidChannelIndex( int c ) const
@@ -140,7 +140,7 @@ public:
    }
 
    /*!
-    * Returns true if this image is empty, i.e. if its area is zero.
+    * Returns true iff this image is empty, i.e. if its area is zero.
     */
    bool IsEmpty() const
    {
@@ -158,7 +158,7 @@ public:
    }
 
    /*!
-    * Returns true if this image includes the specified point \a p in image
+    * Returns true iff this image includes the specified point \a p in image
     * coordinates.
     */
    template <typename T>
@@ -168,7 +168,7 @@ public:
    }
 
    /*!
-    * Returns true if this image includes the specified rectangle \a r in image
+    * Returns true iff this image includes the specified rectangle \a r in image
     * coordinates.
     */
    template <typename T>
@@ -178,7 +178,7 @@ public:
    }
 
    /*!
-    * Returns true if this image includes a rectangle given by its separate
+    * Returns true iff this image includes a rectangle given by its separate
     * image coordinates.
     *
     * \param x0,y0   Upper left corner coordinates (horizontal, vertical).
@@ -192,7 +192,7 @@ public:
    }
 
    /*!
-    * Returns true if this image includes a point given by its separate image
+    * Returns true iff this image includes a point given by its separate image
     * coordinates.
     *
     * \param x    Horizontal coordinate.
@@ -205,7 +205,7 @@ public:
    }
 
    /*!
-    * Returns true if this image intersects with the specified rectangle \a r
+    * Returns true iff this image intersects with the specified rectangle \a r
     * in image coordinates.
     */
    template <typename T>
@@ -215,7 +215,7 @@ public:
    }
 
    /*!
-    * Returns true if this image intersects with a rectangle given by its
+    * Returns true iff this image intersects with a rectangle given by its
     * separate image coordinates.
     *
     * \param x0,y0  Upper left corner coordinates (horizontal, vertical).
@@ -230,7 +230,7 @@ public:
 
    /*!
     * Constrains a point \a p to stay within the boundaries of this image.
-    * Returns true if the original point location is included in this image.
+    * Returns true iff the original point location is included in this image.
     */
    template <typename T>
    bool Clip( pcl::GenericPoint<T>& p ) const
@@ -245,7 +245,7 @@ public:
     * \param[out] x  Horizontal coordinate of the clipped point.
     * \param[out] y  Vertical coordinate of the clipped point.
     *
-    * Returns true if the original point location is included in this image.
+    * Returns true iff the original point location is included in this image.
     */
    template <typename T>
    bool Clip( T& x, T& y ) const
@@ -268,7 +268,7 @@ public:
     * boundaries of this image. Also ensures coherence of clipped rectangular
     * coordinates such that r.x0 <= r.x1 and r.y0 <= r.y1.
     *
-    * Returns true if the original rectangle intersects this image.
+    * Returns true iff the original rectangle intersects this image.
     */
    template <typename T>
    bool Clip( pcl::GenericRectangle<T>& r ) const
@@ -287,7 +287,7 @@ public:
     * \param[out] x1,y1   Lower right corner coordinates (horizontal, vertical)
     *             of the rectangle that will be clipped.
     *
-    * Returns true if the original rectangle intersects the image.
+    * Returns true iff the original rectangle intersects the image.
     */
    template <typename T>
    bool Clip( T& x0, T& y0, T& x1, T& y1 ) const
@@ -356,17 +356,12 @@ protected:
     */
    struct Geometry
    {
-      int width;
-      int height;
-      int numberOfChannels;
+      int width = 0;
+      int height = 0;
+      int numberOfChannels = 0;
 
-      Geometry() : width( 0 ), height( 0 ), numberOfChannels( 0 )
-      {
-      }
-
-      Geometry( const Geometry& x ) : width( x.width ), height( x.height ), numberOfChannels( x.numberOfChannels )
-      {
-      }
+      Geometry() = default;
+      Geometry( const Geometry& ) = default;
 
       size_type NumberOfPixels() const
       {
@@ -420,4 +415,4 @@ protected:
 #endif   // __PCL_ImageGeometry_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageGeometry.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ImageGeometry.h - Released 2015/10/08 11:24:12 UTC

@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.95
+# PixInsight Makefile Generator Script v1.96
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 30 Jul 2015 17:10:35 GMT
+# Automatically generated on Thu, 08 Oct 2015 11:23:31 GMT
 # Project id ...... JPEG2000
 # Project type .... Module
 # Platform ........ Windows/vc12
@@ -20,7 +20,7 @@
 # _CRT_SECURE_NO_WARNINGS
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Additional include search directories:
-# ../../libjasper/include
+# $(PCLSRCDIR)/3rdparty/jasper/include
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Additional libraries:
 # jasper-pxi
@@ -115,7 +115,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>$(PCLINCDIR);..\..\libjasper\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty\jasper\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;EXCLUDE_JPG_SUPPORT;EXCLUDE_MIF_SUPPORT;EXCLUDE_PNM_SUPPORT;EXCLUDE_RAS_SUPPORT;EXCLUDE_BMP_SUPPORT;EXCLUDE_PGX_SUPPORT;JAS_WIN_MSVC_BUILD;_CRT_SECURE_NO_WARNINGS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -158,7 +158,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>$(PCLINCDIR);..\..\libjasper\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty\jasper\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;EXCLUDE_JPG_SUPPORT;EXCLUDE_MIF_SUPPORT;EXCLUDE_PNM_SUPPORT;EXCLUDE_RAS_SUPPORT;EXCLUDE_BMP_SUPPORT;EXCLUDE_PGX_SUPPORT;JAS_WIN_MSVC_BUILD;_CRT_SECURE_NO_WARNINGS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -200,7 +200,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(PCLINCDIR);..\..\libjasper\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty\jasper\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;EXCLUDE_JPG_SUPPORT;EXCLUDE_MIF_SUPPORT;EXCLUDE_PNM_SUPPORT;EXCLUDE_RAS_SUPPORT;EXCLUDE_BMP_SUPPORT;EXCLUDE_PGX_SUPPORT;JAS_WIN_MSVC_BUILD;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <MinimalRebuild>true</MinimalRebuild>
@@ -232,7 +232,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(PCLINCDIR);..\..\libjasper\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty\jasper\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;EXCLUDE_JPG_SUPPORT;EXCLUDE_MIF_SUPPORT;EXCLUDE_PNM_SUPPORT;EXCLUDE_RAS_SUPPORT;EXCLUDE_BMP_SUPPORT;EXCLUDE_PGX_SUPPORT;JAS_WIN_MSVC_BUILD;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <MinimalRebuild>true</MinimalRebuild>
@@ -274,25 +274,6 @@
     <ClInclude Include="..\..\JPEG2000Module.h" />
     <ClInclude Include="..\..\JPEG2000OptionsDialog.h" />
     <ClInclude Include="..\..\JPEG2000PreferencesDialog.h" />
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_cm.h" />
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_config.h" />
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_config2.h" />
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_debug.h" />
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_fix.h" />
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_getopt.h" />
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_icc.h" />
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_image.h" />
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_init.h" />
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_malloc.h" />
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_math.h" />
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_seq.h" />
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_stream.h" />
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_string.h" />
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_tmr.h" />
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_tvp.h" />
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_types.h" />
-    <ClInclude Include="..\..\libjasper\include\jasper\jas_version.h" />
-    <ClInclude Include="..\..\libjasper\include\jasper\jasper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

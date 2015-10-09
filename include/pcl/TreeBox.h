@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/TreeBox.h - Released 2015/07/30 17:15:18 UTC
+// pcl/TreeBox.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -820,7 +820,7 @@ public:
    // void OnNodeSelectionUpdated( TreeBox& sender );
 
    /*!
-    * \defgroup tree_box_event_handlers TabBox Event Handlers
+    * \defgroup tree_box_event_handlers TreeBox Event Handlers
     */
 
    /*! #
@@ -844,38 +844,47 @@ public:
    typedef void (Control::*node_navigation_event_handler)( TreeBox&, TreeBox::Node&, TreeBox::Node& );
 
    /*! #
+    * \ingroup tree_box_event_handlers
     */
    void OnCurrentNodeUpdated( node_navigation_event_handler, Control& );
 
    /*! #
+    * \ingroup tree_box_event_handlers
     */
    void OnNodeActivated( node_event_handler, Control& );
 
    /*! #
+    * \ingroup tree_box_event_handlers
     */
    void OnNodeUpdated( node_event_handler, Control& );
 
    /*! #
+    * \ingroup tree_box_event_handlers
     */
    void OnNodeEntered( node_event_handler, Control& );
 
    /*! #
+    * \ingroup tree_box_event_handlers
     */
    void OnNodeClicked( node_event_handler, Control& );
 
    /*! #
+    * \ingroup tree_box_event_handlers
     */
    void OnNodeDoubleClicked( node_event_handler, Control& );
 
    /*! #
+    * \ingroup tree_box_event_handlers
     */
    void OnNodeExpanded( node_expand_event_handler, Control& );
 
    /*! #
+    * \ingroup tree_box_event_handlers
     */
    void OnNodeCollapsed( node_expand_event_handler, Control& );
 
    /*! #
+    * \ingroup tree_box_event_handlers
     */
    void OnNodeSelectionUpdated( tree_event_handler, Control& );
 
@@ -942,4 +951,4 @@ protected:
 #endif   // __PCL_TreeBox_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/TreeBox.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/TreeBox.h - Released 2015/10/08 11:24:12 UTC

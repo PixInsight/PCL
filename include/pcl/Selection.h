@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Selection.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Selection.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -167,7 +167,6 @@ RI __pcl_quick_select__( RI i, RI j, distance_type k, T* )
  * sequence is preserved after calling this function.
  *
  * \ingroup selection_algorithms
- * \ingroup search_algorithms
  */
 template <class RI> inline
 RI Select( RI i, RI j, distance_type k )
@@ -241,7 +240,6 @@ RI __pcl_quick_select__( RI i, RI j, distance_type k, BP p, T* )
  * See Select( RI, RI, distance_type ) for more information.
  *
  * \ingroup selection_algorithms
- * \ingroup search_algorithms
  */
 template <class RI, class BP> inline
 RI Select( RI i, RI j, distance_type k, BP p )
@@ -256,4 +254,4 @@ RI Select( RI i, RI j, distance_type k, BP p )
 #endif  // __PCL_Selection_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Selection.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Selection.h - Released 2015/10/08 11:24:12 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ProcessInterface.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ProcessInterface.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -521,7 +521,7 @@ public:
     * Preview control bar button.
     *
     * \param active  True if the Real Time Preview button is currently active
-    *             (pushed down); false otherwise (if the button is unpushed).
+    *             (or pushed down); false if the button is unpushed.
     *
     * For this function to be invoked, the InterfaceFeature::RealTimeButton
     * flag must be included in the set of feature flags returned by a
@@ -568,7 +568,7 @@ public:
     * control bar button.
     *
     * \param active  True if the Track %View button is currently active (pushed
-    *                down); false otherwise (if the button is unpushed).
+    *                down); false if the button is unpushed.
     *
     * For this function to be invoked, the InterfaceFeature::TrackViewButton
     * flag must be included in the set of feature flags returned by a
@@ -843,7 +843,7 @@ public:
    }
 
    /*!
-    * Returns true if this interface can generate new process instances.
+    * Returns true iff this interface can generate new process instances.
     *
     * If your interface has no actual processing capabilities, then reimplement
     * this function to return false. This helps the PixInsight core application
@@ -867,7 +867,7 @@ public:
    }
 
    /*!
-    * Returns true if this interface can provide simplified versions of process
+    * Returns true iff this interface can provide simplified versions of process
     * instances for strict testing purposes.
     *
     * For example, the PixInsight core application tries to create \e temporary
@@ -926,7 +926,7 @@ public:
    }
 
    /*!
-    * Returns true if this interface requires validation of a process instance
+    * Returns true iff this interface requires validation of a process instance
     * before acquisition via ImportProcess().
     *
     * If you actually need this kind of validation, reimplement this function
@@ -956,8 +956,8 @@ public:
     * data items are usually acquired by the interface to edit them through its
     * available controls and GUI resources.
     *
-    * This function returns true if the specified instance is accepted and
-    * successfully imported, false otherwise.
+    * This function returns true iff the specified instance is accepted and
+    * successfully imported.
     *
     * This function is never called if CanImportInstances() has been
     * reimplemented to return false.
@@ -983,7 +983,7 @@ public:
    }
 
    /*!
-    * Returns true if this interface is able to import process instances.
+    * Returns true iff this interface is able to import process instances.
     *
     * If your interface has no processing capabilities, you should
     * reimplement this function to return false.
@@ -1126,7 +1126,7 @@ public:
    }
 
    /*!
-    * Returns true if this interface can be a <em>dynamic interface</em>.
+    * Returns true iff this interface can be a <em>dynamic interface</em>.
     *
     * A dynamic interface is a process interface working in <em>dynamic
     * mode</em>. In dynamic mode, an interface provides a high degree of
@@ -1480,7 +1480,7 @@ public:
     */
 
    /*!
-    * Returns true if this interface will receive image notifications.
+    * Returns true iff this interface will receive image notifications.
     *
     * \note The default implementation of this function returns false, so
     * interfaces don't receive image notifications by default.
@@ -1718,7 +1718,7 @@ public:
     */
 
    /*!
-    * Returns true if this interface will receive mask notifications.
+    * Returns true iff this interface will receive mask notifications.
     *
     * \note The default implementation of this function returns false, so
     * interfaces don't receive mask notifications by default.
@@ -1813,7 +1813,7 @@ public:
     */
 
    /*!
-    * Returns true if this interface will receive transparency notifications.
+    * Returns true iff this interface will receive transparency notifications.
     *
     * \note The default implementation of this function returns false, so
     * interfaces don't receive transparency notifications by default.
@@ -1869,7 +1869,7 @@ public:
     */
 
    /*!
-    * Returns true if this interface will receive view property notifications.
+    * Returns true iff this interface will receive view property notifications.
     *
     * \note The default implementation of this function returns false, so
     * interfaces don't receive view property notifications by default.
@@ -1933,7 +1933,7 @@ public:
     */
 
    /*!
-    * Returns true if this interface will receive readout notifications.
+    * Returns true iff this interface will receive readout notifications.
     *
     * \note The default implementation of this function returns false, so
     * interfaces don't receive readout notifications by default.
@@ -1993,7 +1993,7 @@ public:
    }
 
    /*!
-    * \defgroup process_notifications %Process Instance Notification Functions
+    * \defgroup process_notifications Process Instance Notification Functions
     *
     * The PixInsight core application calls process instance notification
     * functions to keep interfaces informed about changes and events involving
@@ -2005,7 +2005,7 @@ public:
     */
 
    /*!
-    * Returns true if this interface will receive process instance
+    * Returns true iff this interface will receive process instance
     * notifications.
     *
     * \note The default implementation of this function returns false, so
@@ -2080,7 +2080,7 @@ public:
     */
 
    /*!
-    * Returns true if this interface will receive notifications from the
+    * Returns true iff this interface will receive notifications from the
     * real-time previewing system.
     *
     * \note The default implementation of this function returns false, so
@@ -2160,7 +2160,7 @@ public:
     */
 
    /*!
-    * Returns true if this interface will receive global notifications.
+    * Returns true iff this interface will receive global notifications.
     *
     * \note The default implementation of this function returns false, so
     * interfaces don't receive global notifications by default.
@@ -2369,7 +2369,7 @@ public:
    void SetDefaultPosition();
 
    /*!
-    * Returns true if the <em>auto save geometry</em> feature is currently
+    * Returns true iff the <em>auto save geometry</em> feature is currently
     * active for this interface.
     *
     * When <em>auto save geometry</em> is active, the interface \e remembers
@@ -2479,4 +2479,4 @@ private:
 #endif   // __PCL_ProcessInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ProcessInterface.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ProcessInterface.h - Released 2015/10/08 11:24:12 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/SortedArray.h - Released 2015/07/30 17:15:18 UTC
+// pcl/SortedArray.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -175,7 +175,7 @@ public:
    }
 
    /*!
-    * Returns true if this array uniquely references its contained data.
+    * Returns true iff this array uniquely references its contained data.
     */
    bool IsUnique() const
    {
@@ -183,7 +183,7 @@ public:
    }
 
    /*!
-    * Returns true if this sorted array is an alias of a sorted array \a x.
+    * Returns true iff this sorted array is an alias of a sorted array \a x.
     *
     * Two objects are aliases if both of them share the same data.
     */
@@ -199,9 +199,9 @@ public:
     * data, references it, and then decrements the reference counter of the
     * original array data.
     */
-   void SetUnique()
+   void EnsureUnique()
    {
-      m_array.SetUnique();
+      m_array.EnsureUnique();
    }
 
    /*!
@@ -371,7 +371,7 @@ public:
    /*!
     * Ensures that the specified iterator points to a uniquely referenced
     * object. If necessary, this function builds a new, uniquely referenced
-    * copy of this array by calling SetUnique().
+    * copy of this array by calling EnsureUnique().
     *
     * If the iterator \a i is changed, it is guaranteed to point to the object
     * at the same array index it was pointing to before calling this function.
@@ -384,7 +384,7 @@ public:
    /*!
     * Ensures that the specified iterators point to uniquely referenced
     * objects. If necessary, this function builds a new, uniquely referenced
-    * copy of this array by calling SetUnique().
+    * copy of this array by calling EnsureUnique().
     *
     * If the iterators \a i and \a j are changed, they are guaranteed to point
     * to the objects at the same array indices they were pointing to before
@@ -559,7 +559,7 @@ public:
    {
       if ( i != j )
       {
-         m_array.SetUnique();
+         m_array.EnsureUnique();
          for ( iterator l = m_array.Begin(), r = m_array.End(); ; )
          {
             FI h = i;
@@ -1049,4 +1049,4 @@ SortedArray<T,A>& operator <<( SortedArray<T,A>&& x1, const Array<T,A>& x2 )
 #endif  // __PCL_SortedArray_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SortedArray.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/SortedArray.h - Released 2015/10/08 11:24:12 UTC

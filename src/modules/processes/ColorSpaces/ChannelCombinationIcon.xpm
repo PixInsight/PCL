@@ -1,0 +1,179 @@
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0763
+// ----------------------------------------------------------------------------
+// Standard ColorSpaces Process Module Version 01.01.00.0258
+// ----------------------------------------------------------------------------
+// ChannelCombinationIcon.xpm - Released 2015/10/08 11:24:39 UTC
+// ----------------------------------------------------------------------------
+// This file is part of the standard ColorSpaces PixInsight module.
+//
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ----------------------------------------------------------------------------
+
+/* XPM */
+static const char* ChannelCombinationIcon_XPM[] = {
+/* columns rows colors chars-per-pixel */
+"24 24 94 2",
+".  c Black",
+";  c #C0BFC0",
+"G  c #B1D3B0",
+"{  c #93DB94",
+"y  c #DD8988",
+"s  c #DD8989",
+"z  c #DF7D7D",
+"'  c #C6CDC7",
+"a  c #D79E9D",
+"o  c #D1B9B8",
+"2  c #D1B9B9",
+"+  c #D5A7A7",
+"e  c #D5A7A8",
+"O  c #D3B0B1",
+"L  c #B1B0D3",
+"K  c #A7A8D5",
+"m  c #88DD88",
+"^  c #88DD89",
+"j  c #BCBCBC",
+"P  c #B9B8D1",
+"1  c #CBCBCB",
+"8  c #BFC0C0",
+"=  c #BAB9B9",
+"h  c #BAB9BA",
+"#  c #DA9393",
+"7  c #BDBDBC",
+"l  c #BDBDBD",
+"D  c #9E9ED7",
+".. c #CCCCCC",
+"C  c #9E9ED8",
+"F  c #B0B1D2",
+"(  c #B0B1D3",
+"N  c #9ED89D",
+"S  c #9ED89E",
+"V  c #9493DA",
+"x  c #898989",
+"f  c #C5C5C4",
+"n  c #93DA93",
+"$  c #DD8888",
+"q  c #C8C9C9",
+"@  c #D79D9D",
+"X  c #CFC1C1",
+"Z  c #A7A7D5",
+"   c None",
+"`  c #C6C6CD",
+"}  c #9394DB",
+"I  c #B9D1B9",
+"k  c #BFBFBF",
+"E  c #C0CFC0",
+"%  c #E07D7D",
+"4  c #D89E9D",
+"p  c #D6A7A8",
+"U  c #B0D3B0",
+"Q  c #B0D3B1",
+"5  c #DC8989",
+"v  c #89DD88",
+"B  c #89DD89",
+"H  c #A7D5A7",
+",  c #C7C7C6",
+"d  c #BDBCBD",
+"/  c #9E9DD7",
+"J  c #9E9DD8",
+" . c #C7C7CD",
+"c  c #FF0000",
+"!  c #9ED79D",
+"[  c #9ED79E",
+"&  c #0000FF",
+">  c #C5C4C5",
+"_  c #C0C0CF",
+"g  c #DB9394",
+"]  c #A8D6A7",
+"A  c #A8D6A8",
+"w  c #D3B1B0",
+"3  c #D3B1B1",
+")  c #B9B9D0",
+"T  c #B9B9D1",
+"-  c #BCBDBD",
+"|  c #9D9ED7",
+"M  c #9D9ED8",
+"*  c #00FF00",
+"b  c #9393DA",
+"R  c #C1C1CF",
+"~  c #94DA93",
+"9  c #C4C5C5",
+"6  c #BABAB9",
+"u  c #BABABA",
+"W  c #B9D0B9",
+"<  c #C9C9C9",
+"t  c #DA9493",
+"r  c #D89D9E",
+"Y  c #A8A7D6",
+":  c #C2C2C2",
+"i  c #C2C2C3",
+"0  c #C7C6C7",
+/* pixels */
+"                                                ",
+"  . . . . . . . . . . . . . . . . . . . . . .   ",
+"  . X o O + @ # $ % & & * * = - ; : > , < 1 .   ",
+"  . 2 3 + 4 # 5 % & & & * * * 6 7 8 : 9 0 q .   ",
+"  . w e r t y % & & & & * * * * u 7 8 i > , .   ",
+"  . p a # s % & & & & & * * * * * u d 8 : f .   ",
+"  . a g $ % & & & & & & * * * * * * h j k : .   ",
+"  . g y % & & & & & & & * * * * * * * u l k .   ",
+"  . $ % & & & & & & & & * * * * * * * * u d .   ",
+"  . z & & & & & & & & & * * * * * * * * * u .   ",
+"  . & & & & & & & & & & * * * * * * * * * * .   ",
+"  . & & & & & & & & & & * * * * * * * * * * .   ",
+"  . x x x x x x x x x x c c c c c c c c c c .   ",
+"  . x x x x x x x x x x c c c c c c c c c c .   ",
+"  . v x x x x x x x x x c c c c c c c c c b .   ",
+"  . n m x x x x x x x x c c c c c c c c b M .   ",
+"  . N n B x x x x x x x c c c c c c c V C Z .   ",
+"  . A S n m x x x x x x c c c c c c V D Z F .   ",
+"  . G H N n m x x x x x c c c c c V J K L P .   ",
+"  . I U H S n m x x x x c c c c b C Y L T R .   ",
+"  . E W Q H ! ~ ^ x x x c c c b / Z ( ) _ ` .   ",
+"  . ' E I G ] [ { v x x c c } | K ( T _  ....   ",
+"  . . . . . . . . . . . . . . . . . . . . . .   ",
+"                                                "
+};
+
+// ----------------------------------------------------------------------------
+// EOF ChannelCombinationIcon.xpm - Released 2015/10/08 11:24:39 UTC

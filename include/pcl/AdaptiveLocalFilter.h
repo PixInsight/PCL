@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/AdaptiveLocalFilter.h - Released 2015/07/30 17:15:18 UTC
+// pcl/AdaptiveLocalFilter.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -182,7 +182,7 @@ public:
    }
 
    /*!
-    * Returns true if this adaptive filter uses median absolute deviation (MAD)
+    * Returns true iff this adaptive filter uses median absolute deviation (MAD)
     * instead of variance / standard deviation to interpret noise estimates.
     */
    bool UsingMAD() const
@@ -201,7 +201,7 @@ public:
    }
 
    /*!
-    * Returns true if this object is allowed to use multiple parallel execution
+    * Returns true iff this object is allowed to use multiple parallel execution
     * threads (when multiple threads are permitted and available).
     */
    bool IsParallelProcessingEnabled() const
@@ -297,4 +297,4 @@ protected:
 #endif   // __PCL_AdaptiveLocalFilter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AdaptiveLocalFilter.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/AdaptiveLocalFilter.h - Released 2015/10/08 11:24:12 UTC

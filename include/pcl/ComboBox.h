@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ComboBox.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ComboBox.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -284,7 +284,7 @@ public:
    }
 
    /*!
-    * Returns true if this combo box is editable. Editable combo boxes allow
+    * Returns true iff this combo box is editable. Editable combo boxes allow
     * the user to edit the text of the currently selected item.
     */
    bool IsEditEnabled() const;
@@ -324,7 +324,7 @@ public:
    }
 
    /*!
-    * Returns true if auto completion is currently enabled for this combo box
+    * Returns true iff auto completion is currently enabled for this combo box
     * control.
     */
    bool IsAutoCompletionEnabled() const;
@@ -512,6 +512,8 @@ public:
     *
     * \param receiver   The control that will receive <em>item selected</em>
     *                   events from this combo box.
+    *
+    * \ingroup combobox_event_handlers
     */
    void OnItemSelected( item_event_handler handler, Control& receiver );
 
@@ -525,6 +527,8 @@ public:
     *
     * \param receiver   The control that will receive <em>item highlighted</em>
     *                   events from this combo box.
+    *
+    * \ingroup combobox_event_handlers
     */
    void OnItemHighlighted( item_event_handler handler, Control& receiver );
 
@@ -538,6 +542,8 @@ public:
     *
     * \param receiver   The control that will receive <em>edit updated</em>
     *                   events from this combo box.
+    *
+    * \ingroup combobox_event_handlers
     */
    void OnEditTextUpdated( edit_event_handler handler, Control& receiver );
 
@@ -568,4 +574,4 @@ private:
 #endif   // __PCL_ComboBox_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ComboBox.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ComboBox.h - Released 2015/10/08 11:24:12 UTC

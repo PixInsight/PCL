@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/FFTRegistration.h - Released 2015/07/30 17:15:18 UTC
+// pcl/FFTRegistration.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -120,7 +120,7 @@ public:
    }
 
    /*!
-    * Returns true if this engine has been initialized.
+    * Returns true iff this engine has been initialized.
     */
    bool IsInitialized() const
    {
@@ -271,7 +271,7 @@ protected:
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup fft_registration_functions %FFT-Based Registration Operator Functions
+ * \defgroup fft_registration_functions FFT-Based Registration Operator Functions
  */
 
 /*!
@@ -333,7 +333,7 @@ public:
    }
 
    /*!
-    * Returns true if this registration engine can evaluate translations
+    * Returns true iff this registration engine can evaluate translations
     * greater than or equal to one half of the largest dimension of the
     * reference image.
     *
@@ -495,7 +495,7 @@ public:
    }
 
    /*!
-    * Returns true if this engine evaluates scaling ratios. By default, scale
+    * Returns true iff this engine evaluates scaling ratios. By default, scale
     * evaluation is disabled.
     */
    bool EvaluatesScaling() const
@@ -538,7 +538,7 @@ public:
    }
 
    /*!
-    * Returns true if this engine uses a low-frequency cutoff to reduce the
+    * Returns true iff this engine uses a low-frequency cutoff to reduce the
     * effects of rotational aliasing.
     */
    bool HasLowFrequencyCutoff() const
@@ -619,4 +619,4 @@ protected:
 #endif   // __PCL_FFTRegistration_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FFTRegistration.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/FFTRegistration.h - Released 2015/10/08 11:24:12 UTC

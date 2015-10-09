@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Defs.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Defs.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -191,7 +191,7 @@
  * Minimum compiler requirements:
  *
  * - MS Visual C++ 2012 or higher on Windows
- * - GCC >= 4.6 (4.8 recommended) on UNIX/Linux
+ * - GCC >= 4.6 (4.8 strongly recommended) on UNIX/Linux
  * - Clang >= 3.3 on UNIX/Linux
  */
 #ifdef __PCL_WINDOWS
@@ -395,6 +395,19 @@ __pragma(warning( disable : 4267 ))
 #  endif
 #else
 #  define PCL_FORCE_INLINE
+#endif
+
+/*
+ * Special GCC function optimizations
+ */
+#ifndef __PCL_NO_HOT_FUNCTIONS
+#  ifndef _MSC_VER
+#    define PCL_HOT_FUNCTION  __attribute__((hot))
+#  else
+#    define PCL_HOT_FUNCTION
+#  endif
+#else
+#  define PCL_HOT_FUNCTION
 #endif
 
 /*
@@ -1062,4 +1075,4 @@ typedef int64                 fsize_type;
 #endif   // __PCL_Defs_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Defs.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Defs.h - Released 2015/10/08 11:24:12 UTC

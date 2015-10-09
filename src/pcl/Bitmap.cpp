@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Bitmap.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/Bitmap.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -246,7 +246,7 @@ RGBA Bitmap::Pixel( int x, int y ) const
 
 void Bitmap::SetPixel( int x, int y, RGBA v )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Bitmap->SetBitmapPixel)( handle, x, y, v );
 }
 
@@ -261,7 +261,7 @@ const RGBA* Bitmap::ScanLine( int i ) const
 
 RGBA* Bitmap::ScanLine( int i )
 {
-   SetUnique();
+   EnsureUnique();
    return (*API->Bitmap->GetBitmapScanLine)( handle, i );
 }
 
@@ -368,7 +368,7 @@ Bitmap Bitmap::Subimage( int x0, int y0, int x1, int y1 ) const
 
 void Bitmap::Copy( const pcl::Point& p, const Bitmap& src, const pcl::Rect& r )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Bitmap->CopyBitmap)( handle, p.x, p.y, src.handle, r.x0, r.y0, r.x1, r.y1 );
 }
 
@@ -376,7 +376,7 @@ void Bitmap::Copy( const pcl::Point& p, const Bitmap& src, const pcl::Rect& r )
 
 void Bitmap::Fill( const pcl::Rect& r, RGBA fillWith )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Bitmap->FillBitmap)( handle, r.x0, r.y0, r.x1, r.y1, fillWith );
 }
 
@@ -384,7 +384,7 @@ void Bitmap::Fill( const pcl::Rect& r, RGBA fillWith )
 
 void Bitmap::Or( const pcl::Rect& r, RGBA orWith )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Bitmap->OrBitmap)( handle, r.x0, r.y0, r.x1, r.y1, orWith );
 }
 
@@ -392,7 +392,7 @@ void Bitmap::Or( const pcl::Rect& r, RGBA orWith )
 
 void Bitmap::Or( const pcl::Point& p, const Bitmap& src, const pcl::Rect& r )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Bitmap->OrBitmaps)( handle, p.x, p.y, src.handle, r.x0, r.y0, r.x1, r.y1 );
 }
 
@@ -400,7 +400,7 @@ void Bitmap::Or( const pcl::Point& p, const Bitmap& src, const pcl::Rect& r )
 
 void Bitmap::And( const pcl::Rect& r, RGBA andWith )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Bitmap->AndBitmap)( handle, r.x0, r.y0, r.x1, r.y1, andWith );
 }
 
@@ -408,7 +408,7 @@ void Bitmap::And( const pcl::Rect& r, RGBA andWith )
 
 void Bitmap::And( const pcl::Point& p, const Bitmap& src, const pcl::Rect& r )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Bitmap->AndBitmaps)( handle, p.x, p.y, src.handle, r.x0, r.y0, r.x1, r.y1 );
 }
 
@@ -416,7 +416,7 @@ void Bitmap::And( const pcl::Point& p, const Bitmap& src, const pcl::Rect& r )
 
 void Bitmap::Xor( const pcl::Rect& r, RGBA xorWith )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Bitmap->XorBitmap)( handle, r.x0, r.y0, r.x1, r.y1, xorWith );
 }
 
@@ -424,7 +424,7 @@ void Bitmap::Xor( const pcl::Rect& r, RGBA xorWith )
 
 void Bitmap::Xor( const pcl::Point& p, const Bitmap& src, const pcl::Rect& r )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Bitmap->XorBitmaps)( handle, p.x, p.y, src.handle, r.x0, r.y0, r.x1, r.y1 );
 }
 
@@ -432,7 +432,7 @@ void Bitmap::Xor( const pcl::Point& p, const Bitmap& src, const pcl::Rect& r )
 
 void Bitmap::XorRect( const pcl::Rect& r, RGBA xorWith )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Bitmap->XorBitmapRect)( handle, r.x0, r.y0, r.x1, r.y1, xorWith );
 }
 
@@ -440,7 +440,7 @@ void Bitmap::XorRect( const pcl::Rect& r, RGBA xorWith )
 
 void Bitmap::ReplaceColor( const pcl::Rect& r, RGBA replaceThis, RGBA replaceWith )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Bitmap->ReplaceBitmapColor)( handle, r.x0, r.y0, r.x1, r.y1, replaceThis, replaceWith );
 }
 
@@ -448,7 +448,7 @@ void Bitmap::ReplaceColor( const pcl::Rect& r, RGBA replaceThis, RGBA replaceWit
 
 void Bitmap::SetAlpha( const pcl::Rect& r, uint8 alpha )
 {
-   SetUnique();
+   EnsureUnique();
    (*API->Bitmap->SetBitmapAlpha)( handle, r.x0, r.y0, r.x1, r.y1, alpha );
 }
 
@@ -464,4 +464,4 @@ void* Bitmap::CloneHandle() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Bitmap.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/Bitmap.cpp - Released 2015/10/08 11:24:19 UTC

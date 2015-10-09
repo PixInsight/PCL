@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ExternalProcess.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ExternalProcess.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -165,7 +165,7 @@ public:
     * Since external processes are unique objects, calling this member function
     * has no effect.
     */
-   virtual void SetUnique()
+   virtual void EnsureUnique()
    {
    }
 
@@ -487,7 +487,7 @@ public:
    void SetWorkingDirectory( const String& dirPath );
 
    /*!
-    * Returns true if the process is running. An %ExternalProcess object
+    * Returns true iff the process is running. An %ExternalProcess object
     * represents a running process briefly (usually) after calling its Start()
     * member function, when the IsStarting() function returns false, and just
     * before an OnStarted() event is generated.
@@ -495,14 +495,14 @@ public:
    bool IsRunning() const;
 
    /*!
-    * Returns true if the process is starting. An %ExternalProcess object
+    * Returns true iff the process is starting. An %ExternalProcess object
     * enters the starting state after calling its Start() member function, but
     * before the actual process is running.
     */
    bool IsStarting() const;
 
    /*!
-    * Returns true if the running process has crashed.
+    * Returns true iff the running process has crashed.
     */
    bool HasCrashed() const;
 
@@ -697,6 +697,8 @@ public:
     *
     * \param receiver   The control that will receive process started events
     *                   from this object.
+    *
+    * \ingroup external_process_event_handlers
     */
    void OnStarted( process_event_handler handler, Control& receiver );
 
@@ -710,6 +712,8 @@ public:
     *
     * \param receiver   The control that will receive process finished events
     *                   from this object.
+    *
+    * \ingroup external_process_event_handlers
     */
    void OnFinished( process_exit_event_handler handler, Control& receiver );
 
@@ -724,6 +728,8 @@ public:
     *
     * \param receiver   The control that will receive stdout data available
     *                   events from this object.
+    *
+    * \ingroup external_process_event_handlers
     */
    void OnStandardOutputDataAvailable( process_event_handler handler, Control& receiver );
 
@@ -738,6 +744,8 @@ public:
     *
     * \param receiver   The control that will receive stderr data available
     *                   events from this object.
+    *
+    * \ingroup external_process_event_handlers
     */
    void OnStandardErrorDataAvailable( process_event_handler handler, Control& receiver );
 
@@ -751,6 +759,8 @@ public:
     *
     * \param receiver   The control that will receive process error events
     *                   from this object.
+    *
+    * \ingroup external_process_event_handlers
     */
    void OnError( process_error_event_handler handler, Control& receiver );
 
@@ -833,4 +843,4 @@ private:
 #endif   // __PCL_ExternalProcess_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ExternalProcess.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ExternalProcess.h - Released 2015/10/08 11:24:12 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/AutoLock.h - Released 2015/07/30 17:15:18 UTC
+// pcl/AutoLock.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -104,7 +104,8 @@ public:
     * unlocked automatically when this %AutoLock object gets out of scope, or
     * if it is destroyed explicitly.
     */
-   explicit AutoLock( pcl::Mutex& mutex ) : m_mutex( &mutex ), m_lock( 0 )
+   explicit AutoLock( pcl::Mutex& mutex ) :
+      m_mutex( &mutex ), m_lock( 0 )
    {
       Lock();
    }
@@ -118,7 +119,7 @@ public:
    ~AutoLock()
    {
       Unlock();
-      m_mutex = 0;
+      m_mutex = nullptr;
    }
 
    /*!
@@ -126,7 +127,7 @@ public:
     */
    void Lock()
    {
-      if ( m_mutex != 0 && m_lock.TestAndSet( 0, 1 ) )
+      if ( m_mutex != nullptr && m_lock.TestAndSet( 0, 1 ) )
          m_mutex->Lock();
    }
 
@@ -135,7 +136,7 @@ public:
     */
    void Unlock()
    {
-      if ( m_mutex != 0 && m_lock.TestAndSet( 1, 0 ) )
+      if ( m_mutex != nullptr && m_lock.TestAndSet( 1, 0 ) )
          m_mutex->Unlock();
    }
 
@@ -189,4 +190,4 @@ private:
 #endif   // __PCL_AutoLock_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AutoLock.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/AutoLock.h - Released 2015/10/08 11:24:12 UTC

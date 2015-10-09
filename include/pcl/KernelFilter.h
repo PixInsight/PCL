@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/KernelFilter.h - Released 2015/07/30 17:15:18 UTC
+// pcl/KernelFilter.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -229,7 +229,7 @@ public:
    virtual SeparableFilter AsSeparableFilter( float tolerance = __PCL_DEFAULT_FILTER_SEPARABILITY_TOLERANCE ) const;
 
    /*!
-    * Returns true if this filter is separable,
+    * Returns true iff this filter is separable,
     *
     * A two-dimensional filter matrix is separable if it can be expressed as
     * the product of two vectors. The default implementation of this function
@@ -296,7 +296,7 @@ public:
    }
 
    /*!
-    * Returns true if this %KernelFilter object is equal to another instance
+    * Returns true iff this %KernelFilter object is equal to another instance
     * \a f. Two %KernelFilter instances are equal if their name and filter
     * coefficients are equal.
     */
@@ -349,7 +349,7 @@ public:
    }
 
    /*!
-    * Returns true if this is an empty filter, that is, if it has no filter
+    * Returns true iff this is an empty filter, that is, if it has no filter
     * coefficients.
     */
    bool IsEmpty() const
@@ -358,7 +358,7 @@ public:
    }
 
    /*!
-    * Returns true if this is a non-empty filter. Equivalent to !IsEmpty().
+    * Returns true iff this is a non-empty filter. Equivalent to !IsEmpty().
     */
    operator bool() const
    {
@@ -501,7 +501,7 @@ public:
    }
 
    /*!
-    * Returns true if this kernel filter has been flipped (rotated by 180
+    * Returns true iff this kernel filter has been flipped (rotated by 180
     * degrees). Note that after an even number of successive flippings (which
     * is a no-op) this member function will return false.
     */
@@ -532,7 +532,7 @@ public:
    }
 
    /*!
-    * Returns true if this %KernelFilter object has the same coefficients as
+    * Returns true iff this %KernelFilter object has the same coefficients as
     * other instance \a f.
     */
    bool SameCoefficients( const KernelFilter& f ) const
@@ -618,4 +618,4 @@ protected:
 #endif   // __PCL_KernelFilter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/KernelFilter.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/KernelFilter.h - Released 2015/10/08 11:24:12 UTC

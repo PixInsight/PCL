@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.95
+# PixInsight Makefile Generator Script v1.96
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 30 Jul 2015 17:10:34 GMT
+# Automatically generated on Thu, 08 Oct 2015 11:23:31 GMT
 # Project id ...... JPEG
 # Project type .... Module
 # Platform ........ Windows/vc12
@@ -13,7 +13,7 @@
 # _CRT_SECURE_NO_WARNINGS
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Additional include search directories:
-# ../../jpeglib/include
+# $(PCLSRCDIR)/3rdparty/jpeg
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Additional libraries:
 # jpeg-pxi
@@ -65,18 +65,6 @@
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\JPEGPreferencesDialog.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\jpeglib\include\jpeglib\jconfig.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\jpeglib\include\jpeglib\jerror.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\jpeglib\include\jpeglib\jmorecfg.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\jpeglib\include\jpeglib\jpeglib.h">
         <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

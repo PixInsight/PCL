@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Pen.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Pen.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -275,7 +275,7 @@ public:
    style Style() const;
 
    /*!
-    * Returns true if this pen draws solid strokes, i.e. if the current pen
+    * Returns true iff this pen draws solid strokes, i.e. if the current pen
     * drawing style is PenStyle::Solid.
     *
     * \sa IsEmpty(), Style()
@@ -286,7 +286,7 @@ public:
    }
 
    /*!
-    * Returns true if this pen draws no strokes, i.e. if the current pen
+    * Returns true iff this pen draws no strokes, i.e. if the current pen
     * drawing style is PenStyle::Empty.
     *
     * \sa IsSolid(), Style()
@@ -378,4 +378,4 @@ private:
 #endif   // __PCL_Pen_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Pen.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Pen.h - Released 2015/10/08 11:24:12 UTC

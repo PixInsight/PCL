@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/KeyCodes.h - Released 2015/07/30 17:15:18 UTC
+// pcl/KeyCodes.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -336,8 +336,7 @@ namespace KeyCode
  */
 
 /*!
- * Returns true if the specified keyboard key is currently pressed; false
- * otherwise.
+ * Returns true iff the specified keyboard key is currently pressed.
  *
  * The \a key1 and (optional) \a key2 parameters are platform-dependent
  * keyboard scan codes or virtual key identifiers.
@@ -349,7 +348,7 @@ bool IsKeyPressed( int key1, int key2 = 0 ); // implemented in pcl/Keyboard.cpp
 #ifndef __PCL_NO_KEY_QUERY_UTILITIES
 
 /*!
- * Returns true if the Space Bar key is currently pressed; false otherwise.
+ * Returns true iff the Space Bar key is currently pressed.
  * \ingroup keyboard_utilities
  */
 inline bool IsSpaceBarPressed()
@@ -368,8 +367,8 @@ inline bool IsSpaceBarPressed()
 }
 
 /*!
- * Returns true if a Control key (also known as Meta key on Mac OS X) is
- * currently pressed; false otherwise.
+ * Returns true iff a Control key (also known as Meta key on Mac OS X) is
+ * currently pressed.
  * \ingroup keyboard_utilities
  */
 inline bool IsControlPressed()
@@ -388,7 +387,7 @@ inline bool IsControlPressed()
 }
 
 /*!
- * Returns true if a Shift key is currently pressed; false otherwise.
+ * Returns true iff a Shift key is currently pressed.
  * \ingroup keyboard_utilities
  */
 inline bool IsShiftPressed()
@@ -407,8 +406,8 @@ inline bool IsShiftPressed()
 }
 
 /*!
- * Returns true if an Alt key (also known as Option key on Mac OS X) is
- * currently pressed; false otherwise.
+ * Returns true iff an Alt key (also known as Option key on Mac OS X) is
+ * currently pressed.
  * \ingroup keyboard_utilities
  */
 inline bool IsAltPressed()
@@ -429,8 +428,8 @@ inline bool IsAltPressed()
 #if defined( __PCL_MACOSX )
 
 /*!
- * Returns true if the Command key (Mac keyboard only) is currently pressed;
- * false otherwise.
+ * Returns true iff the Command key (Mac keyboard only) is currently pressed.
+ *
  * \note This function is only defined on Mac OS X.
  * \ingroup keyboard_utilities
  */
@@ -440,8 +439,7 @@ inline bool IsCmdPressed()
 }
 
 /*!
- * Returns true if the Meta key is currently pressed on the Mac keyboard; false
- * otherwise.
+ * Returns true iff the Meta key is currently pressed on the Mac keyboard.
  *
  * This function is a convenient alias for IsControlPressed(), only available
  * on Mac OS X.
@@ -466,4 +464,4 @@ inline bool IsMetaPressed()
 #endif   // __PCL_KeyCodes_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/KeyCodes.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/KeyCodes.h - Released 2015/10/08 11:24:12 UTC

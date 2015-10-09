@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/SectionBar.h - Released 2015/07/30 17:15:18 UTC
+// pcl/SectionBar.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -164,7 +164,7 @@ public:
    }
 
    /*!
-    * Returns true if this %SectionBar is \e checkable.
+    * Returns true iff this %SectionBar is \e checkable.
     *
     * \sa EnableTitleCheckBox(), DisableTitleCheckBox(), IsChecked(), OnCheck()
     */
@@ -191,7 +191,7 @@ public:
    }
 
    /*!
-    * Returns true if there is a check box in this %SectionBar and it is
+    * Returns true iff there is a check box in this %SectionBar and it is
     * currently checked.
     *
     * \sa SetChecked(), EnableTitleCheckBox(), HasTitleCheckBox(), OnCheck()
@@ -232,7 +232,7 @@ public:
    }
 
    /*!
-    * Returns true if this SectionBar object is enabled.
+    * Returns true iff this SectionBar object is enabled.
     *
     * \sa Enable()
     */
@@ -292,6 +292,8 @@ public:
     *
     * \param receiver   The control that will receive section events from this
     *                   %SectionBar.
+    *
+    * \ingroup section_bar_event_handlers
     */
    void OnToggleSection( section_event_handler handler, Control& receiver );
 
@@ -319,6 +321,8 @@ public:
     *
     * \param receiver   The control that will receive check events from this
     *                   %SectionBar.
+    *
+    * \ingroup section_bar_event_handlers
     */
    void OnCheck( check_event_handler handler, Control& receiver );
 
@@ -359,4 +363,4 @@ private:
 #endif   // PCL_SectionBar_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SectionBar.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/SectionBar.h - Released 2015/10/08 11:24:12 UTC

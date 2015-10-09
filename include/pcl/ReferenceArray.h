@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ReferenceArray.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ReferenceArray.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -642,7 +642,7 @@ public:
    }
 
    /*!
-    * Returns true if this reference array uniquely references its contained
+    * Returns true iff this reference array uniquely references its contained
     * array of pointers to objects.
     */
    bool IsUnique() const
@@ -651,7 +651,7 @@ public:
    }
 
    /*!
-    * Returns true if this reference array is an alias of the array \a x.
+    * Returns true iff this reference array is an alias of the array \a x.
     *
     * Two objects are aliases if both share the same data. Two reference
     * containers are aliases if they share a unique set of object pointers.
@@ -669,9 +669,9 @@ public:
     * of pointers, references it, and then decrements the reference counter of
     * the original pointer array.
     */
-   void SetUnique()
+   void EnsureUnique()
    {
-      m_array.SetUnique();
+      m_array.EnsureUnique();
    }
 
    /*!
@@ -734,7 +734,7 @@ public:
    }
 
    /*!
-    * Returns true if this reference array is empty.
+    * Returns true iff this reference array is empty.
     */
    bool IsEmpty() const
    {
@@ -801,7 +801,7 @@ public:
     * immutable iterator \a i may become invalid. This happens when this
     * function is called for a shared array, since in this case getting a
     * mutable iterator involves a deep copy of the array through an implicit
-    * call to SetUnique().
+    * call to EnsureUnique().
     */
    iterator MutableIterator( const_iterator i )
    {
@@ -1004,7 +1004,7 @@ public:
     * Ensures that the specified iterator represents a pointer stored in a
     * uniquely referenced indirect array. If necessary, this function builds a
     * new, uniquely referenced copy of the underlying indirect array by calling
-    * SetUnique().
+    * EnsureUnique().
     *
     * If the iterator \a i is changed, it is guaranteed to point to the object
     * at the same array index it was pointing to before calling this function.
@@ -1018,7 +1018,7 @@ public:
     * Ensures that the specified iterators represents a pointer stored in a
     * uniquely referenced indirect array. If necessary, this function builds a
     * new, uniquely referenced copy of the underlying indirect array by calling
-    * SetUnique().
+    * EnsureUnique().
     *
     * If the iterators \a i and \a j are changed, they are guaranteed to point
     * to the objects at the same array indices they were pointing to before
@@ -2133,7 +2133,7 @@ private:
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns true if two reference arrays \a x1 and \a x2 are equal. This
+ * Returns true iff two reference arrays \a x1 and \a x2 are equal. This
  * operator compares the objects pointed to by the pointers stored in the
  * reference arrays.
  * \ingroup array_relational_operators
@@ -2145,7 +2145,7 @@ bool operator ==( const ReferenceArray<T,A>& x1, const ReferenceArray<T,A>& x2 )
 }
 
 /*!
- * Returns true if a reference array \a x1 precedes another reference array
+ * Returns true iff a reference array \a x1 precedes another reference array
  * \a x2. This operator compares the objects pointed to by the pointers stored
  * in the reference arrays.
  * \ingroup array_relational_operators
@@ -2235,4 +2235,4 @@ ReferenceArray<T,A>& operator <<( ReferenceArray<T,A>&& x1, const IndirectArray<
 #endif   // __PCL_ReferenceArray_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ReferenceArray.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ReferenceArray.h - Released 2015/10/08 11:24:12 UTC

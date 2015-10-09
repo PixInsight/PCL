@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/FastRotation.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/FastRotation.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -65,6 +65,8 @@ public:
    template <class P> static
    void Rotate180( GenericImage<P>& image )
    {
+      image.EnsureUnique();
+
       size_type N = image.NumberOfPixels();
       int n = image.NumberOfChannels();
 
@@ -101,7 +103,7 @@ public:
    template <class P> static
    void Rotate90CW( GenericImage<P>& image )
    {
-      image.SetUnique();
+      image.EnsureUnique();
 
       int w = image.Width();
       int h = image.Height();
@@ -151,7 +153,7 @@ public:
    template <class P> static
    void Rotate90CCW( GenericImage<P>& image )
    {
-      image.SetUnique();
+      image.EnsureUnique();
 
       int w = image.Width();
       int h = image.Height();
@@ -201,6 +203,8 @@ public:
    template <class P> static
    void HorizontalMirror( GenericImage<P>& image )
    {
+      image.EnsureUnique();
+
       size_type N = image.NumberOfPixels();
       int n = image.NumberOfChannels();
 
@@ -219,6 +223,8 @@ public:
    template <class P> static
    void VerticalMirror( GenericImage<P>& image )
    {
+      image.EnsureUnique();
+
       size_type N = image.NumberOfPixels();
       int n = image.NumberOfChannels();
 
@@ -427,4 +433,4 @@ void VerticalMirror::Apply( pcl::UInt32Image& image ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FastRotation.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/FastRotation.cpp - Released 2015/10/08 11:24:19 UTC

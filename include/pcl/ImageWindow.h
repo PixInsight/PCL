@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ImageWindow.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ImageWindow.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -144,7 +144,7 @@ namespace ImageMode
    };
 
    /*!
-    * Returns true if the specified mode is a valid GUI mode when the active
+    * Returns true iff the specified mode is a valid GUI mode when the active
     * view is a preview.
     */
    inline bool IsValidPreviewMode( value_type m )
@@ -153,7 +153,7 @@ namespace ImageMode
    }
 
    /*!
-    * Returns true if the specified mode is a valid GUI mode when the active
+    * Returns true iff the specified mode is a valid GUI mode when the active
     * view is a main view.
     */
    inline bool IsValidMainViewMode( value_type m )
@@ -545,14 +545,14 @@ public:
    }
 
    /*!
-    * Returns true if the image in this window has not been loaded from a disk
+    * Returns true iff the image in this window has not been loaded from a disk
     * file, but created as a new image in the core application (e.g., by the
     * NewImage standard process).
     */
    bool IsNew() const;
 
    /*!
-    * Returns true if the image in this window has been loaded from a disk file
+    * Returns true iff the image in this window has been loaded from a disk file
     * <em>as a copy</em>.
     *
     * The %File > Save command (and all related menu items) is always disabled
@@ -584,7 +584,7 @@ public:
    String FileURL() const;
 
    /*!
-    * Returns true if this image has been downloaded from a remote location, in
+    * Returns true iff this image has been downloaded from a remote location, in
     * which case the source URL can be obtained by calling FileURL().
     */
    bool HasURL() const
@@ -606,7 +606,7 @@ public:
    size_type ModifyCount() const;
 
    /*!
-    * Returns true if the image in this image window has been modified and is
+    * Returns true iff the image in this image window has been modified and is
     * unsaved. An image is modified if its modification counter is not zero.
     */
    bool IsModified() const
@@ -670,7 +670,7 @@ public:
    void PurgeProperties();
 
    /*!
-    * Returns true if the specified view is a view of this image window, that
+    * Returns true iff the specified view is a view of this image window, that
     * is, either the main view of this image window, or one of its previews.
     */
    bool IsValidView( const View& ) const;
@@ -681,7 +681,7 @@ public:
    int NumberOfPreviews() const;
 
    /*!
-    * Returns true if there are one or more previews currently defined in this
+    * Returns true iff there are one or more previews currently defined in this
     * image window.
     */
    bool HasPreviews() const
@@ -964,7 +964,7 @@ public:
    }
 
    /*!
-    * Returns true if mask inversion is currently active for this image window.
+    * Returns true iff mask inversion is currently active for this image window.
     */
    bool IsMaskInverted() const;
 
@@ -978,7 +978,7 @@ public:
    }
 
    /*!
-    * Returns true if the mask is current enabled for this image window.
+    * Returns true iff the mask is current enabled for this image window.
     */
    bool IsMaskEnabled() const;
 
@@ -996,7 +996,7 @@ public:
    }
 
    /*!
-    * Returns true if the mask is currently visible for this image window.
+    * Returns true iff the mask is currently visible for this image window.
     */
    bool IsMaskVisible() const;
 
@@ -1014,7 +1014,7 @@ public:
    }
 
    /*!
-    * Returns true if a specified image window could be selected as a mask for
+    * Returns true iff a specified image window could be selected as a mask for
     * this image window.
     *
     * For a given image \a M to be a valid mask for an image \a I:
@@ -1027,7 +1027,7 @@ public:
    bool IsMaskCompatible( const ImageWindow& );
 
    /*!
-    * Returns true if this image window is acting as a mask for other image
+    * Returns true iff this image window is acting as a mask for other image
     * window(s).
     */
    bool HasMaskReferences() const;
@@ -1066,7 +1066,7 @@ public:
    void SetRGBWS( const RGBColorSystem& rgbws );
 
    /*!
-    * Returns true if this image window is associated with the global RGB
+    * Returns true iff this image window is associated with the global RGB
     * working space (RGBWS).
     *
     * See the documentation for GetGlobalRGBWS() for a description of the
@@ -1109,7 +1109,7 @@ public:
    static void SetGlobalRGBWS( const RGBColorSystem& rgbws );
 
    /*!
-    * Returns true if color management is active for this image window.
+    * Returns true iff color management is active for this image window.
     */
    bool IsColorManagementEnabled() const;
 
@@ -1149,7 +1149,7 @@ public:
    }
 
    /*!
-    * Returns true if <em>soft-proofing</em> is currently enabled for this
+    * Returns true iff <em>soft-proofing</em> is currently enabled for this
     * image window.
     */
    bool IsProofingEnabled() const;
@@ -1184,7 +1184,7 @@ public:
    }
 
    /*!
-    * Returns true if the <em>gamut check</em> soft-proofing feature is
+    * Returns true iff the <em>gamut check</em> soft-proofing feature is
     * currently enabled for this image window.
     */
    bool IsGamutCheckEnabled() const;
@@ -1387,7 +1387,7 @@ public:
    static void GetDefaultResolution( double& xRes, double& yRes, bool& metric );
 
    /*!
-    * Returns true if default ICC profile embedding is globally enabled for RGB
+    * Returns true iff default ICC profile embedding is globally enabled for RGB
     * images in the PixInsight core application.
     *
     * Modules implementing file format support may call this function to
@@ -1401,7 +1401,7 @@ public:
    static bool IsDefaultICCProfileEmbeddingEnabledForRGBImages();
 
    /*!
-    * Returns true if default ICC profile embedding is globally enabled for
+    * Returns true iff default ICC profile embedding is globally enabled for
     * grayscale images in the PixInsight core application.
     *
     * Modules implementing file format support may call this function to
@@ -1415,7 +1415,7 @@ public:
    static bool IsDefaultICCProfileEmbeddingEnabledForGrayscaleImages();
 
    /*!
-    * Returns true if default thumbnail embedding is globally enabled in the
+    * Returns true iff default thumbnail embedding is globally enabled in the
     * PixInsight core application.
     *
     * Modules implementing file formats should call this function to provide
@@ -1427,7 +1427,7 @@ public:
    static bool IsDefaultThumbnailEmbeddingEnabled();
 
    /*!
-    * Returns true if default properties embedding is globally enabled in the
+    * Returns true iff default properties embedding is globally enabled in the
     * PixInsight core application.
     *
     * Modules implementing file formats should call this function to provide
@@ -1522,7 +1522,7 @@ public:
    display_channel CurrentChannel() const;
 
    /*!
-    * Returns true if the current display channel (in the core application)
+    * Returns true iff the current display channel (in the core application)
     * corresponds to an alpha channel of the image in the current view.
     */
    bool IsAlphaChannelDisplayed() const
@@ -1644,7 +1644,7 @@ public:
    RGBA TransparencyColor() const;
 
    /*!
-    * Returns true if transparent image areas are currently visible for this
+    * Returns true iff transparent image areas are currently visible for this
     * image window.
     *
     * Transparencies are visible if the current rendering mode is not
@@ -1905,7 +1905,7 @@ public:
    }
 
    /*!
-    * Returns true if this image window is currently visible.
+    * Returns true iff this image window is currently visible.
     */
    bool IsVisible() const;
 
@@ -1920,7 +1920,7 @@ public:
    void Hide();
 
    /*!
-    * Returns true if this image window is iconic.
+    * Returns true iff this image window is iconic.
     */
    bool IsIconic() const;
 
@@ -1958,7 +1958,7 @@ public:
    void SendToBack();
 
    /*!
-    * Returns true if a dynamic session is currently active in the core
+    * Returns true iff a dynamic session is currently active in the core
     * PixInsight application.
     *
     * A dynamic session is active if there is a processing interface working
@@ -2589,7 +2589,7 @@ public:
    void UpdateImageRect( double x0, double y0, double x1, double y1 );
 
    /*!
-    * Returns true if there are pending viewport updates for this image window.
+    * Returns true iff there are pending viewport updates for this image window.
     */
    bool HasPendingUpdates() const;
 
@@ -2739,7 +2739,7 @@ public:
    Rect SelectionRect( uint32* flags = 0 ) const;
 
    /*!
-    * Returns true if an interactive selection procedure is currently active on
+    * Returns true iff an interactive selection procedure is currently active on
     * the viewport of this image window.
     */
    bool IsSelection() const;
@@ -2806,4 +2806,4 @@ private:
 #endif   // __PCL_ImageWindow_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageWindow.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ImageWindow.h - Released 2015/10/08 11:24:12 UTC

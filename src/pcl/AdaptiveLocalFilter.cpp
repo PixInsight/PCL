@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/AdaptiveLocalFilter.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/AdaptiveLocalFilter.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -68,7 +68,7 @@ public:
       if ( image.IsEmptySelection() )
          return;
 
-      image.SetUnique();
+      image.EnsureUnique();
 
       if ( filter.Size() > image.Height() || filter.Size() > image.Width() )
       {
@@ -152,7 +152,7 @@ private:
       {
       }
 
-      virtual void Run()
+      virtual PCL_HOT_FUNCTION void Run()
       {
          INIT_THREAD_MONITOR()
 
@@ -303,8 +303,8 @@ private:
                {
                   ::memcpy( *f0[n-1], *f0[n-2], nf0*P::BytesPerSample() );
                   /*
-                   * ### NB: Cannot use an assignment operator here because all
-                   * the f0 vectors must be unique.
+                   * ### N.B.: Cannot use an assignment operator here because
+                   * all the f0 vectors must be unique.
                    */
                   //f0[n-1] = f0[n-2];
                }
@@ -366,4 +366,4 @@ void AdaptiveLocalFilter::Apply( UInt32Image& image ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AdaptiveLocalFilter.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/AdaptiveLocalFilter.cpp - Released 2015/10/08 11:24:19 UTC

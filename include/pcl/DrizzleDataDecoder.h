@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/DrizzleDataDecoder.h - Released 2015/07/30 17:15:18 UTC
+// pcl/DrizzleDataDecoder.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -327,7 +327,7 @@ class DrizzleSplineDecoder : public DrizzleDecoderBase
 {
 public:
 
-   typedef SurfaceSplines::spline spline;
+   typedef PointSurfaceSpline::spline spline;
 
    DrizzleSplineDecoder() : DrizzleDecoderBase()
    {
@@ -433,7 +433,7 @@ public:
       return m_H;
    }
 
-   const SurfaceSplines& AlignmentSplines() const
+   const PointSurfaceSpline& AlignmentSplines() const
    {
       return m_S;
    }
@@ -495,34 +495,34 @@ public:
 
 protected:
 
-   typedef SurfaceSplines::spline       spline;
+   typedef PointSurfaceSpline::spline   spline;
    typedef Array<Point>                 rejection_coordinates;
    typedef Array<rejection_coordinates> rejection_data;
 
    /*
     * Drizzle data
     */
-   String         m_filePath;
-   String         m_targetPath;
-   int            m_referenceWidth;
-   int            m_referenceHeight;
-   Matrix         m_H;
-   SurfaceSplines m_S;
-   Vector         m_location;
-   Vector         m_referenceLocation;
-   Vector         m_scale;
-   Vector         m_weight;
-   UI64Vector     m_rejectionLowCount;
-   UI64Vector     m_rejectionHighCount;
-   UInt8Image     m_rejectionMap;
+   String             m_filePath;
+   String             m_targetPath;
+   int                m_referenceWidth;
+   int                m_referenceHeight;
+   Matrix             m_H;
+   PointSurfaceSpline m_S;
+   Vector             m_location;
+   Vector             m_referenceLocation;
+   Vector             m_scale;
+   Vector             m_weight;
+   UI64Vector         m_rejectionLowCount;
+   UI64Vector         m_rejectionHighCount;
+   UInt8Image         m_rejectionMap;
 
    /*
     * Intermediate working data
     */
-   spline         m_Sx;
-   spline         m_Sy;
-   rejection_data m_rejectLowData;
-   rejection_data m_rejectHighData;
+   spline             m_Sx;
+   spline             m_Sy;
+   rejection_data     m_rejectLowData;
+   rejection_data     m_rejectHighData;
 
    virtual void Initialize()
    {
@@ -691,4 +691,4 @@ protected:
 #endif   // __PCL_DrizzleDataDecoder_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/DrizzleDataDecoder.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/DrizzleDataDecoder.h - Released 2015/10/08 11:24:12 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/MetaProcess.h - Released 2015/07/30 17:15:18 UTC
+// pcl/MetaProcess.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -416,7 +416,7 @@ public:
    }
 
    /*!
-    * Returns true if this process class is able to process views.
+    * Returns true iff this process class is able to process views.
     *
     * View execution of a process, also known as <em>view context</em>, is
     * mainly implemented by the following member functions:
@@ -437,7 +437,7 @@ public:
    }
 
    /*!
-    * Returns true if this process class can be executed globally.
+    * Returns true iff this process class can be executed globally.
     *
     * Global execution of a process, also known as <em>global context</em>, is
     * mainly implemented by the following member functions:
@@ -462,7 +462,7 @@ public:
    }
 
    /*!
-    * Returns true if this process class is able to process standalone images.
+    * Returns true iff this process class is able to process standalone images.
     *
     * This refers to the ability of process instances to be executed on images
     * passed to a reimplementation of the following member function:
@@ -495,7 +495,7 @@ public:
    }
 
    /*!
-    * Returns true if this process class is able to process specific
+    * Returns true iff this process class is able to process specific
     * command-line invocations.
     *
     * If a derived class reimplements this function to return true, it should
@@ -513,7 +513,7 @@ public:
    }
 
    /*!
-    * Returns true if this process is able to edit specific preferences.
+    * Returns true iff this process is able to edit specific preferences.
     *
     * If a derived class reimplements this function to return true, it should
     * also reimplement the EditPreferences() member function to perform the
@@ -530,7 +530,7 @@ public:
    }
 
    /*!
-    * Returns true if this process is able to open a documentation browser with
+    * Returns true iff this process is able to open a documentation browser with
     * specific documentation contents.
     *
     * Starting from version 1.7, the PixInsight Core application implements an
@@ -613,7 +613,7 @@ public:
    }
 
    /*!
-    * Returns true if the instances of this process are \e assignable.
+    * Returns true iff the instances of this process are \e assignable.
     *
     * Assignable processes allow copying one instance to another.
     *
@@ -630,7 +630,7 @@ public:
    }
 
    /*!
-    * Returns true if the instances of this process require <em>special
+    * Returns true iff the instances of this process require <em>special
     * initialization</em>.
     *
     * Special initialization takes place just after instance creation.
@@ -661,7 +661,7 @@ public:
    }
 
    /*!
-    * Returns true if the instances of this process require <em>special
+    * Returns true iff the instances of this process require <em>special
     * validation</em>.
     *
     * Some processes may require validation of their instances just before they
@@ -683,7 +683,7 @@ public:
    }
 
    /*!
-    * Returns true if the instances of this process prefer execution in the
+    * Returns true iff the instances of this process prefer execution in the
     * global context, instead of being executed on views.
     *
     * Note that the option indicated by this function is just a \e hint to the
@@ -737,7 +737,7 @@ public:
 
    /*!
     * Handles a request to browse documentation specific for this process.
-    * Returns true if the documentation was loaded successfully.
+    * Returns true iff the documentation was loaded successfully.
     *
     * Reimplementing this function is strongly discouraged, unless some
     * nonstandard behavior is absolutely necessary for a particular process.
@@ -784,4 +784,4 @@ private:
 #endif   // __PCL_MetaProcess_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaProcess.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/MetaProcess.h - Released 2015/10/08 11:24:12 UTC

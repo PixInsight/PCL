@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/UIScaling.h - Released 2015/07/30 17:15:18 UTC
+// pcl/UIScaling.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -253,10 +253,12 @@ struct PCL_UIStringSection
  *                         zero (the default value), this routine will use the
  *                         font resolution currently selected in core user
  *                         preferences (which is the value of the
- *                         "Application/FontResolution" global integer variable
- *                         - see PixInsightSettings). If this parameter is a
- *                         negative integer, no point-to-pixel conversions will
- *                         be applied.
+ *                         "Application/FontResolution" global integer
+ *                         variable; see PixInsightSettings). If this parameter
+ *                         is a negative integer, no point-to-pixel conversions
+ *                         will be applied.
+ *
+ * See Control::ScaledStyleSheet() for a detailed example.
  *
  * \ingroup ui_scaling_functions
  */
@@ -358,4 +360,4 @@ String UIScaledStyleSheet( double scalingFactor, S styleSheet, int fontDPI = 0 )
 #endif   // __PCL_UIScaling_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/UIScaling.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/UIScaling.h - Released 2015/10/08 11:24:12 UTC

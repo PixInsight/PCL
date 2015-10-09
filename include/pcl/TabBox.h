@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/TabBox.h - Released 2015/07/30 17:15:18 UTC
+// pcl/TabBox.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -219,7 +219,7 @@ public:
    void SetTabPosition( tab_position pos );
 
    /*!
-    * Returns true if the page control at the specified \a index is enabled.
+    * Returns true iff the page control at the specified \a index is enabled.
     *
     * \sa EnablePage(), DisablePage()
     */
@@ -346,15 +346,32 @@ public:
     * \defgroup tab_box_event_handlers TabBox Event Handlers
     */
 
-   /*! #
+   /*!
+    * Defines the prototype of a <em>tab box page event handler</em>.
+    *
+    * A tab box page event is generated when the user changes the current page
+    * in a tab box control.
+    *
+    * \param sender     The control that sends a tab box page event.
+    *
+    * \param pageIndex  The zero-based index of a tab box page.
+    *
     * \ingroup tab_box_event_handlers
     */
    typedef void (Control::*page_event_handler)( TabBox& sender, int pageIndex );
 
-   /*! #
+   /*!
+    * Sets the tab box page selected event handler for this %TabBox control.
+    *
+    * \param handler    The tab box page event handler. Must be a member
+    *                   function of the receiver object's class.
+    *
+    * \param receiver   The control that will receive tab box page selected
+    *                   events from this %TabBox.
+    *
     * \ingroup tab_box_event_handlers
     */
-   void OnPageSelected( page_event_handler, Control& );
+   void OnPageSelected( page_event_handler handler, Control& receiver );
 
 private:
 
@@ -381,4 +398,4 @@ private:
 #endif   // __PCL_TabBox_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/TabBox.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/TabBox.h - Released 2015/10/08 11:24:12 UTC

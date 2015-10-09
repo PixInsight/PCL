@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.06.0280
+// Standard Global Process Module Version 01.02.06.0288
 // ----------------------------------------------------------------------------
-// ColorManagementSetupInstance.cpp - Released 2015/07/31 11:49:48 UTC
+// ColorManagementSetupInstance.cpp - Released 2015/10/08 11:24:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -72,6 +72,7 @@ ColorManagementSetupInstance::ColorManagementSetupInstance( const MetaProcess* p
    onMissingProfile( CMSOnMissingProfile::Default ),
    defaultEmbedProfilesInRGBImages( TheCMSDefaultEmbedProfilesInRGBImagesParameter->DefaultValue() ),
    defaultEmbedProfilesInGrayscaleImages( TheCMSDefaultEmbedProfilesInGrayscaleImagesParameter->DefaultValue() ),
+   useLowResolutionCLUTs( TheCMSUseLowResolutionCLUTsParameter->DefaultValue() ),
    proofingProfile(),
    proofingIntent( CMSRenderingIntent::DefaultForProofing ),
    useProofingBPC( TheCMSUseProofingBPCParameter->DefaultValue() ),
@@ -116,7 +117,7 @@ ColorManagementSetupInstance::ColorManagementSetupInstance( const ColorManagemen
 void ColorManagementSetupInstance::Assign( const ProcessImplementation& p )
 {
    const ColorManagementSetupInstance* x = dynamic_cast<const ColorManagementSetupInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       enabled                               = x->enabled;
       updateMonitorProfile                  = x->updateMonitorProfile;
@@ -127,6 +128,7 @@ void ColorManagementSetupInstance::Assign( const ProcessImplementation& p )
       onMissingProfile                      = x->onMissingProfile;
       defaultEmbedProfilesInRGBImages       = x->defaultEmbedProfilesInRGBImages;
       defaultEmbedProfilesInGrayscaleImages = x->defaultEmbedProfilesInGrayscaleImages;
+      useLowResolutionCLUTs                 = x->useLowResolutionCLUTs;
       proofingProfile                       = x->proofingProfile;
       proofingIntent                        = x->proofingIntent;
       useProofingBPC                        = x->useProofingBPC;
@@ -230,6 +232,7 @@ bool ColorManagementSetupInstance::ExecuteGlobal()
       PixInsightSettings::SetGlobalInteger( "ColorManagement/OnMissingProfile", onMissingProfile );
       PixInsightSettings::SetGlobalFlag( "ColorManagement/DefaultEmbedProfilesInRGBImages", defaultEmbedProfilesInRGBImages );
       PixInsightSettings::SetGlobalFlag( "ColorManagement/DefaultEmbedProfilesInGrayscaleImages", defaultEmbedProfilesInGrayscaleImages );
+      PixInsightSettings::SetGlobalFlag( "ColorManagement/UseLowResolutionCLUTs", useLowResolutionCLUTs );
       PixInsightSettings::SetGlobalString( "ColorManagement/ProofingProfilePath", proofingPath );
       PixInsightSettings::SetGlobalInteger( "ColorManagement/ProofingIntent", proofingIntent );
       PixInsightSettings::SetGlobalFlag( "ColorManagement/UseProofingBPC", useProofingBPC );
@@ -271,6 +274,8 @@ void* ColorManagementSetupInstance::LockParameter( const MetaParameter* p, size_
       return &defaultEmbedProfilesInRGBImages;
    if ( p == TheCMSDefaultEmbedProfilesInGrayscaleImagesParameter )
       return &defaultEmbedProfilesInGrayscaleImages;
+   if ( p == TheCMSUseLowResolutionCLUTsParameter )
+      return &useLowResolutionCLUTs;
    if ( p == TheCMSProofingProfileParameter )
       return proofingProfile.c_str();
    if ( p == TheCMSProofingIntentParameter )
@@ -335,17 +340,17 @@ size_type ColorManagementSetupInstance::ParameterLength( const MetaParameter* p,
 void ColorManagementSetupInstance::LoadCurrentSettings()
 {
    enabled                  = PixInsightSettings::GlobalFlag( "ColorManagement/IsEnabled" );
-   defaultRGBProfile        =
-      ICCProfile( PixInsightSettings::GlobalString( "ColorManagement/DefaultRGBProfilePath" ) ).Description();
-   defaultGrayProfile       =
-      ICCProfile( PixInsightSettings::GlobalString( "ColorManagement/DefaultGrayscaleProfilePath" ) ).Description();
+   defaultRGBProfile        = ICCProfile( PixInsightSettings::GlobalString( "ColorManagement/DefaultRGBProfilePath" ) ).Description();
+   defaultGrayProfile       = ICCProfile( PixInsightSettings::GlobalString( "ColorManagement/DefaultGrayscaleProfilePath" ) ).Description();
    defaultRenderingIntent   = PixInsightSettings::GlobalInteger( "ColorManagement/DefaultRenderingIntent" );
    onProfileMismatch        = PixInsightSettings::GlobalInteger( "ColorManagement/OnProfileMismatch" );
    onMissingProfile         = PixInsightSettings::GlobalInteger( "ColorManagement/OnMissingProfile" );
-   defaultEmbedProfilesInRGBImages       = PixInsightSettings::GlobalFlag( "ColorManagement/DefaultEmbedProfilesInRGBImages" );
-   defaultEmbedProfilesInGrayscaleImages = PixInsightSettings::GlobalFlag( "ColorManagement/DefaultEmbedProfilesInGrayscaleImages" );
-   proofingProfile          =
-      ICCProfile( PixInsightSettings::GlobalString( "ColorManagement/ProofingProfilePath" ) ).Description();
+   defaultEmbedProfilesInRGBImages
+                            = PixInsightSettings::GlobalFlag( "ColorManagement/DefaultEmbedProfilesInRGBImages" );
+   defaultEmbedProfilesInGrayscaleImages
+                            = PixInsightSettings::GlobalFlag( "ColorManagement/DefaultEmbedProfilesInGrayscaleImages" );
+   useLowResolutionCLUTs    = PixInsightSettings::GlobalFlag( "ColorManagement/UseLowResolutionCLUTs" );
+   proofingProfile          = ICCProfile( PixInsightSettings::GlobalString( "ColorManagement/ProofingProfilePath" ) ).Description();
    proofingIntent           = PixInsightSettings::GlobalInteger( "ColorManagement/ProofingIntent" );
    useProofingBPC           = PixInsightSettings::GlobalFlag( "ColorManagement/UseProofingBPC" );
    defaultProofingEnabled   = PixInsightSettings::GlobalFlag( "ColorManagement/DefaultProofingEnabled" );
@@ -358,4 +363,4 @@ void ColorManagementSetupInstance::LoadCurrentSettings()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ColorManagementSetupInstance.cpp - Released 2015/07/31 11:49:48 UTC
+// EOF ColorManagementSetupInstance.cpp - Released 2015/10/08 11:24:39 UTC

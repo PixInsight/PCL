@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Association.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Association.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -122,7 +122,7 @@ Association<T1, T2> Associate( const T1& x1, const T2& x2 )
 }
 
 /*!
- * Returns true if two associations, \a x1 and \a x2, are equal. Two
+ * Returns true iff two associations, \a x1 and \a x2, are equal. Two
  * associations are equal if their homolog members are equal.
  * \ingroup association_utilities
  */
@@ -133,7 +133,7 @@ bool operator ==( const Association<T1, T2>& x1, const Association<T1, T2>& x2 )
 }
 
 /*!
- * Returns true if an association \a x1 is less than other association \a x2.
+ * Returns true iff an association \a x1 is less than other association \a x2.
  * The comparison algorithm is as follows:
  *
  * \code
@@ -164,4 +164,4 @@ bool operator <( const Association<T1, T2>& x1, const Association<T1, T2>& x2 )
 #endif  // __PCL_Association_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Association.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Association.h - Released 2015/10/08 11:24:12 UTC

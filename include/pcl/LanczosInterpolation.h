@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/LanczosInterpolation.h - Released 2015/07/30 17:15:18 UTC
+// pcl/LanczosInterpolation.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -292,7 +292,7 @@ public:
    }
 
    /*!
-    * Returns true if the interpolation clamping feature has been enabled for
+    * Returns true iff the interpolation clamping feature has been enabled for
     * this object.
     *
     * \sa EnableClamping(), ClampingThreshold()
@@ -602,7 +602,7 @@ public:
    }
 
    /*!
-    * Returns true if the interpolation clamping feature has been enabled for
+    * Returns true iff the interpolation clamping feature has been enabled for
     * this object.
     *
     * \sa EnableClamping(), ClampingThreshold()
@@ -912,4 +912,4 @@ public:
 #endif   // __PCL_LanczosInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/LanczosInterpolation.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/LanczosInterpolation.h - Released 2015/10/08 11:24:12 UTC

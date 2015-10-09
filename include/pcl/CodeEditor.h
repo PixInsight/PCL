@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/CodeEditor.h - Released 2015/07/30 17:15:18 UTC
+// pcl/CodeEditor.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -274,7 +274,7 @@ public:
    void ClearText();
 
    /*!
-    * Returns true if this code editor is in <em>read-only mode</em>. A
+    * Returns true iff this code editor is in <em>read-only mode</em>. A
     * read-only editor does not allow any command that can modify its text
     * contents as a result of a direct user interaction. The text can only be
     * changed programmatically for a read-only code editor.
@@ -434,7 +434,7 @@ public:
    }
 
    /*!
-    * Returns true if this code editor is in <em>insert text mode</em>. Returns
+    * Returns true iff this code editor is in <em>insert text mode</em>. Returns
     * false if the editor is in <em>replace text mode</em>.
     *
     * In insert mode, newly generated text by direct user interaction is
@@ -464,7 +464,7 @@ public:
    }
 
    /*!
-    * Returns true if this code editor is in <em>block selection mode</em>;
+    * Returns true iff this code editor is in <em>block selection mode</em>;
     * false if it is in <em>line selection mode</em>.
     *
     * In block selection mode, the user can select rectangular areas of text
@@ -497,7 +497,7 @@ public:
    }
 
    /*!
-    * Returns true if this code editor is in <em>dynamic word wrap mode</em>.
+    * Returns true iff this code editor is in <em>dynamic word wrap mode</em>.
     *
     * In dynamic word wrap mode, long text lines extending beyond the visible
     * width of the editor's viewport are automatically truncated and continued
@@ -528,7 +528,7 @@ public:
    int RedoSteps() const;
 
    /*!
-    * Returns true if this code editor has a text selection defined.
+    * Returns true iff this code editor has a text selection defined.
     */
    bool HasSelection() const;
 
@@ -632,7 +632,7 @@ public:
     * If the cursor points to a bracket or parenthesis character, look for a
     * matching pair and move the cursor to the corresponding location.
     *
-    * Returns true if a matching pair could be found. If there is no bracket or
+    * Returns true iff a matching pair could be found. If there is no bracket or
     * parenthesis at the current cursor location, or if a matched pair couldn't
     * be found, this function returns false and the cursor is not moved.
     */
@@ -671,7 +671,7 @@ public:
     *                operation. Valid flags are enumerated in the pcl::FindMode
     *                namespace.
     *
-    * Returns true if a match was found.
+    * Returns true iff a match was found.
     */
    bool Find( const String& toFind, FindModes mode );
 
@@ -787,6 +787,8 @@ public:
     *
     * \param receiver   The control that will receive text updated events from
     *                   this code editor.
+    *
+    * \ingroup code_editor_event_handlers
     */
    void OnTextUpdated( editor_event_handler handler, Control& receiver );
 
@@ -801,6 +803,8 @@ public:
     *
     * \param receiver   The control that will receive cursor position updated
     *                   events from this code editor.
+    *
+    * \ingroup code_editor_event_handlers
     */
    void OnCursorPositionUpdated( cursor_event_handler handler, Control& receiver );
 
@@ -815,6 +819,8 @@ public:
     *
     * \param receiver   The control that will receive selection updated events
     *                   from this code editor.
+    *
+    * \ingroup code_editor_event_handlers
     */
    void OnSelectionUpdated( selection_event_handler handler, Control& receiver );
 
@@ -830,6 +836,8 @@ public:
     *
     * \param receiver   The control that will receive overwrite mode updated
     *                   events from this code editor.
+    *
+    * \ingroup code_editor_event_handlers
     */
    void OnOverwriteModeUpdated( state_event_handler handler, Control& receiver );
 
@@ -845,6 +853,8 @@ public:
     *
     * \param receiver   The control that will receive selection mode updated
     *                   events from this code editor.
+    *
+    * \ingroup code_editor_event_handlers
     */
    void OnSelectionModeUpdated( state_event_handler handler, Control& receiver );
 
@@ -859,6 +869,8 @@ public:
     *
     * \param receiver   The control that will receive dynamic word wrap mode
     *                   updated events from this code editor.
+    *
+    * \ingroup code_editor_event_handlers
     */
    void OnDynamicWordWrapModeUpdated( state_event_handler handler, Control& receiver );
 
@@ -893,4 +905,4 @@ private:
 #endif   // __PCL_CodeEditor_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/CodeEditor.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/CodeEditor.h - Released 2015/10/08 11:24:12 UTC

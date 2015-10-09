@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/SharedPixelData.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/SharedPixelData.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -55,10 +55,10 @@
 #include <pcl/api/APIException.h>
 #include <pcl/api/APIInterface.h>
 
-#include <new>
+#include <new> // std::bad_alloc
+#include <malloc.h> // _mm_malloc()/_aligned_malloc()
 
 #ifdef _MSC_VER
-#  include <malloc.h>
 #  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
 #endif
 
@@ -267,4 +267,4 @@ void SharedPixelData::SetSharedColor( color_space colorSpace, const RGBColorSyst
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SharedPixelData.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/SharedPixelData.cpp - Released 2015/10/08 11:24:19 UTC

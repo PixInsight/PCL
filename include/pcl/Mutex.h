@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Mutex.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Mutex.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -231,10 +231,7 @@ public:
     *             loops, the expensive wait operation can be avoided. The spin
     *             count must be >= 0. The default value is 512.
     */
-   Mutex( int spin = 512 ) noexcept :
-#ifndef __PCL_WINDOWS
-      m_lockState( 0 ),
-#endif
+   Mutex( int spin = 512 ) :
       m_spinCount( Max( 0, spin ) )
    {
 #ifdef __PCL_WINDOWS
@@ -251,7 +248,7 @@ public:
     * (mostly catastrophic) behavior. Always make sure that a mutex has been
     * unlocked before destroying it.
     */
-   virtual ~Mutex() noexcept
+   virtual ~Mutex()
    {
 #ifdef __PCL_WINDOWS
       DeleteCriticalSection( &criticalSection );
@@ -279,7 +276,7 @@ public:
     * number of spinning loops performed can be specified as a parameter to the
     * Mutex::Mutex( int ) constructor.
     */
-   void Lock() noexcept
+   void Lock()
    {
 #ifdef __PCL_WINDOWS
       EnterCriticalSection( &criticalSection );
@@ -287,7 +284,7 @@ public:
       for ( int spin = m_spinCount; ; )
       {
          // Is the mutex free? If so, get it now and don't look back!
-         if ( m_lockState == 0 && m_lockState.TestAndSet( 0, 1 ) )
+         if ( m_lockState.TestAndSet( 0, 1 ) )
          {
             (void)PThreadLockMutex();
             break;
@@ -298,7 +295,7 @@ public:
             // Either no spinning, or spinned to no avail...
             // Block thread until we can get this mutex. This is expensive.
             (void)PThreadLockMutex();
-            (void)m_lockState.FetchAndStore( 1 );
+            m_lockState.Store( 1 );
             break;
          }
       }
@@ -310,12 +307,12 @@ public:
     *
     * See the Lock() documentation for more information.
     */
-   void Unlock() noexcept
+   void Unlock()
    {
 #ifdef __PCL_WINDOWS
       LeaveCriticalSection( &criticalSection );
 #else
-      (void)m_lockState.FetchAndStore( 0 );
+      m_lockState.Store( 0 );
       (void)PThreadUnlockMutex();
 #endif
    }
@@ -347,7 +344,7 @@ public:
     * mutex.Unlock();
     * \endcode
     */
-   void operator ()( bool lock = true ) noexcept
+   void operator ()( bool lock = true )
    {
       if ( lock )
          Lock();
@@ -356,17 +353,19 @@ public:
    }
 
    /*!
-    * Attempts locking this %Mutex object. Returns true if this mutex has been
-    * successfully locked, false otherwise.
+    * Attempts locking this %Mutex object. Returns true iff this mutex has been
+    * successfully locked.
     *
     * Unlike Lock(), this function does not block execution of the calling
     * thread if this mutex cannot be locked.
     */
-   bool TryLock() noexcept
+   bool TryLock()
    {
 #ifdef __PCL_WINDOWS
       return TryEnterCriticalSection( &criticalSection ) != FALSE;
 #else
+      // ### N.B.: This code is performance and stability critical. DO NOT
+      // modify it unless you are absolutely sure of what you are doing.
       return m_lockState == 0 && m_lockState.TestAndSet( 0, 1 ) && PThreadLockMutex();
 #endif
    }
@@ -378,7 +377,7 @@ public:
     * construction. For information on mutex spin counts, refer to %Mutex's
     * constructor: Mutex::Mutex( int ).
     */
-   int SpinCount() const noexcept
+   int SpinCount() const
    {
       return m_spinCount;
    }
@@ -394,27 +393,27 @@ private:
    AtomicInt       m_lockState; // 0=unlocked, 1=acquired
    pthread_mutex_t m_mutex;
 
-   bool PThreadInitMutex() noexcept
+   bool PThreadInitMutex()
    {
       return PThreadCheckError( pthread_mutex_init( &m_mutex, 0 ), "pthread_mutex_init" );
    }
 
-   bool PThreadDestroyMutex() noexcept
+   bool PThreadDestroyMutex()
    {
       return PThreadCheckError( pthread_mutex_destroy( &m_mutex ), "pthread_mutex_destroy" );
    }
 
-   bool PThreadLockMutex() noexcept
+   bool PThreadLockMutex()
    {
       return PThreadCheckError( pthread_mutex_lock( &m_mutex ), "pthread_mutex_lock" );
    }
 
-   bool PThreadUnlockMutex() noexcept
+   bool PThreadUnlockMutex()
    {
       return PThreadCheckError( pthread_mutex_unlock( &m_mutex ), "pthread_mutex_unlock" );
    }
 
-   static bool PThreadCheckError( int errorCode, const char* funcName ) noexcept
+   static bool PThreadCheckError( int errorCode, const char* funcName )
    {
       if ( errorCode == 0 )
          return true;
@@ -438,4 +437,4 @@ private:
 #endif   // __PCL_Mutex_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Mutex.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Mutex.h - Released 2015/10/08 11:24:12 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ScrollBox.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ScrollBox.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -96,13 +96,13 @@ public:
    }
 
    /*!
-    * Returns true if the horizontal scroll bar is currently visible on this
+    * Returns true iff the horizontal scroll bar is currently visible on this
     * scroll box.
     */
    bool IsHorizontalScrollBarVisible() const;
 
    /*!
-    * Returns true if the vertical scroll bar is currently visible on this
+    * Returns true iff the vertical scroll bar is currently visible on this
     * scroll box.
     */
    bool IsVerticalScrollBarVisible() const;
@@ -171,7 +171,7 @@ public:
    }
 
    /*!
-    * Returns true if the <em>automatic scroll mode</em> is enabled for the
+    * Returns true iff the <em>automatic scroll mode</em> is enabled for the
     * horizontal scroll bar.
     *
     * In automatic scroll mode, scroll bars are automatically shown or hidden
@@ -181,7 +181,7 @@ public:
    bool IsHorizontalAutoScrollEnabled() const;
 
    /*!
-    * Returns true if the <em>automatic scroll mode</em> is enabled for the
+    * Returns true iff the <em>automatic scroll mode</em> is enabled for the
     * vertical scroll bar.
     *
     * In automatic scroll mode, scroll bars are automatically shown or hidden
@@ -423,13 +423,13 @@ public:
    }
 
    /*!
-    * Returns true if the <em>automatic tracking mode</em> is enabled for the
+    * Returns true iff the <em>automatic tracking mode</em> is enabled for the
     * horizontal scroll bar of this scroll box control.
     */
    bool IsHorizontalTrackingEnabled() const;
 
    /*!
-    * Returns true if the <em>automatic tracking mode</em> is enabled for the
+    * Returns true iff the <em>automatic tracking mode</em> is enabled for the
     * vertical scroll bar of this scroll box control.
     */
    bool IsVerticalTrackingEnabled() const;
@@ -582,6 +582,8 @@ public:
     *
     * \param receiver   The control that will receive horizontal scroll
     *                   position events from this scroll box.
+    *
+    * \ingroup scroll_box_event_handlers
     */
    void OnHorizontalScrollPosUpdated( pos_event_handler handler, Control& receiver );
 
@@ -593,6 +595,8 @@ public:
     *
     * \param receiver   The control that will receive vertical scroll
     *                   position events from this scroll box.
+    *
+    * \ingroup scroll_box_event_handlers
     */
    void OnVerticalScrollPosUpdated( pos_event_handler handler, Control& receiver );
 
@@ -604,6 +608,8 @@ public:
     *
     * \param receiver   The control that will receive horizontal scroll
     *                   range events from this scroll box.
+    *
+    * \ingroup scroll_box_event_handlers
     */
    void OnHorizontalScrollRangeUpdated( range_event_handler handler, Control& receiver );
 
@@ -615,6 +621,8 @@ public:
     *
     * \param receiver   The control that will receive vertical scroll
     *                   range events from this scroll box.
+    *
+    * \ingroup scroll_box_event_handlers
     */
    void OnVerticalScrollRangeUpdated( range_event_handler handler, Control& receiver );
 
@@ -660,4 +668,4 @@ protected:
 #endif   // __PCL_ScrollBox_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ScrollBox.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ScrollBox.h - Released 2015/10/08 11:24:12 UTC

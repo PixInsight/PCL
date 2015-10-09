@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ThresholdedTransformation.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ThresholdedTransformation.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -114,7 +114,7 @@ public:
    }
 
    /*!
-    * Returns true if this transformation is currently thresholded.
+    * Returns true iff this transformation is currently thresholded.
     *
     * The transformation is thresholded when either threshold (low or high) is
     * nonzero. When both thresholds are zero, the transformation applies no
@@ -175,4 +175,4 @@ private:
 #endif   // __PCL_ThresholdedTransformation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ThresholdedTransformation.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ThresholdedTransformation.h - Released 2015/10/08 11:24:12 UTC

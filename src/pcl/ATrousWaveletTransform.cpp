@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ATrousWaveletTransform.cpp - Released 2015/07/30 17:15:31 UTC
+// pcl/ATrousWaveletTransform.cpp - Released 2015/10/08 11:24:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -74,27 +74,27 @@ public:
       if ( T.m_scalingFunction.IsSeparable() )
       {
          SeparableConvolution C( *T.m_scalingFunction.separableFilter );
-         C.EnableParallelProcessing( T.m_parallel, T.m_maxProcessors );
          Apply( image, T, C );
       }
       else
       {
          Convolution C( *T.m_scalingFunction.kernelFilter );
-         C.EnableParallelProcessing( T.m_parallel, T.m_maxProcessors );
          Apply( image, T, C );
       }
    }
 
 private:
 
-   template <class P> static
-   void Apply( const GenericImage<P>& image, ATrousWaveletTransform& T, InterlacedTransformation& C )
+   template <class P, class Cn> static
+   void Apply( const GenericImage<P>& image, ATrousWaveletTransform& T, Cn& C )
    {
       bool statusInitialized = false;
       StatusMonitor& status = (StatusMonitor&)image.Status();
 
       try
       {
+         C.EnableParallelProcessing( T.m_parallel, T.m_maxProcessors );
+
          if ( status.IsInitializationEnabled() )
          {
             status.Initialize( "Starlet transform", image.NumberOfSelectedSamples()*T.m_numberOfLayers );
@@ -540,4 +540,4 @@ void ATrousWaveletTransform::ValidateScalingFunction() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ATrousWaveletTransform.cpp - Released 2015/07/30 17:15:31 UTC
+// EOF pcl/ATrousWaveletTransform.cpp - Released 2015/10/08 11:24:19 UTC

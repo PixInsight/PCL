@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// Standard ColorCalibration Process Module Version 01.02.00.0189
+// Standard ColorCalibration Process Module Version 01.02.00.0197
 // ----------------------------------------------------------------------------
-// ColorCalibrationProcess.cpp - Released 2015/07/31 11:49:48 UTC
+// ColorCalibrationProcess.cpp - Released 2015/10/08 11:24:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
@@ -269,4 +269,4 @@ int ColorCalibrationProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ColorCalibrationProcess.cpp - Released 2015/07/31 11:49:48 UTC
+// EOF ColorCalibrationProcess.cpp - Released 2015/10/08 11:24:39 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/SharedPixelData.h - Released 2015/07/30 17:15:18 UTC
+// pcl/SharedPixelData.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -177,7 +177,7 @@ public:
    }
 
    /*!
-    * Returns true if this object represents the same shared image as another
+    * Returns true iff this object represents the same shared image as another
     * object \a x, or if both objects represent local images.
     */
    bool operator ==( const SharedPixelData& x ) const
@@ -205,7 +205,7 @@ public:
    }
 
    /*!
-    * Returns true if the shared image represented by this object is not
+    * Returns true iff the shared image represented by this object is not
     * uniquely referenced, i.e. if there exist other %SharedPixelData objects
     * representing the same shared image. Returns false if the shared image is
     * only referenced by this object, or if this object represents a local
@@ -214,7 +214,7 @@ public:
    bool IsAliased() const;
 
    /*!
-    * Returns true if this object is the owner of the represented shared image.
+    * Returns true iff this object is the owner of the represented shared image.
     * Returns false if this object does not own the shared image, or if this
     * object does not represent a shared image.
     */
@@ -251,4 +251,4 @@ protected:
 #endif   // __PCL_SharedPixelData_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SharedPixelData.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/SharedPixelData.h - Released 2015/10/08 11:24:12 UTC

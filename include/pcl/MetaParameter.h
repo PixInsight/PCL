@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/MetaParameter.h - Released 2015/07/30 17:15:18 UTC
+// pcl/MetaParameter.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -174,7 +174,7 @@ public:
    }
 
    /*!
-    * Returns true if actual process parameters represented by this
+    * Returns true iff actual process parameters represented by this
     * metaparameter require <em>explicit unlock calls</em>.
     *
     * An explicit unlock is a call to ProcessImplementation::UnlockParameter(),
@@ -190,7 +190,7 @@ public:
    }
 
    /*!
-    * Returns true if actual process parameters represented by this
+    * Returns true iff actual process parameters represented by this
     * metaparameter require <em>explicit validation</em>.
     *
     * An explicit validation occurs when the PixInsight Core application
@@ -230,7 +230,7 @@ public:
    }
 
    /*!
-    * Returns true if the process parameter represented by this metaparameter
+    * Returns true iff the process parameter represented by this metaparameter
     * is required to build new process instances. Returns false if a default
     * value can be valid for the process parameter when an actual value is not
     * available.
@@ -318,7 +318,7 @@ public:
    }
 
    /*!
-    * Returns true if this metaparameter represents a numeric process
+    * Returns true iff this metaparameter represents a numeric process
     * parameter. Numeric process parameters are represented as subclasses of
     * MetaNumeric.
     */
@@ -328,7 +328,7 @@ public:
    }
 
    /*!
-    * Returns true if this metaparameter represents a Boolean process
+    * Returns true iff this metaparameter represents a Boolean process
     * parameter. Boolean process parameters are represented as subclasses of
     * MetaBoolean.
     */
@@ -338,7 +338,7 @@ public:
    }
 
    /*!
-    * Returns true if this metaparameter represents an enumerated process
+    * Returns true iff this metaparameter represents an enumerated process
     * parameter. Enumerated process parameters are represented as subclasses of
     * MetaEnumeration.
     */
@@ -348,7 +348,7 @@ public:
    }
 
    /*!
-    * Returns true if this metaparameter represents a variable-length process
+    * Returns true iff this metaparameter represents a variable-length process
     * parameter. Variable-length process parameters are represented as
     * subclasses of MetaVariableLengthParameter.
     */
@@ -358,7 +358,7 @@ public:
    }
 
    /*!
-    * Returns true if this metaparameter represents a string process parameter.
+    * Returns true iff this metaparameter represents a string process parameter.
     * %String process parameters are represented as subclasses of MetaString.
     */
    virtual bool IsString() const
@@ -367,7 +367,7 @@ public:
    }
 
    /*!
-    * Returns true if this metaparameter represents a table process parameter.
+    * Returns true iff this metaparameter represents a table process parameter.
     * Table process parameters are represented as subclasses of MetaTable.
     */
    virtual bool IsTable() const
@@ -376,7 +376,7 @@ public:
    }
 
    /*!
-    * Returns true if this metaparameter represents a block process parameter.
+    * Returns true iff this metaparameter represents a block process parameter.
     * Block process parameters are represented as subclasses of MetaBlock.
     */
    virtual bool IsBlock() const
@@ -463,7 +463,7 @@ public:
    virtual IsoString Id() const = 0;
 
    /*!
-    * Returns true if this metaparameter represents a real (floating-point)
+    * Returns true iff this metaparameter represents a real (floating-point)
     * process parameter. Real process parameters are represented as subclasses
     * of MetaReal.
     */
@@ -473,7 +473,7 @@ public:
    }
 
    /*!
-    * Returns true if this metaparameter represents an integer process
+    * Returns true iff this metaparameter represents an integer process
     * parameter. Integer process parameters are represented as subclasses of
     * MetaReal.
     */
@@ -1164,7 +1164,7 @@ public:
    }
 
    /*!
-    * Returns true if actual values of this real process parameter must be
+    * Returns true iff actual values of this real process parameter must be
     * represented using scientific notation (printf's \e e-format).
     *
     * If this function returns false, actual parameter values of this parameter
@@ -1371,7 +1371,7 @@ private:
 /*!
  * \class pcl_bool
  * \brief A first-class data type that can be safely used to implement Boolean
- *        process parameters.
+ *        process parameters on all supported platforms.
  *
  * %pcl_bool is the \e only recommended way to implement process parameters
  * that are formally described by the MetaBoolean class. %Process parameters
@@ -1396,7 +1396,7 @@ public:
 
    /*!
     * Copy constructor. Constructs a %pcl_bool instance whose logical state is
-    * true if and only if the specified \a value is nonzero; false otherwise.
+    * true if and only if the specified \a value is nonzero.
     * The T template argument type must have integer equality comparison
     * semantics.
     */
@@ -1406,7 +1406,7 @@ public:
 
    /*!
     * Assignment operator. Sets the logical state of this %pcl_bool instance to
-    * true if and only if the specified \a value is nonzero; false otherwise.
+    * true if and only if the specified \a value is nonzero.
     * The T template argument type must have integer equality comparison
     * semantics.
     */
@@ -1601,8 +1601,8 @@ private:
 };
 
 /*!
- * Defines an integer type that can be safely used to implement enumerated
- * process parameters on all supported platforms.
+ * \brief An integer type that can be safely used to implement enumerated
+ *        process parameters on all supported platforms.
  *
  * %pcl_enum is the \e only recommended way to implement process parameters
  * that are formally described by the MetaEnumeration class. %Process
@@ -1967,4 +1967,4 @@ private:
 #endif   // __PCL_MetaParameter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaParameter.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/MetaParameter.h - Released 2015/10/08 11:24:12 UTC

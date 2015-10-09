@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// Standard GradientDomain Process Module Version 00.06.04.0117
+// Standard GradientDomain Process Module Version 00.06.04.0125
 // ----------------------------------------------------------------------------
-// GradientsMergeMosaicInstance.cpp - Released 2015/07/31 11:49:49 UTC
+// GradientsMergeMosaicInstance.cpp - Released 2015/10/08 11:24:40 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard GradientDomain PixInsight module.
 //
@@ -203,4 +203,4 @@ size_type GradientsMergeMosaicInstance::ParameterLength( const MetaParameter* p,
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF GradientsMergeMosaicInstance.cpp - Released 2015/07/31 11:49:49 UTC
+// EOF GradientsMergeMosaicInstance.cpp - Released 2015/10/08 11:24:40 UTC

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.06.0280
+// Standard Global Process Module Version 01.02.06.0288
 // ----------------------------------------------------------------------------
-// ColorManagementSetupProcess.cpp - Released 2015/07/31 11:49:48 UTC
+// ColorManagementSetupProcess.cpp - Released 2015/10/08 11:24:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -86,6 +86,7 @@ ColorManagementSetupProcess::ColorManagementSetupProcess() : MetaProcess()
    new CMSOnMissingProfile( this );
    new CMSDefaultEmbedProfilesInRGBImages( this );
    new CMSDefaultEmbedProfilesInGrayscaleImages( this );
+   new CMSUseLowResolutionCLUTs( this );
    new CMSProofingProfile( this );
    new CMSProofingIntent( this );
    new CMSUseProofingBPC( this );
@@ -105,7 +106,7 @@ IsoString ColorManagementSetupProcess::Id() const
 
 IsoString ColorManagementSetupProcess::Category() const
 {
-   return "Global";
+   return "Global,ColorManagement";
 }
 
 // ----------------------------------------------------------------------------
@@ -427,4 +428,4 @@ int ColorManagementSetupProcess::ProcessCommandLine( const StringList& argv ) co
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ColorManagementSetupProcess.cpp - Released 2015/07/31 11:49:48 UTC
+// EOF ColorManagementSetupProcess.cpp - Released 2015/10/08 11:24:39 UTC

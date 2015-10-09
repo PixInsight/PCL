@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// Standard CometAlignment Process Module Version 01.02.06.0089
+// Standard CometAlignment Process Module Version 01.02.06.0097
 // ----------------------------------------------------------------------------
-// CometAlignmentInstance.cpp - Released 2015/07/31 11:49:49 UTC
+// CometAlignmentInstance.cpp - Released 2015/10/08 11:24:40 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -448,9 +448,9 @@ public:
       return !H.IsEmpty();
    }
 
-   void SetUnique()
+   void EnsureUnique()
    {
-      H.SetUnique();
+      H.EnsureUnique();
    }
 
 private:
@@ -1752,4 +1752,4 @@ size_type CometAlignmentInstance::ParameterLength (const MetaParameter* p, size_
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CometAlignmentInstance.cpp - Released 2015/07/31 11:49:49 UTC
+// EOF CometAlignmentInstance.cpp - Released 2015/10/08 11:24:40 UTC

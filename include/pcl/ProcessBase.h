@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/ProcessBase.h - Released 2015/07/30 17:15:18 UTC
+// pcl/ProcessBase.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -184,33 +184,33 @@ public:
    virtual Bitmap SmallIcon() const = 0;
 
    /*!
-    * Returns true if this process is able to process views.
+    * Returns true iff this process is able to process views.
     */
    virtual bool CanProcessViews() const = 0;
 
    /*!
-    * Returns true if this process can be executed globally.
+    * Returns true iff this process can be executed globally.
     */
    virtual bool CanProcessGlobal() const = 0;
 
    /*!
-    * Returns true if this process is able to process standalone images.
+    * Returns true iff this process is able to process standalone images.
     */
    virtual bool CanProcessImages() const = 0;
 
    /*!
-    * Returns true if this process is able to process specific command-line
+    * Returns true iff this process is able to process specific command-line
     * invocations.
     */
    virtual bool CanProcessCommandLines() const = 0;
 
    /*!
-    * Returns true if this process is able to edit specific preferences.
+    * Returns true iff this process is able to edit specific preferences.
     */
    virtual bool CanEditPreferences() const = 0;
 
    /*!
-    * Returns true if this process is able to open a documentation browser with
+    * Returns true iff this process is able to open a documentation browser with
     * specific documentation contents.
     *
     * Starting from version 1.7, the PixInsight Core application implements an
@@ -221,7 +221,7 @@ public:
    virtual bool CanBrowseDocumentation() const = 0;
 
    /*!
-    * Returns true if the instances of this process are \e assignable.
+    * Returns true iff the instances of this process are \e assignable.
     *
     * Assignable processes allow copying the parameters of one instance (and
     * possibly more module-dependent data) to another.
@@ -229,7 +229,7 @@ public:
    virtual bool IsAssignable() const = 0;
 
    /*!
-    * Returns true if the instances of this process require <em>special
+    * Returns true iff the instances of this process require <em>special
     * initialization</em>.
     *
     * Special initialization takes place just after instance creation.
@@ -242,7 +242,7 @@ public:
    virtual bool NeedsInitialization() const = 0;
 
    /*!
-    * Returns true if the instances of this process require <em>special
+    * Returns true iff the instances of this process require <em>special
     * validation</em>.
     *
     * Some processes may require validation of their instances just before they
@@ -253,7 +253,7 @@ public:
    virtual bool NeedsValidation() const = 0;
 
    /*!
-    * Returns true if the instances of this process prefer execution in the
+    * Returns true iff the instances of this process prefer execution in the
     * global context, instead of being executed on views.
     *
     * Note that the option indicated by this function is just a \e hint to the
@@ -280,7 +280,7 @@ public:
 
    /*!
     * Handles a request to browse documentation specific for this process.
-    * Returns true if the documentation was loaded successfully.
+    * Returns true iff the documentation was loaded successfully.
     *
     * Since version 1.7 of the PixInsight Core application, the integrated
     * documentation system works in a completely automatic and standardized way
@@ -303,4 +303,4 @@ public:
 #endif   // __PCL_ProcessBase_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ProcessBase.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/ProcessBase.h - Released 2015/10/08 11:24:12 UTC

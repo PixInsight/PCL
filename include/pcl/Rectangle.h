@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/Rectangle.h - Released 2015/07/30 17:15:18 UTC
+// pcl/Rectangle.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -123,7 +123,7 @@ typedef Flags<Clip::mask_type>   ClipFlags;
  */
 
 /*!
- * Returns true if a set of rectangle coordinates correspond to a point.
+ * Returns true iff a set of rectangle coordinates correspond to a point.
  *
  * \param x0,y0   Upper left corner coordinates.
  * \param x1,y1   Lower right corner coordinates.
@@ -140,7 +140,7 @@ bool IsPoint( T x0, T y0, T x1, T y1 )
 }
 
 /*!
- * Returns true if a set of rectangle coordinates define a line.
+ * Returns true iff a set of rectangle coordinates define a line.
  *
  * \param x0,y0   Upper left corner coordinates.
  * \param x1,y1   Lower right corner coordinates.
@@ -158,7 +158,7 @@ bool IsLine( T x0, T y0, T x1, T y1 )
 }
 
 /*!
- * Returns true if a set of rectangle coordinates define a horizontal line.
+ * Returns true iff a set of rectangle coordinates define a horizontal line.
  *
  * \param x0,y0   Upper left corner coordinates.
  * \param x1,y1   Lower right corner coordinates.
@@ -175,7 +175,7 @@ bool IsHorizontalLine( T x0, T y0, T x1, T y1 )
 }
 
 /*!
- * Returns true if a set of rectangle coordinates define a vertical line.
+ * Returns true iff a set of rectangle coordinates define a vertical line.
  *
  * \param x0,y0   Upper left corner coordinates.
  * \param x1,y1   Lower right corner coordinates.
@@ -192,7 +192,7 @@ bool IsVerticalLine( T x0, T y0, T x1, T y1 )
 }
 
 /*!
- * Returns true if a set of rectangle coordinates define a point or a line.
+ * Returns true iff a set of rectangle coordinates define a point or a line.
  *
  * \param x0,y0   Upper left corner coordinates.
  * \param x1,y1   Lower right corner coordinates.
@@ -209,7 +209,7 @@ bool IsPointOrLine( T x0, T y0, T x1, T y1 )
 }
 
 /*!
- * Returns true if a set of rectangle coordinates define a rectangle.
+ * Returns true iff a set of rectangle coordinates define a rectangle.
  *
  * \param x0,y0   Upper left corner coordinates.
  * \param x1,y1   Lower right corner coordinates.
@@ -226,7 +226,7 @@ bool IsRect( T x0, T y0, T x1, T y1 )
 }
 
 /*!
- * Returns true if a set of rectangle coordinates define a normal rectangle.
+ * Returns true iff a set of rectangle coordinates define a normal rectangle.
  *
  * \param x0,y0   Upper left corner coordinates.
  * \param x1,y1   Lower right corner coordinates.
@@ -242,7 +242,7 @@ bool IsNormalRect( T x0, T y0, T x1, T y1 )
 }
 
 /*!
- * Returns true if a set of rectangle coordinates define an ordered rectangle.
+ * Returns true iff a set of rectangle coordinates define an ordered rectangle.
  *
  * \param x0,y0   Upper left corner coordinates.
  * \param x1,y1   Lower right corner coordinates.
@@ -616,7 +616,7 @@ public:
    }
 
    /*!
-    * Returns true if this rectangle defines a point in the plane.
+    * Returns true iff this rectangle defines a point in the plane.
     */
    bool IsPoint() const
    {
@@ -624,7 +624,7 @@ public:
    }
 
    /*!
-    * Returns true if this rectangle defines a line.
+    * Returns true iff this rectangle defines a line.
     */
    bool IsLine() const
    {
@@ -632,7 +632,7 @@ public:
    }
 
    /*!
-    * Returns true if this rectangle defines a horizontal line.
+    * Returns true iff this rectangle defines a horizontal line.
     */
    bool IsHorizontalLine() const
    {
@@ -640,7 +640,7 @@ public:
    }
 
    /*!
-    * Returns true if this rectangle defines a vertical line.
+    * Returns true iff this rectangle defines a vertical line.
     */
    bool IsVerticalLine() const
    {
@@ -648,7 +648,7 @@ public:
    }
 
    /*!
-    * Returns true if this rectangle defines a point or a line.
+    * Returns true iff this rectangle defines a point or a line.
     */
    bool IsPointOrLine() const
    {
@@ -656,7 +656,7 @@ public:
    }
 
    /*!
-    * Returns true if the coordinates of this object define a rectangle,
+    * Returns true iff the coordinates of this object define a rectangle,
     * instead of a point or a line.
     */
    bool IsRect() const
@@ -665,7 +665,7 @@ public:
    }
 
    /*!
-    * Returns true if this is a normal rectangle.
+    * Returns true iff this is a normal rectangle.
     */
    bool IsNormal() const
    {
@@ -673,7 +673,7 @@ public:
    }
 
    /*!
-    * Returns true if this is an ordered rectangle.
+    * Returns true iff this is an ordered rectangle.
     */
    bool IsOrdered() const
    {
@@ -750,7 +750,7 @@ public:
    }
 
    /*!
-    * Returns true if this rectangle includes a point specified by its
+    * Returns true iff this rectangle includes a point specified by its
     * separate \a x and \a y coordinates.
     */
    template <typename T1>
@@ -761,7 +761,7 @@ public:
    }
 
    /*!
-    * Returns true if this rectangle includes a point \a p.
+    * Returns true iff this rectangle includes a point \a p.
     */
    template <typename T1>
    bool Includes( const pcl::GenericPoint<T1>& p ) const
@@ -770,7 +770,7 @@ public:
    }
 
    /*!
-    * Returns true if this rectangle completely includes a rectangle \a r.
+    * Returns true iff this rectangle completely includes a rectangle \a r.
     */
    template <typename T1>
    bool Includes( const GenericRectangle<T1>& r ) const
@@ -791,7 +791,7 @@ public:
 #endif
 
    /*!
-    * Returns true if this rectangle intersects a rectangle specified by its
+    * Returns true iff this rectangle intersects a rectangle specified by its
     * individual coordinates.
     *
     * \param left,top      Upper left corner coordinates of a rectangle to test
@@ -809,7 +809,7 @@ public:
    }
 
    /*!
-    * Returns true if this rectangle intersects a rectangle \a r.
+    * Returns true iff this rectangle intersects a rectangle \a r.
     */
    template <typename T1>
    bool Intersects( const pcl::GenericRectangle<T1>& r ) const
@@ -2046,7 +2046,7 @@ public:
  */
 
 /*!
- * Returns true if two rectangles \a r1 and \a r2 are equal. Two rectangles are
+ * Returns true iff two rectangles \a r1 and \a r2 are equal. Two rectangles are
  * equal if their homonym coordinates are equal.
  * \ingroup rect_functions_2d
  */
@@ -2057,7 +2057,7 @@ bool operator ==( const GenericRectangle<T1>& r1, const GenericRectangle<T2>& r2
 }
 
 /*!
- * Returns true if a rectangle \a r1 is equal to a scalar \a d2. A rectangle is
+ * Returns true iff a rectangle \a r1 is equal to a scalar \a d2. A rectangle is
  * equal to a scalar \a d if the four coordinates of \a r are equal to \a d.
  * \ingroup rect_functions_2d
  */
@@ -2068,7 +2068,7 @@ bool operator ==( const GenericRectangle<T>& r1, T d2 )
 }
 
 /*!
- * Returns true if a scalar \a d1 is equal to a rectangle \a r2. A scalar \a d
+ * Returns true iff a scalar \a d1 is equal to a rectangle \a r2. A scalar \a d
  * is equal to a rectangle \a r if the four coordinates of \a r are equal to
  * \a d.
  * \ingroup rect_functions_2d
@@ -2080,7 +2080,7 @@ bool operator ==( T d1, const GenericRectangle<T>& r2 )
 }
 
 /*!
- * Returns true if a rectangle \a r1 is less than another rectangle \a r2.
+ * Returns true iff a rectangle \a r1 is less than another rectangle \a r2.
  * For rectangle comparisons, vertical coordinates have precedence over
  * horizontal coordinates.
  * \ingroup rect_functions_2d
@@ -2684,4 +2684,4 @@ typedef F64Rect                     DRect;
 #endif  // __PCL_Rectangle_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Rectangle.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/Rectangle.h - Released 2015/10/08 11:24:12 UTC

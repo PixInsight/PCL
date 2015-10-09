@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0749
+// /_/     \____//_____/   PCL 02.01.00.0763
 // ----------------------------------------------------------------------------
-// pcl/MetaModule.h - Released 2015/07/30 17:15:18 UTC
+// pcl/MetaModule.h - Released 2015/10/08 11:24:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -429,7 +429,7 @@ public:
    }
 
    /*!
-    * Returns true if this module has been successfully installed. Only when
+    * Returns true iff this module has been successfully installed. Only when
     * the module has been installed, communication with the PixInsight core
     * application is fully operative.
     */
@@ -771,4 +771,4 @@ namespace InstallMode
 #endif   // __PCL_MetaModule_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaModule.h - Released 2015/07/30 17:15:18 UTC
+// EOF pcl/MetaModule.h - Released 2015/10/08 11:24:12 UTC

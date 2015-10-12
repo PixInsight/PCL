@@ -172,6 +172,7 @@ public:
       m_transform( x.m_transform ),
       m_layerEnabled( x.m_layerEnabled )
    {
+      m_transform.EnsureUnique();
    }
 
    /*!
@@ -207,6 +208,7 @@ public:
       m_parallel       = x.m_parallel;
       m_maxProcessors  = x.m_maxProcessors;
       m_transform      = x.m_transform;
+      m_transform.EnsureUnique();
       m_layerEnabled   = x.m_layerEnabled;
       return *this;
    }

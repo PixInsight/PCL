@@ -549,19 +549,17 @@ bool ColorCalibrationInstance::ExecuteOn( View& view )
          v.Status().Initialize( "Calculating color correction", v.NumberOfSelectedPixels() );
 
          DVector white = WhiteReferenceVector( v, m, whiteLow, whiteHigh );
-
          for ( int c = 0; c < 3; ++c )
+         {
             if ( 1 + white[c] == 1 )
                throw Error( String().Format( "No significant white reference pixels for channel #%d: ", c ) + whiteView.FullId() );
+            white[c] = Abs( white[c] - bg[c] );
+         }
 
          console.WriteLn( String().Format( "<end><cbr>* White reference:\n"
                                            "Wr : %.5e\n"
                                            "Wg : %.5e\n"
                                            "Wb : %.5e", white[0], white[1], white[2] ) );
-         if ( !structureDetection )
-            for ( int c = 0; c < 3; ++c )
-               white[c] = Abs( white[c] - bg[c] );
-
          int rc = (white[0] > white[1]) ? ((white[0] > white[2]) ? 0 : 2) : ((white[1] > white[2]) ? 1 : 2);
          for ( int c = 0; c < 3; ++c )
          {
@@ -570,7 +568,6 @@ bool ColorCalibrationInstance::ExecuteOn( View& view )
             else
                kw[c] = white[rc]/white[c];
          }
-
          console.WriteLn( String().Format( "<end><cbr>* Color calibration factors:\n"
                                            "Kr : %7.3f\n"
                                            "Kg : %7.3f\n"

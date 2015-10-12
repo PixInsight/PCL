@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     02
 #define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0197
+#define MODULE_VERSION_BUILD     0198
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2015
 #define MODULE_RELEASE_MONTH     10
-#define MODULE_RELEASE_DAY       8
+#define MODULE_RELEASE_DAY       12
 
 #include "ColorCalibrationModule.h"
 #include "BackgroundNeutralizationProcess.h"

@@ -4,7 +4,7 @@
 # PixInsight Makefile Generator Script v1.96
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Tue, 13 Oct 2015 15:12:28 GMT
+# Automatically generated on Tue, 17 Nov 2015 07:24:13 GMT
 # Project id ...... INDIClient
 # Project type .... Module
 # Platform ........ Windows/vc12
@@ -233,9 +233,13 @@
     <ClCompile Include="..\..\INDIDeviceControllerInstance.cpp"/>
     <ClCompile Include="..\..\INDIDeviceControllerInterface.cpp"/>
     <ClCompile Include="..\..\INDIDeviceControllerProcess.cpp"/>
+    <ClCompile Include="..\..\INDIMountInstance.cpp"/>
+    <ClCompile Include="..\..\INDIMountInterface.cpp"/>
+    <ClCompile Include="..\..\INDIMountProcess.cpp"/>
     <ClCompile Include="..\..\INDIParameters.cpp"/>
     <ClCompile Include="..\..\INDIPropertyBuilder.cpp"/>
     <ClCompile Include="..\..\PropertyNode.cpp"/>
+    <ClCompile Include="..\..\SkyMap.cpp"/>
     <ClCompile Include="..\..\INDI\BaseClientImpl.cpp"/>
     <ClCompile Include="..\..\INDI\base64.c"/>
     <ClCompile Include="..\..\INDI\basedevice.cpp"/>
@@ -254,10 +258,14 @@
     <ClInclude Include="..\..\INDIDeviceControllerInstance.h"/>
     <ClInclude Include="..\..\INDIDeviceControllerInterface.h"/>
     <ClInclude Include="..\..\INDIDeviceControllerProcess.h"/>
+    <ClInclude Include="..\..\INDIMountInstance.h"/>
+    <ClInclude Include="..\..\INDIMountInterface.h"/>
+    <ClInclude Include="..\..\INDIMountProcess.h"/>
     <ClInclude Include="..\..\INDIParamListTypes.h"/>
     <ClInclude Include="..\..\INDIParameters.h"/>
     <ClInclude Include="..\..\INDIPropertyBuilder.h"/>
     <ClInclude Include="..\..\PropertyNode.h"/>
+    <ClInclude Include="..\..\SkyMap.h"/>
     <ClInclude Include="..\..\error.h"/>
     <ClInclude Include="..\..\INDI\BaseClient.h"/>
     <ClInclude Include="..\..\INDI\BaseClientImpl.h"/>

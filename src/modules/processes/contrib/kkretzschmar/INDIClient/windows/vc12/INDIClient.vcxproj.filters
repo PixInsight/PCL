@@ -4,7 +4,7 @@
 # PixInsight Makefile Generator Script v1.96
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Tue, 13 Oct 2015 15:12:28 GMT
+# Automatically generated on Tue, 17 Nov 2015 07:24:13 GMT
 # Project id ...... INDIClient
 # Project type .... Module
 # Platform ........ Windows/vc12
@@ -47,6 +47,15 @@
     <ClCompile Include="..\..\INDIDeviceControllerProcess.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\INDIMountInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\INDIMountInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\INDIMountProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\INDIParameters.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
@@ -54,6 +63,9 @@
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\PropertyNode.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SkyMap.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\INDI\BaseClientImpl.cpp">
@@ -106,6 +118,15 @@
     <ClInclude Include="..\..\INDIDeviceControllerProcess.h">
         <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\INDIMountInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\INDIMountInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\INDIMountProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\INDIParamListTypes.h">
         <Filter>Header Files</Filter>
     </ClInclude>
@@ -116,6 +137,9 @@
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\PropertyNode.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SkyMap.h">
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\error.h">

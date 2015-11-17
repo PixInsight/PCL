@@ -183,6 +183,11 @@ bool INDIDeviceControllerInstance::getPropertyFromKeyString(INDINewPropertyListI
 
 }
 
+bool INDIDeviceControllerInstance::sendNewPropertyVector(const NewPropertyListType& propVector,bool isAsynch){
+	p_newPropertyList.Append(propVector);
+	return sendNewProperty(isAsynch);
+}
+
 bool INDIDeviceControllerInstance::sendNewPropertyValue(const INDINewPropertyListItem& propItem,bool isAsynch){
 
 	p_newPropertyList.Append(propItem);
@@ -375,7 +380,7 @@ bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
 	return true;
 }
 
- bool INDIDeviceControllerInstance::getINDIPropertyItem(String device, String property, String element,INDIPropertyListItem& result ){
+ bool INDIDeviceControllerInstance::getINDIPropertyItem(String device, String property, String element,INDIPropertyListItem& result, bool formatted ){
 
 	for (pcl::Array<INDIPropertyListItem>::iterator iter=p_propertyList.Begin(); iter!=p_propertyList.End(); ++iter){
 
@@ -383,7 +388,7 @@ bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
 			result.Device=device;
 			result.Property=property;
 			result.Element=element;
-			if (iter->PropertyTypeStr==String("INDI_NUMBER")){
+			if (iter->PropertyTypeStr==String("INDI_NUMBER") && formatted){
 				result.PropertyValue=PropertyUtils::getFormattedNumber( iter->PropertyValue, IsoString( iter->PropertyNumberFormat ) );
 			} else {
 				result.PropertyValue=iter->PropertyValue;

@@ -301,6 +301,7 @@ public:
    friend class  DevicePropertiesDialog;
    friend class  INDIClient;
    friend class  CCDFrameInterface;
+   friend class  INDIMountInterface;
 };
 
 // ----------------------------------------------------------------------------

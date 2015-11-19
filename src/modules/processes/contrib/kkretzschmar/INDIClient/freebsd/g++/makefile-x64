@@ -2,7 +2,7 @@
 # PixInsight Makefile Generator Script v1.96
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Tue, 13 Oct 2015 15:12:28 GMT
+# Automatically generated on Tue, 17 Nov 2015 07:24:12 GMT
 # Project id ...... INDIClient
 # Project type .... Module
 # Platform ........ FreeBSD/g++
@@ -28,9 +28,13 @@ SRC_FILES= \
 ../../INDIDeviceControllerInstance.cpp \
 ../../INDIDeviceControllerInterface.cpp \
 ../../INDIDeviceControllerProcess.cpp \
+../../INDIMountInstance.cpp \
+../../INDIMountInterface.cpp \
+../../INDIMountProcess.cpp \
 ../../INDIParameters.cpp \
 ../../INDIPropertyBuilder.cpp \
 ../../PropertyNode.cpp \
+../../SkyMap.cpp \
 ../../INDI/BaseClientImpl.cpp \
 ../../INDI/base64.c \
 ../../INDI/basedevice.cpp \
@@ -52,9 +56,13 @@ OBJ_FILES= \
 ./x64/Release/INDIDeviceControllerInstance.o \
 ./x64/Release/INDIDeviceControllerInterface.o \
 ./x64/Release/INDIDeviceControllerProcess.o \
+./x64/Release/INDIMountInstance.o \
+./x64/Release/INDIMountInterface.o \
+./x64/Release/INDIMountProcess.o \
 ./x64/Release/INDIParameters.o \
 ./x64/Release/INDIPropertyBuilder.o \
 ./x64/Release/PropertyNode.o \
+./x64/Release/SkyMap.o \
 ./x64/Release/INDI/BaseClientImpl.o \
 ./x64/Release/INDI/base64.o \
 ./x64/Release/INDI/basedevice.o \
@@ -76,9 +84,13 @@ DEP_FILES= \
 ./x64/Release/INDIDeviceControllerInstance.d \
 ./x64/Release/INDIDeviceControllerInterface.d \
 ./x64/Release/INDIDeviceControllerProcess.d \
+./x64/Release/INDIMountInstance.d \
+./x64/Release/INDIMountInterface.d \
+./x64/Release/INDIMountProcess.d \
 ./x64/Release/INDIParameters.d \
 ./x64/Release/INDIPropertyBuilder.d \
 ./x64/Release/PropertyNode.d \
+./x64/Release/SkyMap.d \
 ./x64/Release/INDI/BaseClientImpl.d \
 ./x64/Release/INDI/base64.d \
 ./x64/Release/INDI/basedevice.d \

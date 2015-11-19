@@ -282,7 +282,7 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w )
    ExpNum_SpinBox.SetRange( 1, 1000 );
    ExpNum_SpinBox.SetFixedWidth( 10*emWidth );
    ExpNum_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&CCDFrameInterface::SpinValueUpdated, w );
-   ExpNum_SpinBox.Disable();
+   //ExpNum_SpinBox.Disable();
 
    ExpNum_Sizer.SetSpacing( 4 );
    ExpNum_Sizer.Add( ExpNum_Label );
@@ -529,7 +529,6 @@ void CCDFrameInterface::StartExposureButton_Click( Button& sender, bool checked 
          {
             while ( !instance.getImageDownloadedFlag() && !instance.getInternalAbortFlag() )
             {
-               Sleep( 1000 );
                ProcessEvents();
             }
             instance.setImageDownloadedFlag( false );
@@ -542,7 +541,6 @@ void CCDFrameInterface::StartExposureButton_Click( Button& sender, bool checked 
             do
             {
                instance.getINDIPropertyItem( m_Device, "CCD_EXPOSURE", "CCD_EXPOSURE_VALUE", ccdExposure );
-               Sleep( 1000 );
                ProcessEvents();
                serverExposureIsBusy = ccdExposure.PropertyState == IPS_BUSY ;
             }
@@ -551,7 +549,6 @@ void CCDFrameInterface::StartExposureButton_Click( Button& sender, bool checked 
             do
             {
                instance.getINDIPropertyItem( m_Device, "CCD_EXPOSURE", "CCD_EXPOSURE_VALUE", ccdExposure );
-               Sleep( 1000 );
                ProcessEvents();
             }
             while ( ccdExposure.PropertyState == IPS_BUSY && !instance.getInternalAbortFlag() );

@@ -6,7 +6,7 @@
 // ----------------------------------------------------------------------------
 // Standard INDIClient Process Module Version 01.00.02.0096
 // ----------------------------------------------------------------------------
-// INDIClientModule.cpp - Released 2015/10/13 15:55:45 UTC
+// INDIMountProcess.cpp - Released 2015/10/13 15:55:45 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -50,140 +50,123 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#define MODULE_VERSION_MAJOR     01
-#define MODULE_VERSION_MINOR     00
-#define MODULE_VERSION_REVISION  02
-#define MODULE_VERSION_BUILD     0096
-#define MODULE_VERSION_LANGUAGE  eng
-
-#define MODULE_RELEASE_YEAR      2015
-#define MODULE_RELEASE_MONTH     10
-#define MODULE_RELEASE_DAY       13
-
-#include "CCDFrameInterface.h"
-#include "CCDFrameProcess.h"
-#include "INDIDeviceControllerInterface.h"
-#include "INDIClientModule.h"
-#include "INDIDeviceControllerProcess.h"
 #include "INDIMountProcess.h"
 #include "INDIMountInterface.h"
+#include "INDIMountInstance.h"
+
+#include <pcl/Arguments.h>
+#include <pcl/Console.h>
+#include <pcl/Exception.h>
+#include <pcl/View.h>
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-INDIClientModule::INDIClientModule() : MetaModule()
+//#include "PixInsightINDIIcon.xpm"
+
+// ----------------------------------------------------------------------------
+
+INDIMountProcess* TheINDIMountProcess = 0;
+
+// ----------------------------------------------------------------------------
+
+INDIMountProcess::INDIMountProcess() : MetaProcess()
 {
+   TheINDIMountProcess = this;
 }
 
-const char* INDIClientModule::Version() const
+// ----------------------------------------------------------------------------
+
+IsoString INDIMountProcess::Id() const
 {
-   return PCL_MODULE_VERSION( MODULE_VERSION_MAJOR,
-                              MODULE_VERSION_MINOR,
-                              MODULE_VERSION_REVISION,
-                              MODULE_VERSION_BUILD,
-                              MODULE_VERSION_LANGUAGE );
+   return "INDIMount";
 }
 
-IsoString INDIClientModule::Name() const
+// ----------------------------------------------------------------------------
+
+IsoString INDIMountProcess::Category() const
 {
-   return "INDIClient";
+   return IsoString("INDI"); // No category
 }
 
-String INDIClientModule::Description() const
+// ----------------------------------------------------------------------------
+
+uint32 INDIMountProcess::Version() const
 {
-   return "PixInsight INDIClient Process Module"; // Replace with your own description
+   return 0x100; // required
 }
 
-String INDIClientModule::Company() const
+// ----------------------------------------------------------------------------
+
+String INDIMountProcess::Description() const
 {
-   return String(); // ### TODO ?
+   return
+   "<html>"
+   "<p>Control INDI Mount devices./p>"
+   "</html>";
 }
 
-String INDIClientModule::Author() const
+// ----------------------------------------------------------------------------
+
+const char** INDIMountProcess::IconImageXPM() const
 {
-   return "Klaus Kretzschmar";
+   return 0; // PixInsightINDIIcon_XPM; ---> put a nice icon here
 }
 
-String INDIClientModule::Copyright() const
+// ----------------------------------------------------------------------------
+
+bool INDIMountProcess::PrefersGlobalExecution() const
 {
-   return "Copyright (c) 2014-2015 Klaus Kretzschmar";
+	return true;
+}
+// ----------------------------------------------------------------------------
+
+ProcessInterface* INDIMountProcess::DefaultInterface() const
+{
+   return TheINDIMountInterface;
+}
+// ----------------------------------------------------------------------------
+
+ProcessImplementation* INDIMountProcess::Create() const
+{
+   return new INDIDeviceControllerInstance( this );
 }
 
-String INDIClientModule::TradeMarks() const
+// ----------------------------------------------------------------------------
+
+ProcessImplementation* INDIMountProcess::Clone( const ProcessImplementation& p ) const
 {
-   return String(); // ### TODO ?
+   const INDIMountInstance* instPtr = dynamic_cast<const INDIMountInstance*>( &p );
+   return (instPtr != 0) ? new INDIMountInstance( *instPtr ) : 0;
 }
 
-String INDIClientModule::OriginalFileName() const
+// ----------------------------------------------------------------------------
+
+bool INDIMountProcess::CanProcessCommandLines() const
 {
-#ifdef __PCL_FREEBSD
-   return "INDIClient-pxm.so";
-#endif
-#ifdef __PCL_LINUX
-   return "INDIClient-pxm.so";
-#endif
-#ifdef __PCL_MACOSX
-   return "INDIClient-pxm.dylib";
-#endif
-#ifdef __PCL_WINDOWS
-   return "INDIClient-pxm.dll";
-#endif
+   return false;
 }
 
-void INDIClientModule::GetReleaseDate( int& year, int& month, int& day ) const
+// ----------------------------------------------------------------------------
+
+static void ShowHelp()
 {
-   year  = MODULE_RELEASE_YEAR;
-   month = MODULE_RELEASE_MONTH;
-   day   = MODULE_RELEASE_DAY;
+   Console().Write(
+"<raw>"
+"Nothing to show."
+"</raw>" );
+}
+
+int INDIMountProcess::ProcessCommandLine( const StringList& argv ) const
+{
+   return 0;
 }
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-// ----------------------------------------------------------------------------
-// PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
-//
-// Module installation routine.
-//
-// If this routine is defined as a public symbol in a module, the PixInsight
-// core application will call it just after loading and initializing the module
-// shared object or dynamic-link library.
-//
-// The mode argument specifies the kind of installation being performed by the
-// core application. See the pcl::InstallMode namespace for more information.
-// ----------------------------------------------------------------------------
-
-PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
-{
-   /*
-    * When the PixInsight application installs this module, we just have to
-    * instantiate the meta objects describing it.
-    */
-   new pcl::INDIClientModule;
-
-   /*
-    * The mode argument tells us what kind of installation is being requested
-    * by the PixInsight application. Incomplete installation requests only need
-    * module descriptions.
-    */
-   if ( mode == pcl::InstallMode::FullInstall )
-   {
-      new pcl::INDIDeviceControllerProcess;
-      new pcl::INDIDeviceControllerInterface;
-      new pcl::CCDFrameProcess;
-      new pcl::CCDFrameInterface;
-      new pcl::INDIMountProcess;
-      new pcl::INDIMountInterface;
-   }
-
-   /*
-    * Return zero to signal successful installation
-    */
-   return 0;
-}
-
-// ----------------------------------------------------------------------------
-// EOF INDIClientModule.cpp - Released 2015/10/13 15:55:45 UTC
+// ****************************************************************************
+// EOF PixInsightINDIProcess.cpp - Released 2013/03/24 18:42:27 UTC

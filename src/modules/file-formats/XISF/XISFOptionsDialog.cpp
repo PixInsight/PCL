@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.03.0064
+// Standard XISF File Format Module Version 01.00.04.0094
 // ----------------------------------------------------------------------------
-// XISFOptionsDialog.cpp - Released 2015/10/08 11:24:33 UTC
+// XISFOptionsDialog.cpp - Released 2015/11/26 15:59:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
@@ -143,14 +143,26 @@ XISFOptionsDialogBase::XISFOptionsDialogBase( const XISFOptions& xisfOptions, co
 
    //
 
-   Checksums_CheckBox.SetText( "Block checksums" );
-   Checksums_CheckBox.SetToolTip( "<p>Compute cryptographic digests for attached XISF blocks. The SHA-1 hashing "
-      "algorithm is used in this XISF implementation."
-      "Checksums are verified when data blocks are accessed, providing data integrity protection.</p>" );
-   Checksums_CheckBox.SetChecked( options.checksums );
+   const char* checksumToolTip =
+      "<p>Cryptographic hashing algorithm for calculation of block checksums.</p>"
+      "<p>This implementation supports the SHA-1, SHA-256 and SHA-512 algorithms. These algorithms compute checksums "
+      "of 20, 32 and 64 bytes, respectively.</p>"
+      "<p>Checksums are verified when data blocks are accessed, providing data integrity protection.</p>";
 
-   Checksums_Sizer.AddUnscaledSpacing( m_labelWidth + ui4 );
-   Checksums_Sizer.Add( Checksums_CheckBox );
+   Checksums_Label.SetText( "Block checksums:" );
+   Checksums_Label.SetToolTip( checksumToolTip );
+   Checksums_Label.SetMinWidth( m_labelWidth );
+   Checksums_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   Checksums_ComboBox.AddItem( "SHA-1" );
+   Checksums_ComboBox.AddItem( "SHA-256" );
+   Checksums_ComboBox.AddItem( "SHA-512" );
+   Checksums_ComboBox.SetToolTip( checksumToolTip );
+   Checksums_ComboBox.SetCurrentItem( ChecksumMethodToComboBoxItem( options.checksumMethod ) );
+
+   Checksums_Sizer.SetSpacing( 4 );
+   Checksums_Sizer.Add( Checksums_Label );
+   Checksums_Sizer.Add( Checksums_ComboBox );
    Checksums_Sizer.AddStretch();
 
    Security_Sizer.SetMargin( 8 );
@@ -158,6 +170,8 @@ XISFOptionsDialogBase::XISFOptionsDialogBase( const XISFOptions& xisfOptions, co
    Security_Sizer.Add( Checksums_Sizer );
 
    Security_GroupBox.SetTitle( "Security" );
+   Security_GroupBox.EnableTitleCheckBox();
+   Security_GroupBox.SetChecked( options.checksumMethod != XISF_CHECKSUM_NONE );
    Security_GroupBox.SetSizer( Security_Sizer );
    Security_GroupBox.AdjustToContents();
 
@@ -211,6 +225,35 @@ int XISFOptionsDialogBase::ComboBoxItemToCompressionMethod( int item )
    }
 }
 
+int XISFOptionsDialogBase::ChecksumMethodToComboBoxItem( int method )
+{
+   switch ( method )
+   {
+   default:
+   case XISF_CHECKSUM_SHA1:
+      return 0;
+   case XISF_CHECKSUM_SHA256:
+      return 1;
+   case XISF_CHECKSUM_SHA512:
+      return 2;
+   }
+}
+
+int XISFOptionsDialogBase::ComboBoxItemToChecksumMethod( int item )
+{
+   switch ( item )
+   {
+   case 0:
+      return XISF_CHECKSUM_SHA1;
+   case 1:
+      return XISF_CHECKSUM_SHA256;
+   case 2:
+      return XISF_CHECKSUM_SHA512;
+   default: // !?
+      return XISF_CHECKSUM_UNKNOWN;
+   }
+}
+
 void XISFOptionsDialogBase::GetBaseParameters()
 {
    if ( DataCompression_GroupBox.IsChecked() )
@@ -220,7 +263,10 @@ void XISFOptionsDialogBase::GetBaseParameters()
 
    options.compressionLevel = uint8( CompressionLevel_SpinBox.Value() );
 
-   options.checksums = Checksums_CheckBox.IsChecked();
+   if ( Security_GroupBox.IsChecked() )
+      options.checksumMethod = ComboBoxItemToChecksumMethod( Checksums_ComboBox.CurrentItem() );
+   else
+      options.checksumMethod = XISF_CHECKSUM_NONE;
 }
 
 void XISFOptionsDialogBase::Base_Button_Click( Button& sender, bool checked )
@@ -457,4 +503,4 @@ void XISFOptionsDialog::Dialog_Return( Dialog&/*sender*/, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISFOptionsDialog.cpp - Released 2015/10/08 11:24:33 UTC
+// EOF XISFOptionsDialog.cpp - Released 2015/11/26 15:59:58 UTC

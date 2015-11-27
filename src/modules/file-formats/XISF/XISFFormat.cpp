@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.03.0064
+// Standard XISF File Format Module Version 01.00.04.0094
 // ----------------------------------------------------------------------------
-// XISFFormat.cpp - Released 2015/10/08 11:24:33 UTC
+// XISFFormat.cpp - Released 2015/11/26 15:59:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
@@ -92,9 +92,12 @@ String XISFFormat::Description() const
 
    "<html>"
    "<p>XISF - Extensible Image Serialization Format Version 1.0</p>"
+
    "<p>This implementation supports a large subset of the XISF Version 1.0 "
    "Specification DRAFT 7 for monolithic XISF units.</p>"
-   "<p>For the latest XISF specification document, visit:</p>"
+
+   "<p>For the latest XISF specification document, please visit:</p>"
+
    "<p>http://pixinsight.com/doc/docs/XISF-1.0-spec/XISF-1.0-spec.html</p>"
    "</html>";
 }
@@ -206,6 +209,11 @@ bool XISFFormat::SupportsMultipleImages() const
    return true;
 }
 
+bool XISFFormat::SupportsViewProperties() const
+{
+   return true;
+}
+
 bool XISFFormat::CanEditPreferences() const
 {
    return true;
@@ -223,8 +231,7 @@ bool XISFFormat::ValidateFormatSpecificData( const void* data ) const
 
 void XISFFormat::DisposeFormatSpecificData( void* data ) const
 {
-   FormatOptions* o = FormatOptions::FromGenericDataBlock( data );
-   if ( o != nullptr )
+   if ( FormatOptions* o = FormatOptions::FromGenericDataBlock( data ) )
       delete o;
 }
 
@@ -263,7 +270,7 @@ bool XISFFormat::EditPreferences() const
       Settings::Write( "XISFAutoMetadata",       options.autoMetadata );
       Settings::Write( "XISFCompressionCodec",   options.compressionMethod );
       Settings::Write( "XISFCompressionLevel",   options.compressionLevel );
-      Settings::Write( "XISFChecksums",          options.checksums );
+      Settings::Write( "XISFChecksums",          options.checksumMethod );
       Settings::Write( "XISFBlockAlignmentSize", options.blockAlignmentSize );
       Settings::Write( "XISFMaxInlineBlockSize", options.maxInlineBlockSize );
 
@@ -312,9 +319,9 @@ XISFOptions XISFFormat::DefaultOptions()
    Settings::ReadU( "XISFCompressionLevel", u8 );
    options.compressionLevel = u8;
 
-   b = options.checksums;
-   Settings::Read( "XISFChecksums", b );
-   options.checksums = b;
+   u8 = options.checksumMethod;
+   Settings::ReadU( "XISFChecksums", u8 );
+   options.checksumMethod = u8;
 
    u16 = options.blockAlignmentSize;
    Settings::ReadU( "XISFBlockAlignmentSize", u16 );
@@ -350,7 +357,8 @@ XISFFormat::EmbeddingOverrides XISFFormat::DefaultEmbeddingOverrides()
 #define XISF_SIGNATURE  0x58495346u // 'XISF'
 
 XISFFormat::FormatOptions::FormatOptions() :
-   options( XISFFormat::DefaultOptions() ), signature( XISF_SIGNATURE )
+   options( XISFFormat::DefaultOptions() ),
+   signature( XISF_SIGNATURE )
 {
 }
 
@@ -369,4 +377,4 @@ XISFFormat::FormatOptions* XISFFormat::FormatOptions::FromGenericDataBlock( cons
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISFFormat.cpp - Released 2015/10/08 11:24:33 UTC
+// EOF XISFFormat.cpp - Released 2015/11/26 15:59:58 UTC

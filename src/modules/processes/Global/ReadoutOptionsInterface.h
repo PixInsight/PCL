@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.06.0288
+// Standard Global Process Module Version 01.02.07.0318
 // ----------------------------------------------------------------------------
-// ReadoutOptionsInterface.h - Released 2015/10/08 11:24:39 UTC
+// ReadoutOptionsInterface.h - Released 2015/11/26 16:00:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -170,4 +170,4 @@ PCL_END_LOCAL
 #endif   // __ReadoutOptionsInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF ReadoutOptionsInterface.h - Released 2015/10/08 11:24:39 UTC
+// EOF ReadoutOptionsInterface.h - Released 2015/11/26 16:00:12 UTC

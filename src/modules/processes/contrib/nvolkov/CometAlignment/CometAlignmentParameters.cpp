@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard CometAlignment Process Module Version 01.02.06.0097
+// Standard CometAlignment Process Module Version 01.02.06.0127
 // ----------------------------------------------------------------------------
-// CometAlignmentParameters.cpp - Released 2015/10/08 11:24:40 UTC
+// CometAlignmentParameters.cpp - Released 2015/11/26 16:00:13 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -615,4 +615,4 @@ double CALinearClampingThreshold::MaximumValue () const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CometAlignmentParameters.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF CometAlignmentParameters.cpp - Released 2015/11/26 16:00:13 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/ColorSpace.h - Released 2015/10/08 11:24:12 UTC
+// pcl/ColorSpace.h - Released 2015/11/26 15:59:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -134,4 +134,4 @@ namespace ColorSpace
 #endif   // __PCL_ColorSpace_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ColorSpace.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/ColorSpace.h - Released 2015/11/26 15:59:39 UTC

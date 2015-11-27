@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard LocalHistogramEqualization Process Module Version 01.00.00.0121
+// Standard LocalHistogramEqualization Process Module Version 01.00.00.0151
 // ----------------------------------------------------------------------------
-// LocalHistogramEqualizationParameters.cpp - Released 2015/10/08 11:24:40 UTC
+// LocalHistogramEqualizationParameters.cpp - Released 2015/11/26 16:00:13 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard LocalHistogramEqualization PixInsight module.
 //
@@ -217,4 +217,4 @@ bool LHECircularKernel::DefaultValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LocalHistogramEqualizationParameters.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF LocalHistogramEqualizationParameters.cpp - Released 2015/11/26 16:00:13 UTC

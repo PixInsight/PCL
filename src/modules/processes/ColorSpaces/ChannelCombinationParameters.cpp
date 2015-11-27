@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0258
+// Standard ColorSpaces Process Module Version 01.01.00.0288
 // ----------------------------------------------------------------------------
-// ChannelCombinationParameters.cpp - Released 2015/10/08 11:24:39 UTC
+// ChannelCombinationParameters.cpp - Released 2015/11/26 16:00:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
@@ -67,4 +67,4 @@ ChannelId*        TheChannelIdCombinationParameter = 0;
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ChannelCombinationParameters.cpp - Released 2015/10/08 11:24:39 UTC
+// EOF ChannelCombinationParameters.cpp - Released 2015/11/26 16:00:12 UTC

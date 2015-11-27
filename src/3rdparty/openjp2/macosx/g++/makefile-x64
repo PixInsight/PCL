@@ -1,0 +1,114 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.100
+# Copyright (C) 2009-2015 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Thu, 26 Nov 2015 11:35:37 GMT
+# Project id ...... openjp2
+# Project type .... DynamicLibrary
+# Platform ........ MacOSX/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/3rdparty/openjp2/macosx/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/libopenjp2-pxi.dylib
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../bio.c \
+../../cio.c \
+../../dwt.c \
+../../event.c \
+../../function_list.c \
+../../image.c \
+../../invert.c \
+../../j2k.c \
+../../jp2.c \
+../../mct.c \
+../../mqc.c \
+../../openjpeg.c \
+../../opj_clock.c \
+../../pi.c \
+../../raw.c \
+../../t1.c \
+../../t2.c \
+../../tcd.c \
+../../tgt.c
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/bio.o \
+./x64/Release/cio.o \
+./x64/Release/dwt.o \
+./x64/Release/event.o \
+./x64/Release/function_list.o \
+./x64/Release/image.o \
+./x64/Release/invert.o \
+./x64/Release/j2k.o \
+./x64/Release/jp2.o \
+./x64/Release/mct.o \
+./x64/Release/mqc.o \
+./x64/Release/openjpeg.o \
+./x64/Release/opj_clock.o \
+./x64/Release/pi.o \
+./x64/Release/raw.o \
+./x64/Release/t1.o \
+./x64/Release/t2.o \
+./x64/Release/tcd.o \
+./x64/Release/tgt.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/bio.d \
+./x64/Release/cio.d \
+./x64/Release/dwt.d \
+./x64/Release/event.d \
+./x64/Release/function_list.d \
+./x64/Release/image.d \
+./x64/Release/invert.d \
+./x64/Release/j2k.d \
+./x64/Release/jp2.d \
+./x64/Release/mct.d \
+./x64/Release/mqc.d \
+./x64/Release/openjpeg.d \
+./x64/Release/opj_clock.d \
+./x64/Release/pi.d \
+./x64/Release/raw.d \
+./x64/Release/t1.d \
+./x64/Release/t2.d \
+./x64/Release/tcd.d \
+./x64/Release/tgt.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/libopenjp2-pxi.dylib: $(OBJ_FILES)
+	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -stdlib=libc++ -Wl,-dead_strip -dynamiclib -install_name @executable_path/libopenjp2-pxi.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/libopenjp2-pxi.dylib $(OBJ_FILES) -framework CoreFoundation
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/libopenjp2-pxi.dylib
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/libopenjp2-pxi.dylib $(PCLBINDIR64)
+	codesign --deep -s pleiades -f -v --timestamp $(PCLBINDIR64)/libopenjp2-pxi.dylib
+
+./x64/Release/%.o: ../../%.c
+	clang -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

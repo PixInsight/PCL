@@ -1,8 +1,7 @@
 PixInsight Class Library - Coding Style Guidelines
 --------------------------------------------------
 
-Version 0.2 - 2014 November 9<br/>
-*Initial release.*
+Version 0.3 - 2015 November 27<br/>
 
 --------------------------------------------------
 
@@ -20,7 +19,7 @@ Version 0.2 - 2014 November 9<br/>
       if ( condition )
               DoSomething(); // wrong
 
-   1.3. The contents of a namespace block should not be indented. Nested namespaces should be indented. Use line comments to mark the closing brace of each namespace.
+   1.3. The contents of a top-level namespace block should not be indented. Nested namespaces and their contents should be indented. Use line comments to mark the closing brace of each namespace.
 
       namespace pcl
       {
@@ -32,11 +31,10 @@ Version 0.2 - 2014 November 9<br/>
 
          namespace nested_namespace
          {
-
-         class Bar
-         {
-            ...
-         };
+            class Bar
+            {
+               ...
+            };
 
          } // pcl::nested_namespace
 
@@ -193,7 +191,7 @@ Version 0.2 - 2014 November 9<br/>
       SomeFunc( 0 );       // right
       SomeFunc(0);         // wrong
       SomeFunc(0 );        // wrong
-      SomeFunc(  0 );      // wrong, unless spaces are used to vertically align 
+      SomeFunc(  0 );      // wrong, unless spaces are used to vertically align
                            //   arguments or parameters in a set of related items.
 
    2.11. Place one space after a comma separator in a list of arguments or formal parameters in a function call, function declaration, or function definition.
@@ -385,6 +383,7 @@ Version 0.2 - 2014 November 9<br/>
          CallItFooBar();
       }
 
+
 ### 5. Names
 
    5.1. Use CamelCase. Capitalize all letters in acronyms. Capitalize the first letter (Pascal case) in class, struct, union, function and function member names. Lower-case (camel-back case) the first letter in variable and data member names.
@@ -544,13 +543,23 @@ Version 0.2 - 2014 November 9<br/>
          int m_x;
       };
 
-   5.10. Do not use meaningless or redundant variable names in function declarations.
+   5.10. Do not use meaningless or redundant variable names in function declarations, unless parameter names are required for documentation comments.
 
       void SetFileSize( size_type );           // right
       void SetFileSize( size_type size );      // wrong
 
       int EnableLogFile( bool = true );        // right
       int EnableLogFile( bool enable = true ); // wrong
+
+      /*!
+       * ...
+       * \param properties       Reference to an ObjectProperties structure
+       *                         where object properties will be stored.
+       *
+       * \param notifyMembers    Whether to send notification messages to ...
+       * ...
+       */
+      bool GetProperties( ObjectProperties& properties, bool notifyMembers = true ) const;   // right
 
    5.11. Use a block comment to signify the purpose of a Boolean function argument when its meaning is not obvious. Typically you should use formal parameter names in these comments.
 
@@ -559,7 +568,7 @@ Version 0.2 - 2014 November 9<br/>
       int n = CountDocumentFiles( targetDir, false/*includePlainTextFiles*/ ); // right
       int n = CountDocumentFiles( targetDir, false );                          // wrong - false what?
 
-      EnableMaximization( false ); // right - obvious argument meaning
+      EnableMaximization( false ); // right - obvious argument meaning in this case
 
    5.12. #define and #ifdef header guards should be named exactly the same as the source file (including case), replacing the dot suffix separator with an underscore, and prefixed with two underscores. Use line comments to mark the corresponding #endif closing directives.
 
@@ -592,7 +601,6 @@ Version 0.2 - 2014 November 9<br/>
 
       void GetPositionVector( int planetNumber, double julianDay,   // wrong
                               double& x, double& y, double& z );
-
 
 
 ### 7. Virtual Member Functions

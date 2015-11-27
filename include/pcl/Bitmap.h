@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/Bitmap.h - Released 2015/10/08 11:24:12 UTC
+// pcl/Bitmap.h - Released 2015/11/26 15:59:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -1343,6 +1343,36 @@ public:
       SetAlpha( Bounds(), newAlpha );
    }
 
+   /*!
+    * Returns the ratio between output device pixels and pixels of this
+    * device-independent bitmap. See the SetPhysicalPixelRatio() member
+    * function for a detailed description.
+    *
+    * \ingroup ui_scaling_functions
+    * \sa SetPhysicalPixelRatio()
+    */
+   double PhysicalPixelRatio() const;
+
+   /*!
+    * Sets the ratio between output device pixels and pixels of this
+    * device-independent bitmap. This ratio is used as a scaling factor by
+    * core bitmap rendering routines to reproduce bitmaps on high-dpi screens
+    * and other high-density graphics output devices.
+    *
+    * The specified \e ratio must be greater than or equal to one. On OS X with
+    * Retina monitors working in high-dpi modes, this function can be used to
+    * ensure that a bitmap will be reproduced as a high-resolution image by
+    * setting its output pixel ratio to 2.0. In such case the bitmap will be
+    * drawn on the screen with one half its actual pixel dimensions in logical
+    * pixels, using the native physical monitor resoluton. On other platforms
+    * such as X11 (Linux and FreeBSD) and Windows, where no automatic display
+    * scaling is performed, the physical pixel ratio of a bitmap is ignored.
+    *
+    * \ingroup ui_scaling_functions
+    * \sa PhysicalPixelRatio()
+    */
+   void SetPhysicalPixelRatio( double ratio );
+
 private:
 
    Bitmap( void* h ) : UIObject( h )
@@ -1379,4 +1409,4 @@ private:
 #endif   // __PCL_Bitmap_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Bitmap.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/Bitmap.h - Released 2015/11/26 15:59:39 UTC

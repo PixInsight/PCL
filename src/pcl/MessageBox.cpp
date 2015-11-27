@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/MessageBox.cpp - Released 2015/10/08 11:24:19 UTC
+// pcl/MessageBox.cpp - Released 2015/11/26 15:59:45 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -49,8 +49,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#include <pcl/MessageBox.h>
 #include <pcl/Exception.h>
+#include <pcl/MessageBox.h>
 
 #include <pcl/api/APIInterface.h>
 
@@ -108,8 +108,6 @@ MessageBox::MessageBox( const String& text,
 {
    p = new MessageBoxPrivate( text, caption, icon, button0, button1, button2, defaultButton, escapeButton );
 }
-
-// ----------------------------------------------------------------------------
 
 MessageBox::~MessageBox()
 {
@@ -251,4 +249,4 @@ void MessageBox::SetEscapeButtonIndex( int index )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MessageBox.cpp - Released 2015/10/08 11:24:19 UTC
+// EOF pcl/MessageBox.cpp - Released 2015/11/26 15:59:45 UTC

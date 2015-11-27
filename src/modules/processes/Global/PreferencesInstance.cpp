@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.06.0288
+// Standard Global Process Module Version 01.02.07.0318
 // ----------------------------------------------------------------------------
-// PreferencesInstance.cpp - Released 2015/10/08 11:24:39 UTC
+// PreferencesInstance.cpp - Released 2015/11/26 16:00:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -138,10 +138,12 @@ bool PreferencesInstance::ExecuteGlobal()
       PixInsightSettings::SetGlobalFlag   ( "MainWindow/DesktopSettingsAware",            mainWindow.desktopSettingsAware );
       PixInsightSettings::SetGlobalFlag   ( "MainWindow/NativeMenuBar",                   mainWindow.nativeMenuBar );
       PixInsightSettings::SetGlobalFlag   ( "MainWindow/CapitalizedMenuBars",             mainWindow.capitalizedMenuBars );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/WindowButtonsOnTheLeft",          mainWindow.windowButtonsOnTheLeft );
       PixInsightSettings::SetGlobalFlag   ( "MainWindow/TranslucentWindows",              mainWindow.translucentWindows );
       PixInsightSettings::SetGlobalFlag   ( "MainWindow/TranslucentChildWindows",         mainWindow.translucentChildWindows );
       PixInsightSettings::SetGlobalFlag   ( "MainWindow/FadeWindows",                     mainWindow.fadeWindows );
       PixInsightSettings::SetGlobalFlag   ( "MainWindow/FadeAutoHideWindows",             mainWindow.fadeAutoHideWindows );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/TranslucentAutoHideWindows",      mainWindow.translucentAutoHideWindows );
       PixInsightSettings::SetGlobalFlag   ( "MainWindow/FadeWorkspaces",                  mainWindow.fadeWorkspaces );
       PixInsightSettings::SetGlobalFlag   ( "MainWindow/FadeMenu",                        mainWindow.fadeMenu );
       PixInsightSettings::SetGlobalFlag   ( "MainWindow/FadeToolTip",                     mainWindow.fadeToolTip );
@@ -168,12 +170,14 @@ bool PreferencesInstance::ExecuteGlobal()
       PixInsightSettings::SetGlobalFlag   ( "ImageWindow/RememberFileOpenType",           imageWindow.rememberFileOpenType );
       PixInsightSettings::SetGlobalFlag   ( "ImageWindow/RememberFileSaveType",           imageWindow.rememberFileSaveType );
       PixInsightSettings::SetGlobalFlag   ( "ImageWindow/StrictFileSaveMode",             imageWindow.strictFileSaveMode );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/FileFormatWarnings",             imageWindow.fileFormatWarnings );
       PixInsightSettings::SetGlobalFlag   ( "ImageWindow/UseFileNamesAsImageIdentifiers", imageWindow.useFileNamesAsImageIdentifiers );
       PixInsightSettings::SetGlobalInteger( "ImageWindow/CursorTolerance",                imageWindow.cursorTolerance );
       PixInsightSettings::SetGlobalFlag   ( "ImageWindow/TouchEvents",                    imageWindow.touchEvents );
       PixInsightSettings::SetGlobalReal   ( "ImageWindow/PinchSensitivity",               imageWindow.pinchSensitivity );
       PixInsightSettings::SetGlobalFlag   ( "ImageWindow/FastScreenRenditions",           imageWindow.fastScreenRenditions );
       PixInsightSettings::SetGlobalInteger( "ImageWindow/FastScreenRenditionThreshold",   imageWindow.fastScreenRenditionThreshold );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/HighDPIRenditions",              imageWindow.highDPIRenditions );
       PixInsightSettings::SetGlobalFlag   ( "ImageWindow/Default24BitScreenLUT",          imageWindow.default24BitScreenLUT );
       // Better don't mess during a global settings update - for sanity, we'll do this after EndUpdate()
       //ImageWindow::SetSwapDirectories( imageWindow.swapDirectories);
@@ -297,6 +301,8 @@ void* PreferencesInstance::LockParameter( const MetaParameter* p, size_type tabl
       return &mainWindow.nativeMenuBar;
    if ( p == METAPARAMETER_INSTANCE_ID( MainWindow, capitalizedMenuBars ) )
       return &mainWindow.capitalizedMenuBars;
+   if ( p == METAPARAMETER_INSTANCE_ID( MainWindow, windowButtonsOnTheLeft ) )
+      return &mainWindow.windowButtonsOnTheLeft;
    if ( p == METAPARAMETER_INSTANCE_ID( MainWindow, translucentWindows ) )
       return &mainWindow.translucentWindows;
    if ( p == METAPARAMETER_INSTANCE_ID( MainWindow, translucentChildWindows ) )
@@ -305,6 +311,8 @@ void* PreferencesInstance::LockParameter( const MetaParameter* p, size_type tabl
       return &mainWindow.fadeWindows;
    if ( p == METAPARAMETER_INSTANCE_ID( MainWindow, fadeAutoHideWindows ) )
       return &mainWindow.fadeAutoHideWindows;
+   if ( p == METAPARAMETER_INSTANCE_ID( MainWindow, translucentAutoHideWindows ) )
+      return &mainWindow.translucentAutoHideWindows;
    if ( p == METAPARAMETER_INSTANCE_ID( MainWindow, fadeWorkspaces ) )
       return &mainWindow.fadeWorkspaces;
    if ( p == METAPARAMETER_INSTANCE_ID( MainWindow, fadeMenu ) )
@@ -356,6 +364,8 @@ void* PreferencesInstance::LockParameter( const MetaParameter* p, size_type tabl
       return &imageWindow.rememberFileSaveType;
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, strictFileSaveMode ) )
       return &imageWindow.strictFileSaveMode;
+   if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, fileFormatWarnings ) )
+      return &imageWindow.fileFormatWarnings;
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, useFileNamesAsImageIdentifiers ) )
       return &imageWindow.useFileNamesAsImageIdentifiers;
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, cursorTolerance ) )
@@ -368,6 +378,8 @@ void* PreferencesInstance::LockParameter( const MetaParameter* p, size_type tabl
       return &imageWindow.fastScreenRenditions;
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, fastScreenRenditionThreshold ) )
       return &imageWindow.fastScreenRenditionThreshold;
+   if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, highDPIRenditions ) )
+      return &imageWindow.highDPIRenditions;
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, default24BitScreenLUT ) )
       return &imageWindow.default24BitScreenLUT;
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, swapDirectory ) )
@@ -532,10 +544,12 @@ void PreferencesInstance::LoadDefaultSettings()
    mainWindow.desktopSettingsAware              =         METAPARAMETER_INSTANCE_ID( MainWindow, desktopSettingsAware              )->DefaultValue();
    mainWindow.nativeMenuBar                     =         METAPARAMETER_INSTANCE_ID( MainWindow, nativeMenuBar                     )->DefaultValue();
    mainWindow.capitalizedMenuBars               =         METAPARAMETER_INSTANCE_ID( MainWindow, capitalizedMenuBars               )->DefaultValue();
+   mainWindow.windowButtonsOnTheLeft            =         METAPARAMETER_INSTANCE_ID( MainWindow, windowButtonsOnTheLeft            )->DefaultValue();
    mainWindow.translucentWindows                =         METAPARAMETER_INSTANCE_ID( MainWindow, translucentWindows                )->DefaultValue();
    mainWindow.translucentChildWindows           =         METAPARAMETER_INSTANCE_ID( MainWindow, translucentChildWindows           )->DefaultValue();
    mainWindow.fadeWindows                       =         METAPARAMETER_INSTANCE_ID( MainWindow, fadeWindows                       )->DefaultValue();
    mainWindow.fadeAutoHideWindows               =         METAPARAMETER_INSTANCE_ID( MainWindow, fadeAutoHideWindows               )->DefaultValue();
+   mainWindow.translucentAutoHideWindows        =         METAPARAMETER_INSTANCE_ID( MainWindow, translucentAutoHideWindows        )->DefaultValue();
    mainWindow.fadeWorkspaces                    =         METAPARAMETER_INSTANCE_ID( MainWindow, fadeWorkspaces                    )->DefaultValue();
    mainWindow.fadeMenu                          =         METAPARAMETER_INSTANCE_ID( MainWindow, fadeMenu                          )->DefaultValue();
    mainWindow.fadeToolTip                       =         METAPARAMETER_INSTANCE_ID( MainWindow, fadeToolTip                       )->DefaultValue();
@@ -562,12 +576,14 @@ void PreferencesInstance::LoadDefaultSettings()
    imageWindow.rememberFileOpenType             =         METAPARAMETER_INSTANCE_ID( ImageWindow, rememberFileOpenType             )->DefaultValue();
    imageWindow.rememberFileSaveType             =         METAPARAMETER_INSTANCE_ID( ImageWindow, rememberFileSaveType             )->DefaultValue();
    imageWindow.strictFileSaveMode               =         METAPARAMETER_INSTANCE_ID( ImageWindow, strictFileSaveMode               )->DefaultValue();
+   imageWindow.fileFormatWarnings               =         METAPARAMETER_INSTANCE_ID( ImageWindow, fileFormatWarnings               )->DefaultValue();
    imageWindow.useFileNamesAsImageIdentifiers   =         METAPARAMETER_INSTANCE_ID( ImageWindow, useFileNamesAsImageIdentifiers   )->DefaultValue();
    imageWindow.cursorTolerance                  =  int32( METAPARAMETER_INSTANCE_ID( ImageWindow, cursorTolerance                  )->DefaultValue() );
    imageWindow.touchEvents                      =         METAPARAMETER_INSTANCE_ID( ImageWindow, touchEvents                      )->DefaultValue();
    imageWindow.pinchSensitivity                 =         METAPARAMETER_INSTANCE_ID( ImageWindow, pinchSensitivity                 )->DefaultValue();
    imageWindow.fastScreenRenditions             =         METAPARAMETER_INSTANCE_ID( ImageWindow, fastScreenRenditions             )->DefaultValue();
    imageWindow.fastScreenRenditionThreshold     =  int32( METAPARAMETER_INSTANCE_ID( ImageWindow, fastScreenRenditionThreshold     )->DefaultValue() );
+   imageWindow.highDPIRenditions                =         METAPARAMETER_INSTANCE_ID( ImageWindow, highDPIRenditions                )->DefaultValue();
    imageWindow.default24BitScreenLUT            =         METAPARAMETER_INSTANCE_ID( ImageWindow, default24BitScreenLUT            )->DefaultValue();
    imageWindow.swapDirectories.Clear();
    imageWindow.swapDirectories.Add(                File::SystemTempDirectory() );
@@ -645,10 +661,12 @@ void PreferencesInstance::LoadCurrentSettings()
    mainWindow.desktopSettingsAware              = PixInsightSettings::GlobalFlag   ( "MainWindow/DesktopSettingsAware" );
    mainWindow.nativeMenuBar                     = PixInsightSettings::GlobalFlag   ( "MainWindow/NativeMenuBar" );
    mainWindow.capitalizedMenuBars               = PixInsightSettings::GlobalFlag   ( "MainWindow/CapitalizedMenuBars" );
+   mainWindow.windowButtonsOnTheLeft            = PixInsightSettings::GlobalFlag   ( "MainWindow/WindowButtonsOnTheLeft" );
    mainWindow.translucentWindows                = PixInsightSettings::GlobalFlag   ( "MainWindow/TranslucentWindows" );
    mainWindow.translucentChildWindows           = PixInsightSettings::GlobalFlag   ( "MainWindow/TranslucentChildWindows" );
    mainWindow.fadeWindows                       = PixInsightSettings::GlobalFlag   ( "MainWindow/FadeWindows" );
    mainWindow.fadeAutoHideWindows               = PixInsightSettings::GlobalFlag   ( "MainWindow/FadeAutoHideWindows" );
+   mainWindow.translucentAutoHideWindows        = PixInsightSettings::GlobalFlag   ( "MainWindow/TranslucentAutoHideWindows" );
    mainWindow.fadeWorkspaces                    = PixInsightSettings::GlobalFlag   ( "MainWindow/FadeWorkspaces" );
    mainWindow.fadeMenu                          = PixInsightSettings::GlobalFlag   ( "MainWindow/FadeMenu" );
    mainWindow.fadeToolTip                       = PixInsightSettings::GlobalFlag   ( "MainWindow/FadeToolTip" );
@@ -675,12 +693,14 @@ void PreferencesInstance::LoadCurrentSettings()
    imageWindow.rememberFileOpenType             = PixInsightSettings::GlobalFlag   ( "ImageWindow/RememberFileOpenType" );
    imageWindow.rememberFileSaveType             = PixInsightSettings::GlobalFlag   ( "ImageWindow/RememberFileSaveType" );
    imageWindow.strictFileSaveMode               = PixInsightSettings::GlobalFlag   ( "ImageWindow/StrictFileSaveMode" );
+   imageWindow.fileFormatWarnings               = PixInsightSettings::GlobalFlag   ( "ImageWindow/FileFormatWarnings" );
    imageWindow.useFileNamesAsImageIdentifiers   = PixInsightSettings::GlobalFlag   ( "ImageWindow/UseFileNamesAsImageIdentifiers" );
    imageWindow.cursorTolerance                  = PixInsightSettings::GlobalInteger( "ImageWindow/CursorTolerance" );
    imageWindow.touchEvents                      = PixInsightSettings::GlobalFlag   ( "ImageWindow/TouchEvents" );
    imageWindow.pinchSensitivity                 = PixInsightSettings::GlobalReal   ( "ImageWindow/PinchSensitivity" );
    imageWindow.fastScreenRenditions             = PixInsightSettings::GlobalFlag   ( "ImageWindow/FastScreenRenditions" );
    imageWindow.fastScreenRenditionThreshold     = PixInsightSettings::GlobalInteger( "ImageWindow/FastScreenRenditionThreshold" );
+   imageWindow.highDPIRenditions                = PixInsightSettings::GlobalFlag   ( "ImageWindow/HighDPIRenditions" );
    imageWindow.default24BitScreenLUT            = PixInsightSettings::GlobalFlag   ( "ImageWindow/Default24BitScreenLUT" );
    imageWindow.swapDirectories                  = ImageWindow::SwapDirectories();
    imageWindow.swapCompression                  = PixInsightSettings::GlobalFlag   ( "ImageWindow/SwapCompression" );
@@ -799,4 +819,4 @@ String* PreferencesInstance::StringParameterFromMetaParameter( const MetaParamet
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInstance.cpp - Released 2015/10/08 11:24:39 UTC
+// EOF PreferencesInstance.cpp - Released 2015/11/26 16:00:12 UTC

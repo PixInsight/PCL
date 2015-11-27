@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/Frame.cpp - Released 2015/10/08 11:24:19 UTC
+// pcl/Frame.cpp - Released 2015/11/26 15:59:45 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -110,4 +110,4 @@ int Frame::BorderWidth() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Frame.cpp - Released 2015/10/08 11:24:19 UTC
+// EOF pcl/Frame.cpp - Released 2015/11/26 15:59:45 UTC

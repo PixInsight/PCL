@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/Cryptography.h - Released 2015/10/08 11:24:12 UTC
+// pcl/Cryptography.h - Released 2015/11/26 15:59:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -88,7 +88,7 @@ namespace pcl
  * cryptographic hashing algorithms such as MD-5, SHA-1 or SHA-256.
  *
  * \ingroup cryptography_classes
- * \sa MD5, SHA1, SHA256
+ * \sa MD5, SHA1, SHA224, SHA256, SHA384, SHA512, CryptographicHashFactory
  */
 class PCL_CLASS CryptographicHash : public UIObject
 {
@@ -224,6 +224,8 @@ private:
 
    CryptographicHash( const CryptographicHash& ) = delete;
    void operator =( const CryptographicHash& ) = delete;
+
+   friend class CryptographicHashFactory;
 };
 
 // ----------------------------------------------------------------------------
@@ -242,7 +244,8 @@ private:
  * An %MD5 message digest (or %MD5 hash value) is 128 bits (16 bytes) long.
  *
  * \ingroup cryptography_classes
- * \sa CryptographicHash, SHA1, SHA256
+ * \sa CryptographicHash, SHA1, SHA224, SHA256, SHA384, SHA512,
+ *     CryptographicHashFactory
  */
 class PCL_CLASS MD5 : public CryptographicHash
 {
@@ -291,14 +294,16 @@ public:
  *
  * The initial Secure Hash Algorithm (SHA) was published by NIST in 1993 as the
  * Secure Hash Standard, FIPS PUB 180. The SHA-1 algorithm was defined in a
- * revised version published in 1995, FIPS PUB 180-1:
+ * revised version published in 1995, FIPS PUB 180-1. The latest specification
+ * has been released in FIPS PUB 180-4:
  *
- * http://www.itl.nist.gov/fipspubs/fip180-1.htm
+ * http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
  *
  * An SHA-1 message digest (or SHA-1 hash value) is 160 bits (20 bytes) long.
  *
  * \ingroup cryptography_classes
- * \sa CryptographicHash, MD5, SHA256
+ * \sa CryptographicHash, MD5, SHA224, SHA256, SHA384, SHA512,
+ *     CryptographicHashFactory
  */
 class PCL_CLASS SHA1 : public CryptographicHash
 {
@@ -334,6 +339,325 @@ public:
    virtual size_type HashLength() const
    {
       return 20;
+   }
+};
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \class SHA224
+ * \brief Implementation of the SHA-224 cryptographic hashing algorithm
+ *
+ * \b References
+ *
+ * The SHA-2 family of secure hash functions (SHA-256, SHA-384, and SHA-512)
+ * was specified by NIST in 2002 with the publication of FIPS PUB 180-2. The
+ * SHA-224 variant was released in a change notice for FIPS PUB 180-2 in 2004.
+ * FIPS PUB 180-2 has been superseded by FIPS PUB 180-3 and FIPS PUB 180-4:
+ *
+ * http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
+ *
+ * An SHA-224 message digest is 224 bits (28 bytes) long.
+ *
+ * \ingroup cryptography_classes
+ * \sa CryptographicHash, MD5, SHA1, SHA256, SHA384, SHA512,
+ *     CryptographicHashFactory
+ */
+class PCL_CLASS SHA224 : public CryptographicHash
+{
+public:
+
+   /*!
+    * Constructs an SHA-224 hash generator.
+    */
+   SHA224();
+
+   /*!
+    * Destroys an SHA-224 hash generator.
+    */
+   virtual ~SHA224()
+   {
+   }
+
+   /*!
+    * Returns the name of this cryptographic hashing algorithm: "SHA224".
+    */
+   virtual String AlgorithmName() const
+   {
+      return "SHA224";
+   }
+
+   /*!
+    * Returns the length in bytes of a hash sequence (or message digest)
+    * calculated with this cryptographic hashing algorithm.
+    *
+    * As implemented in %SHA224, this function returns 28, the length in bytes
+    * of an SHA-224 digest.
+    */
+   virtual size_type HashLength() const
+   {
+      return 28;
+   }
+};
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \class SHA256
+ * \brief Implementation of the SHA-256 cryptographic hashing algorithm
+ *
+ * \b References
+ *
+ * The SHA-2 family of secure hash functions (SHA-256, SHA-384, and SHA-512)
+ * was specified by NIST in 2002 with the publication of FIPS PUB 180-2. FIPS
+ * PUB 180-2 has been superseded by FIPS PUB 180-3 and FIPS PUB 180-4:
+ *
+ * http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
+ *
+ * An SHA-256 message digest is 256 bits (32 bytes) long.
+ *
+ * \ingroup cryptography_classes
+ * \sa CryptographicHash, MD5, SHA1, SHA224, SHA384, SHA512,
+ *     CryptographicHashFactory
+ */
+class PCL_CLASS SHA256 : public CryptographicHash
+{
+public:
+
+   /*!
+    * Constructs an SHA-256 hash generator.
+    */
+   SHA256();
+
+   /*!
+    * Destroys an SHA-256 hash generator.
+    */
+   virtual ~SHA256()
+   {
+   }
+
+   /*!
+    * Returns the name of this cryptographic hashing algorithm: "SHA256".
+    */
+   virtual String AlgorithmName() const
+   {
+      return "SHA256";
+   }
+
+   /*!
+    * Returns the length in bytes of a hash sequence (or message digest)
+    * calculated with this cryptographic hashing algorithm.
+    *
+    * As implemented in %SHA256, this function returns 32, the length in bytes
+    * of an SHA-256 digest.
+    */
+   virtual size_type HashLength() const
+   {
+      return 32;
+   }
+};
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \class SHA384
+ * \brief Implementation of the SHA-384 cryptographic hashing algorithm
+ *
+ * \b References
+ *
+ * The SHA-2 family of secure hash functions (SHA-384, SHA-384, and SHA-512)
+ * was specified by NIST in 2002 with the publication of FIPS PUB 180-2. FIPS
+ * PUB 180-2 has been superseded by FIPS PUB 180-3 and FIPS PUB 180-4:
+ *
+ * http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
+ *
+ * An SHA-384 message digest is 384 bits (48 bytes) long.
+ *
+ * \ingroup cryptography_classes
+ * \sa CryptographicHash, MD5, SHA1, SHA224, SHA256, SHA512,
+ *     CryptographicHashFactory
+ */
+class PCL_CLASS SHA384 : public CryptographicHash
+{
+public:
+
+   /*!
+    * Constructs an SHA-384 hash generator.
+    */
+   SHA384();
+
+   /*!
+    * Destroys an SHA-384 hash generator.
+    */
+   virtual ~SHA384()
+   {
+   }
+
+   /*!
+    * Returns the name of this cryptographic hashing algorithm: "SHA384".
+    */
+   virtual String AlgorithmName() const
+   {
+      return "SHA384";
+   }
+
+   /*!
+    * Returns the length in bytes of a hash sequence (or message digest)
+    * calculated with this cryptographic hashing algorithm.
+    *
+    * As implemented in %SHA384, this function returns 48, the length in bytes
+    * of an SHA-384 digest.
+    */
+   virtual size_type HashLength() const
+   {
+      return 48;
+   }
+};
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \class SHA512
+ * \brief Implementation of the SHA-512 cryptographic hashing algorithm
+ *
+ * \b References
+ *
+ * The SHA-2 family of secure hash functions (SHA-512, SHA-512, and SHA-512)
+ * was specified by NIST in 2002 with the publication of FIPS PUB 180-2. FIPS
+ * PUB 180-2 has been superseded by FIPS PUB 180-3 and FIPS PUB 180-4:
+ *
+ * http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
+ *
+ * An SHA-512 message digest is 512 bits (64 bytes) long.
+ *
+ * \ingroup cryptography_classes
+ * \sa CryptographicHash, MD5, SHA1, SHA224, SHA256, SHA384,
+ *     CryptographicHashFactory
+ */
+class PCL_CLASS SHA512 : public CryptographicHash
+{
+public:
+
+   /*!
+    * Constructs an SHA-512 hash generator.
+    */
+   SHA512();
+
+   /*!
+    * Destroys an SHA-512 hash generator.
+    */
+   virtual ~SHA512()
+   {
+   }
+
+   /*!
+    * Returns the name of this cryptographic hashing algorithm: "SHA512".
+    */
+   virtual String AlgorithmName() const
+   {
+      return "SHA512";
+   }
+
+   /*!
+    * Returns the length in bytes of a hash sequence (or message digest)
+    * calculated with this cryptographic hashing algorithm.
+    *
+    * As implemented in %SHA512, this function returns 64, the length in bytes
+    * of an SHA-512 digest.
+    */
+   virtual size_type HashLength() const
+   {
+      return 64;
+   }
+};
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \class CryptographicHashFactory
+ * \brief Selectable cryptographic hashing algorithm
+ *
+ * %CryptographicHashFactory implements a cryptographic hashing algorithm that
+ * can be selected upon construction among all of the algorithms implemented in
+ * the PixInsight/PCL platform. This currently includes MD-5, SHA-1, SHA-224,
+ * SHA-256, SHA-384, and SHA-512.
+ *
+ * \ingroup cryptography_classes
+ * \sa CryptographicHash, MD5, SHA1, SHA224, SHA256, SHA384, SHA512
+ */
+class PCL_CLASS CryptographicHashFactory : public CryptographicHash
+{
+public:
+
+   /*!
+    * Constructs a %CryptographicHashFactory object to implement the specified
+    * hashing algorithm.
+    *
+    * \param algorithmName Name of a supported cryptographic hashing algorithm.
+    *                      Currently this parameter can be one of: "md5",
+    *                      "sha1", "sha224", "sha256", "sha384", and "sha512".
+    *                      String comparisons are case-insensitive.
+    *
+    * If an invalid or unsupported algorithm name is specified, this
+    * constructor throws an Error exception.
+    */
+   CryptographicHashFactory( const IsoString& algorithmName );
+
+   template <class S>
+   CryptographicHashFactory( S algorithmName ) : CryptographicHashFactory( IsoString( algorithmName ) )
+   {
+   }
+
+   /*!
+    * Destroys a %CryptographicHashFactory object.
+    */
+   virtual ~CryptographicHashFactory()
+   {
+      delete m_hash;
+      m_hash = nullptr;
+   }
+
+   /*!
+    * Returns the name of this cryptographic hashing algorithm.
+    */
+   virtual String AlgorithmName() const
+   {
+      return m_hash->AlgorithmName();
+   }
+
+   /*!
+    * Returns the length in bytes of a hash sequence (or message digest)
+    * calculated with this cryptographic hashing algorithm.
+    */
+   virtual size_type HashLength() const
+   {
+      return m_hash->HashLength();
+   }
+
+   /*!
+    * Initializes this cryptographic hash generator.
+    */
+   virtual void Initialize()
+   {
+      m_hash->Initialize();
+   }
+
+   /*!
+    * Updates the hash generator with a new \a data chunk of the specified
+    * \a length in bytes.
+    */
+   virtual void Update( const void* data, size_type length )
+   {
+      m_hash->Update( data, length );
+   }
+
+private:
+
+   CryptographicHash* m_hash;
+
+   virtual void Finalize( void* hash )
+   {
+      m_hash->Finalize( hash );
    }
 };
 
@@ -672,4 +996,4 @@ public:
 #endif   // __PCL_Cryptography_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Cryptography.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/Cryptography.h - Released 2015/11/26 15:59:39 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/FileFormat.cpp - Released 2015/10/08 11:24:19 UTC
+// pcl/FileFormat.cpp - Released 2015/11/26 15:59:45 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -111,7 +111,10 @@ private:
    void ZeroCaps()
    {
       // Strict aliasing safe code
+#ifndef _MSC_VER
+      // ### FIXME - MSVC++ 2013 thinks that api_format_capabilities is larger than 8 bytes !?
       static_assert( sizeof( api_format_capabilities ) <= sizeof( uint64 ), "Invalid sizeof( api_format_capabilities )" );
+#endif
       union { api_format_capabilities capabilities; uint64 u; } v;
       v.u = 0u;
       capabilities = v.capabilities;
@@ -292,6 +295,24 @@ String FileFormat::Implementation() const
 
 // ----------------------------------------------------------------------------
 
+String FileFormat::Status() const
+{
+   size_type len = 0;
+   (*API->FileFormat->GetFileFormatStatus)( m_data->handle, 0, &len, 0/*reserved*/ );
+
+   String status;
+   if ( len > 0 )
+   {
+      status.SetLength( len );
+      if ( (*API->FileFormat->GetFileFormatStatus)( m_data->handle, status.c_str(), &len, 0/*reserved*/ ) == api_false )
+         throw APIFunctionError( "GetFileFormatStatus" );
+      status.ResizeToNullTerminated();
+   }
+   return status;
+}
+
+// ----------------------------------------------------------------------------
+
 Bitmap FileFormat::Icon() const
 {
    return Bitmap( (*API->FileFormat->GetFileFormatIcon)( m_data->handle ) );
@@ -431,6 +452,11 @@ bool FileFormat::SupportsMultipleImages() const
    return m_data->capabilities.supportsMultipleImages;
 }
 
+bool FileFormat::SupportsViewProperties() const
+{
+   return m_data->capabilities.supportsViewProperties;
+}
+
 bool FileFormat::CanEditPreferences() const
 {
    return m_data->capabilities.canEditPreferences;
@@ -439,6 +465,11 @@ bool FileFormat::CanEditPreferences() const
 bool FileFormat::UsesFormatSpecificData() const
 {
    return m_data->capabilities.usesFormatSpecificData;
+}
+
+bool FileFormat::IsDeprecated() const
+{
+   return m_data->capabilities.deprecated;
 }
 
 // ----------------------------------------------------------------------------
@@ -482,4 +513,4 @@ Array<FileFormat> FileFormat::AllFormats()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormat.cpp - Released 2015/10/08 11:24:19 UTC
+// EOF pcl/FileFormat.cpp - Released 2015/11/26 15:59:45 UTC

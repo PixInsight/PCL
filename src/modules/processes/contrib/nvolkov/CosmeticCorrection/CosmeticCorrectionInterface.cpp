@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard CosmeticCorrection Process Module Version 01.02.05.0109
+// Standard CosmeticCorrection Process Module Version 01.02.05.0139
 // ----------------------------------------------------------------------------
-// CosmeticCorrectionInterface.cpp - Released 2015/10/08 11:24:40 UTC
+// CosmeticCorrectionInterface.cpp - Released 2015/11/26 16:00:13 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard CosmeticCorrection PixInsight module.
 //
@@ -1391,12 +1391,10 @@ void CosmeticCorrectionInterface::UpdateTargetImageItem( size_type i )
    node->SetText( 0, String( i+1 ) );
    node->SetAlignment( 0, TextAlign::Right );
 
-   double f = DisplayPixelRatio();
-
-   node->SetIcon( 1, Bitmap( UIScaledResource( f, item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
+   node->SetIcon( 1, Bitmap( ScaledResource( item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
    node->SetAlignment( 1, TextAlign::Left );
 
-   node->SetIcon( 2, Bitmap( UIScaledResource( f, ":/icons/select-file.png" ) ) );
+   node->SetIcon( 2, Bitmap( ScaledResource( ":/icons/select-file.png" ) ) );
    if ( GUI->FullPaths_CheckBox.IsChecked() )
       node->SetText( 2, item.path );
    else
@@ -2651,4 +2649,4 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CosmeticCorrectionInterface.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF CosmeticCorrectionInterface.cpp - Released 2015/11/26 16:00:13 UTC

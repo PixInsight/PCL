@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.06.0288
+// Standard Global Process Module Version 01.02.07.0318
 // ----------------------------------------------------------------------------
-// PreferencesProcess.cpp - Released 2015/10/08 11:24:39 UTC
+// PreferencesProcess.cpp - Released 2015/11/26 16:00:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -109,10 +109,12 @@ PreferencesProcess::PreferencesProcess() : MetaProcess()
    new METAPARAMETER_ID( MainWindow,  desktopSettingsAware )( this );
    new METAPARAMETER_ID( MainWindow,  nativeMenuBar )( this );
    new METAPARAMETER_ID( MainWindow,  capitalizedMenuBars )( this );
+   new METAPARAMETER_ID( MainWindow,  windowButtonsOnTheLeft )( this );
    new METAPARAMETER_ID( MainWindow,  translucentWindows )( this );
    new METAPARAMETER_ID( MainWindow,  translucentChildWindows )( this );
    new METAPARAMETER_ID( MainWindow,  fadeWindows )( this );
    new METAPARAMETER_ID( MainWindow,  fadeAutoHideWindows )( this );
+   new METAPARAMETER_ID( MainWindow,  translucentAutoHideWindows )( this );
    new METAPARAMETER_ID( MainWindow,  fadeWorkspaces )( this );
    new METAPARAMETER_ID( MainWindow,  fadeMenu )( this );
    new METAPARAMETER_ID( MainWindow,  fadeToolTip )( this );
@@ -141,12 +143,14 @@ PreferencesProcess::PreferencesProcess() : MetaProcess()
    new METAPARAMETER_ID( ImageWindow, rememberFileOpenType )( this );
    new METAPARAMETER_ID( ImageWindow, rememberFileSaveType )( this );
    new METAPARAMETER_ID( ImageWindow, strictFileSaveMode )( this );
+   new METAPARAMETER_ID( ImageWindow, fileFormatWarnings )( this );
    new METAPARAMETER_ID( ImageWindow, useFileNamesAsImageIdentifiers )( this );
    new METAPARAMETER_ID( ImageWindow, cursorTolerance )( this );
    new METAPARAMETER_ID( ImageWindow, touchEvents )( this );
    new METAPARAMETER_ID( ImageWindow, pinchSensitivity )( this );
    new METAPARAMETER_ID( ImageWindow, fastScreenRenditions )( this );
    new METAPARAMETER_ID( ImageWindow, fastScreenRenditionThreshold )( this );
+   new METAPARAMETER_ID( ImageWindow, highDPIRenditions )( this );
    new METAPARAMETER_ID( ImageWindow, default24BitScreenLUT )( this );
    new METAPARAMETER_ID( ImageWindow, swapDirectories )( this );
    new METAPARAMETER_ID( ImageWindow, swapDirectory )( METAPARAMETER_INSTANCE_ID( ImageWindow, swapDirectories ) );
@@ -337,4 +341,4 @@ int PreferencesProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesProcess.cpp - Released 2015/10/08 11:24:39 UTC
+// EOF PreferencesProcess.cpp - Released 2015/11/26 16:00:12 UTC

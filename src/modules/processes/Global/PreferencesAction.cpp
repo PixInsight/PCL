@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.06.0288
+// Standard Global Process Module Version 01.02.07.0318
 // ----------------------------------------------------------------------------
-// PreferencesAction.cpp - Released 2015/10/08 11:24:39 UTC
+// PreferencesAction.cpp - Released 2015/11/26 16:00:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -84,4 +84,4 @@ void PreferencesAction::Execute()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesAction.cpp - Released 2015/10/08 11:24:39 UTC
+// EOF PreferencesAction.cpp - Released 2015/11/26 16:00:12 UTC

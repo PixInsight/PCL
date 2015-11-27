@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.96
+# PixInsight Makefile Generator Script v1.100
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 08 Oct 2015 11:23:21 GMT
+# Automatically generated on Thu, 26 Nov 2015 11:35:36 GMT
 # Project id ...... jasper
 # Project type .... DynamicLibrary
 # Platform ........ Windows/vc12
@@ -43,7 +43,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9A65FDD9-FFE1-48A6-B8F0-DD61A64D9799}</ProjectGuid>
+    <ProjectGuid>{D01E19F0-A0E5-4A9C-BEEB-DD385F675D9A}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -120,9 +120,11 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat></DebugInformationFormat>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -161,9 +163,11 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat></DebugInformationFormat>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -197,7 +201,8 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -227,7 +232,8 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -249,90 +255,90 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\dummy.c"/>
-    <ClCompile Include="..\..\base\jas_cm.c"/>
-    <ClCompile Include="..\..\base\jas_debug.c"/>
-    <ClCompile Include="..\..\base\jas_getopt.c"/>
-    <ClCompile Include="..\..\base\jas_icc.c"/>
-    <ClCompile Include="..\..\base\jas_iccdata.c"/>
-    <ClCompile Include="..\..\base\jas_image.c"/>
-    <ClCompile Include="..\..\base\jas_init.c"/>
-    <ClCompile Include="..\..\base\jas_malloc.c"/>
-    <ClCompile Include="..\..\base\jas_seq.c"/>
-    <ClCompile Include="..\..\base\jas_stream.c"/>
-    <ClCompile Include="..\..\base\jas_string.c"/>
-    <ClCompile Include="..\..\base\jas_tmr.c"/>
-    <ClCompile Include="..\..\base\jas_tvp.c"/>
-    <ClCompile Include="..\..\base\jas_version.c"/>
-    <ClCompile Include="..\..\jp2\jp2_cod.c"/>
-    <ClCompile Include="..\..\jp2\jp2_dec.c"/>
-    <ClCompile Include="..\..\jp2\jp2_enc.c"/>
-    <ClCompile Include="..\..\jpc\jpc_bs.c"/>
-    <ClCompile Include="..\..\jpc\jpc_cs.c"/>
-    <ClCompile Include="..\..\jpc\jpc_dec.c"/>
-    <ClCompile Include="..\..\jpc\jpc_enc.c"/>
-    <ClCompile Include="..\..\jpc\jpc_math.c"/>
-    <ClCompile Include="..\..\jpc\jpc_mct.c"/>
-    <ClCompile Include="..\..\jpc\jpc_mqcod.c"/>
-    <ClCompile Include="..\..\jpc\jpc_mqdec.c"/>
-    <ClCompile Include="..\..\jpc\jpc_mqenc.c"/>
-    <ClCompile Include="..\..\jpc\jpc_qmfb.c"/>
-    <ClCompile Include="..\..\jpc\jpc_t1cod.c"/>
-    <ClCompile Include="..\..\jpc\jpc_t1dec.c"/>
-    <ClCompile Include="..\..\jpc\jpc_t1enc.c"/>
-    <ClCompile Include="..\..\jpc\jpc_t2cod.c"/>
-    <ClCompile Include="..\..\jpc\jpc_t2dec.c"/>
-    <ClCompile Include="..\..\jpc\jpc_t2enc.c"/>
-    <ClCompile Include="..\..\jpc\jpc_tagtree.c"/>
-    <ClCompile Include="..\..\jpc\jpc_tsfb.c"/>
-    <ClCompile Include="..\..\jpc\jpc_util.c"/>
+    <ClCompile Include="..\..\dummy.c" />
+    <ClCompile Include="..\..\base\jas_cm.c" />
+    <ClCompile Include="..\..\base\jas_debug.c" />
+    <ClCompile Include="..\..\base\jas_getopt.c" />
+    <ClCompile Include="..\..\base\jas_icc.c" />
+    <ClCompile Include="..\..\base\jas_iccdata.c" />
+    <ClCompile Include="..\..\base\jas_image.c" />
+    <ClCompile Include="..\..\base\jas_init.c" />
+    <ClCompile Include="..\..\base\jas_malloc.c" />
+    <ClCompile Include="..\..\base\jas_seq.c" />
+    <ClCompile Include="..\..\base\jas_stream.c" />
+    <ClCompile Include="..\..\base\jas_string.c" />
+    <ClCompile Include="..\..\base\jas_tmr.c" />
+    <ClCompile Include="..\..\base\jas_tvp.c" />
+    <ClCompile Include="..\..\base\jas_version.c" />
+    <ClCompile Include="..\..\jp2\jp2_cod.c" />
+    <ClCompile Include="..\..\jp2\jp2_dec.c" />
+    <ClCompile Include="..\..\jp2\jp2_enc.c" />
+    <ClCompile Include="..\..\jpc\jpc_bs.c" />
+    <ClCompile Include="..\..\jpc\jpc_cs.c" />
+    <ClCompile Include="..\..\jpc\jpc_dec.c" />
+    <ClCompile Include="..\..\jpc\jpc_enc.c" />
+    <ClCompile Include="..\..\jpc\jpc_math.c" />
+    <ClCompile Include="..\..\jpc\jpc_mct.c" />
+    <ClCompile Include="..\..\jpc\jpc_mqcod.c" />
+    <ClCompile Include="..\..\jpc\jpc_mqdec.c" />
+    <ClCompile Include="..\..\jpc\jpc_mqenc.c" />
+    <ClCompile Include="..\..\jpc\jpc_qmfb.c" />
+    <ClCompile Include="..\..\jpc\jpc_t1cod.c" />
+    <ClCompile Include="..\..\jpc\jpc_t1dec.c" />
+    <ClCompile Include="..\..\jpc\jpc_t1enc.c" />
+    <ClCompile Include="..\..\jpc\jpc_t2cod.c" />
+    <ClCompile Include="..\..\jpc\jpc_t2dec.c" />
+    <ClCompile Include="..\..\jpc\jpc_t2enc.c" />
+    <ClCompile Include="..\..\jpc\jpc_tagtree.c" />
+    <ClCompile Include="..\..\jpc\jpc_tsfb.c" />
+    <ClCompile Include="..\..\jpc\jpc_util.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\jasper\jas_cm.h"/>
-    <ClInclude Include="..\..\include\jasper\jas_config.h"/>
-    <ClInclude Include="..\..\include\jasper\jas_config2.h"/>
-    <ClInclude Include="..\..\include\jasper\jas_debug.h"/>
-    <ClInclude Include="..\..\include\jasper\jas_fix.h"/>
-    <ClInclude Include="..\..\include\jasper\jas_getopt.h"/>
-    <ClInclude Include="..\..\include\jasper\jas_icc.h"/>
-    <ClInclude Include="..\..\include\jasper\jas_image.h"/>
-    <ClInclude Include="..\..\include\jasper\jas_init.h"/>
-    <ClInclude Include="..\..\include\jasper\jas_malloc.h"/>
-    <ClInclude Include="..\..\include\jasper\jas_math.h"/>
-    <ClInclude Include="..\..\include\jasper\jas_seq.h"/>
-    <ClInclude Include="..\..\include\jasper\jas_stream.h"/>
-    <ClInclude Include="..\..\include\jasper\jas_string.h"/>
-    <ClInclude Include="..\..\include\jasper\jas_tmr.h"/>
-    <ClInclude Include="..\..\include\jasper\jas_tvp.h"/>
-    <ClInclude Include="..\..\include\jasper\jas_types.h"/>
-    <ClInclude Include="..\..\include\jasper\jas_version.h"/>
-    <ClInclude Include="..\..\include\jasper\jasper.h"/>
-    <ClInclude Include="..\..\jp2\jp2_cod.h"/>
-    <ClInclude Include="..\..\jp2\jp2_dec.h"/>
-    <ClInclude Include="..\..\jpc\jpc_bs.h"/>
-    <ClInclude Include="..\..\jpc\jpc_cod.h"/>
-    <ClInclude Include="..\..\jpc\jpc_cs.h"/>
-    <ClInclude Include="..\..\jpc\jpc_dec.h"/>
-    <ClInclude Include="..\..\jpc\jpc_enc.h"/>
-    <ClInclude Include="..\..\jpc\jpc_fix.h"/>
-    <ClInclude Include="..\..\jpc\jpc_flt.h"/>
-    <ClInclude Include="..\..\jpc\jpc_math.h"/>
-    <ClInclude Include="..\..\jpc\jpc_mct.h"/>
-    <ClInclude Include="..\..\jpc\jpc_mqcod.h"/>
-    <ClInclude Include="..\..\jpc\jpc_mqdec.h"/>
-    <ClInclude Include="..\..\jpc\jpc_mqenc.h"/>
-    <ClInclude Include="..\..\jpc\jpc_qmfb.h"/>
-    <ClInclude Include="..\..\jpc\jpc_t1cod.h"/>
-    <ClInclude Include="..\..\jpc\jpc_t1dec.h"/>
-    <ClInclude Include="..\..\jpc\jpc_t1enc.h"/>
-    <ClInclude Include="..\..\jpc\jpc_t2cod.h"/>
-    <ClInclude Include="..\..\jpc\jpc_t2dec.h"/>
-    <ClInclude Include="..\..\jpc\jpc_t2enc.h"/>
-    <ClInclude Include="..\..\jpc\jpc_tagtree.h"/>
-    <ClInclude Include="..\..\jpc\jpc_tsfb.h"/>
-    <ClInclude Include="..\..\jpc\jpc_util.h"/>
+    <ClInclude Include="..\..\include\jasper\jas_cm.h" />
+    <ClInclude Include="..\..\include\jasper\jas_config.h" />
+    <ClInclude Include="..\..\include\jasper\jas_config2.h" />
+    <ClInclude Include="..\..\include\jasper\jas_debug.h" />
+    <ClInclude Include="..\..\include\jasper\jas_fix.h" />
+    <ClInclude Include="..\..\include\jasper\jas_getopt.h" />
+    <ClInclude Include="..\..\include\jasper\jas_icc.h" />
+    <ClInclude Include="..\..\include\jasper\jas_image.h" />
+    <ClInclude Include="..\..\include\jasper\jas_init.h" />
+    <ClInclude Include="..\..\include\jasper\jas_malloc.h" />
+    <ClInclude Include="..\..\include\jasper\jas_math.h" />
+    <ClInclude Include="..\..\include\jasper\jas_seq.h" />
+    <ClInclude Include="..\..\include\jasper\jas_stream.h" />
+    <ClInclude Include="..\..\include\jasper\jas_string.h" />
+    <ClInclude Include="..\..\include\jasper\jas_tmr.h" />
+    <ClInclude Include="..\..\include\jasper\jas_tvp.h" />
+    <ClInclude Include="..\..\include\jasper\jas_types.h" />
+    <ClInclude Include="..\..\include\jasper\jas_version.h" />
+    <ClInclude Include="..\..\include\jasper\jasper.h" />
+    <ClInclude Include="..\..\jp2\jp2_cod.h" />
+    <ClInclude Include="..\..\jp2\jp2_dec.h" />
+    <ClInclude Include="..\..\jpc\jpc_bs.h" />
+    <ClInclude Include="..\..\jpc\jpc_cod.h" />
+    <ClInclude Include="..\..\jpc\jpc_cs.h" />
+    <ClInclude Include="..\..\jpc\jpc_dec.h" />
+    <ClInclude Include="..\..\jpc\jpc_enc.h" />
+    <ClInclude Include="..\..\jpc\jpc_fix.h" />
+    <ClInclude Include="..\..\jpc\jpc_flt.h" />
+    <ClInclude Include="..\..\jpc\jpc_math.h" />
+    <ClInclude Include="..\..\jpc\jpc_mct.h" />
+    <ClInclude Include="..\..\jpc\jpc_mqcod.h" />
+    <ClInclude Include="..\..\jpc\jpc_mqdec.h" />
+    <ClInclude Include="..\..\jpc\jpc_mqenc.h" />
+    <ClInclude Include="..\..\jpc\jpc_qmfb.h" />
+    <ClInclude Include="..\..\jpc\jpc_t1cod.h" />
+    <ClInclude Include="..\..\jpc\jpc_t1dec.h" />
+    <ClInclude Include="..\..\jpc\jpc_t1enc.h" />
+    <ClInclude Include="..\..\jpc\jpc_t2cod.h" />
+    <ClInclude Include="..\..\jpc\jpc_t2dec.h" />
+    <ClInclude Include="..\..\jpc\jpc_t2enc.h" />
+    <ClInclude Include="..\..\jpc\jpc_tagtree.h" />
+    <ClInclude Include="..\..\jpc\jpc_tsfb.h" />
+    <ClInclude Include="..\..\jpc\jpc_util.h" />
   </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

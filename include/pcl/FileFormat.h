@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/FileFormat.h - Released 2015/10/08 11:24:12 UTC
+// pcl/FileFormat.h - Released 2015/11/26 15:59:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -215,6 +215,10 @@ public:
 
    /*!
     */
+   virtual String Status() const;
+
+   /*!
+    */
    virtual Bitmap Icon() const;
 
    /*!
@@ -323,11 +327,19 @@ public:
 
    /*!
     */
+   virtual bool SupportsViewProperties() const;
+
+   /*!
+    */
    virtual bool CanEditPreferences() const;
 
    /*!
     */
    virtual bool UsesFormatSpecificData() const;
+
+   /*!
+    */
+   virtual bool IsDeprecated() const;
 
    /*!
     */
@@ -368,4 +380,4 @@ private:
 #endif   // __PCL_FileFormat_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormat.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/FileFormat.h - Released 2015/11/26 15:59:39 UTC

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard Annotation Process Module Version 01.00.00.0124
+// Standard Annotation Process Module Version 01.00.00.0154
 // ----------------------------------------------------------------------------
-// AnnotationInterface.cpp - Released 2015/10/08 11:24:40 UTC
+// AnnotationInterface.cpp - Released 2015/11/26 16:00:13 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Annotation PixInsight module.
 //
@@ -516,7 +516,7 @@ bool AnnotationInterface::RequiresDynamicUpdate( const View& v, const DRect& r )
    return totalRect.Intersects( r );
 }
 
-void AnnotationInterface::DynamicPaint( const View& v, Graphics& g, const DRect& r ) const
+void AnnotationInterface::DynamicPaint( const View& v, VectorGraphics& g, const DRect& r ) const
 {
    // we need valid view and annotation must be placed
    if ( view == 0 || v != *view || !annotationPlaced )
@@ -949,4 +949,4 @@ AnnotationInterface::GUIData::GUIData( AnnotationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AnnotationInterface.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF AnnotationInterface.cpp - Released 2015/11/26 16:00:13 UTC

@@ -72,14 +72,14 @@ Here is a list of subdirectories, along with descriptions of the files therein. 
 **[PCL]/src/modules/processes/[module_name]/linux/g++**
 
 <dl><dd>
-   Makefiles for Linux with GCC >= 4.7 (4.8.2 or higher recommended)
+   Makefiles for Linux with GCC >= 4.8.0 (4.8.5 or higher recommended)
 </dd></dl>
 
 **[PCL]/src/modules/file-formats/[module_name]/macosx/g++**<br/>
 **[PCL]/src/modules/processes/[module_name]/macosx/g++**
 
 <dl><dd>
-   Makefiles for Mac OS X >= 10.8 with clang C++ compiler/Xcode version >= 5.0
+   Makefiles for Mac OS X >= 10.9 with clang C++ compiler/Xcode version >= 5.0
 </dd></dl>
 
 **[PCL]/src/modules/file-formats/[module_name]/windows/vc12**<br/>
@@ -107,10 +107,10 @@ Here is a list of subdirectories, along with descriptions of the files therein. 
 
 The current versions of PCL have been successfully compiled and tested with:
 
-   * FreeBSD 10: System clang compiler
-   * Linux: GCC C++ compiler 4.8.3
-   * Mac OS X 10.10: Clang C++ compiler with Xcode 6.3
-   * Windows XP/Vista/7/8.x: Microsoft Visual C++ 2013
+   * FreeBSD 10.2: System clang compiler
+   * Red Hat Enterprise Linux 7.2: GCC C++ compiler 4.8.5
+   * Mac OS X 10.10: Clang C++ compiler with Xcode 6.5
+   * Windows 8.1: Microsoft Visual C++ 2013
 
 The GCC and clang C++ compilers provide higher conformance to ISO C++ standards and are high quality development tools. On FreeBSD and Mac OS X we rely on the Clang/LLVM compiler included with the latest versions of Xcode and FreeBSD.
 

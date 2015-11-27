@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.06.0288
+// Standard Global Process Module Version 01.02.07.0318
 // ----------------------------------------------------------------------------
-// PreferencesParameters.h - Released 2015/10/08 11:24:39 UTC
+// PreferencesParameters.h - Released 2015/11/26 16:00:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -235,8 +235,12 @@ DECLARE_STRING_METAPARAMETER  ( Application, resourceFile10,                   S
 DECLARE_BOOLEAN_METAPARAMETER ( Application, autoUIScaling,                    true )
 DECLARE_DOUBLE_METAPARAMETER  ( Application, uiScalingFactor,                  1.0, 1.0, 4.0 )
 DECLARE_INT32_METAPARAMETER   ( Application, fontResolution,                   100, 1, 1000 )
+#ifdef __PCL_WINDOWS
+DECLARE_STRING_METAPARAMETER  ( Application, lowResFont,                       "Verdana" )
+#else
 DECLARE_STRING_METAPARAMETER  ( Application, lowResFont,                       "DejaVu Sans" )
-DECLARE_STRING_METAPARAMETER  ( Application, highResFont,                      "Open Sans" )
+#endif
+DECLARE_STRING_METAPARAMETER  ( Application, highResFont,                      "DejaVu Sans" )
 DECLARE_STRING_METAPARAMETER  ( Application, lowResMonoFont,                   "DejaVu Sans Mono" )
 DECLARE_STRING_METAPARAMETER  ( Application, highResMonoFont,                  "DejaVu Sans Mono" )
 
@@ -253,14 +257,20 @@ DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  hoverableAutoHideWindows,         t
 DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  desktopSettingsAware,             true )
 DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  nativeMenuBar,                    true )
 DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  capitalizedMenuBars,              true )
-DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  translucentWindows,               true )
-#ifdef __PCL_X11
-DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  translucentChildWindows,          true )
+#ifdef __PCL_MACOSX
+DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  windowButtonsOnTheLeft,           true )
 #else
-DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  translucentChildWindows,          false )
+DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  windowButtonsOnTheLeft,           false )
 #endif
+DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  translucentWindows,               true )
+DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  translucentChildWindows,          true )
 DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  fadeWindows,                      true )
 DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  fadeAutoHideWindows,              true )
+#ifdef __PCL_MACOSX
+DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  translucentAutoHideWindows,       false )
+#else
+DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  translucentAutoHideWindows,       true )
+#endif
 DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  fadeWorkspaces,                   true )
 DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  fadeMenu,                         true )
 DECLARE_BOOLEAN_METAPARAMETER ( MainWindow,  fadeToolTip,                      true )
@@ -297,12 +307,14 @@ DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, nativeFileDialogs,                t
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, rememberFileOpenType,             false )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, rememberFileSaveType,             true )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, strictFileSaveMode,               true )
+DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, fileFormatWarnings,               true )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, useFileNamesAsImageIdentifiers,   true )
 DECLARE_INT32_METAPARAMETER   ( ImageWindow, cursorTolerance,                  3, 1, 16 )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, touchEvents,                      true )
 DECLARE_DOUBLE_METAPARAMETER  ( ImageWindow, pinchSensitivity,                 0.050, 0.0, 1.0 )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, fastScreenRenditions,             true )
 DECLARE_INT32_METAPARAMETER   ( ImageWindow, fastScreenRenditionThreshold,     6, 0, 64 )
+DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, highDPIRenditions,                true )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, default24BitScreenLUT,            false )
 DECLARE_TABLE_METAPARAMETER   ( ImageWindow, swapDirectories )
 DECLARE_ROW_STRING_METAPARAMETER( ImageWindow, swapDirectory,                  String() )
@@ -360,4 +372,4 @@ PCL_END_LOCAL
 #endif   // __PreferencesParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesParameters.h - Released 2015/10/08 11:24:39 UTC
+// EOF PreferencesParameters.h - Released 2015/11/26 16:00:12 UTC

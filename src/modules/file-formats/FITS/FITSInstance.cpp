@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard FITS File Format Module Version 01.01.02.0314
+// Standard FITS File Format Module Version 01.01.03.0343
 // ----------------------------------------------------------------------------
-// FITSInstance.cpp - Released 2015/10/08 11:24:33 UTC
+// FITSInstance.cpp - Released 2015/11/26 15:59:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
@@ -140,12 +140,13 @@ public:
 
 FITSInstance::FITSInstance( const FITSFormat* f ) :
    FileFormatImplementation( f ),
-   reader( 0 ),
-   writer( 0 ),
-   readHints( 0 ),
-   embeddedICCProfile( 0 ),
-   embeddedThumbnail( 0 ),
-   queriedOptions( false )
+   reader( nullptr ),
+   writer( nullptr ),
+   readHints( nullptr ),
+   embeddedICCProfile( nullptr ),
+   embeddedThumbnail( nullptr ),
+   queriedOptions( false ),
+   verbosity( 1 )
 {
 }
 
@@ -174,6 +175,7 @@ ImageDescriptionArray FITSInstance::Open( const String& filePath, const IsoStrin
          readHints = new FITSReadHints( hints );
          defaultOptions.bottomUp = readHints->bottomUp;
          defaultOptions.signedIntegersArePhysical = readHints->signedIntegersArePhysical;
+         verbosity = readHints->verbosity;
       }
 
       ImageDescriptionArray a;
@@ -203,10 +205,10 @@ ImageDescriptionArray FITSInstance::Open( const String& filePath, const IsoStrin
    }
    catch ( ... )
    {
-      if ( reader != 0 )
-         delete reader, reader = 0;
-      if ( readHints != 0 )
-         delete readHints, readHints = 0;
+      if ( reader != nullptr )
+         delete reader, reader = nullptr;
+      if ( readHints != nullptr )
+         delete readHints, readHints = nullptr;
       throw;
    }
 }
@@ -215,16 +217,16 @@ ImageDescriptionArray FITSInstance::Open( const String& filePath, const IsoStrin
 
 bool FITSInstance::IsOpen() const
 {
-   return reader != 0 && reader->IsOpen() || writer != 0 && writer->IsOpen();
+   return reader != nullptr && reader->IsOpen() || writer != nullptr && writer->IsOpen();
 }
 
 // ----------------------------------------------------------------------------
 
 String FITSInstance::FilePath() const
 {
-   if ( reader != 0 )
+   if ( reader != nullptr )
       return reader->Path();
-   if ( writer != 0 )
+   if ( writer != nullptr )
       return writer->Path();
    return String();
 }
@@ -233,23 +235,23 @@ String FITSInstance::FilePath() const
 
 void FITSInstance::Close()
 {
-   if ( reader != 0 )
-      delete reader, reader = 0;
-   if ( writer != 0 )
-      delete writer, writer = 0;
-   if ( readHints != 0 )
-      delete readHints, readHints = 0;
-   if ( embeddedICCProfile != 0 )
-      delete embeddedICCProfile, embeddedICCProfile = 0;
-   if ( embeddedThumbnail != 0 )
-      delete embeddedThumbnail, embeddedThumbnail = 0;
+   if ( reader != nullptr )
+      delete reader, reader = nullptr;
+   if ( writer != nullptr )
+      delete writer, writer = nullptr;
+   if ( readHints != nullptr )
+      delete readHints, readHints = nullptr;
+   if ( embeddedICCProfile != nullptr )
+      delete embeddedICCProfile, embeddedICCProfile = nullptr;
+   if ( embeddedThumbnail != nullptr )
+      delete embeddedThumbnail, embeddedThumbnail = nullptr;
 }
 
 // ----------------------------------------------------------------------------
 
 void FITSInstance::SelectImage( int index )
 {
-   if ( reader == 0 || !reader->IsOpen() )
+   if ( reader == nullptr || !reader->IsOpen() )
       throw Error( "FITS format: Attempt to select an image before opening a file" );
 
    if ( int( reader->NumberOfImages() ) == 0 && index != 0 ||
@@ -261,7 +263,7 @@ void FITSInstance::SelectImage( int index )
 
 int FITSInstance::SelectedImageIndex() const
 {
-   if ( reader == 0 || !reader->IsOpen() )
+   if ( reader == nullptr || !reader->IsOpen() )
       throw Error( "FITS format: Attempt to query the selected image before opening a file" );
 
    return reader->Index();
@@ -272,12 +274,12 @@ int FITSInstance::SelectedImageIndex() const
 void* FITSInstance::FormatSpecificData() const
 {
    if ( !IsOpen() )
-      return 0;
+      return nullptr;
 
    FITSFormat::FormatOptions* data = new FITSFormat::FormatOptions;
-   if ( reader != 0 )
+   if ( reader != nullptr )
       data->options = reader->FITSOptions();
-   else if ( writer != 0 )
+   else if ( writer != nullptr )
       data->options = writer->FITSOptions();
    return data;
 }
@@ -289,10 +291,10 @@ void FITSInstance::Extract( FITSKeywordArray& keywords )
    if ( !IsOpen() )
       throw Error( "FITS format: Attempt to extract keywords without opening or creating a file" );
 
-   if ( reader != 0 )
+   if ( reader != nullptr )
    {
       reader->Extract( keywords );
-      if ( !readHints || readHints->verbosity > 0 )
+      if ( verbosity > 0 )
          Console().WriteLn( "<end><cbr>" + String( keywords.Length() ) + " FITS keywords extracted" );
    }
    else
@@ -304,14 +306,14 @@ void FITSInstance::Extract( ICCProfile& icc )
    if ( !IsOpen() )
       throw Error( "FITS format: Attempt to extract an ICC profile without opening or creating a file" );
 
-   if ( reader != 0 )
+   if ( reader != nullptr )
    {
       reader->Extract( icc );
       if ( icc.IsProfile() )
-         if ( !readHints || readHints->verbosity > 0 )
+         if ( verbosity > 0 )
             Console().WriteLn( "<end><cbr>ICC profile extracted: \'" + icc.Description() + "\', " + String( icc.ProfileSize() ) + " bytes" );
    }
-   else if ( writer->EmbeddedICCProfile() != 0 )
+   else if ( writer->EmbeddedICCProfile() != nullptr )
       icc = *writer->EmbeddedICCProfile();
 }
 
@@ -320,9 +322,9 @@ void FITSInstance::Extract( pcl::UInt8Image& thumbnail )
    if ( !IsOpen() )
       throw Error( "FITS format: Attempt to extract a thumbnail image without opening or creating a file" );
 
-   if ( reader != 0 )
+   if ( reader != nullptr )
       reader->Extract( thumbnail );
-   else if ( writer->EmbeddedThumbnail() != 0 )
+   else if ( writer->EmbeddedThumbnail() != nullptr )
       thumbnail = *writer->EmbeddedThumbnail();
 }
 
@@ -330,7 +332,7 @@ void FITSInstance::Extract( pcl::UInt8Image& thumbnail )
 
 ImagePropertyDescriptionArray FITSInstance::Properties()
 {
-   if ( reader == 0 )
+   if ( reader == nullptr )
       throw Error( "FITS format: Attempt to get property information without opening an existing file" );
 
    ImagePropertyDescriptionArray properties;
@@ -352,7 +354,7 @@ ImagePropertyDescriptionArray FITSInstance::Properties()
 
 Variant FITSInstance::ReadProperty( const IsoString& property )
 {
-   if ( reader == 0 )
+   if ( reader == nullptr )
       throw Error( "FITS format: Attempt to read a data property without opening an existing file" );
 
    if ( !readHints || !readHints->noProperties )
@@ -360,8 +362,8 @@ Variant FITSInstance::ReadProperty( const IsoString& property )
       ByteArray data;
       if ( reader->Extract( data, property ) )
       {
-         if ( !readHints || readHints->verbosity > 0 )
-            Console().WriteLn( "<end><cbr>Property extracted: \'" + property + "\', " + String( data.Length() ) + " bytes" );
+         if ( verbosity > 0 )
+            Console().WriteLn( "<end><cbr>BLOB property extracted: \'" + property + "\', " + String( data.Length() ) + " bytes" );
          return data;
       }
    }
@@ -370,7 +372,7 @@ Variant FITSInstance::ReadProperty( const IsoString& property )
 
 void FITSInstance::WriteProperty( const IsoString& property, const Variant& value )
 {
-   if ( writer == 0 )
+   if ( writer == nullptr )
       throw Error( "FITS format: Attempt to write a data property without creating a new file" );
 
    /*
@@ -381,8 +383,8 @@ void FITSInstance::WriteProperty( const IsoString& property, const Variant& valu
    {
       ByteArray data = value.ToByteArray();
       writer->Embed( data, property );
-      if ( !readHints || readHints->verbosity > 0 )
-         Console().WriteLn( "<end><cbr>Property embedded: \'" + property + "\', " + String( data.Length() ) + " bytes" );
+      if ( verbosity > 0 )
+         Console().WriteLn( "<end><cbr>BLOB property embedded: \'" + property + "\', " + String( data.Length() ) + " bytes" );
    }
 }
 
@@ -415,13 +417,13 @@ static bool ApplyOutOfRangePolicy( GenericImage<P>& image, const FITSReadHints* 
     * Apply out-of-range policy.
     */
    FITSFormat::OutOfRangePolicyOptions options = FITSFormat::DefaultOutOfRangePolicyOptions();
-   if ( readHints )
+   if ( readHints != nullptr )
    {
       options.lowerRange = readHints->lowerRange;
       options.upperRange = readHints->upperRange;
       options.outOfRangeFixMode = readHints->outOfRangeFixMode;
    }
-   else // if there are readHints, never ask user.
+   else // if there are hints, never ask user.
    {
       switch ( options.outOfRangePolicy )
       {
@@ -521,7 +523,7 @@ static bool ApplyOutOfRangePolicy( GenericImage<P>& image, const FITSReadHints* 
    else
    {
       if ( mn < options.lowerRange || mx > options.upperRange )
-         if ( !readHints || readHints->verbosity > 0 )
+         if ( readHints == nullptr || readHints->verbosity > 0 )
             Console().WarningLn( String().Format( "<end><cbr>** Warning: FITS: Out-of-range floating point pixel sample values "
                                                   "were not fixed because of permissive policy. Data range is [%.15g,%.15g]", mn, mx ) );
    }
@@ -586,7 +588,7 @@ static void ReadFITSImage2( DImage& image, FITSReader* reader, const FITSReadHin
 template <class P>
 static void ReadFITSImage1( GenericImage<P>& image, FITSReader* reader, const FITSReadHints* readHints )
 {
-   if ( reader == 0 || !reader->IsOpen() )
+   if ( reader == nullptr || !reader->IsOpen() )
       throw Error( "FITS format: Attempt to read an image before opening a file" );
 
    // Disable automatic normalization of floating point FITS images
@@ -628,7 +630,7 @@ void FITSInstance::ReadImage( UInt32Image& image )
 template <class T>
 void ReadFITSPixels( T* buffer, int startRow, int rowCount, int channel, FITSReader* reader )
 {
-   if ( reader == 0 || !reader->IsOpen() )
+   if ( reader == nullptr || !reader->IsOpen() )
       throw Error( "FITS format: Attempt to perform an incremental read operation before opening a file" );
 
    reader->Read( buffer, startRow, rowCount, channel );
@@ -673,15 +675,15 @@ bool FITSInstance::QueryOptions( Array<ImageOptions>& imageOptions, Array<void*>
 
    // Format-specific options
 
-   FITSFormat::FormatOptions* fits = 0;
+   FITSFormat::FormatOptions* fits = nullptr;
    if ( !formatOptions.IsEmpty() )
    {
       FITSFormat::FormatOptions* o = FITSFormat::FormatOptions::FromGenericDataBlock( *formatOptions );
-      if ( o != 0 )
+      if ( o != nullptr )
          fits = o;
    }
 
-   bool reusedFormatOptions = fits != 0;
+   bool reusedFormatOptions = fits != nullptr;
    if ( !reusedFormatOptions )
       fits = new FITSFormat::FormatOptions;
 
@@ -705,12 +707,12 @@ bool FITSInstance::QueryOptions( Array<ImageOptions>& imageOptions, Array<void*>
       fits->options = dlg.fitsOptions;
 
       if ( imageOptions.IsEmpty() )
-         imageOptions.Add( dlg.options );
+         imageOptions << dlg.options;
       else
          *imageOptions = dlg.options;
 
       if ( formatOptions.IsEmpty() )
-         formatOptions.Add( (void*)fits );
+         formatOptions << (void*)fits;
       else
          *formatOptions = (void*)fits;
 
@@ -736,27 +738,38 @@ void FITSInstance::Create( const String& filePath, int /*numberOfImages*/, const
 
    FITSImageOptions options = FITSFormat::DefaultOptions();
 
-   IsoStringList theHints;
-   hints.Break( theHints, ' ', true/*trim*/ );
-   theHints.Remove( IsoString() );
-   for ( IsoStringList::const_iterator i = theHints.Begin(); i < theHints.End(); ++i )
+   if ( !hints.IsEmpty() )
    {
-      if ( *i == "unsigned" )
-         options.unsignedIntegers = true;
-      else if ( *i == "signed" )
-         options.unsignedIntegers = false;
-      else if ( *i == "bottom-up" )
-         options.bottomUp = true;
-      else if ( *i == "up-bottom" )
-         options.bottomUp = false;
-      else if ( *i == "cleanup-headers" )
-         options.cleanupHeaders = true;
-      else if ( *i == "no-cleanup-headers" )
-         options.cleanupHeaders = false;
-      else if ( *i == "no-properties" )
-         writer->Options().embedProperties = false;
-      else if ( *i == "properties" )
-         writer->Options().embedProperties = true;
+      IsoStringList theHints;
+      hints.Break( theHints, ' ', true/*trim*/ );
+      theHints.Remove( IsoString() );
+      for ( IsoStringList::const_iterator i = theHints.Begin(); i < theHints.End(); ++i )
+      {
+         if ( *i == "unsigned" )
+            options.unsignedIntegers = true;
+         else if ( *i == "signed" )
+            options.unsignedIntegers = false;
+         else if ( *i == "bottom-up" )
+            options.bottomUp = true;
+         else if ( *i == "up-bottom" )
+            options.bottomUp = false;
+         else if ( *i == "cleanup-headers" )
+            options.cleanupHeaders = true;
+         else if ( *i == "no-cleanup-headers" )
+            options.cleanupHeaders = false;
+         else if ( *i == "no-properties" )
+            writer->Options().embedProperties = false;
+         else if ( *i == "properties" )
+            writer->Options().embedProperties = true;
+         else if ( *i == "verbosity" )
+         {
+            if ( ++i == theHints.End() )
+               break;
+            int n;
+            if ( i->TryToInt( n ) )
+               verbosity = Max( 0, n );
+         }
+      }
    }
 
    writer->SetFITSOptions( options );
@@ -766,7 +779,7 @@ void FITSInstance::Create( const String& filePath, int /*numberOfImages*/, const
 
 void FITSInstance::SetId( const IsoString& id )
 {
-   if ( writer == 0 || !writer->IsOpen() )
+   if ( writer == nullptr || !writer->IsOpen() )
       throw Error( "FITS format: Attempt to set an image identifier before creating a file" );
 
    writer->SetId( id );
@@ -774,7 +787,7 @@ void FITSInstance::SetId( const IsoString& id )
 
 void FITSInstance::SetOptions( const ImageOptions& options )
 {
-   if ( writer == 0 || !writer->IsOpen() )
+   if ( writer == nullptr || !writer->IsOpen() )
       throw Error( "FITS format: Attempt to set image options before creating a file" );
 
    writer->Options() = options;
@@ -795,7 +808,7 @@ void FITSInstance::SetOptions( const ImageOptions& options )
 
 void FITSInstance::SetFormatSpecificData( const void* data )
 {
-   if ( writer == 0 || !writer->IsOpen() )
+   if ( writer == nullptr || !writer->IsOpen() )
       throw Error( "FITS format: Attempt to set format-specific options before creating a file" );
 /*
  * ### The FITS writer has no per-instance configurable format data.
@@ -810,30 +823,30 @@ void FITSInstance::SetFormatSpecificData( const void* data )
 
 void FITSInstance::Embed( const FITSKeywordArray& keywords )
 {
-   if ( writer == 0 || !writer->IsOpen() )
+   if ( writer == nullptr || !writer->IsOpen() )
       throw Error( "FITS format: Attempt to embed FITS header keywords before creating a file" );
 
    writer->Embed( keywords );
-   if ( !readHints || readHints->verbosity > 0 )
+   if ( verbosity > 0 )
       Console().WriteLn( "<end><cbr>" + String( keywords.Length() ) + " FITS keywords embedded" );
 }
 
 void FITSInstance::Embed( const ICCProfile& icc )
 {
-   if ( writer == 0 || !writer->IsOpen() )
+   if ( writer == nullptr || !writer->IsOpen() )
       throw Error( "FITS format: Attempt to embed an ICC profile before creating a file" );
 
    if ( icc.IsProfile() )
    {
       writer->Embed( *(embeddedICCProfile = new ICCProfile( icc )) );
-      if ( !readHints || readHints->verbosity > 0 )
+      if ( verbosity > 0 )
          Console().WriteLn( "<end><cbr>ICC profile embedded: \'" + icc.Description() + "\', " + String( icc.ProfileSize() ) + " bytes" );
    }
 }
 
 void FITSInstance::Embed( const pcl::UInt8Image& thumbnail )
 {
-   if ( writer == 0 || !writer->IsOpen() )
+   if ( writer == nullptr || !writer->IsOpen() )
       throw Error( "FITS format: Attempt to embed a thumbnail image before creating a file" );
 
    if ( !thumbnail.IsEmpty() )
@@ -845,7 +858,7 @@ void FITSInstance::Embed( const pcl::UInt8Image& thumbnail )
 template <class P>
 static void WriteFITSImage( const GenericImage<P>& image, FITSWriter* writer )
 {
-   if ( writer == 0 || !writer->IsOpen() )
+   if ( writer == nullptr || !writer->IsOpen() )
       throw Error( "FITS format: Attempt to write an image before creating a file" );
 
    StandardStatus status;
@@ -880,7 +893,7 @@ void FITSInstance::WriteImage( const UInt32Image& image )
 
 void FITSInstance::CreateImage( const ImageInfo& info )
 {
-   if ( writer == 0 || !writer->IsOpen() )
+   if ( writer == nullptr || !writer->IsOpen() )
       throw Error( "FITS format: Attempt to create an image before creating a file" );
 
    writer->CreateImage( info );
@@ -889,7 +902,7 @@ void FITSInstance::CreateImage( const ImageInfo& info )
 template <class T>
 void WriteFITSPixels( const T* buffer, int startRow, int rowCount, int channel, FITSWriter* writer )
 {
-   if ( writer == 0 || !writer->IsOpen() )
+   if ( writer == nullptr || !writer->IsOpen() )
       throw Error( "FITS format: Attempt to perform an incremental write operation before creating a file" );
 
    writer->Write( buffer, startRow, rowCount, channel );
@@ -925,4 +938,4 @@ void FITSInstance::Write( const UInt32Image::sample* buffer, int startRow, int r
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FITSInstance.cpp - Released 2015/10/08 11:24:33 UTC
+// EOF FITSInstance.cpp - Released 2015/11/26 15:59:58 UTC

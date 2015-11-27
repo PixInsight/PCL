@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/MetaFileFormat.cpp - Released 2015/10/08 11:24:19 UTC
+// pcl/MetaFileFormat.cpp - Released 2015/11/26 15:59:45 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -365,7 +365,7 @@ public:
       {
          String s = constInstance->FilePath();
          s.EnsureUnique();
-         return s.Release(); // the PI app. will invoke the module deallocation routine
+         return s.Release(); // the core will invoke the module deallocation routine
       }
       ERROR_HANDLER
       return 0;
@@ -429,7 +429,7 @@ public:
       {
          String s = constInstance->ImageProperties();
          s.EnsureUnique();
-         return s.Release(); // the PI app. will invoke the module deallocation routine
+         return s.Release(); // the core will invoke the module deallocation routine
       }
       ERROR_HANDLER
       return 0;
@@ -1477,6 +1477,20 @@ public:
       return api_false;
    }
 
+   // -------------------------------------------------------------------------
+
+   static const char16_type* api_func QueryFormatStatus( meta_format_handle hF, void* /*reserved*/ )
+   {
+      try
+      {
+         String s = format->Status();
+         s.EnsureUnique();
+         return s.Release(); // the core will invoke the module deallocation routine
+      }
+      ERROR_HANDLER
+      return 0;
+   }
+
 }; // FileFormatDispatcher
 
 #undef format
@@ -1493,14 +1507,14 @@ void MetaFileFormat::PerformAPIDefinitions() const
       Array<const char16_type*> cext;
       StringList extList = FileExtensions();
       for ( StringList::const_iterator i = extList.Begin(); i != extList.End(); ++i )
-         cext.Add( i->c_str() );
-      cext.Add( 0 );
+         cext << i->c_str();
+      cext << nullptr;
 
       Array<const char*> cmime;
       IsoStringList mimeList = MimeTypes();
       for ( IsoStringList::const_iterator i = mimeList.Begin(); i != mimeList.End(); ++i )
-         cmime.Add( i->c_str() );
-      cmime.Add( 0 );
+         cmime << i->c_str();
+      cmime << nullptr;
 
       IsoString name = Name();
 
@@ -1568,7 +1582,9 @@ void MetaFileFormat::PerformAPIDefinitions() const
    caps.supportsMultipleImages = SupportsMultipleImages();
    caps.usesFormatSpecificData = UsesFormatSpecificData();
    caps.canEditPreferences = CanEditPreferences();
+   caps.supportsViewProperties = SupportsViewProperties();
    caps.__r__ = 0;
+   caps.deprecated = IsDeprecated();
 
    (*API->FileFormatDefinition->SetFileFormatCaps)( &caps );
 
@@ -1644,6 +1660,7 @@ void MetaFileFormat::PerformAPIDefinitions() const
    (*API->FileFormatDefinition->SetFileFormatWritePixelsRoutine)( FileFormatDispatcher::WritePixels );
    (*API->FileFormatDefinition->SetFileFormatQueryInexactReadRoutine)( FileFormatDispatcher::QueryInexactRead );
    (*API->FileFormatDefinition->SetFileFormatQueryLossyWriteRoutine)( FileFormatDispatcher::QueryLossyWrite );
+   (*API->FileFormatDefinition->SetFileFormatQueryFormatStatusRoutine)( FileFormatDispatcher::QueryFormatStatus );
 
    (*API->FileFormatDefinition->EndFileFormatDefinition)();
 
@@ -1655,4 +1672,4 @@ void MetaFileFormat::PerformAPIDefinitions() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaFileFormat.cpp - Released 2015/10/08 11:24:19 UTC
+// EOF pcl/MetaFileFormat.cpp - Released 2015/11/26 15:59:45 UTC

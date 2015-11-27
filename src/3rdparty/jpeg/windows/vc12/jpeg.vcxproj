@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.96
+# PixInsight Makefile Generator Script v1.100
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 08 Oct 2015 11:23:22 GMT
+# Automatically generated on Thu, 26 Nov 2015 11:35:37 GMT
 # Project id ...... jpeg
 # Project type .... DynamicLibrary
 # Platform ........ Windows/vc12
@@ -33,7 +33,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9A65FDD9-FFE1-48A6-B8F0-DD61A64D9799}</ProjectGuid>
+    <ProjectGuid>{CB270911-7C3B-49B1-8AFA-653F11923F7A}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -110,9 +110,11 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat></DebugInformationFormat>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -151,9 +153,11 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat></DebugInformationFormat>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -187,7 +191,8 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -217,7 +222,8 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -239,65 +245,65 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\jaricom.c"/>
-    <ClCompile Include="..\..\jcapimin.c"/>
-    <ClCompile Include="..\..\jcapistd.c"/>
-    <ClCompile Include="..\..\jcarith.c"/>
-    <ClCompile Include="..\..\jccoefct.c"/>
-    <ClCompile Include="..\..\jccolor.c"/>
-    <ClCompile Include="..\..\jcdctmgr.c"/>
-    <ClCompile Include="..\..\jchuff.c"/>
-    <ClCompile Include="..\..\jcinit.c"/>
-    <ClCompile Include="..\..\jcmainct.c"/>
-    <ClCompile Include="..\..\jcmarker.c"/>
-    <ClCompile Include="..\..\jcmaster.c"/>
-    <ClCompile Include="..\..\jcomapi.c"/>
-    <ClCompile Include="..\..\jcparam.c"/>
-    <ClCompile Include="..\..\jcprepct.c"/>
-    <ClCompile Include="..\..\jcsample.c"/>
-    <ClCompile Include="..\..\jctrans.c"/>
-    <ClCompile Include="..\..\jdapimin.c"/>
-    <ClCompile Include="..\..\jdapistd.c"/>
-    <ClCompile Include="..\..\jdarith.c"/>
-    <ClCompile Include="..\..\jdatadst.c"/>
-    <ClCompile Include="..\..\jdatasrc.c"/>
-    <ClCompile Include="..\..\jdcoefct.c"/>
-    <ClCompile Include="..\..\jdcolor.c"/>
-    <ClCompile Include="..\..\jddctmgr.c"/>
-    <ClCompile Include="..\..\jdhuff.c"/>
-    <ClCompile Include="..\..\jdinput.c"/>
-    <ClCompile Include="..\..\jdmainct.c"/>
-    <ClCompile Include="..\..\jdmarker.c"/>
-    <ClCompile Include="..\..\jdmaster.c"/>
-    <ClCompile Include="..\..\jdmerge.c"/>
-    <ClCompile Include="..\..\jdpostct.c"/>
-    <ClCompile Include="..\..\jdsample.c"/>
-    <ClCompile Include="..\..\jdtrans.c"/>
-    <ClCompile Include="..\..\jerror.c"/>
-    <ClCompile Include="..\..\jfdctflt.c"/>
-    <ClCompile Include="..\..\jfdctfst.c"/>
-    <ClCompile Include="..\..\jfdctint.c"/>
-    <ClCompile Include="..\..\jidctflt.c"/>
-    <ClCompile Include="..\..\jidctfst.c"/>
-    <ClCompile Include="..\..\jidctint.c"/>
-    <ClCompile Include="..\..\jmemmgr.c"/>
-    <ClCompile Include="..\..\jmemnobs.c"/>
-    <ClCompile Include="..\..\jquant1.c"/>
-    <ClCompile Include="..\..\jquant2.c"/>
-    <ClCompile Include="..\..\jutils.c"/>
+    <ClCompile Include="..\..\jaricom.c" />
+    <ClCompile Include="..\..\jcapimin.c" />
+    <ClCompile Include="..\..\jcapistd.c" />
+    <ClCompile Include="..\..\jcarith.c" />
+    <ClCompile Include="..\..\jccoefct.c" />
+    <ClCompile Include="..\..\jccolor.c" />
+    <ClCompile Include="..\..\jcdctmgr.c" />
+    <ClCompile Include="..\..\jchuff.c" />
+    <ClCompile Include="..\..\jcinit.c" />
+    <ClCompile Include="..\..\jcmainct.c" />
+    <ClCompile Include="..\..\jcmarker.c" />
+    <ClCompile Include="..\..\jcmaster.c" />
+    <ClCompile Include="..\..\jcomapi.c" />
+    <ClCompile Include="..\..\jcparam.c" />
+    <ClCompile Include="..\..\jcprepct.c" />
+    <ClCompile Include="..\..\jcsample.c" />
+    <ClCompile Include="..\..\jctrans.c" />
+    <ClCompile Include="..\..\jdapimin.c" />
+    <ClCompile Include="..\..\jdapistd.c" />
+    <ClCompile Include="..\..\jdarith.c" />
+    <ClCompile Include="..\..\jdatadst.c" />
+    <ClCompile Include="..\..\jdatasrc.c" />
+    <ClCompile Include="..\..\jdcoefct.c" />
+    <ClCompile Include="..\..\jdcolor.c" />
+    <ClCompile Include="..\..\jddctmgr.c" />
+    <ClCompile Include="..\..\jdhuff.c" />
+    <ClCompile Include="..\..\jdinput.c" />
+    <ClCompile Include="..\..\jdmainct.c" />
+    <ClCompile Include="..\..\jdmarker.c" />
+    <ClCompile Include="..\..\jdmaster.c" />
+    <ClCompile Include="..\..\jdmerge.c" />
+    <ClCompile Include="..\..\jdpostct.c" />
+    <ClCompile Include="..\..\jdsample.c" />
+    <ClCompile Include="..\..\jdtrans.c" />
+    <ClCompile Include="..\..\jerror.c" />
+    <ClCompile Include="..\..\jfdctflt.c" />
+    <ClCompile Include="..\..\jfdctfst.c" />
+    <ClCompile Include="..\..\jfdctint.c" />
+    <ClCompile Include="..\..\jidctflt.c" />
+    <ClCompile Include="..\..\jidctfst.c" />
+    <ClCompile Include="..\..\jidctint.c" />
+    <ClCompile Include="..\..\jmemmgr.c" />
+    <ClCompile Include="..\..\jmemnobs.c" />
+    <ClCompile Include="..\..\jquant1.c" />
+    <ClCompile Include="..\..\jquant2.c" />
+    <ClCompile Include="..\..\jutils.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\jconfig.h"/>
-    <ClInclude Include="..\..\jdct.h"/>
-    <ClInclude Include="..\..\jerror.h"/>
-    <ClInclude Include="..\..\jinclude.h"/>
-    <ClInclude Include="..\..\jmemsys.h"/>
-    <ClInclude Include="..\..\jmorecfg.h"/>
-    <ClInclude Include="..\..\jpegint.h"/>
-    <ClInclude Include="..\..\jpeglib.h"/>
-    <ClInclude Include="..\..\jversion.h"/>
+    <ClInclude Include="..\..\jconfig.h" />
+    <ClInclude Include="..\..\jdct.h" />
+    <ClInclude Include="..\..\jerror.h" />
+    <ClInclude Include="..\..\jinclude.h" />
+    <ClInclude Include="..\..\jmemsys.h" />
+    <ClInclude Include="..\..\jmorecfg.h" />
+    <ClInclude Include="..\..\jpegint.h" />
+    <ClInclude Include="..\..\jpeglib.h" />
+    <ClInclude Include="..\..\jversion.h" />
   </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

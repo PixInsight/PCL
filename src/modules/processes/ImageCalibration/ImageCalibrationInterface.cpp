@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.00.0223
+// Standard ImageCalibration Process Module Version 01.03.05.0262
 // ----------------------------------------------------------------------------
-// ImageCalibrationInterface.cpp - Released 2015/10/08 11:24:40 UTC
+// ImageCalibrationInterface.cpp - Released 2015/11/26 16:00:13 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -308,7 +308,7 @@ void ImageCalibrationInterface::UpdateMasterFrameControls()
 
    GUI->OptimizeDarks_CheckBox.SetChecked( instance.optimizeDarks );
 
-   GUI->DarkOptimizationThreshold_NumericControl.SetValue( instance.darkOptimizationThreshold );
+   GUI->DarkOptimizationThreshold_NumericControl.SetValue( instance.darkOptimizationLow );
    GUI->DarkOptimizationThreshold_NumericControl.Enable( instance.optimizeDarks );
 
    GUI->DarkOptimizationWindow_Label.Enable( instance.optimizeDarks );
@@ -714,7 +714,10 @@ void ImageCalibrationInterface::__MasterFrame_ItemSelected( ComboBox& sender, in
 void ImageCalibrationInterface::__MasterFrame_ValueUpdated( NumericEdit& sender, double value )
 {
    if ( sender == GUI->DarkOptimizationThreshold_NumericControl )
-      instance.darkOptimizationThreshold = value;
+   {
+      instance.darkOptimizationLow = value;
+      instance.darkOptimizationThreshold = 0; // deprecated parameter, for compatibility with old versions.
+   }
 }
 
 void ImageCalibrationInterface::__Overscan_ValueUpdated( NumericEdit& sender, double value_ )
@@ -1798,16 +1801,18 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
 
    DarkOptimizationThreshold_NumericControl.label.SetText( "Optimization threshold:" );
    DarkOptimizationThreshold_NumericControl.label.SetFixedWidth( labelWidth1 );
-   DarkOptimizationThreshold_NumericControl.slider.SetRange( 0, 250 );
+   DarkOptimizationThreshold_NumericControl.slider.SetRange( 0, 200 );
    DarkOptimizationThreshold_NumericControl.slider.SetScaledMinWidth( 250 );
    DarkOptimizationThreshold_NumericControl.SetReal();
-   DarkOptimizationThreshold_NumericControl.SetRange( TheICDarkOptimizationThresholdParameter->MinimumValue(), TheICDarkOptimizationThresholdParameter->MaximumValue() );
-   DarkOptimizationThreshold_NumericControl.SetPrecision( TheICDarkOptimizationThresholdParameter->Precision() );
+   DarkOptimizationThreshold_NumericControl.SetRange( TheICDarkOptimizationLowParameter->MinimumValue(), TheICDarkOptimizationLowParameter->MaximumValue() );
+   DarkOptimizationThreshold_NumericControl.SetPrecision( TheICDarkOptimizationLowParameter->Precision() );
    DarkOptimizationThreshold_NumericControl.edit.SetFixedWidth( editWidth2 );
-   DarkOptimizationThreshold_NumericControl.SetToolTip( "<p>Lower bound for the set of dark optimization pixels. "
-      "Set to zero (the default value) to optimize for the whole master dark frame. Set to a value greater than "
-      "zero to restrict dark frame optimization to pixels with higher SNR. This option can be useful to improve "
-      "correction of hot pixels with relatively poor master bias and dark frames.</p>" );
+   DarkOptimizationThreshold_NumericControl.SetToolTip( "<p>Lower bound for the set of dark optimization pixels, "
+      "measured in sigma units from the median.</p>"
+      "<p>This parameter defines the set of dark frame pixels that will be used to compute dark optimization "
+      "factors adaptively. By restricting this set to relatively bright pixels, the optimization process can "
+      "be more robust to readout noise present in the master bias and dark frames. Increase this parameter to "
+      "remove more dark pixels from the optimization set.</p>" );
    DarkOptimizationThreshold_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&ImageCalibrationInterface::__MasterFrame_ValueUpdated, w );
 
    const char* darkOptimizationWindowTip = "<p>This parameter is the size in pixels of a square region "
@@ -1954,4 +1959,4 @@ ImageCalibrationInterface::GUIData::GUIData( ImageCalibrationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageCalibrationInterface.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF ImageCalibrationInterface.cpp - Released 2015/11/26 16:00:13 UTC

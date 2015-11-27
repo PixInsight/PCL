@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.00.0314
+// Standard IntensityTransformations Process Module Version 01.07.01.0345
 // ----------------------------------------------------------------------------
-// ColorSaturationInstance.cpp - Released 2015/10/08 11:24:40 UTC
+// ColorSaturationInstance.cpp - Released 2015/11/26 16:00:13 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -190,12 +190,9 @@ private:
    static DVector MakeLUT( const ColorSaturationInstance& instance )
    {
       DVector lut( lutLen );
-
       AutoPointer<interpolator> iHS( instance.Curve().InitInterpolator() );
-
       for ( int i = 0; i < lutLen; ++i )
          lut[i] = BiasToSaturationFactor( HSCurve::Interpolate( iHS, instance.UnshiftHueValue( double( i )/lutMax ) ) );
-
       return lut;
    }
 
@@ -361,4 +358,4 @@ size_type ColorSaturationInstance::ParameterLength( const MetaParameter* /*p*/, 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ColorSaturationInstance.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF ColorSaturationInstance.cpp - Released 2015/11/26 16:00:13 UTC

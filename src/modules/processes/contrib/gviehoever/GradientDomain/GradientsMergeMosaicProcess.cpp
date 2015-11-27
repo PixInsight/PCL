@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard GradientDomain Process Module Version 00.06.04.0125
+// Standard GradientDomain Process Module Version 00.06.04.0155
 // ----------------------------------------------------------------------------
-// GradientsMergeMosaicProcess.cpp - Released 2015/10/08 11:24:40 UTC
+// GradientsMergeMosaicProcess.cpp - Released 2015/11/26 16:00:13 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard GradientDomain PixInsight module.
 //
@@ -136,4 +136,4 @@ ProcessImplementation* GradientsMergeMosaicProcess::Clone( const ProcessImplemen
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF GradientsMergeMosaicProcess.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF GradientsMergeMosaicProcess.cpp - Released 2015/11/26 16:00:13 UTC

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.03.0064
+// Standard XISF File Format Module Version 01.00.04.0094
 // ----------------------------------------------------------------------------
-// XISFPreferencesDialog.cpp - Released 2015/10/08 11:24:33 UTC
+// XISFPreferencesDialog.cpp - Released 2015/11/26 15:59:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
@@ -271,6 +271,10 @@ void XISFPreferencesDialog::Button_Click( Button& sender, bool checked )
       CompressionLevel_SpinBox.SetValue( defaultOptions.compressionLevel );
       CompressionShuffle_CheckBox.SetChecked( options.compressionMethod == XISF_COMPRESSION_NONE ||
                                               XISFEngineBase::CompressionUsesByteShuffle( options.compressionMethod ) );
+      DataCompression_GroupBox.SetChecked( options.compressionMethod != XISF_COMPRESSION_NONE );
+
+      Checksums_ComboBox.SetCurrentItem( ChecksumMethodToComboBoxItem( defaultOptions.checksumMethod ) );
+      Security_GroupBox.SetChecked( options.checksumMethod != XISF_CHECKSUM_NONE );
 
       AlignmentSize_SpinBox.SetValue( defaultOptions.blockAlignmentSize );
       MaxInlineSize_SpinBox.SetValue( defaultOptions.maxInlineBlockSize );
@@ -316,4 +320,4 @@ void XISFPreferencesDialog::Dialog_Return( Dialog& sender, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISFPreferencesDialog.cpp - Released 2015/10/08 11:24:33 UTC
+// EOF XISFPreferencesDialog.cpp - Released 2015/11/26 15:59:58 UTC

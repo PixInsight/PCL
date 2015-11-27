@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.06.0288
+// Standard Global Process Module Version 01.02.07.0318
 // ----------------------------------------------------------------------------
-// PreferencesInterface.h - Released 2015/10/08 11:24:39 UTC
+// PreferencesInterface.h - Released 2015/11/26 16:00:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -398,9 +398,9 @@ public:
 
    virtual String Title() = 0;
 
-   virtual Bitmap Icon( double uiScalingFactor = 1.0 )
+   virtual Bitmap Icon( double resourceScalingFactor )
    {
-      return Bitmap( UIScaledResource( uiScalingFactor, ":/icons/gear.png" ) );
+      return Bitmap( UIScaledResource( resourceScalingFactor, ":/icons/gear.png" ) );
    }
 
    void HidePage()
@@ -458,11 +458,12 @@ public:
 
    GlobalFlagControl    MaximizeAtStartup_Flag;
    GlobalFlagControl    FullScreenAtStartup_Flag;
-   GlobalFlagControl    NativeMenuBar_Flag;
-   GlobalFlagControl    CapitalizedMenuBars_Flag;
    GlobalFlagControl    ShowSplashAtStartup_Flag;
    GlobalFlagControl    CheckForUpdatesAtStartup_Flag;
    GlobalFlagControl    ConfirmProgramTermination_Flag;
+   GlobalFlagControl    NativeMenuBar_Flag;
+   GlobalFlagControl    CapitalizedMenuBars_Flag;
+   GlobalFlagControl    WindowButtonsOnTheLeft_Flag;
    GlobalFlagControl    AcceptDroppedFiles_Flag;
    GlobalFlagControl    DoubleClickLaunchesOpenDialog_Flag;
    GlobalIntegerControl MaxRecentFiles_Integer;
@@ -512,6 +513,7 @@ public:
    GlobalFlagControl    TranslucentChildWindows_Flag;
    GlobalFlagControl    FadeWindows_Flag;
    GlobalFlagControl    FadeAutoHideWindows_Flag;
+   GlobalFlagControl    TranslucentAutoHideWindows_Flag;
    GlobalFlagControl    FadeWorkspaces_Flag;
    GlobalFlagControl    FadeMenu_Flag;
    GlobalFlagControl    FadeToolTip_Flag;
@@ -542,6 +544,7 @@ public:
    GlobalFlagControl    RememberFileOpenType_Flag;
    GlobalFlagControl    RememberFileSaveType_Flag;
    GlobalFlagControl    StrictFileSaveMode_Flag;
+   GlobalFlagControl    FileFormatWarnings_Flag;
    GlobalFlagControl    DefaultEmbedThumbnails_Flag;
    GlobalFlagControl    DefaultEmbedProperties_Flag;
 };
@@ -636,6 +639,7 @@ public:
    GlobalRealControl    PinchSensitivity_Real;
    GlobalFlagControl    FastScreenRenditions_Flag;
    GlobalIntegerControl FastScreenRenditionThreshold_Integer;
+   GlobalFlagControl    HighDPIRenditions_Flag;
    GlobalFlagControl    Default24BitScreenLUT_Flag;
 };
 
@@ -857,4 +861,4 @@ PCL_END_LOCAL
 #endif   // __PreferencesInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInterface.h - Released 2015/10/08 11:24:39 UTC
+// EOF PreferencesInterface.h - Released 2015/11/26 16:00:12 UTC

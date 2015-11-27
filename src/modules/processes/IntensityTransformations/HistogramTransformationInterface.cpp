@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.00.0314
+// Standard IntensityTransformations Process Module Version 01.07.01.0345
 // ----------------------------------------------------------------------------
-// HistogramTransformationInterface.cpp - Released 2015/10/08 11:24:40 UTC
+// HistogramTransformationInterface.cpp - Released 2015/11/26 16:00:13 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -372,7 +372,8 @@ bool HistogramTransformationInterface::RequiresRealTimePreviewUpdate( const UInt
 // ----------------------------------------------------------------------------
 
 HistogramTransformationInterface::RealTimeThread::RealTimeThread() :
-Thread(), m_instance( TheHistogramTransformationProcess )
+   Thread(),
+   m_instance( TheHistogramTransformationProcess )
 {
 }
 
@@ -436,17 +437,10 @@ bool HistogramTransformationInterface::WantsImageNotifications() const
 void HistogramTransformationInterface::ImageUpdated( const View& v )
 {
    if ( GUI != 0 && v == m_currentView )
-   {
       if ( !m_currentView.HasProperty( "Histogram16" ) )
-         m_currentView.ComputeProperty( "Histogram16", false/*notify*/ );
-
-      CalculateInputHistograms();
-      CalculateOutputHistograms();
-      CalculateClippingCounts();
-
-      UpdateHistograms();
-      UpdateClippingCountControls();
-   }
+         m_currentView.ComputeProperty( "Histogram16" );
+      else
+         SynchronizeWithCurrentView();
 }
 
 // ----------------------------------------------------------------------------
@@ -458,14 +452,9 @@ void HistogramTransformationInterface::ImageFocused( const View& v )
       GUI->AllViews_ViewList.SelectView( v ); // normally not necessary, but we can invoke this f() directly
 
       if ( !m_currentView.IsNull() && !m_currentView.HasProperty( "Histogram16" ) )
-         m_currentView.ComputeProperty( "Histogram16", false/*notify*/ );
-
-      CalculateInputHistograms();
-      CalculateOutputHistograms();
-      CalculateClippingCounts();
-
-      UpdateHistograms();
-      UpdateClippingCountControls();
+         m_currentView.ComputeProperty( "Histogram16" );
+      else
+         SynchronizeWithCurrentView();
    }
 }
 
@@ -483,14 +472,7 @@ void HistogramTransformationInterface::ViewPropertyUpdated( const View& v, const
    if ( GUI != 0 )
       if ( v == m_currentView )
          if ( property == "Histogram16" || property == "*" )
-         {
-            CalculateInputHistograms();
-            CalculateOutputHistograms();
-            CalculateClippingCounts();
-
-            UpdateHistograms();
-            UpdateClippingCountControls();
-         }
+            SynchronizeWithCurrentView();
 }
 
 // ----------------------------------------------------------------------------
@@ -962,13 +944,8 @@ void HistogramTransformationInterface::SetPlotResolution( int r )
 {
    m_plotResolution = r;
 
-   CalculateInputHistograms();
-   CalculateOutputHistograms();
-   CalculateClippingCounts();
-
+   SynchronizeWithCurrentView();
    UpdateGraphicsControls();
-   UpdateHistograms();
-   UpdateClippingCountControls();
 
    if ( TheCurvesTransformationInterface->IsVisible() )
       TheCurvesTransformationInterface->UpdateHistograms();
@@ -1344,6 +1321,16 @@ void HistogramTransformationInterface::UpdateRealTimePreview()
          m_realTimeThread->Abort();
       GUI->UpdateRealTimePreview_Timer.Start();
    }
+}
+
+void HistogramTransformationInterface::SynchronizeWithCurrentView()
+{
+   CalculateInputHistograms();
+   CalculateOutputHistograms();
+   CalculateClippingCounts();
+
+   UpdateHistograms();
+   UpdateClippingCountControls();
 }
 
 // ----------------------------------------------------------------------------
@@ -1845,20 +1832,14 @@ void HistogramTransformationInterface::RegenerateSlidersViewport()
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-void HistogramTransformationInterface::__ViewList_ViewSelected( ViewList& /*sender*/, View& /*v*/ )
+void HistogramTransformationInterface::__ViewList_ViewSelected( ViewList&, View& )
 {
    DeactivateTrackView();
 
-   if ( !m_currentView.IsNull() )
-      if ( !m_currentView.HasProperty( "Histogram16" ) )
-         m_currentView.ComputeProperty( "Histogram16", false/*notify*/ );
-
-   CalculateInputHistograms();
-   CalculateOutputHistograms();
-   UpdateHistograms();
-
-   CalculateClippingCounts();
-   UpdateClippingCountControls();
+   if ( !m_currentView.IsNull() && !m_currentView.HasProperty( "Histogram16" ) )
+      m_currentView.ComputeProperty( "Histogram16" );
+   else
+      SynchronizeWithCurrentView();
 }
 
 void HistogramTransformationInterface::__Histogram_Paint( Control& sender, const pcl::Rect& updateRect )
@@ -2083,16 +2064,16 @@ void HistogramTransformationInterface::__Histogram_MouseMove(
       for ( int i = 0; i < 2; ++i )
       {
          double f = DisplayPixelRatio();
+         int ui1 = RoundInt( f );
          if ( m_mode == ReadoutMode )
          {
-            int ui1 = RoundInt( f );
-            sender.Update( m_cursorPos.x-ui1, 0, m_cursorPos.x+ui1, h );
-            sender.Update( 0, m_cursorPos.y-ui1, w, m_cursorPos.y+ui1 );
+            sender.Update( m_cursorPos.x-ui1-ui1, 0, m_cursorPos.x+ui1+ui1, h );
+            sender.Update( 0, m_cursorPos.y-ui1-ui1, w, m_cursorPos.y+ui1+ui1 );
          }
          else
          {
             int ui16 = RoundInt( f*16 );
-            sender.Update( m_cursorPos.x-ui16, m_cursorPos.y-ui16, m_cursorPos.x+ui16, m_cursorPos.y+ui16 );
+            sender.Update( m_cursorPos.x-ui16-ui1, m_cursorPos.y-ui16-ui1, m_cursorPos.x+ui16+ui1, m_cursorPos.y+ui16+ui1 );
          }
 
          if ( i == 0 )
@@ -3103,4 +3084,4 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF HistogramTransformationInterface.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF HistogramTransformationInterface.cpp - Released 2015/11/26 16:00:13 UTC

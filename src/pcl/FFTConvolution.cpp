@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/FFTConvolution.cpp - Released 2015/10/08 11:24:19 UTC
+// pcl/FFTConvolution.cpp - Released 2015/11/26 15:59:45 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -64,13 +64,14 @@ public:
    template <class P>
    static void Apply( GenericImage<P>& image, const FFTConvolution& F )
    {
-      Rect r = image.SelectedRectangle();
-
-      if ( F.m_h.IsNull() )
-         if ( !F.m_filter.IsNull() )
-            F.m_h = Initialize( *F.m_filter, r.Width(), r.Height(), F.IsParallelProcessingEnabled(), F.MaxProcessors() );
+      if ( !F.m_h )
+      {
+         Rect r = image.SelectedRectangle();
+         if ( F.m_filter )
+            const_cast<FFTConvolution&>( F ).m_h = Initialize( *F.m_filter, r.Width(), r.Height(), F.IsParallelProcessingEnabled(), F.MaxProcessors() );
          else
-            F.m_h = Initialize( F.m_image, r.Width(), r.Height(), F.IsParallelProcessingEnabled(), F.MaxProcessors() );
+            const_cast<FFTConvolution&>( F ).m_h = Initialize( F.m_image, r.Width(), r.Height(), F.IsParallelProcessingEnabled(), F.MaxProcessors() );
+      }
 
       Convolve( image, *F.m_h, F.IsParallelProcessingEnabled(), F.MaxProcessors() );
    }
@@ -225,8 +226,8 @@ private:
          k = 1;
       else
       {
-         k = 1.0/k;
-         if ( 1 + k == 1 )
+         k = 1/k;
+         if ( !IsFinite( k ) || 1 + k == 1 )
             return psfFFT;
       }
 
@@ -269,7 +270,7 @@ private:
          k += *p;
       if ( 1 + k == 1 )
          return 0;
-      return 1.0/k;
+      return 1/k;
    }
 
    static double PSFNormalizationFactor( const ComplexImage& PSF )
@@ -279,7 +280,7 @@ private:
          k += Abs( *p );
       if ( 1 + k == 1 )
          return 0;
-      return 1.0/k;
+      return 1/k;
    }
 
    static double PSFNormalizationFactor( const DComplexImage& PSF )
@@ -289,7 +290,7 @@ private:
          k += Abs( *p );
       if ( 1 + k == 1 )
          return 0;
-      return 1.0/k;
+      return 1/k;
    }
 
    template <class P>
@@ -300,7 +301,7 @@ private:
        * equal to one.
        */
       double k = PSFNormalizationFactor( PSF );
-      if ( k == 0 )
+      if ( !IsFinite( k ) || k == 0 )
          return;
 
       /*
@@ -348,21 +349,21 @@ private:
       if ( PSF.IsComplexSample() )
          switch ( PSF.BitsPerSample() )
          {
-         case 32 : GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const ComplexImage&>( *PSF ) ); break;
-         case 64 : GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const DComplexImage&>( *PSF ) ); break;
+         case 32: GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const ComplexImage&>( *PSF ) ); break;
+         case 64: GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const DComplexImage&>( *PSF ) ); break;
          }
       else if ( PSF.IsFloatSample() )
          switch ( PSF.BitsPerSample() )
          {
-         case 32 : GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const Image&>( *PSF ) ); break;
-         case 64 : GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const DImage&>( *PSF ) ); break;
+         case 32: GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const Image&>( *PSF ) ); break;
+         case 64: GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const DImage&>( *PSF ) ); break;
          }
       else
          switch ( PSF.BitsPerSample() )
          {
-         case  8 : GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const UInt8Image&>( *PSF ) ); break;
-         case 16 : GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const UInt16Image&>( *PSF ) ); break;
-         case 32 : GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const UInt32Image&>( *PSF ) ); break;
+         case  8: GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const UInt8Image&>( *PSF ) ); break;
+         case 16: GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const UInt16Image&>( *PSF ) ); break;
+         case 32: GetWrapAroundNormalizedPSF( *psfFFT, static_cast<const UInt32Image&>( *PSF ) ); break;
          }
 
       /*
@@ -380,49 +381,49 @@ private:
 
 void FFTConvolution::Apply( pcl::Image& image ) const
 {
-   PCL_PRECONDITION( !m_filter.IsNull() || m_image )
+   PCL_PRECONDITION( m_filter || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
 
 void FFTConvolution::Apply( pcl::DImage& image ) const
 {
-   PCL_PRECONDITION( !m_filter.IsNull() || m_image )
+   PCL_PRECONDITION( m_filter || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
 
 void FFTConvolution::Apply( pcl::UInt8Image& image ) const
 {
-   PCL_PRECONDITION( !m_filter.IsNull() || m_image )
+   PCL_PRECONDITION( m_filter || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
 
 void FFTConvolution::Apply( pcl::UInt16Image& image ) const
 {
-   PCL_PRECONDITION( !m_filter.IsNull() || m_image )
+   PCL_PRECONDITION( m_filter || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
 
 void FFTConvolution::Apply( pcl::UInt32Image& image ) const
 {
-   PCL_PRECONDITION( !m_filter.IsNull() || m_image )
+   PCL_PRECONDITION( m_filter || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
 
 void FFTConvolution::Apply( pcl::ComplexImage& image ) const
 {
-   PCL_PRECONDITION( !m_filter.IsNull() || m_image )
+   PCL_PRECONDITION( m_filter || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
 
 void FFTConvolution::Apply( pcl::DComplexImage& image ) const
 {
-   PCL_PRECONDITION( !m_filter.IsNull() || m_image )
+   PCL_PRECONDITION( m_filter || m_image )
    Validate();
    PCL_FFTConvolutionEngine::Apply( image, *this );
 }
@@ -431,13 +432,13 @@ void FFTConvolution::Apply( pcl::DComplexImage& image ) const
 
 void FFTConvolution::Validate() const
 {
-   if ( m_filter.IsNull() && !m_image )
+   if ( !m_filter && !m_image )
       throw Error( "Invalid access to uninitialized FFT-based convolution." );
 }
 
 void FFTConvolution::ValidateFilter() const
 {
-   if ( m_filter.IsNull() )
+   if ( !m_filter )
       throw Error( "Invalid access to nonexistent kernel filter in FFT-based convolution." );
 }
 
@@ -446,4 +447,4 @@ void FFTConvolution::ValidateFilter() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FFTConvolution.cpp - Released 2015/10/08 11:24:19 UTC
+// EOF pcl/FFTConvolution.cpp - Released 2015/11/26 15:59:45 UTC

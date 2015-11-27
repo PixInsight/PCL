@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard FITS File Format Module Version 01.01.02.0314
+// Standard FITS File Format Module Version 01.01.03.0343
 // ----------------------------------------------------------------------------
-// FITSOptionsDialog.cpp - Released 2015/10/08 11:24:33 UTC
+// FITSOptionsDialog.cpp - Released 2015/11/26 15:59:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
@@ -122,7 +122,7 @@ FITSOptionsDialog::FITSOptionsDialog( const pcl::ImageOptions& o, const pcl::FIT
 
    Properties_CheckBox.SetText( "Properties" );
    Properties_CheckBox.SetMinWidth( labelWidth );
-   Properties_CheckBox.SetToolTip( "Embed image properties" );
+   Properties_CheckBox.SetToolTip( "Embed image properties (as BLOBs in FITS image extensions)" );
 
    EmbeddedDataLeft_Sizer.SetSpacing( 4 );
    EmbeddedDataLeft_Sizer.Add( ICCProfile_CheckBox );
@@ -268,4 +268,4 @@ void FITSOptionsDialog::Dialog_Return( Dialog& /*sender*/, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FITSOptionsDialog.cpp - Released 2015/10/08 11:24:33 UTC
+// EOF FITSOptionsDialog.cpp - Released 2015/11/26 15:59:58 UTC

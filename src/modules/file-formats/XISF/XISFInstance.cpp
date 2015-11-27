@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.03.0064
+// Standard XISF File Format Module Version 01.00.04.0094
 // ----------------------------------------------------------------------------
-// XISFInstance.cpp - Released 2015/10/08 11:24:33 UTC
+// XISFInstance.cpp - Released 2015/11/26 15:59:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
@@ -77,6 +77,8 @@ namespace pcl
  *    compress-data                  w
  *    no-compress-data               w
  *    compression-level <n>          w
+ *    checksums <method>             w
+ *    no-checksums                   w
  *    embedded-data                 rw
  *    no-embedded-data              rw
  *    fits-keywords                 rw
@@ -148,6 +150,7 @@ public:
    HintValue<bool>      autoMetadata;
    HintValue<int>       compressionMethod;
    HintValue<int>       compressionLevel;
+   HintValue<int>       checksumMethod;
    HintValue<unsigned>  blockAlignmentSize;
    HintValue<unsigned>  maxInlineBlockSize;
    HintValue<bool>      embeddedData;
@@ -208,6 +211,16 @@ public:
          else if ( *i == "no-compression" ||
                    *i == "no-compress-data" ) // (deprecated) = no-compression
             compressionMethod = XISF_COMPRESSION_NONE;
+         else if ( *i == "checksums" )
+         {
+            if ( ++i == theHints.End() )
+               break;
+            int n = XISFEngineBase::ChecksumMethodFromId( *i );
+            if ( n != XISF_CHECKSUM_UNKNOWN )
+               checksumMethod = n;
+         }
+         else if ( *i == "no-checksums" )
+            checksumMethod = XISF_CHECKSUM_NONE;
          else if ( *i == "block-alignment" )
          {
             if ( ++i == theHints.End() )
@@ -323,11 +336,16 @@ public:
 
       if ( compressionMethod.HasChanged() )
          hints << ((compressionMethod.Value() != XISF_COMPRESSION_NONE) ?
-                   "compression-codec" + IsoString( XISFEngineBase::CompressionMethodId( compressionMethod.Value() ) ) :
+                   "compression-codec " + IsoString( XISFEngineBase::CompressionMethodId( compressionMethod.Value() ) ) :
                    "no-compression");
 
       if ( compressionLevel.HasChanged() && compressionMethod.Value() != XISF_COMPRESSION_NONE )
          hints << "compression-level " + IsoString( compressionLevel.Value() );
+
+      if ( checksumMethod.HasChanged() )
+         hints << ((checksumMethod.Value() != XISF_CHECKSUM_NONE) ?
+                   "checksums " + IsoString( XISFEngineBase::ChecksumMethodId( checksumMethod.Value() ) ) :
+                   "no-checksums");
 
       if ( blockAlignmentSize.HasChanged() )
          hints << ((blockAlignmentSize.Value() > 1) ?
@@ -424,6 +442,8 @@ public:
          options.compressionMethod = compressionMethod;
       if ( compressionLevel.HasChanged() )
          options.compressionLevel = compressionLevel;
+      if ( checksumMethod.HasChanged() )
+         options.checksumMethod = checksumMethod;
       if ( blockAlignmentSize.HasChanged() )
          options.blockAlignmentSize = blockAlignmentSize;
       if ( maxInlineBlockSize.HasChanged() )
@@ -713,16 +733,12 @@ bool XISFInstance::QueryOptions( Array<ImageOptions>& imageOptions, Array<void*>
 
    AutoPointer<XISFFormat::FormatOptions> xisfFormatOptions;
    if ( !formatOptions.IsEmpty() )
-   {
-      XISFFormat::FormatOptions* o = XISFFormat::FormatOptions::FromGenericDataBlock( *formatOptions );
-      if ( o != nullptr )
-         xisfFormatOptions.SetPointer( o );
-   }
+      xisfFormatOptions = XISFFormat::FormatOptions::FromGenericDataBlock( *formatOptions );
 
    if ( xisfFormatOptions.IsNull() )
-      xisfFormatOptions.SetPointer( new XISFFormat::FormatOptions );
+      xisfFormatOptions = new XISFFormat::FormatOptions;
    else
-      xisfFormatOptions.DisableAutoDeletion();
+      xisfFormatOptions.DisableAutoDelete();
 
    // Override embedding options, if requested.
 
@@ -760,7 +776,7 @@ bool XISFInstance::QueryOptions( Array<ImageOptions>& imageOptions, Array<void*>
    else
       *formatOptions = reinterpret_cast<void*>( xisfFormatOptions.Pointer() );
 
-   xisfFormatOptions.DisableAutoDeletion();
+   xisfFormatOptions.Release();
 
    return true;
 }
@@ -1051,4 +1067,4 @@ void XISFInstance::WriteColorFilterArray( const ColorFilterArray& cfa )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISFInstance.cpp - Released 2015/10/08 11:24:33 UTC
+// EOF XISFInstance.cpp - Released 2015/11/26 15:59:58 UTC

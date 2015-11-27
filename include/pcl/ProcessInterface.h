@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/ProcessInterface.h - Released 2015/10/08 11:24:12 UTC
+// pcl/ProcessInterface.h - Released 2015/11/26 15:59:38 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -226,8 +226,8 @@ typedef Flags<InterfaceFeature::mask_type>   InterfaceFeatures;
 
 class PCL_CLASS MetaProcess;
 class PCL_CLASS ProcessImplementation;
+class PCL_CLASS VectorGraphics;
 class PCL_CLASS View;
-class PCL_CLASS Graphics;
 
 // ----------------------------------------------------------------------------
 
@@ -1445,25 +1445,35 @@ public:
     * \param v    Reference to a view where the specified \a r update region
     *             should be redrawn by this interface.
     *
-    * \param g    Reference to a graphics context where all screen drawing work
-    *             must be performed.
+    * \param g    Reference to a vector graphics context, where all screen
+    *             drawing work must be performed.
     *
     * \param r    Update region in image coordinates.
     *
     * This function \e must be reimplemented by dynamic interfaces that
     * maintain their own graphical content over image views.
     *
-    * When this function is invoked, the update region \a r on the passed view
-    * \a v will contain just the screen rendition of the view's image, without
-    * additional vectorial contents like preview rectangles, auxiliary
-    * geometric items, cursors, etc, which are rendered after this function
-    * returns.
+    * When this function is invoked, the update region \a r on the target view
+    * \a v will contain just the screen rendition of the view's image, with
+    * display functions and color management transformations applied as
+    * appropriate, but without any additional vectorial contents such as
+    * preview rectangles, selections, auxiliary geometric items, cursors, etc,
+    * which are always rendered \e after this function returns.
+    *
+    * When this function is called, the update region \a r has already been set
+    * as the current clipping region of the graphics context \a g in viewport
+    * coordinates. The module being invoked can only define a clipping region
+    * as an intersection with the update rectangle \a r, but not outside it. In
+    * other words, this function can only paint \e inside the specified update
+    * rectangle. Any attempt to define a larger clipping region, for example by
+    * calling Graphics::SetClipRect(), is illegal and will be blocked by the
+    * PixInsight core application.
     *
     * \note The default implementation of this function does nothing.
     *
-    * \sa RequiresDynamicUpdate(), Graphics
+    * \sa RequiresDynamicUpdate(), VectorGraphics
     */
-   virtual void DynamicPaint( const View& v, Graphics& g, const DRect& r ) const
+   virtual void DynamicPaint( const View& v, VectorGraphics& g, const DRect& r ) const
    {
    }
 
@@ -2479,4 +2489,4 @@ private:
 #endif   // __PCL_ProcessInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ProcessInterface.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/ProcessInterface.h - Released 2015/11/26 15:59:38 UTC

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard Annotation Process Module Version 01.00.00.0124
+// Standard Annotation Process Module Version 01.00.00.0154
 // ----------------------------------------------------------------------------
-// AnnotationRenderer.cpp - Released 2015/10/08 11:24:40 UTC
+// AnnotationRenderer.cpp - Released 2015/11/26 16:00:13 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Annotation PixInsight module.
 //
@@ -353,4 +353,4 @@ void AnnotationRenderer::RenderTextAndLeader( const AnnotationInstance& instance
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AnnotationRenderer.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF AnnotationRenderer.cpp - Released 2015/11/26 16:00:13 UTC

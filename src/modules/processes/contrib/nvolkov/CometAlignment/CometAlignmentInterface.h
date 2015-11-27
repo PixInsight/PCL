@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard CometAlignment Process Module Version 01.02.06.0097
+// Standard CometAlignment Process Module Version 01.02.06.0127
 // ----------------------------------------------------------------------------
-// CometAlignmentInterface.h - Released 2015/10/08 11:24:40 UTC
+// CometAlignmentInterface.h - Released 2015/11/26 16:00:13 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -102,7 +102,7 @@ namespace pcl
     virtual bool IsDynamicInterface () const;
     virtual void DynamicMousePress (View&, const DPoint&, int button, unsigned buttons, unsigned modifiers);
     virtual bool RequiresDynamicUpdate (const View&, const DRect&) const;
-    virtual void DynamicPaint (const View&, Graphics&, const DRect&) const;
+    virtual void DynamicPaint (const View&, VectorGraphics&, const DRect&) const;
 
     virtual void
     SaveSettings () const;
@@ -281,4 +281,4 @@ namespace pcl
 #endif   // __CometAlignmentInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF CometAlignmentInterface.h - Released 2015/10/08 11:24:40 UTC
+// EOF CometAlignmentInterface.h - Released 2015/11/26 16:00:13 UTC

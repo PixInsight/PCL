@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/MetaFileFormat.h - Released 2015/10/08 11:24:12 UTC
+// pcl/MetaFileFormat.h - Released 2015/11/26 15:59:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -208,6 +208,27 @@ public:
     * function \e should be reimplemented.
     */
    virtual String Implementation() const
+   {
+      return String();
+   }
+
+   /*!
+    * Returns a description of the current status of this file format
+    * implementation.
+    *
+    * This function should return an empty string for normal file format
+    * implementations. Exceptions to this rule are obsolete or deprecated file
+    * formats (see the IsDeprecated() member function), deficient
+    * implementations, or other special cases where the user should be aware of
+    * important potential problems or limitations.
+    *
+    * The output of this function should be essentially plain text with basic
+    * HTML tags. No console tags should be used.
+    *
+    * \note    The default implementation of this function returns an empty
+    * string, so by default a format does not provide any status information.
+    */
+   virtual String Status() const
    {
       return String();
    }
@@ -539,6 +560,8 @@ public:
     * image properties.
     *
     * The default implementation returns false.
+    *
+    * \sa SupportsViewProperties()
     */
    virtual bool CanStoreProperties() const
    {
@@ -614,6 +637,30 @@ public:
    }
 
    /*!
+    * Returns true only if this file format implementation supports data
+    * properties of different data types such as Float64, UI32Vector, String,
+    * Complex32, etc.
+    *
+    * If this member function returns true, a reimplementation of
+    * CanStoreProperties() must also return true, and the format must implement
+    * all property data types supported by View objects. For information on
+    * supported view property types, see the VTYPE_XXX predefined constants in
+    * PCL API headers.
+    *
+    * This function should return false if this format only supports storage of
+    * BLOB properties, represented as ByteArray objects, or a limited subset of
+    * view property types.
+    *
+    * The default implementation returns false.
+    *
+    * \sa CanStoreProperties(), View::PropertyValue(), View::SetPropertyValue()
+    */
+   virtual bool SupportsViewProperties() const
+   {
+      return false;
+   }
+
+   /*!
     * Returns true only if this file format implementation allows the user to
     * edit specific format preferences.
     *
@@ -639,6 +686,21 @@ public:
     * \sa ValidateFormatSpecificData(), DisposeFormatSpecificData()
     */
    virtual bool UsesFormatSpecificData() const
+   {
+      return false;
+   }
+
+   /*!
+    * Returns true only if this file format has been deprecated or declared
+    * obsolete on the PixInsight platform.
+    *
+    * When this function returns true, the Status() member function should also
+    * return information about the current status of this file format,
+    * including an explanation of the reasons for deprecation.
+    *
+    * The default implementation returns false.
+    */
+   virtual bool IsDeprecated() const
    {
       return false;
    }
@@ -696,4 +758,4 @@ private:
 #endif   // __PCL_MetaFileFormat_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaFileFormat.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/MetaFileFormat.h - Released 2015/11/26 15:59:39 UTC

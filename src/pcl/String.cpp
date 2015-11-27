@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/String.cpp - Released 2015/10/08 11:24:19 UTC
+// pcl/String.cpp - Released 2015/11/26 15:59:45 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -1651,7 +1651,48 @@ IsoString IsoString::UUID()
 
 // ----------------------------------------------------------------------------
 
+#define PCL_TO_ENCODED_HTML_SPECIAL_CHARS_BODY()   \
+   ReplaceString( "&", "&amp;" );                  \
+   ReplaceString( "\"", "&quot;" );                \
+   ReplaceString( "\'", "&#039;" );                \
+   ReplaceString( "<", "&lt;" );                   \
+   ReplaceString( ">", "&gt;" )
+
+#define PCL_TO_DECODED_HTML_SPECIAL_CHARS_BODY()   \
+   ReplaceStringIC( "&amp;",  "&" );               \
+   ReplaceStringIC( "&quot;", "\"" );              \
+   ReplaceStringIC( "&#039;", "\'" );              \
+   ReplaceStringIC( "&apos;", "\'" );              \
+   ReplaceStringIC( "&lt;",   "<" );               \
+   ReplaceStringIC( "&gt;",   ">" );
+
+String& String::ToEncodedHTMLSpecialChars()
+{
+   PCL_TO_ENCODED_HTML_SPECIAL_CHARS_BODY();
+   return *this;
+}
+
+IsoString& IsoString::ToEncodedHTMLSpecialChars()
+{
+   PCL_TO_ENCODED_HTML_SPECIAL_CHARS_BODY();
+   return *this;
+}
+
+String& String::ToDecodedHTMLSpecialChars()
+{
+   PCL_TO_DECODED_HTML_SPECIAL_CHARS_BODY();
+   return *this;
+}
+
+IsoString& IsoString::ToDecodedHTMLSpecialChars()
+{
+   PCL_TO_DECODED_HTML_SPECIAL_CHARS_BODY();
+   return *this;
+}
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/String.cpp - Released 2015/10/08 11:24:19 UTC
+// EOF pcl/String.cpp - Released 2015/11/26 15:59:45 UTC

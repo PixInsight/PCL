@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.09.04.0282
+// Standard ImageIntegration Process Module Version 01.09.04.0312
 // ----------------------------------------------------------------------------
-// HDRCompositionInstance.cpp - Released 2015/10/08 11:24:40 UTC
+// HDRCompositionInstance.cpp - Released 2015/11/26 16:00:13 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -62,6 +62,7 @@
 #include <pcl/LinearFit.h>
 #include <pcl/MorphologicalOperator.h>
 #include <pcl/MorphologicalTransformation.h>
+#include <pcl/SeparableConvolution.h>
 #include <pcl/SpinStatus.h>
 #include <pcl/StdStatus.h>
 #include <pcl/StructuringElement.h>
@@ -584,14 +585,15 @@ private:
       if ( instance->maskSmoothness > 0 )
       {
          GaussianFilter G( instance->maskSmoothness*2 + 1 );
-         if ( G.Size() > 15 )
+         if ( G.Size() >= PCL_FFT_CONVOLUTION_IS_FASTER_THAN_SEPARABLE_FILTER_SIZE )
          {
             FFTConvolution C( G );
             C >> mask;
          }
          else
          {
-            Convolution C( G );
+            SeparableFilter S( G.AsSeparableFilter() );
+            SeparableConvolution C( S );
             C >> mask;
          }
       }
@@ -911,4 +913,4 @@ size_type HDRCompositionInstance::ParameterLength( const MetaParameter* p, size_
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF HDRCompositionInstance.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF HDRCompositionInstance.cpp - Released 2015/11/26 16:00:13 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/UIScaling.h - Released 2015/10/08 11:24:12 UTC
+// pcl/UIScaling.h - Released 2015/11/26 15:59:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -89,7 +89,7 @@ extern PCL_DATA const double PCL_UIScalingFactor_LUT[ PCL_UIScaling_LUT_Length ]
 extern PCL_DATA const char*  PCL_UIScalingSubdir_LUT[ PCL_UIScaling_LUT_Length ];
 
 /*!
- * Returns the resource scaling index corresponding to the specified display
+ * Returns the resource scaling index corresponding to the specified resource
  * scaling factor.
  *
  * Resource scaling indexes pertain to the set {0,1,2,3,4,5,6}, respectively
@@ -113,9 +113,9 @@ inline int UIResourceScalingIndex( double scalingFactor )
  * scaling factor.
  *
  * A display scaling factor is the ratio of physical device pixels to
- * device-independent logical pixel units for a particular control. A resource
- * scaling factor has the same definition, but is constrained to the finite set
- * {1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0}.
+ * device-independent logical pixel units for a particular control or resource.
+ * A resource scaling factor has the same definition, but is constrained to the
+ * finite set {1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0}.
  *
  * On the PixInsight platform, the reference display density is 109 dpi,
  * corresponding to a 27-inch monitor at QHD resolution (2560x1440 physical
@@ -149,7 +149,7 @@ inline double UIResourceScalingFactorForIndex( int index )
 }
 
 /*!
- * Applies the specified display scaling factor to convert \a size from
+ * Applies the specified scaling factor to convert \a size from
  * device-independent logical pixel units to physical device pixels. The
  * returned value is always rounded to the nearest integer.
  *
@@ -161,9 +161,9 @@ inline int UIScaled( double scalingFactor, int size )
 }
 
 /*!
- * Applies the specified display scaling factor to convert \a size from
- * physical device pixels to device-independent logical pixel units. The
- * returned value is always rounded to the nearest integer.
+ * Applies the specified scaling factor to convert \a size from physical device
+ * pixels to device-independent logical pixel units. The returned value is
+ * always rounded to the nearest integer.
  *
  * \ingroup ui_scaling_functions
  */
@@ -201,7 +201,7 @@ inline String UIScaledResourceForIndex( int index, R resource )
 
 /*!
  * Returns a user interface resource path corresponding to the specified
- * \a resource path scaled for the specified display scaling factor.
+ * \a resource path scaled for the specified resource scaling factor.
  *
  * For example, if this function is called as follows:
  *
@@ -241,110 +241,122 @@ struct PCL_UIStringSection
  * pixels and scaled resource file paths, and optionally font sizes in points
  * converted to scaled pixels.
  *
- * \param scalingFactor    The display scaling factor to apply.
+ * \param displayScalingFactor   The display scaling factor that will be
+ *                               applied to scale pixel dimensions and
+ *                               (optionally) font sizes.
  *
- * \param styleSheet       A string containing valid input CSS source code. The
- *                         function will return a transformed version of this
- *                         string.
+ * \param resourceScalingFactor  The resource scaling factor that will be
+ *                               applied to select bitmap resources.
  *
- * \param fontDPI          If greater than zero, this is the font resolution,
- *                         in dots per inch (dpi), for transformation of point
- *                         sizes to scaled pixel sizes. If this parameter is
- *                         zero (the default value), this routine will use the
- *                         font resolution currently selected in core user
- *                         preferences (which is the value of the
- *                         "Application/FontResolution" global integer
- *                         variable; see PixInsightSettings). If this parameter
- *                         is a negative integer, no point-to-pixel conversions
- *                         will be applied.
+ * \param styleSheet             A string containing valid input CSS source
+ *                               code. The function will return a transformed
+ *                               version of this string.
+ *
+ * \param fontDPI                If greater than zero, this is the font
+ *                               resolution, in dots per inch (dpi), for
+ *                               transformation of point sizes to scaled pixel
+ *                               sizes. If this parameter is zero (the default
+ *                               value), this routine will use the font
+ *                               resolution currently selected in core user
+ *                               preferences (which is the value of the
+ *                               "Application/FontResolution" global integer
+ *                               variable; see PixInsightSettings). If this
+ *                               parameter is a negative integer, no
+ *                               point-to-pixel conversions will be applied.
  *
  * See Control::ScaledStyleSheet() for a detailed example.
  *
  * \ingroup ui_scaling_functions
  */
 template <class S>
-String UIScaledStyleSheet( double scalingFactor, S styleSheet, int fontDPI = 0 )
+String UIScaledStyleSheet( double displayScalingFactor, double resourceScalingFactor, S styleSheet, int fontDPI = 0 )
 {
 #define PCL_UI_IS_NUMBER_DIGIT( c ) (CharTraits::IsDigit( c ) || CharTraits::IsDecimalSeparator( c ))
 
    String cssCode( styleSheet );
 
    /*
-    * Scale pixel dimensions.
-    */
-   Array<PCL_UIStringSection> pxSections;
-   for ( size_type q = 0; ; q += 2 )
-   {
-      q = cssCode.Find( "px", q );
-      if ( q == String::notFound )
-         break;
-      size_type p = q;
-      while ( p > 0 && PCL_UI_IS_NUMBER_DIGIT( cssCode[p-1] ) )
-         --p;
-      if ( p < q )
-         pxSections.Add( PCL_UIStringSection( p, q ) );
-   }
-   for ( Array<PCL_UIStringSection>::const_iterator i = pxSections.ReverseBegin(); i != pxSections.ReverseEnd(); --i )
-   {
-      double px;
-      if ( cssCode.Substring( i->pos, i->len ).TryToDouble( px ) )
-         cssCode.Replace( i->pos, i->len, String().Format( "%d", RoundInt( px * scalingFactor ) ) );
-   }
-
-   /*
     * Scale resource file paths.
     */
-   Array<PCL_UIStringSection> urlSections;
-   for ( size_type p = 0; ; )
+   if ( resourceScalingFactor > 0 )
    {
-      p = cssCode.Find( ":/", p );
-      if ( p == String::notFound )
-         break;
-      size_type q = cssCode.Find( ')', p+2 );
-      if ( q != String::notFound )
+      Array<PCL_UIStringSection> urlSections;
+      for ( size_type p = 0; ; )
       {
-         urlSections.Add( PCL_UIStringSection( p, q ) );
-         p = q+1;
+         p = cssCode.Find( ":/", p );
+         if ( p == String::notFound )
+            break;
+         size_type q = cssCode.Find( ')', p+2 );
+         if ( q != String::notFound )
+         {
+            urlSections.Add( PCL_UIStringSection( p, q ) );
+            p = q+1;
+         }
+         else
+            p += 2;
       }
-      else
-         p += 2;
-   }
-   if ( !urlSections.IsEmpty() )
-   {
-      int index = UIResourceScalingIndex( scalingFactor );
-      for ( Array<PCL_UIStringSection>::const_iterator i = urlSections.ReverseBegin(); i != urlSections.ReverseEnd(); --i )
-         cssCode.Replace( i->pos, i->len, String( UIScaledResourceForIndex( index, cssCode.Substring( i->pos, i->len ) ) ) );
+      if ( !urlSections.IsEmpty() )
+      {
+         int index = UIResourceScalingIndex( resourceScalingFactor );
+         for ( Array<PCL_UIStringSection>::const_iterator i = urlSections.ReverseBegin(); i != urlSections.ReverseEnd(); --i )
+            cssCode.Replace( i->pos, i->len, String( UIScaledResourceForIndex( index, cssCode.Substring( i->pos, i->len ) ) ) );
+      }
    }
 
    /*
-    * If fontDPI=0 (the default value), use core font resolution settings for
-    * point-to-pixel conversions.
+    * Scale pixel dimensions and convert points to scaled pixels.
     */
-   if ( fontDPI == 0 )
-      fontDPI = PixInsightSettings::GlobalInteger( "Application/FontResolution" );
-
-   /*
-    * If a valid font resolution is available, convert points to scaled pixels.
-    */
-   if ( fontDPI > 0 )
+   if ( displayScalingFactor > 0 )
    {
-      Array<PCL_UIStringSection> ptSections;
+      Array<PCL_UIStringSection> pxSections;
       for ( size_type q = 0; ; q += 2 )
       {
-         q = cssCode.Find( "pt", q );
+         q = cssCode.Find( "px", q );
          if ( q == String::notFound )
             break;
          size_type p = q;
          while ( p > 0 && PCL_UI_IS_NUMBER_DIGIT( cssCode[p-1] ) )
             --p;
          if ( p < q )
-            ptSections.Add( PCL_UIStringSection( p, q ) );
+            pxSections.Add( PCL_UIStringSection( p, q ) );
       }
-      for ( Array<PCL_UIStringSection>::const_iterator i = ptSections.ReverseBegin(); i != ptSections.ReverseEnd(); --i )
+      for ( Array<PCL_UIStringSection>::const_iterator i = pxSections.ReverseBegin(); i != pxSections.ReverseEnd(); --i )
       {
-         double pt;
-         if ( cssCode.Substring( i->pos, i->len ).TryToDouble( pt ) )
-            cssCode.Replace( i->pos, i->len+2, String().Format( "%dpx", RoundInt( scalingFactor*pt*fontDPI/72 ) ) );
+         double px;
+         if ( cssCode.Substring( i->pos, i->len ).TryToDouble( px ) )
+            cssCode.Replace( i->pos, i->len, String().Format( "%d", RoundInt( px * displayScalingFactor ) ) );
+      }
+
+      /*
+       * If fontDPI=0 (the default value), use core font resolution settings for
+       * point-to-pixel conversions.
+       */
+      if ( fontDPI == 0 )
+         fontDPI = PixInsightSettings::GlobalInteger( "Application/FontResolution" );
+
+      /*
+       * If a valid font resolution is available, convert points to scaled pixels.
+       */
+      if ( fontDPI > 0 )
+      {
+         Array<PCL_UIStringSection> ptSections;
+         for ( size_type q = 0; ; q += 2 )
+         {
+            q = cssCode.Find( "pt", q );
+            if ( q == String::notFound )
+               break;
+            size_type p = q;
+            while ( p > 0 && PCL_UI_IS_NUMBER_DIGIT( cssCode[p-1] ) )
+               --p;
+            if ( p < q )
+               ptSections.Add( PCL_UIStringSection( p, q ) );
+         }
+         for ( Array<PCL_UIStringSection>::const_iterator i = ptSections.ReverseBegin(); i != ptSections.ReverseEnd(); --i )
+         {
+            double pt;
+            if ( cssCode.Substring( i->pos, i->len ).TryToDouble( pt ) )
+               cssCode.Replace( i->pos, i->len+2, String().Format( "%dpx", RoundInt( displayScalingFactor*pt*fontDPI/72 ) ) );
+         }
       }
    }
 
@@ -360,4 +372,4 @@ String UIScaledStyleSheet( double scalingFactor, S styleSheet, int fontDPI = 0 )
 #endif   // __PCL_UIScaling_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/UIScaling.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/UIScaling.h - Released 2015/11/26 15:59:39 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/AutoPointer.h - Released 2015/10/08 11:24:12 UTC
+// pcl/AutoPointer.h - Released 2015/11/26 15:59:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -129,8 +129,8 @@ public:
 
 /*!
  * \class AutoPointer
- * \brief A smart pointer with sole object ownership and automatic object
- *        destruction.
+ * \brief A smart pointer with sole object ownership and optional automatic
+ * object destruction.
  *
  * %AutoPointer stores a pointer to an object of which it is the sole owner.
  * The owned object can optionally be destroyed when the owner %AutoPointer
@@ -223,7 +223,7 @@ public:
  *    else
  *    {
  *       lightness = &image;
- *       lightness.DisableAutoDeletion();
+ *       lightness.DisableAutoDelete();
  *    }
  *
  *    DoSomeStuffWithTheLightnessComponent( *lightness );
@@ -344,7 +344,7 @@ public:
    }
 
    /*!
-    * Destructor.
+    * Destroys an %AutoPointer object.
     *
     * If this instance stores a non-null pointer, and the automatic deletion
     * feature is enabled, the pointed object will be destroyed by calling the
@@ -435,21 +435,19 @@ public:
    }
 
    /*!
-    * Returns a pointer to the immutable object pointed to by this %AutoPointer
-    * instance. This function is a synonym for Pointer() const.
+    * A synonym for Pointer() const.
     */
    const_pointer Ptr() const
    {
-      return Pointer();
+      return m_pointer;
    }
 
    /*!
-    * Returns a copy of the pointer stored in this %AutoPointer instance. This
-    * function is a synonym for Pointer().
+    * A synonym for Pointer().
     */
    pointer Ptr()
    {
-      return Pointer();
+      return m_pointer;
    }
 
    /*!
@@ -483,9 +481,9 @@ public:
     * See the detailed description for the %AutoPointer class for more
     * information, including code examples.
     *
-    * \sa EnableAutoDeletion(), DisableAutoDeletion()
+    * \sa EnableAutoDelete(), DisableAutoDelete()
     */
-   bool IsAutoDeletion() const
+   bool IsAutoDelete() const
    {
       return m_autoDelete;
    }
@@ -494,9 +492,9 @@ public:
     * Enables (or disables) the automatic deletion feature of %AutoPointer for
     * this object.
     *
-    * \sa IsAutoDeletion(), DisableAutoDeletion()
+    * \sa IsAutoDelete(), DisableAutoDelete()
     */
-   void EnableAutoDeletion( bool enable = true )
+   void EnableAutoDelete( bool enable = true )
    {
       m_autoDelete = enable;
    }
@@ -505,11 +503,11 @@ public:
     * Disables (or enables) the automatic deletion feature of %AutoPointer for
     * this object.
     *
-    * \sa IsAutoDeletion(), EnableAutoDeletion()
+    * \sa IsAutoDelete(), EnableAutoDelete()
     */
-   void DisableAutoDeletion( bool disable = true )
+   void DisableAutoDelete( bool disable = true )
    {
-      EnableAutoDeletion( !disable );
+      EnableAutoDelete( !disable );
    }
 
    /*!
@@ -598,7 +596,7 @@ public:
     */
    operator const_pointer() const
    {
-      return Pointer();
+      return m_pointer;
    }
 
    /*!
@@ -608,7 +606,7 @@ public:
     */
    operator pointer()
    {
-      return Pointer();
+      return m_pointer;
    }
 
    /*!
@@ -618,7 +616,7 @@ public:
    const_pointer operator ->() const
    {
       PCL_PRECONDITION( m_pointer != nullptr )
-      return Pointer();
+      return m_pointer;
    }
 
    /*!
@@ -628,7 +626,7 @@ public:
    pointer operator ->()
    {
       PCL_PRECONDITION( m_pointer != nullptr )
-      return Pointer();
+      return m_pointer;
    }
 
    /*!
@@ -638,7 +636,7 @@ public:
    const value_type& operator *() const
    {
       PCL_PRECONDITION( m_pointer != nullptr )
-      return *Pointer();
+      return *m_pointer;
    }
 
    /*!
@@ -648,7 +646,7 @@ public:
    value_type& operator *()
    {
       PCL_PRECONDITION( m_pointer != nullptr )
-      return *Pointer();
+      return *m_pointer;
    }
 
    /*!
@@ -689,4 +687,4 @@ private:
 #endif  // __PCL_AutoPointer_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AutoPointer.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/AutoPointer.h - Released 2015/11/26 15:59:39 UTC

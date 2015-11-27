@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/View.h - Released 2015/10/08 11:24:12 UTC
+// pcl/View.h - Released 2015/11/26 15:59:38 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -591,8 +591,6 @@ public:
     * (see ViewPropertyAttributes::ReadProtected), an Error exception will be
     * thrown.
     *
-    * This function is thread-safe.
-    *
     * \ingroup view_properties
     */
    Variant PropertyValue( const IsoString& property ) const;
@@ -623,8 +621,6 @@ public:
     *
     * If the requested property is not recognized as a reserved view property,
     * this member function returns an invalid %Variant object.
-    *
-    * This function is thread-safe.
     *
     * \ingroup view_properties
     */
@@ -678,8 +674,6 @@ public:
     * (see ViewPropertyAttribute::WriteProtected), an Error exception will be
     * thrown.
     *
-    * This function is thread-safe.
-    *
     * \ingroup view_properties
     */
    void SetPropertyValue( const IsoString& property, const Variant& value, bool notify = true,
@@ -701,8 +695,6 @@ public:
     * For a list of available view property types, see the VariantType
     * namespace.
     *
-    * This function is thread-safe.
-    *
     * \ingroup view_properties
     */
    Variant::data_type PropertyType( const IsoString& property ) const;
@@ -722,8 +714,6 @@ public:
     *
     * For a list of available view property attributes, see the
     * ViewPropertyAttribute namespace.
-    *
-    * This function is thread-safe.
     *
     * \ingroup view_properties
     */
@@ -748,8 +738,6 @@ public:
     * properties, this is safer because the property never exists as a publicly
     * writable object.
     *
-    * This function is thread-safe.
-    *
     * \ingroup view_properties
     */
    void SetPropertyAttributes( const IsoString& property, ViewPropertyAttributes attributes, bool notify = true );
@@ -762,8 +750,6 @@ public:
 
    /*!
     * Returns true iff the specified \a property exists in this view.
-    *
-    * This function is thread-safe.
     *
     * \ingroup view_properties
     */
@@ -782,8 +768,6 @@ public:
     * if the calling module has no write access to it (see
     * ViewPropertyAttribute::WriteProtected), an Error exception will be
     * thrown.
-    *
-    * This function is thread-safe.
     *
     * \ingroup view_properties
     */
@@ -869,4 +853,4 @@ protected:
 #endif   // __PCL_View_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/View.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/View.h - Released 2015/11/26 15:59:38 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/APIInterface.h - Released 2015/10/08 11:24:12 UTC
+// pcl/APIInterface.h - Released 2015/11/26 15:59:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -58,7 +58,7 @@
 
 // Global namespace
 
-#define PCL_API_Version 0x0151
+#define PCL_API_Version 0x0154
 
 extern "C"
 {
@@ -538,6 +538,7 @@ struct api_context FileFormatDefinitionContext
    void           (api_func* SetFileFormatWritePixelsRoutine)( pcl::format_write_pixels_routine );
    void           (api_func* SetFileFormatQueryInexactReadRoutine)( pcl::format_query_inexact_read_routine );
    void           (api_func* SetFileFormatQueryLossyWriteRoutine)( pcl::format_query_lossy_write_routine );
+   void           (api_func* SetFileFormatQueryFormatStatusRoutine)( pcl::format_query_format_status_routine );
    void           (api_func* EndFileFormatDefinition)();
 
    void           (api_func* ExitFileFormatDefinitionContext)();
@@ -693,6 +694,7 @@ struct api_context FileFormatContext
    bitmap_handle        (api_func* GetFileFormatIcon)( meta_format_handle );
    bitmap_handle        (api_func* GetFileFormatSmallIcon)( meta_format_handle );
    api_bool             (api_func* GetFileFormatCapabilities)( meta_format_handle, api_format_capabilities* );
+   api_bool             (api_func* GetFileFormatStatus)( meta_format_handle, char16_type*, size_type*, void* );
 
    api_bool             (api_func* EditFileFormatPreferences)( meta_format_handle );
 
@@ -1009,6 +1011,8 @@ struct api_context ControlContext
    void           (api_func* SetWindowToolTip)( control_handle, const char16_type* );
 
    api_bool       (api_func* GetControlDisplayPixelRatio)( const_control_handle, double* );
+   api_bool       (api_func* GetControlResourcePixelRatio)( const_control_handle, double* );
+   api_bool       (api_func* GetControlDevicePixelRatio)( const_control_handle, double* );
 
    api_bool       (api_func* SetDestroyEventRoutine)( control_handle, api_handle, pcl::control_event_routine );
    api_bool       (api_func* SetShowEventRoutine)( control_handle, api_handle, pcl::control_event_routine );
@@ -1768,6 +1772,9 @@ struct api_context BitmapContext
    void           (api_func* ReplaceBitmapColor)( bitmap_handle, int32, int32, int32, int32, uint32, uint32 );
 
    void           (api_func* SetBitmapAlpha)( bitmap_handle, int32, int32, int32, int32, uint8 );
+
+   void           (api_func* GetBitmapDevicePixelRatio)( const_bitmap_handle, double* );
+   void           (api_func* SetBitmapDevicePixelRatio)( bitmap_handle, double );
 };
 
 /*
@@ -1989,6 +1996,8 @@ struct api_context SizerContext
    void           (api_func* SetSizerSpacing)( sizer_handle, int32 );
 
    api_bool       (api_func* GetSizerDisplayPixelRatio)( const_sizer_handle, double* );
+   api_bool       (api_func* GetSizerResourcePixelRatio)( const_sizer_handle, double* );
+   api_bool       (api_func* GetSizerDevicePixelRatio)( const_sizer_handle, double* );
 };
 
 /*
@@ -2415,9 +2424,12 @@ struct api_context CryptographyContext
 {
    enum HashAlgorithm
    {
+      MD5    = 5,
       SHA1   = 1,
-    //SHA256 = 2, // ### TODO: Implement SHA-256 - ASAP
-      MD5    = 5
+      SHA224 = 224,
+      SHA256 = 256,
+      SHA384 = 384,
+      SHA512 = 512
    };
 
    crypto_handle  (api_func* CreateCryptographicHash)( api_handle, int32 hashAlg );
@@ -2726,6 +2738,8 @@ struct api_context ImageWindowContext
    bitmap_handle  (api_func* GetViewportBitmap)( api_handle, const_window_handle, int32 x0, int32 y0, int32 x1, int32 y1, uint32 flags );
 
    api_bool       (api_func* GetImageWindowDisplayPixelRatio)( const_window_handle, double* );
+   api_bool       (api_func* GetImageWindowResourcePixelRatio)( const_window_handle, double* );
+   api_bool       (api_func* GetImageWindowDevicePixelRatio)( const_window_handle, double* );
 };
 
 /*
@@ -3151,4 +3165,4 @@ extern "C" void* api_func APIFunctionResolver( const char* );
 #endif   // __PCL_API_APIInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/APIInterface.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/APIInterface.h - Released 2015/11/26 15:59:39 UTC

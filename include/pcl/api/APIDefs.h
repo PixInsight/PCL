@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/APIDefs.h - Released 2015/10/08 11:24:12 UTC
+// pcl/APIDefs.h - Released 2015/11/26 15:59:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -185,7 +185,9 @@ struct api_format_capabilities
    bool   supportsMultipleImages    :  1;
    bool   canEditPreferences        :  1;
    bool   usesFormatSpecificData    :  1;
-   uint32 __r__                     :  5;
+   bool   supportsViewProperties    :  1;
+   uint32 __r__                     :  3;
+   bool   deprecated                :  1;
 };
 
 /*
@@ -788,6 +790,7 @@ typedef void                  (api_func* format_destruction_routine)            
 typedef api_bool              (api_func* format_validate_format_specific_data_routine)( meta_format_handle, const void* );
 typedef void                  (api_func* format_dispose_format_specific_data_routine) ( meta_format_handle, const void* );
 typedef api_bool              (api_func* format_edit_preferences_routine)             ( meta_format_handle );
+typedef const char16_type*    (api_func* format_query_format_status_routine)          ( meta_format_handle, void* );
 typedef api_bool              (api_func* format_open_routine)                         ( file_format_handle, const char16_type*, const char*, uint32 );
 typedef uint32                (api_func* format_get_image_count_routine)              ( const_file_format_handle );
 typedef api_bool              (api_func* format_get_image_id_routine)                 ( const_file_format_handle, char*, uint32, uint32 );
@@ -945,4 +948,4 @@ void PCL_FUNC PCLImageOptionsToAPI( api_image_options&, const ImageOptions& );
 #endif   // __PCL_API_APIDefs_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/APIDefs.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/APIDefs.h - Released 2015/11/26 15:59:39 UTC

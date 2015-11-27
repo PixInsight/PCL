@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard Morphology Process Module Version 01.00.00.0241
+// Standard Morphology Process Module Version 01.00.00.0271
 // ----------------------------------------------------------------------------
-// Structure.cpp - Released 2015/10/08 11:24:40 UTC
+// Structure.cpp - Released 2015/11/26 16:00:13 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Morphology PixInsight module.
 //
@@ -442,4 +442,4 @@ void StructureCollection::Save( const IsoString& key ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF Structure.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF Structure.cpp - Released 2015/11/26 16:00:13 UTC

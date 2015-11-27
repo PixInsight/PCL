@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.09.04.0282
+// Standard ImageIntegration Process Module Version 01.09.04.0312
 // ----------------------------------------------------------------------------
-// ImageIntegrationInterface.cpp - Released 2015/10/08 11:24:40 UTC
+// ImageIntegrationInterface.cpp - Released 2015/11/26 16:00:13 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -1838,4 +1838,4 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationInterface.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF ImageIntegrationInterface.cpp - Released 2015/11/26 16:00:13 UTC

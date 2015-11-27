@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/Cryptography.cpp - Released 2015/10/08 11:24:19 UTC
+// pcl/Cryptography.cpp - Released 2015/11/26 15:59:45 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -84,8 +84,8 @@ void* CryptographicHash::CloneHandle() const
 
 // ----------------------------------------------------------------------------
 
-MD5::MD5() :
-CryptographicHash( (*API->Cryptography->CreateCryptographicHash)( ModuleHandle(), CryptographyContext::MD5 ) )
+MD5::MD5() : CryptographicHash(
+   (*API->Cryptography->CreateCryptographicHash)( ModuleHandle(), CryptographyContext::MD5 ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CreateCryptographicHash" );
@@ -93,11 +93,66 @@ CryptographicHash( (*API->Cryptography->CreateCryptographicHash)( ModuleHandle()
 
 // ----------------------------------------------------------------------------
 
-SHA1::SHA1() :
-CryptographicHash( (*API->Cryptography->CreateCryptographicHash)( ModuleHandle(), CryptographyContext::SHA1 ) )
+SHA1::SHA1() : CryptographicHash(
+   (*API->Cryptography->CreateCryptographicHash)( ModuleHandle(), CryptographyContext::SHA1 ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CreateCryptographicHash" );
+}
+
+// ----------------------------------------------------------------------------
+
+SHA224::SHA224() : CryptographicHash(
+   (*API->Cryptography->CreateCryptographicHash)( ModuleHandle(), CryptographyContext::SHA224 ) )
+{
+   if ( handle == 0 )
+      throw APIFunctionError( "CreateCryptographicHash" );
+}
+
+// ----------------------------------------------------------------------------
+
+SHA256::SHA256() : CryptographicHash(
+   (*API->Cryptography->CreateCryptographicHash)( ModuleHandle(), CryptographyContext::SHA256 ) )
+{
+   if ( handle == 0 )
+      throw APIFunctionError( "CreateCryptographicHash" );
+}
+
+// ----------------------------------------------------------------------------
+
+SHA384::SHA384() : CryptographicHash(
+   (*API->Cryptography->CreateCryptographicHash)( ModuleHandle(), CryptographyContext::SHA384 ) )
+{
+   if ( handle == 0 )
+      throw APIFunctionError( "CreateCryptographicHash" );
+}
+
+// ----------------------------------------------------------------------------
+
+SHA512::SHA512() : CryptographicHash(
+   (*API->Cryptography->CreateCryptographicHash)( ModuleHandle(), CryptographyContext::SHA512 ) )
+{
+   if ( handle == 0 )
+      throw APIFunctionError( "CreateCryptographicHash" );
+}
+
+// ----------------------------------------------------------------------------
+
+CryptographicHashFactory::CryptographicHashFactory( const IsoString& algorithmName ) :
+   CryptographicHash( (void*)0 ),
+   m_hash( nullptr )
+{
+   switch ( algorithmName.Trimmed().CaseFolded().Hash32() )
+   {
+   case 0x445dd715: m_hash = new MD5; break;
+   case 0x3cac24af: m_hash = new SHA1; break;
+   case 0x7e50b015: m_hash = new SHA224; break;
+   case 0xcbbce793: m_hash = new SHA256; break;
+   case 0x858a0d3d: m_hash = new SHA384; break;
+   case 0xb24dfd53: m_hash = new SHA512; break;
+   default:
+      throw Error( "Unknown/unsupported hashing algorithm: \'" + algorithmName + '\'' );
+   }
 }
 
 // ----------------------------------------------------------------------------
@@ -109,8 +164,8 @@ void* Cipher::CloneHandle() const
 
 // ----------------------------------------------------------------------------
 
-AES256::AES256( void* key ) :
-Cipher( (*API->Cryptography->CreateAES256Cipher)( ModuleHandle(), key ) )
+AES256::AES256( void* key ) : Cipher(
+   (*API->Cryptography->CreateAES256Cipher)( ModuleHandle(), key ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CreateAES256Cipher" );
@@ -201,4 +256,4 @@ void AES256::DecryptBlock( block_type output, const block_type input ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Cryptography.cpp - Released 2015/10/08 11:24:19 UTC
+// EOF pcl/Cryptography.cpp - Released 2015/11/26 15:59:45 UTC

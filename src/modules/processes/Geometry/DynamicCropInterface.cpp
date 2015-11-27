@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0274
+// Standard Geometry Process Module Version 01.01.00.0304
 // ----------------------------------------------------------------------------
-// DynamicCropInterface.cpp - Released 2015/10/08 11:24:39 UTC
+// DynamicCropInterface.cpp - Released 2015/11/26 16:00:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -530,100 +530,74 @@ bool DynamicCropInterface::RequiresDynamicUpdate( const View& v, const DRect& up
 
 // ----------------------------------------------------------------------------
 
-void DynamicCropInterface::PaintRect( VectorGraphics& G, ImageWindow& w, const Point& p0 ) const
+void DynamicCropInterface::PaintRect( VectorGraphics& g, ImageWindow& w ) const
 {
-   // Auxiliary routine to paint the cropping rectangle
+   // Auxiliary routine to paint a cropping rectangle
 
    if ( instance.p_angle == 0 )
    {
       // Optimize for zero rotation
       DRect r;
       GetUnrotatedRect( r );
-      G.DrawRect( w.ImageToViewport( r ) - p0 );
+      g.DrawRect( w.ImageToViewport( r ) );
    }
    else
    {
       Array<DPoint> p( 4 );
       GetRotatedRect( p[0], p[1], p[3], p[2] );
       for ( int i = 0; i < 4; ++i )
-      {
          w.ImageToViewport( p[i].x, p[i].y );
-         p[i] -= p0;
-      }
-      G.DrawPolygon( p );
+      g.DrawPolygon( p );
    }
 }
 
-void DynamicCropInterface::DynamicPaint( const View& v, Graphics& g, const DRect& ur ) const
+void DynamicCropInterface::DynamicPaint( const View& v, VectorGraphics& g, const DRect& ur ) const
 {
-   if ( view == 0 || v != *view )
+   if ( view == nullptr || v != *view )
       return;
 
    ImageWindow window = view->Window();
 
    double f = window.DisplayPixelRatio();
 
-   // Update rectangle in real viewport coordinates.
-   DRect vr = window.ImageToViewport( ur );
-
-   // Update rectangle, integer viewport coordinates.
-   // N.B.: The bottom-right corner (x1,y1) of a Rect object is *excluded*
-   //       from the defined rectangle. For this reason we must extend the
-   //       corresponding x1 and y1 coordinates by one unit.
-   Rect r0( TruncInt( vr.x0 ), TruncInt( vr.y0 ), TruncInt( vr.x1 )+1, TruncInt( vr.y1 )+1 );
-
-   // Origin of the local bitmap coordinate system in viewport coordinates.
-   Point p0 = r0.LeftTop();
-
-   // Working bitmap
-   Bitmap bmp1 = window.ViewportBitmap( r0 );
-
-   // Create a graphics context associated to our working bitmap.
-   VectorGraphics G( bmp1 );
-
-   G.EnableAntialiasing();
+   g.EnableAntialiasing();
 
    // Draw the translucent cropping rectangle
    if ( Alpha( fillColor ) != 0 )
    {
-      G.SetPen( Pen::Null() );
-      G.SetBrush( fillColor );
-      PaintRect( G, window, p0 );
+      g.SetPen( Pen::Null() );
+      g.SetBrush( fillColor );
+      PaintRect( g, window );
    }
 
-   G.SetCompositionOperator( CompositionOp::Difference );
+   g.SetCompositionOperator( CompositionOp::Difference );
 
    // Draw the cropping rectangle
-   G.SetPen( selectionColor, f );
-   G.SetBrush( Brush::Null() );
-   PaintRect( G, window, p0 );
+   g.SetPen( selectionColor, f );
+   g.SetBrush( Brush::Null() );
+   PaintRect( g, window );
 
    // Center mark radius in physical pixels
    double dr = f * CENTER_RADIUS;
 
    // Draw the center of the cropping rectangle
-   DPoint c0 = window.ImageToViewport( center ) - p0;
+   DPoint c0 = window.ImageToViewport( center );
    DPoint c1( c0.x-dr, c0.y-dr );
    DPoint c2( c0.x+dr, c0.y+dr );
-   G.SetPen( centerColor, f );
-   G.DrawLine( c1.x, c1.y, c2.x, c2.y );
-   G.DrawLine( c2.x, c1.y, c1.x, c2.y );
+   g.SetPen( centerColor, f );
+   g.DrawLine( c1.x, c1.y, c2.x, c2.y );
+   g.DrawLine( c2.x, c1.y, c1.x, c2.y );
 
    // Draw the center of rotation
-   DPoint c3 = window.ImageToViewport( rotationCenter ) - p0;
+   DPoint c3 = window.ImageToViewport( rotationCenter );
    if ( c3.ManhattanDistanceTo( c0 ) > 0.5 )
    {
       DPoint c4( c3.x-dr, c3.y-dr );
       DPoint c5( c3.x+dr, c3.y+dr );
-      G.DrawLine( c3.x, c4.y, c3.x, c5.y );
-      G.DrawLine( c4.x, c3.y, c5.x, c3.y );
+      g.DrawLine( c3.x, c4.y, c3.x, c5.y );
+      g.DrawLine( c4.x, c3.y, c5.x, c3.y );
    }
-   G.DrawCircle( c3, dr );
-
-   G.EndPaint();
-
-   // Render our working bitmap on the viewport
-   g.DrawBitmap( p0, bmp1 );
+   g.DrawCircle( c3, dr );
 }
 
 // ----------------------------------------------------------------------------
@@ -1993,4 +1967,4 @@ DynamicCropInterface::GUIData::GUIData( DynamicCropInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropInterface.cpp - Released 2015/10/08 11:24:39 UTC
+// EOF DynamicCropInterface.cpp - Released 2015/11/26 16:00:12 UTC

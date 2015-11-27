@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/Point.h - Released 2015/10/08 11:24:12 UTC
+// pcl/Point.h - Released 2015/11/26 15:59:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -713,7 +713,7 @@ public:
 
    /*!
     * Returns a point whose coordinates have the same magnitudes as the
-    * coordinates of this point, but the opposed signs. The returned point so
+    * coordinates of this point, but opposite signs. The returned point so
     * defined represents a vector diametrically opposed to this one.
     */
    GenericPoint operator -() const
@@ -1264,4 +1264,4 @@ typedef F64Point                    DPoint;
 #endif  // __PCL_Point_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Point.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/Point.h - Released 2015/11/26 15:59:39 UTC

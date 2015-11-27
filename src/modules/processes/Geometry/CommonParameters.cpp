@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0274
+// Standard Geometry Process Module Version 01.01.00.0304
 // ----------------------------------------------------------------------------
-// CommonParameters.cpp - Released 2015/10/08 11:24:39 UTC
+// CommonParameters.cpp - Released 2015/11/26 16:00:12 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -464,4 +464,4 @@ double FillAlpha::MaximumValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CommonParameters.cpp - Released 2015/10/08 11:24:39 UTC
+// EOF CommonParameters.cpp - Released 2015/11/26 16:00:12 UTC

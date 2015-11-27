@@ -1,0 +1,235 @@
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0775
+// ----------------------------------------------------------------------------
+// Standard Image Process Module Version 01.02.09.0342
+// ----------------------------------------------------------------------------
+// StatisticsIcon.xpm - Released 2015/11/26 16:00:12 UTC
+// ----------------------------------------------------------------------------
+// This file is part of the standard Image PixInsight module.
+//
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ----------------------------------------------------------------------------
+
+/* XPM */
+static const char* StatisticsIcon_XPM[] = {
+/* columns rows colors chars-per-pixel */
+"24 24 150 2",
+"f  c #5369FE",
+"j. c #080AFF",
+"v  c #F26521",
+"2. c #6D8AFD",
+"Q  c #6D8AFE",
+"a  c #99C1FD",
+"h  c #5B74FE",
+"|  c #87ABFD",
+":. c #7595FD",
+"w  c #708EFE",
+"M  c #9CC5FD",
+"V. c #3F50FE",
+"4. c #7899FE",
+"X  c #5971FE",
+"-  c #85A8FD",
+"n. c #2833FF",
+"H  c #8DB3FD",
+"{  c #80A1FD",
+"5. c #232CFF",
+"8  c #5C75FE",
+"p  c #95BEFE",
+"~  c #88ACFD",
+"B  c #4F63FE",
+"C  c #576EFE",
+"J  c #90B7FE",
+"b. c #2630FF",
+"u  c #8BB0FD",
+"p. c #0708FF",
+")  c #4051FE",
+"I  c #93BBFE",
+"T  c #485CFE",
+"3  c #A0CAFD",
+"O. c #4355FE",
+"D  c #6F8CFE",
+"<  c #96BFFD",
+"o  c #5D76FE",
+"d  c #4B60FE",
+"U  c #3E4EFE",
+"4  c #A3CEFD",
+"m. c #2C38FF",
+"6. c #00BFF3",
+"g  c #586FFE",
+"t. c #0D10FF",
+"<. c #2731FF",
+"9  c #607AFE",
+"^  c #8CB1FD",
+"V  c #5368FE",
+"z. c #151BFF",
+":  c #8CB1FE",
+"q  c #6D89FD",
+"0  c #6885FE",
+"v. c #222AFE",
+"r. c #5B73FE",
+"K  c #94BCFE",
+"e. c #1014FF",
+"#. c #82A6FE",
+"3. c #7594FE",
+"x. c #181FFF",
+"/  c #8FB5FE",
+",. c #7D9FFE",
+"_  c #4456FF",
+"L  c #97C0FD",
+"a. c #4C61FE",
+"w. c #1318FF",
+"e  c #7898FE",
+"E  c #00A650",
+"7  c #5970FE",
+"F  c #7391FD",
+"   c None",
+"O  c #617BFE",
+"P  c #4253FE",
+"c  c #7B9CFE",
+"M. c #303DFE",
+"n  c #95BDFE",
+"y  c #88ABFD",
+"(  c #3848FE",
+"*. c #2B36FE",
+"]  c #647FFE",
+">  c #90B6FD",
+"@. c #7EA0FE",
+"Y  c #4557FF",
+".. c #3341FE",
+"Z  c #5F78FE",
+"m  c #98C1FE",
+">. c #7999FD",
+"f. c #0203FF",
+"o. c #4050FF",
+"&  c #7999FE",
+"k  c #6783FE",
+",  c #93BAFD",
+"k. c #0A0EFE",
+"`  c #485BFE",
+"7. c #7492FE",
+"1. c #FF0000",
+"q. c #171DFF",
+"5  c #5066FE",
+"r  c #7C9DFE",
+"0. c #6A87FE",
+"!  c #84A8FD",
+"G  c #7796FD",
+";. c #3949FF",
+"+  c #6580FE",
+"#  c #6D8BFE",
+"'  c #6079FE",
+"1  c #99C2FE",
+"[  c #6884FE",
+"y. c #566EFE",
+"&. c #82A5FD",
+"N. c #3746FF",
+"A  c #637DFE",
+"s  c #9CC6FD",
+"i. c #5167FE",
+" . c #8AB0FE",
+"h. c #0608FF",
+"*  c #7D9EFE",
+"=. c #323FFE",
+"l  c #6B88FD",
+"l. c #1317FF",
+"x  c #7897FD",
+"z  c #7393FE",
+"9. c #1B22FE",
+"b  c #92B8FD",
+"c. c #1B22FF",
+"t  c #80A2FD",
+";  c #88ADFE",
+"g. c #0405FF",
+"W  c #6985FD",
+"%. c #303CFF",
+"@  c #6985FE",
+"}  c #83A6FD",
+"+. c #855FA8",
+"%  c #7694FE",
+"$  c #7190FE",
+"j  c #647EFE",
+"2  c #9DC7FD",
+"$. c #86AAFD",
+"R  c #4D61FE",
+"B. c #3B4BFE",
+"X. c #3B4BFF",
+"S  c #6782FE",
+"i  c #8EB5FD",
+".  c #556CFF",
+"d. c #485AFE",
+"u. c #0A0DFF",
+"=  c #81A3FE",
+"-. c #3644FE",
+"s. c #0506FF",
+"8. c #1F27FF",
+"N  c #465AFE",
+"6  c #ACACAC",
+/* pixels */
+"                                                ",
+"  . X o O + @ # $ % & * = - ; : > , < 1 2 3 4   ",
+"  5 6 7 8 9 6 0 q w 6 e r t 6 y u i 6 p a s 3   ",
+"  d 6 f g h 6 j k l 6 z x c 6 v v v v b n m M   ",
+"  N 6 B V C 6 Z A S 6 D F G 6 v v v v H J K L   ",
+"  P 6 6 6 6 6 6 6 6 6 6 6 6 6 v v v v 6 6 6 I   ",
+"  U 6 Y T R 6 E E E E + W Q 6 v v v v ! ~ ^ /   ",
+"  ( 6 ) _ ` 6 E E E E ' ] [ 6 v v v v { } |  .  ",
+"  ..6 X.o.O.6 E E E E +.+.+.+.v v v v c @.#.$.  ",
+"  %.6 6 6 6 6 E E E E +.+.+.+.v v v v 6 6 6 &.  ",
+"  *.6 =.-.;.6 E E E E +.+.+.+.v v v v $ :.>.,.  ",
+"  <.6 1.1.1.1.E E E E +.+.+.+.v v v v 2.w 3.4.  ",
+"  5.6 1.1.1.1.E E E E +.+.+.+.v v v v 6.6.6.7.  ",
+"  8.6 1.1.1.1.E E E E +.+.+.+.v v v v 6.6.6.D   ",
+"  9.6 1.1.1.1.E E E E +.+.+.+.v v v v 6.6.6.0.  ",
+"  q.6 1.1.1.1.E E E E +.+.+.+.v v v v 6.6.6.+   ",
+"  w.6 1.1.1.1.E E E E +.+.+.+.v v v v 6.6.6.9   ",
+"  e.6 1.1.1.1.E E E E +.+.+.+.v v v v 6.6.6.r.  ",
+"  t.6 1.1.1.1.E E E E +.+.+.+.v v v v 6.6.6.y.  ",
+"  u.6 1.1.1.1.E E E E +.+.+.+.v v v v 6.6.6.i.  ",
+"  p.6 1.1.1.1.E E E E +.+.+.+.v v v v 6.6.6.a.  ",
+"  s.6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 d.  ",
+"  f.g.h.j.k.t.e.l.z.x.c.8.v.b.n.m.M...N.B.V.O.  ",
+"                                                "
+};
+
+// ----------------------------------------------------------------------------
+// EOF StatisticsIcon.xpm - Released 2015/11/26 16:00:12 UTC

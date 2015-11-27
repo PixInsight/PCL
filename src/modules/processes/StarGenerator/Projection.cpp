@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard StarGenerator Process Module Version 01.01.00.0207
+// Standard StarGenerator Process Module Version 01.01.00.0237
 // ----------------------------------------------------------------------------
-// Projection.cpp - Released 2015/10/08 11:24:40 UTC
+// Projection.cpp - Released 2015/11/26 16:00:13 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard StarGenerator PixInsight module.
 //
@@ -179,4 +179,4 @@ void Projection::Initialize( double lon, double lat, double fov, double w, doubl
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF Projection.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF Projection.cpp - Released 2015/11/26 16:00:13 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/ImageVariant.h - Released 2015/10/08 11:24:12 UTC
+// pcl/ImageVariant.h - Released 2015/11/26 15:59:38 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -351,10 +351,7 @@ public:
     * not transport an image.
     */
    ImageVariant() :
-      m_data( nullptr )
-#ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
-      , m_shared( nullptr )
-#endif
+      m_data( nullptr ), m_shared( nullptr )
    {
       m_data = new Data;
    }
@@ -368,10 +365,7 @@ public:
     */
    template <class P>
    ImageVariant( GenericImage<P>* image ) :
-      m_data( nullptr )
-#ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
-      , m_shared( nullptr )
-#endif
+      m_data( nullptr ), m_shared( nullptr )
    {
       m_data = new Data;
       m_data->Update( image );
@@ -387,10 +381,7 @@ public:
     * destroyed and deallocated.
     */
    ImageVariant( const ImageVariant& image ) :
-      m_data( image.m_data )
-#ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
-      , m_shared( nullptr )
-#endif
+      m_data( image.m_data ), m_shared( nullptr )
    {
       m_data->Attach();
    }
@@ -399,10 +390,7 @@ public:
     * Move constructor.
     */
    ImageVariant( ImageVariant&& image ) :
-      m_data( image.m_data )
-#ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
-      , m_shared( nullptr )
-#endif
+      m_data( image.m_data ), m_shared( nullptr )
    {
       image.m_data = nullptr;
    }
@@ -6989,6 +6977,8 @@ private:
 #ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
    // This is the server-side part of the image sharing mechanism
    pi::SharedImage* m_shared;
+#else
+   const void*      m_shared;
 #endif
 
    void DetachFromData()
@@ -7063,4 +7053,4 @@ GenericImage<P>& GenericImage<P>::SetLightness( const ImageVariant& L, const Poi
 #endif   // __PCL_ImageVariant_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageVariant.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/ImageVariant.h - Released 2015/11/26 15:59:38 UTC

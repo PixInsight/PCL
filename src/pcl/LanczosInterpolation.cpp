@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// pcl/LanczosInterpolation.cpp - Released 2015/10/08 11:24:19 UTC
+// pcl/LanczosInterpolation.cpp - Released 2015/11/26 15:59:45 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -57,9 +57,9 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-PCL_DATA float* PCL_Lanczos3_LUT = 0;
-PCL_DATA float* PCL_Lanczos4_LUT = 0;
-PCL_DATA float* PCL_Lanczos5_LUT = 0;
+PCL_DATA float* PCL_Lanczos3_LUT = nullptr;
+PCL_DATA float* PCL_Lanczos4_LUT = nullptr;
+PCL_DATA float* PCL_Lanczos5_LUT = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -88,7 +88,7 @@ void PCL_FUNC PCL_InitializeLanczosLUT( float*& LUT, int n )
    static Mutex mutex;
    volatile AutoLock lock( mutex );
 
-   if ( LUT == 0 )
+   if ( LUT == nullptr )
    {
       LUT = new float[ n*__PCL_LANCZOS_LUT_RESOLUTION + 1 ];
       for ( int i = 0, k = 0; i < n; ++i )
@@ -103,4 +103,4 @@ void PCL_FUNC PCL_InitializeLanczosLUT( float*& LUT, int n )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/LanczosInterpolation.cpp - Released 2015/10/08 11:24:19 UTC
+// EOF pcl/LanczosInterpolation.cpp - Released 2015/11/26 15:59:45 UTC

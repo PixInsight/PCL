@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0775
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.00.0314
+// Standard IntensityTransformations Process Module Version 01.07.01.0345
 // ----------------------------------------------------------------------------
-// ColorSaturationInterface.cpp - Released 2015/10/08 11:24:40 UTC
+// ColorSaturationInterface.cpp - Released 2015/11/26 16:00:13 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -1103,20 +1103,20 @@ void ColorSaturationInterface::__Curve_MouseMove(
       for ( int i = 0; i < 2; ++i )
       {
          double f = DisplayPixelRatio();
+         int ui1 = RoundInt( f );
          if ( m_mode == ZoomInMode || m_mode == ZoomOutMode || m_mode == PanMode )
          {
             int ui16 = RoundInt( f*16 );
-            sender.Update( m_cursorPos.x-ui16, m_cursorPos.y-ui16, m_cursorPos.x+ui16, m_cursorPos.y+ui16 );
+            sender.Update( m_cursorPos.x-ui16-ui1, m_cursorPos.y-ui16-ui1, m_cursorPos.x+ui16+ui1, m_cursorPos.y+ui16+ui1 );
          }
          else
          {
-            int ui1 = RoundInt( f );
-            sender.Update( m_cursorPos.x-ui1, 0, m_cursorPos.x+ui1, h );
-            sender.Update( 0, m_cursorPos.y-ui1, w, m_cursorPos.y+ui1 );
+            sender.Update( m_cursorPos.x-ui1-ui1, 0, m_cursorPos.x+ui1+ui1, h );
+            sender.Update( 0, m_cursorPos.y-ui1-ui1, w, m_cursorPos.y+ui1+ui1 );
             if ( m_mode == SelectMode || m_mode == DeleteMode )
             {
                int ui10 = RoundInt( f*10 );
-               sender.Update( m_cursorPos.x-ui10, m_cursorPos.y-ui10, m_cursorPos.x+ui10, m_cursorPos.y+ui10 );
+               sender.Update( m_cursorPos.x-ui10-ui1, m_cursorPos.y-ui10-ui1, m_cursorPos.x+ui10+ui1, m_cursorPos.y+ui10+ui1 );
             }
          }
 
@@ -1898,4 +1898,4 @@ ColorSaturationInterface::GUIData::GUIData( ColorSaturationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ColorSaturationInterface.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF ColorSaturationInterface.cpp - Released 2015/11/26 16:00:13 UTC

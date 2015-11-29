@@ -244,14 +244,12 @@ public:
          VerticalSizer		DeviceAction_Sizer;
             PushButton			ConnectDevice_PushButton;
             PushButton			DisconnectDevice_PushButton;
-            PushButton			RefreshDevice_PushButton;
       SectionBar         INDIProperties_SectionBar;
       Control			   INDIProperties_Control;
       HorizontalSizer    INDIDeviceProperty_Sizer;
       VerticalSizer		INDIDevicePropertyTreeBox_Sizer;
          TreeBox				PropertyList_TreeBox;
       VerticalSizer			Buttons_Sizer;
-         PushButton			RefreshProperty_PushButton;
          PushButton			EditProperty_PushButton;
       VerticalSizer      ServerMessage_Sizer;
          Label               ServerMessageLabel_Label;

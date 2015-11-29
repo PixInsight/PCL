@@ -320,14 +320,6 @@ void INDIDeviceControllerInterface::__CameraListButtons_Click( Button& sender, b
 			}
             ERROR_HANDLER
 		}
-		else if ( sender == GUI->RefreshDevice_PushButton)
-		{
-			try
-            {
-				UpdateDeviceList();
-			}
-            ERROR_HANDLER
-		}
 }
 
 
@@ -456,13 +448,10 @@ INDIDeviceControllerInterface::GUIData::GUIData( INDIDeviceControllerInterface& 
    ConnectDevice_PushButton.OnClick((Button::click_event_handler) &INDIDeviceControllerInterface::__CameraListButtons_Click, w );
    DisconnectDevice_PushButton.SetText("Disconnect");
    DisconnectDevice_PushButton.OnClick((Button::click_event_handler) &INDIDeviceControllerInterface::__CameraListButtons_Click, w );
-   RefreshDevice_PushButton.SetText("Refresh");
-   RefreshDevice_PushButton.OnClick((Button::click_event_handler) &INDIDeviceControllerInterface::__CameraListButtons_Click, w );
 
    DeviceAction_Sizer.SetSpacing( 6 );
    DeviceAction_Sizer.Add(ConnectDevice_PushButton);
    DeviceAction_Sizer.Add(DisconnectDevice_PushButton);
-   DeviceAction_Sizer.Add(RefreshDevice_PushButton);
    DeviceAction_Sizer.AddStretch();
 
    INDIDevice_Sizer.Add( DeviceList_TreeBox, 100 );
@@ -496,13 +485,10 @@ INDIDeviceControllerInterface::GUIData::GUIData( INDIDeviceControllerInterface& 
    ServerMessage_Sizer.Add(ServerMessageLabel_Label);
    ServerMessage_Sizer.Add(ServerMessage_Label);
 
-   RefreshProperty_PushButton.SetText("Refresh");
-   RefreshProperty_PushButton.OnClick((Button::click_event_handler) &INDIDeviceControllerInterface::PropertyButton_Click, w );
    EditProperty_PushButton.SetText("Edit");
    EditProperty_PushButton.OnClick((Button::click_event_handler) &INDIDeviceControllerInterface::PropertyButton_Click, w );
 
    Buttons_Sizer.SetSpacing( 6 );
-   Buttons_Sizer.Add(RefreshProperty_PushButton);
    Buttons_Sizer.Add(EditProperty_PushButton);
    Buttons_Sizer.AddStretch();
 
@@ -959,9 +945,6 @@ void INDIDeviceControllerInterface::PropertyButton_Click( Button& sender, bool c
 		}
 
 		GUI->SetPropDlg->Execute();
-	}
-	else if (sender==GUI->RefreshProperty_PushButton){
-		UpdatePropertyList();
 	}
 }
 

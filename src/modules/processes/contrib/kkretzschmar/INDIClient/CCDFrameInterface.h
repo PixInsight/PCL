@@ -105,14 +105,34 @@ public:
 
    void UpdateControls();
 
+
    struct GUIData
    {
+	  enum UploadCombo {
+		  UploadClient,
+		  UploadServer,
+		  UploadBoth
+	  } ;
+
+	  enum FramteType {
+		  Light,
+		  Bias,
+		  Dark,
+		  Flat
+	  };
+
       GUIData(CCDFrameInterface& w);
 
       Timer UpdateDeviceList_Timer;
       Timer ExposureDuration_Timer;
       Timer ExposureDelay_Timer;
       Timer Temperature_Timer;
+
+      bool   m_updateNewDirStr;
+      bool   m_updateNewPrefixStr;
+
+      std::vector<String> m_frameTypes      {"FRAME_LIGHT","FRAME_BIAS","FRAME_DARK","FRAME_FLAT"};
+      std::vector<String> m_frameTypePrefix {"OBJECT","BIAS","DARK","FLAT"};
 
       VerticalSizer     Global_Sizer;
          SectionBar        CCDDevice_SectionBar;
@@ -123,9 +143,36 @@ public:
          SectionBar        CCDParam_SectionBar;
          Control           CCDParam_Control;
          VerticalSizer     CCDParam_Sizer;
+           HorizontalSizer   CCDTemp_HSizer;
             NumericEdit       CCDTemp_NumericEdit;
-            NumericEdit       CCDBinX_NumericEdit;
-            NumericEdit       CCDBinY_NumericEdit;
+            NumericControl    CCDTargetTemp_NumericEdit;
+            PushButton        CCDTemp_PushButton;
+           HorizontalSizer   CCDBinX_HSizer;
+            Label             CCDBinX_Label;
+            ComboBox          CCDBinX_Combo;
+           HorizontalSizer   CCDBinY_HSizer;
+            Label             CCDBinY_Label;
+            ComboBox          CCDBinY_Combo;
+           HorizontalSizer   CCDFrameType_HSizer;
+            Label             CCDFrameType_Label;
+            ComboBox          CCDFrameType_Combo;
+           HorizontalSizer   UploadMode_HSizer;
+            Label               UploadMode_Label;
+            ComboBox            UploadMode_Combo;
+           HorizontalSizer   UploadDir_HSizer;
+            Label               UploadDir_Label;
+            Edit                UploadDir_Edit;
+           HorizontalSizer   UploadNewDir_HSizer;
+            Label               UploadNewDir_Label;
+            Edit                UploadNewDir_Edit;
+            PushButton          UploadNewDir_PushButton;
+           HorizontalSizer   UploadPrefix_HSizer;
+            Label               UploadPrefix_Label;
+            Edit                UploadPrefix_Edit;
+           HorizontalSizer   UploadNewPrefix_HSizer;
+            Label               UploadNewPrefix_Label;
+            Edit                UploadNewPrefix_Edit;
+            PushButton          UploadNewPrefix_PushButton;
          SectionBar        FrameExposure_SectionBar;
          Control           FrameExposure_Control;
          VerticalSizer     FrameExposure_Sizer;
@@ -161,7 +208,6 @@ public:
    double                  m_ExposureDuration;
    int                     m_NumOfExposures;
    double                  m_Temperature;
-   bool                    m_saveFrame;
    String                  m_FrameFolder;
    String                  m_FramePrefix;
    bool                    m_isWaiting;
@@ -169,14 +215,22 @@ public:
    void UpdateDeviceList_Timer( Timer& sender );
    void ExposureDuration_Timer( Timer &sender );
    void ExposureDelay_Timer( Timer &sender );
-   void Temperature_Timer( Timer &sender );
+   void INDI_ServerMonitor_Timer( Timer &sender );
+   void SetCCDPropertyButton_Click(Button& sender, bool checked);
    void SpinValueUpdated( SpinBox& sender, int value );
    void EditValueUpdated( NumericEdit& sender, double value );
+   void EditTextUpdated( Edit& sender, const String& text );
+   void EditEntered(Edit& sender);
    void ComboItemSelected(ComboBox& sender, int itemIndex);
    void StartExposureButton_Click(Button& sender, bool checked);
    void CancelButton_Click(Button& sender, bool checked);
 
    void UpdateDeviceList();
+   String getUploadModePropertyString(int UploadModeIdx);
+   String getCCDFrameTypePropertyString(int FrameTypeIdx);
+   void EnableUploadSettingControls();
+   void DisableUploadSettingControls();
+   void updateNewPrefixControl();
 };
 
 // ----------------------------------------------------------------------------

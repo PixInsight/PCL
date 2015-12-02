@@ -56,6 +56,7 @@
 #include "BlinkStatisticsDialog.h"
 #include "BlinkVideoDialog.h"
 
+#include <pcl/AutoPointer.h>
 #include <pcl/Console.h>
 #include <pcl/ElapsedTime.h>
 #include <pcl/ErrorHandler.h>
@@ -70,12 +71,6 @@
 #include <pcl/StdStatus.h>  // for progress monitor
 #include <pcl/Version.h>    // for PixInsightVersion
 #include <pcl/View.h>
-
-#ifdef __PCL_WINDOWS
-#  include <time.h>
-#else
-#  include <sys/time.h>
-#endif
 
 namespace pcl
 {
@@ -114,7 +109,7 @@ static const double g_stfTargetBackground = 0.25;
 // ----------------------------------------------------------------------------
 
 template <class P>
-static bool LoadImage_P( GenericImage<P>& img, const String& filePath )
+static bool LoadImage_P( GenericImage<P>& image, const String& filePath )
 {
    Console().WriteLn( "<end><cbr><br>* Read file: " + filePath );
    FileFormat format( File::ExtractExtension( filePath ), true/*toRead*/, false/*toWrite*/ );
@@ -132,7 +127,7 @@ static bool LoadImage_P( GenericImage<P>& img, const String& filePath )
          throw Error( filePath + ": Multiple images not supported in the current version (push me if you need them)." );
       if ( !file.SelectImage( 0 ) )
          throw CatchedException();
-      if ( !file.ReadImage( img ) )
+      if ( !file.ReadImage( image ) )
          throw CatchedException();
       if ( !file.Close() )
          throw CatchedException();
@@ -156,51 +151,19 @@ static bool LoadImage_P( GenericImage<P>& img, const String& filePath )
    }
 }
 
-#ifdef __PCL_WINDOWS
-
-/*
- * MSVC does not have gettimeofday(), so we implement an equivalent routine
- * here using WIN32 API calls.
- */
-
-#define DELTA_EPOCH_IN_MICROSECS  11644473600000000Ui64
-
-int gettimeofday( timeval* tv, void* /*notUsed*/ )
-{
-   if ( tv != 0 )
-   {
-      FILETIME ft;
-      GetSystemTimeAsFileTime( &ft );
-
-      uint64 t = ft.dwHighDateTime;
-      t <<= 32;
-      t |= ft.dwLowDateTime;
-
-      // convert file time to unix epoch
-      t -= DELTA_EPOCH_IN_MICROSECS;
-      t /= 10;  // convert into microseconds
-      tv->tv_sec = (long)(t / 1000000UL);
-      tv->tv_usec = (long)(t % 1000000UL);
-   }
-
-   return 0;
-}
-
-#endif   // __PCL_WINDOWS
-
 // ----------------------------------------------------------------------------
 // BlinkInterface::FileData Implementation
 // ----------------------------------------------------------------------------
 
 BlinkInterface::FileData::FileData( FileFormatInstance& file,
-                                    blink_image* img,
+                                    blink_image* image,
                                     const ImageDescription& description,
                                     const String& path,
                                     bool realPixelData ) :
    m_filePath( path ),
-   m_image( img ),
-   m_format( new FileFormat( file.Format() ) ),
-   m_fsData( 0 ),
+   m_image( image ),
+   m_format( nullptr ),
+   m_fsData( nullptr ),
    m_options( description.options ),
    m_info( description.info ),
    m_keywords(),
@@ -216,6 +179,8 @@ BlinkInterface::FileData::FileData( FileFormatInstance& file,
    Console().WriteLn( String().Format( "Create FileData Id %i", m_id ) );
    m_total++;
 #endif
+   m_format = new FileFormat( file.Format() );
+
    if ( m_format->UsesFormatSpecificData() )
       m_fsData = file.FormatSpecificData();
 
@@ -225,7 +190,7 @@ BlinkInterface::FileData::FileData( FileFormatInstance& file,
    if ( m_format->CanStoreICCProfiles() )
       file.Extract( m_profile );
 #if debug
-   Console().WriteLn(String().Format( "FileData End") );
+   Console().WriteLn( String().Format( "FileData End") );
 #endif
 }
 
@@ -233,21 +198,21 @@ BlinkInterface::FileData::~FileData()
 {
 #if debug
    Console().WriteLn( String().Format( "~FileData( Id = %i, total = %i )<br>{", m_id, m_total ) );
-   Console().WriteLn( "format   = " + String( m_format != 0 ) );
-   Console().WriteLn( "image    = " + String( m_image != 0 ) );
+   Console().WriteLn( "format   = " + String( m_format != nullptr ) );
+   Console().WriteLn( "image    = " + String( m_image != nullptr ) );
    Console().WriteLn( "statSTF  = " + String( !m_statSTF.IsEmpty() ) );
    Console().WriteLn( "statReal = " + String( !m_statReal.IsEmpty() ) );
    m_total--;
 #endif
-   if ( m_format != 0 )
+   if ( m_format != nullptr )
    {
-      if ( m_fsData != 0 )
-         m_format->DisposeFormatSpecificData( const_cast<void*>( m_fsData ) ), m_fsData = 0;
-      delete m_format, m_format = 0;
+      if ( m_fsData != nullptr )
+         m_format->DisposeFormatSpecificData( const_cast<void*>( m_fsData ) ), m_fsData = nullptr;
+      delete m_format, m_format = nullptr;
    }
 
-   if ( m_image != 0 )
-      delete m_image, m_image = 0;
+   if ( m_image != nullptr )
+      delete m_image, m_image = nullptr;
 #if debug
    Console().WriteLn( "}~FileData" );
 #endif
@@ -294,7 +259,6 @@ bool BlinkInterface::BlinkData::Add( const String& filePath )
    Console().WriteLn( "<end><cbr>" + filePath );
    FileFormat format( File::ExtractExtension( filePath ), true/*toRead*/, false/*toWrite*/ );
    FileFormatInstance file( format );
-   blink_image* img = 0;
 
    try
    {
@@ -311,15 +275,15 @@ bool BlinkInterface::BlinkData::Add( const String& filePath )
       if ( !CheckGeomery( images[0] ) )
          throw Error( "Wrong image geometry" );
 
-      img = new blink_image;
+      AutoPointer<blink_image> image( new blink_image );
 
-      if ( !file.ReadImage( *img ) )
+      if ( !file.ReadImage( *image ) )
          throw CatchedException();
 
-      bool realPixelData = img->IsFloatSample() != images[0].options.ieeefpSampleFormat &&
-                           img->BitsPerSample() != images[0].options.bitsPerSample;
+      bool realPixelData = image->IsFloatSample() != images[0].options.ieeefpSampleFormat &&
+                           image->BitsPerSample() != images[0].options.bitsPerSample;
 
-      m_filesData.Add( new FileData( file, img, images[0], filePath, realPixelData ) );
+      m_filesData.Add( new FileData( file, image.Release(), images[0], filePath, realPixelData ) );
 
       if ( !file.Close() )
          throw CatchedException();
@@ -328,8 +292,6 @@ bool BlinkInterface::BlinkData::Add( const String& filePath )
    }
    catch ( ... )
    {
-      if ( img != 0 )
-         delete img;
       if ( file.IsOpen() )
          file.Close();
 
@@ -757,8 +719,8 @@ BlinkInterface::BlinkInterface() :
 
 BlinkInterface::~BlinkInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
    m_blink.Clear();
 }
 
@@ -910,9 +872,6 @@ void BlinkInterface::Init()
    GUI->Statistics_button.Disable( noFiles );
    GUI->CropToVideo_button.Disable( noFiles );
 
-   // Force regeneration of the preview image
-   m_previewBmp = Bitmap::Null();
-
    if ( noFiles )             // file == 0 -> init default GUI
    {
       GUI->AutoHT_Button.Uncheck();
@@ -934,6 +893,8 @@ void BlinkInterface::Init()
    GUI->Play_Button.Disable( oneOrNone );
    GUI->NextImage_Button.Disable( oneOrNone );
    GUI->BlinkingDelay_ComboBox.Disable( oneOrNone );
+
+   GeneratePreview();
 
    Enable();
 
@@ -1013,20 +974,17 @@ void BlinkInterface::TranslucentPlanets()
    for ( int i = 0; i < PreviewSize; i += networkFrequency )
       g.DrawLine( i, PreviewSize-1, 0, i );
    g.DrawLine( PreviewSize-1, PreviewSize-1, 0, PreviewSize-1 );
-
-   // End painting
-   g.EndPaint();
 }
 
 void BlinkInterface::Image2Preview()
 {
-   blink_image img( *m_blink.m_filesData[0].m_image );
+   blink_image image( *m_blink.m_filesData[0].m_image );
 
    if ( GUI->AutoSTF_Button.IsChecked() )
    {
       m_blink.GetStatsForSTF( 0 );
 
-      int n = img.NumberOfNominalChannels();
+      int n = image.NumberOfNominalChannels();
       double c0 = 0, m = 0;
       for ( int c = 0; c < n; c++ )
       {
@@ -1040,15 +998,15 @@ void BlinkInterface::Image2Preview()
       for ( int c = 0; c < n; c++ )
       {
          HistogramTransformation H( m, c0, 1, 0, 1 );
-         img.SelectChannel( c );
-         H >> img;
+         image.SelectChannel( c );
+         H >> image;
       }
-      img.ResetChannelRange();
+      image.ResetChannelRange();
    }
 
-   int w = (img.Width() > img.Height()) ? PreviewSize : RoundInt( float( PreviewSize )*img.Width()/img.Height() );
-   int h = (img.Height() > img.Width()) ? PreviewSize : RoundInt( float( PreviewSize )*img.Height()/img.Width() );
-   m_previewBmp = Bitmap::Render( &img ).ScaledToSize( w, h ); // fit big Image to small Preview
+   int w = (image.Width() > image.Height()) ? PreviewSize : RoundInt( float( PreviewSize )*image.Width()/image.Height() );
+   int h = (image.Height() > image.Width()) ? PreviewSize : RoundInt( float( PreviewSize )*image.Height()/image.Width() );
+   m_previewBmp = Bitmap::Render( &image ).ScaledToSize( w, h ); // fit big Image to small Preview
 }
 
 void BlinkInterface::GeneratePreview()
@@ -1458,8 +1416,7 @@ void BlinkInterface::__Brightness_Click( Button& sender, bool checked )
       if ( m_blink.m_screen.IsNull() )
          m_blink.UpdateScreen();
 
-      // Force regeneration of the preview image
-      m_previewBmp = Bitmap::Null();
+      GeneratePreview();
 
       Continue();
    }
@@ -1489,8 +1446,7 @@ void BlinkInterface::__Brightness_Click( Button& sender, bool checked )
       if ( m_blink.m_screen.IsNull() )
          m_blink.UpdateScreen();
 
-      // Force regeneration of the preview image
-      m_previewBmp = Bitmap::Null();
+      GeneratePreview();
 
       Continue();
    }
@@ -1500,8 +1456,7 @@ void BlinkInterface::__Brightness_Click( Button& sender, bool checked )
 
       m_blink.AutoSTF();
 
-      // Force regeneration of the preview image
-      m_previewBmp = Bitmap::Null();
+      GeneratePreview();
 
       Continue();
    }
@@ -1618,7 +1573,7 @@ void BlinkInterface::__ActionButton_Click( Button& sender, bool /*checked*/ )
 void BlinkInterface::__ScrollControl_Paint( Control& sender, const Rect& r )
 {
    if ( m_previewBmp.IsNull() )
-      GeneratePreview();
+      return;
 
    Graphics g( sender );
    g.DisableAntialiasing();
@@ -1656,8 +1611,6 @@ void BlinkInterface::__ScrollControl_Paint( Control& sender, const Rect& r )
          g.DrawRect( (k * DRect( previews[i].Bounds().MovedTo( p ) )).RoundedToInt() );
       }
    }
-
-   g.EndPaint();
 }
 
 void BlinkInterface::__ScrollControl_MouseWheel( Control& sender, const Point& pos, int delta, unsigned buttons, unsigned modifiers )
@@ -1739,8 +1692,9 @@ void BlinkInterface::__FilePanelHideButton_Click( Button& sender, bool /*checked
 
 void BlinkInterface::__Show( Control& /*sender*/ )
 {
-   // Force regeneration of the preview image
-   m_previewBmp = Bitmap::Null();
+   // If necessary, generate the preview bitmap
+   if ( m_previewBmp.IsNull() )
+      GeneratePreview();
    // Enable periodic preview refresh
    GUI->UpdatePreview_Timer.Start();
 }

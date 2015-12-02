@@ -54,12 +54,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     02
 #define MODULE_VERSION_REVISION  01
-#define MODULE_VERSION_BUILD     0204
+#define MODULE_VERSION_BUILD     0205
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2015
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       26
+#define MODULE_RELEASE_MONTH     12
+#define MODULE_RELEASE_DAY       02
 
 #include "BlinkModule.h"
 #include "BlinkProcess.h"

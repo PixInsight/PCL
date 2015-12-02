@@ -130,7 +130,7 @@ private:
    void LinearFilterLayer( GenericImage<P>& cj, int n, bool parallel, int maxProcessors )
    {
       GaussianFilter H( n );
-      if ( n >= 49 || cj.Width() < n || cj.Height() < n  )
+      if ( n >= PCL_FFT_CONVOLUTION_IS_FASTER_THAN_SEPARABLE_FILTER_SIZE || cj.Width() < n || cj.Height() < n  )
       {
          FFTConvolution Z( H );
          Z.EnableParallelProcessing( parallel, maxProcessors );

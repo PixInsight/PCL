@@ -309,7 +309,6 @@ public:
     * specified, this object will use a default-constructed instance of the
     * deleter template argument class.
     */
-   explicit
    AutoPointer( pointer p, bool autoDelete = true, const deleter& d = deleter() ) :
       m_pointer( nullptr ), m_deleter( d ), m_autoDelete( autoDelete )
    {

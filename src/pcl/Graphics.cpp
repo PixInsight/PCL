@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/Graphics.cpp - Released 2015/11/26 15:59:45 UTC
+// pcl/Graphics.cpp - Released 2015/12/17 18:52:18 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -932,4 +932,4 @@ pcl::DRect VectorGraphics::TextRect( double x0, double y0, double x1, double y1,
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Graphics.cpp - Released 2015/11/26 15:59:45 UTC
+// EOF pcl/Graphics.cpp - Released 2015/12/17 18:52:18 UTC

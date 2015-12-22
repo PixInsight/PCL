@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/SectionBar.cpp - Released 2015/11/26 15:59:45 UTC
+// pcl/SectionBar.cpp - Released 2015/12/17 18:52:18 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -49,9 +49,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#include <pcl/SectionBar.h>
 #include <pcl/GlobalSettings.h>
+#include <pcl/MetaModule.h> // MetaModule::ProcessEvents()
 #include <pcl/ProcessInterface.h>
+#include <pcl/SectionBar.h>
 
 #define contract_icon ":/process-interface/contract-vert.png"
 #define expand_icon   ":/process-interface/expand-vert.png"
@@ -262,7 +263,7 @@ void SectionBar::ButtonClick( Button& sender, bool checked )
       // On OS X, forcing event processing here causes a lot of flickering.
       // On X11 and Windows, it's just the opposite...
 #ifndef __PCL_MACOSX
-      ProcessInterface::ProcessEvents();
+      Module->ProcessEvents();
 #endif
       if ( !p->IsNull() )
       {
@@ -276,9 +277,8 @@ void SectionBar::ButtonClick( Button& sender, bool checked )
 
          p->AdjustToContents();
 
-//#ifndef __PCL_MACOSX
-         ProcessInterface::ProcessEvents();
-//#endif
+         Module->ProcessEvents();
+
          if ( !fixedWidth )
             p->SetVariableWidth();
          if ( fixedHeight )
@@ -345,4 +345,4 @@ void SectionBar::ControlHide( Control& sender )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SectionBar.cpp - Released 2015/11/26 15:59:45 UTC
+// EOF pcl/SectionBar.cpp - Released 2015/12/17 18:52:18 UTC

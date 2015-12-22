@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/ImageWindow.cpp - Released 2015/11/26 15:59:45 UTC
+// pcl/ImageWindow.cpp - Released 2015/12/17 18:52:18 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -179,6 +179,7 @@ ImageOptions ImageWindow::FileInfo() const
    o.embedRGBWS            = a.embedRGBWS;
    o.embedDisplayFunction  = a.embedDisplayFunction;
    o.embedColorFilterArray = a.embedColorFilterArray;
+   o.embedPreviewRects     = a.embedPreviewRects;
    o.xResolution           = a.xResolution;
    o.yResolution           = a.yResolution;
    o.isoSpeed              = a.isoSpeed;
@@ -488,13 +489,15 @@ bool ImageWindow::GetKeywords( FITSKeywordArray& keywords ) const
    if ( n <= 0 )
       return false;
 
+   IsoString name, value, comment;
+   name.Reserve( 16 );
+   value.Reserve( 96 );
+   comment.Reserve( 96 );
    for ( int i = 0; i < n; ++i )
    {
-      char name[ 80 ], value[ 80 ], comment[ 80 ];
-      (*API->ImageWindow->GetImageWindowKeyword)( handle, i, name, value, comment );
-      keywords.Add( FITSHeaderKeyword( name, value, comment ) );
+      (*API->ImageWindow->GetImageWindowKeyword)( handle, i, name.Begin(), 16, value.Begin(), 96, comment.Begin(), 96 );
+      keywords << FITSHeaderKeyword( name.c_str(), value.c_str(), comment.c_str() );
    }
-
    return true;
 }
 
@@ -1157,4 +1160,4 @@ Array<ImageWindow> ImageWindow::AllWindows( bool includeIconicWindows )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageWindow.cpp - Released 2015/11/26 15:59:45 UTC
+// EOF pcl/ImageWindow.cpp - Released 2015/12/17 18:52:18 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/MetaModule.cpp - Released 2015/11/26 15:59:45 UTC
+// pcl/MetaModule.cpp - Released 2015/12/17 18:52:18 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -93,11 +93,11 @@ bool MetaModule::IsInstalled() const
    return API != nullptr;
 }
 
-void MetaModule::ProcessEvents()
+void MetaModule::ProcessEvents( bool excludeUserInputEvents )
 {
    thread_handle thread = (*API->Thread->GetCurrentThread)();
-   if ( thread == 0 )
-      (*API->Global->ProcessEvents)();
+   if ( thread == 0 ) // if root thread
+      (*API->Global->ProcessEvents)( excludeUserInputEvents );
    else
    {
       uint32 threadStatus = (*API->Thread->GetThreadStatus)( thread );
@@ -280,4 +280,4 @@ void MetaModule::PerformAPIDefinitions() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaModule.cpp - Released 2015/11/26 15:59:45 UTC
+// EOF pcl/MetaModule.cpp - Released 2015/12/17 18:52:18 UTC

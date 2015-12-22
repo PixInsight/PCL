@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/MetaFileFormat.cpp - Released 2015/11/26 15:59:45 UTC
+// pcl/MetaFileFormat.cpp - Released 2015/12/17 18:52:18 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -84,6 +84,7 @@ void APIImageOptionsToPCL( ImageOptions& opt, const api_image_options& o )
    opt.embedRGBWS            = o.embedRGBWS;
    opt.embedDisplayFunction  = o.embedDisplayFunction;
    opt.embedColorFilterArray = o.embedColorFilterArray;
+   opt.embedPreviewRects     = o.embedPreviewRects;
    opt.lowerRange            = o.lowerRange;
    opt.upperRange            = o.upperRange;
    opt.xResolution           = o.xResolution;
@@ -119,6 +120,7 @@ void PCLImageOptionsToAPI( api_image_options& o, const ImageOptions& opt )
    o.embedRGBWS            = opt.embedRGBWS;
    o.embedDisplayFunction  = opt.embedDisplayFunction;
    o.embedColorFilterArray = opt.embedColorFilterArray;
+   o.embedPreviewRects     = opt.embedPreviewRects;
    o.lowerRange            = opt.lowerRange;
    o.upperRange            = opt.upperRange;
    o.xResolution           = opt.xResolution;
@@ -1672,4 +1674,4 @@ void MetaFileFormat::PerformAPIDefinitions() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaFileFormat.cpp - Released 2015/11/26 15:59:45 UTC
+// EOF pcl/MetaFileFormat.cpp - Released 2015/12/17 18:52:18 UTC

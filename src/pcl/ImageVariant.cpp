@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/ImageVariant.cpp - Released 2015/11/26 15:59:45 UTC
+// pcl/ImageVariant.cpp - Released 2015/12/17 18:52:18 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -186,7 +186,7 @@ public:
          if ( processEvents )
             for ( thread_list::iterator i = threads.Begin(); i != threads.End(); ++i )
                while ( !i->Wait( 250 ) )
-                  Module->ProcessEvents();
+                  Module->ProcessEvents( true/*excludeUserInputEvents*/ );
          else
             for ( thread_list::iterator i = threads.Begin(); i != threads.End(); ++i )
                i->Wait();
@@ -197,7 +197,7 @@ public:
          {
             threads[0].Start( ThreadPriority::DefaultMax );
             while ( !threads[0].Wait( 250 ) )
-               Module->ProcessEvents();
+               Module->ProcessEvents( true/*excludeUserInputEvents*/ );
          }
          else
             threads[0].Run();
@@ -1404,4 +1404,4 @@ void ImageVariant::MaskImage( const ImageVariant& src, const ImageVariant& mask,
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageVariant.cpp - Released 2015/11/26 15:59:45 UTC
+// EOF pcl/ImageVariant.cpp - Released 2015/12/17 18:52:18 UTC

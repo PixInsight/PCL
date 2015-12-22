@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/PolarTransform.h - Released 2015/11/26 15:59:39 UTC
+// pcl/PolarTransform.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -76,7 +76,7 @@ namespace pcl
  * \brief Base class of polar transforms.
  *
  * %PolarTransformBase implements properties and functionality common to polar
- * transform classes in the PCL.
+ * transform classes in PCL.
  *
  * A polar transform remaps pixel values in a two-dimensional image to encode
  * polar coordinates on both image axes. Polar angle measured counter-clockwise
@@ -372,4 +372,4 @@ protected:
 #endif   // __PCL_PolarTransform_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/PolarTransform.h - Released 2015/11/26 15:59:39 UTC
+// EOF pcl/PolarTransform.h - Released 2015/12/17 18:52:09 UTC

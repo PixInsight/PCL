@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/Version.h - Released 2015/11/26 15:59:39 UTC
+// pcl/Version.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -84,34 +84,34 @@ class PCL_CLASS Version
 public:
 
    /*!
-    * Returns the PCL major version number.
+    * Returns the current PCL major version number.
     */
    static int Major();
 
    /*!
-    * Returns the PCL minor version number.
+    * Returns the current PCL minor version number.
     */
    static int Minor();
 
    /*!
-    * Returns the PCL release version number.
+    * Returns the current PCL release version number.
     */
    static int Release();
 
    /*!
-    * Returns the PCL build number.
+    * Returns the current PCL build number.
     */
    static int Build();
 
    /*!
-    * Returns the beta version number of the PCL, or zero if the PCL framework
-    * is a release (non-beta) version.
+    * Returns the beta version number of PCL, or zero if the current PCL
+    * framework is a release (non-beta) version.
     */
    static int BetaRelease();
 
    /*!
     * Returns an ISO 639.2 language code that identifies the primary language
-    * of the PCL framework.
+    * of the current PCL framework.
     */
    static String LanguageCode();  // ISO 639.2 language code
 
@@ -128,7 +128,7 @@ public:
    }
 
    /*!
-    * Returns a readable representation of the PCL version.
+    * Returns a readable representation of the current PCL version.
     */
    static String AsString();
 
@@ -253,4 +253,4 @@ private:
 #endif   // __PCL_Version_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Version.h - Released 2015/11/26 15:59:39 UTC
+// EOF pcl/Version.h - Released 2015/12/17 18:52:09 UTC

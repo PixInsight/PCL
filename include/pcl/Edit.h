@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/Edit.h - Released 2015/11/26 15:59:39 UTC
+// pcl/Edit.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -395,4 +395,4 @@ private:
 #endif   // __PCL_Edit_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Edit.h - Released 2015/11/26 15:59:39 UTC
+// EOF pcl/Edit.h - Released 2015/12/17 18:52:09 UTC

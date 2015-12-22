@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/String.h - Released 2015/11/26 15:59:39 UTC
+// pcl/String.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -2989,6 +2989,7 @@ public:
    /*!
     * Returns a duplicate of this string padded to the right, using the
     * specified \a fill character, up to the specified \a width.
+    *
     * \sa JustifyLeft(), RightJustified(), CenterJustified()
     */
    GenericString LeftJustified( size_type width, char_type fill = R::Blank() ) const
@@ -3001,6 +3002,7 @@ public:
    /*!
     * Returns a duplicate of this string padded to the left, using the
     * specified \a fill character, up to the specified \a width.
+    *
     * \sa JustifyRight(), LeftJustified(), CenterJustified()
     */
    GenericString RightJustified( size_type width, char_type fill = R::Blank() ) const
@@ -3013,6 +3015,7 @@ public:
    /*!
     * Returns a duplicate of this string padded equally to the left and right,
     * using the specified \a fill character, up to the specified \a width.
+    *
     * \sa JustifyCenter(), LeftJustified(), RightJustified()
     */
    GenericString CenterJustified( size_type width, char_type fill = R::Blank() ) const
@@ -3083,7 +3086,7 @@ public:
    /*!
     * Compares numeric character values a string and a null-terminated string.
     *
-    * \param s                A single character to which this string will be
+    * \param c                A single character to which this string will be
     *                         compared.
     *
     * \param caseSensitive    When true, a case-sensitive comparison is
@@ -3180,7 +3183,7 @@ public:
    /*!
     * Lexicographical comparison to a single character.
     *
-    * \param s             A character to which this string will be compared.
+    * \param c             A character to which this string will be compared.
     *
     * \param caseSensitive When true, a case-sensitive comparison is performed;
     *                      otherwise the comparison does not distinguish
@@ -3266,7 +3269,7 @@ public:
    /*!
     * Case-insensitive lexicographical comparison to a single character.
     *
-    * \param s             A character to which this string will be compared.
+    * \param c             A character to which this string will be compared.
     *
     * \param localeAware   When true, a locale-dependent comparison is done
     *                      which takes into account the currently selected user
@@ -5987,7 +5990,7 @@ public:
     * Returns \c false if this string is equal to "0", "false", "FALSE" or "F".
     * Otherwise this function throws a ParseError exception.
     *
-    * \sa TryToBool( bool& )
+    * \sa TryToBool()
     */
    bool ToBool() const;
 
@@ -6018,7 +6021,7 @@ public:
     * range of \c float is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToFloat( float& )
+    * \sa TryToFloat()
     */
    float ToFloat() const;
 
@@ -6059,7 +6062,7 @@ public:
     * range of \c double is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToDouble( double& )
+    * \sa TryToDouble()
     */
    double ToDouble() const;
 
@@ -6094,7 +6097,7 @@ public:
     * of \c long is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToInt( int& )
+    * \sa TryToInt()
     */
    long ToInt() const
    {
@@ -6153,7 +6156,7 @@ public:
     * \a base, if an illegal \a base is specified, or if the range of \c long
     * is exceeded, this member function throws a ParseError exception.
     *
-    * \sa TryToInt( int&, int )
+    * \sa TryToInt( int&, int ) const
     */
    long ToInt( int base ) const;
 
@@ -6172,7 +6175,7 @@ public:
     * \a base, this function returns \c false and does not change the \a value
     * variable. This function does not throw any exception.
     *
-    * \sa ToInt( int )
+    * \sa ToInt( int ) const
     */
    bool TryToInt( int& value, int base ) const;
 
@@ -6191,7 +6194,7 @@ public:
     * the range of \c unsigned \c long is exceeded, this member function throws
     * a ParseError exception.
     *
-    * \sa TryToUInt( unsigned& )
+    * \sa TryToUInt()
     */
    unsigned long ToUInt() const
    {
@@ -6240,7 +6243,7 @@ public:
     * \c unsigned \c long is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToUInt( unsigned&, int )
+    * \sa TryToUInt( unsigned&, int ) const
     */
    unsigned long ToUInt( int base ) const;
 
@@ -6259,7 +6262,7 @@ public:
     * specified \a base, this function returns \c false and does not change the
     * \a value variable. This function does not throw any exception.
     *
-    * \sa ToUInt( int )
+    * \sa ToUInt( int ) const
     */
    bool TryToUInt( unsigned& value, int base ) const;
 
@@ -6275,7 +6278,7 @@ public:
     * of \c long \c long is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToInt64( long long& )
+    * \sa TryToInt64()
     */
    long long ToInt64() const
    {
@@ -6323,7 +6326,7 @@ public:
     * \c long \c long is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToInt64( long long&, int )
+    * \sa TryToInt64( long long&, int ) const
     */
    long long ToInt64( int base ) const;
 
@@ -6342,7 +6345,7 @@ public:
     * specified \a base, this function returns \c false and does not change the
     * \a value variable. This function does not throw any exception.
     *
-    * \sa ToInt64( int )
+    * \sa ToInt64( int ) const
     */
    bool TryToInt64( long long& value, int base ) const;
 
@@ -6358,7 +6361,7 @@ public:
     * the range of \c unsigned \c long \c long is exceeded, this member
     * function throws a ParseError exception.
     *
-    * \sa TryToUInt64( long long& )
+    * \sa TryToUInt64()
     */
    unsigned long long ToUInt64() const
    {
@@ -6406,7 +6409,7 @@ public:
     * \c unsigned \c long \c long is exceeded, this member function throws a
     * ParseError exception.
     *
-    * \sa TryToUInt64( unsigned long long&, int )
+    * \sa TryToUInt64( unsigned long long&, int ) const
     */
    unsigned long long ToUInt64( int base ) const;
 
@@ -6425,7 +6428,7 @@ public:
     * in the specified \a base, this function returns \c false and does not
     * change the \a value variable. This function does not throw any exception.
     *
-    * \sa ToUInt64( int )
+    * \sa ToUInt64( int ) const
     */
    bool TryToUInt64( unsigned long long& value, int base ) const;
 
@@ -6515,9 +6518,10 @@ public:
    ByteArray FromBase64() const;
 
    /*!
-    * Generates a string of \a n random 7-bit ASCII code points (stored as
-    * 8-bit characters), with character types and ranges as prescribed by the
-    * specified \a options.
+    * Generates a string of \a n random 8-bit code points, with character types
+    * and ranges as prescribed by the specified \a options.
+    *
+    * \sa RandomizationOption
     */
    static IsoString Random( size_type n,
                             RandomizationOptions options = RandomizationOption::Default );
@@ -9396,7 +9400,7 @@ public:
     * have undefined values in the returned string. Undefined values are
     * represented with question mark characters (?).
     *
-    * \sa ToUTF8(), ToMBS(), ToUTF32(), ToASCII(), To7BitASCII()
+    * \sa ToUTF8(), ToMBS(), ToUTF32(), To7BitASCII()
     */
    IsoString ToIsoString() const;
 
@@ -9407,7 +9411,7 @@ public:
     * have undefined values in the returned string. Undefined values are
     * represented with question mark characters (?).
     *
-    * \sa ToIsoString(), ToUTF8(), ToMBS(), ToUTF32(), ToASCII()
+    * \sa ToIsoString(), ToUTF8(), ToMBS(), ToUTF32()
     */
    IsoString To7BitASCII() const;
 
@@ -9540,7 +9544,7 @@ public:
     * Returns \c false if this string is equal to "0", "false", "FALSE" or "F".
     * Otherwise this function throws a ParseError exception.
     *
-    * \sa TryToBool( bool& )
+    * \sa TryToBool()
     */
    bool ToBool() const;
 
@@ -9571,7 +9575,7 @@ public:
     * range of \c float is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToFloat( float& )
+    * \sa TryToFloat()
     */
    float ToFloat() const;
 
@@ -9612,7 +9616,7 @@ public:
     * range of \c double is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToDouble( double& )
+    * \sa TryToDouble()
     */
    double ToDouble() const;
 
@@ -9646,7 +9650,7 @@ public:
     * If this string doesn't contain a valid integer literal, or if the range
     * of \c long is exceeded, this member function throws a ParseError exception.
     *
-    * \sa TryToInt( int& )
+    * \sa TryToInt()
     */
    long ToInt() const
    {
@@ -9705,7 +9709,7 @@ public:
     * \a base, if an illegal \a base is specified, or if the range of \c long
     * is exceeded, this member function throws a ParseError exception.
     *
-    * \sa TryToInt( int&, int )
+    * \sa TryToInt( int&, int ) const
     */
    long ToInt( int base ) const;
 
@@ -9724,7 +9728,7 @@ public:
     * \a base, this function returns \c false and does not change the \a value
     * variable. This function does not throw any exception.
     *
-    * \sa ToInt( int )
+    * \sa ToInt( int ) const
     */
    bool TryToInt( int& value, int base ) const;
 
@@ -9743,7 +9747,7 @@ public:
     * the range of \c unsigned \c long is exceeded, this member function throws
     * a ParseError exception.
     *
-    * \sa TryToUInt( unsigned& )
+    * \sa TryToUInt()
     */
    unsigned long ToUInt() const
    {
@@ -9792,7 +9796,7 @@ public:
     * \c unsigned \c long is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToUInt( unsigned&, int )
+    * \sa TryToUInt( unsigned&, int ) const
     */
    unsigned long ToUInt( int base ) const;
 
@@ -9811,7 +9815,7 @@ public:
     * specified \a base, this function returns \c false and does not change the
     * \a value variable. This function does not throw any exception.
     *
-    * \sa ToUInt( int )
+    * \sa ToUInt( int ) const
     */
    bool TryToUInt( unsigned& value, int base ) const;
 
@@ -9827,7 +9831,7 @@ public:
     * of \c long \c long is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToInt64( long long& )
+    * \sa TryToInt64()
     */
    long long ToInt64() const
    {
@@ -9875,7 +9879,7 @@ public:
     * \c long \c long is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToInt64( long long&, int )
+    * \sa TryToInt64( long long&, int ) const
     */
    long long ToInt64( int base ) const;
 
@@ -9894,7 +9898,7 @@ public:
     * specified \a base, this function returns \c false and does not change the
     * \a value variable. This function does not throw any exception.
     *
-    * \sa ToInt64( int )
+    * \sa ToInt64( int ) const
     */
    bool TryToInt64( long long& value, int base ) const;
 
@@ -9910,7 +9914,7 @@ public:
     * the range of \c unsigned \c long \c long is exceeded, this member
     * function throws a ParseError exception.
     *
-    * \sa TryToUInt64( long long& )
+    * \sa TryToUInt64()
     */
    unsigned long long ToUInt64() const
    {
@@ -9958,7 +9962,7 @@ public:
     * \c unsigned \c long \c long is exceeded, this member function throws a
     * ParseError exception.
     *
-    * \sa TryToUInt64( unsigned long long&, int )
+    * \sa TryToUInt64( unsigned long long&, int ) const
     */
    unsigned long long ToUInt64( int base ) const;
 
@@ -9977,14 +9981,15 @@ public:
     * in the specified \a base, this function returns \c false and does not
     * change the \a value variable. This function does not throw any exception.
     *
-    * \sa ToUInt64( int )
+    * \sa ToUInt64( int ) const
     */
    bool TryToUInt64( unsigned long long& value, int base ) const;
 
    /*!
-    * Generates a string of \a n random 7-bit ASCII code points (stored as
-    * UTF-16 characters), with character types and ranges as prescribed by the
-    * specified \a options.
+    * Generates a string of \a n random 16-bit code points, with character
+    * types and ranges as prescribed by the specified \a options.
+    *
+    * \sa RandomizationOption
     */
    static String Random( size_type n,
                          RandomizationOptions options = RandomizationOption::Default );
@@ -11292,4 +11297,4 @@ inline std::ostream& operator <<( std::ostream& o, const String& s )
 #endif   // __PCL_String_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/String.h - Released 2015/11/26 15:59:39 UTC
+// EOF pcl/String.h - Released 2015/12/17 18:52:09 UTC

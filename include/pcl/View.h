@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/View.h - Released 2015/11/26 15:59:38 UTC
+// pcl/View.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -641,7 +641,8 @@ public:
     * \code
     * if ( HasProperty( property ) )
     *    return PropertyValue( property );
-    * return ComputeProperty( property, notify );\endcode
+    * return ComputeProperty( property, notify );
+    * \endcode
     *
     * See ComputeProperty() for information on reserved view properties.
     */
@@ -661,6 +662,9 @@ public:
     *
     * \param value      A valid Variant object transporting the new property
     *                   value.
+    *
+    * \param notify     Whether to notify the platform on the property change.
+    *                   This is true by default.
     *
     * \param attributes Optional attribute properties. If not specified, the
     *                   current property attributes will be preserved. If not
@@ -853,4 +857,4 @@ protected:
 #endif   // __PCL_View_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/View.h - Released 2015/11/26 15:59:38 UTC
+// EOF pcl/View.h - Released 2015/12/17 18:52:09 UTC

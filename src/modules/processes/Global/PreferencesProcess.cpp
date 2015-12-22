@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0318
+// Standard Global Process Module Version 01.02.07.0324
 // ----------------------------------------------------------------------------
-// PreferencesProcess.cpp - Released 2015/11/26 16:00:12 UTC
+// PreferencesProcess.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -152,6 +152,7 @@ PreferencesProcess::PreferencesProcess() : MetaProcess()
    new METAPARAMETER_ID( ImageWindow, fastScreenRenditionThreshold )( this );
    new METAPARAMETER_ID( ImageWindow, highDPIRenditions )( this );
    new METAPARAMETER_ID( ImageWindow, default24BitScreenLUT )( this );
+   new METAPARAMETER_ID( ImageWindow, createPreviewsFromCoreProperties )( this );
    new METAPARAMETER_ID( ImageWindow, swapDirectories )( this );
    new METAPARAMETER_ID( ImageWindow, swapDirectory )( METAPARAMETER_INSTANCE_ID( ImageWindow, swapDirectories ) );
    new METAPARAMETER_ID( ImageWindow, swapCompression )( this );
@@ -341,4 +342,4 @@ int PreferencesProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesProcess.cpp - Released 2015/11/26 16:00:12 UTC
+// EOF PreferencesProcess.cpp - Released 2015/12/18 08:55:08 UTC

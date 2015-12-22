@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/AbstractImage.h - Released 2015/11/26 15:59:39 UTC
+// pcl/AbstractImage.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -730,7 +730,7 @@ public:
     *                      channel index of the current channel range selection
     *                      in this image.
     *
-    * \param[in,out] firstChannel   If a negative channel index is specified,
+    * \param[in,out] lastChannel    If a negative channel index is specified,
     *                      this parameter will be replaced with the last
     *                      channel index of the current channel range selection
     *                      in this image.
@@ -1394,4 +1394,4 @@ protected:
 #endif   // __PCL_AbstractImage_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AbstractImage.h - Released 2015/11/26 15:59:39 UTC
+// EOF pcl/AbstractImage.h - Released 2015/12/17 18:52:09 UTC

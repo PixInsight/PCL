@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/Bitmap.h - Released 2015/11/26 15:59:39 UTC
+// pcl/Bitmap.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -251,7 +251,7 @@ public:
     *
     * \code Bitmap icon( ":/icons/document.png" ); \endcode
     *
-    * A module can also use the standard ":/&amp;module_root/" prefix to load
+    * A module can also use the standard ":/@module_root/" prefix to load
     * module-defined resources. See MetaModule::LoadResource() for a detailed
     * description.
     *
@@ -1409,4 +1409,4 @@ private:
 #endif   // __PCL_Bitmap_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Bitmap.h - Released 2015/11/26 15:59:39 UTC
+// EOF pcl/Bitmap.h - Released 2015/12/17 18:52:09 UTC

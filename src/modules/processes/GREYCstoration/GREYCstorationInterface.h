@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard GREYCstoration Process Module Version 01.00.02.0262
+// Standard GREYCstoration Process Module Version 01.00.02.0268
 // ----------------------------------------------------------------------------
-// GREYCstorationInterface.h - Released 2015/11/26 16:00:12 UTC
+// GREYCstorationInterface.h - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard GREYCstoration PixInsight module.
 //
@@ -169,4 +169,4 @@ PCL_END_LOCAL
 #endif   // __GREYCstorationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF GREYCstorationInterface.h - Released 2015/11/26 16:00:12 UTC
+// EOF GREYCstorationInterface.h - Released 2015/12/18 08:55:08 UTC

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.04.0094
+// Standard XISF File Format Module Version 01.00.05.0101
 // ----------------------------------------------------------------------------
-// XISFOptionsDialog.cpp - Released 2015/11/26 15:59:58 UTC
+// XISFOptionsDialog.cpp - Released 2015/12/18 08:55:16 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
@@ -367,6 +367,7 @@ XISFOptionsDialog::XISFOptionsDialog( const ImageOptions& o, const XISFOptions& 
    Properties_CheckBox.SetText( "Image properties" );
    Properties_CheckBox.SetToolTip( "<p>Embed view properties as XISF properties.</p>" );
    Properties_CheckBox.SetChecked( imageOptions.embedProperties );
+   Properties_CheckBox.OnClick( (pcl::Button::click_event_handler)&XISFOptionsDialog::Button_Click, *this );
 
    Properties_Sizer.AddUnscaledSpacing( m_labelWidth + ui4 );
    Properties_Sizer.Add( Properties_CheckBox );
@@ -406,13 +407,22 @@ XISFOptionsDialog::XISFOptionsDialog( const ImageOptions& o, const XISFOptions& 
    RGBWorkingSpace_Sizer.Add( RGBWorkingSpace_CheckBox );
    RGBWorkingSpace_Sizer.AddStretch();
 
-   Thumbnail_CheckBox.SetText( "Thumbnail Image" );
+   Thumbnail_CheckBox.SetText( "Thumbnail image" );
    Thumbnail_CheckBox.SetToolTip( "<p>Embed an 8-bit reduced version of the image for quick reference.</p>" );
    Thumbnail_CheckBox.SetChecked( imageOptions.embedThumbnail );
 
    Thumbnail_Sizer.AddUnscaledSpacing( m_labelWidth + ui4 );
    Thumbnail_Sizer.Add( Thumbnail_CheckBox );
    Thumbnail_Sizer.AddStretch();
+
+   PreviewRects_CheckBox.SetText( "Preview rectangles" );
+   PreviewRects_CheckBox.SetToolTip( "<p>Embed preview rectangles and identifiers.</p>" );
+   PreviewRects_CheckBox.SetChecked( imageOptions.embedPreviewRects );
+   PreviewRects_CheckBox.Enable( imageOptions.embedProperties );
+
+   PreviewRects_Sizer.AddUnscaledSpacing( m_labelWidth + ui4 );
+   PreviewRects_Sizer.Add( PreviewRects_CheckBox );
+   PreviewRects_Sizer.AddStretch();
 
    EmbeddedData_Sizer.SetMargin( 8 );
    EmbeddedData_Sizer.SetSpacing( 4 );
@@ -422,6 +432,7 @@ XISFOptionsDialog::XISFOptionsDialog( const ImageOptions& o, const XISFOptions& 
    EmbeddedData_Sizer.Add( DisplayFunction_Sizer );
    EmbeddedData_Sizer.Add( RGBWorkingSpace_Sizer );
    EmbeddedData_Sizer.Add( Thumbnail_Sizer );
+   EmbeddedData_Sizer.Add( PreviewRects_Sizer );
 
    EmbeddedData_GroupBox.SetTitle( "Embedded Data" );
    EmbeddedData_GroupBox.SetSizer( EmbeddedData_Sizer );
@@ -449,6 +460,14 @@ XISFOptionsDialog::XISFOptionsDialog( const ImageOptions& o, const XISFOptions& 
 }
 
 // ----------------------------------------------------------------------------
+
+void XISFOptionsDialog::Button_Click( Button& sender, bool checked )
+{
+   if ( sender == Properties_CheckBox )
+      PreviewRects_CheckBox.Enable( checked );
+   else
+      Base_Button_Click( sender, checked );
+}
 
 void XISFOptionsDialog::Dialog_Return( Dialog&/*sender*/, int retVal )
 {
@@ -493,6 +512,7 @@ void XISFOptionsDialog::Dialog_Return( Dialog&/*sender*/, int retVal )
       imageOptions.embedDisplayFunction = DisplayFunction_CheckBox.IsChecked();
       imageOptions.embedRGBWS = RGBWorkingSpace_CheckBox.IsChecked();
       imageOptions.embedThumbnail = Thumbnail_CheckBox.IsChecked();
+      imageOptions.embedPreviewRects = PreviewRects_CheckBox.IsChecked();
 
       // outputHints = OutputHints_Edit.Text().Trimmed();
    }
@@ -503,4 +523,4 @@ void XISFOptionsDialog::Dialog_Return( Dialog&/*sender*/, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISFOptionsDialog.cpp - Released 2015/11/26 15:59:58 UTC
+// EOF XISFOptionsDialog.cpp - Released 2015/12/18 08:55:16 UTC

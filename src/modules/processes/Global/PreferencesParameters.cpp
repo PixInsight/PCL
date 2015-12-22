@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0318
+// Standard Global Process Module Version 01.02.07.0324
 // ----------------------------------------------------------------------------
-// PreferencesParameters.cpp - Released 2015/11/26 16:00:12 UTC
+// PreferencesParameters.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -135,6 +135,7 @@ IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, fastScreenRenditions )
 IMPLEMENT_INT32_METAPARAMETER   ( ImageWindow, fastScreenRenditionThreshold )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, highDPIRenditions );
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, default24BitScreenLUT )
+IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, createPreviewsFromCoreProperties )
 IMPLEMENT_TABLE_METAPARAMETER   ( ImageWindow, swapDirectories )
 IMPLEMENT_ROW_STRING_METAPARAMETER( ImageWindow, swapDirectory )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, swapCompression )
@@ -187,4 +188,4 @@ IMPLEMENT_BOOLEAN_METAPARAMETER ( Process, alertOnProcessCompleted )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesParameters.cpp - Released 2015/11/26 16:00:12 UTC
+// EOF PreferencesParameters.cpp - Released 2015/12/18 08:55:08 UTC

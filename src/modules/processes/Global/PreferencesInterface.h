@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0318
+// Standard Global Process Module Version 01.02.07.0324
 // ----------------------------------------------------------------------------
-// PreferencesInterface.h - Released 2015/11/26 16:00:12 UTC
+// PreferencesInterface.h - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -641,6 +641,7 @@ public:
    GlobalIntegerControl FastScreenRenditionThreshold_Integer;
    GlobalFlagControl    HighDPIRenditions_Flag;
    GlobalFlagControl    Default24BitScreenLUT_Flag;
+   GlobalFlagControl    CreatePreviewsFromCoreProperties_Flag;
 };
 
 DEFINE_PREFERENCES_CATEGORY( MiscImageWindowSettings, "Miscellaneous Image Window Settings" )
@@ -861,4 +862,4 @@ PCL_END_LOCAL
 #endif   // __PreferencesInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInterface.h - Released 2015/11/26 16:00:12 UTC
+// EOF PreferencesInterface.h - Released 2015/12/18 08:55:08 UTC

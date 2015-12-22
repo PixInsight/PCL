@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0345
+// Standard IntensityTransformations Process Module Version 01.07.01.0351
 // ----------------------------------------------------------------------------
-// CurvesTransformationInterface.h - Released 2015/11/26 16:00:13 UTC
+// CurvesTransformationInterface.h - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -218,6 +218,8 @@ private:
    int            m_zoomX;
    int            m_zoomY;
 
+   int            m_wheelSteps;     // accumulated 1/8-degree wheel steps
+
    bool           m_showAllCurves;
    bool           m_showGrid;       // draw coordinate grids
 
@@ -395,4 +397,4 @@ PCL_END_LOCAL
 #endif   // __CurvesTransformationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF CurvesTransformationInterface.h - Released 2015/11/26 16:00:13 UTC
+// EOF CurvesTransformationInterface.h - Released 2015/12/18 08:55:08 UTC

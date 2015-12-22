@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/FileFormatImplementation.h - Released 2015/11/26 15:59:39 UTC
+// pcl/FileFormatImplementation.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -227,7 +227,7 @@ public:
     * this file, or zero if no such data have been retrieved.
     *
     * See SetFormatSpecificData() for a description of format specific data
-    * functionality in the PCL.
+    * functionality in PCL.
     */
    virtual void* FormatSpecificData() const;
 
@@ -810,4 +810,4 @@ private:
 #endif   // __PCL_FileFormat_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormatImplementation.h - Released 2015/11/26 15:59:39 UTC
+// EOF pcl/FileFormatImplementation.h - Released 2015/12/17 18:52:09 UTC

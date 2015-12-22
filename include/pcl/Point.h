@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/Point.h - Released 2015/11/26 15:59:39 UTC
+// pcl/Point.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -811,8 +811,8 @@ bool operator ==( T d1, const GenericPoint<T>& p2 )
 /*!
  * Returns true iff a point \a p1 is less than another point \a p2.
  *
- * Points in the plane are sorted by ordinates in the PCL. Given two points
- * \a p and \a q in the plane, it holds that:
+ * Points in the plane are sorted by ordinates in PCL. Given two points \a p
+ * and \a q in the plane, it holds that:
  *
  * \a p < \a q if \a p.y < \a q.y or \a p.y == \a q.y and \a p.x < \a q.x
  *
@@ -1264,4 +1264,4 @@ typedef F64Point                    DPoint;
 #endif  // __PCL_Point_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Point.h - Released 2015/11/26 15:59:39 UTC
+// EOF pcl/Point.h - Released 2015/12/17 18:52:09 UTC

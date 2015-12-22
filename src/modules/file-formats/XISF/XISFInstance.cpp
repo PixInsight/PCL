@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.04.0094
+// Standard XISF File Format Module Version 01.00.05.0101
 // ----------------------------------------------------------------------------
-// XISFInstance.cpp - Released 2015/11/26 15:59:58 UTC
+// XISFInstance.cpp - Released 2015/12/18 08:55:16 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
@@ -759,6 +759,9 @@ bool XISFInstance::QueryOptions( Array<ImageOptions>& imageOptions, Array<void*>
    if ( overrides.overrideThumbnailEmbedding )
       options.embedThumbnail = overrides.embedThumbnails;
 
+   if ( overrides.overridePreviewRectsEmbedding )
+      options.embedPreviewRects = overrides.embedPreviewRects;
+
    // Execute the XISF Options dialog
 
    XISFOptionsDialog dlg( options, xisfFormatOptions->options );
@@ -805,12 +808,14 @@ void XISFInstance::Create( const String& filePath, int numberOfImages, const Iso
       imageOptions.embedRGBWS = overrides.embedRGBWorkingSpaces;
    if ( overrides.overrideThumbnailEmbedding )
       imageOptions.embedThumbnail = overrides.embedThumbnails;
+   if ( overrides.overridePreviewRectsEmbedding )
+      imageOptions.embedPreviewRects = overrides.embedPreviewRects;
 
    if ( !hints.IsEmpty() )
    {
       m_writeHints = new XISFStreamHints( hints );
-      m_writeHints->ApplyReadHints( xisfOptions );
-      m_writeHints->ApplyReadHints( imageOptions );
+      m_writeHints->ApplyWriteHints( xisfOptions );
+      m_writeHints->ApplyWriteHints( imageOptions );
       m_writer->SetHints( m_writeHints->ToHintsString() );
    }
    else
@@ -850,6 +855,8 @@ void XISFInstance::SetOptions( const ImageOptions& options )
          imageOptions.embedRGBWS = overrides.embedRGBWorkingSpaces;
       if ( overrides.overrideThumbnailEmbedding )
          imageOptions.embedThumbnail = overrides.embedThumbnails;
+      if ( overrides.overridePreviewRectsEmbedding )
+         imageOptions.embedPreviewRects = overrides.embedPreviewRects;
    }
 
    if ( m_writeHints )
@@ -1067,4 +1074,4 @@ void XISFInstance::WriteColorFilterArray( const ColorFilterArray& cfa )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISFInstance.cpp - Released 2015/11/26 15:59:58 UTC
+// EOF XISFInstance.cpp - Released 2015/12/18 08:55:16 UTC

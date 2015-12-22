@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/BicubicFilterInterpolation.h - Released 2015/11/26 15:59:39 UTC
+// pcl/BicubicFilterInterpolation.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -600,7 +600,7 @@ public:
    /*!
     * Sets new interpolation radii.
     *
-    * \param rh,rv   Horizontal and vertical interpolation radii, respectively,
+    * \param rx,ry   Horizontal and vertical interpolation radii, respectively,
     *                in pixels. Both radii must be >= 1. Interpolation will
     *                take place in a rectangular pixel matrix with 2*rh + 1
     *                columns and 2*rv + 1 rows.
@@ -672,4 +672,4 @@ protected:
 #endif   // __PCL_BicubicFilterInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/BicubicFilterInterpolation.h - Released 2015/11/26 15:59:39 UTC
+// EOF pcl/BicubicFilterInterpolation.h - Released 2015/12/17 18:52:09 UTC

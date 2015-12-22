@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.05.0262
+// Standard ImageCalibration Process Module Version 01.03.05.0268
 // ----------------------------------------------------------------------------
-// DefectMapParameters.cpp - Released 2015/11/26 16:00:13 UTC
+// DefectMapParameters.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -180,4 +180,4 @@ bool DMPIsCFA::DefaultValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DefectMapParameters.cpp - Released 2015/11/26 16:00:13 UTC
+// EOF DefectMapParameters.cpp - Released 2015/12/18 08:55:08 UTC

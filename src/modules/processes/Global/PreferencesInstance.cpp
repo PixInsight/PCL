@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0318
+// Standard Global Process Module Version 01.02.07.0324
 // ----------------------------------------------------------------------------
-// PreferencesInstance.cpp - Released 2015/11/26 16:00:12 UTC
+// PreferencesInstance.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -108,119 +108,121 @@ bool PreferencesInstance::ExecuteGlobal()
 
    try
    {
-      PixInsightSettings::SetGlobalString ( "Application/StyleSheetFile",                 application.styleSheetFile );
-      PixInsightSettings::SetGlobalString ( "Application/ResourceFile01",                 application.resourceFile01 );
-      PixInsightSettings::SetGlobalString ( "Application/ResourceFile02",                 application.resourceFile02 );
-      PixInsightSettings::SetGlobalString ( "Application/ResourceFile03",                 application.resourceFile03 );
-      PixInsightSettings::SetGlobalString ( "Application/ResourceFile04",                 application.resourceFile04 );
-      PixInsightSettings::SetGlobalString ( "Application/ResourceFile05",                 application.resourceFile05 );
-      PixInsightSettings::SetGlobalString ( "Application/ResourceFile06",                 application.resourceFile06 );
-      PixInsightSettings::SetGlobalString ( "Application/ResourceFile07",                 application.resourceFile07 );
-      PixInsightSettings::SetGlobalString ( "Application/ResourceFile08",                 application.resourceFile08 );
-      PixInsightSettings::SetGlobalString ( "Application/ResourceFile09",                 application.resourceFile09 );
-      PixInsightSettings::SetGlobalString ( "Application/ResourceFile10",                 application.resourceFile10 );
-      PixInsightSettings::SetGlobalFlag   ( "Application/AutoUIScaling",                  application.autoUIScaling );
-      PixInsightSettings::SetGlobalReal   ( "Application/UIScalingFactor",                application.uiScalingFactor );
-      PixInsightSettings::SetGlobalInteger( "Application/FontResolution",                 application.fontResolution );
-      PixInsightSettings::SetGlobalString ( "Application/LowResFont",                     application.lowResFont );
-      PixInsightSettings::SetGlobalString ( "Application/HighResFont",                    application.highResFont );
-      PixInsightSettings::SetGlobalString ( "Application/LowResMonoFont",                 application.lowResMonoFont );
-      PixInsightSettings::SetGlobalString ( "Application/HighResMonoFont",                application.highResMonoFont );
+      PixInsightSettings::SetGlobalString ( "Application/StyleSheetFile",                   application.styleSheetFile );
+      PixInsightSettings::SetGlobalString ( "Application/ResourceFile01",                   application.resourceFile01 );
+      PixInsightSettings::SetGlobalString ( "Application/ResourceFile02",                   application.resourceFile02 );
+      PixInsightSettings::SetGlobalString ( "Application/ResourceFile03",                   application.resourceFile03 );
+      PixInsightSettings::SetGlobalString ( "Application/ResourceFile04",                   application.resourceFile04 );
+      PixInsightSettings::SetGlobalString ( "Application/ResourceFile05",                   application.resourceFile05 );
+      PixInsightSettings::SetGlobalString ( "Application/ResourceFile06",                   application.resourceFile06 );
+      PixInsightSettings::SetGlobalString ( "Application/ResourceFile07",                   application.resourceFile07 );
+      PixInsightSettings::SetGlobalString ( "Application/ResourceFile08",                   application.resourceFile08 );
+      PixInsightSettings::SetGlobalString ( "Application/ResourceFile09",                   application.resourceFile09 );
+      PixInsightSettings::SetGlobalString ( "Application/ResourceFile10",                   application.resourceFile10 );
+      PixInsightSettings::SetGlobalFlag   ( "Application/AutoUIScaling",                    application.autoUIScaling );
+      PixInsightSettings::SetGlobalReal   ( "Application/UIScalingFactor",                  application.uiScalingFactor );
+      PixInsightSettings::SetGlobalInteger( "Application/FontResolution",                   application.fontResolution );
+      PixInsightSettings::SetGlobalString ( "Application/LowResFont",                       application.lowResFont );
+      PixInsightSettings::SetGlobalString ( "Application/HighResFont",                      application.highResFont );
+      PixInsightSettings::SetGlobalString ( "Application/LowResMonoFont",                   application.lowResMonoFont );
+      PixInsightSettings::SetGlobalString ( "Application/HighResMonoFont",                  application.highResMonoFont );
 
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/MaximizeAtStartup",               mainWindow.maximizeAtStartup );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/FullScreenAtStartup",             mainWindow.fullScreenAtStartup );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/ShowSplashAtStartup",             mainWindow.showSplashAtStartup );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/CheckForUpdatesAtStartup",        mainWindow.checkForUpdatesAtStartup );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/ConfirmProgramTermination",       mainWindow.confirmProgramTermination );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/AcceptDroppedFiles",              mainWindow.acceptDroppedFiles );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/DoubleClickLaunchesOpenDialog",   mainWindow.doubleClickLaunchesOpenDialog );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/HoverableAutoHideWindows",        mainWindow.hoverableAutoHideWindows );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/DesktopSettingsAware",            mainWindow.desktopSettingsAware );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/NativeMenuBar",                   mainWindow.nativeMenuBar );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/CapitalizedMenuBars",             mainWindow.capitalizedMenuBars );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/WindowButtonsOnTheLeft",          mainWindow.windowButtonsOnTheLeft );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/TranslucentWindows",              mainWindow.translucentWindows );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/TranslucentChildWindows",         mainWindow.translucentChildWindows );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/FadeWindows",                     mainWindow.fadeWindows );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/FadeAutoHideWindows",             mainWindow.fadeAutoHideWindows );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/TranslucentAutoHideWindows",      mainWindow.translucentAutoHideWindows );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/FadeWorkspaces",                  mainWindow.fadeWorkspaces );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/FadeMenu",                        mainWindow.fadeMenu );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/FadeToolTip",                     mainWindow.fadeToolTip );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/ExplodeIcons",                    mainWindow.explodeIcons );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/ImplodeIcons",                    mainWindow.implodeIcons );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/AnimateWindows",                  mainWindow.animateWindows );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/AnimateMenu",                     mainWindow.animateMenu );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/AnimateCombo",                    mainWindow.animateCombo );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/AnimateToolTip",                  mainWindow.animateToolTip );
-      PixInsightSettings::SetGlobalFlag   ( "MainWindow/AnimateToolBox",                  mainWindow.animateToolBox );
-      PixInsightSettings::SetGlobalInteger( "MainWindow/MaxRecentFiles",                  mainWindow.maxRecentFiles );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/MaximizeAtStartup",                 mainWindow.maximizeAtStartup );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/FullScreenAtStartup",               mainWindow.fullScreenAtStartup );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/ShowSplashAtStartup",               mainWindow.showSplashAtStartup );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/CheckForUpdatesAtStartup",          mainWindow.checkForUpdatesAtStartup );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/ConfirmProgramTermination",         mainWindow.confirmProgramTermination );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/AcceptDroppedFiles",                mainWindow.acceptDroppedFiles );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/DoubleClickLaunchesOpenDialog",     mainWindow.doubleClickLaunchesOpenDialog );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/HoverableAutoHideWindows",          mainWindow.hoverableAutoHideWindows );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/DesktopSettingsAware",              mainWindow.desktopSettingsAware );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/NativeMenuBar",                     mainWindow.nativeMenuBar );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/CapitalizedMenuBars",               mainWindow.capitalizedMenuBars );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/WindowButtonsOnTheLeft",            mainWindow.windowButtonsOnTheLeft );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/TranslucentWindows",                mainWindow.translucentWindows );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/TranslucentChildWindows",           mainWindow.translucentChildWindows );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/FadeWindows",                       mainWindow.fadeWindows );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/FadeAutoHideWindows",               mainWindow.fadeAutoHideWindows );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/TranslucentAutoHideWindows",        mainWindow.translucentAutoHideWindows );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/FadeWorkspaces",                    mainWindow.fadeWorkspaces );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/FadeMenu",                          mainWindow.fadeMenu );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/FadeToolTip",                       mainWindow.fadeToolTip );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/ExplodeIcons",                      mainWindow.explodeIcons );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/ImplodeIcons",                      mainWindow.implodeIcons );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/AnimateWindows",                    mainWindow.animateWindows );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/AnimateMenu",                       mainWindow.animateMenu );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/AnimateCombo",                      mainWindow.animateCombo );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/AnimateToolTip",                    mainWindow.animateToolTip );
+      PixInsightSettings::SetGlobalFlag   ( "MainWindow/AnimateToolBox",                    mainWindow.animateToolBox );
+      PixInsightSettings::SetGlobalInteger( "MainWindow/MaxRecentFiles",                    mainWindow.maxRecentFiles );
 
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/BackupFiles",                    imageWindow.backupFiles );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/DefaultMasksShown",              imageWindow.defaultMasksShown );
-      PixInsightSettings::SetGlobalInteger( "ImageWindow/DefaultMaskMode",                imageWindow.defaultMaskMode );
-      PixInsightSettings::SetGlobalInteger( "ImageWindow/DefaultTransparencyMode",        imageWindow.defaultTransparencyMode );
-      PixInsightSettings::SetGlobalReal   ( "ImageWindow/DefaultHorizontalResolution",    imageWindow.defaultHorizontalResolution );
-      PixInsightSettings::SetGlobalReal   ( "ImageWindow/DefaultVerticalResolution",      imageWindow.defaultVerticalResolution );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/DefaultMetricResolution",        imageWindow.defaultMetricResolution );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/DefaultEmbedThumbnails",         imageWindow.defaultEmbedThumbnails );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/DefaultEmbedProperties",         imageWindow.defaultEmbedProperties );
-      PixInsightSettings::SetGlobalString ( "ImageWindow/DefaultFileExtension",           imageWindow.defaultFileExtension );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/NativeFileDialogs",              imageWindow.nativeFileDialogs );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/RememberFileOpenType",           imageWindow.rememberFileOpenType );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/RememberFileSaveType",           imageWindow.rememberFileSaveType );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/StrictFileSaveMode",             imageWindow.strictFileSaveMode );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/FileFormatWarnings",             imageWindow.fileFormatWarnings );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/UseFileNamesAsImageIdentifiers", imageWindow.useFileNamesAsImageIdentifiers );
-      PixInsightSettings::SetGlobalInteger( "ImageWindow/CursorTolerance",                imageWindow.cursorTolerance );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/TouchEvents",                    imageWindow.touchEvents );
-      PixInsightSettings::SetGlobalReal   ( "ImageWindow/PinchSensitivity",               imageWindow.pinchSensitivity );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/FastScreenRenditions",           imageWindow.fastScreenRenditions );
-      PixInsightSettings::SetGlobalInteger( "ImageWindow/FastScreenRenditionThreshold",   imageWindow.fastScreenRenditionThreshold );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/HighDPIRenditions",              imageWindow.highDPIRenditions );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/Default24BitScreenLUT",          imageWindow.default24BitScreenLUT );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/BackupFiles",                      imageWindow.backupFiles );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/DefaultMasksShown",                imageWindow.defaultMasksShown );
+      PixInsightSettings::SetGlobalInteger( "ImageWindow/DefaultMaskMode",                  imageWindow.defaultMaskMode );
+      PixInsightSettings::SetGlobalInteger( "ImageWindow/DefaultTransparencyMode",          imageWindow.defaultTransparencyMode );
+      PixInsightSettings::SetGlobalReal   ( "ImageWindow/DefaultHorizontalResolution",      imageWindow.defaultHorizontalResolution );
+      PixInsightSettings::SetGlobalReal   ( "ImageWindow/DefaultVerticalResolution",        imageWindow.defaultVerticalResolution );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/DefaultMetricResolution",          imageWindow.defaultMetricResolution );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/DefaultEmbedThumbnails",           imageWindow.defaultEmbedThumbnails );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/DefaultEmbedProperties",           imageWindow.defaultEmbedProperties );
+      PixInsightSettings::SetGlobalString ( "ImageWindow/DefaultFileExtension",             imageWindow.defaultFileExtension );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/NativeFileDialogs",                imageWindow.nativeFileDialogs );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/RememberFileOpenType",             imageWindow.rememberFileOpenType );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/RememberFileSaveType",             imageWindow.rememberFileSaveType );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/StrictFileSaveMode",               imageWindow.strictFileSaveMode );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/FileFormatWarnings",               imageWindow.fileFormatWarnings );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/UseFileNamesAsImageIdentifiers",   imageWindow.useFileNamesAsImageIdentifiers );
+      PixInsightSettings::SetGlobalInteger( "ImageWindow/CursorTolerance",                  imageWindow.cursorTolerance );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/TouchEvents",                      imageWindow.touchEvents );
+      PixInsightSettings::SetGlobalReal   ( "ImageWindow/PinchSensitivity",                 imageWindow.pinchSensitivity );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/FastScreenRenditions",             imageWindow.fastScreenRenditions );
+      PixInsightSettings::SetGlobalInteger( "ImageWindow/FastScreenRenditionThreshold",     imageWindow.fastScreenRenditionThreshold );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/HighDPIRenditions",                imageWindow.highDPIRenditions );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/Default24BitScreenLUT",            imageWindow.default24BitScreenLUT );
       // Better don't mess during a global settings update - for sanity, we'll do this after EndUpdate()
       //ImageWindow::SetSwapDirectories( imageWindow.swapDirectories);
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/SwapCompression",                imageWindow.swapCompression );
-      PixInsightSettings::SetGlobalString ( "ImageWindow/DownloadsDirectory",             imageWindow.downloadsDirectory );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/FollowDownloadLocations",        imageWindow.followDownloadLocations );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/VerboseNetworkOperations",       imageWindow.verboseNetworkOperations );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/ShowCaptionCurrentChannels",     imageWindow.showCaptionCurrentChannels );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/ShowCaptionZoomRatios",          imageWindow.showCaptionZoomRatios );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/ShowCaptionIdentifiers",         imageWindow.showCaptionIdentifiers );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/ShowCaptionFullPaths",           imageWindow.showCaptionFullPaths );
-      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/ShowActiveSTFIndicators",        imageWindow.showActiveSTFIndicators );
-      PixInsightSettings::SetGlobalInteger( "TransparencyBrush/Brush",                    imageWindow.transparencyBrush );
-      PixInsightSettings::SetGlobalColor  ( "TransparencyBrush/ForegroundColor",          imageWindow.transparencyBrushForegroundColor );
-      PixInsightSettings::SetGlobalColor  ( "TransparencyBrush/BackgroundColor",          imageWindow.transparencyBrushBackgroundColor );
-      PixInsightSettings::SetGlobalColor  ( "TransparencyBrush/DefaultColor",             imageWindow.defaultTransparencyColor );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/SwapCompression",                  imageWindow.swapCompression );
+      PixInsightSettings::SetGlobalString ( "ImageWindow/DownloadsDirectory",               imageWindow.downloadsDirectory );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/FollowDownloadLocations",          imageWindow.followDownloadLocations );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/VerboseNetworkOperations",         imageWindow.verboseNetworkOperations );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/ShowCaptionCurrentChannels",       imageWindow.showCaptionCurrentChannels );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/ShowCaptionZoomRatios",            imageWindow.showCaptionZoomRatios );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/ShowCaptionIdentifiers",           imageWindow.showCaptionIdentifiers );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/ShowCaptionFullPaths",             imageWindow.showCaptionFullPaths );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/ShowActiveSTFIndicators",          imageWindow.showActiveSTFIndicators );
+      PixInsightSettings::SetGlobalFlag   ( "ImageWindow/CreatePreviewsFromCoreProperties", imageWindow.createPreviewsFromCoreProperties );
 
-      PixInsightSettings::SetGlobalString ( "Workspace/Prefix",                           identifiers.workspacePrefix );
-      PixInsightSettings::SetGlobalString ( "ImageWindow/Prefix",                         identifiers.imagePrefix );
-      PixInsightSettings::SetGlobalString ( "Preview/Prefix",                             identifiers.previewPrefix );
-      PixInsightSettings::SetGlobalString ( "ProcessIcon/Prefix",                         identifiers.processIconPrefix );
-      PixInsightSettings::SetGlobalString ( "ImageContainerIcon/Prefix",                  identifiers.imageContainerIconPrefix );
-      PixInsightSettings::SetGlobalString ( "ImageWindow/NewImageCaption",                identifiers.newImageCaption );
-      PixInsightSettings::SetGlobalString ( "ImageWindow/ClonePostfix",                   identifiers.clonePostfix );
-      PixInsightSettings::SetGlobalString ( "ViewList/NoViewsAvailableText",              identifiers.noViewsAvailableText );
-      PixInsightSettings::SetGlobalString ( "ViewList/NoViewSelectedText",                identifiers.noViewSelectedText );
-      PixInsightSettings::SetGlobalString ( "ViewList/NoPreviewsAvailableText",           identifiers.noPreviewsAvailableText );
-      PixInsightSettings::SetGlobalString ( "ViewList/NoPreviewSelectedText",             identifiers.noPreviewSelectedText );
-      PixInsightSettings::SetGlobalString ( "View/BrokenLinkText",                        identifiers.brokenLinkText );
+      PixInsightSettings::SetGlobalInteger( "TransparencyBrush/Brush",                      imageWindow.transparencyBrush );
+      PixInsightSettings::SetGlobalColor  ( "TransparencyBrush/ForegroundColor",            imageWindow.transparencyBrushForegroundColor );
+      PixInsightSettings::SetGlobalColor  ( "TransparencyBrush/BackgroundColor",            imageWindow.transparencyBrushBackgroundColor );
+      PixInsightSettings::SetGlobalColor  ( "TransparencyBrush/DefaultColor",               imageWindow.defaultTransparencyColor );
 
-      PixInsightSettings::SetGlobalFlag   ( "Process/EnableParallelProcessing",           process.enableParallelProcessing );
-      PixInsightSettings::SetGlobalFlag   ( "Process/EnableParallelCoreRendering",        process.enableParallelCoreRendering );
-      PixInsightSettings::SetGlobalFlag   ( "Process/EnableParallelCoreColorManagement",  process.enableParallelCoreColorManagement );
-      PixInsightSettings::SetGlobalFlag   ( "Process/EnableParallelModuleProcessing",     process.enableParallelModuleProcessing );
-      PixInsightSettings::SetGlobalFlag   ( "Process/EnableThreadCPUAffinity",            process.enableThreadCPUAffinity );
-      PixInsightSettings::SetGlobalInteger( "Process/MaxModuleThreadPriority",            process.maxModuleThreadPriority );
-      PixInsightSettings::SetGlobalInteger( "Process/MaxProcessors",                      process.maxProcessors );
-      PixInsightSettings::SetGlobalFlag   ( "Process/BackupFiles",                        process.backupFiles );
-      PixInsightSettings::SetGlobalFlag   ( "Process/GenerateScriptComments",             process.generateScriptComments );
-      PixInsightSettings::SetGlobalInteger( "Process/MaxConsoleLines",                    process.maxConsoleLines );
-      PixInsightSettings::SetGlobalInteger( "Process/ConsoleDelay",                       process.consoleDelay );
-      PixInsightSettings::SetGlobalInteger( "Process/AutoSavePSMPeriod",                  process.autoSavePSMPeriod );
-      PixInsightSettings::SetGlobalFlag   ( "Process/AlertOnProcessCompleted",            process.alertOnProcessCompleted );
+      PixInsightSettings::SetGlobalString ( "Workspace/Prefix",                             identifiers.workspacePrefix );
+      PixInsightSettings::SetGlobalString ( "ImageWindow/Prefix",                           identifiers.imagePrefix );
+      PixInsightSettings::SetGlobalString ( "Preview/Prefix",                               identifiers.previewPrefix );
+      PixInsightSettings::SetGlobalString ( "ProcessIcon/Prefix",                           identifiers.processIconPrefix );
+      PixInsightSettings::SetGlobalString ( "ImageContainerIcon/Prefix",                    identifiers.imageContainerIconPrefix );
+      PixInsightSettings::SetGlobalString ( "ImageWindow/NewImageCaption",                  identifiers.newImageCaption );
+      PixInsightSettings::SetGlobalString ( "ImageWindow/ClonePostfix",                     identifiers.clonePostfix );
+      PixInsightSettings::SetGlobalString ( "ViewList/NoViewsAvailableText",                identifiers.noViewsAvailableText );
+      PixInsightSettings::SetGlobalString ( "ViewList/NoViewSelectedText",                  identifiers.noViewSelectedText );
+      PixInsightSettings::SetGlobalString ( "ViewList/NoPreviewsAvailableText",             identifiers.noPreviewsAvailableText );
+      PixInsightSettings::SetGlobalString ( "ViewList/NoPreviewSelectedText",               identifiers.noPreviewSelectedText );
+      PixInsightSettings::SetGlobalString ( "View/BrokenLinkText",                          identifiers.brokenLinkText );
+
+      PixInsightSettings::SetGlobalFlag   ( "Process/EnableParallelProcessing",             process.enableParallelProcessing );
+      PixInsightSettings::SetGlobalFlag   ( "Process/EnableParallelCoreRendering",          process.enableParallelCoreRendering );
+      PixInsightSettings::SetGlobalFlag   ( "Process/EnableParallelCoreColorManagement",    process.enableParallelCoreColorManagement );
+      PixInsightSettings::SetGlobalFlag   ( "Process/EnableParallelModuleProcessing",       process.enableParallelModuleProcessing );
+      PixInsightSettings::SetGlobalFlag   ( "Process/EnableThreadCPUAffinity",              process.enableThreadCPUAffinity );
+      PixInsightSettings::SetGlobalInteger( "Process/MaxModuleThreadPriority",              process.maxModuleThreadPriority );
+      PixInsightSettings::SetGlobalInteger( "Process/MaxProcessors",                        process.maxProcessors );
+      PixInsightSettings::SetGlobalFlag   ( "Process/BackupFiles",                          process.backupFiles );
+      PixInsightSettings::SetGlobalFlag   ( "Process/GenerateScriptComments",               process.generateScriptComments );
+      PixInsightSettings::SetGlobalInteger( "Process/MaxConsoleLines",                      process.maxConsoleLines );
+      PixInsightSettings::SetGlobalInteger( "Process/ConsoleDelay",                         process.consoleDelay );
+      PixInsightSettings::SetGlobalInteger( "Process/AutoSavePSMPeriod",                    process.autoSavePSMPeriod );
+      PixInsightSettings::SetGlobalFlag   ( "Process/AlertOnProcessCompleted",              process.alertOnProcessCompleted );
 
       PixInsightSettings::EndUpdate();
 
@@ -402,6 +404,8 @@ void* PreferencesInstance::LockParameter( const MetaParameter* p, size_type tabl
       return &imageWindow.showCaptionFullPaths;
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, showActiveSTFIndicators ) )
       return &imageWindow.showActiveSTFIndicators;
+   if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, createPreviewsFromCoreProperties ) )
+      return &imageWindow.createPreviewsFromCoreProperties;
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, transparencyBrush ) )
       return &imageWindow.transparencyBrush;
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, transparencyBrushForegroundColor ) )
@@ -596,6 +600,7 @@ void PreferencesInstance::LoadDefaultSettings()
    imageWindow.showCaptionIdentifiers           =         METAPARAMETER_INSTANCE_ID( ImageWindow, showCaptionIdentifiers           )->DefaultValue();
    imageWindow.showCaptionFullPaths             =         METAPARAMETER_INSTANCE_ID( ImageWindow, showCaptionFullPaths             )->DefaultValue();
    imageWindow.showActiveSTFIndicators          =         METAPARAMETER_INSTANCE_ID( ImageWindow, showActiveSTFIndicators          )->DefaultValue();
+   imageWindow.createPreviewsFromCoreProperties =         METAPARAMETER_INSTANCE_ID( ImageWindow, createPreviewsFromCoreProperties )->DefaultValue();
    imageWindow.transparencyBrush                =  int32( METAPARAMETER_INSTANCE_ID( ImageWindow, transparencyBrush                )->DefaultValue() );
    imageWindow.transparencyBrushForegroundColor = uint32( METAPARAMETER_INSTANCE_ID( ImageWindow, transparencyBrushForegroundColor )->DefaultValue() );
    imageWindow.transparencyBrushBackgroundColor = uint32( METAPARAMETER_INSTANCE_ID( ImageWindow, transparencyBrushBackgroundColor )->DefaultValue() );
@@ -712,6 +717,7 @@ void PreferencesInstance::LoadCurrentSettings()
    imageWindow.showCaptionIdentifiers           = PixInsightSettings::GlobalFlag   ( "ImageWindow/ShowCaptionIdentifiers" );
    imageWindow.showCaptionFullPaths             = PixInsightSettings::GlobalFlag   ( "ImageWindow/ShowCaptionFullPaths" );
    imageWindow.showActiveSTFIndicators          = PixInsightSettings::GlobalFlag   ( "ImageWindow/ShowActiveSTFIndicators" );
+   imageWindow.createPreviewsFromCoreProperties = PixInsightSettings::GlobalFlag   ( "ImageWindow/CreatePreviewsFromCoreProperties" );
    imageWindow.transparencyBrush                = PixInsightSettings::GlobalInteger( "TransparencyBrush/Brush" );
    imageWindow.transparencyBrushForegroundColor = PixInsightSettings::GlobalColor  ( "TransparencyBrush/ForegroundColor" );
    imageWindow.transparencyBrushBackgroundColor = PixInsightSettings::GlobalColor  ( "TransparencyBrush/BackgroundColor" );
@@ -819,4 +825,4 @@ String* PreferencesInstance::StringParameterFromMetaParameter( const MetaParamet
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInstance.cpp - Released 2015/11/26 16:00:12 UTC
+// EOF PreferencesInstance.cpp - Released 2015/12/18 08:55:08 UTC

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard Fourier Process Module Version 01.00.04.0181
+// Standard Fourier Process Module Version 01.00.04.0187
 // ----------------------------------------------------------------------------
-// FourierModule.cpp - Released 2015/11/26 16:00:12 UTC
+// FourierModule.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Fourier PixInsight module.
 //
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  04
-#define MODULE_VERSION_BUILD     0181
+#define MODULE_VERSION_BUILD     0187
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2015
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       26
+#define MODULE_RELEASE_MONTH     12
+#define MODULE_RELEASE_DAY       18
 
 #include "FourierModule.h"
 #include "FourierTransformProcess.h"
@@ -191,4 +191,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF FourierModule.cpp - Released 2015/11/26 16:00:12 UTC
+// EOF FourierModule.cpp - Released 2015/12/18 08:55:08 UTC

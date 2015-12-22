@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/APIInterface.h - Released 2015/11/26 15:59:39 UTC
+// pcl/APIInterface.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -58,7 +58,7 @@
 
 // Global namespace
 
-#define PCL_API_Version 0x0154
+#define PCL_API_Version 0x0155
 
 extern "C"
 {
@@ -96,7 +96,7 @@ struct api_context GlobalContext
    api_bool    (api_func* EnableAbort)();
    api_bool    (api_func* DisableAbort)();
    api_bool    (api_func* Abort)();
-   void        (api_func* ProcessEvents)();
+   void        (api_func* ProcessEvents)( api_bool excludeUserInputEvents );
 
    /*
     * Console functions
@@ -2620,7 +2620,7 @@ struct api_context ImageWindowContext
    void           (api_func* DeleteImageWindowICCProfile)( window_handle );
 
    int32          (api_func* GetImageWindowKeywordCount)( const_window_handle );
-   void           (api_func* GetImageWindowKeyword)( const_window_handle, int32, char*, char*, char* );
+   void           (api_func* GetImageWindowKeyword)( const_window_handle, int32, char*, size_type, char*, size_type, char*, size_type );
    void           (api_func* AddImageWindowKeyword)( window_handle, const char*, const char*, const char* );
    void           (api_func* ResetImageWindowKeywords)( window_handle );
 
@@ -3165,4 +3165,4 @@ extern "C" void* api_func APIFunctionResolver( const char* );
 #endif   // __PCL_API_APIInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/APIInterface.h - Released 2015/11/26 15:59:39 UTC
+// EOF pcl/APIInterface.h - Released 2015/12/17 18:52:09 UTC

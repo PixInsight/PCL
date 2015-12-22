@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard LocalHistogramEqualization Process Module Version 01.00.00.0151
+// Standard LocalHistogramEqualization Process Module Version 01.00.00.0157
 // ----------------------------------------------------------------------------
-// LocalHistogramEqualizationInstance.cpp - Released 2015/11/26 16:00:13 UTC
+// LocalHistogramEqualizationInstance.cpp - Released 2015/12/18 08:55:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard LocalHistogramEqualization PixInsight module.
 //
@@ -647,4 +647,4 @@ int LocalHistogramEqualizationInstance::GetHistogramSize() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LocalHistogramEqualizationInstance.cpp - Released 2015/11/26 16:00:13 UTC
+// EOF LocalHistogramEqualizationInstance.cpp - Released 2015/12/18 08:55:09 UTC

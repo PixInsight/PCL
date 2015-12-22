@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard Blink Process Module Version 01.02.01.0204
+// Standard Blink Process Module Version 01.02.01.0211
 // ----------------------------------------------------------------------------
-// BlinkStatisticsDialog.cpp - Released 2015/11/26 16:00:13 UTC
+// BlinkStatisticsDialog.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
@@ -57,7 +57,6 @@
 #include <pcl/Console.h>
 #include <pcl/ImageWindow.h>
 #include <pcl/MessageBox.h>
-#include <pcl/MetaModule.h> // for ProcessEvents()
 #include <pcl/StdStatus.h>
 
 #define ftb m_parent->GUI->Files_TreeBox
@@ -559,7 +558,7 @@ void BlinkStatisticsDialog::PrepareData()
          if ( fd.m_isSTFStatisticsEqualToReal )             // if statSTF hold good data
          {                                                  // Copy Statistics from statSTF
             Console().WriteLn( "<br>Using image statistics in memory: " + fd.m_filePath  );
-            Module->ProcessEvents();
+            ProcessEvents();
             for ( int c = 0; c < int( fd.m_statSTF.Length() ); c++ )
                fd.m_statReal.Add( fd.m_statSTF[c] );
 
@@ -575,7 +574,7 @@ void BlinkStatisticsDialog::PrepareData()
       if ( fd.m_isRealPixelData )                           // use blink_image PixelData
       {
          Console().WriteLn( "<br>Use Image in memory: " + fd.m_filePath );
-         Module->ProcessEvents();
+         ProcessEvents();
          img.Assign( *fd.m_image );                         // Convert & Copy blink_image to DImage
       }
       else                                                  // load Real Image from file
@@ -589,7 +588,7 @@ void BlinkStatisticsDialog::PrepareData()
       StatusMonitor monitor;
       monitor.SetCallback( &callback );
       monitor.Initialize( "<end><cbr>Calculating image statistics", img.NumberOfNominalChannels() );
-      Module->ProcessEvents();
+      ProcessEvents();
 
       if ( m_rect != blink.m_screenRect )                   // Crop mode
          img.SelectRectangle( m_rect );
@@ -774,4 +773,4 @@ void BlinkStatisticsDialog::__Dialog_Return( Dialog& sender, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BlinkStatisticsDialog.cpp - Released 2015/11/26 16:00:13 UTC
+// EOF BlinkStatisticsDialog.cpp - Released 2015/12/18 08:55:08 UTC

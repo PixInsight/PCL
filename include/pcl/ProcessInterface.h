@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/ProcessInterface.h - Released 2015/11/26 15:59:38 UTC
+// pcl/ProcessInterface.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -2449,19 +2449,30 @@ public:
    static void BroadcastImageUpdated( const View& v );
 
    /*!
-    * Processes all pending GUI events.
+    * Processes pending user interface events.
     *
     * Call this function to let the PixInsight core application process pending
-    * GUI events, which may accumulate while your code is running.
+    * user interface events, which may accumulate while your code is running.
     *
     * Modules typically call this function during real-time preview generation
     * procedures. Calling this function ensures that the GUI remains responsive
     * during long, calculation-intensive operations.
     *
-    * \note Do not call this function on a regular basis. Normally, you should
-    * not need calling it except during real-time generation procedures.
+    * If the \a excludeUserInputEvents parameter is set to true, no user input
+    * events will be processed by calling this function. This includes mainly
+    * mouse and keyboard events. Unprocessed input events will remain pending
+    * and will be processed as appropriate when execution returns to
+    * PixInsight's main event handling loop, or when this function is called
+    * with \a excludeUserInputEvents set to false.
+    *
+    * \note Do not call this function too frequently, as doing so may degrade
+    * performance of the whole PixInsight graphical interface. For example,
+    * calling this function at 250 ms intervals is reasonable and more than
+    * sufficient in most cases. Normally, you should only need to call this
+    * function during real-time image and graphics generation procedures, or
+    * from time-consuming processes.
     */
-   static void ProcessEvents();
+   static void ProcessEvents( bool excludeUserInputEvents = false );
 
 protected:
 
@@ -2489,4 +2500,4 @@ private:
 #endif   // __PCL_ProcessInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ProcessInterface.h - Released 2015/11/26 15:59:38 UTC
+// EOF pcl/ProcessInterface.h - Released 2015/12/17 18:52:09 UTC

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.04.0094
+// Standard XISF File Format Module Version 01.00.05.0101
 // ----------------------------------------------------------------------------
-// XISFPreferencesDialog.h - Released 2015/11/26 15:59:58 UTC
+// XISFPreferencesDialog.h - Released 2015/12/18 08:55:16 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
@@ -104,6 +104,8 @@ private:
          CheckBox             RGBWorkingSpace_CheckBox;
       HorizontalSizer      Thumbnail_Sizer;
          CheckBox             Thumbnail_CheckBox;
+      HorizontalSizer      PreviewRects_Sizer;
+         CheckBox             PreviewRects_CheckBox;
 
    PushButton        Reset_PushButton;
 
@@ -118,4 +120,4 @@ private:
 #endif   // XISFPreferencesDialog_h
 
 // ----------------------------------------------------------------------------
-// EOF XISFPreferencesDialog.h - Released 2015/11/26 15:59:58 UTC
+// EOF XISFPreferencesDialog.h - Released 2015/12/18 08:55:16 UTC

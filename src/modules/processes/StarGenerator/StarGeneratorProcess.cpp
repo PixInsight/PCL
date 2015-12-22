@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard StarGenerator Process Module Version 01.01.00.0237
+// Standard StarGenerator Process Module Version 01.01.00.0243
 // ----------------------------------------------------------------------------
-// StarGeneratorProcess.cpp - Released 2015/11/26 16:00:13 UTC
+// StarGeneratorProcess.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard StarGenerator PixInsight module.
 //
@@ -227,4 +227,4 @@ int StarGeneratorProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF StarGeneratorProcess.cpp - Released 2015/11/26 16:00:13 UTC
+// EOF StarGeneratorProcess.cpp - Released 2015/12/18 08:55:08 UTC

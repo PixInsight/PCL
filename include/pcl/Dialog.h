@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/Dialog.h - Released 2015/11/26 15:59:39 UTC
+// pcl/Dialog.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -216,6 +216,14 @@ public:
       EnableUserResizing( !disable );
    }
 
+   /*!
+    * Processes pending user interface events.
+    *
+    * This member function is a convenience wrapper with the same functionality
+    * as ProcessInterface::ProcessEvents().
+    */
+   static void ProcessEvents( bool excludeUserInputEvents = false );
+
    // -------------------------------------------------------------------------
    // Event handlers
    //
@@ -305,4 +313,4 @@ private:
 #endif   // __PCL_Dialog_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Dialog.h - Released 2015/11/26 15:59:39 UTC
+// EOF pcl/Dialog.h - Released 2015/12/17 18:52:09 UTC

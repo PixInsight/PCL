@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard Flux Process Module Version 01.00.00.0123
+// Standard Flux Process Module Version 01.00.00.0129
 // ----------------------------------------------------------------------------
-// FluxCalibrationParameters.cpp - Released 2015/11/26 16:00:12 UTC
+// FluxCalibrationParameters.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Flux PixInsight module.
 //
@@ -672,4 +672,4 @@ String FCQuantumEfficiencyKeyword::AllowedCharacters() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FluxCalibrationParameters.cpp - Released 2015/11/26 16:00:12 UTC
+// EOF FluxCalibrationParameters.cpp - Released 2015/12/18 08:55:08 UTC

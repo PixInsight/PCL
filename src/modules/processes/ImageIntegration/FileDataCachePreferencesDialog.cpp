@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.09.04.0312
+// Standard ImageIntegration Process Module Version 01.09.04.0318
 // ----------------------------------------------------------------------------
-// FileDataCachePreferencesDialog.cpp - Released 2015/11/26 16:00:13 UTC
+// FileDataCachePreferencesDialog.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -251,4 +251,4 @@ void FileDataCachePreferencesDialog::Dialog_Return( Dialog& sender, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FileDataCachePreferencesDialog.cpp - Released 2015/11/26 16:00:13 UTC
+// EOF FileDataCachePreferencesDialog.cpp - Released 2015/12/18 08:55:08 UTC

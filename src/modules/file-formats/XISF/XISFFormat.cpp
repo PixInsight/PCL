@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.04.0094
+// Standard XISF File Format Module Version 01.00.05.0101
 // ----------------------------------------------------------------------------
-// XISFFormat.cpp - Released 2015/11/26 15:59:58 UTC
+// XISFFormat.cpp - Released 2015/12/18 08:55:16 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
@@ -260,6 +260,8 @@ bool XISFFormat::EditPreferences() const
       Settings::Write( "XISFEmbedRGBWorkingSpaces",            overrides.embedRGBWorkingSpaces );
       Settings::Write( "XISFOverrideThumbnailEmbedding",       overrides.overrideThumbnailEmbedding );
       Settings::Write( "XISFEmbedThumbnails",                  overrides.embedThumbnails );
+      Settings::Write( "XISFOverridePreviewRectsEmbedding",    overrides.overridePreviewRectsEmbedding );
+      Settings::Write( "XISFEmbedPreviewRects",                overrides.embedPreviewRects );
 
       options = dlg.options;
       Settings::Write( "XISFStoreFITSKeywords",  options.storeFITSKeywords );
@@ -348,6 +350,8 @@ XISFFormat::EmbeddingOverrides XISFFormat::DefaultEmbeddingOverrides()
    Settings::Read( "XISFEmbedRGBWorkingSpaces",            overrides.embedRGBWorkingSpaces );
    Settings::Read( "XISFOverrideThumbnailEmbedding",       overrides.overrideThumbnailEmbedding );
    Settings::Read( "XISFEmbedThumbnails",                  overrides.embedThumbnails );
+   Settings::Read( "XISFOverridePreviewRectsEmbedding",    overrides.overridePreviewRectsEmbedding );
+   Settings::Read( "XISFEmbedPreviewRects",                overrides.embedPreviewRects );
 
    return overrides;
 }
@@ -377,4 +381,4 @@ XISFFormat::FormatOptions* XISFFormat::FormatOptions::FromGenericDataBlock( cons
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISFFormat.cpp - Released 2015/11/26 15:59:58 UTC
+// EOF XISFFormat.cpp - Released 2015/12/18 08:55:16 UTC

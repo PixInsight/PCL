@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/ImageVariant.h - Released 2015/11/26 15:59:38 UTC
+// pcl/ImageVariant.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -6186,7 +6186,7 @@ public:
     * operations by invoking any installed file format support module on the
     * platform. %FileFormatInstance requires shared images to read/write images
     * from/to disk files ( you can actually pass a local image to
-    * %FileFormatInstance, but then the PCL will generate and use a temporary
+    * %FileFormatInstance, but then PCL will generate and use a temporary
     * \e shared working image on the fly, wasting memory unnecessarily ).
     */
    ImageVariant& CreateSharedImage( bool isFloat, bool isComplex, int bitSize )
@@ -6378,8 +6378,8 @@ public:
     * image in this case.
     *
     * This function is useful to allocate pixel data without having to resolve
-    * the template instantiation of the transported image. The PCL allocates
-    * pixels of the appropriate sample data type transparently.
+    * the template instantiation of the transported image. PCL allocates pixels
+    * of the appropriate sample data type transparently.
     */
    ImageVariant& AllocateImage( int width, int height, int numberOfChannels, color_space colorSpace )
    {
@@ -6451,7 +6451,7 @@ public:
     * %ImageVariant instance. Returns a reference to this object.
     *
     * This function is useful to deallocate pixel data without having to
-    * resolve the template instantiation of the transported image. The PCL
+    * resolve the template instantiation of the transported image. PCL
     * deallocates pixel data of any supported pixel sample type transparently.
     *
     * If this %ImageVariant transports no image, this function has no effect.
@@ -6504,8 +6504,8 @@ public:
     * specification.
     *
     * This function is useful to write pixel data without having to resolve the
-    * template instantiation of the transported image. The PCL writes pixel
-    * data of any supported sample type transparently.
+    * template instantiation of the transported image. PCL writes pixel data of
+    * any supported sample type transparently.
     */
    void WriteSwapFile( const String& filePath,
                        swap_compression compression = SwapCompression::None,
@@ -7053,4 +7053,4 @@ GenericImage<P>& GenericImage<P>::SetLightness( const ImageVariant& L, const Poi
 #endif   // __PCL_ImageVariant_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageVariant.h - Released 2015/11/26 15:59:38 UTC
+// EOF pcl/ImageVariant.h - Released 2015/12/17 18:52:09 UTC

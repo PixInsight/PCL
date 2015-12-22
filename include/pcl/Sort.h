@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/Sort.h - Released 2015/11/26 15:59:39 UTC
+// pcl/Sort.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -533,7 +533,7 @@ void __pcl_sort__( RI i, RI j, RandomAccessIterator )
  * algorithm (median of three variant) is used for random access iterators.
  *
  * If you want to use the heap sort algorithm instead of quick sort (e.g. for
- * performance testing purposes), #define the __PCL_PREFER_HEAPSORT macro.
+ * performance testing purposes), define the __PCL_PREFER_HEAPSORT macro.
  *
  * \ingroup sorting_algorithms
  */
@@ -574,7 +574,7 @@ void __pcl_sort__( RI i, RI j, BP p, RandomAccessIterator )
  * algorithm (median of three variant) is used for random access iterators.
  *
  * If you want to use the heap sort algorithm instead of quick sort (e.g. for
- * performance testing purposes), #define the __PCL_PREFER_HEAPSORT macro.
+ * performance testing purposes), define the __PCL_PREFER_HEAPSORT macro.
  *
  * \ingroup sorting_algorithms
  */
@@ -591,4 +591,4 @@ void Sort( BI i, BI j, BP p )
 #endif  // __PCL_Sort_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Sort.h - Released 2015/11/26 15:59:39 UTC
+// EOF pcl/Sort.h - Released 2015/12/17 18:52:09 UTC

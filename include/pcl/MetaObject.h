@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/MetaObject.h - Released 2015/11/26 15:59:39 UTC
+// pcl/MetaObject.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -77,14 +77,14 @@ namespace pcl
  * \class MetaObject
  * \brief Root base class for all PixInsight module components.
  *
- * In the PCL, a \e metaobject is a special class describing in formal terms
- * the functionality and properties of a \e component in a PixInsight module.
+ * In PCL, a \e metaobject is a special class describing in formal terms the
+ * functionality and properties of a \e component in a PixInsight module.
  *
  * The %MetaObject class provides basic functionality to implement the existing
  * hierarchical relationships between a module and all of its components. A
  * %MetaObject contains a list of %MetaObject instances, which generates a tree
  * structure based on parent-children container relations. This structural
- * layout has been used in the PCL to automatize communication between the core
+ * layout has been used in PCL to automatize communication between the core
  * PixInsight application, modules, and all module components.
  *
  * \sa MetaModule, MetaProcess, MetaParameter, MetaFileFormat
@@ -179,4 +179,4 @@ protected:
 #endif   // __PCL_MetaObject_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaObject.h - Released 2015/11/26 15:59:39 UTC
+// EOF pcl/MetaObject.h - Released 2015/12/17 18:52:09 UTC

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0318
+// Standard Global Process Module Version 01.02.07.0324
 // ----------------------------------------------------------------------------
-// PreferencesInterface.cpp - Released 2015/11/26 16:00:12 UTC
+// PreferencesInterface.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -1730,6 +1730,11 @@ MiscImageWindowSettingsPreferencesPage::MiscImageWindowSettingsPreferencesPage( 
       "renditions, such as HDR compositions. Note that you can enable or disable this feature on a per view "
       "basis; this setting refers to the default state for newly created images.</p>" );
 
+   CreatePreviewsFromCoreProperties_Flag.checkBox.SetText( "Create previews from core properties" );
+   CreatePreviewsFromCoreProperties_Flag.item = &instance.imageWindow.createPreviewsFromCoreProperties;
+   CreatePreviewsFromCoreProperties_Flag.SetToolTip(
+      "<p>Create previews automatically from core properties stored in image files (XISF format feature).</p>" );
+
    Page_Sizer.SetSpacing( 4 );
    Page_Sizer.Add( ShowCaptionCurrentChannels_Flag );
    Page_Sizer.Add( ShowCaptionZoomRatios_Flag );
@@ -1743,6 +1748,7 @@ MiscImageWindowSettingsPreferencesPage::MiscImageWindowSettingsPreferencesPage( 
    Page_Sizer.Add( FastScreenRenditionThreshold_Integer );
    Page_Sizer.Add( HighDPIRenditions_Flag );
    Page_Sizer.Add( Default24BitScreenLUT_Flag );
+   Page_Sizer.Add( CreatePreviewsFromCoreProperties_Flag );
    Page_Sizer.AddStretch();
 
    SetSizer( Page_Sizer );
@@ -1750,18 +1756,19 @@ MiscImageWindowSettingsPreferencesPage::MiscImageWindowSettingsPreferencesPage( 
 
 void MiscImageWindowSettingsPreferencesPage::TransferSettings( PreferencesInstance& to, const PreferencesInstance& from )
 {
-   to.imageWindow.showCaptionCurrentChannels   = from.imageWindow.showCaptionCurrentChannels;
-   to.imageWindow.showCaptionZoomRatios        = from.imageWindow.showCaptionZoomRatios;
-   to.imageWindow.showCaptionIdentifiers       = from.imageWindow.showCaptionIdentifiers;
-   to.imageWindow.showCaptionFullPaths         = from.imageWindow.showCaptionFullPaths;
-   to.imageWindow.showActiveSTFIndicators      = from.imageWindow.showActiveSTFIndicators;
-   to.imageWindow.cursorTolerance              = from.imageWindow.cursorTolerance;
-   to.imageWindow.touchEvents                  = from.imageWindow.touchEvents;
-   to.imageWindow.pinchSensitivity             = from.imageWindow.pinchSensitivity;
-   to.imageWindow.fastScreenRenditions         = from.imageWindow.fastScreenRenditions;
-   to.imageWindow.fastScreenRenditionThreshold = from.imageWindow.fastScreenRenditionThreshold;
-   to.imageWindow.highDPIRenditions            = from.imageWindow.highDPIRenditions;
-   to.imageWindow.default24BitScreenLUT        = from.imageWindow.default24BitScreenLUT;
+   to.imageWindow.showCaptionCurrentChannels       = from.imageWindow.showCaptionCurrentChannels;
+   to.imageWindow.showCaptionZoomRatios            = from.imageWindow.showCaptionZoomRatios;
+   to.imageWindow.showCaptionIdentifiers           = from.imageWindow.showCaptionIdentifiers;
+   to.imageWindow.showCaptionFullPaths             = from.imageWindow.showCaptionFullPaths;
+   to.imageWindow.showActiveSTFIndicators          = from.imageWindow.showActiveSTFIndicators;
+   to.imageWindow.createPreviewsFromCoreProperties = from.imageWindow.createPreviewsFromCoreProperties;
+   to.imageWindow.cursorTolerance                  = from.imageWindow.cursorTolerance;
+   to.imageWindow.touchEvents                      = from.imageWindow.touchEvents;
+   to.imageWindow.pinchSensitivity                 = from.imageWindow.pinchSensitivity;
+   to.imageWindow.fastScreenRenditions             = from.imageWindow.fastScreenRenditions;
+   to.imageWindow.fastScreenRenditionThreshold     = from.imageWindow.fastScreenRenditionThreshold;
+   to.imageWindow.highDPIRenditions                = from.imageWindow.highDPIRenditions;
+   to.imageWindow.default24BitScreenLUT            = from.imageWindow.default24BitScreenLUT;
 }
 
 // ----------------------------------------------------------------------------
@@ -2260,4 +2267,4 @@ void PreferencesInterface::GUIData::InitializeCategories()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInterface.cpp - Released 2015/11/26 16:00:12 UTC
+// EOF PreferencesInterface.cpp - Released 2015/12/18 08:55:08 UTC

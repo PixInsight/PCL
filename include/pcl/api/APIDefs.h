@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/APIDefs.h - Released 2015/11/26 15:59:39 UTC
+// pcl/APIDefs.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -220,7 +220,8 @@ struct api_image_options
    bool   embedRGBWS            :  1;
    bool   embedDisplayFunction  :  1;
    bool   embedColorFilterArray :  1;
-   uint32 __r__                 : 13;
+   bool   embedPreviewRects     :  1;
+   uint32 __r__                 : 12;
    double lowerRange;
    double upperRange;
    double xResolution;
@@ -248,7 +249,8 @@ struct api_image_file_info
    bool   embedRGBWS            :  1;
    bool   embedDisplayFunction  :  1;
    bool   embedColorFilterArray :  1;
-   uint32 __r__                 : 14;
+   bool   embedPreviewRects     :  1;
+   uint32 __r__                 : 13;
    double xResolution;
    double yResolution;
    int32  isoSpeed;
@@ -948,4 +950,4 @@ void PCL_FUNC PCLImageOptionsToAPI( api_image_options&, const ImageOptions& );
 #endif   // __PCL_API_APIDefs_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/APIDefs.h - Released 2015/11/26 15:59:39 UTC
+// EOF pcl/APIDefs.h - Released 2015/12/17 18:52:09 UTC

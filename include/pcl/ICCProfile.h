@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/ICCProfile.h - Released 2015/11/26 15:59:39 UTC
+// pcl/ICCProfile.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -348,7 +348,7 @@ public:
     * language and country. The returned description will be as close as
     * possible to the requested localization.
     */
-   String Description() const;
+   String Description( const char* language = "en", const char* country = "US" ) const;
 
    /*!
     * Returns the data color space of the stored ICC profile. If this object
@@ -541,8 +541,10 @@ public:
    }
 
    /*!
-    * Returns the localized profile description of an open ICC profile
-    * handle \a h.
+    * Returns the localized profile description of an open ICC profile.
+    *
+    * \param h          Handle to an open ICC profile, from which the requested
+    *                   profile description will be obtained.
     *
     * \param language   Optional language code (ISO 639/2) of the requested
     *                   profile description. The default value is "en" for
@@ -612,10 +614,10 @@ public:
    static StringList FindProfiles( const String& dirPath = String() );
 
    /*!
-    * Finds the file path to an installed ICC profile given its profile
-    * \a description.
+    * Finds the file path to an installed ICC profile, given its profile
+    * description.
     *
-    * \param descriptions  Description of the profile to search for.
+    * \param description   Description of the profile to search for.
     *
     * \param exactMatch    If true, this routine will search for a profile that
     *                   matches the specified \a description exactly, including
@@ -736,4 +738,4 @@ private:
 #endif   // __PCL_ICCProfile_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ICCProfile.h - Released 2015/11/26 15:59:39 UTC
+// EOF pcl/ICCProfile.h - Released 2015/12/17 18:52:09 UTC

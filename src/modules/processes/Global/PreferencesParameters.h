@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0318
+// Standard Global Process Module Version 01.02.07.0324
 // ----------------------------------------------------------------------------
-// PreferencesParameters.h - Released 2015/11/26 16:00:12 UTC
+// PreferencesParameters.h - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -316,6 +316,7 @@ DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, fastScreenRenditions,             t
 DECLARE_INT32_METAPARAMETER   ( ImageWindow, fastScreenRenditionThreshold,     6, 0, 64 )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, highDPIRenditions,                true )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, default24BitScreenLUT,            false )
+DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, createPreviewsFromCoreProperties, true )
 DECLARE_TABLE_METAPARAMETER   ( ImageWindow, swapDirectories )
 DECLARE_ROW_STRING_METAPARAMETER( ImageWindow, swapDirectory,                  String() )
 DECLARE_BOOLEAN_METAPARAMETER ( ImageWindow, swapCompression,                  false )
@@ -372,4 +373,4 @@ PCL_END_LOCAL
 #endif   // __PreferencesParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesParameters.h - Released 2015/11/26 16:00:12 UTC
+// EOF PreferencesParameters.h - Released 2015/12/18 08:55:08 UTC

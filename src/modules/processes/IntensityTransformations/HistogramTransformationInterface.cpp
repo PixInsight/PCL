@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0345
+// Standard IntensityTransformations Process Module Version 01.07.01.0351
 // ----------------------------------------------------------------------------
-// HistogramTransformationInterface.cpp - Released 2015/11/26 16:00:13 UTC
+// HistogramTransformationInterface.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -57,12 +57,17 @@
 #include "ScreenTransferFunctionInstance.h"
 #include "ScreenTransferFunctionParameters.h" // for STFInteraction
 
+#include <pcl/GlobalSettings.h>
 #include <pcl/Graphics.h>
 #include <pcl/HistogramTransformation.h>
 #include <pcl/ImageWindow.h>
 #include <pcl/RealTimePreview.h>
 #include <pcl/Settings.h>
 #include <pcl/Vector.h>
+
+#define m_currentView      GUI->AllViews_ViewList.CurrentView()
+
+#define WHEEL_STEP_ANGLE   PixInsightSettings::GlobalInteger( "ImageWindow/WheelStepAngle" )
 
 namespace pcl
 {
@@ -83,10 +88,6 @@ HistogramTransformationInterface* TheHistogramTransformationInterface = 0;
 #include "auto_zero_highlights.xpm"
 #include "auto_clip_shadows.xpm"
 #include "auto_clip_highlights.xpm"
-
-// ----------------------------------------------------------------------------
-
-#define m_currentView   GUI->AllViews_ViewList.CurrentView()
 
 // ----------------------------------------------------------------------------
 
@@ -133,6 +134,7 @@ HistogramTransformationInterface::HistogramTransformationInterface() :
    m_inputZoomY( 1 ),
    m_outputZoomX( 1 ),
    m_outputZoomY( 1 ),
+   m_wheelSteps( 0 ),
    m_rejectSaturated( true ),
    m_rawRGBInput( true ),
    m_lockOutputChannel( true ),
@@ -2115,23 +2117,29 @@ void HistogramTransformationInterface::__Histogram_MouseMove(
 void HistogramTransformationInterface::__Histogram_MouseWheel(
    Control& sender, const pcl::Point& pos, int delta, unsigned buttons, unsigned modifiers )
 {
-   int d = (delta > 0) ? -1 : +1;
+   m_wheelSteps += delta; // delta is rotation angle in 1/8 degree steps
+   if ( Abs( m_wheelSteps ) >= WHEEL_STEP_ANGLE*8 )
+   {
+      int d = (delta > 0) ? -1 : +1;
 
-   if ( sender == GUI->InputHistogramPlot_Control )
-   {
-      Point p = pos + GUI->InputHistogram_ScrollBox.ScrollPosition();
-      p.x /= m_inputZoomX;
-      p.y /= m_inputZoomY;
-      p.y += 8; // favor bottom histogram locations
-      SetInputZoom( Range( m_inputZoomX+d, 1, s_maxZoom ), Range( m_inputZoomY+d, 1, s_maxZoom ), &p );
-   }
-   else if ( sender == GUI->OutputHistogram_ScrollBox.Viewport() )
-   {
-      Point p = pos + GUI->OutputHistogram_ScrollBox.ScrollPosition();
-      p.x /= m_outputZoomX;
-      p.y /= m_outputZoomY;
-      p.y += 8; // favor bottom histogram locations
-      SetOutputZoom( Range( m_outputZoomX+d, 1, s_maxZoom ), Range( m_outputZoomY+d, 1, s_maxZoom ), &p );
+      if ( sender == GUI->InputHistogramPlot_Control )
+      {
+         Point p = pos + GUI->InputHistogram_ScrollBox.ScrollPosition();
+         p.x /= m_inputZoomX;
+         p.y /= m_inputZoomY;
+         p.y += 8; // favor bottom histogram locations
+         SetInputZoom( Range( m_inputZoomX+d, 1, s_maxZoom ), Range( m_inputZoomY+d, 1, s_maxZoom ), &p );
+      }
+      else if ( sender == GUI->OutputHistogram_ScrollBox.Viewport() )
+      {
+         Point p = pos + GUI->OutputHistogram_ScrollBox.ScrollPosition();
+         p.x /= m_outputZoomX;
+         p.y /= m_outputZoomY;
+         p.y += 8; // favor bottom histogram locations
+         SetOutputZoom( Range( m_outputZoomX+d, 1, s_maxZoom ), Range( m_outputZoomY+d, 1, s_maxZoom ), &p );
+      }
+
+      m_wheelSteps = 0;
    }
 }
 
@@ -3084,4 +3092,4 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF HistogramTransformationInterface.cpp - Released 2015/11/26 16:00:13 UTC
+// EOF HistogramTransformationInterface.cpp - Released 2015/12/18 08:55:08 UTC

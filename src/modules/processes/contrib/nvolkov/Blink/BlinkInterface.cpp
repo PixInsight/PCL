@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard Blink Process Module Version 01.02.01.0204
+// Standard Blink Process Module Version 01.02.01.0211
 // ----------------------------------------------------------------------------
-// BlinkInterface.cpp - Released 2015/11/26 16:00:13 UTC
+// BlinkInterface.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
@@ -63,14 +63,16 @@
 #include <pcl/FileDialog.h>
 #include <pcl/FileFormat.h>
 #include <pcl/FileFormatInstance.h>
+#include <pcl/GlobalSettings.h>
 #include <pcl/Graphics.h>
 #include <pcl/MessageBox.h>
-#include <pcl/MetaModule.h> // for ProcessEvents()
 #include <pcl/Random.h>
 #include <pcl/Settings.h>
 #include <pcl/StdStatus.h>  // for progress monitor
 #include <pcl/Version.h>    // for PixInsightVersion
 #include <pcl/View.h>
+
+#define WHEEL_STEP_ANGLE   PixInsightSettings::GlobalInteger( "ImageWindow/WheelStepAngle" )
 
 namespace pcl
 {
@@ -124,7 +126,7 @@ static bool LoadImage_P( GenericImage<P>& image, const String& filePath )
       if ( images.IsEmpty() )
          throw Error( filePath + ": Empty image file." );
       if ( images.Length() > 1 )
-         throw Error( filePath + ": Multiple images not supported in the current version (push me if you need them)." );
+         Console().NoteLn( String().Format( "<end><cbr>* Ignoring %u additional image(s) in input file.", images.Length()-1 ) );
       if ( !file.SelectImage( 0 ) )
          throw CatchedException();
       if ( !file.ReadImage( image ) )
@@ -132,7 +134,7 @@ static bool LoadImage_P( GenericImage<P>& image, const String& filePath )
       if ( !file.Close() )
          throw CatchedException();
 
-      Module->ProcessEvents();
+      ProcessInterface::ProcessEvents();
 
       return true;
    }
@@ -379,7 +381,7 @@ void BlinkInterface::BlinkData::GetStatsForSTF( int fileNumber )
    StatusMonitor m;
    m.SetCallback( &callback );
    m.Initialize( "<end><cbr><br>* Blink: Calculating statistics", fd.m_image->NumberOfNominalChannels() );
-   Module->ProcessEvents();
+   ProcessEvents();
 
    for( int c = 0; c < fd.m_image->NumberOfNominalChannels(); c++, ++m )
    {
@@ -454,7 +456,7 @@ void BlinkInterface::BlinkData::AutoHT()
 {
    Console().Show();
    Console().WriteLn( "<end><cbr><br>* Blink: Applying automatic histogram transformations" );
-   Module->ProcessEvents();
+   ProcessEvents();
 
    for ( int fileNumber = 0; fileNumber < int( m_filesData.Length() ); fileNumber++ )
    {
@@ -462,7 +464,7 @@ void BlinkInterface::BlinkData::AutoHT()
       FileData& fd = m_filesData[fileNumber];
 
       Console().WriteLn( fd.m_filePath );
-      Module->ProcessEvents();
+      ProcessEvents();
 
       int n = fd.m_image->NumberOfNominalChannels();
       double c0 = 0, m = 0;
@@ -480,7 +482,7 @@ void BlinkInterface::BlinkData::AutoHT()
          HistogramTransformation H ( m, c0, 1, 0, 1 );
          fd.m_image->SelectChannel( c );
          H >> *fd.m_image;
-         Module->ProcessEvents();
+         ProcessEvents();
       }
       fd.m_image->ResetChannelRange();
    }
@@ -688,14 +690,15 @@ void BlinkInterface::BlinkData::ShowNextImage()
 // BlinkInterface Implementation
 // ----------------------------------------------------------------------------
 
-BlinkInterface* TheBlinkInterface = 0;
+BlinkInterface* TheBlinkInterface = nullptr;
 
 BlinkInterface::BlinkInterface() :
    ProcessInterface(),
-   GUI( 0 ),
+   GUI( nullptr ),
    m_blink(),
    m_previewBmp( Bitmap::Null() ),
    m_isRunning( false ),
+   m_wheelSteps( 0 ),
    m_sortChannels( true ),    // mode: sort by channel(true) or not(false)?
    m_cropMode( false ),       // true = Statistics only for Green rectangle
    m_digits0_1( 6 ),          // digits after dot for range 0-1
@@ -1101,7 +1104,7 @@ void BlinkInterface::FileCopyTo()
             const String toFilePath = UniqueFilePath( fromFilePath, dir );
             Console().WriteLn( "Copy from " + fromFilePath + " to " + toFilePath );
             ProcessEvents();
-            File::WriteFile( toFilePath, File::ReadFile( fromFilePath ) );
+            File::CopyFile( toFilePath, fromFilePath );
          }
       Console().WriteLn( "Done." );
 
@@ -1140,7 +1143,7 @@ void BlinkInterface::FileMoveTo()
             const String toFilePath = UniqueFilePath( fromFilePath, dir );
             Console().WriteLn( "Move from " + fromFilePath + " to " + toFilePath );
             ProcessEvents();
-            File::Move( fromFilePath, toFilePath );
+            File::MoveFile( toFilePath, fromFilePath );
             m_blink.m_filesData[fileNumber].m_filePath = toFilePath; // update file path
          }
       Console().WriteLn( "Done." );
@@ -1618,15 +1621,21 @@ void BlinkInterface::__ScrollControl_MouseWheel( Control& sender, const Point& p
    if ( m_blink.m_screen.IsNull() || m_blink.m_filesData.IsEmpty() )
       return;
 
-   if ( delta > 0 )
+   m_wheelSteps += delta; // delta is rotation angle in 1/8 degree steps
+   if ( Abs( m_wheelSteps ) >= WHEEL_STEP_ANGLE*8 )
    {
-      int z = m_blink.m_screen.ZoomFactor() - 1;
-      m_blink.m_screen.SetZoomFactor( (z != 0) ? z : -2 );
-   }
-   else
-      m_blink.m_screen.ZoomIn();
+      if ( delta > 0 )
+      {
+         int z = m_blink.m_screen.ZoomFactor() - 1;
+         m_blink.m_screen.SetZoomFactor( (z != 0) ? z : -2 );
+      }
+      else
+         m_blink.m_screen.ZoomIn();
 
-   sender.Update();
+      m_wheelSteps = 0;
+
+      sender.Update();
+   }
 }
 
 void BlinkInterface::__ScrollControl_MousePress( Control& sender, const Point& pos, int button, unsigned buttons, unsigned modifiers )
@@ -2089,4 +2098,4 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BlinkInterface.cpp - Released 2015/11/26 16:00:13 UTC
+// EOF BlinkInterface.cpp - Released 2015/12/18 08:55:08 UTC

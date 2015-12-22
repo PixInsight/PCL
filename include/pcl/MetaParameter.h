@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/MetaParameter.h - Released 2015/11/26 15:59:39 UTC
+// pcl/MetaParameter.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -92,7 +92,7 @@ class PCL_CLASS MetaTable;
  *
  * %MetaParameter represents a <em>process parameter</em>. This is an abstract
  * base class providing fundamental functionality common to all process
- * parameters available in the PCL. Derived classes implement and extended that
+ * parameters available in PCL. Derived classes implement and extended that
  * functionality to represent a wide variety of process parameter types.
  *
  * %Process parameters can be numerical values (MetaInteger and MetaReal, and
@@ -309,8 +309,8 @@ public:
     * to document process parameters in automatically generated scripts.
     *
     * If this member function is not reimplemented for a table parameter (see
-    * MetaTable), the PCL automatically generates a script comment including
-    * the identifiers of all table column parameters.
+    * MetaTable), PCL automatically generates a script comment including the
+    * identifiers of all table column parameters.
     */
    virtual String Comment() const
    {
@@ -596,8 +596,8 @@ private:
  * \class MetaUnsignedInteger
  * \brief A formal description of an unsigned integer process parameter.
  *
- * The PCL supports 8, 16, 32 and 64-bit unsigned integer process parameters.
- * This leads to the following unsigned process parameter classes: MetaUInt8,
+ * PCL supports 8, 16, 32 and 64-bit unsigned integer process parameters. This
+ * leads to the following unsigned process parameter classes: MetaUInt8,
  * MetaUInt16, MetaUInt32, and MetaUInt64.
  */
 class PCL_CLASS MetaUnsignedInteger : public MetaInteger
@@ -651,8 +651,8 @@ private:
  * \class MetaSignedInteger
  * \brief A formal description of a signed integer process parameter.
  *
- * The PCL supports 8, 16, 32 and 64-bit signed integer process parameters.
- * This leads to the following signed process parameter classes: MetaInt8,
+ * PCL supports 8, 16, 32 and 64-bit signed integer process parameters. This
+ * leads to the following signed process parameter classes: MetaInt8,
  * MetaInt16, MetaInt32, and MetaInt64.
  */
 class PCL_CLASS MetaSignedInteger : public MetaInteger
@@ -706,8 +706,8 @@ private:
  * \class MetaUInt8
  * \brief A formal description of an 8-bit unsigned integer process parameter.
  *
- * The PCL supports 8, 16, 32 and 64-bit unsigned integer process parameters.
- * This leads to the following unsigned process parameter classes: MetaUInt8,
+ * PCL supports 8, 16, 32 and 64-bit unsigned integer process parameters. This
+ * leads to the following unsigned process parameter classes: MetaUInt8,
  * MetaUInt16, MetaUInt32, and MetaUInt64.
  */
 class PCL_CLASS MetaUInt8 : public MetaUnsignedInteger
@@ -754,8 +754,8 @@ private:
  * \class MetaUInt16
  * \brief A formal description of a 16-bit unsigned integer process parameter.
  *
- * The PCL supports 8, 16, 32 and 64-bit unsigned integer process parameters.
- * This leads to the following unsigned process parameter classes: MetaUInt8,
+ * PCL supports 8, 16, 32 and 64-bit unsigned integer process parameters. This
+ * leads to the following unsigned process parameter classes: MetaUInt8,
  * MetaUInt16, MetaUInt32, and MetaUInt64.
  */
 class PCL_CLASS MetaUInt16 : public MetaUnsignedInteger
@@ -802,8 +802,8 @@ private:
  * \class MetaUInt32
  * \brief A formal description of a 32-bit unsigned integer process parameter.
  *
- * The PCL supports 8, 16, 32 and 64-bit unsigned integer process parameters.
- * This leads to the following unsigned process parameter classes: MetaUInt8,
+ * PCL supports 8, 16, 32 and 64-bit unsigned integer process parameters. This
+ * leads to the following unsigned process parameter classes: MetaUInt8,
  * MetaUInt16, MetaUInt32, and MetaUInt64.
  */
 class PCL_CLASS MetaUInt32 : public MetaUnsignedInteger
@@ -850,8 +850,8 @@ private:
  * \class MetaUInt64
  * \brief A formal description of a 64-bit unsigned integer process parameter.
  *
- * The PCL supports 8, 16, 32 and 64-bit unsigned integer process parameters.
- * This leads to the following unsigned process parameter classes: MetaUInt8,
+ * PCL supports 8, 16, 32 and 64-bit unsigned integer process parameters. This
+ * leads to the following unsigned process parameter classes: MetaUInt8,
  * MetaUInt16, MetaUInt32, and MetaUInt64.
  */
 class PCL_CLASS MetaUInt64 : public MetaUnsignedInteger
@@ -896,8 +896,8 @@ private:
  * \class MetaInt8
  * \brief A formal description of an 8-bit signed integer process parameter.
  *
- * The PCL supports 8, 16, 32 and 64-bit signed integer process parameters.
- * This leads to the following signed process parameter classes: MetaInt8,
+ * PCL supports 8, 16, 32 and 64-bit signed integer process parameters. This
+ * leads to the following signed process parameter classes: MetaInt8,
  * MetaInt16, MetaInt32, and MetaInt64.
  */
 class PCL_CLASS MetaInt8 : public MetaSignedInteger
@@ -944,8 +944,8 @@ private:
  * \class MetaInt16
  * \brief A formal description of a 16-bit signed integer process parameter.
  *
- * The PCL supports 8, 16, 32 and 64-bit signed integer process parameters.
- * This leads to the following signed process parameter classes: MetaInt8,
+ * PCL supports 8, 16, 32 and 64-bit signed integer process parameters. This
+ * leads to the following signed process parameter classes: MetaInt8,
  * MetaInt16, MetaInt32, and MetaInt64.
  */
 class MetaInt16 : public MetaSignedInteger
@@ -992,8 +992,8 @@ private:
  * \class MetaInt32
  * \brief A formal description of a 32-bit signed integer process parameter.
  *
- * The PCL supports 8, 16, 32 and 64-bit signed integer process parameters.
- * This leads to the following signed process parameter classes: MetaInt8,
+ * PCL supports 8, 16, 32 and 64-bit signed integer process parameters. This
+ * leads to the following signed process parameter classes: MetaInt8,
  * MetaInt16, MetaInt32, and MetaInt64.
  */
 class PCL_CLASS MetaInt32 : public MetaSignedInteger
@@ -1040,8 +1040,8 @@ private:
  * \class MetaInt64
  * \brief A formal description of a 64-bit signed integer process parameter.
  *
- * The PCL supports 8, 16, 32 and 64-bit signed integer process parameters.
- * This leads to the following signed process parameter classes: MetaInt8,
+ * PCL supports 8, 16, 32 and 64-bit signed integer process parameters. This
+ * leads to the following signed process parameter classes: MetaInt8,
  * MetaInt16, MetaInt32, and MetaInt64.
  */
 class PCL_CLASS MetaInt64 : public MetaSignedInteger
@@ -1967,4 +1967,4 @@ private:
 #endif   // __PCL_MetaParameter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaParameter.h - Released 2015/11/26 15:59:39 UTC
+// EOF pcl/MetaParameter.h - Released 2015/12/17 18:52:09 UTC

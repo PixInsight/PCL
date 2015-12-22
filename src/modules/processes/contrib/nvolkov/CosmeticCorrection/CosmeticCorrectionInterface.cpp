@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard CosmeticCorrection Process Module Version 01.02.05.0139
+// Standard CosmeticCorrection Process Module Version 01.02.05.0145
 // ----------------------------------------------------------------------------
-// CosmeticCorrectionInterface.cpp - Released 2015/11/26 16:00:13 UTC
+// CosmeticCorrectionInterface.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard CosmeticCorrection PixInsight module.
 //
@@ -57,6 +57,7 @@
 #include <pcl/Dialog.h>
 #include <pcl/FileDialog.h>
 #include <pcl/MessageBox.h>
+#include <pcl/MetaModule.h>
 #include <pcl/StdStatus.h>
 #include <pcl/SpinStatus.h>
 #include <pcl/FileFormat.h>
@@ -440,7 +441,7 @@ inline void CosmeticCorrectionInterface::RTPGetStatistics( Array<double>& avgDev
    avgDev.Clear();                     // clear old statistics
    for ( int c = 0; c < v->NumberOfNominalChannels(); c++, ++monitor  )
    {
-      ProcessInterface::ProcessEvents();
+      ProcessEvents();
       avgDev.Add( v.AvgDev( v.Median( v.Bounds(), c, c ), v.Bounds(), c, c ) );
    }
 
@@ -532,7 +533,7 @@ inline void CosmeticCorrectionInterface::RTPGetBkg( UInt16Image& bkg, const UInt
    }
 
    Console().Write(String().Format("Create%s backgound image...<flush>", instance.p_cfa ? " CFA":"" ));
-   ProcessInterface::ProcessEvents(); //for update console output
+   ProcessEvents(); //for update console output
 
    // set the pixel value to filtered by median backgound 7x7 arrea arround central 3x3 area of centaral pixel
    bkg.Assign( wrk );
@@ -540,7 +541,7 @@ inline void CosmeticCorrectionInterface::RTPGetBkg( UInt16Image& bkg, const UInt
    MT >> bkg;
 
    Console().WriteLn("done.");
-   ProcessInterface::ProcessEvents();
+   ProcessEvents();
 }
 
 inline void CosmeticCorrectionInterface::RTPGetMed( UInt16Image& med, const UInt16Image& wrk ) const
@@ -573,7 +574,7 @@ inline void CosmeticCorrectionInterface::RTPGetMed( UInt16Image& med, const UInt
    }
 
    Console().Write(String().Format("Create%s median filtered image...<flush>", instance.p_cfa ? " CFA":"" ));
-   ProcessInterface::ProcessEvents(); //for update console output
+   ProcessEvents(); //for update console output
 
    // set the pixel value to filter by median 3x3 arrea around centaral pixel
    med.Assign( wrk );
@@ -581,7 +582,7 @@ inline void CosmeticCorrectionInterface::RTPGetMed( UInt16Image& med, const UInt
    MT >> med;
 
    Console().WriteLn("done.");
-   ProcessInterface::ProcessEvents();
+   ProcessEvents();
 }
 
 inline void CosmeticCorrectionInterface::RTPGetAvr( UInt16Image& avr, const UInt16Image& wrk ) const
@@ -618,7 +619,7 @@ inline void CosmeticCorrectionInterface::RTPGetAvr( UInt16Image& avr, const UInt
    //m.SetCallback( &s );
    //m.Initialize( "<end><cbr>Create average filtered image", 1 );
    Console().Write(String().Format("Create%s average filtered image...<flush>", instance.p_cfa ? " CFA":"" ));
-   ProcessInterface::ProcessEvents();   //for update console output
+   ProcessEvents();   //for update console output
 
    // set the pixel value to ad value of 3x3 arrea around centaral pixel
    avr.Assign( wrk );
@@ -627,7 +628,7 @@ inline void CosmeticCorrectionInterface::RTPGetAvr( UInt16Image& avr, const UInt
 
    //++m;
    Console().WriteLn("done.");
-   ProcessInterface::ProcessEvents();
+   ProcessEvents();
 }
 
 inline int CosmeticCorrectionInterface::RTPGetHotAutoMap( UInt8Image& mapAutoHot, float& hotAutoValue, const UInt16Image& med, const UInt16Image& bkg, const UInt16Image& avr,   const UInt16Image& wrk, const Array<double>& avgDev) const
@@ -2649,4 +2650,4 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CosmeticCorrectionInterface.cpp - Released 2015/11/26 16:00:13 UTC
+// EOF CosmeticCorrectionInterface.cpp - Released 2015/12/18 08:55:08 UTC

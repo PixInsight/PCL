@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0345
+// Standard IntensityTransformations Process Module Version 01.07.01.0351
 // ----------------------------------------------------------------------------
-// STFSliders.cpp - Released 2015/11/26 16:00:13 UTC
+// STFSliders.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -53,21 +53,25 @@
 #include "STFSliders.h"
 #include "ScreenTransferFunctionInterface.h" // for ScreenTransferFunctionInterface::WorkingMode()
 
+#include <pcl/GlobalSettings.h>
 #include <pcl/Graphics.h>
 #include <pcl/Bitmap.h>
 #include <pcl/Vector.h>
+
+#define WHEEL_STEP_ANGLE   PixInsightSettings::GlobalInteger( "ImageWindow/WheelStepAngle" )
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-STFSliders::STFSliders() : Control(),
-channel( 0 ), rgb( true ), m( 0.5F ), c0( 0 ), c1( 1 ), v0( 0 ), v1( 1 ),
-gradient( Bitmap::Null() ),
-beingDragged( -1 ), scrolling( false ), scrollOrigin( 0 ),
-onValueUpdated( 0 ), onValueUpdatedReceiver( 0 ),
-onRangeUpdated( 0 ), onRangeUpdatedReceiver( 0 )
+STFSliders::STFSliders() :
+   Control(),
+   channel( 0 ), rgb( true ), m( 0.5F ), c0( 0 ), c1( 1 ), v0( 0 ), v1( 1 ),
+   gradient( Bitmap::Null() ),
+   beingDragged( -1 ), scrolling( false ), scrollOrigin( 0 ), m_wheelSteps( 0 ),
+   onValueUpdated( 0 ), onValueUpdatedReceiver( 0 ),
+   onRangeUpdated( 0 ), onRangeUpdatedReceiver( 0 )
 {
    OnPaint( (Control::paint_event_handler)&STFSliders::__Paint, *this );
    OnResize( (Control::resize_event_handler)&STFSliders::__Resize, *this );
@@ -408,7 +412,8 @@ void STFSliders::__MouseRelease( Control& sender, const pcl::Point& pos, int but
 
 void STFSliders::__MouseWheel( Control& sender, const pcl::Point& pos, int delta, unsigned buttons, unsigned modifiers )
 {
-   if ( delta != 0 )
+   m_wheelSteps += delta; // delta is rotation angle in 1/8 degree steps
+   if ( Abs( m_wheelSteps ) >= WHEEL_STEP_ANGLE*8 )
    {
       FPoint vz = (delta < 0) ? ZoomInRange( pos.x ) : ZoomOutRange( pos.x );
       if ( vz.x != v0 || vz.y != v1 )
@@ -417,6 +422,7 @@ void STFSliders::__MouseWheel( Control& sender, const pcl::Point& pos, int delta
          if ( onRangeUpdated != 0 )
             (onRangeUpdatedReceiver->*onRangeUpdated)( *this, channel, v0, v1, modifiers );
       }
+      m_wheelSteps = 0;
    }
 }
 
@@ -425,4 +431,4 @@ void STFSliders::__MouseWheel( Control& sender, const pcl::Point& pos, int delta
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF STFSliders.cpp - Released 2015/11/26 16:00:13 UTC
+// EOF STFSliders.cpp - Released 2015/12/18 08:55:08 UTC

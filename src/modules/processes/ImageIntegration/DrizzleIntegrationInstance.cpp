@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.09.04.0312
+// Standard ImageIntegration Process Module Version 01.09.04.0318
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInstance.cpp - Released 2015/11/26 16:00:13 UTC
+// DrizzleIntegrationInstance.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -52,8 +52,6 @@
 
 #include "DrizzleIntegrationInstance.h"
 
-#include "../ImageRegistration/Homography.h"
-
 #include <pcl/DrizzleDataDecoder.h>
 #include <pcl/ErrorHandler.h>
 #include <pcl/FileFormat.h>
@@ -74,27 +72,98 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
+/*
+ * Homography class borrowed from ImageRegistration to fix compilation issue:
+ * http://pixinsight.com/forum/index.php?topic=7936.0
+ *
+ * ### TODO: This is a temporary fix - Must implement this class (improved) as
+ * a public PCL class.
+ */
+class Homography
+{
+public:
+
+   typedef Array<FPoint>   point_list;
+
+   Homography() : H( Matrix::UnitMatrix( 3 ) )
+   {
+   }
+
+   Homography( const Matrix& aH ) : H( aH )
+   {
+   }
+
+   Homography( const Homography& h ) : H( h.H )
+   {
+   }
+
+//    Homography( const point_list& P1, const point_list& P2 ) : H( HomographyDLT( P1, P2 ).H )
+//    {
+//    }
+
+   template <typename T>
+   DPoint operator ()( T x, T y ) const
+   {
+      double w = H[2][0]*x + H[2][1]*y + H[2][2];
+      PCL_CHECK( 1 + w != 1 )
+      return DPoint( (H[0][0]*x + H[0][1]*y + H[0][2])/w,
+                     (H[1][0]*x + H[1][1]*y + H[1][2])/w );
+   }
+
+   template <typename T>
+   DPoint operator ()( const GenericPoint<T>& p ) const
+   {
+      return operator ()( p.x, p.y );
+   }
+
+   Homography Inverse() const
+   {
+      return Homography( H.Inverse() );
+   }
+
+   operator const Matrix&() const
+   {
+      return H;
+   }
+
+   bool IsValid() const
+   {
+      return !H.IsEmpty();
+   }
+
+   void EnsureUnique()
+   {
+      H.EnsureUnique();
+   }
+
+private:
+
+   Matrix H;
+};
+
+// ----------------------------------------------------------------------------
+
 DrizzleIntegrationInstance::DrizzleIntegrationInstance( const MetaProcess* m ) :
-ProcessImplementation( m ),
-p_inputData(),
-p_inputHints(),
-p_inputDirectory(),
-p_scale( TheDZScaleParameter->DefaultValue() ),
-p_dropShrink( TheDZDropShrinkParameter->DefaultValue() ),
-p_enableRejection( TheDZEnableRejectionParameter->DefaultValue() ),
-p_enableImageWeighting( TheDZEnableImageWeightingParameter->DefaultValue() ),
-p_enableSurfaceSplines( TheDZEnableSurfaceSplinesParameter->DefaultValue() ),
-p_useROI( TheDZUseROIParameter->DefaultValue() ),
-p_roi( 0 ),
-p_closePreviousImages( TheDZClosePreviousImagesParameter->DefaultValue() ),
-p_noGUIMessages( TheDZNoGUIMessagesParameter->DefaultValue() ),
-p_onError( DZOnError::Default ),
-o_output()
+   ProcessImplementation( m ),
+   p_inputData(),
+   p_inputHints(),
+   p_inputDirectory(),
+   p_scale( TheDZScaleParameter->DefaultValue() ),
+   p_dropShrink( TheDZDropShrinkParameter->DefaultValue() ),
+   p_enableRejection( TheDZEnableRejectionParameter->DefaultValue() ),
+   p_enableImageWeighting( TheDZEnableImageWeightingParameter->DefaultValue() ),
+   p_enableSurfaceSplines( TheDZEnableSurfaceSplinesParameter->DefaultValue() ),
+   p_useROI( TheDZUseROIParameter->DefaultValue() ),
+   p_roi( 0 ),
+   p_closePreviousImages( TheDZClosePreviousImagesParameter->DefaultValue() ),
+   p_noGUIMessages( TheDZNoGUIMessagesParameter->DefaultValue() ),
+   p_onError( DZOnError::Default ),
+   o_output()
 {
 }
 
 DrizzleIntegrationInstance::DrizzleIntegrationInstance( const DrizzleIntegrationInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
@@ -102,7 +171,7 @@ ProcessImplementation( x )
 void DrizzleIntegrationInstance::Assign( const ProcessImplementation& p )
 {
    const DrizzleIntegrationInstance* x = dynamic_cast<const DrizzleIntegrationInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       p_inputData            = x->p_inputData;
       p_inputHints           = x->p_inputHints;
@@ -188,8 +257,8 @@ private:
       ThreadData( const DrizzleIntegrationEngine& a_engine,
                   const Image& a_source, Image& a_result, Image& a_weight,
                   const StatusMonitor& monitor, size_type count ) :
-      AbstractImage::ThreadData( monitor, count ),
-      engine( a_engine ), source( a_source ), result( a_result ), weight( a_weight )
+         AbstractImage::ThreadData( monitor, count ),
+         engine( a_engine ), source( a_source ), result( a_result ), weight( a_weight )
       {
       }
 
@@ -861,7 +930,7 @@ void DrizzleIntegrationEngine::Perform()
                console.WriteLn();
             }
 
-            ProcessInterface::ProcessEvents();
+            Module->ProcessEvents();
 
             StandardStatus status;
             StatusMonitor monitor;
@@ -1292,169 +1361,7 @@ size_type DrizzleIntegrationInstance::ParameterLength( const MetaParameter* p, s
 
 // ----------------------------------------------------------------------------
 
-// /*
-//  * Tests if a point is Left|On|Right of an infinite line.
-//  * Input:  three points a, b, and c
-//  * Return: > 0 for c left of the line through a and b
-//  *         = 0 for c on the line
-//  *         < 0 for c right of the line
-//  */
-// inline double IsLeftTurn( const DPoint& a, const DPoint& b, const DPoint& c )
-// {
-//    return (b.x - a.x)*(c.y - a.y) - (c.x - a.x)*(b.y - a.y);
-// }
-//
-/*
- * Andrew's monotone chain 2D convex hull algorithm
- * Input:  P = Array of 2D points presorted by increasing x and y coordinates
- * Output: H = Array of the convex hull vertices
- *
- * Adapted from an implementation by Dan Sunday:
- *    http://geomalgorithms.com/a10-_hull-1.html
- * Copyright 2001 softSurfer, 2012 Dan Sunday
- */
-// static void GetConvexHullOfSortedPolygon( Array<DPoint>& H, const Array<DPoint>& P )
-// {
-//    int n = P.Length();
-//
-//    // Get the indices of points with min x-coord and min|max y-coord
-//    int minmin = 0, minmax;
-//    double xmin = P[0].x;
-//    for ( int i = 1; i < n; ++i )
-//       if ( P[i].x != xmin )
-//       {
-//          minmax = i-1;
-//          break;
-//       }
-//    if ( minmax == n-1 ) // degenerate case: all x-coords == xmin
-//    {
-//       H.Append( P[minmin] );
-//       if ( P[minmax].y != P[minmin].y ) // a nontrivial segment
-//          H.Append( P[minmax] );
-//       H.Append( P[minmin] );             // add polygon endpoint
-//       return;
-//    }
-//
-//    // Get the indices of points with max x-coord and min|max y-coord
-//    int maxmin, maxmax = n-1;
-//    double xmax = P[n-1].x;
-//    for ( int i = n-2; i >= 0; --i )
-//       if ( P[i].x != xmax )
-//       {
-//          maxmin = i+1;
-//          break;
-//       }
-//
-//    // the output array H[] will be used as the stack
-//    H = Array<DPoint>( n );
-//    int bot = 0, top = -1; // indices for bottom and top of the stack
-//
-//    // Compute the lower hull on the stack H
-//    H[++top] = P[minmin];      // push minmin point onto stack
-//    for ( int i = minmax; ++i <= maxmin; )
-//    {
-//       // the lower line joins P[minmin] with P[maxmin]
-//       if ( IsLeftTurn( P[minmin], P[maxmin], P[i] ) >= 0 && i < maxmin )
-//          continue;           // ignore P[i] above or on the lower line
-//
-//       while ( top > 0 )         // there are at least 2 points on the stack
-//       {
-//          // test if P[i] is left of the line at the stack top
-//          if ( IsLeftTurn( H[top-1], H[top], P[i]) > 0 )
-//             break;         // P[i] is a new hull vertex
-//          --top;         // pop top point off stack
-//       }
-//       H[++top] = P[i];        // push P[i] onto stack
-//    }
-//
-//    // Next, compute the upper hull on the stack H above the bottom hull
-//    if ( maxmax != maxmin )      // if distinct xmax points
-//       H[++top] = P[maxmax];  // push maxmax point onto stack
-//    bot = top;                  // the bottom point of the upper hull stack
-//    for ( int i = maxmin; --i >= minmax; )
-//    {
-//       // the upper line joins P[maxmax] with P[minmax]
-//       if ( IsLeftTurn( P[maxmax], P[minmax], P[i] ) >= 0 && i > minmax )
-//          continue;           // ignore P[i] below or on the upper line
-//
-//       while ( top > bot )     // at least 2 points on the upper stack
-//       {
-//          // test if P[i] is left of the line at the stack top
-//          if ( IsLeftTurn( H[top-1], H[top], P[i]) > 0 )
-//             break;         // P[i] is a new hull vertex
-//          --top;         // pop top point off stack
-//       }
-//       H[++top] = P[i];        // push P[i] onto stack
-//    }
-//    if ( minmax != minmin )
-//       H[++top] = P[minmin];  // push joining endpoint onto stack
-//
-//    H.Remove( H.At( top+1 ), H.End() );
-// }
-
-/*
- * Adapted from a public-domain function by Darel Rex Finley, 2006
- * http://alienryderflex.com/intersect/
- *
- * Determines the intersection point of the line segment defined by points A and B
- * with the line segment defined by points C and D.
- *
- * Returns true if the intersection point was found, and stores the
- * intersection coordinates in p.
- *
- * Returns false if there is no determinable intersection point, in which case
- * p will be unmodified.
- *
- * Returns false if the segments are collinear, even if they overlap.
- */
-// inline bool GetIntersectionOfLineSegments( DPoint& p, const DPoint& a, const DPoint& b, const DPoint& c, const DPoint& d )
-// {
-//    // Fail if either line segment is zero-length.
-//    if ( a.x == b.x && a.y == b.y || c.x == d.x && c.y == d.y )
-//       return false;
-//
-//    // Fail if the segments share an end-point.
-//    if ( a == c || b == c || a == d || b == d )
-//       return false;
-//
-//    // (1) Translate the system so that point A is at the origin.
-//    DPoint b0 = b - a;
-//    DPoint c0 = c - a;
-//    DPoint d0 = d - a;
-//
-//    // Discover the length of segment A-B.
-//    double r = Sqrt( b0.x*b0.x + b0.y*b0.y );
-//
-//    // (2) Rotate the system so that point B is on the positive X axis.
-//    double theCos = b0.x/r;
-//    double theSin = b0.y/r;
-//    double newX = c0.x*theCos + c0.y*theSin;
-//    c0.y = c0.y*theCos - c0.x*theSin;
-//    c0.x = newX;
-//    newX = d0.x*theCos + d0.y*theSin;
-//    d0.y = d0.y*theCos - d0.x*theSin;
-//    d0.x = newX;
-//
-//    //  Fail if segment C-D doesn't cross line A-B.
-//    if ( c0.y < 0 && d0.y < 0 || c0.y >= 0 && d0.y >= 0 )
-//       return false;
-//
-//    // (3) Discover the position of the intersection point along line A-B.
-//    double abPos = d0.x + (c0.x - d0.x)*d0.y/(d0.y - c0.y);
-//
-//    // Fail if segment C-D crosses line A-B outside of segment A-B.
-//    if ( abPos < 0 || abPos > r )
-//       return false;
-//
-//    // (4) Apply the discovered position to line A-B in the original coordinate system.
-//    p.x = a.x + abPos*theCos;
-//    p.y = a.y + abPos*theSin;
-//    return true;
-// }
-
-// ----------------------------------------------------------------------------
-
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInstance.cpp - Released 2015/11/26 16:00:13 UTC
+// EOF DrizzleIntegrationInstance.cpp - Released 2015/12/18 08:55:08 UTC

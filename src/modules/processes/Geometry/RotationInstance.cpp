@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0304
+// Standard Geometry Process Module Version 01.01.00.0310
 // ----------------------------------------------------------------------------
-// RotationInstance.cpp - Released 2015/11/26 16:00:12 UTC
+// RotationInstance.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -251,4 +251,4 @@ void* RotationInstance::LockParameter( const MetaParameter* p, size_type /*table
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RotationInstance.cpp - Released 2015/11/26 16:00:12 UTC
+// EOF RotationInstance.cpp - Released 2015/12/18 08:55:08 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/GlobalSettings.h - Released 2015/11/26 15:59:39 UTC
+// pcl/GlobalSettings.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -172,7 +172,9 @@ namespace GlobalVariableType
  * <tr><td>ImageWindow/TouchEvents</td>                               <td></td></tr>
  * <tr><td>ImageWindow/FastScreenRenditions</td>                      <td></td></tr>
  * <tr><td>ImageWindow/HighDPIRenditions</td>                         <td></td></tr>
- * <tr><td>ImageWindow/Default20BitScreenLUT</td>                     <td></td></tr>
+ * <tr><td>ImageWindow/Default24BitScreenLUT</td>                     <td></td></tr>
+ * <tr><td>ImageWindow/CreatePreviewsFromCoreProperties</td>          <td></td></tr>
+ *
  * <tr><td>Process/EnableParallelProcessing</td>                      <td></td></tr>
  * <tr><td>Process/EnableParallelCoreRendering</td>                   <td></td></tr>
  * <tr><td>Process/EnableParallelCoreColorManagement</td>             <td></td></tr>
@@ -199,6 +201,7 @@ namespace GlobalVariableType
  * <tr><td>ImageWindow/DefaultMaskMode</td>                           <td>See the pcl::MaskMode namespace.</td></tr>
  * <tr><td>ImageWindow/DefaultTransparencyMode</td>                   <td>See the pcl::TransparencyMode namespace.</td></tr>
  * <tr><td>ImageWindow/CursorTolerance</td>                           <td>In device pixels.</td></tr>
+ * <tr><td>ImageWindow/WheelStepAngle</td>                            <td>In degrees.</td></tr>
  * <tr><td>ImageWindow/FastScreenRenditionThreshold</td>              <td>In MiB.</td></tr>
  * <tr><td>ImageWindow/ImageThumbnailSize</td>                        <td>In pixels</td></tr>
  * <tr><td>ImageWindow/ProjectThumbnailSize</td>                      <td>In pixels</td></tr>
@@ -442,4 +445,4 @@ private:
 #endif   // __PCL_GlobalSettings_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/GlobalSettings.h - Released 2015/11/26 15:59:39 UTC
+// EOF pcl/GlobalSettings.h - Released 2015/12/17 18:52:09 UTC

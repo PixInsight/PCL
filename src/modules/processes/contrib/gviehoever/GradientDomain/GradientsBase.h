@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard GradientDomain Process Module Version 00.06.04.0155
+// Standard GradientDomain Process Module Version 00.06.04.0161
 // ----------------------------------------------------------------------------
-// GradientsBase.h - Released 2015/11/26 16:00:13 UTC
+// GradientsBase.h - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard GradientDomain PixInsight module.
 //
@@ -218,4 +218,4 @@ class GradientsBase
 #endif
 
 // ----------------------------------------------------------------------------
-// EOF GradientsBase.h - Released 2015/11/26 16:00:13 UTC
+// EOF GradientsBase.h - Released 2015/12/18 08:55:08 UTC

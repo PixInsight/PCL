@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0288
+// Standard ColorSpaces Process Module Version 01.01.00.0294
 // ----------------------------------------------------------------------------
-// LRGBCombinationInterface.h - Released 2015/11/26 16:00:12 UTC
+// LRGBCombinationInterface.h - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
@@ -197,4 +197,4 @@ PCL_END_LOCAL
 #endif   // __LRGBCombinationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF LRGBCombinationInterface.h - Released 2015/11/26 16:00:12 UTC
+// EOF LRGBCombinationInterface.h - Released 2015/12/18 08:55:08 UTC

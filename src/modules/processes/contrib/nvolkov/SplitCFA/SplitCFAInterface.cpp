@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0775
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard SplitCFA Process Module Version 01.00.05.0094
+// Standard SplitCFA Process Module Version 01.00.05.0100
 // ----------------------------------------------------------------------------
-// SplitCFAInterface.cpp - Released 2015/11/26 16:00:13 UTC
+// SplitCFAInterface.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard SplitCFA PixInsight module.
 //
@@ -58,7 +58,6 @@
 #include <pcl/FileDialog.h>
 #include <pcl/FileFormat.h>
 #include <pcl/FileFormatInstance.h>
-//#include <pcl/Graphics.h>
 #include <pcl/StdStatus.h>
 
 #define IMAGELIST_MINHEIGHT( fnt )  RoundInt( 8.125*fnt.Height() )
@@ -317,7 +316,7 @@ void SplitCFAInterface::AddFile(const String& path, const String& folder )
    {
       Console().WriteLn( "AddFile: " + path);
 
-      ProcessInterface::ProcessEvents();
+      ProcessEvents();
       // insert the file to list
       String f;
       if(!folder.IsEmpty())
@@ -326,14 +325,14 @@ void SplitCFAInterface::AddFile(const String& path, const String& folder )
          #if debug
             Console().WriteLn( "intut TopFolder:" + folder );
             Console().WriteLn( "input FileFolder:" + f );
-            ProcessInterface::ProcessEvents();
+            ProcessEvents();
          #endif
          f.DeleteLeft(folder.Length());
       }
 
       #if debug
          Console().WriteLn( "output subfolder:" + f );
-         ProcessInterface::ProcessEvents();
+         ProcessEvents();
       #endif
 
       m_instance.p_targetFrames.Add( SplitCFAInstance::ImageItem( path, f ) );
@@ -744,4 +743,4 @@ SplitCFAInterface::GUIData::GUIData( SplitCFAInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SplitCFAInterface.cpp - Released 2015/11/26 16:00:13 UTC
+// EOF SplitCFAInterface.cpp - Released 2015/12/18 08:55:08 UTC

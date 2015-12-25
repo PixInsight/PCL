@@ -77,6 +77,9 @@ namespace pcl {
 	}
 
 	String PropertyUtils::getFormattedNumber(String numberStr, IsoString numberFormat){
+		if (numberStr.IsEmpty())
+			return numberStr;
+
 		size_t im = numberFormat.Find('m');
 		if (im!=String::notFound){
 			numberFormat.DeleteRight(im);

@@ -166,6 +166,9 @@ String SwitchProperty::getElementValue(size_t i) {
 
 
  void NumberProperty::addElement(IsoString elementName, IsoString value){
+	 if (value.IsEmpty()){
+		 return;
+	 }
 	 INumber* np = ((INumberVectorProperty*) m_property->getProperty())->np;
 	 int nnp = ((INumberVectorProperty*) m_property->getProperty())->nnp;
 	 np = (INumber*) realloc(np, (nnp+1) * sizeof(INumber));

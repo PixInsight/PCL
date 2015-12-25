@@ -390,6 +390,10 @@ bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
 			result.Element=element;
 			if (iter->PropertyTypeStr==String("INDI_NUMBER") && formatted){
 				result.PropertyValue=PropertyUtils::getFormattedNumber( iter->PropertyValue, IsoString( iter->PropertyNumberFormat ) );
+				if (result.PropertyValue.IsEmpty()){
+					// invalid property value
+					return false;
+				}
 			} else {
 				result.PropertyValue=iter->PropertyValue;
 			}

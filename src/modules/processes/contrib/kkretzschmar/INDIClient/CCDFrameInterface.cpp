@@ -89,6 +89,7 @@ CCDFrameInterface::CCDFrameInterface() :
    m_FrameFolder = "./";
    m_FramePrefix = "Image";
    m_isWaiting = false;
+   m_timeoutCounter = 0;
 }
 
 CCDFrameInterface::~CCDFrameInterface()
@@ -583,8 +584,13 @@ void CCDFrameInterface::ExposureDuration_Timer( Timer &sender )
    if ( sender == GUI->ExposureDuration_Timer )
    {
       GUI->ExpDur_Edit.SetText( String( sender.Count() ) );
-      if ( sender.Count()*sender.Interval() >= GUI->ExpTime_NumericEdit.Value() )
+      // increase timeout counter
+      m_timeoutCounter++;
+      if ( sender.Count()*sender.Interval() >= GUI->ExpTime_NumericEdit.Value() ){
          GUI->ExposureDuration_Timer.Stop();
+         // reset timeout counter
+         m_timeoutCounter=0;
+      }
    }
 }
 
@@ -961,15 +967,18 @@ void CCDFrameInterface::StartExposureButton_Click( Button& sender, bool checked 
             // timing problem: wait until server sends BUSY
             do
             {
-               instance.getINDIPropertyItem( m_Device, "CCD_EXPOSURE", "CCD_EXPOSURE_VALUE", ccdExposure );
+               if (instance.getINDIPropertyItem( m_Device, "CCD_EXPOSURE", "CCD_EXPOSURE_VALUE", ccdExposure, false)){
+            	   serverExposureIsBusy = ccdExposure.PropertyState == IPS_BUSY ;
+               }
                ProcessEvents();
-               serverExposureIsBusy = ccdExposure.PropertyState == IPS_BUSY ;
-            }
-            while ( !serverExposureIsBusy && (GUI->ExpDur_Edit.Text().ToFloat() < pcl_timeout) && !instance.getInternalAbortFlag() );
 
+            }
+            while ( !serverExposureIsBusy && (m_timeoutCounter < pcl_timeout) && !instance.getInternalAbortFlag() );
+
+            // start exposure
             do
             {
-               instance.getINDIPropertyItem( m_Device, "CCD_EXPOSURE", "CCD_EXPOSURE_VALUE", ccdExposure );
+               instance.getINDIPropertyItem( m_Device, "CCD_EXPOSURE", "CCD_EXPOSURE_VALUE", ccdExposure, false);
                ProcessEvents();
             }
             while ( ccdExposure.PropertyState == IPS_BUSY && !instance.getInternalAbortFlag() );

@@ -195,7 +195,7 @@ bool INDIDeviceControllerInstance::sendNewPropertyValue(const INDINewPropertyLis
 }
 
 bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
-	//Precondition: NewPropertyList contains ony elements of the same property
+	//Precondition: NewPropertyList contains only elements of the same property
 	String deviceStr;
 	String propertyStr;
 	String propertyTypeStr;
@@ -203,8 +203,7 @@ bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
 	bool firstTime=true;
 	INumberVectorProperty * numberVecProp=NULL;
     ITextVectorProperty * textVecProp=NULL;
-    ISwitchVectorProperty * switchVecProp=NULL;;
-//    ILightVectorProperty * lightVecProp=NULL;
+    ISwitchVectorProperty * switchVecProp=NULL;
 
 	if (p_newPropertyList.IsEmpty())
 		return false; //Nothing to do
@@ -318,53 +317,35 @@ bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
 	// send new properties to server and wait for response
 	if (switchVecProp){
 		indiClient.get()->sendNewSwitch(switchVecProp);
-		if (switchVecProp!=NULL){
-			while (switchVecProp->s!=IPS_OK && switchVecProp->s!=IPS_IDLE &&  !p_doAbort && !m_internalAbortFlag && !isAsynchCall){
-				if (switchVecProp->s==IPS_ALERT){
-					writeCurrentMessageToConsole();
-					m_internalAbortFlag=false;
-					return false;
-				}
+		// if synch mode wait until completed or abort
+		while (switchVecProp->s!=IPS_OK && switchVecProp->s!=IPS_IDLE &&  !p_doAbort && !m_internalAbortFlag && !isAsynchCall){
+			if (switchVecProp->s==IPS_ALERT){
+				writeCurrentMessageToConsole();
+				m_internalAbortFlag=false;
+				return false;
 			}
-
-		}else{
-		  Console().WriteLn(String().Format("Could not get property value from server. Please check that INDI device %s is connected.",IsoString(deviceStr).c_str()));
-		  return false;
 		}
-
 	}
 	else if (numberVecProp){
 		indiClient.get()->sendNewNumber(numberVecProp);
-		// wait until completed or abort
-		if (numberVecProp!=NULL){
-			while (numberVecProp->s!=IPS_OK && numberVecProp->s!=IPS_IDLE && !p_doAbort && !m_internalAbortFlag && !isAsynchCall){
-				if (numberVecProp->s==IPS_ALERT){
-					writeCurrentMessageToConsole();
-					m_internalAbortFlag=false;
-					return false;
-				}
+		// if synch mode wait until completed or abort
+		while (numberVecProp->s != IPS_OK && numberVecProp->s != IPS_IDLE && !p_doAbort && !m_internalAbortFlag && !isAsynchCall) {
+			if (numberVecProp->s == IPS_ALERT) {
+				writeCurrentMessageToConsole();
+				m_internalAbortFlag = false;
+				return false;
 			}
-
-		}else{
-			Console().WriteLn(String().Format("Could not get property value from server. Please check that INDI device %s is connected.",IsoString(deviceStr).c_str()));
-			return false;
 		}
 	}
-	else if (textVecProp){
+	else if (textVecProp) {
 		indiClient.get()->sendNewText(textVecProp);
-		// wait until completed or abort
-		if (textVecProp!=NULL){
-			while (textVecProp->s!=IPS_OK && textVecProp->s!=IPS_IDLE && !p_doAbort && !m_internalAbortFlag && !isAsynchCall){
-				if (textVecProp->s==IPS_ALERT){
-					writeCurrentMessageToConsole();
-					m_internalAbortFlag=false;
-					return false;
-				}
+		// if synch mode wait until completed or abort
+		while (textVecProp->s != IPS_OK && textVecProp->s != IPS_IDLE && !p_doAbort && !m_internalAbortFlag && !isAsynchCall) {
+			if (textVecProp->s == IPS_ALERT) {
+				writeCurrentMessageToConsole();
+				m_internalAbortFlag = false;
+				return false;
 			}
-
-		}else{
-			Console().WriteLn(String().Format("Could not get property value from server. Please check that INDI device %s is connected.",IsoString(deviceStr).c_str()));
-			return false;
 		}
 	}
 	else {
@@ -390,7 +371,7 @@ bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
 			result.Element=element;
 			if (iter->PropertyTypeStr==String("INDI_NUMBER") && formatted){
 				result.PropertyValue=PropertyUtils::getFormattedNumber( iter->PropertyValue, IsoString( iter->PropertyNumberFormat ) );
-				if (result.PropertyValue.IsEmpty()){
+				if (result.PropertyValue.IsEmpty()) {
 					// invalid property value
 					return false;
 				}

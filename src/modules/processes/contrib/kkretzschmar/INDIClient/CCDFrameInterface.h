@@ -206,6 +206,7 @@ public:
    //INDINewPropertyListItem m_newPropertyListItem;
    String                  m_Device;
    double                  m_ExposureDuration;
+   int 				   	   m_timeoutCounter;
    int                     m_NumOfExposures;
    double                  m_Temperature;
    String                  m_FrameFolder;

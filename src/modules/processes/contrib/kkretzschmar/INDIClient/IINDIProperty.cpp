@@ -174,7 +174,7 @@ String SwitchProperty::getElementValue(size_t i) {
 	 np = (INumber*) realloc(np, (nnp+1) * sizeof(INumber));
 	 CHECK_POINTER(np);
 	 strcpy(np->name, elementName.c_str());
-	 np->value = value.ToDouble();
+	 value.TryToDouble(np->value);
 	 np->nvp=(INumberVectorProperty*) m_property->getProperty();
 	 ((INumberVectorProperty*) m_property->getProperty())->nnp++;
 	 ((INumberVectorProperty*) m_property->getProperty())->np = np;

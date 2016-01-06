@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.03.0064
+// Standard XISF File Format Module Version 01.00.05.0101
 // ----------------------------------------------------------------------------
-// XISFPreferencesDialog.cpp - Released 2015/10/08 11:24:33 UTC
+// XISFPreferencesDialog.cpp - Released 2015/12/18 08:55:16 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
@@ -200,7 +200,7 @@ XISFPreferencesDialog::XISFPreferencesDialog( const XISFFormat::EmbeddingOverrid
    RGBWorkingSpace_Sizer.Add( RGBWorkingSpace_CheckBox );
    RGBWorkingSpace_Sizer.AddStretch();
 
-   Thumbnail_CheckBox.SetText( "Thumbnail Image" );
+   Thumbnail_CheckBox.SetText( "Thumbnail image" );
    Thumbnail_CheckBox.SetTristateMode();
    Thumbnail_CheckBox.SetToolTip( "<p>Override global core application settings for embedded thumbnails.</p>" );
    Thumbnail_CheckBox.SetState( overrides.overrideThumbnailEmbedding ?
@@ -210,6 +210,16 @@ XISFPreferencesDialog::XISFPreferencesDialog( const XISFFormat::EmbeddingOverrid
    Thumbnail_Sizer.Add( Thumbnail_CheckBox );
    Thumbnail_Sizer.AddStretch();
 
+   PreviewRects_CheckBox.SetText( "Preview rectangles" );
+   PreviewRects_CheckBox.SetTristateMode();
+   PreviewRects_CheckBox.SetToolTip( "<p>Override global core application settings for embedded preview rectangles.</p>" );
+   PreviewRects_CheckBox.SetState( overrides.overridePreviewRectsEmbedding ?
+      (overrides.embedPreviewRects ? CheckState::Checked : CheckState::Unchecked) : CheckState::ThirdState );
+
+   PreviewRects_Sizer.AddUnscaledSpacing( m_labelWidth + ui4 );
+   PreviewRects_Sizer.Add( PreviewRects_CheckBox );
+   PreviewRects_Sizer.AddStretch();
+
    EmbeddedData_Sizer.SetMargin( 8 );
    EmbeddedData_Sizer.SetSpacing( 4 );
    EmbeddedData_Sizer.Add( Properties_Sizer );
@@ -217,6 +227,7 @@ XISFPreferencesDialog::XISFPreferencesDialog( const XISFFormat::EmbeddingOverrid
    EmbeddedData_Sizer.Add( DisplayFunction_Sizer );
    EmbeddedData_Sizer.Add( RGBWorkingSpace_Sizer );
    EmbeddedData_Sizer.Add( Thumbnail_Sizer );
+   EmbeddedData_Sizer.Add( PreviewRects_Sizer );
 
    EmbeddedData_GroupBox.SetTitle( "Override Embedding Settings" );
    EmbeddedData_GroupBox.SetSizer( EmbeddedData_Sizer );
@@ -271,6 +282,10 @@ void XISFPreferencesDialog::Button_Click( Button& sender, bool checked )
       CompressionLevel_SpinBox.SetValue( defaultOptions.compressionLevel );
       CompressionShuffle_CheckBox.SetChecked( options.compressionMethod == XISF_COMPRESSION_NONE ||
                                               XISFEngineBase::CompressionUsesByteShuffle( options.compressionMethod ) );
+      DataCompression_GroupBox.SetChecked( options.compressionMethod != XISF_COMPRESSION_NONE );
+
+      Checksums_ComboBox.SetCurrentItem( ChecksumMethodToComboBoxItem( defaultOptions.checksumMethod ) );
+      Security_GroupBox.SetChecked( options.checksumMethod != XISF_CHECKSUM_NONE );
 
       AlignmentSize_SpinBox.SetValue( defaultOptions.blockAlignmentSize );
       MaxInlineSize_SpinBox.SetValue( defaultOptions.maxInlineBlockSize );
@@ -300,6 +315,9 @@ void XISFPreferencesDialog::Dialog_Return( Dialog& sender, int retVal )
       overrides.overrideThumbnailEmbedding = Thumbnail_CheckBox.State() != CheckState::ThirdState;
       overrides.embedThumbnails = Thumbnail_CheckBox.IsChecked();
 
+      overrides.overridePreviewRectsEmbedding = PreviewRects_CheckBox.State() != CheckState::ThirdState;
+      overrides.embedPreviewRects = PreviewRects_CheckBox.IsChecked();
+
       options.storeFITSKeywords = StoreFITSKeywords_CheckBox.IsChecked();
       options.ignoreFITSKeywords = IgnoreFITSKeywords_CheckBox.IsChecked();
       options.importFITSKeywords = ImportFITSKeywords_CheckBox.IsChecked();
@@ -316,4 +334,4 @@ void XISFPreferencesDialog::Dialog_Return( Dialog& sender, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISFPreferencesDialog.cpp - Released 2015/10/08 11:24:33 UTC
+// EOF XISFPreferencesDialog.cpp - Released 2015/12/18 08:55:16 UTC

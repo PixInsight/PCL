@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard Blink Process Module Version 01.02.01.0174
+// Standard Blink Process Module Version 01.02.01.0211
 // ----------------------------------------------------------------------------
-// BlinkVideoDialog.cpp - Released 2015/10/08 11:24:40 UTC
+// BlinkVideoDialog.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
@@ -56,7 +56,6 @@
 
 #include <pcl/Console.h>
 #include <pcl/MessageBox.h>
-#include <pcl/MetaModule.h> // for ProcessEvents()
 #include <pcl/StdStatus.h>
 #include <pcl/FileFormat.h>
 
@@ -132,7 +131,7 @@ inline void BlinkVideoDialog::DeleteFrames()
          }
       }
 
-      Module->ProcessEvents();
+      ProcessEvents();
    }
 }
 
@@ -214,7 +213,7 @@ void BlinkVideoDialog::CreateFrames()
 
       ++m_frameCount;
 
-      Module->ProcessEvents();
+      ProcessEvents();
    }
 
    Console().WriteLn( String().Format( "<end><cbr><br>* %i video frames written to:", m_frameCount ) );
@@ -366,7 +365,7 @@ void BlinkVideoDialog::AddLog( const String& s )
 {
    StdOut_TextBox.Insert( "<end><raw>" + s + "</raw><flush>" );
    StdOut_TextBox.Focus();
-   Module->ProcessEvents();
+   ProcessEvents();
 }
 
 void BlinkVideoDialog::__Process_Finished( ExternalProcess& p, int exitCode, bool exitOk )
@@ -636,4 +635,4 @@ BlinkVideoDialog::BlinkVideoDialog( BlinkInterface* parent ) :
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BlinkVideoDialog.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF BlinkVideoDialog.cpp - Released 2015/12/18 08:55:08 UTC

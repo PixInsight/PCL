@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.06.0288
+// Standard Global Process Module Version 01.02.07.0324
 // ----------------------------------------------------------------------------
-// PreferencesParameters.cpp - Released 2015/10/08 11:24:39 UTC
+// PreferencesParameters.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -92,10 +92,12 @@ IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  hoverableAutoHideWindows )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  desktopSettingsAware )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  nativeMenuBar )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  capitalizedMenuBars )
+IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  windowButtonsOnTheLeft )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  translucentWindows )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  translucentChildWindows )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  fadeWindows )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  fadeAutoHideWindows )
+IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  translucentAutoHideWindows )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  fadeWorkspaces )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  fadeMenu )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( MainWindow,  fadeToolTip )
@@ -124,13 +126,16 @@ IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, nativeFileDialogs )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, rememberFileOpenType )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, rememberFileSaveType )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, strictFileSaveMode )
+IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, fileFormatWarnings )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, useFileNamesAsImageIdentifiers )
 IMPLEMENT_INT32_METAPARAMETER   ( ImageWindow, cursorTolerance )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, touchEvents )
 IMPLEMENT_DOUBLE_METAPARAMETER  ( ImageWindow, pinchSensitivity )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, fastScreenRenditions )
 IMPLEMENT_INT32_METAPARAMETER   ( ImageWindow, fastScreenRenditionThreshold )
+IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, highDPIRenditions );
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, default24BitScreenLUT )
+IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, createPreviewsFromCoreProperties )
 IMPLEMENT_TABLE_METAPARAMETER   ( ImageWindow, swapDirectories )
 IMPLEMENT_ROW_STRING_METAPARAMETER( ImageWindow, swapDirectory )
 IMPLEMENT_BOOLEAN_METAPARAMETER ( ImageWindow, swapCompression )
@@ -183,4 +188,4 @@ IMPLEMENT_BOOLEAN_METAPARAMETER ( Process, alertOnProcessCompleted )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesParameters.cpp - Released 2015/10/08 11:24:39 UTC
+// EOF PreferencesParameters.cpp - Released 2015/12/18 08:55:08 UTC

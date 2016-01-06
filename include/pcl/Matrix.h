@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/Matrix.h - Released 2015/10/08 11:24:12 UTC
+// pcl/Matrix.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -647,6 +647,139 @@ public:
    }
 
 #undef IMPLEMENT_SCALAR_ASSIGN_OP
+
+#ifndef __PCL_NO_MATRIX_ELEMENT_WISE_ARITHMETIC_OPERATIONS
+
+#define IMPLEMENT_ELEMENT_WISE_ASSIGN_OP( op )                                            \
+      if ( IsUnique() )                                                                   \
+      {                                                                                   \
+               block_iterator a = m_data->Begin();                                        \
+         const_block_iterator b = pcl::Min( m_data->End(), a + x.NumberOfElements() );    \
+         const_block_iterator c = x.m_data->Begin();                                      \
+         for ( ; a < b; ++a, ++c )                                                        \
+            *a op##= *c;                                                                  \
+      }                                                                                   \
+      else                                                                                \
+      {                                                                                   \
+         Data* newData = new Data( m_data->Rows(), m_data->Cols() );                      \
+               block_iterator a = newData->Begin();                                       \
+         const_block_iterator b = pcl::Min( newData->End(), a + x.NumberOfElements() );   \
+         const_block_iterator c = m_data->Begin();                                        \
+         const_block_iterator d = x.m_data->Begin();                                      \
+         for ( ; a < b; ++a, ++c, ++d )                                                   \
+            *a = *c op *d;                                                                \
+         DetachFromData();                                                                \
+         m_data = newData;                                                                \
+      }                                                                                   \
+      return *this;
+
+   /*!
+    * Performs the element-wise addition of a matrix \a x to this matrix.
+    * Returns a reference to this object.
+    *
+    * The specified operand matrix \a x should have at least the same number of
+    * elements as this matrix. Otherwise the operation will be aborted upon
+    * reaching the end of the operand matrix, but no exception will be thrown.
+    *
+    * This function ensures that this instance uniquely references its matrix
+    * data before the element-wise addition operation, generating a duplicate
+    * if necessary.
+    */
+   GenericMatrix& operator +=( const GenericMatrix& x )
+   {
+      IMPLEMENT_ELEMENT_WISE_ASSIGN_OP( + )
+   }
+
+   /*!
+    * Performs the element-wise subtraction of a matrix \a x to this matrix.
+    * Returns a reference to this object.
+    *
+    * The specified operand matrix \a x should have at least the same number of
+    * elements as this matrix. Otherwise the operation will be aborted upon
+    * reaching the end of the operand matrix, but no exception will be thrown.
+    *
+    * This function ensures that this instance uniquely references its matrix
+    * data before the element-wise subtraction operation, generating a
+    * duplicate if necessary.
+    */
+   GenericMatrix& operator -=( const GenericMatrix& x )
+   {
+      IMPLEMENT_ELEMENT_WISE_ASSIGN_OP( - )
+   }
+
+   /*!
+    * Performs the element-wise multiplication of a matrix \a x with this
+    * matrix. Returns a reference to this object.
+    *
+    * The specified operand matrix \a x should have at least the same number of
+    * elements as this matrix. Otherwise the operation will be aborted upon
+    * reaching the end of the operand matrix, but no exception will be thrown.
+    *
+    * This function ensures that this instance uniquely references its matrix
+    * data before the element-wise multiplication operation, generating a
+    * duplicate if necessary.
+    */
+   GenericMatrix& operator *=( const GenericMatrix& x )
+   {
+      IMPLEMENT_ELEMENT_WISE_ASSIGN_OP( * )
+   }
+
+   /*!
+    * Performs the element-wise division of this matrix by a matrix \a x.
+    * Returns a reference to this object.
+    *
+    * The specified operand matrix \a x should have at least the same number of
+    * elements as this matrix. Otherwise the operation will be aborted upon
+    * reaching the end of the operand matrix, but no exception will be thrown.
+    *
+    * This function ensures that this instance uniquely references its matrix
+    * data before the element-wise division operation, generating a duplicate
+    * if necessary.
+    */
+   GenericMatrix& operator /=( const GenericMatrix& x )
+   {
+      IMPLEMENT_ELEMENT_WISE_ASSIGN_OP( / )
+   }
+
+   /*!
+    * Performs the element-wise exponentiation of this matrix by a matrix \a x.
+    * Returns a reference to this object.
+    *
+    * The specified matrix \a x must have at least the same number of elements
+    * as this matrix. Otherwise an Error exception will be thrown.
+    *
+    * This function ensures that this instance uniquely references its matrix
+    * data before the element-wise raise operation, generating a duplicate if
+    * necessary.
+    */
+   GenericMatrix& operator ^=( const GenericMatrix& x )
+   {
+      if ( IsUnique() )
+      {
+               block_iterator a = m_data->Begin();
+         const_block_iterator b = pcl::Min( m_data->End(), a + x.NumberOfElements() );
+         const_block_iterator c = x.m_data->Begin();
+         for ( ; a < b; ++a, ++c )
+            *a = pcl::Pow( *a, *c );
+      }
+      else
+      {
+         Data* newData = new Data( m_data->Rows(), m_data->Cols() );
+               block_iterator a = newData->Begin();
+         const_block_iterator b = pcl::Min( newData->End(), a + x.NumberOfElements() );
+         const_block_iterator c = m_data->Begin();
+         const_block_iterator d = x.m_data->Begin();
+         for ( ; a < b; ++a, ++c, ++d )
+            *a = pcl::Pow( *c, *d );
+         DetachFromData();
+         m_data = newData;
+      }
+      return *this;
+   }
+
+#undef IMPLEMENT_ELEMENT_WISE_ASSIGN_OP
+
+#endif   // __PCL_NO_MATRIX_ELEMENT_WISE_ARITHMETIC_OPERATIONS
 
    /*!
     * Returns the square of this matrix. The result is a new matrix of the same
@@ -3010,4 +3143,4 @@ typedef GenericMatrix<Complex64>    C64Matrix;
 #endif   // __PCL_Matrix_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Matrix.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/Matrix.h - Released 2015/12/17 18:52:09 UTC

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard CosmeticCorrection Process Module Version 01.02.05.0109
+// Standard CosmeticCorrection Process Module Version 01.02.05.0145
 // ----------------------------------------------------------------------------
-// CosmeticCorrectionInstance.cpp - Released 2015/10/08 11:24:40 UTC
+// CosmeticCorrectionInstance.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard CosmeticCorrection PixInsight module.
 //
@@ -845,7 +845,7 @@ namespace pcl
                 Module->ProcessEvents(); /* ### */
                 if (m_geometry.IsRect() && (target->Bounds() != m_geometry))
                 {
-                    throw Error("Image and MasterDark geometry is not equal.");
+                    throw Error("Image and MasterDark geometries are not equal.");
                 }
                 FileData* inputData = new FileData(file, images[index].options);
                 threads.Add(new CCThread(target, inputData, filePath, index, threadData, this));
@@ -1261,4 +1261,4 @@ namespace pcl
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CosmeticCorrectionInstance.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF CosmeticCorrectionInstance.cpp - Released 2015/12/18 08:55:08 UTC

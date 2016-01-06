@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard FITS File Format Module Version 01.01.02.0314
+// Standard FITS File Format Module Version 01.01.03.0349
 // ----------------------------------------------------------------------------
-// FITSFormat.h - Released 2015/10/08 11:24:33 UTC
+// FITSFormat.h - Released 2015/12/18 08:55:16 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
@@ -77,6 +77,7 @@ public:
 
    virtual String Description() const;
    virtual String Implementation() const;
+   virtual String Status() const;
 
    virtual String IconImageFile() const;
 
@@ -94,6 +95,7 @@ public:
    virtual bool SupportsMultipleImages() const;
    virtual bool CanEditPreferences() const;
    virtual bool UsesFormatSpecificData() const;
+   virtual bool IsDeprecated() const;
 
    virtual bool ValidateFormatSpecificData( const void* data ) const;
    virtual void DisposeFormatSpecificData( void* data ) const;
@@ -169,4 +171,4 @@ public:
 #endif   // __FITSFormat_h
 
 // ----------------------------------------------------------------------------
-// EOF FITSFormat.h - Released 2015/10/08 11:24:33 UTC
+// EOF FITSFormat.h - Released 2015/12/18 08:55:16 UTC

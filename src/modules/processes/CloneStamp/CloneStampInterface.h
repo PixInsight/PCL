@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard CloneStamp Process Module Version 01.00.02.0246
+// Standard CloneStamp Process Module Version 01.00.02.0282
 // ----------------------------------------------------------------------------
-// CloneStampInterface.h - Released 2015/10/08 11:24:39 UTC
+// CloneStampInterface.h - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard CloneStamp PixInsight module.
 //
@@ -112,7 +112,7 @@ public:
    virtual bool DynamicKeyRelease( View& v, int key, unsigned modifiers );
 
    virtual bool RequiresDynamicUpdate( const View&, const DRect& ) const;
-   virtual void DynamicPaint( const View&, Graphics&, const DRect& ) const;
+   virtual void DynamicPaint( const View&, VectorGraphics&, const DRect& ) const;
 
    virtual void SaveSettings() const;
    virtual void LoadSettings();
@@ -303,4 +303,4 @@ PCL_END_LOCAL
 #endif   // __CloneStampInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF CloneStampInterface.h - Released 2015/10/08 11:24:39 UTC
+// EOF CloneStampInterface.h - Released 2015/12/18 08:55:08 UTC

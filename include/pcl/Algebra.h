@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/Algebra.h - Released 2015/10/08 11:24:12 UTC
+// pcl/Algebra.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -296,16 +296,31 @@ public:
     */
    int IndexOfLargestSingularValue() const
    {
-      return int( MaxItem( W.Begin(), W.End() ) - W.Begin() );
+      return W.IndexOfLargestComponent();
    }
 
    /*!
     * Returns the column index of the smallest eigenvector in matrix V. This is
-    * the index of the smallest component of vector W.
+    * the index of the smallest nonzero component of vector W.
+    *
+    * Before calling this function, you should edit the components of vector W
+    * to set to zero all singular values below a suitable tolerance. For
+    * example, using the machine epsilon:
+    *
+    * \code
+    * Matrix A;
+    * ...
+    * InPlaceSVD svd( A );
+    * for ( int i = 0; i < svd.W.Length(); ++i )
+    *    if ( 1 + svd.W[i] == 1 )
+    *       svd.W[i] = 0;
+    * int i = svd.IndexOfSmallestSingularValue();
+    * ...
+    * \endcode
     */
    int IndexOfSmallestSingularValue() const
    {
-      return int( MinItem( W.Begin(), W.End() ) - W.Begin() );
+      return W.IndexOfSmallestNonzeroComponent();
    }
 };
 
@@ -502,16 +517,31 @@ public:
     */
    int IndexOfLargestSingularValue() const
    {
-      return int( MaxItem( W.Begin(), W.End() ) - W.Begin() );
+      return W.IndexOfLargestComponent();
    }
 
    /*!
     * Returns the column index of the smallest eigenvector in matrix V. This is
-    * the index of the smallest component of vector W.
+    * the index of the smallest nonzero component of vector W.
+    *
+    * Before calling this function, you should edit the components of vector W
+    * to set to zero all singular values below a suitable tolerance. For
+    * example, using the machine epsilon:
+    *
+    * \code
+    * Matrix A;
+    * ...
+    * SVD svd( A );
+    * for ( int i = 0; i < svd.W.Length(); ++i )
+    *    if ( 1 + svd.W[i] == 1 )
+    *       svd.W[i] = 0;
+    * int i = svd.IndexOfSmallestSingularValue();
+    * ...
+    * \endcode
     */
    int IndexOfSmallestSingularValue() const
    {
-      return int( MinItem( W.Begin(), W.End() ) - W.Begin() );
+      return W.IndexOfSmallestNonzeroComponent();
    }
 };
 
@@ -632,4 +662,4 @@ public:
 #endif   // __PCL_Algebra_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Algebra.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/Algebra.h - Released 2015/12/17 18:52:09 UTC

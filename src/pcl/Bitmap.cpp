@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/Bitmap.cpp - Released 2015/10/08 11:24:19 UTC
+// pcl/Bitmap.cpp - Released 2015/12/17 18:52:18 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -461,7 +461,24 @@ void* Bitmap::CloneHandle() const
 
 // ----------------------------------------------------------------------------
 
+double Bitmap::PhysicalPixelRatio() const
+{
+   double f = 1.0;
+   (*API->Bitmap->GetBitmapDevicePixelRatio)( handle, &f );
+   return f;
+}
+
+// ----------------------------------------------------------------------------
+
+void Bitmap::SetPhysicalPixelRatio( double ratio )
+{
+   EnsureUnique();
+   (*API->Bitmap->SetBitmapDevicePixelRatio)( handle, Max( 1.0, ratio ) );
+}
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Bitmap.cpp - Released 2015/10/08 11:24:19 UTC
+// EOF pcl/Bitmap.cpp - Released 2015/12/17 18:52:18 UTC

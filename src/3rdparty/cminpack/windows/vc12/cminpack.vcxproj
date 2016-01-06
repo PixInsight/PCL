@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.96
+# PixInsight Makefile Generator Script v1.100
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 08 Oct 2015 11:23:20 GMT
+# Automatically generated on Thu, 17 Dec 2015 19:03:21 GMT
 # Project id ...... cminpack
 # Project type .... StaticLibrary
 # Platform ........ Windows/vc12
@@ -33,7 +33,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9A65FDD9-FFE1-48A6-B8F0-DD61A64D9799}</ProjectGuid>
+    <ProjectGuid>{BEA40FB1-B1C3-43E8-89FC-D817E185AE10}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -110,9 +110,11 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat></DebugInformationFormat>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -137,9 +139,11 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat></DebugInformationFormat>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -159,7 +163,8 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -178,7 +183,8 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -189,36 +195,36 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\chkder.c"/>
-    <ClCompile Include="..\..\covar.c"/>
-    <ClCompile Include="..\..\covar1.c"/>
-    <ClCompile Include="..\..\dogleg.c"/>
-    <ClCompile Include="..\..\dpmpar.c"/>
-    <ClCompile Include="..\..\enorm.c"/>
-    <ClCompile Include="..\..\fdjac1.c"/>
-    <ClCompile Include="..\..\fdjac2.c"/>
-    <ClCompile Include="..\..\hybrd.c"/>
-    <ClCompile Include="..\..\hybrd1.c"/>
-    <ClCompile Include="..\..\hybrj.c"/>
-    <ClCompile Include="..\..\hybrj1.c"/>
-    <ClCompile Include="..\..\lmder.c"/>
-    <ClCompile Include="..\..\lmder1.c"/>
-    <ClCompile Include="..\..\lmdif.c"/>
-    <ClCompile Include="..\..\lmdif1.c"/>
-    <ClCompile Include="..\..\lmpar.c"/>
-    <ClCompile Include="..\..\lmstr.c"/>
-    <ClCompile Include="..\..\lmstr1.c"/>
-    <ClCompile Include="..\..\qform.c"/>
-    <ClCompile Include="..\..\qrfac.c"/>
-    <ClCompile Include="..\..\qrsolv.c"/>
-    <ClCompile Include="..\..\r1mpyq.c"/>
-    <ClCompile Include="..\..\r1updt.c"/>
-    <ClCompile Include="..\..\rwupdt.c"/>
+    <ClCompile Include="..\..\chkder.c" />
+    <ClCompile Include="..\..\covar.c" />
+    <ClCompile Include="..\..\covar1.c" />
+    <ClCompile Include="..\..\dogleg.c" />
+    <ClCompile Include="..\..\dpmpar.c" />
+    <ClCompile Include="..\..\enorm.c" />
+    <ClCompile Include="..\..\fdjac1.c" />
+    <ClCompile Include="..\..\fdjac2.c" />
+    <ClCompile Include="..\..\hybrd.c" />
+    <ClCompile Include="..\..\hybrd1.c" />
+    <ClCompile Include="..\..\hybrj.c" />
+    <ClCompile Include="..\..\hybrj1.c" />
+    <ClCompile Include="..\..\lmder.c" />
+    <ClCompile Include="..\..\lmder1.c" />
+    <ClCompile Include="..\..\lmdif.c" />
+    <ClCompile Include="..\..\lmdif1.c" />
+    <ClCompile Include="..\..\lmpar.c" />
+    <ClCompile Include="..\..\lmstr.c" />
+    <ClCompile Include="..\..\lmstr1.c" />
+    <ClCompile Include="..\..\qform.c" />
+    <ClCompile Include="..\..\qrfac.c" />
+    <ClCompile Include="..\..\qrsolv.c" />
+    <ClCompile Include="..\..\r1mpyq.c" />
+    <ClCompile Include="..\..\r1updt.c" />
+    <ClCompile Include="..\..\rwupdt.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\cminpack.h"/>
+    <ClInclude Include="..\..\cminpack.h" />
   </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

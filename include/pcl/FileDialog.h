@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/FileDialog.h - Released 2015/10/08 11:24:12 UTC
+// pcl/FileDialog.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -481,4 +481,4 @@ private:
 #endif   // __PCL_FileDialog_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileDialog.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/FileDialog.h - Released 2015/12/17 18:52:09 UTC

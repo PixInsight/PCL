@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/ImageOptions.h - Released 2015/10/08 11:24:12 UTC
+// pcl/ImageOptions.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -73,7 +73,7 @@ namespace pcl
  *
  * A CFA (Color Filter Array) is a mosaic of color filters placed in front of
  * an image sensor, such as CMOS sensors of digital cameras. This enumeration
- * defines the CFA types currently supported in the PCL.
+ * defines the CFA types currently supported in PCL.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
  * <tr><td>CFAType::None</td> <td>The image uses no CFA pattern, or the CFA pattern is unsupported.</td></tr>
@@ -114,7 +114,8 @@ public:
    bool     embedRGBWS            :  1; //!< Embed RGB working space parameters.
    bool     embedDisplayFunction  :  1; //!< Embed display function (aka STF) parameters.
    bool     embedColorFilterArray :  1; //!< Embed color filter array (CFA) description.
-   int      __rsv__               : 13; // Reserved for future extensions; must be zero.
+   bool     embedPreviewRects     :  1; //!< Embed preview rectangles and identifiers.
+   int      __rsv__               : 12; // Reserved for future extensions; must be zero.
 
    double   lowerRange;    //!< Lower limit to normalize read floating-point samples. The default value is 0.
    double   upperRange;    //!< Upper limit to normalize read floating-point samples. The default value is 1.
@@ -163,6 +164,7 @@ public:
       embedRGBWS            = true;
       embedDisplayFunction  = true;
       embedColorFilterArray = true;
+      embedPreviewRects     = false;
       __rsv__               = 0;
       lowerRange            = 0;
       upperRange            = 1;
@@ -183,4 +185,4 @@ public:
 #endif   // __PCL_ImageOptions_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageOptions.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/ImageOptions.h - Released 2015/12/17 18:52:09 UTC

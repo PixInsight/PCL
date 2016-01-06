@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.06.0288
+// Standard Global Process Module Version 01.02.07.0324
 // ----------------------------------------------------------------------------
-// PreferencesInstance.h - Released 2015/10/08 11:24:39 UTC
+// PreferencesInstance.h - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -95,12 +95,14 @@ struct MainWindowPreferences
    pcl_bool    doubleClickLaunchesOpenDialog;
    pcl_bool    hoverableAutoHideWindows;
    pcl_bool    desktopSettingsAware;
-   pcl_bool    nativeMenuBar; // Mac OS X only
+   pcl_bool    nativeMenuBar; // OS X only
    pcl_bool    capitalizedMenuBars;
+   pcl_bool    windowButtonsOnTheLeft; // true by default on OS X
    pcl_bool    translucentWindows;
-   pcl_bool    translucentChildWindows; // only enabled by default on X11 because of Qt bugs
+   pcl_bool    translucentChildWindows;
    pcl_bool    fadeWindows;
    pcl_bool    fadeAutoHideWindows;
+   pcl_bool    translucentAutoHideWindows;
    pcl_bool    fadeWorkspaces;
    pcl_bool    fadeMenu;
    pcl_bool    fadeToolTip;
@@ -130,13 +132,16 @@ struct ImageWindowPreferences
    pcl_bool    rememberFileOpenType;
    pcl_bool    rememberFileSaveType;
    pcl_bool    strictFileSaveMode;
+   pcl_bool    fileFormatWarnings;
    pcl_bool    useFileNamesAsImageIdentifiers;
    int32       cursorTolerance;
    pcl_bool    touchEvents;
    double      pinchSensitivity;
    pcl_bool    fastScreenRenditions;
    int32       fastScreenRenditionThreshold;
+   pcl_bool    highDPIRenditions;
    pcl_bool    default24BitScreenLUT;
+   pcl_bool    createPreviewsFromCoreProperties;
    StringList  swapDirectories;
    pcl_bool    swapCompression;
    String      downloadsDirectory;
@@ -248,4 +253,4 @@ private:
 #endif   // __PreferencesInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInstance.h - Released 2015/10/08 11:24:39 UTC
+// EOF PreferencesInstance.h - Released 2015/12/18 08:55:08 UTC

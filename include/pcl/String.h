@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/String.h - Released 2015/10/08 11:24:12 UTC
+// pcl/String.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -2927,6 +2927,105 @@ public:
    }
 
    /*!
+    * Pads this string to the right, using the specified \a fill character, up
+    * to the specified \a width.
+    *
+    * If the current length \e n of this string is less than the specified
+    * \a width, \a width - \e n copies of the \a fill character will be
+    * appended to the string. If the current length is greater than or equal to
+    * \a width, this function has no effect.
+    *
+    * \sa JustifyRight(), JustifyCenter(), LeftJustified()
+    */
+   void JustifyLeft( size_type width, char_type fill = R::Blank() )
+   {
+      size_type len = Length();
+      if ( len < width )
+         Append( fill, width-len );
+   }
+
+   /*!
+    * Pads this string to the left, using the specified \a fill character, up
+    * to the specified \a width.
+    *
+    * If the current length \e n of this string is less than the specified
+    * \a width, \a width - \e n copies of the \a fill character will be
+    * prepended to the string. If the current length is greater than or equal to
+    * \a width, this function has no effect.
+    *
+    * \sa JustifyLeft(), JustifyCenter(), RightJustified()
+    */
+   void JustifyRight( size_type width, char_type fill = R::Blank() )
+   {
+      size_type len = Length();
+      if ( len < width )
+         Prepend( fill, width-len );
+   }
+
+   /*!
+    * Pads this string equally to the left and right, using the specified
+    * \a fill character, up to the specified \a width.
+    *
+    * If the current length \e n of this string is less than the specified
+    * \a width, let \e m = \a width - \e n, and let \e m2 = \e m/2. Then \e m2
+    * copies of the \a fill character will be prepended to the string, and
+    * \e m - \e m2 \a fill characters will be appended. If the current length
+    * is greater than or equal to \a width, this function has no effect.
+    *
+    * \sa JustifyLeft(), JustifyRight(), CenterJustified()
+    */
+   void JustifyCenter( size_type width, char_type fill = R::Blank() )
+   {
+      size_type len = Length();
+      if ( len < width )
+      {
+         size_type n = width-len;
+         size_type n2 = n >> 1;
+         Prepend( fill, n2 );
+         Append( fill, n-n2 );
+      }
+   }
+
+   /*!
+    * Returns a duplicate of this string padded to the right, using the
+    * specified \a fill character, up to the specified \a width.
+    *
+    * \sa JustifyLeft(), RightJustified(), CenterJustified()
+    */
+   GenericString LeftJustified( size_type width, char_type fill = R::Blank() ) const
+   {
+      GenericString s( *this );
+      s.JustifyLeft( width, fill );
+      return s;
+   }
+
+   /*!
+    * Returns a duplicate of this string padded to the left, using the
+    * specified \a fill character, up to the specified \a width.
+    *
+    * \sa JustifyRight(), LeftJustified(), CenterJustified()
+    */
+   GenericString RightJustified( size_type width, char_type fill = R::Blank() ) const
+   {
+      GenericString s( *this );
+      s.JustifyRight( width, fill );
+      return s;
+   }
+
+   /*!
+    * Returns a duplicate of this string padded equally to the left and right,
+    * using the specified \a fill character, up to the specified \a width.
+    *
+    * \sa JustifyCenter(), LeftJustified(), RightJustified()
+    */
+   GenericString CenterJustified( size_type width, char_type fill = R::Blank() ) const
+   {
+      GenericString s( *this );
+      s.JustifyCenter( width, fill );
+      return s;
+   }
+
+   /*!
     * Compares numeric character values between two strings.
     *
     * \param s                A string to which this string will be compared.
@@ -2987,7 +3086,7 @@ public:
    /*!
     * Compares numeric character values a string and a null-terminated string.
     *
-    * \param s                A single character to which this string will be
+    * \param c                A single character to which this string will be
     *                         compared.
     *
     * \param caseSensitive    When true, a case-sensitive comparison is
@@ -3084,7 +3183,7 @@ public:
    /*!
     * Lexicographical comparison to a single character.
     *
-    * \param s             A character to which this string will be compared.
+    * \param c             A character to which this string will be compared.
     *
     * \param caseSensitive When true, a case-sensitive comparison is performed;
     *                      otherwise the comparison does not distinguish
@@ -3170,7 +3269,7 @@ public:
    /*!
     * Case-insensitive lexicographical comparison to a single character.
     *
-    * \param s             A character to which this string will be compared.
+    * \param c             A character to which this string will be compared.
     *
     * \param localeAware   When true, a locale-dependent comparison is done
     *                      which takes into account the currently selected user
@@ -3597,6 +3696,36 @@ public:
    GenericString& ToTabSeparated( const C& c )
    {
       return ToSeparated( c, R::Tab() );
+   }
+
+   /*!
+    * Replaces the contents of this string with a sequence of
+    * new line-separated tokens extracted from a container \a c. Returns a
+    * reference to this string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, char_type( '\n' ) ); \endcode
+    */
+   template <class C>
+   GenericString& ToNewLineSeparated( const C& c )
+   {
+      return ToSeparated( c, R::LF() );
+   }
+
+   /*!
+    * Replaces the contents of this string with a sequence of
+    * null-separated tokens extracted from a container \a c. Returns a
+    * reference to this string.
+    *
+    * This member function is equivalent to:
+    *
+    * \code ToSeparated( c, char_type( '\0' ) ); \endcode
+    */
+   template <class C>
+   GenericString& ToNullSeparated( const C& c )
+   {
+      return ToSeparated( c, R::Null() );
    }
 
    /*!
@@ -4591,47 +4720,59 @@ void Swap( GenericString<T,R,A>& s1, GenericString<T,R,A>& s2 )
 template <class T, class R1, class A1, class R2, class A2> inline
 bool operator ==( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>& s2 )
 {
-   return s1.Compare( s2 ) == 0;
+   return s1.CompareCodePoints( s2 ) == 0;
 }
 
 /*!
- * Returns true iff a string \a s1 is less than a string \a s2.
+ * Returns true iff a string \a s1 is less than a string \a s2. This function
+ * performs a character-to-character, locale-unaware comparison of numeric
+ * character values. See GenericString<>::CompareCodePoints() for more
+ * information.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R1, class A1, class R2, class A2> inline
 bool operator  <( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>& s2 )
 {
-   return s1.Compare( s2 ) < 0;
+   return s1.CompareCodePoints( s2 ) < 0;
 }
 
 /*!
  * Returns true iff a string \a s1 is less than or equal to a string \a s2.
+ * This function performs a character-to-character, locale-unaware comparison
+ * of numeric character values. See GenericString<>::CompareCodePoints() for
+ * more information.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R1, class A1, class R2, class A2> inline
 bool operator <=( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>& s2 )
 {
-   return s1.Compare( s2 ) <= 0;
+   return s1.CompareCodePoints( s2 ) <= 0;
 }
 
 /*!
- * Returns true iff a string \a s1 is greater than a string \a s2.
+ * Returns true iff a string \a s1 is greater than a string \a s2. This
+ * function performs a character-to-character, locale-unaware comparison of
+ * numeric character values. See GenericString<>::CompareCodePoints() for more
+ * information.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R1, class A1, class R2, class A2> inline
 bool operator  >( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>& s2 )
 {
-   return s1.Compare( s2 ) > 0;
+   return s1.CompareCodePoints( s2 ) > 0;
 }
 
 /*!
  * Returns true iff a string \a s1 is greater than or equal to a string \a s2.
+ * This function performs a character-to-character, locale-unaware comparison
+ * of numeric character values. See GenericString<>::CompareCodePoints() for
+ * more information.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R1, class A1, class R2, class A2> inline
 bool operator >=( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>& s2 )
 {
-   return s1.Compare( s2 ) >= 0;
+   return s1.CompareCodePoints( s2 ) >= 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -4643,50 +4784,59 @@ bool operator >=( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>
 template <class T, class R, class A> inline
 bool operator ==( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::const_c_string t2 )
 {
-   return s1.Compare( t2 ) == 0;
+   return s1.CompareCodePoints( t2 ) == 0;
 }
 
 /*!
  * Returns true iff a string \a s1 is less than a null-terminated string \a t2.
+ * This function performs a character-to-character, locale-unaware comparison
+ * of numeric character values. See GenericString<>::CompareCodePoints() for
+ * more information.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  <( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::const_c_string t2 )
 {
-   return s1.Compare( t2 ) < 0;
+   return s1.CompareCodePoints( t2 ) < 0;
 }
 
 /*!
  * Returns true iff a string \a s1 is less than or equal to a null-terminated
- * string \a t2.
+ * string \a t2. This function performs a character-to-character,
+ * locale-unaware comparison of numeric character values. See
+ * GenericString<>::CompareCodePoints() for more information.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator <=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::const_c_string t2 )
 {
-   return s1.Compare( t2 ) <= 0;
+   return s1.CompareCodePoints( t2 ) <= 0;
 }
 
 /*!
- * Returns true iff a string \a s1 is greater than a null-terminated
- * string \a t2.
+ * Returns true iff a string \a s1 is greater than a null-terminated string
+ * \a t2. This function performs a character-to-character, locale-unaware
+ * comparison of numeric character values. See
+ * GenericString<>::CompareCodePoints() for more information.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  >( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::const_c_string t2 )
 {
-   return s1.Compare( t2 ) > 0;
+   return s1.CompareCodePoints( t2 ) > 0;
 }
 
 /*!
- * Returns true iff a string \a s1 is greater than or equal to a null-terminated
- * string \a t2.
+ * Returns true iff a string \a s1 is greater than or equal to a
+ * null-terminated string \a t2. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator >=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::const_c_string t2 )
 {
-   return s1.Compare( t2 ) >= 0;
+   return s1.CompareCodePoints( t2 ) >= 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -4698,50 +4848,59 @@ bool operator >=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
 template <class T, class R, class A> inline
 bool operator ==( typename GenericString<T,R,A>::const_c_string t1, const GenericString<T,R,A>& s2 )
 {
-   return s2.Compare( t1 ) == 0;
+   return s2.CompareCodePoints( t1 ) == 0;
 }
 
 /*!
  * Returns true iff a null-terminated string \a t1 is less than a string \a s2.
+ * This function performs a character-to-character, locale-unaware comparison
+ * of numeric character values. See GenericString<>::CompareCodePoints() for
+ * more information.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  <( typename GenericString<T,R,A>::const_c_string t1, const GenericString<T,R,A>& s2 )
 {
-   return s2.Compare( t1 ) > 0;
+   return s2.CompareCodePoints( t1 ) > 0;
 }
 
 /*!
  * Returns true iff a null-terminated string \a t1 is less than or equal to a
- * string \a s2.
+ * string \a s2. This function performs a character-to-character,
+ * locale-unaware comparison of numeric character values. See
+ * GenericString<>::CompareCodePoints() for more information.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator <=( typename GenericString<T,R,A>::const_c_string t1, const GenericString<T,R,A>& s2 )
 {
-   return s2.Compare( t1 ) >= 0;
+   return s2.CompareCodePoints( t1 ) >= 0;
 }
 
 /*!
- * Returns true iff a null-terminated string \a t1 is greater than a
- * string \a s2.
+ * Returns true iff a null-terminated string \a t1 is greater than a string
+ * \a s2. This function performs a character-to-character, locale-unaware
+ * comparison of numeric character values. See
+ * GenericString<>::CompareCodePoints() for more information.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  >( typename GenericString<T,R,A>::const_c_string t1, const GenericString<T,R,A>& s2 )
 {
-   return s2.Compare( t1 ) < 0;
+   return s2.CompareCodePoints( t1 ) < 0;
 }
 
 /*!
- * Returns true iff a null-terminated string \a t1 is greater than or equal to a
- * string \a s2.
+ * Returns true iff a null-terminated string \a t1 is greater than or equal to
+ * a string \a s2. This function performs a character-to-character,
+ * locale-unaware comparison of numeric character values. See
+ * GenericString<>::CompareCodePoints() for more information.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator >=( typename GenericString<T,R,A>::const_c_string t1, const GenericString<T,R,A>& s2 )
 {
-   return s2.Compare( t1 ) <= 0;
+   return s2.CompareCodePoints( t1 ) <= 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -4753,47 +4912,59 @@ bool operator >=( typename GenericString<T,R,A>::const_c_string t1, const Generi
 template <class T, class R, class A> inline
 bool operator ==( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::char_type c2 )
 {
-   return s1.Compare( c2 ) == 0;
+   return s1.CompareCodePoints( c2 ) == 0;
 }
 
 /*!
- * Returns true iff a string \a s1 is less than a character \a c2.
+ * Returns true iff a string \a s1 is less than a character \a c2. This
+ * function performs a character-to-character, locale-unaware comparison of
+ * numeric character values. See GenericString<>::CompareCodePoints() for more
+ * information.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  <( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::char_type c2 )
 {
-   return s1.Compare( c2 ) < 0;
+   return s1.CompareCodePoints( c2 ) < 0;
 }
 
 /*!
  * Returns true iff a string \a s1 is less than or equal to a character \a c2.
+ * This function performs a character-to-character, locale-unaware comparison
+ * of numeric character values. See GenericString<>::CompareCodePoints() for
+ * more information.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator <=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::char_type c2 )
 {
-   return s1.Compare( c2 ) <= 0;
+   return s1.CompareCodePoints( c2 ) <= 0;
 }
 
 /*!
- * Returns true iff a string \a s1 is greater than a character \a c2.
+ * Returns true iff a string \a s1 is greater than a character \a c2. This
+ * function performs a character-to-character, locale-unaware comparison of
+ * numeric character values. See GenericString<>::CompareCodePoints() for more
+ * information.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  >( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::char_type c2 )
 {
-   return s1.Compare( c2 ) > 0;
+   return s1.CompareCodePoints( c2 ) > 0;
 }
 
 /*!
- * Returns true iff a string \a s1 is greater than or equal to a character \a c2.
+ * Returns true iff a string \a s1 is greater than or equal to a character
+ * \a c2. This function performs a character-to-character, locale-unaware
+ * comparison of numeric character values. See
+ * GenericString<>::CompareCodePoints() for more information.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator >=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::char_type c2 )
 {
-   return s1.Compare( c2 ) >= 0;
+   return s1.CompareCodePoints( c2 ) >= 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -4805,47 +4976,59 @@ bool operator >=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
 template <class T, class R, class A> inline
 bool operator ==( typename GenericString<T,R,A>::char_type c1, const GenericString<T,R,A>& s2 )
 {
-   return s2.Compare( c1 ) == 0;
+   return s2.CompareCodePoints( c1 ) == 0;
 }
 
 /*!
- * Returns true iff a character \a c1 is less than a string \a s2.
+ * Returns true iff a character \a c1 is less than a string \a s2. This
+ * function performs a character-to-character, locale-unaware comparison of
+ * numeric character values. See GenericString<>::CompareCodePoints() for more
+ * information.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  <( typename GenericString<T,R,A>::char_type c1, const GenericString<T,R,A>& s2 )
 {
-   return s2.Compare( c1 ) > 0;
+   return s2.CompareCodePoints( c1 ) > 0;
 }
 
 /*!
  * Returns true iff a character \a c1 is less than or equal to a string \a s2.
+ * This function performs a character-to-character, locale-unaware comparison
+ * of numeric character values. See GenericString<>::CompareCodePoints() for
+ * more information.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator <=( typename GenericString<T,R,A>::char_type c1, const GenericString<T,R,A>& s2 )
 {
-   return s2.Compare( c1 ) >= 0;
+   return s2.CompareCodePoints( c1 ) >= 0;
 }
 
 /*!
- * Returns true iff a character \a c1 is greater than a string \a s2.
+ * Returns true iff a character \a c1 is greater than a string \a s2. This
+ * function performs a character-to-character, locale-unaware comparison of
+ * numeric character values. See GenericString<>::CompareCodePoints() for more
+ * information.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  >( typename GenericString<T,R,A>::char_type c1, const GenericString<T,R,A>& s2 )
 {
-   return s2.Compare( c1 ) < 0;
+   return s2.CompareCodePoints( c1 ) < 0;
 }
 
 /*!
- * Returns true iff a character \a c1 is greater than or equal to a string \a s2.
+ * Returns true iff a character \a c1 is greater than or equal to a string
+ * \a s2. This function performs a character-to-character, locale-unaware
+ * comparison of numeric character values. See
+ * GenericString<>::CompareCodePoints() for more information.
  * \ingroup generic_string_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator >=( typename GenericString<T,R,A>::char_type c1, const GenericString<T,R,A>& s2 )
 {
-   return s2.Compare( c1 ) <= 0;
+   return s2.CompareCodePoints( c1 ) <= 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -5439,6 +5622,23 @@ public:
 
    // -------------------------------------------------------------------------
 
+   IsoString LeftJustified( size_type width, char_type fill = IsoCharTraits::Blank() ) const
+   {
+      return string_base::LeftJustified( width, fill );
+   }
+
+   IsoString RightJustified( size_type width, char_type fill = IsoCharTraits::Blank() ) const
+   {
+      return string_base::RightJustified( width, fill );
+   }
+
+   IsoString CenterJustified( size_type width, char_type fill = IsoCharTraits::Blank() ) const
+   {
+      return string_base::CenterJustified( width, fill );
+   }
+
+   // -------------------------------------------------------------------------
+
    IsoString CaseFolded() const
    {
       return string_base::CaseFolded();
@@ -5538,10 +5738,79 @@ public:
    }
 
    template <class C>
+   IsoString& ToNewLineSeparated( const C& c )
+   {
+      (void)string_base::ToNewLineSeparated( c );
+      return *this;
+   }
+
+   template <class C>
+   IsoString& ToNullSeparated( const C& c )
+   {
+      (void)string_base::ToNullSeparated( c );
+      return *this;
+   }
+
+   template <class C>
    IsoString& ToHyphenated( const C& c )
    {
       (void)string_base::ToHyphenated( c );
       return *this;
+   }
+
+   // -------------------------------------------------------------------------
+
+   /*!
+    * Replaces all occurrences of HTML special characters in this string with
+    * valid HTML entities. Returns a reference to this string.
+    *
+    * The following replacements are performed:
+    *
+    * '&' (ampersand) becomes "\&amp;" \n
+    * '"' (double quote) becomes "\&quot;" \n
+    * "'" (single quote) becomes "\&#039;" \n
+    * '<' (less than) becomes "\&lt;" \n
+    * '>' (greater than) becomes "\&gt;"
+    */
+   IsoString& ToEncodedHTMLSpecialChars();
+
+   /*!
+    * Returns a duplicate of this string with all occurrences of HTML special
+    * characters replaced with valid HTML entities.
+    *
+    * \sa ToEncodedHTMLSpecialChars()
+    */
+   IsoString EncodedHTMLSpecialChars() const
+   {
+      return IsoString( *this ).ToEncodedHTMLSpecialChars();
+   }
+
+   /*!
+    * Replaces all occurrences of special HTML entities in this string with
+    * their corresponding plain text character equivalents. Returns a reference
+    * to this string.
+    *
+    * The following replacements are performed:
+    *
+    * "\&amp;" (ampersand) becomes '&' \n
+    * "\&quot;" (double quote) becomes '"' \n
+    * "\&#039;" (single quote) becomes "'" \n
+    * "\&apos;" (apostrophe) becomes "'" \n
+    * "\&lt;" (less than) becomes '<' \n
+    * "\&gt;" (greater than) becomes '>'
+    */
+   IsoString& ToDecodedHTMLSpecialChars();
+
+   /*!
+    * Returns a duplicate of this string with all occurrences of special HTML
+    * entities replaced with their corresponding plain text character
+    * equivalents.
+    *
+    * \sa ToDecodedHTMLSpecialChars()
+    */
+   IsoString DecodedHTMLSpecialChars() const
+   {
+      return IsoString( *this ).ToDecodedHTMLSpecialChars();
    }
 
    // -------------------------------------------------------------------------
@@ -5721,7 +5990,7 @@ public:
     * Returns \c false if this string is equal to "0", "false", "FALSE" or "F".
     * Otherwise this function throws a ParseError exception.
     *
-    * \sa TryToBool( bool& )
+    * \sa TryToBool()
     */
    bool ToBool() const;
 
@@ -5752,7 +6021,7 @@ public:
     * range of \c float is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToFloat( float& )
+    * \sa TryToFloat()
     */
    float ToFloat() const;
 
@@ -5793,7 +6062,7 @@ public:
     * range of \c double is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToDouble( double& )
+    * \sa TryToDouble()
     */
    double ToDouble() const;
 
@@ -5828,7 +6097,7 @@ public:
     * of \c long is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToInt( int& )
+    * \sa TryToInt()
     */
    long ToInt() const
    {
@@ -5887,7 +6156,7 @@ public:
     * \a base, if an illegal \a base is specified, or if the range of \c long
     * is exceeded, this member function throws a ParseError exception.
     *
-    * \sa TryToInt( int&, int )
+    * \sa TryToInt( int&, int ) const
     */
    long ToInt( int base ) const;
 
@@ -5906,7 +6175,7 @@ public:
     * \a base, this function returns \c false and does not change the \a value
     * variable. This function does not throw any exception.
     *
-    * \sa ToInt( int )
+    * \sa ToInt( int ) const
     */
    bool TryToInt( int& value, int base ) const;
 
@@ -5925,7 +6194,7 @@ public:
     * the range of \c unsigned \c long is exceeded, this member function throws
     * a ParseError exception.
     *
-    * \sa TryToUInt( unsigned& )
+    * \sa TryToUInt()
     */
    unsigned long ToUInt() const
    {
@@ -5974,7 +6243,7 @@ public:
     * \c unsigned \c long is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToUInt( unsigned&, int )
+    * \sa TryToUInt( unsigned&, int ) const
     */
    unsigned long ToUInt( int base ) const;
 
@@ -5993,7 +6262,7 @@ public:
     * specified \a base, this function returns \c false and does not change the
     * \a value variable. This function does not throw any exception.
     *
-    * \sa ToUInt( int )
+    * \sa ToUInt( int ) const
     */
    bool TryToUInt( unsigned& value, int base ) const;
 
@@ -6009,7 +6278,7 @@ public:
     * of \c long \c long is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToInt64( long long& )
+    * \sa TryToInt64()
     */
    long long ToInt64() const
    {
@@ -6057,7 +6326,7 @@ public:
     * \c long \c long is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToInt64( long long&, int )
+    * \sa TryToInt64( long long&, int ) const
     */
    long long ToInt64( int base ) const;
 
@@ -6076,7 +6345,7 @@ public:
     * specified \a base, this function returns \c false and does not change the
     * \a value variable. This function does not throw any exception.
     *
-    * \sa ToInt64( int )
+    * \sa ToInt64( int ) const
     */
    bool TryToInt64( long long& value, int base ) const;
 
@@ -6092,7 +6361,7 @@ public:
     * the range of \c unsigned \c long \c long is exceeded, this member
     * function throws a ParseError exception.
     *
-    * \sa TryToUInt64( long long& )
+    * \sa TryToUInt64()
     */
    unsigned long long ToUInt64() const
    {
@@ -6140,7 +6409,7 @@ public:
     * \c unsigned \c long \c long is exceeded, this member function throws a
     * ParseError exception.
     *
-    * \sa TryToUInt64( unsigned long long&, int )
+    * \sa TryToUInt64( unsigned long long&, int ) const
     */
    unsigned long long ToUInt64( int base ) const;
 
@@ -6159,7 +6428,7 @@ public:
     * in the specified \a base, this function returns \c false and does not
     * change the \a value variable. This function does not throw any exception.
     *
-    * \sa ToUInt64( int )
+    * \sa ToUInt64( int ) const
     */
    bool TryToUInt64( unsigned long long& value, int base ) const;
 
@@ -6249,9 +6518,10 @@ public:
    ByteArray FromBase64() const;
 
    /*!
-    * Generates a string of \a n random 7-bit ASCII code points (stored as
-    * 8-bit characters), with character types and ranges as prescribed by the
-    * specified \a options.
+    * Generates a string of \a n random 8-bit code points, with character types
+    * and ranges as prescribed by the specified \a options.
+    *
+    * \sa RandomizationOption
     */
    static IsoString Random( size_type n,
                             RandomizationOptions options = RandomizationOption::Default );
@@ -8431,6 +8701,47 @@ public:
 
    // -------------------------------------------------------------------------
 
+   int CompareCodePoints( const String& s, bool caseSensitive = true ) const
+   {
+      return string_base::CompareCodePoints( s, caseSensitive );
+   }
+
+   int CompareCodePoints( const_iterator t, bool caseSensitive = true ) const
+   {
+      return string_base::CompareCodePoints( t, caseSensitive );
+   }
+
+   int CompareCodePoints( char_type c, bool caseSensitive = true ) const
+   {
+      return string_base::CompareCodePoints( c, caseSensitive );
+   }
+
+   int CompareCodePoints( const wchar_t* t, bool caseSensitive = true ) const
+   {
+#ifdef __PCL_WINDOWS
+      return string_base::CompareCodePoints( reinterpret_cast<const_iterator>( t ), caseSensitive );
+#else
+      return string_base::CompareCodePoints( String( t ), caseSensitive );
+#endif
+   }
+
+   int CompareCodePoints( wchar_t c, bool caseSensitive = true ) const
+   {
+      return string_base::CompareCodePoints( char_type( c ), caseSensitive );
+   }
+
+   int CompareCodePoints( const_c_string8 t, bool caseSensitive = true ) const
+   {
+      return string_base::CompareCodePoints( String( t ), caseSensitive );
+   }
+
+   int CompareCodePoints( char8_type c, bool caseSensitive = true ) const
+   {
+      return string_base::CompareCodePoints( char_type( c ), caseSensitive );
+   }
+
+   // -------------------------------------------------------------------------
+
    int Compare( const String& s, bool caseSensitive = true, bool localeAware = true ) const
    {
       return string_base::Compare( s, caseSensitive, localeAware );
@@ -8634,6 +8945,23 @@ public:
 
    // -------------------------------------------------------------------------
 
+   String LeftJustified( size_type width, char_type fill = CharTraits::Blank() ) const
+   {
+      return string_base::LeftJustified( width, fill );
+   }
+
+   String RightJustified( size_type width, char_type fill = CharTraits::Blank() ) const
+   {
+      return string_base::RightJustified( width, fill );
+   }
+
+   String CenterJustified( size_type width, char_type fill = CharTraits::Blank() ) const
+   {
+      return string_base::CenterJustified( width, fill );
+   }
+
+   // -------------------------------------------------------------------------
+
    String CaseFolded() const
    {
       return string_base::CaseFolded();
@@ -8761,10 +9089,79 @@ public:
    }
 
    template <class C>
+   String& ToNewLineSeparated( const C& c )
+   {
+      (void)string_base::ToNewLineSeparated( c );
+      return *this;
+   }
+
+   template <class C>
+   String& ToNullSeparated( const C& c )
+   {
+      (void)string_base::ToNullSeparated( c );
+      return *this;
+   }
+
+   template <class C>
    String& ToHyphenated( const C& c )
    {
       (void)string_base::ToHyphenated( c );
       return *this;
+   }
+
+   // -------------------------------------------------------------------------
+
+   /*!
+    * Replaces all occurrences of HTML special characters in this string with
+    * valid HTML entities. Returns a reference to this string.
+    *
+    * The following replacements are performed:
+    *
+    * '&' (ampersand) becomes "\&amp;" \n
+    * '"' (double quote) becomes "\&quot;" \n
+    * "'" (single quote) becomes "\&#039;" \n
+    * '<' (less than) becomes "\&lt;" \n
+    * '>' (greater than) becomes "\&gt;"
+    */
+   String& ToEncodedHTMLSpecialChars();
+
+   /*!
+    * Returns a duplicate of this string with all occurrences of HTML special
+    * characters replaced with valid HTML entities.
+    *
+    * \sa ToEncodedHTMLSpecialChars()
+    */
+   String EncodedHTMLSpecialChars() const
+   {
+      return String( *this ).ToEncodedHTMLSpecialChars();
+   }
+
+   /*!
+    * Replaces all occurrences of special HTML entities in this string with
+    * their corresponding plain text character equivalents. Returns a reference
+    * to this string.
+    *
+    * The following replacements are performed:
+    *
+    * "\&amp;" (ampersand) becomes '&' \n
+    * "\&quot;" (double quote) becomes '"' \n
+    * "\&#039;" (single quote) becomes "'" \n
+    * "\&apos;" (apostrophe) becomes "'" \n
+    * "\&lt;" (less than) becomes '<' \n
+    * "\&gt;" (greater than) becomes '>'
+    */
+   String& ToDecodedHTMLSpecialChars();
+
+   /*!
+    * Returns a duplicate of this string with all occurrences of special HTML
+    * entities replaced with their corresponding plain text character
+    * equivalents.
+    *
+    * \sa ToDecodedHTMLSpecialChars()
+    */
+   String DecodedHTMLSpecialChars() const
+   {
+      return String( *this ).ToDecodedHTMLSpecialChars();
    }
 
    // -------------------------------------------------------------------------
@@ -9003,7 +9400,7 @@ public:
     * have undefined values in the returned string. Undefined values are
     * represented with question mark characters (?).
     *
-    * \sa ToUTF8(), ToMBS(), ToUTF32(), ToASCII(), To7BitASCII()
+    * \sa ToUTF8(), ToMBS(), ToUTF32(), To7BitASCII()
     */
    IsoString ToIsoString() const;
 
@@ -9014,7 +9411,7 @@ public:
     * have undefined values in the returned string. Undefined values are
     * represented with question mark characters (?).
     *
-    * \sa ToIsoString(), ToUTF8(), ToMBS(), ToUTF32(), ToASCII()
+    * \sa ToIsoString(), ToUTF8(), ToMBS(), ToUTF32()
     */
    IsoString To7BitASCII() const;
 
@@ -9147,7 +9544,7 @@ public:
     * Returns \c false if this string is equal to "0", "false", "FALSE" or "F".
     * Otherwise this function throws a ParseError exception.
     *
-    * \sa TryToBool( bool& )
+    * \sa TryToBool()
     */
    bool ToBool() const;
 
@@ -9178,7 +9575,7 @@ public:
     * range of \c float is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToFloat( float& )
+    * \sa TryToFloat()
     */
    float ToFloat() const;
 
@@ -9219,7 +9616,7 @@ public:
     * range of \c double is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToDouble( double& )
+    * \sa TryToDouble()
     */
    double ToDouble() const;
 
@@ -9253,7 +9650,7 @@ public:
     * If this string doesn't contain a valid integer literal, or if the range
     * of \c long is exceeded, this member function throws a ParseError exception.
     *
-    * \sa TryToInt( int& )
+    * \sa TryToInt()
     */
    long ToInt() const
    {
@@ -9312,7 +9709,7 @@ public:
     * \a base, if an illegal \a base is specified, or if the range of \c long
     * is exceeded, this member function throws a ParseError exception.
     *
-    * \sa TryToInt( int&, int )
+    * \sa TryToInt( int&, int ) const
     */
    long ToInt( int base ) const;
 
@@ -9331,7 +9728,7 @@ public:
     * \a base, this function returns \c false and does not change the \a value
     * variable. This function does not throw any exception.
     *
-    * \sa ToInt( int )
+    * \sa ToInt( int ) const
     */
    bool TryToInt( int& value, int base ) const;
 
@@ -9350,7 +9747,7 @@ public:
     * the range of \c unsigned \c long is exceeded, this member function throws
     * a ParseError exception.
     *
-    * \sa TryToUInt( unsigned& )
+    * \sa TryToUInt()
     */
    unsigned long ToUInt() const
    {
@@ -9399,7 +9796,7 @@ public:
     * \c unsigned \c long is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToUInt( unsigned&, int )
+    * \sa TryToUInt( unsigned&, int ) const
     */
    unsigned long ToUInt( int base ) const;
 
@@ -9418,7 +9815,7 @@ public:
     * specified \a base, this function returns \c false and does not change the
     * \a value variable. This function does not throw any exception.
     *
-    * \sa ToUInt( int )
+    * \sa ToUInt( int ) const
     */
    bool TryToUInt( unsigned& value, int base ) const;
 
@@ -9434,7 +9831,7 @@ public:
     * of \c long \c long is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToInt64( long long& )
+    * \sa TryToInt64()
     */
    long long ToInt64() const
    {
@@ -9482,7 +9879,7 @@ public:
     * \c long \c long is exceeded, this member function throws a ParseError
     * exception.
     *
-    * \sa TryToInt64( long long&, int )
+    * \sa TryToInt64( long long&, int ) const
     */
    long long ToInt64( int base ) const;
 
@@ -9501,7 +9898,7 @@ public:
     * specified \a base, this function returns \c false and does not change the
     * \a value variable. This function does not throw any exception.
     *
-    * \sa ToInt64( int )
+    * \sa ToInt64( int ) const
     */
    bool TryToInt64( long long& value, int base ) const;
 
@@ -9517,7 +9914,7 @@ public:
     * the range of \c unsigned \c long \c long is exceeded, this member
     * function throws a ParseError exception.
     *
-    * \sa TryToUInt64( long long& )
+    * \sa TryToUInt64()
     */
    unsigned long long ToUInt64() const
    {
@@ -9565,7 +9962,7 @@ public:
     * \c unsigned \c long \c long is exceeded, this member function throws a
     * ParseError exception.
     *
-    * \sa TryToUInt64( unsigned long long&, int )
+    * \sa TryToUInt64( unsigned long long&, int ) const
     */
    unsigned long long ToUInt64( int base ) const;
 
@@ -9584,14 +9981,15 @@ public:
     * in the specified \a base, this function returns \c false and does not
     * change the \a value variable. This function does not throw any exception.
     *
-    * \sa ToUInt64( int )
+    * \sa ToUInt64( int ) const
     */
    bool TryToUInt64( unsigned long long& value, int base ) const;
 
    /*!
-    * Generates a string of \a n random 7-bit ASCII code points (stored as
-    * UTF-16 characters), with character types and ranges as prescribed by the
-    * specified \a options.
+    * Generates a string of \a n random 16-bit code points, with character
+    * types and ranges as prescribed by the specified \a options.
+    *
+    * \sa RandomizationOption
     */
    static String Random( size_type n,
                          RandomizationOptions options = RandomizationOption::Default );
@@ -10439,43 +10837,51 @@ inline String& operator <<( String&& s1, String::char8_type c2 )
  */
 inline bool operator ==( const String& s1, const wchar_t* t2 )
 {
-   return s1.Compare( t2 ) == 0;
+   return s1.CompareCodePoints( t2 ) == 0;
 }
 
 /*!
- * <em>Less than</em> operator.
+ * <em>Less than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator  <( const String& s1, const wchar_t* t2 )
 {
-   return s1.Compare( t2 ) < 0;
+   return s1.CompareCodePoints( t2 ) < 0;
 }
 
 /*!
- * <em>Less than or equal</em> operator.
+ * <em>Less than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator <=( const String& s1, const wchar_t* t2 )
 {
-   return s1.Compare( t2 ) <= 0;
+   return s1.CompareCodePoints( t2 ) <= 0;
 }
 
 /*!
- * <em>Greater than</em> operator.
+ * <em>Greater than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator  >( const String& s1, const wchar_t* t2 )
 {
-   return s1.Compare( t2 ) > 0;
+   return s1.CompareCodePoints( t2 ) > 0;
 }
 
 /*!
- * <em>Greater than or equal</em> operator.
+ * <em>Greater than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator >=( const String& s1, const wchar_t* t2 )
 {
-   return s1.Compare( t2 ) >= 0;
+   return s1.CompareCodePoints( t2 ) >= 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -10486,43 +10892,51 @@ inline bool operator >=( const String& s1, const wchar_t* t2 )
  */
 inline bool operator ==( const wchar_t* t1, const String& s2 )
 {
-   return s2.Compare( t1 ) == 0;
+   return s2.CompareCodePoints( t1 ) == 0;
 }
 
 /*!
- * <em>Less than</em> operator.
+ * <em>Less than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator  <( const wchar_t* t1, const String& s2 )
 {
-   return s2.Compare( t1 ) > 0;
+   return s2.CompareCodePoints( t1 ) > 0;
 }
 
 /*!
- * <em>Less than or equal</em> operator.
+ * <em>Less than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator <=( const wchar_t* t1, const String& s2 )
 {
-   return s2.Compare( t1 ) >= 0;
+   return s2.CompareCodePoints( t1 ) >= 0;
 }
 
 /*!
- * <em>Greater than</em> operator.
+ * <em>Greater than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator  >( const wchar_t* t1, const String& s2 )
 {
-   return s2.Compare( t1 ) < 0;
+   return s2.CompareCodePoints( t1 ) < 0;
 }
 
 /*!
- * <em>Greater than or equal</em> operator.
+ * <em>Greater than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator >=( const wchar_t* t1, const String& s2 )
 {
-   return s2.Compare( t1 ) <= 0;
+   return s2.CompareCodePoints( t1 ) <= 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -10533,43 +10947,51 @@ inline bool operator >=( const wchar_t* t1, const String& s2 )
  */
 inline bool operator ==( const String& s1, wchar_t c2 )
 {
-   return s1.Compare( c2 ) == 0;
+   return s1.CompareCodePoints( c2 ) == 0;
 }
 
 /*!
- * <em>Less than</em> operator.
+ * <em>Less than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator  <( const String& s1, wchar_t c2 )
 {
-   return s1.Compare( c2 ) < 0;
+   return s1.CompareCodePoints( c2 ) < 0;
 }
 
 /*!
- * <em>Less than or equal</em> operator.
+ * <em>Less than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator <=( const String& s1, wchar_t c2 )
 {
-   return s1.Compare( c2 ) <= 0;
+   return s1.CompareCodePoints( c2 ) <= 0;
 }
 
 /*!
- * <em>Greater than</em> operator.
+ * <em>Greater than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator  >( const String& s1, wchar_t c2 )
 {
-   return s1.Compare( c2 ) > 0;
+   return s1.CompareCodePoints( c2 ) > 0;
 }
 
 /*!
- * <em>Greater than or equal</em> operator.
+ * <em>Greater than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator >=( const String& s1, wchar_t c2 )
 {
-   return s1.Compare( c2 ) >= 0;
+   return s1.CompareCodePoints( c2 ) >= 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -10580,43 +11002,51 @@ inline bool operator >=( const String& s1, wchar_t c2 )
  */
 inline bool operator ==( wchar_t c1, const String& s2 )
 {
-   return s2.Compare( c1 ) == 0;
+   return s2.CompareCodePoints( c1 ) == 0;
 }
 
 /*!
- * <em>Less than</em> operator.
+ * <em>Less than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator  <( wchar_t c1, const String& s2 )
 {
-   return s2.Compare( c1 ) > 0;
+   return s2.CompareCodePoints( c1 ) > 0;
 }
 
 /*!
- * <em>Less than or equal</em> operator.
+ * <em>Less than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator <=( wchar_t c1, const String& s2 )
 {
-   return s2.Compare( c1 ) >= 0;
+   return s2.CompareCodePoints( c1 ) >= 0;
 }
 
 /*!
- * <em>Greater than</em> operator.
+ * <em>Greater than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator  >( wchar_t c1, const String& s2 )
 {
-   return s2.Compare( c1 ) < 0;
+   return s2.CompareCodePoints( c1 ) < 0;
 }
 
 /*!
- * <em>Greater than or equal</em> operator.
+ * <em>Greater than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator >=( wchar_t c1, const String& s2 )
 {
-   return s2.Compare( c1 ) <= 0;
+   return s2.CompareCodePoints( c1 ) <= 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -10627,43 +11057,51 @@ inline bool operator >=( wchar_t c1, const String& s2 )
  */
 inline bool operator ==( const String& s1, String::const_c_string8 t2 )
 {
-   return s1.Compare( t2 ) == 0;
+   return s1.CompareCodePoints( t2 ) == 0;
 }
 
 /*!
- * <em>Less than</em> operator.
+ * <em>Less than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator  <( const String& s1, String::const_c_string8 t2 )
 {
-   return s1.Compare( t2 ) < 0;
+   return s1.CompareCodePoints( t2 ) < 0;
 }
 
 /*!
- * <em>Less than or equal</em> operator.
+ * <em>Less than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator <=( const String& s1, String::const_c_string8 t2 )
 {
-   return s1.Compare( t2 ) <= 0;
+   return s1.CompareCodePoints( t2 ) <= 0;
 }
 
 /*!
- * <em>Greater than</em> operator.
+ * <em>Greater than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator  >( const String& s1, String::const_c_string8 t2 )
 {
-   return s1.Compare( t2 ) > 0;
+   return s1.CompareCodePoints( t2 ) > 0;
 }
 
 /*!
- * <em>Greater than or equal</em> operator.
+ * <em>Greater than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator >=( const String& s1, String::const_c_string8 t2 )
 {
-   return s1.Compare( t2 ) >= 0;
+   return s1.CompareCodePoints( t2 ) >= 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -10674,43 +11112,51 @@ inline bool operator >=( const String& s1, String::const_c_string8 t2 )
  */
 inline bool operator ==( String::const_c_string8 t1, const String& s2 )
 {
-   return s2.Compare( t1 ) == 0;
+   return s2.CompareCodePoints( t1 ) == 0;
 }
 
 /*!
- * <em>Less than</em> operator.
+ * <em>Less than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator  <( String::const_c_string8 t1, const String& s2 )
 {
-   return s2.Compare( t1 ) > 0;
+   return s2.CompareCodePoints( t1 ) > 0;
 }
 
 /*!
- * <em>Less than or equal</em> operator.
+ * <em>Less than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator <=( String::const_c_string8 t1, const String& s2 )
 {
-   return s2.Compare( t1 ) >= 0;
+   return s2.CompareCodePoints( t1 ) >= 0;
 }
 
 /*!
- * <em>Greater than</em> operator.
+ * <em>Greater than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator  >( String::const_c_string8 t1, const String& s2 )
 {
-   return s2.Compare( t1 ) < 0;
+   return s2.CompareCodePoints( t1 ) < 0;
 }
 
 /*!
- * <em>Greater than or equal</em> operator.
+ * <em>Greater than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator >=( String::const_c_string8 t1, const String& s2 )
 {
-   return s2.Compare( t1 ) <= 0;
+   return s2.CompareCodePoints( t1 ) <= 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -10721,43 +11167,51 @@ inline bool operator >=( String::const_c_string8 t1, const String& s2 )
  */
 inline bool operator ==( const String& s1, String::char8_type c2 )
 {
-   return s1.Compare( c2 ) == 0;
+   return s1.CompareCodePoints( c2 ) == 0;
 }
 
 /*!
- * <em>Less than</em> operator.
+ * <em>Less than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator  <( const String& s1, String::char8_type c2 )
 {
-   return s1.Compare( c2 ) < 0;
+   return s1.CompareCodePoints( c2 ) < 0;
 }
 
 /*!
- * <em>Less than or equal</em> operator.
+ * <em>Less than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator <=( const String& s1, String::char8_type c2 )
 {
-   return s1.Compare( c2 ) <= 0;
+   return s1.CompareCodePoints( c2 ) <= 0;
 }
 
 /*!
- * <em>Greater than</em> operator.
+ * <em>Greater than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator  >( const String& s1, String::char8_type c2 )
 {
-   return s1.Compare( c2 ) > 0;
+   return s1.CompareCodePoints( c2 ) > 0;
 }
 
 /*!
- * <em>Greater than or equal</em> operator.
+ * <em>Greater than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator >=( const String& s1, String::char8_type c2 )
 {
-   return s1.Compare( c2 ) >= 0;
+   return s1.CompareCodePoints( c2 ) >= 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -10768,43 +11222,51 @@ inline bool operator >=( const String& s1, String::char8_type c2 )
  */
 inline bool operator ==( String::char8_type c1, const String& s2 )
 {
-   return s2.Compare( c1 ) == 0;
+   return s2.CompareCodePoints( c1 ) == 0;
 }
 
 /*!
- * <em>Less than</em> operator.
+ * <em>Less than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator  <( String::char8_type c1, const String& s2 )
 {
-   return s2.Compare( c1 ) > 0;
+   return s2.CompareCodePoints( c1 ) > 0;
 }
 
 /*!
- * <em>Less than or equal</em> operator.
+ * <em>Less than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator <=( String::char8_type c1, const String& s2 )
 {
-   return s2.Compare( c1 ) >= 0;
+   return s2.CompareCodePoints( c1 ) >= 0;
 }
 
 /*!
- * <em>Greater than</em> operator.
+ * <em>Greater than</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator  >( String::char8_type c1, const String& s2 )
 {
-   return s2.Compare( c1 ) < 0;
+   return s2.CompareCodePoints( c1 ) < 0;
 }
 
 /*!
- * <em>Greater than or equal</em> operator.
+ * <em>Greater than or equal</em> operator. This function performs a
+ * character-to-character, locale-unaware comparison of numeric character
+ * values. See GenericString<>::CompareCodePoints() for more information.
  * \ingroup string_relational_operators
  */
 inline bool operator >=( String::char8_type c1, const String& s2 )
 {
-   return s2.Compare( c1 ) <= 0;
+   return s2.CompareCodePoints( c1 ) <= 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -10835,4 +11297,4 @@ inline std::ostream& operator <<( std::ostream& o, const String& s )
 #endif   // __PCL_String_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/String.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/String.h - Released 2015/12/17 18:52:09 UTC

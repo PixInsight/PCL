@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.00.0314
+// Standard IntensityTransformations Process Module Version 01.07.01.0351
 // ----------------------------------------------------------------------------
-// ColorSaturationInterface.h - Released 2015/10/08 11:24:40 UTC
+// ColorSaturationInterface.h - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -70,6 +70,8 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
+
+class PCL_CLASS Graphics;
 
 class ColorSaturationInterface : public ProcessInterface
 {
@@ -176,28 +178,29 @@ private:
    enum working_mode { EditMode, SelectMode, DeleteMode, ZoomInMode, ZoomOutMode, PanMode, NoMode = -1 };
 
    working_mode   m_mode;
-   working_mode   m_savedMode;     // for temporary keyboard mode switch
+   working_mode   m_savedMode;      // for temporary keyboard mode switch
 
-   size_type      m_currentPoint;  // point index
+   size_type      m_currentPoint;   // point index
 
    bool           m_readoutActive;
-   double         m_readouts[ 4 ]; // 0=R 1=G 2=B 3=Alpha
+   double         m_readouts[ 4 ];  // 0=R 1=G 2=B 3=Alpha
    RGBColorSystem m_readoutRGBWS;
 
    int            m_zoomX;
    int            m_zoomY;
-
    int            m_scale;
 
-   bool           m_showGrid;      // draw coordinate grids
+   int            m_wheelSteps;     // accumulated 1/8-degree wheel steps
 
-   int            m_panning;       // panning the viewport?
+   bool           m_showGrid;       // draw coordinate grids
+
+   int            m_panning;        // panning the viewport?
    Point          m_panOrigin;
 
    bool           m_cursorVisible;
-   bool           m_dragging;      // dragging a curve point?
-   Point          m_cursorPos;     // cursor position in viewport crds.
-   DPoint         m_curvePos;      // cursor position in normalized crds.
+   bool           m_dragging;       // dragging a curve point?
+   Point          m_cursorPos;      // cursor position in viewport crds.
+   DPoint         m_curvePos;       // cursor position in normalized crds.
 
    Bitmap         m_viewportBitmap; // screen bitmap
    bool           m_viewportDirty : 1;
@@ -378,4 +381,4 @@ PCL_END_LOCAL
 #endif   // __ColorSaturationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF ColorSaturationInterface.h - Released 2015/10/08 11:24:40 UTC
+// EOF ColorSaturationInterface.h - Released 2015/12/18 08:55:08 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/FileFormatInstance.cpp - Released 2015/10/08 11:24:19 UTC
+// pcl/FileFormatInstance.cpp - Released 2015/12/17 18:52:18 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -399,7 +399,7 @@ Variant FileFormatInstance::ReadProperty( const IsoString& property )
       api_property_value apiValue;
       if ( (*API->FileFormat->GetImageProperty)( handle, property.c_str(), &apiValue ) == api_false )
       {
-         apiValue.data.blockValue = 0;
+         apiValue.data.blockValue = nullptr;
          apiValue.type = VTYPE_INVALID;
       }
 
@@ -964,4 +964,4 @@ void* FileFormatInstance::CloneHandle() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormatInstance.cpp - Released 2015/10/08 11:24:19 UTC
+// EOF pcl/FileFormatInstance.cpp - Released 2015/12/17 18:52:18 UTC

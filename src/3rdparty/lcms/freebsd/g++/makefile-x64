@@ -1,0 +1,131 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.100
+# Copyright (C) 2009-2015 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Thu, 17 Dec 2015 19:03:23 GMT
+# Project id ...... lcms
+# Project type .... DynamicLibrary
+# Platform ........ FreeBSD/g++
+# Configuration ... Release/x64
+######################################################################
+
+OBJ_DIR="$(PCLSRCDIR)/3rdparty/lcms/freebsd/g++/x64/Release"
+
+.PHONY: all
+all: $(OBJ_DIR)/liblcms-pxi.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../cmscam02.c \
+../../cmscgats.c \
+../../cmscnvrt.c \
+../../cmserr.c \
+../../cmsgamma.c \
+../../cmsgmt.c \
+../../cmshalf.c \
+../../cmsintrp.c \
+../../cmsio0.c \
+../../cmsio1.c \
+../../cmslut.c \
+../../cmsmd5.c \
+../../cmsmtrx.c \
+../../cmsnamed.c \
+../../cmsopt.c \
+../../cmspack.c \
+../../cmspcs.c \
+../../cmsplugin.c \
+../../cmsps2.c \
+../../cmssamp.c \
+../../cmssm.c \
+../../cmstypes.c \
+../../cmsvirt.c \
+../../cmswtpnt.c \
+../../cmsxform.c
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Release/cmscam02.o \
+./x64/Release/cmscgats.o \
+./x64/Release/cmscnvrt.o \
+./x64/Release/cmserr.o \
+./x64/Release/cmsgamma.o \
+./x64/Release/cmsgmt.o \
+./x64/Release/cmshalf.o \
+./x64/Release/cmsintrp.o \
+./x64/Release/cmsio0.o \
+./x64/Release/cmsio1.o \
+./x64/Release/cmslut.o \
+./x64/Release/cmsmd5.o \
+./x64/Release/cmsmtrx.o \
+./x64/Release/cmsnamed.o \
+./x64/Release/cmsopt.o \
+./x64/Release/cmspack.o \
+./x64/Release/cmspcs.o \
+./x64/Release/cmsplugin.o \
+./x64/Release/cmsps2.o \
+./x64/Release/cmssamp.o \
+./x64/Release/cmssm.o \
+./x64/Release/cmstypes.o \
+./x64/Release/cmsvirt.o \
+./x64/Release/cmswtpnt.o \
+./x64/Release/cmsxform.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Release/cmscam02.d \
+./x64/Release/cmscgats.d \
+./x64/Release/cmscnvrt.d \
+./x64/Release/cmserr.d \
+./x64/Release/cmsgamma.d \
+./x64/Release/cmsgmt.d \
+./x64/Release/cmshalf.d \
+./x64/Release/cmsintrp.d \
+./x64/Release/cmsio0.d \
+./x64/Release/cmsio1.d \
+./x64/Release/cmslut.d \
+./x64/Release/cmsmd5.d \
+./x64/Release/cmsmtrx.d \
+./x64/Release/cmsnamed.d \
+./x64/Release/cmsopt.d \
+./x64/Release/cmspack.d \
+./x64/Release/cmspcs.d \
+./x64/Release/cmsplugin.d \
+./x64/Release/cmsps2.d \
+./x64/Release/cmssamp.d \
+./x64/Release/cmssm.d \
+./x64/Release/cmstypes.d \
+./x64/Release/cmsvirt.d \
+./x64/Release/cmswtpnt.d \
+./x64/Release/cmsxform.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/liblcms-pxi.so: $(OBJ_FILES)
+	clang++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -s -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/liblcms-pxi.so $(OBJ_FILES)
+	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/liblcms-pxi.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/liblcms-pxi.so $(PCLBINDIR64)
+
+./x64/Release/%.o: ../../%.c
+	clang -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -I"$(PCLINCDIR)" -mtune=corei7 -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

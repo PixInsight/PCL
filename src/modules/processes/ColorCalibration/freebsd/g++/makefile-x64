@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.96
+# PixInsight Makefile Generator Script v1.100
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 08 Oct 2015 11:23:33 GMT
+# Automatically generated on Thu, 17 Dec 2015 19:03:40 GMT
 # Project id ...... ColorCalibration
 # Project type .... Module
 # Platform ........ FreeBSD/g++
@@ -90,6 +90,6 @@ post-build:
 	cp $(OBJ_DIR)/ColorCalibration-pxm.so $(PCLBINDIR64)
 
 ./x64/Release/%.o: ../../%.cpp
-	clang++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -I"$(PCLINCDIR)" -mtune=corei7 -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	clang++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -I"$(PCLINCDIR)" -mtune=corei7 -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

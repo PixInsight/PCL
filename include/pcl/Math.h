@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/Math.h - Released 2015/10/08 11:24:12 UTC
+// pcl/Math.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -308,7 +308,7 @@ inline int IsInfinity( double x )
  * Absolute value of \a x.
  * \ingroup mathematical_functions
  */
-inline constexpr float Abs( float x )
+inline float Abs( float x )
 {
    return std::fabs( x );
 }
@@ -316,7 +316,7 @@ inline constexpr float Abs( float x )
 /*!
  * \ingroup mathematical_functions
  */
-inline constexpr double Abs( double x )
+inline double Abs( double x )
 {
    return std::fabs( x );
 }
@@ -324,7 +324,7 @@ inline constexpr double Abs( double x )
 /*!
  * \ingroup mathematical_functions
  */
-inline constexpr long double Abs( long double x )
+inline long double Abs( long double x )
 {
    return std::fabs( x );
 }
@@ -332,7 +332,7 @@ inline constexpr long double Abs( long double x )
 /*!
  * \ingroup mathematical_functions
  */
-inline constexpr signed int Abs( signed int x )
+inline signed int Abs( signed int x )
 {
    return ::abs( x );
 }
@@ -340,15 +340,15 @@ inline constexpr signed int Abs( signed int x )
 /*!
  * \ingroup mathematical_functions
  */
-#ifdef __clang__ // turn off warning due to broken cstdlib in Xcode
+#if defined( __PCL_MACOSX ) && defined( __clang__ ) // turn off warning due to broken cstdlib in Xcode
 _Pragma("clang diagnostic push")
 _Pragma("clang diagnostic ignored \"-Wabsolute-value\"")
 #endif
-inline constexpr signed long Abs( signed long x )
+inline signed long Abs( signed long x )
 {
    return ::abs( x );
 }
-#ifdef __clang__
+#if defined( __PCL_MACOSX ) && defined( __clang__ )
 _Pragma("clang diagnostic pop")
 #endif
 
@@ -360,13 +360,13 @@ inline __int64 Abs( __int64 x )
 {
    return (x < 0) ? -x : +x;
 }
-#elif defined( __clang__ )
+#elif defined( __PCL_MACOSX ) && defined( __clang__ )
 inline constexpr signed long long Abs( signed long long x )
 {
    return (x < 0) ? -x : +x;
 }
 #else
-inline constexpr signed long long Abs( signed long long x )
+inline signed long long Abs( signed long long x )
 {
    return ::abs( x );
 }
@@ -375,7 +375,7 @@ inline constexpr signed long long Abs( signed long long x )
 /*!
  * \ingroup mathematical_functions
  */
-inline constexpr signed short Abs( signed short x )
+inline signed short Abs( signed short x )
 {
    return (signed short)::abs( int( x ) );
 }
@@ -383,7 +383,7 @@ inline constexpr signed short Abs( signed short x )
 /*!
  * \ingroup mathematical_functions
  */
-inline constexpr signed char Abs( signed char x )
+inline signed char Abs( signed char x )
 {
    return (signed char)::abs( int( x ) );
 }
@@ -391,7 +391,7 @@ inline constexpr signed char Abs( signed char x )
 /*!
  * \ingroup mathematical_functions
  */
-inline constexpr wchar_t Abs( wchar_t x )
+inline wchar_t Abs( wchar_t x )
 {
    return (wchar_t)::abs( int( x ) );
 }
@@ -3339,4 +3339,4 @@ inline uint32 Hash32( const void* data, size_type size, uint32 seed = 0 )
 #endif   // __PCL_Math_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Math.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/Math.h - Released 2015/12/17 18:52:09 UTC

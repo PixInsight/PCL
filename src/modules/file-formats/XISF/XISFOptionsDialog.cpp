@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.03.0064
+// Standard XISF File Format Module Version 01.00.05.0101
 // ----------------------------------------------------------------------------
-// XISFOptionsDialog.cpp - Released 2015/10/08 11:24:33 UTC
+// XISFOptionsDialog.cpp - Released 2015/12/18 08:55:16 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
@@ -143,14 +143,26 @@ XISFOptionsDialogBase::XISFOptionsDialogBase( const XISFOptions& xisfOptions, co
 
    //
 
-   Checksums_CheckBox.SetText( "Block checksums" );
-   Checksums_CheckBox.SetToolTip( "<p>Compute cryptographic digests for attached XISF blocks. The SHA-1 hashing "
-      "algorithm is used in this XISF implementation."
-      "Checksums are verified when data blocks are accessed, providing data integrity protection.</p>" );
-   Checksums_CheckBox.SetChecked( options.checksums );
+   const char* checksumToolTip =
+      "<p>Cryptographic hashing algorithm for calculation of block checksums.</p>"
+      "<p>This implementation supports the SHA-1, SHA-256 and SHA-512 algorithms. These algorithms compute checksums "
+      "of 20, 32 and 64 bytes, respectively.</p>"
+      "<p>Checksums are verified when data blocks are accessed, providing data integrity protection.</p>";
 
-   Checksums_Sizer.AddUnscaledSpacing( m_labelWidth + ui4 );
-   Checksums_Sizer.Add( Checksums_CheckBox );
+   Checksums_Label.SetText( "Block checksums:" );
+   Checksums_Label.SetToolTip( checksumToolTip );
+   Checksums_Label.SetMinWidth( m_labelWidth );
+   Checksums_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   Checksums_ComboBox.AddItem( "SHA-1" );
+   Checksums_ComboBox.AddItem( "SHA-256" );
+   Checksums_ComboBox.AddItem( "SHA-512" );
+   Checksums_ComboBox.SetToolTip( checksumToolTip );
+   Checksums_ComboBox.SetCurrentItem( ChecksumMethodToComboBoxItem( options.checksumMethod ) );
+
+   Checksums_Sizer.SetSpacing( 4 );
+   Checksums_Sizer.Add( Checksums_Label );
+   Checksums_Sizer.Add( Checksums_ComboBox );
    Checksums_Sizer.AddStretch();
 
    Security_Sizer.SetMargin( 8 );
@@ -158,6 +170,8 @@ XISFOptionsDialogBase::XISFOptionsDialogBase( const XISFOptions& xisfOptions, co
    Security_Sizer.Add( Checksums_Sizer );
 
    Security_GroupBox.SetTitle( "Security" );
+   Security_GroupBox.EnableTitleCheckBox();
+   Security_GroupBox.SetChecked( options.checksumMethod != XISF_CHECKSUM_NONE );
    Security_GroupBox.SetSizer( Security_Sizer );
    Security_GroupBox.AdjustToContents();
 
@@ -211,6 +225,35 @@ int XISFOptionsDialogBase::ComboBoxItemToCompressionMethod( int item )
    }
 }
 
+int XISFOptionsDialogBase::ChecksumMethodToComboBoxItem( int method )
+{
+   switch ( method )
+   {
+   default:
+   case XISF_CHECKSUM_SHA1:
+      return 0;
+   case XISF_CHECKSUM_SHA256:
+      return 1;
+   case XISF_CHECKSUM_SHA512:
+      return 2;
+   }
+}
+
+int XISFOptionsDialogBase::ComboBoxItemToChecksumMethod( int item )
+{
+   switch ( item )
+   {
+   case 0:
+      return XISF_CHECKSUM_SHA1;
+   case 1:
+      return XISF_CHECKSUM_SHA256;
+   case 2:
+      return XISF_CHECKSUM_SHA512;
+   default: // !?
+      return XISF_CHECKSUM_UNKNOWN;
+   }
+}
+
 void XISFOptionsDialogBase::GetBaseParameters()
 {
    if ( DataCompression_GroupBox.IsChecked() )
@@ -220,7 +263,10 @@ void XISFOptionsDialogBase::GetBaseParameters()
 
    options.compressionLevel = uint8( CompressionLevel_SpinBox.Value() );
 
-   options.checksums = Checksums_CheckBox.IsChecked();
+   if ( Security_GroupBox.IsChecked() )
+      options.checksumMethod = ComboBoxItemToChecksumMethod( Checksums_ComboBox.CurrentItem() );
+   else
+      options.checksumMethod = XISF_CHECKSUM_NONE;
 }
 
 void XISFOptionsDialogBase::Base_Button_Click( Button& sender, bool checked )
@@ -321,6 +367,7 @@ XISFOptionsDialog::XISFOptionsDialog( const ImageOptions& o, const XISFOptions& 
    Properties_CheckBox.SetText( "Image properties" );
    Properties_CheckBox.SetToolTip( "<p>Embed view properties as XISF properties.</p>" );
    Properties_CheckBox.SetChecked( imageOptions.embedProperties );
+   Properties_CheckBox.OnClick( (pcl::Button::click_event_handler)&XISFOptionsDialog::Button_Click, *this );
 
    Properties_Sizer.AddUnscaledSpacing( m_labelWidth + ui4 );
    Properties_Sizer.Add( Properties_CheckBox );
@@ -360,13 +407,22 @@ XISFOptionsDialog::XISFOptionsDialog( const ImageOptions& o, const XISFOptions& 
    RGBWorkingSpace_Sizer.Add( RGBWorkingSpace_CheckBox );
    RGBWorkingSpace_Sizer.AddStretch();
 
-   Thumbnail_CheckBox.SetText( "Thumbnail Image" );
+   Thumbnail_CheckBox.SetText( "Thumbnail image" );
    Thumbnail_CheckBox.SetToolTip( "<p>Embed an 8-bit reduced version of the image for quick reference.</p>" );
    Thumbnail_CheckBox.SetChecked( imageOptions.embedThumbnail );
 
    Thumbnail_Sizer.AddUnscaledSpacing( m_labelWidth + ui4 );
    Thumbnail_Sizer.Add( Thumbnail_CheckBox );
    Thumbnail_Sizer.AddStretch();
+
+   PreviewRects_CheckBox.SetText( "Preview rectangles" );
+   PreviewRects_CheckBox.SetToolTip( "<p>Embed preview rectangles and identifiers.</p>" );
+   PreviewRects_CheckBox.SetChecked( imageOptions.embedPreviewRects );
+   PreviewRects_CheckBox.Enable( imageOptions.embedProperties );
+
+   PreviewRects_Sizer.AddUnscaledSpacing( m_labelWidth + ui4 );
+   PreviewRects_Sizer.Add( PreviewRects_CheckBox );
+   PreviewRects_Sizer.AddStretch();
 
    EmbeddedData_Sizer.SetMargin( 8 );
    EmbeddedData_Sizer.SetSpacing( 4 );
@@ -376,6 +432,7 @@ XISFOptionsDialog::XISFOptionsDialog( const ImageOptions& o, const XISFOptions& 
    EmbeddedData_Sizer.Add( DisplayFunction_Sizer );
    EmbeddedData_Sizer.Add( RGBWorkingSpace_Sizer );
    EmbeddedData_Sizer.Add( Thumbnail_Sizer );
+   EmbeddedData_Sizer.Add( PreviewRects_Sizer );
 
    EmbeddedData_GroupBox.SetTitle( "Embedded Data" );
    EmbeddedData_GroupBox.SetSizer( EmbeddedData_Sizer );
@@ -403,6 +460,14 @@ XISFOptionsDialog::XISFOptionsDialog( const ImageOptions& o, const XISFOptions& 
 }
 
 // ----------------------------------------------------------------------------
+
+void XISFOptionsDialog::Button_Click( Button& sender, bool checked )
+{
+   if ( sender == Properties_CheckBox )
+      PreviewRects_CheckBox.Enable( checked );
+   else
+      Base_Button_Click( sender, checked );
+}
 
 void XISFOptionsDialog::Dialog_Return( Dialog&/*sender*/, int retVal )
 {
@@ -447,6 +512,7 @@ void XISFOptionsDialog::Dialog_Return( Dialog&/*sender*/, int retVal )
       imageOptions.embedDisplayFunction = DisplayFunction_CheckBox.IsChecked();
       imageOptions.embedRGBWS = RGBWorkingSpace_CheckBox.IsChecked();
       imageOptions.embedThumbnail = Thumbnail_CheckBox.IsChecked();
+      imageOptions.embedPreviewRects = PreviewRects_CheckBox.IsChecked();
 
       // outputHints = OutputHints_Edit.Text().Trimmed();
    }
@@ -457,4 +523,4 @@ void XISFOptionsDialog::Dialog_Return( Dialog&/*sender*/, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISFOptionsDialog.cpp - Released 2015/10/08 11:24:33 UTC
+// EOF XISFOptionsDialog.cpp - Released 2015/12/18 08:55:16 UTC

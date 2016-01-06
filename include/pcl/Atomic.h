@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/Atomic.h - Released 2015/10/08 11:24:12 UTC
+// pcl/Atomic.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -484,7 +484,7 @@ public:
     * Returns true iff the value of the monitored guard variable (see the class
     * constructor) was zero when this object was constructed.
     */
-   operator bool() const
+   operator bool() const volatile
    {
       return m_guarded;
    }
@@ -504,11 +504,11 @@ private:
  *
  * \ingroup reentrancy_protection
  */
-#define PCL_REENTRANCY_GUARDED_BEGIN                                    \
-   {                                                                    \
-      static pcl::AtomicInt ___r_g___( 0 );                             \
-      pcl::AutoReentrancyGuard ___a_r_g___( ___r_g___ );                \
-      if ( ___a_r_g___ )                                                \
+#define PCL_REENTRANCY_GUARDED_BEGIN                                          \
+   {                                                                          \
+      static pcl::AtomicInt __r_g__( 0 );                                     \
+      volatile pcl::AutoReentrancyGuard __a_r_g__( __r_g__ );                 \
+      if ( __a_r_g__ )                                                        \
       {
 
 /*!
@@ -520,8 +520,8 @@ private:
  *
  * \ingroup reentrancy_protection
  */
-#define PCL_REENTRANCY_GUARDED_END                                      \
-      }                                                                 \
+#define PCL_REENTRANCY_GUARDED_END                                            \
+      }                                                                       \
    }
 
 /*!
@@ -568,7 +568,7 @@ private:
  *
  * \ingroup reentrancy_protection
  */
-#define PCL_CLASS_REENTRANCY_GUARD                                      \
+#define PCL_CLASS_REENTRANCY_GUARD                                            \
    mutable pcl::AtomicInt __pcl_guard__;
 
 /*!
@@ -584,10 +584,10 @@ private:
  *
  * \ingroup reentrancy_protection
  */
-#define PCL_CLASS_REENTRANCY_GUARDED_BEGIN                              \
-   {                                                                    \
-      pcl::AutoReentrancyGuard ___a_r_g___( __pcl_guard__ );            \
-      if ( ___a_r_g___ )                                                \
+#define PCL_CLASS_REENTRANCY_GUARDED_BEGIN                                    \
+   {                                                                          \
+      volatile pcl::AutoReentrancyGuard __a_r_g__( __pcl_guard__ );           \
+      if ( __a_r_g__ )                                                        \
       {
 
 /*!
@@ -635,7 +635,7 @@ private:
  *
  * \ingroup reentrancy_protection
  */
-#define PCL_MEMBER_REENTRANCY_GUARD( member )                           \
+#define PCL_MEMBER_REENTRANCY_GUARD( member )                                 \
    mutable pcl::AtomicInt __pcl_guard_##member##__;
 
 /*!
@@ -651,10 +651,10 @@ private:
  *
  * \ingroup reentrancy_protection
  */
-#define PCL_MEMBER_REENTRANCY_GUARDED_BEGIN( member )                   \
-   {                                                                    \
-      pcl::AutoReentrancyGuard ___a_r_g___( __pcl_guard_##member##__ ); \
-      if ( ___a_r_g___ )                                                \
+#define PCL_MEMBER_REENTRANCY_GUARDED_BEGIN( member )                         \
+   {                                                                          \
+      volatile pcl::AutoReentrancyGuard __a_r_g__( __pcl_guard_##member##__ );\
+      if ( __a_r_g__ )                                                        \
       {
 
 // ----------------------------------------------------------------------------
@@ -664,4 +664,4 @@ private:
 #endif  // __PCL_Atomic_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Atomic.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/Atomic.h - Released 2015/12/17 18:52:09 UTC

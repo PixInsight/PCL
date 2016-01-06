@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.00.0223
+// Standard ImageCalibration Process Module Version 01.03.05.0268
 // ----------------------------------------------------------------------------
-// ImageCalibrationInstance.h - Released 2015/10/08 11:24:40 UTC
+// ImageCalibrationInstance.h - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -211,7 +211,8 @@ private:
 
    // Dark frame optimization
    pcl_bool        optimizeDarks;   // perform dark frame optimizations
-   float           darkOptimizationThreshold;   // threshold for isolation of optimized dark pixels
+   float           darkOptimizationThreshold;   // ### DEPRECATED
+   float           darkOptimizationLow;    // lower bound for dark frame optimization in sigma units
    int32           darkOptimizationWindow; // size in px of the central region for dark optimization
    pcl_enum        darkCFADetectionMode;   // detect/force/ignore CFA in the master dark image
 
@@ -243,20 +244,13 @@ private:
       StringList noiseAlgorithms;
 
       OutputData() :
-      outputFilePath(),
-      darkScalingFactors( 0.0F, 3 ),
-      noiseEstimates( 0.0F, 3 ), noiseFractions( 0.0F, 3 ), noiseAlgorithms( 3 )
+         outputFilePath(),
+         darkScalingFactors( 0.0F, 3 ),
+         noiseEstimates( 0.0F, 3 ), noiseFractions( 0.0F, 3 ), noiseAlgorithms( 3 )
       {
       }
 
-      OutputData( const OutputData& o ) :
-      outputFilePath( o.outputFilePath ),
-      darkScalingFactors( o.darkScalingFactors ),
-      noiseEstimates( o.noiseEstimates ),
-      noiseFractions( o.noiseFractions ),
-      noiseAlgorithms( o.noiseAlgorithms )
-      {
-      }
+      OutputData( const OutputData& ) = default;
    };
 
    Array<OutputData> output;
@@ -295,4 +289,4 @@ private:
 #endif   // __ImageCalibrationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF ImageCalibrationInstance.h - Released 2015/10/08 11:24:40 UTC
+// EOF ImageCalibrationInstance.h - Released 2015/12/18 08:55:08 UTC

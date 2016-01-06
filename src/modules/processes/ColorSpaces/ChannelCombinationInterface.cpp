@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0258
+// Standard ColorSpaces Process Module Version 01.01.00.0294
 // ----------------------------------------------------------------------------
-// ChannelCombinationInterface.cpp - Released 2015/10/08 11:24:39 UTC
+// ChannelCombinationInterface.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
@@ -523,4 +523,4 @@ ChannelCombinationInterface::GUIData::GUIData( ChannelCombinationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ChannelCombinationInterface.cpp - Released 2015/10/08 11:24:39 UTC
+// EOF ChannelCombinationInterface.cpp - Released 2015/12/18 08:55:08 UTC

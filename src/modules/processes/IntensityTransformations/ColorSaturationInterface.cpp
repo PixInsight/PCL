@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.00.0314
+// Standard IntensityTransformations Process Module Version 01.07.01.0351
 // ----------------------------------------------------------------------------
-// ColorSaturationInterface.cpp - Released 2015/10/08 11:24:40 UTC
+// ColorSaturationInterface.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -60,6 +60,9 @@
 #include <pcl/MessageBox.h>
 #include <pcl/RealTimePreview.h>
 
+#define CURSOR_TOLERANCE   PixInsightSettings::GlobalInteger( "ImageWindow/CursorTolerance" )
+#define WHEEL_STEP_ANGLE   PixInsightSettings::GlobalInteger( "ImageWindow/WheelStepAngle" )
+
 namespace pcl
 {
 
@@ -80,12 +83,8 @@ ColorSaturationInterface* TheColorSaturationInterface = 0;
 
 // ----------------------------------------------------------------------------
 
-static const int maxZoom = 99;
-static const int maxScale = 10;
-
-// ----------------------------------------------------------------------------
-
-#define CURSOR_TOLERANCE   PixInsightSettings::GlobalInteger( "ImageWindow/CursorTolerance" )
+static const int s_maxZoom = 99;
+static const int s_maxScale = 10;
 
 // ----------------------------------------------------------------------------
 
@@ -108,6 +107,7 @@ m_viewportDirty( true )
 
    m_zoomX = m_zoomY = 1;
    m_scale = 1;
+   m_wheelSteps = 0;
 
    m_showGrid = true;
 
@@ -1004,7 +1004,7 @@ void ColorSaturationInterface::__Curve_MousePress(
             p.y /= m_zoomY;
 
             if ( m_mode == ZoomInMode )
-               SetZoom( Min( m_zoomX+1, maxZoom ), Min( m_zoomY+1, maxZoom ), &p );
+               SetZoom( Min( m_zoomX+1, s_maxZoom ), Min( m_zoomY+1, s_maxZoom ), &p );
             else
                SetZoom( Max( 1, m_zoomX-1 ), Max( 1, m_zoomY-1 ), &p );
          }
@@ -1103,20 +1103,20 @@ void ColorSaturationInterface::__Curve_MouseMove(
       for ( int i = 0; i < 2; ++i )
       {
          double f = DisplayPixelRatio();
+         int ui1 = RoundInt( f );
          if ( m_mode == ZoomInMode || m_mode == ZoomOutMode || m_mode == PanMode )
          {
             int ui16 = RoundInt( f*16 );
-            sender.Update( m_cursorPos.x-ui16, m_cursorPos.y-ui16, m_cursorPos.x+ui16, m_cursorPos.y+ui16 );
+            sender.Update( m_cursorPos.x-ui16-ui1, m_cursorPos.y-ui16-ui1, m_cursorPos.x+ui16+ui1, m_cursorPos.y+ui16+ui1 );
          }
          else
          {
-            int ui1 = RoundInt( f );
-            sender.Update( m_cursorPos.x-ui1, 0, m_cursorPos.x+ui1, h );
-            sender.Update( 0, m_cursorPos.y-ui1, w, m_cursorPos.y+ui1 );
+            sender.Update( m_cursorPos.x-ui1-ui1, 0, m_cursorPos.x+ui1+ui1, h );
+            sender.Update( 0, m_cursorPos.y-ui1-ui1, w, m_cursorPos.y+ui1+ui1 );
             if ( m_mode == SelectMode || m_mode == DeleteMode )
             {
                int ui10 = RoundInt( f*10 );
-               sender.Update( m_cursorPos.x-ui10, m_cursorPos.y-ui10, m_cursorPos.x+ui10, m_cursorPos.y+ui10 );
+               sender.Update( m_cursorPos.x-ui10-ui1, m_cursorPos.y-ui10-ui1, m_cursorPos.x+ui10+ui1, m_cursorPos.y+ui10+ui1 );
             }
          }
 
@@ -1153,14 +1153,18 @@ void ColorSaturationInterface::__Curve_MouseMove(
 void ColorSaturationInterface::__Curve_MouseWheel(
    Control& sender, const pcl::Point& pos, int delta, unsigned buttons, unsigned modifiers )
 {
-   int d = (delta > 0) ? -1 : +1;
-
    if ( sender == GUI->Curve_ScrollBox.Viewport() )
    {
-      Point p = pos + GUI->Curve_ScrollBox.ScrollPosition();
-      p.x /= m_zoomX;
-      p.y /= m_zoomY;
-      SetZoom( Range( m_zoomX+d, 1, maxZoom ), Range( m_zoomY+d, 1, maxZoom ), &p );
+      m_wheelSteps += delta; // delta is rotation angle in 1/8 degree steps
+      if ( Abs( m_wheelSteps ) >= WHEEL_STEP_ANGLE*8 )
+      {
+         Point p = pos + GUI->Curve_ScrollBox.ScrollPosition();
+         p.x /= m_zoomX;
+         p.y /= m_zoomY;
+         int d = (delta > 0) ? -1 : +1;
+         SetZoom( Range( m_zoomX+d, 1, s_maxZoom ), Range( m_zoomY+d, 1, s_maxZoom ), &p );
+         m_wheelSteps = 0;
+      }
    }
 }
 
@@ -1701,7 +1705,7 @@ ColorSaturationInterface::GUIData::GUIData( ColorSaturationInterface& w )
    PanMode_ToolButton.SetCheckable();
    PanMode_ToolButton.OnClick( (ToolButton::click_event_handler)&ColorSaturationInterface::__Mode_ButtonClick, w );
 
-   Zoom_SpinBox.SetRange( 1, maxZoom );
+   Zoom_SpinBox.SetRange( 1, s_maxZoom );
    Zoom_SpinBox.SetToolTip( "Zoom" );
    Zoom_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&ColorSaturationInterface::__Zoom_ValueUpdated, w );
 
@@ -1715,7 +1719,7 @@ ColorSaturationInterface::GUIData::GUIData( ColorSaturationInterface& w )
    Scale_Label.SetToolTip( "Y-axis (saturation) range." );
    Scale_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
 
-   Scale_SpinBox.SetRange( 1, maxScale );
+   Scale_SpinBox.SetRange( 1, s_maxScale );
    Scale_SpinBox.SetToolTip( "Y-axis (saturation) range." );
    Scale_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&ColorSaturationInterface::__Scale_ValueUpdated, w );
 
@@ -1898,4 +1902,4 @@ ColorSaturationInterface::GUIData::GUIData( ColorSaturationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ColorSaturationInterface.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF ColorSaturationInterface.cpp - Released 2015/12/18 08:55:08 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/Vector.h - Released 2015/10/08 11:24:12 UTC
+// pcl/Vector.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -778,6 +778,103 @@ public:
    }
 
 #ifndef __PCL_NO_VECTOR_STATISTICS
+
+   /*!
+    * Returns the index of the smallest vector component.
+    *
+    * For empty vectors, this function returns zero. For vectors where the
+    * smallest component occurs more than once, this function returns the index
+    * of the first occurrence.
+    */
+   int IndexOfSmallestComponent() const
+   {
+      return int( pcl::MinItem( m_data->Begin(), m_data->End() ) - m_data->Begin() );
+   }
+
+   /*!
+    * Returns the index of the largest vector component.
+    *
+    * For empty vectors, this function returns zero. For vectors where the
+    * largest component occurs more than once, this function returns the index
+    * of the first occurrence.
+    */
+   int IndexOfLargestComponent() const
+   {
+      return int( pcl::MaxItem( m_data->Begin(), m_data->End() ) - m_data->Begin() );
+   }
+
+   /*!
+    * Returns the index of the last occurrence of the smallest vector
+    * component.
+    *
+    * For empty vectors, this function returns zero. For vectors where the
+    * smallest component occurs more than once, this function returns the index
+    * of the last occurrence.
+    */
+   int IndexOfLastSmallestComponent() const
+   {
+      iterator i = m_data->Begin();
+      if ( m_data->Length() > 0 )
+         for ( iterator j = m_data->Begin(); ++j < m_data->End(); )
+            if ( *j <= *i )
+               i = j;
+      return i - m_data->Begin();
+   }
+
+   /*!
+    * Returns the index of the last occurrence of the largest vector
+    * component.
+    *
+    * For empty vectors, this function returns zero. For vectors where the
+    * largest component occurs more than once, this function returns the index
+    * of the last occurrence.
+    */
+   int IndexOfLastLargestComponent() const
+   {
+      iterator i = m_data->Begin();
+      if ( m_data->Length() > 0 )
+         for ( iterator j = m_data->Begin(); ++j < m_data->End(); )
+            if ( *i <= *j )
+               i = j;
+      return i - m_data->Begin();
+   }
+
+   /*!
+    * Returns the index of the smallest nonzero vector component.
+    *
+    * For empty vectors, this function returns zero. For vectors where the
+    * smallest nonzero component occurs more than once, this function returns
+    * the index of the first occurrence.
+    */
+   int IndexOfSmallestNonzeroComponent() const
+   {
+      iterator i = m_data->Begin();
+      if ( m_data->Length() > 0 )
+         for ( iterator j = m_data->Begin(); ++j < m_data->End(); )
+            if ( *j != component( 0 ) )
+               if ( *j < *i )
+                  i = j;
+      return i - m_data->Begin();
+   }
+
+   /*!
+    * Returns the index of the last occurrence of the smallest nonzero vector
+    * component.
+    *
+    * For empty vectors, this function returns zero. For vectors where the
+    * smallest nonzero component occurs more than once, this function returns
+    * the index of the last occurrence.
+    */
+   int IndexOfLastSmallestNonzeroComponent() const
+   {
+      iterator i = m_data->Begin();
+      if ( m_data->Length() > 0 )
+         for ( iterator j = m_data->Begin(); ++j < m_data->End(); )
+            if ( *j != component( 0 ) )
+               if ( *j <= *i )
+                  i = j;
+      return i - m_data->Begin();
+   }
 
    /*!
     * Returns the value of the smallest vector component.
@@ -2481,4 +2578,4 @@ typedef GenericVector<Complex64>    C64Vector;
 #endif   // __PCL_Vector_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Vector.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/Vector.h - Released 2015/12/17 18:52:09 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/ImageColor.h - Released 2015/10/08 11:24:12 UTC
+// pcl/ImageColor.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -92,10 +92,10 @@ namespace pcl
  *
  * Supported color spaces are defined and enumerated by the ColorSpace class.
  *
- * A RGB Working Space (RGBWS) is used by the PCL and the PixInsight core
+ * An RGB Working Space (RGBWS) is used by PCL and the PixInsight core
  * application to perform luminance/chrominance separations and color space
  * conversions. Note that a RGBWS has nothing to do with color management and
- * ICC profiles in the PixInsight/PCL environment. A RGBWS is used for image
+ * ICC profiles in the PixInsight/PCL environment. An RGBWS is used for image
  * processing tasks exclusively, and \e never for color management tasks.
  *
  * RGB working spaces are implemented by the RGBColorSystem class.
@@ -271,4 +271,4 @@ protected:
 #endif   // __PCL_ImageColor_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageColor.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/ImageColor.h - Released 2015/12/17 18:52:09 UTC

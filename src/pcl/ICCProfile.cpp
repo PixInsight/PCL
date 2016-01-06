@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/ICCProfile.cpp - Released 2015/10/08 11:24:19 UTC
+// pcl/ICCProfile.cpp - Released 2015/12/17 18:52:18 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -49,13 +49,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#include <pcl/ICCProfile.h>
+#include <pcl/EndianConversions.h>
 #include <pcl/File.h>
 #include <pcl/GlobalSettings.h>
-#include <pcl/EndianConversions.h>
+#include <pcl/ICCProfile.h>
 
-#include <pcl/api/APIInterface.h>
 #include <pcl/api/APIException.h>
+#include <pcl/api/APIInterface.h>
 
 namespace pcl
 {
@@ -172,7 +172,7 @@ size_type ICCProfile::ProfileSize() const
 
 // ----------------------------------------------------------------------------
 
-String ICCProfile::Description() const
+String ICCProfile::Description( const char* language, const char* country ) const
 {
    if ( data.IsEmpty() )
       return String();
@@ -181,7 +181,7 @@ String ICCProfile::Description() const
    if ( h == 0 )
       ThrowError( "Unable to retrieve ICC profile description" );
 
-   String description = Description( h );
+   String description = Description( h, language, country );
 
    (*API->ColorManagement->CloseProfile)( h );
 
@@ -637,4 +637,4 @@ ICCProfile::profile_list ICCProfile::FindProfilesByColorSpace( ICCColorSpaces co
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ICCProfile.cpp - Released 2015/10/08 11:24:19 UTC
+// EOF pcl/ICCProfile.cpp - Released 2015/12/17 18:52:18 UTC

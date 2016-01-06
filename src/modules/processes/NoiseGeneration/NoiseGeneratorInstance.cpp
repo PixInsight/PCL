@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard NoiseGeneration Process Module Version 01.00.02.0235
+// Standard NoiseGeneration Process Module Version 01.00.02.0271
 // ----------------------------------------------------------------------------
-// NoiseGeneratorInstance.cpp - Released 2015/10/08 11:24:40 UTC
+// NoiseGeneratorInstance.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard NoiseGeneration PixInsight module.
 //
@@ -215,4 +215,4 @@ void* NoiseGeneratorInstance::LockParameter( const MetaParameter* p, size_type /
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF NoiseGeneratorInstance.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF NoiseGeneratorInstance.cpp - Released 2015/12/18 08:55:08 UTC

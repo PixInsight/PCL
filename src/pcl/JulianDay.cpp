@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/JulianDay.cpp - Released 2015/10/08 11:24:19 UTC
+// pcl/JulianDay.cpp - Released 2015/12/17 18:52:18 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -56,15 +56,15 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-// Julian Day Number Conversion Algorithms
-//
-// Based on:
-// Meeus, Jean. 1991, Astronomical Algorithms (Willmann-Bell, Inc.), chap. 7.
-//
-// We have modified the original Meeus' algorithms to support negative julian
-// day numbers.
-
-// ----------------------------------------------------------------------------
+/*
+ * Julian Day Number Conversion Algorithms
+ *
+ * Based on:
+ * Meeus, Jean (1991), Astronomical Algorithms, Willmann-Bell, Inc., ch. 7.
+ *
+ * We have modified the original Meeus' algorithms to support negative julian
+ * day numbers.
+ */
 
 double ComplexTimeToJD( int y, int m, int d, double f )
 {
@@ -74,7 +74,7 @@ double ComplexTimeToJD( int y, int m, int d, double f )
       m += 12;
    }
 
-   int i = TruncI( Floor( 365.25*(y + 4716) ) ) + TruncI( 30.6001*(m + 1) ) + d - 1524;
+   int i = TruncInt( Floor( 365.25*(y + 4716) ) ) + TruncInt( 30.6001*(m + 1) ) + d - 1524;
 
    f -= 0.5;
 
@@ -91,18 +91,16 @@ double ComplexTimeToJD( int y, int m, int d, double f )
 
    if ( i > 2299160 || i == 2299160 && f >= 0.5 )
    {
-      int a = TruncI( 0.01*y );
+      int a = TruncInt( 0.01*y );
       i += 2 - a + (a >> 2);
    }
 
    return i + f;
 }
 
-// ----------------------------------------------------------------------------
-
 void JDToComplexTime( int& year, int& month, int& day, double& dayf, double jd )
 {
-   int A = TruncI( jd );
+   int A = TruncInt( jd );
 
    dayf = jd - A + 0.5;
 
@@ -119,20 +117,20 @@ void JDToComplexTime( int& year, int& month, int& day, double& dayf, double jd )
 
    if ( A > 2299160 )
    {
-      int a = TruncI( (A - 1867216.25)/36524.25 );
+      int a = TruncInt( (A - 1867216.25)/36524.25 );
       A += 1 + a - (a >> 2);
    }
 
    int B = A + 1524;
-   int C = TruncI( (B - 122.1)/365.25 );
+   int C = TruncInt( (B - 122.1)/365.25 );
 
    if ( A < -1401 )  // -1400.5 = -4716 feb 29
       --C;
 
-   int D = TruncI( Floor( 365.25*C ) );
-   int E = TruncI( (B - D)/30.6001 );
+   int D = TruncInt( Floor( 365.25*C ) );
+   int E = TruncInt( (B - D)/30.6001 );
 
-   day = B - D - TruncI( 30.6001*E );
+   day = B - D - TruncInt( 30.6001*E );
    month = E - ((E < 14) ? 1 : 13);
    year = C - ((month > 2) ? 4716 : 4715);
 }
@@ -142,4 +140,4 @@ void JDToComplexTime( int& year, int& month, int& day, double& dayf, double jd )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/JulianDay.cpp - Released 2015/10/08 11:24:19 UTC
+// EOF pcl/JulianDay.cpp - Released 2015/12/17 18:52:18 UTC

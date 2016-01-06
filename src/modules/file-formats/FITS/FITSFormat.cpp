@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard FITS File Format Module Version 01.01.02.0314
+// Standard FITS File Format Module Version 01.01.03.0349
 // ----------------------------------------------------------------------------
-// FITSFormat.cpp - Released 2015/10/08 11:24:33 UTC
+// FITSFormat.cpp - Released 2015/12/18 08:55:16 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
@@ -121,6 +121,25 @@ String FITSFormat::Implementation() const
    "</html>";
 }
 
+String FITSFormat::Status() const
+{
+   return
+
+   "<p>The FITS format has been deprecated in PixInsight. It is maintained for "
+   "compatibility with existing data and legacy applications, but no active "
+   "development will be done to implement new features in FITS.</p>"
+
+   "<p><b>Consider using the XISF format.</b> XISF is the open-source, native "
+   "file format of the PixInsight platform. It is fully backwards-compatible "
+   "with FITS metadata and provides many advanced features that cannot be "
+   "implemented in FITS. XISF is subject to intense development as an initiative "
+   "to create a free, modern, efficient and interoperable format for storage, "
+   "management and interchange of digital images and associated data. For "
+   "up-to-date information on XISF, please visit:</p>"
+
+   "<p>http://pixinsight.com/xisf/</p>";
+}
+
 String FITSFormat::IconImageFile() const
 {
    return ":/file-format/fits-format-icon.png";
@@ -143,7 +162,7 @@ bool FITSFormat::CanStore32Bit() const
 
 bool FITSFormat::CanStore64Bit() const
 {
-   return false; // ### TODO - should be true
+   return false;
 }
 
 bool FITSFormat::CanStoreFloat() const
@@ -196,15 +215,19 @@ bool FITSFormat::UsesFormatSpecificData() const
    return true; // use format-specific data to manage some special FITS options
 }
 
+bool FITSFormat::IsDeprecated() const
+{
+   return true; // formally deprecated since core build 1187
+}
+
 bool FITSFormat::ValidateFormatSpecificData( const void* data ) const
 {
-   return FormatOptions::FromGenericDataBlock( data ) != 0;
+   return FormatOptions::FromGenericDataBlock( data ) != nullptr;
 }
 
 void FITSFormat::DisposeFormatSpecificData( void* data ) const
 {
-   FormatOptions* o = FormatOptions::FromGenericDataBlock( data );
-   if ( o != 0 )
+   if ( FormatOptions* o = FormatOptions::FromGenericDataBlock( data ) )
       delete o;
 }
 
@@ -330,22 +353,24 @@ FITSFormat::EmbeddingOverrides FITSFormat::DefaultEmbeddingOverrides()
 #define FITS_SIGNATURE  0x46495453u // 'FITS'
 
 FITSFormat::FormatOptions::FormatOptions() :
-signature( FITS_SIGNATURE ), options( FITSFormat::DefaultOptions() )
+   signature( FITS_SIGNATURE ),
+   options( FITSFormat::DefaultOptions() )
 {
 }
 
 FITSFormat::FormatOptions::FormatOptions( const FITSFormat::FormatOptions& x ) :
-signature( FITS_SIGNATURE ), options( x.options )
+   signature( FITS_SIGNATURE ),
+   options( x.options )
 {
 }
 
 FITSFormat::FormatOptions* FITSFormat::FormatOptions::FromGenericDataBlock( const void* data )
 {
-   if ( data == 0 )
-      return 0;
+   if ( data == nullptr )
+      return nullptr;
    const FITSFormat::FormatOptions* o = reinterpret_cast<const FITSFormat::FormatOptions*>( data );
    if ( o->signature != FITS_SIGNATURE )
-      return 0;
+      return nullptr;
    return const_cast<FITSFormat::FormatOptions*>( o );
 }
 
@@ -354,4 +379,4 @@ FITSFormat::FormatOptions* FITSFormat::FormatOptions::FromGenericDataBlock( cons
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FITSFormat.cpp - Released 2015/10/08 11:24:33 UTC
+// EOF FITSFormat.cpp - Released 2015/12/18 08:55:16 UTC

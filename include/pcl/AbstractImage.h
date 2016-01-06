@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/AbstractImage.h - Released 2015/10/08 11:24:12 UTC
+// pcl/AbstractImage.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -484,16 +484,17 @@ public:
     * When range clipping is enabled, pixel samples outside the current
     * clipping range:
     *
-    * ]RangeClipLow(),RangeClipHigh()[
+    * ( RangeClipLow(), RangeClipHigh() )
     *
-    * are ignored by statistics calculation routines. The clipping range is
-    * always defined in the normalized [0,1] range for all pixel sample data
-    * types; the necessary conversions are performed transparently.
+    * are ignored by statistics calculation routines. Note that range bounds
+    * are always excluded, since the range is open on both sides. The clipping
+    * range is always defined in the normalized [0,1] range for all pixel
+    * sample data types; the necessary conversions are performed transparently.
     *
     * When range clipping is disabled, the clipping range is ignored and all
     * pixel samples are considered for statistics calculations.
     *
-    * The default clipping range is the normalized [0,1] range. Range clipping
+    * The default clipping range is the normalized (0,1) range. Range clipping
     * is disabled by default.
     */
    bool IsRangeClippingEnabled() const
@@ -663,6 +664,121 @@ public:
    bool CanPopSelections() const
    {
       return !m_savedSelections.IsEmpty();
+   }
+
+   /*!
+    * Interprets the coordinates of a rectangle as a parameter to define a
+    * pixel selection.
+    *
+    * \param[in,out] rect  If this rectangle is empty (defining either a
+    *                      point or a line), this function sets it to the
+    *                      current rectangular selection in this image. If this
+    *                      rectangle is nonempty, this function constrains its
+    *                      coordinates to stay within image boundaries.
+    *
+    * Returns true iff the output rectangle is nonempty.
+    */
+   bool ParseRect( Rect& rect ) const
+   {
+      if ( !rect.IsRect() )
+      {
+         rect = m_selected.rectangle;
+         if ( !rect.IsRect() )
+            return false;
+      }
+      if ( !Clip( rect ) )
+         return false;
+      return true;
+   }
+
+   /*!
+    * Interprets a channel index as a parameter to define a pixel sample
+    * selection.
+    *
+    * \param[in,out] channel     If a negative channel index is specified, this
+    *                      parameter will be replaced with the currently
+    *                      selected channel index in this image.
+    *
+    * Returns true iff the output channel index is valid.
+    */
+   bool ParseChannel( int& channel ) const
+   {
+      if ( channel < 0 )
+      {
+         channel = m_selected.channel;
+         if ( channel < 0 )
+            return false;
+      }
+      if ( channel >= m_numberOfChannels )
+         return false;
+
+      return true;
+   }
+
+   /*!
+    * Interprets the coordinates of a rectangle and two channel indexes as
+    * parameters to define a pixel sample selection.
+    *
+    * \param[in,out] rect  If this rectangle is empty (defining either a
+    *                      point or a line), this function sets it to the
+    *                      current rectangular selection in this image. If this
+    *                      rectangle is nonempty, this function constrains its
+    *                      coordinates to stay within image boundaries.
+    *
+    * \param[in,out] firstChannel   If a negative channel index is specified,
+    *                      this parameter will be replaced with the first
+    *                      channel index of the current channel range selection
+    *                      in this image.
+    *
+    * \param[in,out] lastChannel    If a negative channel index is specified,
+    *                      this parameter will be replaced with the last
+    *                      channel index of the current channel range selection
+    *                      in this image.
+    *
+    * Returns true iff the output rectangle is nonempty and the output channel
+    * range is valid. When true is returned, this function ensures that
+    * \a firstChannel <= \a lastChannel.
+    */
+   bool ParseSelection( Rect& rect, int& firstChannel, int& lastChannel ) const
+   {
+      if ( !ParseRect( rect ) || !ParseChannel( firstChannel ) )
+         return false;
+
+      if ( lastChannel < 0 )
+      {
+         lastChannel = m_selected.lastChannel;
+         if ( lastChannel < 0 )
+            return false;
+      }
+      if ( lastChannel >= m_numberOfChannels )
+         return false;
+
+      if ( lastChannel < firstChannel )
+         pcl::Swap( firstChannel, lastChannel );
+
+      return true;
+   }
+
+   /*!
+    * Interprets the coordinates of a rectangle and one channel index as
+    * parameters to define a pixel sample selection.
+    *
+    * \param[in,out] rect  If this rectangle is empty (defining either a
+    *                      point or a line), this function sets it to the
+    *                      current rectangular selection in this image. If this
+    *                      rectangle is nonempty, this function constrains its
+    *                      coordinates to stay within image boundaries.
+    *
+    * \param[in,out] channel     If a negative channel index is specified, this
+    *                      parameter will be replaced with the currently
+    *                      selected channel index in this image.
+    *
+    * Returns true iff the output rectangle is nonempty and the output channel
+    * index is valid.
+    */
+   bool ParseSelection( Rect& rect, int& channel ) const
+   {
+      return ParseRect( rect ) && ParseChannel( channel );
    }
 
    // -------------------------------------------------------------------------
@@ -1278,4 +1394,4 @@ protected:
 #endif   // __PCL_AbstractImage_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AbstractImage.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/AbstractImage.h - Released 2015/12/17 18:52:09 UTC

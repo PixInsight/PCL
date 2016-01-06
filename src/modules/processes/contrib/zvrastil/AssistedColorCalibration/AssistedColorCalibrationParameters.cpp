@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard AssistedColorCalibration Process Module Version 01.00.00.0125
+// Standard AssistedColorCalibration Process Module Version 01.00.00.0161
 // ----------------------------------------------------------------------------
-// AssistedColorCalibrationParameters.cpp - Released 2015/10/08 11:24:40 UTC
+// AssistedColorCalibrationParameters.cpp - Released 2015/12/18 08:55:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard AssistedColorCalibration PixInsight module.
 //
@@ -319,4 +319,4 @@ double ACCSaturationBoost::MaximumValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AssistedColorCalibrationParameters.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF AssistedColorCalibrationParameters.cpp - Released 2015/12/18 08:55:09 UTC

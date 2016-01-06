@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.96
+# PixInsight Makefile Generator Script v1.100
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 08 Oct 2015 11:23:23 GMT
+# Automatically generated on Thu, 17 Dec 2015 19:03:25 GMT
 # Project id ...... zlib
 # Project type .... DynamicLibrary
 # Platform ........ Windows/vc12
@@ -33,7 +33,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9A65FDD9-FFE1-48A6-B8F0-DD61A64D9799}</ProjectGuid>
+    <ProjectGuid>{52B5BF26-2567-4B45-B714-DEC5E8D36D60}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -110,9 +110,11 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat></DebugInformationFormat>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -151,9 +153,11 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat></DebugInformationFormat>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -187,7 +191,8 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -217,7 +222,8 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -239,36 +245,36 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\adler32.c"/>
-    <ClCompile Include="..\..\compress.c"/>
-    <ClCompile Include="..\..\crc32.c"/>
-    <ClCompile Include="..\..\deflate.c"/>
-    <ClCompile Include="..\..\gzclose.c"/>
-    <ClCompile Include="..\..\gzlib.c"/>
-    <ClCompile Include="..\..\gzread.c"/>
-    <ClCompile Include="..\..\gzwrite.c"/>
-    <ClCompile Include="..\..\infback.c"/>
-    <ClCompile Include="..\..\inffast.c"/>
-    <ClCompile Include="..\..\inflate.c"/>
-    <ClCompile Include="..\..\inftrees.c"/>
-    <ClCompile Include="..\..\trees.c"/>
-    <ClCompile Include="..\..\uncompr.c"/>
-    <ClCompile Include="..\..\zutil.c"/>
+    <ClCompile Include="..\..\adler32.c" />
+    <ClCompile Include="..\..\compress.c" />
+    <ClCompile Include="..\..\crc32.c" />
+    <ClCompile Include="..\..\deflate.c" />
+    <ClCompile Include="..\..\gzclose.c" />
+    <ClCompile Include="..\..\gzlib.c" />
+    <ClCompile Include="..\..\gzread.c" />
+    <ClCompile Include="..\..\gzwrite.c" />
+    <ClCompile Include="..\..\infback.c" />
+    <ClCompile Include="..\..\inffast.c" />
+    <ClCompile Include="..\..\inflate.c" />
+    <ClCompile Include="..\..\inftrees.c" />
+    <ClCompile Include="..\..\trees.c" />
+    <ClCompile Include="..\..\uncompr.c" />
+    <ClCompile Include="..\..\zutil.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\crc32.h"/>
-    <ClInclude Include="..\..\deflate.h"/>
-    <ClInclude Include="..\..\gzguts.h"/>
-    <ClInclude Include="..\..\inffast.h"/>
-    <ClInclude Include="..\..\inffixed.h"/>
-    <ClInclude Include="..\..\inflate.h"/>
-    <ClInclude Include="..\..\inftrees.h"/>
-    <ClInclude Include="..\..\trees.h"/>
-    <ClInclude Include="..\..\zconf.h"/>
-    <ClInclude Include="..\..\zlib.h"/>
-    <ClInclude Include="..\..\zutil.h"/>
+    <ClInclude Include="..\..\crc32.h" />
+    <ClInclude Include="..\..\deflate.h" />
+    <ClInclude Include="..\..\gzguts.h" />
+    <ClInclude Include="..\..\inffast.h" />
+    <ClInclude Include="..\..\inffixed.h" />
+    <ClInclude Include="..\..\inflate.h" />
+    <ClInclude Include="..\..\inftrees.h" />
+    <ClInclude Include="..\..\trees.h" />
+    <ClInclude Include="..\..\zconf.h" />
+    <ClInclude Include="..\..\zlib.h" />
+    <ClInclude Include="..\..\zutil.h" />
   </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

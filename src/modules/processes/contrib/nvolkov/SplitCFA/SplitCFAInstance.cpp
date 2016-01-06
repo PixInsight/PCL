@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard SplitCFA Process Module Version 01.00.05.0064
+// Standard SplitCFA Process Module Version 01.00.05.0100
 // ----------------------------------------------------------------------------
-// SplitCFAInstance.cpp - Released 2015/10/08 11:24:40 UTC
+// SplitCFAInstance.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard SplitCFA PixInsight module.
 //
@@ -57,7 +57,7 @@
 #include <pcl/ErrorHandler.h>
 #include <pcl/FileFormat.h>
 #include <pcl/ICCProfile.h>
-#include <pcl/ProcessInterface.h> // for ProcessEvents()
+#include <pcl/MetaModule.h> // for ProcessEvents()
 #include <pcl/StdStatus.h>
 //#include <pcl/Translation.h>
 #include <pcl/Version.h>
@@ -448,7 +448,7 @@ inline thread_list SplitCFAInstance::LoadTargetFrame( const size_t fileIndex )
          if ( images.Length() > 1 ) console.WriteLn( String().Format( "* Subimage %u of %u", index+1, images.Length() ) );
          if ( !file.SelectImage( index ) ) throw CatchedException();
          LoadImageFile( *source, file, images, index );
-         ProcessInterface::ProcessEvents();
+         Module->ProcessEvents();
          FileData* inputData = new FileData( file, images[index].options );
 
 
@@ -627,16 +627,16 @@ bool SplitCFAInstance::ExecuteGlobal()
       console.WriteLn( String().Format( "<br>Processing %u target frames:", total ) );
 
       Array<size_t> t;
-      for ( size_t i = 0; i < total; t.Add( i++ ) );                        // Array with file indexes
+      for ( size_t i = 0; i < total; t.Add( i++ ) );                       // Array with file indexes
 
       const int totalCPU = Thread::NumberOfThreads( 1024, 1 );
       Console().Write( String().Format("Detected %u CPU. ", totalCPU ) );
 
       const size_t n = Min( size_t( totalCPU ), total );
-      thread_list runningThreads( n );                                       // n = how many threads will run simultaneously
+      thread_list runningThreads( n );                                     // n = how many threads will run simultaneously
       console.WriteLn( String().Format( "Using %u worker threads", runningThreads.Length() ) );
 
-      thread_list waitingThreads;                                          //container for hold images from next image. One or more if file is multi image
+      thread_list waitingThreads;                                          // container for hold images from next image. One or more if file is multi image
 
       //Translation::DisableParallelProcessing();
       try //try 2
@@ -644,19 +644,19 @@ bool SplitCFAInstance::ExecuteGlobal()
          int runing = 0;                                                   // runing = Qty sub-images processing now = Qty CPU isActiv now.
          do
          {
-            ProcessInterface::ProcessEvents();                              // Keep the GUI responsive
+            Module->ProcessEvents();                                       // Keep the GUI responsive
             if ( console.AbortRequested() ) throw ProcessAborted();
 
             // ------------------------------------------------------------
             // Open File
             if ( !t.IsEmpty() && waitingThreads.IsEmpty() )
             {
-               size_t fileIndex = *t;                                       // take first index from begining of the list
-               t.Remove( t.Begin() );                                       // remove the index from the list
+               size_t fileIndex = *t;                                      // take first index from begining of the list
+               t.Remove( t.Begin() );                                      // remove the index from the list
 
                console.WriteLn( String().Format( "<br>File %u of %u", total - t.Length(), total ) );
                if ( p_targetFrames[fileIndex].enabled )
-                  waitingThreads = LoadTargetFrame( fileIndex );            // put all sub-images from file to waitingThreads
+                  waitingThreads = LoadTargetFrame( fileIndex );           // put all sub-images from file to waitingThreads
                else
                {
                   ++skipped; console.NoteLn( "* Skipping disabled target" );
@@ -668,21 +668,21 @@ bool SplitCFAInstance::ExecuteGlobal()
             thread_list::iterator i = 0;
             for ( thread_list::iterator j = runningThreads.Begin(); j != runningThreads.End(); ++j ) //Cycle in CPU units
             {
-               if ( *j == 0 )                                               // the CPU is free and empty.
+               if ( *j == 0 )                                              // the CPU is free and empty.
                {
-                  if ( !waitingThreads.IsEmpty() )                          // there are not processed images
+                  if ( !waitingThreads.IsEmpty() )                         // there are not processed images
                   {
-                     i = j; break;                                          // i pointed to CPU which is free now.
+                     i = j; break;                                         // i pointed to CPU which is free now.
                   }
                }
-                                                                            // *j != 0 the CPU is non free and maybe idle or active
-               else if ( !(*j)->IsActive() )                                // the CPU is idle = the CPU has finished processing
+                                                                           // *j != 0 the CPU is non free and maybe idle or active
+               else if ( !(*j)->IsActive() )                               // the CPU is idle = the CPU has finished processing
                {
-                  i = j; break;                                             // i pointed to CPU thread which ready to save.
+                  i = j; break;                                            // i pointed to CPU thread which ready to save.
                }
             }
 
-            if ( i == 0 )                                                   // all CPU IsActive or no new images
+            if ( i == 0 )                                                  // all CPU IsActive or no new images
             {
                pcl::Sleep( 100 );
                continue;
@@ -690,14 +690,14 @@ bool SplitCFAInstance::ExecuteGlobal()
 
             // ------------------------------------------------------------
             // Write File
-            if ( *i != 0 )                                                   //the CPU is idle
+            if ( *i != 0 )                                                 //the CPU is idle
             {
                runing--;
                try
                {
                   console.WriteLn( String().Format( "<br>CPU#%u has finished processing. Saving file:", i - runningThreads.Begin() ));
                   SaveImage( *i );
-                  runningThreads.Delete( i );                                //prepare thread for next image. now (*i == 0) the CPU is free
+                  runningThreads.Delete( i );                              //prepare thread for next image. now (*i == 0) the CPU is free
                }
                catch ( ... )
                {
@@ -705,14 +705,14 @@ bool SplitCFAInstance::ExecuteGlobal()
                   throw;
                }
                ++succeeded;
-            }                                                                 //now (*i == 0) the CPU is free
+            }                                                              //now (*i == 0) the CPU is free
 
             // ------------------------------------------------------------
             // Put image to empty runningThreads slot and Run()
             if ( !waitingThreads.IsEmpty() )
             {
-               *i = *waitingThreads;                                          //put one sub-image to runningThreads. so, now (*i != 0)
-               waitingThreads.Remove( waitingThreads.Begin() );               //remove one sub-image from waitingThreads
+               *i = *waitingThreads;                                       //put one sub-image to runningThreads. so, now (*i != 0)
+               waitingThreads.Remove( waitingThreads.Begin() );            //remove one sub-image from waitingThreads
                console.WriteLn( String().Format( "<br>CPU#%u processing file " , i - runningThreads.Begin() ) + (*i)->TargetPath() );
                (*i)->Start( ThreadPriority::DefaultMax, i - runningThreads.Begin() );
                runing++;
@@ -832,4 +832,4 @@ size_type SplitCFAInstance::ParameterLength( const MetaParameter* p, size_type t
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SplitCFAInstance.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF SplitCFAInstance.cpp - Released 2015/12/18 08:55:08 UTC

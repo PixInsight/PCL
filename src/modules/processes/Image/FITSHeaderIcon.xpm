@@ -1,0 +1,280 @@
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0779
+// ----------------------------------------------------------------------------
+// Standard Image Process Module Version 01.02.09.0348
+// ----------------------------------------------------------------------------
+// FITSHeaderIcon.xpm - Released 2015/12/18 08:55:08 UTC
+// ----------------------------------------------------------------------------
+// This file is part of the standard Image PixInsight module.
+//
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ----------------------------------------------------------------------------
+
+/* XPM */
+static const char* FITSHeaderIcon_XPM[] = {
+"24 24 198 2",
+"Qt c None",
+"bd c #0809fd",
+"b. c #0d0efc",
+"ay c #1012fc",
+"a9 c #1214fb",
+".X c #1518fb",
+"aZ c #1619fb",
+"az c #1719fb",
+"aN c #1b1efa",
+"bc c #1c1ffa",
+"aK c #2023f9",
+"aM c #2024f9",
+"#Y c #2224f8",
+"#V c #2225f8",
+".Y c #2226f9",
+"aA c #2428f8",
+"ax c #2529f8",
+"#a c #272af7",
+".W c #282bf7",
+"al c #2a2ef7",
+"a8 c #2a2ff7",
+".Z c #2f34f6",
+"aj c #2f34f7",
+"aB c #3136f6",
+"aa c #3339f6",
+"ak c #3439f6",
+"a7 c #343af6",
+"#Z c #383ef5",
+"aO c #393ff5",
+"aP c #3b41f5",
+".0 c #3c43f4",
+"#X c #3d44f4",
+"aC c #3e44f4",
+"aQ c #4048f3",
+"#T c #4249f3",
+"a6 c #434af3",
+"aR c #464cf3",
+"#F c #474ef2",
+"ai c #474ff2",
+"a5 c #484ff2",
+"am c #484ff3",
+".1 c #4951f2",
+"#1 c #4a53f2",
+"aS c #4b52f2",
+"an c #4b54f1",
+"#D c #4b54f2",
+"#S c #4c54f2",
+"a4 c #4c55f2",
+"bb c #4d55f1",
+"#2 c #4f57f2",
+"aT c #4f58f1",
+"ao c #5058f1",
+"#s c #5059f1",
+"ah c #5159f1",
+"#I c #515af1",
+"#0 c #525cf0",
+"#3 c #535cf0",
+"aU c #545ef1",
+"#b c #555ef0",
+"#r c #555ff0",
+".2 c #565ff0",
+"ba c #5660f0",
+"ap c #5761ef",
+"aD c #5761f0",
+"#4 c #5862ef",
+"aV c #5964ef",
+".F c #5964f0",
+"## c #5a64ef",
+"#H c #5b65ef",
+"aq c #5c66ef",
+"#e c #5d66ef",
+"#5 c #5d67ef",
+".G c #5e69ef",
+".V c #5f69ee",
+"#J c #5f6aee",
+"a3 c #606aee",
+"b# c #606bee",
+"#f c #606bef",
+"#6 c #616cee",
+".3 c #636eee",
+".H c #646eed",
+".C c #646eee",
+"ag c #646fed",
+"#C c #646fee",
+"#g c #656fed",
+"a2 c #6570ed",
+"#7 c #6672ee",
+"#d c #6673ed",
+".E c #6772ed",
+"ar c #6773ed",
+"#K c #6873ed",
+"#h c #6874ec",
+".y c #6874ed",
+".U c #6974ed",
+"aW c #6975ec",
+".I c #6975ed",
+"a1 c #6a75ed",
+"#8 c #6b76ed",
+"as c #6c77ed",
+".u c #6d79ec",
+"#B c #6e7aec",
+".J c #6e7bec",
+"aX c #6f7aec",
+"#9 c #6f7beb",
+"at c #6f7bec",
+".4 c #707cec",
+"#i c #707deb",
+"aE c #717deb",
+"#L c #727dec",
+".t c #727eeb",
+"aw c #727eec",
+".x c #727feb",
+"#A c #737feb",
+"af c #7380eb",
+".K c #7480eb",
+"au c #7481eb",
+"#j c #7581eb",
+"#M c #7683ea",
+".s c #7784ea",
+"av c #7785ea",
+"#k c #7885ea",
+"a0 c #7886ea",
+"aY c #7986e9",
+".L c #7986ea",
+"#N c #7b87ea",
+".r c #7c89e9",
+"#z c #7c8ae9",
+".5 c #7d8ae9",
+"a. c #7d8be9",
+".M c #7e8be9",
+"aF c #7e8ce9",
+"#O c #7f8de9",
+"#l c #808ee9",
+".q c #818fe9",
+"ae c #8290e8",
+"#P c #8392e8",
+".N c #8491e9",
+"#m c #8493e8",
+".p c #8694e8",
+"a# c #8695e7",
+"#y c #8695e8",
+"ad c #8795e8",
+".O c #8897e7",
+"#Q c #8897e8",
+"#n c #8998e8",
+".6 c #8a98e7",
+".o c #8b9ae7",
+"ac c #8c9be7",
+"#o c #8c9ce7",
+".P c #8d9ce6",
+"#R c #8d9de7",
+".n c #8f9fe6",
+".w c #909fe6",
+"#x c #90a0e6",
+"#p c #91a0e6",
+"#q c #91a1e6",
+".Q c #92a2e5",
+".m c #94a4e5",
+".B c #95a5e5",
+"ab c #95a6e5",
+".7 c #96a7e5",
+".R c #97a7e5",
+"aG c #98a8e5",
+".v c #99aae4",
+".l c #99aae5",
+"#w c #9aaae4",
+"#U c #9aabe4",
+".S c #9daee3",
+".k c #9eafe4",
+".T c #9eb0e3",
+".A c #9eb0e4",
+"#v c #9fb0e4",
+".j c #a3b5e3",
+"#u c #a4b5e3",
+"#G c #a4b6e3",
+"aH c #a5b7e3",
+".i c #a8bae2",
+"#t c #a8bbe2",
+"#E c #a9bbe2",
+".h c #adc0e1",
+"aL c #aec1e1",
+"aJ c #afc2e1",
+".8 c #b0c3e1",
+".g c #b2c5e0",
+"#c c #b7cbdf",
+".f c #b7cbe0",
+".e c #bcd0df",
+".9 c #bdd2de",
+"aI c #bfd3de",
+".d c #c1d5de",
+".D c #c1d6de",
+"#W c #c2d8dd",
+"#. c #c4dadd",
+".c c #c5dbdd",
+".z c #c6dbdd",
+".b c #cae0dc",
+".a c #cfe5db",
+".# c #d4ebdb",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt",
+"Qt.#.a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t.uQt",
+"Qt.a.b.c.d.e.f.g.h.i.j.k.v.m.w.o.p.q.r.s.x.u.yQt",
+"Qt.b.z.d.e.f.g.h.i.j.A.v.B.w.o.p.q.r.s.x.u.y.CQt",
+"Qt.z.D.e.E.F.G.H.I.J.K.L.M.N.O.P.Q.R.S.T.U.C.VQt",
+"Qt.D.e.f.W.X.Y.Z.0.1.2.3.4.5.6.7.j.8.9#..C.V##Qt",
+"Qt.e.f.g#a.X.Y.Z.0.1.2.3.4.5.6.7.j.8.9#..V###bQt",
+"Qt#c.g.h#d#e#f#g#h.u#i#j#k.5#l#m#n#o#p#q###r#sQt",
+"Qt.g.h#t#u#v#w.B#x.o#y.q#z.s#A#B.U#C.V###r#s#DQt",
+"Qt.h#E#u#v#w.B#x.o#y.q#z#k#A#B.U#C.V###r#s#D#FQt",
+"Qt#E#G#v#H#I#r###J.3#K.u#L#M#N#O#P#Q.P#R#S#F#TQt",
+"Qt#G#v#U#V.X.Y.Z.0.1.2.3.4.5.6.7.j.8.9#W#F#T#XQt",
+"Qt#v#U.B#Y.X.Y.Z.0.1.2.3.4.5.6.7.j.8.9#W#T#X#ZQt",
+"Qt#U.B#x#0#1#2#3#4#5#6#7#8#9.K#ka..qa##y#X#ZaaQt",
+"Qtab#xacadae.5#kaf#B.Iag#J##.2ah#Sai#T#X#ZaaajQt",
+"Qt#xacadae.5#kaf#B.Iag#J#H.2#I#Sai#T#X#ZakajalQt",
+"Qtacadaeaiamanao#3apaq#J.Carasatauav.rawajalaxQt",
+"Qtadaea.ayazaAaBaC#1aDagaEaF.oaGaH.gaIaJalaxaKQt",
+"Qtaea.#kayazaAaBaC#1aDagaEaF.oaGaH.gaIaLaxaMaNQt",
+"Qta.#kafaOaPaQaRaSaTaUaV.V#CaWaX.KaY.M.taMaNaZQt",
+"Qta0afata1a2a3#H.2#Ia4a5a6aCaOa7.Za8axaMaNaza9Qt",
+"Qtafata1a2a3#H.2#Ia4a5a6aCaOa7.Za8axaMaNaza9b.Qt",
+"Qtata1a2b##Hba#Ibba5a6aCaOa7.Za8axaMbcaza9b.bdQt",
+"QtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQtQt"};
+
+// ----------------------------------------------------------------------------
+// EOF FITSHeaderIcon.xpm - Released 2015/12/18 08:55:08 UTC

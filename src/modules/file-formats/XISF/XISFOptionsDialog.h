@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.03.0064
+// Standard XISF File Format Module Version 01.00.05.0101
 // ----------------------------------------------------------------------------
-// XISFOptionsDialog.h - Released 2015/10/08 11:24:33 UTC
+// XISFOptionsDialog.h - Released 2015/12/18 08:55:16 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
@@ -97,7 +97,8 @@ protected:
    GroupBox          Security_GroupBox;
    VerticalSizer     Security_Sizer;
       HorizontalSizer   Checksums_Sizer;
-         CheckBox          Checksums_CheckBox;
+         Label             Checksums_Label;
+         ComboBox          Checksums_ComboBox;
 
    HorizontalSizer   BottomSection_Sizer;
       PushButton        OK_PushButton;
@@ -105,6 +106,9 @@ protected:
 
    int CompressionMethodToComboBoxItem( int );
    int ComboBoxItemToCompressionMethod( int );
+
+   int ChecksumMethodToComboBoxItem( int );
+   int ComboBoxItemToChecksumMethod( int );
 
    void GetBaseParameters();
 
@@ -162,7 +166,10 @@ private:
          CheckBox             RGBWorkingSpace_CheckBox;
       HorizontalSizer      Thumbnail_Sizer;
          CheckBox             Thumbnail_CheckBox;
+      HorizontalSizer      PreviewRects_Sizer;
+         CheckBox             PreviewRects_CheckBox;
 
+   void Button_Click( Button& sender, bool checked );
    void Dialog_Return( Dialog& sender, int retVal );
 };
 
@@ -173,4 +180,4 @@ private:
 #endif   // XISFOptionsDialog_h
 
 // ----------------------------------------------------------------------------
-// EOF XISFOptionsDialog.h - Released 2015/10/08 11:24:33 UTC
+// EOF XISFOptionsDialog.h - Released 2015/12/18 08:55:16 UTC

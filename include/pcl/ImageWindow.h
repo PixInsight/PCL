@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/ImageWindow.h - Released 2015/10/08 11:24:12 UTC
+// pcl/ImageWindow.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -515,9 +515,9 @@ public:
     *
     * %File and directory paths in the PixInsight environment employ UNIX
     * directory separators (the slash character, '/') on all supported
-    * platforms. As an exception, on Windows the PCL allows you to use also
-    * DOS separators (backslash, '\'), but their usage is discouraged since
-    * its support might be discontinued in future PCL versions.
+    * platforms. As an exception, on Windows PCL allows you to use also DOS
+    * separators (backslash, '\'), but their use is discouraged since its
+    * support might be discontinued in future PCL versions.
     *
     * URLs must be valid and conform to the URI specification from
     * RFC 3986 (Uniform Resource Identifier: Generic Syntax). The HTTP and
@@ -1707,7 +1707,7 @@ public:
     *
     *                A zoom factor of -1 should not be used explicitly; it is a
     *                reserved value for internal use, and there is no guarantee
-    *                that future versions of the PCL continue accepting it.
+    *                that future versions of PCL continue accepting it.
     *
     * If the specified viewport location cannot correspond to the viewport
     * central position with the specified zoom factor, the nearest image
@@ -2806,4 +2806,4 @@ private:
 #endif   // __PCL_ImageWindow_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageWindow.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/ImageWindow.h - Released 2015/12/17 18:52:09 UTC

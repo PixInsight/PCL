@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/MultiscaleLinearTransform.cpp - Released 2015/10/08 11:24:19 UTC
+// pcl/MultiscaleLinearTransform.cpp - Released 2015/12/17 18:52:18 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -130,7 +130,7 @@ private:
    void LinearFilterLayer( GenericImage<P>& cj, int n, bool parallel, int maxProcessors )
    {
       GaussianFilter H( n );
-      if ( n >= 49 || cj.Width() < n || cj.Height() < n  )
+      if ( n >= PCL_FFT_CONVOLUTION_IS_FASTER_THAN_SEPARABLE_FILTER_SIZE || cj.Width() < n || cj.Height() < n  )
       {
          FFTConvolution Z( H );
          Z.EnableParallelProcessing( parallel, maxProcessors );
@@ -205,4 +205,4 @@ void MultiscaleLinearTransform::Transform( const UInt32Image& image )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MultiscaleLinearTransform.cpp - Released 2015/10/08 11:24:19 UTC
+// EOF pcl/MultiscaleLinearTransform.cpp - Released 2015/12/17 18:52:18 UTC

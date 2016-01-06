@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/ProcessParameter.h - Released 2015/10/08 11:24:12 UTC
+// pcl/ProcessParameter.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -393,7 +393,7 @@ public:
     * Read-only process parameters, also known as <em>output properties</em>,
     * cannot be changed by external processes. For example, a script running on
     * the core application can retrieve an output property from a process
-    * instance, but it cannot change its value. The same happens with the PCL
+    * instance, but it cannot change its value. The same happens with PCL's
     * implementation represented by the Process and ProcessInstance classes.
     *
     * Read-only parameters are often used to provide resulting values or
@@ -700,4 +700,4 @@ private:
 #endif   // __PCL_ProcessParameter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ProcessParameter.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/ProcessParameter.h - Released 2015/12/17 18:52:09 UTC

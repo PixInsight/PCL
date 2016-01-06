@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.00.0223
+// Standard ImageCalibration Process Module Version 01.03.05.0268
 // ----------------------------------------------------------------------------
-// DefectMapInstance.h - Released 2015/10/08 11:24:40 UTC
+// DefectMapInstance.h - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -96,4 +96,4 @@ private:
 #endif   // __DefectMapInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF DefectMapInstance.h - Released 2015/10/08 11:24:40 UTC
+// EOF DefectMapInstance.h - Released 2015/12/18 08:55:08 UTC

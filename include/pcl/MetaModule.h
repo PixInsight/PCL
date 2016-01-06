@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/MetaModule.h - Released 2015/10/08 11:24:12 UTC
+// pcl/MetaModule.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -364,7 +364,7 @@ public:
     * Module allocation routine. Allocates a contiguous block of \a sz bytes,
     * and returns its starting address.
     *
-    * This routine is called by the PCL internal code, and indirectly by the
+    * This routine is called by PCL internal code, and indirectly by the
     * PixInsight core application.
     *
     * The default implementation simply calls ::operator new( sz ) to allocate
@@ -385,7 +385,7 @@ public:
     * Module deallocation routine. Deallocates a previously allocated
     * contiguous block of memory starting at address \a p.
     *
-    * This routine is called by the PCL internal code, and indirectly by the
+    * This routine is called by PCL internal code, and indirectly by the
     * PixInsight core application.
     *
     * The default implementation simply calls ::operator delete( p ) to free
@@ -436,31 +436,40 @@ public:
    bool IsInstalled() const;
 
    /*!
-    * Processes all pending GUI and thread events.
+    * Processes pending user interface and thread events.
     *
-    * Call this function from the root thread (aka the GUI thread) to let the
-    * PixInsight core application process pending interface events, which may
-    * accumulate while your code is running.
+    * Call this function from the root thread (aka <em>GUI thread</em>) to let
+    * the PixInsight core application process pending interface events, which
+    * may accumulate while your code is running.
     *
     * Modules typically call this function during real-time preview generation
     * procedures. Calling this function from the root thread ensures that the
     * GUI remains responsive during long, calculation-intensive operations.
     *
+    * If the \a excludeUserInputEvents parameter is set to true, no user input
+    * events will be processed by calling this function. This includes mainly
+    * mouse and keyboard events. Unprocessed input events will remain pending
+    * and will be processed as appropriate when execution returns to
+    * PixInsight's main event handling loop, or when this function is called
+    * with \a excludeUserInputEvents set to false.
+    *
     * When this function is invoked from a running thread, a ProcessAborted
     * exception will be thrown automatically if the Thread::Abort() member
     * function has been previously called for the running thread. This allows
-    * stopping running threads in a thread-safe and controlled way. For more
+    * stopping running processes in a thread-safe and controlled way. For more
     * information, read the documentation for the Thread class.
     *
     * \note Do not call this function too frequently from the root thread, as
     * doing so may degrade the performance of the whole PixInsight graphical
-    * interface. Normally, you should only need to call this function during
-    * real-time image and graphics generation procedures, or from
-    * time-consuming processes, especially from multithreaded code.
+    * interface. For example, calling this function at 250 ms intervals is
+    * reasonable and more than sufficient in most cases. Normally, you should
+    * only need to call this function during real-time image and graphics
+    * generation procedures, or from time-consuming processes, especially from
+    * multithreaded code.
     *
     * \sa Thread, Thread::Abort()
     */
-   void ProcessEvents();
+   void ProcessEvents( bool excludeUserInputEvents = false );
 
    /*!
     * Loads a bitmap resource file.
@@ -481,7 +490,7 @@ public:
     * Resource files can be loaded from arbitrary locations. However, modules
     * typically install their resources on the /rsc/rcc/modules directory under
     * the local PixInsight installation. A module can specify the
-    * "&amp;module_resource_dir/" prefix in resource file paths to let the
+    * "@module_resource_dir/" prefix in resource file paths to let the
     * PixInsight core application load the resources from the appropriate
     * standard distribution directory automatically. For example, if a module
     * whose name is "Foo" makes the following call:
@@ -498,7 +507,7 @@ public:
     * <b>Resource Root Paths</b>
     *
     * All the resources loaded by a call to this function will be rooted at the
-    * specified \a rootPath under a standard ":/module/&lt;module-name&gt;/"
+    * specified \a rootPath under a standard ":/module/<module-name>/"
     * root path prefix set by the PixInsight core application automatically.
     * For example, if the Foo module calls this function as follows:
     *
@@ -515,7 +524,7 @@ public:
     * but these problems cannot propagate outside the failing module.
     *
     * To ease working with module-defined resources, the standard
-    * ":/&amp;module_root/" prefix can be specified in resource file paths:
+    * ":/@module_root/" prefix can be specified in resource file paths:
     *
     * \code Bitmap bmp( ":/@module_root/foo-icon.png" ); \endcode
     *
@@ -771,4 +780,4 @@ namespace InstallMode
 #endif   // __PCL_MetaModule_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaModule.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/MetaModule.h - Released 2015/12/17 18:52:09 UTC

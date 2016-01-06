@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0258
+// Standard ColorSpaces Process Module Version 01.01.00.0294
 // ----------------------------------------------------------------------------
-// RGBWorkingSpaceInterface.cpp - Released 2015/10/08 11:24:39 UTC
+// RGBWorkingSpaceInterface.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
@@ -216,7 +216,6 @@ void RGBWorkingSpaceInterface::ImageUpdated( const View& v )
 void RGBWorkingSpaceInterface::ImageFocused( const View& v )
 {
    if ( GUI != 0 && IsTrackViewActive() )
-   {
       if ( !v.IsNull() )
       {
          View mainView = v.Window().MainView();
@@ -233,7 +232,6 @@ void RGBWorkingSpaceInterface::ImageFocused( const View& v )
             UpdateControls();
          }
       }
-   }
 }
 
 void RGBWorkingSpaceInterface::ImageRGBWSUpdated( const View& v )
@@ -711,4 +709,4 @@ RGBWorkingSpaceInterface::GUIData::GUIData( RGBWorkingSpaceInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RGBWorkingSpaceInterface.cpp - Released 2015/10/08 11:24:39 UTC
+// EOF RGBWorkingSpaceInterface.cpp - Released 2015/12/18 08:55:08 UTC

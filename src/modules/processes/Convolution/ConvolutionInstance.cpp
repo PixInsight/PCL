@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard Convolution Process Module Version 01.01.03.0167
+// Standard Convolution Process Module Version 01.01.03.0203
 // ----------------------------------------------------------------------------
-// ConvolutionInstance.cpp - Released 2015/10/08 11:24:39 UTC
+// ConvolutionInstance.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Convolution PixInsight module.
 //
@@ -139,9 +139,10 @@ public:
             VariableShapeFilter H( instance.sigma, instance.shape, 0.01F,
                                    instance.aspectRatio, Rad( instance.rotationAngle ) );
 
-            if ( H.Size() >= 49 ||
-                 image.Width() < H.Size() || image.Height() < H.Size() ||
-                 !H.IsSeparable() && H.Size() >= 15 )
+            if (     H.Size() >= PCL_FFT_CONVOLUTION_IS_FASTER_THAN_SEPARABLE_FILTER_SIZE
+                 || !H.IsSeparable() && H.Size() >= PCL_FFT_CONVOLUTION_IS_FASTER_THAN_NONSEPARABLE_FILTER_SIZE
+                 ||  H.Size() > image.Width()
+                 ||  H.Size() > image.Height() )
             {
                FFTConvolution Z( H );
                Z >> image;
@@ -174,7 +175,8 @@ public:
             }
             else
             {
-               if ( F.Kernel().Size() < 15 || F.Kernel().IsHighPassFilter() )
+               if (    F.Kernel().Size() < PCL_FFT_CONVOLUTION_IS_FASTER_THAN_NONSEPARABLE_FILTER_SIZE
+                    || F.Kernel().IsHighPassFilter() )
                {
                   Convolution C( F.Kernel() );
                   C.EnableHighPassRescaling( instance.rescaleHighPass );
@@ -262,14 +264,12 @@ void ConvolutionInstance::Convolve( Image& image, int zoomLevel ) const
             S >> image;
             return;
          }
+
+         if ( f.IsSeparable() )
+            KernelFilter( KernelFilter::coefficient_matrix::FromColumnVector( f.Separable().ColFilter() ) *
+                          KernelFilter::coefficient_matrix::FromRowVector( f.Separable().RowFilter() ) ).ToImage( h );
          else
-         {
-            if ( f.IsSeparable() )
-               KernelFilter( KernelFilter::coefficient_matrix::FromColumnVector( f.Separable().ColFilter() ) *
-                             KernelFilter::coefficient_matrix::FromRowVector( f.Separable().RowFilter() ) ).ToImage( h );
-            else
-               f.Kernel().ToImage( h );
-         }
+            f.Kernel().ToImage( h );
       }
       break;
 
@@ -487,4 +487,4 @@ bool ConvolutionInstance::CreateFilterImage( Image& filter ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ConvolutionInstance.cpp - Released 2015/10/08 11:24:39 UTC
+// EOF ConvolutionInstance.cpp - Released 2015/12/18 08:55:08 UTC

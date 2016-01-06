@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.00.0314
+// Standard IntensityTransformations Process Module Version 01.07.01.0351
 // ----------------------------------------------------------------------------
-// HistogramTransformationInterface.h - Released 2015/10/08 11:24:40 UTC
+// HistogramTransformationInterface.h - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -73,6 +73,8 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
+
+class PCL_CLASS Graphics;
 
 class HistogramTransformationInterface : public ProcessInterface
 {
@@ -284,6 +286,8 @@ private:
    int            m_inputZoomX, m_inputZoomY;
    int            m_outputZoomX, m_outputZoomY;
 
+   int            m_wheelSteps;           // accumulated 1/8-degree wheel steps
+
    bool           m_rejectSaturated;      // ignore the first and last histogram counts to compute peaks
    bool           m_rawRGBInput;          // always show raw RGB input histograms when channel=RGB/K
    bool           m_lockOutputChannel;    // always show RGB output histograms
@@ -368,6 +372,7 @@ private:
    void UpdateHistogramInfo();
    void UpdateAutoClippingToolTips();
    void UpdateRealTimePreview();
+   void SynchronizeWithCurrentView();
 
    /*
     * Screen bitmap regeneration
@@ -474,4 +479,4 @@ PCL_END_LOCAL
 #endif   // __HistogramTransformationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF HistogramTransformationInterface.h - Released 2015/10/08 11:24:40 UTC
+// EOF HistogramTransformationInterface.h - Released 2015/12/18 08:55:08 UTC

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.06.0288
+// Standard Global Process Module Version 01.02.07.0324
 // ----------------------------------------------------------------------------
-// PreferencesInterface.cpp - Released 2015/10/08 11:24:39 UTC
+// PreferencesInterface.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
@@ -939,22 +939,6 @@ MainWindowPreferencesPage::MainWindowPreferencesPage( PreferencesInstance& insta
       "screen space upon startup. When enabled, this option takes precedence over maximization "
       "(previous option). If disabled, window size and position will be restored from the last session.</p>" );
 
-   NativeMenuBar_Flag.checkBox.SetText( "Native menu bar" );
-   NativeMenuBar_Flag.item = &instance.mainWindow.nativeMenuBar;
-   NativeMenuBar_Flag.SetToolTip(
-      "<p>When enabled, PixInsight will use a native menu bar on Mac OS X. When disabled, a multiplatform "
-      "menu bar will be used. This option only works on Mac OS X; it is ignored on X11 (FreeBSD, Linux) "
-      "and Windows platforms. Changing this option requires a restart of the PixInsight core application "
-      "to take effect.</p>" );
-
-   CapitalizedMenuBars_Flag.checkBox.SetText( "Capitalized menu bars" );
-   CapitalizedMenuBars_Flag.item = &instance.mainWindow.capitalizedMenuBars;
-   CapitalizedMenuBars_Flag.SetToolTip(
-      "<p>When this option is enabled, menu bar items will be written in uppercase characters "
-      "(FILE, EDIT, ...). When disabled, only the first letter of each menu bar item will be uppercase "
-      "(File, Edit, ...), following more traditional UI criteria. Note that this option does not apply to "
-      "native menu bars on Mac OS X. Changing this option requires an application restart to take effect.</p>" );
-
    ShowSplashAtStartup_Flag.checkBox.SetText( "Show splash at startup" );
    ShowSplashAtStartup_Flag.item = &instance.mainWindow.showSplashAtStartup;
    ShowSplashAtStartup_Flag.SetToolTip(
@@ -971,13 +955,37 @@ MainWindowPreferencesPage::MainWindowPreferencesPage( PreferencesInstance& insta
       "<p>If enabled, PixInsight will ask if you really want to terminate execution when you "
       "select the File > Exit main menu option.</p>" );
 
+   NativeMenuBar_Flag.checkBox.SetText( "Native menu bar" );
+   NativeMenuBar_Flag.item = &instance.mainWindow.nativeMenuBar;
+   NativeMenuBar_Flag.SetToolTip(
+      "<p>When enabled, PixInsight will use a native menu bar on OS X. When disabled, a multiplatform "
+      "menu bar will be used. This option only works on OS X; it is ignored on X11 (FreeBSD, Linux) "
+      "and Windows platforms. Changing this option requires a restart of the PixInsight core application "
+      "to take effect.</p>" );
+
+   CapitalizedMenuBars_Flag.checkBox.SetText( "Capitalized menu bars" );
+   CapitalizedMenuBars_Flag.item = &instance.mainWindow.capitalizedMenuBars;
+   CapitalizedMenuBars_Flag.SetToolTip(
+      "<p>When this option is enabled, menu bar items will be written in uppercase characters "
+      "(FILE, EDIT, ...). When disabled, only the first letter of each menu bar item will be uppercase "
+      "(File, Edit, ...), following more traditional UI criteria. Note that this option does not apply to "
+      "native menu bars on OS X. Changing this option requires an application restart to take effect.</p>" );
+
+   WindowButtonsOnTheLeft_Flag.checkBox.SetText( "Window title bar buttons on the left" );
+   WindowButtonsOnTheLeft_Flag.item = &instance.mainWindow.windowButtonsOnTheLeft;
+   WindowButtonsOnTheLeft_Flag.SetToolTip(
+      "<p>Enable this option to place window title bar buttons (minimize, maximize, close, etc) on the left side; "
+      "disable it to place buttons on the right side. This option is only enabled by default on OS X.</p>"
+      "<p>Already existing windows cannot apply changes made to this option. The selected buttons layout will be "
+      "fully applied the next time PixInsight is executed.</p>" );
+
    AcceptDroppedFiles_Flag.checkBox.SetText( "Accept dropped files/URLs" );
    AcceptDroppedFiles_Flag.item = &instance.mainWindow.acceptDroppedFiles;
    AcceptDroppedFiles_Flag.SetToolTip(
       "<p>If enabled, PixInsight will attempt to open images, PSM files and script files "
       "when one or more file or URL items are dragged to the workspace.</p>" );
 
-   DoubleClickLaunchesOpenDialog_Flag.checkBox.SetText( "Double-click launches Open File dialog" );
+   DoubleClickLaunchesOpenDialog_Flag.checkBox.SetText( "Double-click on workspace launches Open File dialog" );
    DoubleClickLaunchesOpenDialog_Flag.item = &instance.mainWindow.doubleClickLaunchesOpenDialog;
    DoubleClickLaunchesOpenDialog_Flag.SetToolTip(
       "<p>Enable this option to launch the File Open dialog box by double-clicking on the workspace.</p>" );
@@ -992,11 +1000,12 @@ MainWindowPreferencesPage::MainWindowPreferencesPage( PreferencesInstance& insta
    Page_Sizer.SetSpacing( 4 );
    Page_Sizer.Add( MaximizeAtStartup_Flag );
    Page_Sizer.Add( FullScreenAtStartup_Flag );
-   Page_Sizer.Add( NativeMenuBar_Flag );
-   Page_Sizer.Add( CapitalizedMenuBars_Flag );
    Page_Sizer.Add( ShowSplashAtStartup_Flag );
    Page_Sizer.Add( CheckForUpdatesAtStartup_Flag );
    Page_Sizer.Add( ConfirmProgramTermination_Flag );
+   Page_Sizer.Add( NativeMenuBar_Flag );
+   Page_Sizer.Add( CapitalizedMenuBars_Flag );
+   Page_Sizer.Add( WindowButtonsOnTheLeft_Flag );
    Page_Sizer.Add( AcceptDroppedFiles_Flag );
    Page_Sizer.Add( DoubleClickLaunchesOpenDialog_Flag );
    Page_Sizer.Add( MaxRecentFiles_Integer );
@@ -1207,16 +1216,12 @@ GUIEffectsPreferencesPage::GUIEffectsPreferencesPage( PreferencesInstance& insta
    TranslucentWindows_Flag.checkBox.SetText( "Translucent workspace top-level windows" );
    TranslucentWindows_Flag.item = &instance.mainWindow.translucentWindows;
    TranslucentWindows_Flag.SetToolTip(
-      "<p>Enable to allow translucency (varying opacity) effects for top-level workspace windows (e.g., tool windows).</p>" );
+      "<p>Enable to allow translucency effects (varying opacity) for top-level workspace windows (e.g., tool windows).</p>" );
 
    TranslucentChildWindows_Flag.checkBox.SetText( "Translucent workspace child windows" );
    TranslucentChildWindows_Flag.item = &instance.mainWindow.translucentChildWindows;
    TranslucentChildWindows_Flag.SetToolTip(
-      "<p>Enable to allow translucency (varying opacity) effects for child workspace windows (e.g., image windows).</p>"
-      "<p><b>Note</b> Due to several Qt bugs, currently child window translucency only works reliably on X11 (FreeBSD and Linux). "
-      "This option is disabled by default on Mac OS X and Windows; if you enable it on these platforms, make sure that it doesn't "
-      "cause screen rendering artifacts or instabilities.</p>"
-      "<p><b>Enable this option on Windows and Mac OS X on your own risk.</b></p>" );
+      "<p>Enable to allow translucency effects (varying opacity) for child workspace windows (e.g., image windows).</p>" );
 
    FadeWindows_Flag.checkBox.SetText( "Fade workspace windows" );
    FadeWindows_Flag.item = &instance.mainWindow.fadeWindows;
@@ -1227,6 +1232,11 @@ GUIEffectsPreferencesPage::GUIEffectsPreferencesPage( PreferencesInstance& insta
    FadeAutoHideWindows_Flag.item = &instance.mainWindow.fadeAutoHideWindows;
    FadeAutoHideWindows_Flag.SetToolTip(
       "<p>Enable to allow sliding animation effects for docked AutoHide windows.</p>" );
+
+   TranslucentAutoHideWindows_Flag.checkBox.SetText( "Translucent AutoHide windows" );
+   TranslucentAutoHideWindows_Flag.item = &instance.mainWindow.translucentAutoHideWindows;
+   TranslucentAutoHideWindows_Flag.SetToolTip(
+      "<p>Enable to allow translucency effects (varying opacity) for AutoHide windows.</p>" );
 
    FadeWorkspaces_Flag.checkBox.SetText( "Fade workspaces" );
    FadeWorkspaces_Flag.item = &instance.mainWindow.fadeWorkspaces;
@@ -1286,6 +1296,7 @@ GUIEffectsPreferencesPage::GUIEffectsPreferencesPage( PreferencesInstance& insta
    Page_Sizer.Add( TranslucentChildWindows_Flag );
    Page_Sizer.Add( FadeWindows_Flag );
    Page_Sizer.Add( FadeAutoHideWindows_Flag );
+   Page_Sizer.Add( TranslucentAutoHideWindows_Flag );
    Page_Sizer.Add( FadeWorkspaces_Flag );
    Page_Sizer.Add( FadeMenu_Flag );
    Page_Sizer.Add( FadeToolTip_Flag );
@@ -1303,24 +1314,26 @@ GUIEffectsPreferencesPage::GUIEffectsPreferencesPage( PreferencesInstance& insta
 
 void GUIEffectsPreferencesPage::TransferSettings( PreferencesInstance& to, const PreferencesInstance& from )
 {
-   to.mainWindow.hoverableAutoHideWindows = from.mainWindow.hoverableAutoHideWindows;
-   to.mainWindow.desktopSettingsAware     = from.mainWindow.desktopSettingsAware;
-   to.mainWindow.nativeMenuBar            = from.mainWindow.nativeMenuBar;
-   to.mainWindow.capitalizedMenuBars      = from.mainWindow.capitalizedMenuBars;
-   to.mainWindow.translucentWindows       = from.mainWindow.translucentWindows;
-   to.mainWindow.translucentChildWindows  = from.mainWindow.translucentChildWindows;
-   to.mainWindow.fadeWindows              = from.mainWindow.fadeWindows;
-   to.mainWindow.fadeAutoHideWindows      = from.mainWindow.fadeAutoHideWindows;
-   to.mainWindow.fadeWorkspaces           = from.mainWindow.fadeWorkspaces;
-   to.mainWindow.fadeMenu                 = from.mainWindow.fadeMenu;
-   to.mainWindow.fadeToolTip              = from.mainWindow.fadeToolTip;
-   to.mainWindow.explodeIcons             = from.mainWindow.explodeIcons;
-   to.mainWindow.implodeIcons             = from.mainWindow.implodeIcons;
-   to.mainWindow.animateWindows           = from.mainWindow.animateWindows;
-   to.mainWindow.animateMenu              = from.mainWindow.animateMenu;
-   to.mainWindow.animateCombo             = from.mainWindow.animateCombo;
-   to.mainWindow.animateToolTip           = from.mainWindow.animateToolTip;
-   to.mainWindow.animateToolBox           = from.mainWindow.animateToolBox;
+   to.mainWindow.hoverableAutoHideWindows   = from.mainWindow.hoverableAutoHideWindows;
+   to.mainWindow.desktopSettingsAware       = from.mainWindow.desktopSettingsAware;
+   to.mainWindow.nativeMenuBar              = from.mainWindow.nativeMenuBar;
+   to.mainWindow.capitalizedMenuBars        = from.mainWindow.capitalizedMenuBars;
+   to.mainWindow.windowButtonsOnTheLeft     = from.mainWindow.windowButtonsOnTheLeft;
+   to.mainWindow.translucentWindows         = from.mainWindow.translucentWindows;
+   to.mainWindow.translucentChildWindows    = from.mainWindow.translucentChildWindows;
+   to.mainWindow.fadeWindows                = from.mainWindow.fadeWindows;
+   to.mainWindow.fadeAutoHideWindows        = from.mainWindow.fadeAutoHideWindows;
+   to.mainWindow.translucentAutoHideWindows = from.mainWindow.translucentAutoHideWindows;
+   to.mainWindow.fadeWorkspaces             = from.mainWindow.fadeWorkspaces;
+   to.mainWindow.fadeMenu                   = from.mainWindow.fadeMenu;
+   to.mainWindow.fadeToolTip                = from.mainWindow.fadeToolTip;
+   to.mainWindow.explodeIcons               = from.mainWindow.explodeIcons;
+   to.mainWindow.implodeIcons               = from.mainWindow.implodeIcons;
+   to.mainWindow.animateWindows             = from.mainWindow.animateWindows;
+   to.mainWindow.animateMenu                = from.mainWindow.animateMenu;
+   to.mainWindow.animateCombo               = from.mainWindow.animateCombo;
+   to.mainWindow.animateToolTip             = from.mainWindow.animateToolTip;
+   to.mainWindow.animateToolBox             = from.mainWindow.animateToolBox;
 }
 
 // ----------------------------------------------------------------------------
@@ -1333,7 +1346,7 @@ FileIOPreferencesPage::FileIOPreferencesPage( PreferencesInstance& instance )
       "<p>Make backups of existing disk image files when saving images.</p>"
       "<p><b>* Warning *</b> This may increase disk space requirements considerably.</p>" );
 
-   DefaultFileExtension_Ext.label.SetText( "Default image file extension" );
+   DefaultFileExtension_Ext.label.SetText( "Default Save As image file extension" );
    DefaultFileExtension_Ext.item = &instance.imageWindow.defaultFileExtension;
    DefaultFileExtension_Ext.SetToolTip(
       "<p>This is the default file extension proposed by File Save As dialogs for new images, when the "
@@ -1342,12 +1355,12 @@ FileIOPreferencesPage::FileIOPreferencesPage( PreferencesInstance& instance )
    NativeFileDialogs_Flag.checkBox.SetText( "Use native file dialogs" );
    NativeFileDialogs_Flag.item = &instance.imageWindow.nativeFileDialogs;
    NativeFileDialogs_Flag.SetToolTip(
-      "<p>Use native file dialogs on FreeBSD, Linux, Mac OS X and Windows platforms.</p>"
+      "<p>Use native file dialogs on FreeBSD, Linux, OS X and Windows platforms.</p>"
       "<p>When this option is disabled, PixInsight uses its own, platform-independent file dialogs for "
       "all <i>file open</i> and <i>file save</i> operations. Platform-independent file dialogs are "
       "extremely reliable and behave consistently on all supported operating systems.</p>"
       "<p>If this option is enabled, PixInsight uses the native dialogs provided by the host operating "
-      "system. On Windows and Mac OS X, PixInsight will use the <i>common dialogs</i> provided by these "
+      "system. On Windows and OS X, PixInsight will use the <i>common dialogs</i> provided by these "
       "operating systems. On FreeBSD/X11 and Linux/X11 platforms, PixInsight supports native file dialogs "
       "on KDE4 and GNOME/GTK+. However, this option is currently disabled by default on X11 due to some "
       "problematic interactions between KDE file dialogs and the PixInsight Core application.</p>" );
@@ -1370,6 +1383,12 @@ FileIOPreferencesPage::FileIOPreferencesPage( PreferencesInstance& instance )
       "associated file path is not changed to the new location. This is because what "
       "has been written to disk is not an accurate representation of existing image data.</p>" );
 
+   FileFormatWarnings_Flag.checkBox.SetText( "File format warnings" );
+   FileFormatWarnings_Flag.item = &instance.imageWindow.fileFormatWarnings;
+   FileFormatWarnings_Flag.SetToolTip(
+      "<p>Emit warning messages on using deprecated file formats and insufficient format capabilities "
+      "during file write operations.</p>" );
+
    DefaultEmbedThumbnails_Flag.checkBox.SetText( "Enable thumbnail embedding by default" );
    DefaultEmbedThumbnails_Flag.item = &instance.imageWindow.defaultEmbedThumbnails;
    DefaultEmbedThumbnails_Flag.SetToolTip(
@@ -1387,6 +1406,7 @@ FileIOPreferencesPage::FileIOPreferencesPage( PreferencesInstance& instance )
    Page_Sizer.Add( RememberFileOpenType_Flag );
    Page_Sizer.Add( RememberFileSaveType_Flag );
    Page_Sizer.Add( StrictFileSaveMode_Flag );
+   Page_Sizer.Add( FileFormatWarnings_Flag );
    Page_Sizer.Add( DefaultEmbedThumbnails_Flag );
    Page_Sizer.Add( DefaultEmbedProperties_Flag );
    Page_Sizer.AddStretch();
@@ -1402,6 +1422,7 @@ void FileIOPreferencesPage::TransferSettings( PreferencesInstance& to, const Pre
    to.imageWindow.rememberFileOpenType   = from.imageWindow.rememberFileOpenType;
    to.imageWindow.rememberFileSaveType   = from.imageWindow.rememberFileSaveType;
    to.imageWindow.strictFileSaveMode     = from.imageWindow.strictFileSaveMode;
+   to.imageWindow.fileFormatWarnings     = from.imageWindow.fileFormatWarnings;
    to.imageWindow.defaultEmbedThumbnails = from.imageWindow.defaultEmbedThumbnails;
 }
 
@@ -1433,7 +1454,7 @@ DirectoriesAndNetworkPreferencesPage::DirectoriesAndNetworkPreferencesPage( Pref
       "<p><b>* Important *</b> Many critical operations depend on fast sequential access to very large files on the "
       "PixInsight platform. For this reason, a highly fragmented filesystem may degrade performance. Under MS Windows "
       "(both FAT and NTFS filesystems), it is very important to avoid heavy disk fragmentation by running the "
-      "<i>defrag</i> utility (or equivalent) on a regular basis. Under UNIX/Linux and Mac OS X, there are no "
+      "<i>defrag</i> utility (or equivalent) on a regular basis. Under UNIX/Linux and OS X, there are no "
       "fragmentation problems because the native filesystems on these platforms prevent fragmentation automatically.</p>" );
 
    SwapCompression_Flag.checkBox.SetText( "Swap file compression" );
@@ -1463,7 +1484,7 @@ DirectoriesAndNetworkPreferencesPage::DirectoriesAndNetworkPreferencesPage( Pref
    VerboseNetworkOperations_Flag.item = &instance.imageWindow.verboseNetworkOperations;
    VerboseNetworkOperations_Flag.SetToolTip(
       "<p>Enable this option to obtain information about network operations on PixInsight's stdout. Currently "
-      "this only works under UNIX/Linux and Mac OS X.</p>"
+      "this only works under UNIX/Linux and OS X.</p>"
       "<p><b>* Warning * Be aware that sensitive information, including user passwords and IP addresses, "
       "can be written to stdout as part of the generated reports.</b></p>" );
 
@@ -1682,7 +1703,23 @@ MiscImageWindowSettingsPreferencesPage::MiscImageWindowSettingsPreferencesPage( 
       "renditions, when fast renditions are enabled (See the <i>Use fast screen renditions</i> option). "
       "The default value is 6 megapixels.</p>" );
 
-   Default24BitScreenLUT_Flag.checkBox.SetText( "Use 24-bit Screen Transfer Function LUTs" );
+   HighDPIRenditions_Flag.checkBox.SetText( "High-DPI screen renditions" );
+   HighDPIRenditions_Flag.item = &instance.imageWindow.highDPIRenditions;
+   HighDPIRenditions_Flag.SetToolTip(
+      "<p>Render images using physical screen pixels on Retina displays working in high-dpi modes.<p>"
+      "<p>Currently this option is only available on OS X. On Linux/FreeBSD and Windows, all screen output "
+      "is always performed at the physical display resolution, so the state of this option is immaterial. "
+      "On high-dpi Retina display modes, physical screen pixels are used for images represented at reduced "
+      "zoom ratios 1:2 and lower. When this option is enabled in these modes, an image is represented at its "
+      "full size on physical pixels when the zoom ratio is 1:2. This is because the ratio of physical to "
+      "logical pixels is always 2 in Retina high-dpi modes.</p>"
+      "<p>Enabling this option on OS X with capable hardware may slow down screen image renditions, since the "
+      "volume of the generated pixel data is four times the volume required when working with logical pixels. "
+      "Furthermore, when this option is enabled, certain optimizations that can yield faster screen renditions "
+      "have to be disabled. If you experience slow screen performance working with big images, especially on "
+      "slow machines, you can turn off this option to improve speed at the expense of representation quality.</p>" );
+
+   Default24BitScreenLUT_Flag.checkBox.SetText( "Use 24-bit Screen Transfer Function LUTs by default" );
    Default24BitScreenLUT_Flag.item = &instance.imageWindow.default24BitScreenLUT;
    Default24BitScreenLUT_Flag.SetToolTip(
       "<p>Use 24-bit lookup tables (LUT) to apply screen transfer functions (STF) by default, instead of "
@@ -1693,18 +1730,10 @@ MiscImageWindowSettingsPreferencesPage::MiscImageWindowSettingsPreferencesPage( 
       "renditions, such as HDR compositions. Note that you can enable or disable this feature on a per view "
       "basis; this setting refers to the default state for newly created images.</p>" );
 
-   /*
-   PaintOnScreen_Flag.checkBox.SetText( "Paint image renditions directly on the screen" );
-   PaintOnScreen_Flag.item = &instance.imageWindow.paintOnScreen;
-   PaintOnScreen_Flag.SetToolTip(
-      "<p>This option is available exclusively under X11-based window managers (UNIX/Linux). It avoids the "
-      "doubly-buffered graphics output normally used by PixInsight's GUI, which may accelerate image renditions "
-      "slightly, so this feature is enabled by default.</p>"
-      "<p>However, direct screen painting may conflict with some advanced X11 composition managers. Try "
-      "disabling this option if you experience problems with window transparencies and other special desktop "
-      "effects.</p>"
-      "<p>On MS Windows and Mac OS X platforms, the state of this option is simply ignored.</p>" );
-   */
+   CreatePreviewsFromCoreProperties_Flag.checkBox.SetText( "Create previews from core properties" );
+   CreatePreviewsFromCoreProperties_Flag.item = &instance.imageWindow.createPreviewsFromCoreProperties;
+   CreatePreviewsFromCoreProperties_Flag.SetToolTip(
+      "<p>Create previews automatically from core properties stored in image files (XISF format feature).</p>" );
 
    Page_Sizer.SetSpacing( 4 );
    Page_Sizer.Add( ShowCaptionCurrentChannels_Flag );
@@ -1717,8 +1746,9 @@ MiscImageWindowSettingsPreferencesPage::MiscImageWindowSettingsPreferencesPage( 
    Page_Sizer.Add( PinchSensitivity_Real );
    Page_Sizer.Add( FastScreenRenditions_Flag );
    Page_Sizer.Add( FastScreenRenditionThreshold_Integer );
+   Page_Sizer.Add( HighDPIRenditions_Flag );
    Page_Sizer.Add( Default24BitScreenLUT_Flag );
-   //Page_Sizer.Add( PaintOnScreen_Flag );  // ### Deprecated
+   Page_Sizer.Add( CreatePreviewsFromCoreProperties_Flag );
    Page_Sizer.AddStretch();
 
    SetSizer( Page_Sizer );
@@ -1726,12 +1756,19 @@ MiscImageWindowSettingsPreferencesPage::MiscImageWindowSettingsPreferencesPage( 
 
 void MiscImageWindowSettingsPreferencesPage::TransferSettings( PreferencesInstance& to, const PreferencesInstance& from )
 {
-   to.imageWindow.showCaptionCurrentChannels = from.imageWindow.showCaptionCurrentChannels;
-   to.imageWindow.showCaptionZoomRatios      = from.imageWindow.showCaptionZoomRatios;
-   to.imageWindow.showCaptionIdentifiers     = from.imageWindow.showCaptionIdentifiers;
-   to.imageWindow.showCaptionFullPaths       = from.imageWindow.showCaptionFullPaths;
-   to.imageWindow.showActiveSTFIndicators     = from.imageWindow.showActiveSTFIndicators;
-   to.imageWindow.cursorTolerance            = from.imageWindow.cursorTolerance;
+   to.imageWindow.showCaptionCurrentChannels       = from.imageWindow.showCaptionCurrentChannels;
+   to.imageWindow.showCaptionZoomRatios            = from.imageWindow.showCaptionZoomRatios;
+   to.imageWindow.showCaptionIdentifiers           = from.imageWindow.showCaptionIdentifiers;
+   to.imageWindow.showCaptionFullPaths             = from.imageWindow.showCaptionFullPaths;
+   to.imageWindow.showActiveSTFIndicators          = from.imageWindow.showActiveSTFIndicators;
+   to.imageWindow.createPreviewsFromCoreProperties = from.imageWindow.createPreviewsFromCoreProperties;
+   to.imageWindow.cursorTolerance                  = from.imageWindow.cursorTolerance;
+   to.imageWindow.touchEvents                      = from.imageWindow.touchEvents;
+   to.imageWindow.pinchSensitivity                 = from.imageWindow.pinchSensitivity;
+   to.imageWindow.fastScreenRenditions             = from.imageWindow.fastScreenRenditions;
+   to.imageWindow.fastScreenRenditionThreshold     = from.imageWindow.fastScreenRenditionThreshold;
+   to.imageWindow.highDPIRenditions                = from.imageWindow.highDPIRenditions;
+   to.imageWindow.default24BitScreenLUT            = from.imageWindow.default24BitScreenLUT;
 }
 
 // ----------------------------------------------------------------------------
@@ -1904,7 +1941,7 @@ ParallelProcessingPreferencesPage::ParallelProcessingPreferencesPage( Preference
       "<p><b>Note</b> The state of this setting is only fetched upon application startup. Changes "
       "to this setting require a restart of the PixInsight core application to take effect.</p>"
       "<p><b>Note</b> Currently this option only works on Linux and Windows platforms. It does not "
-      "work on Mac OS X and FreeBSD. Support for all platforms will be implemented in a future "
+      "work on OS X and FreeBSD. Support for all platforms will be implemented in a future "
       "version of PixInsight.</p>" );
 
    MaxModuleThreadPriority_Set.label.SetText( "Maximum module thread priority" );
@@ -2033,7 +2070,7 @@ MiscProcessingPreferencesPage::MiscProcessingPreferencesPage( PreferencesInstanc
    AlertOnProcessCompleted_Flag.SetToolTip(
       "<p>When this option is enabled, the PixInsight core application generates a visible <i>alert</i> when "
       "a running process completes its execution. On Windows and most X11 (UNIX/Linux) desktops, an alert causes "
-      "the application icon to flash intermittently on the task bar. On Mac OS X, an alert causes the application "
+      "the application icon to flash intermittently on the task bar. On OS X, an alert causes the application "
       "icon to start bouncing on the dock. This option is disabled by default.</p>" );
 
    Page_Sizer.SetSpacing( 4 );
@@ -2101,11 +2138,12 @@ PreferencesInterface::GUIData::GUIData( PreferencesInterface& w ) : window( w )
    CategorySelection_TreeBox.OnCurrentNodeUpdated( (TreeBox::node_navigation_event_handler)&PreferencesInterface::__Category_CurrentNodeUpdated, w );
 
    int index = 0;
+   double f = w.ResourcePixelRatio();
    for ( category_list::iterator i = categories.Begin(); i != categories.End(); ++i )
    {
       CategoryNode* node = new CategoryNode( CategorySelection_TreeBox, index++ );
       node->SetText( 0, i->Title() );
-      node->SetIcon( 0, i->Icon( w.DisplayPixelRatio() ) );
+      node->SetIcon( 0, i->Icon( f ) );
    }
 
    pcl::Font titleFont = w.Font();
@@ -2229,4 +2267,4 @@ void PreferencesInterface::GUIData::InitializeCategories()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInterface.cpp - Released 2015/10/08 11:24:39 UTC
+// EOF PreferencesInterface.cpp - Released 2015/12/18 08:55:08 UTC

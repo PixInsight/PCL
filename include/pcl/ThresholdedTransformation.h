@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/ThresholdedTransformation.h - Released 2015/10/08 11:24:12 UTC
+// pcl/ThresholdedTransformation.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -72,16 +72,16 @@ namespace pcl
  * \brief Thresholded image transformation.
  *
  * %ThresholdedTransformation represents a <em>thresholded image
- * transformation</em> in the PCL. A thresholded transformation modifies its
- * effect when applied to pixels within a given range of pixel sample values.
+ * transformation</em> in PCL. A thresholded transformation modifies its effect
+ * when applied to pixels within a given range of pixel sample values.
  *
  * Instead of defining a fixed range of sample values, a thresholded
- * transformation defines two \e threshold values in the PCL. These thresholds
- * are normalized \e distances measured from a \e floating reference value that
- * can be specified on a per-pixel basis.
+ * transformation defines two \e threshold values in PCL. These thresholds are
+ * normalized \e distances measured from a \e floating reference value that can
+ * be specified on a per-pixel basis.
  *
- * In the PCL, convolutions in the spatial domain and morphological
- * transformations have been implemented as thresholded transformations.
+ * In PCL, convolutions in the spatial domain and morphological transformations
+ * have been implemented as thresholded transformations.
  */
 class PCL_CLASS ThresholdedTransformation : public virtual ImageTransformation
 {
@@ -175,4 +175,4 @@ private:
 #endif   // __PCL_ThresholdedTransformation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ThresholdedTransformation.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/ThresholdedTransformation.h - Released 2015/12/17 18:52:09 UTC

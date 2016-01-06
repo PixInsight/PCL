@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.96
+# PixInsight Makefile Generator Script v1.100
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 08 Oct 2015 11:23:33 GMT
+# Automatically generated on Thu, 17 Dec 2015 19:03:39 GMT
 # Project id ...... CloneStamp
 # Project type .... Module
 # Platform ........ MacOSX/g++
@@ -54,7 +54,7 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/CloneStamp-pxm.dylib: $(OBJ_FILES)
-	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -stdlib=libc++ -Wl,--gc-sections -s -dynamiclib -install_name @executable_path/CloneStamp-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/CloneStamp-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lpthread -lPCL-pxi
+	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -stdlib=libc++ -Wl,-dead_strip -dynamiclib -install_name @executable_path/CloneStamp-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/CloneStamp-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lpthread -lPCL-pxi
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean
@@ -67,6 +67,6 @@ post-build:
 	codesign --deep -s pleiades -f -v --timestamp $(PCLBINDIR64)/CloneStamp-pxm.dylib
 
 ./x64/Release/%.o: ../../%.cpp
-	clang++ -c -pipe -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

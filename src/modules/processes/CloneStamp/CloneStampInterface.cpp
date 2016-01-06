@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard CloneStamp Process Module Version 01.00.02.0246
+// Standard CloneStamp Process Module Version 01.00.02.0282
 // ----------------------------------------------------------------------------
-// CloneStampInterface.cpp - Released 2015/10/08 11:24:39 UTC
+// CloneStampInterface.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard CloneStamp PixInsight module.
 //
@@ -1502,39 +1502,24 @@ bool CloneStampInterface::RequiresDynamicUpdate( const View& v, const DRect& upd
    return false;
 }
 
-void CloneStampInterface::DynamicPaint( const View& v, Graphics& g, const DRect& ur  ) const
+void CloneStampInterface::DynamicPaint( const View& v, VectorGraphics& g, const DRect& ur  ) const
 {
    if ( targetView == nullptr || (v != *targetView && (sourceView == nullptr || v != *sourceView)) || !initialized )
       return;
 
    ImageWindow window = v.Window();
 
-   // Update rectangle in real viewport coordinates.
-   DRect vr = window.ImageToViewport( ur );
-
    // Update rectangle, integer viewport coordinates.
-   // N.B.: The bottom-right corner (x1,y1) of a Rect object is *excluded*
-   //       from the defined rectangle. For this reason we must extend the
-   //       corresponding x1 and y1 coordinates by one unit.
-   Rect r0( TruncInt( vr.x0 ), TruncInt( vr.y0 ), TruncInt( vr.x1 )+1, TruncInt( vr.y1 )+1 );
+   // Inflated rectangle coordinates compensate for rounding errors.
+   Rect r0 = window.ImageToViewport( ur ).TruncatedToInt().InflatedBy( 1 );
 
-   // Origin of the local bitmap coordinate system in viewport coordinates.
-   Point p0 = r0.LeftTop();
-
-   // Working bitmap
-   Bitmap bmp1 = window.ViewportBitmap( r0 );
-
-   // Create a graphics context associated to our working bitmap.
-   VectorGraphics G( bmp1 );
-
-   G.SetCompositionOperator( CompositionOp::Difference );
-   G.EnableAntialiasing();
-
-   G.SetBrush( Brush::Null() );
+   g.SetCompositionOperator( CompositionOp::Difference );
+   g.EnableAntialiasing();
+   g.SetBrush( Brush::Null() );
 
    if ( onTarget )
    {
-      G.SetPen( color, window.DisplayPixelRatio() );
+      g.SetPen( color, window.DisplayPixelRatio() );
 
       DPoint t = TargetPos();
       DPoint s = SourcePos();
@@ -1544,29 +1529,22 @@ void CloneStampInterface::DynamicPaint( const View& v, Graphics& g, const DRect&
          // Brush circle
          double r = window.ImageScalarToViewport( double( brush.radius ) );
          if ( r >= 1 )
-         {
-            DPoint c = window.ImageToViewport( t ) - p0;
-            G.DrawCircle( c, r );
-         }
+            g.DrawCircle( window.ImageToViewport( t ), r );
 
-         if ( sourceView == 0 )
-         {
-            // Vector line
-            DPoint p1 = window.ImageToViewport( s ) - p0;
-            DPoint p2 = window.ImageToViewport( t ) - p0;
-            G.DrawLine( p1, p2 );
-         }
+         // Vector line
+         if ( sourceView == nullptr )
+            g.DrawLine( window.ImageToViewport( s ), window.ImageToViewport( t ) );
       }
 
-      if ( sourceView == 0 || v == *sourceView )
+      if ( sourceView == nullptr || v == *sourceView )
       {
          // Source point
-         DPoint p1 = window.ImageToViewport( s ) - p0;
+         DPoint p1 = window.ImageToViewport( s );
          double centerRadius = window.DisplayPixelRatio() * CENTER_RADIUS;
          DPoint c1 = p1 - centerRadius;
          DPoint c2 = p1 + centerRadius;
-         G.DrawLine( c1.x, c1.y, c2.x, c2.y );
-         G.DrawLine( c2.x, c1.y, c1.x, c2.y );
+         g.DrawLine( c1.x, c1.y, c2.x, c2.y );
+         g.DrawLine( c2.x, c1.y, c1.x, c2.y );
       }
    }
 
@@ -1576,16 +1554,10 @@ void CloneStampInterface::DynamicPaint( const View& v, Graphics& g, const DRect&
       Rect r = window.ImageToViewport( done.ReverseBegin()->bounds );
       if ( r.Intersects( r0 ) )
       {
-         r -= p0;
-         G.SetPen( boundsColor, window.DisplayPixelRatio() );
-         G.DrawRect( r );
+         g.SetPen( boundsColor, window.DisplayPixelRatio() );
+         g.DrawRect( r );
       }
    }
-
-   G.EndPaint();
-
-   // Render our working bitmap on the viewport
-   g.DrawBitmap( p0, bmp1 );
 }
 
 void CloneStampInterface::SaveSettings() const
@@ -1903,4 +1875,4 @@ CloneStampInterface::GUIData::GUIData( CloneStampInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CloneStampInterface.cpp - Released 2015/10/08 11:24:39 UTC
+// EOF CloneStampInterface.cpp - Released 2015/12/18 08:55:08 UTC

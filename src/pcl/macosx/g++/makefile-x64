@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.96
+# PixInsight Makefile Generator Script v1.100
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 08 Oct 2015 11:23:23 GMT
+# Automatically generated on Thu, 17 Dec 2015 19:03:25 GMT
 # Project id ...... PCL
 # Project type .... StaticLibrary
 # Platform ........ MacOSX/g++
@@ -474,6 +474,6 @@ post-build:
 	cp $(OBJ_DIR)/libPCL-pxi.a $(PCLLIBDIR64)
 
 ./x64/Release/%.o: ../../%.cpp
-	clang++ -c -pipe -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

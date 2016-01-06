@@ -1,0 +1,120 @@
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.00.0779
+// ----------------------------------------------------------------------------
+// Standard Image Process Module Version 01.02.09.0348
+// ----------------------------------------------------------------------------
+// next.xpm - Released 2015/12/18 08:55:08 UTC
+// ----------------------------------------------------------------------------
+// This file is part of the standard Image PixInsight module.
+//
+// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ----------------------------------------------------------------------------
+
+/* XPM */
+static const char* next_XPM[] = {
+/* columns rows colors chars-per-pixel */
+"13 13 46 1",
+"& c #3948FF",
+". c #5369FE",
+"g c #080AFE",
+"q c #222BFF",
+"h c #0B0EFF",
+", c #3A49FF",
+"4 c #2B37FE",
+"0 c #1E25FE",
+"k c #0204FF",
+"8 c #4051FF",
+"o c #485CFE",
+"s c #1217FF",
+"@ c #3E4EFE",
+"t c #151BFF",
+"2 c #222AFF",
+"= c #4456FE",
+"* c #3F4FFE",
+"7 c #3A4BFF",
+"a c #0E11FF",
+"  c None",
+"d c #161CFE",
+"5 c #303DFF",
+"9 c #1920FF",
+"1 c #4557FF",
+"< c #4050FE",
+"f c #0507FF",
+"e c #313EFF",
+"j c #0000FF",
+"w c #2C37FF",
+"y c #1A21FE",
+"+ c #536AFE",
+"% c #3442FE",
+"i c #222CFF",
+"O c #4E63FE",
+"$ c #495CFF",
+"> c #3543FE",
+"6 c #3543FF",
+"r c #1117FF",
+": c #303CFE",
+"u c #1E26FF",
+"- c #4A5DFE",
+"3 c #2631FE",
+"; c #2B35FF",
+"p c #0A0DFF",
+"# c #4356FE",
+"X c #5870FE",
+/* pixels */
+"             ",
+"   .X        ",
+"   oO+       ",
+"   @#$O      ",
+"   %&*=-     ",
+"   ;:>,<1    ",
+"   2345678   ",
+"   90q3we    ",
+"   rtyui     ",
+"   pasd      ",
+"   fgh       ",
+"   jk        ",
+"             "
+};
+
+// ----------------------------------------------------------------------------
+// EOF next.xpm - Released 2015/12/18 08:55:08 UTC

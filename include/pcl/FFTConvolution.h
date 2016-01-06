@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/FFTConvolution.h - Released 2015/10/08 11:24:12 UTC
+// pcl/FFTConvolution.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -80,6 +80,42 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
+ * \defgroup fft_convolution_limits_macros Helper Macros for selection of
+ * FFT-based, separable and nonseparable convolutions as a function of filter
+ * dimensions.
+ */
+
+/*!
+ * \def PCL_FFT_CONVOLUTION_IS_FASTER_THAN_SEPARABLE_FILTER_SIZE
+ * \brief Defines a filter size in pixels above which FFT-based convolution is
+ * consistently faster than separable convolution on the current PixInsight/PCL
+ * platform.
+ *
+ * This value has been determined experimentally, and has been optimized for
+ * parallel execution on relatively fast machines with eight or more logical
+ * processor cores.
+ *
+ * \ingroup fft_convolution_limits_macros
+ */
+#define PCL_FFT_CONVOLUTION_IS_FASTER_THAN_SEPARABLE_FILTER_SIZE     162
+
+/*!
+ * \def PCL_FFT_CONVOLUTION_IS_FASTER_THAN_NONSEPARABLE_FILTER_SIZE
+ * \brief Defines a filter size in pixels above which FFT-based convolution is
+ * consistently faster than nonseparable convolution on the current
+ * PixInsight/PCL platform.
+ *
+ * This value has been determined experimentally, and has been optimized for
+ * parallel execution on relatively fast machines with eight or more logical
+ * processor cores. Note that separable convolution is \e always faster than
+ * nonseparable convolution, so this value should only be considered for
+ * convolution with nonseparable filters.
+ *
+ * \ingroup fft_convolution_limits_macros
+ */
+#define PCL_FFT_CONVOLUTION_IS_FASTER_THAN_NONSEPARABLE_FILTER_SIZE  12
+
+/*!
  * \class FFTConvolution
  * \brief Fourier-based two-dimensional convolution
  *
@@ -119,9 +155,10 @@ public:
     */
    FFTConvolution( const KernelFilter& filter ) :
       ImageTransformation(),
+      m_filter( filter.Clone() ),
       m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
    {
-      SetFilter( filter );
+      PCL_CHECK( bool( m_filter ) )
    }
 
    /*!
@@ -153,7 +190,7 @@ public:
       m_image( x.m_image ),
       m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
    {
-      if ( !x.m_filter.IsNull() )
+      if ( x.m_filter )
          m_filter = x.m_filter->Clone();
    }
 
@@ -163,7 +200,8 @@ public:
    FFTConvolution( FFTConvolution&& x ) :
       ImageTransformation( x ),
       m_filter( x.m_filter ), m_image( std::move( x.m_image ) ),
-      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors ), m_h( x.m_h )
+      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors ),
+      m_h( x.m_h )
    {
       //x.m_filter = nullptr; // already done by AutoPointer
       //x.m_h = nullptr;
@@ -185,7 +223,7 @@ public:
       {
          (void)ImageTransformation::operator =( x );
          DestroyFilter();
-         if ( !x.m_filter.IsNull() )
+         if ( x.m_filter )
             m_filter = x.m_filter->Clone();
          else
             m_image = x.m_image;
@@ -220,7 +258,7 @@ public:
     */
    bool UsingFilter() const
    {
-      return !m_filter.IsNull();
+      return m_filter;
    }
 
    /*!
@@ -232,7 +270,7 @@ public:
     */
    const KernelFilter& Filter() const
    {
-      PCL_PRECONDITION( !m_filter.IsNull() )
+      PCL_PRECONDITION( bool( m_filter ) )
       return *m_filter;
    }
 
@@ -263,7 +301,7 @@ public:
    {
       DestroyFilter();
       m_filter = filter.Clone();
-      PCL_CHECK( !m_filter.IsNull() )
+      PCL_CHECK( bool( m_filter ) )
    }
 
    /*!
@@ -391,7 +429,7 @@ protected:
    AutoPointer<KernelFilter> m_filter;
    ImageVariant              m_image;
    bool                      m_parallel      : 1;
-   unsigned                  m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT; // Maximum number of processors allowed
+   unsigned                  m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT;
 
    /*
     * Internal DFT of the response function. Initially zero. This matrix is
@@ -433,4 +471,4 @@ private:
 #endif   // __PCL_FFTConvolution_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FFTConvolution.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/FFTConvolution.h - Released 2015/12/17 18:52:09 UTC

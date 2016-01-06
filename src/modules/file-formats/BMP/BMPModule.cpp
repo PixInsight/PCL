@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard BMP File Format Module Version 01.00.03.0238
+// Standard BMP File Format Module Version 01.00.03.0272
 // ----------------------------------------------------------------------------
-// BMPModule.cpp - Released 2015/10/08 11:24:33 UTC
+// BMPModule.cpp - Released 2015/12/18 08:55:16 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard BMP PixInsight module.
 //
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  03
-#define MODULE_VERSION_BUILD     0238
+#define MODULE_VERSION_BUILD     0272
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2015
-#define MODULE_RELEASE_MONTH     10
-#define MODULE_RELEASE_DAY       8
+#define MODULE_RELEASE_MONTH     12
+#define MODULE_RELEASE_DAY       18
 
 #include "BMPModule.h"
 #include "BMPFormat.h"
@@ -183,4 +183,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF BMPModule.cpp - Released 2015/10/08 11:24:33 UTC
+// EOF BMPModule.cpp - Released 2015/12/18 08:55:16 UTC

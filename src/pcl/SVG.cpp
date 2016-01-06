@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/SVG.cpp - Released 2015/10/08 11:24:19 UTC
+// pcl/SVG.cpp - Released 2015/12/17 18:52:18 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -61,7 +61,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 SVG::SVG( const String& filePath, int width, int height ) :
-UIObject( (*API->SVG->CreateSVGFile)( ModuleHandle(), filePath.c_str(), width, height, 0/*flags*/ ) )
+   UIObject( (*API->SVG->CreateSVGFile)( ModuleHandle(), filePath.c_str(), width, height, 0/*flags*/ ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CreateSVGFile" );
@@ -70,7 +70,7 @@ UIObject( (*API->SVG->CreateSVGFile)( ModuleHandle(), filePath.c_str(), width, h
 // ----------------------------------------------------------------------------
 
 SVG::SVG( int width, int height ) :
-UIObject( (*API->SVG->CreateSVGBuffer)( ModuleHandle(), width, height, 0/*flags*/ ) )
+   UIObject( (*API->SVG->CreateSVGBuffer)( ModuleHandle(), width, height, 0/*flags*/ ) )
 {
    if ( handle == 0 )
       throw APIFunctionError( "CreateSVGBuffer" );
@@ -78,18 +78,12 @@ UIObject( (*API->SVG->CreateSVGBuffer)( ModuleHandle(), width, height, 0/*flags*
 
 // ----------------------------------------------------------------------------
 
-SVG::SVG( void* h ) : UIObject( h )
-{
-}
-
-// ----------------------------------------------------------------------------
-
 SVG& SVG::Null()
 {
-   static SVG* nullSVG = 0;
+   static SVG* nullSVG = nullptr;
    static Mutex mutex;
    volatile AutoLock lock( mutex );
-   if ( nullSVG == 0 )
+   if ( nullSVG == nullptr )
       nullSVG = new SVG( reinterpret_cast<void*>( 0 ) );
    return *nullSVG;
 }
@@ -267,4 +261,4 @@ void* SVG::CloneHandle() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SVG.cpp - Released 2015/10/08 11:24:19 UTC
+// EOF pcl/SVG.cpp - Released 2015/12/17 18:52:18 UTC

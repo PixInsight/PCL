@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/GlobalSettings.h - Released 2015/10/08 11:24:12 UTC
+// pcl/GlobalSettings.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -140,6 +140,7 @@ namespace GlobalVariableType
  * <tr><td>MainWindow/TranslucentChildWindows</td>                    <td></td></tr>
  * <tr><td>MainWindow/FadeWindows</td>                                <td></td></tr>
  * <tr><td>MainWindow/FadeAutoHideWindows</td>                        <td></td></tr>
+ * <tr><td>MainWindow/TranslucentAutoHideWindows</td>                 <td></td></tr>
  * <tr><td>MainWindow/FadeWorkspaces</td>                             <td></td></tr>
  * <tr><td>MainWindow/FadeMenu</td>                                   <td></td></tr>
  * <tr><td>MainWindow/FadeToolTip</td>                                <td></td></tr>
@@ -166,10 +167,14 @@ namespace GlobalVariableType
  * <tr><td>ImageWindow/RememberFileOpenType</td>                      <td></td></tr>
  * <tr><td>ImageWindow/RememberFileSaveType</td>                      <td></td></tr>
  * <tr><td>ImageWindow/StrictFileSaveMode</td>                        <td></td></tr>
+ * <tr><td>ImageWindow/FileFormatWarnings</td>                        <td></td></tr>
  * <tr><td>ImageWindow/UseFileNamesAsImageIdentifiers</td>            <td></td></tr>
  * <tr><td>ImageWindow/TouchEvents</td>                               <td></td></tr>
  * <tr><td>ImageWindow/FastScreenRenditions</td>                      <td></td></tr>
- * <tr><td>ImageWindow/Default20BitScreenLUT</td>                     <td></td></tr>
+ * <tr><td>ImageWindow/HighDPIRenditions</td>                         <td></td></tr>
+ * <tr><td>ImageWindow/Default24BitScreenLUT</td>                     <td></td></tr>
+ * <tr><td>ImageWindow/CreatePreviewsFromCoreProperties</td>          <td></td></tr>
+ *
  * <tr><td>Process/EnableParallelProcessing</td>                      <td></td></tr>
  * <tr><td>Process/EnableParallelCoreRendering</td>                   <td></td></tr>
  * <tr><td>Process/EnableParallelCoreColorManagement</td>             <td></td></tr>
@@ -191,12 +196,15 @@ namespace GlobalVariableType
  * <h3>Global Integers</h3>
  *
  * <table border="1" cellpadding="4" cellspacing="0">
- * <tr><td>Application/FontResolution</td>                            <td></td>Font resolution in dots per inch (dpi).</tr>
+ * <tr><td>Application/FontResolution</td>                            <td></td>Font resolution in dots per inch.</tr>
  * <tr><td>MainWindow/MaxRecentFiles</td>                             <td></td></tr>
  * <tr><td>ImageWindow/DefaultMaskMode</td>                           <td>See the pcl::MaskMode namespace.</td></tr>
  * <tr><td>ImageWindow/DefaultTransparencyMode</td>                   <td>See the pcl::TransparencyMode namespace.</td></tr>
  * <tr><td>ImageWindow/CursorTolerance</td>                           <td>In device pixels.</td></tr>
+ * <tr><td>ImageWindow/WheelStepAngle</td>                            <td>In degrees.</td></tr>
  * <tr><td>ImageWindow/FastScreenRenditionThreshold</td>              <td>In MiB.</td></tr>
+ * <tr><td>ImageWindow/ImageThumbnailSize</td>                        <td>In pixels</td></tr>
+ * <tr><td>ImageWindow/ProjectThumbnailSize</td>                      <td>In pixels</td></tr>
  * <tr><td>Workspace/PrimaryScreenCenterX</td>                        <td>Read-only. In physical device pixels.</td></tr>
  * <tr><td>Workspace/PrimaryScreenCenterY</td>                        <td>Read-only. In physical device pixels.</td></tr>
  * <tr><td>TransparencyBrush/Brush</td>                               <td>See the pcl::BackgroundBrush namespace.</td></tr>
@@ -217,6 +225,12 @@ namespace GlobalVariableType
  * <table border="1" cellpadding="4" cellspacing="0">
  * <tr><td>Application/StartUTC</td>                                  <td>Read-only</td></tr>
  * <tr><td>Application/UIScalingFactor</td>                           <td>In the range [1.0,4.0].</td></tr>
+ * <tr><td>MainWindow/ActiveWindowOpacity</td>                        <td></td></tr>
+ * <tr><td>MainWindow/InactiveWindowOpacity</td>                      <td></td></tr>
+ * <tr><td>MainWindow/MovingWindowOpacity</td>                        <td></td></tr>
+ * <tr><td>MainWindow/InactiveChildWindowOpacity</td>                 <td></td></tr>
+ * <tr><td>MainWindow/MovingChildWindowOpacity</td>                   <td></td></tr>
+ * <tr><td>MainWindow/AutoHideWindowOpacity</td>                      <td></td></tr>
  * <tr><td>ImageWindow/DefaultHorizontalResolution</td>               <td>In device pixels per resolution unit. See the ImageWindow/DefaultMetricResolution global variable.</td></tr>
  * <tr><td>ImageWindow/DefaultVerticalResolution</td>                 <td>In device pixels per resolution unit. See the ImageWindow/DefaultMetricResolution global variable.</td></tr>
  * <tr><td>ImageWindow/PinchSensitivity</td>                          <td>In device pixels.</td></tr>
@@ -285,7 +299,7 @@ namespace GlobalVariableType
  * <tr><td>ImageWindow/DefaultFileExtension</td>                      <td></td></tr>
  * <tr><td>ImageWindow/DownloadsDirectory</td>                        <td></td></tr>
  * <tr><td>ColorManagement/MonitorProfilePath</td>                    <td>Read-only</td></tr>
- * <tr><td>ColorManagement/UpdateMonitorProfile</td>                  <td>Write-only. Only available on X11 (UNIX/Linux). See ColorManagementSetup documentation.</td></tr>
+ * <tr><td>ColorManagement/UpdateMonitorProfile</td>                  <td>Write-only. See the documentation for ColorManagementSetup.</td></tr>
  * <tr><td>ColorManagement/DefaultRGBProfilePath</td>                 <td></td></tr>
  * <tr><td>ColorManagement/DefaultGrayscaleProfilePath</td>           <td></td></tr>
  * <tr><td>ColorManagement/ProofingProfilePath</td>                   <td></td></tr>
@@ -431,4 +445,4 @@ private:
 #endif   // __PCL_GlobalSettings_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/GlobalSettings.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/GlobalSettings.h - Released 2015/12/17 18:52:09 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/ImageDescription.h - Released 2015/10/08 11:24:12 UTC
+// pcl/ImageDescription.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -130,15 +130,9 @@ struct PCL_CLASS ImageDescription
    ImageDescription( const ImageDescription& ) = default;
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Cop assignment operator. Returns a reference to this object.
     */
-   ImageDescription& operator =( const ImageDescription& x )
-   {
-      info = x.info;
-      options = x.options;
-      id = x.id;
-      return *this;
-   }
+   ImageDescription& operator =( const ImageDescription& ) = default;
 };
 
 /*!
@@ -176,7 +170,8 @@ struct PCL_CLASS ImagePropertyDescription
     * Default constructor. Constructs an %ImagePropertyDescription object with
     * an empty property identifier and unspecified (invalid) data type.
     */
-   ImagePropertyDescription() : id(), type( VariantType::Invalid )
+   ImagePropertyDescription() :
+      id(), type( VariantType::Invalid )
    {
    }
 
@@ -184,26 +179,20 @@ struct PCL_CLASS ImagePropertyDescription
     * Constructs an %ImagePropertyDescription object with the specified
     * property identifier and data type.
     */
-   ImagePropertyDescription( const IsoString& s, data_type t = VariantType::Invalid ) : id( s ), type( t )
+   ImagePropertyDescription( const IsoString& s, data_type t = VariantType::Invalid ) :
+      id( s ), type( t )
    {
    }
 
    /*!
     * Copy constructor.
     */
-   ImagePropertyDescription( const ImagePropertyDescription& x ) : id( x.id ), type( x.type )
-   {
-   }
+   ImagePropertyDescription( const ImagePropertyDescription& ) = default;
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Copy assignment operator. Returns a reference to this object.
     */
-   ImagePropertyDescription& operator =( const ImagePropertyDescription& x )
-   {
-      id = x.id;
-      type = x.type;
-      return *this;
-   }
+   ImagePropertyDescription& operator =( const ImagePropertyDescription& ) = default;
 
    /*!
     * Returns true iff this object represents a valid data property.
@@ -256,4 +245,4 @@ typedef Array<ImagePropertyDescription>  ImagePropertyDescriptionArray;
 #endif   // __PCL_ImageDescription_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageDescription.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/ImageDescription.h - Released 2015/12/17 18:52:09 UTC

@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.03.0064
+// Standard XISF File Format Module Version 01.00.05.0101
 // ----------------------------------------------------------------------------
-// XISF.cpp - Released 2015/10/08 11:24:33 UTC
+// XISF.cpp - Released 2015/12/18 08:55:16 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
@@ -52,11 +52,10 @@
 
 #include "XISF.h"
 
+#include <QtCore/QUrl>
 #include <QtCore/QXmlStreamReader>
 #include <QtCore/QXmlStreamWriter>
-#include <QtCore/QUrl>
 
-#include <pcl/AutoPointer.h>
 #include <pcl/ColorFilterArray.h>
 #include <pcl/Compression.h>
 #include <pcl/Cryptography.h>
@@ -489,9 +488,6 @@ const char* XISFEngineBase::CompressionMethodId( int compressionMethod )
 {
    switch ( compressionMethod )
    {
-   default:
-   case XISF_COMPRESSION_NONE:
-      return "";
    case XISF_COMPRESSION_ZLIB:
       return "zlib";
    case XISF_COMPRESSION_LZ4:
@@ -504,6 +500,9 @@ const char* XISFEngineBase::CompressionMethodId( int compressionMethod )
       return "lz4+sh";
    case XISF_COMPRESSION_LZ4HC_SH:
       return "lz4hc+sh";
+   default:
+   case XISF_COMPRESSION_NONE:
+      return "";
    }
 }
 
@@ -632,13 +631,66 @@ bool XISFEngineBase::CompressionNeedsItemSize( int method )
    return CompressionUsesByteShuffle( method );
 }
 
-CryptographicHash* XISFEngineBase::NewCryptographicHash( const IsoString& checksumMethod )
+const char* XISFEngineBase::ChecksumMethodId( int method )
 {
-   IsoString method = checksumMethod.CaseFolded();
-   if ( method == "sha1" || method == "sha-1" )
+   switch ( method )
+   {
+   case XISF_CHECKSUM_SHA1:
+      return "sha1";
+   case XISF_CHECKSUM_SHA256:
+      return "sha256";
+   case XISF_CHECKSUM_SHA512:
+      return "sha512";
+   default:
+   case XISF_COMPRESSION_NONE:
+      return "";
+   }
+}
+
+int XISFEngineBase::ChecksumMethodFromId( const IsoString& methodId )
+{
+   if ( methodId.IsEmpty() )
+      return XISF_COMPRESSION_NONE;
+   IsoString id = methodId.CaseFolded();
+   if ( id == "sha1" || id == "sha-1" )
+      return XISF_CHECKSUM_SHA1;
+   if ( id == "sha256" || id == "sha-256" )
+      return XISF_CHECKSUM_SHA256;
+   if ( id == "sha512" || id == "sha-512" )
+      return XISF_CHECKSUM_SHA512;
+   throw XISF_CHECKSUM_UNKNOWN;
+}
+
+size_type XISFEngineBase::ChecksumLength( int method )
+{
+   switch ( method )
+   {
+   case XISF_CHECKSUM_SHA1:
+      return 20;
+   case XISF_CHECKSUM_SHA256:
+      return 32;
+   case XISF_CHECKSUM_SHA512:
+      return 64;
+   default: // ?!
+   case XISF_CHECKSUM_NONE:
+      throw Error( String().Format( "Internal error: Invalid cryptographic hashing algorithm %02x", method ) );
+   }
+}
+
+CryptographicHash* XISFEngineBase::NewCryptographicHash( int method )
+{
+   switch ( method )
+   {
+   case XISF_CHECKSUM_SHA1:
       return new SHA1;
-   // ### TODO: Implement SHA-256
-   throw Error( "Internal error: Invalid cryptographic hashing algorithm '" + checksumMethod + "'" );
+   case XISF_CHECKSUM_SHA256:
+      return new SHA256;
+   case XISF_CHECKSUM_SHA512:
+      return new SHA512;
+   default: // ?!
+   case XISF_CHECKSUM_NONE:
+      throw Error( String().Format( "Internal error: Invalid cryptographic hashing algorithm %02x", method ) );
+   }
 }
 
 bool XISFEngineBase::IsInternalPropertyId( const IsoString& id )
@@ -697,7 +749,7 @@ struct XISFInputDataBlock
    subblock_list subblocks;               // compressed data
    ByteArray     data;                    // uncompressed data
    ByteArray     checksum;                // cryptographic hash digest
-   IsoString     checksumMethod;          // hashing algorithm
+   int           checksumMethod    = XISF_CHECKSUM_NONE; // hashing algorithm
    mutable bool  checksumVerified  = false;
 
    XISFInputDataBlock() = default;
@@ -987,10 +1039,7 @@ class XISFReaderEngine : public XISFEngineBase
 public:
 
    XISFReaderEngine() = default;
-
-   virtual ~XISFReaderEngine()
-   {
-   }
+   virtual ~XISFReaderEngine() = default;
 
    /*
     * Set format-specific options.
@@ -2139,7 +2188,7 @@ private:
          if ( block.compressionMethod == XISF_COMPRESSION_NONE )
             throw Error( "Missing data compression algorithm: " + s );
          if ( block.compressionMethod == XISF_COMPRESSION_UNKNOWN )
-            throw Error( "Unknown data compression algorithm '" + tokens[0] + "'" );
+            throw Error( "Unknown/unsupported data compression algorithm '" + tokens[0] + "'" );
 
          size_type uncompressedSize = tokens[1].ToUInt64();
          if ( uncompressedSize == 0 )
@@ -2190,7 +2239,7 @@ private:
    void GetBlockChecksum( XISFInputDataBlock& block, QXmlStreamReader& xml )
    {
       block.checksum.Clear();
-      block.checksumMethod.Clear();
+      block.checksumMethod = XISF_CHECKSUM_NONE;
       block.checksumVerified = false;
 
       // checksum="<algorithm>:<digest>"
@@ -2203,12 +2252,15 @@ private:
          if ( tokens.Length() != 2 )
             throw Error( "Malformed block checksum attribute: '" + s + "'" );
 
-         block.checksumMethod = tokens[0].CaseFolded();
-         if ( block.checksumMethod != "sha1" && block.checksumMethod != "sha-1" )
-            throw Error( "Invalid/unsupported checksum algorithm '" + tokens[0] + "'" );
+         block.checksumMethod = ChecksumMethodFromId( tokens[0] );
+         if ( block.checksumMethod == XISF_CHECKSUM_NONE )
+            throw Error( "Missing checksum algorithm: " + s );
+         if ( block.checksumMethod == XISF_CHECKSUM_UNKNOWN )
+            throw Error( "Unknown/unsupported checksum algorithm '" + tokens[0] + "'" );
+
          block.checksum = tokens[1].FromHex();
-         if ( block.checksum.Length() != 20 ) // SHA-1 digests have 160 bits = 20 bytes
-            throw Error( "Invalid SHA-1 digest value '" + tokens[1] + "'" );
+         if ( block.checksum.Length() != ChecksumLength( block.checksumMethod ) )
+            throw Error( "Invalid checksum length: '" + tokens[1] + "'" );
       }
    }
 
@@ -3000,9 +3052,7 @@ private:
 
 // ----------------------------------------------------------------------------
 
-XISFReader::XISFReader() :
-   m_engine( nullptr ),
-   m_options()
+XISFReader::XISFReader()
 {
 }
 
@@ -3027,7 +3077,7 @@ void XISFReader::SetHints( const IsoString& hints )
 
 bool XISFReader::IsOpen() const
 {
-   return m_engine != 0;
+   return m_engine;
 }
 
 void XISFReader::Open( const String& filePath )
@@ -3049,7 +3099,7 @@ void XISFReader::Close()
    if ( IsOpen() )
    {
       m_engine->Close();
-      delete m_engine, m_engine = 0;
+      m_engine.Destroy();
    }
 }
 
@@ -3265,7 +3315,7 @@ struct XISFOutputBlock
    int           itemSize          = 1;
    subblock_list subblocks;
    ByteArray     data;
-   IsoString     checksumMethod;
+   int           checksumMethod    = XISF_CHECKSUM_NONE;
    ByteArray     checksum;
 
    XISFOutputBlock() :
@@ -3398,7 +3448,7 @@ struct XISFOutputBlock
       }
    }
 
-   void ComputeChecksum( const IsoString& method )
+   void ComputeChecksum( int method )
    {
       AutoPointer<CryptographicHash> hash( XISFEngineBase::NewCryptographicHash( checksumMethod = method ) );
 
@@ -3420,7 +3470,7 @@ struct XISFOutputBlock
       // checksum="<algorithm>:<digest>"
       IsoString value;
       if ( HasChecksum() )
-         value = checksumMethod + ':' + IsoString::ToHex( checksum );
+         value = IsoString( XISFEngineBase::ChecksumMethodId( checksumMethod ) ) + ':' + IsoString::ToHex( checksum );
       return value;
    }
 
@@ -3492,14 +3542,8 @@ class XISFWriterEngine : public XISFEngineBase
 {
 public:
 
-   XISFWriterEngine() : XISFEngineBase(), m_xml( 0 )
-   {
-   }
-
-   ~XISFWriterEngine()
-   {
-      DestroyXMLWriter();
-   }
+   XISFWriterEngine() = default;
+   virtual ~XISFWriterEngine() = default;
 
    /*
     * Set format-specific options.
@@ -3593,7 +3637,7 @@ public:
 
    bool IsOpen() const
    {
-      return m_xml != 0;
+      return m_xml;
    }
 
    String FilePath() const
@@ -3771,7 +3815,7 @@ public:
       }
 
       /*
-       * ### NB: To support embedded storage (for very small images) and child
+       * ### N.B. To support embedded storage (for very small images) and child
        * elements, serialization of an image consists of the following steps:
        *
        * 1. Open the Image element and prepare some internal structures
@@ -3854,35 +3898,35 @@ private:
    /*
     * Stream data
     */
-   XISFOptions             m_xisfOptions; // format-specific options
-   IsoString               m_hints;       // format hints (only used to generate metadata)
-   mutable Console         m_console;     // for verbosity
-   QXmlStreamWriter*       m_xml;         // XML output stream
-   String                  m_path;        // path of the current output file
-   QByteArray              m_text;        // XML header
+   XISFOptions                   m_xisfOptions; // format-specific options
+   IsoString                     m_hints;       // format hints (only used to generate metadata)
+   mutable Console               m_console;     // for verbosity
+   AutoPointer<QXmlStreamWriter> m_xml;         // XML output stream
+   String                        m_path;        // path of the current output file
+   QByteArray                    m_text;        // XML header
 
    /*
     * Image data
     */
-   pcl::ImageOptions       m_options;     // format-independent options
-   pcl::ImageInfo          m_info;        // geometry and color space data
-   IsoString               m_id;          // optional image identifier
-   RGBColorSystem          m_rgbws;       // RGB working space
-   DisplayFunction         m_df;          // display function
-   ColorFilterArray        m_cfa;         // CFA pattern
-   FITSKeywordArray        m_keywords;    // compatibility FITS header keywords
-   ICCProfile              m_iccProfile;  // ICC profile
-   UInt8Image              m_thumbnail;   // thumbnail image
-   XISFOutputPropertyArray m_properties;  // image properties
-   XISFOutputBlockArray    m_blocks;      // generic blobs
-   ByteArray               m_randomData;  // sequential/random access image data
+   pcl::ImageOptions             m_options;     // format-independent options
+   pcl::ImageInfo                m_info;        // geometry and color space data
+   IsoString                     m_id;          // optional image identifier
+   RGBColorSystem                m_rgbws;       // RGB working space
+   DisplayFunction               m_df;          // display function
+   ColorFilterArray              m_cfa;         // CFA pattern
+   FITSKeywordArray              m_keywords;    // compatibility FITS header keywords
+   ICCProfile                    m_iccProfile;  // ICC profile
+   UInt8Image                    m_thumbnail;   // thumbnail image
+   XISFOutputPropertyArray       m_properties;  // image properties
+   XISFOutputBlockArray          m_blocks;      // generic blobs
+   ByteArray                     m_randomData;  // sequential/random access image data
 
    /*
     * Reset the state of the engine and destroy all internal data structures
     */
    void Reset()
    {
-      DestroyXMLWriter();
+      m_xml.Destroy();
       m_path.Clear();
       m_text = QByteArray();
       m_info.Reset();
@@ -3898,21 +3942,10 @@ private:
    }
 
    /*
-    * Destroy the XML stream writer.
-    */
-   void DestroyXMLWriter()
-   {
-      if ( m_xml != nullptr )
-         delete m_xml, m_xml = nullptr;
-   }
-
-   /*
     * Start a new XML document.
     */
    void StartDocument()
    {
-      DestroyXMLWriter();
-
       m_xml = new QXmlStreamWriter( &m_text );
       m_xml->setCodec( "UTF-8" );
       m_xml->setAutoFormatting( true );
@@ -3969,13 +4002,16 @@ private:
          WriteProperty( "XISF:AbstractCompressionLevel", int( m_xisfOptions.compressionLevel ) );
       }
 
+      if ( m_xisfOptions.checksumMethod != XISF_CHECKSUM_NONE )
+         WriteProperty( "XISF:ChecksumMethod", IsoString( ChecksumMethodId( m_xisfOptions.checksumMethod ) ) );
+
       if ( !m_hints.IsEmpty() )
          WriteProperty( "XISF:OutputHints", m_hints );
 
       EndElement();
 
       m_xml->writeEndDocument();
-      DestroyXMLWriter();
+      m_xml.Destroy();
    }
 
    /*
@@ -4082,8 +4118,8 @@ private:
       if ( m_xisfOptions.compressionMethod != XISF_COMPRESSION_NONE )
          CompressBlock( block, itemSize );
 
-      if ( m_xisfOptions.checksums )
-         block.ComputeChecksum( "sha1" );
+      if ( m_xisfOptions.checksumMethod != XISF_CHECKSUM_NONE )
+         block.ComputeChecksum( m_xisfOptions.checksumMethod );
 
       size_type blockSize = block.BlockSize();
 
@@ -4501,7 +4537,7 @@ private:
 
 // ----------------------------------------------------------------------------
 
-XISFWriter::XISFWriter() : m_engine( 0 ), m_options()
+XISFWriter::XISFWriter()
 {
 }
 
@@ -4526,7 +4562,7 @@ void XISFWriter::SetHints( const IsoString& hints )
 
 bool XISFWriter::IsOpen() const
 {
-   return m_engine != 0;
+   return m_engine;
 }
 
 void XISFWriter::Create( const String& filePath, int/*count*/ )
@@ -4543,7 +4579,7 @@ void XISFWriter::Close()
    if ( IsOpen() )
    {
       m_engine->Close();
-      delete m_engine, m_engine = 0;
+      m_engine.Destroy();
    }
 }
 
@@ -4734,4 +4770,4 @@ void XISFWriter::CheckClosedStream( const char* memberFunction ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISF.cpp - Released 2015/10/08 11:24:33 UTC
+// EOF XISF.cpp - Released 2015/12/18 08:55:16 UTC

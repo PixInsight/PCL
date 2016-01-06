@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.00.0223
+// Standard ImageCalibration Process Module Version 01.03.05.0268
 // ----------------------------------------------------------------------------
-// ImageCalibrationModule.cpp - Released 2015/10/08 11:24:40 UTC
+// ImageCalibrationModule.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -52,13 +52,13 @@
 
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     03
-#define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0223
+#define MODULE_VERSION_REVISION  05
+#define MODULE_VERSION_BUILD     0268
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2015
-#define MODULE_RELEASE_MONTH     10
-#define MODULE_RELEASE_DAY       8
+#define MODULE_RELEASE_MONTH     12
+#define MODULE_RELEASE_DAY       18
 
 #include "ImageCalibrationModule.h"
 #include "ImageCalibrationProcess.h"
@@ -178,4 +178,4 @@ int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF ImageCalibrationModule.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF ImageCalibrationModule.cpp - Released 2015/12/18 08:55:08 UTC

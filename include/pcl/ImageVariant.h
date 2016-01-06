@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/ImageVariant.h - Released 2015/10/08 11:24:12 UTC
+// pcl/ImageVariant.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -351,10 +351,7 @@ public:
     * not transport an image.
     */
    ImageVariant() :
-      m_data( nullptr )
-#ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
-      , m_shared( nullptr )
-#endif
+      m_data( nullptr ), m_shared( nullptr )
    {
       m_data = new Data;
    }
@@ -368,10 +365,7 @@ public:
     */
    template <class P>
    ImageVariant( GenericImage<P>* image ) :
-      m_data( nullptr )
-#ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
-      , m_shared( nullptr )
-#endif
+      m_data( nullptr ), m_shared( nullptr )
    {
       m_data = new Data;
       m_data->Update( image );
@@ -387,10 +381,7 @@ public:
     * destroyed and deallocated.
     */
    ImageVariant( const ImageVariant& image ) :
-      m_data( image.m_data )
-#ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
-      , m_shared( nullptr )
-#endif
+      m_data( image.m_data ), m_shared( nullptr )
    {
       m_data->Attach();
    }
@@ -399,10 +390,7 @@ public:
     * Move constructor.
     */
    ImageVariant( ImageVariant&& image ) :
-      m_data( image.m_data )
-#ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
-      , m_shared( nullptr )
-#endif
+      m_data( image.m_data ), m_shared( nullptr )
    {
       image.m_data = nullptr;
    }
@@ -6198,7 +6186,7 @@ public:
     * operations by invoking any installed file format support module on the
     * platform. %FileFormatInstance requires shared images to read/write images
     * from/to disk files ( you can actually pass a local image to
-    * %FileFormatInstance, but then the PCL will generate and use a temporary
+    * %FileFormatInstance, but then PCL will generate and use a temporary
     * \e shared working image on the fly, wasting memory unnecessarily ).
     */
    ImageVariant& CreateSharedImage( bool isFloat, bool isComplex, int bitSize )
@@ -6390,8 +6378,8 @@ public:
     * image in this case.
     *
     * This function is useful to allocate pixel data without having to resolve
-    * the template instantiation of the transported image. The PCL allocates
-    * pixels of the appropriate sample data type transparently.
+    * the template instantiation of the transported image. PCL allocates pixels
+    * of the appropriate sample data type transparently.
     */
    ImageVariant& AllocateImage( int width, int height, int numberOfChannels, color_space colorSpace )
    {
@@ -6463,7 +6451,7 @@ public:
     * %ImageVariant instance. Returns a reference to this object.
     *
     * This function is useful to deallocate pixel data without having to
-    * resolve the template instantiation of the transported image. The PCL
+    * resolve the template instantiation of the transported image. PCL
     * deallocates pixel data of any supported pixel sample type transparently.
     *
     * If this %ImageVariant transports no image, this function has no effect.
@@ -6516,8 +6504,8 @@ public:
     * specification.
     *
     * This function is useful to write pixel data without having to resolve the
-    * template instantiation of the transported image. The PCL writes pixel
-    * data of any supported sample type transparently.
+    * template instantiation of the transported image. PCL writes pixel data of
+    * any supported sample type transparently.
     */
    void WriteSwapFile( const String& filePath,
                        swap_compression compression = SwapCompression::None,
@@ -6989,6 +6977,8 @@ private:
 #ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
    // This is the server-side part of the image sharing mechanism
    pi::SharedImage* m_shared;
+#else
+   const void*      m_shared;
 #endif
 
    void DetachFromData()
@@ -7063,4 +7053,4 @@ GenericImage<P>& GenericImage<P>::SetLightness( const ImageVariant& L, const Poi
 #endif   // __PCL_ImageVariant_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageVariant.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/ImageVariant.h - Released 2015/12/17 18:52:09 UTC

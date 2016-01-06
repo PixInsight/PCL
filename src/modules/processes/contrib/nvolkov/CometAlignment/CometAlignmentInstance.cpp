@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard CometAlignment Process Module Version 01.02.06.0097
+// Standard CometAlignment Process Module Version 01.02.06.0133
 // ----------------------------------------------------------------------------
-// CometAlignmentInstance.cpp - Released 2015/10/08 11:24:40 UTC
+// CometAlignmentInstance.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -59,7 +59,7 @@
 #include <pcl/FileFormat.h>
 #include <pcl/ICCProfile.h>
 #include <pcl/LinearFit.h>
-#include <pcl/ProcessInterface.h> // for ProcessEvents()
+#include <pcl/MetaModule.h> // for ProcessEvents()
 #include <pcl/SpinStatus.h>
 #include <pcl/StdStatus.h>
 #include <pcl/Translation.h>
@@ -995,7 +995,7 @@ inline thread_list CometAlignmentInstance::LoadTargetFrame (const size_t fileInd
 		if (images.Length () > 1)
 			throw Error ("Multiple image files is not supported.");
 		LoadImageFile (*target, file, images[0].options);
-		ProcessInterface::ProcessEvents ();
+		Module->ProcessEvents();
 		if (m_geometry.IsRect ())
 		{
 			if (target->Bounds () != m_geometry)
@@ -1336,7 +1336,7 @@ inline ImageVariant* CometAlignmentInstance::LoadOperandImage (const String& fil
    if (images.IsEmpty ()) throw Error (filePath + ": Empty image file.");
    ImageVariant* img = new ImageVariant ();
 	LoadImageFile (*img, file, images[0].options);
-   ProcessInterface::ProcessEvents ();
+   Module->ProcessEvents ();
    console.WriteLn ("Close " + filePath);
    file.Close ();
    m_geometry = img->Bounds ();
@@ -1752,4 +1752,4 @@ size_type CometAlignmentInstance::ParameterLength (const MetaParameter* p, size_
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CometAlignmentInstance.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF CometAlignmentInstance.cpp - Released 2015/12/18 08:55:08 UTC

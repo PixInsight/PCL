@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.00.0314
+// Standard IntensityTransformations Process Module Version 01.07.01.0351
 // ----------------------------------------------------------------------------
-// ExponentialTransformationInstance.cpp - Released 2015/10/08 11:24:40 UTC
+// ExponentialTransformationInstance.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -148,7 +148,7 @@ public:
          mask->Status().DisableInitialization();
          mask->SelectNominalChannels();
          GaussianFilter G( instance.sigma );
-         if ( G.Size() < 90 )
+         if ( G.Size() < PCL_FFT_CONVOLUTION_IS_FASTER_THAN_SEPARABLE_FILTER_SIZE )
             SeparableConvolution( G.AsSeparableFilter() ) >> *mask;
          else
             FFTConvolution( G ) >> *mask;
@@ -369,4 +369,4 @@ String ExponentialTransformationInstance::TypeAsString() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ExponentialTransformationInstance.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF ExponentialTransformationInstance.cpp - Released 2015/12/18 08:55:08 UTC

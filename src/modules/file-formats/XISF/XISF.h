@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.03.0064
+// Standard XISF File Format Module Version 01.00.05.0101
 // ----------------------------------------------------------------------------
-// XISF.h - Released 2015/10/08 11:24:33 UTC
+// XISF.h - Released 2015/12/18 08:55:16 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
@@ -65,6 +65,10 @@
 #include <pcl/FileFormatImplementation.h>
 #endif
 
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
+#endif
+
 namespace pcl
 {
 
@@ -81,29 +85,48 @@ class PCL_CLASS CryptographicHash;
 /*
  * Default block size in bytes for optional alignment of XISF data structures.
  */
-#define XISF_BLOCK_ALIGN_SIZE       4096
+#define XISF_BLOCK_ALIGN_SIZE          4096
 
 /*
  * Maximum size in bytes of an inline data block.
  */
-#define XISF_BLOCK_INLINE_MAX       3072 // 3072*4/3 = 4096 (base64)
+#define XISF_BLOCK_INLINE_MAX          3072 // 3072*4/3 = 4096 (base64)
 
 /*
  * Maximum allowed width or height of an XISF image thumbnail in pixels.
  */
-#define XISF_THUMBNAIL_MAX          1024
+#define XISF_THUMBNAIL_MAX             1024
 
 /*
- * Supported compression algorithms.
+ * Block checksum algorithms.
  */
-#define XISF_COMPRESSION_NONE       0
-#define XISF_COMPRESSION_ZLIB       1
-#define XISF_COMPRESSION_LZ4        2
-#define XISF_COMPRESSION_LZ4HC      3
-#define XISF_COMPRESSION_ZLIB_SH    4
-#define XISF_COMPRESSION_LZ4_SH     5
-#define XISF_COMPRESSION_LZ4HC_SH   6
-#define XISF_COMPRESSION_UNKNOWN    0x0F
+#define XISF_CHECKSUM_NONE             0
+#define XISF_CHECKSUM_SHA1             1
+#define XISF_CHECKSUM_SHA256           2
+#define XISF_CHECKSUM_SHA512           3
+#define XISF_CHECKSUM_UNKNOWN          0x0F
+
+/*
+ * Default block checksum algorithm.
+ */
+#define XISF_CHECKSUM_DEFAULT          XISF_CHECKSUM_NONE
+
+/*
+ * Block compression algorithms.
+ */
+#define XISF_COMPRESSION_NONE          0
+#define XISF_COMPRESSION_ZLIB          1
+#define XISF_COMPRESSION_LZ4           2
+#define XISF_COMPRESSION_LZ4HC         3
+#define XISF_COMPRESSION_ZLIB_SH       4
+#define XISF_COMPRESSION_LZ4_SH        5
+#define XISF_COMPRESSION_LZ4HC_SH      6
+#define XISF_COMPRESSION_UNKNOWN       0x0F
+
+/*
+ * Default compression algorithm.
+ */
+#define XISF_COMPRESSION_DEFAULT       XISF_COMPRESSION_NONE
 
 /*
  * Default compression level. This means that the specific compression level
@@ -115,6 +138,57 @@ class PCL_CLASS CryptographicHash;
  * Maximum codec-independent compression level.
  */
 #define XISF_COMPRESSION_LEVEL_MAX     100
+
+/*
+ * The default verbosity level (0=quiet, 1=normal, 2=quite, >2=very)
+ */
+#define XISF_VERBOSITY_DEFAULT         1
+
+/*
+ * The default output range for floating point pixel samples.
+ */
+#define XISF_OUT_LOWER_BOUND_DEFAULT   0
+#define XISF_OUT_UPPER_BOUND_DEFAULT   1
+
+/*
+ * Whether to serialize FITS keywords by default.
+ */
+#define XISF_STORE_FITS_DEFAULT        true
+
+/*
+ * Whether to ignore existing FITS keywords by default.
+ */
+#define XISF_IGNORE_FITS_DEFAULT       false
+
+/*
+ * Whether to import FITS keywords as XISF properties by default.
+ */
+#define XISF_IMPORT_FITS_DEFAULT       false
+
+/*
+ * Whether to ignore embedded data by default.
+ */
+#define XISF_IGNORE_EMBEDDED_DEFAULT   false
+
+/*
+ * Whether to ignore embedded properties by default.
+ */
+#define XISF_IGNORE_PROPERTIES_DEFAULT false
+
+/*
+ * Whether to generate XISF standard properties by default.
+ */
+#define XISF_AUTO_METADATA_DEFAULT     true
+
+/*
+ * Whether to silent warning conditions by default.
+ */
+#define XISF_NO_WARNINGS_DEFAULT       false
+
+/*
+ * Whether to treat warnings as unrecoverable errors by default.
+ */
+#define XISF_WARNINGS_ERRORS_DEFAULT   false
 
 /*
  * XISF-specific file options.
@@ -132,7 +206,7 @@ public:
    bool   autoMetadata        : 1;  // * automatically generate a number of internal XISF properties
    bool   noWarnings          : 1;  // * suppress all warning messages
    bool   warningsAreErrors   : 1;  // * treat warnings as errors
-   bool   checksums           : 1;  // include block checksums
+   uint8  checksumMethod      : 4;  // algorithm for block checksum calculations
    uint8  compressionMethod   : 4;  // algorithm for compression of data blocks
    uint8  compressionLevel    : 7;  // codec-independent compression level: 0=auto, 1=fast, 100=max-compression
    uint8  verbosity           : 3;  // * 0 = quiet, > 0 = write console state messages
@@ -152,22 +226,22 @@ public:
 
    void Reset()
    {
-      storeFITSKeywords  = true;
-      ignoreFITSKeywords = false;
-      importFITSKeywords = false;
-      ignoreEmbeddedData = false;
-      ignoreProperties   = false;
-      autoMetadata       = true;
-      noWarnings         = false;
-      warningsAreErrors  = false;
-      checksums          = false;
-      compressionMethod  = XISF_COMPRESSION_NONE;
+      storeFITSKeywords  = XISF_STORE_FITS_DEFAULT;
+      ignoreFITSKeywords = XISF_IGNORE_FITS_DEFAULT;
+      importFITSKeywords = XISF_IMPORT_FITS_DEFAULT;
+      ignoreEmbeddedData = XISF_IGNORE_EMBEDDED_DEFAULT;
+      ignoreProperties   = XISF_IGNORE_PROPERTIES_DEFAULT;
+      autoMetadata       = XISF_AUTO_METADATA_DEFAULT;
+      noWarnings         = XISF_NO_WARNINGS_DEFAULT;
+      warningsAreErrors  = XISF_WARNINGS_ERRORS_DEFAULT;
+      checksumMethod     = XISF_CHECKSUM_DEFAULT;
+      compressionMethod  = XISF_COMPRESSION_DEFAULT;
       compressionLevel   = XISF_COMPRESSION_LEVEL_DEFAULT;
-      verbosity          = 1;
+      verbosity          = XISF_VERBOSITY_DEFAULT;
       blockAlignmentSize = XISF_BLOCK_ALIGN_SIZE;
       maxInlineBlockSize = XISF_BLOCK_INLINE_MAX;
-      outputLowerBound   = 0;
-      outputUpperBound   = 1;
+      outputLowerBound   = XISF_OUT_LOWER_BOUND_DEFAULT;
+      outputUpperBound   = XISF_OUT_UPPER_BOUND_DEFAULT;
    }
 };
 
@@ -433,9 +507,9 @@ public:
 
 private:
 
-   XISFReaderEngine* m_engine;
-   XISFOptions       m_options;
-   IsoString         m_hints;
+   AutoPointer<XISFReaderEngine> m_engine;
+   XISFOptions                   m_options;
+   IsoString                     m_hints;
 
    void CheckOpenStream( const char* ) const;
    void CheckClosedStream( const char* ) const;
@@ -706,9 +780,9 @@ public:
 
 private:
 
-   XISFWriterEngine* m_engine;
-   XISFOptions       m_options;
-   IsoString         m_hints;
+   AutoPointer<XISFWriterEngine> m_engine;
+   XISFOptions                   m_options;
+   IsoString                     m_hints;
 
    void CheckOpenStream( const char* ) const;
    void CheckClosedStream( const char* ) const;
@@ -855,10 +929,28 @@ public:
    static bool CompressionNeedsItemSize( int method );
 
    /*
+    * Identifier of a supported checksum algorithm.  Used as XML element
+    * attribute values in XISF headers.
+    */
+   static const char* ChecksumMethodId( int method );
+
+   /*
+    * Get a checksum algorithm given its identifier. Used for deserialization
+    * from XML file headers.
+    */
+   static int ChecksumMethodFromId( const IsoString& methodId );
+
+   /*
+    * Returns the length in bytes of a cryptographic digest computed with the
+    * specified algorithm.
+    */
+   static size_type ChecksumLength( int method );
+
+   /*
     * Returns a pointer to a dynamically allocated CryptographicHash object.
     * The returned object implements the specified hashing algorithm.
     */
-   static CryptographicHash* NewCryptographicHash( const IsoString& checksumMethod );
+   static CryptographicHash* NewCryptographicHash( int method );
 
    /*
     * Property identifiers starting with the XISF: namespace prefix are
@@ -882,4 +974,4 @@ public:
 #endif   // __PCL_XISF_h
 
 // ----------------------------------------------------------------------------
-// EOF XISF.h - Released 2015/10/08 11:24:33 UTC
+// EOF XISF.h - Released 2015/12/18 08:55:16 UTC

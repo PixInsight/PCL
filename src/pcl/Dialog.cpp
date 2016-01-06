@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/Dialog.cpp - Released 2015/10/08 11:24:19 UTC
+// pcl/Dialog.cpp - Released 2015/12/17 18:52:18 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -50,6 +50,7 @@
 // ----------------------------------------------------------------------------
 
 #include <pcl/Dialog.h>
+#include <pcl/MetaModule.h>
 
 #include <pcl/api/APIInterface.h>
 #include <pcl/api/APIException.h>
@@ -103,6 +104,14 @@ bool Dialog::IsUserResizable() const
 void Dialog::EnableUserResizing( bool enable )
 {
    (*API->Dialog->SetDialogResizable)( handle, enable );
+}
+
+// ----------------------------------------------------------------------------
+
+void Dialog::ProcessEvents( bool excludeUserInputEvents )
+{
+   if ( Module != nullptr )
+      Module->ProcessEvents( excludeUserInputEvents );
 }
 
 // ----------------------------------------------------------------------------
@@ -164,4 +173,4 @@ void Dialog::OnReturn( return_event_handler f, Control& receiver )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Dialog.cpp - Released 2015/10/08 11:24:19 UTC
+// EOF pcl/Dialog.cpp - Released 2015/12/17 18:52:18 UTC

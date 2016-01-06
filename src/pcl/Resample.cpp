@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/Resample.cpp - Released 2015/10/08 11:24:19 UTC
+// pcl/Resample.cpp - Released 2015/12/17 18:52:18 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -142,7 +142,7 @@ void Resample::GetNewSizes( int& width, int& height ) const
 
 // ----------------------------------------------------------------------------
 
-#ifndef _MSC_VER
+#if !defined( _MSC_VER ) && !defined( __clang__ )
 #pragma GCC push_options
 #pragma GCC optimize ("O2")
 #endif
@@ -292,7 +292,7 @@ private:
    };
 };
 
-#ifndef _MSC_VER
+#if !defined( _MSC_VER ) && !defined( __clang__ )
 #pragma GCC pop_options
 #endif
 
@@ -328,4 +328,4 @@ void Resample::Apply( pcl::UInt32Image& image ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Resample.cpp - Released 2015/10/08 11:24:19 UTC
+// EOF pcl/Resample.cpp - Released 2015/12/17 18:52:18 UTC

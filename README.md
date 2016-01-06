@@ -11,7 +11,7 @@ PCL is highly portable code. As of writing this document, it is available on the
 
 Starting from version 2.0, which was published in December of 2012, PCL is an open-source library released under the [PixInsight Class Library License](http://pixinsight.com/license/PCL_PJSR_1.0.html) (PCLL). In essence, PCLL is a liberal BSD-like license that allows you to develop open-source and closed-source, free and commercial PixInsight modules without restrictions. As long as you observe all PCLL terms, you can modify PCL and use your modified version with or without releasing your source code.
 
-A good starting point for developing PixInsight modules are the open sourced modules in src/modules directory. You may also want to take a look at the PCL Reference Documentation mentioned below. PixInsight and PCL are supported by a vibrant community in the [PixInsight Forum](http://forum.pixinsight.com) that also contains a developers section. Join us there!
+A good starting point for developing PixInsight modules is the src/modules directory, where you'll find all open-source modules that form part of the official PixInsight distribution. You may also want to take a look at the PCL Reference Documentation mentioned below. PixInsight and PCL are supported by a vibrant community on [PixInsight Forum](http://forum.pixinsight.com), which also contains a developers section. Join us there!
 
 ## PCL Reference Documentation
 
@@ -72,14 +72,14 @@ Here is a list of subdirectories, along with descriptions of the files therein. 
 **[PCL]/src/modules/processes/[module_name]/linux/g++**
 
 <dl><dd>
-   Makefiles for Linux with GCC >= 4.7 (4.8.2 or higher recommended)
+   Makefiles for Linux with GCC >= 4.8.0 (4.8.5 or higher recommended)
 </dd></dl>
 
 **[PCL]/src/modules/file-formats/[module_name]/macosx/g++**<br/>
 **[PCL]/src/modules/processes/[module_name]/macosx/g++**
 
 <dl><dd>
-   Makefiles for Mac OS X >= 10.8 with clang C++ compiler/Xcode version >= 5.0
+   Makefiles for Mac OS X >= 10.9 with clang C++ compiler/Xcode version >= 5.0
 </dd></dl>
 
 **[PCL]/src/modules/file-formats/[module_name]/windows/vc12**<br/>
@@ -107,10 +107,10 @@ Here is a list of subdirectories, along with descriptions of the files therein. 
 
 The current versions of PCL have been successfully compiled and tested with:
 
-   * FreeBSD 10: System clang compiler
-   * Linux: GCC C++ compiler 4.8.3
-   * Mac OS X 10.10: Clang C++ compiler with Xcode 6.3
-   * Windows XP/Vista/7/8.x: Microsoft Visual C++ 2013
+   * FreeBSD 10.2: System clang compiler
+   * Red Hat Enterprise Linux 7.2: GCC C++ compiler 4.8.5
+   * Mac OS X 10.10: Clang C++ compiler with Xcode 6.5
+   * Windows 8.1: Microsoft Visual C++ 2013
 
 The GCC and clang C++ compilers provide higher conformance to ISO C++ standards and are high quality development tools. On FreeBSD and Mac OS X we rely on the Clang/LLVM compiler included with the latest versions of Xcode and FreeBSD.
 

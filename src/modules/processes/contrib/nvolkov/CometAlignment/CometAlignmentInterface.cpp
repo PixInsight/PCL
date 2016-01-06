@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard CometAlignment Process Module Version 01.02.06.0097
+// Standard CometAlignment Process Module Version 01.02.06.0133
 // ----------------------------------------------------------------------------
-// CometAlignmentInterface.cpp - Released 2015/10/08 11:24:40 UTC
+// CometAlignmentInterface.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -308,14 +308,13 @@ bool CometAlignmentInterface::RequiresDynamicUpdate (const View& v, const DRect&
    return false; // no such View in p_targetFrames, so no need to update
 }
 
-void CometAlignmentInterface::DynamicPaint (const View& v, Graphics& g, const DRect& updateRect) const
+void CometAlignmentInterface::DynamicPaint (const View& v, VectorGraphics& g, const DRect& updateRect) const
 
 {
    ImageWindow w = v.Window ();
 
-   Rect r0 = w.ImageToViewport (updateRect);
-
 #if debug
+   Rect r0 = w.ImageToViewport (updateRect);
    Console ().Clear ();
    Console ().WriteLn (String ().Format ("updateRect"));
    Console ().WriteLn (String ().Format ("x0:%10.5f, x1:%10.5f, w:%10.5f", updateRect.x0, updateRect.x1, updateRect.Width ()));
@@ -325,35 +324,18 @@ void CometAlignmentInterface::DynamicPaint (const View& v, Graphics& g, const DR
    Console ().WriteLn (String ().Format ("y0:%i, y1:%i, h:%i", r0.y0, r0.y1, r0.Height ()));
 #endif
 
-   --r0.x0;
-   --r0.y0;
-   ++r0.x1;
-   ++r0.y1; // rounding error compensation
-   Bitmap bmp1 = w.ViewportBitmap (r0); // Working bitmap
-   Point p0 = r0.LeftTop (); // Origin of the local bitmap coordinate system in viewport coordinates.
-
-   Graphics G;
-   G.BeginPaint (bmp1);
-
-   G.SetPen (0xff00ff00); // Green
-   G.SetBrush (Brush::Null ()); // no brush.
+   g.EnableAntialiasing();
+   g.SetPen (0xff00ff00); // Green
+   g.SetBrush (Brush::Null ()); // no brush.
 
    Point pv0 = w.ImageToViewport (posInImage); // star center in image trsnslated to view coordinates
-   pv0 -= p0; // star center in updateRect viewport
-   G.DrawCircle (pv0, screenRadius); // draw on screen graphics, non scalable with image
+   g.DrawCircle (pv0, screenRadius); // draw on screen graphics, non scalable with image
 
-   // draw on image graphics, scalsable with image
+   // draw on image graphics, scalable with image
    DRect r (posInImage.x - imageRadius, posInImage.y - imageRadius, posInImage.x + imageRadius, posInImage.y + imageRadius); // small rectangle around star in image coordinates
    Rect rv = w.ImageToViewport (r); // small rectangle around star scaled to viewport coordinates
    if (!rv.IsPoint ()) // if rectange wider then one pixel
-
-   {
-      rv -= p0;
-      G.DrawCircle (pv0, rv.Width ()*.5);
-   }
-
-   G.EndPaint ();
-   g.DrawBitmap (p0, bmp1);
+      g.DrawCircle (pv0, rv.Width ()*.5);
 }
 
 //-------------------------------------------------------------------------
@@ -499,18 +481,16 @@ void CometAlignmentInterface::UpdateTargetImageItem (size_type i)
    Console ().WriteLn (String ().Format ("old x:%.3f, y:%.3f", item.x, item.y));
 #endif
 
-   double f = DisplayPixelRatio();
-
-   if (i == m_instance.p_reference) node->SetIcon (0, Bitmap (UIScaledResource( f, ":/icons/arrow-right.png" ) ));
+   if (i == m_instance.p_reference) node->SetIcon (0, Bitmap (ScaledResource( ":/icons/arrow-right.png" ) ));
    node->SetToolTip (0, "Double Click to set reference");
    node->SetText (0, String (i + 1));
    node->SetAlignment (0, TextAlign::Right);
 
-   node->SetIcon (1, Bitmap (UIScaledResource( f, item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" )));
+   node->SetIcon (1, Bitmap (ScaledResource( item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" )));
    node->SetToolTip (1, "Double Click to check/uncheck");
    node->SetAlignment (1, TextAlign::Left);
 
-   node->SetIcon (2, Bitmap (UIScaledResource( f, ":/browser/document.png") ));
+   node->SetIcon (2, Bitmap (ScaledResource( ":/browser/document.png") ));
    String fileText;
    if ( !item.drzPath.IsEmpty() )
       fileText = "<d> ";
@@ -1821,9 +1801,11 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
    Global_Sizer.Add (Interpolation_Control);
 
    w.SetSizer (Global_Sizer);
-   w.AdjustToContents ();
+   w.SetMinWidth();
 
    FormatHints_Control.Hide();
+
+   w.AdjustToContents ();
 }
 
 // ----------------------------------------------------------------------------
@@ -1831,4 +1813,4 @@ CometAlignmentInterface::GUIData::GUIData (CometAlignmentInterface& w)
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CometAlignmentInterface.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF CometAlignmentInterface.cpp - Released 2015/12/18 08:55:08 UTC

@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/File.cpp - Released 2015/10/08 11:24:19 UTC
+// pcl/File.cpp - Released 2015/12/17 18:52:18 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -210,7 +210,7 @@ fpos_type File::Position() const
 #else
 
    errno = 0;
-   fpos_type p = ::ftello( (FILE *)m_fileHandle );
+   fpos_type p = ::ftello( (FILE*)m_fileHandle );
    if ( p < 0 )
    {
       if ( errno != 0 )
@@ -243,9 +243,9 @@ void File::SetPosition( fpos_type pos )
 #else
 
    errno = 0;
-   if ( ::fseeko( (FILE *)m_fileHandle, pos, SEEK_SET ) == 0 )
+   if ( ::fseeko( (FILE*)m_fileHandle, pos, SEEK_SET ) == 0 )
    {
-      fpos_type p = ::ftello( (FILE *)m_fileHandle );
+      fpos_type p = ::ftello( (FILE*)m_fileHandle );
       if ( p == pos )
          return;
    }
@@ -297,9 +297,9 @@ fpos_type File::Seek( fpos_type delta, File::seek_mode origin )
    }
 
    errno = 0;
-   if ( ::fseeko( (FILE *)m_fileHandle, delta, stdWhence ) == 0 )
+   if ( ::fseeko( (FILE*)m_fileHandle, delta, stdWhence ) == 0 )
    {
-      fpos_type pos = ::ftello( (FILE *)m_fileHandle );
+      fpos_type pos = ::ftello( (FILE*)m_fileHandle );
       if ( pos >= 0 )
          return pos;
    }
@@ -356,7 +356,7 @@ void File::Resize( fsize_type sz )
       throw File::Error( FilePath(), "Unable to set file size " + WinErrorMessage() );
 #else
    errno = 0;
-   if ( ::ftruncate( fileno( (FILE *)m_fileHandle ), sz ) != 0 )
+   if ( ::ftruncate( fileno( (FILE*)m_fileHandle ), sz ) != 0 )
    {
       if ( errno != 0 )
          throw File::Error( FilePath(), "Unable to set file size: " + String( ::strerror( errno ) ) );
@@ -373,7 +373,7 @@ void File::Read( void* b, fsize_type sz )
 {
    CHECK_READABLE( "Read" );
 
-   if ( sz != 0 )
+   if ( sz > 0 )
    {
 #ifndef __PCL_WINDOWS
       if ( sizeof( void* ) == 4 )
@@ -393,7 +393,7 @@ void File::Read( void* b, fsize_type sz )
                   throw File::Error( FilePath(), "File read error: " + WinErrorMessage() );
 #else
                errno = 0;
-               size_t nr = ::fread( b, size_t( 1 ), size_t( thisBlockSz ), (FILE *)m_fileHandle );
+               size_t nr = ::fread( b, size_t( 1 ), size_t( thisBlockSz ), (FILE*)m_fileHandle );
                if ( errno != 0 )
                   throw File::Error( FilePath(), "File read error: " + String( ::strerror( errno ) ) );
 #endif
@@ -411,7 +411,7 @@ void File::Read( void* b, fsize_type sz )
       else
       {
          errno = 0;
-         size_t nr = ::fread( b, size_t( 1 ), size_t( sz ), (FILE *)m_fileHandle );
+         size_t nr = ::fread( b, size_t( 1 ), size_t( sz ), (FILE*)m_fileHandle );
          if ( errno != 0 )
             throw File::Error( FilePath(), "File read error: " + String( ::strerror( errno ) ) );
          if ( fsize_type( nr ) != sz )
@@ -427,7 +427,7 @@ void File::Write( const void* b, fsize_type sz )
 {
    CHECK_WRITABLE( "Write" );
 
-   if ( sz != 0 )
+   if ( sz > 0 )
    {
 #ifndef __PCL_WINDOWS
       if ( sizeof( void* ) == 4 )
@@ -447,7 +447,7 @@ void File::Write( const void* b, fsize_type sz )
                   throw File::Error( FilePath(), "File write error: " + WinErrorMessage() );
 #else
                errno = 0;
-               size_t nw = ::fwrite( b, size_t( 1 ), size_t( thisBlockSz ), (FILE *)m_fileHandle );
+               size_t nw = ::fwrite( b, size_t( 1 ), size_t( thisBlockSz ), (FILE*)m_fileHandle );
                if ( errno != 0 )
                   throw File::Error( FilePath(), "File write error: " + String( ::strerror( errno ) ) );
 #endif
@@ -465,7 +465,7 @@ void File::Write( const void* b, fsize_type sz )
       else
       {
          errno = 0;
-         size_t nw = ::fwrite( b, size_t( 1 ), size_t( sz ), (FILE *)m_fileHandle );
+         size_t nw = ::fwrite( b, size_t( 1 ), size_t( sz ), (FILE*)m_fileHandle );
          if ( errno != 0 )
             throw File::Error( FilePath(), "File write error: " + String( ::strerror( errno ) ) );
          if ( fsize_type( nw ) != sz )
@@ -485,7 +485,7 @@ void File::Read( IsoString& s )
    if ( len == 0xffffffffu )
    {
       Read( len );
-      if ( len != 0 )
+      if ( len > 0 )
       {
          String u;
          u.SetLength( size_type( len ) );
@@ -508,7 +508,7 @@ void File::Read( String& s )
    if ( len == 0xffffffffu )
    {
       Read( len );
-      if ( len != 0 )
+      if ( len > 0 )
       {
          s.SetLength( size_type( len ) );
          Read( (void*)s.c_str(), size_type( len )*s.BytesPerChar() );
@@ -563,7 +563,7 @@ void File::Flush()
       throw File::Error( FilePath(), "File flush failed: " + WinErrorMessage() );
 #else
    errno = 0;
-   if ( ::fflush( (FILE *)m_fileHandle ) != 0 )
+   if ( ::fflush( (FILE*)m_fileHandle ) != 0 )
    {
       if ( errno != 0 )
          throw File::Error( FilePath(), "File flush failed: " + String( ::strerror( errno ) ) );
@@ -705,15 +705,15 @@ void File::Close()
          throw File::Error( FilePath(), "Unable to close file: " + WinErrorMessage() );
 #else
       errno = 0;
-      if ( ::fclose( (FILE *)m_fileHandle ) != 0 )
+      if ( ::fclose( (FILE*)m_fileHandle ) != 0 )
       {
          if ( errno != 0 )
             throw File::Error( FilePath(), "Unable to close file: " + String( ::strerror( errno ) ) );
          throw File::Error( FilePath(), "Unable to close file" );
       }
 #endif
-      // NB: We don't clear m_filePath when a file is closed. This allows us to
-      // reopen the file with the same File instance.
+      // N.B.: We don't clear m_filePath when a file is closed. This allows us
+      // to reopen the file with the same File instance.
       m_fileHandle = s_invalidHandle;
       m_fileMode = FileMode::Zero;
    }
@@ -1393,21 +1393,21 @@ void File::CopyTimesAndPermissions( const String& targetPath, const String& sour
    FileInfo sourceInfo( sourcePath );
 #ifdef __PCL_WINDOWS
    __utimbuf64 times;
-   times.actime = TruncI64( sourceInfo.LastAccessed().SecondsSinceEpoch() );
-   times.modtime = TruncI64( sourceInfo.LastModified().SecondsSinceEpoch() );
+   times.actime = TruncInt64( sourceInfo.LastAccessed().SecondsSinceEpoch() );
+   times.modtime = TruncInt64( sourceInfo.LastModified().SecondsSinceEpoch() );
    if ( _wutime64( (const wchar_t*)targetPath.c_str(), &times ) != 0 )
       throw File::Error( targetPath, "Unable to set file times: " + String( ::_wcserror( errno ) ) );
 #else
    utimbuf times;
    if ( sizeof( time_t ) == 8 )
    {
-      times.actime = TruncI64( sourceInfo.LastAccessed().SecondsSinceEpoch() );
-      times.modtime = TruncI64( sourceInfo.LastModified().SecondsSinceEpoch() );
+      times.actime = TruncInt64( sourceInfo.LastAccessed().SecondsSinceEpoch() );
+      times.modtime = TruncInt64( sourceInfo.LastModified().SecondsSinceEpoch() );
    }
    else
    {
-      times.actime = TruncI( sourceInfo.LastAccessed().SecondsSinceEpoch() );
-      times.modtime = TruncI( sourceInfo.LastModified().SecondsSinceEpoch() );
+      times.actime = TruncInt( sourceInfo.LastAccessed().SecondsSinceEpoch() );
+      times.modtime = TruncInt( sourceInfo.LastModified().SecondsSinceEpoch() );
    }
 
    IsoString utf8 = targetPath.ToUTF8();
@@ -1481,7 +1481,7 @@ void File::CopyFile( const String& targetFilePath, const String& sourceFilePath,
       targetFile.CreateForWriting( tempFilePath );
 
       fsize_type size = sourceFile.Size();
-      if ( progress )
+      if ( progress != nullptr )
          progress->SetText( targetFilePath + " (" + File::SizeAsString( size ) + ")" );
 
       if ( size > 0 )
@@ -1494,7 +1494,7 @@ void File::CopyFile( const String& targetFilePath, const String& sourceFilePath,
          {
             sourceFile.Read( block, COPY_BLOCK_SIZE );
             targetFile.Write( block, COPY_BLOCK_SIZE );
-            if ( progress )
+            if ( progress != nullptr )
                progress->Add( COPY_BLOCK_SIZE );
          }
 
@@ -1502,7 +1502,7 @@ void File::CopyFile( const String& targetFilePath, const String& sourceFilePath,
          {
             sourceFile.Read( block, remainderBytes );
             targetFile.Write( block, remainderBytes );
-            if ( progress )
+            if ( progress != nullptr )
                progress->Add( remainderBytes );
          }
       }
@@ -1554,10 +1554,10 @@ void File::MoveFile( const String& targetFilePath, const String& sourceFilePath,
     */
    if ( sameDevice )
    {
-      if ( progress )
+      if ( progress != nullptr )
          progress->SetText( targetFilePath );
       File::Move( sourceFilePath, targetFilePath );
-      if ( progress )
+      if ( progress != nullptr )
          progress->Add( FileInfo( targetFilePath ).Size() );
       return;
    }
@@ -1600,7 +1600,7 @@ void File::MoveFile( const String& targetFilePath, const String& sourceFilePath,
       targetFile.CreateForWriting( tempFilePath );
 
       fsize_type size = sourceFile.Size();
-      if ( progress )
+      if ( progress != nullptr )
          progress->SetText( targetFilePath + " (" + File::SizeAsString( size ) + ")" );
 
       if ( size > 0 )
@@ -1613,7 +1613,7 @@ void File::MoveFile( const String& targetFilePath, const String& sourceFilePath,
          {
             sourceFile.Read( block, COPY_BLOCK_SIZE );
             targetFile.Write( block, COPY_BLOCK_SIZE );
-            if ( progress )
+            if ( progress != nullptr )
                progress->Add( COPY_BLOCK_SIZE );
          }
 
@@ -1621,7 +1621,7 @@ void File::MoveFile( const String& targetFilePath, const String& sourceFilePath,
          {
             sourceFile.Read( block, remainderBytes );
             targetFile.Write( block, remainderBytes );
-            if ( progress )
+            if ( progress != nullptr )
                progress->Add( remainderBytes );
          }
       }
@@ -1713,7 +1713,7 @@ static void AddLineHelper( const char* p, const char* q, IsoStringList& lines, c
    if ( p == q )
       if ( options.IsFlagSet( ReadTextOption::RemoveEmptyLines ) )
          return;
-   lines.Add( IsoString( p, q ) );
+   lines << IsoString( p, q );
 }
 
 IsoStringList File::ReadLines( const String& filePath, ReadTextOptions options )
@@ -1855,7 +1855,7 @@ static String CleanPath( const String& path )
       {
          while ( i < len-1 && name[i+1] == '/' )
          {
-#ifdef __PCL_WINDOWS // allow unc paths
+#ifdef __PCL_WINDOWS // allow UNC paths
             if ( i == 0 )
                break;
 #endif
@@ -2411,4 +2411,4 @@ bool File::IsValidHandle( handle h ) const
 }  // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/File.cpp - Released 2015/10/08 11:24:19 UTC
+// EOF pcl/File.cpp - Released 2015/12/17 18:52:18 UTC

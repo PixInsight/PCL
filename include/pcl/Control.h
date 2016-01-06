@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/Control.h - Released 2015/10/08 11:24:12 UTC
+// pcl/Control.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -1243,25 +1243,64 @@ public:
 
    /*!
     * Returns the ratio between physical screen pixels and device-independent
-    * logical units for the parent top-level window of this %Control object.
-    * This ratio is used as a scaling factor by the LogicalPixelsToPhysical() and PhysicalPixelsToLogical()
-    * functions, which are used internally by <em>automatic size scaling</em>
-    * member functions such as SetScaledFixedSize(), ScaledMinWidth(), etc.
+    * logical screen units for the parent top-level window of this %Control
+    * object. This ratio is used as a scaling factor by the
+    * LogicalPixelsToPhysical() and PhysicalPixelsToLogical() functions, which
+    * are used internally by <em>automatic size scaling</em> member functions
+    * such as SetScaledFixedSize(), ScaledMinWidth(), etc.
     *
     * The returned value is greater than or equal to one. Typical pixel ratios
-    * are 2.0 for high-dpi displays such as Retina monitors, or 1.0 for normal
-    * 96 dpi monitors.
+    * are 1.5 and 2.0 for high-density displays such as 4K and 5K monitors,
+    * respectively, or 1.0 for normal 96 dpi monitors.
     *
-    * \sa LogicalPixelsToPhysical(), PhysicalPixelsToLogical()
+    * On OS X, this function normally returns 1.0 for Retina displays working
+    * in high-dpi modes, since the operating system performs the conversion
+    * from logical to physical pixels automatically. The ResourcePixelRatio()
+    * member function returns the actual ratio between physical and logical
+    * screen pixels on OS X.
+    *
+    * \ingroup ui_scaling_functions
+    * \sa LogicalPixelsToPhysical(), PhysicalPixelsToLogical(),
+    * ResourcePixelRatio()
     */
    double DisplayPixelRatio() const;
+
+   /*!
+    * Returns the ratio between physical screen pixels and pixels of
+    * device-independent image resources reproduced on the parent top-level
+    * window of this %Control object. This ratio is used as a scaling factor by
+    * the ScaledResource() member function.
+    *
+    * The returned value is greater than or equal to one. Typical resource
+    * pixel ratios are 1.5 and 2.0 for high-density displays such as 4K and 5K
+    * monitors, respectively, 2.0 for Retina displays, or 1.0 for normal 96 dpi
+    * monitors.
+    *
+    * On OS X with Retina monitors working in high-dpi modes, this function
+    * returns a value greater than one (typically 2.0), while
+    * DisplayPixelRatio() normally returns one by default. This is because in
+    * high-dpi modes, OS X works in logical display coordinates to represent
+    * text, control sizes and distances. However, image resources must be
+    * provided with pixel data in the physical screen resolution. On X11 and
+    * Windows platforms, where no automatic display scaling is performed, this
+    * member function is equivalent to DisplayPixelRatio().
+    *
+    * Portable code should use the value returned by this member function to
+    * scale image resources drawn on controls, such as icons and bitmaps. The
+    * ScaledResource() function can be used to select the appropriate file
+    * paths from PixInsight core resources.
+    *
+    * \ingroup ui_scaling_functions
+    * \sa ScaledResource(), DisplayPixelRatio()
+    */
+   double ResourcePixelRatio() const;
 
    /*!
     * Returns the specified bitmap \a resource path adapted to be represented
     * with the physical display pixel ratio of this control. Calling this
     * function is equivalent to:
     *
-    * \code pcl::UIScaledResource( DisplayPixelRatio(), resource ); \endcode
+    * \code pcl::UIScaledResource( ResourcePixelRatio(), resource ); \endcode
     *
     * Example:
     *
@@ -1271,11 +1310,12 @@ public:
     * \endcode
     *
     * \ingroup ui_scaling_functions
+    * \sa ResourcePixelRatio()
     */
    template <class R>
    String ScaledResource( R resource ) const
    {
-      return UIScaledResource( DisplayPixelRatio(), resource );
+      return UIScaledResource( ResourcePixelRatio(), resource );
    }
 
    /*!
@@ -1283,26 +1323,24 @@ public:
     * pixels and scaled resource file paths, and optionally point sizes
     * converted to scaled pixel sizes.
     *
-    * \param cssCode          A string containing the input CSS source code.
-    *                         The function will return a transformed version of
-    *                         this string.
+    * \param cssCode    A string containing the input CSS source code. The
+    *                   function will return a transformed version of this
+    *                   string.
     *
-    * \param fontDPI          If greater than zero, this is the font
-    *                         resolution, in dots per inch (dpi), for
-    *                         transformation of point sizes to scaled pixel
-    *                         sizes. If this parameter is zero (the default
-    *                         value), this routine will use the font resolution
-    *                         currently selected in core user preferences
-    *                         (which is the value of the
-    *                         "Application/FontResolution" global integer
-    *                         variable; see PixInsightSettings). If this
-    *                         parameter is a negative integer, no
-    *                         point-to-pixel conversions will be applied.
+    * \param fontDPI    If greater than zero, this is the font resolution, in
+    *                   dots per inch (dpi), for transformation of point sizes
+    *                   to scaled pixel sizes. If this parameter is zero (the
+    *                   default value), this routine will use the font
+    *                   resolution currently selected in core user preferences
+    *                   (which is the value of the "Application/FontResolution"
+    *                   global integer variable; see PixInsightSettings). If
+    *                   this parameter is a negative integer, no point-to-pixel
+    *                   conversions will be applied.
     *
     * Calling this function is equivalent to:
     *
     * \code
-    * pcl::UIScaledStyleSheet( DisplayPixelRatio(), cssCode, fontDPI );
+    * pcl::UIScaledStyleSheet( DisplayPixelRatio(), ResourcePixelRatio(), cssCode, fontDPI );
     * \endcode
     *
     * Example:
@@ -1323,9 +1361,9 @@ public:
     *    ) );
     * \endcode
     *
-    * If the display pixel ratio of \c Data_TreeBox were 1.5 (for example, on a
-    * 4K monitor), and the current font resolution were 100 dpi, the code above
-    * would be equivalent to:
+    * If the display and resource pixel ratios of \c Data_TreeBox were 1.5 (for
+    * example, on a 4K monitor), and the current font resolution were 100 dpi,
+    * the code above would be equivalent to:
     *
     * \code
     * Data_TreeBox.SetStyleSheet(
@@ -1344,11 +1382,12 @@ public:
     * \endcode
     *
     * \ingroup ui_scaling_functions
+    * \sa DisplayPixelRatio(), ResourcePixelRatio(), ScaledResource()
     */
    template <class S>
    String ScaledStyleSheet( S cssCode, int fontDPI = 0 ) const
    {
-      return UIScaledStyleSheet( DisplayPixelRatio(), cssCode, fontDPI );
+      return UIScaledStyleSheet( DisplayPixelRatio(), ResourcePixelRatio(), cssCode, fontDPI );
    }
 
    /*!
@@ -1371,6 +1410,9 @@ public:
     * multiplication with DisplayPixelRatio() and rounding. This also
     * guarantees source code compatibility with future versions of PixInsight,
     * where standard cursor dimensions might change.
+    *
+    * \ingroup ui_scaling_functions
+    * \sa DisplayPixelRatio();
     */
    Point ScaledCursorHotSpot( int xHot, int yHot ) const
    {
@@ -1385,6 +1427,8 @@ public:
     * This function is equivalent to:
     *
     * \code ScaledCursorHotSpot( hotSpot.x, hotSpot.y ); \endcode
+    *
+    * \ingroup ui_scaling_functions
     */
    Point ScaledCursorHotSpot( const Point& hotSpot ) const
    {
@@ -1395,6 +1439,7 @@ public:
     * Returns the specified \a size in logical device-independent pixel units
     * converted to physical device pixels.
     *
+    * \ingroup ui_scaling_functions
     * \sa DisplayPixelRatio(), PhysicalPixelsToLogical()
     */
    int LogicalPixelsToPhysical( int size ) const
@@ -1406,6 +1451,7 @@ public:
     * Returns the specified \a size in physical device pixels converted to
     * logical device-independent pixel units.
     *
+    * \ingroup ui_scaling_functions
     * \sa DisplayPixelRatio(), LogicalPixelsToPhysical()
     */
    int PhysicalPixelsToLogical( int size ) const
@@ -1725,4 +1771,4 @@ int CanonicalControlHeightImplementation()
 #endif   // __PCL_Control_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Control.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/Control.h - Released 2015/12/17 18:52:09 UTC

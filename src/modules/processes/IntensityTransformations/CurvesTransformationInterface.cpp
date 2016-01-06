@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.00.0314
+// Standard IntensityTransformations Process Module Version 01.07.01.0351
 // ----------------------------------------------------------------------------
-// CurvesTransformationInterface.cpp - Released 2015/10/08 11:24:40 UTC
+// CurvesTransformationInterface.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
@@ -61,6 +61,9 @@
 #include <pcl/MessageBox.h>
 #include <pcl/RealTimePreview.h>
 
+#define CURSOR_TOLERANCE   PixInsightSettings::GlobalInteger( "ImageWindow/CursorTolerance" )
+#define WHEEL_STEP_ANGLE   PixInsightSettings::GlobalInteger( "ImageWindow/WheelStepAngle" )
+
 namespace pcl
 {
 
@@ -86,40 +89,37 @@ static const int s_maxZoom = 99;
 
 // ----------------------------------------------------------------------------
 
-#define CURSOR_TOLERANCE   PixInsightSettings::GlobalInteger( "ImageWindow/CursorTolerance" )
-
-// ----------------------------------------------------------------------------
-
 CurvesTransformationInterface::CurvesTransformationInterface() :
-ProcessInterface(),
-m_instance( TheCurvesTransformationProcess ),
-m_realTimeThread( 0 ),
-GUI( 0 ),
-m_mode( EditMode ),
-m_savedMode( NoMode ),
-m_channel( CurveIndex::RGBK ),
-m_currentPoint( 0, CurveIndex::NumberOfCurves ),
-m_histograms(),
-m_histogramView( View::Null() ),
-m_histogramColor( false ),
-m_readoutActive( false ),
-m_readouts( 0.0, 4 ),
-m_readoutRGBWS(),
-m_zoomX( 1 ),
-m_zoomY( 1 ),
-m_showAllCurves( true ),
-m_showGrid( true ),
-m_panning( 0 ),
-m_panOrigin( 0 ),
-m_cursorVisible( false ),
-m_dragging( false ),
-m_cursorPos( -1 ),
-m_curvePos( 0 ),
-m_viewportBitmap( Bitmap::Null() ),
-m_viewportDirty( true ),
-m_storedCurve(),
-m_channelColor( CurveIndex::NumberOfCurves ),
-m_settingUp( false )
+   ProcessInterface(),
+   m_instance( TheCurvesTransformationProcess ),
+   m_realTimeThread( 0 ),
+   GUI( 0 ),
+   m_mode( EditMode ),
+   m_savedMode( NoMode ),
+   m_channel( CurveIndex::RGBK ),
+   m_currentPoint( 0, CurveIndex::NumberOfCurves ),
+   m_histograms(),
+   m_histogramView( View::Null() ),
+   m_histogramColor( false ),
+   m_readoutActive( false ),
+   m_readouts( 0.0, 4 ),
+   m_readoutRGBWS(),
+   m_zoomX( 1 ),
+   m_zoomY( 1 ),
+   m_wheelSteps( 0 ),
+   m_showAllCurves( true ),
+   m_showGrid( true ),
+   m_panning( 0 ),
+   m_panOrigin( 0 ),
+   m_cursorVisible( false ),
+   m_dragging( false ),
+   m_cursorPos( -1 ),
+   m_curvePos( 0 ),
+   m_viewportBitmap( Bitmap::Null() ),
+   m_viewportDirty( true ),
+   m_storedCurve(),
+   m_channelColor( CurveIndex::NumberOfCurves ),
+   m_settingUp( false )
 {
    TheCurvesTransformationInterface = this;
 
@@ -1405,20 +1405,20 @@ void CurvesTransformationInterface::__Curve_MouseMove(
       for ( int i = 0; i < 2; ++i )
       {
          double f = DisplayPixelRatio();
+         int ui1 = RoundInt( f );
          if ( m_mode == ZoomInMode || m_mode == ZoomOutMode || m_mode == PanMode )
          {
             int ui16 = RoundInt( f*16 );
-            sender.Update( m_cursorPos.x-ui16, m_cursorPos.y-ui16, m_cursorPos.x+ui16, m_cursorPos.y+ui16 );
+            sender.Update( m_cursorPos.x-ui16-ui1, m_cursorPos.y-ui16-ui1, m_cursorPos.x+ui16+ui1, m_cursorPos.y+ui16+ui1 );
          }
          else
          {
-            int ui1 = RoundInt( f );
-            sender.Update( m_cursorPos.x-ui1, 0, m_cursorPos.x+ui1, h );
-            sender.Update( 0, m_cursorPos.y-ui1, w, m_cursorPos.y+ui1 );
+            sender.Update( m_cursorPos.x-ui1-ui1, 0, m_cursorPos.x+ui1+ui1, h );
+            sender.Update( 0, m_cursorPos.y-ui1-ui1, w, m_cursorPos.y+ui1+ui1 );
             if ( m_mode == SelectMode || m_mode == DeleteMode )
             {
                int ui10 = RoundInt( f*10 );
-               sender.Update( m_cursorPos.x-ui10, m_cursorPos.y-ui10, m_cursorPos.x+ui10, m_cursorPos.y+ui10 );
+               sender.Update( m_cursorPos.x-ui10-ui1, m_cursorPos.y-ui10-ui1, m_cursorPos.x+ui10+ui1, m_cursorPos.y+ui10+ui1 );
             }
          }
 
@@ -1455,14 +1455,18 @@ void CurvesTransformationInterface::__Curve_MouseMove(
 void CurvesTransformationInterface::__Curve_MouseWheel(
    Control& sender, const pcl::Point& pos, int delta, unsigned buttons, unsigned modifiers )
 {
-   int d = (delta > 0) ? -1 : +1;
-
    if ( sender == GUI->Curve_ScrollBox.Viewport() )
    {
-      Point p = pos + GUI->Curve_ScrollBox.ScrollPosition();
-      p.x /= m_zoomX;
-      p.y /= m_zoomY;
-      SetZoom( Range( m_zoomX+d, 1, s_maxZoom ), Range( m_zoomY+d, 1, s_maxZoom ), &p );
+      m_wheelSteps += delta; // delta is rotation angle in 1/8 degree steps
+      if ( Abs( m_wheelSteps ) >= WHEEL_STEP_ANGLE*8 )
+      {
+         Point p = pos + GUI->Curve_ScrollBox.ScrollPosition();
+         p.x /= m_zoomX;
+         p.y /= m_zoomY;
+         int d = (delta > 0) ? -1 : +1;
+         SetZoom( Range( m_zoomX+d, 1, s_maxZoom ), Range( m_zoomY+d, 1, s_maxZoom ), &p );
+         m_wheelSteps = 0;
+      }
    }
 }
 
@@ -2296,4 +2300,4 @@ CurvesTransformationInterface::GUIData::GUIData( CurvesTransformationInterface& 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CurvesTransformationInterface.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF CurvesTransformationInterface.cpp - Released 2015/12/18 08:55:08 UTC

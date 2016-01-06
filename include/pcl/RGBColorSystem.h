@@ -2,9 +2,9 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// pcl/RGBColorSystem.h - Released 2015/10/08 11:24:12 UTC
+// pcl/RGBColorSystem.h - Released 2015/12/17 18:52:09 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -460,7 +460,7 @@ public:
     * \param R,G,B   Input RGB components.
     *
     * \note HSI is more often known as HSL; however we reserve the L channel
-    * identifier exclusively for the CIE L* component (lightness) in the PCL.
+    * identifier exclusively for the CIE L* component (lightness) in PCL.
     *
     * \note This is an utility function provided for convenience; HSI is not a
     * color space, but a color ordering system not based on a RGBWS.
@@ -532,7 +532,7 @@ public:
     * \param R,G,B   Input RGB components.
     *
     * \note HSI is more often known as HSL; however we reserve the L channel
-    * identifier exclusively for the CIE L* component (lightness) in the PCL.
+    * identifier exclusively for the CIE L* component (lightness) in PCL.
     *
     * \note This is an utility function provided for convenience; HSI is not a
     * color space, but a color ordering system not based on a RGBWS.
@@ -621,7 +621,7 @@ public:
     * one corresponds to a hue angle of 2*pi radians, or 360 degrees.
     *
     * \note HSI is more often known as HSL; however we reserve the L channel
-    * identifier exclusively for the CIE L* component (lightness) in the PCL.
+    * identifier exclusively for the CIE L* component (lightness) in PCL.
     *
     * \note This is a static function provided for convenience; HSV is not a
     * color space, but a color ordering system not based on a RGBWS.
@@ -699,7 +699,7 @@ public:
     * one corresponds to a hue angle of 2*pi radians, or 360 degrees.
     *
     * \note HSI is more often known as HSL; however we reserve the L channel
-    * identifier exclusively for the CIE L* component (lightness) in the PCL.
+    * identifier exclusively for the CIE L* component (lightness) in PCL.
     */
    void RGBToHSIL( sample& H, sample& S, sample& I, sample& L, sample R, sample G, sample B ) const
    {
@@ -1059,7 +1059,7 @@ public:
     * one corresponds to a hue angle of 2*pi radians, or 360 degrees.
     *
     * \note HSI is more often known as HSL; however we reserve the L channel
-    * identifier exclusively for the CIE L* component (lightness) in the PCL.
+    * identifier exclusively for the CIE L* component (lightness) in PCL.
     *
     * \note This is a static function provided for convenience; HSI is not a
     * color space, but a color ordering system not based on a RGBWS.
@@ -1106,7 +1106,7 @@ public:
     * preservation of the CIE lightness component.
     *
     * \note HSI is more often known as HSL; however we reserve the L channel
-    * identifier exclusively for the CIE L* component (lightness) in the PCL.
+    * identifier exclusively for the CIE L* component (lightness) in PCL.
     */
    void HSILToRGB( sample& R, sample& G, sample& B, sample H, sample S, sample I, sample L ) const
    {
@@ -1606,4 +1606,4 @@ public:
 #endif   // __PCL_RGBColorSystem_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/RGBColorSystem.h - Released 2015/10/08 11:24:12 UTC
+// EOF pcl/RGBColorSystem.h - Released 2015/12/17 18:52:09 UTC

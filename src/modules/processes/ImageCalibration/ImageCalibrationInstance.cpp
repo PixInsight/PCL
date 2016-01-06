@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.00.0779
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.00.0223
+// Standard ImageCalibration Process Module Version 01.03.05.0268
 // ----------------------------------------------------------------------------
-// ImageCalibrationInstance.cpp - Released 2015/10/08 11:24:40 UTC
+// ImageCalibrationInstance.cpp - Released 2015/12/18 08:55:08 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
@@ -53,6 +53,7 @@
 #include "ImageCalibrationInstance.h"
 
 #include <pcl/ATrousWaveletTransform.h>
+#include <pcl/AutoPointer.h>
 #include <pcl/ErrorHandler.h>
 #include <pcl/FITSHeaderKeyword.h>
 #include <pcl/FileFormat.h>
@@ -97,6 +98,18 @@ const float __5x5B3Spline_kj[] =
 #define NO_DARK_CORRELATION   0.005F
 
 /*
+ * Maximum fraction of surviving pixels after optimization thresholding to
+ * issue an 'optimization threshold too high' warning.
+ */
+#define DARK_COUNT_LOW        0.001
+
+/*
+ * Minimum cardinality of a usable dark frame optimization set. Smaller sets
+ * disable dark frame optimization.
+ */
+#define DARK_COUNT_SMALL      16
+
+/*
  * Spinning sticks.
  */
 static size_type nspin = 0;
@@ -107,36 +120,37 @@ static const char* cspin[ 4 ] = { "&mdash;", "\\", "|", "/" };
 // ----------------------------------------------------------------------------
 
 ImageCalibrationInstance::ImageCalibrationInstance( const MetaProcess* m ) :
-ProcessImplementation( m ),
-targetFrames(),
-inputHints(),
-outputHints(),
-pedestal( TheICPedestalParameter->DefaultValue() ),
-pedestalMode( ICPedestalMode::Default ),
-pedestalKeyword(),
-overscan(),
-masterBias(),
-masterDark(),
-masterFlat(),
-calibrateBias( TheICCalibrateBiasParameter->DefaultValue() ),
-calibrateDark( TheICCalibrateDarkParameter->DefaultValue() ),
-calibrateFlat( TheICCalibrateFlatParameter->DefaultValue() ),
-optimizeDarks( TheICOptimizeDarksParameter->DefaultValue() ),
-darkOptimizationThreshold( TheICDarkOptimizationThresholdParameter->DefaultValue() ),
-darkOptimizationWindow( TheICDarkOptimizationWindowParameter->DefaultValue() ),
-darkCFADetectionMode( ICDarkCFADetectionMode::Default ),
-evaluateNoise( TheICEvaluateNoiseParameter->DefaultValue() ),
-noiseEvaluationAlgorithm( ICNoiseEvaluationAlgorithm::Default ),
-outputDirectory( TheICOutputDirectoryParameter->DefaultValue() ),
-outputExtension( TheICOutputExtensionParameter->DefaultValue() ),
-outputPrefix( TheICOutputPrefixParameter->DefaultValue() ),
-outputPostfix( TheICOutputPostfixParameter->DefaultValue() ),
-outputSampleFormat( ICOutputSampleFormat::Default ),
-outputPedestal( TheICOutputPedestalParameter->DefaultValue() ),
-overwriteExistingFiles( TheICOverwriteExistingFilesParameter->DefaultValue() ),
-onError( ICOnError::Default ),
-noGUIMessages( TheICNoGUIMessagesParameter->DefaultValue() ),
-output()
+   ProcessImplementation( m ),
+   targetFrames(),
+   inputHints(),
+   outputHints(),
+   pedestal( TheICPedestalParameter->DefaultValue() ),
+   pedestalMode( ICPedestalMode::Default ),
+   pedestalKeyword(),
+   overscan(),
+   masterBias(),
+   masterDark(),
+   masterFlat(),
+   calibrateBias( TheICCalibrateBiasParameter->DefaultValue() ),
+   calibrateDark( TheICCalibrateDarkParameter->DefaultValue() ),
+   calibrateFlat( TheICCalibrateFlatParameter->DefaultValue() ),
+   optimizeDarks( TheICOptimizeDarksParameter->DefaultValue() ),
+   darkOptimizationThreshold( TheICDarkOptimizationThresholdParameter->DefaultValue() ),
+   darkOptimizationLow( TheICDarkOptimizationLowParameter->DefaultValue() ),
+   darkOptimizationWindow( TheICDarkOptimizationWindowParameter->DefaultValue() ),
+   darkCFADetectionMode( ICDarkCFADetectionMode::Default ),
+   evaluateNoise( TheICEvaluateNoiseParameter->DefaultValue() ),
+   noiseEvaluationAlgorithm( ICNoiseEvaluationAlgorithm::Default ),
+   outputDirectory( TheICOutputDirectoryParameter->DefaultValue() ),
+   outputExtension( TheICOutputExtensionParameter->DefaultValue() ),
+   outputPrefix( TheICOutputPrefixParameter->DefaultValue() ),
+   outputPostfix( TheICOutputPostfixParameter->DefaultValue() ),
+   outputSampleFormat( ICOutputSampleFormat::Default ),
+   outputPedestal( TheICOutputPedestalParameter->DefaultValue() ),
+   overwriteExistingFiles( TheICOverwriteExistingFilesParameter->DefaultValue() ),
+   onError( ICOnError::Default ),
+   noGUIMessages( TheICNoGUIMessagesParameter->DefaultValue() ),
+   output()
 {
 }
 
@@ -166,6 +180,7 @@ void ImageCalibrationInstance::Assign( const ProcessImplementation& p )
       calibrateFlat             = x->calibrateFlat;
       optimizeDarks             = x->optimizeDarks;
       darkOptimizationThreshold = x->darkOptimizationThreshold;
+      darkOptimizationLow       = x->darkOptimizationLow;
       darkOptimizationWindow    = x->darkOptimizationWindow;
       darkCFADetectionMode      = x->darkCFADetectionMode;
       evaluateNoise             = x->evaluateNoise;
@@ -857,8 +872,12 @@ struct OutputFileData
       if ( format != nullptr )
       {
          if ( fsData != nullptr )
-            format->DisposeFormatSpecificData( const_cast<void*>( fsData ) ), fsData = nullptr;
-         delete format, format = nullptr;
+         {
+            format->DisposeFormatSpecificData( const_cast<void*>( fsData ) );
+            fsData = nullptr;
+         }
+         delete format;
+         format = nullptr;
       }
    }
 };
@@ -926,17 +945,21 @@ public:
 
    CalibrationThread( Image* target, OutputFileData* outputData, const String& targetPath, int subimageIndex,
                       const CalibrationThreadData& data ) :
-   m_target( target ), m_outputData( outputData ), m_targetPath( targetPath ), m_subimageIndex( subimageIndex ),
-   m_success( false ), m_data( data )
+      m_target( target ),
+      m_outputData( outputData ),
+      m_targetPath( targetPath ),
+      m_subimageIndex( subimageIndex ),
+      m_success( false ),
+      m_data( data )
    {
    }
 
    virtual ~CalibrationThread()
    {
-      if ( m_target != 0 )
-         delete m_target, m_target = 0;
-      if ( m_outputData != 0 )
-         delete m_outputData, m_outputData = 0;
+      if ( m_target != nullptr )
+         delete m_target, m_target = nullptr;
+      if ( m_outputData != nullptr )
+         delete m_outputData, m_outputData = nullptr;
    }
 
    virtual void Run()
@@ -956,7 +979,7 @@ public:
          /*
           * Dark frame optimization.
           */
-         if ( m_data.dark != 0 && m_data.instance->optimizeDarks )
+         if ( m_data.dark != nullptr && m_data.instance->optimizeDarks && m_data.optimizingDark != nullptr )
             K = OptimizeDark( *m_target,
                               *m_data.optimizingDark,
                                m_data.isDarkCFA );
@@ -1034,7 +1057,7 @@ private:
    Image*          m_target;        // The image being calibrated. It belongs to this thread.
    OutputFileData* m_outputData;    // Target image parameters and embedded m_data. It belongs to this thread.
    String          m_targetPath;    // File path of this m_target image
-   int             m_subimageIndex; // > 0 in case of a multiple image; = 0 otherwise
+   int             m_subimageIndex; // >= 0 in case of a multiple image; = 0 otherwise
    bool            m_success : 1;   // The thread completed execution successfully
 
    const CalibrationThreadData& m_data;
@@ -1227,7 +1250,7 @@ Image* ImageCalibrationInstance::LoadCalibrationFrame( const String& filePath, b
    /*
     * Optional CFA type retrieval.
     */
-   if ( hasCFA != 0 )
+   if ( hasCFA != nullptr )
       *hasCFA = images[0].options.cfaType != CFAType::None;
 
    /*
@@ -1290,11 +1313,10 @@ ImageCalibrationInstance::LoadTargetFrame( const String& filePath,
 
    /*
     * Multiple-image file formats are supported and implemented in PixInsight
-    * (e.g. FITS), so when we open a file, what we get is an array of images,
-    * usually consisting of a single image, but we must provide for a set of
-    * subimages.
+    * (e.g.: XISF, FITS), so when we open a file, what we get is an array of
+    * images, usually consisting of a single image, but we must provide for a
+    * set of subimages.
     */
-   Image* target = 0;
    thread_list threads;
    try
    {
@@ -1303,7 +1325,7 @@ ImageCalibrationInstance::LoadTargetFrame( const String& filePath,
          if ( images.Length() > 1 )
             console.WriteLn( String().Format( "* Subimage %u of %u", j+1, images.Length() ) );
 
-         target = LoadImageFile( file, j );
+         AutoPointer<Image> target( LoadImageFile( file, j ) );
 
          Module->ProcessEvents();
 
@@ -1337,7 +1359,7 @@ ImageCalibrationInstance::LoadTargetFrame( const String& filePath,
                                              (images.Length() > 1) ? j+1 : 0,
                                              threadData ) );
          // The thread owns the target image
-         target = nullptr;
+         target.Release();
       }
 
       /*
@@ -1349,8 +1371,6 @@ ImageCalibrationInstance::LoadTargetFrame( const String& filePath,
    }
    catch ( ... )
    {
-      if ( target != nullptr )
-         delete target;
       threads.Destroy();
       throw;
    }
@@ -1591,9 +1611,14 @@ void ImageCalibrationInstance::WriteCalibratedImage( const CalibrationThread* t 
                darkScalingFactors.AppendFormat( " %.3f", t->K[i] );
             keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(), darkScalingFactors ) );
 
-            keywords.Add( FITSHeaderKeyword( "HISTORY",
+            if ( darkOptimizationThreshold > 0 )
+               keywords.Add( FITSHeaderKeyword( "HISTORY",
                                        IsoString(),
                                        IsoString().Format( "ImageCalibration.masterDark.optimizationThreshold: %.5f", darkOptimizationThreshold ) ) );
+
+            keywords.Add( FITSHeaderKeyword( "HISTORY",
+                                       IsoString(),
+                                       IsoString().Format( "ImageCalibration.masterDark.optimizationLow: %.4f", darkOptimizationLow ) ) );
 
             if ( darkOptimizationWindow > 0 )
                keywords.Add( FITSHeaderKeyword( "HISTORY",
@@ -1864,29 +1889,31 @@ bool ImageCalibrationInstance::ExecuteGlobal()
             throw( "No such file exists on the local filesystem: " + i->path );
    }
 
-   /*
-    * Reset output data
-    */
-   output.Clear();
-
-   /*
-    * Master frames in use. Declared here because we must deallocate all
-    * working pixel data in the event of error/abortion.
-    */
-   Image* bias = 0;
-   Image* dark = 0, * optimizingDark = 0;
-   Image* flat = 0;
-
-   /*
-    * Flag true if the master dark frame is mosaiced with a Color Filter Array
-    * (CFA, e.g. a Bayer pattern), either explicitly reported by the file
-    * format (DSLR_RAW), detected heuristically (e.g., a CFA stored as a
-    * proprietary FITS file), or forced with darkCFADetectionMode = ForceCFA.
-    */
-   bool isDarkCFA = false;
-
    try
    {
+      /*
+       * Master frames in use.
+       */
+      AutoPointer<Image> bias, dark, optimizingDark, flat;
+
+      /*
+       * Flag true if the master dark frame is mosaiced with a Color Filter Array
+       * (CFA, e.g. a Bayer pattern), either explicitly reported by the file
+       * format (DSLR_RAW), detected heuristically (e.g., a CFA stored as a
+       * proprietary FITS file), or forced with darkCFADetectionMode = ForceCFA.
+       */
+      bool isDarkCFA = false;
+
+      /*
+       * Per-channel flat scaling factors.
+       */
+      FVector s;
+
+      /*
+       * Reset output data
+       */
+      output.Clear();
+
       /*
        * For all errors generated, we want a report on the console. This is
        * customary in PixInsight for all batch processes.
@@ -1904,11 +1931,6 @@ bool ImageCalibrationInstance::ExecuteGlobal()
        * Initialize validation geometries.
        */
       geometry = calibratedGeometry = 0;
-
-      /*
-       * Per-channel flat scaling factors.
-       */
-      FVector s;
 
       /*
        * Overscan regions grouped by target regions.
@@ -2014,46 +2036,57 @@ bool ImageCalibrationInstance::ExecuteGlobal()
             if ( optimizeDarks )
             {
                dark->ResetSelections();
+               optimizingDark = new Image( *dark );
+               if ( isDarkCFA )
+                  IntegerResample( -2 ) >> *optimizingDark;
 
-               if ( darkOptimizationWindow > 0
-                    && (darkOptimizationWindow < dark->Width() || darkOptimizationWindow < dark->Height()) )
+               console.WriteLn( "<end><cbr><br>Dark frame optimization thresholds:" );
+               for ( int c = 0; c < optimizingDark->NumberOfChannels(); ++c )
                {
-                  if ( isDarkCFA )
+                  optimizingDark->SelectChannel( c );
+                  double location = optimizingDark->Median();
+                  double scale = optimizingDark->MAD( location ) * 1.4826;
+                  double t;
+                  if ( darkOptimizationThreshold > 0 ) // ### be backwards-compatible
                   {
-                     optimizingDark = new Image( *dark );
-                     IntegerResample( -2 ) >> *optimizingDark;
+                     t = Range( darkOptimizationThreshold, 0.0F, 1.0F );
+                     darkOptimizationLow = (t - location)/scale;
+                     darkOptimizationThreshold = 0;
+                  }
+                  else
+                  {
+                     t = Range( location + darkOptimizationLow * scale, 0.0, 1.0 );
+                  }
+                  size_type N = optimizingDark->NumberOfPixels();
+                  for ( Image::sample_iterator i( *optimizingDark, c ); i; ++i )
+                     if ( *i < t )
+                     {
+                        *i = 0;
+                        --N;
+                     }
+                  console.WriteLn( String().Format( "<end><cbr>Td%d = %.8lf (%llu px = %.3lf%%)",
+                                                      c, t, N, 100.0*N/optimizingDark->NumberOfPixels() ) );
+                  if ( N < DARK_COUNT_LOW*optimizingDark->NumberOfPixels() )
+                     console.WarningLn( String().Format( "** Warning: The dark frame optimization threshold is probably too high (channel %d).", c ) );
+                  if ( N < DARK_COUNT_SMALL )
+                  {
+                     console.WarningLn( String().Format( "** Warning: The dark frame optimization pixel set is too small - disabling dark frame optimization (channel %d).", c ) );
+                     optimizingDark.Destroy();
+                  }
+               }
+
+               if ( optimizingDark )
+               {
+                  optimizingDark->ResetSelections();
+
+                  if ( darkOptimizationWindow > 0
+                     && (darkOptimizationWindow < dark->Width() || darkOptimizationWindow < dark->Height()) )
+                  {
                      optimizingDark->SelectRectangle( OptimizingRect( *optimizingDark, darkOptimizationWindow ) );
                      optimizingDark->Crop();
                      optimizingDark->ResetSelections();
                   }
-                  else
-                  {
-                     dark->SelectRectangle( OptimizingRect( *dark, darkOptimizationWindow ) );
-                     optimizingDark = new Image( *dark );
-                     dark->ResetSelections();
-                  }
                }
-               else
-               {
-                  if ( isDarkCFA )
-                  {
-                     optimizingDark = new Image( *dark );
-                     IntegerResample( -2 ) >> *optimizingDark;
-                  }
-                  else
-                  {
-                     if ( darkOptimizationThreshold > 0 )
-                        optimizingDark = new Image( *dark );
-                     else
-                        optimizingDark = dark;
-                  }
-               }
-
-               if ( darkOptimizationThreshold > 0 )
-                  for ( int c = 0; c < optimizingDark->NumberOfChannels(); ++c )
-                     for ( Image::sample_iterator i( *optimizingDark, c ); i; ++i )
-                        if ( *i < darkOptimizationThreshold )
-                           *i = 0;
             }
          }
 
@@ -2076,13 +2109,13 @@ bool ImageCalibrationInstance::ExecuteGlobal()
 
                   FVector K;
                   if ( masterDark.enabled )
-                     if ( optimizeDarks )
+                     if ( optimizeDarks && optimizingDark )
                      {
                         console.WriteLn( "Optimizing master dark frame:" );
                         K = OptimizeDark( *flat, *optimizingDark, isDarkCFA );
                         for ( int c = 0; c < flat->NumberOfChannels(); ++c )
                         {
-                           console.WriteLn( String().Format( "k%d = %.3f", c, K[c] ) );
+                           console.WriteLn( String().Format( "<end><cbr>k%d = %.3f", c, K[c] ) );
                            if ( K[c] <= NO_DARK_CORRELATION )
                               console.WarningLn( String().Format( "** Warning: No correlation between "
                                                 "the master dark and master flat frames (channel %d).", c ) );
@@ -2450,22 +2483,6 @@ bool ImageCalibrationInstance::ExecuteGlobal()
       }
 
       /*
-       * Deallocate all working images.
-       */
-      if ( bias != 0 )
-         delete bias, bias = 0;
-      if ( optimizingDark != 0 )
-      {
-         if ( optimizingDark != dark )
-            delete optimizingDark;
-         optimizingDark = 0;
-      }
-      if ( dark != 0 )
-         delete dark, dark = 0;
-      if ( flat != 0 )
-         delete flat, flat = 0;
-
-      /*
        * Fail if no images have been calibrated.
        */
       if ( succeeded == 0 )
@@ -2488,16 +2505,6 @@ bool ImageCalibrationInstance::ExecuteGlobal()
       /*
        * All breaking errors are caught here.
        */
-      if ( bias != 0 )
-         delete bias;
-      if ( optimizingDark != 0 )
-         if ( optimizingDark != dark )
-            delete optimizingDark;
-      if ( dark != 0 )
-         delete dark;
-      if ( flat != 0 )
-         delete flat;
-
       Exception::EnableGUIOutput( !noGUIMessages );
       throw;
    }
@@ -2583,6 +2590,8 @@ void* ImageCalibrationInstance::LockParameter( const MetaParameter* p, size_type
       return &optimizeDarks;
    if ( p == TheICDarkOptimizationThresholdParameter )
       return &darkOptimizationThreshold;
+   if ( p == TheICDarkOptimizationLowParameter )
+      return &darkOptimizationLow;
    if ( p == TheICDarkOptimizationWindowParameter )
       return &darkOptimizationWindow;
    if ( p == TheICDarkCFADetectionModeParameter )
@@ -2802,4 +2811,4 @@ size_type ImageCalibrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageCalibrationInstance.cpp - Released 2015/10/08 11:24:40 UTC
+// EOF ImageCalibrationInstance.cpp - Released 2015/12/18 08:55:08 UTC

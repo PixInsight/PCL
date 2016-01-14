@@ -117,10 +117,10 @@ post-build:
 	cp $(OBJ_DIR)/INDIClient-pxm.so $(PCLBINDIR64)
 
 ./x64/Debug/%.o: ../../%.cpp
-	g++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O0 -g -fvisibility=default -fvisibility-inlines-hidden -fnon-call-exceptions -rdynamic -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	g++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O0 -g -fvisibility=default  -fnon-call-exceptions -rdynamic -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 ./x64/Debug/INDI/%.o: ../../INDI/%.cpp
-	g++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O0 -g -fvisibility=default -fvisibility-inlines-hidden -fnon-call-exceptions -rdynamic -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	g++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O0 -g -fvisibility=default  -fnon-call-exceptions -rdynamic -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 ./x64/Debug/INDI/%.o: ../../INDI/%.c
 	gcc -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O0 -g -fvisibility=default -fnon-call-exceptions -rdynamic -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"

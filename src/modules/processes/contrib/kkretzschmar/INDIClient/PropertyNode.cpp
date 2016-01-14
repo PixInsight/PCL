@@ -334,6 +334,9 @@ namespace pcl {
 	}
 
 	PropertyNode* PropertyTree::addElementNode(String device,String property,String element, int state, String label){
+		assert(!device.IsEmpty());
+		assert(!property.IsEmpty());
+		assert(!element.IsEmpty());
 		assert(m_rootNode!=NULL);
 		// lookup device node
 		String deviceKeyStr = PropertyUtils::getKey(device);

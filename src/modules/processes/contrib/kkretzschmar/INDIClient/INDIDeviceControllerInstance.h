@@ -65,6 +65,8 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
+
+
 class INDIDeviceControllerInstance : public ProcessImplementation, IINDIDeviceControllerInstance
 {
 public:
@@ -88,9 +90,11 @@ public:
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
 
-	virtual Array<INDIPropertyListItem>& getPropertyList() {return p_propertyList;}
-	virtual Array<INDIDeviceListItem>& getDeviceList(){return p_deviceList; }
-	virtual IsoString& getCurrentMessage() {return p_currentMessage;}
+   virtual Array<INDIPropertyListItem>& getPropertyList() {return p_propertyList;}
+   virtual Array<INDIDeviceListItem>& getDeviceList(){return p_deviceList; }
+   virtual IsoString& getCurrentMessage() {return p_currentMessage;}
+
+   ExclPropertyList getExclusivePropertyList() {return ExclPropertyList(m_mutex,p_propertyList);}
 
    bool sendNewPropertyValue(const INDINewPropertyListItem& propItem,bool isAsynch=false);
 
@@ -117,6 +121,10 @@ private:
 
    bool                    m_internalAbortFlag;
    bool                    m_ImageDownloaded;
+
+   // Mutex for access to propertyList
+   pcl::Mutex             m_mutex;
+
 
    void getProperties();
    bool sendNewProperty(bool isAsyncCall=false);

@@ -363,7 +363,10 @@ bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
 
  bool INDIDeviceControllerInstance::getINDIPropertyItem(String device, String property, String element,INDIPropertyListItem& result, bool formatted ){
 
-	for (pcl::Array<INDIPropertyListItem>::iterator iter=p_propertyList.Begin(); iter!=p_propertyList.End(); ++iter){
+	// get popertyList with exclusive access
+	ExclPropertyList propertyList = getExclusivePropertyList();
+
+	for (pcl::Array<INDIPropertyListItem>::iterator iter=propertyList.get()->Begin(); iter!=propertyList.get()->End(); ++iter){
 
 		if ((iter->Device==device) && (iter->Property==property) && (iter->Element==element) ){
 			result.Device=device;
@@ -381,7 +384,6 @@ bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
 			result.PropertyState=iter->PropertyState;
 			return true;
 		}
-
 	}
 	return false;
 }
@@ -394,7 +396,7 @@ void INDIDeviceControllerInstance::writeCurrentMessageToConsole(){
 
 bool INDIDeviceControllerInstance::ExecuteGlobal()
 {
-   Console().WriteLn("INDI control client --- (c) Klaus Kretzschmar, 2014-2015");
+   Console().WriteLn("INDI control client --- (c) Klaus Kretzschmar, 2014-2016");
    Console().EnableAbort();
    if (!p_connect){
 	  // disconnet from server

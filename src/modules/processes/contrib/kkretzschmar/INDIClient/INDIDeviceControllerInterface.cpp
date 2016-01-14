@@ -325,9 +325,6 @@ void INDIDeviceControllerInterface::__CameraListButtons_Click( Button& sender, b
 
 void INDIDeviceControllerInterface::UpdateDeviceList(){
 
-
-	GUI->DeviceList_TreeBox.DisableUpdates();
-
 	if (indiClient.get() == 0)
 		return;
 
@@ -356,7 +353,6 @@ void INDIDeviceControllerInterface::UpdateDeviceList(){
 		}
 		assert(deviceNode!=NULL);
 
-
 		deviceNode->getTreeBoxNode()->SetText( TextColumn, iter->DeviceName );
 		deviceNode->getTreeBoxNode()->SetAlignment( TextColumn, TextAlign::Left );
 
@@ -366,11 +362,7 @@ void INDIDeviceControllerInterface::UpdateDeviceList(){
       } else {
 			deviceNode->getTreeBoxNode()->SetIcon( TextColumn, ScaledResource( ":/bullets/bullet-ball-glass-grey.png" ) );
 		}
-
-
 	}
-	//GUI->UpdateDeviceList_Timer.Stop();
-	GUI->DeviceList_TreeBox.EnableUpdates();
 
 }
 // ----------------------------------------------------------------------------
@@ -810,24 +802,25 @@ EditSwitchPropertyDialog::EditSwitchPropertyDialog(INDIDeviceControllerInstance*
 
 
 void INDIDeviceControllerInterface::UpdatePropertyList(){
-	GUI->PropertyList_TreeBox.DisableUpdates();
 	std::vector<INDIPropertyListItem> itemsToBeRemoved;
 	std::vector<INDIPropertyListItem> itemsCreated;
+
+	// get popertyList with exclusive access
+	ExclPropertyList propertyList = instance.getExclusivePropertyList();
+
 
 	if (indiClient.get() == 0){
 		GUI->PropertyList_TreeBox.EnableUpdates();
 		return;
 	}
 
-	if (instance.p_propertyList.Begin()==instance.p_propertyList.End()){
+	if (propertyList.get()->Begin()==propertyList.get()->End()){
 		GUI->PropertyList_TreeBox.EnableUpdates();
 		return;
 	}
-	if (indiClient.get()!=NULL){
-		indiClient.get()->m_mutex.Lock();
-	}
+
 	PropertyNodeFactory factory;
-	for (INDIDeviceControllerInstance::PropertyListType::iterator iter=instance.p_propertyList.Begin() ; iter!=instance.p_propertyList.End(); ++iter){
+	for (INDIDeviceControllerInstance::PropertyListType::iterator iter=propertyList.get()->Begin() ; iter!=propertyList.get()->End(); ++iter){
 
 		if (iter->PropertyFlag==Idle){
 			continue;
@@ -881,29 +874,26 @@ void INDIDeviceControllerInterface::UpdatePropertyList(){
 		}
 
 	}
-	GUI->PropertyList_TreeBox.EnableUpdates();
 
 	// remove properties from property list
 	for (size_t i=0; i<itemsToBeRemoved.size(); i++){
-		INDIDeviceControllerInstance::PropertyListType::iterator iter = instance.p_propertyList.Search(itemsToBeRemoved[i]);
-		if (iter==instance.p_propertyList.End()){
+		INDIDeviceControllerInstance::PropertyListType::iterator iter = propertyList.get()->Search(itemsToBeRemoved[i]);
+		if (iter==propertyList.get()->End()){
 			IsoString elemStr=IsoString(iter->Element);
 			throw Error(String().Format("%s",elemStr.c_str()));
 		}
-		instance.p_propertyList.Remove(iter);
+		propertyList.get()->Remove(iter);
 
 	}
 
 	// set newly created elements to Idle
 	for (size_t i=0; i<itemsCreated.size(); i++){
-		INDIDeviceControllerInstance::PropertyListType::iterator iter =instance.p_propertyList.Search(itemsCreated[i]);
-		if (iter!=instance.p_propertyList.End()){
+		INDIDeviceControllerInstance::PropertyListType::iterator iter =propertyList.get()->Search(itemsCreated[i]);
+		if (iter!=propertyList.get()->End()){
 			iter->PropertyFlag=Idle;
 		}
 	}
-	if (indiClient.get()!=NULL){
-		indiClient.get()->m_mutex.Unlock();
-	}
+
 }
 
 

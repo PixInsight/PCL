@@ -59,6 +59,9 @@
 
 #ifndef PIXINSIGHTINDIPARAMLISTTYPES_H_
 #define PIXINSIGHTINDIPARAMLISTTYPES_H_
+#include <memory>
+#include <pcl/Mutex.h>
+#include <pcl/AutoLock.h>
 
 #include "INDI/indibase.h"
 
@@ -110,6 +113,19 @@ struct INDINewPropertyListItem {
    String PropertyKey;
    String NewPropertyValue;
    bool operator==(const INDINewPropertyListItem& rhs) const;
+};
+
+class ExclPropertyList {
+	std::shared_ptr<pcl::AutoLock>  m_locker;
+	Array<INDIPropertyListItem>&    m_propertyListRef;
+public:
+	ExclPropertyList(pcl::Mutex& mutex, Array<INDIPropertyListItem>&  propertyList) :
+		m_locker(new AutoLock(mutex)),
+		m_propertyListRef(propertyList){
+	}
+
+	Array<INDIPropertyListItem>* get() {return &m_propertyListRef;}
+
 };
 
 } // pcl

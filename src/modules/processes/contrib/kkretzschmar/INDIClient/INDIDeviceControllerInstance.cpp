@@ -189,13 +189,12 @@ bool INDIDeviceControllerInstance::sendNewPropertyVector(const NewPropertyListTy
 }
 
 bool INDIDeviceControllerInstance::sendNewPropertyValue(const INDINewPropertyListItem& propItem,bool isAsynch){
-
 	p_newPropertyList.Append(propItem);
 	return sendNewProperty(isAsynch);
 }
 
 bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
-	//Precondition: NewPropertyList contains ony elements of the same property
+	//Precondition: NewPropertyList contains only elements of the same property
 	String deviceStr;
 	String propertyStr;
 	String propertyTypeStr;
@@ -203,15 +202,18 @@ bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
 	bool firstTime=true;
 	INumberVectorProperty * numberVecProp=NULL;
     ITextVectorProperty * textVecProp=NULL;
-    ISwitchVectorProperty * switchVecProp=NULL;;
-//    ILightVectorProperty * lightVecProp=NULL;
+    ISwitchVectorProperty * switchVecProp=NULL;
 
 	if (p_newPropertyList.IsEmpty())
 		return false; //Nothing to do
 
+	Console().WriteLn(String().Format("Sending new property value(s) to INDI server '%s:%d':",
+									   IsoString(p_host).c_str(),
+									   p_port));
+
 	for (pcl::Array<INDINewPropertyListItem>::iterator iter=p_newPropertyList.Begin(); iter!=p_newPropertyList.End(); ++iter){
 		if (iter->NewPropertyValue.IsEmpty()) {
-			Console().WriteLn("Empty property value ... exiting.");
+			Console().WriteLn("ERROR: Empty property value ... exiting.");
 			return false;
 		}
 		// initialize
@@ -221,15 +223,16 @@ bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
 				propertyStr = iter->Property;
 				propertyTypeStr = iter->PropertyType;
 				firstTime=false;
-				Console().WriteLn(String().Format("Found new property value '%s' for property '%s' of device '%s'",
-								  IsoString(iter->NewPropertyValue).c_str(),
+				Console().WriteLn(String().Format("Device: '%s', Property: '%s', Element: '%s', Value: '%s'",
+						          IsoString(deviceStr).c_str(),
 								  IsoString(propertyStr).c_str(),
-								  IsoString(deviceStr).c_str()));
+								  IsoString(iter->Element).c_str(),
+								  IsoString(iter->NewPropertyValue).c_str()));
 				Console().Flush();
 				// get device
 				device = indiClient.get()->getDevice(IsoString(deviceStr).c_str());
 				if (!device){
-				  Console().WriteLn(String().Format("Device '%s' not found ... exiting.",IsoString(deviceStr).c_str()));
+				  Console().WriteLn(String().Format("ERROR: Device '%s' not found ... exiting.",IsoString(deviceStr).c_str()));
 				  return false;
 				}
 				// get property vector
@@ -244,7 +247,7 @@ bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
 				} else if (iter->PropertyType == "INDI_NUMBER"){
 					numberVecProp = device->getNumber(IsoString(propertyStr).c_str());
 					if (!numberVecProp){
-					  Console().WriteLn(String().Format("Could not get property '%s' from server. Please check that INDI device is connected.",
+					  Console().WriteLn(String().Format("ERROR: Could not get property '%s' from server. Please check that INDI device is connected.",
 										IsoString(propertyStr).c_str(),
 										IsoString(deviceStr).c_str()));
 					  return false;
@@ -252,18 +255,18 @@ bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
 				} else if (iter->PropertyType == "INDI_TEXT"){
 					textVecProp = device->getText(IsoString(propertyStr).c_str());
 					if (!textVecProp){
-					  Console().WriteLn(String().Format("Could not get property '%s' from server. Please check that INDI device is connected.",
+					  Console().WriteLn(String().Format("ERROR: Could not get property '%s' from server. Please check that INDI device is connected.",
 										IsoString(propertyStr).c_str(),
 										IsoString(deviceStr).c_str()));
 					  return false;
 					}
 				}
 				else {
-				  Console().WriteLn(String().Format("Property '%s' not supported.",IsoString(propertyStr).c_str()));
+				  Console().WriteLn(String().Format("ERROR: Property '%s' not supported.",IsoString(propertyStr).c_str()));
 				}
 			}
 			else{
-			  Console().WriteLn(String().Format("Invalid property key '%s' not supported. ",IsoString(iter->PropertyKey).c_str()));
+			  Console().WriteLn(String().Format("ERROR: Invalid property key '%s' not supported. ",IsoString(iter->PropertyKey).c_str()));
 			}
 		}
 		if (getPropertyFromKeyString(*iter,iter->PropertyKey) || (!iter->Device.IsEmpty() && !iter->Property.IsEmpty() && !iter->PropertyType.IsEmpty())){
@@ -271,7 +274,7 @@ bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
 				// set new switch
 				ISwitch * sp = IUFindSwitch(switchVecProp, IsoString(iter->Element).c_str());
 				if (!sp){
-				  Console().WriteLn(String().Format("Could not find element '%s' ... exiting.",IsoString(iter->Element).c_str()));
+				  Console().WriteLn(String().Format("ERROR: Could not find element '%s' ... exiting.",IsoString(iter->Element).c_str()));
 				  return false;
 				}
 				IUResetSwitch(switchVecProp);
@@ -280,8 +283,6 @@ bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
 				}
 				else {
 				    sp->s = ISS_OFF;
-					//Console().WriteLn(String().Format("Invalid value for INDI switch: '%s' ... exiting.",IsoString(iter->NewPropertyValue).c_str()));
-					//return false;
 				}
 
 			}
@@ -289,7 +290,7 @@ bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
 				// set new number value
 				INumber * np = IUFindNumber(numberVecProp, IsoString(iter->Element).c_str());
 				if (!np){
-				  Console().WriteLn(String().Format("Could not find element '%s' ... exiting.",IsoString(iter->Element).c_str()));
+				  Console().WriteLn(String().Format("ERROR: Could not find element '%s' ... exiting.",IsoString(iter->Element).c_str()));
 				  return false;
 				}
 				np->value = iter->NewPropertyValue.ToDouble();
@@ -298,18 +299,18 @@ bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
 				// set new text value
 				IText * np = IUFindText(textVecProp, IsoString(iter->Element).c_str());
 				if (!np){
-					Console().WriteLn(String().Format("Could not find element '%s' ... exiting.",IsoString(iter->Element).c_str()));
+					Console().WriteLn(String().Format("ERROR: Could not find element '%s' ... exiting.",IsoString(iter->Element).c_str()));
 					return false;
 				}
 				IUSaveText(np,IsoString(iter->NewPropertyValue).c_str());
 			}
 			else {
-			  Console().WriteLn(String().Format("Should not be here %d ... exiting.",__LINE__));
+			  Console().WriteLn(String().Format("ERROR: Should not be here %d ... exiting.",__LINE__));
 			  return false;
 			}
 		}
 		else{
-		  Console().WriteLn(String().Format("Invalid property key '%s' ... exiting ",IsoString(iter->PropertyKey).c_str()));
+		  Console().WriteLn(String().Format("ERROR: Invalid property key '%s' ... exiting ",IsoString(iter->PropertyKey).c_str()));
 		  return false;
 		}
 	} // for
@@ -318,57 +319,39 @@ bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
 	// send new properties to server and wait for response
 	if (switchVecProp){
 		indiClient.get()->sendNewSwitch(switchVecProp);
-		if (switchVecProp!=NULL){
-			while (switchVecProp->s!=IPS_OK && switchVecProp->s!=IPS_IDLE &&  !p_doAbort && !m_internalAbortFlag && !isAsynchCall){
-				if (switchVecProp->s==IPS_ALERT){
-					writeCurrentMessageToConsole();
-					m_internalAbortFlag=false;
-					return false;
-				}
+		// if synch mode wait until completed or abort
+		while (switchVecProp->s!=IPS_OK && switchVecProp->s!=IPS_IDLE &&  !p_doAbort && !m_internalAbortFlag && !isAsynchCall){
+			if (switchVecProp->s==IPS_ALERT){
+				writeCurrentMessageToConsole();
+				m_internalAbortFlag=false;
+				return false;
 			}
-
-		}else{
-		  Console().WriteLn(String().Format("Could not get property value from server. Please check that INDI device %s is connected.",IsoString(deviceStr).c_str()));
-		  return false;
 		}
-
 	}
 	else if (numberVecProp){
 		indiClient.get()->sendNewNumber(numberVecProp);
-		// wait until completed or abort
-		if (numberVecProp!=NULL){
-			while (numberVecProp->s!=IPS_OK && numberVecProp->s!=IPS_IDLE && !p_doAbort && !m_internalAbortFlag && !isAsynchCall){
-				if (numberVecProp->s==IPS_ALERT){
-					writeCurrentMessageToConsole();
-					m_internalAbortFlag=false;
-					return false;
-				}
+		// if synch mode wait until completed or abort
+		while (numberVecProp->s != IPS_OK && numberVecProp->s != IPS_IDLE && !p_doAbort && !m_internalAbortFlag && !isAsynchCall) {
+			if (numberVecProp->s == IPS_ALERT) {
+				writeCurrentMessageToConsole();
+				m_internalAbortFlag = false;
+				return false;
 			}
-
-		}else{
-			Console().WriteLn(String().Format("Could not get property value from server. Please check that INDI device %s is connected.",IsoString(deviceStr).c_str()));
-			return false;
 		}
 	}
-	else if (textVecProp){
+	else if (textVecProp) {
 		indiClient.get()->sendNewText(textVecProp);
-		// wait until completed or abort
-		if (textVecProp!=NULL){
-			while (textVecProp->s!=IPS_OK && textVecProp->s!=IPS_IDLE && !p_doAbort && !m_internalAbortFlag && !isAsynchCall){
-				if (textVecProp->s==IPS_ALERT){
-					writeCurrentMessageToConsole();
-					m_internalAbortFlag=false;
-					return false;
-				}
+		// if synch mode wait until completed or abort
+		while (textVecProp->s != IPS_OK && textVecProp->s != IPS_IDLE && !p_doAbort && !m_internalAbortFlag && !isAsynchCall) {
+			if (textVecProp->s == IPS_ALERT) {
+				writeCurrentMessageToConsole();
+				m_internalAbortFlag = false;
+				return false;
 			}
-
-		}else{
-			Console().WriteLn(String().Format("Could not get property value from server. Please check that INDI device %s is connected.",IsoString(deviceStr).c_str()));
-			return false;
 		}
 	}
 	else {
-	   Console().WriteLn(String().Format("Should not be here %d ... exiting.",__LINE__));
+	   Console().WriteLn(String().Format("ERROR: Should not be here %d ... exiting.",__LINE__));
 	}
 
 	p_newPropertyList.Clear();
@@ -382,7 +365,10 @@ bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
 
  bool INDIDeviceControllerInstance::getINDIPropertyItem(String device, String property, String element,INDIPropertyListItem& result, bool formatted ){
 
-	for (pcl::Array<INDIPropertyListItem>::iterator iter=p_propertyList.Begin(); iter!=p_propertyList.End(); ++iter){
+	// get popertyList with exclusive access
+	ExclPropertyList propertyList = getExclusivePropertyList();
+
+	for (pcl::Array<INDIPropertyListItem>::iterator iter=propertyList.get()->Begin(); iter!=propertyList.get()->End(); ++iter){
 
 		if ((iter->Device==device) && (iter->Property==property) && (iter->Element==element) ){
 			result.Device=device;
@@ -390,13 +376,16 @@ bool INDIDeviceControllerInstance::sendNewProperty(bool isAsynchCall) {
 			result.Element=element;
 			if (iter->PropertyTypeStr==String("INDI_NUMBER") && formatted){
 				result.PropertyValue=PropertyUtils::getFormattedNumber( iter->PropertyValue, IsoString( iter->PropertyNumberFormat ) );
+				if (result.PropertyValue.IsEmpty()) {
+					// invalid property value
+					return false;
+				}
 			} else {
 				result.PropertyValue=iter->PropertyValue;
 			}
 			result.PropertyState=iter->PropertyState;
 			return true;
 		}
-
 	}
 	return false;
 }
@@ -409,7 +398,7 @@ void INDIDeviceControllerInstance::writeCurrentMessageToConsole(){
 
 bool INDIDeviceControllerInstance::ExecuteGlobal()
 {
-   Console().WriteLn("INDI control client --- (c) Klaus Kretzschmar, 2014-2015");
+   Console().WriteLn("INDI control client --- (c) Klaus Kretzschmar, 2014-2016");
    Console().EnableAbort();
    if (!p_connect){
 	  // disconnet from server

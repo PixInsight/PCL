@@ -320,21 +320,10 @@ void INDIDeviceControllerInterface::__CameraListButtons_Click( Button& sender, b
 			}
             ERROR_HANDLER
 		}
-		else if ( sender == GUI->RefreshDevice_PushButton)
-		{
-			try
-            {
-				UpdateDeviceList();
-			}
-            ERROR_HANDLER
-		}
 }
 
 
 void INDIDeviceControllerInterface::UpdateDeviceList(){
-
-
-	GUI->DeviceList_TreeBox.DisableUpdates();
 
 	if (indiClient.get() == 0)
 		return;
@@ -364,7 +353,6 @@ void INDIDeviceControllerInterface::UpdateDeviceList(){
 		}
 		assert(deviceNode!=NULL);
 
-
 		deviceNode->getTreeBoxNode()->SetText( TextColumn, iter->DeviceName );
 		deviceNode->getTreeBoxNode()->SetAlignment( TextColumn, TextAlign::Left );
 
@@ -374,11 +362,7 @@ void INDIDeviceControllerInterface::UpdateDeviceList(){
       } else {
 			deviceNode->getTreeBoxNode()->SetIcon( TextColumn, ScaledResource( ":/bullets/bullet-ball-glass-grey.png" ) );
 		}
-
-
 	}
-	//GUI->UpdateDeviceList_Timer.Stop();
-	GUI->DeviceList_TreeBox.EnableUpdates();
 
 }
 // ----------------------------------------------------------------------------
@@ -456,13 +440,10 @@ INDIDeviceControllerInterface::GUIData::GUIData( INDIDeviceControllerInterface& 
    ConnectDevice_PushButton.OnClick((Button::click_event_handler) &INDIDeviceControllerInterface::__CameraListButtons_Click, w );
    DisconnectDevice_PushButton.SetText("Disconnect");
    DisconnectDevice_PushButton.OnClick((Button::click_event_handler) &INDIDeviceControllerInterface::__CameraListButtons_Click, w );
-   RefreshDevice_PushButton.SetText("Refresh");
-   RefreshDevice_PushButton.OnClick((Button::click_event_handler) &INDIDeviceControllerInterface::__CameraListButtons_Click, w );
 
    DeviceAction_Sizer.SetSpacing( 6 );
    DeviceAction_Sizer.Add(ConnectDevice_PushButton);
    DeviceAction_Sizer.Add(DisconnectDevice_PushButton);
-   DeviceAction_Sizer.Add(RefreshDevice_PushButton);
    DeviceAction_Sizer.AddStretch();
 
    INDIDevice_Sizer.Add( DeviceList_TreeBox, 100 );
@@ -496,13 +477,10 @@ INDIDeviceControllerInterface::GUIData::GUIData( INDIDeviceControllerInterface& 
    ServerMessage_Sizer.Add(ServerMessageLabel_Label);
    ServerMessage_Sizer.Add(ServerMessage_Label);
 
-   RefreshProperty_PushButton.SetText("Refresh");
-   RefreshProperty_PushButton.OnClick((Button::click_event_handler) &INDIDeviceControllerInterface::PropertyButton_Click, w );
    EditProperty_PushButton.SetText("Edit");
    EditProperty_PushButton.OnClick((Button::click_event_handler) &INDIDeviceControllerInterface::PropertyButton_Click, w );
 
    Buttons_Sizer.SetSpacing( 6 );
-   Buttons_Sizer.Add(RefreshProperty_PushButton);
    Buttons_Sizer.Add(EditProperty_PushButton);
    Buttons_Sizer.AddStretch();
 
@@ -824,24 +802,25 @@ EditSwitchPropertyDialog::EditSwitchPropertyDialog(INDIDeviceControllerInstance*
 
 
 void INDIDeviceControllerInterface::UpdatePropertyList(){
-	GUI->PropertyList_TreeBox.DisableUpdates();
 	std::vector<INDIPropertyListItem> itemsToBeRemoved;
 	std::vector<INDIPropertyListItem> itemsCreated;
+
+	// get popertyList with exclusive access
+	ExclPropertyList propertyList = instance.getExclusivePropertyList();
+
 
 	if (indiClient.get() == 0){
 		GUI->PropertyList_TreeBox.EnableUpdates();
 		return;
 	}
 
-	if (instance.p_propertyList.Begin()==instance.p_propertyList.End()){
+	if (propertyList.get()->Begin()==propertyList.get()->End()){
 		GUI->PropertyList_TreeBox.EnableUpdates();
 		return;
 	}
-	if (indiClient.get()!=NULL){
-		indiClient.get()->m_mutex.Lock();
-	}
+
 	PropertyNodeFactory factory;
-	for (INDIDeviceControllerInstance::PropertyListType::iterator iter=instance.p_propertyList.Begin() ; iter!=instance.p_propertyList.End(); ++iter){
+	for (INDIDeviceControllerInstance::PropertyListType::iterator iter=propertyList.get()->Begin() ; iter!=propertyList.get()->End(); ++iter){
 
 		if (iter->PropertyFlag==Idle){
 			continue;
@@ -895,29 +874,26 @@ void INDIDeviceControllerInterface::UpdatePropertyList(){
 		}
 
 	}
-	GUI->PropertyList_TreeBox.EnableUpdates();
 
 	// remove properties from property list
 	for (size_t i=0; i<itemsToBeRemoved.size(); i++){
-		INDIDeviceControllerInstance::PropertyListType::iterator iter = instance.p_propertyList.Search(itemsToBeRemoved[i]);
-		if (iter==instance.p_propertyList.End()){
+		INDIDeviceControllerInstance::PropertyListType::iterator iter = propertyList.get()->Search(itemsToBeRemoved[i]);
+		if (iter==propertyList.get()->End()){
 			IsoString elemStr=IsoString(iter->Element);
 			throw Error(String().Format("%s",elemStr.c_str()));
 		}
-		instance.p_propertyList.Remove(iter);
+		propertyList.get()->Remove(iter);
 
 	}
 
 	// set newly created elements to Idle
 	for (size_t i=0; i<itemsCreated.size(); i++){
-		INDIDeviceControllerInstance::PropertyListType::iterator iter =instance.p_propertyList.Search(itemsCreated[i]);
-		if (iter!=instance.p_propertyList.End()){
+		INDIDeviceControllerInstance::PropertyListType::iterator iter =propertyList.get()->Search(itemsCreated[i]);
+		if (iter!=propertyList.get()->End()){
 			iter->PropertyFlag=Idle;
 		}
 	}
-	if (indiClient.get()!=NULL){
-		indiClient.get()->m_mutex.Unlock();
-	}
+
 }
 
 
@@ -959,9 +935,6 @@ void INDIDeviceControllerInterface::PropertyButton_Click( Button& sender, bool c
 		}
 
 		GUI->SetPropDlg->Execute();
-	}
-	else if (sender==GUI->RefreshProperty_PushButton){
-		UpdatePropertyList();
 	}
 }
 

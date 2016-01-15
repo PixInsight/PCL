@@ -86,10 +86,10 @@ CCDFrameInterface::CCDFrameInterface() :
    TheCCDFrameInterface = this;
    m_NumOfExposures = 1;
    m_Temperature = 0;
-   m_saveFrame = false;
    m_FrameFolder = "./";
    m_FramePrefix = "Image";
    m_isWaiting = false;
+   m_timeoutCounter = 0;
 }
 
 CCDFrameInterface::~CCDFrameInterface()
@@ -214,43 +214,208 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w )
 
    CCDTemp_NumericEdit.SetReal();
    CCDTemp_NumericEdit.SetPrecision( 2 );
-   CCDTemp_NumericEdit.SetRange( -30, 0 );
+   CCDTemp_NumericEdit.SetRange( -30, 50 );
    CCDTemp_NumericEdit.label.SetText( "Temperature:" );
    CCDTemp_NumericEdit.label.SetFixedWidth( labelWidth1 );
-   CCDTemp_NumericEdit.edit.SetFixedWidth( 10*emWidth );
+   CCDTemp_NumericEdit.edit.SetFixedWidth( 5*emWidth );
    CCDTemp_NumericEdit.sizer.AddStretch();
    CCDTemp_NumericEdit.SetToolTip( "<p>Current chip temperature in degrees Celsius.</p>" );
    CCDTemp_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&CCDFrameInterface::EditValueUpdated, w );
    CCDTemp_NumericEdit.Disable();
 
-   CCDBinX_NumericEdit.SetInteger();
-   CCDBinX_NumericEdit.SetRange( 1, 4 );
-   CCDBinX_NumericEdit.label.SetText( "Binning X:" );
-   CCDBinX_NumericEdit.label.SetFixedWidth( labelWidth1 );
-   CCDBinX_NumericEdit.edit.SetFixedWidth( 10*emWidth );
-   CCDBinX_NumericEdit.sizer.AddStretch();
-   CCDBinX_NumericEdit.SetToolTip( "<p>Horizontal pixel binning factor.</p>" );
-   CCDBinX_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&CCDFrameInterface::EditValueUpdated, w );
-   CCDBinX_NumericEdit.Disable();
+   CCDTargetTemp_NumericEdit.SetReal();
+   CCDTargetTemp_NumericEdit.SetPrecision( 2 );
+   CCDTargetTemp_NumericEdit.SetRange(-30 , 25 );
+   CCDTargetTemp_NumericEdit.edit.SetFixedWidth( 5*emWidth );
+   CCDTargetTemp_NumericEdit.slider.SetScaledMinWidth(200);
+   CCDTargetTemp_NumericEdit.slider.SetRange(0,30);
+   CCDTargetTemp_NumericEdit.SetToolTip( "<p>Target chip temperature in degrees Celsius.</p>" );
+   CCDTargetTemp_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&CCDFrameInterface::EditValueUpdated, w );
+   CCDTargetTemp_NumericEdit.Disable();
 
-   CCDBinY_NumericEdit.SetInteger();
-   CCDBinY_NumericEdit.SetRange( 1, 4 );
-   CCDBinY_NumericEdit.label.SetText( "Binning Y:" );
-   CCDBinY_NumericEdit.label.SetFixedWidth( labelWidth1 );
-   CCDBinY_NumericEdit.edit.SetFixedWidth( 10*emWidth );
-   CCDBinY_NumericEdit.sizer.AddStretch();
-   CCDBinY_NumericEdit.SetToolTip( "<p>Vertical pixel binning factor.</p>" );
-   CCDBinY_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&CCDFrameInterface::EditValueUpdated, w );
-   CCDBinY_NumericEdit.Disable();
+   CCDTemp_PushButton.SetText("Set");
+   CCDTemp_PushButton.SetFixedWidth( 10*emWidth );
+   CCDTemp_PushButton.OnClick( (Button::click_event_handler)&CCDFrameInterface::SetCCDPropertyButton_Click, w );
+   CCDTemp_PushButton.Disable();
+
+   CCDTemp_HSizer.SetSpacing(6);
+   CCDTemp_HSizer.Add(CCDTemp_NumericEdit);
+   CCDTemp_HSizer.Add(CCDTargetTemp_NumericEdit);
+   CCDTemp_HSizer.AddStretch();
+   CCDTemp_HSizer.Add(CCDTemp_PushButton);
+
+   CCDBinX_Label.SetText( "Binning X:" );
+   CCDBinX_Label.SetFixedWidth( labelWidth1 );
+   CCDBinX_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   CCDBinX_Label.SetToolTip("<p>Horizontal pixel binning factor.</p>");
+   CCDBinX_Label.Disable();
+
+   CCDBinX_Combo.AddItem("1");
+   CCDBinX_Combo.AddItem("2");
+   CCDBinX_Combo.AddItem("3");
+   CCDBinX_Combo.AddItem("4");
+   CCDBinX_Combo.SetToolTip("<p>Set horizontal pixel binning factor.</p>");
+   CCDBinX_Combo.OnItemSelected( (ComboBox::item_event_handler)&CCDFrameInterface::ComboItemSelected, w );
+   CCDBinX_Combo.Disable();
+
+   CCDBinX_HSizer.SetSpacing(6);
+   CCDBinX_HSizer.Add(CCDBinX_Label);
+   CCDBinX_HSizer.Add(CCDBinX_Combo);
+   CCDBinX_HSizer.AddStretch();
+
+   CCDBinY_Label.SetText( "Binning Y:" );
+   CCDBinY_Label.SetFixedWidth( labelWidth1 );
+   CCDBinY_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   CCDBinY_Label.SetToolTip("<p>Vertical pixel binning factor.</p>");
+   CCDBinY_Label.Disable();
+
+   CCDBinY_Combo.AddItem("1");
+   CCDBinY_Combo.AddItem("2");
+   CCDBinY_Combo.AddItem("3");
+   CCDBinY_Combo.AddItem("4");
+   CCDBinY_Combo.SetToolTip("<p>Set vertical pixel binning factor.</p>");
+   CCDBinY_Combo.OnItemSelected( (ComboBox::item_event_handler)&CCDFrameInterface::ComboItemSelected, w );
+   CCDBinY_Combo.Disable();
+
+   CCDBinY_HSizer.SetSpacing(6);
+   CCDBinY_HSizer.Add(CCDBinY_Label);
+   CCDBinY_HSizer.Add(CCDBinY_Combo);
+   CCDBinY_HSizer.AddStretch();
+
+   CCDFrameType_Label.SetText( "Frame Type:" );
+   CCDFrameType_Label.SetFixedWidth( labelWidth1 );
+   CCDFrameType_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   CCDFrameType_Label.SetToolTip("<p>Type of frame: Possible values are 1) Light, 2) Bias, 3) Dark, 4) Flat.</p>");
+   CCDFrameType_Label.Disable();
+
+   CCDFrameType_Combo.InsertItem(Light, "Light frame");
+   CCDFrameType_Combo.InsertItem(Bias,  "Bias frame");
+   CCDFrameType_Combo.InsertItem(Dark,  "Dark frame");
+   CCDFrameType_Combo.InsertItem(Flat,  "Flat frame");
+   CCDFrameType_Combo.SetToolTip("<p>The frame type will be stored as a FITS keyword in the FITS header.</p>");
+   CCDFrameType_Combo.OnItemSelected( (ComboBox::item_event_handler)&CCDFrameInterface::ComboItemSelected, w );
+   CCDFrameType_Combo.Disable();
+
+   CCDFrameType_HSizer.SetSpacing(6);
+   CCDFrameType_HSizer.Add(CCDFrameType_Label);
+   CCDFrameType_HSizer.Add(CCDFrameType_Combo);
+   CCDFrameType_HSizer.AddStretch();
+
+
+   UploadMode_Label.SetText("Upload mode:");
+   UploadMode_Label.SetToolTip("<p> Frame upload mode: Possible values are 1) upload to client only, 2) upload to server only, 3) upload both to client and server.<p>");
+
+   UploadMode_Label.SetMinWidth( labelWidth1 );
+   UploadMode_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   UploadMode_Label.Disable();
+
+   UploadMode_Combo.InsertItem(UploadClient,"Upload to client only ");
+   UploadMode_Combo.InsertItem(UploadServer,"Upload to INDI server only ");
+   UploadMode_Combo.InsertItem(UploadBoth,"Upload both: client and server");
+   UploadMode_Combo.AdjustToContents();
+   UploadMode_Combo.OnItemSelected( (ComboBox::item_event_handler)&CCDFrameInterface::ComboItemSelected, w );
+   UploadMode_Combo.Disable();
+   UploadMode_Combo.SetToolTip("<p> Upload to client: The frame will be uploaded to the client and displayed in a separate image window. The frame will be not stored to the file system. <p>"
+           	   	   	   	   	   "<p> Upload to server: The frame will be stored on the file system of the INDI server. The directory and filename can be set separately. The frame will not be uploaded to the client. <p>"
+           	   	   	   	   	   "<p> Upload both: The frame will be uploaded to the client and displayed and stored on the file system of the server.<p>");
+
+   UploadMode_HSizer.SetSpacing(6);
+   UploadMode_HSizer.Add(UploadMode_Label);
+   UploadMode_HSizer.Add(UploadMode_Combo);
+   UploadMode_HSizer.AddStretch();
+
+   UploadDir_Label.SetText("Upload directory:");
+   UploadDir_Label.SetToolTip("<p>Directory where the acquired CCD frames on the INDI server are stored.<p>");
+   UploadDir_Label.SetMinWidth(labelWidth1);
+   UploadDir_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   UploadDir_Label.Disable();
+
+   UploadDir_Edit.SetFixedWidth(25 * emWidth);
+   UploadDir_Edit.SetReadOnly();
+
+   m_updateNewDirStr=true;
+
+   UploadDir_HSizer.SetSpacing( 4 );
+   UploadDir_HSizer.Add( UploadDir_Label );
+   UploadDir_HSizer.Add( UploadDir_Edit );
+   UploadDir_HSizer.AddStretch();
+
+   UploadNewDir_Label.SetText("Set upload directory:");
+   UploadNewDir_Label.SetToolTip("<p>Set directory where the acquired CCD frames on the INDI server are stored.<p>");
+   UploadNewDir_Label.SetMinWidth(labelWidth1);
+   UploadNewDir_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   UploadNewDir_Label.Disable();
+
+   UploadNewDir_Edit.SetFixedWidth(25 * emWidth);
+   UploadNewDir_Edit.OnEnter((Control::event_handler)& CCDFrameInterface::EditEntered,w );
+   UploadNewDir_Edit.Disable();
+
+   UploadNewDir_PushButton.SetText("Set");
+   UploadNewDir_PushButton.SetFixedWidth( 10*emWidth );
+   UploadNewDir_PushButton.OnClick( (Button::click_event_handler)&CCDFrameInterface::SetCCDPropertyButton_Click, w );
+   UploadNewDir_PushButton.Disable();
+
+   UploadNewDir_HSizer.SetSpacing( 4 );
+   UploadNewDir_HSizer.Add( UploadNewDir_Label );
+   UploadNewDir_HSizer.Add( UploadNewDir_Edit );
+   UploadNewDir_HSizer.AddStretch();
+   UploadNewDir_HSizer.Add( UploadNewDir_PushButton );
+
+   UploadPrefix_Label.SetText("Frame image prefix:");
+   UploadPrefix_Label.SetToolTip("<p> Frame file prefix of the acquired CCD frames.<p>"
+		                         "<p> 'Image_XX' is replaced by 'Image_01','Image_02',...<p>");
+   UploadPrefix_Label.SetMinWidth(labelWidth1);
+   UploadPrefix_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   UploadPrefix_Label.Disable();
+
+   UploadPrefix_Edit.SetFixedWidth(25 * emWidth);
+   UploadPrefix_Edit.SetReadOnly();
+
+   UploadPrefix_HSizer.SetSpacing( 4 );
+   UploadPrefix_HSizer.Add( UploadPrefix_Label );
+   UploadPrefix_HSizer.Add( UploadPrefix_Edit );
+   UploadPrefix_HSizer.AddStretch();
+
+   UploadNewPrefix_Label.SetText("Set image prefix:");
+   UploadNewPrefix_Label.SetToolTip("<p> Set a new frame file prefix of the acquired CCD frames.<p>"
+           	   	   	   	   	   	   	"<p> 'Image_XX' is replaced by 'Image_01','Image_02' <p>");
+   UploadNewPrefix_Label.SetMinWidth(labelWidth1);
+   UploadNewPrefix_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   UploadNewPrefix_Label.Disable();
+
+   UploadNewPrefix_Edit.SetFixedWidth(25 * emWidth);
+   UploadNewPrefix_Edit.OnEnter((Control::event_handler)& CCDFrameInterface::EditEntered,w );
+   UploadNewPrefix_Edit.OnTextUpdated((Edit::text_event_handler)&CCDFrameInterface::EditTextUpdated, w);
+   UploadNewPrefix_Edit.SetText("OBJECT_B0x0_E0.000_XX");
+   UploadNewPrefix_Edit.Disable();
+
+   UploadNewPrefix_PushButton.SetText("Set");
+   UploadNewPrefix_PushButton.SetFixedWidth( 10*emWidth );
+   UploadNewPrefix_PushButton.OnClick( (Button::click_event_handler)&CCDFrameInterface::SetCCDPropertyButton_Click, w );
+   UploadNewPrefix_PushButton.Disable();
+
+   UploadNewPrefix_HSizer.SetSpacing( 4 );
+   UploadNewPrefix_HSizer.Add( UploadNewPrefix_Label );
+   UploadNewPrefix_HSizer.Add( UploadNewPrefix_Edit );
+   UploadNewPrefix_HSizer.AddStretch();
+   UploadNewPrefix_HSizer.Add( UploadNewPrefix_PushButton );
+
+   m_updateNewPrefixStr=true;
 
    CCDParam_Sizer.SetSpacing( 4 );
-   CCDParam_Sizer.Add( CCDTemp_NumericEdit );
-   CCDParam_Sizer.Add( CCDBinX_NumericEdit );
-   CCDParam_Sizer.Add( CCDBinY_NumericEdit );
+   CCDParam_Sizer.Add( CCDTemp_HSizer );
+   CCDParam_Sizer.Add( CCDBinX_HSizer );
+   CCDParam_Sizer.Add( CCDBinY_HSizer );
+   CCDParam_Sizer.Add( CCDFrameType_HSizer );
+   CCDParam_Sizer.Add( UploadMode_HSizer );
+   CCDParam_Sizer.Add( UploadDir_HSizer );
+   CCDParam_Sizer.Add( UploadNewDir_HSizer );
+   CCDParam_Sizer.Add( UploadPrefix_HSizer );
+   CCDParam_Sizer.Add( UploadNewPrefix_HSizer );
 
    //
 
-   FrameExposure_SectionBar.SetTitle( "Frame Shooting" );
+   FrameExposure_SectionBar.SetTitle( "Frame Acquisition" );
    FrameExposure_SectionBar.SetSection( FrameExposure_Control );
    FrameExposure_Control.SetSizer( FrameExposure_Sizer );
 
@@ -282,7 +447,6 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w )
    ExpNum_SpinBox.SetRange( 1, 1000 );
    ExpNum_SpinBox.SetFixedWidth( 10*emWidth );
    ExpNum_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&CCDFrameInterface::SpinValueUpdated, w );
-   //ExpNum_SpinBox.Disable();
 
    ExpNum_Sizer.SetSpacing( 4 );
    ExpNum_Sizer.Add( ExpNum_Label );
@@ -371,7 +535,7 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w )
 
    //
 
-   UpdateDeviceList_Timer.SetInterval( 0.5 );
+   UpdateDeviceList_Timer.SetInterval( 1 );
    UpdateDeviceList_Timer.SetPeriodic( true );
    UpdateDeviceList_Timer.OnTimer( (Timer::timer_event_handler)&CCDFrameInterface::UpdateDeviceList_Timer, w );
 
@@ -387,7 +551,7 @@ CCDFrameInterface::GUIData::GUIData(CCDFrameInterface& w )
 
    Temperature_Timer.SetInterval( 1 );
    Temperature_Timer.SetPeriodic( true );
-   Temperature_Timer.OnTimer( (Timer::timer_event_handler)&CCDFrameInterface::Temperature_Timer, w );
+   Temperature_Timer.OnTimer( (Timer::timer_event_handler)&CCDFrameInterface::INDI_ServerMonitor_Timer, w );
 }
 
 void CCDFrameInterface::UpdateDeviceList()
@@ -395,12 +559,16 @@ void CCDFrameInterface::UpdateDeviceList()
    if ( TheINDIDeviceControllerInterface != nullptr )
    {
       INDIDeviceControllerInstance& instance = TheINDIDeviceControllerInterface->instance;
-      if ( !instance.p_deviceList.IsEmpty() )
+      if ( !instance.p_deviceList.IsEmpty() ) {
          for ( INDIDeviceControllerInstance::DeviceListType::iterator iter = instance.p_deviceList.Begin();
                iter != instance.p_deviceList.End();
-               ++iter )
-            GUI->CCDDevice_Combo.AddItem( iter->DeviceName );
-      GUI->UpdateDeviceList_Timer.Stop();
+               ++iter ) {
+        	 if (GUI->CCDDevice_Combo.FindItem(iter->DeviceName) == -1){ //item not found
+        		 GUI->CCDDevice_Combo.AddItem( iter->DeviceName );
+        	 }
+         }
+         //GUI->UpdateDeviceList_Timer.Stop();
+      }
    }
 }
 
@@ -416,8 +584,13 @@ void CCDFrameInterface::ExposureDuration_Timer( Timer &sender )
    if ( sender == GUI->ExposureDuration_Timer )
    {
       GUI->ExpDur_Edit.SetText( String( sender.Count() ) );
-      if ( sender.Count()*sender.Interval() >= GUI->ExpTime_NumericEdit.Value() )
+      // increase timeout counter
+      m_timeoutCounter++;
+      if ( sender.Count()*sender.Interval() >= GUI->ExpTime_NumericEdit.Value() ){
          GUI->ExposureDuration_Timer.Stop();
+         // reset timeout counter
+         m_timeoutCounter=0;
+      }
    }
 }
 
@@ -425,33 +598,182 @@ void CCDFrameInterface::ExposureDelay_Timer( Timer &sender )
 {
    if ( sender == GUI->ExposureDelay_Timer )
    {
-      GUI->ExpDelay_Edit.SetText( String( sender.Count() + GUI->ExpDur_Edit.Text().ToDouble() ) );
       if ( sender.Count()*sender.Interval() >= GUI->ExpDelayTime_NumericEdit.Value() )
       {
          GUI->ExposureDelay_Timer.Stop();
          m_isWaiting = false;
       }
+      GUI->ExpDelay_Edit.SetText( String( sender.Count() + GUI->ExpDur_Edit.Text().ToDouble() ) );
    }
 }
 
-void CCDFrameInterface::Temperature_Timer( Timer &sender )
+void CCDFrameInterface::EditEntered(Edit& sender){
+	if (sender == GUI->UploadNewDir_Edit){
+		GUI->m_updateNewDirStr=false;
+	}
+	if (sender == GUI->UploadNewPrefix_Edit) {
+		GUI->m_updateNewPrefixStr=false;
+	}
+}
+
+void CCDFrameInterface::EditTextUpdated( Edit& sender, const String& text ){
+	if (sender == GUI->UploadNewPrefix_Edit){
+		size_t splitPos = text.Find('_');
+		GUI->m_frameTypePrefix[0] = text.Substring(0, splitPos);
+	}
+}
+
+void CCDFrameInterface::EnableUploadSettingControls() {
+	GUI->UploadDir_Label.Enable();
+	GUI->UploadNewDir_Label.Enable();
+	GUI->UploadNewDir_Edit.Enable();
+	GUI->UploadNewDir_PushButton.Enable();
+	GUI->UploadPrefix_Label.Enable();
+	GUI->UploadNewPrefix_Label.Enable();
+	GUI->UploadNewPrefix_Edit.Enable();
+	GUI->UploadNewPrefix_PushButton.Enable();
+}
+
+void CCDFrameInterface::DisableUploadSettingControls() {
+	GUI->UploadDir_Label.Disable();
+	GUI->UploadNewDir_Label.Disable();
+	GUI->UploadNewDir_Edit.Disable();
+	GUI->UploadNewDir_PushButton.Disable();
+	GUI->UploadNewPrefix_Label.Disable();
+	GUI->UploadNewPrefix_Edit.Disable();
+	GUI->UploadNewPrefix_PushButton.Disable();
+}
+
+void CCDFrameInterface::updateNewPrefixControl() {
+	if (GUI->m_updateNewPrefixStr) {
+		int binningX  =GUI->CCDBinX_Combo.CurrentItem();
+		int binningY  =GUI->CCDBinY_Combo.CurrentItem();
+		double expTime=GUI->ExpTime_NumericEdit.Value();
+		String currentText=GUI->UploadNewPrefix_Edit.Text();
+
+		IsoString frameTypePrefix = IsoString(GUI->m_frameTypePrefix[GUI->CCDFrameType_Combo.CurrentItem()]);
+		currentText = String().Format("%s_B%dx%d_E%4.3f_XX",frameTypePrefix.c_str(),++binningX, ++binningY,GUI->ExpTime_NumericEdit.Value());
+		GUI->UploadNewPrefix_Edit.SetText(currentText);
+	}
+}
+
+void CCDFrameInterface::INDI_ServerMonitor_Timer( Timer &sender )
 {
    if ( TheINDIDeviceControllerInterface != nullptr)
       if ( sender == GUI->Temperature_Timer )
       {
+
          INDINewPropertyListItem newPropertyListItem;
          INDIDeviceControllerInstance& instance = TheINDIDeviceControllerInterface->instance;
          INDIPropertyListItem CCDProp;
          // get temperature value
-         if ( instance.getINDIPropertyItem( m_Device, "CCD_TEMPERATURE", "CCD_TEMPERATURE_VALUE", CCDProp ) )
+         if ( instance.getINDIPropertyItem( m_Device, "CCD_TEMPERATURE", "CCD_TEMPERATURE_VALUE", CCDProp ) ){
+        	GUI->CCDTargetTemp_NumericEdit.Enable();
+        	GUI->CCDTargetTemp_NumericEdit.label.Enable();
+        	GUI->CCDTemp_PushButton.Enable();
             GUI->CCDTemp_NumericEdit.SetValue( CCDProp.PropertyValue.ToDouble() );
+         }
          // get X binning value
-         if ( instance.getINDIPropertyItem( m_Device, "CCD_BINNING", "HOR_BIN", CCDProp ) )
-            GUI->CCDBinX_NumericEdit.SetValue( CCDProp.PropertyValue.ToInt() );
-         // get X binning value
-         if ( instance.getINDIPropertyItem( m_Device, "CCD_BINNING", "VER_BIN", CCDProp ) )
-            GUI->CCDBinY_NumericEdit.SetValue( CCDProp.PropertyValue.ToInt() );
+         if ( instance.getINDIPropertyItem( m_Device, "CCD_BINNING", "HOR_BIN", CCDProp ) ){
+        	GUI->CCDBinX_Combo.Enable();
+        	GUI->CCDBinX_Label.Enable();
+        	GUI->CCDBinX_Combo.SetCurrentItem(CCDProp.PropertyValue.ToInt()-1);
+        	updateNewPrefixControl();
+         }
+         // get Y binning value
+         if ( instance.getINDIPropertyItem( m_Device, "CCD_BINNING", "VER_BIN", CCDProp ) ){
+        	GUI->CCDBinY_Combo.Enable();
+        	GUI->CCDBinY_Label.Enable();
+        	GUI->CCDBinY_Combo.SetCurrentItem(CCDProp.PropertyValue.ToInt()-1);
+        	updateNewPrefixControl();
+         }
+         // get upload mode
+         int UploadModeIndex=-1;
+         if ( instance.getINDIPropertyItem( m_Device, "UPLOAD_MODE", "UPLOAD_CLIENT", CCDProp ) ){
+             if (CCDProp.PropertyValue == "OFF"){
+            	 if ( instance.getINDIPropertyItem( m_Device, "UPLOAD_MODE", "UPLOAD_LOCAL", CCDProp ) ){
+            		 if (CCDProp.PropertyValue == "OFF"){
+            			 UploadModeIndex=GUIData::UploadBoth;
+            		 } else {
+            			 UploadModeIndex=GUIData::UploadServer;
+            		 }
+					 EnableUploadSettingControls();
+            	 }
+             } else {
+        		 UploadModeIndex=GUIData::UploadClient;
+				 DisableUploadSettingControls();
+        	 }
+         }
+         if (UploadModeIndex>=0){
+             GUI->UploadMode_Combo.Enable();
+             GUI->UploadMode_Label.Enable();
+             GUI->UploadMode_Combo.SetCurrentItem(UploadModeIndex);
+         } else {
+        	 GUI->UploadMode_Combo.Disable();
+         }
+         // get frame type
+         {
+        	 size_t idx=0;
+        	 for (auto frameType : GUI->m_frameTypes){
+        		 if ( instance.getINDIPropertyItem( m_Device, "CCD_FRAME_TYPE", frameType, CCDProp ) ){
+        			 if (CCDProp.PropertyValue == "ON"){
+        				 GUI->CCDFrameType_Label.Enable();
+           				 GUI->CCDFrameType_Combo.SetCurrentItem(idx);
+           				 GUI->CCDFrameType_Combo.Enable();
+        				 break;
+        			 }
+        		 }
+        		 idx++;
+        	 }
+         }
+         // get upload directory
+         if ( instance.getINDIPropertyItem( m_Device, "UPLOAD_SETTINGS", "UPLOAD_DIR", CCDProp ) ){
+        	 GUI->UploadDir_Edit.SetText(CCDProp.PropertyValue);
+        	 if (GUI->m_updateNewDirStr){
+        		 GUI->UploadNewDir_Edit.SetText(CCDProp.PropertyValue);
+        	 }
+         }
+         // get upload settings
+         if ( instance.getINDIPropertyItem( m_Device, "UPLOAD_SETTINGS", "UPLOAD_PREFIX", CCDProp ) ){
+				GUI->UploadPrefix_Edit.SetText(CCDProp.PropertyValue);
+				updateNewPrefixControl();
+         }
       }
+}
+
+String CCDFrameInterface::getUploadModePropertyString(int UploadModeIdx) {
+	String PropertyElement;
+	switch (UploadModeIdx) {
+	case GUIData::UploadClient:
+		PropertyElement = "UPLOAD_CLIENT";
+		break;
+	case GUIData::UploadServer:
+		PropertyElement = "UPLOAD_LOCAL";
+		break;
+	case GUIData::UploadBoth:
+		PropertyElement = "UPLOAD_BOTH";
+		break;
+	}
+	return PropertyElement;
+}
+
+String CCDFrameInterface::getCCDFrameTypePropertyString(int FrameTypeIdx) {
+	String PropertyElement;
+	switch (FrameTypeIdx) {
+	case GUIData::Light:
+		PropertyElement = "FRAME_LIGHT";
+		break;
+	case GUIData::Bias:
+		PropertyElement = "FRAME_BIAS";
+		break;
+	case GUIData::Dark:
+		PropertyElement = "FRAME_DARK";
+		break;
+	case GUIData::Flat:
+		PropertyElement = "FRAME_FLAT";
+		break;
+	}
+	return PropertyElement;
 }
 
 void CCDFrameInterface::ComboItemSelected( ComboBox& sender, int itemIndex )
@@ -477,7 +799,113 @@ void CCDFrameInterface::ComboItemSelected( ComboBox& sender, int itemIndex )
                instance.sendNewPropertyValue( newPropertyListItem, true );
             }
       }
+   } else if (sender == GUI->CCDBinY_Combo){
+	   if ( TheINDIDeviceControllerInterface != nullptr ){
+			INDIDeviceControllerInstance& instance = TheINDIDeviceControllerInterface->instance;
+			INDIPropertyListItem CCDProp;
+		if ( instance.getINDIPropertyItem( m_Device, "CCD_BINNING", "VER_BIN", CCDProp ) ){
+			INDINewPropertyListItem newPropertyListItem;
+			newPropertyListItem.Device = m_Device;
+			newPropertyListItem.Property = "CCD_BINNING";
+			newPropertyListItem.Element = "VER_BIN";
+			newPropertyListItem.PropertyType = "INDI_NUMBER";
+			newPropertyListItem.NewPropertyValue = GUI->CCDBinY_Combo.ItemText(itemIndex);
+			instance.sendNewPropertyValue(newPropertyListItem, true);
+			// Enable updates
+			GUI->m_updateNewPrefixStr=true;
+		}
+	   }
+   } else if (sender == GUI->CCDBinX_Combo){
+	   if ( TheINDIDeviceControllerInterface != nullptr ){
+			INDIDeviceControllerInstance& instance = TheINDIDeviceControllerInterface->instance;
+			INDIPropertyListItem CCDProp;
+		if ( instance.getINDIPropertyItem( m_Device, "CCD_BINNING", "HOR_BIN", CCDProp ) ){
+			INDINewPropertyListItem newPropertyListItem;
+			newPropertyListItem.Device = m_Device;
+			newPropertyListItem.Property = "CCD_BINNING";
+			newPropertyListItem.Element = "HOR_BIN";
+			newPropertyListItem.PropertyType = "INDI_NUMBER";
+			newPropertyListItem.NewPropertyValue = GUI->CCDBinX_Combo.ItemText(itemIndex);
+			instance.sendNewPropertyValue(newPropertyListItem, true);
+			// Enable updates
+			GUI->m_updateNewPrefixStr=true;
+		}
+	   }
+   } else if (sender == GUI->UploadMode_Combo){
+	   if ( TheINDIDeviceControllerInterface != nullptr ){
+			INDIDeviceControllerInstance& instance = TheINDIDeviceControllerInterface->instance;
+			INDIPropertyListItem CCDProp;
+			String PropertyElement = getUploadModePropertyString(itemIndex);
+		if ( instance.getINDIPropertyItem( m_Device, "UPLOAD_MODE", PropertyElement, CCDProp ) ){
+			INDINewPropertyListItem newPropertyListItem;
+			newPropertyListItem.Device = m_Device;
+			newPropertyListItem.Property = "UPLOAD_MODE";
+			newPropertyListItem.Element = PropertyElement;;
+			newPropertyListItem.PropertyType = "INDI_SWITCH";
+			newPropertyListItem.NewPropertyValue = "ON";
+			instance.sendNewPropertyValue(newPropertyListItem, true);
+		}
+	   }
+   } else if (sender == GUI->CCDFrameType_Combo){
+	   if ( TheINDIDeviceControllerInterface != nullptr ){
+			INDIDeviceControllerInstance& instance = TheINDIDeviceControllerInterface->instance;
+			INDIPropertyListItem CCDProp;
+			String PropertyElement = getCCDFrameTypePropertyString(itemIndex);
+		if ( instance.getINDIPropertyItem( m_Device, "CCD_FRAME_TYPE", PropertyElement, CCDProp ) ){
+			INDINewPropertyListItem newPropertyListItem;
+			newPropertyListItem.Device = m_Device;
+			newPropertyListItem.Property = "CCD_FRAME_TYPE";
+			newPropertyListItem.Element = PropertyElement;;
+			newPropertyListItem.PropertyType = "INDI_SWITCH";
+			newPropertyListItem.NewPropertyValue = "ON";
+			instance.sendNewPropertyValue(newPropertyListItem, true);
+			//Enable updates
+			GUI->m_updateNewPrefixStr=true;
+		}
+	   }
    }
+
+}
+
+void CCDFrameInterface::SetCCDPropertyButton_Click(Button& sender, bool checked){
+
+	if (sender == GUI->CCDTemp_PushButton){
+		INDIDeviceControllerInstance& instance = TheINDIDeviceControllerInterface->instance;
+
+		INDINewPropertyListItem newPropertyListItem;
+	    newPropertyListItem.Device = m_Device;
+	    newPropertyListItem.Property = "CCD_TEMPERATURE";
+	    newPropertyListItem.Element = "CCD_TEMPERATURE_VALUE";
+	    newPropertyListItem.PropertyType = "INDI_NUMBER";
+	    newPropertyListItem.NewPropertyValue = String( GUI->CCDTargetTemp_NumericEdit.Value() );
+	    bool send_ok = instance.sendNewPropertyValue( newPropertyListItem, true/*isAsynchCall*/ );
+	    // check send_ok
+	} else if (sender == GUI->UploadNewDir_PushButton){
+		INDIDeviceControllerInstance& instance = TheINDIDeviceControllerInterface->instance;
+
+		INDINewPropertyListItem newPropertyListItem;
+	    newPropertyListItem.Device = m_Device;
+	    newPropertyListItem.Property = "UPLOAD_SETTINGS";
+	    newPropertyListItem.Element = "UPLOAD_DIR";
+	    newPropertyListItem.PropertyType = "INDI_TEXT";
+	    newPropertyListItem.NewPropertyValue = GUI->UploadNewDir_Edit.Text();
+	    bool send_ok = instance.sendNewPropertyValue( newPropertyListItem, true/*isAsynchCall*/ );
+	    GUI->m_updateNewDirStr=true;
+	    // check send_ok
+	} else if (sender == GUI->UploadNewPrefix_PushButton){
+		INDIDeviceControllerInstance& instance = TheINDIDeviceControllerInterface->instance;
+
+		INDINewPropertyListItem newPropertyListItem;
+	    newPropertyListItem.Device = m_Device;
+	    newPropertyListItem.Property = "UPLOAD_SETTINGS";
+	    newPropertyListItem.Element = "UPLOAD_PREFIX";
+	    newPropertyListItem.PropertyType = "INDI_TEXT";
+	    newPropertyListItem.NewPropertyValue = GUI->UploadNewPrefix_Edit.Text();
+	    bool send_ok = instance.sendNewPropertyValue( newPropertyListItem, true/*isAsynchCall*/ );
+	    GUI->m_updateNewPrefixStr=true;
+	    // check send_ok
+	}
+
 }
 
 void CCDFrameInterface::CancelButton_Click( Button& sender, bool checked )
@@ -524,7 +952,6 @@ void CCDFrameInterface::StartExposureButton_Click( Button& sender, bool checked 
          if ( !send_ok )
             break;
 
-         // TODO enable abort
          if ( serverSendsImage )
          {
             while ( !instance.getImageDownloadedFlag() && !instance.getInternalAbortFlag() )
@@ -537,18 +964,21 @@ void CCDFrameInterface::StartExposureButton_Click( Button& sender, bool checked 
          {
             INDIPropertyListItem ccdExposure;
             bool serverExposureIsBusy = false;
-            // timimg problem: wait until server sends BUSY
+            // timing problem: wait until server sends BUSY
             do
             {
-               instance.getINDIPropertyItem( m_Device, "CCD_EXPOSURE", "CCD_EXPOSURE_VALUE", ccdExposure );
+               if (instance.getINDIPropertyItem( m_Device, "CCD_EXPOSURE", "CCD_EXPOSURE_VALUE", ccdExposure, false)){
+            	   serverExposureIsBusy = ccdExposure.PropertyState == IPS_BUSY ;
+               }
                ProcessEvents();
-               serverExposureIsBusy = ccdExposure.PropertyState == IPS_BUSY ;
-            }
-            while ( !serverExposureIsBusy && (GUI->ExpDur_Edit.Text().ToFloat() < pcl_timeout) && !instance.getInternalAbortFlag() );
 
+            }
+            while ( !serverExposureIsBusy && (m_timeoutCounter < pcl_timeout) && !instance.getInternalAbortFlag() );
+
+            // start exposure
             do
             {
-               instance.getINDIPropertyItem( m_Device, "CCD_EXPOSURE", "CCD_EXPOSURE_VALUE", ccdExposure );
+               instance.getINDIPropertyItem( m_Device, "CCD_EXPOSURE", "CCD_EXPOSURE_VALUE", ccdExposure, false);
                ProcessEvents();
             }
             while ( ccdExposure.PropertyState == IPS_BUSY && !instance.getInternalAbortFlag() );
@@ -571,16 +1001,10 @@ void CCDFrameInterface::StartExposureButton_Click( Button& sender, bool checked 
                imgArray[0].Show();
             }
 
-            if ( m_saveFrame )
-            {
-               String source = tmpDir + "/Image.fits";
-               String dest   = m_FrameFolder + this->m_FramePrefix + '_' + String( num ) + ".fits";
-               File::CopyFile( dest, source );
-            }
          }
 
          // wait until next exposure
-         if ( GUI->ExpDelayTime_NumericEdit.Value() > 0 )
+         if ( GUI->ExpDelayTime_NumericEdit.Value() > GUI->ExpDelayTime_NumericEdit.LowerBound() )
          {
             GUI->ExposureDelay_Timer.Start();
             m_isWaiting=true;
@@ -591,6 +1015,7 @@ void CCDFrameInterface::StartExposureButton_Click( Button& sender, bool checked 
       }
 
       instance.setInternalAbortFlag( false );
+      instance.setImageDownloadedFlag( false );
 
       GUI->StartExposure_PushButton.Enable();
    }
@@ -610,9 +1035,9 @@ void CCDFrameInterface::EditValueUpdated( NumericEdit& sender, double value )
    else if ( sender == GUI->ExpTime_NumericEdit )
    {
       m_ExposureDuration = value;
-   }
-   else if ( sender == GUI->ExpDelayTime_NumericEdit )
-   {
+      GUI->m_updateNewPrefixStr=true;
+      updateNewPrefixControl();
+
    }
 }
 

@@ -72,6 +72,7 @@ class IINDIDeviceControllerInstance
 {
 public:
    virtual ~IINDIDeviceControllerInstance(){}
+   virtual ExclPropertyList getExclusivePropertyList() = 0;
    virtual Array<INDIPropertyListItem>& getPropertyList() = 0;
    virtual Array<INDIDeviceListItem>& getDeviceList() = 0;
    virtual IsoString& getCurrentMessage() = 0;

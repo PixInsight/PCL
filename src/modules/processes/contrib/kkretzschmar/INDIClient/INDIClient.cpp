@@ -63,6 +63,10 @@ namespace pcl
 {
 
 	void INDIClient::runOnPropertyTable(IProperty* INDIProperty, const ArrayOperator<INDIPropertyListItem>* arrayOp, PropertyFlagType flag){
+
+		// get popertyList with exclusive access
+		ExclPropertyList propertyList = m_Instance->getExclusivePropertyList();
+
 		String sep("/");
 		INDIPropertyListItem propertyListItem;
 		propertyListItem.Device=INDIProperty->getDeviceName();
@@ -79,9 +83,10 @@ namespace pcl
 			propertyListItem.PropertyFlag=flag;
 			propertyListItem.PropertyNumberFormat=INDIProperty->getNumberFormat(i);
 			propertyListItem.ElementLabel=INDIProperty->getElementLabel(i);
-			arrayOp->run(m_Instance->getPropertyList(),propertyListItem);
+			arrayOp->run(*propertyList.get(),propertyListItem);
 		    if (m_ScriptInstance) {
-			  arrayOp->run(m_ScriptInstance->getPropertyList(), propertyListItem);
+		    	ExclPropertyList scriptPropertyList = m_ScriptInstance->getExclusivePropertyList();
+		    	arrayOp->run(*scriptPropertyList.get(), propertyListItem);
 		    }
 		}
 	}
@@ -119,7 +124,6 @@ namespace pcl
 		IProperty* INDIProperty = PropertyFactory::create(property);
 		ArrayOperator<INDIPropertyListItem>* append=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayAppend<INDIPropertyListItem>());
 		// add property to the property process parameter table
-
 		runOnPropertyTable(INDIProperty,append,Insert);
 
 		setBLOBMode(B_ALSO,property->getDeviceName());
@@ -182,7 +186,6 @@ namespace pcl
 
 		IProperty* INDIProperty = PropertyFactory::create(property);
 		ArrayOperator<INDIPropertyListItem>* update=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayUpdate<INDIPropertyListItem>());
-
 		runOnPropertyTable(INDIProperty,update,Update);
 	}
 
@@ -193,7 +196,6 @@ namespace pcl
 
 		IProperty* INDIProperty = PropertyFactory::create(property);
 		ArrayOperator<INDIPropertyListItem>* update=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayUpdate<INDIPropertyListItem>());
-
 		runOnPropertyTable(INDIProperty,update,Update);
 	}
 
@@ -204,7 +206,6 @@ namespace pcl
 
 		IProperty* INDIProperty = PropertyFactory::create(property);
 		ArrayOperator<INDIPropertyListItem>* update=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayUpdate<INDIPropertyListItem>());
-
 		runOnPropertyTable(INDIProperty,update,Update);
 	}
 

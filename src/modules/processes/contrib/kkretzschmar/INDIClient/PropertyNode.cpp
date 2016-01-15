@@ -76,58 +76,77 @@ namespace pcl {
 		return keyString.Substring(startpos2+1,endpos-startpos2);
 	}
 
+	float stringToFloatSafe(String numberStr){
+		float result=0;
+		// dirty read: Try to convert the number string.
+		// if not possible return 0
+		numberStr.TryToFloat(result);
+		return result;
+	}
+
+	int stringToIntSafe(String numberStr){
+		int result=0;
+		// dirty read: Try to convert the number string.
+		// if not possible return 0
+		numberStr.TryToInt(result);
+		return result;
+	}
+
 	String PropertyUtils::getFormattedNumber(String numberStr, IsoString numberFormat){
+		if (numberStr.IsEmpty())
+			return numberStr;
+
 		size_t im = numberFormat.Find('m');
 		if (im!=String::notFound){
 			numberFormat.DeleteRight(im);
 			numberFormat.DeleteLeft(1);
 			StringList tokens;
 			numberFormat.Break(tokens,'.',true);
-			size_t fraction = tokens[1].ToInt();
-			size_t width    = tokens[0].ToInt()-fraction;
+			size_t fraction = stringToIntSafe(tokens[1]);
+			size_t width    = stringToIntSafe(tokens[0])-fraction;
 			assert(width>0);
-			int hours = Trunc(numberStr.ToFloat());
+			int hours = Trunc(stringToFloatSafe(numberStr));
 			switch (fraction) {
 			case 3:
 			{
-				int minutes = Trunc((numberStr.ToFloat() - hours)*60);
+				int minutes = Trunc((stringToFloatSafe(numberStr) - hours)*60);
 				IsoString formatStr = '%' + IsoString().Format("%dd",width) + ":%02d";
 				return String().Format(formatStr.c_str(),hours,Abs(minutes));
 			}
 			case 5:
 			{
-				int minutes     = Trunc((numberStr.ToFloat() - hours)*60);
-				int minutesfrac = Trunc(((numberStr.ToFloat() - hours)*60-minutes)*10);
+				int minutes     = Trunc((stringToFloatSafe(numberStr) - hours)*60);
+				int minutesfrac = Trunc(((stringToFloatSafe(numberStr) - hours)*60-minutes)*10);
 				IsoString formatStr = '%' + IsoString().Format("%dd",width) + ":%02d.%d";
 				return String().Format(formatStr.c_str(),hours,Abs(minutes),Abs(minutesfrac));
 			}
 			case 6:
 			{
-				int minutes     = Trunc((numberStr.ToFloat() - hours)*60);
-				int seconds     = Trunc(((numberStr.ToFloat() - hours)*60-minutes)*60);
+				int minutes     = Trunc((stringToFloatSafe(numberStr) - hours)*60);
+				int seconds     = Trunc(((stringToFloatSafe(numberStr) - hours)*60-minutes)*60);
 				IsoString formatStr = '%' + IsoString().Format("%dd",width) + ":%02d:%02d";
 				return String().Format(formatStr.c_str(),hours,Abs(minutes),Abs(seconds));
 			}
 			case 8:
 			{
-				int minutes     = Trunc((numberStr.ToFloat() - hours)*60);
-				int seconds     = Trunc(((numberStr.ToFloat() - hours)*60-minutes)*60);
-				int secondsfrac = Trunc((((numberStr.ToFloat() - hours)*60-minutes)*60-seconds)*10);
+				int minutes     = Trunc((stringToFloatSafe(numberStr) - hours)*60);
+				int seconds     = Trunc(((stringToFloatSafe(numberStr) - hours)*60-minutes)*60);
+				int secondsfrac = Trunc((((stringToFloatSafe(numberStr) - hours)*60-minutes)*60-seconds)*10);
 				IsoString formatStr = '%' + IsoString().Format("%dd",width) + ":%02d:%02d.%d";
 				return String().Format(formatStr.c_str(),hours,Abs(minutes),Abs(seconds),Abs(secondsfrac));
 			}
 			case 9:
 			{
-				int minutes     = Trunc((numberStr.ToFloat() - hours)*60);
-				int seconds     = Trunc(((numberStr.ToFloat() - hours)*60-minutes)*60);
-				int secondsfrac = Trunc((((numberStr.ToFloat() - hours)*60-minutes)*60-seconds)*100);
+				int minutes     = Trunc((stringToFloatSafe(numberStr) - hours)*60);
+				int seconds     = Trunc(((stringToFloatSafe(numberStr) - hours)*60-minutes)*60);
+				int secondsfrac = Trunc((((stringToFloatSafe(numberStr) - hours)*60-minutes)*60-seconds)*100);
 				IsoString formatStr = '%' + IsoString().Format("%dd",width) + ":%02d:%02d.%02d";
 				return String().Format(formatStr.c_str(),hours,Abs(minutes),Abs(seconds),Abs(secondsfrac));
 			}
 			return String();
 			}
 		}else {
-			return String().Format(numberFormat.c_str(),numberStr.ToFloat());
+			return String().Format(numberFormat.c_str(),stringToFloatSafe(numberStr));
 		}
 
 		return String();
@@ -315,6 +334,9 @@ namespace pcl {
 	}
 
 	PropertyNode* PropertyTree::addElementNode(String device,String property,String element, int state, String label){
+		assert(!device.IsEmpty());
+		assert(!property.IsEmpty());
+		assert(!element.IsEmpty());
 		assert(m_rootNode!=NULL);
 		// lookup device node
 		String deviceKeyStr = PropertyUtils::getKey(device);

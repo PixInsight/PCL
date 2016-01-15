@@ -36,7 +36,6 @@
 #define MAXRBUF 2048
 
 #include <pcl/Thread.h>
-#include <pcl/Mutex.h>
 
 using namespace std;
 
@@ -171,7 +170,6 @@ public:
     /** \brief Send closing tag for BLOB command to server */
     virtual void finishBlob();
 
-    pcl::Mutex m_mutex;
     // Listen to INDI server and process incoming messages
     void listenINDI();
 

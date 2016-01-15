@@ -1,0 +1,128 @@
+######################################################################
+# PixInsight Makefile Generator Script v1.96
+# Copyright (C) 2009-2015 Pleiades Astrophoto
+######################################################################
+# Automatically generated on Fri, 25 Dec 2015 15:26:18 GMT
+# Project id ...... INDIClient
+# Project type .... Module
+# Platform ........ Linux/g++
+# Configuration ... Debug/x64
+######################################################################
+
+OBJ_DIR="/media/klaus/DATA/C++/PCL/src/modules/processes/contrib/kkretzschmar/INDIClient/linux/g++/x64/Debug"
+
+.PHONY: all
+all: $(OBJ_DIR)/INDIClient-pxm.so
+
+#
+# Source files
+#
+
+SRC_FILES= \
+../../CCDFrameInstance.cpp \
+../../CCDFrameInterface.cpp \
+../../CCDFrameProcess.cpp \
+../../IINDIProperty.cpp \
+../../INDIClient.cpp \
+../../INDIClientModule.cpp \
+../../INDIDeviceControllerInstance.cpp \
+../../INDIDeviceControllerInterface.cpp \
+../../INDIDeviceControllerProcess.cpp \
+../../INDIMountInstance.cpp \
+../../INDIMountInterface.cpp \
+../../INDIMountProcess.cpp \
+../../INDIParameters.cpp \
+../../INDIPropertyBuilder.cpp \
+../../PropertyNode.cpp \
+../../SkyMap.cpp \
+../../INDI/BaseClientImpl.cpp \
+../../INDI/base64.c \
+../../INDI/basedevice.cpp \
+../../INDI/indicom.c \
+../../INDI/indiproperty.cpp \
+../../INDI/lilxml.c
+
+#
+# Object files
+#
+
+OBJ_FILES= \
+./x64/Debug/CCDFrameInstance.o \
+./x64/Debug/CCDFrameInterface.o \
+./x64/Debug/CCDFrameProcess.o \
+./x64/Debug/IINDIProperty.o \
+./x64/Debug/INDIClient.o \
+./x64/Debug/INDIClientModule.o \
+./x64/Debug/INDIDeviceControllerInstance.o \
+./x64/Debug/INDIDeviceControllerInterface.o \
+./x64/Debug/INDIDeviceControllerProcess.o \
+./x64/Debug/INDIMountInstance.o \
+./x64/Debug/INDIMountInterface.o \
+./x64/Debug/INDIMountProcess.o \
+./x64/Debug/INDIParameters.o \
+./x64/Debug/INDIPropertyBuilder.o \
+./x64/Debug/PropertyNode.o \
+./x64/Debug/SkyMap.o \
+./x64/Debug/INDI/BaseClientImpl.o \
+./x64/Debug/INDI/base64.o \
+./x64/Debug/INDI/basedevice.o \
+./x64/Debug/INDI/indicom.o \
+./x64/Debug/INDI/indiproperty.o \
+./x64/Debug/INDI/lilxml.o
+
+#
+# Dependency files
+#
+
+DEP_FILES= \
+./x64/Debug/CCDFrameInstance.d \
+./x64/Debug/CCDFrameInterface.d \
+./x64/Debug/CCDFrameProcess.d \
+./x64/Debug/IINDIProperty.d \
+./x64/Debug/INDIClient.d \
+./x64/Debug/INDIClientModule.d \
+./x64/Debug/INDIDeviceControllerInstance.d \
+./x64/Debug/INDIDeviceControllerInterface.d \
+./x64/Debug/INDIDeviceControllerProcess.d \
+./x64/Debug/INDIMountInstance.d \
+./x64/Debug/INDIMountInterface.d \
+./x64/Debug/INDIMountProcess.d \
+./x64/Debug/INDIParameters.d \
+./x64/Debug/INDIPropertyBuilder.d \
+./x64/Debug/PropertyNode.d \
+./x64/Debug/SkyMap.d \
+./x64/Debug/INDI/BaseClientImpl.d \
+./x64/Debug/INDI/base64.d \
+./x64/Debug/INDI/basedevice.d \
+./x64/Debug/INDI/indicom.d \
+./x64/Debug/INDI/indiproperty.d \
+./x64/Debug/INDI/lilxml.d
+
+#
+# Rules
+#
+
+-include $(DEP_FILES)
+
+$(OBJ_DIR)/INDIClient-pxm.so: $(OBJ_FILES)
+	g++ -m64 -fPIC -Wl,-fuse-ld=gold -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -rdynamic -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/INDIClient-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
+	$(MAKE) -f ./makefile-x64-debug --no-print-directory post-build
+
+.PHONY: clean
+clean:
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/INDIClient-pxm.so
+
+.PHONY: post-build
+post-build:
+	cp $(OBJ_DIR)/INDIClient-pxm.so $(PCLBINDIR64)
+
+./x64/Debug/%.o: ../../%.cpp
+	g++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O0 -g -fvisibility=default  -fnon-call-exceptions -rdynamic -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x64/Debug/INDI/%.o: ../../INDI/%.cpp
+	g++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O0 -g -fvisibility=default  -fnon-call-exceptions -rdynamic -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+./x64/Debug/INDI/%.o: ../../INDI/%.c
+	gcc -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -O0 -g -fvisibility=default -fnon-call-exceptions -rdynamic -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo ' '
+

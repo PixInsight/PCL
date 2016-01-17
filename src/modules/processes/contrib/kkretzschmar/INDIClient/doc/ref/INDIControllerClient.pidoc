@@ -1,0 +1,121 @@
+\documentclass PIToolDoc
+
+\tool INDIDeviceController
+
+\module INDIDeviceController
+
+\categories {
+   Automation, Control
+}
+
+\keywords {
+    INDI, Device, Instrument, Automation, Control
+}
+
+\author {
+   Klaus Kretzschmar
+}
+
+\copyright {
+   2014-2016 Klaus Kretzschmar
+}
+
+\brief {
+   Sends commands to an INDI server to control astronomical devices.
+}
+
+\description {
+   \image[size:50\%,float,marginRight:1.25em,marginBottom:0.5em] INDIControllerClient.png
+
+   The INDI Device Controller module is an INDI client which can be used to control astronomical
+   devices like CCD cameras, telescope mounts, or filter wheels. The client sends device independent
+   commands (INDI Device Properties) to an INDI server which translates the commands to devices specific
+   commands by routing the commands to device hardware drivers (see \ref  indi_lib_overview for a more detailed description).
+   The INDI client/server communication uses the INDI protocol which is an official IANA registered TCP/IP protocol.
+
+   So the INDI controlling system can be set-up in two configurations:
+
+   \list[spaced]{
+    { {\s Locally:} Client and server run on the same machine as different processes.}
+    { {\s Distributed:} Client and server run on different machines, and the client connects to the server over an existing LAN or WLAN network.}
+   }
+
+   For example, you can install the \e{ INDI server} on your Linux or Mac computer \ref indi_download_linosx, where all hardware devices are plugged-in,
+   start the \e{ INDI server} and connect the \e{INDI Device Controller} (use host \e{localhost}) to the server.
+
+   Alternatively, you can
+   use a remote (e.g. Windows) computer to remotely connect to the \e{INDI server} running on a Linux or Mac OS computer by specifying the remote host.
+   There is no INDI server implementation for Windows, but there is an INDI wrapper for ASCOM available \ref indi_download_windi.
+
+}
+
+\usage {
+   The \e{INDI Device Controller} module contains three sections
+
+   \definition {
+      {INDI Server Connection} {Specify the host and port number and connect to the INDI server.
+        \list [spaced]{
+          {\s Hostname: The name of the host where the \e {INDI server} processs is running on. Use \s localhost if
+          \e PixInsight and \e{INDI server} run on the same computer.}
+          {\s Port: The port number where the \e {INDI server} is listen to. The default port number of the \e {INDI server} is \e 7624.}
+       }
+
+      After successful connection, the server sends a list of device names which are displayed in the \lref indi_devices {INDI Devices} section.
+      If the connection was not successful, a corresponding message is displayed in the section \lref server_message {Last server message}.}
+
+      {\label indi_devices INDI Devices} {
+      Select and connect to the INDI devices which are available on the INDI server.
+
+      To connect a hardware device with the \e {INDI server}, select one or several devices in the \lref indi_devices {INDI Devices}
+      tree-box and press the \e { Connect} button.
+
+      \image[marginRight:1.25em,marginBottom:0.5em] INDIDeviceSelection_1.png
+
+      After successful connection, the server sends a list of device properties which are displayed in the \lref indi_properties
+      {INDI Device Properties} tree-box. Device properties are the control parameters of a hardware device, e.g. the property
+      CCD_TEMPARATURE controls the chip temperature of a CCD camera.
+
+      }
+      {\label indi_properties INDI Device Properties} {
+      Edit and send new INDI property values to the INDI server.
+
+      This section lists all properties of a device in a tree-box control. A property consists of one-or-many elements which
+      are grouped in a property tree-node and its values can be displayed by expanding the node. There are three different types
+      of property values
+
+      \list {
+          {\s Switch: A switch property can contain several elements which can only have two values: ON or OFF  }
+          {\s Number: A number property can contain several elements which have a number as value.}
+          {\s Text: A text property can contain everal elements which have a string as value.}
+       }
+
+      \image[marginRight:1.25em,marginBottom:0.5em] INDIPropertySelection.png
+
+      It is possible to send a new target property value to the \e {INDI server} by selecting the \e {property
+      element} and pressing the \e Edit button. A new dialog appears which enables to a enter a new value for the property.
+
+      \image[marginRight:1.25em,marginBottom:0.5em] INDIPropertyEdit.png
+
+
+
+      }
+      {\label server_message Last server message } {
+        The most current message from the {\e INDI server} is displayed in this section.
+      \image[marginRight:1.25em,marginBottom:0.5em] INDIPropertyMessage.png
+      }
+   }
+}
+
+\relatedtools {
+   INDICCDFrame
+}
+
+\reference indi_lib_overview { INDI library, \xref http://indilib.org/about/discover-indi.html  { What is INDI? : An overview} }
+
+\reference indi_download_linosx {INDI library, \xref http://www.indilib.org/download.html { Linux and OS X: Download INDI software} }
+
+\reference indi_download_windi {Cloudmakers, \xref http://www.cloudmakers.eu/windi/ {Windows: An INDI wrapper for ASCOM} }
+
+
+
+\make[noauthors]

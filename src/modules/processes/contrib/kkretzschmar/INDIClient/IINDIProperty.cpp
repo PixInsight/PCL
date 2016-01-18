@@ -236,9 +236,12 @@ void TextProperty::addElement(IsoString elementName, IsoString value) {
 	tp = (IText*) realloc(tp, (ntp + 1) * sizeof(IText));
 	CHECK_POINTER(tp);
 	strcpy(tp->name, elementName.c_str());
-	//FIXME Leaks memory?
-	tp->text = (char*) malloc(sizeof(value.c_str()));
-	strcpy(tp->text, value.c_str());
+
+// 	//FIXME Leaks memory?
+// 	tp->text = (char*) malloc(sizeof(value.c_str()));
+// 	strcpy(tp->text, value.c_str());
+   tp->text = value.Release(); // N.B.: can do this because value is being passed by value.
+
 	tp->tvp = (ITextVectorProperty*) m_property->getProperty();
 	((ITextVectorProperty*) m_property->getProperty())->ntp++;
 	((ITextVectorProperty*) m_property->getProperty())->tp = tp;

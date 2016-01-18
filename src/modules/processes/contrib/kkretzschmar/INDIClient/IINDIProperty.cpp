@@ -158,7 +158,7 @@ String SwitchProperty::getElementValue(size_t i) {
  	 sp = (ISwitch*) realloc(sp, (nsp+1) * sizeof(ISwitch));
  	 CHECK_POINTER(sp);
  	 strcpy(sp->name, elementName.c_str());
- 	 sp->s = (strcmp(value.c_str(),"ON")==0) ? ISS_ON : ISS_OFF ;
+ 	 sp->s = (value == "ON") ? ISS_ON : ISS_OFF ;
  	 sp->svp =(ISwitchVectorProperty*) m_property->getProperty();
  	 ((ISwitchVectorProperty*) m_property->getProperty())->nsp++;
  	 ((ISwitchVectorProperty*) m_property->getProperty())->sp = sp;

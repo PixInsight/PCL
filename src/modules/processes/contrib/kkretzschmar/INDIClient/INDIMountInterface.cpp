@@ -181,7 +181,7 @@ bool INDIMountInterface::ImportProcess( const ProcessImplementation& p )
 
 void INDIMountInterface::UpdateControls()
 {
-   
+
 }
 
 
@@ -457,7 +457,7 @@ void CoordSearchDialog::Button_Click(Button& sender, bool checked){
 	if (sender == Search_PushButton) {
 		NetworkTransfer transfer;
 		String url=String("http://simbad.u-strasbg.fr/simbad/sim-tap/sync?request=doQuery&lang=adql&format=text&query=");
-		String select_stmt=String().Format("SELECT basic.OID, RA, DEC, main_id AS \"Main identifier\" FROM basic JOIN ident ON oidref = oid WHERE id = '%s';",IsoString(m_targetObj).c_str());
+		String select_stmt = "SELECT basic.OID, RA, DEC, main_id AS \"Main identifier\" FROM basic JOIN ident ON oidref = oid WHERE id = '" + String( m_targetObj ) + "';";
 		//String url = String("http://vizier.cfa.harvard.edu/viz-bin/nph-sesame/-oI/A?");
 		//url.Append(m_targetObj);
 		url.Append(select_stmt);
@@ -466,7 +466,7 @@ void CoordSearchDialog::Button_Click(Button& sender, bool checked){
 				(NetworkTransfer::download_event_handler) &CoordSearchDialog::DownloadObjectCoordinates,
 				*this);
 		if (!transfer.Download()) {
-			Console().WriteLn(String().Format("Download failed with error '%s'",IsoString(transfer.ErrorInformation()).c_str()));
+			Console().WriteLn( "Download failed with error '" + String( transfer.ErrorInformation() ) + "'" );
 		} else {
 			Console().WriteLn(
 					String().Format(
@@ -741,7 +741,7 @@ INDIMountInterface::GUIData::GUIData(INDIMountInterface& w ){
 	Global_Sizer.Add(MountGoto_Control);
 
 	w.SetSizer(Global_Sizer);
-	
+
 	UpdateDeviceList_Timer.SetInterval( 0.5 );
     UpdateDeviceList_Timer.SetPeriodic( true );
     UpdateDeviceList_Timer.OnTimer( (Timer::timer_event_handler)&INDIMountInterface::UpdateDeviceList_Timer, w );
@@ -776,14 +776,14 @@ void INDIMountInterface::TabPageSelected( TabBox& sender, int pageIndex ){
 			NetworkTransfer transfer;
 			IsoString url =	IsoString("http://simbad.u-strasbg.fr/simbad/sim-tap/sync?request=doQuery&lang=adql&format=text&query=");
 			IsoString select_stmt = m_skymap->getASDLFoVQueryString(ra_center,dec_center,FoV_width,FoV_height,limitStarMag);
-			Console().WriteLn(IsoString().Format("QueryStr = %s",	select_stmt.c_str()));
+			Console().WriteLn( "QueryStr = " + select_stmt );
 			url.Append(select_stmt);
 			transfer.SetURL(url);
 			transfer.OnDownloadDataAvailable(
 					(NetworkTransfer::download_event_handler) &INDIMountInterface::DownloadObjectCoordinates,
 					*this);
 			if (!transfer.Download()) {
-				Console().WriteLn(String().Format("Download failed with error '%s'",IsoString(transfer.ErrorInformation()).c_str()));
+				Console().WriteLn( "Download failed with error '" + String( transfer.ErrorInformation() ) + "'" );
 			} else {
 				Console().WriteLn(String().Format("%d bytes downloaded with speed %f KiB/seconds.",
 										transfer.BytesTransferred(),
@@ -955,20 +955,16 @@ void INDIMountInterface::ComboItemSelected(ComboBox& sender, int itemIndex) {
 
 		m_skymap = new SkyMap(filter, geoCoord);
 		IsoString select_stmt = m_skymap->getASDLQueryString();
-		Console().WriteLn(
-				IsoString().Format("QueryStr = %s",
-						m_skymap->getASDLQueryString().c_str()));
+		Console().WriteLn( "QueryStr = " + m_skymap->getASDLQueryString() );
 		url.Append(select_stmt);
 		transfer.SetURL(url);
 		transfer.OnDownloadDataAvailable(
 				(NetworkTransfer::download_event_handler) &INDIMountInterface::DownloadObjectCoordinates,
 				*this);
 		if (!transfer.Download()) {
-			Console().WriteLn(
-					String().Format("Download failed with error '%s'",
-							IsoString(transfer.ErrorInformation()).c_str()));
+			Console().WriteLn( "Download failed with error '" + String( transfer.ErrorInformation() ) + "'" );
 			if (transfer.WasAborted()){
-				Console().WriteLn("Download was aborted");
+				Console().WriteLn( "Download was aborted" );
 			}
 		} else {
 			Console().WriteLn(

@@ -222,7 +222,7 @@ void INDIDeviceControllerInterface::__CameraListButtons_Click( Button& sender, b
 					indiClient.reset(new INDIClient(&instance));
 
 				IsoString ASCIIHost(instance.p_host);
-				indiClient->setServer(ASCIIHost.c_str() , instance.p_port);
+				indiClient->setServer(ASCIIHost.c_str(), instance.p_port);
 
 				bool connected=false;
 
@@ -356,7 +356,11 @@ void INDIDeviceControllerInterface::UpdateDeviceList(){
 		deviceNode->getTreeBoxNode()->SetText( TextColumn, iter->DeviceName );
 		deviceNode->getTreeBoxNode()->SetAlignment( TextColumn, TextAlign::Left );
 
-		INDI::BaseDevice* device = indiClient->getDevice(IsoString(iter->DeviceName).c_str());
+      INDI::BaseDevice* device;
+      {
+         IsoString s( iter->DeviceName );
+         device = indiClient->getDevice( s.c_str() );
+      }
 		if (device && device->isConnected()) {
 			deviceNode->getTreeBoxNode()->SetIcon( TextColumn, ScaledResource( ":/bullets/bullet-ball-glass-green.png" ) );
       } else {
@@ -878,10 +882,8 @@ void INDIDeviceControllerInterface::UpdatePropertyList(){
 	// remove properties from property list
 	for (size_t i=0; i<itemsToBeRemoved.size(); i++){
 		INDIDeviceControllerInstance::PropertyListType::iterator iter = propertyList.get()->Search(itemsToBeRemoved[i]);
-		if (iter==propertyList.get()->End()){
-			IsoString elemStr=IsoString(iter->Element);
-			throw Error(String().Format("%s",elemStr.c_str()));
-		}
+		if (iter==propertyList.get()->End())
+			throw Error( String( iter->Element ) );
 		propertyList.get()->Remove(iter);
 
 	}

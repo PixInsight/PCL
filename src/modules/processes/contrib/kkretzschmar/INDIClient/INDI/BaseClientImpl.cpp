@@ -182,10 +182,6 @@ bool INDI::BaseClientImpl::disconnectServer()
 #endif
 
     shutdown(sockfd, SHUT_RDWR);
-#if defined(WIN32) && !defined(_DEBUG)
-    while (write(m_sendFd,"1",1) <= 0)
-#endif
-
 
     if (svrwfp != NULL)
         fclose(svrwfp);

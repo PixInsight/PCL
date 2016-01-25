@@ -607,7 +607,7 @@ void CCDFrameInterface::ExposureDelay_Timer( Timer &sender )
    }
 }
 
-void CCDFrameInterface::EditEntered(Edit& sender){
+void CCDFrameInterface::EditEntered(Control& sender){
 	if (sender == GUI->UploadNewDir_Edit){
 		GUI->m_updateNewDirStr=false;
 	}

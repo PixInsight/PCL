@@ -131,8 +131,8 @@ public:
       bool   m_updateNewDirStr;
       bool   m_updateNewPrefixStr;
 
-      std::vector<String> m_frameTypes      {"FRAME_LIGHT","FRAME_BIAS","FRAME_DARK","FRAME_FLAT"};
-      std::vector<String> m_frameTypePrefix {"OBJECT","BIAS","DARK","FLAT"};
+	  std::vector<String> m_frameTypes      = std::vector<String> {"FRAME_LIGHT", "FRAME_BIAS", "FRAME_DARK", "FRAME_FLAT"};
+	  std::vector<String> m_frameTypePrefix = std::vector<String> {"OBJECT", "BIAS", "DARK", "FLAT"};
 
       VerticalSizer     Global_Sizer;
          SectionBar        CCDDevice_SectionBar;
@@ -221,7 +221,7 @@ public:
    void SpinValueUpdated( SpinBox& sender, int value );
    void EditValueUpdated( NumericEdit& sender, double value );
    void EditTextUpdated( Edit& sender, const String& text );
-   void EditEntered(Edit& sender);
+   void EditEntered(Control& sender);
    void ComboItemSelected(ComboBox& sender, int itemIndex);
    void StartExposureButton_Click(Button& sender, bool checked);
    void CancelButton_Click(Button& sender, bool checked);

@@ -602,8 +602,9 @@ void CCDFrameInterface::ExposureDelay_Timer( Timer &sender )
       {
          GUI->ExposureDelay_Timer.Stop();
          m_isWaiting = false;
+         GUI->ExpDelay_Edit.SetText( String(0) );
       }
-      GUI->ExpDelay_Edit.SetText( String( sender.Count() + GUI->ExpDur_Edit.Text().ToDouble() ) );
+      GUI->ExpDelay_Edit.SetText( String( sender.Count()) );
    }
 }
 
@@ -648,7 +649,6 @@ void CCDFrameInterface::updateNewPrefixControl() {
 	if (GUI->m_updateNewPrefixStr) {
 		int binningX  =GUI->CCDBinX_Combo.CurrentItem();
 		int binningY  =GUI->CCDBinY_Combo.CurrentItem();
-		double expTime=GUI->ExpTime_NumericEdit.Value();
 		String currentText=GUI->UploadNewPrefix_Edit.Text();
 
 		IsoString frameTypePrefix = IsoString(GUI->m_frameTypePrefix[GUI->CCDFrameType_Combo.CurrentItem()]);
@@ -878,7 +878,9 @@ void CCDFrameInterface::SetCCDPropertyButton_Click(Button& sender, bool checked)
 	    newPropertyListItem.Element = "CCD_TEMPERATURE_VALUE";
 	    newPropertyListItem.PropertyType = "INDI_NUMBER";
 	    newPropertyListItem.NewPropertyValue = String( GUI->CCDTargetTemp_NumericEdit.Value() );
-	    bool send_ok = instance.sendNewPropertyValue( newPropertyListItem, true/*isAsynchCall*/ );
+	    if (!instance.sendNewPropertyValue( newPropertyListItem, true/*isAsynchCall*/ )){
+	    	Console().WriteLn(ERR_MSG("Error while sending new property values to INDI server."));
+	    }
 	    // check send_ok
 	} else if (sender == GUI->UploadNewDir_PushButton){
 		INDIDeviceControllerInstance& instance = TheINDIDeviceControllerInterface->instance;
@@ -889,7 +891,9 @@ void CCDFrameInterface::SetCCDPropertyButton_Click(Button& sender, bool checked)
 	    newPropertyListItem.Element = "UPLOAD_DIR";
 	    newPropertyListItem.PropertyType = "INDI_TEXT";
 	    newPropertyListItem.NewPropertyValue = GUI->UploadNewDir_Edit.Text();
-	    bool send_ok = instance.sendNewPropertyValue( newPropertyListItem, true/*isAsynchCall*/ );
+	    if(!instance.sendNewPropertyValue( newPropertyListItem, true/*isAsynchCall*/ )){
+	    	Console().WriteLn(ERR_MSG("Error while sending new property values to INDI server."));
+	    }
 	    GUI->m_updateNewDirStr=true;
 	    // check send_ok
 	} else if (sender == GUI->UploadNewPrefix_PushButton){
@@ -901,7 +905,9 @@ void CCDFrameInterface::SetCCDPropertyButton_Click(Button& sender, bool checked)
 	    newPropertyListItem.Element = "UPLOAD_PREFIX";
 	    newPropertyListItem.PropertyType = "INDI_TEXT";
 	    newPropertyListItem.NewPropertyValue = GUI->UploadNewPrefix_Edit.Text();
-	    bool send_ok = instance.sendNewPropertyValue( newPropertyListItem, true/*isAsynchCall*/ );
+	    if(!instance.sendNewPropertyValue( newPropertyListItem, true/*isAsynchCall*/ )){
+	    	Console().WriteLn(ERR_MSG("Error while sending new property values to INDI server."));
+	    }
 	    GUI->m_updateNewPrefixStr=true;
 	    // check send_ok
 	}
@@ -948,9 +954,9 @@ void CCDFrameInterface::StartExposureButton_Click( Button& sender, bool checked 
          newPropertyListItem.NewPropertyValue = String( m_ExposureDuration );
 
          GUI->ExposureDuration_Timer.Start();
-         bool send_ok = instance.sendNewPropertyValue( newPropertyListItem, true/*isAsynchCall*/ );
-         if ( !send_ok )
-            break;
+         if(!instance.sendNewPropertyValue( newPropertyListItem, true/*isAsynchCall*/ )){
+        	 Console().WriteLn(ERR_MSG("Error while sending new property values to INDI server."));
+         }
 
          if ( serverSendsImage )
          {
@@ -1010,8 +1016,9 @@ void CCDFrameInterface::StartExposureButton_Click( Button& sender, bool checked 
             m_isWaiting=true;
          }
 
-         while ( m_isWaiting )
+         while ( m_isWaiting ){
             ProcessEvents();
+         }
       }
 
       instance.setInternalAbortFlag( false );

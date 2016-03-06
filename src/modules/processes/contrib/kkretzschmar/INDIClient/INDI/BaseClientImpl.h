@@ -74,6 +74,7 @@ public:
     //typedef boost::shared_ptr<INDI::BaseDevice> devicePtr;
 
     BaseClientImpl();
+    BaseClientImpl(const char* hostname, unsigned int port);
     virtual ~BaseClientImpl();
 
     /** \brief Set the server host name and port

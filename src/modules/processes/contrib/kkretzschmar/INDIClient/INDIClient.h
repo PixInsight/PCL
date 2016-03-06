@@ -114,6 +114,12 @@ class INDIClient : public INDI::BaseClientImpl
          throw FatalError(ERR_MSG("Invalid instance pointer."));
       }
    }
+   INDIClient(IINDIDeviceControllerInstance* instance,const char* hostname, unsigned int port):BaseClientImpl(hostname,port),m_Instance(instance),m_ScriptInstance(NULL)
+   {
+	   if (m_Instance==NULL){
+		   throw FatalError(ERR_MSG("Invalid instance pointer."));
+       }
+    }
    ~INDIClient(){}
 
    void registerScriptInstance(IINDIDeviceControllerInstance* scriptInstance){

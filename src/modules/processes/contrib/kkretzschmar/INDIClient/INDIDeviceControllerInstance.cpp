@@ -435,11 +435,9 @@ bool INDIDeviceControllerInstance::ExecuteGlobal()
 	return true;
    }
 
-   if (indiClient.get() == 0)
-        indiClient.reset(new INDIClient(this));
-
    IsoString ASCIIHost(p_host);
-   indiClient->setServer(ASCIIHost.c_str(), p_port);
+   if (indiClient.get() == 0)
+        indiClient.reset(new INDIClient(this,ASCIIHost.c_str(), p_port));
 
    if (!indiClient.get()->serverIsConnected())
 		indiClient->connectServer();

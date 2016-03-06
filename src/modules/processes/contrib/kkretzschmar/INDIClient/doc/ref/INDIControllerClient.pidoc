@@ -27,7 +27,7 @@
 \description {
    \image[size:50\%,float,marginRight:1.25em,marginBottom:0.5em] INDIControllerClient.png
 
-   The INDI Device Controller module is an INDI client which can be used to control astronomical
+   The \e{INDI Device Controller} module is an INDI client which can be used to control astronomical
    devices like CCD cameras, telescope mounts, or filter wheels. The client sends device independent
    commands (INDI Device Properties) to an INDI server which translates the commands to devices specific
    commands by routing the commands to device hardware drivers (see \ref  indi_lib_overview for a more detailed description).

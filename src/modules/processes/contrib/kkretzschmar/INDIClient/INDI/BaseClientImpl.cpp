@@ -61,10 +61,12 @@ void INDIListener::Run(){
 }
 
 
-INDI::BaseClientImpl::BaseClientImpl()
+INDI::BaseClientImpl::BaseClientImpl(){}
+
+INDI::BaseClientImpl::BaseClientImpl(const char* hostname, unsigned int port)
 {
-    cServer = "localhost";
-    cPort   = 7624;
+    cServer = hostname;
+    cPort   = port;
     svrwfp = NULL;    
     sConnected = false;
 

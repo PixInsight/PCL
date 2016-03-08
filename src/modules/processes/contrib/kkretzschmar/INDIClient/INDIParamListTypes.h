@@ -119,6 +119,9 @@ class ExclPropertyList {
 	std::shared_ptr<pcl::AutoLock>  m_locker;
 	Array<INDIPropertyListItem>&    m_propertyListRef;
 public:
+	explicit ExclPropertyList(Array<INDIPropertyListItem>&  propertyList) :
+			m_locker(nullptr),
+			m_propertyListRef(propertyList){}
 	ExclPropertyList(pcl::Mutex& mutex, Array<INDIPropertyListItem>&  propertyList) :
 		m_locker(new AutoLock(mutex)),
 		m_propertyListRef(propertyList){

@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.100
+# PixInsight Makefile Generator Script v1.101
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 17 Dec 2015 19:03:47 GMT
+# Automatically generated on Fri, 18 Mar 2016 13:16:53 GMT
 # Project id ...... ImageIntegration
 # Project type .... Module
 # Platform ........ Windows/vc12
@@ -30,7 +30,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{23B89CF3-C94F-4497-B3A0-F98EF7C2F1C5}</ProjectGuid>
+    <ProjectGuid>{9A65FDD9-FFE1-48A6-B8F0-DD61A64D9799}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -107,11 +107,9 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
+      <DebugInformationFormat></DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -119,8 +117,7 @@
       <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR64)\ImageIntegration-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -151,11 +148,9 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
+      <DebugInformationFormat></DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -163,8 +158,7 @@
       <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\ImageIntegration-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -190,8 +184,7 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -201,8 +194,7 @@
       <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR64)\ImageIntegration-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <ImportLibrary>$(Platform)\$(Configuration)\$(ProjectName).lib</ImportLibrary>
@@ -222,8 +214,7 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -233,8 +224,7 @@
       <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\ImageIntegration-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <ImportLibrary>$(Platform)\$(Configuration)\$(ProjectName).lib</ImportLibrary>
@@ -246,52 +236,52 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\DrizzleIntegrationInstance.cpp" />
-    <ClCompile Include="..\..\DrizzleIntegrationInterface.cpp" />
-    <ClCompile Include="..\..\DrizzleIntegrationParameters.cpp" />
-    <ClCompile Include="..\..\DrizzleIntegrationProcess.cpp" />
-    <ClCompile Include="..\..\FileDataCache.cpp" />
-    <ClCompile Include="..\..\FileDataCachePreferencesDialog.cpp" />
-    <ClCompile Include="..\..\HDRCompositionInstance.cpp" />
-    <ClCompile Include="..\..\HDRCompositionInterface.cpp" />
-    <ClCompile Include="..\..\HDRCompositionParameters.cpp" />
-    <ClCompile Include="..\..\HDRCompositionProcess.cpp" />
-    <ClCompile Include="..\..\ImageIntegrationInstance.cpp" />
-    <ClCompile Include="..\..\ImageIntegrationInterface.cpp" />
-    <ClCompile Include="..\..\ImageIntegrationModule.cpp" />
-    <ClCompile Include="..\..\ImageIntegrationParameters.cpp" />
-    <ClCompile Include="..\..\ImageIntegrationProcess.cpp" />
-    <ClCompile Include="..\..\IntegrationCache.cpp" />
+    <ClCompile Include="..\..\DrizzleIntegrationInstance.cpp"/>
+    <ClCompile Include="..\..\DrizzleIntegrationInterface.cpp"/>
+    <ClCompile Include="..\..\DrizzleIntegrationParameters.cpp"/>
+    <ClCompile Include="..\..\DrizzleIntegrationProcess.cpp"/>
+    <ClCompile Include="..\..\FileDataCache.cpp"/>
+    <ClCompile Include="..\..\FileDataCachePreferencesDialog.cpp"/>
+    <ClCompile Include="..\..\HDRCompositionInstance.cpp"/>
+    <ClCompile Include="..\..\HDRCompositionInterface.cpp"/>
+    <ClCompile Include="..\..\HDRCompositionParameters.cpp"/>
+    <ClCompile Include="..\..\HDRCompositionProcess.cpp"/>
+    <ClCompile Include="..\..\ImageIntegrationInstance.cpp"/>
+    <ClCompile Include="..\..\ImageIntegrationInterface.cpp"/>
+    <ClCompile Include="..\..\ImageIntegrationModule.cpp"/>
+    <ClCompile Include="..\..\ImageIntegrationParameters.cpp"/>
+    <ClCompile Include="..\..\ImageIntegrationProcess.cpp"/>
+    <ClCompile Include="..\..\IntegrationCache.cpp"/>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\DrizzleIntegrationInstance.h" />
-    <ClInclude Include="..\..\DrizzleIntegrationInterface.h" />
-    <ClInclude Include="..\..\DrizzleIntegrationParameters.h" />
-    <ClInclude Include="..\..\DrizzleIntegrationProcess.h" />
-    <ClInclude Include="..\..\FileDataCache.h" />
-    <ClInclude Include="..\..\FileDataCachePreferencesDialog.h" />
-    <ClInclude Include="..\..\HDRCompositionInstance.h" />
-    <ClInclude Include="..\..\HDRCompositionInterface.h" />
-    <ClInclude Include="..\..\HDRCompositionParameters.h" />
-    <ClInclude Include="..\..\HDRCompositionProcess.h" />
-    <ClInclude Include="..\..\ImageIntegrationInstance.h" />
-    <ClInclude Include="..\..\ImageIntegrationInterface.h" />
-    <ClInclude Include="..\..\ImageIntegrationModule.h" />
-    <ClInclude Include="..\..\ImageIntegrationParameters.h" />
-    <ClInclude Include="..\..\ImageIntegrationProcess.h" />
-    <ClInclude Include="..\..\IntegrationCache.h" />
+    <ClInclude Include="..\..\DrizzleIntegrationInstance.h"/>
+    <ClInclude Include="..\..\DrizzleIntegrationInterface.h"/>
+    <ClInclude Include="..\..\DrizzleIntegrationParameters.h"/>
+    <ClInclude Include="..\..\DrizzleIntegrationProcess.h"/>
+    <ClInclude Include="..\..\FileDataCache.h"/>
+    <ClInclude Include="..\..\FileDataCachePreferencesDialog.h"/>
+    <ClInclude Include="..\..\HDRCompositionInstance.h"/>
+    <ClInclude Include="..\..\HDRCompositionInterface.h"/>
+    <ClInclude Include="..\..\HDRCompositionParameters.h"/>
+    <ClInclude Include="..\..\HDRCompositionProcess.h"/>
+    <ClInclude Include="..\..\ImageIntegrationInstance.h"/>
+    <ClInclude Include="..\..\ImageIntegrationInterface.h"/>
+    <ClInclude Include="..\..\ImageIntegrationModule.h"/>
+    <ClInclude Include="..\..\ImageIntegrationParameters.h"/>
+    <ClInclude Include="..\..\ImageIntegrationProcess.h"/>
+    <ClInclude Include="..\..\IntegrationCache.h"/>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\DrizzleIntegrationIcon.png" />
-    <None Include="..\..\HDRCompositionIcon.png" />
-    <None Include="..\..\ImageIntegrationIcon.png" />
-    <None Include="..\..\grid.png" />
-    <None Include="..\..\__private\ImageIntegrationIcons.svg" />
-    <None Include="..\..\__private\ImageIntegrationIcons.svg-rect3260-4294966373.png" />
-    <None Include="..\..\__private\Pyramid.svg" />
-    <None Include="..\..\__private\Tetrahedron.svg" />
+    <None Include="..\..\DrizzleIntegrationIcon.png"/>
+    <None Include="..\..\HDRCompositionIcon.png"/>
+    <None Include="..\..\ImageIntegrationIcon.png"/>
+    <None Include="..\..\grid.png"/>
+    <None Include="..\..\__private\ImageIntegrationIcons.svg"/>
+    <None Include="..\..\__private\ImageIntegrationIcons.svg-rect3260-4294966373.png"/>
+    <None Include="..\..\__private\Pyramid.svg"/>
+    <None Include="..\..\__private\Tetrahedron.svg"/>
   </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

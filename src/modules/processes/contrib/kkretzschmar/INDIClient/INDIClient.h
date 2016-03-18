@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.02.0096
+// Standard INDIClient Process Module Version 01.00.03.0102
 // ----------------------------------------------------------------------------
-// INDIClient.h - Released 2015/10/13 15:55:45 UTC
+// INDIClient.h - Released 2016/03/18 13:15:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2015 Klaus Kretzschmar
+// Copyright (c) 2014-2016 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -50,107 +50,133 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#ifndef INDI_CLIENT_H
-#define INDI_CLIENT_H
+#ifndef __INDIClient_h
+#define __INDIClient_h
 
 #include "IINDIProperty.h"
 #include "INDIDeviceControllerInstance.h"
 #include "INDIDeviceControllerInterface.h"
-#include "error.h"
 
 #include "INDI/BaseClientImpl.h"
 #include "INDI/basedevice.h"
 #include "INDI/indicom.h"
 #include "INDI/indidevapi.h"
 
+#include <pcl/Exception.h>
+
 namespace pcl
 {
+
+// ----------------------------------------------------------------------------
 
 class PropertyNode;
 
 template<typename T>
-class ArrayOperator{
+class ArrayOperator
+{
 public:
-   virtual void run(Array<T>& _array,T& _element) const {}
-};
 
-template<typename T>
-class ArrayAppend : public ArrayOperator<T> {
-public:
-   virtual void run (Array<T>& _array,T& _element) const {_array.Append(_element);}
-};
-
-template<typename T>
-class ArrayDelete : public ArrayOperator<T> {
-public:
-   virtual void run (Array<T>& _array,T& _element) const {
-      typename pcl::Array<T>::iterator iter = _array.Search(_element);
-      if (iter==_array.End()){
-         return;
-      }
-      _array.Remove(iter);
+   virtual void run( Array<T>& _array, const T& _element ) const
+   {
    }
 };
 
 template<typename T>
-class ArrayUpdate : public ArrayOperator<T> {
+class ArrayAppend : public ArrayOperator<T>
+{
 public:
-   virtual void run (Array<T>& _array,T& _element) const  {
-      typename pcl::Array<T>::iterator iter = _array.Search(_element);
-      if (iter==_array.End()){
-         return;
-      }
-      *iter=_element;
+
+   virtual void run( Array<T>& _array, const T& _element ) const
+   {
+      _array.Append( _element );
+   }
+};
+
+template<typename T>
+class ArrayDelete : public ArrayOperator<T>
+{
+public:
+
+   virtual void run( Array<T>& _array, const T& _element ) const
+   {
+      typename pcl::Array<T>::iterator iter = _array.Search( _element );
+      if ( iter != _array.End() )
+         _array.Remove( iter );
+   }
+};
+
+template<typename T>
+class ArrayUpdate : public ArrayOperator<T>
+{
+public:
+
+   virtual void run( Array<T>& _array, const T& _element ) const
+   {
+      typename pcl::Array<T>::iterator iter = _array.Search( _element );
+      if ( iter != _array.End() )
+         *iter = _element;
    }
 };
 
 class INDIClient : public INDI::BaseClientImpl
 {
- public:
+public:
 
-   INDIClient(IINDIDeviceControllerInstance* instance):BaseClientImpl(),m_Instance(instance),m_ScriptInstance(NULL)
+   INDIClient( IINDIDeviceControllerInstance* instance ) :
+      BaseClientImpl(),
+      m_instance( instance ),
+      m_scriptInstance( nullptr )
    {
-      if (m_Instance==NULL){
-         throw FatalError(ERR_MSG("Invalid instance pointer."));
-      }
+      if ( m_instance == nullptr )
+         throw Error( "*** Internal error: INDIClient: Invalid instance pointer." );
    }
-   INDIClient(IINDIDeviceControllerInstance* instance,const char* hostname, unsigned int port):BaseClientImpl(hostname,port),m_Instance(instance),m_ScriptInstance(NULL)
-   {
-	   if (m_Instance==NULL){
-		   throw FatalError(ERR_MSG("Invalid instance pointer."));
-       }
-    }
-   ~INDIClient(){}
 
-   void registerScriptInstance(IINDIDeviceControllerInstance* scriptInstance){
-      m_ScriptInstance=scriptInstance;
+   INDIClient( IINDIDeviceControllerInstance* instance, const char* hostname, unsigned int port ) :
+      BaseClientImpl( hostname, port ),
+      m_instance( instance ),
+      m_scriptInstance( nullptr )
+   {
+      if ( m_instance == nullptr )
+         throw Error( "*** Internal error: INDIClient: Invalid instance pointer." );
+   }
+
+   ~INDIClient()
+   {
+   }
+
+   void registerScriptInstance( IINDIDeviceControllerInstance* scriptInstance )
+   {
+      m_scriptInstance = scriptInstance;
    }
 
 protected:
-   void newDevice(INDI::BaseDevice *dp);
-   void deleteDevice(INDI::BaseDevice *dp);
-   void newProperty(INDI::Property *property);
-   void removeProperty(INDI::Property *property);
-   void newBLOB(IBLOB *bp);
-   void newSwitch(ISwitchVectorProperty *svp);
-   void newNumber(INumberVectorProperty *nvp);
-   void newMessage(INDI::BaseDevice *dp, int messageID);
-   void newText(ITextVectorProperty *tvp);
-   void newLight(ILightVectorProperty *lvp);
+
+   void newDevice( INDI::BaseDevice* );
+   void deleteDevice( INDI::BaseDevice* );
+   void newProperty( INDI::Property* );
+   void removeProperty( INDI::Property* );
+   void newBLOB( IBLOB* );
+   void newSwitch( ISwitchVectorProperty* );
+   void newNumber( INumberVectorProperty* );
+   void newMessage( INDI::BaseDevice*, int messageID );
+   void newText( ITextVectorProperty* );
+   void newLight( ILightVectorProperty* );
 
 private:
 
-   IINDIDeviceControllerInstance*     m_Instance;
-   IINDIDeviceControllerInstance*     m_ScriptInstance;
+   IINDIDeviceControllerInstance* m_instance;
+   IINDIDeviceControllerInstance* m_scriptInstance;
 
-   void runOnPropertyTable( IProperty* INDIProperty, const ArrayOperator<INDIPropertyListItem>* arrayOp, PropertyFlagType flag=Idle );
+   void runOnPropertyTable( IProperty*, const ArrayOperator<INDIPropertyListItem>*, PropertyFlagType = Idle );
 };
 
-extern auto_ptr<INDIClient> indiClient;
+extern AutoPointer<INDIClient> indiClient;
+
+// ----------------------------------------------------------------------------
 
 } // pcl
 
-#endif
+#endif   // __INDIClient_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIClient.h - Released 2015/10/13 15:55:45 UTC
+// EOF INDIClient.h - Released 2016/03/18 13:15:37 UTC

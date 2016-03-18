@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.02.0096
+// Standard INDIClient Process Module Version 01.00.03.0102
 // ----------------------------------------------------------------------------
-// INDIClientModule.cpp - Released 2015/10/13 15:55:45 UTC
+// INDIClientModule.cpp - Released 2016/03/18 13:15:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2015 Klaus Kretzschmar
+// Copyright (c) 2014-2016 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -52,21 +52,21 @@
 
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
-#define MODULE_VERSION_REVISION  02
-#define MODULE_VERSION_BUILD     0096
+#define MODULE_VERSION_REVISION  03
+#define MODULE_VERSION_BUILD     0102
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2015
-#define MODULE_RELEASE_MONTH     10
-#define MODULE_RELEASE_DAY       13
+#define MODULE_RELEASE_YEAR      2016
+#define MODULE_RELEASE_MONTH     3
+#define MODULE_RELEASE_DAY       18
 
-#include "CCDFrameInterface.h"
-#include "CCDFrameProcess.h"
-#include "INDIDeviceControllerInterface.h"
+#include "INDICCDFrameInterface.h"
+#include "INDICCDFrameProcess.h"
 #include "INDIClientModule.h"
+#include "INDIDeviceControllerInterface.h"
 #include "INDIDeviceControllerProcess.h"
-#include "INDIMountProcess.h"
 #include "INDIMountInterface.h"
+#include "INDIMountProcess.h"
 
 namespace pcl
 {
@@ -93,7 +93,7 @@ IsoString INDIClientModule::Name() const
 
 String INDIClientModule::Description() const
 {
-   return "PixInsight INDIClient Process Module"; // Replace with your own description
+   return "PixInsight INDIClient Process Module";
 }
 
 String INDIClientModule::Company() const
@@ -173,8 +173,8 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
    {
       new pcl::INDIDeviceControllerProcess;
       new pcl::INDIDeviceControllerInterface;
-      new pcl::CCDFrameProcess;
-      new pcl::CCDFrameInterface;
+      new pcl::INDICCDFrameProcess;
+      new pcl::INDICCDFrameInterface;
       new pcl::INDIMountProcess;
       new pcl::INDIMountInterface;
    }
@@ -186,4 +186,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF INDIClientModule.cpp - Released 2015/10/13 15:55:45 UTC
+// EOF INDIClientModule.cpp - Released 2016/03/18 13:15:37 UTC

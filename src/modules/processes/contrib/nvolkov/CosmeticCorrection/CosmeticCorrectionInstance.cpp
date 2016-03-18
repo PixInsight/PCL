@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard CosmeticCorrection Process Module Version 01.02.05.0145
+// Standard CosmeticCorrection Process Module Version 01.02.05.0149
 // ----------------------------------------------------------------------------
-// CosmeticCorrectionInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// CosmeticCorrectionInstance.cpp - Released 2016/02/21 20:22:43 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard CosmeticCorrection PixInsight module.
 //
@@ -1160,19 +1160,19 @@ namespace pcl
     void* CosmeticCorrectionInstance::LockParameter(const MetaParameter* p, size_type tableRow)
     {
         if (p == TheTargetFrameEnabled) return &p_targetFrames[tableRow].enabled;
-        if (p == TheTargetFramePath) return p_targetFrames[tableRow].path.c_str();
+        if (p == TheTargetFramePath) return p_targetFrames[tableRow].path.Begin();
 
-        if (p == TheOutputDir) return p_outputDir.c_str();
-        if (p == TheOutputExtension) return p_outputExtension.c_str();
-        if (p == ThePrefix) return p_prefix.c_str();
-        if (p == ThePostfix) return p_postfix.c_str();
+        if (p == TheOutputDir) return p_outputDir.Begin();
+        if (p == TheOutputExtension) return p_outputExtension.Begin();
+        if (p == ThePrefix) return p_prefix.Begin();
+        if (p == ThePostfix) return p_postfix.Begin();
         if (p == TheOverwrite) return &p_overwrite;
 
         if (p == TheAmount) return &p_amount;
         if (p == TheCFA) return &p_cfa;
 
         if (p == TheUseMasterDark) return &p_useMasterDark;
-        if (p == TheMasterPath) return p_masterDark.c_str();
+        if (p == TheMasterPath) return p_masterDark.Begin();
         if (p == TheHotDarkCheck) return &p_hotDarkCheck;
         if (p == TheHotLevel) return &p_hotDarkLevel;
         if (p == TheColdDarkCheck) return &p_coldDarkCheck;
@@ -1261,4 +1261,4 @@ namespace pcl
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CosmeticCorrectionInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// EOF CosmeticCorrectionInstance.cpp - Released 2016/02/21 20:22:43 UTC

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard GREYCstoration Process Module Version 01.00.02.0268
+// Standard GREYCstoration Process Module Version 01.00.02.0272
 // ----------------------------------------------------------------------------
-// GREYCstorationModule.cpp - Released 2015/12/18 08:55:08 UTC
+// GREYCstorationModule.cpp - Released 2016/02/21 20:22:42 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard GREYCstoration PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -68,12 +68,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  02
-#define MODULE_VERSION_BUILD     0268
+#define MODULE_VERSION_BUILD     0272
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2015
-#define MODULE_RELEASE_MONTH     12
-#define MODULE_RELEASE_DAY       18
+#define MODULE_RELEASE_YEAR      2016
+#define MODULE_RELEASE_MONTH     2
+#define MODULE_RELEASE_DAY       21
 
 #include "GREYCstorationModule.h"
 #include "GREYCstorationProcess.h"
@@ -189,4 +189,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF GREYCstorationModule.cpp - Released 2015/12/18 08:55:08 UTC
+// EOF GREYCstorationModule.cpp - Released 2016/02/21 20:22:42 UTC

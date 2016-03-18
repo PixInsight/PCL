@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard JPEG File Format Module Version 01.00.03.0291
+// Standard JPEG File Format Module Version 01.00.03.0295
 // ----------------------------------------------------------------------------
-// JPEGModule.cpp - Released 2015/12/18 08:55:16 UTC
+// JPEGModule.cpp - Released 2016/02/21 20:22:34 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard JPEG PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  03
-#define MODULE_VERSION_BUILD     0291
+#define MODULE_VERSION_BUILD     0295
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2015
-#define MODULE_RELEASE_MONTH     12
-#define MODULE_RELEASE_DAY       18
+#define MODULE_RELEASE_YEAR      2016
+#define MODULE_RELEASE_MONTH     2
+#define MODULE_RELEASE_DAY       21
 
 #include "JPEGModule.h"
 #include "JPEGFormat.h"
@@ -103,7 +103,7 @@ String JPEGModule::Author() const
 
 String JPEGModule::Copyright() const
 {
-   return "Copyright (c) 2005-2015, Pleiades Astrophoto";
+   return "Copyright (c) 2005-2016, Pleiades Astrophoto";
 }
 
 String JPEGModule::TradeMarks() const
@@ -170,4 +170,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF JPEGModule.cpp - Released 2015/12/18 08:55:16 UTC
+// EOF JPEGModule.cpp - Released 2016/02/21 20:22:34 UTC

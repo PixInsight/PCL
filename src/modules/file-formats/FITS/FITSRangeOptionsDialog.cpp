@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard FITS File Format Module Version 01.01.03.0349
+// Standard FITS File Format Module Version 01.01.04.0358
 // ----------------------------------------------------------------------------
-// FITSRangeOptionsDialog.cpp - Released 2015/12/18 08:55:16 UTC
+// FITSRangeOptionsDialog.cpp - Released 2016/02/21 20:22:34 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,60 +59,54 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-FITSRangeOptionsDialog::FITSRangeOptionsDialog(
-   const FITSFormat::OutOfRangePolicyOptions& r, int bps, double min, double max ) :
-Dialog(), outOfRange( r )
+FITSRangeOptionsDialog::FITSRangeOptionsDialog( const FITSFormat::OutOfRangePolicyOptions& options,
+                                                int bitsPerSample,
+                                                double minSampleValue, double maxSampleValue ) :
+   Dialog(),
+   outOfRange( options )
 {
-   if ( max < min )
-      Swap( min,max );
+   if ( maxSampleValue < minSampleValue )
+      Swap( minSampleValue, maxSampleValue );
 
    FITSFormat::OutOfRangePolicyOptions o = FITSFormat::DefaultOutOfRangePolicyOptions();
 
-   //
-
-   pcl::Font fnt = Font();
-   int labelWidth = fnt.Width( String( "If out of range:" ) + 'M' );
-   int editWidth = fnt.Width( String( '0', 30 ) );
+   int labelWidth = Font().Width( String( "If out of range:" ) + 'M' );
 
    //
 
    Info_Label.EnableWordWrapping();
    Info_Label.EnableRichText();
-   Info_Label.SetStyle( FrameStyle::Styled );
-   Info_Label.SetMargin( 6 );
-   Info_Label.SetText( "<p>This FITS file stores a " + String( bps ) + "-bit floating point image.<br>"
+   Info_Label.SetText( "<p>This FITS file stores a " + String( bitsPerSample ) + "-bit floating point image.<br>"
       "Its extreme pixel sample values are:</p>"
-      "<p style=\"white-space:pre;\"><pre>" + String().Format( "Minimum: %+.15e", min ) + "<br>"
-                                            + String().Format( "Maximum: %+.15e", max ) + "</pre></p>"
+      "<p style=\"white-space:pre;\"><pre>" + String().Format( "Minimum: %+.15g", minSampleValue ) + "<br>"
+                                            + String().Format( "Maximum: %+.15g", maxSampleValue ) + "</pre></p>"
       "<p>Please specify a range of values to correctly interpret existing pixel values in this image. "
-      "The lower and upper ranges below correspond to the limits of the available dynamic range in the "
+      "The lower and upper range bounds below correspond to the limits of the available dynamic range in the "
       "context of this FITS image. PixInsight will use these limits to scale pixel values to the normalized "
       "[0,1] range, where zero represents black and one represents white.</p>" );
 
    //
 
    LowerRange_NumericEdit.label.SetText( "Lower Range:" );
-   LowerRange_NumericEdit.label.SetMinWidth( labelWidth );
+   LowerRange_NumericEdit.label.SetFixedWidth( labelWidth );
    LowerRange_NumericEdit.SetReal( true );
    LowerRange_NumericEdit.SetRange( -DBL_MAX, +DBL_MAX );
    LowerRange_NumericEdit.SetPrecision( 15 );
    LowerRange_NumericEdit.EnableScientificNotation();
    LowerRange_NumericEdit.SetScientificNotationTriggerExponent( 5 );
-   LowerRange_NumericEdit.edit.SetFixedWidth( editWidth );
    LowerRange_NumericEdit.sizer.AddStretch();
-   LowerRange_NumericEdit.SetToolTip( "Lower range of input floating point pixel samples" );
+   LowerRange_NumericEdit.SetToolTip( "<p>Lower range of input floating point pixel samples.</p>" );
    LowerRange_NumericEdit.SetValue( o.lowerRange );
 
    UpperRange_NumericEdit.label.SetText( "Upper Range:" );
-   UpperRange_NumericEdit.label.SetMinWidth( labelWidth );
+   UpperRange_NumericEdit.label.SetFixedWidth( labelWidth );
    UpperRange_NumericEdit.SetReal( true );
    UpperRange_NumericEdit.SetRange( -DBL_MAX, +DBL_MAX );
    UpperRange_NumericEdit.SetPrecision( 15 );
    UpperRange_NumericEdit.EnableScientificNotation();
    UpperRange_NumericEdit.SetScientificNotationTriggerExponent( 5 );
-   UpperRange_NumericEdit.edit.SetFixedWidth( editWidth );
    UpperRange_NumericEdit.sizer.AddStretch();
-   UpperRange_NumericEdit.SetToolTip( "Upper range of input floating point pixel samples" );
+   UpperRange_NumericEdit.SetToolTip( "<p>Upper range of input floating point pixel samples.</p>" );
    UpperRange_NumericEdit.SetValue( o.upperRange );
 
    ReadRescaleMode_Label.SetText( "If out of range:" );
@@ -137,8 +131,6 @@ Dialog(), outOfRange( r )
 
    ReadRange_GroupBox.SetTitle( "Floating Point Input Range" );
    ReadRange_GroupBox.SetSizer( ReadRange_Sizer );
-   ReadRange_GroupBox.AdjustToContents();
-   ReadRange_GroupBox.SetMinSize();
 
    //
 
@@ -159,22 +151,30 @@ Dialog(), outOfRange( r )
    //
 
    Global_Sizer.SetMargin( 8 );
-   Global_Sizer.SetSpacing( 8 );
    Global_Sizer.Add( Info_Label );
+   Global_Sizer.AddSpacing( 12 );
    Global_Sizer.Add( ReadRange_GroupBox );
-   Global_Sizer.AddSpacing( 8 );
+   Global_Sizer.AddSpacing( 12 );
    Global_Sizer.Add( BottomSection_Sizer );
 
    SetSizer( Global_Sizer );
-   AdjustToContents();
-   SetFixedSize();
-
    SetWindowTitle( "FITS Floating Point Range Options" );
 
+   OnShow( (Control::event_handler)&FITSRangeOptionsDialog::Control_Show, *this );
    OnReturn( (Dialog::return_event_handler)&FITSRangeOptionsDialog::Dialog_Return, *this );
 }
 
 // ----------------------------------------------------------------------------
+
+void FITSRangeOptionsDialog::Control_Show( Control& sender )
+{
+   AdjustToContents();
+   Info_Label.SetMinWidth();
+   Info_Label.AdjustToContents();
+   Info_Label.SetMinHeight();
+   AdjustToContents();
+   SetFixedSize();
+}
 
 void FITSRangeOptionsDialog::Button_Click( Button& sender, bool checked )
 {
@@ -183,8 +183,6 @@ void FITSRangeOptionsDialog::Button_Click( Button& sender, bool checked )
    else if ( sender == Cancel_PushButton )
       Cancel();
 }
-
-// ----------------------------------------------------------------------------
 
 void FITSRangeOptionsDialog::Dialog_Return( Dialog& sender, int retVal )
 {
@@ -201,4 +199,4 @@ void FITSRangeOptionsDialog::Dialog_Return( Dialog& sender, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FITSRangeOptionsDialog.cpp - Released 2015/12/18 08:55:16 UTC
+// EOF FITSRangeOptionsDialog.cpp - Released 2016/02/21 20:22:34 UTC

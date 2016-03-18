@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.05.0268
+// Standard ImageCalibration Process Module Version 01.03.05.0272
 // ----------------------------------------------------------------------------
-// SuperbiasInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// SuperbiasInstance.cpp - Released 2016/02/21 20:22:43 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -320,9 +320,9 @@ void* SuperbiasInstance::LockParameter( const MetaParameter* p, size_type /*tabl
    if ( p == TheSBTrimmingFactorParameter )
       return &p_trimmingFactor;
    if ( p == TheSBSuperbiasViewIdParameter )
-      return o_superbiasViewId.c_str();
+      return o_superbiasViewId.Begin();
    if ( p == TheSBSuperbiasViewId1Parameter )
-      return o_superbiasViewId1.c_str();
+      return o_superbiasViewId1.Begin();
    return 0;
 }
 
@@ -360,4 +360,4 @@ size_type SuperbiasInstance::ParameterLength( const MetaParameter* p, size_type 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SuperbiasInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// EOF SuperbiasInstance.cpp - Released 2016/02/21 20:22:43 UTC

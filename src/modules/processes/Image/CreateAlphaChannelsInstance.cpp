@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0348
+// Standard Image Process Module Version 01.02.09.0352
 // ----------------------------------------------------------------------------
-// CreateAlphaChannelsInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// CreateAlphaChannelsInstance.cpp - Released 2016/02/21 20:22:43 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -436,7 +436,7 @@ void* CreateAlphaChannelsInstance::LockParameter( const MetaParameter* p, size_t
    if ( p == TheCAFromImageParameter )
       return &fromImage;
    if ( p == TheCASourceImageIdentifierParameter )
-      return imageId.c_str();
+      return imageId.Begin();
    if ( p == TheCAInvertSourceImageParameter )
       return &invertSourceImage;
    if ( p == TheCACloseSourceImageParameter )
@@ -475,4 +475,4 @@ size_type CreateAlphaChannelsInstance::ParameterLength( const MetaParameter* p, 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CreateAlphaChannelsInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// EOF CreateAlphaChannelsInstance.cpp - Released 2016/02/21 20:22:43 UTC

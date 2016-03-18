@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.02.0096
+// Standard INDIClient Process Module Version 01.00.03.0102
 // ----------------------------------------------------------------------------
-// INDIDeviceControllerProcess.cpp - Released 2015/10/13 15:55:45 UTC
+// INDIDeviceControllerProcess.cpp - Released 2016/03/18 13:15:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2015 Klaus Kretzschmar
+// Copyright (c) 2014-2016 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -52,7 +52,7 @@
 
 #include "INDIDeviceControllerInstance.h"
 #include "INDIDeviceControllerInterface.h"
-#include "INDIParameters.h"
+#include "INDIDeviceControllerParameters.h"
 #include "INDIDeviceControllerProcess.h"
 
 #include <pcl/Arguments.h>
@@ -77,25 +77,29 @@ INDIDeviceControllerProcess::INDIDeviceControllerProcess() : MetaProcess()
 {
    TheINDIDeviceControllerProcess = this;
 
-   // Instantiate process parameters
-   new INDIServerHostname(TheINDIDeviceControllerProcess);
-   new INDIServerPort(TheINDIDeviceControllerProcess);
-   new INDIServerConnect(TheINDIDeviceControllerProcess);
-   new INDIProperties(TheINDIDeviceControllerProcess);
-   new INDIProcessFlagDoAbort(TheINDIDeviceControllerProcess);
-   new INDIPropertyName(TheINDIPropertiesParameter);
-   new INDIPropertyValue(TheINDIPropertiesParameter);
-   new INDIPropertyState(TheINDIPropertiesParameter);
-   new INDIPropertyType(TheINDIPropertiesParameter);
-   new INDINewProperties(TheINDIDeviceControllerProcess);
-   new INDINewPropertyKey(TheINDINewPropertiesParameter);
-   new INDINewPropertyType(TheINDINewPropertiesParameter);
-   new INDINewPropertyValue(TheINDINewPropertiesParameter);
-   new INDIDevices(TheINDIDeviceControllerProcess);
-   new INDIDeviceName(TheINDIDevicesParameter);
-   new INDIServerCommand(TheINDIDeviceControllerProcess);
-   new INDIServerGetPropertyReturnValue(TheINDIDeviceControllerProcess);
-   new INDIServerGetPropertyPropertyParam(TheINDIDeviceControllerProcess);
+   new IDCServerHostName( TheINDIDeviceControllerProcess );
+   new IDCServerPort( TheINDIDeviceControllerProcess );
+   new IDCServerConnect( TheINDIDeviceControllerProcess );
+   new IDCServerCommand( TheINDIDeviceControllerProcess );
+   new IDCAbort( TheINDIDeviceControllerProcess );
+
+   new IDCNewProperties( TheINDIDeviceControllerProcess );
+   new IDCNewPropertyKey( TheIDCNewPropertiesParameter );
+   new IDCNewPropertyType( TheIDCNewPropertiesParameter );
+   new IDCNewPropertyValue( TheIDCNewPropertiesParameter );
+
+   new IDCProperties( TheINDIDeviceControllerProcess );
+   new IDCPropertyName( TheIDCPropertiesParameter );
+   new IDCPropertyValue( TheIDCPropertiesParameter );
+   new IDCPropertyState( TheIDCPropertiesParameter );
+   new IDCPropertyType( TheIDCPropertiesParameter );
+
+   new IDCDevices( TheINDIDeviceControllerProcess );
+   new IDCDeviceName( TheIDCDevicesParameter );
+   new IDCDeviceLabel( TheIDCDevicesParameter );
+
+   new IDCGetCommandResult( TheINDIDeviceControllerProcess );
+   new IDCGetCommandParameters( TheINDIDeviceControllerProcess );
 }
 
 // ----------------------------------------------------------------------------
@@ -193,4 +197,4 @@ int INDIDeviceControllerProcess::ProcessCommandLine( const StringList& argv ) co
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIDeviceControllerProcess.cpp - Released 2015/10/13 15:55:45 UTC
+// EOF INDIDeviceControllerProcess.cpp - Released 2016/03/18 13:15:37 UTC

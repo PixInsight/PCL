@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.02.0096
+// Standard INDIClient Process Module Version 01.00.03.0102
 // ----------------------------------------------------------------------------
-// CCDFrameProcess.cpp - Released 2015/10/13 15:55:45 UTC
+// INDICCDFrameProcess.cpp - Released 2016/03/18 13:15:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2015 Klaus Kretzschmar
+// Copyright (c) 2014-2016 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -50,9 +50,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#include "CCDFrameProcess.h"
-#include "CCDFrameInterface.h"
-#include "CCDFrameInstance.h"
+#include "INDICCDFrameProcess.h"
+#include "INDICCDFrameInterface.h"
+#include "INDICCDFrameInstance.h"
+#include "INDICCDFrameParameters.h"
 
 #include <pcl/Arguments.h>
 #include <pcl/Console.h>
@@ -64,43 +65,55 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-//#include "CCDFrameProcess.xpm" // ### TODO
+//#include "INDICCDFrameProcess.xpm" // ### TODO
 
 // ----------------------------------------------------------------------------
 
-CCDFrameProcess* TheCCDFrameProcess = nullptr;
+INDICCDFrameProcess* TheINDICCDFrameProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
-CCDFrameProcess::CCDFrameProcess() : MetaProcess()
+INDICCDFrameProcess::INDICCDFrameProcess() : MetaProcess()
 {
-   TheCCDFrameProcess = this;
+   TheINDICCDFrameProcess = this;
+
+   new ICFDeviceName( this );
+   new ICFUploadMode( this );
+   new ICFServerUploadDirectory( this );
+   new ICFServerFileNameTemplate( this );
+   new ICFFrameType( this );
+   new ICFBinningX( this );
+   new ICFBinningY( this );
+   new ICFExposureTime( this );
+   new ICFExposureDelay( this );
+   new ICFExposureCount( this );
+   new ICFNewImageIdTemplate( this );
 }
 
 // ----------------------------------------------------------------------------
 
-IsoString CCDFrameProcess::Id() const
+IsoString INDICCDFrameProcess::Id() const
 {
    return "INDICCDFrame";
 }
 
 // ----------------------------------------------------------------------------
 
-IsoString CCDFrameProcess::Category() const
+IsoString INDICCDFrameProcess::Category() const
 {
    return "INDI,Instrumentation";
 }
 
 // ----------------------------------------------------------------------------
 
-uint32 CCDFrameProcess::Version() const
+uint32 INDICCDFrameProcess::Version() const
 {
    return 0x100;
 }
 
 // ----------------------------------------------------------------------------
 
-String CCDFrameProcess::Description() const
+String INDICCDFrameProcess::Description() const
 {
    return
    "<html>"
@@ -110,42 +123,43 @@ String CCDFrameProcess::Description() const
 
 // ----------------------------------------------------------------------------
 
-const char** CCDFrameProcess::IconImageXPM() const
+const char** INDICCDFrameProcess::IconImageXPM() const
 {
-   return nullptr; // CCDFrameProcess_XPM; // ### TODO
+   return nullptr; // INDICCDFrameProcess_XPM; // ### TODO
 }
 
 // ----------------------------------------------------------------------------
 
-bool CCDFrameProcess::PrefersGlobalExecution() const
+bool INDICCDFrameProcess::PrefersGlobalExecution() const
 {
 	return true;
 }
 // ----------------------------------------------------------------------------
 
-ProcessInterface* CCDFrameProcess::DefaultInterface() const
+ProcessInterface* INDICCDFrameProcess::DefaultInterface() const
 {
-   return TheCCDFrameInterface;
+   return TheINDICCDFrameInterface;
 }
 // ----------------------------------------------------------------------------
 
-ProcessImplementation* CCDFrameProcess::Create() const
+ProcessImplementation* INDICCDFrameProcess::Create() const
 {
-   return new INDIDeviceControllerInstance( this );
-}
-
-// ----------------------------------------------------------------------------
-
-ProcessImplementation* CCDFrameProcess::Clone( const ProcessImplementation& p ) const
-{
-   const CCDFrameInstance* instPtr = dynamic_cast<const CCDFrameInstance*>( &p );
-   return (instPtr != nullptr) ? new CCDFrameInstance( *instPtr ) : nullptr;
+   return new INDICCDFrameInstance( this );
 }
 
 // ----------------------------------------------------------------------------
 
-bool CCDFrameProcess::CanProcessCommandLines() const
+ProcessImplementation* INDICCDFrameProcess::Clone( const ProcessImplementation& p ) const
 {
+   const INDICCDFrameInstance* r = dynamic_cast<const INDICCDFrameInstance*>( &p );
+   return (r != nullptr) ? new INDICCDFrameInstance( *r ) : nullptr;
+}
+
+// ----------------------------------------------------------------------------
+
+bool INDICCDFrameProcess::CanProcessCommandLines() const
+{
+   // ### TODO
    return false;
 }
 
@@ -161,7 +175,7 @@ static void ShowHelp()
 }
 #endif
 
-int CCDFrameProcess::ProcessCommandLine( const StringList& argv ) const
+int INDICCDFrameProcess::ProcessCommandLine( const StringList& argv ) const
 {
    // ### TODO
    return 0;
@@ -172,4 +186,4 @@ int CCDFrameProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CCDFrameProcess.cpp - Released 2015/10/13 15:55:45 UTC
+// EOF INDICCDFrameProcess.cpp - Released 2016/03/18 13:15:37 UTC

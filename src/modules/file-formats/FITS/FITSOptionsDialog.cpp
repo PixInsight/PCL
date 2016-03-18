@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard FITS File Format Module Version 01.01.03.0349
+// Standard FITS File Format Module Version 01.01.04.0358
 // ----------------------------------------------------------------------------
-// FITSOptionsDialog.cpp - Released 2015/12/18 08:55:16 UTC
+// FITSOptionsDialog.cpp - Released 2016/02/21 20:22:34 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -68,42 +68,34 @@ FITSOptionsDialog::FITSOptionsDialog( const pcl::ImageOptions& o, const pcl::FIT
    //
 
    UInt8_RadioButton.SetText( "8-bit unsigned integer" );
-   UInt8_RadioButton.SetMinWidth( labelWidth );
+   UInt8_RadioButton.OnClick( (pcl::Button::click_event_handler)&FITSOptionsDialog::Button_Click, *this );
 
-   UInt16_RadioButton.SetText( "16-bit unsigned integer" );
-   UInt16_RadioButton.SetMinWidth( labelWidth );
+   Int16_RadioButton.SetText( "16-bit integer" );
+   Int16_RadioButton.OnClick( (pcl::Button::click_event_handler)&FITSOptionsDialog::Button_Click, *this );
 
-   Int16_RadioButton.SetText( "16-bit signed integer" );
-   Int16_RadioButton.SetMinWidth( labelWidth );
+   Int32_RadioButton.SetText( "32-bit integer" );
+   Int32_RadioButton.OnClick( (pcl::Button::click_event_handler)&FITSOptionsDialog::Button_Click, *this );
 
-   Float_RadioButton.SetText( "32-bit IEEE 754 floating point" );
-   Float_RadioButton.SetMinWidth( labelWidth );
+   UnsignedIntegers_Checkbox.SetText( "Unsigned 16/32-bit integers" );
+   UnsignedIntegers_Checkbox.SetToolTip( "<p>Write unsigned 16-bit and 32-bit integers using the BZERO/BSCALE convention. "
+      "Otherwise write a standard signed integer FITS image.</p>" );
 
    SampleFormatLeft_Sizer.SetSpacing( 4 );
    SampleFormatLeft_Sizer.Add( UInt8_RadioButton );
-   SampleFormatLeft_Sizer.Add( UInt16_RadioButton );
    SampleFormatLeft_Sizer.Add( Int16_RadioButton );
-   SampleFormatLeft_Sizer.Add( Float_RadioButton );
+   SampleFormatLeft_Sizer.Add( Int32_RadioButton );
+   SampleFormatLeft_Sizer.Add( UnsignedIntegers_Checkbox );
 
-   UInt32_RadioButton.SetText( "32-bit unsigned integer" );
-   UInt32_RadioButton.SetMinWidth( labelWidth );
-
-   Int32_RadioButton.SetText( "32-bit signed integer" );
-   Int32_RadioButton.SetMinWidth( labelWidth );
-
-   Int64_RadioButton.SetText( "64-bit signed integer" );
-   Int64_RadioButton.SetMinWidth( labelWidth );
-   Int64_RadioButton.Disable();
-   Int64_RadioButton.SetToolTip( "<* not available *>" );
+   Float_RadioButton.SetText( "32-bit IEEE 754 floating point" );
+   Float_RadioButton.OnClick( (pcl::Button::click_event_handler)&FITSOptionsDialog::Button_Click, *this );
 
    Double_RadioButton.SetText( "64-bit IEEE 754 floating point" );
-   Double_RadioButton.SetMinWidth( labelWidth );
+   Double_RadioButton.OnClick( (pcl::Button::click_event_handler)&FITSOptionsDialog::Button_Click, *this );
 
    SampleFormatRight_Sizer.SetSpacing( 4 );
-   SampleFormatRight_Sizer.Add( UInt32_RadioButton );
-   SampleFormatRight_Sizer.Add( Int32_RadioButton );
-   SampleFormatRight_Sizer.Add( Int64_RadioButton );
+   SampleFormatRight_Sizer.Add( Float_RadioButton );
    SampleFormatRight_Sizer.Add( Double_RadioButton );
+   SampleFormatRight_Sizer.AddStretch();
 
    SampleFormat_Sizer.SetMargin( 6 );
    SampleFormat_Sizer.SetSpacing( 12 );
@@ -118,11 +110,11 @@ FITSOptionsDialog::FITSOptionsDialog( const pcl::ImageOptions& o, const pcl::FIT
 
    ICCProfile_CheckBox.SetText( "ICC Profile" );
    ICCProfile_CheckBox.SetMinWidth( labelWidth );
-   ICCProfile_CheckBox.SetToolTip( "Embed an ICC profile" );
+   ICCProfile_CheckBox.SetToolTip( "<p>Embed an ICC profile.</p>" );
 
    Properties_CheckBox.SetText( "Properties" );
    Properties_CheckBox.SetMinWidth( labelWidth );
-   Properties_CheckBox.SetToolTip( "Embed image properties (as BLOBs in FITS image extensions)" );
+   Properties_CheckBox.SetToolTip( "<p>Embed image properties (as BLOBs in FITS image extensions).</p>" );
 
    EmbeddedDataLeft_Sizer.SetSpacing( 4 );
    EmbeddedDataLeft_Sizer.Add( ICCProfile_CheckBox );
@@ -131,11 +123,11 @@ FITSOptionsDialog::FITSOptionsDialog( const pcl::ImageOptions& o, const pcl::FIT
 
    Thumbnail_CheckBox.SetText( "Thumbnail Image" );
    Thumbnail_CheckBox.SetMinWidth( labelWidth );
-   Thumbnail_CheckBox.SetToolTip( "Embed an 8-bit reduced version of the image for quick reference" );
+   Thumbnail_CheckBox.SetToolTip( "<p>Embed an 8-bit reduced version of the image for quick reference.</p>" );
 
    FixedPrecision_CheckBox.SetText( "Fixed-precision keywords" );
    FixedPrecision_CheckBox.SetMinWidth( labelWidth );
-   FixedPrecision_CheckBox.SetToolTip( "Write fixed-precision floating-point FITS keywords" );
+   FixedPrecision_CheckBox.SetToolTip( "<p>Write fixed-precision floating-point FITS keywords.</p>" );
 
    EmbeddedDataRight_Sizer.SetSpacing( 4 );
    EmbeddedDataRight_Sizer.Add( Thumbnail_CheckBox );
@@ -185,10 +177,10 @@ FITSOptionsDialog::FITSOptionsDialog( const pcl::ImageOptions& o, const pcl::FIT
    OnReturn( (pcl::Dialog::return_event_handler)&FITSOptionsDialog::Dialog_Return, *this );
 
    UInt8_RadioButton.SetChecked( options.bitsPerSample == 8 );
-   UInt16_RadioButton.SetChecked( options.bitsPerSample == 16 && fitsOptions.unsignedIntegers );
-   Int16_RadioButton.SetChecked( options.bitsPerSample == 16 && !fitsOptions.unsignedIntegers );
-   UInt32_RadioButton.SetChecked( options.bitsPerSample == 32 && fitsOptions.unsignedIntegers );
-   Int32_RadioButton.SetChecked( options.bitsPerSample == 32 && !fitsOptions.unsignedIntegers );
+   Int16_RadioButton.SetChecked( options.bitsPerSample == 16 );
+   Int32_RadioButton.SetChecked( options.bitsPerSample == 32 && !options.ieeefpSampleFormat );
+   UnsignedIntegers_Checkbox.SetChecked( fitsOptions.unsignedIntegers );
+   UnsignedIntegers_Checkbox.Enable( !options.ieeefpSampleFormat && options.bitsPerSample != 8 );
    Float_RadioButton.SetChecked( options.bitsPerSample == 32 && options.ieeefpSampleFormat );
    Double_RadioButton.SetChecked( options.bitsPerSample == 64 && options.ieeefpSampleFormat );
 
@@ -202,7 +194,11 @@ FITSOptionsDialog::FITSOptionsDialog( const pcl::ImageOptions& o, const pcl::FIT
 
 void FITSOptionsDialog::Button_Click( Button& sender, bool /*checked*/ )
 {
-   if ( sender == OK_PushButton )
+   if ( sender == UInt8_RadioButton || sender == Float_RadioButton || sender == Double_RadioButton )
+      UnsignedIntegers_Checkbox.Disable();
+   else if ( sender == Int16_RadioButton || sender == Int32_RadioButton )
+      UnsignedIntegers_Checkbox.Enable();
+   else if ( sender == OK_PushButton )
       Ok();
    else if ( sender == Cancel_PushButton )
       Cancel();
@@ -220,29 +216,17 @@ void FITSOptionsDialog::Dialog_Return( Dialog& /*sender*/, int retVal )
          options.ieeefpSampleFormat = false;
          fitsOptions.unsignedIntegers = true;
       }
-      else if ( UInt16_RadioButton.IsChecked() )
-      {
-         options.bitsPerSample = 16;
-         options.ieeefpSampleFormat = false;
-         fitsOptions.unsignedIntegers = true;
-      }
       else if ( Int16_RadioButton.IsChecked() )
       {
          options.bitsPerSample = 16;
          options.ieeefpSampleFormat = false;
-         fitsOptions.unsignedIntegers = false;
-      }
-      else if ( UInt32_RadioButton.IsChecked() )
-      {
-         options.bitsPerSample = 32;
-         options.ieeefpSampleFormat = false;
-         fitsOptions.unsignedIntegers = true;
+         fitsOptions.unsignedIntegers = UnsignedIntegers_Checkbox.IsChecked();
       }
       else if ( Int32_RadioButton.IsChecked() )
       {
          options.bitsPerSample = 32;
          options.ieeefpSampleFormat = false;
-         fitsOptions.unsignedIntegers = false;
+         fitsOptions.unsignedIntegers = UnsignedIntegers_Checkbox.IsChecked();
       }
       else if ( Float_RadioButton.IsChecked() )
       {
@@ -268,4 +252,4 @@ void FITSOptionsDialog::Dialog_Return( Dialog& /*sender*/, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FITSOptionsDialog.cpp - Released 2015/12/18 08:55:16 UTC
+// EOF FITSOptionsDialog.cpp - Released 2016/02/21 20:22:34 UTC

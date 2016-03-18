@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Flux Process Module Version 01.00.00.0129
+// Standard Flux Process Module Version 01.00.01.0135
 // ----------------------------------------------------------------------------
-// B3EInterface.cpp - Released 2015/12/18 08:55:08 UTC
+// B3EInterface.cpp - Released 2016/03/14 10:07:00 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Flux PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -577,7 +577,7 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    CenterInput2_NumericEdit.sizer.AddStretch();
    CenterInput2_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&B3EInterface::__ValueUpdated, w );
 
-   //CenterInput1_NumericEdit.label.SetText( "" );     // Text updated in UpdateControls().
+   //CenterOutput_NumericEdit.label.SetText( "" );     // Text updated in UpdateControls().
    CenterOutput_NumericEdit.label.SetMinWidth( labelWidth1 );
    CenterOutput_NumericEdit.SetReal();
    CenterOutput_NumericEdit.SetRange( TheB3EOutputCenterParameter->MinimumValue(), TheB3EOutputCenterParameter->MaximumValue() );
@@ -993,4 +993,4 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF B3EInterface.cpp - Released 2015/12/18 08:55:08 UTC
+// EOF B3EInterface.cpp - Released 2016/03/14 10:07:00 UTC

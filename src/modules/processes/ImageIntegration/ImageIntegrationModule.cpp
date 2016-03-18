@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.09.04.0318
+// Standard ImageIntegration Process Module Version 01.09.04.0322
 // ----------------------------------------------------------------------------
-// ImageIntegrationModule.cpp - Released 2015/12/18 08:55:08 UTC
+// ImageIntegrationModule.cpp - Released 2016/02/21 20:22:43 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     09
 #define MODULE_VERSION_REVISION  04
-#define MODULE_VERSION_BUILD     0318
+#define MODULE_VERSION_BUILD     0322
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2015
-#define MODULE_RELEASE_MONTH     12
-#define MODULE_RELEASE_DAY       18
+#define MODULE_RELEASE_YEAR      2016
+#define MODULE_RELEASE_MONTH     2
+#define MODULE_RELEASE_DAY       21
 
 #include "DrizzleIntegrationInstance.h"
 #include "DrizzleIntegrationInterface.h"
@@ -204,4 +204,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationModule.cpp - Released 2015/12/18 08:55:08 UTC
+// EOF ImageIntegrationModule.cpp - Released 2016/02/21 20:22:43 UTC

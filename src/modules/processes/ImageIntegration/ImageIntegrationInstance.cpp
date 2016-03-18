@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.09.04.0318
+// Standard ImageIntegration Process Module Version 01.09.04.0322
 // ----------------------------------------------------------------------------
-// ImageIntegrationInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// ImageIntegrationInstance.cpp - Released 2016/02/21 20:22:43 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -3668,11 +3668,11 @@ void* ImageIntegrationInstance::LockParameter( const MetaParameter* p, size_type
    if ( p == TheIIImageEnabledParameter )
       return &p_images[tableRow].enabled;
    if ( p == TheIIImagePathParameter )
-      return p_images[tableRow].path.c_str();
+      return p_images[tableRow].path.Begin();
    if ( p == TheIIDrizzlePathParameter )
-      return p_images[tableRow].drzPath.c_str();
+      return p_images[tableRow].drzPath.Begin();
    if ( p == TheIIInputHintsParameter )
-      return p_inputHints.c_str();
+      return p_inputHints.Begin();
    if ( p == TheIICombinationParameter )
       return &p_combination;
    if ( p == TheIINormalizationParameter )
@@ -3680,7 +3680,7 @@ void* ImageIntegrationInstance::LockParameter( const MetaParameter* p, size_type
    if ( p == TheIIWeightModeParameter )
       return &p_weightMode;
    if ( p == TheIIWeightKeywordParameter )
-      return p_weightKeyword.c_str();
+      return p_weightKeyword.Begin();
    if ( p == TheIIWeightScaleParameter )
       return &p_weightScale;
    if ( p == TheIIIgnoreNoiseKeywordsParameter )
@@ -3761,13 +3761,13 @@ void* ImageIntegrationInstance::LockParameter( const MetaParameter* p, size_type
       return &p_noGUIMessages;
 
    if ( p == TheIIIntegrationImageIdParameter )
-      return o_output.integrationImageId.c_str();
+      return o_output.integrationImageId.Begin();
    if ( p == TheIILowRejectionMapImageIdParameter )
-      return o_output.lowRejectionMapImageId.c_str();
+      return o_output.lowRejectionMapImageId.Begin();
    if ( p == TheIIHighRejectionMapImageIdParameter )
-      return o_output.highRejectionMapImageId.c_str();
+      return o_output.highRejectionMapImageId.Begin();
    if ( p == TheIISlopeMapImageIdParameter )
-      return o_output.slopeMapImageId.c_str();
+      return o_output.slopeMapImageId.Begin();
    if ( p == TheIINumberOfChannelsParameter )
       return &o_output.numberOfChannels;
    if ( p == TheIINumberOfPixelsParameter )
@@ -3961,4 +3961,4 @@ size_type ImageIntegrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// EOF ImageIntegrationInstance.cpp - Released 2016/02/21 20:22:43 UTC

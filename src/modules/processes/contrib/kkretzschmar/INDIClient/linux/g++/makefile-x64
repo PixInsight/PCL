@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.96
+# PixInsight Makefile Generator Script v1.101
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Tue, 17 Nov 2015 07:24:12 GMT
+# Automatically generated on Fri, 18 Mar 2016 13:17:31 GMT
 # Project id ...... INDIClient
 # Project type .... Module
 # Platform ........ Linux/g++
@@ -19,20 +19,20 @@ all: $(OBJ_DIR)/INDIClient-pxm.so
 #
 
 SRC_FILES= \
-../../CCDFrameInstance.cpp \
-../../CCDFrameInterface.cpp \
-../../CCDFrameProcess.cpp \
 ../../IINDIProperty.cpp \
+../../INDICCDFrameInstance.cpp \
+../../INDICCDFrameInterface.cpp \
+../../INDICCDFrameParameters.cpp \
+../../INDICCDFrameProcess.cpp \
 ../../INDIClient.cpp \
 ../../INDIClientModule.cpp \
 ../../INDIDeviceControllerInstance.cpp \
 ../../INDIDeviceControllerInterface.cpp \
+../../INDIDeviceControllerParameters.cpp \
 ../../INDIDeviceControllerProcess.cpp \
 ../../INDIMountInstance.cpp \
 ../../INDIMountInterface.cpp \
 ../../INDIMountProcess.cpp \
-../../INDIParameters.cpp \
-../../INDIPropertyBuilder.cpp \
 ../../PropertyNode.cpp \
 ../../SkyMap.cpp \
 ../../INDI/BaseClientImpl.cpp \
@@ -47,20 +47,20 @@ SRC_FILES= \
 #
 
 OBJ_FILES= \
-./x64/Release/CCDFrameInstance.o \
-./x64/Release/CCDFrameInterface.o \
-./x64/Release/CCDFrameProcess.o \
 ./x64/Release/IINDIProperty.o \
+./x64/Release/INDICCDFrameInstance.o \
+./x64/Release/INDICCDFrameInterface.o \
+./x64/Release/INDICCDFrameParameters.o \
+./x64/Release/INDICCDFrameProcess.o \
 ./x64/Release/INDIClient.o \
 ./x64/Release/INDIClientModule.o \
 ./x64/Release/INDIDeviceControllerInstance.o \
 ./x64/Release/INDIDeviceControllerInterface.o \
+./x64/Release/INDIDeviceControllerParameters.o \
 ./x64/Release/INDIDeviceControllerProcess.o \
 ./x64/Release/INDIMountInstance.o \
 ./x64/Release/INDIMountInterface.o \
 ./x64/Release/INDIMountProcess.o \
-./x64/Release/INDIParameters.o \
-./x64/Release/INDIPropertyBuilder.o \
 ./x64/Release/PropertyNode.o \
 ./x64/Release/SkyMap.o \
 ./x64/Release/INDI/BaseClientImpl.o \
@@ -75,20 +75,20 @@ OBJ_FILES= \
 #
 
 DEP_FILES= \
-./x64/Release/CCDFrameInstance.d \
-./x64/Release/CCDFrameInterface.d \
-./x64/Release/CCDFrameProcess.d \
 ./x64/Release/IINDIProperty.d \
+./x64/Release/INDICCDFrameInstance.d \
+./x64/Release/INDICCDFrameInterface.d \
+./x64/Release/INDICCDFrameParameters.d \
+./x64/Release/INDICCDFrameProcess.d \
 ./x64/Release/INDIClient.d \
 ./x64/Release/INDIClientModule.d \
 ./x64/Release/INDIDeviceControllerInstance.d \
 ./x64/Release/INDIDeviceControllerInterface.d \
+./x64/Release/INDIDeviceControllerParameters.d \
 ./x64/Release/INDIDeviceControllerProcess.d \
 ./x64/Release/INDIMountInstance.d \
 ./x64/Release/INDIMountInterface.d \
 ./x64/Release/INDIMountProcess.d \
-./x64/Release/INDIParameters.d \
-./x64/Release/INDIPropertyBuilder.d \
 ./x64/Release/PropertyNode.d \
 ./x64/Release/SkyMap.d \
 ./x64/Release/INDI/BaseClientImpl.d \
@@ -105,7 +105,7 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/INDIClient-pxm.so: $(OBJ_FILES)
-	g++ -m64 -fPIC -Wl,-fuse-ld=gold -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -s -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/INDIClient-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
+	g++ -m64 -fPIC -pthread -Wl,-fuse-ld=gold -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -s -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/INDIClient-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean
@@ -117,12 +117,12 @@ post-build:
 	cp $(OBJ_DIR)/INDIClient-pxm.so $(PCLBINDIR64)
 
 ./x64/Release/%.o: ../../%.cpp
-	g++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	g++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 ./x64/Release/INDI/%.o: ../../INDI/%.cpp
-	g++ -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	g++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 ./x64/Release/INDI/%.o: ../../INDI/%.c
-	gcc -c -pipe -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	gcc -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fnon-call-exceptions -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.02.0096
+// Standard INDIClient Process Module Version 01.00.03.0102
 // ----------------------------------------------------------------------------
-// SkyMap.cpp - Released 2015/10/13 15:55:45 UTC
+// SkyMap.cpp - Released 2016/03/18 13:15:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2015 Klaus Kretzschmar
+// Copyright (c) 2014-2016 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -49,6 +49,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
+
 #include "SkyMap.h"
 #include "pcl/Console.h"
 
@@ -56,170 +57,130 @@ namespace pcl {
 
 // ----------------------------------------------------------------------------
 
-CoordUtils::coord_HMS CoordUtils::convertToHMS(double coord){
-	coord_HMS coordInHMS;
-	coordInHMS.hour   = trunc(coord);
-	coordInHMS.minute = trunc((coord - coordInHMS.hour) * 60);
-	coordInHMS.second = trunc(((coord - coordInHMS.hour) * 60 - coordInHMS.minute ) * 60*100)/100.0;
-	return coordInHMS;
+CoordUtils::HMS CoordUtils::convertToHMS(double coord){
+   HMS coordInHMS;
+   coordInHMS.hour   = trunc(coord);
+   coordInHMS.minute = trunc((coord - coordInHMS.hour) * 60);
+   coordInHMS.second = trunc(((coord - coordInHMS.hour) * 60 - coordInHMS.minute ) * 60*100)/100.0;
+   return coordInHMS;
 }
 
-CoordUtils::coord_HMS CoordUtils::parse(String coordStr){
-	CoordUtils::coord_HMS result;
-	StringList tokens;
-	coordStr.Break(tokens,':',true);
-	tokens[0].TrimLeft();
-	result.hour=tokens[0].ToDouble();
-	result.minute=tokens[1].ToDouble();
-	result.second=tokens[2].ToDouble();
-	return result;
+CoordUtils::HMS CoordUtils::parse(String coordStr){
+   CoordUtils::HMS result;
+   StringList tokens;
+   coordStr.Break(tokens,':',true);
+   tokens[0].TrimLeft();
+   result.hour=tokens[0].ToDouble();
+   result.minute=tokens[1].ToDouble();
+   result.second=tokens[2].ToDouble();
+   return result;
 }
 
-double CoordUtils::convertFromHMS(const CoordUtils::coord_HMS& coord_in_HMS){
-	int sign=coord_in_HMS.hour >= 0 ? 1 : -1;
-	// seconds are rounded to two fractional decimals
-	double coord=sign * (fabs(coord_in_HMS.hour) + coord_in_HMS.minute / 60 + coord_in_HMS.second / 3600);
-	return coord;
+double CoordUtils::convertFromHMS(const CoordUtils::HMS& coord_in_HMS){
+   int sign=coord_in_HMS.hour >= 0 ? 1 : -1;
+   // seconds are rounded to two fractional decimals
+   double coord=sign * (fabs(coord_in_HMS.hour) + coord_in_HMS.minute / 60 + coord_in_HMS.second / 3600);
+   return coord;
 }
 
-double CoordUtils::convertDegFromHMS(const CoordUtils::coord_HMS& coord_in_HMS){
-	return CoordUtils::convertFromHMS(coord_in_HMS) * 360.0 / 24.0 ;
+double CoordUtils::convertDegFromHMS(const CoordUtils::HMS& coord_in_HMS){
+   return CoordUtils::convertFromHMS(coord_in_HMS) * 360.0 / 24.0 ;
 }
 
-double CoordUtils::convertRadFromHMS(const CoordUtils::coord_HMS& coord){
-	return CoordUtils::convertDegFromHMS(coord) * c_rad;
-}
-
-
-StereoProjection::polarCoord StereoProjection::project(const StereoProjection::sphericalCoord& spherical){
-	polarCoord result;
-
-	result.r = Sin(spherical.theta) / (1.0 - Cos(spherical.theta));
-	result.phi = spherical.phi;
-
-	return result;
-}
-
-StereoProjection::polarCoord StereoProjection::projectScaled(const StereoProjection::sphericalCoord& spherical,double scale){
-	polarCoord result;
-
-	result.r = scale * Sin(spherical.theta) / (1.0 - Cos(spherical.theta));
-	result.phi = spherical.phi;
-
-	return result;
-}
-
-
-StereoProjection::euklidCoord StereoProjection::polarToEuklid(StereoProjection::polarCoord& polar){
-
-	euklidCoord result;
-	result.x = polar.r * Sin(-polar.phi);
-	result.y = polar.r * Cos(-polar.phi);
-	return result;
-}
-
-
-
-SkyMap::SkyMap(const SkyMap::filter& filter,const SkyMap::geoCoord& geoCoord):m_filter(filter), m_geoCoord(geoCoord) {
-
-
+double CoordUtils::convertRadFromHMS( const CoordUtils::HMS& coord )
+{
+   return Rad( CoordUtils::convertDegFromHMS( coord ) );
 }
 
 IsoString  SkyMap::getASDLQueryString(){
 
-	IsoString queryStr ("SELECT  main_id AS \"Main identifier\",  RA      AS  \"RA\", DEC     AS  \"DEC\", v       AS  \"V\", sp_type as \"Spectral Type\"  FROM basic JOIN mesUBV ON mesUBV.oidref = basic.oid WHERE v < %f and mespos = 1 and DEC > %f and DEC < %f ORDER BY v ASC;");
+   IsoString queryStr ("SELECT  main_id AS \"Main identifier\",  RA      AS  \"RA\", DEC     AS  \"DEC\", v       AS  \"V\", sp_type as \"Spectral Type\"  FROM basic JOIN mesUBV ON mesUBV.oidref = basic.oid WHERE v < %f and mespos = 1 and DEC > %f and DEC < %f ORDER BY v ASC;");
 
-	return IsoString().Format(queryStr.c_str(),m_filter.v_upperLimit,m_filter.dec_lowerLimit,m_filter.dec_upperLimit);
+   return IsoString().Format(queryStr.c_str(),m_filter.v_upperLimit,m_filter.dec_lowerLimit,m_filter.dec_upperLimit);
 }
 
 IsoString SkyMap::getASDLFoVQueryString(coord_d ra_center, coord_d dec_center, double width, double height, double limitStarMag){
-	IsoString queryStr ("SELECT  main_id AS \"Main identifier\",  RA      AS  \"RA\", DEC     AS  \"DEC\", flux       AS  \"flux\",filter       AS  \"filter\", sp_type as \"Spectral Type\"  FROM basic JOIN flux ON flux.oidref = basic.oid WHERE flux < %f and filter = 'V' and CONTAINS(POINT('ICRS',RA,DEC),BOX('ICRS',%f,%f,%f,%f)) = 1 ORDER BY flux ASC;");
-	return IsoString().Format(queryStr.c_str(),limitStarMag,ra_center,dec_center,width,height);
+   IsoString queryStr ("SELECT  main_id AS \"Main identifier\",  RA      AS  \"RA\", DEC     AS  \"DEC\", flux       AS  \"flux\",filter       AS  \"filter\", sp_type as \"Spectral Type\"  FROM basic JOIN flux ON flux.oidref = basic.oid WHERE flux < %f and filter = 'V' and CONTAINS(POINT('ICRS',RA,DEC),BOX('ICRS',%f,%f,%f,%f)) = 1 ORDER BY flux ASC;");
+   return IsoString().Format(queryStr.c_str(),limitStarMag,ra_center,dec_center,width,height);
 }
 
 double SkyMap::getObjectAltitude(double dec, double hourAngle, double geo_lat){
-	return ArcSin( Cos(Rad(geo_lat)) * Cos(Rad(dec)) * Cos(Rad(hourAngle)) + Sin(Rad(geo_lat)) * Sin(Rad(dec))  ) / Pi() * 180.0;
+   return ArcSin( Cos(Rad(geo_lat)) * Cos(Rad(dec)) * Cos(Rad(hourAngle)) + Sin(Rad(geo_lat)) * Sin(Rad(dec))  ) / Pi() * 180.0;
 }
 
 double SkyMap::getObjectAzimut(double dec, double ha, double lat){
-	double rdec = Rad(dec);
-	double rha  = Rad(ha);
-	double rlat = Rad(lat);
+   double rdec = Rad(dec);
+   double rha  = Rad(ha);
+   double rlat = Rad(lat);
 
-	double x = Cos(rdec) * Cos(rha) * Sin(rlat) - Sin(rdec) * Cos(rlat);
-	double y = Cos(rdec) * Sin(rha);
-	return ArcTan2Pi(y,x) / Pi() *180.0;
+   double x = Cos(rdec) * Cos(rha) * Sin(rlat) - Sin(rdec) * Cos(rlat);
+   double y = Cos(rdec) * Sin(rha);
+   return ArcTan2Pi(y,x) / Pi() *180.0;
 }
 
+RGBA SkyMap::getStarColor( String spType )
+{
+   if ( spType.StartsWith( "\"O" ) )
+      return RGBAColor( 255, 255, 255 ); // white
 
+   if ( spType.StartsWith( "\"B" ) )
+      return RGBAColor( 153, 153, 153 ); // gray
 
-RGBA  SkyMap::getStarColor(String spType){
+   if ( spType.StartsWith( "\"A" ) )
+      return RGBAColor( 0, 0, 153 ); // blue
 
+   if ( spType.StartsWith( "\"F" ) )
+      return RGBAColor( 0, 153, 153 ); // green-blue
 
-	if (spType.StartsWith(String("\"O"))){
-		return RGBAColor(255, 255, 255); // white
-	} else if (spType.StartsWith(String("\"B"))){
-		return RGBAColor(153, 153, 153); // grey
-	} else if (spType.StartsWith(String("\"A"))){
-		return RGBAColor(0, 0, 153); // blue
-	} else if (spType.StartsWith(String("\"F"))){
-		return RGBAColor(0, 153, 153); // green-blue
-	} else if (spType.StartsWith(String("\"G"))){
-		return RGBAColor(0, 153, 0); // green
-	} else if (spType.StartsWith(String("\"K"))){
-		return RGBAColor(153, 153, 0); // yellow
-	} else if (spType.StartsWith(String("\"M"))){
-		return RGBAColor(153, 0, 0); // red
-	}
-	return RGBAColor(153, 153, 0);
+   if ( spType.StartsWith( "\"G" ) )
+      return RGBAColor( 0, 153, 0 ); // green
 
+   if ( spType.StartsWith( "\"K" ) )
+      return RGBAColor( 153, 153, 0 ); // yellow
+
+   if ( spType.StartsWith( "\"M" ) )
+      return RGBAColor( 153, 0, 0 ); // red
+
+   return RGBAColor( 153, 153, 0 );
 }
 
-void SkyMap::plotStars(coord_d lst, coord_d geo_lat, int x, int y, double scale, Graphics& g, double limitStarMag){
-
-	for (SkyMap::ObjectListType::iterator iter = m_objectList.Begin();iter != m_objectList.End(); ++iter) {
-		// draw stars
-		double hourAngle = iter->ra - lst * 360.0 / 24.0;
-		double currentAlt = getObjectAltitude(iter->dec,hourAngle,geo_lat);
-		double currentAz = SkyMap::getObjectAzimut(iter->dec, hourAngle, geo_lat);
-		if (currentAlt > 3) {
-			StereoProjection::sphericalCoord spherical;
-			spherical.phi = Rad(currentAz);
-			spherical.theta = Rad(90.0 + currentAlt);
-			StereoProjection::polarCoord polarCoord = 	StereoProjection::projectScaled(spherical,scale);
-			double xs = StereoProjection::polarToEuklid(polarCoord).x;
-			double ys = StereoProjection::polarToEuklid(polarCoord).y;
-			Brush brush(getStarColor(iter->spType));
-			double starRadius = Sqrt(0.5 * Pow(2.5, limitStarMag - iter->v));
-			pcl::Point starCenter(x + xs, y + ys);
-			g.FillCircle(starCenter, starRadius, brush);
-		}
-	}
-
+void SkyMap::plotStars( coord_d lst, coord_d geo_lat, int x, int y, double scale, Graphics& g, double limitStarMag )
+{
+   for ( auto object : m_objectList )
+   {
+      double hourAngle = object.ra - lst*360/24;
+      double currentAlt = getObjectAltitude( object.dec, hourAngle, geo_lat );
+      double currentAz = SkyMap::getObjectAzimut( object.dec, hourAngle, geo_lat );
+      if ( currentAlt > 3 )
+      {
+         StereoProjection::Rectangular r =
+            StereoProjection::Spherical( Rad( currentAz ), Rad( 90 + currentAlt ) ).Projected( scale ).ToRectangular();
+         g.FillCircle( x + r.x, y + r.y,
+                       Sqrt( Pow( 2.5, limitStarMag - object.v )/2 ),
+                       Brush( getStarColor( object.spType ) ) );
+      }
+   }
 }
 
-void SkyMap::plotFoVStars(coord_d lst, coord_d geo_lat, int x, int y, double scale, Graphics& g, double limitStarMag){
-
-	for (SkyMap::ObjectListType::iterator iter = m_fovObjectList.Begin();iter != m_fovObjectList.End(); ++iter) {
-		// draw stars
-		double hourAngle = iter->ra;
-		double currentAlt = getObjectAltitude(iter->dec,hourAngle,geo_lat);
-		double currentAz = SkyMap::getObjectAzimut(iter->dec, hourAngle, geo_lat);
-
-		StereoProjection::sphericalCoord spherical;
-		spherical.phi = Rad(currentAz);
-		spherical.theta = Rad(90.0 + currentAlt);
-		StereoProjection::polarCoord polarCoord = 	StereoProjection::projectScaled(spherical,scale);
-		double xs = StereoProjection::polarToEuklid(polarCoord).x;
-		double ys = StereoProjection::polarToEuklid(polarCoord).y;
-		Brush brush(getStarColor(iter->spType));
-		double starRadius = Sqrt(0.5 * Pow(2.5, limitStarMag - iter->v));
-		//Console().WriteLn(String().Format("x=%f, y=%f, r=%f",x+xs,y+ys,scale));
-		pcl::Point starCenter(x + xs, y + ys);
-		g.FillCircle(starCenter, starRadius > 15 ?  15 : starRadius , brush);
-
-	}
-
+void SkyMap::plotFoVStars( coord_d lst, coord_d geo_lat, int x, int y, double scale, Graphics& g, double limitStarMag )
+{
+   for ( auto object : m_fovObjectList )
+   {
+      double hourAngle = object.ra;
+      double currentAlt = getObjectAltitude( object.dec, hourAngle, geo_lat );
+      double currentAz = SkyMap::getObjectAzimut( object.dec, hourAngle, geo_lat );
+      StereoProjection::Rectangular r =
+         StereoProjection::Spherical( Rad( currentAz ), Rad( 90 + currentAlt ) ).Projected( scale ).ToRectangular();
+      ;
+      double starRadius = Sqrt(0.5 * Pow(2.5, limitStarMag - object.v));
+      //Console().WriteLn( String().Format( "x=%f, y=%f, r=%f", x+r.x, y+r.y, scale ) );
+      g.FillCircle( x + r.x, y + r.y,
+                    Min( 15.0, starRadius ),
+                    Brush( getStarColor( object.spType ) ) );
+   }
 }
 
-} /* namespace pcl */
+} // pcl
+
+// ----------------------------------------------------------------------------
+// EOF SkyMap.cpp - Released 2016/03/18 13:15:37 UTC

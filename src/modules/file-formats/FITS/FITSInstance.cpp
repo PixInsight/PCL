@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard FITS File Format Module Version 01.01.03.0349
+// Standard FITS File Format Module Version 01.01.04.0358
 // ----------------------------------------------------------------------------
-// FITSInstance.cpp - Released 2015/12/18 08:55:16 UTC
+// FITSInstance.cpp - Released 2016/02/21 20:22:34 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -810,13 +810,10 @@ void FITSInstance::SetFormatSpecificData( const void* data )
 {
    if ( writer == nullptr || !writer->IsOpen() )
       throw Error( "FITS format: Attempt to set format-specific options before creating a file" );
-/*
- * ### The FITS writer has no per-instance configurable format data.
- *
+
    const FITSFormat::FormatOptions* o = FITSFormat::FormatOptions::FromGenericDataBlock( data );
-   if ( o != 0 )
+   if ( o != nullptr )
       writer->SetFITSOptions( o->options );
-*/
 }
 
 // ----------------------------------------------------------------------------
@@ -938,4 +935,4 @@ void FITSInstance::Write( const UInt32Image::sample* buffer, int startRow, int r
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FITSInstance.cpp - Released 2015/12/18 08:55:16 UTC
+// EOF FITSInstance.cpp - Released 2016/02/21 20:22:34 UTC

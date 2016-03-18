@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard SplitCFA Process Module Version 01.00.05.0100
+// Standard SplitCFA Process Module Version 01.00.05.0104
 // ----------------------------------------------------------------------------
-// SplitCFAInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// SplitCFAInstance.cpp - Released 2016/02/21 20:22:43 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard SplitCFA PixInsight module.
 //
@@ -765,14 +765,14 @@ bool SplitCFAInstance::ExecuteGlobal()
 void* SplitCFAInstance::LockParameter( const MetaParameter* p, size_type tableRow )
 {
    if ( p == TheTargetFrameEnabledParameter )   return &p_targetFrames[tableRow].enabled;
-   if ( p == TheTargetFramePathParameter )      return p_targetFrames[tableRow].path.c_str();
-   if ( p == TheTargetFrameFolderParameter )    return p_targetFrames[tableRow].folder.c_str();
+   if ( p == TheTargetFramePathParameter )      return p_targetFrames[tableRow].path.Begin();
+   if ( p == TheTargetFrameFolderParameter )    return p_targetFrames[tableRow].folder.Begin();
 
    if ( p == TheOutputTreeParameter )           return &p_outputTree;
    if ( p == TheOutputSubDirCFAParameter )      return &p_outputSubDirCFA;
-   if ( p == TheOutputDirParameter )            return p_outputDir.c_str();
-   if ( p == ThePrefixParameter )               return p_prefix.c_str();
-   if ( p == ThePostfixParameter )              return p_postfix.c_str();
+   if ( p == TheOutputDirParameter )            return p_outputDir.Begin();
+   if ( p == ThePrefixParameter )               return p_prefix.Begin();
+   if ( p == ThePostfixParameter )              return p_postfix.Begin();
    if ( p == TheOverwriteParameter )            return &p_overwrite;
 
    return 0;
@@ -832,4 +832,4 @@ size_type SplitCFAInstance::ParameterLength( const MetaParameter* p, size_type t
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SplitCFAInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// EOF SplitCFAInstance.cpp - Released 2016/02/21 20:22:43 UTC

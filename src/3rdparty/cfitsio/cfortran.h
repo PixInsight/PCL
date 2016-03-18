@@ -84,6 +84,12 @@
 #define LONGLONG_TYPE
 #endif
 
+/* Microsoft Visual C++ requires alternate form for static inline. */
+#if defined(_MSC_VER)   /* Microsoft Visual C++ */
+#define STIN static __inline
+#else
+#define STIN static inline
+#endif
 
 /* First prepare for the C compiler. */
 
@@ -216,11 +222,11 @@ only C calling FORTRAN subroutines will work using K&R style.*/
 #endif /* ...Fortran */
 #endif /* ...Fortran */
 
-// ### CUSTOM CODE ------------------------------------------------------------
+// ### PixInsight: BEGIN CUSTOM CODE ------------------------------------------
 #ifdef __PCL_FREEBSD
 #define f2cFortran
 #endif
-// ### CUSTOM CODE ------------------------------------------------------------
+// ### PixInsight: END CUSTOM CODE --------------------------------------------
 
 /* Split #if into 2 because some HP-UX can't handle long #if */
 #if !(defined(NAGf90Fortran)||defined(f2cFortran)||defined(hpuxFortran)||defined(apolloFortran)||defined(sunFortran)||defined(IBMR2Fortran)||defined(CRAYFortran))
@@ -620,9 +626,9 @@ typedef DSC$DESCRIPTOR_A(1) fstringvector;
 #define NUM_ELEM_ARG(B) *_2(A,B),_NUM_ELEM_ARG
 #define TERM_CHARS(A,B) A,B
 #ifndef __CF__KnR
-static int num_elem(char *strv, unsigned elem_len, int term_char, int num_term)
+STIN int num_elem(char *strv, unsigned elem_len, int term_char, int num_term)
 #else
-static int num_elem(      strv,          elem_len,     term_char,     num_term)
+STIN int num_elem(      strv,          elem_len,     term_char,     num_term)
                     char *strv; unsigned elem_len; int term_char; int num_term;
 #endif
 /* elem_len is the number of characters in each element of strv, the FORTRAN

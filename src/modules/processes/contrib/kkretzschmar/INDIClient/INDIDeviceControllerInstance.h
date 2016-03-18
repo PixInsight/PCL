@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.02.0096
+// Standard INDIClient Process Module Version 01.00.03.0102
 // ----------------------------------------------------------------------------
-// INDIDeviceControllerInstance.h - Released 2015/10/13 15:55:45 UTC
+// INDIDeviceControllerInstance.h - Released 2016/03/18 13:15:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2015 Klaus Kretzschmar
+// Copyright (c) 2014-2016 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,19 +53,16 @@
 #ifndef __INDIDeviceControllerInstance_h
 #define __INDIDeviceControllerInstance_h
 
-#include <pcl/MetaParameter.h> // for pcl_bool, pcl_enum
+#include <pcl/MetaParameter.h>
 #include <pcl/ProcessImplementation.h>
-#include <pcl/Timer.h>
-#include <pcl/Console.h>
-#include "INDIParameters.h"
+
 #include "IINDIDeviceControllerInstance.h"
+#include "INDIDeviceControllerParameters.h"
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-
-
 
 class INDIDeviceControllerInstance : public ProcessImplementation, IINDIDeviceControllerInstance
 {
@@ -82,63 +79,95 @@ public:
 
    virtual bool CanExecuteOn( const View&, pcl::String& whyNot ) const;
    virtual bool CanExecuteGlobal( pcl::String& whyNot ) const;
-
    virtual bool ExecuteGlobal();
 
    virtual void* LockParameter( const MetaParameter*, size_type tableRow );
-
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
 
-   virtual Array<INDIPropertyListItem>& getPropertyList() {return p_propertyList;}
-   virtual Array<INDIDeviceListItem>& getDeviceList(){return p_deviceList; }
-   virtual IsoString& getCurrentMessage() {return p_currentMessage;}
+   virtual Array<INDIPropertyListItem>& getPropertyList()
+   {
+      return o_properties;
+   }
 
-   ExclPropertyList getExclusivePropertyList() {return ExclPropertyList(m_mutex,p_propertyList);}
+   virtual Array<INDIDeviceListItem>& getDeviceList()
+   {
+      return o_devices;
+   }
 
-   bool sendNewPropertyValue(const INDINewPropertyListItem& propItem,bool isAsynch=false);
+   virtual IsoString getCurrentMessage() const
+   {
+      return m_currentMessage;
+   }
 
-   bool getINDIPropertyItem(String device, String property, String element, INDIPropertyListItem& result, bool formatted=true );
+   ExclPropertyList getExclusivePropertyList()
+   {
+      return ExclPropertyList( m_mutex, o_properties );
+   }
 
-   void doInternalAbort() {m_internalAbortFlag=true;}
-   bool getInternalAbortFlag() {return m_internalAbortFlag;}
-   void setInternalAbortFlag(bool doAbort) {m_internalAbortFlag=doAbort;}
-   void clearNewPropertyList(){p_newPropertyList.Clear();}
-   virtual bool getImageDownloadedFlag(){return m_ImageDownloaded;}
-   virtual void setImageDownloadedFlag(bool flag){m_ImageDownloaded=flag;}
+   bool sendNewPropertyValue( const INDINewPropertyListItem& propItem, bool isAsynch = false );
+
+   bool getINDIPropertyItem( String device, String property, String element, INDIPropertyListItem& result, bool formatted = true );
+
+   void doInternalAbort()
+   {
+      m_internalAbortFlag = true;
+   }
+
+   bool getInternalAbortFlag() const
+   {
+      return m_internalAbortFlag;
+   }
+
+   void setInternalAbortFlag( bool doAbort )
+   {
+      m_internalAbortFlag=doAbort;
+   }
+
+   void clearNewPropertyList()
+   {
+      p_newProperties.Clear();
+   }
+
+   virtual bool getImageDownloadedFlag() const
+   {
+      return m_imageDownloaded;
+   }
+
+   virtual void setImageDownloadedFlag( bool flag )
+   {
+      m_imageDownloaded = flag;
+   }
+
 private:
-   DeviceListType          p_deviceList;
-   PropertyListType        p_propertyList;
-   NewPropertyListType     p_newPropertyList;
-   String	               p_host;       // String hostname of INDI server
-   uint32                  p_port;	     // uint32 port of INDI server
-   uint32                  p_connect;	 // uint32 port of INDI server
-   IsoString               p_currentMessage;
-   String                  p_command;
-   String                  p_getPropertyReturnValue;
-   String                  p_getPropertyParam;
-   pcl_bool				   p_doAbort;
 
-   bool                    m_internalAbortFlag;
-   bool                    m_ImageDownloaded;
+   String              p_serverHostName;
+   uint32              p_serverPort;
+   pcl_bool            p_serverConnect;
+   String              p_serverCommand;
+   pcl_bool            p_abort;
+   NewPropertyListType p_newProperties;
+   String              p_getCommandParameters;
 
-   // Mutex for access to propertyList
-   pcl::Mutex             m_mutex;
+   DeviceListType      o_devices;
+   PropertyListType    o_properties;
+   String              o_getCommandResult;
 
+   IsoString           m_currentMessage;
+   bool                m_internalAbortFlag;
+   bool                m_imageDownloaded;
+   pcl::Mutex          m_mutex; // for access to propertyList
 
-   void getProperties();
-   bool sendNewProperty(bool isAsyncCall=false);
-   bool sendNewPropertyVector(const NewPropertyListType& propVector,bool isAsynch=false);
-   bool getPropertyFromKeyString(INDINewPropertyListItem& newPropertyKey, const String& keyString);
+   bool sendNewProperty( bool isAsyncCall = false );
+   bool sendNewPropertyVector( const NewPropertyListType& propVector, bool isAsynch = false );
+   bool getPropertyFromKeyString( INDINewPropertyListItem& newPropertyKey, const String& keyString );
    void writeCurrentMessageToConsole();
 
    friend class INDIClient;
-
-
-   friend class PixInsightINDIEngine;
    friend class INDIDeviceControllerProcess;
    friend class INDIDeviceControllerInterface;
-   friend class CCDFrameInterface;
+   friend class INDICCDFrameInstance;
+   friend class INDICCDFrameInterface;
    friend class INDIMountInterface;
 };
 
@@ -150,4 +179,4 @@ private:
 #endif   // __INDIDeviceControllerInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIDeviceControllerInstance.h - Released 2015/10/13 15:55:45 UTC
+// EOF INDIDeviceControllerInstance.h - Released 2016/03/18 13:15:37 UTC

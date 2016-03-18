@@ -1,10 +1,10 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.100
+# PixInsight Makefile Generator Script v1.101
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 17 Dec 2015 19:03:24 GMT
+# Automatically generated on Fri, 18 Mar 2016 13:16:32 GMT
 # Project id ...... libtiff
-# Project type .... DynamicLibrary
+# Project type .... StaticLibrary
 # Platform ........ Linux/g++
 # Configuration ... Release/x64
 # --------------------------------------------------------------------
@@ -14,16 +14,12 @@
 # Additional include search directories:
 # $(PCLSRCDIR)/3rdparty/jpeg
 # $(PCLSRCDIR)/3rdparty/zlib
-# --------------------------------------------------------------------
-# Additional libraries:
-# jpeg-pxi
-# zlib-pxi
 ######################################################################
 
 OBJ_DIR="$(PCLSRCDIR)/3rdparty/libtiff/linux/g++/x64/Release"
 
 .PHONY: all
-all: $(OBJ_DIR)/liblibtiff-pxi.so
+all: $(OBJ_DIR)/liblibtiff-pxi.a
 
 #
 # Source files
@@ -169,17 +165,17 @@ DEP_FILES= \
 
 -include $(DEP_FILES)
 
-$(OBJ_DIR)/liblibtiff-pxi.so: $(OBJ_FILES)
-	g++ -m64 -fPIC -pthread -Wl,-fuse-ld=gold -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -s -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/liblibtiff-pxi.so $(OBJ_FILES) -ljpeg-pxi -lzlib-pxi
+$(OBJ_DIR)/liblibtiff-pxi.a: $(OBJ_FILES)
+	ar r $(OBJ_DIR)/liblibtiff-pxi.a $(OBJ_FILES)
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean
 clean:
-	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/liblibtiff-pxi.so
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/liblibtiff-pxi.a
 
 .PHONY: post-build
 post-build:
-	cp $(OBJ_DIR)/liblibtiff-pxi.so $(PCLBINDIR64)
+	cp $(OBJ_DIR)/liblibtiff-pxi.a $(PCLLIBDIR64)
 
 ./x64/Release/%.o: ../../%.cxx
 	g++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -D"ZIP_SUPPORT" -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty/jpeg" -I"$(PCLSRCDIR)/3rdparty/zlib" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"

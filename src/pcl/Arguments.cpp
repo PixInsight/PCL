@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// pcl/Arguments.cpp - Released 2015/12/17 18:52:18 UTC
+// pcl/Arguments.cpp - Released 2016/02/21 20:22:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -94,7 +94,7 @@ void Argument::Parse( const char16_type* argv )
          errno = 0;
 
 #ifdef __PCL_WINDOWS
-         asNumeric = ::wcstod( reinterpret_cast<wchar_t*>( a.c_str() )+nsep+1,
+         asNumeric = ::wcstod( reinterpret_cast<const wchar_t*>( a.c_str() )+nsep+1,
                               &reinterpret_cast<wchar_t*&>( endptr ) );
 #else
          Array<wchar_t> w = a.ToWCharArray( nsep+1 );
@@ -103,7 +103,7 @@ void Argument::Parse( const char16_type* argv )
          asNumeric = ::wcstod( w.Begin(), &wendptr );
 
          if ( wendptr != 0 )
-            endptr = a.c_str() + nsep + 1 + (wendptr - w.Begin());
+            endptr = a.Begin() + nsep + 1 + (wendptr - w.Begin());
 #endif
          if ( errno == ERANGE )
             throw ParseError( "Numeric value out of representable range", a );
@@ -423,4 +423,4 @@ String ReplaceEnvironmentVariables( const String& s0 )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Arguments.cpp - Released 2015/12/17 18:52:18 UTC
+// EOF pcl/Arguments.cpp - Released 2016/02/21 20:22:19 UTC

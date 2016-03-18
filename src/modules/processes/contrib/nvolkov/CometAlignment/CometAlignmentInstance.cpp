@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard CometAlignment Process Module Version 01.02.06.0133
+// Standard CometAlignment Process Module Version 01.02.06.0137
 // ----------------------------------------------------------------------------
-// CometAlignmentInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// CometAlignmentInstance.cpp - Released 2016/02/21 20:22:43 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard CometAlignment PixInsight module.
 //
@@ -1631,24 +1631,24 @@ bool CometAlignmentInstance::ExecuteGlobal ()
 void* CometAlignmentInstance::LockParameter (const MetaParameter* p, size_type tableRow)
 {
    if (p == TheTargetFrameEnabled) return &p_targetFrames[tableRow].enabled;
-   if (p == TheTargetFramePath) return p_targetFrames[tableRow].path.c_str ();
-   if (p == TheTargetFrameDate) return p_targetFrames[tableRow].date.c_str ();
+   if (p == TheTargetFramePath) return p_targetFrames[tableRow].path.Begin ();
+   if (p == TheTargetFrameDate) return p_targetFrames[tableRow].date.Begin ();
    if (p == TheTargetFrameJDate)return &p_targetFrames[tableRow].Jdate;
    if (p == TheTargetFrameX) return &p_targetFrames[tableRow].x;
    if (p == TheTargetFrameY) return &p_targetFrames[tableRow].y;
-   if (p == TheDrizzlePath ) return p_targetFrames[tableRow].drzPath.c_str();
+   if (p == TheDrizzlePath ) return p_targetFrames[tableRow].drzPath.Begin();
 
-   if (p == TheCAInputHintsParameter ) return p_inputHints.c_str();
-   if (p == TheCAOutputHintsParameter ) return p_outputHints.c_str();
-   if (p == TheOutputDir) return p_outputDir.c_str ();
-   if (p == TheCAOutputExtensionParameter ) return p_outputExtension.c_str();
-   if (p == ThePrefix) return p_prefix.c_str ();
-   if (p == ThePostfix) return p_postfix.c_str ();
+   if (p == TheCAInputHintsParameter ) return p_inputHints.Begin();
+   if (p == TheCAOutputHintsParameter ) return p_outputHints.Begin();
+   if (p == TheOutputDir) return p_outputDir.Begin ();
+   if (p == TheCAOutputExtensionParameter ) return p_outputExtension.Begin();
+   if (p == ThePrefix) return p_prefix.Begin ();
+   if (p == ThePostfix) return p_postfix.Begin ();
    if (p == TheOverwrite) return &p_overwrite;
 
    if (p == TheReference) return &p_reference;
 
-   if (p == TheSubtractFile) return p_subtractFile.c_str ();
+   if (p == TheSubtractFile) return p_subtractFile.Begin ();
    if (p == TheSubtractMode) return &p_subtractMode;
    if (p == TheOperandIsDI) return &p_OperandIsDI;
    if (p == TheNormalize) return &p_normalize;
@@ -1752,4 +1752,4 @@ size_type CometAlignmentInstance::ParameterLength (const MetaParameter* p, size_
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CometAlignmentInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// EOF CometAlignmentInstance.cpp - Released 2016/02/21 20:22:43 UTC

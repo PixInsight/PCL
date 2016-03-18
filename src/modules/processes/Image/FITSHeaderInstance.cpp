@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0348
+// Standard Image Process Module Version 01.02.09.0352
 // ----------------------------------------------------------------------------
-// FITSHeaderInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// FITSHeaderInstance.cpp - Released 2016/02/21 20:22:42 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -60,11 +60,13 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-FITSHeaderInstance::FITSHeaderInstance( const MetaProcess* m ) : ProcessImplementation( m ), keywords()
+FITSHeaderInstance::FITSHeaderInstance( const MetaProcess* m ) :
+   ProcessImplementation( m ), keywords()
 {
 }
 
-FITSHeaderInstance::FITSHeaderInstance( const FITSHeaderInstance& x ) : ProcessImplementation( x ), keywords()
+FITSHeaderInstance::FITSHeaderInstance( const FITSHeaderInstance& x ) :
+   ProcessImplementation( x ), keywords()
 {
    keywords = x.keywords;
 }
@@ -72,7 +74,7 @@ FITSHeaderInstance::FITSHeaderInstance( const FITSHeaderInstance& x ) : ProcessI
 void FITSHeaderInstance::Assign( const ProcessImplementation& p )
 {
    const FITSHeaderInstance* x = dynamic_cast<const FITSHeaderInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
       keywords = x->keywords;
 }
 
@@ -106,14 +108,12 @@ bool FITSHeaderInstance::ExecuteOn( View& view )
    view.Window().GetKeywords( K0 );
    for ( FITSKeywordArray::iterator i = K0.Begin(); i != K0.End(); ++i )
       if ( IsReservedKeyword( i->name ) )
-         K.Add( *i );
+         K << *i;
 
    // Append new non-reserved keywords
    for ( keyword_list::const_iterator i = keywords.Begin(); i != keywords.End(); ++i )
       if ( !IsReservedKeyword( i->name ) )
-         K.Add( FITSHeaderKeyword( IsoString( i->name ),
-                                   IsoString( i->value ),
-                                   IsoString( i->comment ) ) );
+         K << FITSHeaderKeyword( IsoString( i->name ), IsoString( i->value ), IsoString( i->comment ) );
 
    // Update keyword set
    view.Window().SetKeywords( K );
@@ -125,12 +125,12 @@ bool FITSHeaderInstance::ExecuteOn( View& view )
 void* FITSHeaderInstance::LockParameter( const MetaParameter* p, size_type tableRow )
 {
    if ( p == TheFITSKeywordNameParameter )
-      return keywords[tableRow].name.c_str();
+      return keywords[tableRow].name.Begin();
    if ( p == TheFITSKeywordValueParameter )
-      return keywords[tableRow].value.c_str();
+      return keywords[tableRow].value.Begin();
    if ( p == TheFITSKeywordCommentParameter )
-      return keywords[tableRow].comment.c_str();
-   return 0;
+      return keywords[tableRow].comment.Begin();
+   return nullptr;
 }
 
 bool FITSHeaderInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow )
@@ -188,7 +188,7 @@ void FITSHeaderInstance::ImportKeywords( const ImageWindow& w )
    w.GetKeywords( K );
 
    for ( FITSKeywordArray::const_iterator i = K.Begin(); i != K.End(); ++i )
-      keywords.Add( Keyword( i->name, i->value, i->comment ) );
+      keywords << Keyword( i->name, i->value, i->comment );
 }
 
 bool FITSHeaderInstance::IsReservedKeyword( const String& id )
@@ -225,13 +225,13 @@ bool FITSHeaderInstance::IsReservedKeyword( const String& id )
       "ICCPROFL",
       "THUMBIMG",
 
-      0
+      nullptr
    };
 
    static SortedStringList reserved;
    if ( reserved.IsEmpty() )
-      for ( const char** i = cReserved; *i != 0; ++i )
-         reserved.Add( *i );
+      for ( const char** i = cReserved; *i != nullptr; ++i )
+         reserved << *i;
 
    return reserved.Contains( id.Uppercase() );
 }
@@ -241,4 +241,4 @@ bool FITSHeaderInstance::IsReservedKeyword( const String& id )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FITSHeaderInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// EOF FITSHeaderInstance.cpp - Released 2016/02/21 20:22:42 UTC

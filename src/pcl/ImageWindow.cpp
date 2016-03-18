@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// pcl/ImageWindow.cpp - Released 2015/12/17 18:52:18 UTC
+// pcl/ImageWindow.cpp - Released 2016/02/21 20:22:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -135,7 +135,7 @@ String ImageWindow::FilePath() const
    if ( len > 0 )
    {
       path.SetLength( len );
-      if ( (*API->ImageWindow->GetImageWindowFilePath)( handle, path.c_str(), &len ) == api_false )
+      if ( (*API->ImageWindow->GetImageWindowFilePath)( handle, path.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetImageWindowFilePath" );
       path.ResizeToNullTerminated();
    }
@@ -153,7 +153,7 @@ String ImageWindow::FileURL() const
    if ( len > 0 )
    {
       url.SetLength( len );
-      if ( (*API->ImageWindow->GetImageWindowFileURL)( handle, url.c_str(), &len ) == api_false )
+      if ( (*API->ImageWindow->GetImageWindowFileURL)( handle, url.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetImageWindowFileURL" );
       url.ResizeToNullTerminated();
    }
@@ -489,13 +489,16 @@ bool ImageWindow::GetKeywords( FITSKeywordArray& keywords ) const
    if ( n <= 0 )
       return false;
 
-   IsoString name, value, comment;
-   name.Reserve( 16 );
-   value.Reserve( 96 );
-   comment.Reserve( 96 );
    for ( int i = 0; i < n; ++i )
    {
+      IsoString name, value, comment;
+      name.Reserve( 16 );
+      value.Reserve( 96 );
+      comment.Reserve( 96 );
       (*API->ImageWindow->GetImageWindowKeyword)( handle, i, name.Begin(), 16, value.Begin(), 96, comment.Begin(), 96 );
+      name.ResizeToNullTerminated();
+      value.ResizeToNullTerminated();
+      comment.ResizeToNullTerminated();
       keywords << FITSHeaderKeyword( name.c_str(), value.c_str(), comment.c_str() );
    }
    return true;
@@ -589,7 +592,7 @@ StringList ImageWindow::SwapDirectories()
 
       String path;
       path.SetLength( len );
-      if ( (*API->ImageWindow->GetSwapDirectory)( i, path.c_str(), &len ) == api_false )
+      if ( (*API->ImageWindow->GetSwapDirectory)( i, path.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetSwapDirectory" );
       path.ResizeToNullTerminated();
 
@@ -1160,4 +1163,4 @@ Array<ImageWindow> ImageWindow::AllWindows( bool includeIconicWindows )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageWindow.cpp - Released 2015/12/17 18:52:18 UTC
+// EOF pcl/ImageWindow.cpp - Released 2016/02/21 20:22:19 UTC

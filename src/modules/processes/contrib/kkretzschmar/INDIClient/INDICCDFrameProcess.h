@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.02.0096
+// Standard INDIClient Process Module Version 01.00.03.0102
 // ----------------------------------------------------------------------------
-// CCDFrameInstance.h - Released 2015/10/13 15:55:45 UTC
+// INDICCDFrameProcess.h - Released 2016/03/18 13:15:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2015 Klaus Kretzschmar
+// Copyright (c) 2014-2016 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -50,52 +50,53 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#ifndef __CCDFrameInstance_h
-#define __CCDFrameInstance_h
+#ifndef __INDICCDFrameProcess_h
+#define __INDICCDFrameProcess_h
 
-#include <pcl/MetaParameter.h> // for pcl_bool, pcl_enum
-#include <pcl/ProcessImplementation.h>
-#include <pcl/Timer.h>
-#include <pcl/Console.h>
-
-
+#include <pcl/MetaProcess.h>
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-class CCDFrameInstance : public ProcessImplementation
+class INDICCDFrameProcess : public MetaProcess
 {
 public:
 
-   CCDFrameInstance( const MetaProcess* );
-   CCDFrameInstance( const CCDFrameInstance& );
+   INDICCDFrameProcess();
 
-   virtual void Assign( const ProcessImplementation& );
+   virtual IsoString Id() const;
+   virtual IsoString Category() const;
 
-   virtual bool CanExecuteOn( const View&, pcl::String& whyNot ) const;
-   virtual bool CanExecuteGlobal( pcl::String& whyNot ) const;
+   virtual uint32 Version() const;
 
-   virtual bool ExecuteGlobal();
+   virtual String Description() const;
 
-   //virtual void* LockParameter( const MetaParameter*, size_type tableRow );
+   virtual const char** IconImageXPM() const;
 
-   //virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
-   //virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
+   virtual bool PrefersGlobalExecution() const;
 
+   virtual ProcessInterface* DefaultInterface() const;
 
-private:
+   virtual ProcessImplementation* Create() const;
+   virtual ProcessImplementation* Clone( const ProcessImplementation& ) const;
 
-
+   virtual bool CanProcessCommandLines() const;
+   virtual int ProcessCommandLine( const StringList& ) const;
 };
 
 // ----------------------------------------------------------------------------
 
+PCL_BEGIN_LOCAL
+extern INDICCDFrameProcess* TheINDICCDFrameProcess;
+PCL_END_LOCAL
+
+// ----------------------------------------------------------------------------
 
 } // pcl
 
-#endif   // __CCDFrameInstance_h
+#endif   // __INDICCDFrameProcess_h
 
 // ----------------------------------------------------------------------------
-// EOF CCDFrameInstance.h - Released 2015/10/13 15:55:45 UTC
+// EOF INDICCDFrameProcess.h - Released 2016/03/18 13:15:37 UTC

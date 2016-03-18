@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Flux Process Module Version 01.00.00.0129
+// Standard Flux Process Module Version 01.00.01.0135
 // ----------------------------------------------------------------------------
-// FluxCalibrationInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// FluxCalibrationInstance.cpp - Released 2016/03/14 10:07:00 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Flux PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -116,7 +116,7 @@ ProcessImplementation( x )
 void FluxCalibrationInstance::Assign( const ProcessImplementation& p )
 {
    const FluxCalibrationInstance* x = dynamic_cast<const FluxCalibrationInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       p_wavelength = x->p_wavelength;
       p_transmissivity = x->p_transmissivity;
@@ -206,7 +206,7 @@ public:
             keywords.Add( *i );
 
       if ( foundPedestal )
-         Console().NoteLn( "<end><cbr><br>* FluxCalibration: PEDESTAL keyword found: " + view.FullId() );
+         Console().NoteLn( "<end><cbr>* FluxCalibration: PEDESTAL keyword found: " + view.FullId() );
 
       // double F = Wc * inv_ch * (1 - Tr) * Delta * Ap * Cobs * ExpT * AtmE * G * QEff;
       double F = Wc * inv_ch * (1 - AtmE) * Delta * ( Const<double>::pi() / 4 * ( Ap*Ap - Cobs*Cobs  ) ) * ExpT * Tr * G * QEff;
@@ -340,63 +340,63 @@ void* FluxCalibrationInstance::LockParameter( const MetaParameter* p, size_type 
    if ( p == TheFCWavelengthModeParameter )
       return &p_wavelength.mode;
    if ( p == TheFCWavelengthKeywordParameter )
-      return p_wavelength.keyword.c_str();
+      return p_wavelength.keyword.Begin();
 
    if ( p == TheFCTransmissivityValueParameter )
       return &p_transmissivity.value;
    if ( p == TheFCTransmissivityModeParameter )
       return &p_transmissivity.mode;
    if ( p == TheFCTransmissivityKeywordParameter )
-      return p_transmissivity.keyword.c_str();
+      return p_transmissivity.keyword.Begin();
 
    if ( p == TheFCFilterWidthValueParameter )
       return &p_filterWidth.value;
    if ( p == TheFCFilterWidthModeParameter )
       return &p_filterWidth.mode;
    if ( p == TheFCFilterWidthKeywordParameter )
-      return p_filterWidth.keyword.c_str();
+      return p_filterWidth.keyword.Begin();
 
    if ( p == TheFCApertureValueParameter )
       return &p_aperture.value;
    if ( p == TheFCApertureModeParameter )
       return &p_aperture.mode;
    if ( p == TheFCApertureKeywordParameter )
-      return p_aperture.keyword.c_str();
+      return p_aperture.keyword.Begin();
 
    if ( p == TheFCCentralObstructionValueParameter )
       return &p_centralObstruction.value;
    if ( p == TheFCCentralObstructionModeParameter )
       return &p_centralObstruction.mode;
    if ( p == TheFCCentralObstructionKeywordParameter )
-      return p_centralObstruction.keyword.c_str();
+      return p_centralObstruction.keyword.Begin();
 
    if ( p == TheFCExposureTimeValueParameter )
       return &p_exposureTime.value;
    if ( p == TheFCExposureTimeModeParameter )
       return &p_exposureTime.mode;
    if ( p == TheFCExposureTimeKeywordParameter )
-      return p_exposureTime.keyword.c_str();
+      return p_exposureTime.keyword.Begin();
 
    if ( p == TheFCAtmosphericExtinctionValueParameter )
       return &p_atmosphericExtinction.value;
    if ( p == TheFCAtmosphericExtinctionModeParameter )
       return &p_atmosphericExtinction.mode;
    if ( p == TheFCAtmosphericExtinctionKeywordParameter )
-      return p_atmosphericExtinction.keyword.c_str();
+      return p_atmosphericExtinction.keyword.Begin();
 
    if ( p == TheFCSensorGainValueParameter )
       return &p_sensorGain.value;
    if ( p == TheFCSensorGainModeParameter )
       return &p_sensorGain.mode;
    if ( p == TheFCSensorGainKeywordParameter )
-      return p_sensorGain.keyword.c_str();
+      return p_sensorGain.keyword.Begin();
 
    if ( p == TheFCQuantumEfficiencyValueParameter )
       return &p_quantumEfficiency.value;
    if ( p == TheFCQuantumEfficiencyModeParameter )
       return &p_quantumEfficiency.mode;
    if ( p == TheFCQuantumEfficiencyKeywordParameter )
-      return p_quantumEfficiency.keyword.c_str();
+      return p_quantumEfficiency.keyword.Begin();
 
    return 0;
 }
@@ -490,4 +490,4 @@ size_type FluxCalibrationInstance::ParameterLength( const MetaParameter* p, size
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FluxCalibrationInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// EOF FluxCalibrationInstance.cpp - Released 2016/03/14 10:07:00 UTC

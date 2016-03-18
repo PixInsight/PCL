@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// pcl/File.cpp - Released 2015/12/17 18:52:18 UTC
+// pcl/File.cpp - Released 2016/02/21 20:22:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -2019,7 +2019,7 @@ String File::FullPath( const String& filePath )
 
    IsoString curDir;
    curDir.Reserve( PATH_MAX*3 ); // UTF-8, worst case
-   if ( ::getcwd( curDir.c_str(), PATH_MAX*3+1 ) != 0 )
+   if ( ::getcwd( curDir.Begin(), PATH_MAX*3+1 ) != 0 )
    {
       curDir.ResizeToNullTerminated();
       if ( !curDir.IsEmpty() )
@@ -2411,4 +2411,4 @@ bool File::IsValidHandle( handle h ) const
 }  // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/File.cpp - Released 2015/12/17 18:52:18 UTC
+// EOF pcl/File.cpp - Released 2016/02/21 20:22:19 UTC

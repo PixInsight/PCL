@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard SplitCFA Process Module Version 01.00.05.0100
+// Standard SplitCFA Process Module Version 01.00.05.0104
 // ----------------------------------------------------------------------------
-// MergeCFAInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// MergeCFAInstance.cpp - Released 2016/02/21 20:22:43 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard SplitCFA PixInsight module.
 //
@@ -223,13 +223,13 @@ bool MergeCFAInstance::ExecuteGlobal()
 void* MergeCFAInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/ )
 {
    if ( p == TheMergeCFASourceImage0Parameter )
-      return p_viewId[0].c_str();
+      return p_viewId[0].Begin();
    if ( p == TheMergeCFASourceImage1Parameter )
-      return p_viewId[1].c_str();
+      return p_viewId[1].Begin();
    if ( p == TheMergeCFASourceImage2Parameter )
-      return p_viewId[2].c_str();
+      return p_viewId[2].Begin();
    if ( p == TheMergeCFASourceImage3Parameter )
-      return p_viewId[3].c_str();
+      return p_viewId[3].Begin();
    return 0;
 }
 
@@ -271,4 +271,4 @@ size_type MergeCFAInstance::ParameterLength( const MetaParameter* p, size_type /
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF MergeCFAInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// EOF MergeCFAInstance.cpp - Released 2016/02/21 20:22:43 UTC

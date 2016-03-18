@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.96
+# PixInsight Makefile Generator Script v1.101
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Tue, 17 Nov 2015 07:24:13 GMT
+# Automatically generated on Fri, 18 Mar 2016 13:17:31 GMT
 # Project id ...... INDIClient
 # Project type .... Module
 # Platform ........ Windows/vc12
@@ -20,16 +20,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\CCDFrameInstance.cpp">
-        <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\CCDFrameInterface.cpp">
-        <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\CCDFrameProcess.cpp">
-        <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\IINDIProperty.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\INDICCDFrameInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\INDICCDFrameInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\INDICCDFrameParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\INDICCDFrameProcess.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\INDIClient.cpp">
@@ -44,6 +47,9 @@
     <ClCompile Include="..\..\INDIDeviceControllerInterface.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\INDIDeviceControllerParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\INDIDeviceControllerProcess.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
@@ -54,12 +60,6 @@
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\INDIMountProcess.cpp">
-        <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\INDIParameters.cpp">
-        <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\INDIPropertyBuilder.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\PropertyNode.cpp">
@@ -88,19 +88,22 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\CCDFrameInstance.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\CCDFrameInterface.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\CCDFrameProcess.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\IINDIDeviceControllerInstance.h">
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\IINDIProperty.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\INDICCDFrameInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\INDICCDFrameInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\INDICCDFrameParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\INDICCDFrameProcess.h">
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\INDIClient.h">
@@ -113,6 +116,9 @@
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\INDIDeviceControllerInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\INDIDeviceControllerParameters.h">
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\INDIDeviceControllerProcess.h">
@@ -130,9 +136,6 @@
     <ClInclude Include="..\..\INDIParamListTypes.h">
         <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\INDIParameters.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\INDIPropertyBuilder.h">
         <Filter>Header Files</Filter>
     </ClInclude>
@@ -140,9 +143,6 @@
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\SkyMap.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\error.h">
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\INDI\BaseClient.h">

@@ -1,10 +1,10 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.100
+# PixInsight Makefile Generator Script v1.101
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 17 Dec 2015 19:03:24 GMT
+# Automatically generated on Fri, 18 Mar 2016 13:16:32 GMT
 # Project id ...... libtiff
-# Project type .... DynamicLibrary
+# Project type .... StaticLibrary
 # Platform ........ MacOSX/g++
 # Configuration ... Release/x64
 # --------------------------------------------------------------------
@@ -14,16 +14,12 @@
 # Additional include search directories:
 # $(PCLSRCDIR)/3rdparty/jpeg
 # $(PCLSRCDIR)/3rdparty/zlib
-# --------------------------------------------------------------------
-# Additional libraries:
-# jpeg-pxi
-# zlib-pxi
 ######################################################################
 
 OBJ_DIR="$(PCLSRCDIR)/3rdparty/libtiff/macosx/g++/x64/Release"
 
 .PHONY: all
-all: $(OBJ_DIR)/liblibtiff-pxi.dylib
+all: $(OBJ_DIR)/liblibtiff-pxi.a
 
 #
 # Source files
@@ -169,20 +165,17 @@ DEP_FILES= \
 
 -include $(DEP_FILES)
 
-$(OBJ_DIR)/liblibtiff-pxi.dylib: $(OBJ_FILES)
-	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -stdlib=libc++ -Wl,-dead_strip -dynamiclib -install_name @executable_path/liblibtiff-pxi.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/liblibtiff-pxi.dylib $(OBJ_FILES) -framework CoreFoundation -ljpeg-pxi -lzlib-pxi
+$(OBJ_DIR)/liblibtiff-pxi.a: $(OBJ_FILES)
+	ar r $(OBJ_DIR)/liblibtiff-pxi.a $(OBJ_FILES)
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean
 clean:
-	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/liblibtiff-pxi.dylib
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/liblibtiff-pxi.a
 
 .PHONY: post-build
 post-build:
-	cp $(OBJ_DIR)/liblibtiff-pxi.dylib $(PCLBINDIR64)
-	install_name_tool -change @executable_path/libjpeg-pxi.dylib @loader_path/libjpeg-pxi.dylib $(PCLBINDIR64)/liblibtiff-pxi.dylib
-	install_name_tool -change @executable_path/libzlib-pxi.dylib @loader_path/libzlib-pxi.dylib $(PCLBINDIR64)/liblibtiff-pxi.dylib
-	codesign --deep -s pleiades -f -v --timestamp $(PCLBINDIR64)/liblibtiff-pxi.dylib
+	cp $(OBJ_DIR)/liblibtiff-pxi.a $(PCLLIBDIR64)
 
 ./x64/Release/%.o: ../../%.cxx
 	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -D"ZIP_SUPPORT" -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty/jpeg" -I"$(PCLSRCDIR)/3rdparty/zlib" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"

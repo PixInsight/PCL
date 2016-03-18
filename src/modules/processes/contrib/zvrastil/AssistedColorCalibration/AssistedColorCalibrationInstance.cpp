@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard AssistedColorCalibration Process Module Version 01.00.00.0161
+// Standard AssistedColorCalibration Process Module Version 01.00.00.0165
 // ----------------------------------------------------------------------------
-// AssistedColorCalibrationInstance.cpp - Released 2015/12/18 08:55:09 UTC
+// AssistedColorCalibrationInstance.cpp - Released 2016/02/21 20:22:43 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard AssistedColorCalibration PixInsight module.
 //
@@ -426,7 +426,7 @@ void* AssistedColorCalibrationInstance::LockParameter( const MetaParameter* p, s
    if ( p == TheACCBlueCorrectionFactor )
       return &blueCorrectionFactor;
    if ( p == TheACCBackgroundReference )
-      return backgroundReference.c_str();
+      return backgroundReference.Begin();
    if ( p == TheACCHistogramShadows )
       return &histogramShadows;
    if ( p == TheACCHistogramHighlights )
@@ -501,4 +501,4 @@ double AssistedColorCalibrationInstance::GetSaturationBoost() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AssistedColorCalibrationInstance.cpp - Released 2015/12/18 08:55:09 UTC
+// EOF AssistedColorCalibrationInstance.cpp - Released 2016/02/21 20:22:43 UTC

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// pcl/FileFormat.cpp - Released 2015/12/17 18:52:18 UTC
+// pcl/FileFormat.cpp - Released 2016/02/21 20:22:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -189,7 +189,7 @@ IsoString FileFormat::Name() const
    if ( len > 0 )
    {
       name.SetLength( len );
-      if ( (*API->FileFormat->GetFileFormatName)( m_data->handle, name.c_str(), &len ) == api_false )
+      if ( (*API->FileFormat->GetFileFormatName)( m_data->handle, name.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetFileFormatName" );
       name.ResizeToNullTerminated();
    }
@@ -211,7 +211,7 @@ StringList FileFormat::FileExtensions() const
       for ( size_type i = 0; i < count; ++i )
       {
          extensions[i].Reserve( maxLen );
-         ptrs.Add( extensions[i].c_str() );
+         ptrs.Add( extensions[i].Begin() );
       }
 
       if ( (*API->FileFormat->GetFileFormatFileExtensions)( m_data->handle, ptrs.Begin(), &count, &maxLen ) == api_false )
@@ -238,7 +238,7 @@ IsoStringList FileFormat::MimeTypes() const
       for ( size_type i = 0; i < count; ++i )
       {
          mimeTypes[i].Reserve( maxLen );
-         ptrs.Add( mimeTypes[i].c_str() );
+         ptrs.Add( mimeTypes[i].Begin() );
       }
 
       if ( (*API->FileFormat->GetFileFormatMimeTypes)( m_data->handle, ptrs.Begin(), &count, &maxLen ) == api_false )
@@ -268,7 +268,7 @@ String FileFormat::Description() const
    if ( len > 0 )
    {
       description.SetLength( len );
-      if ( (*API->FileFormat->GetFileFormatDescription)( m_data->handle, description.c_str(), &len ) == api_false )
+      if ( (*API->FileFormat->GetFileFormatDescription)( m_data->handle, description.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetFileFormatDescription" );
       description.ResizeToNullTerminated();
    }
@@ -286,7 +286,7 @@ String FileFormat::Implementation() const
    if ( len > 0 )
    {
       implementation.SetLength( len );
-      if ( (*API->FileFormat->GetFileFormatImplementation)( m_data->handle, implementation.c_str(), &len ) == api_false )
+      if ( (*API->FileFormat->GetFileFormatImplementation)( m_data->handle, implementation.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetFileFormatImplementation" );
       implementation.ResizeToNullTerminated();
    }
@@ -304,7 +304,7 @@ String FileFormat::Status() const
    if ( len > 0 )
    {
       status.SetLength( len );
-      if ( (*API->FileFormat->GetFileFormatStatus)( m_data->handle, status.c_str(), &len, 0/*reserved*/ ) == api_false )
+      if ( (*API->FileFormat->GetFileFormatStatus)( m_data->handle, status.Begin(), &len, 0/*reserved*/ ) == api_false )
          throw APIFunctionError( "GetFileFormatStatus" );
       status.ResizeToNullTerminated();
    }
@@ -513,4 +513,4 @@ Array<FileFormat> FileFormat::AllFormats()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormat.cpp - Released 2015/12/17 18:52:18 UTC
+// EOF pcl/FileFormat.cpp - Released 2016/02/21 20:22:19 UTC

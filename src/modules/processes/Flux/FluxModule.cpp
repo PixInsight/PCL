@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Flux Process Module Version 01.00.00.0129
+// Standard Flux Process Module Version 01.00.01.0135
 // ----------------------------------------------------------------------------
-// FluxModule.cpp - Released 2015/12/18 08:55:08 UTC
+// FluxModule.cpp - Released 2016/03/14 10:07:00 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Flux PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -52,13 +52,13 @@
 
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
-#define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0129
+#define MODULE_VERSION_REVISION  01
+#define MODULE_VERSION_BUILD     0135
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2015
-#define MODULE_RELEASE_MONTH     12
-#define MODULE_RELEASE_DAY       18
+#define MODULE_RELEASE_YEAR      2016
+#define MODULE_RELEASE_MONTH     3
+#define MODULE_RELEASE_DAY       14
 
 #include "FluxModule.h"
 #include "B3EProcess.h"
@@ -106,7 +106,7 @@ String FluxModule::Author() const
 
 String FluxModule::Copyright() const
 {
-   return "Copyright (c) 2012 Pleiades Astrophoto";
+   return "Copyright (c) 2012-2016 Pleiades Astrophoto";
 }
 
 String FluxModule::TradeMarks() const
@@ -178,4 +178,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF FluxModule.cpp - Released 2015/12/18 08:55:08 UTC
+// EOF FluxModule.cpp - Released 2016/03/14 10:07:00 UTC

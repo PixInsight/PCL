@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// pcl/FileFormatInstance.cpp - Released 2015/12/17 18:52:18 UTC
+// pcl/FileFormatInstance.cpp - Released 2016/02/21 20:22:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -180,7 +180,7 @@ String FileFormatInstance::FilePath() const
    if ( len > 0 )
    {
       path.SetLength( len );
-      if ( (*API->FileFormat->GetImageFilePath)( handle, path.c_str(), &len ) == api_false )
+      if ( (*API->FileFormat->GetImageFilePath)( handle, path.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetImageFilePath" );
       path.ResizeToNullTerminated();
    }
@@ -205,7 +205,7 @@ bool FileFormatInstance::Open( ImageDescriptionArray& images,
       if ( len > 0 )
       {
          id.SetLength( len );
-         if ( (*API->FileFormat->GetImageId)( handle, id.c_str(), &len, i ) == api_false )
+         if ( (*API->FileFormat->GetImageId)( handle, id.Begin(), &len, i ) == api_false )
             throw APIFunctionError( "GetImageId" );
          id.ResizeToNullTerminated();
       }
@@ -257,7 +257,7 @@ String FileFormatInstance::ImageProperties() const
    if ( len > 0 )
    {
       properties.SetLength( len );
-      if ( (*API->FileFormat->GetImageProperties)( handle, properties.c_str(), &len ) == api_false )
+      if ( (*API->FileFormat->GetImageProperties)( handle, properties.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetImageProperties" );
       properties.ResizeToNullTerminated();
    }
@@ -283,7 +283,7 @@ bool FileFormatInstance::Extract( FITSKeywordArray& keywords )
          comment.Reserve( 96 );
 
          if ( (*API->FileFormat->GetNextKeyword)( handle,
-                  name.c_str(), value.c_str(), comment.c_str(), 81 ) == api_false )
+                  name.Begin(), value.Begin(), comment.Begin(), 81 ) == api_false )
             throw APIFunctionError( "GetNextKeyword" );
 
          name.ResizeToNullTerminated();
@@ -381,7 +381,7 @@ ImagePropertyDescriptionArray FileFormatInstance::Properties()
    {
       id.Reserve( len );
       if ( (*API->FileFormat->EnumerateImageProperties)( handle, APIPropertyEnumerationCallback,
-                                                         id.c_str(), &len, &properties ) == api_false )
+                                                         id.Begin(), &len, &properties ) == api_false )
          throw APIFunctionError( "EnumerateImageProperties" );
    }
    return properties;
@@ -964,4 +964,4 @@ void* FileFormatInstance::CloneHandle() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormatInstance.cpp - Released 2015/12/17 18:52:18 UTC
+// EOF pcl/FileFormatInstance.cpp - Released 2016/02/21 20:22:19 UTC

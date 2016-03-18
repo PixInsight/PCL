@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.02.0096
+// Standard INDIClient Process Module Version 01.00.03.0102
 // ----------------------------------------------------------------------------
-// INDIMountInterface.cpp - Released 2015/10/13 15:55:45 UTC
+// INDIMountInterface.h - Released 2016/03/18 13:15:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2015 Klaus Kretzschmar
+// Copyright (c) 2014-2016 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -126,6 +126,7 @@ private:
 	String m_DEC_TargetCoord;
 
 public:
+
 	EditEqCoordPropertyDialog(String raCoord, String decCoord);
 	virtual ~EditEqCoordPropertyDialog(){}
 
@@ -193,10 +194,6 @@ public:
    virtual MetaProcess* Process() const;
    virtual const char** IconImageXPM() const;
 
-   virtual void ApplyInstance() const;
-   virtual void ApplyInstanceGlobal() const;
-   virtual void ResetInstance();
-
    virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ );
 
    virtual ProcessImplementation* NewProcess() const;
@@ -209,7 +206,7 @@ public:
    virtual InterfaceFeatures Features() const;
 
    void UpdateControls();
-   
+
 
 
    struct GUIData
@@ -290,7 +287,7 @@ public:
    double			       m_alignedDEC;
    double                  m_limitStarMag;
    bool                    m_isAllSkyView;
-   
+
    void UpdateDeviceList_Timer( Timer& sender );
    void UpdateMount_Timer( Timer &sender );
    void EditCompleted( Edit& sender );
@@ -314,5 +311,5 @@ PCL_END_LOCAL
 
 #endif   // __INDIMountInterface_h
 
-// ****************************************************************************
-// EOF INDIMountInterface.h - Released 2013/03/24 18:42:27 UTC
+// ----------------------------------------------------------------------------
+// EOF INDIMountInterface.h - Released 2016/03/18 13:15:37 UTC

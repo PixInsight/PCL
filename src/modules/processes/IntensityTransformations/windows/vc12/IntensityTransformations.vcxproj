@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.100
+# PixInsight Makefile Generator Script v1.101
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 17 Dec 2015 19:03:48 GMT
+# Automatically generated on Fri, 18 Mar 2016 13:16:54 GMT
 # Project id ...... IntensityTransformations
 # Project type .... Module
 # Platform ........ Windows/vc12
@@ -30,7 +30,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{055AF6B9-5B4E-4396-B848-959B1093098E}</ProjectGuid>
+    <ProjectGuid>{9A65FDD9-FFE1-48A6-B8F0-DD61A64D9799}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -107,11 +107,9 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
+      <DebugInformationFormat></DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -119,8 +117,7 @@
       <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR64)\IntensityTransformations-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -151,11 +148,9 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
+      <DebugInformationFormat></DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -163,8 +158,7 @@
       <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\IntensityTransformations-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -190,8 +184,7 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -201,8 +194,7 @@
       <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR64)\IntensityTransformations-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <ImportLibrary>$(Platform)\$(Configuration)\$(ProjectName).lib</ImportLibrary>
@@ -222,8 +214,7 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -233,8 +224,7 @@
       <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\IntensityTransformations-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <ImportLibrary>$(Platform)\$(Configuration)\$(ProjectName).lib</ImportLibrary>
@@ -246,171 +236,171 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\AdaptiveStretchCurveGraphInterface.cpp" />
-    <ClCompile Include="..\..\AdaptiveStretchInstance.cpp" />
-    <ClCompile Include="..\..\AdaptiveStretchInterface.cpp" />
-    <ClCompile Include="..\..\AdaptiveStretchParameters.cpp" />
-    <ClCompile Include="..\..\AdaptiveStretchProcess.cpp" />
-    <ClCompile Include="..\..\AutoHistogramInstance.cpp" />
-    <ClCompile Include="..\..\AutoHistogramInterface.cpp" />
-    <ClCompile Include="..\..\AutoHistogramParameters.cpp" />
-    <ClCompile Include="..\..\AutoHistogramProcess.cpp" />
-    <ClCompile Include="..\..\BinarizeAction.cpp" />
-    <ClCompile Include="..\..\BinarizeInstance.cpp" />
-    <ClCompile Include="..\..\BinarizeInterface.cpp" />
-    <ClCompile Include="..\..\BinarizeParameters.cpp" />
-    <ClCompile Include="..\..\BinarizeProcess.cpp" />
-    <ClCompile Include="..\..\ColorSaturationInstance.cpp" />
-    <ClCompile Include="..\..\ColorSaturationInterface.cpp" />
-    <ClCompile Include="..\..\ColorSaturationParameters.cpp" />
-    <ClCompile Include="..\..\ColorSaturationProcess.cpp" />
-    <ClCompile Include="..\..\CurvesTransformationInstance.cpp" />
-    <ClCompile Include="..\..\CurvesTransformationInterface.cpp" />
-    <ClCompile Include="..\..\CurvesTransformationParameters.cpp" />
-    <ClCompile Include="..\..\CurvesTransformationProcess.cpp" />
-    <ClCompile Include="..\..\ExponentialNumericControl.cpp" />
-    <ClCompile Include="..\..\ExponentialTransformationInstance.cpp" />
-    <ClCompile Include="..\..\ExponentialTransformationInterface.cpp" />
-    <ClCompile Include="..\..\ExponentialTransformationParameters.cpp" />
-    <ClCompile Include="..\..\ExponentialTransformationProcess.cpp" />
-    <ClCompile Include="..\..\HistogramAutoClipSetupDialog.cpp" />
-    <ClCompile Include="..\..\HistogramTransformationInstance.cpp" />
-    <ClCompile Include="..\..\HistogramTransformationInterface.cpp" />
-    <ClCompile Include="..\..\HistogramTransformationParameters.cpp" />
-    <ClCompile Include="..\..\HistogramTransformationProcess.cpp" />
-    <ClCompile Include="..\..\IntensityTransformationsModule.cpp" />
-    <ClCompile Include="..\..\InvertAction.cpp" />
-    <ClCompile Include="..\..\InvertInstance.cpp" />
-    <ClCompile Include="..\..\InvertProcess.cpp" />
-    <ClCompile Include="..\..\MaskedStretchInstance.cpp" />
-    <ClCompile Include="..\..\MaskedStretchInterface.cpp" />
-    <ClCompile Include="..\..\MaskedStretchParameters.cpp" />
-    <ClCompile Include="..\..\MaskedStretchProcess.cpp" />
-    <ClCompile Include="..\..\RescaleActions.cpp" />
-    <ClCompile Include="..\..\RescaleInstance.cpp" />
-    <ClCompile Include="..\..\RescaleInterface.cpp" />
-    <ClCompile Include="..\..\RescaleParameters.cpp" />
-    <ClCompile Include="..\..\RescaleProcess.cpp" />
-    <ClCompile Include="..\..\STFAutoStretchAction.cpp" />
-    <ClCompile Include="..\..\STFSliders.cpp" />
-    <ClCompile Include="..\..\ScreenTransferFunctionInstance.cpp" />
-    <ClCompile Include="..\..\ScreenTransferFunctionInterface.cpp" />
-    <ClCompile Include="..\..\ScreenTransferFunctionParameters.cpp" />
-    <ClCompile Include="..\..\ScreenTransferFunctionProcess.cpp" />
+    <ClCompile Include="..\..\AdaptiveStretchCurveGraphInterface.cpp"/>
+    <ClCompile Include="..\..\AdaptiveStretchInstance.cpp"/>
+    <ClCompile Include="..\..\AdaptiveStretchInterface.cpp"/>
+    <ClCompile Include="..\..\AdaptiveStretchParameters.cpp"/>
+    <ClCompile Include="..\..\AdaptiveStretchProcess.cpp"/>
+    <ClCompile Include="..\..\AutoHistogramInstance.cpp"/>
+    <ClCompile Include="..\..\AutoHistogramInterface.cpp"/>
+    <ClCompile Include="..\..\AutoHistogramParameters.cpp"/>
+    <ClCompile Include="..\..\AutoHistogramProcess.cpp"/>
+    <ClCompile Include="..\..\BinarizeAction.cpp"/>
+    <ClCompile Include="..\..\BinarizeInstance.cpp"/>
+    <ClCompile Include="..\..\BinarizeInterface.cpp"/>
+    <ClCompile Include="..\..\BinarizeParameters.cpp"/>
+    <ClCompile Include="..\..\BinarizeProcess.cpp"/>
+    <ClCompile Include="..\..\ColorSaturationInstance.cpp"/>
+    <ClCompile Include="..\..\ColorSaturationInterface.cpp"/>
+    <ClCompile Include="..\..\ColorSaturationParameters.cpp"/>
+    <ClCompile Include="..\..\ColorSaturationProcess.cpp"/>
+    <ClCompile Include="..\..\CurvesTransformationInstance.cpp"/>
+    <ClCompile Include="..\..\CurvesTransformationInterface.cpp"/>
+    <ClCompile Include="..\..\CurvesTransformationParameters.cpp"/>
+    <ClCompile Include="..\..\CurvesTransformationProcess.cpp"/>
+    <ClCompile Include="..\..\ExponentialNumericControl.cpp"/>
+    <ClCompile Include="..\..\ExponentialTransformationInstance.cpp"/>
+    <ClCompile Include="..\..\ExponentialTransformationInterface.cpp"/>
+    <ClCompile Include="..\..\ExponentialTransformationParameters.cpp"/>
+    <ClCompile Include="..\..\ExponentialTransformationProcess.cpp"/>
+    <ClCompile Include="..\..\HistogramAutoClipSetupDialog.cpp"/>
+    <ClCompile Include="..\..\HistogramTransformationInstance.cpp"/>
+    <ClCompile Include="..\..\HistogramTransformationInterface.cpp"/>
+    <ClCompile Include="..\..\HistogramTransformationParameters.cpp"/>
+    <ClCompile Include="..\..\HistogramTransformationProcess.cpp"/>
+    <ClCompile Include="..\..\IntensityTransformationsModule.cpp"/>
+    <ClCompile Include="..\..\InvertAction.cpp"/>
+    <ClCompile Include="..\..\InvertInstance.cpp"/>
+    <ClCompile Include="..\..\InvertProcess.cpp"/>
+    <ClCompile Include="..\..\MaskedStretchInstance.cpp"/>
+    <ClCompile Include="..\..\MaskedStretchInterface.cpp"/>
+    <ClCompile Include="..\..\MaskedStretchParameters.cpp"/>
+    <ClCompile Include="..\..\MaskedStretchProcess.cpp"/>
+    <ClCompile Include="..\..\RescaleActions.cpp"/>
+    <ClCompile Include="..\..\RescaleInstance.cpp"/>
+    <ClCompile Include="..\..\RescaleInterface.cpp"/>
+    <ClCompile Include="..\..\RescaleParameters.cpp"/>
+    <ClCompile Include="..\..\RescaleProcess.cpp"/>
+    <ClCompile Include="..\..\STFAutoStretchAction.cpp"/>
+    <ClCompile Include="..\..\STFSliders.cpp"/>
+    <ClCompile Include="..\..\ScreenTransferFunctionInstance.cpp"/>
+    <ClCompile Include="..\..\ScreenTransferFunctionInterface.cpp"/>
+    <ClCompile Include="..\..\ScreenTransferFunctionParameters.cpp"/>
+    <ClCompile Include="..\..\ScreenTransferFunctionProcess.cpp"/>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\AdaptiveStretchCurveGraphInterface.h" />
-    <ClInclude Include="..\..\AdaptiveStretchInstance.h" />
-    <ClInclude Include="..\..\AdaptiveStretchInterface.h" />
-    <ClInclude Include="..\..\AdaptiveStretchParameters.h" />
-    <ClInclude Include="..\..\AdaptiveStretchProcess.h" />
-    <ClInclude Include="..\..\AutoHistogramInstance.h" />
-    <ClInclude Include="..\..\AutoHistogramInterface.h" />
-    <ClInclude Include="..\..\AutoHistogramParameters.h" />
-    <ClInclude Include="..\..\AutoHistogramProcess.h" />
-    <ClInclude Include="..\..\BinarizeAction.h" />
-    <ClInclude Include="..\..\BinarizeInstance.h" />
-    <ClInclude Include="..\..\BinarizeInterface.h" />
-    <ClInclude Include="..\..\BinarizeParameters.h" />
-    <ClInclude Include="..\..\BinarizeProcess.h" />
-    <ClInclude Include="..\..\ColorSaturationInstance.h" />
-    <ClInclude Include="..\..\ColorSaturationInterface.h" />
-    <ClInclude Include="..\..\ColorSaturationParameters.h" />
-    <ClInclude Include="..\..\ColorSaturationProcess.h" />
-    <ClInclude Include="..\..\CurveBase.h" />
-    <ClInclude Include="..\..\CurvesTransformationInstance.h" />
-    <ClInclude Include="..\..\CurvesTransformationInterface.h" />
-    <ClInclude Include="..\..\CurvesTransformationParameters.h" />
-    <ClInclude Include="..\..\CurvesTransformationProcess.h" />
-    <ClInclude Include="..\..\ExponentialNumericControl.h" />
-    <ClInclude Include="..\..\ExponentialTransformationInstance.h" />
-    <ClInclude Include="..\..\ExponentialTransformationInterface.h" />
-    <ClInclude Include="..\..\ExponentialTransformationParameters.h" />
-    <ClInclude Include="..\..\ExponentialTransformationProcess.h" />
-    <ClInclude Include="..\..\HistogramAutoClipSetupDialog.h" />
-    <ClInclude Include="..\..\HistogramTransformationInstance.h" />
-    <ClInclude Include="..\..\HistogramTransformationInterface.h" />
-    <ClInclude Include="..\..\HistogramTransformationParameters.h" />
-    <ClInclude Include="..\..\HistogramTransformationProcess.h" />
-    <ClInclude Include="..\..\IntensityTransformationsModule.h" />
-    <ClInclude Include="..\..\InvertAction.h" />
-    <ClInclude Include="..\..\InvertInstance.h" />
-    <ClInclude Include="..\..\InvertProcess.h" />
-    <ClInclude Include="..\..\MaskedStretchInstance.h" />
-    <ClInclude Include="..\..\MaskedStretchInterface.h" />
-    <ClInclude Include="..\..\MaskedStretchParameters.h" />
-    <ClInclude Include="..\..\MaskedStretchProcess.h" />
-    <ClInclude Include="..\..\RescaleActions.h" />
-    <ClInclude Include="..\..\RescaleInstance.h" />
-    <ClInclude Include="..\..\RescaleInterface.h" />
-    <ClInclude Include="..\..\RescaleParameters.h" />
-    <ClInclude Include="..\..\RescaleProcess.h" />
-    <ClInclude Include="..\..\STFAutoStretchAction.h" />
-    <ClInclude Include="..\..\STFSliders.h" />
-    <ClInclude Include="..\..\ScreenTransferFunctionInstance.h" />
-    <ClInclude Include="..\..\ScreenTransferFunctionInterface.h" />
-    <ClInclude Include="..\..\ScreenTransferFunctionParameters.h" />
-    <ClInclude Include="..\..\ScreenTransferFunctionProcess.h" />
+    <ClInclude Include="..\..\AdaptiveStretchCurveGraphInterface.h"/>
+    <ClInclude Include="..\..\AdaptiveStretchInstance.h"/>
+    <ClInclude Include="..\..\AdaptiveStretchInterface.h"/>
+    <ClInclude Include="..\..\AdaptiveStretchParameters.h"/>
+    <ClInclude Include="..\..\AdaptiveStretchProcess.h"/>
+    <ClInclude Include="..\..\AutoHistogramInstance.h"/>
+    <ClInclude Include="..\..\AutoHistogramInterface.h"/>
+    <ClInclude Include="..\..\AutoHistogramParameters.h"/>
+    <ClInclude Include="..\..\AutoHistogramProcess.h"/>
+    <ClInclude Include="..\..\BinarizeAction.h"/>
+    <ClInclude Include="..\..\BinarizeInstance.h"/>
+    <ClInclude Include="..\..\BinarizeInterface.h"/>
+    <ClInclude Include="..\..\BinarizeParameters.h"/>
+    <ClInclude Include="..\..\BinarizeProcess.h"/>
+    <ClInclude Include="..\..\ColorSaturationInstance.h"/>
+    <ClInclude Include="..\..\ColorSaturationInterface.h"/>
+    <ClInclude Include="..\..\ColorSaturationParameters.h"/>
+    <ClInclude Include="..\..\ColorSaturationProcess.h"/>
+    <ClInclude Include="..\..\CurveBase.h"/>
+    <ClInclude Include="..\..\CurvesTransformationInstance.h"/>
+    <ClInclude Include="..\..\CurvesTransformationInterface.h"/>
+    <ClInclude Include="..\..\CurvesTransformationParameters.h"/>
+    <ClInclude Include="..\..\CurvesTransformationProcess.h"/>
+    <ClInclude Include="..\..\ExponentialNumericControl.h"/>
+    <ClInclude Include="..\..\ExponentialTransformationInstance.h"/>
+    <ClInclude Include="..\..\ExponentialTransformationInterface.h"/>
+    <ClInclude Include="..\..\ExponentialTransformationParameters.h"/>
+    <ClInclude Include="..\..\ExponentialTransformationProcess.h"/>
+    <ClInclude Include="..\..\HistogramAutoClipSetupDialog.h"/>
+    <ClInclude Include="..\..\HistogramTransformationInstance.h"/>
+    <ClInclude Include="..\..\HistogramTransformationInterface.h"/>
+    <ClInclude Include="..\..\HistogramTransformationParameters.h"/>
+    <ClInclude Include="..\..\HistogramTransformationProcess.h"/>
+    <ClInclude Include="..\..\IntensityTransformationsModule.h"/>
+    <ClInclude Include="..\..\InvertAction.h"/>
+    <ClInclude Include="..\..\InvertInstance.h"/>
+    <ClInclude Include="..\..\InvertProcess.h"/>
+    <ClInclude Include="..\..\MaskedStretchInstance.h"/>
+    <ClInclude Include="..\..\MaskedStretchInterface.h"/>
+    <ClInclude Include="..\..\MaskedStretchParameters.h"/>
+    <ClInclude Include="..\..\MaskedStretchProcess.h"/>
+    <ClInclude Include="..\..\RescaleActions.h"/>
+    <ClInclude Include="..\..\RescaleInstance.h"/>
+    <ClInclude Include="..\..\RescaleInterface.h"/>
+    <ClInclude Include="..\..\RescaleParameters.h"/>
+    <ClInclude Include="..\..\RescaleProcess.h"/>
+    <ClInclude Include="..\..\STFAutoStretchAction.h"/>
+    <ClInclude Include="..\..\STFSliders.h"/>
+    <ClInclude Include="..\..\ScreenTransferFunctionInstance.h"/>
+    <ClInclude Include="..\..\ScreenTransferFunctionInterface.h"/>
+    <ClInclude Include="..\..\ScreenTransferFunctionParameters.h"/>
+    <ClInclude Include="..\..\ScreenTransferFunctionProcess.h"/>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\AdaptiveStretchIcon.png" />
-    <None Include="..\..\AutoHistogramIcon.png" />
-    <None Include="..\..\BinarizeActionIcon.png" />
-    <None Include="..\..\BinarizeIcon.png" />
-    <None Include="..\..\ColorSaturationIcon.png" />
-    <None Include="..\..\CurvesTransformationIcon.png" />
-    <None Include="..\..\ExponentialTransformationIcon.png" />
-    <None Include="..\..\H_channel.png" />
-    <None Include="..\..\HistogramTransformationIcon.png" />
-    <None Include="..\..\InvertActionIcon.png" />
-    <None Include="..\..\InvertIcon.png" />
-    <None Include="..\..\L_channel.png" />
-    <None Include="..\..\MaskedStretchIcon.png" />
-    <None Include="..\..\RescaleIcon.png" />
-    <None Include="..\..\RescaleLumActionIcon.png" />
-    <None Include="..\..\RescaleRGBActionIcon.png" />
-    <None Include="..\..\S_channel.png" />
-    <None Include="..\..\ScreenTransferFunctionIcon.png" />
-    <None Include="..\..\a_channel.png" />
-    <None Include="..\..\akima_interpolation.png" />
-    <None Include="..\..\alpha_channel.png" />
-    <None Include="..\..\alpha_small_channel.png" />
-    <None Include="..\..\auto_clip_highlights.png" />
-    <None Include="..\..\auto_clip_shadows.png" />
-    <None Include="..\..\auto_zero_highlights.png" />
-    <None Include="..\..\auto_zero_shadows.png" />
-    <None Include="..\..\b_channel.png" />
-    <None Include="..\..\blue_channel.png" />
-    <None Include="..\..\blue_small_channel.png" />
-    <None Include="..\..\c_channel.png" />
-    <None Include="..\..\cubic_spline_interpolation.png" />
-    <None Include="..\..\delete_point_mode.png" />
-    <None Include="..\..\edit_point_mode.png" />
-    <None Include="..\..\green_channel.png" />
-    <None Include="..\..\green_small_channel.png" />
-    <None Include="..\..\linear_interpolation.png" />
-    <None Include="..\..\lock_output.png" />
-    <None Include="..\..\pan_cursor.png" />
-    <None Include="..\..\raw_rgb.png" />
-    <None Include="..\..\red_channel.png" />
-    <None Include="..\..\red_small_channel.png" />
-    <None Include="..\..\reject_saturated.png" />
-    <None Include="..\..\restore_curve.png" />
-    <None Include="..\..\reverse.png" />
-    <None Include="..\..\rgbk_channel.png" />
-    <None Include="..\..\rgbk_small_channel.png" />
-    <None Include="..\..\select_point_mode.png" />
-    <None Include="..\..\show_all_curves.png" />
-    <None Include="..\..\show_curve.png" />
-    <None Include="..\..\show_grid.png" />
-    <None Include="..\..\store_curve.png" />
-    <None Include="..\..\zoom_in_cursor.png" />
-    <None Include="..\..\zoom_out_cursor.png" />
-    <None Include="..\..\__private\AdaptiveStretchIcon.svg" />
-    <None Include="..\..\__private\MaskedStretchIcon.svg" />
-    <None Include="..\..\__private\icons.svg" />
+    <None Include="..\..\AdaptiveStretchIcon.png"/>
+    <None Include="..\..\AutoHistogramIcon.png"/>
+    <None Include="..\..\BinarizeActionIcon.png"/>
+    <None Include="..\..\BinarizeIcon.png"/>
+    <None Include="..\..\ColorSaturationIcon.png"/>
+    <None Include="..\..\CurvesTransformationIcon.png"/>
+    <None Include="..\..\ExponentialTransformationIcon.png"/>
+    <None Include="..\..\H_channel.png"/>
+    <None Include="..\..\HistogramTransformationIcon.png"/>
+    <None Include="..\..\InvertActionIcon.png"/>
+    <None Include="..\..\InvertIcon.png"/>
+    <None Include="..\..\L_channel.png"/>
+    <None Include="..\..\MaskedStretchIcon.png"/>
+    <None Include="..\..\RescaleIcon.png"/>
+    <None Include="..\..\RescaleLumActionIcon.png"/>
+    <None Include="..\..\RescaleRGBActionIcon.png"/>
+    <None Include="..\..\S_channel.png"/>
+    <None Include="..\..\ScreenTransferFunctionIcon.png"/>
+    <None Include="..\..\a_channel.png"/>
+    <None Include="..\..\akima_interpolation.png"/>
+    <None Include="..\..\alpha_channel.png"/>
+    <None Include="..\..\alpha_small_channel.png"/>
+    <None Include="..\..\auto_clip_highlights.png"/>
+    <None Include="..\..\auto_clip_shadows.png"/>
+    <None Include="..\..\auto_zero_highlights.png"/>
+    <None Include="..\..\auto_zero_shadows.png"/>
+    <None Include="..\..\b_channel.png"/>
+    <None Include="..\..\blue_channel.png"/>
+    <None Include="..\..\blue_small_channel.png"/>
+    <None Include="..\..\c_channel.png"/>
+    <None Include="..\..\cubic_spline_interpolation.png"/>
+    <None Include="..\..\delete_point_mode.png"/>
+    <None Include="..\..\edit_point_mode.png"/>
+    <None Include="..\..\green_channel.png"/>
+    <None Include="..\..\green_small_channel.png"/>
+    <None Include="..\..\linear_interpolation.png"/>
+    <None Include="..\..\lock_output.png"/>
+    <None Include="..\..\pan_cursor.png"/>
+    <None Include="..\..\raw_rgb.png"/>
+    <None Include="..\..\red_channel.png"/>
+    <None Include="..\..\red_small_channel.png"/>
+    <None Include="..\..\reject_saturated.png"/>
+    <None Include="..\..\restore_curve.png"/>
+    <None Include="..\..\reverse.png"/>
+    <None Include="..\..\rgbk_channel.png"/>
+    <None Include="..\..\rgbk_small_channel.png"/>
+    <None Include="..\..\select_point_mode.png"/>
+    <None Include="..\..\show_all_curves.png"/>
+    <None Include="..\..\show_curve.png"/>
+    <None Include="..\..\show_grid.png"/>
+    <None Include="..\..\store_curve.png"/>
+    <None Include="..\..\zoom_in_cursor.png"/>
+    <None Include="..\..\zoom_out_cursor.png"/>
+    <None Include="..\..\__private\AdaptiveStretchIcon.svg"/>
+    <None Include="..\..\__private\MaskedStretchIcon.svg"/>
+    <None Include="..\..\__private\icons.svg"/>
   </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Flux Process Module Version 01.00.00.0129
+// Standard Flux Process Module Version 01.00.01.0135
 // ----------------------------------------------------------------------------
-// B3EInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// B3EInstance.cpp - Released 2016/03/14 10:07:00 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Flux PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -62,8 +62,7 @@
 
 #include <iostream>
 
-#define TINY            1.2e-07
-#define REFRESH_COUNT   65536
+#define TINY 1.2e-07
 
 namespace pcl
 {
@@ -81,25 +80,6 @@ B3EInstance::InputViewParameters::InputViewParameters() :
    backgroundROI( 0 ),
    outputBackgroundReferenceMask( TheB3EOutputBackgroundReferenceMask1Parameter->DefaultValue() )
 {
-}
-
-B3EInstance::InputViewParameters::InputViewParameters( const InputViewParameters& x )
-{
-   (void)operator =( x );
-}
-
-B3EInstance::InputViewParameters& B3EInstance::InputViewParameters::operator =( const InputViewParameters& x )
-{
-   id = x.id;
-   center = x.center;
-   subtractBackground = x.subtractBackground;
-   backgroundReferenceViewId = x.backgroundReferenceViewId;
-   backgroundLow = x.backgroundLow;
-   backgroundHigh = x.backgroundHigh;
-   backgroundUseROI = x.backgroundUseROI;
-   backgroundROI = x.backgroundROI;
-   outputBackgroundReferenceMask = x.outputBackgroundReferenceMask;
-   return *this;
 }
 
 // ----------------------------------------------------------------------------
@@ -126,7 +106,7 @@ B3EInstance::B3EInstance( const B3EInstance& x ) :
 void B3EInstance::Assign( const ProcessImplementation& p )
 {
    const B3EInstance* x = dynamic_cast<const B3EInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       p_inputView[0]         = x->p_inputView[0];
       p_inputView[1]         = x->p_inputView[1];
@@ -190,7 +170,7 @@ bool B3EInstance::Validate( String& info )
 
    if ( 1 + Abs( p_inputView[0].center - p_inputView[1].center ) == 1 )
    {
-      info = "Both input center values must be different.";
+      info = "Both input center values must be different (with respect to the machine epsilon).";
       return false;
    }
 
@@ -198,7 +178,7 @@ bool B3EInstance::Validate( String& info )
       if ( 1 + Abs( p_outputCenter - p_inputView[0].center ) == 1 ||
            1 + Abs( p_outputCenter - p_inputView[1].center ) == 1 )
       {
-         info = "The output center value must be different from both input center values.";
+         info = "The output center value must be different (with respect to the machine epsilon) from both input center values.";
          return false;
       }
 
@@ -213,7 +193,7 @@ bool B3EInstance::CanExecuteOn( const View&, String& whyNot ) const
 
 bool B3EInstance::CanExecuteGlobal( String& whyNot ) const
 {
-   return true;
+   return true; // Validate() has already detected any invalid parameters.
 }
 
 // ----------------------------------------------------------------------------
@@ -310,34 +290,54 @@ public:
 private:
 
    template <class P1, class P2>
+   struct ThreadData : public AbstractImage::ThreadData
+   {
+      ThreadData( const B3EEngine& a_engine,
+                  UInt16Image* a_It, Image* a_Ic, UInt8Image* a_Im,
+                  const GenericImage<P1>& a_Ia, double a_ra, double a_ma, double a_ba,
+                  const GenericImage<P2>& a_Ib, double a_rb, double a_mb, double a_bb, double a_rc,
+                  const StatusMonitor& status, size_type count ) :
+         AbstractImage::ThreadData( status, count ),
+         engine( a_engine ),
+         It( a_It ), Ic( a_Ic ), Im( a_Im ),
+         Ia( a_Ia ), ra( a_ra ), ma( a_ma ),  ba( a_ba ),
+         Ib( a_Ib ), rb( a_rb ), mb( a_mb ),  bb( a_bb ),
+         rc( a_rc )
+      {
+      }
+
+      const B3EEngine&        engine;
+      UInt16Image*            It;
+      Image*                  Ic;
+      UInt8Image*             Im;
+      const GenericImage<P1>& Ia;
+      double                  ra, ma, ba;
+      const GenericImage<P2>& Ib;
+      double                  rb, mb, bb;
+      double                  rc;
+   };
+
+   template <class P1, class P2>
    class B3EThread : public Thread
    {
    public:
 
-      B3EThread( const B3EEngine& engine,
-                 UInt16Image* It, Image* Ic, UInt8Image* Im,
-                 const GenericImage<P1>& Ia, double ra, double ma, double ba,
-                 const GenericImage<P2>& Ib, double rb, double mb, double bb, double rc,
-                 size_type start, size_type end ) :
-      Thread(),
-      m_engine( engine ),
-      m_It( It ), m_Ic( Ic ), m_Im( Im ),
-      m_Ia( Ia ), m_ra( ra ), m_ma( ma ), m_ba( ba ),
-      m_Ib( Ib ), m_rb( rb ), m_mb( mb ), m_bb( bb ), m_rc( rc ),
-      m_start( start ), m_end( end )
+      B3EThread( ThreadData<P1,P2>& data, size_type start, size_type end ) :
+         Thread(),
+         m_data( data ), m_start( start ), m_end( end )
       {
       }
 
       virtual void Run()
       {
-         size_type n = 0, n1 = 0;
+         INIT_THREAD_MONITOR()
 
-         uint16* ft = m_It ? m_It->PixelData() + m_start : 0;
-         float*  fc = m_Ic ? m_Ic->PixelData() + m_start : 0;
-         uint8*  fm = m_Im ? m_Im->PixelData() + m_start : 0;
+         uint16* ft = m_data.It ? m_data.It->PixelData() + m_start : nullptr;
+         float*  fc = m_data.Ic ? m_data.Ic->PixelData() + m_start : nullptr;
+         uint8*  fm = m_data.Im ? m_data.Im->PixelData() + m_start : nullptr;
 
-         const typename P1::sample* fa = m_Ia.PixelData() + m_start;
-         const typename P2::sample* fb = m_Ib.PixelData() + m_start;
+         const typename P1::sample* fa = m_data.Ia.PixelData() + m_start;
+         const typename P2::sample* fb = m_data.Ib.PixelData() + m_start;
 
          for ( size_type i = m_start; i < m_end; ++i )
          {
@@ -346,87 +346,58 @@ private:
 
             double a;
             P1::FromSample( a, *fa++ );
-            a = (a - m_ba)*m_ra + m_ma;
+            a = (a - m_data.ba)*m_data.ra + m_data.ma;
 
             double b;
             P2::FromSample( b, *fb++ );
-            b = (b - m_bb)*m_rb + m_mb;
+            b = (b - m_data.bb)*m_data.rb + m_data.mb;
 
             double Iab = Max( TINY, a )/Max( TINY, b );
-            double T = m_engine.Tprop*(1/Ln( Iab*m_engine.xq1 ) + 1/Ln( Iab*m_engine.xq2 ));
+            double T = m_data.engine.Tprop*(1/Ln( Iab*m_data.engine.xq1 ) + 1/Ln( Iab*m_data.engine.xq2 ));
 
             if ( static_cast<uint16>( T ) == 28 )
-            {
                std::cout << String().Format( "a  = %.6f\n", a )
                          << String().Format( "b  = %.6f\n", b )
                          << String().Format( "fa = %.6f\n", fax )
                          << String().Format( "fb = %.6f\n", fbx )
-                         << String().Format( "x  = %d\n",   i%m_Ia.Width() )
-                         << String().Format( "y  = %d\n",   i/m_Ia.Width() )
-                         << String().Format( "Tp = %.6f\n", m_engine.Tprop )
-                         << String().Format( "xa = %.6f\n", m_engine.xa )
-                         << String().Format( "xb = %.6f\n", m_engine.xb )
-                         << String().Format( "g  = %.6f\n", m_engine.gamma ) << std::flush;
-            }
+                         << String().Format( "x  = %d\n",   i%m_data.Ia.Width() )
+                         << String().Format( "y  = %d\n",   i/m_data.Ia.Width() )
+                         << String().Format( "Tp = %.6f\n", m_data.engine.Tprop )
+                         << String().Format( "xa = %.6f\n", m_data.engine.xa )
+                         << String().Format( "xb = %.6f\n", m_data.engine.xb )
+                         << String().Format( "g  = %.6f\n", m_data.engine.gamma ) << std::flush;
 
-            if ( ft != 0 )
+            if ( ft != nullptr )
                *ft++ = static_cast<uint16>( RoundI( Range( T, 0.0, double( uint16_max ) ) ) );
 
-            if ( fc != 0 )
-            {
+            if ( fc != nullptr )
                if ( T < 1 )
                {
                   *fc++ = 0;
-                  if ( fm != 0 )
+                  if ( fm != nullptr )
                      *fm++ = 64;
                }
                else
                {
-                  double xcT1 = Max( TINY, Exp( m_engine.xc/T ) - 1 );
+                  double xcT1 = Max( TINY, Exp( m_data.engine.xc/T ) - 1 );
                   double c;
-                  if ( m_engine.closerToA )
-                     c = a*m_engine.xnca*(Exp( m_engine.xa/T ) - 1)/xcT1;
+                  if ( m_data.engine.closerToA )
+                     c = a*m_data.engine.xnca*(Exp( m_data.engine.xa/T ) - 1)/xcT1;
                   else
-                     c = b*m_engine.xncb*(Exp( m_engine.xb/T ) - 1)/xcT1;
-                  c /= m_rc;
-                  if ( fm != 0 )
+                     c = b*m_data.engine.xncb*(Exp( m_data.engine.xb/T ) - 1)/xcT1;
+                  c /= m_data.rc;
+                  if ( fm != nullptr )
                      *fm++ = (c < 0) ? 0 : ((c > 1) ? 255 : 153);
                   *fc++ = Range( c, 0.0, 1.0 );
                }
-            }
 
-            if ( ++n1 == REFRESH_COUNT )
-            {
-               n1 = 0;
-               n += REFRESH_COUNT;
-               if ( m_engine.mutex.TryLock() )
-               {
-                  m_engine.count += n;
-                  bool myAbort = m_engine.abort;
-                  m_engine.mutex.Unlock();
-                  if ( myAbort )
-                     break;
-                  n = 0;
-               }
-            }
+            UPDATE_THREAD_MONITOR( 65536 )
          }
       }
 
    private:
 
-      const B3EEngine& m_engine;
-      UInt16Image*     m_It;
-      Image*           m_Ic;
-      UInt8Image*      m_Im;
-      const GenericImage<P1>& m_Ia;
-      double           m_ra;
-      double           m_ma;
-      double           m_ba;
-      const GenericImage<P2>& m_Ib;
-      double           m_rb;
-      double           m_mb;
-      double           m_bb;
-      double           m_rc;
+      ThreadData<P1,P2>& m_data;
       size_type m_start, m_end;
    };
 
@@ -445,12 +416,11 @@ private:
       monitor.SetCallback( &status );
       monitor.Initialize( "B3E", N );
 
-      AbstractImage::ThreadData data( monitor, N );
+      ThreadData<P1,P2> data( *this, It, Ic, Im, Ia, ra, ma, ba, Ib, rb, mb, bb, rc, monitor, N );
       ReferenceArray<B3EThread<P1,P2> > threads;
       for ( int i = 0, j = 1; i < numberOfThreads; ++i, ++j )
-         threads.Add( new B3EThread<P1,P2>( *this, It, Ic, Im, Ia, ra, ma, ba, Ib, rb, mb, bb, rc,
-                                            i*pixelsPerThread,
-                                            (j < numberOfThreads) ? j*pixelsPerThread : N ) );
+         threads << new B3EThread<P1,P2>( data, i*pixelsPerThread,
+                                                (j < numberOfThreads) ? j*pixelsPerThread : N );
       AbstractImage::RunThreads( threads, data );
       threads.Destroy();
    }
@@ -527,10 +497,6 @@ private:
    double xnca, xncb;    // proportionality factors
    double Tprop;         // proportinality factor for temperature calculation
    bool   closerToA : 1; // xc is closer to xa than to xb
-
-   mutable Mutex     mutex;
-   mutable size_type count;
-   mutable bool      abort;
 };
 
 static bool GetFluxConversionParameters( double& flxRange, double& flxMin, const View& v )
@@ -554,9 +520,9 @@ static bool GetFluxConversionParameters( double& flxRange, double& flxMin, const
       }
 
    if ( !foundFlxRange )
-      Console().WarningLn( "<end><cbr><br>** Warning: B3E: FLXRANGE keyword not found: " + v.FullId() );
+      Console().WarningLn( "<end><cbr>** Warning: B3E: FLXRANGE keyword not found: " + v.FullId() );
    if ( !foundFlxMin )
-      Console().WarningLn( "<end><cbr><br>** Warning: B3E: FLXMIN keyword not found: " + v.FullId() );
+      Console().WarningLn( "<end><cbr>** Warning: B3E: FLXMIN keyword not found: " + v.FullId() );
 
    return foundFlxMin && foundFlxRange;
 }
@@ -847,9 +813,9 @@ bool B3EInstance::ExecuteGlobal()
 void* B3EInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/ )
 {
    if ( p == TheB3EInputViewId1Parameter )
-      return p_inputView[0].id.c_str();
+      return p_inputView[0].id.Begin();
    if ( p == TheB3EInputViewId2Parameter )
-      return p_inputView[1].id.c_str();
+      return p_inputView[1].id.Begin();
    if ( p == TheB3EInputCenter1Parameter )
       return &p_inputView[0].center;
    if ( p == TheB3EInputCenter2Parameter )
@@ -865,16 +831,16 @@ void* B3EInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/
    if ( p == TheB3EOutOfRangeMaskParameter )
       return &p_outOfRangeMask;
    if ( p == TheB3ESyntheticImageViewIdParameter )
-      return o_syntheticImageViewId.c_str();
+      return o_syntheticImageViewId.Begin();
    if ( p == TheB3EThermalMapViewIdParameter )
-      return o_thermalMapViewId.c_str();
+      return o_thermalMapViewId.Begin();
    if ( p == TheB3EOutOfRangeMaskViewIdParameter )
-      return o_outOfRangeMaskViewId.c_str();
+      return o_outOfRangeMaskViewId.Begin();
 
    if ( p == TheB3ESubstractBackground1Parameter )
       return &p_inputView[0].subtractBackground;
    if ( p == TheB3EBackgroundReferenceViewId1Parameter )
-      return p_inputView[0].backgroundReferenceViewId.c_str();
+      return p_inputView[0].backgroundReferenceViewId.Begin();
    if ( p == TheB3EBackgroundLow1Parameter )
       return &p_inputView[0].backgroundLow;
    if ( p == TheB3EBackgroundHigh1Parameter )
@@ -895,7 +861,7 @@ void* B3EInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/
    if ( p == TheB3ESubstractBackground2Parameter )
       return &p_inputView[1].subtractBackground;
    if ( p == TheB3EBackgroundReferenceViewId2Parameter )
-      return p_inputView[1].backgroundReferenceViewId.c_str();
+      return p_inputView[1].backgroundReferenceViewId.Begin();
    if ( p == TheB3EBackgroundLow2Parameter )
       return &p_inputView[1].backgroundLow;
    if ( p == TheB3EBackgroundHigh2Parameter )
@@ -990,4 +956,4 @@ size_type B3EInstance::ParameterLength( const MetaParameter* p, size_type tableR
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF B3EInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// EOF B3EInstance.cpp - Released 2016/03/14 10:07:00 UTC

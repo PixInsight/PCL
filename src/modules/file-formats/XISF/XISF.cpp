@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.05.0101
+// Standard XISF File Format Module Version 01.00.05.0105
 // ----------------------------------------------------------------------------
-// XISF.cpp - Released 2015/12/18 08:55:16 UTC
+// XISF.cpp - Released 2016/02/21 20:22:34 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -3618,8 +3618,7 @@ public:
        */
       XISFFileSignature signature( m_text.count() );
       ByteArray zero( size_type( m_xisfOptions.blockAlignmentSize ), uint8( 0 ) );
-      File f;
-      f.CreateForWriting( m_path );
+      File f = File::CreateFileForWriting( m_path );
       f.Write( signature );
       f.Write( reinterpret_cast<const void*>( m_text.constData() ), m_text.count() );
       for ( XISFOutputBlockArray::const_iterator i = m_blocks.Begin(); i < m_blocks.End(); ++i )
@@ -4770,4 +4769,4 @@ void XISFWriter::CheckClosedStream( const char* memberFunction ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISF.cpp - Released 2015/12/18 08:55:16 UTC
+// EOF XISF.cpp - Released 2016/02/21 20:22:34 UTC

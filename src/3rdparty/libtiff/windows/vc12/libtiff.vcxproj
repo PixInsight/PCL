@@ -1,12 +1,12 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.100
+# PixInsight Makefile Generator Script v1.101
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 17 Dec 2015 19:03:24 GMT
+# Automatically generated on Fri, 18 Mar 2016 13:16:32 GMT
 # Project id ...... libtiff
-# Project type .... DynamicLibrary
+# Project type .... StaticLibrary
 # Platform ........ Windows/vc12
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Additional preprocessor definitions:
@@ -17,10 +17,6 @@
 # Additional include search directories:
 # $(PCLSRCDIR)/3rdparty/jpeg
 # $(PCLSRCDIR)/3rdparty/zlib
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Additional libraries:
-# jpeg-pxi
-# zlib-pxi
 ######################################################################
 -->
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -43,30 +39,30 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{A0285A51-96CB-4E40-9C79-3BBA3E511A9D}</ProjectGuid>
+    <ProjectGuid>{9A65FDD9-FFE1-48A6-B8F0-DD61A64D9799}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <PlatformToolset>v120_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v120_xp</PlatformToolset>
   </PropertyGroup>
@@ -88,13 +84,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(PCLBINDIR64)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(PCLLIBDIR64)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(PCLBINDIR32)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(PCLLIBDIR32)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(PCLBINDIR64)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(PCLLIBDIR64)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(PCLBINDIR32)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(PCLLIBDIR32)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">libtiff-pxi</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">libtiff-pxi</TargetName>
@@ -111,7 +107,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
-      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
       <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty\jpeg;$(PCLSRCDIR)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;ZIP_SUPPORT;__WIN32__;_CRT_SECURE_NO_WARNINGS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
@@ -120,31 +116,15 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
+      <DebugInformationFormat></DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
-    <Link>
-      <AdditionalDependencies>;jpeg-pxi.lib;zlib-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(PCLBINDIR64)\libtiff-pxi.dll</OutputFile>
-      <AdditionalLibraryDirectories>$(PCLLIBDIR64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>../../libtiff.def</ModuleDefinitionFile>
-      <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
-      <SubSystem>Windows</SubSystem>
-      <LargeAddressAware>true</LargeAddressAware>
-      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <SupportUnloadOfDelayLoadedDLL>true</SupportUnloadOfDelayLoadedDLL>
-      <ImportLibrary>$(PCLLIBDIR64)\$(ProjectName)-pxi.lib</ImportLibrary>
-      <TargetMachine>MachineX64</TargetMachine>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
-    </Link>
-    <PostBuildEvent>
-      <Command>signtool.exe sign /a /t http://timestamp.verisign.com/scripts/timstamp.dll /v $(TargetDir)$(TargetFileName)</Command>
-    </PostBuildEvent>
+    <Lib>
+      <OutputFile>$(PCLLIBDIR64)\libtiff-pxi.lib</OutputFile>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -153,7 +133,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
-      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
       <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty\jpeg;$(PCLSRCDIR)\3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;ZIP_SUPPORT;__WIN32__;_CRT_SECURE_NO_WARNINGS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
@@ -163,31 +143,15 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
+      <DebugInformationFormat></DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
-    <Link>
-      <AdditionalDependencies>;jpeg-pxi.lib;zlib-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(PCLBINDIR32)\libtiff-pxi.dll</OutputFile>
-      <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>../../libtiff.def</ModuleDefinitionFile>
-      <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
-      <SubSystem>Windows</SubSystem>
-      <LargeAddressAware>true</LargeAddressAware>
-      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <SupportUnloadOfDelayLoadedDLL>true</SupportUnloadOfDelayLoadedDLL>
-      <ImportLibrary>$(PCLLIBDIR32)\$(ProjectName)-pxi.lib</ImportLibrary>
-      <TargetMachine>MachineX86</TargetMachine>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
-    </Link>
-    <PostBuildEvent>
-      <Command>signtool.exe sign /a /t http://timestamp.verisign.com/scripts/timstamp.dll /v $(TargetDir)$(TargetFileName)</Command>
-    </PostBuildEvent>
+    <Lib>
+      <OutputFile>$(PCLLIBDIR32)\libtiff-pxi.lib</OutputFile>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
@@ -201,27 +165,15 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
-    <Link>
-      <AdditionalDependencies>;jpeg-pxi.lib;zlib-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(PCLBINDIR64)\libtiff-pxi.dll</OutputFile>
-      <AdditionalLibraryDirectories>$(PCLLIBDIR64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>../../libtiff.def</ModuleDefinitionFile>
-      <SubSystem>Windows</SubSystem>
-      <LargeAddressAware>true</LargeAddressAware>
-      <ImportLibrary>$(PCLLIBDIR64)\$(ProjectName)-pxi.lib</ImportLibrary>
-      <TargetMachine>MachineX64</TargetMachine>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-    <PostBuildEvent>
-      <Command>signtool.exe sign /a /t http://timestamp.verisign.com/scripts/timstamp.dll /v $(TargetDir)$(TargetFileName)</Command>
-    </PostBuildEvent>
+    <Lib>
+      <OutputFile>$(PCLLIBDIR64)\libtiff-pxi.lib</OutputFile>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -232,85 +184,73 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
-    <Link>
-      <AdditionalDependencies>;jpeg-pxi.lib;zlib-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(PCLBINDIR32)\libtiff-pxi.dll</OutputFile>
-      <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>../../libtiff.def</ModuleDefinitionFile>
-      <SubSystem>Windows</SubSystem>
-      <LargeAddressAware>true</LargeAddressAware>
-      <ImportLibrary>$(PCLLIBDIR32)\$(ProjectName)-pxi.lib</ImportLibrary>
-      <TargetMachine>MachineX86</TargetMachine>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-    <PostBuildEvent>
-      <Command>signtool.exe sign /a /t http://timestamp.verisign.com/scripts/timstamp.dll /v $(TargetDir)$(TargetFileName)</Command>
-    </PostBuildEvent>
+    <Lib>
+      <OutputFile>$(PCLLIBDIR32)\libtiff-pxi.lib</OutputFile>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\tif_aux.c" />
-    <ClCompile Include="..\..\tif_close.c" />
-    <ClCompile Include="..\..\tif_codec.c" />
-    <ClCompile Include="..\..\tif_color.c" />
-    <ClCompile Include="..\..\tif_compress.c" />
-    <ClCompile Include="..\..\tif_dir.c" />
-    <ClCompile Include="..\..\tif_dirinfo.c" />
-    <ClCompile Include="..\..\tif_dirread.c" />
-    <ClCompile Include="..\..\tif_dirwrite.c" />
-    <ClCompile Include="..\..\tif_dumpmode.c" />
-    <ClCompile Include="..\..\tif_error.c" />
-    <ClCompile Include="..\..\tif_extension.c" />
-    <ClCompile Include="..\..\tif_fax3.c" />
-    <ClCompile Include="..\..\tif_fax3sm.c" />
-    <ClCompile Include="..\..\tif_flush.c" />
-    <ClCompile Include="..\..\tif_getimage.c" />
-    <ClCompile Include="..\..\tif_jbig.c" />
-    <ClCompile Include="..\..\tif_jpeg.c" />
-    <ClCompile Include="..\..\tif_jpeg_12.c" />
-    <ClCompile Include="..\..\tif_luv.c" />
-    <ClCompile Include="..\..\tif_lzma.c" />
-    <ClCompile Include="..\..\tif_lzw.c" />
-    <ClCompile Include="..\..\tif_next.c" />
-    <ClCompile Include="..\..\tif_ojpeg.c" />
-    <ClCompile Include="..\..\tif_open.c" />
-    <ClCompile Include="..\..\tif_packbits.c" />
-    <ClCompile Include="..\..\tif_pixarlog.c" />
-    <ClCompile Include="..\..\tif_predict.c" />
-    <ClCompile Include="..\..\tif_print.c" />
-    <ClCompile Include="..\..\tif_read.c" />
-    <ClCompile Include="..\..\tif_stream.cxx" />
-    <ClCompile Include="..\..\tif_strip.c" />
-    <ClCompile Include="..\..\tif_swab.c" />
-    <ClCompile Include="..\..\tif_thunder.c" />
-    <ClCompile Include="..\..\tif_tile.c" />
-    <ClCompile Include="..\..\tif_unix.c" />
-    <ClCompile Include="..\..\tif_version.c" />
-    <ClCompile Include="..\..\tif_warning.c" />
-    <ClCompile Include="..\..\tif_write.c" />
-    <ClCompile Include="..\..\tif_zip.c" />
+    <ClCompile Include="..\..\tif_aux.c"/>
+    <ClCompile Include="..\..\tif_close.c"/>
+    <ClCompile Include="..\..\tif_codec.c"/>
+    <ClCompile Include="..\..\tif_color.c"/>
+    <ClCompile Include="..\..\tif_compress.c"/>
+    <ClCompile Include="..\..\tif_dir.c"/>
+    <ClCompile Include="..\..\tif_dirinfo.c"/>
+    <ClCompile Include="..\..\tif_dirread.c"/>
+    <ClCompile Include="..\..\tif_dirwrite.c"/>
+    <ClCompile Include="..\..\tif_dumpmode.c"/>
+    <ClCompile Include="..\..\tif_error.c"/>
+    <ClCompile Include="..\..\tif_extension.c"/>
+    <ClCompile Include="..\..\tif_fax3.c"/>
+    <ClCompile Include="..\..\tif_fax3sm.c"/>
+    <ClCompile Include="..\..\tif_flush.c"/>
+    <ClCompile Include="..\..\tif_getimage.c"/>
+    <ClCompile Include="..\..\tif_jbig.c"/>
+    <ClCompile Include="..\..\tif_jpeg.c"/>
+    <ClCompile Include="..\..\tif_jpeg_12.c"/>
+    <ClCompile Include="..\..\tif_luv.c"/>
+    <ClCompile Include="..\..\tif_lzma.c"/>
+    <ClCompile Include="..\..\tif_lzw.c"/>
+    <ClCompile Include="..\..\tif_next.c"/>
+    <ClCompile Include="..\..\tif_ojpeg.c"/>
+    <ClCompile Include="..\..\tif_open.c"/>
+    <ClCompile Include="..\..\tif_packbits.c"/>
+    <ClCompile Include="..\..\tif_pixarlog.c"/>
+    <ClCompile Include="..\..\tif_predict.c"/>
+    <ClCompile Include="..\..\tif_print.c"/>
+    <ClCompile Include="..\..\tif_read.c"/>
+    <ClCompile Include="..\..\tif_stream.cxx"/>
+    <ClCompile Include="..\..\tif_strip.c"/>
+    <ClCompile Include="..\..\tif_swab.c"/>
+    <ClCompile Include="..\..\tif_thunder.c"/>
+    <ClCompile Include="..\..\tif_tile.c"/>
+    <ClCompile Include="..\..\tif_unix.c"/>
+    <ClCompile Include="..\..\tif_version.c"/>
+    <ClCompile Include="..\..\tif_warning.c"/>
+    <ClCompile Include="..\..\tif_write.c"/>
+    <ClCompile Include="..\..\tif_zip.c"/>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\t4.h" />
-    <ClInclude Include="..\..\tif_config.h" />
-    <ClInclude Include="..\..\tif_dir.h" />
-    <ClInclude Include="..\..\tif_fax3.h" />
-    <ClInclude Include="..\..\tif_predict.h" />
-    <ClInclude Include="..\..\tiff.h" />
-    <ClInclude Include="..\..\tiffconf.h" />
-    <ClInclude Include="..\..\tiffio.h" />
-    <ClInclude Include="..\..\tiffio.hxx" />
-    <ClInclude Include="..\..\tiffiop.h" />
-    <ClInclude Include="..\..\tiffvers.h" />
-    <ClInclude Include="..\..\uvcode.h" />
+    <ClInclude Include="..\..\t4.h"/>
+    <ClInclude Include="..\..\tif_config.h"/>
+    <ClInclude Include="..\..\tif_dir.h"/>
+    <ClInclude Include="..\..\tif_fax3.h"/>
+    <ClInclude Include="..\..\tif_predict.h"/>
+    <ClInclude Include="..\..\tiff.h"/>
+    <ClInclude Include="..\..\tiffconf.h"/>
+    <ClInclude Include="..\..\tiffio.h"/>
+    <ClInclude Include="..\..\tiffio.hxx"/>
+    <ClInclude Include="..\..\tiffiop.h"/>
+    <ClInclude Include="..\..\tiffvers.h"/>
+    <ClInclude Include="..\..\uvcode.h"/>
   </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.02.0096
+// Standard INDIClient Process Module Version 01.00.03.0102
 // ----------------------------------------------------------------------------
-// INDIParamListTypes.h - Released 2015/10/13 15:55:45 UTC
+// INDIParamListTypes.h - Released 2016/03/18 13:15:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2015 Klaus Kretzschmar
+// Copyright (c) 2014-2016 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,7 +59,9 @@
 
 #ifndef PIXINSIGHTINDIPARAMLISTTYPES_H_
 #define PIXINSIGHTINDIPARAMLISTTYPES_H_
+
 #include <memory>
+
 #include <pcl/Mutex.h>
 #include <pcl/AutoLock.h>
 
@@ -68,72 +70,115 @@
 namespace pcl
 {
 
-struct INDIDeviceListItem {
-   INDIDeviceListItem(){}
+// ----------------------------------------------------------------------------
+
+struct INDIDeviceListItem
+{
+   INDIDeviceListItem()
+   {
+   }
+
    String DeviceName;
    String DeviceLabel;
-   bool operator==(const INDIDeviceListItem& rhs ) const {
-      return (DeviceName == rhs.DeviceName);
+
+   bool operator ==( const INDIDeviceListItem& rhs ) const
+   {
+      return DeviceName == rhs.DeviceName;
    }
 };
 
-typedef enum {
+typedef enum
+{
    Insert,
    Update,
    Remove,
    Idle
-} PropertyFlagType;
+}
+PropertyFlagType;
 
-struct INDIPropertyListItem {
-   INDIPropertyListItem():PropertyFlag(Idle){}
-   String Device;
-   String Property;
-   INDI_TYPE PropertyType;
-   String PropertyTypeStr;
-   String Element;
-   unsigned int PropertyState;
-   PropertyFlagType   PropertyFlag;
-   String PropertyNumberFormat;
-   String PropertyLabel;
-   String ElementLabel;
-   String PropertyKey;
-   String PropertyValue;
-   String NewPropertyValue;
-   bool operator==(const INDIPropertyListItem& rhs) const {
-      return (PropertyKey == rhs.PropertyKey) ;
+struct INDIPropertyListItem
+{
+   INDIPropertyListItem() : PropertyFlag( Idle )
+   {
+   }
+
+   String           Device;
+   String           Property;
+   INDI_TYPE        PropertyType;
+   String           PropertyTypeStr;
+   String           Element;
+   unsigned         PropertyState;
+   PropertyFlagType PropertyFlag;
+   String           PropertyNumberFormat;
+   String           PropertyLabel;
+   String           ElementLabel;
+   String           PropertyKey;
+   String           PropertyValue;
+   String           NewPropertyValue;
+
+   bool operator ==( const INDIPropertyListItem& rhs ) const
+   {
+      return PropertyKey == rhs.PropertyKey;
    }
 };
 
-struct INDINewPropertyListItem {
-   INDINewPropertyListItem(){}
+struct INDINewPropertyListItem
+{
+   INDINewPropertyListItem()
+   {
+   }
+
    String Device;
    String Property;
+   String PropertyKey;
    String PropertyType;
    String Element;
-   String PropertyKey;
    String NewPropertyValue;
-   bool operator==(const INDINewPropertyListItem& rhs) const;
+
+   bool operator ==( const INDINewPropertyListItem& rhs ) const
+   {
+      return Device == rhs.Device &&
+             Property == rhs.Property &&
+             PropertyKey == rhs.PropertyKey &&
+             PropertyType == rhs.PropertyType &&
+             Element == rhs.Element &&
+             NewPropertyValue == rhs.NewPropertyValue;
+   }
 };
 
-class ExclPropertyList {
-	std::shared_ptr<pcl::AutoLock>  m_locker;
-	Array<INDIPropertyListItem>&    m_propertyListRef;
+class ExclPropertyList
+{
 public:
-	explicit ExclPropertyList(Array<INDIPropertyListItem>&  propertyList) :
-			m_locker(nullptr),
-			m_propertyListRef(propertyList){}
-	ExclPropertyList(pcl::Mutex& mutex, Array<INDIPropertyListItem>&  propertyList) :
-		m_locker(new AutoLock(mutex)),
-		m_propertyListRef(propertyList){
-	}
 
-	Array<INDIPropertyListItem>* get() {return &m_propertyListRef;}
+   explicit
+   ExclPropertyList( Array<INDIPropertyListItem>& propertyList ) :
+      m_locker( nullptr ),
+      m_propertyListRef( propertyList )
+   {
+   }
 
+   ExclPropertyList( pcl::Mutex& mutex, Array<INDIPropertyListItem>&  propertyList ) :
+      m_locker( new AutoLock( mutex ) ),
+      m_propertyListRef( propertyList )
+   {
+   }
+
+   Array<INDIPropertyListItem>* get()
+   {
+      return &m_propertyListRef;
+   }
+
+private:
+
+   std::shared_ptr<pcl::AutoLock> m_locker;
+   Array<INDIPropertyListItem>&   m_propertyListRef;
 };
+
+// ----------------------------------------------------------------------------
 
 } // pcl
 
 #endif /* PIXINSIGHTINDIPARAMLISTTYPES_H_ */
 
 // ----------------------------------------------------------------------------
-// EOF INDIParamListTypes.h - Released 2015/10/13 15:55:45 UTC
+// EOF INDIParamListTypes.h - Released 2016/03/18 13:15:37 UTC

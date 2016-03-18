@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Flux Process Module Version 01.00.00.0129
+// Standard Flux Process Module Version 01.00.01.0135
 // ----------------------------------------------------------------------------
-// B3EParameters.cpp - Released 2015/12/18 08:55:08 UTC
+// B3EParameters.cpp - Released 2016/03/14 10:07:00 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Flux PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -162,7 +162,7 @@ double B3EInputCenter1::DefaultValue() const
 
 double B3EInputCenter1::MinimumValue() const
 {
-   return 1.0e-05;
+   return 0; // 0 = undefined
 }
 
 double B3EInputCenter1::MaximumValue() const
@@ -194,7 +194,7 @@ double B3EInputCenter2::DefaultValue() const
 
 double B3EInputCenter2::MinimumValue() const
 {
-   return 1.0e-05;
+   return 0; // 0 = undefined
 }
 
 double B3EInputCenter2::MaximumValue() const
@@ -226,7 +226,7 @@ double B3EOutputCenter::DefaultValue() const
 
 double B3EOutputCenter::MinimumValue() const
 {
-   return 1.0e-05;
+   return 0; // 0 = undefined
 }
 
 double B3EOutputCenter::MaximumValue() const
@@ -862,4 +862,4 @@ bool B3EOutputBackgroundReferenceMask2::DefaultValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF B3EParameters.cpp - Released 2015/12/18 08:55:08 UTC
+// EOF B3EParameters.cpp - Released 2016/03/14 10:07:00 UTC

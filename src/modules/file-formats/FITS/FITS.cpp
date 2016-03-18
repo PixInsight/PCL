@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard FITS File Format Module Version 01.01.03.0349
+// Standard FITS File Format Module Version 01.01.04.0358
 // ----------------------------------------------------------------------------
-// FITS.cpp - Released 2015/12/18 08:55:16 UTC
+// FITS.cpp - Released 2016/02/21 20:22:34 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -227,7 +227,7 @@ public:
 
          if ( image.Status().IsInitializationEnabled() )
             image.Status().Initialize( String().Format(
-                     "Reading FITS: %d-bit %s, %d channel(s), %dx%d pixels",
+                     "Reading FITS image: %d-bit %s, %d channel(s), %dx%d pixels",
                      reader.Options().bitsPerSample,
                      reader.Options().ieeefpSampleFormat ? "floating point" : "integers",
                      image.NumberOfChannels(), image.Width(), image.Height() ),
@@ -931,7 +931,7 @@ bool FITSReader::Extract( UInt8Image& image )
 
    if ( !hdus[index].thumbExtName.IsEmpty() )
    {
-      ::fits_movnam_hdu( fits_handle, IMAGE_HDU, hdus[index].thumbExtName.c_str(), 0, &fitsStatus );
+      ::fits_movnam_hdu( fits_handle, IMAGE_HDU, hdus[index].thumbExtName.Begin(), 0, &fitsStatus );
       if ( fitsStatus == 0 ) // HDU found ?
          ok = true;
    }
@@ -1332,7 +1332,8 @@ public:
             image.Status().Initialize( String().Format(
                      "Writing FITS image: %d-bit %s, %d channel(s), %dx%d pixels",
                      writer.options.bitsPerSample,
-                     writer.options.ieeefpSampleFormat ? "floating point" : "integers",
+                     writer.options.ieeefpSampleFormat ? "floating point" :
+                              (writer.FITSOptions().unsignedIntegers ? "unsigned integers" : "signed integers"),
                      info.numberOfChannels,
                      info.width, info.height ),
                   info.NumberOfSamples() );
@@ -2248,7 +2249,7 @@ void FITSWriter::CreateImage( const ImageInfo& info )
          FITSHeaderKeyword k = *i;
 
          // Take it as uppercase to simplify subsequent comparisons
-         IsoString kname = k.name.Uppercase();
+         IsoString kname = k.name.Trimmed().Uppercase();
 
          /*
           * Do not duplicate mandatory and PCL FITS keywords, and do not
@@ -2385,9 +2386,7 @@ void FITSWriter::CreateImage( const ImageInfo& info )
          }
       }
 
-      /*
-       * Turn off CFITSIO's automatic data scaling for floating-point samples.
-       */
+      // Turn off CFITSIO's automatic data scaling for floating-point samples.
       if ( options.ieeefpSampleFormat )
          ::fits_set_bscale( fits_handle, 1, 0, &fitsStatus );
    }
@@ -2569,4 +2568,4 @@ void FITSWriter::WriteExtensionHDU( const FITSExtensionData& ext )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FITS.cpp - Released 2015/12/18 08:55:16 UTC
+// EOF FITS.cpp - Released 2016/02/21 20:22:34 UTC

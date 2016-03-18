@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.02.0096
+// Standard INDIClient Process Module Version 01.00.03.0102
 // ----------------------------------------------------------------------------
-// INDIClient.cpp - Released 2015/10/13 15:55:45 UTC
+// INDIClient.cpp - Released 2016/03/18 13:15:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2015 Klaus Kretzschmar
+// Copyright (c) 2014-2016 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -62,164 +62,170 @@
 namespace pcl
 {
 
-	void INDIClient::runOnPropertyTable(IProperty* INDIProperty, const ArrayOperator<INDIPropertyListItem>* arrayOp, PropertyFlagType flag){
+// ----------------------------------------------------------------------------
 
-		// get popertyList with exclusive access
-		ExclPropertyList propertyList = m_Instance->getExclusivePropertyList();
+void INDIClient::runOnPropertyTable( IProperty* INDIProperty, const ArrayOperator<INDIPropertyListItem>* arrayOp, PropertyFlagType flag )
+{
+   // get propertyList with exclusive access
+   ExclPropertyList propertyList = m_instance->getExclusivePropertyList();
+   INDIPropertyListItem propertyListItem;
+   propertyListItem.Device = INDIProperty->getDeviceName();
+   propertyListItem.Property = INDIProperty->getName();
+   propertyListItem.PropertyType = INDIProperty->getType();
+   propertyListItem.PropertyTypeStr = INDIProperty->getTypeStr();
+   propertyListItem.PropertyState = INDIProperty->getState();
+   propertyListItem.PropertyLabel = INDIProperty->getLabel();
 
-		String sep("/");
-		INDIPropertyListItem propertyListItem;
-		propertyListItem.Device=INDIProperty->getDeviceName();
-		propertyListItem.Property=INDIProperty->getName();
-		propertyListItem.PropertyType=INDIProperty->getType();
-		propertyListItem.PropertyTypeStr=INDIProperty->getTypeStr();
-		propertyListItem.PropertyState =INDIProperty->getState();
-		propertyListItem.PropertyLabel =INDIProperty->getLabel();
-
-		for (size_t i=0; i<INDIProperty->getNumOfElements();i++) {
-			propertyListItem.Element=INDIProperty->getElementName(i);
-			propertyListItem.PropertyKey=sep + propertyListItem.Device + sep + propertyListItem.Property + sep + propertyListItem.Element;
-			propertyListItem.PropertyValue=INDIProperty->getElementValue(i);
-			propertyListItem.PropertyFlag=flag;
-			propertyListItem.PropertyNumberFormat=INDIProperty->getNumberFormat(i);
-			propertyListItem.ElementLabel=INDIProperty->getElementLabel(i);
-			arrayOp->run(*propertyList.get(),propertyListItem);
-		    if (m_ScriptInstance) {
-		    	ExclPropertyList scriptPropertyList = m_ScriptInstance->getExclusivePropertyList();
-		    	arrayOp->run(*scriptPropertyList.get(), propertyListItem);
-		    }
-		}
-	}
-
-	void INDIClient::newDevice(INDI::BaseDevice *dp){
-		assert(dp!=NULL);
-		if (m_Instance!=NULL){
-			INDIDeviceListItem deviceListItem;
-			deviceListItem.DeviceName=String(dp->getDeviceName());
-			deviceListItem.DeviceLabel=String(dp->getDriverName());
-			m_Instance->getDeviceList().Append(deviceListItem);
-			if (m_ScriptInstance) {
-				m_ScriptInstance->getDeviceList().Append(deviceListItem);
-			}
-		}
-
-	}
-
-	void INDIClient::deleteDevice(INDI::BaseDevice *dp){
-		assert(dp!=NULL);
-
-		if (m_Instance!=NULL){
-			for (INDIDeviceControllerInstance::PropertyListType::iterator iter=m_Instance->getPropertyList().Begin() ; iter!=m_Instance->getPropertyList().End(); ++iter){
-				if (iter->Device==String(dp->getDeviceName())){
-					iter->PropertyFlag=Remove;
-				}
-			}
-			// TODO script instance
-		}
-	}
-
-
-	void INDIClient::newProperty(INDI::Property *property){
-		assert(property!=NULL);
-		IProperty* INDIProperty = PropertyFactory::create(property);
-		ArrayOperator<INDIPropertyListItem>* append=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayAppend<INDIPropertyListItem>());
-		// add property to the property process parameter table
-		runOnPropertyTable(INDIProperty,append,Insert);
-
-		setBLOBMode(B_ALSO,property->getDeviceName());
-	}
-
-	void INDIClient::removeProperty(INDI::Property *property){
-		if (property!=NULL){
-			ArrayOperator<INDIPropertyListItem>* update=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayUpdate<INDIPropertyListItem>());
-
-			IProperty* INDIProperty = PropertyFactory::create(property);
-
-			String sep("/");
-			INDIPropertyListItem propertyListItem;
-			propertyListItem.Device = INDIProperty->getDeviceName();
-			propertyListItem.Property = INDIProperty->getName();
-			propertyListItem.PropertyType = INDIProperty->getType();
-			propertyListItem.PropertyTypeStr = INDIProperty->getTypeStr();
-			propertyListItem.PropertyState = INDIProperty->getState();
-
-			for (size_t i = 0; i < INDIProperty->getNumOfElements(); i++) {
-				propertyListItem.Element = INDIProperty->getElementName(i);
-				propertyListItem.PropertyKey = sep + propertyListItem.Device + sep
-						+ propertyListItem.Property + sep
-						+ propertyListItem.Element;
-				propertyListItem.PropertyValue = INDIProperty->getElementValue(i);
-				propertyListItem.PropertyFlag=Remove;
-				update->run(m_Instance->getPropertyList(), propertyListItem);
-				if (m_ScriptInstance) {
-					update->run(m_ScriptInstance->getPropertyList(), propertyListItem);
-				}
-			}
-		}
-	}
-
-	void INDIClient::newMessage(INDI::BaseDevice *dp, int messageID){
-		const char* message = dp->messageQueue(messageID);
-		if (message!=NULL){
-			m_Instance->getCurrentMessage()=IsoString(message);
-			if (m_ScriptInstance) {
-				m_ScriptInstance->getCurrentMessage()=IsoString(message);
-			}
-		}
-	}
-
-	void INDIClient::newSwitch(ISwitchVectorProperty *svp){
-		INDI::Property* property = new INDI::Property();
-		property->setProperty(svp);
-		property->setType(INDI_SWITCH);
-
-		IProperty* INDIProperty = PropertyFactory::create(property);
-		ArrayOperator<INDIPropertyListItem>* update=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayUpdate<INDIPropertyListItem>());
-		runOnPropertyTable(INDIProperty,update,Update);
-
-	}
-
-	void INDIClient::newNumber(INumberVectorProperty *nvp){
-		INDI::Property* property = new INDI::Property();
-		property->setProperty(nvp);
-		property->setType(INDI_NUMBER);
-
-		IProperty* INDIProperty = PropertyFactory::create(property);
-		ArrayOperator<INDIPropertyListItem>* update=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayUpdate<INDIPropertyListItem>());
-		runOnPropertyTable(INDIProperty,update,Update);
-	}
-
-	void INDIClient::newText(ITextVectorProperty *tvp){
-		INDI::Property* property = new INDI::Property();
-		property->setProperty(tvp);
-		property->setType(INDI_TEXT);
-
-		IProperty* INDIProperty = PropertyFactory::create(property);
-		ArrayOperator<INDIPropertyListItem>* update=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayUpdate<INDIPropertyListItem>());
-		runOnPropertyTable(INDIProperty,update,Update);
-	}
-
-	void INDIClient::newLight(ILightVectorProperty *lvp){
-		INDI::Property* property = new INDI::Property();
-		property->setProperty(lvp);
-		property->setType(INDI_LIGHT);
-
-		IProperty* INDIProperty = PropertyFactory::create(property);
-		ArrayOperator<INDIPropertyListItem>* update=dynamic_cast<ArrayOperator<INDIPropertyListItem>*>(new ArrayUpdate<INDIPropertyListItem>());
-		runOnPropertyTable(INDIProperty,update,Update);
-	}
-
-   void INDIClient::newBLOB( IBLOB *bp )
+   for ( size_t i = 0; i < INDIProperty->getNumOfElements(); i++ )
    {
-      String fileName = File::SystemTempDirectory() + '/' + bp->label + bp->format;
-      File myfile = File::CreateFileForWriting( fileName );
-      myfile.Write( bp->blob, bp->size );
-      myfile.Close();
-      m_Instance->setImageDownloadedFlag( true );
-      if ( m_ScriptInstance )
-         m_ScriptInstance->setImageDownloadedFlag( true );
+      propertyListItem.Element = INDIProperty->getElementName( i );
+      propertyListItem.PropertyKey = '/' + propertyListItem.Device
+                                   + '/' + propertyListItem.Property
+                                   + '/' + propertyListItem.Element;
+      propertyListItem.PropertyValue = INDIProperty->getElementValue( i );
+      propertyListItem.PropertyFlag = flag;
+      propertyListItem.PropertyNumberFormat = INDIProperty->getNumberFormat( i );
+      propertyListItem.ElementLabel = INDIProperty->getElementLabel( i );
+      arrayOp->run( *propertyList.get(), propertyListItem );
+      if ( m_scriptInstance )
+      {
+         ExclPropertyList scriptPropertyList = m_scriptInstance->getExclusivePropertyList();
+         arrayOp->run( *scriptPropertyList.get(), propertyListItem );
+      }
    }
 }
 
+void INDIClient::newDevice( INDI::BaseDevice* dp )
+{
+   assert( dp != nullptr );
+   if ( m_instance != nullptr )
+   {
+      INDIDeviceListItem deviceListItem;
+      deviceListItem.DeviceName = dp->getDeviceName();
+      deviceListItem.DeviceLabel = dp->getDriverName();
+      m_instance->getDeviceList().Append( deviceListItem );
+      if ( m_scriptInstance )
+         m_scriptInstance->getDeviceList().Append( deviceListItem );
+   }
+}
+
+void INDIClient::deleteDevice( INDI::BaseDevice* dp )
+{
+   assert( dp != nullptr );
+   if ( m_instance != nullptr )
+   {
+      for ( auto item : m_instance->getPropertyList() )
+      {
+         if ( item.Device == dp->getDeviceName() )
+            item.PropertyFlag = Remove;
+      }
+      // TODO script instance
+   }
+}
+
+void INDIClient::newProperty( INDI::Property* property )
+{
+   assert( property != nullptr );
+   // add property to the property process parameter table
+   runOnPropertyTable( PropertyFactory::create( property ),
+                       dynamic_cast<ArrayOperator<INDIPropertyListItem>*>( new ArrayAppend<INDIPropertyListItem>() ),
+                       Insert );
+   setBLOBMode( B_ALSO, property->getDeviceName() );
+}
+
+void INDIClient::removeProperty( INDI::Property* property )
+{
+   if ( property != nullptr )
+   {
+      IProperty* INDIProperty = PropertyFactory::create( property );
+      ArrayOperator<INDIPropertyListItem>* update = dynamic_cast<ArrayOperator<INDIPropertyListItem>*>( new ArrayUpdate<INDIPropertyListItem>() );
+      INDIPropertyListItem propertyListItem;
+      propertyListItem.Device = INDIProperty->getDeviceName();
+      propertyListItem.Property = INDIProperty->getName();
+      propertyListItem.PropertyType = INDIProperty->getType();
+      propertyListItem.PropertyTypeStr = INDIProperty->getTypeStr();
+      propertyListItem.PropertyState = INDIProperty->getState();
+
+      for ( size_t i = 0; i < INDIProperty->getNumOfElements(); i++ )
+      {
+         propertyListItem.Element = INDIProperty->getElementName( i );
+         propertyListItem.PropertyKey = '/' + propertyListItem.Device
+                                      + '/' + propertyListItem.Property
+                                      + '/' + propertyListItem.Element;
+         propertyListItem.PropertyValue = INDIProperty->getElementValue( i );
+         propertyListItem.PropertyFlag = Remove;
+         update->run( m_instance->getPropertyList(), propertyListItem );
+         if ( m_scriptInstance )
+            update->run( m_scriptInstance->getPropertyList(), propertyListItem );
+      }
+   }
+}
+
+void INDIClient::newMessage( INDI::BaseDevice* dp, int messageID )
+{
+   const char* message = dp->messageQueue( messageID );
+   if ( message != nullptr )
+   {
+      m_instance->getCurrentMessage() = IsoString( message );
+      if ( m_scriptInstance )
+         m_scriptInstance->getCurrentMessage() = IsoString( message );
+   }
+}
+
+void INDIClient::newSwitch( ISwitchVectorProperty* svp )
+{
+   INDI::Property* property = new INDI::Property();
+   property->setProperty( svp );
+   property->setType( INDI_SWITCH );
+   runOnPropertyTable( PropertyFactory::create( property ),
+                       dynamic_cast<ArrayOperator<INDIPropertyListItem>*>( new ArrayUpdate<INDIPropertyListItem>() ),
+                       Update );
+}
+
+void INDIClient::newNumber( INumberVectorProperty* nvp )
+{
+   INDI::Property* property = new INDI::Property();
+   property->setProperty( nvp );
+   property->setType( INDI_NUMBER );
+   runOnPropertyTable( PropertyFactory::create( property ),
+                       dynamic_cast<ArrayOperator<INDIPropertyListItem>*>( new ArrayUpdate<INDIPropertyListItem>() ),
+                       Update );
+}
+
+void INDIClient::newText( ITextVectorProperty* tvp )
+{
+   INDI::Property* property = new INDI::Property();
+   property->setProperty( tvp );
+   property->setType( INDI_TEXT );
+   runOnPropertyTable( PropertyFactory::create( property ),
+                       dynamic_cast<ArrayOperator<INDIPropertyListItem>*>( new ArrayUpdate<INDIPropertyListItem>() ),
+                       Update );
+}
+
+void INDIClient::newLight( ILightVectorProperty* lvp )
+{
+   INDI::Property* property = new INDI::Property();
+   property->setProperty( lvp );
+   property->setType( INDI_LIGHT );
+   runOnPropertyTable( PropertyFactory::create( property ),
+                       dynamic_cast<ArrayOperator<INDIPropertyListItem>*>( new ArrayUpdate<INDIPropertyListItem>() ),
+                       Update );
+}
+
+void INDIClient::newBLOB( IBLOB* bp )
+{
+   String fileName = File::SystemTempDirectory() + '/' + bp->label + bp->format;
+   File myfile = File::CreateFileForWriting( fileName );
+   myfile.Write( bp->blob, bp->size );
+   myfile.Close();
+   m_instance->setImageDownloadedFlag( true );
+   if ( m_scriptInstance )
+      m_scriptInstance->setImageDownloadedFlag( true );
+}
+
 // ----------------------------------------------------------------------------
-// EOF INDIClient.cpp - Released 2015/10/13 15:55:45 UTC
+
+} // pcl
+
+// ----------------------------------------------------------------------------
+// EOF INDIClient.cpp - Released 2016/03/18 13:15:37 UTC

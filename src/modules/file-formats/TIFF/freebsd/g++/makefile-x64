@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.100
+# PixInsight Makefile Generator Script v1.101
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 17 Dec 2015 19:03:37 GMT
+# Automatically generated on Fri, 18 Mar 2016 13:16:44 GMT
 # Project id ...... TIFF
 # Project type .... Module
 # Platform ........ FreeBSD/g++
@@ -13,6 +13,8 @@
 # --------------------------------------------------------------------
 # Additional libraries:
 # libtiff-pxi
+# jpeg-pxi
+# zlib-pxi
 ######################################################################
 
 OBJ_DIR="$(PCLSRCDIR)/modules/file-formats/TIFF/freebsd/g++/x64/Release"
@@ -66,7 +68,7 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/TIFF-pxm.so: $(OBJ_FILES)
-	clang++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -s -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/TIFF-pxm.so $(OBJ_FILES) -llibtiff-pxi -lpthread -lPCL-pxi
+	clang++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -s -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/TIFF-pxm.so $(OBJ_FILES) -llibtiff-pxi -ljpeg-pxi -lzlib-pxi -lpthread -lPCL-pxi
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean

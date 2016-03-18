@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.02.0096
+// Standard INDIClient Process Module Version 01.00.03.0102
 // ----------------------------------------------------------------------------
-// INDIMountInstance.h - Released 2015/10/13 15:55:45 UTC
+// INDIMountInstance.h - Released 2016/03/18 13:15:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2015 Klaus Kretzschmar
+// Copyright (c) 2014-2016 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,27 +53,21 @@
 #ifndef ____INDIMountInstance_h
 #define ____INDIMountInstance_h
 
-#include <pcl/MetaParameter.h> // for pcl_bool, pcl_enum
+#include <pcl/MetaParameter.h>
 #include <pcl/ProcessImplementation.h>
-#include <pcl/Timer.h>
-#include <pcl/Console.h>
-
-
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-
-
 class INDIMountInstance : public ProcessImplementation
 {
 public:
- 
+
    INDIMountInstance( const MetaProcess* );
    INDIMountInstance( const INDIMountInstance& );
-  
+
    virtual void Assign( const ProcessImplementation& );
 
    virtual bool CanExecuteOn( const View&, pcl::String& whyNot ) const;
@@ -81,11 +75,9 @@ public:
 
    virtual bool ExecuteGlobal();
 
-   	
-   
 private:
-   
-   
+
+   // ### TODO
 };
 
 // ----------------------------------------------------------------------------
@@ -95,5 +87,5 @@ private:
 
 #endif   // __INDIMountInstance_h
 
-// ****************************************************************************
-// EOF __INDIMountInstance.h - Released 2013/03/24 18:42:27 UTC
+// ----------------------------------------------------------------------------
+// EOF INDIMountInstance.h - Released 2016/03/18 13:15:37 UTC

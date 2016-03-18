@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.02.0096
+// Standard INDIClient Process Module Version 01.00.03.0102
 // ----------------------------------------------------------------------------
-// IINDIProperty.cpp - Released 2015/10/13 15:55:45 UTC
+// IINDIProperty.cpp - Released 2016/03/18 13:15:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2015 Klaus Kretzschmar
+// Copyright (c) 2014-2016 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,258 +58,255 @@
  */
 
 #include "IINDIProperty.h"
-#include "pcl/Exception.h"
-#include "pcl/String.h"
-#include "error.h"
-namespace pcl {
 
-#define CHECK_INDEX_THROWS(EXPR) \
-		if ((int) i > EXPR - 1){\
-			throw Error(ERR_MSG("Invalid element index."));\
-		}
+#include <pcl/Exception.h>
 
+#define CHECK_INDEX_THROWS( x )  \
+   if ( int( i ) >= x )          \
+      throw Error( "*** Error: " + String( __func__ ) + ": Invalid element index '" + String( i ) + "'" );
 
- IProperty* PropertyFactory::create(INDI::Property* property){
-		switch(property->getType()){
-		case INDI_NUMBER:
-			return new NumberProperty(property);
-			break;
-		case INDI_TEXT:
-			return new TextProperty(property);
-			break;
-		case INDI_SWITCH:
-			return new SwitchProperty(property);
-			break;
-		case INDI_LIGHT:
-			return new LightProperty(property);
-			break;
-		default:
-			return new IProperty(property);
-		}
-	}
+namespace pcl
+{
 
- IProperty* PropertyFactory::create(INDI::Property* property,INDI_TYPE type){
-	 	property->setType(type);
- 		switch(type){
- 		case INDI_NUMBER:
- 		{
- 			INumberVectorProperty* nProperty = new INumberVectorProperty();
- 			CHECK_POINTER(nProperty);
- 			property->setProperty(nProperty);
- 			return new NumberProperty(property);
- 			break;
- 		}
- 		case INDI_TEXT:
- 		{
- 			ITextVectorProperty* tProperty = new ITextVectorProperty();
- 			CHECK_POINTER(tProperty);
- 		 	property->setProperty(tProperty);
- 			return new TextProperty(property);
- 			break;
- 		}
- 		case INDI_SWITCH:
- 		{
- 			ISwitchVectorProperty* sProperty = new ISwitchVectorProperty();
- 			CHECK_POINTER(sProperty);
- 			property->setProperty(sProperty);
- 			return new SwitchProperty(property);
- 			break;
- 		}
- 		case INDI_LIGHT:
- 		{
- 			ILightVectorProperty* lProperty = new ILightVectorProperty();
- 			CHECK_POINTER(lProperty);
-			property->setProperty(lProperty);
- 			return new LightProperty(property);
- 			break;
- 		}
- 		default:
- 			throw FatalError(ERR_MSG("Unknown property."));
- 		}
- 	}
+// ----------------------------------------------------------------------------
 
-String SwitchProperty::getElementName(size_t i) {
-	CHECK_INDEX_THROWS(
-			((ISwitchVectorProperty*) m_property->getProperty())->nsp);
-
-	return String(m_property->getSwitch()->sp[i].name);
+IProperty* PropertyFactory::create( INDI::Property* property )
+{
+   switch( property->getType() )
+   {
+   case INDI_NUMBER:
+      return new NumberProperty( property );
+   case INDI_TEXT:
+      return new TextProperty( property );
+   case INDI_SWITCH:
+      return new SwitchProperty( property );
+   case INDI_LIGHT:
+      return new LightProperty( property );
+   default:
+      return new IProperty( property );
+   }
 }
 
-String SwitchProperty::getElementLabel(size_t i) {
-	CHECK_INDEX_THROWS(
-			((ISwitchVectorProperty*) m_property->getProperty())->nsp);
-
-	return String(m_property->getSwitch()->sp[i].label);
-}
-
-String SwitchProperty::getElementValue(size_t i) {
-	CHECK_INDEX_THROWS(
-			((ISwitchVectorProperty*) m_property->getProperty())->nsp);
-
-	return String(m_property->getSwitch()->sp[i].s == ISS_ON  ? "ON" : "OFF");
-}
-
-
-
-
- void SwitchProperty::addElement(IsoString elementName, IsoString value){
- 	 ISwitch* sp = ((ISwitchVectorProperty*) m_property->getProperty())->sp;
- 	 int nsp = ((ISwitchVectorProperty*) m_property->getProperty())->nsp;
- 	 sp = (ISwitch*) realloc(sp, (nsp+1) * sizeof(ISwitch));
- 	 CHECK_POINTER(sp);
- 	 strcpy(sp->name, elementName.c_str());
- 	 sp->s = (value == "ON") ? ISS_ON : ISS_OFF ;
- 	 sp->svp =(ISwitchVectorProperty*) m_property->getProperty();
- 	 ((ISwitchVectorProperty*) m_property->getProperty())->nsp++;
- 	 ((ISwitchVectorProperty*) m_property->getProperty())->sp = sp;
-  }
-
-
- void NumberProperty::addElement(IsoString elementName, IsoString value){
-	 if (value.IsEmpty()){
-		 return;
-	 }
-	 INumber* np = ((INumberVectorProperty*) m_property->getProperty())->np;
-	 int nnp = ((INumberVectorProperty*) m_property->getProperty())->nnp;
-	 np = (INumber*) realloc(np, (nnp+1) * sizeof(INumber));
-	 CHECK_POINTER(np);
-	 strcpy(np->name, elementName.c_str());
-	 value.TryToDouble(np->value);
-	 np->nvp=(INumberVectorProperty*) m_property->getProperty();
-	 ((INumberVectorProperty*) m_property->getProperty())->nnp++;
-	 ((INumberVectorProperty*) m_property->getProperty())->np = np;
- }
-
-String NumberProperty::getElementName(size_t i) {
-	CHECK_INDEX_THROWS(
-			((INumberVectorProperty*) m_property->getProperty())->nnp);
-
-	return String(m_property->getNumber()->np[i].name);
- }
-
-String NumberProperty::getElementLabel(size_t i)  {
-	CHECK_INDEX_THROWS(
-			((INumberVectorProperty*) m_property->getProperty())->nnp);
-
-	return String(m_property->getNumber()->np[i].label);
-}
-
-String NumberProperty::getElementValue(size_t i) {
-	CHECK_INDEX_THROWS(
-			((INumberVectorProperty*) m_property->getProperty())->nnp);
-
-	return String(m_property->getNumber()->np[i].value);
-}
-
-String NumberProperty::getNumberFormat(size_t i){
-	CHECK_INDEX_THROWS(
-			((INumberVectorProperty*) m_property->getProperty())->nnp);
-
-	return String(m_property->getNumber()->np[i].format);
-}
-
-String TextProperty::getElementName(size_t i) {
-	CHECK_INDEX_THROWS(
-			((ITextVectorProperty*) m_property->getProperty())->ntp);
-
-	return String(m_property->getText()->tp[i].name);
-}
-
-String TextProperty::getElementLabel(size_t i)  {
-	CHECK_INDEX_THROWS(
-			((ITextVectorProperty*) m_property->getProperty())->ntp);
-
-	return String(m_property->getText()->tp[i].label);
-}
-
-String TextProperty::getElementValue(size_t i) {
-	CHECK_INDEX_THROWS(
-			((ITextVectorProperty*) m_property->getProperty())->ntp);
-
-	return String(m_property->getText()->tp[i].text);
-}
-
-
-void TextProperty::addElement(IsoString elementName, IsoString value) {
-	IText* tp = ((ITextVectorProperty*) m_property->getProperty())->tp;
-	int ntp = ((ITextVectorProperty*) m_property->getProperty())->ntp;
-	tp = (IText*) realloc(tp, (ntp + 1) * sizeof(IText));
-	CHECK_POINTER(tp);
-	strcpy(tp->name, elementName.c_str());
-
-// 	//FIXME Leaks memory?
-// 	tp->text = (char*) malloc(sizeof(value.c_str()));
-// 	strcpy(tp->text, value.c_str());
-   tp->text = value.Release(); // N.B.: can do this because value is being passed by value.
-
-	tp->tvp = (ITextVectorProperty*) m_property->getProperty();
-	((ITextVectorProperty*) m_property->getProperty())->ntp++;
-	((ITextVectorProperty*) m_property->getProperty())->tp = tp;
- }
-
-
- void LightProperty::addElement(IsoString elementName, IsoString value) {
-	ILight* lp = ((ILightVectorProperty*) m_property->getProperty())->lp;
-	int nlp = ((ILightVectorProperty*) m_property->getProperty())->nlp;
-	lp = (ILight*) realloc(lp, (nlp + 1) * sizeof(ILight));
-	CHECK_POINTER(lp);
-	strcpy(lp->name, elementName.c_str());
-	if (value == "IDLE") {
-		lp->s = IPS_IDLE;
-	} else if (value == "OK") {
-		lp->s = IPS_OK;
-	} else if (value == "BUSY") {
-		lp->s = IPS_BUSY;
-	} else if (value == "ALERT") {
-		lp->s = IPS_ALERT;
-	} else {
-		throw Error(ERR_MSG("Invalid property value;"));
-	}
-	lp->lvp = (ILightVectorProperty*) m_property->getProperty();
-	((ILightVectorProperty*) m_property->getProperty())->nlp++;
-	((ILightVectorProperty*) m_property->getProperty())->lp = lp;
-}
-
-
-
-
-String LightProperty::getElementName(size_t i) {
-	CHECK_INDEX_THROWS(((ILightVectorProperty*) m_property->getProperty())->nlp);
-	return String(m_property->getLight()->lp[i].name);
-}
-
-String LightProperty::getElementLabel(size_t i) {
-	CHECK_INDEX_THROWS(((ILightVectorProperty*) m_property->getProperty())->nlp);
-
-	return String(m_property->getLight()->lp[i].label);
-}
-
-String LightProperty::getElementValue(size_t i) {
-	CHECK_INDEX_THROWS(((ILightVectorProperty*) m_property->getProperty())->nlp);
-
-	switch (m_property->getLight()->lp[i].s) {
-	case IPS_IDLE:
-		return String("IDLE");
-		break;
-	case IPS_OK:
-		return String("OK");
-		break;
-	case IPS_BUSY:
-		return String("BUSY");
-		break;
-	case IPS_ALERT:
-		return String("ALERT");
-		break;
-	default:
-		return String("UNSUPPORTED");
-	}
-}
-
-
-
-
-
+IProperty* PropertyFactory::create( INDI::Property* property, INDI_TYPE type )
+{
+   property->setType( type );
+   switch( type )
+   {
+   case INDI_NUMBER:
+      {
+         INumberVectorProperty* nProperty = new INumberVectorProperty;
+         property->setProperty( nProperty );
+         return new NumberProperty( property );
+      }
+   case INDI_TEXT:
+      {
+         ITextVectorProperty* tProperty = new ITextVectorProperty;
+         property->setProperty( tProperty );
+         return new TextProperty( property );
+      }
+   case INDI_SWITCH:
+      {
+         ISwitchVectorProperty* sProperty = new ISwitchVectorProperty;
+         property->setProperty( sProperty );
+         return new SwitchProperty( property );
+      }
+   case INDI_LIGHT:
+      {
+         ILightVectorProperty* lProperty = new ILightVectorProperty;
+         property->setProperty( lProperty );
+         return new LightProperty( property );
+      }
+   default:
+      throw Error( "INDIDeviceController: Internal error: Unknown property type in PropertyFactory::create()" );
+   }
 }
 
 // ----------------------------------------------------------------------------
-// EOF IINDIProperty.cpp - Released 2015/10/13 15:55:45 UTC
+
+String SwitchProperty::getElementName( size_t i ) const
+{
+   ISwitchVectorProperty* svp = m_property->getSwitch();
+   CHECK_INDEX_THROWS( svp->nsp );
+   return svp->sp[i].name;
+}
+
+String SwitchProperty::getElementLabel( size_t i ) const
+{
+   ISwitchVectorProperty* svp = m_property->getSwitch();
+   CHECK_INDEX_THROWS( svp->nsp );
+   return svp->sp[i].label;
+}
+
+String SwitchProperty::getElementValue( size_t i ) const
+{
+   ISwitchVectorProperty* svp = m_property->getSwitch();
+   CHECK_INDEX_THROWS( svp->nsp );
+   return svp->sp[i].s == ISS_ON  ? "ON" : "OFF";
+}
+
+void SwitchProperty::addElement( IsoString elementName, IsoString value )
+{
+   ISwitchVectorProperty* svp = m_property->getSwitch();
+   ISwitch* sp = svp->sp;
+   int nsp = svp->nsp;
+   sp = reinterpret_cast<ISwitch*>( realloc( sp, (nsp + 1)*sizeof( ISwitch ) ) );
+   if ( sp == nullptr )
+      throw std::bad_alloc();
+   strcpy( sp->name, elementName.c_str() );
+   sp->s = (value == "ON") ? ISS_ON : ISS_OFF;
+   sp->svp = svp;
+   svp->nsp++;
+   svp->sp = sp;
+}
+
+// ----------------------------------------------------------------------------
+
+String NumberProperty::getElementName( size_t i ) const
+{
+   INumberVectorProperty* nvp = m_property->getNumber();
+   CHECK_INDEX_THROWS( nvp->nnp );
+   return nvp->np[i].name;
+}
+
+String NumberProperty::getElementLabel( size_t i ) const
+{
+   INumberVectorProperty* nvp = m_property->getNumber();
+   CHECK_INDEX_THROWS( nvp->nnp );
+   return nvp->np[i].label;
+}
+
+String NumberProperty::getElementValue( size_t i ) const
+{
+   INumberVectorProperty* nvp = m_property->getNumber();
+   CHECK_INDEX_THROWS( nvp->nnp );
+   return String( nvp->np[i].value ); // ### N.B. All String::String( <number> ) constructors are explicit.
+}
+
+String NumberProperty::getNumberFormat( size_t i ) const
+{
+   INumberVectorProperty* nvp = m_property->getNumber();
+   CHECK_INDEX_THROWS( nvp->nnp );
+   return nvp->np[i].format;
+}
+
+void NumberProperty::addElement( IsoString elementName, IsoString value )
+{
+   if ( !value.IsEmpty() )
+   {
+      INumberVectorProperty* nvp = m_property->getNumber();
+      INumber* np = nvp->np;
+      int nnp = nvp->nnp;
+      np = reinterpret_cast<INumber*>( realloc( np, (nnp + 1)*sizeof( INumber ) ) );
+      if ( np == nullptr )
+         throw std::bad_alloc();
+      strcpy( np->name, elementName.c_str() );
+      value.TryToDouble( np->value );
+      np->nvp = nvp;
+      nvp->nnp++;
+      nvp->np = np;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+String TextProperty::getElementName( size_t i ) const
+{
+   ITextVectorProperty* tvp = m_property->getText();
+   CHECK_INDEX_THROWS( tvp->ntp );
+   return tvp->tp[i].name;
+}
+
+String TextProperty::getElementLabel( size_t i ) const
+{
+   ITextVectorProperty* tvp = m_property->getText();
+   CHECK_INDEX_THROWS( tvp->ntp );
+   return tvp->tp[i].label;
+}
+
+String TextProperty::getElementValue( size_t i ) const
+{
+   ITextVectorProperty* tvp = m_property->getText();
+   CHECK_INDEX_THROWS( tvp->ntp );
+   return tvp->tp[i].text;
+}
+
+void TextProperty::addElement( IsoString elementName, IsoString value )
+{
+   ITextVectorProperty* tvp = m_property->getText();
+   IText* tp = tvp->tp;
+   int ntp = tvp->ntp;
+   tp = reinterpret_cast<IText*>( realloc( tp, (ntp + 1)* sizeof( IText ) ) );
+   if ( tp == nullptr )
+      throw std::bad_alloc();
+   strcpy( tp->name, elementName.c_str() );
+   tp->text = value.Release(); // N.B.: Can do this because value is being passed by value, so we have a local copy.
+   tp->tvp = tvp;
+   tvp->ntp++;
+   tvp->tp = tp;
+}
+
+// ----------------------------------------------------------------------------
+
+String LightProperty::getElementName( size_t i ) const
+{
+   ILightVectorProperty* lvp = m_property->getLight();
+   CHECK_INDEX_THROWS( lvp->nlp );
+   return lvp->lp[i].name;
+}
+
+String LightProperty::getElementLabel( size_t i ) const
+{
+   ILightVectorProperty* lvp = m_property->getLight();
+   CHECK_INDEX_THROWS( lvp->nlp );
+   return lvp->lp[i].label;
+}
+
+String LightProperty::getElementValue( size_t i ) const
+{
+   ILightVectorProperty* lvp = m_property->getLight();
+   CHECK_INDEX_THROWS( lvp->nlp );
+   switch ( lvp->lp[i].s )
+   {
+   case IPS_IDLE:
+      return "IDLE";
+   case IPS_OK:
+      return "OK";
+   case IPS_BUSY:
+      return "BUSY";
+   case IPS_ALERT:
+      return "ALERT";
+   default:
+      return "UNSUPPORTED";
+   }
+}
+
+void LightProperty::addElement( IsoString elementName, IsoString value )
+{
+   ILightVectorProperty* lvp = m_property->getLight();
+   ILight* lp = lvp->lp;
+   int nlp = lvp->nlp;
+   lp = reinterpret_cast<ILight*>( realloc( lp, (nlp + 1)*sizeof( ILight ) ) );
+   if ( lp == nullptr )
+      throw std::bad_alloc();
+   strcpy( lp->name, elementName.c_str() );
+   if (value == "IDLE")
+      lp->s = IPS_IDLE;
+   else if (value == "OK")
+      lp->s = IPS_OK;
+   else if (value == "BUSY")
+      lp->s = IPS_BUSY;
+   else if (value == "ALERT")
+      lp->s = IPS_ALERT;
+   else
+      throw Error( "INDIDeviceController: Internal error: Invalid property value in LightProperty::addElement()" );
+   lp->lvp = lvp;
+   lvp->nlp++;
+   lvp->lp = lp;
+}
+
+// ----------------------------------------------------------------------------
+
+} // pcl
+
+// ----------------------------------------------------------------------------
+// EOF IINDIProperty.cpp - Released 2016/03/18 13:15:37 UTC

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// pcl/ProcessInstance.cpp - Released 2015/12/17 18:52:18 UTC
+// pcl/ProcessInstance.cpp - Released 2016/02/21 20:22:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -120,7 +120,7 @@ bool ProcessInstance::Assign( const ProcessInstance& p )
 bool ProcessInstance::Validate( String& whyNot )
 {
    whyNot.Reserve( WHYNOT_MAXLENGTH );
-   bool result = (*API->Process->ValidateProcessInstance)( handle, whyNot.c_str(), WHYNOT_MAXLENGTH ) != api_false;
+   bool result = (*API->Process->ValidateProcessInstance)( handle, whyNot.Begin(), WHYNOT_MAXLENGTH ) != api_false;
    whyNot.ResizeToNullTerminated();
    return result;
 }
@@ -142,7 +142,7 @@ bool ProcessInstance::IsMaskable( const View& view, const ImageWindow& mask ) co
 bool ProcessInstance::CanExecuteOn( const View& view, String& whyNot ) const
 {
    whyNot.Reserve( WHYNOT_MAXLENGTH );
-   bool result = (*API->Process->ValidateViewExecution)( handle, view.handle, whyNot.c_str(), WHYNOT_MAXLENGTH ) != api_false;
+   bool result = (*API->Process->ValidateViewExecution)( handle, view.handle, whyNot.Begin(), WHYNOT_MAXLENGTH ) != api_false;
    whyNot.ResizeToNullTerminated();
    return result;
 }
@@ -157,7 +157,7 @@ bool ProcessInstance::ExecuteOn( View& view, bool swapFile )
 bool ProcessInstance::CanExecuteGlobal( String& whyNot ) const
 {
    whyNot.Reserve( WHYNOT_MAXLENGTH );
-   bool result = (*API->Process->ValidateGlobalExecution)( handle, whyNot.c_str(), WHYNOT_MAXLENGTH ) != api_false;
+   bool result = (*API->Process->ValidateGlobalExecution)( handle, whyNot.Begin(), WHYNOT_MAXLENGTH ) != api_false;
    whyNot.ResizeToNullTerminated();
    return result;
 }
@@ -186,7 +186,7 @@ bool ProcessInstance::CanExecuteOn( const ImageVariant& image, String& whyNot ) 
    image.PopSelections();
 
    whyNot.Reserve( WHYNOT_MAXLENGTH );
-   bool ok = (*API->Process->ValidateImageExecution)( handle, image.SharedImageHandle(), whyNot.c_str(), WHYNOT_MAXLENGTH ) != api_false;
+   bool ok = (*API->Process->ValidateImageExecution)( handle, image.SharedImageHandle(), whyNot.Begin(), WHYNOT_MAXLENGTH ) != api_false;
    whyNot.ResizeToNullTerminated();
 
    image.PushSelections();
@@ -246,7 +246,7 @@ String ProcessInstance::Description() const
    if ( len > 0 )
    {
       description.SetLength( len );
-      if ( (*API->Process->GetProcessInstanceDescription)( handle, description.c_str(), &len ) == api_false )
+      if ( (*API->Process->GetProcessInstanceDescription)( handle, description.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetProcessInstanceDescription" );
       description.ResizeToNullTerminated();
    }
@@ -310,7 +310,7 @@ IsoStringList ProcessInstance::Icons()
       IsoString iconId;
       iconId.Reserve( len );
       if ( (*API->Process->EnumerateProcessIcons)( InternalIconEnumerator::IconCallback,
-                                          iconId.c_str(), &len, &icons ) == api_false )
+                                          iconId.Begin(), &len, &icons ) == api_false )
          throw APIFunctionError( "EnumerateProcessIcons" );
    }
    return icons;
@@ -351,7 +351,7 @@ IsoStringList ProcessInstance::IconsByProcessId( const IsoString& processId )
       IsoString iconId;
       iconId.Reserve( len );
       if ( (*API->Process->EnumerateProcessIcons)( InternalIconEnumerator::ProcessCallback,
-                                          iconId.c_str(), &len, &data ) == api_false )
+                                          iconId.Begin(), &len, &data ) == api_false )
          throw APIFunctionError( "EnumerateProcessIcons" );
    }
    return data.icons;
@@ -382,7 +382,7 @@ Variant ProcessInstance::ParameterValue( const ProcessParameter& parameter, size
       {
          value.SetLength( len );
          if ( (*API->Process->GetParameterValue)( handle, parameter.Handle(),
-                                                  rowIndex, &apiType, value.c_str(), &len ) == api_false )
+                                                  rowIndex, &apiType, value.Begin(), &len ) == api_false )
             throw APIFunctionError( "GetParameterValue" );
          value.ResizeToNullTerminated();
       }
@@ -544,4 +544,4 @@ void* ProcessInstance::CloneHandle() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ProcessInstance.cpp - Released 2015/12/17 18:52:18 UTC
+// EOF pcl/ProcessInstance.cpp - Released 2016/02/21 20:22:19 UTC

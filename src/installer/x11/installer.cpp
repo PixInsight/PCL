@@ -7,7 +7,7 @@
 // ----------------------------------------------------------------------------
 // This file is part of PixInsight X11 UNIX/Linux Installer
 // ----------------------------------------------------------------------------
-// 2015/12/17 18:59:45 UTC
+// 2016/02/21 20:23:49 UTC
 // installer.cpp
 // ----------------------------------------------------------------------------
 // Copyright (c) 2013-2015 Pleiades Astrophoto S.L.
@@ -466,6 +466,8 @@ bool PixInsightX11Installer::DoInstall()
    CopyFiles( m_installDir, m_sourceDir );
 
    // Application launcher script on /bin
+   // Ensure that arguments with whitespaces are correctly received by the core
+   // launcher script at <m_installDir>/bin/PixInsight.sh.
    if ( m_createBinLauncher )
    {
       File f;
@@ -475,7 +477,17 @@ bool PixInsightX11Installer::DoInstall()
 #else
       f.OutTextLn( "#!/bin/bash" );
 #endif
-      f.OutTextLn( m_installDir.ToUTF8() + "/bin/PixInsight.sh $*" );
+      f.OutTextLn( "args=\"\"" );
+      f.OutTextLn( "for arg in \"$@\"" );
+      f.OutTextLn( "   do" );
+      f.OutTextLn( "      if echo $arg | grep -q \" \"; then" );
+      f.OutTextLn( "         args=\"$args \\\"$arg\\\"\"" );
+      f.OutTextLn( "      else" );
+      f.OutTextLn( "         args=\"$args $arg\"" );
+      f.OutTextLn( "      fi" );
+      f.OutTextLn( "   done" );
+      f.OutTextLn( "args=$(echo $args | sed 's/^ *//')" );
+      f.OutTextLn( "eval \"" + m_installDir.ToUTF8() + "/bin/PixInsight.sh $args\"" );
       f.Close();
 
       // Make it executable
@@ -755,7 +767,7 @@ void PixInsightX11Installer::ShowLogo()
    std::cout <<
    "\n-------------------------------------------------------------------------------"
    "\nPixInsight X11 UNIX/Linux installer version " << VersionString() <<
-   "\nCopyright (C) 2003-2015 Pleiades Astrophoto. All Rights Reserved"
+   "\nCopyright (C) 2003-2016 Pleiades Astrophoto. All Rights Reserved"
    "\n-------------------------------------------------------------------------------"
    "\n";
 }
@@ -1060,5 +1072,5 @@ int main( int argc, const char** argv )
 }
 
 // ----------------------------------------------------------------------------
-// 2015/12/17 18:59:45 UTC
+// 2016/02/21 20:23:49 UTC
 // installer.cpp

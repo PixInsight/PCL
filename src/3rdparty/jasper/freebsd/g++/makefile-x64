@@ -1,10 +1,10 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.100
+# PixInsight Makefile Generator Script v1.101
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 17 Dec 2015 19:03:22 GMT
+# Automatically generated on Fri, 18 Mar 2016 13:16:31 GMT
 # Project id ...... jasper
-# Project type .... DynamicLibrary
+# Project type .... StaticLibrary
 # Platform ........ FreeBSD/g++
 # Configuration ... Release/x64
 # --------------------------------------------------------------------
@@ -23,7 +23,7 @@
 OBJ_DIR="$(PCLSRCDIR)/3rdparty/jasper/freebsd/g++/x64/Release"
 
 .PHONY: all
-all: $(OBJ_DIR)/libjasper-pxi.so
+all: $(OBJ_DIR)/libjasper-pxi.a
 
 #
 # Source files
@@ -160,17 +160,17 @@ DEP_FILES= \
 
 -include $(DEP_FILES)
 
-$(OBJ_DIR)/libjasper-pxi.so: $(OBJ_FILES)
-	clang++ -m64 -fPIC -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -s -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/libjasper-pxi.so $(OBJ_FILES)
+$(OBJ_DIR)/libjasper-pxi.a: $(OBJ_FILES)
+	ar r $(OBJ_DIR)/libjasper-pxi.a $(OBJ_FILES)
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean
 clean:
-	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/libjasper-pxi.so
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/libjasper-pxi.a
 
 .PHONY: post-build
 post-build:
-	cp $(OBJ_DIR)/libjasper-pxi.so $(PCLBINDIR64)
+	cp $(OBJ_DIR)/libjasper-pxi.a $(PCLLIBDIR64)
 
 ./x64/Release/%.o: ../../%.c
 	clang -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_FREEBSD -D"EXCLUDE_JPG_SUPPORT" -D"EXCLUDE_MIF_SUPPORT" -D"EXCLUDE_PNM_SUPPORT" -D"EXCLUDE_RAS_SUPPORT" -D"EXCLUDE_BMP_SUPPORT" -D"EXCLUDE_PGX_SUPPORT" -I"$(PCLINCDIR)" -I"../../include" -mtune=corei7 -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"

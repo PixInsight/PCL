@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.05.0268
+// Standard ImageCalibration Process Module Version 01.03.05.0272
 // ----------------------------------------------------------------------------
-// ImageCalibrationInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// ImageCalibrationInstance.cpp - Released 2016/02/21 20:22:43 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -2518,19 +2518,19 @@ void* ImageCalibrationInstance::LockParameter( const MetaParameter* p, size_type
    if ( p == TheICTargetFrameEnabledParameter )
       return &targetFrames[tableRow].enabled;
    if ( p == TheICTargetFramePathParameter )
-      return targetFrames[tableRow].path.c_str();
+      return targetFrames[tableRow].path.Begin();
 
    if ( p == TheICInputHintsParameter )
-      return inputHints.c_str();
+      return inputHints.Begin();
    if ( p == TheICOutputHintsParameter )
-      return outputHints.c_str();
+      return outputHints.Begin();
 
    if ( p == TheICPedestalParameter )
       return &pedestal;
    if ( p == TheICPedestalModeParameter )
       return &pedestalMode;
    if ( p == TheICPedestalKeywordParameter )
-      return pedestalKeyword.c_str();
+      return pedestalKeyword.Begin();
 
    if ( p == TheICOverscanEnabledParameter )
       return &overscan.enabled;
@@ -2568,17 +2568,17 @@ void* ImageCalibrationInstance::LockParameter( const MetaParameter* p, size_type
    if ( p == TheICMasterBiasEnabledParameter )
       return &masterBias.enabled;
    if ( p == TheICMasterBiasPathParameter )
-      return masterBias.path.c_str();
+      return masterBias.path.Begin();
 
    if ( p == TheICMasterDarkEnabledParameter )
       return &masterDark.enabled;
    if ( p == TheICMasterDarkPathParameter )
-      return masterDark.path.c_str();
+      return masterDark.path.Begin();
 
    if ( p == TheICMasterFlatEnabledParameter )
       return &masterFlat.enabled;
    if ( p == TheICMasterFlatPathParameter )
-      return masterFlat.path.c_str();
+      return masterFlat.path.Begin();
 
    if ( p == TheICCalibrateBiasParameter )
       return &calibrateBias;
@@ -2603,13 +2603,13 @@ void* ImageCalibrationInstance::LockParameter( const MetaParameter* p, size_type
       return &noiseEvaluationAlgorithm;
 
    if ( p == TheICOutputDirectoryParameter )
-      return outputDirectory.c_str();
+      return outputDirectory.Begin();
    if ( p == TheICOutputExtensionParameter )
-      return outputExtension.c_str();
+      return outputExtension.Begin();
    if ( p == TheICOutputPrefixParameter )
-      return outputPrefix.c_str();
+      return outputPrefix.Begin();
    if ( p == TheICOutputPostfixParameter )
-      return outputPostfix.c_str();
+      return outputPostfix.Begin();
    if ( p == TheICOutputSampleFormatParameter )
       return &outputSampleFormat;
    if ( p == TheICOutputPedestalParameter )
@@ -2622,7 +2622,7 @@ void* ImageCalibrationInstance::LockParameter( const MetaParameter* p, size_type
       return &noGUIMessages;
 
    if ( p == TheICOutputFilePathParameter )
-      return output[tableRow].outputFilePath.c_str();
+      return output[tableRow].outputFilePath.Begin();
    if ( p == TheICDarkScalingFactorRKParameter )
       return output[tableRow].darkScalingFactors.At( 0 );
    if ( p == TheICDarkScalingFactorGParameter )
@@ -2642,11 +2642,11 @@ void* ImageCalibrationInstance::LockParameter( const MetaParameter* p, size_type
    if ( p == TheICNoiseFractionBParameter )
       return output[tableRow].noiseFractions.At( 2 );
    if ( p == TheICNoiseAlgorithmRKParameter )
-      return output[tableRow].noiseAlgorithms[0].c_str();
+      return output[tableRow].noiseAlgorithms[0].Begin();
    if ( p == TheICNoiseAlgorithmGParameter )
-      return output[tableRow].noiseAlgorithms[1].c_str();
+      return output[tableRow].noiseAlgorithms[1].Begin();
    if ( p == TheICNoiseAlgorithmBParameter )
-      return output[tableRow].noiseAlgorithms[2].c_str();
+      return output[tableRow].noiseAlgorithms[2].Begin();
 
    return 0;
 }
@@ -2811,4 +2811,4 @@ size_type ImageCalibrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageCalibrationInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// EOF ImageCalibrationInstance.cpp - Released 2016/02/21 20:22:43 UTC

@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.100
+# PixInsight Makefile Generator Script v1.101
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 17 Dec 2015 19:03:37 GMT
+# Automatically generated on Fri, 18 Mar 2016 13:16:45 GMT
 # Project id ...... TIFF
 # Project type .... Module
 # Platform ........ Windows/vc12
@@ -17,6 +17,8 @@
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Additional libraries:
 # libtiff-pxi
+# jpeg-pxi
+# zlib-pxi
 ######################################################################
 -->
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -39,7 +41,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{216744E5-A5B6-47FE-8826-0F520BA54CD9}</ProjectGuid>
+    <ProjectGuid>{9A65FDD9-FFE1-48A6-B8F0-DD61A64D9799}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -116,20 +118,17 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
+      <DebugInformationFormat></DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>PCL-pxi.lib;libtiff-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>PCL-pxi.lib;libtiff-pxi.lib;jpeg-pxi.lib;zlib-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR64)\TIFF-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -160,20 +159,17 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
+      <DebugInformationFormat></DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>PCL-pxi.lib;libtiff-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>PCL-pxi.lib;libtiff-pxi.lib;jpeg-pxi.lib;zlib-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\TIFF-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -199,19 +195,17 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>PCL-pxi.lib;libtiff-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>PCL-pxi.lib;libtiff-pxi.lib;jpeg-pxi.lib;zlib-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR64)\TIFF-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <ImportLibrary>$(Platform)\$(Configuration)\$(ProjectName).lib</ImportLibrary>
@@ -231,19 +225,17 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>PCL-pxi.lib;libtiff-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>PCL-pxi.lib;libtiff-pxi.lib;jpeg-pxi.lib;zlib-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\TIFF-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile></ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <ImportLibrary>$(Platform)\$(Configuration)\$(ProjectName).lib</ImportLibrary>
@@ -255,24 +247,24 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\TIFF.cpp" />
-    <ClCompile Include="..\..\TIFFFormat.cpp" />
-    <ClCompile Include="..\..\TIFFInstance.cpp" />
-    <ClCompile Include="..\..\TIFFModule.cpp" />
-    <ClCompile Include="..\..\TIFFOptionsDialog.cpp" />
-    <ClCompile Include="..\..\TIFFPreferencesDialog.cpp" />
-    <ClCompile Include="..\..\TIFFRangeOptionsDialog.cpp" />
+    <ClCompile Include="..\..\TIFF.cpp"/>
+    <ClCompile Include="..\..\TIFFFormat.cpp"/>
+    <ClCompile Include="..\..\TIFFInstance.cpp"/>
+    <ClCompile Include="..\..\TIFFModule.cpp"/>
+    <ClCompile Include="..\..\TIFFOptionsDialog.cpp"/>
+    <ClCompile Include="..\..\TIFFPreferencesDialog.cpp"/>
+    <ClCompile Include="..\..\TIFFRangeOptionsDialog.cpp"/>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\TIFF.h" />
-    <ClInclude Include="..\..\TIFFFormat.h" />
-    <ClInclude Include="..\..\TIFFInstance.h" />
-    <ClInclude Include="..\..\TIFFModule.h" />
-    <ClInclude Include="..\..\TIFFOptionsDialog.h" />
-    <ClInclude Include="..\..\TIFFPreferencesDialog.h" />
-    <ClInclude Include="..\..\TIFFRangeOptionsDialog.h" />
+    <ClInclude Include="..\..\TIFF.h"/>
+    <ClInclude Include="..\..\TIFFFormat.h"/>
+    <ClInclude Include="..\..\TIFFInstance.h"/>
+    <ClInclude Include="..\..\TIFFModule.h"/>
+    <ClInclude Include="..\..\TIFFOptionsDialog.h"/>
+    <ClInclude Include="..\..\TIFFPreferencesDialog.h"/>
+    <ClInclude Include="..\..\TIFFRangeOptionsDialog.h"/>
   </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

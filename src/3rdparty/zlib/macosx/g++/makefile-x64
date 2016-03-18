@@ -1,10 +1,10 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.100
+# PixInsight Makefile Generator Script v1.101
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 17 Dec 2015 19:03:25 GMT
+# Automatically generated on Fri, 18 Mar 2016 13:16:29 GMT
 # Project id ...... zlib
-# Project type .... DynamicLibrary
+# Project type .... StaticLibrary
 # Platform ........ MacOSX/g++
 # Configuration ... Release/x64
 ######################################################################
@@ -12,7 +12,7 @@
 OBJ_DIR="$(PCLSRCDIR)/3rdparty/zlib/macosx/g++/x64/Release"
 
 .PHONY: all
-all: $(OBJ_DIR)/libzlib-pxi.dylib
+all: $(OBJ_DIR)/libzlib-pxi.a
 
 #
 # Source files
@@ -83,18 +83,17 @@ DEP_FILES= \
 
 -include $(DEP_FILES)
 
-$(OBJ_DIR)/libzlib-pxi.dylib: $(OBJ_FILES)
-	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -stdlib=libc++ -Wl,-dead_strip -dynamiclib -install_name @executable_path/libzlib-pxi.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/libzlib-pxi.dylib $(OBJ_FILES) -framework CoreFoundation
+$(OBJ_DIR)/libzlib-pxi.a: $(OBJ_FILES)
+	ar r $(OBJ_DIR)/libzlib-pxi.a $(OBJ_FILES)
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean
 clean:
-	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/libzlib-pxi.dylib
+	rm -f $(OBJ_FILES) $(DEP_FILES) $(OBJ_DIR)/libzlib-pxi.a
 
 .PHONY: post-build
 post-build:
-	cp $(OBJ_DIR)/libzlib-pxi.dylib $(PCLBINDIR64)
-	codesign --deep -s pleiades -f -v --timestamp $(PCLBINDIR64)/libzlib-pxi.dylib
+	cp $(OBJ_DIR)/libzlib-pxi.a $(PCLLIBDIR64)
 
 ./x64/Release/%.o: ../../%.c
 	clang -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// pcl/Font.cpp - Released 2015/12/17 18:52:18 UTC
+// pcl/Font.cpp - Released 2016/02/21 20:22:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -100,7 +100,7 @@ String Font::Face() const
 
    String face;
    face.SetLength( len );
-   if ( (*API->Font->GetFontFace)( handle, face.c_str(), &len ) == api_false )
+   if ( (*API->Font->GetFontFace)( handle, face.Begin(), &len ) == api_false )
       throw APIFunctionError( "GetFontFace" );
    face.ResizeToNullTerminated();
    return face;
@@ -391,7 +391,7 @@ StringList Font::AvailableFonts( const String& writingSystem )
       String fontFace;
       fontFace.Reserve( len );
       if ( (*API->Font->EnumerateFonts)( InternalFontEnumerator::FontCallback,
-                        fontFace.c_str(), &len, &faces, ws8.c_str() ) == api_false )
+                        fontFace.Begin(), &len, &faces, ws8.c_str() ) == api_false )
       {
          throw APIFunctionError( "EnumerateFonts" );
       }
@@ -414,7 +414,7 @@ StringList Font::AvailableFontWritingSystems( const String& font )
       String system;
       system.Reserve( len );
       if ( (*API->Font->EnumerateWritingSystems)( InternalFontEnumerator::FontCallback,
-                        system.c_str(), &len, &writingSystems, font.c_str() ) == api_false )
+                        system.Begin(), &len, &writingSystems, font.c_str() ) == api_false )
       {
          throw APIFunctionError( "EnumerateWritingSystems" );
       }
@@ -437,7 +437,7 @@ StringList Font::AvailableFontStyles( const String& font )
       String style;
       style.Reserve( len );
       if ( (*API->Font->EnumerateFontStyles)( InternalFontEnumerator::FontCallback,
-                        style.c_str(), &len, &styles, font.c_str() ) == api_false )
+                        style.Begin(), &len, &styles, font.c_str() ) == api_false )
       {
          throw APIFunctionError( "EnumerateFontStyles" );
       }
@@ -579,4 +579,4 @@ String PCL_FUNC FamilyToFace( value_type family )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Font.cpp - Released 2015/12/17 18:52:18 UTC
+// EOF pcl/Font.cpp - Released 2016/02/21 20:22:19 UTC

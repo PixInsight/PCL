@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.02.0096
+// Standard INDIClient Process Module Version 01.00.03.0102
 // ----------------------------------------------------------------------------
-// IINDIDeviceControllerInstance.h - Released 2015/10/13 15:55:45 UTC
+// IINDIDeviceControllerInstance.h - Released 2016/03/18 13:15:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2015 Klaus Kretzschmar
+// Copyright (c) 2014-2016 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -57,8 +57,8 @@
  *      Author: klaus
  */
 
-#ifndef IPIXINSIGHTINDIINSTANCE_H_
-#define IPIXINSIGHTINDIINSTANCE_H_
+#ifndef __IINDIDeviceControllerInstance_h
+#define __IINDIDeviceControllerInstance_h
 
 #include <pcl/Array.h>
 #include <pcl/String.h>
@@ -68,21 +68,29 @@
 namespace pcl
 {
 
+// ----------------------------------------------------------------------------
+
 class IINDIDeviceControllerInstance
 {
 public:
-   virtual ~IINDIDeviceControllerInstance(){}
-   virtual ExclPropertyList getExclusivePropertyList() = 0;
-   virtual Array<INDIPropertyListItem>& getPropertyList() = 0;
+
+   virtual ~IINDIDeviceControllerInstance()
+   {
+   }
+
    virtual Array<INDIDeviceListItem>& getDeviceList() = 0;
-   virtual IsoString& getCurrentMessage() = 0;
-   virtual void setImageDownloadedFlag(bool flag) = 0;
-   virtual bool getImageDownloadedFlag() = 0;
+   virtual Array<INDIPropertyListItem>& getPropertyList() = 0;
+   virtual ExclPropertyList getExclusivePropertyList() = 0;
+   virtual IsoString getCurrentMessage() const = 0;
+   virtual void setImageDownloadedFlag( bool ) = 0;
+   virtual bool getImageDownloadedFlag() const = 0;
 };
 
-} /* namespace pcl */
+// ----------------------------------------------------------------------------
 
-#endif /* IPIXINSIGHTINDIINSTANCE_H_ */
+} // pcl
+
+#endif   // __IINDIDeviceControllerInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF IINDIDeviceControllerInstance.h - Released 2015/10/13 15:55:45 UTC
+// EOF IINDIDeviceControllerInstance.h - Released 2016/03/18 13:15:37 UTC

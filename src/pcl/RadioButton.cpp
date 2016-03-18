@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// pcl/RadioButton.cpp - Released 2015/12/17 18:52:18 UTC
+// pcl/RadioButton.cpp - Released 2016/02/21 20:22:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -76,4 +76,4 @@ Button( (*API->Button->CreateRadioButton)(
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/RadioButton.cpp - Released 2015/12/17 18:52:18 UTC
+// EOF pcl/RadioButton.cpp - Released 2016/02/21 20:22:19 UTC

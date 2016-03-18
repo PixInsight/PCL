@@ -468,8 +468,8 @@ namespace pcl
       if (p == TheSMMaxStarDistortionParameter) return &maxStarDistortion;
       if (p == TheSMInvertParameter) return &invert;
 
-      if (p == TheSMMonitoredFolderParameter) return monitoredFolder.c_str();
-      if (p == TheSMTargetImageParameter) return targets[tableRow].path.c_str();
+      if (p == TheSMMonitoredFolderParameter) return monitoredFolder.Begin();
+      if (p == TheSMTargetImageParameter) return targets[tableRow].path.Begin();
       if (p == TheSMStarQuantityParameter) return &targets[tableRow].qty;
       if (p == TheSMBackgroundParameter) return &targets[tableRow].B;
       if (p == TheSMAmplitudeParameter) return &targets[tableRow].A;
@@ -482,7 +482,7 @@ namespace pcl
       if (p == TheSMxScaleParameter) return &targets[tableRow].xScale;
       if (p == TheSMyScaleParameter) return &targets[tableRow].yScale;
 
-      if (p == TheSMInputHintsParameter) return inputHints.c_str();
+      if (p == TheSMInputHintsParameter) return inputHints.Begin();
 
       if (p == TheSMScaleModeParameter) return &scaleMode;
       if (p == TheSMScaleValueParameter) return &scaleValue;
@@ -492,8 +492,8 @@ namespace pcl
       if (p == TheSMAlertRoundnessCheckParameter) return &alertRoundnessCheck;
       if (p == TheSMAlertBackgroundCheckParameter) return &alertBackgroundCheck;
       if (p == TheSMAlertStarQuantityCheckParameter)return &alertStarQuantityCheck;
-      if (p == TheSMAlertExecuteParameter) return alertExecute.c_str();
-      if (p == TheSMAlertArgumentsParameter) return alertArguments.c_str();
+      if (p == TheSMAlertExecuteParameter) return alertExecute.Begin();
+      if (p == TheSMAlertArgumentsParameter) return alertArguments.Begin();
       if (p == TheSMAlertFWHMxParameter) return &alertFWHMx;
       if (p == TheSMAlertRoundnessParameter) return &alertRoundness;
       if (p == TheSMAlertBackgroundParameter) return &alertBackground;

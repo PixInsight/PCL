@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.02.0096
+// Standard INDIClient Process Module Version 01.00.03.0102
 // ----------------------------------------------------------------------------
-// INDIDeviceControllerInterface.cpp - Released 2015/10/13 15:55:45 UTC
+// INDIDeviceControllerInterface.cpp - Released 2016/03/18 13:15:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2015 Klaus Kretzschmar
+// Copyright (c) 2014-2016 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -52,7 +52,7 @@
 
 #include "INDIClient.h"
 #include "INDIDeviceControllerInterface.h"
-#include "INDIParameters.h"
+#include "INDIDeviceControllerParameters.h"
 #include "INDIDeviceControllerProcess.h"
 #include "PropertyNode.h"
 
@@ -82,8 +82,7 @@ INDIDeviceControllerInterface* TheINDIDeviceControllerInterface = nullptr;
 INDIDeviceControllerInterface::INDIDeviceControllerInterface() :
    ProcessInterface(),
    instance( TheINDIDeviceControllerProcess ),
-   GUI( nullptr ),
-   m_serverMessage()
+   GUI( nullptr )
 {
    TheINDIDeviceControllerInterface = this;
 }
@@ -93,11 +92,8 @@ INDIDeviceControllerInterface::~INDIDeviceControllerInterface()
    if ( GUI != nullptr )
       delete GUI, GUI = nullptr;
 
-   if (m_propertyTreeMap.size()!=0){
-	   for (PropertyTreeMapType::iterator iter=m_propertyTreeMap.begin();iter!=m_propertyTreeMap.end(); iter++ ){
-		   delete iter->second;
-	   }
-   }
+   for ( PropertyTreeMapType::iterator iter = m_propertyTreeMap.begin(); iter != m_propertyTreeMap.end(); iter++ )
+      delete iter->second;
 }
 
 IsoString INDIDeviceControllerInterface::Id() const
@@ -112,12 +108,13 @@ MetaProcess* INDIDeviceControllerInterface::Process() const
 
 const char** INDIDeviceControllerInterface::IconImageXPM() const
 {
-   return 0; // PixInsightINDIIcon_XPM; // ### TODO
+   return nullptr; // PixInsightINDIIcon_XPM; // ### TODO
 }
 
 InterfaceFeatures INDIDeviceControllerInterface::Features() const
 {
-	return   InterfaceFeature::DragObject | InterfaceFeature::ApplyGlobalButton | InterfaceFeature::ApplyToViewButton | InterfaceFeature::BrowseDocumentationButton | InterfaceFeature::ResetButton;
+   return InterfaceFeature::DragObject
+        | InterfaceFeature::BrowseDocumentationButton;
 }
 
 void INDIDeviceControllerInterface::ApplyInstance() const
@@ -157,7 +154,7 @@ ProcessImplementation* INDIDeviceControllerInterface::NewProcess() const
 bool INDIDeviceControllerInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
    const INDIDeviceControllerInstance* r = dynamic_cast<const INDIDeviceControllerInstance*>( &p );
-   if ( r == 0 )
+   if ( r == nullptr )
    {
       whyNot = "Not an INDIDeviceController instance.";
       return false;
@@ -183,19 +180,17 @@ bool INDIDeviceControllerInterface::ImportProcess( const ProcessImplementation& 
 
 void INDIDeviceControllerInterface::UpdateControls()
 {
-   GUI->ParameterPort_SpinBox.SetValue( instance.p_port );
-   GUI->ParameterHost_Edit.SetText( instance.p_host );
+   GUI->ParameterPort_SpinBox.SetValue( instance.p_serverPort );
+   GUI->ParameterHost_Edit.SetText( instance.p_serverHostName );
 }
 
 // ----------------------------------------------------------------------------
 
-
 void INDIDeviceControllerInterface::__IntegerValueUpdated( SpinBox& sender, int value )
 {
    if ( sender == GUI->ParameterPort_SpinBox )
-      instance.p_port = value;
+      instance.p_serverPort = value;
 }
-
 
 void INDIDeviceControllerInterface::__EditGetFocus( Control& sender )
 {
@@ -208,192 +203,149 @@ void INDIDeviceControllerInterface::__EditGetFocus( Control& sender )
 void INDIDeviceControllerInterface::__EditCompleted( Edit& sender )
 {
    if ( sender == GUI->ParameterHost_Edit )
-      instance.p_host = sender.Text();
+      instance.p_serverHostName = sender.Text();
 }
 
 void INDIDeviceControllerInterface::__CameraListButtons_Click( Button& sender, bool checked )
 {
+   if ( sender == GUI->ConnectServer_PushButton )
+   {
+      try
+      {
+         if ( indiClient.IsNull() )
+            indiClient = new INDIClient( &instance );
+         IsoString ASCIIHost(instance.p_serverHostName);
+         indiClient->setServer( ASCIIHost.c_str(), instance.p_serverPort );
+         if ( indiClient->connectServer() )
+         {
+            GUI->UpdateDeviceList_Timer.Start();
+            GUI->UpdateServerMessage_Timer.Start();
+            GUI->UpdatePropertyList_Timer.Start();
+         }
+         else
+            GUI->ServerMessage_Label.SetText( "Connection to INDI server failed. Please check server host and port." );
+      }
+      ERROR_HANDLER
+   }
+   else if ( sender == GUI->DisconnectServer_PushButton )
+   {
+      try
+      {
+         if ( indiClient.IsNull() )
+            indiClient = new INDIClient( &instance );
 
-        if ( sender == GUI->ConnectServer_PushButton )
-        {
-            try
-            {
-				if (indiClient.get() == 0)
-					indiClient.reset(new INDIClient(&instance));
+         if ( indiClient->serverIsConnected() )
+            indiClient->disconnectServer();
 
-				IsoString ASCIIHost(instance.p_host);
-				indiClient->setServer(ASCIIHost.c_str(), instance.p_port);
+         GUI->UpdateDeviceList_Timer.Stop();
+         GUI->UpdatePropertyList_Timer.Stop();
+         GUI->UpdateServerMessage_Timer.Stop();
 
-				bool connected=false;
+         m_rootNodeMap.clear();
+         m_deviceNodeMap.clear();
+         m_deviceRootNodeMap.clear();
+         for ( auto item : m_propertyTreeMap )
+            delete item.second;
+         m_propertyTreeMap.clear();
 
-				connected = indiClient->connectServer();
+         // flag property list items as Insert to create new property tree
+         for ( auto item : instance.o_properties )
+            item.PropertyFlag = Insert;
 
-				if (connected){
-					GUI->UpdateDeviceList_Timer.Start();
-					GUI->UpdateServerMessage_Timer.Start();
-					GUI->UpdatePropertyList_Timer.Start();
-				}
-				else{
-					GUI->ServerMessage_Label.SetText("Connection to INDI server failed. Please check server host and port.");
-				}
-            }
-            ERROR_HANDLER
-        }
-		else if ( sender == GUI->DisconnectServer_PushButton )
-		{
-			try
-            {
-                if (indiClient.get() == 0)
-					indiClient.reset(new INDIClient(&instance));
+         GUI->DeviceList_TreeBox.Clear();
+         GUI->PropertyList_TreeBox.Clear();
 
-				if (indiClient->serverIsConnected())
-					indiClient->disconnectServer();
-
-
-				GUI->UpdateDeviceList_Timer.Stop();
-				GUI->UpdatePropertyList_Timer.Stop();
-				GUI->UpdateServerMessage_Timer.Stop();
-
-				// clear node maps
-				m_rootNodeMap.clear();
-				m_deviceNodeMap.clear();
-				m_deviceRootNodeMap.clear();
-
-				for (PropertyTreeMapType::iterator iter=m_propertyTreeMap.begin();iter!=m_propertyTreeMap.end(); iter++ ){
-					delete iter->second;
-				}
-
-				m_propertyTreeMap.clear();
-				// flag property list items as Insert to create new property tree
-
-				for (INDIDeviceControllerInstance::PropertyListType::iterator iter=instance.p_propertyList.Begin() ; iter!=instance.p_propertyList.End(); ++iter){
-					iter->PropertyFlag=Insert;
-				}
-
-				GUI->DeviceList_TreeBox.Clear();
-				// clear property list
-				GUI->PropertyList_TreeBox.Clear();
-
-
-				if (!indiClient->serverIsConnected()) {
-					GUI->ServerMessage_Label.SetText("Successfully disconnected from server");
-				}
-
-            }
-            ERROR_HANDLER
-		}
-		else if ( sender == GUI->ConnectDevice_PushButton)
-		{
-			try
-            {
-				pcl::IndirectArray<pcl::TreeBox::Node> selectedNodes = GUI->DeviceList_TreeBox.SelectedNodes();
-
-				for (pcl::IndirectArray<pcl::TreeBox::Node>::iterator it=selectedNodes.Begin(); it!=selectedNodes.End();++it){
-					IsoString deviceName((*it)->Text(TextColumn).To7BitASCII());
-
-					INDI::BaseDevice* device = indiClient->getDevice(deviceName.c_str());
-
-					if (device)
-						if (!device->isConnected())
-							indiClient->connectDevice(deviceName.c_str());
-				}
-			}
-            ERROR_HANDLER
-		}
-		else if ( sender == GUI->DisconnectDevice_PushButton)
-		{
-			try
-			{
-				pcl::IndirectArray<pcl::TreeBox::Node> selectedNodes =  GUI->DeviceList_TreeBox.SelectedNodes();
-
-				for (pcl::IndirectArray<pcl::TreeBox::Node>::iterator it=selectedNodes.Begin(); it!=selectedNodes.End();++it){
-					IsoString deviceName((*it)->Text(TextColumn).To7BitASCII());
-
-					INDI::BaseDevice* device = indiClient->getDevice(deviceName.c_str());
-
-					if (device)
-						if (device->isConnected())
-							indiClient->disconnectDevice(deviceName.c_str());
-
-					(*it)->Enable();
-				}
-			}
-            ERROR_HANDLER
-		}
+         if ( !indiClient->serverIsConnected() )
+            GUI->ServerMessage_Label.SetText( "Successfully disconnected from server" );
+      }
+      ERROR_HANDLER
+   }
+   else if ( sender == GUI->ConnectDevice_PushButton )
+   {
+      try
+      {
+         pcl::IndirectArray<pcl::TreeBox::Node> selectedNodes = GUI->DeviceList_TreeBox.SelectedNodes();
+         for ( auto nodePtr : selectedNodes )
+         {
+            IsoString deviceName( nodePtr->Text( TextColumn ).To7BitASCII() );
+            INDI::BaseDevice* device = indiClient->getDevice( deviceName.c_str() );
+            if ( device != nullptr )
+               if ( !device->isConnected() )
+                  indiClient->connectDevice( deviceName.c_str() );
+         }
+      }
+      ERROR_HANDLER
+   }
+   else if ( sender == GUI->DisconnectDevice_PushButton )
+   {
+      try
+      {
+         pcl::IndirectArray<pcl::TreeBox::Node> selectedNodes = GUI->DeviceList_TreeBox.SelectedNodes();
+         for ( auto nodePtr : selectedNodes )
+         {
+            IsoString deviceName( nodePtr->Text( TextColumn ).To7BitASCII() );
+            INDI::BaseDevice* device = indiClient->getDevice( deviceName.c_str() );
+            if ( device != nullptr )
+               if ( device->isConnected() )
+                  indiClient->disconnectDevice( deviceName.c_str() );
+            nodePtr->Enable();
+         }
+      }
+      ERROR_HANDLER
+   }
 }
 
+void INDIDeviceControllerInterface::UpdateDeviceList()
+{
+   if ( indiClient.IsNull() )
+      return;
 
-void INDIDeviceControllerInterface::UpdateDeviceList(){
+   if ( instance.o_devices.IsEmpty() )
+      return;
 
-	if (indiClient.get() == 0)
-		return;
+   for ( auto item : instance.o_devices )
+   {
+      PropertyNode* rootNode;
+      PropertyNodeMapType::iterator rootNodeIter = m_deviceRootNodeMap.find( item.DeviceName );
+      if ( rootNodeIter == m_deviceRootNodeMap.end() )
+         m_deviceRootNodeMap[item.DeviceName] = rootNode = new PropertyNode( GUI->DeviceList_TreeBox );
+      else
+         rootNode = rootNodeIter->second;
+      assert( rootNode != nullptr );
 
-	if (instance.p_deviceList.Begin()==instance.p_deviceList.End())
-		return;
+      PropertyNode* deviceNode;
+      PropertyNodeMapType::iterator deviceNodeIter = m_deviceNodeMap.find( item.DeviceName );
+      if ( deviceNodeIter == m_deviceNodeMap.end() )
+         m_deviceNodeMap[item.DeviceName] = deviceNode = new PropertyNode( rootNode, IsoString( item.DeviceName ) );
+      else
+         deviceNode = deviceNodeIter->second;
+      assert( deviceNode != NULL );
 
-	for (INDIDeviceControllerInstance::DeviceListType::iterator iter=instance.p_deviceList.Begin() ; iter!=instance.p_deviceList.End(); ++iter){
-
-		PropertyNode* rootNode=NULL;
-		PropertyNodeMapType::iterator rootNodeIter = m_deviceRootNodeMap.find(iter->DeviceName);
-		if (rootNodeIter== m_deviceRootNodeMap.end()){
-			rootNode=new PropertyNode(GUI->DeviceList_TreeBox);
-			m_deviceRootNodeMap[iter->DeviceName]=rootNode;
-		} else {
-			rootNode = rootNodeIter->second;
-		}
-		assert(rootNode!=NULL);
-
-		PropertyNode* deviceNode = NULL;
-		PropertyNodeMapType::iterator deviceNodeIter = m_deviceNodeMap.find(iter->DeviceName);
-		if (deviceNodeIter== m_deviceNodeMap.end()){
-			deviceNode=new PropertyNode(rootNode,IsoString(iter->DeviceName));
-			m_deviceNodeMap[iter->DeviceName]=deviceNode;
-		} else {
-			deviceNode = deviceNodeIter->second;
-		}
-		assert(deviceNode!=NULL);
-
-		deviceNode->getTreeBoxNode()->SetText( TextColumn, iter->DeviceName );
-		deviceNode->getTreeBoxNode()->SetAlignment( TextColumn, TextAlign::Left );
+      deviceNode->getTreeBoxNode()->SetText( TextColumn, item.DeviceName );
+      deviceNode->getTreeBoxNode()->SetAlignment( TextColumn, TextAlign::Left );
 
       INDI::BaseDevice* device;
       {
-         IsoString s( iter->DeviceName );
+         IsoString s( item.DeviceName );
          device = indiClient->getDevice( s.c_str() );
       }
-		if (device && device->isConnected()) {
-			deviceNode->getTreeBoxNode()->SetIcon( TextColumn, ScaledResource( ":/bullets/bullet-ball-glass-green.png" ) );
-      } else {
-			deviceNode->getTreeBoxNode()->SetIcon( TextColumn, ScaledResource( ":/bullets/bullet-ball-glass-grey.png" ) );
-		}
-	}
-
+      deviceNode->getTreeBoxNode()->SetIcon( TextColumn, ScaledResource(
+         (device != nullptr && device->isConnected()) ? ":/bullets/bullet-ball-glass-green.png" : ":/bullets/bullet-ball-glass-grey.png" ) );
+   }
 }
+
 // ----------------------------------------------------------------------------
 
 INDIDeviceControllerInterface::GUIData::GUIData( INDIDeviceControllerInterface& w )
 {
    pcl::Font fnt = w.Font();
-   int labelWidth1 = fnt.Width( String( "Three:" ) ); // the longest label text
-   int editWidth1 = fnt.Width( String( '0',14 ) );
+   int editWidth1 = fnt.Width( String( '0', 14 ) );
 
-   INDIServer_SectionBar.SetTitle("INDI Server Connection");
-   INDIServer_SectionBar.SetSection(INDIServerConnection_Control);
+   INDIServer_SectionBar.SetTitle( "INDI Server Connection" );
+   INDIServer_SectionBar.SetSection( INDIServer_Control );
    INDIServer_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&INDIDeviceControllerInterface::__ToggleSection, w );
-   INDIServerConnection_Control.SetSizer(ParameterHost_Sizer);
-   ParameterPort_Label.SetText( "Port:" );
-   ParameterPort_Label.SetMinWidth( labelWidth1 );
-   ParameterPort_Label.SetToolTip( "<p>INDI server port.</p>" );
-   ParameterPort_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
-
-   ParameterPort_SpinBox.SetRange( int( TheINDIServerPort->MinimumValue() ), int( TheINDIServerPort->MaximumValue() ) );
-   ParameterPort_SpinBox.SetFixedWidth( editWidth1 );
-   ParameterPort_SpinBox.SetToolTip( "<p>INDI server port.</p>" );
-   ParameterPort_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&INDIDeviceControllerInterface::__IntegerValueUpdated, w );
 
    ParameterHost_Label.SetText( "Host:" );
-   ParameterHost_Label.SetMinWidth( labelWidth1 );
-   ParameterHost_Label.SetToolTip( "<p>INDI server host.</p>" );
    ParameterHost_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
    ParameterHost_Edit.SetMinWidth( editWidth1 );
@@ -401,63 +353,66 @@ INDIDeviceControllerInterface::GUIData::GUIData( INDIDeviceControllerInterface& 
    ParameterHost_Edit.OnEditCompleted( (Edit::edit_event_handler)&INDIDeviceControllerInterface::__EditCompleted, w );
 
    ParameterPort_Label.SetText( "Port:" );
-   ParameterPort_Label.SetMinWidth( labelWidth1 );
-   ParameterPort_Label.SetToolTip( "<p>INDI server port.</p>" );
    ParameterPort_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
-   ParameterPort_SpinBox.SetRange( int( TheINDIServerPort->MinimumValue() ), int( TheINDIServerPort->MaximumValue() ) );
-   ParameterPort_SpinBox.SetFixedWidth( editWidth1 );
-   ParameterPort_SpinBox.SetToolTip( "<p>INDI server port.</p>" );
+   ParameterPort_SpinBox.SetRange( int( TheIDCServerPortParameter->MinimumValue() ), int( TheIDCServerPortParameter->MaximumValue() ) );
    ParameterPort_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&INDIDeviceControllerInterface::__IntegerValueUpdated, w );
 
-   //pushbuttons
    ConnectServer_PushButton.SetText( "Connect" );
-   ConnectServer_PushButton.OnClick( (Button::click_event_handler) &INDIDeviceControllerInterface::__CameraListButtons_Click, w );
+   ConnectServer_PushButton.OnClick( (Button::click_event_handler)&INDIDeviceControllerInterface::__CameraListButtons_Click, w );
+
    DisconnectServer_PushButton.SetText( "Disconnect" );
-   DisconnectServer_PushButton.OnClick( (Button::click_event_handler) &INDIDeviceControllerInterface::__CameraListButtons_Click, w );
+   DisconnectServer_PushButton.OnClick( (Button::click_event_handler)&INDIDeviceControllerInterface::__CameraListButtons_Click, w );
 
    ConnectionServer_Sizer.SetSpacing( 6 );
-   ConnectionServer_Sizer.Add(ConnectServer_PushButton);
-   ConnectionServer_Sizer.Add(DisconnectServer_PushButton);
+   ConnectionServer_Sizer.Add( ConnectServer_PushButton );
+   ConnectionServer_Sizer.Add( DisconnectServer_PushButton );
 
-   ParameterHost_Sizer.SetSpacing( 4 );
-   ParameterHost_Sizer.Add( ParameterHost_Label );
-   ParameterHost_Sizer.Add( ParameterHost_Edit, 100 );
-   ParameterHost_Sizer.Add( ParameterPort_Label );
-   ParameterHost_Sizer.Add( ParameterPort_SpinBox );
-   ParameterHost_Sizer.AddSpacing( 4 );
-   ParameterHost_Sizer.Add( ConnectionServer_Sizer );
+   INDIServer_Sizer.SetSpacing( 4 );
+   INDIServer_Sizer.Add( ParameterHost_Label );
+   INDIServer_Sizer.Add( ParameterHost_Edit, 100 );
+   INDIServer_Sizer.AddSpacing( 6 );
+   INDIServer_Sizer.Add( ParameterPort_Label );
+   INDIServer_Sizer.Add( ParameterPort_SpinBox );
+   INDIServer_Sizer.AddSpacing( 8 );
+   INDIServer_Sizer.Add( ConnectionServer_Sizer );
 
-   // INDI devices
-   INDIDevices_SectionBar.SetTitle("INDI Devices");
-   INDIDevices_SectionBar.SetSection(INDIDevices_Control);
+   INDIServer_Control.SetSizer( INDIServer_Sizer );
+
+   //
+
+   INDIDevices_SectionBar.SetTitle( "INDI Devices" );
+   INDIDevices_SectionBar.SetSection( INDIDevices_Control );
    INDIDevices_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&INDIDeviceControllerInterface::__ToggleSection, w );
-   INDIDevices_Control.SetSizer(INDIDevice_Sizer);
 
    DeviceList_TreeBox.EnableAlternateRowColor();
    DeviceList_TreeBox.EnableMultipleSelections();
-   DeviceList_TreeBox.SetNumberOfColumns(1);
-   DeviceList_TreeBox.SetHeaderText(0,"Device");
+   DeviceList_TreeBox.SetNumberOfColumns( 1 );
+   DeviceList_TreeBox.SetHeaderText( 0, "Device" );
    DeviceList_TreeBox.SetMinHeight( LIST_MINHEIGHT( fnt ) );
 
-   ConnectDevice_PushButton.SetText("Connect");
-   ConnectDevice_PushButton.OnClick((Button::click_event_handler) &INDIDeviceControllerInterface::__CameraListButtons_Click, w );
-   DisconnectDevice_PushButton.SetText("Disconnect");
-   DisconnectDevice_PushButton.OnClick((Button::click_event_handler) &INDIDeviceControllerInterface::__CameraListButtons_Click, w );
+   ConnectDevice_PushButton.SetText( "Connect" );
+   ConnectDevice_PushButton.OnClick( (Button::click_event_handler)&INDIDeviceControllerInterface::__CameraListButtons_Click, w );
+
+   DisconnectDevice_PushButton.SetText( "Disconnect" );
+   DisconnectDevice_PushButton.OnClick( (Button::click_event_handler)&INDIDeviceControllerInterface::__CameraListButtons_Click, w );
 
    DeviceAction_Sizer.SetSpacing( 6 );
-   DeviceAction_Sizer.Add(ConnectDevice_PushButton);
-   DeviceAction_Sizer.Add(DisconnectDevice_PushButton);
+   DeviceAction_Sizer.Add( ConnectDevice_PushButton );
+   DeviceAction_Sizer.Add( DisconnectDevice_PushButton );
    DeviceAction_Sizer.AddStretch();
 
-   INDIDevice_Sizer.Add( DeviceList_TreeBox, 100 );
-   INDIDevice_Sizer.AddSpacing( 8 );
-   INDIDevice_Sizer.Add( DeviceAction_Sizer );
+   INDIDevices_Sizer.Add( DeviceList_TreeBox, 100 );
+   INDIDevices_Sizer.AddSpacing( 8 );
+   INDIDevices_Sizer.Add( DeviceAction_Sizer );
+
+   INDIDevices_Control.SetSizer( INDIDevices_Sizer );
+
+   //
 
    INDIProperties_SectionBar.SetTitle( "INDI Device Properties" );
-   INDIProperties_SectionBar.SetSection(INDIProperties_Control);
+   INDIProperties_SectionBar.SetSection( INDIProperties_Control );
    INDIProperties_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&INDIDeviceControllerInterface::__ToggleSection, w );
-   INDIProperties_Control.SetSizer(INDIDeviceProperty_Sizer);
 
    PropertyList_TreeBox.EnableAlternateRowColor();
    PropertyList_TreeBox.SetNumberOfColumns(5);
@@ -469,7 +424,7 @@ INDIDeviceControllerInterface::GUIData::GUIData( INDIDeviceControllerInterface& 
    PropertyList_TreeBox.SetHeaderText( LabelColumn, "Label" );
    PropertyList_TreeBox.SetMinHeight( LIST_MINHEIGHT( fnt ) );
 
-   PropertyList_TreeBox.OnClose((Control::close_event_handler)&INDIDeviceControllerInterface::__Close,w);
+   PropertyList_TreeBox.OnClose( (Control::close_event_handler)&INDIDeviceControllerInterface::__Close, w );
 
    ServerMessageLabel_Label.SetText( "Last server message:" );
    ServerMessageLabel_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
@@ -478,29 +433,33 @@ INDIDeviceControllerInterface::GUIData::GUIData( INDIDeviceControllerInterface& 
    ServerMessage_Label.SetFixedHeight( 2*fnt.Height() );
    ServerMessage_Label.EnableWordWrapping();
 
-   ServerMessage_Sizer.Add(ServerMessageLabel_Label);
-   ServerMessage_Sizer.Add(ServerMessage_Label);
+   ServerMessage_Sizer.Add( ServerMessageLabel_Label );
+   ServerMessage_Sizer.Add( ServerMessage_Label );
 
-   EditProperty_PushButton.SetText("Edit");
-   EditProperty_PushButton.OnClick((Button::click_event_handler) &INDIDeviceControllerInterface::PropertyButton_Click, w );
+   EditProperty_PushButton.SetText( "Edit" );
+   EditProperty_PushButton.OnClick( (Button::click_event_handler) &INDIDeviceControllerInterface::PropertyButton_Click, w );
 
    Buttons_Sizer.SetSpacing( 6 );
-   Buttons_Sizer.Add(EditProperty_PushButton);
+   Buttons_Sizer.Add( EditProperty_PushButton );
    Buttons_Sizer.AddStretch();
 
-   INDIDeviceProperty_Sizer.Add( PropertyList_TreeBox, 100 );
-   INDIDeviceProperty_Sizer.AddSpacing( 8 );
-   INDIDeviceProperty_Sizer.Add( Buttons_Sizer );
+   INDIProperties_Sizer.Add( PropertyList_TreeBox, 100 );
+   INDIProperties_Sizer.AddSpacing( 8 );
+   INDIProperties_Sizer.Add( Buttons_Sizer );
+
+   INDIProperties_Control.SetSizer( INDIProperties_Sizer );
+
+   //
 
    Global_Sizer.SetMargin( 8 );
    Global_Sizer.SetSpacing( 6 );
-   Global_Sizer.Add(INDIServer_SectionBar);
-   Global_Sizer.Add(INDIServerConnection_Control);
-   Global_Sizer.Add(INDIDevices_SectionBar);
-   Global_Sizer.Add(INDIDevices_Control);
-   Global_Sizer.Add(INDIProperties_SectionBar);
-   Global_Sizer.Add(INDIProperties_Control);
-   Global_Sizer.Add(ServerMessage_Sizer);
+   Global_Sizer.Add( INDIServer_SectionBar );
+   Global_Sizer.Add( INDIServer_Control );
+   Global_Sizer.Add( INDIDevices_SectionBar );
+   Global_Sizer.Add( INDIDevices_Control );
+   Global_Sizer.Add( INDIProperties_SectionBar );
+   Global_Sizer.Add( INDIProperties_Control );
+   Global_Sizer.Add( ServerMessage_Sizer );
 
    UpdateDeviceList_Timer.SetInterval( 0.5 );
    UpdateDeviceList_Timer.SetPeriodic( true );
@@ -533,7 +492,7 @@ void INDIDeviceControllerInterface::__UpdatePropertyList_Timer( Timer &sender )
 void INDIDeviceControllerInterface::__UpdateServerMessage_Timer( Timer &sender )
 {
    if ( sender == GUI->UpdateServerMessage_Timer )
-      GUI->ServerMessage_Label.SetText( instance.p_currentMessage );
+      GUI->ServerMessage_Label.SetText( instance.m_currentMessage );
 }
 
 void INDIDeviceControllerInterface::__ToggleSection( SectionBar& sender, Control& section, bool start )
@@ -558,25 +517,23 @@ void INDIDeviceControllerInterface::__ToggleSection( SectionBar& sender, Control
 
 // ----------------------------------------------------------------------------
 
+void SetPropertyDialog::Ok_Button_Click( Button& sender, bool checked )
+{
+   if ( indiClient.IsNull() )
+      return;
 
+   assert( m_instance != nullptr );
 
-void SetPropertyDialog::Ok_Button_Click( Button& sender, bool checked ){
-
-	if (indiClient.get() == 0)
-		return;
-
-	assert(m_instance!=NULL);
-
-	INDINewPropertyListItem newPropertyListItem=getNewPropertyListItem();
-	bool send_ok = m_instance->sendNewPropertyValue(newPropertyListItem,true /*isAsynch*/);
-	if (!send_ok) {
-		m_instance->clearNewPropertyList();
-	}
-	Ok();
+   INDINewPropertyListItem newPropertyListItem = getNewPropertyListItem();
+   bool send_ok = m_instance->sendNewPropertyValue( newPropertyListItem, true/*isAsynch*/ );
+   if ( !send_ok )
+      m_instance->clearNewPropertyList();
+   Ok();
 }
 
-void SetPropertyDialog::Cancel_Button_Click( Button& sender, bool checked ){
-		Cancel();
+void SetPropertyDialog::Cancel_Button_Click( Button& sender, bool checked )
+{
+   Cancel();
 }
 
 SetPropertyDialog* SetPropertyDialog::createPropertyDialog( String indiType, String numberFormat, INDIDeviceControllerInstance* indiInstance )
@@ -596,351 +553,342 @@ SetPropertyDialog* SetPropertyDialog::createPropertyDialog( String indiType, Str
 
 void EditPropertyDialog::EditCompleted( Edit& sender )
 {
-	m_newPropertyListItem.NewPropertyValue=sender.Text();
+   m_newPropertyListItem.NewPropertyValue = sender.Text();
 }
 
-EditPropertyDialog::EditPropertyDialog(INDIDeviceControllerInstance* indiInstance):SetPropertyDialog(indiInstance){
-	pcl::Font fnt = Font();
-	int labelWidth = fnt.Width( String( '0',30 ) );
-	int editWidth = fnt.Width( String( '0',10 ) );
+EditPropertyDialog::EditPropertyDialog( INDIDeviceControllerInstance* indiInstance ) :
+   SetPropertyDialog( indiInstance )
+{
+   pcl::Font fnt = Font();
+   int labelWidth = fnt.Width( String( '0', 30 ) );
+   int editWidth = fnt.Width( String( '0', 16 ) );
 
-	SetWindowTitle(String("INDI number property value"));
+   SetWindowTitle( "INDI Number Property Value" );
 
-	Property_Label.SetMinWidth(labelWidth);
-	Property_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+   Property_Label.SetMinWidth( labelWidth );
+   Property_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
-	Property_Edit.SetMinWidth(editWidth);
-	Property_Edit.OnEditCompleted( (Edit::edit_event_handler)&EditPropertyDialog::EditCompleted, *this );
+   Property_Edit.SetMinWidth( editWidth );
+   Property_Edit.OnEditCompleted( (Edit::edit_event_handler)&EditPropertyDialog::EditCompleted, *this );
 
-	OK_PushButton.SetText("OK");
-	OK_PushButton.OnClick((Button::click_event_handler) &SetPropertyDialog::Ok_Button_Click, *this );
-	Cancel_PushButton.SetText("Cancel");
-	Cancel_PushButton.OnClick((Button::click_event_handler) &SetPropertyDialog::Cancel_Button_Click, *this );
+   OK_PushButton.SetText( "OK" );
+   OK_PushButton.OnClick( (Button::click_event_handler)&SetPropertyDialog::Ok_Button_Click, *this );
 
-	Property_Sizer.SetMargin(10);
-	Property_Sizer.SetSpacing(4);
-	Property_Sizer.Add(Property_Label);
-	Property_Sizer.Add(Property_Edit);
-	Property_Sizer.AddStretch();
+   Cancel_PushButton.SetText( "Cancel" );
+   Cancel_PushButton.OnClick( (Button::click_event_handler)&SetPropertyDialog::Cancel_Button_Click, *this );
 
+   Property_Sizer.SetSpacing( 4 );
+   Property_Sizer.Add( Property_Label );
+   Property_Sizer.Add( Property_Edit );
+   Property_Sizer.AddStretch();
 
-	Buttons_Sizer.SetSpacing(4);
-	Buttons_Sizer.AddSpacing(10);
-	Buttons_Sizer.AddStretch();
-	Buttons_Sizer.Add(OK_PushButton);
-	Buttons_Sizer.AddStretch();
-	Buttons_Sizer.Add(Cancel_PushButton);
-	Buttons_Sizer.AddStretch();
+   Buttons_Sizer.SetSpacing( 8 );
+   Buttons_Sizer.AddStretch();
+   Buttons_Sizer.Add( OK_PushButton );
+   Buttons_Sizer.Add( Cancel_PushButton );
 
-	Global_Sizer.Add(Property_Sizer);
-	Global_Sizer.Add(Buttons_Sizer);
+   Global_Sizer.SetMargin( 8 );
+   Global_Sizer.SetSpacing( 8 );
+   Global_Sizer.Add( Property_Sizer );
+   Global_Sizer.Add( Buttons_Sizer );
 
-	SetSizer(Global_Sizer);
-
+   SetSizer( Global_Sizer );
 }
 
-
-void EditNumberCoordPropertyDialog::setPropertyValueString(String value){
-	StringList tokens;
-	value.Break(tokens,':',true);
-	assert(tokens.Length()==3);
-	tokens[0].TrimLeft();
-	Hour_Edit.SetText(tokens[0]);
-	Minute_Edit.SetText(tokens[1]);
-	Second_Edit.SetText(tokens[2]);
+void EditNumberCoordPropertyDialog::setPropertyValueString( String value )
+{
+   StringList tokens;
+   value.Break( tokens, ':', true/*trim*/ );
+   assert( tokens.Length() == 3 );
+   tokens[0].TrimLeft();
+   Hour_Edit.SetText( tokens[0] );
+   Minute_Edit.SetText( tokens[1] );
+   Second_Edit.SetText( tokens[2] );
 }
 
 void EditNumberCoordPropertyDialog::EditCompleted( Edit& sender )
 {
-	if (sender==Hour_Edit){
-		m_hour=sender.Text().ToDouble();
-		m_minute=Minute_Edit.Text().ToDouble();
-		m_second=Second_Edit.Text().ToDouble();
-	}
-	if (sender==Minute_Edit){
-		m_hour=Hour_Edit.Text().ToDouble();
-		m_minute=sender.Text().ToDouble();
-		m_second=Second_Edit.Text().ToDouble();
-	}
-	if (sender==Second_Edit){
-		m_hour=Hour_Edit.Text().ToDouble();
-		m_minute=Minute_Edit.Text().ToDouble();
-		m_second=sender.Text().ToDouble();
-	}
-	double sign=m_hour >=0 ? 1.0 : -1.0;
-	double coord=sign * (fabs(m_hour) + m_minute / 60 + m_second / 3600);
-	m_newPropertyListItem.NewPropertyValue=String(coord) ;
+   if ( sender == Hour_Edit )
+   {
+      m_hour = sender.Text().ToDouble();
+      m_minute = Minute_Edit.Text().ToDouble();
+      m_second = Second_Edit.Text().ToDouble();
+   }
+   else if ( sender == Minute_Edit )
+   {
+      m_hour = Hour_Edit.Text().ToDouble();
+      m_minute = sender.Text().ToDouble();
+      m_second = Second_Edit.Text().ToDouble();
+   }
+   else if ( sender == Second_Edit )
+   {
+      m_hour = Hour_Edit.Text().ToDouble();
+      m_minute = Minute_Edit.Text().ToDouble();
+      m_second = sender.Text().ToDouble();
+   }
+   double coord = Abs( m_hour ) + m_minute/60 + m_second/3600;
+   if ( m_hour < 0 )
+      coord = -coord;
+   m_newPropertyListItem.NewPropertyValue = String( coord );
 }
 
-EditNumberCoordPropertyDialog::EditNumberCoordPropertyDialog(INDIDeviceControllerInstance* indiInstance):SetPropertyDialog(indiInstance),m_hour(0),m_minute(0),m_second(0){
-	pcl::Font fnt = Font();
-	int labelWidth = fnt.Width( String( '0',20 ) );
-	int editWidth = fnt.Width( String( '0',4 ) );
+EditNumberCoordPropertyDialog::EditNumberCoordPropertyDialog( INDIDeviceControllerInstance* indiInstance ) :
+   SetPropertyDialog( indiInstance ),
+   m_hour( 0 ),
+   m_minute( 0 ),
+   m_second( 0 )
+{
+   pcl::Font fnt = Font();
+   int labelWidth = fnt.Width( String( '0', 20 ) );
+   int editWidth = fnt.Width( String( '0', 4 ) );
 
+   SetWindowTitle( "INDI Coordinate Property Value" );
 
-	SetWindowTitle(String("INDI coordinate property value"));
+   Property_Label.SetMinWidth( labelWidth );
+   Property_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
-	Property_Label.SetMinWidth(labelWidth);
-	Property_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+   Hour_Edit.SetMaxWidth( editWidth );
+   Hour_Edit.OnEditCompleted( (Edit::edit_event_handler)&EditNumberCoordPropertyDialog::EditCompleted, *this );
 
-	Hour_Edit.SetMaxWidth(editWidth);
-	Hour_Edit.OnEditCompleted( (Edit::edit_event_handler)&EditNumberCoordPropertyDialog::EditCompleted, *this );
+   Colon1_Label.SetText( ":" );
 
-	Colon1_Label.SetText(":");
+   Minute_Edit.SetMaxWidth( editWidth );
+   Minute_Edit.OnEditCompleted( (Edit::edit_event_handler)&EditNumberCoordPropertyDialog::EditCompleted, *this );
 
-	Minute_Edit.SetMaxWidth(editWidth);
-	Minute_Edit.OnEditCompleted( (Edit::edit_event_handler)&EditNumberCoordPropertyDialog::EditCompleted, *this );
+   Colon2_Label.SetText( ":" );
 
-	Colon2_Label.SetText(":");
+   Second_Edit.SetMaxWidth( editWidth );
+   Second_Edit.OnEditCompleted( (Edit::edit_event_handler)&EditNumberCoordPropertyDialog::EditCompleted, *this );
 
-	Second_Edit.SetMaxWidth(editWidth);
-	Second_Edit.OnEditCompleted( (Edit::edit_event_handler)&EditNumberCoordPropertyDialog::EditCompleted, *this );
+   OK_PushButton.SetText( "OK" );
+   OK_PushButton.OnClick( (Button::click_event_handler)&SetPropertyDialog::Ok_Button_Click, *this );
 
+   Cancel_PushButton.SetText( "Cancel" );
+   Cancel_PushButton.OnClick( (Button::click_event_handler)&SetPropertyDialog::Cancel_Button_Click, *this );
 
-	OK_PushButton.SetText("OK");
-	OK_PushButton.OnClick((Button::click_event_handler) &SetPropertyDialog::Ok_Button_Click, *this );
-	Cancel_PushButton.SetText("Cancel");
-	Cancel_PushButton.OnClick((Button::click_event_handler) &SetPropertyDialog::Cancel_Button_Click, *this );
+   Property_Sizer.SetSpacing( 4 );
+   Property_Sizer.Add( Property_Label );
+   Property_Sizer.Add( Hour_Edit );
+   Property_Sizer.Add( Colon1_Label );
+   Property_Sizer.Add( Minute_Edit );
+   Property_Sizer.Add( Colon2_Label );
+   Property_Sizer.Add( Second_Edit );
+   Property_Sizer.AddStretch();
 
-	Property_Sizer.SetMargin(10);
-	Property_Sizer.SetSpacing(4);
-	Property_Sizer.Add(Property_Label);
-	Property_Sizer.Add(Hour_Edit);
-	Property_Sizer.Add(Colon1_Label);
-	Property_Sizer.Add(Minute_Edit);
-	Property_Sizer.Add(Colon2_Label);
-	Property_Sizer.Add(Second_Edit);
-	Property_Sizer.AddStretch();
+   Buttons_Sizer.SetSpacing( 8 );
+   Buttons_Sizer.AddStretch();
+   Buttons_Sizer.Add( OK_PushButton );
+   Buttons_Sizer.Add( Cancel_PushButton );
 
+   Global_Sizer.SetMargin( 8 );
+   Global_Sizer.SetSpacing( 8 );
+   Global_Sizer.Add( Property_Sizer );
+   Global_Sizer.Add( Buttons_Sizer );
 
-	Buttons_Sizer.SetSpacing(4);
-	Buttons_Sizer.AddSpacing(10);
-	Buttons_Sizer.AddStretch();
-	Buttons_Sizer.Add(OK_PushButton);
-	Buttons_Sizer.AddStretch();
-	Buttons_Sizer.Add(Cancel_PushButton);
-	Buttons_Sizer.AddStretch();
-
-	Global_Sizer.Add(Property_Sizer);
-	Global_Sizer.Add(Buttons_Sizer);
-
-	SetSizer(Global_Sizer);
-
+   SetSizer( Global_Sizer );
 }
 
-void EditSwitchPropertyDialog::setPropertyValueString(String value){
-	if (value==String("ON")){
-		ON_RadioButton.Check();
-		OFF_RadioButton.Uncheck();
-	}
-	else if (value==String("OFF")) {
-		ON_RadioButton.Uncheck();
-		OFF_RadioButton.Check();
-	} else {
-		throw Error("Invalid Switch value.");
-	}
+void EditSwitchPropertyDialog::setPropertyValueString( String value )
+{
+   if ( value == "ON" )
+   {
+      ON_RadioButton.Check();
+      OFF_RadioButton.Uncheck();
+   }
+   else if ( value == "OFF" )
+   {
+      ON_RadioButton.Uncheck();
+      OFF_RadioButton.Check();
+   }
+   else
+      throw Error( "Invalid switch value." );
 }
 
 void EditSwitchPropertyDialog::ButtonChecked( RadioButton& sender )
 {
-	if (sender==ON_RadioButton){
-		m_newPropertyListItem.NewPropertyValue=String("ON") ;
-	}
-
-	if (sender==OFF_RadioButton){
-		m_newPropertyListItem.NewPropertyValue=String("OFF") ;
-	}
-
+   if ( sender == ON_RadioButton )
+      m_newPropertyListItem.NewPropertyValue = "ON";
+   else if ( sender == OFF_RadioButton )
+      m_newPropertyListItem.NewPropertyValue = "OFF";
 }
 
-EditSwitchPropertyDialog::EditSwitchPropertyDialog(INDIDeviceControllerInstance* indiInstance):SetPropertyDialog(indiInstance){
-	pcl::Font fnt = Font();
-	int labelWidth = fnt.Width( String( '0',20 ) );
+EditSwitchPropertyDialog::EditSwitchPropertyDialog( INDIDeviceControllerInstance* indiInstance ) :
+   SetPropertyDialog( indiInstance )
+{
+   pcl::Font fnt = Font();
+   int labelWidth = fnt.Width( String( '0', 20 ) );
 
-	SetWindowTitle(String("INDI switch property value"));
+   SetWindowTitle( "INDI switch property value" );
 
-	Property_Label.SetMinWidth(labelWidth);
-	Property_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+   Property_Label.SetMinWidth(labelWidth);
+   Property_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
-	ON_Label.SetText("ON");
-	OFF_Label.SetText("OFF");
+   ON_Label.SetText( "ON" );
+   OFF_Label.SetText( "OFF" );
 
-	//ON_RadioButton.Uncheck();
-	ON_RadioButton.OnCheck((RadioButton::check_event_handler) &EditSwitchPropertyDialog::ButtonChecked,*this);
+   //ON_RadioButton.Uncheck();
+   ON_RadioButton.OnCheck( (RadioButton::check_event_handler)&EditSwitchPropertyDialog::ButtonChecked, *this );
 
+   //OFF_RadioButton.Check();
+   //OFF_RadioButton.Disable( true );
+   OFF_RadioButton.OnCheck( (RadioButton::check_event_handler)&EditSwitchPropertyDialog::ButtonChecked,*this );
 
-	//OFF_RadioButton.Check();
-	//OFF_RadioButton.Disable(true);
-	OFF_RadioButton.OnCheck((RadioButton::check_event_handler) &EditSwitchPropertyDialog::ButtonChecked,*this);
+   OK_PushButton.SetText( "OK" );
+   OK_PushButton.OnClick( (Button::click_event_handler)&SetPropertyDialog::Ok_Button_Click, *this );
+   Cancel_PushButton.SetText( "Cancel" );
+   Cancel_PushButton.OnClick( (Button::click_event_handler)&SetPropertyDialog::Cancel_Button_Click, *this );
 
-	OK_PushButton.SetText("OK");
-	OK_PushButton.OnClick((Button::click_event_handler) &SetPropertyDialog::Ok_Button_Click, *this );
-	Cancel_PushButton.SetText("Cancel");
-	Cancel_PushButton.OnClick((Button::click_event_handler) &SetPropertyDialog::Cancel_Button_Click, *this );
+   Property_Sizer.SetSpacing( 4 );
+   Property_Sizer.Add( Property_Label );
+   Property_Sizer.Add( ON_Label );
+   Property_Sizer.Add( ON_RadioButton );
+   Property_Sizer.Add( OFF_Label );
+   Property_Sizer.Add( OFF_RadioButton );
+   Property_Sizer.AddStretch();
 
-	Property_Sizer.SetMargin(10);
-	Property_Sizer.SetSpacing(4);
-	Property_Sizer.Add(Property_Label);
-	Property_Sizer.Add(ON_Label);
-	Property_Sizer.Add(ON_RadioButton);
-	Property_Sizer.Add(OFF_Label);
-	Property_Sizer.Add(OFF_RadioButton);
-	Property_Sizer.AddStretch();
+   Buttons_Sizer.SetSpacing( 8 );
+   Buttons_Sizer.AddStretch();
+   Buttons_Sizer.Add( OK_PushButton );
+   Buttons_Sizer.Add( Cancel_PushButton );
 
+   Global_Sizer.SetMargin( 8 );
+   Global_Sizer.SetSpacing( 8 );
+   Global_Sizer.Add( Property_Sizer );
+   Global_Sizer.Add( Buttons_Sizer );
 
-	Buttons_Sizer.SetSpacing(4);
-	Buttons_Sizer.AddSpacing(10);
-	Buttons_Sizer.AddStretch();
-	Buttons_Sizer.Add(OK_PushButton);
-	Buttons_Sizer.AddStretch();
-	Buttons_Sizer.Add(Cancel_PushButton);
-	Buttons_Sizer.AddStretch();
-
-	Global_Sizer.Add(Property_Sizer);
-	Global_Sizer.Add(Buttons_Sizer);
-
-	SetSizer(Global_Sizer);
-
+   SetSizer( Global_Sizer );
 }
 
+void INDIDeviceControllerInterface::UpdatePropertyList()
+{
+   Array<INDIPropertyListItem> itemsToBeRemoved, itemsCreated;
 
+   // get popertyList with exclusive access
+   ExclPropertyList propertyList = instance.getExclusivePropertyList();
 
-void INDIDeviceControllerInterface::UpdatePropertyList(){
-	std::vector<INDIPropertyListItem> itemsToBeRemoved;
-	std::vector<INDIPropertyListItem> itemsCreated;
+   if ( indiClient.IsNull() )
+   {
+      GUI->PropertyList_TreeBox.EnableUpdates();
+      return;
+   }
 
-	// get popertyList with exclusive access
-	ExclPropertyList propertyList = instance.getExclusivePropertyList();
+   if ( propertyList.get()->IsEmpty() )
+   {
+      GUI->PropertyList_TreeBox.EnableUpdates();
+      return;
+   }
 
+   PropertyNodeFactory factory;
+   for ( auto item : *propertyList.get() )
+   {
+      if ( item.PropertyFlag == Idle )
+         continue;
 
-	if (indiClient.get() == 0){
-		GUI->PropertyList_TreeBox.EnableUpdates();
-		return;
-	}
+      PropertyNode* rootNode = nullptr;
+      PropertyNodeMapType::iterator rootNodeIter = m_rootNodeMap.find( item.Device );
+      if ( rootNodeIter == m_rootNodeMap.end() )
+         m_rootNodeMap[item.Device] = rootNode = new PropertyNode( GUI->PropertyList_TreeBox );
+      else
+         rootNode = rootNodeIter->second;
+      assert( rootNode != nullptr );
 
-	if (propertyList.get()->Begin()==propertyList.get()->End()){
-		GUI->PropertyList_TreeBox.EnableUpdates();
-		return;
-	}
+      PropertyTree* propTree = nullptr;
+      PropertyTreeMapType::iterator propTreeIter = m_propertyTreeMap.find( item.Device );
+      if ( propTreeIter == m_propertyTreeMap.end() )
+         propTree = new PropertyTree( rootNode, &factory );
+      else
+         propTree = propTreeIter->second;
+      assert( propTree != nullptr );
 
-	PropertyNodeFactory factory;
-	for (INDIDeviceControllerInstance::PropertyListType::iterator iter=propertyList.get()->Begin() ; iter!=propertyList.get()->End(); ++iter){
+      if ( item.PropertyFlag == Remove )
+      {
+         FindNodeVisitor* findDeviceNodeVisitor = new FindNodeVisitor;
+         rootNode->accept( findDeviceNodeVisitor, PropertyUtils::getKey( item.Device ), IsoString() );
+         FindNodeVisitor* findPropNodeVisitor = new FindNodeVisitor;
+         rootNode->accept( findPropNodeVisitor, PropertyUtils::getKey( item.Device, item.Property ), IsoString() );
+         if ( findDeviceNodeVisitor->foundNode() && findPropNodeVisitor->foundNode() )
+         {
+            findDeviceNodeVisitor->getNode()->RemoveChild( findPropNodeVisitor->getNode() );
+            delete findPropNodeVisitor->getNode();
+         }
+         itemsToBeRemoved << item;
+      }
+      else
+      {
+         PropertyNode* elemNode = propTree->addElementNode( item.Device, item.Property, item.Element, item.PropertyState, item.PropertyLabel );
+         elemNode->setNodeINDIType( item.PropertyTypeStr );
+         elemNode->setNodeINDINumberFormat( item.PropertyNumberFormat );
+         if ( item.PropertyTypeStr == "INDI_NUMBER" )
+            elemNode->setNodeINDIValue( PropertyUtils::getFormattedNumber( item.PropertyValue, IsoString( item.PropertyNumberFormat ) ) );
+         else
+            elemNode->setNodeINDIValue( item.PropertyValue );
+         elemNode->setNodeINDILabel( item.ElementLabel );
+         elemNode->getTreeBoxNode()->SetAlignment( TextColumn, TextAlign::Left );
+         elemNode->getTreeBoxNode()->SetAlignment( ValueColumn, TextAlign::Left );
+         elemNode->getTreeBoxNode()->SetAlignment( LabelColumn, TextAlign::Left );
+         if ( item.PropertyFlag == Insert )
+            itemsCreated << item;
+      }
+   }
 
-		if (iter->PropertyFlag==Idle){
-			continue;
-		}
+   // remove properties from property list
+   for( auto item : itemsToBeRemoved )
+   {
+      INDIDeviceControllerInstance::PropertyListType::iterator iter = propertyList.get()->Search( item );
+      if ( iter == propertyList.get()->End() )
+         throw Error( String( iter->Element ) );
+      propertyList.get()->Remove( iter );
+   }
 
-		PropertyNode* rootNode=NULL;
-		PropertyNodeMapType::iterator rootNodeIter = m_rootNodeMap.find(iter->Device);
-		if (rootNodeIter== m_rootNodeMap.end()){
-			rootNode=new PropertyNode(GUI->PropertyList_TreeBox);
-			m_rootNodeMap[iter->Device]=rootNode;
-		} else {
-			rootNode = rootNodeIter->second;
-		}
-		assert(rootNode!=NULL);
-
-		PropertyTree*  propTree = NULL;
-		PropertyTreeMapType::iterator propTreeIter = m_propertyTreeMap.find(iter->Device);
-		if (propTreeIter==m_propertyTreeMap.end()){
-			propTree = new PropertyTree(rootNode,&factory);
-		} else {
-			propTree = propTreeIter->second;
-		}
-		assert(propTree!=NULL);
-
-		if (iter->PropertyFlag==Remove){
-			FindNodeVisitor* findDeviceNodeVisitor = new FindNodeVisitor();
-			rootNode->accept(findDeviceNodeVisitor,PropertyUtils::getKey(iter->Device),IsoString());
-			FindNodeVisitor* findPropNodeVisitor = new FindNodeVisitor();
-			rootNode->accept(findPropNodeVisitor,PropertyUtils::getKey(iter->Device,iter->Property),IsoString());
-			if (findDeviceNodeVisitor->foundNode() && findPropNodeVisitor->foundNode()){
-				findDeviceNodeVisitor->getNode()->RemoveChild(findPropNodeVisitor->getNode());
-				delete findPropNodeVisitor->getNode();
-			}
-			itemsToBeRemoved.push_back(*iter);
-		} else  {
-			PropertyNode* elemNode = propTree->addElementNode(iter->Device,iter->Property,iter->Element,iter->PropertyState,iter->PropertyLabel);
-			elemNode->setNodeINDIType(iter->PropertyTypeStr);
-			elemNode->setNodeINDINumberFormat(iter->PropertyNumberFormat);
-			if (iter->PropertyTypeStr==String("INDI_NUMBER")){
-				elemNode->setNodeINDIValue( PropertyUtils::getFormattedNumber( iter->PropertyValue, IsoString( iter->PropertyNumberFormat ) ) );
-			} else {
-				elemNode->setNodeINDIValue(iter->PropertyValue);
-			}
-			elemNode->setNodeINDILabel(iter->ElementLabel);
-			elemNode->getTreeBoxNode()->SetAlignment(TextColumn, TextAlign::Left);
-			elemNode->getTreeBoxNode()->SetAlignment(ValueColumn, TextAlign::Left);
-			elemNode->getTreeBoxNode()->SetAlignment(LabelColumn, TextAlign::Left);
-			if (iter->PropertyFlag==Insert){
-				itemsCreated.push_back(*iter);
-			}
-		}
-
-	}
-
-	// remove properties from property list
-	for (size_t i=0; i<itemsToBeRemoved.size(); i++){
-		INDIDeviceControllerInstance::PropertyListType::iterator iter = propertyList.get()->Search(itemsToBeRemoved[i]);
-		if (iter==propertyList.get()->End())
-			throw Error( String( iter->Element ) );
-		propertyList.get()->Remove(iter);
-
-	}
-
-	// set newly created elements to Idle
-	for (size_t i=0; i<itemsCreated.size(); i++){
-		INDIDeviceControllerInstance::PropertyListType::iterator iter =propertyList.get()->Search(itemsCreated[i]);
-		if (iter!=propertyList.get()->End()){
-			iter->PropertyFlag=Idle;
-		}
-	}
-
+   // set newly created elements to Idle
+   for ( auto item : itemsCreated )
+   {
+      INDIDeviceControllerInstance::PropertyListType::iterator iter = propertyList.get()->Search( item );
+      if ( iter != propertyList.get()->End() )
+         iter->PropertyFlag = Idle;
+   }
 }
 
-
-void INDIDeviceControllerInterface::__Close( Control& sender, bool& allowClose){
-
+void INDIDeviceControllerInterface::__Close( Control& sender, bool& allowClose )
+{
 }
 
-void INDIDeviceControllerInterface::PropertyButton_Click( Button& sender, bool checked ){
+void INDIDeviceControllerInterface::PropertyButton_Click( Button& sender, bool checked )
+{
+   if ( sender == GUI->EditProperty_PushButton )
+   {
+      pcl::IndirectArray<pcl::TreeBox::Node> selectedNodes;
+      selectedNodes = GUI->PropertyList_TreeBox.SelectedNodes();
+      if ( !selectedNodes.IsEmpty() )
+      {
+         TreeBox::Node* node = *selectedNodes.Begin();
 
-	if (sender==GUI->EditProperty_PushButton){
-		pcl::IndirectArray<pcl::TreeBox::Node> selectedNodes;
-		selectedNodes = GUI->PropertyList_TreeBox.SelectedNodes();
+         // check that selected node is an element node, i.e. has two parents
+         if ( node->Parent() == nullptr || node->Parent()->Parent() == nullptr )
+            throw Error( "Please select a property element node (leaf of the tree)" );
 
-		if (selectedNodes.Begin()!=selectedNodes.End())
-		{
+         // Create dialog window according to the property type
+         GUI->SetPropDlg = SetPropertyDialog::createPropertyDialog( node->Text( TypeColumn ), node->Text( NumberFormatColumn ), &instance );
 
-			pcl::IndirectArray<pcl::TreeBox::Node>::iterator it=selectedNodes.Begin();
+         GUI->SetPropDlg->setPropertyLabelString( node->Text( LabelColumn ) );
+         GUI->SetPropDlg->setPropertyValueString( node->Text( ValueColumn ) );
+         INDINewPropertyListItem propItem;
+         propItem.Device = node->Parent()->Parent()->Text( TextColumn );
+         propItem.Property = node->Parent()->Text( TextColumn );
+         propItem.Element = node->Text( TextColumn );
+         propItem.NewPropertyValue = node->Text( ValueColumn );
+         propItem.PropertyType = node->Text( TypeColumn );
+         propItem.PropertyKey = PropertyUtils::getKey( propItem.Device, propItem.Property, propItem.Element );
+         GUI->SetPropDlg->setNewPropertyListItem( propItem );
+      }
 
-			// check that selected node is an element node, i.e. has two parents
-			if ((*it)->Parent()==NULL || (*it)->Parent()->Parent()==NULL){
-				throw Error("Please select an property element node (leaf of the tree)");
-			}
-
-			// Create dialog window according to the property type
-			GUI->SetPropDlg = SetPropertyDialog::createPropertyDialog((*it)->Text(TypeColumn),(*it)->Text(NumberFormatColumn), &instance);
-			CHECK_POINTER(GUI->SetPropDlg);
-
-			GUI->SetPropDlg->setPropertyLabelString((*it)->Text(LabelColumn));
-			GUI->SetPropDlg->setPropertyValueString((*it)->Text(ValueColumn));
-			INDINewPropertyListItem propItem;
-			propItem.Device=(*it)->Parent()->Parent()->Text(TextColumn);
-			propItem.Property=(*it)->Parent()->Text(TextColumn);
-			propItem.Element=(*it)->Text(TextColumn);
-			propItem.NewPropertyValue=(*it)->Text(ValueColumn);
-			propItem.PropertyType=(*it)->Text(TypeColumn);
-			propItem.PropertyKey=PropertyUtils::getKey(propItem.Device,propItem.Property,propItem.Element);
-			GUI->SetPropDlg->setNewPropertyListItem(propItem);
-
-		}
-
-		GUI->SetPropDlg->Execute();
-	}
+      GUI->SetPropDlg->Execute();
+   }
 }
+
+// ----------------------------------------------------------------------------
 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIDeviceControllerInterface.cpp - Released 2015/10/13 15:55:45 UTC
+// EOF INDIDeviceControllerInterface.cpp - Released 2016/03/18 13:15:37 UTC

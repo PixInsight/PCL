@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.100
+# PixInsight Makefile Generator Script v1.101
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 17 Dec 2015 19:03:21 GMT
+# Automatically generated on Fri, 18 Mar 2016 13:16:31 GMT
 # Project id ...... cfitsio
-# Project type .... DynamicLibrary
+# Project type .... StaticLibrary
 # Platform ........ Windows/vc12
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Additional preprocessor definitions:
 # _MBCS
-# _USRDLL
-# cfitsio_EXPORTS
 # FF_NO_UNISTD_H
 # _CRT_SECURE_NO_WARNINGS
 ######################################################################
@@ -279,9 +277,6 @@
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\fitsio2.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\fpack.h">
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\group.h">

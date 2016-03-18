@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// pcl/Control.cpp - Released 2015/12/17 18:52:18 UTC
+// pcl/Control.cpp - Released 2016/02/21 20:22:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -597,7 +597,7 @@ String Control::StyleSheet() const
    if ( len > 0 )
    {
       css.SetLength( len );
-      if ( (*API->Control->GetControlStyleSheet)( handle, css.c_str(), &len ) == api_false )
+      if ( (*API->Control->GetControlStyleSheet)( handle, css.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetControlStyleSheet" );
       css.ResizeToNullTerminated();
    }
@@ -778,7 +778,7 @@ String Control::WindowTitle() const
    if ( len > 0 )
    {
       title.SetLength( len );
-      if ( (*API->Control->GetWindowTitle)( handle, title.c_str(), &len ) == api_false )
+      if ( (*API->Control->GetWindowTitle)( handle, title.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetWindowTitle" );
       title.ResizeToNullTerminated();
    }
@@ -803,7 +803,7 @@ String Control::InfoText() const
    if ( len > 0 )
    {
       text.SetLength( len );
-      if ( (*API->Control->GetInfoText)( handle, text.c_str(), &len ) == api_false )
+      if ( (*API->Control->GetInfoText)( handle, text.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetInfoText" );
       text.ResizeToNullTerminated();
    }
@@ -856,7 +856,7 @@ String Control::ToolTip() const
    if ( len > 0 )
    {
       tip.SetLength( len );
-      if ( (*API->Control->GetWindowToolTip)( handle, tip.c_str(), &len ) == api_false )
+      if ( (*API->Control->GetWindowToolTip)( handle, tip.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetWindowToolTip" );
       tip.ResizeToNullTerminated();
    }
@@ -895,7 +895,7 @@ String Control::ToolTipText()
    if ( len > 0 )
    {
       tip.SetLength( len );
-      if ( (*API->Global->GetToolTipWindowText)( tip.c_str(), &len ) == api_false )
+      if ( (*API->Global->GetToolTipWindowText)( tip.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetToolTipWindowText" );
       tip.ResizeToNullTerminated();
    }
@@ -1362,4 +1362,4 @@ void Control::OnChildDestroy( child_event_handler f, Control& receiver )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Control.cpp - Released 2015/12/17 18:52:18 UTC
+// EOF pcl/Control.cpp - Released 2016/02/21 20:22:19 UTC

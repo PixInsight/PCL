@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0294
+// Standard ColorSpaces Process Module Version 01.01.00.0298
 // ----------------------------------------------------------------------------
-// ChannelCombinationInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// ChannelCombinationInstance.cpp - Released 2016/02/21 20:22:42 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -662,7 +662,7 @@ void* ChannelCombinationInstance::LockParameter( const MetaParameter* p, size_ty
    if ( p == TheChannelEnabledCombinationParameter )
       return channelEnabled+tableRow;
    if ( p == TheChannelIdCombinationParameter )
-      return channelId[tableRow].c_str();
+      return channelId[tableRow].Begin();
    return 0;
 }
 
@@ -696,4 +696,4 @@ size_type ChannelCombinationInstance::ParameterLength( const MetaParameter* p, s
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ChannelCombinationInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// EOF ChannelCombinationInstance.cpp - Released 2016/02/21 20:22:42 UTC

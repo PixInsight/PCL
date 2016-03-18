@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.02.0096
+// Standard INDIClient Process Module Version 01.00.03.0102
 // ----------------------------------------------------------------------------
-// CCDFrameProcess.h - Released 2015/10/13 15:55:45 UTC
+// INDICCDFrameInstance.h - Released 2016/03/18 13:15:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2015 Klaus Kretzschmar
+// Copyright (c) 2014-2016 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -50,53 +50,65 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#ifndef __CCDFrameProcess_h
-#define __CCDFrameProcess_h
+#ifndef __INDICCDFrameInstance_h
+#define __INDICCDFrameInstance_h
 
-#include <pcl/MetaProcess.h>
+#include <pcl/MetaParameter.h>
+#include <pcl/ProcessImplementation.h>
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-class CCDFrameProcess : public MetaProcess
+class INDICCDFrameInstance : public ProcessImplementation
 {
 public:
 
-   CCDFrameProcess();
+   INDICCDFrameInstance( const MetaProcess* );
+   INDICCDFrameInstance( const INDICCDFrameInstance& );
 
-   virtual IsoString Id() const;
-   virtual IsoString Category() const;
+   virtual void Assign( const ProcessImplementation& );
 
-   virtual uint32 Version() const;
+   virtual bool CanExecuteOn( const View&, String& whyNot ) const;
+   virtual bool CanExecuteGlobal( String& whyNot ) const;
 
-   virtual String Description() const;
+   virtual bool ExecuteGlobal();
 
-   virtual const char** IconImageXPM() const;
+   virtual void* LockParameter( const MetaParameter*, size_type tableRow );
+   virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter*, size_type tableRow );
+   virtual size_type ParameterLength( const MetaParameter*, size_type tableRow ) const;
 
-   virtual bool PrefersGlobalExecution() const;
+   bool ValidateDevice( bool throwErrors = true ) const;
+   void SendDeviceProperties( bool asynchronous = true ) const;
 
-   virtual ProcessInterface* DefaultInterface() const;
+   static String UploadModePropertyString( int uploadModeIdx );
+   static String CCDFrameTypePropertyString( int frameTypeIdx );
+   static String CCDFrameTypePrefix( int frameTypeIdx );
 
-   virtual ProcessImplementation* Create() const;
-   virtual ProcessImplementation* Clone( const ProcessImplementation& ) const;
+private:
 
-   virtual bool CanProcessCommandLines() const;
-   virtual int ProcessCommandLine( const StringList& ) const;
+   String   p_deviceName;
+   pcl_enum p_uploadMode;
+   String   p_serverUploadDirectory;
+   String   p_serverFileNameTemplate;
+   pcl_enum p_frameType;
+   int32    p_binningX;
+   int32    p_binningY;
+   double   p_exposureTime;
+   double   p_exposureDelay;
+   int32    p_exposureCount;
+   String   p_newImageIdTemplate;
+
+   friend class INDICCDFrameInterface;
 };
 
 // ----------------------------------------------------------------------------
 
-PCL_BEGIN_LOCAL
-extern CCDFrameProcess* TheCCDFrameProcess;
-PCL_END_LOCAL
-
-// ----------------------------------------------------------------------------
 
 } // pcl
 
-#endif   // __CCDFrameProcess_h
+#endif   // __INDICCDFrameInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF CCDFrameProcess.h - Released 2015/10/13 15:55:45 UTC
+// EOF INDICCDFrameInstance.h - Released 2016/03/18 13:15:37 UTC

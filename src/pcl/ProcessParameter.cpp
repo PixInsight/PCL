@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// pcl/ProcessParameter.cpp - Released 2015/12/17 18:52:18 UTC
+// pcl/ProcessParameter.cpp - Released 2016/02/21 20:22:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -195,7 +195,7 @@ IsoString ProcessParameter::Id() const
    if ( len > 0 )
    {
       id.SetLength( len );
-      if ( (*API->Process->GetParameterIdentifier)( m_data->handle, id.c_str(), &len ) == api_false )
+      if ( (*API->Process->GetParameterIdentifier)( m_data->handle, id.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetParameterIdentifier" );
       id.ResizeToNullTerminated();
    }
@@ -214,7 +214,7 @@ IsoStringList ProcessParameter::Aliases() const
    {
       IsoString csAliases;
       csAliases.SetLength( len );
-      if ( (*API->Process->GetParameterAliasIdentifiers)( m_data->handle, csAliases.c_str(), &len ) == api_false )
+      if ( (*API->Process->GetParameterAliasIdentifiers)( m_data->handle, csAliases.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetParameterAliasIdentifiers" );
       csAliases.ResizeToNullTerminated();
       csAliases.Break( aliases, ',' );
@@ -247,7 +247,7 @@ String ProcessParameter::Description() const
    if ( len > 0 )
    {
       description.SetLength( len );
-      if ( (*API->Process->GetParameterDescription)( m_data->handle, description.c_str(), &len ) == api_false )
+      if ( (*API->Process->GetParameterDescription)( m_data->handle, description.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetParameterDescription" );
       description.ResizeToNullTerminated();
    }
@@ -265,7 +265,7 @@ String ProcessParameter::ScriptComment() const
    if ( len > 0 )
    {
       comment.SetLength( len );
-      if ( (*API->Process->GetParameterScriptComment)( m_data->handle, comment.c_str(), &len ) == api_false )
+      if ( (*API->Process->GetParameterScriptComment)( m_data->handle, comment.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetParameterScriptComment" );
       comment.ResizeToNullTerminated();
    }
@@ -357,7 +357,7 @@ Variant ProcessParameter::DefaultValue() const
       if ( len > 0 )
       {
          value.SetLength( len );
-         if ( (*API->Process->GetParameterDefaultValue)( m_data->handle, value.c_str(), &len ) == api_false )
+         if ( (*API->Process->GetParameterDefaultValue)( m_data->handle, value.Begin(), &len ) == api_false )
             throw APIFunctionError( "GetParameterDefaultValue" );
          value.ResizeToNullTerminated();
       }
@@ -475,7 +475,7 @@ ProcessParameter::enumeration_element_list ProcessParameter::EnumerationElements
       if ( len == 0 )
          throw APIFunctionError( "GetParameterElementIdentifier" );
       elements[i].id.SetLength( len );
-      if ( (*API->Process->GetParameterElementIdentifier)( m_data->handle, i, elements[i].id.c_str(), &len ) == api_false )
+      if ( (*API->Process->GetParameterElementIdentifier)( m_data->handle, i, elements[i].id.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetParameterElementIdentifier" );
       elements[i].id.ResizeToNullTerminated();
 
@@ -485,7 +485,7 @@ ProcessParameter::enumeration_element_list ProcessParameter::EnumerationElements
       {
          IsoString aliases;
          aliases.SetLength( len );
-         if ( (*API->Process->GetParameterElementAliasIdentifiers)( m_data->handle, i, aliases.c_str(), &len ) == api_false )
+         if ( (*API->Process->GetParameterElementAliasIdentifiers)( m_data->handle, i, aliases.Begin(), &len ) == api_false )
             throw APIFunctionError( "GetParameterElementAliasIdentifiers" );
          aliases.ResizeToNullTerminated();
          aliases.Break( elements[i].aliases, ',' );
@@ -511,7 +511,7 @@ String ProcessParameter::AllowedCharacters() const
       if ( len > 0 )
       {
          allowed.SetLength( len );
-         if ( (*API->Process->GetParameterAllowedCharacters)( m_data->handle, allowed.c_str(), &len ) == api_false )
+         if ( (*API->Process->GetParameterAllowedCharacters)( m_data->handle, allowed.Begin(), &len ) == api_false )
             throw APIFunctionError( "GetParameterAllowedCharacters" );
          allowed.ResizeToNullTerminated();
       }
@@ -544,4 +544,4 @@ const void* ProcessParameter::Handle() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ProcessParameter.cpp - Released 2015/12/17 18:52:18 UTC
+// EOF pcl/ProcessParameter.cpp - Released 2016/02/21 20:22:19 UTC

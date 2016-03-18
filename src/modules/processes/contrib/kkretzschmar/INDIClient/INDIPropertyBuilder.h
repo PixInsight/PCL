@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.02.0096
+// Standard INDIClient Process Module Version 01.00.03.0102
 // ----------------------------------------------------------------------------
-// INDIPropertyBuilder.h - Released 2015/10/13 15:55:45 UTC
+// INDIPropertyBuilder.h - Released 2016/03/18 13:15:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2015 Klaus Kretzschmar
+// Copyright (c) 2014-2016 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -61,26 +61,60 @@
 #define INDIPROPERTYBUILDER_H_
 
 #include <pcl/String.h>
+
 #include "IINDIProperty.h"
 
-namespace pcl {
-
-class INDIPropertyBuilder {
-public:
-	INDIPropertyBuilder(INDI_TYPE t);
-	virtual ~INDIPropertyBuilder(){}
-
-	INDIPropertyBuilder& device(IsoString device);
-	INDIPropertyBuilder& property(IsoString device);
-	INDIPropertyBuilder& addElement(IsoString elementName,IsoString value);
-
-	IProperty* getProperty(){return m_property;}
-private:
-	IProperty* m_property;
-};
-
-} /* namespace pcl */
-#endif /* INDIPROPERTYBUILDER_H_ */
+namespace pcl
+{
 
 // ----------------------------------------------------------------------------
-// EOF INDIPropertyBuilder.h - Released 2015/10/13 15:55:45 UTC
+
+class INDIPropertyBuilder
+{
+public:
+
+   INDIPropertyBuilder( INDI_TYPE t ) : m_property( nullptr )
+   {
+      m_property = PropertyFactory::create( new INDI::Property, t );
+   }
+
+   virtual ~INDIPropertyBuilder()
+   {
+   }
+
+   INDIPropertyBuilder& device( IsoString device )
+   {
+      m_property->setDeviceName( device );
+      return *this;
+   }
+
+   INDIPropertyBuilder& property( IsoString property )
+   {
+      m_property->setName( property );
+      return *this;
+   }
+
+   INDIPropertyBuilder& addElement( IsoString elementName, IsoString value )
+   {
+      m_property->addElement( elementName, value );
+      return *this;
+   }
+
+   IProperty* getProperty()
+   {
+      return m_property;
+   }
+
+private:
+
+   IProperty* m_property;
+};
+
+// ----------------------------------------------------------------------------
+
+} // pcl
+
+#endif // INDIPROPERTYBUILDER_H_
+
+// ----------------------------------------------------------------------------
+// EOF INDIPropertyBuilder.h - Released 2016/03/18 13:15:37 UTC

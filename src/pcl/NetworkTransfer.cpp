@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// pcl/NetworkTransfer.cpp - Released 2015/12/17 18:52:18 UTC
+// pcl/NetworkTransfer.cpp - Released 2016/02/21 20:22:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -213,7 +213,7 @@ String NetworkTransfer::URL() const
    if ( len > 0 )
    {
       url.SetLength( len );
-      if ( (*API->NetworkTransfer->GetNetworkTransferURL)( handle, url.c_str(), &len ) == api_false )
+      if ( (*API->NetworkTransfer->GetNetworkTransferURL)( handle, url.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetNetworkTransferURL" );
       url.ResizeToNullTerminated();
    }
@@ -231,7 +231,7 @@ String NetworkTransfer::ProxyURL() const
    if ( len > 0 )
    {
       url.SetLength( len );
-      if ( (*API->NetworkTransfer->GetNetworkTransferProxyURL)( handle, url.c_str(), &len ) == api_false )
+      if ( (*API->NetworkTransfer->GetNetworkTransferProxyURL)( handle, url.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetNetworkTransferProxyURL" );
       url.ResizeToNullTerminated();
    }
@@ -270,7 +270,7 @@ String NetworkTransfer::ContentType() const
    if ( len > 0 )
    {
       contentType.SetLength( len );
-      if ( (*API->NetworkTransfer->GetNetworkTransferContentType)( handle, contentType.c_str(), &len ) == api_false )
+      if ( (*API->NetworkTransfer->GetNetworkTransferContentType)( handle, contentType.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetNetworkTransferContentType" );
       contentType.ResizeToNullTerminated();
    }
@@ -313,7 +313,7 @@ String NetworkTransfer::ErrorInformation() const
    if ( len > 0 )
    {
       errorInfo.SetLength( len );
-      if ( (*API->NetworkTransfer->GetNetworkTransferErrorInformation)( handle, errorInfo.c_str(), &len ) == api_false )
+      if ( (*API->NetworkTransfer->GetNetworkTransferErrorInformation)( handle, errorInfo.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetNetworkTransferErrorInformation" );
       errorInfo.ResizeToNullTerminated();
    }
@@ -368,4 +368,4 @@ void* NetworkTransfer::CloneHandle() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/NetworkTransfer.cpp - Released 2015/12/17 18:52:18 UTC
+// EOF pcl/NetworkTransfer.cpp - Released 2016/02/21 20:22:19 UTC

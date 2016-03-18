@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0763
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.02.0096
+// Standard INDIClient Process Module Version 01.00.03.0102
 // ----------------------------------------------------------------------------
-// INDIDeviceControllerInterface.h - Released 2015/10/13 15:55:45 UTC
+// INDIDeviceControllerInterface.h - Released 2016/03/18 13:15:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
-// Copyright (c) 2014-2015 Klaus Kretzschmar
+// Copyright (c) 2014-2016 Klaus Kretzschmar
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -228,8 +228,8 @@ public:
 
       VerticalSizer      Global_Sizer;
       SectionBar         INDIServer_SectionBar;
-      Control			  INDIServerConnection_Control;
-      HorizontalSizer		ParameterHost_Sizer;
+      Control			  INDIServer_Control;
+      HorizontalSizer		INDIServer_Sizer;
             Label				ParameterHost_Label;
             Edit				ParameterHost_Edit;
             Label				ParameterPort_Label;
@@ -239,14 +239,14 @@ public:
             PushButton			DisconnectServer_PushButton;
       SectionBar         INDIDevices_SectionBar;
       Control			   INDIDevices_Control;
-      HorizontalSizer	INDIDevice_Sizer;
+      HorizontalSizer	INDIDevices_Sizer;
          TreeBox				DeviceList_TreeBox;
          VerticalSizer		DeviceAction_Sizer;
             PushButton			ConnectDevice_PushButton;
             PushButton			DisconnectDevice_PushButton;
       SectionBar         INDIProperties_SectionBar;
       Control			   INDIProperties_Control;
-      HorizontalSizer    INDIDeviceProperty_Sizer;
+      HorizontalSizer    INDIProperties_Sizer;
       VerticalSizer		INDIDevicePropertyTreeBox_Sizer;
          TreeBox				PropertyList_TreeBox;
       VerticalSizer			Buttons_Sizer;
@@ -257,22 +257,20 @@ public:
       SetPropertyDialog* SetPropDlg;
    };
 
-   private:
+private:
 
    typedef std::map<String,PropertyNode*> PropertyNodeMapType;
    typedef std::map<String,PropertyTree*> PropertyTreeMapType;
    typedef std::vector<PropertyNode*>     PropertyNodeVectorType;
+
    INDIDeviceControllerInstance instance;
 
    GUIData* GUI;
-
-   IsoString m_serverMessage;
 
    PropertyNodeMapType m_rootNodeMap;
    PropertyNodeMapType m_deviceRootNodeMap;
    PropertyNodeMapType m_deviceNodeMap;
    PropertyTreeMapType m_propertyTreeMap;
-
 
    void UpdatePropertyList();
 
@@ -298,7 +296,8 @@ public:
    friend struct GUIData;
    friend class  DevicePropertiesDialog;
    friend class  INDIClient;
-   friend class  CCDFrameInterface;
+   friend class  INDICCDFrameInstance;
+   friend class  INDICCDFrameInterface;
    friend class  INDIMountInterface;
 };
 
@@ -315,4 +314,4 @@ PCL_END_LOCAL
 #endif   // __INDIDeviceControllerInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIDeviceControllerInterface.h - Released 2015/10/13 15:55:45 UTC
+// EOF INDIDeviceControllerInterface.h - Released 2016/03/18 13:15:37 UTC

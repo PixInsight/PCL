@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// pcl/FileDialog.cpp - Released 2015/12/17 18:52:18 UTC
+// pcl/FileDialog.cpp - Released 2016/02/21 20:22:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -284,11 +284,11 @@ bool OpenFileDialog::Execute()
 
    String fileName;
    fileName.Reserve( 8192 );
-   *fileName.c_str() = CharTraits::Null();
+   *fileName.Begin() = CharTraits::Null();
 
    if ( q->multipleSelections )
    {
-      if ( (*API->Dialog->ExecuteOpenMultipleFilesDialog)( fileName.c_str(),
+      if ( (*API->Dialog->ExecuteOpenMultipleFilesDialog)( fileName.Begin(),
                AddFileNameToList, &q->fileNames,
                p->caption.c_str(),
                p->initialPath.c_str(), apiFilters.c_str(), p->fileExtension.c_str() ) == api_false )
@@ -298,7 +298,7 @@ bool OpenFileDialog::Execute()
    }
    else
    {
-      if ( (*API->Dialog->ExecuteOpenFileDialog)( fileName.c_str(),
+      if ( (*API->Dialog->ExecuteOpenFileDialog)( fileName.Begin(),
                p->caption.c_str(),
                p->initialPath.c_str(), apiFilters.c_str(), p->fileExtension.c_str() ) == api_false )
       {
@@ -369,9 +369,9 @@ bool SaveFileDialog::Execute()
    String apiFilters = p->MakeAPIFilters();
 
    q->fileName.Reserve( 8192 );
-   *q->fileName.c_str() = CharTraits::Null();
+   *q->fileName.Begin() = CharTraits::Null();
 
-   if ( (*API->Dialog->ExecuteSaveFileDialog)( q->fileName.c_str(),
+   if ( (*API->Dialog->ExecuteSaveFileDialog)( q->fileName.Begin(),
                p->caption.c_str(),
                p->initialPath.c_str(), apiFilters.c_str(), p->fileExtension.c_str(),
                q->overwritePrompt ) != api_false )
@@ -414,9 +414,9 @@ GetDirectoryDialog::~GetDirectoryDialog()
 bool GetDirectoryDialog::Execute()
 {
    q->directory.Reserve( 8192 );
-   *q->directory.c_str() = CharTraits::Null();
+   *q->directory.Begin() = CharTraits::Null();
 
-   if ( (*API->Dialog->ExecuteGetDirectoryDialog)( q->directory.c_str(),
+   if ( (*API->Dialog->ExecuteGetDirectoryDialog)( q->directory.Begin(),
                         p->caption.c_str(), p->initialPath.c_str() ) != api_false )
    {
       q->directory.ResizeToNullTerminated();
@@ -436,4 +436,4 @@ String GetDirectoryDialog::Directory() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileDialog.cpp - Released 2015/12/17 18:52:18 UTC
+// EOF pcl/FileDialog.cpp - Released 2016/02/21 20:22:19 UTC

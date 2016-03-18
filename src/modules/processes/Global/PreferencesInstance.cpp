@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0324
+// Standard Global Process Module Version 01.02.07.0328
 // ----------------------------------------------------------------------------
-// PreferencesInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// PreferencesInstance.cpp - Released 2016/02/21 20:22:42 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -245,27 +245,27 @@ bool PreferencesInstance::ExecuteGlobal()
 void* PreferencesInstance::LockParameter( const MetaParameter* p, size_type tableRow )
 {
    if ( p == METAPARAMETER_INSTANCE_ID( Application, styleSheetFile ) )
-      return application.styleSheetFile.c_str();
+      return application.styleSheetFile.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Application, resourceFile01 ) )
-      return application.resourceFile01.c_str();
+      return application.resourceFile01.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Application, resourceFile02 ) )
-      return application.resourceFile02.c_str();
+      return application.resourceFile02.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Application, resourceFile03 ) )
-      return application.resourceFile03.c_str();
+      return application.resourceFile03.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Application, resourceFile04 ) )
-      return application.resourceFile04.c_str();
+      return application.resourceFile04.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Application, resourceFile05 ) )
-      return application.resourceFile05.c_str();
+      return application.resourceFile05.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Application, resourceFile06 ) )
-      return application.resourceFile06.c_str();
+      return application.resourceFile06.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Application, resourceFile07 ) )
-      return application.resourceFile07.c_str();
+      return application.resourceFile07.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Application, resourceFile08 ) )
-      return application.resourceFile08.c_str();
+      return application.resourceFile08.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Application, resourceFile09 ) )
-      return application.resourceFile09.c_str();
+      return application.resourceFile09.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Application, resourceFile10 ) )
-      return application.resourceFile10.c_str();
+      return application.resourceFile10.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Application, autoUIScaling ) )
       return &application.autoUIScaling;
    if ( p == METAPARAMETER_INSTANCE_ID( Application, uiScalingFactor ) )
@@ -273,13 +273,13 @@ void* PreferencesInstance::LockParameter( const MetaParameter* p, size_type tabl
    if ( p == METAPARAMETER_INSTANCE_ID( Application, fontResolution ) )
       return &application.fontResolution;
    if ( p == METAPARAMETER_INSTANCE_ID( Application, lowResFont ) )
-      return application.lowResFont.c_str();
+      return application.lowResFont.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Application, highResFont ) )
-      return application.highResFont.c_str();
+      return application.highResFont.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Application, lowResMonoFont ) )
-      return application.lowResMonoFont.c_str();
+      return application.lowResMonoFont.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Application, highResMonoFont ) )
-      return application.highResMonoFont.c_str();
+      return application.highResMonoFont.Begin();
 
    if ( p == METAPARAMETER_INSTANCE_ID( MainWindow, maximizeAtStartup ) )
       return &mainWindow.maximizeAtStartup;
@@ -357,7 +357,7 @@ void* PreferencesInstance::LockParameter( const MetaParameter* p, size_type tabl
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, defaultEmbedProperties ) )
       return &imageWindow.defaultEmbedProperties;
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, defaultFileExtension ) )
-      return imageWindow.defaultFileExtension.c_str();
+      return imageWindow.defaultFileExtension.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, nativeFileDialogs ) )
       return &imageWindow.nativeFileDialogs;
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, rememberFileOpenType ) )
@@ -385,11 +385,11 @@ void* PreferencesInstance::LockParameter( const MetaParameter* p, size_type tabl
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, default24BitScreenLUT ) )
       return &imageWindow.default24BitScreenLUT;
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, swapDirectory ) )
-      return imageWindow.swapDirectories[tableRow].c_str();
+      return imageWindow.swapDirectories[tableRow].Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, swapCompression ) )
       return &imageWindow.swapCompression;
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, downloadsDirectory ) )
-      return imageWindow.downloadsDirectory.c_str();
+      return imageWindow.downloadsDirectory.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, followDownloadLocations ) )
       return &imageWindow.followDownloadLocations;
    if ( p == METAPARAMETER_INSTANCE_ID( ImageWindow, verboseNetworkOperations ) )
@@ -416,29 +416,29 @@ void* PreferencesInstance::LockParameter( const MetaParameter* p, size_type tabl
       return &imageWindow.defaultTransparencyColor;
 
    if ( p == METAPARAMETER_INSTANCE_ID( Identifiers, workspacePrefix ) )
-      return identifiers.workspacePrefix.c_str();
+      return identifiers.workspacePrefix.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Identifiers, imagePrefix ) )
-      return identifiers.imagePrefix.c_str();
+      return identifiers.imagePrefix.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Identifiers, previewPrefix ) )
-      return identifiers.previewPrefix.c_str();
+      return identifiers.previewPrefix.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Identifiers, processIconPrefix ) )
-      return identifiers.processIconPrefix.c_str();
+      return identifiers.processIconPrefix.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Identifiers, imageContainerIconPrefix ) )
-      return identifiers.imageContainerIconPrefix.c_str();
+      return identifiers.imageContainerIconPrefix.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Identifiers, newImageCaption ) )
-      return identifiers.newImageCaption.c_str();
+      return identifiers.newImageCaption.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Identifiers, clonePostfix ) )
-      return identifiers.clonePostfix.c_str();
+      return identifiers.clonePostfix.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Identifiers, noViewsAvailableText ) )
-      return identifiers.noViewsAvailableText.c_str();
+      return identifiers.noViewsAvailableText.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Identifiers, noViewSelectedText ) )
-      return identifiers.noViewSelectedText.c_str();
+      return identifiers.noViewSelectedText.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Identifiers, noPreviewsAvailableText ) )
-      return identifiers.noPreviewsAvailableText.c_str();
+      return identifiers.noPreviewsAvailableText.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Identifiers, noPreviewSelectedText ) )
-      return identifiers.noPreviewSelectedText.c_str();
+      return identifiers.noPreviewSelectedText.Begin();
    if ( p == METAPARAMETER_INSTANCE_ID( Identifiers, brokenLinkText ) )
-      return identifiers.brokenLinkText.c_str();
+      return identifiers.brokenLinkText.Begin();
 
    if ( p == METAPARAMETER_INSTANCE_ID( Process, enableParallelProcessing ) )
       return &process.enableParallelProcessing;
@@ -825,4 +825,4 @@ String* PreferencesInstance::StringParameterFromMetaParameter( const MetaParamet
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// EOF PreferencesInstance.cpp - Released 2016/02/21 20:22:42 UTC

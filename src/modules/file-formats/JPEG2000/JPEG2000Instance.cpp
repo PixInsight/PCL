@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard JPEG2000 File Format Module Version 01.00.01.0275
+// Standard JPEG2000 File Format Module Version 01.00.01.0279
 // ----------------------------------------------------------------------------
-// JPEG2000Instance.cpp - Released 2015/12/18 08:55:16 UTC
+// JPEG2000Instance.cpp - Released 2016/02/21 20:22:34 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard JPEG2000 PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -694,7 +694,7 @@ static void WriteJP2KImage( const GenericImage<P>& img,
          }
       }
 
-      if ( jas_image_encode( jp2Image, jp2Stream, jp2Format, jp2OptionsStr.c_str() ) < 0 )
+      if ( jas_image_encode( jp2Image, jp2Stream, jp2Format, jp2OptionsStr.Begin() ) < 0 )
          throw Error( "Unable to encode JPEG2000 image." );
 
       jas_matrix_destroy( pixels ), pixels = nullptr;
@@ -862,4 +862,4 @@ void JP2Instance::Embed( const ICCProfile& icc )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF JPEG2000Instance.cpp - Released 2015/12/18 08:55:16 UTC
+// EOF JPEG2000Instance.cpp - Released 2016/02/21 20:22:34 UTC

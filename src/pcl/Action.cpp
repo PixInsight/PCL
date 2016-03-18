@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// pcl/Action.cpp - Released 2015/12/17 18:52:18 UTC
+// pcl/Action.cpp - Released 2016/02/21 20:22:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -139,7 +139,7 @@ String Action::MenuItem() const
    if ( len > 0 )
    {
       menuItem.SetLength( len );
-      if ( (*API->Action->GetActionMenuItem)( handle, menuItem.c_str(), &len ) == api_false )
+      if ( (*API->Action->GetActionMenuItem)( handle, menuItem.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetActionMenuItem" );
       menuItem.ResizeToNullTerminated();
    }
@@ -157,7 +157,7 @@ String Action::MenuText() const
    if ( len > 0 )
    {
       menuText.SetLength( len );
-      if ( (*API->Action->GetActionMenuText)( handle, menuText.c_str(), &len ) == api_false )
+      if ( (*API->Action->GetActionMenuText)( handle, menuText.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetActionMenuText" );
       menuText.ResizeToNullTerminated();
    }
@@ -182,7 +182,7 @@ String Action::ToolBar() const
    if ( len > 0 )
    {
       toolBarName.SetLength( len );
-      if ( (*API->Action->GetActionToolBar)( handle, toolBarName.c_str(), &len ) == api_false )
+      if ( (*API->Action->GetActionToolBar)( handle, toolBarName.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetActionToolBar" );
       toolBarName.ResizeToNullTerminated();
    }
@@ -214,7 +214,7 @@ String Action::ToolTip() const
    if ( len > 0 )
    {
       toolTip.SetLength( len );
-      if ( (*API->Action->GetActionToolTip)( handle, toolTip.c_str(), &len ) == api_false )
+      if ( (*API->Action->GetActionToolTip)( handle, toolTip.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetActionToolTip" );
       toolTip.ResizeToNullTerminated();
    }
@@ -261,4 +261,4 @@ void* Action::CloneHandle() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Action.cpp - Released 2015/12/17 18:52:18 UTC
+// EOF pcl/Action.cpp - Released 2016/02/21 20:22:19 UTC

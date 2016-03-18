@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// pcl/TabBox.cpp - Released 2015/12/17 18:52:18 UTC
+// pcl/TabBox.cpp - Released 2016/02/21 20:22:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -160,7 +160,7 @@ String TabBox::PageLabel( int idx ) const
    if ( len > 0 )
    {
       label.SetLength( len );
-      if ( (*API->TabBox->GetTabBoxPageLabel)( handle, idx, label.c_str(), &len ) == api_false )
+      if ( (*API->TabBox->GetTabBoxPageLabel)( handle, idx, label.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetTabBoxPageLabel" );
       label.ResizeToNullTerminated();
    }
@@ -199,7 +199,7 @@ String TabBox::PageToolTip( int idx ) const
    if ( len > 0 )
    {
       tip.SetLength( len );
-      if ( (*API->TabBox->GetTabBoxPageToolTip)( handle, idx, tip.c_str(), &len ) == api_false )
+      if ( (*API->TabBox->GetTabBoxPageToolTip)( handle, idx, tip.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetTabBoxPageToolTip" );
       tip.ResizeToNullTerminated();
    }
@@ -281,4 +281,4 @@ void TabBox::OnPageSelected( page_event_handler f, Control& receiver )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/TabBox.cpp - Released 2015/12/17 18:52:18 UTC
+// EOF pcl/TabBox.cpp - Released 2016/02/21 20:22:19 UTC

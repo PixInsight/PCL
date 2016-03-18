@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.04.03.0209
+// Standard Debayer Process Module Version 01.04.03.0213
 // ----------------------------------------------------------------------------
-// DebayerInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// DebayerInstance.cpp - Released 2016/02/21 20:22:43 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -1122,7 +1122,7 @@ void* DebayerInstance::LockParameter( const MetaParameter* p, size_type /*tableR
    if ( p == TheDebayerShowImagesParameter )
       return &p_showImages;
    if ( p == TheDebayerOutputImageParameter )
-      return o_imageId.c_str();
+      return o_imageId.Begin();
    if ( p == TheDebayerNoiseEstimateRParameter )
       return o_noiseEstimates.At( 0 );
    if ( p == TheDebayerNoiseEstimateGParameter )
@@ -1136,11 +1136,11 @@ void* DebayerInstance::LockParameter( const MetaParameter* p, size_type /*tableR
    if ( p == TheDebayerNoiseFractionBParameter )
       return o_noiseFractions.At( 2 );
    if ( p == TheDebayerNoiseAlgorithmRParameter )
-      return o_noiseAlgorithms[0].c_str();
+      return o_noiseAlgorithms[0].Begin();
    if ( p == TheDebayerNoiseAlgorithmGParameter )
-      return o_noiseAlgorithms[1].c_str();
+      return o_noiseAlgorithms[1].Begin();
    if ( p == TheDebayerNoiseAlgorithmBParameter )
-      return o_noiseAlgorithms[2].c_str();
+      return o_noiseAlgorithms[2].Begin();
 
    return 0;
 }
@@ -1196,4 +1196,4 @@ size_type DebayerInstance::ParameterLength( const MetaParameter* p, size_type ta
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DebayerInstance.cpp - Released 2015/12/18 08:55:08 UTC
+// EOF DebayerInstance.cpp - Released 2016/02/21 20:22:43 UTC

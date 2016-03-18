@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0348
+// Standard Image Process Module Version 01.02.09.0352
 // ----------------------------------------------------------------------------
-// FITSHeaderInstance.h - Released 2015/12/18 08:55:08 UTC
+// FITSHeaderInstance.h - Released 2016/02/21 20:22:43 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -62,8 +62,6 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-// FITSHeaderInstance
-// ----------------------------------------------------------------------------
 
 class FITSHeaderInstance : public ProcessImplementation
 {
@@ -73,19 +71,13 @@ public:
    {
       String name, value, comment;
 
-      Keyword() :
-      name(), value(), comment()
-      {
-      }
+      Keyword() = default;
 
-      Keyword( const Keyword& k ) :
-      name( k.name ), value( k.value ), comment( k.comment )
-      {
-      }
+      Keyword( const Keyword& ) = default;
 
       template <class S>
       Keyword( const S& n, const S& v, const S& c ) :
-      name( String( n ) ), value( String( v ) ), comment( String( c ) )
+         name( String( n ) ), value( String( v ) ), comment( String( c ) )
       {
       }
    };
@@ -105,13 +97,9 @@ public:
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter*, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
 
-   // -------------------------------------------------------------------------
-
    void ImportKeywords( const ImageWindow& );
 
    static bool IsReservedKeyword( const String& id );
-
-   // -------------------------------------------------------------------------
 
 private:
 
@@ -128,4 +116,4 @@ private:
 #endif   // __FITSHeaderInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF FITSHeaderInstance.h - Released 2015/12/18 08:55:08 UTC
+// EOF FITSHeaderInstance.h - Released 2016/02/21 20:22:43 UTC

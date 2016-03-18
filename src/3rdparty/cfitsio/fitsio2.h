@@ -48,10 +48,10 @@ extern int Fitsio_Pthread_Status;
 
 #define DBUFFSIZE 28800 /* size of data buffer in bytes */
 
-// ### CUSTOM CODE ------------------------------------------------------------
+// ### PixInsight: BEGIN CUSTOM CODE ------------------------------------------
 #define NMAXFILES  8192   /* maximum number of FITS files that can be opened */
 //#define NMAXFILES  1000   /* maximum number of FITS files that can be opened */
-// ### CUSTOM CODE ------------------------------------------------------------
+// ### PixInsight: END CUSTOM CODE --------------------------------------------
         /* CFITSIO will allocate (NMAXFILES * 80) bytes of memory */
 	/* plus each file that is opened will use NIOBUF * 2880 bytes of memeory */
 	/* where NIOBUF is defined in fitio.h and has a default value of 40 */
@@ -352,7 +352,7 @@ int ffc2r(const char *cval, float *fval, int *status);
 int ffc2d(const char *cval, double *dval, int *status);
 int ffc2l(const char *cval, int *lval, int *status);
 void ffxmsg(int action, char *err_message);
-int ffgcnt(fitsfile *fptr, char *value, int *status);
+int ffgcnt(fitsfile *fptr, char *value, char *comm, int *status);
 int ffgtkn(fitsfile *fptr, int numkey, char *keyname, long *value, int *status);
 int ffgtknjj(fitsfile *fptr, int numkey, char *keyname, LONGLONG *value, int *status);
 int fftkyn(fitsfile *fptr, int numkey, char *keyname, char *value, int *status);

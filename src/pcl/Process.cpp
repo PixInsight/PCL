@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// pcl/Process.cpp - Released 2015/12/17 18:52:18 UTC
+// pcl/Process.cpp - Released 2016/02/21 20:22:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -144,7 +144,7 @@ IsoString Process::Id() const
    if ( len > 0 )
    {
       id.SetLength( len );
-      if ( (*API->Process->GetProcessIdentifier)( m_data->handle, id.c_str(), &len ) == api_false )
+      if ( (*API->Process->GetProcessIdentifier)( m_data->handle, id.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetProcessIdentifier" );
       id.ResizeToNullTerminated();
    }
@@ -163,7 +163,7 @@ IsoStringList Process::Aliases() const
    {
       IsoString csAliases;
       csAliases.SetLength( len );
-      if ( (*API->Process->GetProcessAliasIdentifiers)( m_data->handle, csAliases.c_str(), &len ) == api_false )
+      if ( (*API->Process->GetProcessAliasIdentifiers)( m_data->handle, csAliases.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetProcessAliasIdentifiers" );
       csAliases.ResizeToNullTerminated();
       csAliases.Break( aliases, ',' );
@@ -183,7 +183,7 @@ IsoStringList Process::Categories() const
    {
       IsoString csCategories;
       csCategories.SetLength( len );
-      if ( (*API->Process->GetProcessCategory)( m_data->handle, csCategories.c_str(), &len ) == api_false )
+      if ( (*API->Process->GetProcessCategory)( m_data->handle, csCategories.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetProcessCategory" );
       csCategories.ResizeToNullTerminated();
       csCategories.Break( categories, ',' );
@@ -209,7 +209,7 @@ String Process::Description() const
    if ( len > 0 )
    {
       description.SetLength( len );
-      if ( (*API->Process->GetProcessDescription)( m_data->handle, description.c_str(), &len ) == api_false )
+      if ( (*API->Process->GetProcessDescription)( m_data->handle, description.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetProcessDescription" );
       description.ResizeToNullTerminated();
    }
@@ -227,7 +227,7 @@ String Process::ScriptComment() const
    if ( len > 0 )
    {
       comment.SetLength( len );
-      if ( (*API->Process->GetProcessScriptComment)( m_data->handle, comment.c_str(), &len ) == api_false )
+      if ( (*API->Process->GetProcessScriptComment)( m_data->handle, comment.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetProcessScriptComment" );
       comment.ResizeToNullTerminated();
    }
@@ -396,7 +396,7 @@ IsoStringList Process::AllProcessCategories()
       IsoString category;
       category.Reserve( len );
       if ( (*API->Process->EnumerateProcessCategories)( CategoryEnumerationCallback,
-                                          category.c_str(), &len, &categories ) == api_false )
+                                          category.Begin(), &len, &categories ) == api_false )
          throw APIFunctionError( "EnumerateProcessCategories" );
    }
    return categories;
@@ -453,4 +453,4 @@ Array<Process> Process::ProcessesByCategory( const IsoString& category )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Process.cpp - Released 2015/12/17 18:52:18 UTC
+// EOF pcl/Process.cpp - Released 2016/02/21 20:22:19 UTC

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// pcl/UIObject.cpp - Released 2015/12/17 18:52:18 UTC
+// pcl/UIObject.cpp - Released 2016/02/21 20:22:19 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -376,7 +376,7 @@ IsoString UIObject::ObjectType() const
 
    IsoString objType;
    objType.SetLength( len );
-   if ( (*API->UI->GetUIObjectType)( handle, objType.c_str(), &len ) == api_false )
+   if ( (*API->UI->GetUIObjectType)( handle, objType.Begin(), &len ) == api_false )
       throw APIFunctionError( "GetUIObjectType" );
    objType.ResizeToNullTerminated();
    return objType;
@@ -396,7 +396,7 @@ String UIObject::ObjectId() const
    if ( len > 0 )
    {
       objId.SetLength( len );
-      if ( (*API->UI->GetUIObjectId)( handle, objId.c_str(), &len ) == api_false )
+      if ( (*API->UI->GetUIObjectId)( handle, objId.Begin(), &len ) == api_false )
          throw APIFunctionError( "GetUIObjectId" );
       objId.ResizeToNullTerminated();
    }
@@ -469,4 +469,4 @@ void UIObject::TransferHandle( void* newHandle )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/UIObject.cpp - Released 2015/12/17 18:52:18 UTC
+// EOF pcl/UIObject.cpp - Released 2016/02/21 20:22:19 UTC

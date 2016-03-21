@@ -499,34 +499,60 @@ public:
    bool WriteColorFilterArray( const ColorFilterArray& cfa );
 
    /*!
-    * Reads the current image in 32-bit floating point format. Returns true if
+    * Reads the current image in 32-bit floating point format. Returns true iff
     * the image was successfully read.
     */
    bool ReadImage( FImage& image );
 
    /*!
-    * Reads the current image in 64-bit floating point format. Returns true if
+    * Reads the current image in 64-bit floating point format. Returns true iff
     * the image was successfully read.
     */
    bool ReadImage( DImage& image );
 
    /*!
-    * Reads the current image in 8-bit unsigned integer format. Returns true if
-    * the image was successfully read.
+    * Reads the current image in 8-bit unsigned integer format. Returns true
+    * iff the image was successfully read.
     */
    bool ReadImage( UInt8Image& image );
 
    /*!
-    * Reads the current image in 16-bit unsigned integer format. Returns true if
-    * the image was successfully read.
+    * Reads the current image in 16-bit unsigned integer format. Returns true
+    * iff the image was successfully read.
     */
    bool ReadImage( UInt16Image& image );
 
    /*!
-    * Reads the current image in 32-bit unsigned integer format. Returns true if
-    * the image was successfully read.
+    * Reads the current image in 32-bit unsigned integer format. Returns true
+    * iff the image was successfully read.
     */
    bool ReadImage( UInt32Image& image );
+
+   /*!
+    * Reads the current image and stores it in the image transported by the
+    * specified ImageVariant object, using the pixel sample format of the
+    * transported image. Returns true iff the ImageVariant object transports a
+    * valid image and the image was successfully read.
+    */
+   bool ReadImage( ImageVariant& image )
+   {
+      if ( image )
+         if ( !image.IsComplexSample() )
+            if ( image.IsFloatSample() )
+               switch ( image.BitsPerSample() )
+               {
+               case 32: return ReadImage( static_cast<pcl::Image&>( *image ) );
+               case 64: return ReadImage( static_cast<pcl::DImage&>( *image ) );
+               }
+            else
+               switch ( image.BitsPerSample() )
+               {
+               case  8: return ReadImage( static_cast<pcl::UInt8Image&>( *image ) );
+               case 16: return ReadImage( static_cast<pcl::UInt16Image&>( *image ) );
+               case 32: return ReadImage( static_cast<pcl::UInt32Image&>( *image ) );
+               }
+      return false;
+   }
 
    /*!
     * Incremental read in 32-bit floating point sample format.
@@ -754,34 +780,60 @@ public:
    bool Embed( const UInt8Image& image );
 
    /*!
-    * Writes a 32-bit floating point image to this file. Returns true if the
+    * Writes a 32-bit floating point image to this file. Returns true iff the
     * image was successfully written.
     */
    bool WriteImage( const FImage& image );
 
    /*!
-    * Writes a 64-bit floating point image to this file. Returns true if the
+    * Writes a 64-bit floating point image to this file. Returns true iff the
     * image was successfully written.
     */
    bool WriteImage( const DImage& image );
 
    /*!
-    * Writes an 8-bit unsigned integer image to this file. Returns true if the
+    * Writes an 8-bit unsigned integer image to this file. Returns true iff the
     * image was successfully written.
     */
    bool WriteImage( const UInt8Image& image );
 
    /*!
-    * Writes a 16-bit unsigned integer image to this file. Returns true if the
+    * Writes a 16-bit unsigned integer image to this file. Returns true iff the
     * image was successfully written.
     */
    bool WriteImage( const UInt16Image& image );
 
    /*!
-    * Writes a 32-bit unsigned integer image to this file. Returns true if the
+    * Writes a 32-bit unsigned integer image to this file. Returns true iff the
     * image was successfully written.
     */
    bool WriteImage( const UInt32Image& image );
+
+   /*!
+    * Writes image transported by the specified ImageVariant object to this
+    * file, using the pixel sample format of the transported image. Returns
+    * true iff the ImageVariant object transports a valid image and the image
+    * was successfully written.
+    */
+   bool WriteImage( ImageVariant& image )
+   {
+      if ( image )
+         if ( !image.IsComplexSample() )
+            if ( image.IsFloatSample() )
+               switch ( image.BitsPerSample() )
+               {
+               case 32: return WriteImage( static_cast<pcl::Image&>( *image ) );
+               case 64: return WriteImage( static_cast<pcl::DImage&>( *image ) );
+               }
+            else
+               switch ( image.BitsPerSample() )
+               {
+               case  8: return WriteImage( static_cast<pcl::UInt8Image&>( *image ) );
+               case 16: return WriteImage( static_cast<pcl::UInt16Image&>( *image ) );
+               case 32: return WriteImage( static_cast<pcl::UInt32Image&>( *image ) );
+               }
+      return false;
+   }
 
    /*!
     * Creates a new image with the geometry and color space as specified by an

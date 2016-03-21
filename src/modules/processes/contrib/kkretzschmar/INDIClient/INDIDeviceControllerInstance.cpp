@@ -92,7 +92,7 @@ INDIDeviceControllerInstance::INDIDeviceControllerInstance( const MetaProcess* m
    o_getCommandResult(),
    m_currentMessage(),
    m_internalAbortFlag( false ),
-   m_imageDownloaded( false )
+   m_downloadedImagePath()
 {
 }
 

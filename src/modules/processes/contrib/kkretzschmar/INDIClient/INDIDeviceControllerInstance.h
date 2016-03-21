@@ -129,14 +129,24 @@ public:
       p_newProperties.Clear();
    }
 
-   virtual bool getImageDownloadedFlag() const
+   virtual String DownloadedImagePath() const
    {
-      return m_imageDownloaded;
+      return m_downloadedImagePath;
    }
 
-   virtual void setImageDownloadedFlag( bool flag )
+   virtual void SetDownloadedImagePath( const String& path )
    {
-      m_imageDownloaded = flag;
+      m_downloadedImagePath = path;
+   }
+
+   bool HasDownloadedImage() const
+   {
+      return !m_downloadedImagePath.IsEmpty();
+   }
+
+   void ResetDownloadedImage()
+   {
+      m_downloadedImagePath.Clear();
    }
 
 private:
@@ -155,7 +165,7 @@ private:
 
    IsoString           m_currentMessage;
    bool                m_internalAbortFlag;
-   bool                m_imageDownloaded;
+   String              m_downloadedImagePath;
    pcl::Mutex          m_mutex; // for access to propertyList
 
    bool sendNewProperty( bool isAsyncCall = false );

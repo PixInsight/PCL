@@ -58,6 +58,7 @@
 #include "PropertyNode.h"
 
 #include <pcl/Console.h>
+#include <pcl/GlobalSettings.h>
 
 namespace pcl
 {
@@ -214,13 +215,16 @@ void INDIClient::newLight( ILightVectorProperty* lvp )
 
 void INDIClient::newBLOB( IBLOB* bp )
 {
-   String fileName = File::SystemTempDirectory() + '/' + bp->label + bp->format;
-   File myfile = File::CreateFileForWriting( fileName );
+   String dir = PixInsightSettings::GlobalString( "ImageWindow/DownloadsDirectory" );
+   if ( dir.IsEmpty() ) // this cannot happen
+      dir = File::SystemTempDirectory();
+   String filePath = dir + '/' + bp->label + bp->format;
+   File myfile = File::CreateFileForWriting( filePath );
    myfile.Write( bp->blob, bp->size );
    myfile.Close();
-   m_instance->setImageDownloadedFlag( true );
+   m_instance->SetDownloadedImagePath( filePath );
    if ( m_scriptInstance )
-      m_scriptInstance->setImageDownloadedFlag( true );
+      m_scriptInstance->SetDownloadedImagePath( filePath );
 }
 
 // ----------------------------------------------------------------------------

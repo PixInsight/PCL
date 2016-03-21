@@ -82,8 +82,9 @@ public:
    virtual Array<INDIPropertyListItem>& getPropertyList() = 0;
    virtual ExclPropertyList getExclusivePropertyList() = 0;
    virtual IsoString getCurrentMessage() const = 0;
-   virtual void setImageDownloadedFlag( bool ) = 0;
-   virtual bool getImageDownloadedFlag() const = 0;
+
+   virtual String DownloadedImagePath() const = 0;
+   virtual void SetDownloadedImagePath( const String& ) = 0;
 };
 
 // ----------------------------------------------------------------------------

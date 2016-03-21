@@ -815,22 +815,22 @@ public:
     * true iff the ImageVariant object transports a valid image and the image
     * was successfully written.
     */
-   bool WriteImage( ImageVariant& image )
+   bool WriteImage( const ImageVariant& image )
    {
       if ( image )
          if ( !image.IsComplexSample() )
             if ( image.IsFloatSample() )
                switch ( image.BitsPerSample() )
                {
-               case 32: return WriteImage( static_cast<pcl::Image&>( *image ) );
-               case 64: return WriteImage( static_cast<pcl::DImage&>( *image ) );
+               case 32: return WriteImage( static_cast<const pcl::Image&>( *image ) );
+               case 64: return WriteImage( static_cast<const pcl::DImage&>( *image ) );
                }
             else
                switch ( image.BitsPerSample() )
                {
-               case  8: return WriteImage( static_cast<pcl::UInt8Image&>( *image ) );
-               case 16: return WriteImage( static_cast<pcl::UInt16Image&>( *image ) );
-               case 32: return WriteImage( static_cast<pcl::UInt32Image&>( *image ) );
+               case  8: return WriteImage( static_cast<const pcl::UInt8Image&>( *image ) );
+               case 16: return WriteImage( static_cast<const pcl::UInt16Image&>( *image ) );
+               case 32: return WriteImage( static_cast<const pcl::UInt32Image&>( *image ) );
                }
       return false;
    }

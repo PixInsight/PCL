@@ -95,9 +95,14 @@ public:
       return o_devices;
    }
 
-   virtual IsoString getCurrentMessage() const
+   virtual String CurrentServerMessage() const
    {
-      return m_currentMessage;
+	   return m_currentMessage;
+   }
+
+   virtual void SetCurrentServerMessage(const String& message)
+   {
+      m_currentMessage = message;
    }
 
    ExclPropertyList getExclusivePropertyList()
@@ -163,7 +168,7 @@ private:
    PropertyListType    o_properties;
    String              o_getCommandResult;
 
-   IsoString           m_currentMessage;
+   String              m_currentMessage;
    bool                m_internalAbortFlag;
    String              m_downloadedImagePath;
    pcl::Mutex          m_mutex; // for access to propertyList

@@ -354,6 +354,12 @@ bool INDICCDFrameInstance::ExecuteGlobal()
             pcl::Sleep( 100 );
          }
 
+         // print latest INDI server log entry
+         console.WriteLn(String().Format("<end><cbr><br>===== Latest INDI server log entry:"));
+         console.WriteLn(String().Format("%s",IsoString(instance.CurrentServerMessage()).c_str()));
+
+         console.WriteLn();
+
          if ( serverSendsImage )
          {
             for ( T.Reset(); !instance.HasDownloadedImage(); )

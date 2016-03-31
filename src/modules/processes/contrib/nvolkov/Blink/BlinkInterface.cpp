@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.00.0779
+// /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Blink Process Module Version 01.02.01.0211
+// Standard Blink Process Module Version 01.02.01.0215
 // ----------------------------------------------------------------------------
-// BlinkInterface.cpp - Released 2015/12/18 08:55:08 UTC
+// BlinkInterface.cpp - Released 2016/02/21 20:22:43 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
@@ -468,23 +468,40 @@ void BlinkInterface::BlinkData::AutoHT()
 
       int n = fd.m_image->NumberOfNominalChannels();
       double c0 = 0, m = 0;
-      for ( int c = 0; c < n; c++ )
-      {
-         const ImageStatistics& S = fd.m_statSTF[c];
-         if ( 1 + S.MAD() != 1 )
-            c0 += S.Median() + g_stfShadowsClipping * S.MAD();
-         m += S.Median();
-      }
-      c0 = Range( c0/n, 0.0, 1.0 );
-      m = HistogramTransformation::MTF( g_stfTargetBackground, m/n - c0 );
-      for ( int c = 0; c < n; c++ )
-      {
-         HistogramTransformation H ( m, c0, 1, 0, 1 );
-         fd.m_image->SelectChannel( c );
-         H >> *fd.m_image;
-         ProcessEvents();
-      }
-      fd.m_image->ResetChannelRange();
+	  if (TheBlinkInterface->GUI->RGBLinked_Button.IsChecked() || n == 1)
+	  {
+		  for (int c = 0; c < n; c++)
+		  {
+			  const ImageStatistics& S = fd.m_statSTF[c];
+			  if (1 + S.MAD() != 1)
+				  c0 += S.Median() + g_stfShadowsClipping * S.MAD();
+			  m += S.Median();
+		  }
+		  c0 = Range(c0 / n, 0.0, 1.0);
+		  m = HistogramTransformation::MTF(g_stfTargetBackground, m / n - c0);
+		  for (int c = 0; c < n; c++)
+		  {
+			  HistogramTransformation H(m, c0, 1, 0, 1);
+			  fd.m_image->SelectChannel(c);
+			  H >> *fd.m_image;
+			  ProcessEvents();
+		  }
+		  fd.m_image->ResetChannelRange();
+	  }
+	  else
+	  {
+		  for (int c = 0; c < n; c++)
+		  {
+			  const ImageStatistics& S = fd.m_statSTF[c];
+			  c0 = (1 + S.MAD() != 1) ? Range(S.Median() + g_stfShadowsClipping * S.MAD(), 0.0, 1.0) : 0.0;
+			  m = HistogramTransformation::MTF(g_stfTargetBackground, S.Median() - c0);
+			  HistogramTransformation H(m, c0, 1, 0, 1);
+			  fd.m_image->SelectChannel(c);
+			  H >> *fd.m_image;
+			  ProcessEvents();
+		  }
+		  fd.m_image->ResetChannelRange();
+	  }
    }
 
    DisableSTF();
@@ -501,11 +518,10 @@ void BlinkInterface::BlinkData::ResetHT()
       if ( !LoadImage_P( *m_filesData[fileNumber].m_image, m_filesData[fileNumber].m_filePath ) )
          throw CatchedException();
 
-   //EnableSTF();
    DisableSTF();
    UpdateScreen();
 
-   Console().Hide();
+   //Console().Hide();
 }
 
 void BlinkInterface::BlinkData::EnableSTF()
@@ -885,7 +901,7 @@ void BlinkInterface::Init()
    }
    else
    {
-      if ( m_blink.IsColor() && GUI->AutoSTF_Button.IsChecked() )
+      if ( m_blink.IsColor() )
          GUI->RGBLinked_Button.Show();
       m_blink.Update();
       GUI->UpdatePreview_Timer.Start();
@@ -1406,12 +1422,9 @@ void BlinkInterface::__Brightness_Click( Button& sender, bool checked )
       if ( checked )
       {
          if ( GUI->AutoSTF_Button.IsChecked() )
-         {
             GUI->AutoSTF_Button.Uncheck();
-            GUI->RGBLinked_Button.Hide();
-         }
 
-         m_blink.AutoHT();
+		 m_blink.AutoHT();
       }
       else
          m_blink.ResetHT();
@@ -1435,16 +1448,10 @@ void BlinkInterface::__Brightness_Click( Button& sender, bool checked )
             m_blink.ResetHT();
          }
 
-         if ( m_blink.IsColor() )
-            GUI->RGBLinked_Button.Show();
-
          m_blink.AutoSTF();
       }
       else
-      {
-         GUI->RGBLinked_Button.Hide();
          m_blink.DisableSTF();
-      }
 
       if ( m_blink.m_screen.IsNull() )
          m_blink.UpdateScreen();
@@ -1456,11 +1463,17 @@ void BlinkInterface::__Brightness_Click( Button& sender, bool checked )
    else if ( sender == GUI->RGBLinked_Button )
    {
       Pause();
-
-      m_blink.AutoSTF();
-
-      GeneratePreview();
-
+	  if (GUI->AutoSTF_Button.IsChecked())
+	  {
+		  m_blink.AutoSTF();
+		  GeneratePreview();
+	  }
+	  else if ( GUI->AutoHT_Button.IsChecked() )
+	  {
+		  m_blink.ResetHT();
+		  m_blink.AutoHT();
+		  GeneratePreview();
+	  }
       Continue();
    }
 }
@@ -2098,4 +2111,4 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BlinkInterface.cpp - Released 2015/12/18 08:55:08 UTC
+// EOF BlinkInterface.cpp - Released 2016/02/21 20:22:43 UTC

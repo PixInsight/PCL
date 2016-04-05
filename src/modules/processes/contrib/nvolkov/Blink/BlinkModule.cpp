@@ -4,14 +4,14 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Blink Process Module Version 01.02.01.0215
+// Standard Blink Process Module Version 01.02.02.0218
 // ----------------------------------------------------------------------------
-// BlinkModule.cpp - Released 2016/02/21 20:22:43 UTC
+// BlinkModule.cpp - Released 2016/04/05 08:54:27 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
-// Copyright (c) 2011-2015 Nikolay Volkov
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2016 Nikolay Volkov
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,13 +53,13 @@
 
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     02
-#define MODULE_VERSION_REVISION  01
-#define MODULE_VERSION_BUILD     0215
+#define MODULE_VERSION_REVISION  02
+#define MODULE_VERSION_BUILD     0218
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2016
-#define MODULE_RELEASE_MONTH     2
-#define MODULE_RELEASE_DAY       21
+#define MODULE_RELEASE_MONTH     4
+#define MODULE_RELEASE_DAY       5
 
 #include "BlinkModule.h"
 #include "BlinkProcess.h"
@@ -105,7 +105,7 @@ String BlinkModule::Author() const
 
 String BlinkModule::Copyright() const
 {
-   return "Copyright (c) 2011-2015 Nikolay Volkov";
+   return "Copyright (c) 2011-2016 Nikolay Volkov";
 }
 
 String BlinkModule::TradeMarks() const
@@ -155,4 +155,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF BlinkModule.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF BlinkModule.cpp - Released 2016/04/05 08:54:27 UTC

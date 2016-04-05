@@ -4,14 +4,14 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Blink Process Module Version 01.02.01.0215
+// Standard Blink Process Module Version 01.02.02.0218
 // ----------------------------------------------------------------------------
-// BlinkInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// BlinkInterface.cpp - Released 2016/04/05 08:54:27 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
-// Copyright (c) 2011-2015 Nikolay Volkov
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2016 Nikolay Volkov
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -414,7 +414,7 @@ void BlinkInterface::BlinkData::AutoSTF()
 
    View::stf_list stf( 4 );
 
-   if ( TheBlinkInterface->GUI->RGBLinked_Button.IsChecked() || n == 1 )
+   if ( n == 1 || TheBlinkInterface->GUI->RGBLinked_Button.IsChecked() )
    {
       for ( int c = 0; c < n; c++ )
       {
@@ -468,40 +468,40 @@ void BlinkInterface::BlinkData::AutoHT()
 
       int n = fd.m_image->NumberOfNominalChannels();
       double c0 = 0, m = 0;
-	  if (TheBlinkInterface->GUI->RGBLinked_Button.IsChecked() || n == 1)
-	  {
-		  for (int c = 0; c < n; c++)
-		  {
-			  const ImageStatistics& S = fd.m_statSTF[c];
-			  if (1 + S.MAD() != 1)
-				  c0 += S.Median() + g_stfShadowsClipping * S.MAD();
-			  m += S.Median();
-		  }
-		  c0 = Range(c0 / n, 0.0, 1.0);
-		  m = HistogramTransformation::MTF(g_stfTargetBackground, m / n - c0);
-		  for (int c = 0; c < n; c++)
-		  {
-			  HistogramTransformation H(m, c0, 1, 0, 1);
-			  fd.m_image->SelectChannel(c);
-			  H >> *fd.m_image;
-			  ProcessEvents();
-		  }
-		  fd.m_image->ResetChannelRange();
-	  }
-	  else
-	  {
-		  for (int c = 0; c < n; c++)
-		  {
-			  const ImageStatistics& S = fd.m_statSTF[c];
-			  c0 = (1 + S.MAD() != 1) ? Range(S.Median() + g_stfShadowsClipping * S.MAD(), 0.0, 1.0) : 0.0;
-			  m = HistogramTransformation::MTF(g_stfTargetBackground, S.Median() - c0);
-			  HistogramTransformation H(m, c0, 1, 0, 1);
-			  fd.m_image->SelectChannel(c);
-			  H >> *fd.m_image;
-			  ProcessEvents();
-		  }
-		  fd.m_image->ResetChannelRange();
-	  }
+      if ( n == 1 || TheBlinkInterface->GUI->RGBLinked_Button.IsChecked() )
+      {
+         for ( int c = 0; c < n; c++ )
+         {
+            const ImageStatistics& S = fd.m_statSTF[c];
+            if ( 1 + S.MAD() != 1 )
+               c0 += S.Median() + g_stfShadowsClipping * S.MAD();
+            m += S.Median();
+         }
+         c0 = Range( c0/n, 0.0, 1.0 );
+         m = HistogramTransformation::MTF( g_stfTargetBackground, m/n - c0 );
+         for ( int c = 0; c < n; c++ )
+         {
+            HistogramTransformation H( m, c0, 1, 0, 1 );
+            fd.m_image->SelectChannel( c );
+            H >> *fd.m_image;
+            ProcessEvents();
+         }
+      }
+      else
+      {
+         for ( int c = 0; c < n; c++ )
+         {
+            const ImageStatistics& S = fd.m_statSTF[c];
+            c0 = (1 + S.MAD() != 1) ? Range( S.Median() + g_stfShadowsClipping * S.MAD(), 0.0, 1.0 ) : 0.0;
+            m = HistogramTransformation::MTF( g_stfTargetBackground, S.Median() - c0 );
+            HistogramTransformation H( m, c0, 1, 0, 1 );
+            fd.m_image->SelectChannel( c );
+            H >> *fd.m_image;
+            ProcessEvents();
+         }
+      }
+
+      fd.m_image->ResetChannelRange();
    }
 
    DisableSTF();
@@ -581,8 +581,8 @@ bool BlinkInterface::BlinkData::CheckGeomery( const ImageDescription& descriptio
    else if ( imageBounds != m_screenRect )
    {
       Console().WarningLn( String().Format( "<end><cbr>*** Wrong image geometry: %dx%d pixels, expected %dx%d.",
-                                            imageBounds.Width(), imageBounds.Height(),
-                                            m_screenRect.Width(), m_screenRect.Height() ) );
+                                          imageBounds.Width(), imageBounds.Height(),
+                                          m_screenRect.Width(), m_screenRect.Height() ) );
       return false;
    }
 
@@ -775,7 +775,7 @@ bool BlinkInterface::CanImportInstances() const
 
 bool BlinkInterface::Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "Blink" );
@@ -1424,7 +1424,7 @@ void BlinkInterface::__Brightness_Click( Button& sender, bool checked )
          if ( GUI->AutoSTF_Button.IsChecked() )
             GUI->AutoSTF_Button.Uncheck();
 
-		 m_blink.AutoHT();
+         m_blink.AutoHT();
       }
       else
          m_blink.ResetHT();
@@ -1463,17 +1463,19 @@ void BlinkInterface::__Brightness_Click( Button& sender, bool checked )
    else if ( sender == GUI->RGBLinked_Button )
    {
       Pause();
-	  if (GUI->AutoSTF_Button.IsChecked())
-	  {
-		  m_blink.AutoSTF();
-		  GeneratePreview();
-	  }
-	  else if ( GUI->AutoHT_Button.IsChecked() )
-	  {
-		  m_blink.ResetHT();
-		  m_blink.AutoHT();
-		  GeneratePreview();
-	  }
+
+      if ( GUI->AutoSTF_Button.IsChecked() )
+      {
+         m_blink.AutoSTF();
+         GeneratePreview();
+      }
+      else if ( GUI->AutoHT_Button.IsChecked() )
+      {
+         m_blink.ResetHT();
+         m_blink.AutoHT();
+         GeneratePreview();
+      }
+
       Continue();
    }
 }
@@ -1841,9 +1843,9 @@ String BlinkInterface::RowToStringFileNumber( const int row ) //Convert fileNumb
                               String( #a ) + '.' + #b + '.' + #c + '.' + #d
 
 #define PrintableVersion()    PrintableVersion_1( MODULE_VERSION_MAJOR,       \
-                                                  MODULE_VERSION_MINOR,       \
-                                                  MODULE_VERSION_REVISION,    \
-                                                  MODULE_VERSION_BUILD )
+                                                MODULE_VERSION_MINOR,       \
+                                                MODULE_VERSION_REVISION,    \
+                                                MODULE_VERSION_BUILD )
 
 FileFormatInstance BlinkInterface::CreateImageFile( int index, const String& history, const String& dir )
 {
@@ -1921,20 +1923,23 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
    Preview_ScrollBox.Viewport().OnMousePress( (Control::mouse_button_event_handler)&BlinkInterface::__ScrollControl_MousePress, w );
    Preview_ScrollBox.Viewport().OnMouseMove( (Control::mouse_event_handler)&BlinkInterface::__ScrollControl_MouseMove, w );
 
-   RGBLinked_Button.SetCheckable();
-   RGBLinked_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-color.png" ) ) );
-   RGBLinked_Button.SetToolTip( "<p>Link RGB channels. Enabled only for RGB images.</p>" );
-   RGBLinked_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__Brightness_Click, w );
-
    AutoSTF_Button.SetCheckable();
    AutoSTF_Button.SetIcon( Bitmap( ScreenTransferFunctionIcon_XPM ) );
+   AutoSTF_Button.SetScaledFixedSize( 28, 28 );
    AutoSTF_Button.SetToolTip( "<p>Compute AutoSTF for the curent image, then apply the computed STF to all images.</p>" );
    AutoSTF_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__Brightness_Click, w );
 
    AutoHT_Button.SetCheckable();
    AutoHT_Button.SetIcon( Bitmap( HistogramTransformationIcon_XPM ) );
+   AutoHT_Button.SetScaledFixedSize( 28, 28 );
    AutoHT_Button.SetToolTip( "<p>Apply an automatic histogram transformation to all images</p>" );
    AutoHT_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__Brightness_Click, w );
+
+   RGBLinked_Button.SetCheckable();
+   RGBLinked_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/link.png" ) ) );
+   RGBLinked_Button.SetScaledFixedSize( 22, 22 );
+   RGBLinked_Button.SetToolTip( "<p>Link RGB channels. Enabled only for RGB images.</p>" );
+   RGBLinked_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__Brightness_Click, w );
 
 #if debug
    DebugInfo_Label.SetText( "Debug" );
@@ -1942,14 +1947,17 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
 #endif
 
    PreviousImage_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/left.png" ) ) );
+   PreviousImage_Button.SetScaledFixedSize( 22, 22 );
    PreviousImage_Button.SetToolTip( "Previous image" );
    PreviousImage_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__ActionButton_Click, w );
 
    Play_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/play.png" ) ) );
+   Play_Button.SetScaledFixedSize( 22, 22 );
    Play_Button.SetToolTip( "Play Animation" );
    Play_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__ActionButton_Click, w );
 
    NextImage_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/right.png" ) ) );
+   NextImage_Button.SetScaledFixedSize( 22, 22 );
    NextImage_Button.SetToolTip( "Next image" );
    NextImage_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__ActionButton_Click, w );
 
@@ -1959,6 +1967,7 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
    BlinkingDelay_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&BlinkInterface::__Delay_ItemSelected, w );
 
    ShowTreeBox_Button.SetIcon( Bitmap( w.ScaledResource( ":/process-interface/contract.png" ) ) );
+   ShowTreeBox_Button.SetScaledFixedSize( 22, 22 );
    ShowTreeBox_Button.SetToolTip( "Hide file panel" );
    ShowTreeBox_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__FilePanelHideButton_Click, w );
 
@@ -1999,36 +2008,44 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
    Files_TreeBox.OnNodeDoubleClicked( (TreeBox::node_event_handler)&BlinkInterface::__Files_NodeDoubleClicked, w );
 
    FileAdd_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/folder-open.png" ) ) );
+   FileAdd_Button.SetScaledFixedSize( 22, 22 );
    FileAdd_Button.SetToolTip( "<p>Add image files.</p>" );
    FileAdd_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__FileButton_Click, w );
 
    FileClose_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/window-close.png" ) ) );
+   FileClose_Button.SetScaledFixedSize( 22, 22 );
    FileClose_Button.SetToolTip( String( "<p>Close Selected images.</p>" ) + selectionNoteToolTip );
    FileClose_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__FileButton_Click, w );
 
    FileCloseAll_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/window-close-all.png" ) ) );
+   FileCloseAll_Button.SetScaledFixedSize( 22, 22 );
    FileCloseAll_Button.SetToolTip( "<p>Close all images.</p>" );
    FileCloseAll_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__FileButton_Click, w );
 
    FileCopyTo_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/save.png" ) ) );
+   FileCopyTo_Button.SetScaledFixedSize( 22, 22 );
    FileCopyTo_Button.SetToolTip( String( "<p>Copy selected files to new location.</p>" ) + fileNameNoteToolTip + selectionNoteToolTip );
    FileCopyTo_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__FileButton_Click, w );
 
    FileMoveTo_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/file-copy.png" ) ) );
+   FileMoveTo_Button.SetScaledFixedSize( 22, 22 );
    FileMoveTo_Button.SetToolTip( String( "<p>Move selected files to new location.</p>" ) + fileNameNoteToolTip + selectionNoteToolTip );
    FileMoveTo_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__FileButton_Click, w );
 
    FileCropTo_Button.SetIcon( Bitmap( w.ScaledResource( ":/icons/cut.png" ) ) );
+   FileCropTo_Button.SetScaledFixedSize( 22, 22 );
    FileCropTo_Button.SetToolTip(
       String( "<p>Crop the selected files by the green rectangle and save them to a new location. "
-              "You can define a preview to use its size and position.</p>" ) + fileNameNoteToolTip + selectionNoteToolTip );
+            "You can define a preview to use its size and position.</p>" ) + fileNameNoteToolTip + selectionNoteToolTip );
    FileCropTo_Button.OnClick( (Button::click_event_handler)&BlinkInterface::__FileButton_Click, w );
 
    Statistics_button.SetIcon( Bitmap( w.ScaledResource( ":/icons/statistics.png" ) ) );
+   Statistics_button.SetScaledFixedSize( 22, 22 );
    Statistics_button.SetToolTip( "<p>Series analysis report.</p>");
    Statistics_button.OnClick( (Button::click_event_handler)&BlinkInterface::__FileButton_Click, w );
 
    CropToVideo_button.SetIcon( Bitmap( w.ScaledResource( ":/icons/clap.png" ) ) );
+   CropToVideo_button.SetScaledFixedSize( 22, 22 );
    CropToVideo_button.SetToolTip( "<p>Crop and create video.</p>");
    CropToVideo_button.OnClick( (Button::click_event_handler)&BlinkInterface::__FileButton_Click, w );
 
@@ -2036,13 +2053,15 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
     * Sizers central panel
     */
 
-   STF_Sizer.SetSpacing( 2 );
+   STF_Sizer.SetSpacing( 4 );
    STF_Sizer.Add( AutoHT_Button );
    STF_Sizer.Add( AutoSTF_Button );
+   STF_Sizer.AddSpacing( 2 );
    STF_Sizer.Add( RGBLinked_Button );
    STF_Sizer.AddStretch();
 
    Preview_sizer.SetSpacing( 4 );
+   Preview_sizer.AddStretch();
    Preview_sizer.Add( Preview_ScrollBox );
    Preview_sizer.Add( STF_Sizer );
 
@@ -2059,6 +2078,7 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
    ActionControl_Sizer.Add( BlinkingDelay_ComboBox );
    ActionControl_Sizer.AddSpacing( 4 );
    ActionControl_Sizer.Add( ShowTreeBox_Button );
+   ActionControl_Sizer.AddSpacing( 6+1 ); // align ShowTreeBox_Button with RGBLinked_Button
 
    CentralPanel_sizer.SetSpacing( 4 );
    CentralPanel_sizer.Add( Preview_sizer );
@@ -2069,7 +2089,7 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
     * Sizers right panel
     */
 
-   FilesControl_Sizer.SetSpacing( 2 );
+   FilesControl_Sizer.SetSpacing( 4 );
    FilesControl_Sizer.Add( FileAdd_Button );
    FilesControl_Sizer.Add( FileClose_Button );
    FilesControl_Sizer.Add( FileCloseAll_Button );
@@ -2098,7 +2118,7 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
    w.OnHide( (Control::event_handler)&BlinkInterface::__Hide, w );
 
    UpdateAnimation_Timer.SetSingleShot();
-   UpdateAnimation_Timer.SetInterval( 0.0 );
+   UpdateAnimation_Timer.SetInterval( 0.0 ); // deliver as soon as the event queue gets empty
    UpdateAnimation_Timer.OnTimer( (Timer::timer_event_handler)&BlinkInterface::__UpdateAnimation_Timer, w );
 
    UpdatePreview_Timer.SetSingleShot();
@@ -2111,4 +2131,4 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BlinkInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF BlinkInterface.cpp - Released 2016/04/05 08:54:27 UTC

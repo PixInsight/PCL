@@ -81,7 +81,8 @@ public:
    virtual Array<INDIDeviceListItem>& getDeviceList() = 0;
    virtual Array<INDIPropertyListItem>& getPropertyList() = 0;
    virtual ExclPropertyList getExclusivePropertyList() = 0;
-   virtual IsoString getCurrentMessage() const = 0;
+   virtual String CurrentServerMessage() const = 0;
+   virtual void SetCurrentServerMessage(const String& )  = 0;
 
    virtual String DownloadedImagePath() const = 0;
    virtual void SetDownloadedImagePath( const String& ) = 0;

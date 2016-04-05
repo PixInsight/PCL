@@ -9,8 +9,12 @@
 #include "FakeINDIClient.h"
 //#include "../indiapi.h"
 #include "INDIPropertyBuilder.h"
-#include "error.h"
+#include "pcl/Exception.h"
 
+#define CHECK_POINTER(PTR) \
+		if (PTR==NULL) {\
+		  throw FatalError(String().Format("Error in %s line %d: Null pointer exception",__FILE__,__LINE__));\
+		}
 
 namespace pcl {
 

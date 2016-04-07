@@ -128,6 +128,10 @@ private:
                   Label               UploadDir_Label;
                   Edit                UploadDir_Edit;
                   PushButton          UploadDir_PushButton;
+               HorizontalSizer   ServerFileNameTemplate_HSizer;
+                  Label               ServerFileNameTemplate_Label;
+                  Edit                ServerFileNameTemplate_Edit;
+                  PushButton          ServerFileNameTemplate_PushButton;
          SectionBar        FrameAcquisition_SectionBar;
          Control           FrameAcquisition_Control;
          VerticalSizer     FrameAcquisition_Sizer;

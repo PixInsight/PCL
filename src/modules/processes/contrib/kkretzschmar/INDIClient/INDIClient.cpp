@@ -167,9 +167,9 @@ void INDIClient::newMessage( INDI::BaseDevice* dp, int messageID )
    const char* message = dp->messageQueue( messageID );
    if ( message != nullptr )
    {
-      m_instance->SetCurrentServerMessage(String(message));
+      m_instance->SetCurrentServerMessage( message );
       if ( m_scriptInstance )
-         m_scriptInstance->SetCurrentServerMessage(String(message));
+         m_scriptInstance->SetCurrentServerMessage( message );
    }
 }
 

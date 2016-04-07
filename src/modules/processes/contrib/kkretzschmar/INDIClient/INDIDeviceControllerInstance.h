@@ -97,10 +97,10 @@ public:
 
    virtual String CurrentServerMessage() const
    {
-	   return m_currentMessage;
+      return m_currentMessage;
    }
 
-   virtual void SetCurrentServerMessage(const String& message)
+   virtual void SetCurrentServerMessage( const String& message )
    {
       m_currentMessage = message;
    }

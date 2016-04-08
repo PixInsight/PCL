@@ -53,6 +53,8 @@
 #include "INDICCDFrameInstance.h"
 #include "INDICCDFrameParameters.h"
 #include "INDIDeviceControllerInterface.h"
+#include "INDIClient.h"
+
 
 #include <pcl/Console.h>
 #include <pcl/ElapsedTime.h>
@@ -119,11 +121,6 @@ bool INDICCDFrameInstance::CanExecuteOn( const View&, pcl::String& whyNot ) cons
 
 bool INDICCDFrameInstance::CanExecuteGlobal( String& whyNot ) const
 {
-   if ( TheINDIDeviceControllerInterface == nullptr )
-   {
-      whyNot = "The INDI device controller has not been initialized";
-      return false;
-   }
 
    if ( p_deviceName.IsEmpty() )
    {
@@ -144,20 +141,25 @@ bool INDICCDFrameInstance::ValidateDevice( bool throwErrors ) const
       return false;
    }
 
-   if ( TheINDIDeviceControllerInterface == nullptr )
+
+   if (indiClient.IsNull())
+	   throw Error( "The INDI device controller has not been initialized" );
+
+   INDIDeviceControllerInstance* instance = dynamic_cast<INDIDeviceControllerInstance*>(indiClient->m_instance);
+
+   if ( instance == nullptr )
    {
-      if ( throwErrors )
-         throw Error( "The INDI device controller has not been initialized" );
-      return false;
+	   if ( throwErrors )
+		   throw Error( "The INDI device controller has not been initialized" );
+	   return false;
    }
 
-   INDIDeviceControllerInstance& instance = TheINDIDeviceControllerInterface->instance;
    INDIPropertyListItem CCDProp;
 
-   for ( auto device : instance.o_devices )
+   for ( auto device : instance->o_devices )
       if ( device.DeviceName == p_deviceName )
       {
-         if ( !instance.getINDIPropertyItem( device.DeviceName, "CCD_FRAME", "WIDTH", CCDProp ) ) // is this a camera device?
+         if ( !instance->getINDIPropertyItem( device.DeviceName, "CCD_FRAME", "WIDTH", CCDProp ) ) // is this a camera device?
          {
             if ( throwErrors )
                throw Error( '\'' + p_deviceName + "' does not seem to be a valid INDI CCD device" );
@@ -173,20 +175,24 @@ bool INDICCDFrameInstance::ValidateDevice( bool throwErrors ) const
 
 void INDICCDFrameInstance::SendDeviceProperties( bool asynchronous ) const
 {
-   if ( TheINDIDeviceControllerInterface != nullptr )
+   if (indiClient.IsNull())
+	   throw Error( "The INDI device controller has not been initialized" );
+
+   INDIDeviceControllerInstance* instance = dynamic_cast<INDIDeviceControllerInstance*>(indiClient->m_instance);
+
+   if ( instance != nullptr )
    {
-      INDIDeviceControllerInstance& instance = TheINDIDeviceControllerInterface->instance;
       INDIPropertyListItem CCDProp;
       INDINewPropertyListItem newPropertyListItem;
       newPropertyListItem.Device = p_deviceName;
 
-      if ( instance.getINDIPropertyItem( p_deviceName, "UPLOAD_MODE", UploadModePropertyString( p_uploadMode ), CCDProp ) )
+      if ( instance->getINDIPropertyItem( p_deviceName, "UPLOAD_MODE", UploadModePropertyString( p_uploadMode ), CCDProp ) )
       {
          newPropertyListItem.Property = "UPLOAD_MODE";
          newPropertyListItem.Element = UploadModePropertyString( p_uploadMode );
          newPropertyListItem.PropertyType = "INDI_SWITCH";
          newPropertyListItem.NewPropertyValue = "ON";
-         instance.sendNewPropertyValue( newPropertyListItem, asynchronous );
+         instance->sendNewPropertyValue( newPropertyListItem, asynchronous );
       }
 
       if ( !p_serverUploadDirectory.IsEmpty() )
@@ -195,48 +201,53 @@ void INDICCDFrameInstance::SendDeviceProperties( bool asynchronous ) const
          newPropertyListItem.Element = "UPLOAD_DIR";
          newPropertyListItem.PropertyType = "INDI_TEXT";
          newPropertyListItem.NewPropertyValue = p_serverUploadDirectory;
-         instance.sendNewPropertyValue( newPropertyListItem, asynchronous );
+         instance->sendNewPropertyValue( newPropertyListItem, asynchronous );
       }
 
-      if ( instance.getINDIPropertyItem( p_deviceName, "CCD_FRAME_TYPE", CCDFrameTypePropertyString( p_frameType ), CCDProp ) )
+      if ( instance->getINDIPropertyItem( p_deviceName, "CCD_FRAME_TYPE", CCDFrameTypePropertyString( p_frameType ), CCDProp ) )
       {
          newPropertyListItem.Property = "CCD_FRAME_TYPE";
          newPropertyListItem.Element = CCDFrameTypePropertyString( p_frameType );
          newPropertyListItem.PropertyType = "INDI_SWITCH";
          newPropertyListItem.NewPropertyValue = "ON";
-         instance.sendNewPropertyValue( newPropertyListItem, asynchronous );
+         instance->sendNewPropertyValue( newPropertyListItem, asynchronous );
       }
 
-      if ( instance.getINDIPropertyItem( p_deviceName, "CCD_BINNING", "HOR_BIN", CCDProp ) )
+      if ( instance->getINDIPropertyItem( p_deviceName, "CCD_BINNING", "HOR_BIN", CCDProp ) )
       {
          newPropertyListItem.Property = "CCD_BINNING";
          newPropertyListItem.Element = "HOR_BIN";
          newPropertyListItem.PropertyType = "INDI_NUMBER";
          newPropertyListItem.NewPropertyValue = String( p_binningX );
-         instance.sendNewPropertyValue( newPropertyListItem, asynchronous );
+         instance->sendNewPropertyValue( newPropertyListItem, asynchronous );
       }
 
-      if ( instance.getINDIPropertyItem( p_deviceName, "CCD_BINNING", "VER_BIN", CCDProp ) )
+      if ( instance->getINDIPropertyItem( p_deviceName, "CCD_BINNING", "VER_BIN", CCDProp ) )
       {
          newPropertyListItem.Property = "CCD_BINNING";
          newPropertyListItem.Element = "VER_BIN";
          newPropertyListItem.PropertyType = "INDI_NUMBER";
          newPropertyListItem.NewPropertyValue = String( p_binningY );
-         instance.sendNewPropertyValue( newPropertyListItem, asynchronous );
+         instance->sendNewPropertyValue( newPropertyListItem, asynchronous );
       }
    }
 }
 
 bool INDICCDFrameInstance::ExecuteGlobal()
 {
-   if ( TheINDIDeviceControllerInterface == nullptr )
+
+   if (indiClient.IsNull())
+	   throw Error( "The INDI device controller has not been initialized" );
+
+   INDIDeviceControllerInstance* instance = dynamic_cast<INDIDeviceControllerInstance*>(indiClient->m_instance);
+
+   if ( instance == nullptr )
       throw Error( "The INDI device controller has not been initialized" );
 
    if ( p_deviceName.IsEmpty() )
       throw Error( "No device has been specified" );
 
-   INDIDeviceControllerInstance& instance = TheINDIDeviceControllerInterface->instance;
-   if ( instance.o_devices.IsEmpty() )
+   if ( instance->o_devices.IsEmpty() )
       throw Error( "No INDI device has been connected." );
 
    INDINewPropertyListItem newPropertyListItem;
@@ -251,7 +262,7 @@ bool INDICCDFrameInstance::ExecuteGlobal()
 
       INDIPropertyListItem CCDProp;
       bool serverSendsImage = true;
-      if ( instance.getINDIPropertyItem( p_deviceName, "UPLOAD_MODE", "UPLOAD_LOCAL", CCDProp ) )
+      if ( instance->getINDIPropertyItem( p_deviceName, "UPLOAD_MODE", "UPLOAD_LOCAL", CCDProp ) )
          serverSendsImage = CCDProp.PropertyValue != "ON";
 
       int successCount = 0;
@@ -281,7 +292,7 @@ bool INDICCDFrameInstance::ExecuteGlobal()
 
          console.WriteLn( String().Format( "<end><cbr>Exposure %d of %d (%.3gs)", num+1, p_exposureCount, p_exposureTime ) );
 
-         instance.ResetDownloadedImage();
+         instance->ResetDownloadedImage();
 
          // ### TODO: Implement a file name template available as a process parameter.
          newPropertyListItem.Property = "UPLOAD_SETTINGS";
@@ -289,13 +300,13 @@ bool INDICCDFrameInstance::ExecuteGlobal()
          newPropertyListItem.PropertyType = "INDI_TEXT";
          newPropertyListItem.NewPropertyValue = CCDFrameTypePrefix( p_frameType )
                   + String().Format( "_B%dx%d_E%4.3f_%03d", p_binningX, p_binningY, p_exposureTime, num + 1 );
-         instance.sendNewPropertyValue( newPropertyListItem, false/*async*/ );
+         instance->sendNewPropertyValue( newPropertyListItem, false/*async*/ );
 
          newPropertyListItem.Property = "CCD_EXPOSURE";
          newPropertyListItem.Element = "CCD_EXPOSURE_VALUE";
          newPropertyListItem.PropertyType = "INDI_NUMBER";
          newPropertyListItem.NewPropertyValue = String( p_exposureTime );
-         if ( !instance.sendNewPropertyValue( newPropertyListItem, true/*async*/ ) )
+         if ( !instance->sendNewPropertyValue( newPropertyListItem, true/*async*/ ) )
          {
             console.CriticalLn( "<end><cbr>*** Error: Failure to send new property values to INDI server." );
             ++errorCount;
@@ -314,10 +325,10 @@ bool INDICCDFrameInstance::ExecuteGlobal()
 
          for ( bool inExposure = false; ; )
          {
-            if ( instance.getInternalAbortFlag() )
+            if ( instance->getInternalAbortFlag() )
                throw ProcessAborted();
 
-            if ( instance.getINDIPropertyItem( p_deviceName, "CCD_EXPOSURE", "CCD_EXPOSURE_VALUE", CCDProp, false/*formatted*/ ) )
+            if ( instance->getINDIPropertyItem( p_deviceName, "CCD_EXPOSURE", "CCD_EXPOSURE_VALUE", CCDProp, false/*formatted*/ ) )
                if ( CCDProp.PropertyState == IPS_BUSY )
                {
                   if ( inExposure )
@@ -356,13 +367,13 @@ bool INDICCDFrameInstance::ExecuteGlobal()
 
          // print latest INDI server log entry
          console.WriteLn(String().Format("<end><cbr><br>===== Latest INDI server log entry:"));
-         console.WriteLn(String().Format("%s",IsoString(instance.CurrentServerMessage()).c_str()));
+         console.WriteLn(String().Format("%s",IsoString(instance->CurrentServerMessage()).c_str()));
 
          console.WriteLn();
 
          if ( serverSendsImage )
          {
-            for ( T.Reset(); !instance.HasDownloadedImage(); )
+            for ( T.Reset(); !instance->HasDownloadedImage(); )
             {
                if ( T() > 1 )
                   if ( waitMonitor.IsInitialized() )
@@ -373,7 +384,7 @@ bool INDICCDFrameInstance::ExecuteGlobal()
                pcl::Sleep( 50 );
             }
 
-            String filePath = instance.DownloadedImagePath();
+            String filePath = instance->DownloadedImagePath();
             FileFormat format( File::ExtractExtension( filePath ), true/*read*/, false/*write*/ );
             FileFormatInstance file( format );
 
@@ -447,8 +458,8 @@ bool INDICCDFrameInstance::ExecuteGlobal()
          }
       }
 
-      instance.setInternalAbortFlag( false );
-      instance.ResetDownloadedImage();
+      instance->setInternalAbortFlag( false );
+      instance->ResetDownloadedImage();
 
       console.NoteLn( String().Format( "<end><cbr><br>===== INDICCDFrame: %d succeeded, %d failed =====",
                                        successCount, errorCount ) );
@@ -460,7 +471,7 @@ bool INDICCDFrameInstance::ExecuteGlobal()
       newPropertyListItem.Element = "ABORT";
       newPropertyListItem.PropertyType = "INDI_SWITCH";
       newPropertyListItem.NewPropertyValue = "ON";
-      instance.sendNewPropertyValue( newPropertyListItem, true/*async*/ );
+      instance->sendNewPropertyValue( newPropertyListItem, true/*async*/ );
       throw;
    }
    catch ( ... )

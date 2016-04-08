@@ -440,17 +440,21 @@ void INDIDeviceControllerInstance::writeCurrentMessageToConsole()
 
 bool INDIDeviceControllerInstance::ExecuteGlobal()
 {
+
    Console console;
 
    console.NoteLn( "<end><cbr>INDI Control Client --- (C) Klaus Kretzschmar, 2014-2016" );
+   console.Flush();
 
    o_getCommandResult.Clear();
 
    if ( !p_serverConnect )
    {
-      // disconnet from server
-      if ( indiClient->serverIsConnected() )
+      // disconnect from server
+      if ( indiClient->serverIsConnected() ){
+    	 console.NoteLn( "* Disconnect from INDI server " + p_serverHostName + ", port=" + String( p_serverPort ) );
          indiClient->disconnectServer();
+      }
       indiClient.Destroy();
       return true;
    }

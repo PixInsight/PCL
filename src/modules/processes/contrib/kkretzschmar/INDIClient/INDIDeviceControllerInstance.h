@@ -64,7 +64,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-class INDIDeviceControllerInstance : public ProcessImplementation, IINDIDeviceControllerInstance
+class INDIDeviceControllerInstance : public ProcessImplementation, public IINDIDeviceControllerInstance
 {
 public:
 

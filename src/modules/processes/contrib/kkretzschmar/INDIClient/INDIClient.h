@@ -162,11 +162,11 @@ protected:
    void newText( ITextVectorProperty* );
    void newLight( ILightVectorProperty* );
 
-private:
+public:
 
    IINDIDeviceControllerInstance* m_instance;
    IINDIDeviceControllerInstance* m_scriptInstance;
-
+private:
    void runOnPropertyTable( IProperty*, const ArrayOperator<INDIPropertyListItem>*, PropertyFlagType = Idle );
 };
 

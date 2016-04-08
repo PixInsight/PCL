@@ -118,6 +118,7 @@ public:
    ICFServerFileNameTemplate( MetaProcess* );
 
    virtual IsoString Id() const;
+   virtual String DefaultValue() const;
 };
 
 extern ICFServerFileNameTemplate* TheICFServerFileNameTemplateParameter;

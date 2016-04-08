@@ -80,7 +80,15 @@ public:
    virtual size_type ParameterLength( const MetaParameter*, size_type tableRow ) const;
 
    bool ValidateDevice( bool throwErrors = true ) const;
+
    void SendDeviceProperties( bool asynchronous = true ) const;
+
+   String ServerFileName( const String& fileNameTemplate ) const;
+
+   String ServerFileName() const
+   {
+      return ServerFileName( p_serverFileNameTemplate );
+   }
 
    static String UploadModePropertyString( int uploadModeIdx );
    static String CCDFrameTypePropertyString( int frameTypeIdx );
@@ -99,6 +107,8 @@ private:
    double   p_exposureDelay;
    int32    p_exposureCount;
    String   p_newImageIdTemplate;
+
+   int      m_exposureNumber;
 
    friend class INDICCDFrameInterface;
 };

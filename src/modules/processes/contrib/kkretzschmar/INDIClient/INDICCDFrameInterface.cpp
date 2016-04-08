@@ -213,7 +213,7 @@ ProcessImplementation* INDICCDFrameInterface::NewProcess() const
    instance->p_deviceName = m_device;
    instance->p_uploadMode = GUI->UploadMode_Combo.CurrentItem();
    instance->p_serverUploadDirectory = GUI->UploadDir_Edit.Text().Trimmed();
-   //instance->p_serverFileNameTemplate = ; // ### TODO
+   instance->p_serverFileNameTemplate = GUI->ServerFileNameTemplate_Edit.Text().Trimmed();
    instance->p_frameType = GUI->CCDFrameType_Combo.CurrentItem();
    instance->p_binningX = GUI->CCDBinX_Combo.CurrentItem() + 1;
    instance->p_binningY = GUI->CCDBinY_Combo.CurrentItem() + 1;
@@ -250,6 +250,7 @@ bool INDICCDFrameInterface::ImportProcess( const ProcessImplementation& p )
       {
          m_device = r->p_deviceName;
          r->SendDeviceProperties();
+         GUI->ServerFileNameTemplate_Edit.SetText( r->p_serverFileNameTemplate );
          GUI->ExposureTime_NumericEdit.SetValue( r->p_exposureTime );
          GUI->ExposureDelay_NumericEdit.SetValue( r->p_exposureDelay );
          GUI->ExposureCount_SpinBox.SetValue( r->p_exposureCount );
@@ -267,7 +268,7 @@ bool INDICCDFrameInterface::ImportProcess( const ProcessImplementation& p )
 INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
 {
    int emWidth = w.Font().Width( 'm' );
-   int labelWidth1 = w.Font().Width( "Server upload directory:" ) + emWidth;
+   int labelWidth1 = w.Font().Width( "Server file name template:" ) + emWidth;
    int editWidth1 = 5*emWidth;
    int editWidth2 = 8*emWidth;
 
@@ -397,13 +398,12 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
       "<p>Upload to client: The frame will be uploaded to the client and displayed on a new image window. "
       "The frame will not be stored on the client's file system.</p>"
       "<p>Upload to server: The frame will be stored on the file system of the INDI server. "
-      "The upload directory can be specified. "
+      "The server upload directory and file name template can be specified. "
       "The frame will not be uploaded to the client.</p>"
       "<p>Upload both: The frame will be stored on the server's file system, then uploaded to the client and displayed.</p>";
 
    UploadMode_Label.SetText( "Upload mode:" );
    UploadMode_Label.SetToolTip( uploadModeToolTipText );
-
    UploadMode_Label.SetMinWidth( labelWidth1 );
    UploadMode_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    UploadMode_Label.Disable();
@@ -421,13 +421,17 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    UploadMode_HSizer.Add( UploadMode_Combo );
    UploadMode_HSizer.AddStretch();
 
+   const char* uploadDirToolTipText =
+      "<p>The directory where acquired CCD frames will be stored on the INDI server.</p>";
+
    UploadDir_Label.SetText( "Server upload directory:" );
-   UploadDir_Label.SetToolTip( "<p>The directory where acquired CCD frames will be stored on the INDI server.</p>" );
+   UploadDir_Label.SetToolTip( uploadDirToolTipText );
    UploadDir_Label.SetMinWidth( labelWidth1 );
    UploadDir_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    UploadDir_Label.Disable();
 
    UploadDir_Edit.SetReadOnly();
+   UploadDir_Edit.SetToolTip( uploadDirToolTipText );
 
    UploadDir_PushButton.SetText( "Set" );
    UploadDir_PushButton.OnClick( (Button::click_event_handler)&INDICCDFrameInterface::e_Click, w );
@@ -439,6 +443,71 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    UploadDir_HSizer.AddSpacing( 4 );
    UploadDir_HSizer.Add( UploadDir_PushButton );
 
+   const char* serverFileNameTemplateToolTipText =
+      "<p>A template to build the file name prefixes of CCD frames stored on the INDI server.</p>"
+      "<p>The template can be any valid text suitable to specify file names on the server's filesystem, and may include "
+      "one or more <i>template specifiers</i>. Template specifiers are replaced automatically with selected tokens when "
+      "CCD frames are acquired. Supported template specifiers are the following:</p>"
+      "<p><table border=\"1\" cellspacing=\"1\" cellpadding=\"4\">"
+      "<tr>"
+         "<td><i>Template specifier</i></td>"
+         "<td width=\"90%\"><i>Will be replaced by</i></td>"
+      "</tr>"
+      "<tr>"
+         "<td>%f</td>"
+         "<td>Frame type (light, flat, dark, bias).</td>"
+      "</tr>"
+      "<tr>"
+         "<td>%b</td>"
+         "<td>CCD binning with the format HxV, where H and V are, respectively, the horizontal and vertical binning factors.</td>"
+      "</tr>"
+      "<tr>"
+         "<td>%e</td>"
+         "<td>Exposure time in seconds.</td>"
+      "</tr>"
+      "<tr>"
+         "<td>%F</td>"
+         "<td>Filter name</td>"
+      "</tr>"
+      "<tr>"
+         "<td>%T</td>"
+         "<td>CCD temperature in degrees Celsius.</td>"
+      "</tr>"
+      "<tr>"
+         "<td>%t</td>"
+         "<td>Acquisition date and time in the UTC time scale, ISO 8601 format.</td>"
+      "</tr>"
+      "<tr>"
+         "<td>%d</td>"
+         "<td>Acquisition date in the UTC time scale, yyyy-mm-dd format.</td>"
+      "</tr>"
+      "<tr>"
+         "<td>%n</td>"
+         "<td>The frame number starting from one, with three digits and left-padded with zeros.</td>"
+      "</tr>"
+      "<tr>"
+         "<td>%u</td>"
+         "<td>A universally unique identifier (UUID) in canonical form (36 characters).</td>"
+      "</tr>"
+      "</table></p>"
+      "<p>For example, the default template %f_B%b_E%e_%n would produce the following server file name:</p>"
+      "<p>LIGHT_B2x2_E300.00_002.fits</p>"
+      "<p>for the second light frame of a series with exposure time of 300 seconds at binning 2x2.</p>";
+
+   ServerFileNameTemplate_Label.SetText( "Server file name template:" );
+   ServerFileNameTemplate_Label.SetToolTip( serverFileNameTemplateToolTipText );
+   ServerFileNameTemplate_Label.SetMinWidth( labelWidth1 );
+   ServerFileNameTemplate_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   ServerFileNameTemplate_Label.Disable();
+
+   ServerFileNameTemplate_Edit.SetToolTip( serverFileNameTemplateToolTipText );
+   ServerFileNameTemplate_Edit.SetText( TheICFServerFileNameTemplateParameter->DefaultValue() );
+   ServerFileNameTemplate_Edit.Disable();
+
+   ServerFileNameTemplate_HSizer.SetSpacing( 4 );
+   ServerFileNameTemplate_HSizer.Add( ServerFileNameTemplate_Label );
+   ServerFileNameTemplate_HSizer.Add( ServerFileNameTemplate_Edit, 100 );
+
    CCDProperties_Sizer.SetSpacing( 4 );
    CCDProperties_Sizer.Add( CCDTemp_HSizer );
    CCDProperties_Sizer.Add( CCDBinX_HSizer );
@@ -446,6 +515,7 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    CCDProperties_Sizer.Add( CCDFrameType_HSizer );
    CCDProperties_Sizer.Add( UploadMode_HSizer );
    CCDProperties_Sizer.Add( UploadDir_HSizer );
+   CCDProperties_Sizer.Add( ServerFileNameTemplate_HSizer );
 
    CCDProperties_Control.SetSizer( CCDProperties_Sizer );
 
@@ -645,6 +715,8 @@ __device_found:
 
             GUI->UploadDir_Label.Enable();
             GUI->UploadDir_PushButton.Enable();
+            GUI->ServerFileNameTemplate_Label.Enable();
+            GUI->ServerFileNameTemplate_Edit.Enable();
          }
          else
          {
@@ -652,6 +724,8 @@ __device_found:
 
             GUI->UploadDir_Label.Disable();
             GUI->UploadDir_PushButton.Disable();
+            GUI->ServerFileNameTemplate_Label.Disable();
+            GUI->ServerFileNameTemplate_Edit.Disable();
          }
       }
       if ( uploadModeIndex >= 0 )

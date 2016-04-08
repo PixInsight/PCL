@@ -65,6 +65,8 @@
 #include <pcl/SpinStatus.h>
 #include <pcl/StdStatus.h>
 
+#include <time.h>
+
 namespace pcl
 {
 
@@ -82,7 +84,8 @@ INDICCDFrameInstance::INDICCDFrameInstance( const MetaProcess* m ) :
    p_exposureTime( TheICFExposureTimeParameter->DefaultValue() ),
    p_exposureDelay( TheICFExposureDelayParameter->DefaultValue() ),
    p_exposureCount( TheICFExposureCountParameter->DefaultValue() ),
-   p_newImageIdTemplate( TheICFNewImageIdTemplateParameter->DefaultValue() )
+   p_newImageIdTemplate( TheICFNewImageIdTemplateParameter->DefaultValue() ),
+   m_exposureNumber( 0 )
 {
 }
 
@@ -233,6 +236,73 @@ void INDICCDFrameInstance::SendDeviceProperties( bool asynchronous ) const
    }
 }
 
+String INDICCDFrameInstance::ServerFileName( const String& fileNameTemplate ) const
+{
+   INDIDeviceControllerInstance& instance = TheINDIDeviceControllerInterface->instance;
+   INDIPropertyListItem CCDProp;
+
+   String fileName;
+   for ( String::const_iterator i = fileNameTemplate.Begin(); i < fileNameTemplate.End(); ++i )
+      switch ( *i )
+      {
+      case '%':
+         if ( ++i < fileNameTemplate.End() )
+            switch ( *i )
+            {
+            case 'f':
+               fileName << CCDFrameTypePrefix( p_frameType );
+               break;
+            case 'b':
+               fileName << String().Format( "%dx%d", p_binningX, p_binningY );
+               break;
+            case 'e':
+               fileName << String().Format( "%.3lf", p_exposureTime );
+               break;
+            case 'F':
+               if ( instance.getINDIPropertyItem( p_deviceName, "FILTER_SLOT", "FILTER_SLOT_VALUE", CCDProp ) )
+                  if ( instance.getINDIPropertyItem( p_deviceName, "FILTER_NAME", "FILTER_SLOT_NAME_" + CCDProp.PropertyValue, CCDProp ) )
+                     fileName << CCDProp.PropertyValue;
+               break;
+            case 'T':
+               if ( instance.getINDIPropertyItem( p_deviceName, "CCD_TEMPERATURE", "CCD_TEMPERATURE_VALUE", CCDProp ) )
+                  fileName << String().Format( "%+.2lf", CCDProp.PropertyValue.ToDouble() );
+               break;
+            case 't':
+            case 'd':
+               {
+                  time_t t0 = ::time( nullptr );
+                  const tm* t = ::gmtime( &t0 );
+                  fileName << String().Format( "%d-%02d-%02d", t->tm_year+1900, t->tm_mon+1, t->tm_mday );
+                  if ( *i == 't' )
+                     fileName << String().Format( "T%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec );
+               }
+               break;
+            case 'n':
+               fileName << String().Format( "%03d", m_exposureNumber+1 );
+               break;
+            case 'u':
+               fileName << IsoString::UUID();
+               break;
+            case '%':
+               fileName << '%';
+               break;
+            default:
+               break;
+            }
+         break;
+
+      default:
+         fileName << *i;
+         break;
+      }
+
+   fileName.Trim();
+   if ( !fileName.IsEmpty() )
+      return fileName;
+
+   return ServerFileName( TheICFServerFileNameTemplateParameter->DefaultValue() );
+}
+
 bool INDICCDFrameInstance::ExecuteGlobal()
 {
 
@@ -255,7 +325,6 @@ bool INDICCDFrameInstance::ExecuteGlobal()
 
    try
    {
-
       ValidateDevice();
 
       SendDeviceProperties( false/*asynchronous*/ );
@@ -271,9 +340,9 @@ bool INDICCDFrameInstance::ExecuteGlobal()
       Console console;
       console.EnableAbort();
 
-      for ( int num = 0; num < p_exposureCount; ++num )
+      for ( m_exposureNumber = 0; m_exposureNumber < p_exposureCount; ++m_exposureNumber )
       {
-         if ( num > 0 )
+         if ( m_exposureNumber > 0 )
             if ( p_exposureDelay > 0 )
             {
                StandardStatus status;
@@ -290,16 +359,14 @@ bool INDICCDFrameInstance::ExecuteGlobal()
                monitor.Complete();
             }
 
-         console.WriteLn( String().Format( "<end><cbr>Exposure %d of %d (%.3gs)", num+1, p_exposureCount, p_exposureTime ) );
+         console.WriteLn( String().Format( "<end><cbr>Exposure %d of %d (%.3gs)", m_exposureNumber+1, p_exposureCount, p_exposureTime ) );
 
          instance->ResetDownloadedImage();
 
-         // ### TODO: Implement a file name template available as a process parameter.
          newPropertyListItem.Property = "UPLOAD_SETTINGS";
          newPropertyListItem.Element = "UPLOAD_PREFIX";
          newPropertyListItem.PropertyType = "INDI_TEXT";
-         newPropertyListItem.NewPropertyValue = CCDFrameTypePrefix( p_frameType )
-                  + String().Format( "_B%dx%d_E%4.3f_%03d", p_binningX, p_binningY, p_exposureTime, num + 1 );
+         newPropertyListItem.NewPropertyValue = ServerFileName();
          instance->sendNewPropertyValue( newPropertyListItem, false/*async*/ );
 
          newPropertyListItem.Property = "CCD_EXPOSURE";
@@ -366,10 +433,12 @@ bool INDICCDFrameInstance::ExecuteGlobal()
          }
 
          // print latest INDI server log entry
-         console.WriteLn(String().Format("<end><cbr><br>===== Latest INDI server log entry:"));
-         console.WriteLn(String().Format("%s",IsoString(instance->CurrentServerMessage()).c_str()));
-
-         console.WriteLn();
+         if ( !instance->CurrentServerMessage().IsEmpty() )
+         {
+            console.NoteLn( "<end><cbr><br>* Latest INDI server log entry:" );
+            console.NoteLn( instance->CurrentServerMessage() );
+            console.WriteLn();
+         }
 
          if ( serverSendsImage )
          {

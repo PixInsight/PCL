@@ -143,6 +143,11 @@ IsoString ICFServerFileNameTemplate::Id() const
    return "serverFileNameTemplate";
 }
 
+String ICFServerFileNameTemplate::DefaultValue() const
+{
+   return "%f_B%b_E%e_%n";
+}
+
 // ----------------------------------------------------------------------------
 
 ICFFrameType::ICFFrameType( MetaProcess* P ) : MetaEnumeration( P )

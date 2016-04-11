@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Blink Process Module Version 01.02.02.0218
+// Standard Blink Process Module Version 01.02.02.0225
 // ----------------------------------------------------------------------------
-// BlinkModule.h - Released 2016/04/05 08:54:27 UTC
+// BlinkModule.h - Released 2016/04/11 10:12:47 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
@@ -85,4 +85,4 @@ public:
 #endif   // __BlinkModule_h
 
 // ----------------------------------------------------------------------------
-// EOF BlinkModule.h - Released 2016/04/05 08:54:27 UTC
+// EOF BlinkModule.h - Released 2016/04/11 10:12:47 UTC

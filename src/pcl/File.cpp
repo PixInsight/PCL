@@ -673,25 +673,27 @@ void File::Open( const String& filePath, FileModes mode )
 
 #endif // __PCL_WINDOWS
 
-   m_filePath = FullPath( filePath );
+   m_filePath = filePath;
    m_fileMode = mode;
 
    if ( !IsValidHandle( m_fileHandle ) )
    {
 #ifdef __PCL_WINDOWS
       throw File::Error( FilePath(), (mode.IsFlagSet( FileMode::Create ) ?
-                                     "Unable to create file: " : "Unable to open file: ")
-                                     + WinErrorMessage() );
+                                       "Unable to create file: " : "Unable to open file: ")
+                                       + WinErrorMessage() );
 #else
       if ( errno != 0 )
          throw File::Error( FilePath(), (mode.IsFlagSet( FileMode::Create ) ?
-                                        "Unable to create file: " : "Unable to open file: ")
-                                        + String( ::strerror( errno ) ) );
+                                       "Unable to create file: " : "Unable to open file: ")
+                                       + String( ::strerror( errno ) ) );
       if ( mode.IsFlagSet( FileMode::Create ) )
          throw File::Error( FilePath(), "Unable to create file" );
       throw File::Error( FilePath(), "Unable to open file" );
 #endif
    }
+
+   m_filePath = FullPath( filePath ); // ### N.B.: FullPath() may throw on Windows
 }
 
 // ----------------------------------------------------------------------------
@@ -1028,7 +1030,7 @@ static String WinLongPathName( const String& path )
    {
       String longPath;
       longPath.Reserve( n );
-      DWORD n1 = ::GetLongPathNameW( (LPCWSTR)path.c_str(), (LPWSTR)longPath.c_str(), n );
+      DWORD n1 = ::GetLongPathNameW( (LPCWSTR)path.c_str(), (LPWSTR)longPath.Begin(), n );
       if ( n1 != 0 && n1 <= n )
       {
          longPath.SetLength( n1 );
@@ -2004,7 +2006,7 @@ String File::FullPath( const String& filePath )
    String fullPath;
    fullPath.Reserve( n );
    LPWSTR dum;
-   DWORD n1 = ::GetFullPathNameW( (LPCWSTR)winPath.c_str(), n, (LPWSTR)fullPath.c_str(), &dum );
+   DWORD n1 = ::GetFullPathNameW( (LPCWSTR)winPath.c_str(), n, (LPWSTR)fullPath.Begin(), &dum );
    if ( n1 != 0 && n1 <= n )
    {
       fullPath.SetLength( n1 );
@@ -2048,7 +2050,7 @@ String File::SystemTempDirectory()
    {
       String temp;
       temp.Reserve( n );
-      DWORD n1 = ::GetTempPathW( n, (LPWSTR)temp.c_str() );
+      DWORD n1 = ::GetTempPathW( n, (LPWSTR)temp.Begin() );
       if ( n1 != 0 && n1 <= n )
       {
          temp.SetLength( n1 );

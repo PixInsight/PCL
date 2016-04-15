@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.03.0102
+// Standard INDIClient Process Module Version 01.00.04.0108
 // ----------------------------------------------------------------------------
-// INDIDeviceControllerInstance.h - Released 2016/03/18 13:15:37 UTC
+// INDIDeviceControllerInstance.h - Released 2016/04/15 15:37:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -183,6 +183,7 @@ private:
    friend class INDIDeviceControllerInterface;
    friend class INDICCDFrameInstance;
    friend class INDICCDFrameInterface;
+   friend class AbstractINDICCDFrameExecution;
    friend class INDIMountInterface;
 };
 
@@ -194,4 +195,4 @@ private:
 #endif   // __INDIDeviceControllerInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIDeviceControllerInstance.h - Released 2016/03/18 13:15:37 UTC
+// EOF INDIDeviceControllerInstance.h - Released 2016/04/15 15:37:39 UTC

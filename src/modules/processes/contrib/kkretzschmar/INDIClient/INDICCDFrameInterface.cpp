@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.03.0102
+// Standard INDIClient Process Module Version 01.00.04.0108
 // ----------------------------------------------------------------------------
-// INDICCDFrameInterface.cpp - Released 2016/03/18 13:15:37 UTC
+// INDICCDFrameInterface.cpp - Released 2016/04/15 15:37:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -157,6 +157,7 @@ private:
 INDICCDFrameInterface::INDICCDFrameInterface() :
    ProcessInterface(),
    m_device(),
+   m_execution( nullptr ),
    GUI( nullptr )
 {
    TheINDICCDFrameInterface = this;
@@ -562,10 +563,35 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    ExposureCount_Sizer.Add( ExposureCount_SpinBox );
    ExposureCount_Sizer.AddStretch();
 
-   FrameAcquisition_Sizer.SetSpacing( 4 );
-   FrameAcquisition_Sizer.Add( ExposureTime_NumericEdit );
-   FrameAcquisition_Sizer.Add( ExposureDelay_NumericEdit );
-   FrameAcquisition_Sizer.Add( ExposureCount_Sizer );
+   FrameAcquisitionLeft_Sizer.SetSpacing( 4 );
+   FrameAcquisitionLeft_Sizer.Add( ExposureTime_NumericEdit );
+   FrameAcquisitionLeft_Sizer.Add( ExposureDelay_NumericEdit );
+   FrameAcquisitionLeft_Sizer.Add( ExposureCount_Sizer );
+
+   StartExposure_PushButton.SetText( "Start" );
+   StartExposure_PushButton.SetIcon( w.ScaledResource( ":/icons/play.png" ) );
+   StartExposure_PushButton.OnClick( (Button::click_event_handler)&INDICCDFrameInterface::e_Click, w );
+
+   StartExposure_Sizer.Add( StartExposure_PushButton );
+   StartExposure_Sizer.AddStretch();
+
+   CancelExposure_PushButton.SetText( "Cancel" );
+   CancelExposure_PushButton.SetIcon( w.ScaledResource( ":/icons/stop.png" ) );
+   CancelExposure_PushButton.OnClick( (Button::click_event_handler)&INDICCDFrameInterface::e_Click, w );
+   CancelExposure_PushButton.Disable();
+
+   CancelExposure_Sizer.Add( CancelExposure_PushButton );
+   CancelExposure_Sizer.AddStretch();
+
+   FrameAcquisitionRight_Sizer.SetSpacing( 4 );
+   FrameAcquisitionRight_Sizer.Add( StartExposure_Sizer );
+   FrameAcquisitionRight_Sizer.Add( CancelExposure_Sizer );
+   FrameAcquisitionRight_Sizer.Add( ExposureInfo_Label );
+
+   FrameAcquisition_Sizer.SetSpacing( 8 );
+   FrameAcquisition_Sizer.Add( FrameAcquisitionLeft_Sizer );
+   FrameAcquisition_Sizer.Add( FrameAcquisitionRight_Sizer );
+   FrameAcquisition_Sizer.AddStretch();
 
    FrameAcquisition_Control.SetSizer( FrameAcquisition_Sizer );
 
@@ -842,6 +868,118 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
    }
 }
 
+class INDICCDFrameInterfaceExecution : public AbstractINDICCDFrameExecution
+{
+public:
+
+   INDICCDFrameInterfaceExecution( INDICCDFrameInterface* iface ) :
+      AbstractINDICCDFrameExecution( *dynamic_cast<INDICCDFrameInstance*>( iface->NewProcess() ) ),
+      m_iface( iface ),
+      m_instanceAuto( &m_instance ),
+      m_abortRequested( false )
+   {
+   }
+
+   virtual void Abort()
+   {
+      m_abortRequested = true;
+   }
+
+private:
+
+   INDICCDFrameInterface*            m_iface;
+   AutoPointer<INDICCDFrameInstance> m_instanceAuto;
+   bool                              m_abortRequested;
+
+   virtual void StartAcquisitionEvent()
+   {
+      m_iface->m_execution = this;
+      m_iface->GUI->ExposureInfo_Label.Clear();
+      m_iface->GUI->CancelExposure_PushButton.Enable();
+   }
+
+   virtual void NewExposureEvent( int expNum, int expCount )
+   {
+      m_iface->ProcessEvents();
+   }
+
+   virtual void StartExposureDelayEvent( double totalDelayTime )
+   {
+      m_iface->GUI->ExposureInfo_Label.SetText( String().Format( "Waiting for %.3gs", totalDelayTime ) );
+      m_iface->ProcessEvents();
+   }
+
+   virtual void ExposureDelayEvent( double delayTime )
+   {
+      if ( m_abortRequested )
+         AbstractINDICCDFrameExecution::Abort();
+
+      m_iface->ProcessEvents();
+   }
+
+   virtual void EndExposureDelayEvent()
+   {
+      m_iface->GUI->ExposureInfo_Label.Clear();
+      m_iface->ProcessEvents();
+   }
+
+   virtual void StartExposureEvent( int expNum, int expCount, double expTime )
+   {
+      m_iface->ProcessEvents();
+   }
+
+   virtual void ExposureEvent( int expNum, int expCount, double expTime )
+   {
+      if ( m_abortRequested )
+         AbstractINDICCDFrameExecution::Abort();
+
+      m_iface->GUI->ExposureInfo_Label.SetText( String().Format( "Exposure %d of %d: %.3gs", expNum+1, expCount, expTime ) );
+      m_iface->ProcessEvents();
+   }
+
+   virtual void ExposureErrorEvent( const String& errMsg )
+   {
+      m_iface->GUI->ExposureInfo_Label.SetText( "*** Error: " + errMsg + '.' );
+      m_iface->ProcessEvents();
+   }
+
+   virtual void EndExposureEvent( int expNum )
+   {
+      m_iface->GUI->ExposureInfo_Label.Clear();
+      m_iface->ProcessEvents();
+   }
+
+   virtual void WaitingForServerEvent()
+   {
+      if ( m_abortRequested )
+         AbstractINDICCDFrameExecution::Abort();
+
+      m_iface->GUI->ExposureInfo_Label.SetText( "Waiting for INDI server" );
+      m_iface->ProcessEvents();
+   }
+
+   virtual void NewFrameEvent( ImageWindow& window )
+   {
+      window.ZoomToFit( false/*allowZoom*/ );
+      window.Show();
+      m_iface->ProcessEvents();
+   }
+
+   virtual void EndAcquisitionEvent()
+   {
+      m_iface->m_execution = nullptr;
+      m_iface->GUI->ExposureInfo_Label.Clear();
+      m_iface->GUI->CancelExposure_PushButton.Disable();
+      m_iface->ProcessEvents();
+   }
+
+   virtual void AbortEvent()
+   {
+      EndAcquisitionEvent();
+      m_iface->GUI->ExposureInfo_Label.SetText( "Aborted" );
+   }
+};
+
 void INDICCDFrameInterface::e_Click( Button& sender, bool checked )
 {
    if ( TheINDIDeviceControllerInterface == nullptr )
@@ -871,6 +1009,15 @@ void INDICCDFrameInterface::e_Click( Button& sender, bool checked )
          instance.sendNewPropertyValue( newPropertyListItem, true/*isAsynchCall*/ );
       }
    }
+   else if ( sender == GUI->StartExposure_PushButton )
+   {
+      INDICCDFrameInterfaceExecution( this ).Perform();
+   }
+   else if ( sender == GUI->CancelExposure_PushButton )
+   {
+      if ( m_execution != nullptr )
+         m_execution->Abort();
+   }
 }
 
 // ----------------------------------------------------------------------------
@@ -878,4 +1025,4 @@ void INDICCDFrameInterface::e_Click( Button& sender, bool checked )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInterface.cpp - Released 2016/03/18 13:15:37 UTC
+// EOF INDICCDFrameInterface.cpp - Released 2016/04/15 15:37:39 UTC

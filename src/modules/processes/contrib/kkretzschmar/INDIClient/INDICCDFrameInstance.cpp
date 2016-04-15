@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.03.0102
+// Standard INDIClient Process Module Version 01.00.04.0108
 // ----------------------------------------------------------------------------
-// INDICCDFrameInstance.cpp - Released 2016/03/18 13:15:37 UTC
+// INDICCDFrameInstance.cpp - Released 2016/04/15 15:37:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -297,245 +297,109 @@ String INDICCDFrameInstance::ServerFileName( const String& fileNameTemplate ) co
    return ServerFileName( TheICFServerFileNameTemplateParameter->DefaultValue() );
 }
 
+class INDICCDFrameInstanceExecution : public AbstractINDICCDFrameExecution
+{
+public:
+
+   INDICCDFrameInstanceExecution( INDICCDFrameInstance& instance ) :
+      AbstractINDICCDFrameExecution( instance )
+   {
+      m_monitor.SetCallback( &m_status );
+      m_waitMonitor.SetCallback( &m_spin );
+   }
+
+private:
+
+   Console        m_console;
+   StandardStatus m_status;
+   StatusMonitor  m_monitor;
+   SpinStatus     m_spin;
+   StatusMonitor  m_waitMonitor;
+
+   virtual void StartAcquisitionEvent()
+   {
+      m_console.EnableAbort();
+   }
+
+   virtual void NewExposureEvent( int expNum, int expCount )
+   {
+   }
+
+   virtual void StartExposureDelayEvent( double totalDelayTime )
+   {
+      m_monitor.Initialize( String().Format( "Waiting for %.3gs", totalDelayTime ), RoundInt( totalDelayTime*100 ) );
+   }
+
+   virtual void ExposureDelayEvent( double delayTime )
+   {
+      m_monitor += size_type( RoundInt( delayTime*100 ) ) - m_monitor.Count();
+   }
+
+   virtual void EndExposureDelayEvent()
+   {
+      m_monitor.Complete();
+   }
+
+   virtual void StartExposureEvent( int expNum, int expCount, double expTime )
+   {
+      if ( m_waitMonitor.IsInitialized() )
+         m_waitMonitor.Complete();
+      m_monitor.Initialize( String().Format( "<end><cbr>Exposure %d of %d (%.3gs)", expNum+1, expCount, expTime ), RoundInt( expTime*100 ) );
+   }
+
+   virtual void ExposureEvent( int expNum, int expCount, double expTime )
+   {
+      m_monitor += size_type( RoundInt( expTime*100 ) ) - m_monitor.Count();
+   }
+
+   virtual void ExposureErrorEvent( const String& errMsg )
+   {
+      m_console.CriticalLn( "<end><cbr>*** Error: " + errMsg + '.' );
+   }
+
+   virtual void EndExposureEvent( int expNum )
+   {
+      m_monitor.Complete();
+
+      // Print latest INDI server message
+      if ( !DeviceControllerInstance().CurrentServerMessage().IsEmpty() )
+      {
+         m_console.NoteLn( "<end><cbr><br>* Latest INDI server log entry:" );
+         m_console.NoteLn( DeviceControllerInstance().CurrentServerMessage() );
+         m_console.WriteLn();
+      }
+   }
+
+   virtual void WaitingForServerEvent()
+   {
+      if ( m_waitMonitor.IsInitialized() )
+         ++m_waitMonitor;
+      else
+         m_waitMonitor.Initialize( "Waiting for INDI server" );
+   }
+
+   virtual void NewFrameEvent( ImageWindow& window )
+   {
+      window.ZoomToFit( false/*allowZoom*/ );
+      window.Show();
+   }
+
+   virtual void EndAcquisitionEvent()
+   {
+      m_console.DisableAbort();
+      m_console.NoteLn( String().Format( "<end><cbr><br>===== INDICCDFrame: %d succeeded, %d failed =====",
+                                       SuccessCount(), ErrorCount() ) );
+   }
+
+   virtual void AbortEvent()
+   {
+   }
+};
+
 bool INDICCDFrameInstance::ExecuteGlobal()
 {
-   if ( TheINDIDeviceControllerInterface == nullptr )
-      throw Error( "The INDI device controller has not been initialized" );
-
-   if ( p_deviceName.IsEmpty() )
-      throw Error( "No device has been specified" );
-
-   INDIDeviceControllerInstance& instance = TheINDIDeviceControllerInterface->instance;
-   if ( instance.o_devices.IsEmpty() )
-      throw Error( "No INDI device has been connected." );
-
-   INDINewPropertyListItem newPropertyListItem;
-   newPropertyListItem.Device = p_deviceName;
-
-   try
-   {
-      ValidateDevice();
-
-      SendDeviceProperties( false/*asynchronous*/ );
-
-      INDIPropertyListItem CCDProp;
-      bool serverSendsImage = true;
-      if ( instance.getINDIPropertyItem( p_deviceName, "UPLOAD_MODE", "UPLOAD_LOCAL", CCDProp ) )
-         serverSendsImage = CCDProp.PropertyValue != "ON";
-
-      int successCount = 0;
-      int errorCount = 0;
-
-      Console console;
-      console.EnableAbort();
-
-      for ( m_exposureNumber = 0; m_exposureNumber < p_exposureCount; ++m_exposureNumber )
-      {
-         if ( m_exposureNumber > 0 )
-            if ( p_exposureDelay > 0 )
-            {
-               StandardStatus status;
-               StatusMonitor monitor;
-               monitor.SetCallback( &status );
-               monitor.Initialize( String().Format( "Waiting for %.3gs", p_exposureDelay ), RoundInt( p_exposureDelay*100 ) );
-
-               for ( ElapsedTime T; T() < p_exposureDelay; )
-               {
-                  monitor += size_type( RoundInt( T()*100 ) ) - monitor.Count();
-                  pcl::Sleep( 50 );
-               }
-
-               monitor.Complete();
-            }
-
-         console.WriteLn( String().Format( "<end><cbr>Exposure %d of %d (%.3gs)", m_exposureNumber+1, p_exposureCount, p_exposureTime ) );
-
-         instance.ResetDownloadedImage();
-
-         newPropertyListItem.Property = "UPLOAD_SETTINGS";
-         newPropertyListItem.Element = "UPLOAD_PREFIX";
-         newPropertyListItem.PropertyType = "INDI_TEXT";
-         newPropertyListItem.NewPropertyValue = ServerFileName();
-         instance.sendNewPropertyValue( newPropertyListItem, false/*async*/ );
-
-         newPropertyListItem.Property = "CCD_EXPOSURE";
-         newPropertyListItem.Element = "CCD_EXPOSURE_VALUE";
-         newPropertyListItem.PropertyType = "INDI_NUMBER";
-         newPropertyListItem.NewPropertyValue = String( p_exposureTime );
-         if ( !instance.sendNewPropertyValue( newPropertyListItem, true/*async*/ ) )
-         {
-            console.CriticalLn( "<end><cbr>*** Error: Failure to send new property values to INDI server." );
-            ++errorCount;
-            continue; // ### TODO: Implement a p_onError process parameter
-         }
-
-         StandardStatus status;
-         StatusMonitor monitor;
-         monitor.SetCallback( &status );
-
-         SpinStatus spin;
-         StatusMonitor waitMonitor;
-         waitMonitor.SetCallback( &spin );
-
-         ElapsedTime T;
-
-         for ( bool inExposure = false; ; )
-         {
-            if ( instance.getInternalAbortFlag() )
-               throw ProcessAborted();
-
-            if ( instance.getINDIPropertyItem( p_deviceName, "CCD_EXPOSURE", "CCD_EXPOSURE_VALUE", CCDProp, false/*formatted*/ ) )
-               if ( CCDProp.PropertyState == IPS_BUSY )
-               {
-                  if ( inExposure )
-                  {
-                     // Exposure running
-                     double t = 0;
-                     CCDProp.PropertyValue.TryToDouble( t );
-                     monitor += size_type( RoundInt( (p_exposureTime - t)*100 ) ) - monitor.Count(); // CCD_EXPOSURE_VALUE is the remaining exp. time
-                  }
-                  else
-                  {
-                     // Exposure started
-                     inExposure = true;
-                     monitor.Initialize( "Performing exposure", RoundInt( p_exposureTime*100 ) );
-                  }
-               }
-               else
-               {
-                  if ( inExposure )
-                  {
-                     // Exposure completed
-                     monitor.Complete();
-                     ++successCount;
-                     break;
-                  }
-
-                  if ( T() > 1 )
-                     if ( waitMonitor.IsInitialized() )
-                        ++waitMonitor;
-                     else
-                        waitMonitor.Initialize( "Waiting for INDI server" );
-               }
-
-            pcl::Sleep( 100 );
-         }
-
-         // print latest INDI server log entry
-         if ( !instance.CurrentServerMessage().IsEmpty() )
-         {
-            console.NoteLn( "<end><cbr><br>* Latest INDI server log entry:" );
-            console.NoteLn( instance.CurrentServerMessage() );
-            console.WriteLn();
-         }
-
-         if ( serverSendsImage )
-         {
-            for ( T.Reset(); !instance.HasDownloadedImage(); )
-            {
-               if ( T() > 1 )
-                  if ( waitMonitor.IsInitialized() )
-                     ++waitMonitor;
-                  else
-                     waitMonitor.Initialize( "Waiting for INDI server" );
-
-               pcl::Sleep( 50 );
-            }
-
-            String filePath = instance.DownloadedImagePath();
-            FileFormat format( File::ExtractExtension( filePath ), true/*read*/, false/*write*/ );
-            FileFormatInstance file( format );
-
-            ImageDescriptionArray images;
-            if ( !file.Open( images, filePath, "raw cfa up-bottom signed-is-physical" ) )
-               throw CatchedException();
-            if ( images.IsEmpty() )
-               throw Error( filePath + ": Empty image file." );
-            if ( images.Length() > 1 )
-               console.NoteLn( "<end><cbr>* " + filePath + String().Format( ": Ignoring %u additional image(s) in input file.", images.Length()-1 ) );
-            if ( !images[0].info.supported || images[0].info.NumberOfSamples() == 0 )
-               throw Error( filePath + ": Invalid or unsupported image." );
-
-            ImageWindow window( 1, 1, 1,
-                              images[0].options.bitsPerSample,
-                              images[0].options.ieeefpSampleFormat,
-                              false/*color*/,
-                              true/*initialProcessing*/,
-                              p_newImageIdTemplate );
-            ImageVariant image = window.MainView().Image();
-            if ( !file.ReadImage( image ) )
-               throw CatchedException();
-
-            if ( format.CanStoreProperties() )
-            {
-               View view = window.MainView();
-               ImagePropertyDescriptionArray properties = file.Properties();
-               for ( auto property : properties )
-               {
-                  Variant value = file.ReadProperty( property.id );
-                  if ( value.IsValid() )
-                     view.SetPropertyValue( property.id, value, false/*notify*/,
-                                          ViewPropertyAttribute::Storable|ViewPropertyAttribute::Permanent );
-
-               }
-            }
-
-            if ( format.CanStoreKeywords() )
-            {
-               FITSKeywordArray keywords;
-               if ( !file.Extract( keywords ) )
-                  throw CatchedException();
-               window.SetKeywords( keywords );
-            }
-
-            if ( format.CanStoreResolution() )
-               window.SetResolution( images[0].options.xResolution, images[0].options.yResolution, images[0].options.metricResolution );
-
-            if ( format.CanStoreICCProfiles() )
-            {
-               ICCProfile icc;
-               if ( file.Extract( icc ) )
-                  if ( icc )
-                     window.SetICCProfile( icc );
-            }
-
-            if ( format.CanStoreRGBWS() )
-            {
-               RGBColorSystem rgbws;
-               if ( file.ReadRGBWS( rgbws ) )
-                  window.SetRGBWS( rgbws );
-            }
-
-            if ( format.CanStoreColorFilterArrays() )
-            {
-               // ### TODO - Cannot be implemented until the core provides support for CFAs
-            }
-
-            window.ZoomToFit( false/*allowZoom*/ );
-            window.Show();
-         }
-      }
-
-      instance.setInternalAbortFlag( false );
-      instance.ResetDownloadedImage();
-
-      console.NoteLn( String().Format( "<end><cbr><br>===== INDICCDFrame: %d succeeded, %d failed =====",
-                                       successCount, errorCount ) );
-      return true;
-   }
-   catch ( ProcessAborted& )
-   {
-      newPropertyListItem.Property = "CCD_ABORT_EXPOSURE";
-      newPropertyListItem.Element = "ABORT";
-      newPropertyListItem.PropertyType = "INDI_SWITCH";
-      newPropertyListItem.NewPropertyValue = "ON";
-      instance.sendNewPropertyValue( newPropertyListItem, true/*async*/ );
-      throw;
-   }
-   catch ( ... )
-   {
-      throw;
-   }
+   INDICCDFrameInstanceExecution( *this ).Perform();
+   return true;
 }
 
 void* INDICCDFrameInstance::LockParameter( const MetaParameter* p, size_type tableRow )
@@ -660,8 +524,240 @@ String INDICCDFrameInstance::CCDFrameTypePrefix( int frameTypeIdx )
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+INDIDeviceControllerInstance& AbstractINDICCDFrameExecution::DeviceControllerInstance() const
+{
+   return TheINDIDeviceControllerInterface->instance;
+}
+
+void AbstractINDICCDFrameExecution::Perform()
+{
+   if ( IsRunning() )
+      throw Error( "Internal error: Recursive call to AbstractINDICCDFrameExecution::Perform() detected." );
+
+   if ( TheINDIDeviceControllerInterface == nullptr )
+      throw Error( "The INDI device controller has not been initialized" );
+
+   if ( m_instance.p_deviceName.IsEmpty() )
+      throw Error( "No device has been specified" );
+
+   INDIDeviceControllerInstance& instance = DeviceControllerInstance();
+   if ( instance.o_devices.IsEmpty() )
+      throw Error( "No INDI device has been connected." );
+
+   INDINewPropertyListItem newPropertyListItem;
+   newPropertyListItem.Device = m_instance.p_deviceName;
+
+   try
+   {
+      m_instance.ValidateDevice();
+
+      m_instance.SendDeviceProperties( false/*asynchronous*/ );
+
+      INDIPropertyListItem CCDProp;
+      bool serverSendsImage = true;
+      if ( instance.getINDIPropertyItem( m_instance.p_deviceName, "UPLOAD_MODE", "UPLOAD_LOCAL", CCDProp ) )
+         serverSendsImage = CCDProp.PropertyValue != "ON";
+
+      m_running = true;
+      m_aborted = false;
+      m_successCount = m_errorCount = 0;
+
+      StartAcquisitionEvent();
+
+      for ( m_instance.m_exposureNumber = 0; m_instance.m_exposureNumber < m_instance.p_exposureCount; ++m_instance.m_exposureNumber )
+      {
+         NewExposureEvent( m_instance.m_exposureNumber, m_instance.p_exposureCount );
+
+         if ( m_instance.m_exposureNumber > 0 )
+            if ( m_instance.p_exposureDelay > 0 )
+            {
+               StartExposureDelayEvent( m_instance.p_exposureDelay );
+
+               for ( ElapsedTime T; T() < m_instance.p_exposureDelay; )
+                  ExposureDelayEvent( T() );
+
+               EndExposureDelayEvent();
+            }
+
+         instance.ResetDownloadedImage();
+
+         newPropertyListItem.Property = "UPLOAD_SETTINGS";
+         newPropertyListItem.Element = "UPLOAD_PREFIX";
+         newPropertyListItem.PropertyType = "INDI_TEXT";
+         newPropertyListItem.NewPropertyValue = m_instance.ServerFileName();
+         instance.sendNewPropertyValue( newPropertyListItem, false/*async*/ );
+
+         newPropertyListItem.Property = "CCD_EXPOSURE";
+         newPropertyListItem.Element = "CCD_EXPOSURE_VALUE";
+         newPropertyListItem.PropertyType = "INDI_NUMBER";
+         newPropertyListItem.NewPropertyValue = String( m_instance.p_exposureTime );
+         if ( !instance.sendNewPropertyValue( newPropertyListItem, true/*async*/ ) )
+         {
+            ExposureErrorEvent( "Failure to send new property values to INDI server" );
+            ++m_errorCount;
+            continue; // ### TODO: Implement a p_onError process parameter
+         }
+
+         ElapsedTime T;
+
+         for ( bool inExposure = false; ; )
+         {
+            if ( instance.getInternalAbortFlag() )
+               throw ProcessAborted();
+
+            if ( instance.getINDIPropertyItem( m_instance.p_deviceName, "CCD_EXPOSURE", "CCD_EXPOSURE_VALUE", CCDProp, false/*formatted*/ ) )
+               if ( CCDProp.PropertyState == IPS_BUSY )
+               {
+                  if ( inExposure )
+                  {
+                     // Exposure running
+                     double t = 0;
+                     CCDProp.PropertyValue.TryToDouble( t );
+                     ExposureEvent( m_instance.m_exposureNumber, m_instance.p_exposureCount, m_instance.p_exposureTime - t ); // CCD_EXPOSURE_VALUE is the remaining exp. time
+                  }
+                  else
+                  {
+                     // Exposure started
+                     inExposure = true;
+                     StartExposureEvent( m_instance.m_exposureNumber, m_instance.p_exposureCount, m_instance.p_exposureTime );
+                  }
+               }
+               else
+               {
+                  if ( inExposure )
+                  {
+                     // Exposure completed
+                     EndExposureEvent( m_instance.m_exposureNumber );
+                     ++m_successCount;
+                     break;
+                  }
+
+                  if ( T() > 1 )
+                     WaitingForServerEvent();
+               }
+         }
+
+         if ( serverSendsImage )
+         {
+            for ( T.Reset(); !instance.HasDownloadedImage(); )
+               if ( T() > 1 )
+                     WaitingForServerEvent();
+
+            String filePath = instance.DownloadedImagePath();
+            FileFormat format( File::ExtractExtension( filePath ), true/*read*/, false/*write*/ );
+            FileFormatInstance file( format );
+
+            ImageDescriptionArray images;
+            if ( !file.Open( images, filePath, "raw cfa up-bottom signed-is-physical" ) )
+               throw CatchedException();
+            if ( images.IsEmpty() )
+               throw Error( filePath + ": Empty image file." );
+            if ( !images[0].info.supported || images[0].info.NumberOfSamples() == 0 )
+               throw Error( filePath + ": Invalid or unsupported image." );
+
+            ImageWindow window( 1, 1, 1,
+                              images[0].options.bitsPerSample,
+                              images[0].options.ieeefpSampleFormat,
+                              false/*color*/,
+                              true/*initialProcessing*/,
+                              m_instance.p_newImageIdTemplate );
+            ImageVariant image = window.MainView().Image();
+            if ( !file.ReadImage( image ) )
+               throw CatchedException();
+
+            if ( format.CanStoreProperties() )
+            {
+               View view = window.MainView();
+               ImagePropertyDescriptionArray properties = file.Properties();
+               for ( auto property : properties )
+               {
+                  Variant value = file.ReadProperty( property.id );
+                  if ( value.IsValid() )
+                     view.SetPropertyValue( property.id, value, false/*notify*/,
+                                          ViewPropertyAttribute::Storable|ViewPropertyAttribute::Permanent );
+
+               }
+            }
+
+            if ( format.CanStoreKeywords() )
+            {
+               FITSKeywordArray keywords;
+               if ( !file.Extract( keywords ) )
+                  throw CatchedException();
+               window.SetKeywords( keywords );
+            }
+
+            if ( format.CanStoreResolution() )
+               window.SetResolution( images[0].options.xResolution, images[0].options.yResolution, images[0].options.metricResolution );
+
+            if ( format.CanStoreICCProfiles() )
+            {
+               ICCProfile icc;
+               if ( file.Extract( icc ) )
+                  if ( icc )
+                     window.SetICCProfile( icc );
+            }
+
+            if ( format.CanStoreRGBWS() )
+            {
+               RGBColorSystem rgbws;
+               if ( file.ReadRGBWS( rgbws ) )
+                  window.SetRGBWS( rgbws );
+            }
+
+            if ( format.CanStoreColorFilterArrays() )
+            {
+               // ### TODO - Cannot be implemented until the core provides support for CFAs
+            }
+
+            NewFrameEvent( window );
+         }
+      }
+
+      instance.setInternalAbortFlag( false );
+      instance.ResetDownloadedImage();
+
+      m_running = false;
+
+      EndAcquisitionEvent();
+   }
+   catch ( ... )
+   {
+      m_running = false;
+
+      try
+      {
+         throw;
+      }
+      catch ( ProcessAborted& )
+      {
+         m_aborted = true;
+         newPropertyListItem.Property = "CCD_ABORT_EXPOSURE";
+         newPropertyListItem.Element = "ABORT";
+         newPropertyListItem.PropertyType = "INDI_SWITCH";
+         newPropertyListItem.NewPropertyValue = "ON";
+         instance.sendNewPropertyValue( newPropertyListItem, true/*async*/ );
+         AbortEvent();
+         throw;
+      }
+      catch ( ... )
+      {
+         throw;
+      }
+   }
+}
+
+void AbstractINDICCDFrameExecution::Abort()
+{
+   if ( IsRunning() )
+      throw ProcessAborted();
+}
+
+// ----------------------------------------------------------------------------
 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInstance.cpp - Released 2016/03/18 13:15:37 UTC
+// EOF INDICCDFrameInstance.cpp - Released 2016/04/15 15:37:39 UTC

@@ -1,3 +1,55 @@
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.01.0784
+// ----------------------------------------------------------------------------
+// Standard INDIClient Process Module Version 01.00.04.0108
+// ----------------------------------------------------------------------------
+// indiapi.h - Released 2016/04/15 15:37:39 UTC
+// ----------------------------------------------------------------------------
+// This file is part of the standard INDIClient PixInsight module.
+//
+// Copyright (c) 2014-2016 Klaus Kretzschmar
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ----------------------------------------------------------------------------
+
 #if 0
     INDI
     Copyright (C) 2003 Elwood C. Downey
@@ -26,18 +78,18 @@
 \section Introduction
 
  INDI is a simple XML-like communications protocol described for interactive and automated remote control of diverse instrumentation.\n
- 
- INDI is small, easy to parse, and stateless. In the INDI paradigm each Device poses all command and status functions in terms of settings and getting Properties. Each Property is a vector of one or more names members. Each property has a current value vector; a target value vector; provides information about how it should be sequenced with respect to other Properties to accomplish one coordinated unit of observation; and provides hints as to how it might be displayed for interactive manipulation in a GUI.\n
- 
- Clients learn the Properties of a particular Device at runtime using introspection. This decouples Client and Device implementation histories. Devices have a complete authority over whether to accept commands from Clients. INDI accommadates intermediate servers, broadcasting, and connection topologies ranging from one-to-one on a single system to many-to-many between systems of different genre.\n
- 
- The INDI protocol can be nested within other XML elements such as constraints for automatic scheduling and execution.\n
- 
- For a complete review on the INDI protocol, please refer to the INDI <a href="http://www.clearskyinstitute.com/INDI/INDI.pdf">white paper</a>. 
- 
-\section Audience Intended Audience 
 
-INDI is intended for developers who seek a scalable API for device control and automation. Hardware drivers written under INDI can be used under any INDI-compatible client. INDI serves as a backend only, you need frontend clients to control devices. Current clients include <a href="http://edu.kde.org/kstars">KStars</a>, <a href="http://www.clearyskyinstitute.com/xephem">Xephem</a>, <a href="http://pygtkindiclient.sourceforge.net/">DCD</a>, and <a href="http://www.stargazing.net/astropc">Cartes du Ciel</a>. 
+ INDI is small, easy to parse, and stateless. In the INDI paradigm each Device poses all command and status functions in terms of settings and getting Properties. Each Property is a vector of one or more names members. Each property has a current value vector; a target value vector; provides information about how it should be sequenced with respect to other Properties to accomplish one coordinated unit of observation; and provides hints as to how it might be displayed for interactive manipulation in a GUI.\n
+
+ Clients learn the Properties of a particular Device at runtime using introspection. This decouples Client and Device implementation histories. Devices have a complete authority over whether to accept commands from Clients. INDI accommadates intermediate servers, broadcasting, and connection topologies ranging from one-to-one on a single system to many-to-many between systems of different genre.\n
+
+ The INDI protocol can be nested within other XML elements such as constraints for automatic scheduling and execution.\n
+
+ For a complete review on the INDI protocol, please refer to the INDI <a href="http://www.clearskyinstitute.com/INDI/INDI.pdf">white paper</a>.
+
+\section Audience Intended Audience
+
+INDI is intended for developers who seek a scalable API for device control and automation. Hardware drivers written under INDI can be used under any INDI-compatible client. INDI serves as a backend only, you need frontend clients to control devices. Current clients include <a href="http://edu.kde.org/kstars">KStars</a>, <a href="http://www.clearyskyinstitute.com/xephem">Xephem</a>, <a href="http://pygtkindiclient.sourceforge.net/">DCD</a>, and <a href="http://www.stargazing.net/astropc">Cartes du Ciel</a>.
 
 \section Development Developing under INDI
 
@@ -54,7 +106,7 @@ INDI is intended for developers who seek a scalable API for device control and a
 </ul>
 
 
-\section Help 
+\section Help
 
 You can find information on INDI development in the <a href="http://www.indilib.org">INDI Library</a> site. Furthermore, you can discuss INDI related issues on the <a href="http://sourceforge.net/mail/?group_id=90275">INDI development mailing list</a>.
 
@@ -85,7 +137,7 @@ You can find information on INDI development in the <a href="http://www.indilib.
 /** \typedef ISState
     \brief Switch state.
 */
-typedef enum 
+typedef enum
 {
     ISS_OFF,		/*!< Switch is OFF */
     ISS_ON		/*!< Switch is ON */
@@ -94,7 +146,7 @@ typedef enum
 /** \typedef IPState
     \brief Property state.
 */
-typedef enum 
+typedef enum
 {
     IPS_IDLE,		/*!< State is idle */
     IPS_OK,		/*!< State is ok */
@@ -105,7 +157,7 @@ typedef enum
 /** \typedef ISRule
     \brief Switch vector rule hint.
 */
-typedef enum 
+typedef enum
 {
     ISR_1OFMANY,	/*!< Only 1 switch of many can be ON (e.g. radio buttons) */
     ISR_ATMOST1,        /*!< There is only ONE switch */
@@ -115,7 +167,7 @@ typedef enum
 /** \typedef IPerm
     \brief Permission hint, with respect to client.
 */
-typedef enum 
+typedef enum
 {
     IP_RO,		/*!< Read Only */
     IP_WO,		/*!< Write Only */
@@ -157,19 +209,19 @@ typedef enum
 /** \struct IText
     \brief One text descriptor.
 */
-typedef struct {		
-    /** index name */	
-    char name[MAXINDINAME];	
+typedef struct {
+    /** index name */
+    char name[MAXINDINAME];
     /** short description */
-    char label[MAXINDILABEL];		
+    char label[MAXINDILABEL];
     /** malloced text string */
-    char *text;				
+    char *text;
     /** pointer to parent */
-    struct _ITextVectorProperty *tvp;	
+    struct _ITextVectorProperty *tvp;
     /** handy place to hang helper info */
-    void *aux0;   			
+    void *aux0;
     /** handy place to hang helper info */
-    void *aux1;				
+    void *aux1;
 } IText;
 
 /** \struct _ITextVectorProperty
@@ -177,27 +229,27 @@ typedef struct {
 */
 typedef struct _ITextVectorProperty {
     /** device name */
-    char device[MAXINDIDEVICE];		
+    char device[MAXINDIDEVICE];
     /** property name */
-    char name[MAXINDINAME];		
+    char name[MAXINDINAME];
     /** short description */
-    char label[MAXINDILABEL];		
+    char label[MAXINDILABEL];
     /** GUI grouping hint */
-    char group[MAXINDIGROUP];		
+    char group[MAXINDIGROUP];
     /** client accessibility hint */
-    IPerm p;				
+    IPerm p;
     /** current max time to change, secs */
-    double timeout;			
+    double timeout;
     /** current property state */
-    IPState s;				
+    IPState s;
     /** texts comprising this vector */
-    IText *tp;				
+    IText *tp;
     /** dimension of tp[] */
     int ntp;
-    /** ISO 8601 timestamp of this event */			
-    char timestamp[MAXINDITSTAMP];	
+    /** ISO 8601 timestamp of this event */
+    char timestamp[MAXINDITSTAMP];
     /** handy place to hang helper info */
-    void *aux;				
+    void *aux;
 } ITextVectorProperty;
 
 /** \struct INumber
@@ -216,7 +268,7 @@ typedef struct {
 
 /** \struct _INumberVectorProperty
     \brief Number vector property descriptor.
-    
+
     INumber.format may be any fprintf-style appropriate for double or style "m" to create sexigesimal using the form "%\<w\>.\<f\>m" where:\n
     \<w\> is the total field width.\n
     \<f\> is the width of the fraction. valid values are:\n
@@ -225,41 +277,41 @@ typedef struct {
         6  ->  \<w\>:mm:ss \n
         5  ->  \<w\>:mm.m \n
         3  ->  \<w\>:mm \n
-	
-   examples:\n 
- 
+
+   examples:\n
+
    To produce "-123:45", use \%7.3m \n
-   To produce "  0:01:02", use \%9.6m 
+   To produce "  0:01:02", use \%9.6m
 */
 typedef struct _INumberVectorProperty {
     /** device name */
-    char device[MAXINDIDEVICE];		
+    char device[MAXINDIDEVICE];
     /** property name */
-    char name[MAXINDINAME];		
+    char name[MAXINDINAME];
     /** short description */
-    char label[MAXINDILABEL];		
+    char label[MAXINDILABEL];
     /** GUI grouping hint */
-    char group[MAXINDIGROUP];		
+    char group[MAXINDIGROUP];
     /** client accessibility hint */
-    IPerm p;				
+    IPerm p;
     /** current max time to change, secs */
-    double timeout;			
+    double timeout;
     /** current property state */
-    IPState s;				
+    IPState s;
     /** numbers comprising this vector */
-    INumber *np;			
+    INumber *np;
     /** dimension of np[] */
     int nnp;
-    /** ISO 8601 timestamp of this event */			
-    char timestamp[MAXINDITSTAMP];			
+    /** ISO 8601 timestamp of this event */
+    char timestamp[MAXINDITSTAMP];
     /** handy place to hang helper info */
-    void *aux;				
+    void *aux;
 } INumberVectorProperty;
 
 /** \struct ISwitch
     \brief One switch descriptor.
 */
-typedef struct {			
+typedef struct {
     char name[MAXINDINAME];		/** index name */
     char label[MAXINDILABEL];		/** this switch's label */
     ISState s;				/** this switch's state */
@@ -272,35 +324,35 @@ typedef struct {
 */
 typedef struct _ISwitchVectorProperty {
     /** device name */
-    char device[MAXINDIDEVICE];		
+    char device[MAXINDIDEVICE];
     /** property name */
-    char name[MAXINDINAME];		
+    char name[MAXINDINAME];
     /** short description */
-    char label[MAXINDILABEL];		
+    char label[MAXINDILABEL];
     /** GUI grouping hint */
-    char group[MAXINDIGROUP];		
+    char group[MAXINDIGROUP];
     /** client accessibility hint */
-    IPerm p;				
+    IPerm p;
     /** switch behavior hint */
-    ISRule r;				
+    ISRule r;
     /** current max time to change, secs */
-    double timeout;			
+    double timeout;
     /** current property state */
-    IPState s;				
+    IPState s;
     /** switches comprising this vector */
-    ISwitch *sp;			
+    ISwitch *sp;
     /** dimension of sp[] */
     int nsp;
-    /** ISO 8601 timestamp of this event */			
+    /** ISO 8601 timestamp of this event */
     char timestamp[MAXINDITSTAMP];
     /** handy place to hang helper info */
-    void *aux;				
+    void *aux;
 } ISwitchVectorProperty;
 
 /** \struct ILight
     \brief One light descriptor.
 */
-typedef struct {			
+typedef struct {
     char name[MAXINDINAME];		/** index name */
     char label[MAXINDILABEL];		/** this lights's label */
     IPState s;				/** this lights's state */
@@ -311,25 +363,25 @@ typedef struct {
 /** \struct _ILightVectorProperty
     \brief Light vector property descriptor.
 */
-typedef struct _ILightVectorProperty {	
+typedef struct _ILightVectorProperty {
     /** device name */
-    char device[MAXINDIDEVICE];		
+    char device[MAXINDIDEVICE];
     /** property name */
-    char name[MAXINDINAME];		
+    char name[MAXINDINAME];
     /** short description */
-    char label[MAXINDILABEL];		
+    char label[MAXINDILABEL];
     /** GUI grouping hint */
-    char group[MAXINDIGROUP];		
+    char group[MAXINDIGROUP];
     /** current property state */
-    IPState s;				
+    IPState s;
     /** lights comprising this vector */
-    ILight *lp;				
+    ILight *lp;
     /** dimension of lp[] */
     int nlp;
-    /** ISO 8601 timestamp of this event */			
-    char timestamp[MAXINDITSTAMP];	
+    /** ISO 8601 timestamp of this event */
+    char timestamp[MAXINDITSTAMP];
     /** handy place to hang helper info */
-    void *aux;				
+    void *aux;
 } ILightVectorProperty;
 
 /** \struct IBLOB
@@ -337,21 +389,21 @@ typedef struct _ILightVectorProperty {
  */
 typedef struct {			/* one BLOB descriptor */
   /** index name */
-  char name[MAXINDINAME];		
+  char name[MAXINDINAME];
   /** this BLOB's label */
-  char label[MAXINDILABEL];	
-  /** format attr */	
-  char format[MAXINDIBLOBFMT];	
+  char label[MAXINDILABEL];
+  /** format attr */
+  char format[MAXINDIBLOBFMT];
   /** malloced binary large object bytes */
-  void *blob;			
-  /** bytes in blob */	
-  int bloblen;			
+  void *blob;
+  /** bytes in blob */
+  int bloblen;
   /** n uncompressed bytes */
-  int size;				
+  int size;
   /** pointer to parent */
-  struct _IBLOBVectorProperty *bvp;	
+  struct _IBLOBVectorProperty *bvp;
   /** handy place to hang helper info */
-  void *aux0, *aux1, *aux2;		
+  void *aux0, *aux1, *aux2;
 } IBLOB;
 
 /** \struct _IBLOBVectorProperty
@@ -360,27 +412,27 @@ typedef struct {			/* one BLOB descriptor */
 
 typedef struct _IBLOBVectorProperty {	/* BLOB vector property descriptor */
   /** device name */
-  char device[MAXINDIDEVICE];		
+  char device[MAXINDIDEVICE];
   /** property name */
-  char name[MAXINDINAME];		
+  char name[MAXINDINAME];
   /** short description */
-  char label[MAXINDILABEL];		
+  char label[MAXINDILABEL];
   /** GUI grouping hint */
-  char group[MAXINDIGROUP];		
+  char group[MAXINDIGROUP];
   /** client accessibility hint */
-  IPerm p;				
+  IPerm p;
   /** current max time to change, secs */
-  double timeout;			
+  double timeout;
   /** current property state */
-  IPState s;				
+  IPState s;
   /** BLOBs comprising this vector */
-  IBLOB *bp;				
+  IBLOB *bp;
   /** dimension of bp[] */
-  int nbp;				
+  int nbp;
   /** ISO 8601 timestamp of this event */
-  char timestamp[MAXINDITSTAMP];	
+  char timestamp[MAXINDITSTAMP];
   /** handy place to hang helper info */
-  void *aux;				
+  void *aux;
 } IBLOBVectorProperty;
 
 
@@ -389,3 +441,6 @@ typedef struct _IBLOBVectorProperty {	/* BLOB vector property descriptor */
 #define NARRAY(a)       (sizeof(a)/sizeof(a[0]))
 
 #endif
+
+// ----------------------------------------------------------------------------
+// EOF indiapi.h - Released 2016/04/15 15:37:39 UTC

@@ -1,3 +1,55 @@
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.01.0784
+// ----------------------------------------------------------------------------
+// Standard INDIClient Process Module Version 01.00.04.0108
+// ----------------------------------------------------------------------------
+// lilxml.h - Released 2016/04/15 15:37:39 UTC
+// ----------------------------------------------------------------------------
+// This file is part of the standard INDIClient PixInsight module.
+//
+// Copyright (c) 2014-2016 Klaus Kretzschmar
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ----------------------------------------------------------------------------
+
 #if 0
     liblilxml
     Copyright (C) 2003 Elwood C. Downey
@@ -20,15 +72,15 @@
 
 /** \file lilxml.h
     \brief A little DOM-style library to handle parsing and processing an XML file.
-    
+
     It only handles elements, attributes and pcdata content. <! ... > and <? ... > are silently ignored. pcdata is collected into one string, sans leading whitespace first line. \n
-    
+
     The following is an example of a cannonical usage for the lilxml library. Initialize a lil xml context and read an XML file in a root element.
-    
+
     \code
-    
+
     #include <lilxml.h>
-    
+
     LilXML *lp = newLilXML();
 	char errmsg[1024];
 	XMLEle *root, *ep;
@@ -41,8 +93,8 @@
 	    if (errmsg[0])
 		error ("Error: %s\n", errmsg);
 	}
- 
-        // print the tag and pcdata content of each child element within the root 
+
+        // print the tag and pcdata content of each child element within the root
 
         for (ep = nextXMLEle (root, 1); ep != NULL; ep = nextXMLEle (root, 0))
         printf ("%s: %s\n", tagXMLEle(ep), pcdataXMLEle(ep));
@@ -52,9 +104,9 @@
 
 	delXMLEle (root);
 	delLilXML (lp);
-	
+
      \endcode
-    
+
  */
 
 #ifndef LILXML_H
@@ -97,7 +149,7 @@ extern void delXMLEle (XMLEle *e);
     \param lp a pointer to a lilxml parser.
     \param c one character to process.
     \param errmsg a buffer to store error messages if an error in parsing is encounterd.
-    \return When the function parses a complete valid XML element, it will return a pointer to the XML element. A NULL is returned when parsing the element is still in progress, or if a parsing error occurs. Check errmsg for errors if NULL is returned. 
+    \return When the function parses a complete valid XML element, it will return a pointer to the XML element. A NULL is returned when parsing the element is still in progress, or if a parsing error occurs. Check errmsg for errors if NULL is returned.
  */
 extern XMLEle *readXMLEle (LilXML *lp, int c, char errmsg[]);
 
@@ -119,14 +171,14 @@ extern XMLEle *findXMLEle (XMLEle *e, const char *tag);
 /* iteration functions */
 /** \brief Iterate an XML element for a list of nesetd XML elements.
     \param ep a pointer to the XML element to iterate.
-    \param first the index of the starting XML element. Pass 1 to start iteration from the beginning of the XML element. Pass 0 to get the next element thereater. 
+    \param first the index of the starting XML element. Pass 1 to start iteration from the beginning of the XML element. Pass 0 to get the next element thereater.
     \return On success, a pointer to the next XML element is returned. NULL when there are no more elements.
 */
 extern XMLEle *nextXMLEle (XMLEle *ep, int first);
 
 /** \brief Iterate an XML element for a list of XML attributes.
     \param ep a pointer to the XML element to iterate.
-    \param first the index of the starting XML attribute. Pass 1 to start iteration from the beginning of the XML element. Pass 0 to get the next attribute thereater. 
+    \param first the index of the starting XML attribute. Pass 1 to start iteration from the beginning of the XML element. Pass 0 to get the next attribute thereater.
     \return On success, a pointer to the next XML attribute is returned. NULL when there are no more attributes.
 */
 extern XMLAtt *nextXMLAtt (XMLEle *ep, int first);
@@ -282,7 +334,7 @@ extern void indi_xmlMalloc (void *(*newmalloc)(size_t size),
 	    if (errmsg[0])
 		error ("Error: %s\n", errmsg);
 	}
- 
+
         print the tag and pcdata content of each child element within the root
 
         for (ep = nextXMLEle (root, 1); ep != NULL; ep = nextXMLEle (root, 0))
@@ -300,3 +352,6 @@ extern void indi_xmlMalloc (void *(*newmalloc)(size_t size),
  */
 
 #endif	/* LILXML_H */
+
+// ----------------------------------------------------------------------------
+// EOF lilxml.h - Released 2016/04/15 15:37:39 UTC

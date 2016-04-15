@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.03.0102
+// Standard INDIClient Process Module Version 01.00.04.0108
 // ----------------------------------------------------------------------------
-// INDIMountProcess.cpp - Released 2016/03/18 13:15:37 UTC
+// INDIMountProcess.cpp - Released 2016/04/15 15:37:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -169,4 +169,4 @@ int INDIMountProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountProcess.cpp - Released 2016/03/18 13:15:37 UTC
+// EOF INDIMountProcess.cpp - Released 2016/04/15 15:37:39 UTC

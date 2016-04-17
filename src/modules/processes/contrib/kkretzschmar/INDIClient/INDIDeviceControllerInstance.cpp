@@ -198,6 +198,11 @@ bool INDIDeviceControllerInstance::sendNewProperty( bool isAsynchCall )
    if ( p_newProperties.IsEmpty() )
       return false; //Nothing to do
 
+   if ( indiClient.IsNull() ){
+	   Console().CriticalLn("*** Error: Internal: The INDI device controller has not been initialized");
+	   return false;
+   }
+
    Console().WriteLn( "<end><cbr><br>------------------------------------------------------------------------------" );
    Console().WriteLn( "Sending new property value(s) to INDI server '" + String( p_serverHostName ) + ':' + String( p_serverPort ) + "':" );
 
@@ -446,17 +451,24 @@ bool INDIDeviceControllerInstance::ExecuteGlobal()
    console.NoteLn( "<end><cbr>INDI Control Client --- (C) Klaus Kretzschmar, 2014-2016" );
    console.Flush();
 
+
    o_getCommandResult.Clear();
 
    if ( !p_serverConnect )
    {
-      // disconnet from server
+	   if ( indiClient.IsNull() ){
+		   console.CriticalLn("The INDI device controller has not been initialized");
+		   return false;
+	   }
+
+      // disconnect from server
       if ( indiClient->serverIsConnected() )
       {
          console.NoteLn( "* Disconnect from INDI server " + p_serverHostName + ", port=" + String( p_serverPort ) );
          indiClient->disconnectServer();
       }
       indiClient.Destroy();
+      indiClient=nullptr;
       return true;
    }
 

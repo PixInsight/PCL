@@ -144,6 +144,12 @@ public:
    {
    }
 
+   IINDIDeviceControllerInstance* getDeviceControllerInstance()
+   {
+	   return m_instance;
+   }
+
+
    void registerScriptInstance( IINDIDeviceControllerInstance* scriptInstance )
    {
       m_scriptInstance = scriptInstance;
@@ -162,11 +168,12 @@ protected:
    void newText( ITextVectorProperty* );
    void newLight( ILightVectorProperty* );
 
-public:
+
+private:
 
    IINDIDeviceControllerInstance* m_instance;
    IINDIDeviceControllerInstance* m_scriptInstance;
-private:
+
    void runOnPropertyTable( IProperty*, const ArrayOperator<INDIPropertyListItem>*, PropertyFlagType = Idle );
 };
 

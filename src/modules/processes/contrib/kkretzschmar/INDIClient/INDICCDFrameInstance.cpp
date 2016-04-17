@@ -148,7 +148,7 @@ bool INDICCDFrameInstance::ValidateDevice( bool throwErrors ) const
    if (indiClient.IsNull())
 	   throw Error( "The INDI device controller has not been initialized" );
 
-   INDIDeviceControllerInstance* instance = dynamic_cast<INDIDeviceControllerInstance*>(indiClient->m_instance);
+   INDIDeviceControllerInstance* instance = dynamic_cast<INDIDeviceControllerInstance*>(indiClient->getDeviceControllerInstance());
 
    if ( instance == nullptr )
    {
@@ -181,7 +181,7 @@ void INDICCDFrameInstance::SendDeviceProperties( bool asynchronous ) const
    if (indiClient.IsNull())
 	   throw Error( "The INDI device controller has not been initialized" );
 
-   INDIDeviceControllerInstance* instance = dynamic_cast<INDIDeviceControllerInstance*>(indiClient->m_instance);
+   INDIDeviceControllerInstance* instance = dynamic_cast<INDIDeviceControllerInstance*>(indiClient->getDeviceControllerInstance());
 
    if ( instance != nullptr )
    {
@@ -538,7 +538,7 @@ INDIDeviceControllerInstance& AbstractINDICCDFrameExecution::DeviceControllerIns
 	if (indiClient.IsNull())
 		throw Error( "The INDI device controller has not been initialized" );
 
-	INDIDeviceControllerInstance* instance = dynamic_cast<INDIDeviceControllerInstance*>(indiClient->m_instance);
+	INDIDeviceControllerInstance* instance = dynamic_cast<INDIDeviceControllerInstance*>(indiClient->getDeviceControllerInstance());
 
 	if ( instance == nullptr )
 		throw Error("The INDI device controller has not been initialized");

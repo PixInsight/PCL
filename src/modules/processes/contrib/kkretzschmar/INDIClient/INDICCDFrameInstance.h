@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.03.0102
+// Standard INDIClient Process Module Version 01.00.04.0108
 // ----------------------------------------------------------------------------
-// INDICCDFrameInstance.h - Released 2016/03/18 13:15:37 UTC
+// INDICCDFrameInstance.h - Released 2016/04/15 15:37:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -61,6 +61,8 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
+class INDIDeviceControllerInstance;
+
 class INDICCDFrameInstance : public ProcessImplementation
 {
 public:
@@ -111,6 +113,89 @@ private:
    int      m_exposureNumber;
 
    friend class INDICCDFrameInterface;
+   friend class AbstractINDICCDFrameExecution;
+};
+
+// ----------------------------------------------------------------------------
+
+class AbstractINDICCDFrameExecution
+{
+public:
+
+   AbstractINDICCDFrameExecution( INDICCDFrameInstance& instance ) :
+      m_instance( instance ),
+      m_running( false ),
+      m_aborted( false ),
+      m_successCount( 0 ),
+      m_errorCount( 0 )
+   {
+   }
+
+   virtual ~AbstractINDICCDFrameExecution()
+   {
+   }
+
+   virtual void Perform();
+   virtual void Abort();
+
+   INDIDeviceControllerInstance& DeviceControllerInstance() const;
+
+   const INDICCDFrameInstance& Instance() const
+   {
+      return m_instance;
+   }
+
+   bool IsRunning() const
+   {
+      return m_running;
+   }
+
+   bool WasAborted() const
+   {
+      return m_aborted;
+   }
+
+   int SuccessCount() const
+   {
+      return m_successCount;
+   }
+
+   int ErrorCount() const
+   {
+      return m_errorCount;
+   }
+
+protected:
+
+   virtual void StartAcquisitionEvent() = 0;
+
+   virtual void NewExposureEvent( int expNum, int expCount ) = 0;
+
+   virtual void StartExposureDelayEvent( double totalDelayTime ) = 0;
+   virtual void ExposureDelayEvent( double expTime ) = 0;
+   virtual void EndExposureDelayEvent() = 0;
+
+   virtual void StartExposureEvent( int expNum, int expCount, double expTime ) = 0;
+   virtual void ExposureEvent( int expNum, int expCount, double expTime ) = 0;
+   virtual void ExposureErrorEvent( const String& errMsg ) = 0;
+   virtual void EndExposureEvent( int expNum ) = 0;
+
+   virtual void WaitingForServerEvent() = 0;
+
+   virtual void NewFrameEvent( ImageWindow& ) = 0;
+
+   virtual void EndAcquisitionEvent() = 0;
+
+   virtual void AbortEvent() = 0;
+
+protected:
+
+   INDICCDFrameInstance& m_instance;
+
+private:
+
+   bool                  m_running, m_aborted;
+   int                   m_successCount, m_errorCount;
 };
 
 // ----------------------------------------------------------------------------
@@ -121,4 +206,4 @@ private:
 #endif   // __INDICCDFrameInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInstance.h - Released 2016/03/18 13:15:37 UTC
+// EOF INDICCDFrameInstance.h - Released 2016/04/15 15:37:39 UTC

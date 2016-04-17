@@ -212,7 +212,11 @@ void Exception::Show() const
    {
       String text = caption + ": " + info;
       if ( HaveConsole() )
-         Console().CriticalLn( "<end><cbr>*** " + text );
+      {
+         Console console;
+         console.Critical( "<end><cbr>*** " + text );
+         console.Write( "\x1b[39m<end><cbr>" );
+      }
       else
          std::cerr << "\n*** " << RemoveHTMLTags( TranslateHTMLParagraphTags( TranslateHTMLBreakTags( text ) ) ) << '\n' << std::flush;
    }
@@ -305,7 +309,11 @@ void ParseError::Show() const
          }
 
       if ( HaveConsole() )
-         Console().CriticalLn( "<end><cbr>*** " + Caption() + ": " + info );
+      {
+         Console console;
+         console.Critical( "<end><cbr>*** " + Caption() + ": " + info );
+         console.Write( "\x1b[39m<end><cbr>" );
+      }
       else
          std::cerr << "\n*** " << Caption() << ": " << info << '\n';
    }
@@ -351,7 +359,11 @@ void SourceCodeError::Show() const
    if ( s_useConsole || !showOnGUI )
    {
       if ( HaveConsole() )
-         Console().CriticalLn( "<end><cbr>*** " + Caption() + ": <raw>" + Message() + "</raw>" );
+      {
+         Console console;
+         console.Critical( "<end><cbr>*** " + Caption() + ": <raw>" + Message() + "</raw>" );
+         console.Write( "\x1b[39m<end><cbr>" );
+      }
       else
          std::cerr << "\n*** " << Caption() << ": " << Message() << '\n';
    }

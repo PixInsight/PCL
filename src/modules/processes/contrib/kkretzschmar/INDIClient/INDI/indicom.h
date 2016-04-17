@@ -1,3 +1,55 @@
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.01.0784
+// ----------------------------------------------------------------------------
+// Standard INDIClient Process Module Version 01.00.04.0108
+// ----------------------------------------------------------------------------
+// indicom.h - Released 2016/04/15 15:37:39 UTC
+// ----------------------------------------------------------------------------
+// This file is part of the standard INDIClient PixInsight module.
+//
+// Copyright (c) 2014-2016 Klaus Kretzschmar
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ----------------------------------------------------------------------------
+
 /*
     INDI LIB
     Common routines used by all drivers
@@ -33,7 +85,7 @@
 
 
     </ul>
-    
+
     \author Jason Harris
     \author Elwood C. Downey
     \author Jasem Mutlaq
@@ -141,9 +193,9 @@ int tty_timeout(int fd, int timeout);
 /*@{*/
 
 /** \brief Converts a sexagesimal number to a string.
- 
+
    sprint the variable a in sexagesimal format into out[].
-	
+
   \param out a pointer to store the sexagesimal number.
   \param a the sexagesimal number to convert.
   \param w the number of spaces in the whole part.
@@ -153,7 +205,7 @@ int tty_timeout(int fd, int timeout);
  	  \li 3600:	\<w\>:mm:ss
  	  \li 600:	\<w\>:mm.m
  	  \li 60:	\<w\>:mm
-  
+
   \return number of characters written to out, not counting final null terminator.
  */
 int fs_sexa (char *out, double a, int w, int fracbase);
@@ -161,7 +213,7 @@ int fs_sexa (char *out, double a, int w, int fracbase);
 /** \brief convert sexagesimal string str AxBxC to double.
 
     x can be anything non-numeric. Any missing A, B or C will be assumed 0. Optional - and + can be anywhere.
-    
+
     \param str0 string containing sexagesimal number.
     \param dp pointer to a double to store the sexagesimal number.
     \return return 0 if ok, -1 if can't find a thing.
@@ -198,3 +250,6 @@ const char *timestamp (void);
 
 
 #endif
+
+// ----------------------------------------------------------------------------
+// EOF indicom.h - Released 2016/04/15 15:37:39 UTC

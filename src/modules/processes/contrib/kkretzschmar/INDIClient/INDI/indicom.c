@@ -1,3 +1,55 @@
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.01.0784
+// ----------------------------------------------------------------------------
+// Standard INDIClient Process Module Version 01.00.04.0108
+// ----------------------------------------------------------------------------
+// indicom.c - Released 2016/04/15 15:37:39 UTC
+// ----------------------------------------------------------------------------
+// This file is part of the standard INDIClient PixInsight module.
+//
+// Copyright (c) 2014-2016 Klaus Kretzschmar
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ----------------------------------------------------------------------------
+
 /*
     INDI LIB
     Common routines used by all drivers
@@ -70,7 +122,7 @@ void getSexComponents(double value, int *d, int *m, int *s);
 
 int extractISOTime(char *timestr, struct ln_date *iso_date)
 {
-  #ifdef HAVE_NOVA_H	
+  #ifdef HAVE_NOVA_H
   struct tm utm;
 
   if (strptime(timestr, "%Y/%m/%dT%H:%M:%S", &utm))
@@ -85,7 +137,7 @@ int extractISOTime(char *timestr, struct ln_date *iso_date)
    	return (0);
   }
   #endif
-  
+
   return (-1);
 }
 
@@ -257,16 +309,16 @@ timestamp()
 
 int tty_timeout(int fd, int timeout)
 {
- 
+
   struct timeval tv;
   fd_set readout;
   int retval;
 
-	
+
   if (fd == -1)
 	return TTY_ERRNO;
 
- 
+
   FD_ZERO(&readout);
   FD_SET(fd, &readout);
 
@@ -291,16 +343,16 @@ int tty_timeout(int fd, int timeout)
 
 int tty_write(int fd, const char * buf, int nbytes, int *nbytes_written)
 {
-	int bytes_w = 0;   
+	int bytes_w = 0;
 
 	if (fd==-1)
 		return TTY_ERRNO;
- 
+
   *nbytes_written = 0;
-   
+
   while (nbytes > 0)
   {
-    
+
     bytes_w = write(fd, buf, nbytes);
 
     if (bytes_w < 0)
@@ -322,14 +374,14 @@ int tty_write_string(int fd, const char * buf, int *nbytes_written)
     if (fd == -1)
            return TTY_ERRNO;
 
- 
+
   *nbytes_written = 0;
-   
+
   nbytes = strlen(buf);
 
   while (nbytes > 0)
   {
-    
+
     bytes_w = write(fd, buf, nbytes);
 
     if (bytes_w < 0)
@@ -379,11 +431,11 @@ int tty_read_section(int fd, char *buf, char stop_char, int timeout, int *nbytes
 {
 	int bytesRead = 0;
     int err = TTY_OK;
-    
+
 	if (fd == -1)
            return TTY_ERRNO;
 
- 
+
  *nbytes_read = 0;
 
  for (;;)
@@ -871,13 +923,13 @@ int tty_connect(const char *device, int bit_rate, int word_size, int parity, int
 
   /* now clear input and output buffers and activate the new terminal settings */
   tcflush(t_fd, TCIOFLUSH);
-  if (tcsetattr(t_fd, TCSANOW, &tty_setting)) 
+  if (tcsetattr(t_fd, TCSANOW, &tty_setting))
   {
     perror("tty_connect: failed setting attributes on serial port.");
     tty_disconnect(t_fd);
     return TTY_PORT_FAILURE;
   }
-  
+
   *fd = t_fd;
   /* return success */
   return TTY_OK;
@@ -921,7 +973,7 @@ void tty_error_msg(int err_code, char *err_msg, int err_msg_len)
         snprintf(error_string, 512, "Read Error: %s", strerror(errno));
 		strncpy(err_msg, error_string, err_msg_len);
 		break;
-		
+
        case TTY_WRITE_ERROR:
         snprintf(error_string, 512, "Write Error: %s", strerror(errno));
 		strncpy(err_msg, error_string, err_msg_len);
@@ -959,7 +1011,7 @@ void tty_error_msg(int err_code, char *err_msg, int err_msg_len)
 		break;
 
 
-   }	
+   }
 }
 
 /* return static string corresponding to the given property or light state */
@@ -1207,3 +1259,6 @@ IUSaveText (IText *tp, const char *newtext)
         /* copy in fresh string */
         tp->text = strcpy (realloc (tp->text, strlen(newtext)+1), newtext);
 }
+
+// ----------------------------------------------------------------------------
+// EOF indicom.c - Released 2016/04/15 15:37:39 UTC

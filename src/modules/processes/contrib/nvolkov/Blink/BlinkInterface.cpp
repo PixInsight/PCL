@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Blink Process Module Version 01.02.02.0218
+// Standard Blink Process Module Version 01.02.02.0225
 // ----------------------------------------------------------------------------
-// BlinkInterface.cpp - Released 2016/04/05 08:54:27 UTC
+// BlinkInterface.cpp - Released 2016/04/11 10:12:47 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
@@ -1129,9 +1129,14 @@ void BlinkInterface::FileCopyTo()
    }
    catch ( ... )
    {
-      Console().Hide();
       Stop();
-      throw;
+      Exception::EnableConsoleOutput();
+      try
+      {
+         throw;
+      }
+      ERROR_HANDLER
+      Exception::DisableConsoleOutput();
    }
 }
 
@@ -1169,9 +1174,14 @@ void BlinkInterface::FileMoveTo()
    }
    catch ( ... )
    {
-      Console().Hide();
       Stop();
-      throw;
+      Exception::EnableConsoleOutput();
+      try
+      {
+         throw;
+      }
+      ERROR_HANDLER
+      Exception::DisableConsoleOutput();
    }
 }
 
@@ -1215,7 +1225,7 @@ void BlinkInterface::FileCropTo()
    {
       Pause();
 
-      Rect r(GetCropRect());
+      Rect r( GetCropRect() );
 
       if ( r == m_blink.m_screenRect )
       {
@@ -1226,7 +1236,8 @@ void BlinkInterface::FileCropTo()
       }
 
       const String dir( SelectDirectory( "Blink/Crop: Select Output Directory" ) );
-      if ( dir.IsEmpty() ) return;
+      if ( dir.IsEmpty() )
+         return;
 
       Console().Show();
 
@@ -1269,9 +1280,14 @@ void BlinkInterface::FileCropTo()
    }
    catch ( ... )
    {
-      Console().Hide();
       Stop();
-      throw;
+      Exception::EnableConsoleOutput();
+      try
+      {
+         throw;
+      }
+      ERROR_HANDLER
+      Exception::DisableConsoleOutput();
    }
 }
 
@@ -1748,7 +1764,7 @@ void BlinkInterface::__UpdateAnimation_Timer( Timer& timer )
    }
 
 #if debug
-   GUI->DebugInfo_Label.SetText( String().Format("%.3f",time) + "+" + String().Format( "%.3f", t() ) );
+   GUI->DebugInfo_Label.SetText( String().Format( "%.3f", time ) + "+" + String().Format( "%.3f", t() ) );
 #endif
 }
 
@@ -1801,7 +1817,10 @@ String BlinkInterface::SelectDirectory( const String& caption, const String& ini
 
 String BlinkInterface::UniqueFilePath( const String& fileName, const String& dir )
 {
-   String filePath = dir + "/" + File::ExtractName( fileName ) + File::ExtractExtension( fileName );
+   String filePath = dir;
+   if ( !dir.EndsWith( '/' ) )
+      filePath << '/';
+   filePath << File::ExtractName( fileName ) << File::ExtractExtension( fileName );
    if ( !File::Exists( filePath ) )
       return filePath;
 
@@ -2131,4 +2150,4 @@ BlinkInterface::GUIData::GUIData( BlinkInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BlinkInterface.cpp - Released 2016/04/05 08:54:27 UTC
+// EOF BlinkInterface.cpp - Released 2016/04/11 10:12:47 UTC

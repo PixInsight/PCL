@@ -193,9 +193,10 @@ void FileInfo::Refresh()
 
    WIN32_FILE_ATTRIBUTE_DATA data;
 
-   if ( !::GetFileAttributesEx( (LPCTSTR)m_path.c_str(),
-                                GetFileExInfoStandard,
-                                (LPVOID)&data ) )
+   String winPath = File::UnixPathToWindows( m_path );
+   if ( !::GetFileAttributesExW( (LPCTSTR)winPath.c_str(),
+                                 GetFileExInfoStandard,
+                                 (LPVOID)&data ) )
    {
       DWORD error = ::GetLastError();
       if ( error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND )
@@ -226,8 +227,8 @@ void FileInfo::Refresh()
 
    m_exists = true;
 
-   m_readable = ::_waccess_s( (const wchar_t*)m_path.c_str(), 4 ) == 0;
-   m_writable = ::_waccess_s( (const wchar_t*)m_path.c_str(), 2 ) == 0;
+   m_readable = ::_waccess_s( (const wchar_t*)winPath.c_str(), 4 ) == 0;
+   m_writable = ::_waccess_s( (const wchar_t*)winPath.c_str(), 2 ) == 0;
    m_executable = false; // not available on Windows
 
 #else

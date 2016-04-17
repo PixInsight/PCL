@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.03.0102
+// Standard INDIClient Process Module Version 01.00.04.0108
 // ----------------------------------------------------------------------------
-// INDICCDFrameInterface.h - Released 2016/03/18 13:15:37 UTC
+// INDICCDFrameInterface.h - Released 2016/04/15 15:37:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -70,6 +70,8 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
+class INDICCDFrameInterfaceExecution;
+
 class INDICCDFrameInterface : public ProcessInterface
 {
 public:
@@ -91,6 +93,7 @@ public:
 private:
 
    String m_device;
+   INDICCDFrameInterfaceExecution* m_execution;
 
    struct GUIData
    {
@@ -134,12 +137,19 @@ private:
                   PushButton          ServerFileNameTemplate_PushButton;
          SectionBar        FrameAcquisition_SectionBar;
          Control           FrameAcquisition_Control;
-         VerticalSizer     FrameAcquisition_Sizer;
-            NumericEdit       ExposureTime_NumericEdit;
-            NumericEdit       ExposureDelay_NumericEdit;
-            HorizontalSizer   ExposureCount_Sizer;
-               Label             ExposureCount_Label;
-               SpinBox           ExposureCount_SpinBox;
+         HorizontalSizer   FrameAcquisition_Sizer;
+            VerticalSizer     FrameAcquisitionLeft_Sizer;
+               NumericEdit       ExposureTime_NumericEdit;
+               NumericEdit       ExposureDelay_NumericEdit;
+               HorizontalSizer   ExposureCount_Sizer;
+                  Label             ExposureCount_Label;
+                  SpinBox           ExposureCount_SpinBox;
+            VerticalSizer     FrameAcquisitionRight_Sizer;
+               HorizontalSizer   StartExposure_Sizer;
+                  PushButton        StartExposure_PushButton;
+               HorizontalSizer   CancelExposure_Sizer;
+                  PushButton        CancelExposure_PushButton;
+               Label             ExposureInfo_Label;
    };
 
    GUIData* GUI;
@@ -151,6 +161,8 @@ private:
    void e_Timer( Timer& sender );
    void e_Click( Button& sender, bool checked );
    void e_ItemSelected( ComboBox& sender, int itemIndex );
+
+   friend class INDICCDFrameInterfaceExecution;
 };
 
 // ----------------------------------------------------------------------------
@@ -166,4 +178,4 @@ PCL_END_LOCAL
 #endif   // __INDICCDFrameInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInterface.h - Released 2016/03/18 13:15:37 UTC
+// EOF INDICCDFrameInterface.h - Released 2016/04/15 15:37:39 UTC

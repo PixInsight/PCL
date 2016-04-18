@@ -123,7 +123,7 @@ class INDIClient : public INDI::BaseClientImpl
 public:
 
    INDIClient( IINDIDeviceControllerInstance* instance ) :
-      BaseClientImpl(),
+      BaseClientImpl( "localhost", 7624 ),
       m_instance( instance ),
       m_scriptInstance( nullptr )
    {
@@ -140,7 +140,7 @@ public:
          throw Error( "Internal error: INDIClient: Invalid instance pointer." );
    }
 
-   ~INDIClient()
+   virtual ~INDIClient()
    {
    }
 

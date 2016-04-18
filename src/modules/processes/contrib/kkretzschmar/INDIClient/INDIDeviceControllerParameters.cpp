@@ -62,6 +62,7 @@ IDCServerPort*           TheIDCServerPortParameter = nullptr;
 IDCServerConnect*        TheIDCServerConnectParameter = nullptr;
 IDCServerCommand*        TheIDCServerCommandParameter = nullptr;
 IDCAbort*                TheIDCAbortParameter = nullptr;
+IDCVerbosity*            TheIDCVerbosityParameter = nullptr;
 IDCGetCommandParameters* TheIDCGetCommandParametersParameter = nullptr;
 IDCGetCommandResult*     TheIDCGetCommandResultParameter = nullptr;
 
@@ -163,6 +164,23 @@ IDCAbort::IDCAbort( MetaProcess* P ) : MetaBoolean( P )
 IsoString IDCAbort::Id() const
 {
    return "abort";
+}
+
+// --------------------------------------------------------------------------
+
+IDCVerbosity::IDCVerbosity( MetaProcess* P ) : MetaInt32( P )
+{
+   TheIDCVerbosityParameter = this;
+}
+
+IsoString IDCVerbosity::Id() const
+{
+   return "verbosity";
+}
+
+double IDCVerbosity::DefaultValue() const
+{
+   return 1; // 0=none 1=errors/notifications 2+=informative
 }
 
 // --------------------------------------------------------------------------

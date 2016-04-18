@@ -657,7 +657,7 @@ void AbstractINDICCDFrameExecution::Perform()
             FileFormatInstance file( format );
 
             ImageDescriptionArray images;
-            if ( !file.Open( images, filePath, "raw cfa up-bottom signed-is-physical" ) )
+            if ( !file.Open( images, filePath, "raw cfa verbosity 0 up-bottom signed-is-physical" ) )
                throw CatchedException();
             if ( images.IsEmpty() )
                throw Error( filePath + ": Empty image file." );

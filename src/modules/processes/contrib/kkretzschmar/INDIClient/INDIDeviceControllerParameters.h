@@ -134,6 +134,20 @@ extern IDCAbort* TheIDCAbortParameter;
 
 // ----------------------------------------------------------------------------
 
+class IDCVerbosity : public MetaInt32
+{
+public:
+
+   IDCVerbosity( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+};
+
+extern IDCVerbosity* TheIDCVerbosityParameter;
+
+// ----------------------------------------------------------------------------
+
 class IDCGetCommandParameters : public MetaString
 {
 public:

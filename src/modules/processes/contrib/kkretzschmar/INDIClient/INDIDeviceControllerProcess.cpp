@@ -82,6 +82,7 @@ INDIDeviceControllerProcess::INDIDeviceControllerProcess() : MetaProcess()
    new IDCServerConnect( TheINDIDeviceControllerProcess );
    new IDCServerCommand( TheINDIDeviceControllerProcess );
    new IDCAbort( TheINDIDeviceControllerProcess );
+   new IDCVerbosity( TheINDIDeviceControllerProcess );
 
    new IDCNewProperties( TheINDIDeviceControllerProcess );
    new IDCNewPropertyKey( TheIDCNewPropertiesParameter );

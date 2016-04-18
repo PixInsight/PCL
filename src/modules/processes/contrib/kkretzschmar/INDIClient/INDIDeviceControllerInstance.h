@@ -161,6 +161,7 @@ private:
    pcl_bool            p_serverConnect;
    String              p_serverCommand;
    pcl_bool            p_abort;
+   int32               p_verbosity;
    NewPropertyListType p_newProperties;
    String              p_getCommandParameters;
 
@@ -176,7 +177,6 @@ private:
    bool sendNewProperty( bool isAsyncCall = false );
    bool sendNewPropertyVector( const NewPropertyListType& propVector, bool isAsynch = false );
    bool getPropertyFromKeyString( INDINewPropertyListItem& newPropertyKey, const String& keyString );
-   void writeCurrentMessageToConsole();
 
    friend class INDIClient;
    friend class INDIDeviceControllerProcess;

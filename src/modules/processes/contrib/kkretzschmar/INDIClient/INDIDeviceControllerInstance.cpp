@@ -73,11 +73,6 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-/* Our client auto pointer */
-AutoPointer<INDIClient> indiClient;
-
-// ----------------------------------------------------------------------------
-
 INDIDeviceControllerInstance::INDIDeviceControllerInstance( const MetaProcess* m ) :
    ProcessImplementation( m ),
    p_serverHostName( TheIDCServerHostNameParameter->DefaultValue() ),
@@ -196,11 +191,12 @@ bool INDIDeviceControllerInstance::sendNewProperty( bool isAsynchCall )
    ISwitchVectorProperty* switchVecProp = nullptr;
 
    if ( p_newProperties.IsEmpty() )
-      return false; //Nothing to do
+      return false; // nothing to do
 
-   if ( indiClient.IsNull() ){
-	   Console().CriticalLn("*** Error: Internal: The INDI device controller has not been initialized");
-	   return false;
+   if ( !INDIClient::HasClient() )
+   {
+      Console().CriticalLn( "*** Error: Internal: The INDI device controller has not been initialized." );
+      return false;
    }
 
    Console().WriteLn( "<end><cbr><br>------------------------------------------------------------------------------" );
@@ -228,7 +224,7 @@ bool INDIDeviceControllerInstance::sendNewProperty( bool isAsynchCall )
             // get device
             {
                IsoString s( deviceStr );
-               device = indiClient->getDevice( s.c_str() );
+               device = INDIClient::TheClient()->getDevice( s.c_str() );
             }
             if ( !device )
             {
@@ -367,7 +363,7 @@ bool INDIDeviceControllerInstance::sendNewProperty( bool isAsynchCall )
    // send new properties to server and wait for response
    if ( switchVecProp )
    {
-      indiClient->sendNewSwitch( switchVecProp );
+      INDIClient::TheClient()->sendNewSwitch( switchVecProp );
       // if synch mode wait until completed or abort
       while ( switchVecProp->s != IPS_OK && switchVecProp->s != IPS_IDLE && !p_abort && !m_internalAbortFlag && !isAsynchCall )
          if ( switchVecProp->s == IPS_ALERT )
@@ -379,7 +375,7 @@ bool INDIDeviceControllerInstance::sendNewProperty( bool isAsynchCall )
    }
    else if ( numberVecProp )
    {
-      indiClient->sendNewNumber( numberVecProp );
+      INDIClient::TheClient()->sendNewNumber( numberVecProp );
       // if synch mode wait until completed or abort
       while ( numberVecProp->s != IPS_OK && numberVecProp->s != IPS_IDLE && !p_abort && !m_internalAbortFlag && !isAsynchCall )
          if ( numberVecProp->s == IPS_ALERT )
@@ -391,7 +387,7 @@ bool INDIDeviceControllerInstance::sendNewProperty( bool isAsynchCall )
    }
    else if ( textVecProp )
    {
-      indiClient->sendNewText( textVecProp );
+      INDIClient::TheClient()->sendNewText( textVecProp );
       // if synch mode wait until completed or abort
       while ( textVecProp->s != IPS_OK && textVecProp->s != IPS_IDLE && !p_abort && !m_internalAbortFlag && !isAsynchCall )
          if ( textVecProp->s == IPS_ALERT )
@@ -445,38 +441,31 @@ void INDIDeviceControllerInstance::writeCurrentMessageToConsole()
 
 bool INDIDeviceControllerInstance::ExecuteGlobal()
 {
-
    Console console;
 
    console.NoteLn( "<end><cbr>INDI Control Client --- (C) Klaus Kretzschmar, 2014-2016" );
    console.Flush();
 
-
    o_getCommandResult.Clear();
+
+   INDIClient* indiClient = INDIClient::TheClient();
 
    if ( !p_serverConnect )
    {
-	   if ( indiClient.IsNull() ){
-		   console.CriticalLn("The INDI device controller has not been initialized");
-		   return false;
-	   }
-
       // disconnect from server
+      if ( indiClient == nullptr )
+         throw Error( "The INDI device controller has not been initialized" );
       if ( indiClient->serverIsConnected() )
       {
          console.NoteLn( "* Disconnect from INDI server " + p_serverHostName + ", port=" + String( p_serverPort ) );
          indiClient->disconnectServer();
       }
-      indiClient.Destroy();
-      indiClient=nullptr;
+      INDIClient::DestroyClient();
       return true;
    }
 
-   {
-      IsoString host8 = p_serverHostName.ToUTF8();
-      if ( indiClient.IsNull() )
-         indiClient = new INDIClient( this, host8.c_str(), p_serverPort );
-   }
+   if ( indiClient == nullptr )
+      indiClient = INDIClient::NewClient( this, p_serverHostName.ToUTF8(), p_serverPort );
 
    if ( !indiClient->serverIsConnected() )
       indiClient->connectServer();
@@ -511,11 +500,11 @@ bool INDIDeviceControllerInstance::ExecuteGlobal()
    }
    else if ( p_serverCommand == "REGISTER_INSTANCE" )
    {
-      indiClient->registerScriptInstance( this );
+      indiClient->RegisterScriptInstance( this );
    }
    else if ( p_serverCommand == "RELEASE_INSTANCE" )
    {
-      indiClient->registerScriptInstance( nullptr );
+      indiClient->RegisterScriptInstance( nullptr );
    }
    else
    {

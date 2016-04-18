@@ -128,7 +128,7 @@ public:
       m_scriptInstance( nullptr )
    {
       if ( m_instance == nullptr )
-         throw Error( "*** Internal error: INDIClient: Invalid instance pointer." );
+         throw Error( "Internal error: INDIClient: Invalid instance pointer." );
    }
 
    INDIClient( IINDIDeviceControllerInstance* instance, const char* hostname, unsigned int port ) :
@@ -137,23 +137,32 @@ public:
       m_scriptInstance( nullptr )
    {
       if ( m_instance == nullptr )
-         throw Error( "*** Internal error: INDIClient: Invalid instance pointer." );
+         throw Error( "Internal error: INDIClient: Invalid instance pointer." );
    }
 
    ~INDIClient()
    {
    }
 
-   IINDIDeviceControllerInstance* getDeviceControllerInstance()
+   IINDIDeviceControllerInstance* DeviceControllerInstance() const
    {
-	   return m_instance;
+      return m_instance;
    }
 
-
-   void registerScriptInstance( IINDIDeviceControllerInstance* scriptInstance )
+   void RegisterScriptInstance( IINDIDeviceControllerInstance* scriptInstance )
    {
       m_scriptInstance = scriptInstance;
    }
+
+   static bool HasClient()
+   {
+      return TheClient() != nullptr;
+   }
+
+   static INDIClient* TheClient();
+   static INDIClient* NewClient( IINDIDeviceControllerInstance* instance );
+   static INDIClient* NewClient( IINDIDeviceControllerInstance* instance, const IsoString& hostname, unsigned int port );
+   static void DestroyClient();
 
 protected:
 
@@ -168,7 +177,6 @@ protected:
    void newText( ITextVectorProperty* );
    void newLight( ILightVectorProperty* );
 
-
 private:
 
    IINDIDeviceControllerInstance* m_instance;
@@ -176,8 +184,6 @@ private:
 
    void runOnPropertyTable( IProperty*, const ArrayOperator<INDIPropertyListItem>*, PropertyFlagType = Idle );
 };
-
-extern AutoPointer<INDIClient> indiClient;
 
 // ----------------------------------------------------------------------------
 

@@ -212,143 +212,138 @@ void INDIDeviceControllerInterface::__CameraListButtons_Click( Button& sender, b
    {
       try
       {
-         if ( indiClient.IsNull() )
-            indiClient = new INDIClient( &instance );
+         if ( !INDIClient::HasClient() )
+            INDIClient::NewClient( &instance );
 
-         if (indiClient->serverIsConnected())
+         if ( !INDIClient::TheClient()->serverIsConnected() )
          {
-        	return;
+            IsoString hostName8 = instance.p_serverHostName.ToUTF8();
+            INDIClient::TheClient()->setServer( hostName8.c_str(), instance.p_serverPort );
+            if ( INDIClient::TheClient()->connectServer() )
+            {
+               GUI->UpdateDeviceList_Timer.Start();
+               GUI->UpdateServerMessage_Timer.Start();
+               GUI->UpdatePropertyList_Timer.Start();
+            }
+            else
+               GUI->ServerMessage_Label.SetText( "Connection to INDI server failed. Please check server host and port." );
          }
-         IsoString ASCIIHost(instance.p_serverHostName);
-         indiClient->setServer( ASCIIHost.c_str(), instance.p_serverPort );
-         if ( indiClient->connectServer() )
-         {
-            GUI->UpdateDeviceList_Timer.Start();
-            GUI->UpdateServerMessage_Timer.Start();
-            GUI->UpdatePropertyList_Timer.Start();
-         }
-         else
-            GUI->ServerMessage_Label.SetText( "Connection to INDI server failed. Please check server host and port." );
       }
       ERROR_HANDLER
    }
    else if ( sender == GUI->DisconnectServer_PushButton )
    {
-      try
+      if ( INDIClient::HasClient() )
       {
-         if ( indiClient.IsNull() )
-        	 return;
-            //indiClient = new INDIClient( &instance );
-
-         if ( indiClient->serverIsConnected() )
+         try
          {
-            indiClient->disconnectServer();
+            if ( INDIClient::TheClient()->serverIsConnected() )
+               INDIClient::TheClient()->disconnectServer();
+
+            GUI->UpdateDeviceList_Timer.Stop();
+            GUI->UpdatePropertyList_Timer.Stop();
+            GUI->UpdateServerMessage_Timer.Stop();
+
+            m_rootNodeMap.clear();
+            m_deviceNodeMap.clear();
+            m_deviceRootNodeMap.clear();
+            for ( auto item : m_propertyTreeMap )
+               delete item.second;
+            m_propertyTreeMap.clear();
+
+            // flag property list items as Insert to create new property tree
+            for ( auto item : instance.o_properties )
+               item.PropertyFlag = Insert;
+
+            GUI->DeviceList_TreeBox.Clear();
+            GUI->PropertyList_TreeBox.Clear();
+
+            // clear instance variables
+            instance.o_devices.Clear();
+            instance.o_properties.Clear();
+
+            if ( !INDIClient::TheClient()->serverIsConnected() )
+            {
+               INDIClient::DestroyClient();
+               GUI->ServerMessage_Label.SetText( "Successfully disconnected from server" );
+            }
          }
-
-         GUI->UpdateDeviceList_Timer.Stop();
-         GUI->UpdatePropertyList_Timer.Stop();
-         GUI->UpdateServerMessage_Timer.Stop();
-
-         m_rootNodeMap.clear();
-         m_deviceNodeMap.clear();
-         m_deviceRootNodeMap.clear();
-         for ( auto item : m_propertyTreeMap )
-            delete item.second;
-         m_propertyTreeMap.clear();
-
-         // flag property list items as Insert to create new property tree
-         for ( auto item : instance.o_properties )
-            item.PropertyFlag = Insert;
-
-         GUI->DeviceList_TreeBox.Clear();
-         GUI->PropertyList_TreeBox.Clear();
-
-         // clear instance variables
-         instance.o_devices.Clear();
-         instance.o_properties.Clear();
-
-
-         if ( !indiClient->serverIsConnected() ){
-            GUI->ServerMessage_Label.SetText( "Successfully disconnected from server" );
-            indiClient.Destroy();
-            indiClient=nullptr;
-         }
-
+         ERROR_HANDLER
       }
-      ERROR_HANDLER
    }
    else if ( sender == GUI->ConnectDevice_PushButton )
    {
-      try
+      if ( INDIClient::HasClient() )
       {
-         pcl::IndirectArray<pcl::TreeBox::Node> selectedNodes = GUI->DeviceList_TreeBox.SelectedNodes();
-         for ( auto nodePtr : selectedNodes )
+         try
          {
-            IsoString deviceName( nodePtr->Text( TextColumn ).To7BitASCII() );
-            INDI::BaseDevice* device = indiClient->getDevice( deviceName.c_str() );
-            if ( device != nullptr )
-               if ( !device->isConnected() )
-                  indiClient->connectDevice( deviceName.c_str() );
+            pcl::IndirectArray<pcl::TreeBox::Node> selectedNodes = GUI->DeviceList_TreeBox.SelectedNodes();
+            for ( auto nodePtr : selectedNodes )
+            {
+               IsoString deviceName( nodePtr->Text( TextColumn ).To7BitASCII() );
+               INDI::BaseDevice* device = INDIClient::TheClient()->getDevice( deviceName.c_str() );
+               if ( device != nullptr )
+                  if ( !device->isConnected() )
+                     INDIClient::TheClient()->connectDevice( deviceName.c_str() );
+            }
          }
+         ERROR_HANDLER
       }
-      ERROR_HANDLER
    }
    else if ( sender == GUI->DisconnectDevice_PushButton )
    {
-      try
+      if ( INDIClient::HasClient() )
       {
-         pcl::IndirectArray<pcl::TreeBox::Node> selectedNodes = GUI->DeviceList_TreeBox.SelectedNodes();
-         for ( auto nodePtr : selectedNodes )
+         try
          {
-            IsoString deviceName( nodePtr->Text( TextColumn ).To7BitASCII() );
-            INDI::BaseDevice* device = indiClient->getDevice( deviceName.c_str() );
-            if ( device != nullptr )
-               if ( device->isConnected() )
-                  indiClient->disconnectDevice( deviceName.c_str() );
-            nodePtr->Enable();
+            pcl::IndirectArray<pcl::TreeBox::Node> selectedNodes = GUI->DeviceList_TreeBox.SelectedNodes();
+            for ( auto nodePtr : selectedNodes )
+            {
+               IsoString deviceName( nodePtr->Text( TextColumn ).To7BitASCII() );
+               INDI::BaseDevice* device = INDIClient::TheClient()->getDevice( deviceName.c_str() );
+               if ( device != nullptr )
+                  if ( device->isConnected() )
+                     INDIClient::TheClient()->disconnectDevice( deviceName.c_str() );
+               nodePtr->Enable();
+            }
          }
+         ERROR_HANDLER
       }
-      ERROR_HANDLER
    }
 }
 
 void INDIDeviceControllerInterface::UpdateDeviceList()
 {
-   if ( indiClient.IsNull() )
-      return;
-
-   if ( instance.o_devices.IsEmpty() )
-      return;
-
-   for ( auto item : instance.o_devices )
-   {
-      PropertyNode* rootNode;
-      PropertyNodeMapType::iterator rootNodeIter = m_deviceRootNodeMap.find( item.DeviceName );
-      if ( rootNodeIter == m_deviceRootNodeMap.end() )
-         m_deviceRootNodeMap[item.DeviceName] = rootNode = new PropertyNode( GUI->DeviceList_TreeBox );
-      else
-         rootNode = rootNodeIter->second;
-      assert( rootNode != nullptr );
-
-      PropertyNode* deviceNode;
-      PropertyNodeMapType::iterator deviceNodeIter = m_deviceNodeMap.find( item.DeviceName );
-      if ( deviceNodeIter == m_deviceNodeMap.end() )
-         m_deviceNodeMap[item.DeviceName] = deviceNode = new PropertyNode( rootNode, IsoString( item.DeviceName ) );
-      else
-         deviceNode = deviceNodeIter->second;
-      assert( deviceNode != NULL );
-
-      deviceNode->getTreeBoxNode()->SetText( TextColumn, item.DeviceName );
-      deviceNode->getTreeBoxNode()->SetAlignment( TextColumn, TextAlign::Left );
-
-      INDI::BaseDevice* device;
+   if ( INDIClient::HasClient() )
+      for ( auto item : instance.o_devices )
       {
-         IsoString s( item.DeviceName );
-         device = indiClient->getDevice( s.c_str() );
+         PropertyNode* rootNode;
+         PropertyNodeMapType::iterator rootNodeIter = m_deviceRootNodeMap.find( item.DeviceName );
+         if ( rootNodeIter == m_deviceRootNodeMap.end() )
+            m_deviceRootNodeMap[item.DeviceName] = rootNode = new PropertyNode( GUI->DeviceList_TreeBox );
+         else
+            rootNode = rootNodeIter->second;
+         assert( rootNode != nullptr );
+
+         PropertyNode* deviceNode;
+         PropertyNodeMapType::iterator deviceNodeIter = m_deviceNodeMap.find( item.DeviceName );
+         if ( deviceNodeIter == m_deviceNodeMap.end() )
+            m_deviceNodeMap[item.DeviceName] = deviceNode = new PropertyNode( rootNode, IsoString( item.DeviceName ) );
+         else
+            deviceNode = deviceNodeIter->second;
+         assert( deviceNode != NULL );
+
+         deviceNode->getTreeBoxNode()->SetText( TextColumn, item.DeviceName );
+         deviceNode->getTreeBoxNode()->SetAlignment( TextColumn, TextAlign::Left );
+
+         INDI::BaseDevice* device;
+         {
+            IsoString s( item.DeviceName );
+            device = INDIClient::TheClient()->getDevice( s.c_str() );
+         }
+         deviceNode->getTreeBoxNode()->SetIcon( TextColumn, ScaledResource(
+            (device != nullptr && device->isConnected()) ? ":/bullets/bullet-ball-glass-green.png" : ":/bullets/bullet-ball-glass-grey.png" ) );
       }
-      deviceNode->getTreeBoxNode()->SetIcon( TextColumn, ScaledResource(
-         (device != nullptr && device->isConnected()) ? ":/bullets/bullet-ball-glass-green.png" : ":/bullets/bullet-ball-glass-grey.png" ) );
-   }
 }
 
 // ----------------------------------------------------------------------------
@@ -536,16 +531,16 @@ void INDIDeviceControllerInterface::__ToggleSection( SectionBar& sender, Control
 
 void SetPropertyDialog::Ok_Button_Click( Button& sender, bool checked )
 {
-   if ( indiClient.IsNull() )
-      return;
+   if ( INDIClient::HasClient() )
+   {
+      assert( m_instance != nullptr );
 
-   assert( m_instance != nullptr );
-
-   INDINewPropertyListItem newPropertyListItem = getNewPropertyListItem();
-   bool send_ok = m_instance->sendNewPropertyValue( newPropertyListItem, true/*isAsynch*/ );
-   if ( !send_ok )
-      m_instance->clearNewPropertyList();
-   Ok();
+      INDINewPropertyListItem newPropertyListItem = getNewPropertyListItem();
+      bool send_ok = m_instance->sendNewPropertyValue( newPropertyListItem, true/*isAsynch*/ );
+      if ( !send_ok )
+         m_instance->clearNewPropertyList();
+      Ok();
+   }
 }
 
 void SetPropertyDialog::Cancel_Button_Click( Button& sender, bool checked )
@@ -783,7 +778,7 @@ void INDIDeviceControllerInterface::UpdatePropertyList()
    // get popertyList with exclusive access
    ExclPropertyList propertyList = instance.getExclusivePropertyList();
 
-   if ( indiClient.IsNull() )
+   if ( !INDIClient::HasClient() )
    {
       GUI->PropertyList_TreeBox.EnableUpdates();
       return;

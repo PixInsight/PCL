@@ -167,6 +167,8 @@ public:
 
 protected:
 
+   INDICCDFrameInstance& m_instance;
+
    virtual void StartAcquisitionEvent() = 0;
 
    virtual void NewExposureEvent( int expNum, int expCount ) = 0;
@@ -188,14 +190,10 @@ protected:
 
    virtual void AbortEvent() = 0;
 
-protected:
-
-   INDICCDFrameInstance& m_instance;
-
 private:
 
-   bool                  m_running, m_aborted;
-   int                   m_successCount, m_errorCount;
+   bool m_running, m_aborted;
+   int  m_successCount, m_errorCount;
 };
 
 // ----------------------------------------------------------------------------

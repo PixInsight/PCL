@@ -65,6 +65,30 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
+static AutoPointer<INDIClient> s_indiClient;
+
+INDIClient* INDIClient::TheClient()
+{
+   return s_indiClient;
+}
+
+INDIClient* INDIClient::NewClient( IINDIDeviceControllerInstance* instance )
+{
+   return s_indiClient = new INDIClient( instance );
+}
+
+INDIClient* INDIClient::NewClient( IINDIDeviceControllerInstance* instance, const IsoString& hostname, unsigned int port )
+{
+   return s_indiClient = new INDIClient( instance, hostname.c_str(), port );
+}
+
+void INDIClient::DestroyClient()
+{
+   s_indiClient.Destroy();
+}
+
+// ----------------------------------------------------------------------------
+
 void INDIClient::runOnPropertyTable( IProperty* INDIProperty, const ArrayOperator<INDIPropertyListItem>* arrayOp, PropertyFlagType flag )
 {
    // get propertyList with exclusive access

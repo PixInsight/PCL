@@ -53,6 +53,8 @@
 #include "INDICCDFrameInstance.h"
 #include "INDICCDFrameParameters.h"
 #include "INDIDeviceControllerInterface.h"
+#include "INDIClient.h"
+
 
 #include <pcl/Console.h>
 #include <pcl/ElapsedTime.h>
@@ -122,11 +124,6 @@ bool INDICCDFrameInstance::CanExecuteOn( const View&, pcl::String& whyNot ) cons
 
 bool INDICCDFrameInstance::CanExecuteGlobal( String& whyNot ) const
 {
-   if ( TheINDIDeviceControllerInterface == nullptr )
-   {
-      whyNot = "The INDI device controller has not been initialized";
-      return false;
-   }
 
    if ( p_deviceName.IsEmpty() )
    {
@@ -147,20 +144,25 @@ bool INDICCDFrameInstance::ValidateDevice( bool throwErrors ) const
       return false;
    }
 
-   if ( TheINDIDeviceControllerInterface == nullptr )
+
+   if (indiClient.IsNull())
+	   throw Error( "The INDI device controller has not been initialized" );
+
+   INDIDeviceControllerInstance* instance = dynamic_cast<INDIDeviceControllerInstance*>(indiClient->getDeviceControllerInstance());
+
+   if ( instance == nullptr )
    {
-      if ( throwErrors )
-         throw Error( "The INDI device controller has not been initialized" );
-      return false;
+	   if ( throwErrors )
+		   throw Error( "The INDI device controller has not been initialized" );
+	   return false;
    }
 
-   INDIDeviceControllerInstance& instance = TheINDIDeviceControllerInterface->instance;
    INDIPropertyListItem CCDProp;
 
-   for ( auto device : instance.o_devices )
+   for ( auto device : instance->o_devices )
       if ( device.DeviceName == p_deviceName )
       {
-         if ( !instance.getINDIPropertyItem( device.DeviceName, "CCD_FRAME", "WIDTH", CCDProp ) ) // is this a camera device?
+         if ( !instance->getINDIPropertyItem( device.DeviceName, "CCD_FRAME", "WIDTH", CCDProp ) ) // is this a camera device?
          {
             if ( throwErrors )
                throw Error( '\'' + p_deviceName + "' does not seem to be a valid INDI CCD device" );
@@ -176,20 +178,24 @@ bool INDICCDFrameInstance::ValidateDevice( bool throwErrors ) const
 
 void INDICCDFrameInstance::SendDeviceProperties( bool asynchronous ) const
 {
-   if ( TheINDIDeviceControllerInterface != nullptr )
+   if (indiClient.IsNull())
+	   throw Error( "The INDI device controller has not been initialized" );
+
+   INDIDeviceControllerInstance* instance = dynamic_cast<INDIDeviceControllerInstance*>(indiClient->getDeviceControllerInstance());
+
+   if ( instance != nullptr )
    {
-      INDIDeviceControllerInstance& instance = TheINDIDeviceControllerInterface->instance;
       INDIPropertyListItem CCDProp;
       INDINewPropertyListItem newPropertyListItem;
       newPropertyListItem.Device = p_deviceName;
 
-      if ( instance.getINDIPropertyItem( p_deviceName, "UPLOAD_MODE", UploadModePropertyString( p_uploadMode ), CCDProp ) )
+      if ( instance->getINDIPropertyItem( p_deviceName, "UPLOAD_MODE", UploadModePropertyString( p_uploadMode ), CCDProp ) )
       {
          newPropertyListItem.Property = "UPLOAD_MODE";
          newPropertyListItem.Element = UploadModePropertyString( p_uploadMode );
          newPropertyListItem.PropertyType = "INDI_SWITCH";
          newPropertyListItem.NewPropertyValue = "ON";
-         instance.sendNewPropertyValue( newPropertyListItem, asynchronous );
+         instance->sendNewPropertyValue( newPropertyListItem, asynchronous );
       }
 
       if ( !p_serverUploadDirectory.IsEmpty() )
@@ -198,34 +204,34 @@ void INDICCDFrameInstance::SendDeviceProperties( bool asynchronous ) const
          newPropertyListItem.Element = "UPLOAD_DIR";
          newPropertyListItem.PropertyType = "INDI_TEXT";
          newPropertyListItem.NewPropertyValue = p_serverUploadDirectory;
-         instance.sendNewPropertyValue( newPropertyListItem, asynchronous );
+         instance->sendNewPropertyValue( newPropertyListItem, asynchronous );
       }
 
-      if ( instance.getINDIPropertyItem( p_deviceName, "CCD_FRAME_TYPE", CCDFrameTypePropertyString( p_frameType ), CCDProp ) )
+      if ( instance->getINDIPropertyItem( p_deviceName, "CCD_FRAME_TYPE", CCDFrameTypePropertyString( p_frameType ), CCDProp ) )
       {
          newPropertyListItem.Property = "CCD_FRAME_TYPE";
          newPropertyListItem.Element = CCDFrameTypePropertyString( p_frameType );
          newPropertyListItem.PropertyType = "INDI_SWITCH";
          newPropertyListItem.NewPropertyValue = "ON";
-         instance.sendNewPropertyValue( newPropertyListItem, asynchronous );
+         instance->sendNewPropertyValue( newPropertyListItem, asynchronous );
       }
 
-      if ( instance.getINDIPropertyItem( p_deviceName, "CCD_BINNING", "HOR_BIN", CCDProp ) )
+      if ( instance->getINDIPropertyItem( p_deviceName, "CCD_BINNING", "HOR_BIN", CCDProp ) )
       {
          newPropertyListItem.Property = "CCD_BINNING";
          newPropertyListItem.Element = "HOR_BIN";
          newPropertyListItem.PropertyType = "INDI_NUMBER";
          newPropertyListItem.NewPropertyValue = String( p_binningX );
-         instance.sendNewPropertyValue( newPropertyListItem, asynchronous );
+         instance->sendNewPropertyValue( newPropertyListItem, asynchronous );
       }
 
-      if ( instance.getINDIPropertyItem( p_deviceName, "CCD_BINNING", "VER_BIN", CCDProp ) )
+      if ( instance->getINDIPropertyItem( p_deviceName, "CCD_BINNING", "VER_BIN", CCDProp ) )
       {
          newPropertyListItem.Property = "CCD_BINNING";
          newPropertyListItem.Element = "VER_BIN";
          newPropertyListItem.PropertyType = "INDI_NUMBER";
          newPropertyListItem.NewPropertyValue = String( p_binningY );
-         instance.sendNewPropertyValue( newPropertyListItem, asynchronous );
+         instance->sendNewPropertyValue( newPropertyListItem, asynchronous );
       }
    }
 }
@@ -528,16 +534,22 @@ String INDICCDFrameInstance::CCDFrameTypePrefix( int frameTypeIdx )
 
 INDIDeviceControllerInstance& AbstractINDICCDFrameExecution::DeviceControllerInstance() const
 {
-   return TheINDIDeviceControllerInterface->instance;
+
+	if (indiClient.IsNull())
+		throw Error( "The INDI device controller has not been initialized" );
+
+	INDIDeviceControllerInstance* instance = dynamic_cast<INDIDeviceControllerInstance*>(indiClient->getDeviceControllerInstance());
+
+	if ( instance == nullptr )
+		throw Error("The INDI device controller has not been initialized");
+
+   return *instance;
 }
 
 void AbstractINDICCDFrameExecution::Perform()
 {
    if ( IsRunning() )
       throw Error( "Internal error: Recursive call to AbstractINDICCDFrameExecution::Perform() detected." );
-
-   if ( TheINDIDeviceControllerInterface == nullptr )
-      throw Error( "The INDI device controller has not been initialized" );
 
    if ( m_instance.p_deviceName.IsEmpty() )
       throw Error( "No device has been specified" );
@@ -718,6 +730,7 @@ void AbstractINDICCDFrameExecution::Perform()
 
       instance.setInternalAbortFlag( false );
       instance.ResetDownloadedImage();
+
 
       m_running = false;
 

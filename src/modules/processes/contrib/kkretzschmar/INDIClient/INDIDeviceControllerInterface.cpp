@@ -214,6 +214,11 @@ void INDIDeviceControllerInterface::__CameraListButtons_Click( Button& sender, b
       {
          if ( indiClient.IsNull() )
             indiClient = new INDIClient( &instance );
+
+         if (indiClient->serverIsConnected())
+         {
+        	return;
+         }
          IsoString ASCIIHost(instance.p_serverHostName);
          indiClient->setServer( ASCIIHost.c_str(), instance.p_serverPort );
          if ( indiClient->connectServer() )
@@ -232,10 +237,13 @@ void INDIDeviceControllerInterface::__CameraListButtons_Click( Button& sender, b
       try
       {
          if ( indiClient.IsNull() )
-            indiClient = new INDIClient( &instance );
+        	 return;
+            //indiClient = new INDIClient( &instance );
 
          if ( indiClient->serverIsConnected() )
+         {
             indiClient->disconnectServer();
+         }
 
          GUI->UpdateDeviceList_Timer.Stop();
          GUI->UpdatePropertyList_Timer.Stop();
@@ -255,8 +263,17 @@ void INDIDeviceControllerInterface::__CameraListButtons_Click( Button& sender, b
          GUI->DeviceList_TreeBox.Clear();
          GUI->PropertyList_TreeBox.Clear();
 
-         if ( !indiClient->serverIsConnected() )
+         // clear instance variables
+         instance.o_devices.Clear();
+         instance.o_properties.Clear();
+
+
+         if ( !indiClient->serverIsConnected() ){
             GUI->ServerMessage_Label.SetText( "Successfully disconnected from server" );
+            indiClient.Destroy();
+            indiClient=nullptr;
+         }
+
       }
       ERROR_HANDLER
    }

@@ -113,7 +113,7 @@ void INDIListener::Run(){
 }
 
 
-INDI::BaseClientImpl::BaseClientImpl(){}
+INDI::BaseClientImpl::BaseClientImpl():sConnected(false){}
 
 INDI::BaseClientImpl::BaseClientImpl(const char* hostname, unsigned int port)
 {

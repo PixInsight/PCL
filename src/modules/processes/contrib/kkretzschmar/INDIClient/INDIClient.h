@@ -144,6 +144,12 @@ public:
    {
    }
 
+   IINDIDeviceControllerInstance* getDeviceControllerInstance()
+   {
+	   return m_instance;
+   }
+
+
    void registerScriptInstance( IINDIDeviceControllerInstance* scriptInstance )
    {
       m_scriptInstance = scriptInstance;
@@ -161,6 +167,7 @@ protected:
    void newMessage( INDI::BaseDevice*, int messageID );
    void newText( ITextVectorProperty* );
    void newLight( ILightVectorProperty* );
+
 
 private:
 

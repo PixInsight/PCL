@@ -245,6 +245,48 @@ extern ICFNewImageIdTemplate* TheICFNewImageIdTemplateParameter;
 
 // ----------------------------------------------------------------------------
 
+class ICFReuseImageWindow : public MetaBoolean
+{
+public:
+
+   ICFReuseImageWindow( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern ICFReuseImageWindow* TheICFReuseImageWindowParameter;
+
+// ----------------------------------------------------------------------------
+
+class ICFAutoStretch : public MetaBoolean
+{
+public:
+
+   ICFAutoStretch( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern ICFAutoStretch* TheICFAutoStretchParameter;
+
+// ----------------------------------------------------------------------------
+
+class ICFLinkedAutoStretch : public MetaBoolean
+{
+public:
+
+   ICFLinkedAutoStretch( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern ICFLinkedAutoStretch* TheICFLinkedAutoStretchParameter;
+
+// ----------------------------------------------------------------------------
+
 PCL_END_LOCAL
 
 } // pcl

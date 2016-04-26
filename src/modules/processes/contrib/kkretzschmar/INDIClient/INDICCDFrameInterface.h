@@ -53,6 +53,7 @@
 #ifndef __INDICCDFrameInterface_h
 #define __INDICCDFrameInterface_h
 
+#include <pcl/CheckBox.h>
 #include <pcl/ComboBox.h>
 #include <pcl/Label.h>
 #include <pcl/NumericControl.h>
@@ -144,12 +145,19 @@ private:
                HorizontalSizer   ExposureCount_Sizer;
                   Label             ExposureCount_Label;
                   SpinBox           ExposureCount_SpinBox;
+               HorizontalSizer   ReuseImageWindow_Sizer;
+                  CheckBox          ReuseImageWindow_CheckBox;
+               HorizontalSizer   AutoStretch_Sizer;
+                  CheckBox          AutoStretch_CheckBox;
+               HorizontalSizer   LinkedAutoStretch_Sizer;
+                  CheckBox          LinkedAutoStretch_CheckBox;
             VerticalSizer     FrameAcquisitionRight_Sizer;
                HorizontalSizer   StartExposure_Sizer;
                   PushButton        StartExposure_PushButton;
                HorizontalSizer   CancelExposure_Sizer;
                   PushButton        CancelExposure_PushButton;
                Label             ExposureInfo_Label;
+
    };
 
    GUIData* GUI;

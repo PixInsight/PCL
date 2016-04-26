@@ -88,6 +88,9 @@ INDICCDFrameProcess::INDICCDFrameProcess() : MetaProcess()
    new ICFExposureDelay( this );
    new ICFExposureCount( this );
    new ICFNewImageIdTemplate( this );
+   new ICFReuseImageWindow( this );
+   new ICFAutoStretch( this );
+   new ICFLinkedAutoStretch( this );
 }
 
 // ----------------------------------------------------------------------------

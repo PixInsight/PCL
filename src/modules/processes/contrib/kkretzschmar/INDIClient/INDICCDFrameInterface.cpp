@@ -222,6 +222,9 @@ ProcessImplementation* INDICCDFrameInterface::NewProcess() const
    instance->p_exposureDelay = GUI->ExposureDelay_NumericEdit.Value();
    instance->p_exposureCount = GUI->ExposureCount_SpinBox.Value();
    //instance->p_newImageIdTemplate = ; // ### TODO
+   instance->p_reuseImageWindow = GUI->ReuseImageWindow_CheckBox.IsChecked();
+   instance->p_autoStretch = GUI->AutoStretch_CheckBox.IsChecked();
+   instance->p_linkedAutoStretch = GUI->LinkedAutoStretch_CheckBox.IsChecked();
    return instance;
 }
 
@@ -255,6 +258,9 @@ bool INDICCDFrameInterface::ImportProcess( const ProcessImplementation& p )
          GUI->ExposureTime_NumericEdit.SetValue( r->p_exposureTime );
          GUI->ExposureDelay_NumericEdit.SetValue( r->p_exposureDelay );
          GUI->ExposureCount_SpinBox.SetValue( r->p_exposureCount );
+         GUI->ReuseImageWindow_CheckBox.SetChecked( r->p_reuseImageWindow );
+         GUI->AutoStretch_CheckBox.SetChecked( r->p_autoStretch );
+         GUI->LinkedAutoStretch_CheckBox.SetChecked( r->p_linkedAutoStretch );
          return true;
       }
       else
@@ -563,10 +569,33 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    ExposureCount_Sizer.Add( ExposureCount_SpinBox );
    ExposureCount_Sizer.AddStretch();
 
+   ReuseImageWindow_CheckBox.SetText( "Reuse image window" );
+   ReuseImageWindow_CheckBox.SetToolTip( "<p>Load newly acquired client frames on the same image window, if available.</p>" );
+   ReuseImageWindow_Sizer.AddSpacing( labelWidth1 + 4 );
+   ReuseImageWindow_Sizer.Add( ReuseImageWindow_CheckBox );
+   ReuseImageWindow_Sizer.AddStretch();
+
+   AutoStretch_CheckBox.SetText( "AutoStretch" );
+   AutoStretch_CheckBox.SetToolTip( "<p>Compute and apply adaptive screen transfer functions (STF) for newly acquired client frames.</p>" );
+   AutoStretch_Sizer.AddSpacing( labelWidth1 + 4 );
+   AutoStretch_Sizer.Add( AutoStretch_CheckBox );
+   AutoStretch_Sizer.AddStretch();
+
+   LinkedAutoStretch_CheckBox.SetText( "Linked AutoStretch" );
+   LinkedAutoStretch_CheckBox.SetToolTip( "<p>If enabled, compute and apply a single adaptive STF for all nominal channels of "
+      "each acquired color image.</p>"
+      "<p>If disabled, compute a separate adaptive STF for each nominal color channel.</p>" );
+   LinkedAutoStretch_Sizer.AddSpacing( labelWidth1 + 4 );
+   LinkedAutoStretch_Sizer.Add( LinkedAutoStretch_CheckBox );
+   LinkedAutoStretch_Sizer.AddStretch();
+
    FrameAcquisitionLeft_Sizer.SetSpacing( 4 );
    FrameAcquisitionLeft_Sizer.Add( ExposureTime_NumericEdit );
    FrameAcquisitionLeft_Sizer.Add( ExposureDelay_NumericEdit );
    FrameAcquisitionLeft_Sizer.Add( ExposureCount_Sizer );
+   FrameAcquisitionLeft_Sizer.Add( ReuseImageWindow_Sizer );
+   FrameAcquisitionLeft_Sizer.Add( AutoStretch_Sizer );
+   FrameAcquisitionLeft_Sizer.Add( LinkedAutoStretch_Sizer );
 
    StartExposure_PushButton.SetText( "Start" );
    StartExposure_PushButton.SetIcon( w.ScaledResource( ":/icons/play.png" ) );
@@ -586,11 +615,11 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    FrameAcquisitionRight_Sizer.SetSpacing( 4 );
    FrameAcquisitionRight_Sizer.Add( StartExposure_Sizer );
    FrameAcquisitionRight_Sizer.Add( CancelExposure_Sizer );
-   FrameAcquisitionRight_Sizer.Add( ExposureInfo_Label );
+   FrameAcquisitionRight_Sizer.Add( ExposureInfo_Label, 100 );
 
-   FrameAcquisition_Sizer.SetSpacing( 8 );
+   FrameAcquisition_Sizer.SetSpacing( 16 );
    FrameAcquisition_Sizer.Add( FrameAcquisitionLeft_Sizer );
-   FrameAcquisition_Sizer.Add( FrameAcquisitionRight_Sizer );
+   FrameAcquisition_Sizer.Add( FrameAcquisitionRight_Sizer, 100 );
    FrameAcquisition_Sizer.AddStretch();
 
    FrameAcquisition_Control.SetSizer( FrameAcquisition_Sizer );
@@ -732,13 +761,35 @@ __device_found:
          if ( CCDProp.PropertyValue == "OFF" )
          {
             if ( instance.getINDIPropertyItem( m_device, "UPLOAD_MODE", "UPLOAD_LOCAL", CCDProp ) )
-            {
                if ( CCDProp.PropertyValue == "OFF" )
                   uploadModeIndex = ICFUploadMode::UploadServerAndClient;
                else
                   uploadModeIndex = ICFUploadMode::UploadServer;
-            }
+         }
+         else
+            uploadModeIndex = ICFUploadMode::UploadClient;
+      }
+      if ( uploadModeIndex >= 0 )
+      {
+         GUI->UploadMode_Combo.Enable();
+         GUI->UploadMode_Label.Enable();
+         GUI->UploadMode_Combo.SetCurrentItem( uploadModeIndex );
 
+         if ( uploadModeIndex == ICFUploadMode::UploadClient || uploadModeIndex == ICFUploadMode::UploadServerAndClient )
+         {
+            GUI->ReuseImageWindow_CheckBox.Enable();
+            GUI->AutoStretch_CheckBox.Enable();
+            GUI->LinkedAutoStretch_CheckBox.Enable( GUI->AutoStretch_CheckBox.IsChecked() );
+         }
+         else
+         {
+            GUI->ReuseImageWindow_CheckBox.Disable();
+            GUI->AutoStretch_CheckBox.Disable();
+            GUI->LinkedAutoStretch_CheckBox.Disable();
+         }
+
+         if ( uploadModeIndex == ICFUploadMode::UploadServer || uploadModeIndex == ICFUploadMode::UploadServerAndClient )
+         {
             GUI->UploadDir_Label.Enable();
             GUI->UploadDir_PushButton.Enable();
             GUI->ServerFileNameTemplate_Label.Enable();
@@ -746,19 +797,11 @@ __device_found:
          }
          else
          {
-            uploadModeIndex = ICFUploadMode::UploadClient;
-
             GUI->UploadDir_Label.Disable();
             GUI->UploadDir_PushButton.Disable();
             GUI->ServerFileNameTemplate_Label.Disable();
             GUI->ServerFileNameTemplate_Edit.Disable();
          }
-      }
-      if ( uploadModeIndex >= 0 )
-      {
-         GUI->UploadMode_Combo.Enable();
-         GUI->UploadMode_Label.Enable();
-         GUI->UploadMode_Combo.SetCurrentItem( uploadModeIndex );
       }
       else
       {
@@ -958,10 +1001,16 @@ private:
       m_iface->ProcessEvents();
    }
 
-   virtual void NewFrameEvent( ImageWindow& window )
+   virtual void NewFrameEvent( ImageWindow& window, bool reusedWindow )
    {
-      window.ZoomToFit( false/*allowZoom*/ );
-      window.Show();
+      if ( reusedWindow )
+         window.Regenerate();
+      else
+      {
+         window.BringToFront();
+         window.Show();
+         window.ZoomToFit( false/*allowZoom*/ );
+      }
       m_iface->ProcessEvents();
    }
 

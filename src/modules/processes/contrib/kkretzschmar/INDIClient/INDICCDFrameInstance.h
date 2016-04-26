@@ -109,6 +109,9 @@ private:
    double   p_exposureDelay;
    int32    p_exposureCount;
    String   p_newImageIdTemplate;
+   pcl_bool p_reuseImageWindow;
+   pcl_bool p_autoStretch;
+   pcl_bool p_linkedAutoStretch;
 
    int      m_exposureNumber;
 
@@ -184,7 +187,7 @@ protected:
 
    virtual void WaitingForServerEvent() = 0;
 
-   virtual void NewFrameEvent( ImageWindow& ) = 0;
+   virtual void NewFrameEvent( ImageWindow&, bool reusedWindow ) = 0;
 
    virtual void EndAcquisitionEvent() = 0;
 
@@ -194,6 +197,8 @@ private:
 
    bool m_running, m_aborted;
    int  m_successCount, m_errorCount;
+
+   void AutoStretch( ImageWindow& ) const;
 };
 
 // ----------------------------------------------------------------------------

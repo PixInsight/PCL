@@ -68,6 +68,9 @@ ICFExposureTime*           TheICFExposureTimeParameter = nullptr;
 ICFExposureDelay*          TheICFExposureDelayParameter = nullptr;
 ICFExposureCount*          TheICFExposureCountParameter = nullptr;
 ICFNewImageIdTemplate*     TheICFNewImageIdTemplateParameter = nullptr;
+ICFReuseImageWindow*       TheICFReuseImageWindowParameter = nullptr;
+ICFAutoStretch*            TheICFAutoStretchParameter = nullptr;
+ICFLinkedAutoStretch*      TheICFLinkedAutoStretchParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -347,6 +350,57 @@ IsoString ICFNewImageIdTemplate::Id() const
 String ICFNewImageIdTemplate::DefaultValue() const
 {
    return "INDICCDFrame";
+}
+
+// ----------------------------------------------------------------------------
+
+ICFReuseImageWindow::ICFReuseImageWindow( MetaProcess* P ) : MetaBoolean( P )
+{
+   TheICFReuseImageWindowParameter = this;
+}
+
+IsoString ICFReuseImageWindow::Id() const
+{
+   return "reuseImageWindow";
+}
+
+bool ICFReuseImageWindow::DefaultValue() const
+{
+   return false;
+}
+
+// ----------------------------------------------------------------------------
+
+ICFAutoStretch::ICFAutoStretch( MetaProcess* P ) : MetaBoolean( P )
+{
+   TheICFAutoStretchParameter = this;
+}
+
+IsoString ICFAutoStretch::Id() const
+{
+   return "autoStretch";
+}
+
+bool ICFAutoStretch::DefaultValue() const
+{
+   return false;
+}
+
+// ----------------------------------------------------------------------------
+
+ICFLinkedAutoStretch::ICFLinkedAutoStretch( MetaProcess* P ) : MetaBoolean( P )
+{
+   TheICFLinkedAutoStretchParameter = this;
+}
+
+IsoString ICFLinkedAutoStretch::Id() const
+{
+   return "linkedAutoStretch";
+}
+
+bool ICFLinkedAutoStretch::DefaultValue() const
+{
+   return false;
 }
 
 // ----------------------------------------------------------------------------

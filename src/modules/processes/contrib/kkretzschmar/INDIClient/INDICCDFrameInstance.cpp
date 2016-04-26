@@ -59,6 +59,7 @@
 #include <pcl/FileFormat.h>
 #include <pcl/FileFormatInstance.h>
 #include <pcl/ICCProfile.h>
+#include <pcl/ImageStatistics.h>
 #include <pcl/MetaModule.h>
 #include <pcl/SpinStatus.h>
 #include <pcl/StdStatus.h>
@@ -83,6 +84,9 @@ INDICCDFrameInstance::INDICCDFrameInstance( const MetaProcess* m ) :
    p_exposureDelay( TheICFExposureDelayParameter->DefaultValue() ),
    p_exposureCount( TheICFExposureCountParameter->DefaultValue() ),
    p_newImageIdTemplate( TheICFNewImageIdTemplateParameter->DefaultValue() ),
+   p_reuseImageWindow( TheICFReuseImageWindowParameter->DefaultValue() ),
+   p_autoStretch( TheICFAutoStretchParameter->DefaultValue() ),
+   p_linkedAutoStretch( TheICFLinkedAutoStretchParameter->DefaultValue() ),
    m_exposureNumber( 0 )
 {
 }
@@ -109,6 +113,9 @@ void INDICCDFrameInstance::Assign( const ProcessImplementation& p )
       p_exposureDelay          = x->p_exposureDelay;
       p_exposureCount          = x->p_exposureCount;
       p_newImageIdTemplate     = x->p_newImageIdTemplate;
+      p_reuseImageWindow       = x->p_reuseImageWindow;
+      p_autoStretch            = x->p_autoStretch;
+      p_linkedAutoStretch      = x->p_linkedAutoStretch;
    }
 }
 
@@ -382,10 +389,16 @@ private:
          m_waitMonitor.Initialize( "Waiting for INDI server" );
    }
 
-   virtual void NewFrameEvent( ImageWindow& window )
+   virtual void NewFrameEvent( ImageWindow& window, bool reusedWindow )
    {
-      window.ZoomToFit( false/*allowZoom*/ );
-      window.Show();
+      if ( reusedWindow )
+         window.Regenerate();
+      else
+      {
+         window.BringToFront();
+         window.Show();
+         window.ZoomToFit( false/*allowZoom*/ );
+      }
    }
 
    virtual void EndAcquisitionEvent()
@@ -430,6 +443,12 @@ void* INDICCDFrameInstance::LockParameter( const MetaParameter* p, size_type tab
       return &p_exposureCount;
    if ( p == TheICFNewImageIdTemplateParameter )
       return p_newImageIdTemplate.Begin();
+   if ( p == TheICFReuseImageWindowParameter )
+      return &p_reuseImageWindow;
+   if ( p == TheICFAutoStretchParameter )
+      return &p_autoStretch;
+   if ( p == TheICFLinkedAutoStretchParameter )
+      return &p_linkedAutoStretch;
    return nullptr;
 }
 
@@ -664,12 +683,23 @@ void AbstractINDICCDFrameExecution::Perform()
             if ( !images[0].info.supported || images[0].info.NumberOfSamples() == 0 )
                throw Error( filePath + ": Invalid or unsupported image." );
 
-            ImageWindow window( 1, 1, 1,
-                              images[0].options.bitsPerSample,
-                              images[0].options.ieeefpSampleFormat,
-                              false/*color*/,
-                              true/*initialProcessing*/,
-                              m_instance.p_newImageIdTemplate );
+            ImageWindow window;
+            if ( m_instance.p_reuseImageWindow )
+            {
+               window = ImageWindow::WindowById( m_instance.p_newImageIdTemplate );
+               if ( !window.IsNull() ) // Make sure our window is valid and has not been write-locked by other task.
+                  if ( !window.MainView().CanWrite() )
+                     window = ImageWindow::Null();
+            }
+            bool reusedWindow = !window.IsNull();
+            if ( !reusedWindow )
+               window = ImageWindow( 1, 1, 1,
+                                     images[0].options.bitsPerSample,
+                                     images[0].options.ieeefpSampleFormat,
+                                     false/*color*/,
+                                     true/*initialProcessing*/,
+                                     m_instance.p_newImageIdTemplate );
+
             ImageVariant image = window.MainView().Image();
             if ( !file.ReadImage( image ) )
                throw CatchedException();
@@ -719,7 +749,10 @@ void AbstractINDICCDFrameExecution::Perform()
                // ### TODO - Cannot be implemented until the core provides support for CFAs
             }
 
-            NewFrameEvent( window );
+            if ( m_instance.p_autoStretch )
+               AutoStretch( window );
+
+            NewFrameEvent( window, reusedWindow );
          }
       }
 
@@ -760,6 +793,71 @@ void AbstractINDICCDFrameExecution::Abort()
 {
    if ( IsRunning() )
       throw ProcessAborted();
+}
+
+void AbstractINDICCDFrameExecution::AutoStretch( ImageWindow& window ) const
+{
+   /*
+    * AutoStretch parameters
+    */
+   static const double s_shadowsClipping = -2.80 * 1.4826; // in MAD units from the median
+   static const double s_targetBackground = 0.25;
+
+   ImageVariant image = window.MainView().Image();
+   Array<ImageStatistics> S;
+   for( int c = 0; c < image->NumberOfNominalChannels(); ++c )
+   {
+      image->SelectChannel( c );
+      ImageStatistics s;
+      s.EnableRejection();
+      s.SetRejectionLimits( 0.0, 1.0 );
+      s.DisableSumOfSquares();
+      s.DisableBWMV();
+      s.DisablePBMV();
+      s << image;
+      S << s;
+   }
+
+   int n = image->NumberOfNominalChannels();
+   double c0 = 0, m = 0;
+
+   View::stf_list stf( 4 );
+
+   if ( n == 1 || m_instance.p_linkedAutoStretch )
+   {
+      for ( int c = 0; c < n; c++ )
+      {
+         if ( 1 + S[c].MAD() != 1 )
+            c0 += S[c].Median() + s_shadowsClipping * S[c].MAD();
+         m += S[c].Median();
+      }
+      c0 = Range( c0/n, 0.0, 1.0 );
+      m = HistogramTransformation::MTF( s_targetBackground, m/n - c0 );
+      for ( int i = 0; i < 3; i++ )
+      {
+         stf[i].SetMidtonesBalance( m );
+         stf[i].SetClipping( c0, 1 );
+         stf[i].SetRange( 0, 1 );
+      }
+   }
+   else
+   {
+      for ( int c = 0; c < n; c++ )
+      {
+         c0 = (1 +  S[c].MAD() != 1) ? Range( S[c].Median() + s_shadowsClipping * S[c].MAD(), 0.0, 1.0 ) : 0.0;
+         m = HistogramTransformation::MTF( s_targetBackground, S[c].Median() - c0 );
+         stf[c].SetMidtonesBalance( m );
+         stf[c].SetClipping( c0, 1 );
+         stf[c].SetRange( 0, 1 );
+      }
+   }
+
+   stf[3].SetMidtonesBalance( 0.5 );
+   stf[3].SetClipping( 0, 1 );
+   stf[3].SetRange( 0, 1 );
+
+   window.MainView().SetScreenTransferFunctions( stf );
+   window.MainView().EnableScreenTransferFunctions();
 }
 
 // ----------------------------------------------------------------------------

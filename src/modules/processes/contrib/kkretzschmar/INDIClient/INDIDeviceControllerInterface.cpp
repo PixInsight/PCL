@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.04.0108
+// Standard INDIClient Process Module Version 01.00.07.0141
 // ----------------------------------------------------------------------------
-// INDIDeviceControllerInterface.cpp - Released 2016/04/15 15:37:39 UTC
+// INDIDeviceControllerInterface.cpp - Released 2016/04/28 15:13:36 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -402,6 +402,7 @@ INDIDeviceControllerInterface::GUIData::GUIData( INDIDeviceControllerInterface& 
    DeviceList_TreeBox.SetNumberOfColumns( 1 );
    DeviceList_TreeBox.SetHeaderText( 0, "Device" );
    DeviceList_TreeBox.SetMinHeight( LIST_MINHEIGHT( fnt ) );
+   DeviceList_TreeBox.SetScaledMinWidth( 400 );
 
    ConnectDevice_PushButton.SetText( "Connect" );
    ConnectDevice_PushButton.OnClick( (Button::click_event_handler)&INDIDeviceControllerInterface::__CameraListButtons_Click, w );
@@ -435,6 +436,7 @@ INDIDeviceControllerInterface::GUIData::GUIData( INDIDeviceControllerInterface& 
    PropertyList_TreeBox.SetHeaderText( ValueColumn, "Value" );
    PropertyList_TreeBox.SetHeaderText( LabelColumn, "Label" );
    PropertyList_TreeBox.SetMinHeight( LIST_MINHEIGHT( fnt ) );
+   PropertyList_TreeBox.SetScaledMinWidth( 400 );
 
    PropertyList_TreeBox.OnClose( (Control::close_event_handler)&INDIDeviceControllerInterface::__Close, w );
 
@@ -903,4 +905,4 @@ void INDIDeviceControllerInterface::PropertyButton_Click( Button& sender, bool c
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIDeviceControllerInterface.cpp - Released 2016/04/15 15:37:39 UTC
+// EOF INDIDeviceControllerInterface.cpp - Released 2016/04/28 15:13:36 UTC

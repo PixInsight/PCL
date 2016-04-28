@@ -2,11 +2,14 @@
 # PixInsight Makefile Generator Script v1.101
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Fri, 18 Mar 2016 13:17:31 GMT
+# Automatically generated on Thu, 28 Apr 2016 14:46:22 GMT
 # Project id ...... INDIClient
 # Project type .... Module
 # Platform ........ Linux/g++
 # Configuration ... Release/x64
+# --------------------------------------------------------------------
+# Additional libraries:
+# zlib-pxi
 ######################################################################
 
 OBJ_DIR="$(PCLSRCDIR)/modules/processes/contrib/kkretzschmar/INDIClient/linux/g++/x64/Release"
@@ -105,7 +108,7 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/INDIClient-pxm.so: $(OBJ_FILES)
-	g++ -m64 -fPIC -pthread -Wl,-fuse-ld=gold -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -s -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/INDIClient-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
+	g++ -m64 -fPIC -pthread -Wl,-fuse-ld=gold -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -s -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/INDIClient-pxm.so $(OBJ_FILES) -lzlib-pxi -lpthread -lPCL-pxi
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean

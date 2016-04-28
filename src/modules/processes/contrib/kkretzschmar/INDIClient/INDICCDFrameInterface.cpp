@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.04.0108
+// Standard INDIClient Process Module Version 01.00.07.0141
 // ----------------------------------------------------------------------------
-// INDICCDFrameInterface.cpp - Released 2016/04/15 15:37:39 UTC
+// INDICCDFrameInterface.cpp - Released 2016/04/28 15:13:36 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -775,18 +775,19 @@ __device_found:
          GUI->UploadMode_Label.Enable();
          GUI->UploadMode_Combo.SetCurrentItem( uploadModeIndex );
 
-         if ( uploadModeIndex == ICFUploadMode::UploadClient || uploadModeIndex == ICFUploadMode::UploadServerAndClient )
-         {
-            GUI->ReuseImageWindow_CheckBox.Enable();
-            GUI->AutoStretch_CheckBox.Enable();
-            GUI->LinkedAutoStretch_CheckBox.Enable( GUI->AutoStretch_CheckBox.IsChecked() );
-         }
-         else
-         {
-            GUI->ReuseImageWindow_CheckBox.Disable();
-            GUI->AutoStretch_CheckBox.Disable();
-            GUI->LinkedAutoStretch_CheckBox.Disable();
-         }
+         if ( m_execution == nullptr )
+            if ( uploadModeIndex == ICFUploadMode::UploadClient || uploadModeIndex == ICFUploadMode::UploadServerAndClient )
+            {
+               GUI->ReuseImageWindow_CheckBox.Enable();
+               GUI->AutoStretch_CheckBox.Enable();
+               GUI->LinkedAutoStretch_CheckBox.Enable( GUI->AutoStretch_CheckBox.IsChecked() );
+            }
+            else
+            {
+               GUI->ReuseImageWindow_CheckBox.Disable();
+               GUI->AutoStretch_CheckBox.Disable();
+               GUI->LinkedAutoStretch_CheckBox.Disable();
+            }
 
          if ( uploadModeIndex == ICFUploadMode::UploadServer || uploadModeIndex == ICFUploadMode::UploadServerAndClient )
          {
@@ -937,8 +938,17 @@ private:
    virtual void StartAcquisitionEvent()
    {
       m_iface->m_execution = this;
-      m_iface->GUI->ExposureInfo_Label.Clear();
+      m_iface->GUI->ExposureTime_NumericEdit.Disable();
+      m_iface->GUI->ExposureDelay_NumericEdit.Disable();
+      m_iface->GUI->ExposureCount_Label.Disable();
+      m_iface->GUI->ExposureCount_SpinBox.Disable();
+      m_iface->GUI->ReuseImageWindow_CheckBox.Disable();
+      m_iface->GUI->AutoStretch_CheckBox.Disable();
+      m_iface->GUI->LinkedAutoStretch_CheckBox.Disable();
+      m_iface->GUI->StartExposure_PushButton.Disable();
       m_iface->GUI->CancelExposure_PushButton.Enable();
+      m_iface->GUI->ExposureInfo_Label.Clear();
+
    }
 
    virtual void NewExposureEvent( int expNum, int expCount )
@@ -1017,8 +1027,16 @@ private:
    virtual void EndAcquisitionEvent()
    {
       m_iface->m_execution = nullptr;
-      m_iface->GUI->ExposureInfo_Label.Clear();
+      m_iface->GUI->ExposureTime_NumericEdit.Enable();
+      m_iface->GUI->ExposureDelay_NumericEdit.Enable();
+      m_iface->GUI->ExposureCount_Label.Enable();
+      m_iface->GUI->ExposureCount_SpinBox.Enable();
+      m_iface->GUI->ReuseImageWindow_CheckBox.Enable();
+      m_iface->GUI->AutoStretch_CheckBox.Enable();
+      m_iface->GUI->LinkedAutoStretch_CheckBox.Enable();
+      m_iface->GUI->StartExposure_PushButton.Enable();
       m_iface->GUI->CancelExposure_PushButton.Disable();
+      m_iface->GUI->ExposureInfo_Label.Clear();
       m_iface->ProcessEvents();
    }
 
@@ -1074,4 +1092,4 @@ void INDICCDFrameInterface::e_Click( Button& sender, bool checked )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInterface.cpp - Released 2016/04/15 15:37:39 UTC
+// EOF INDICCDFrameInterface.cpp - Released 2016/04/28 15:13:36 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.04.0108
+// Standard INDIClient Process Module Version 01.00.07.0141
 // ----------------------------------------------------------------------------
-// INDIDeviceControllerInstance.cpp - Released 2016/04/15 15:37:39 UTC
+// INDIDeviceControllerInstance.cpp - Released 2016/04/28 15:13:36 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -60,6 +60,7 @@
 
 #include <pcl/AutoViewLock.h>
 #include <pcl/Console.h>
+#include <pcl/MetaModule.h>
 #include <pcl/Mutex.h>
 #include <pcl/StdStatus.h>
 #include <pcl/View.h>
@@ -210,7 +211,9 @@ bool INDIDeviceControllerInstance::sendNewProperty( bool isAsynchCall )
          Console().WriteLn( "Sending new property value(s) to INDI server '" + String( p_serverHostName ) + ':' + String( p_serverPort ) + "':" );
       }
 
-      for ( pcl::Array<INDINewPropertyListItem>::iterator iter = p_newProperties.Begin(); iter != p_newProperties.End(); ++iter )
+      Array<INDINewPropertyListItem> watchNewProperties;
+
+      for ( Array<INDINewPropertyListItem>::iterator iter = p_newProperties.Begin(); iter != p_newProperties.End(); ++iter )
       {
          if ( iter->NewPropertyValue.IsEmpty() )
             throw String( "Internal: Empty property value in " + String( __func__ ) );
@@ -279,7 +282,7 @@ bool INDIDeviceControllerInstance::sendNewProperty( bool isAsynchCall )
          if (    getPropertyFromKeyString( *iter, iter->PropertyKey )
             || !iter->Device.IsEmpty() && !iter->Property.IsEmpty() && !iter->PropertyType.IsEmpty() )
          {
-            if ( switchVecProp )
+            if ( switchVecProp != nullptr )
             {
                // set new switch
                ISwitch* sp;
@@ -295,7 +298,7 @@ bool INDIDeviceControllerInstance::sendNewProperty( bool isAsynchCall )
                else
                   sp->s = ISS_OFF;
             }
-            else if ( numberVecProp )
+            else if ( numberVecProp != nullptr )
             {
                // set new number value
                INumber* np;
@@ -307,7 +310,7 @@ bool INDIDeviceControllerInstance::sendNewProperty( bool isAsynchCall )
                   throw String( "Could not find element '" + String( iter->Element ) + "'." );
                np->value = iter->NewPropertyValue.ToDouble();
             }
-            else if ( textVecProp )
+            else if ( textVecProp != nullptr )
             {
                // set new text value
                IText* np;
@@ -330,57 +333,53 @@ bool INDIDeviceControllerInstance::sendNewProperty( bool isAsynchCall )
             throw String( "Invalid property key '" + String( iter->PropertyKey ) + "'." );
          }
 
+         if ( isAsynchCall )
+            watchNewProperties << *iter;
+
          if ( p_verbosity > 1 )
          {
             Console().WriteLn( "<end><cbr>"
-                              "Device  : '" + String( deviceStr ) + "'" );
-            Console().WriteLn( "Property: '" + String( propertyStr ) + "'" );
-            Console().WriteLn( "Element : '" + String( iter->Element ) + "'" );
-            Console().WriteLn( "Value   : '" + String( iter->NewPropertyValue ) + "'" );
+                               "Device   : '" + String( deviceStr ) + "'" );
+            Console().WriteLn( "Property : '" + String( propertyStr ) + "'" );
+            Console().WriteLn( "Element  : '" + String( iter->Element ) + "'" );
+            Console().WriteLn( "Value    : '" + String( iter->NewPropertyValue ) + "'" );
          }
       } // for
 
       if ( p_verbosity > 1 )
          Console().WriteLn( "<end><cbr>------------------------------------------------------------------------------" );
 
-      // send new properties to server and wait for response
-      if ( switchVecProp )
-      {
+      // Send new properties to server
+      if ( switchVecProp != nullptr )
          INDIClient::TheClient()->sendNewSwitch( switchVecProp );
-         // if synch mode wait until completed or abort
-         while ( switchVecProp->s != IPS_OK && switchVecProp->s != IPS_IDLE && !p_abort && !m_internalAbortFlag && !isAsynchCall )
-            if ( switchVecProp->s == IPS_ALERT )
-            {
-               m_internalAbortFlag = false;
-               throw String( "Failure to send switch property. Message from INDI server: " + String( m_currentMessage ) );
-            }
-      }
-      else if ( numberVecProp )
-      {
+      else if ( numberVecProp != nullptr )
          INDIClient::TheClient()->sendNewNumber( numberVecProp );
-         // if synch mode wait until completed or abort
-         while ( numberVecProp->s != IPS_OK && numberVecProp->s != IPS_IDLE && !p_abort && !m_internalAbortFlag && !isAsynchCall )
-            if ( numberVecProp->s == IPS_ALERT )
-            {
-               m_internalAbortFlag = false;
-               throw String( "Failure to send number property. Message from INDI server: " + String( m_currentMessage ) );
-            }
-      }
-      else if ( textVecProp )
-      {
+      else if ( textVecProp != nullptr )
          INDIClient::TheClient()->sendNewText( textVecProp );
-         // if synch mode wait until completed or abort
-         while ( textVecProp->s != IPS_OK && textVecProp->s != IPS_IDLE && !p_abort && !m_internalAbortFlag && !isAsynchCall )
-            if ( textVecProp->s == IPS_ALERT )
-            {
-               m_internalAbortFlag = false;
-               throw String( "Failure to send text property. Message from INDI server: " + String( m_currentMessage ) );
-            }
-      }
 
       p_newProperties.Clear();
 
       m_internalAbortFlag = false;
+
+      // In asynchronous calls, wait until the server has processed all of our
+      // new property requests.
+      for ( auto item : watchNewProperties )
+      {
+         Module->ProcessEvents();
+         INDIPropertyListItem p;
+         if ( !getINDIPropertyItem( item.Device, item.Property, item.Element, p, false/*formatted*/ ) )
+            throw String( "Unable to watch '"
+                     + item.Device + '.' + item.Property + '.' + item.Element
+                     + "' property item. Message from INDI server: " + String( m_currentMessage ) );
+         if ( p_abort || m_internalAbortFlag )
+            break;
+         if ( p.PropertyState == IPS_OK || p.PropertyState == IPS_IDLE )
+            break;
+         if ( p.PropertyState == IPS_ALERT )
+            throw String( "Failure to send '"
+                     + item.Device + '.' + item.Property + '.' + item.Element
+                     + "' property item. Message from INDI server: " + String( m_currentMessage ) );
+      }
 
       return true;
    }
@@ -694,4 +693,4 @@ size_type INDIDeviceControllerInstance::ParameterLength( const MetaParameter* p,
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIDeviceControllerInstance.cpp - Released 2016/04/15 15:37:39 UTC
+// EOF INDIDeviceControllerInstance.cpp - Released 2016/04/28 15:13:36 UTC

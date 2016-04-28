@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.04.0108
+// Standard INDIClient Process Module Version 01.00.07.0141
 // ----------------------------------------------------------------------------
-// INDICCDFrameInstance.cpp - Released 2016/04/15 15:37:39 UTC
+// INDICCDFrameInstance.cpp - Released 2016/04/28 15:13:36 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -373,12 +373,13 @@ private:
       m_monitor.Complete();
 
       // Print latest INDI server message
-      if ( !DeviceControllerInstance().CurrentServerMessage().IsEmpty() )
-      {
-         m_console.NoteLn( "<end><cbr><br>* Latest INDI server log entry:" );
-         m_console.NoteLn( DeviceControllerInstance().CurrentServerMessage() );
-         m_console.WriteLn();
-      }
+      if ( DeviceControllerInstance().Verbosity() > 1 )
+         if ( !DeviceControllerInstance().CurrentServerMessage().IsEmpty() )
+         {
+            m_console.NoteLn( "<end><cbr><br>* Latest INDI server log entry:" );
+            m_console.NoteLn( DeviceControllerInstance().CurrentServerMessage() );
+            m_console.WriteLn();
+         }
    }
 
    virtual void WaitingForServerEvent()
@@ -865,4 +866,4 @@ void AbstractINDICCDFrameExecution::AutoStretch( ImageWindow& window ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInstance.cpp - Released 2016/04/15 15:37:39 UTC
+// EOF INDICCDFrameInstance.cpp - Released 2016/04/28 15:13:36 UTC

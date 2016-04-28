@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.04.0108
+// Standard INDIClient Process Module Version 01.00.07.0141
 // ----------------------------------------------------------------------------
-// INDIParamListTypes.h - Released 2016/04/15 15:37:39 UTC
+// INDIParamListTypes.h - Released 2016/04/28 15:13:36 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -181,4 +181,4 @@ private:
 #endif /* PIXINSIGHTINDIPARAMLISTTYPES_H_ */
 
 // ----------------------------------------------------------------------------
-// EOF INDIParamListTypes.h - Released 2016/04/15 15:37:39 UTC
+// EOF INDIParamListTypes.h - Released 2016/04/28 15:13:36 UTC

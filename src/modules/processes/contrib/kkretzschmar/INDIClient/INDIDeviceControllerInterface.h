@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.07.0141
+// Standard INDIClient Process Module Version 01.00.09.0153
 // ----------------------------------------------------------------------------
-// INDIDeviceControllerInterface.h - Released 2016/04/28 15:13:36 UTC
+// INDIDeviceControllerInterface.h - Released 2016/05/08 20:36:42 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -53,139 +53,20 @@
 #ifndef __INDIDeviceControllerInterface_h
 #define __INDIDeviceControllerInterface_h
 
-#include <pcl/Dialog.h>
-#include <pcl/CheckBox.h>
-#include <pcl/ComboBox.h>
 #include <pcl/Edit.h>
 #include <pcl/Label.h>
-#include <pcl/NumericControl.h>
 #include <pcl/ProcessInterface.h>
-#include <pcl/Sizer.h>
-#include <pcl/SectionBar.h>
-#include <pcl/SpinBox.h>
 #include <pcl/PushButton.h>
-#include <pcl/RadioButton.h>
-#include <pcl/TreeBox.h>
-#include <pcl/ErrorHandler.h>
+#include <pcl/SectionBar.h>
+#include <pcl/Sizer.h>
+#include <pcl/SpinBox.h>
 #include <pcl/Timer.h>
-#include <pcl/Mutex.h>
-#include <map>
-#include <vector>
-
+#include <pcl/TreeBox.h>
 
 #include "INDIDeviceControllerInstance.h"
 
-#if defined(__PCL_LINUX)
-#include <memory>
-#endif
-
 namespace pcl
 {
-
-class PropertyNode;
-class PropertyTree;
-class INDIDeviceControllerInterface;
-
-class SetPropertyDialog : public Dialog
-{
-public:
-   SetPropertyDialog(INDIDeviceControllerInstance* indiInstance ):Dialog(),m_instance(indiInstance) {}
-   virtual ~SetPropertyDialog() {}
-
-   virtual void setPropertyLabelString(String label){}
-   virtual void setPropertyValueString(String value){}
-   void setNewPropertyListItem(INDINewPropertyListItem& newPropItem) {m_newPropertyListItem=newPropItem;}
-   INDINewPropertyListItem getNewPropertyListItem(){return m_newPropertyListItem;}
-
-   static SetPropertyDialog* createPropertyDialog( String IndiType, String NumberFormatType, INDIDeviceControllerInstance* indiInstance );
-
-   void Ok_Button_Click( Button& sender, bool checked );
-   void Cancel_Button_Click( Button& sender, bool checked );
-
-
-protected:
-   INDINewPropertyListItem m_newPropertyListItem;
-
-private:
-
-   INDIDeviceControllerInstance*  m_instance;
-
-   friend class INDIClient;
-
-};
-
-class EditPropertyDialog : public SetPropertyDialog {
-private:
-   VerticalSizer       Global_Sizer;
-      HorizontalSizer		Property_Sizer;
-         Label               Property_Label;
-         Edit				Property_Edit;
-      HorizontalSizer	Buttons_Sizer;
-         PushButton			OK_PushButton;
-         PushButton			Cancel_PushButton;
-
-public:
-   EditPropertyDialog(INDIDeviceControllerInstance* indiInstance );
-   virtual ~EditPropertyDialog(){}
-
-   virtual void setPropertyLabelString(String label){Property_Label.SetText(label);}
-   virtual void setPropertyValueString(String value){Property_Edit.SetText(value);}
-   void EditCompleted( Edit& sender );
-};
-
-class EditSwitchPropertyDialog : public SetPropertyDialog {
-private:
-   VerticalSizer       Global_Sizer;
-      HorizontalSizer		Property_Sizer;
-         Label               Property_Label;
-         Label               ON_Label;
-         RadioButton			ON_RadioButton;
-         Label               OFF_Label;
-         RadioButton			OFF_RadioButton;
-      HorizontalSizer	Buttons_Sizer;
-         PushButton			OK_PushButton;
-         PushButton			Cancel_PushButton;
-
-public:
-   EditSwitchPropertyDialog(INDIDeviceControllerInstance* indiInstance );
-   virtual ~EditSwitchPropertyDialog(){}
-
-   virtual void setPropertyLabelString(String label){Property_Label.SetText(label);}
-   virtual void setPropertyValueString(String value);
-   void ButtonChecked( RadioButton& sender );
-};
-
-
-class EditNumberCoordPropertyDialog : public SetPropertyDialog {
-private:
-   VerticalSizer       Global_Sizer;
-      HorizontalSizer		Property_Sizer;
-         Label               Property_Label;
-         Edit				Hour_Edit;
-         Label               Colon1_Label;
-         Edit				Minute_Edit;
-         Label               Colon2_Label;
-         Edit				Second_Edit;
-      HorizontalSizer	Buttons_Sizer;
-         PushButton			OK_PushButton;
-         PushButton			Cancel_PushButton;
-
-   double m_hour;
-   double m_minute;
-   double m_second;
-
-
-
-public:
-   EditNumberCoordPropertyDialog(INDIDeviceControllerInstance* indiInstance );
-   virtual ~EditNumberCoordPropertyDialog(){}
-
-   virtual void setPropertyLabelString(String label){Property_Label.SetText(label);}
-   virtual void setPropertyValueString(String value);
-   void EditCompleted( Edit& sender);
-};
-
-
 
 // ----------------------------------------------------------------------------
 
@@ -200,10 +81,6 @@ public:
    virtual MetaProcess* Process() const;
    virtual const char** IconImageXPM() const;
 
-   virtual void ApplyInstance() const;
-   virtual void ApplyInstanceGlobal() const;
-   virtual void ResetInstance();
-
    virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ );
 
    virtual ProcessImplementation* NewProcess() const;
@@ -217,89 +94,56 @@ public:
 
    void UpdateControls();
 
-   // PixInsight client GUI
    struct GUIData
    {
       GUIData( INDIDeviceControllerInterface& );
-      ~GUIData(){delete SetPropDlg;}
-   Timer				 UpdateDeviceList_Timer;
-   Timer              UpdatePropertyList_Timer;
-   Timer              UpdateServerMessage_Timer;
 
-      VerticalSizer      Global_Sizer;
-      SectionBar         INDIServer_SectionBar;
-      Control			  INDIServer_Control;
-      HorizontalSizer		INDIServer_Sizer;
-            Label				ParameterHost_Label;
-            Edit				ParameterHost_Edit;
-            Label				ParameterPort_Label;
-            SpinBox				ParameterPort_SpinBox;
-         VerticalSizer		ConnectionServer_Sizer;
-            PushButton			ConnectServer_PushButton;
-            PushButton			DisconnectServer_PushButton;
-      SectionBar         INDIDevices_SectionBar;
-      Control			   INDIDevices_Control;
-      HorizontalSizer	INDIDevices_Sizer;
-         TreeBox				DeviceList_TreeBox;
-         VerticalSizer		DeviceAction_Sizer;
-            PushButton			ConnectDevice_PushButton;
-            PushButton			DisconnectDevice_PushButton;
-      SectionBar         INDIProperties_SectionBar;
-      Control			   INDIProperties_Control;
-      HorizontalSizer    INDIProperties_Sizer;
-      VerticalSizer		INDIDevicePropertyTreeBox_Sizer;
-         TreeBox				PropertyList_TreeBox;
-      VerticalSizer			Buttons_Sizer;
-         PushButton			EditProperty_PushButton;
-      VerticalSizer      ServerMessage_Sizer;
-         Label               ServerMessageLabel_Label;
-         Label               ServerMessage_Label;
-      SetPropertyDialog* SetPropDlg;
+      VerticalSizer     Global_Sizer;
+         SectionBar        Server_SectionBar;
+         Control           Server_Control;
+         HorizontalSizer   Server_Sizer;
+            Label             HostName_Label;
+            Edit              HostName_Edit;
+            Label             Port_Label;
+            SpinBox           Port_SpinBox;
+            VerticalSizer     ServerAction_Sizer;
+               PushButton        Connect_PushButton;
+               PushButton        Disconnect_PushButton;
+         SectionBar        Devices_SectionBar;
+         Control           Devices_Control;
+         HorizontalSizer   Devices_Sizer;
+            TreeBox           Devices_TreeBox;
+            VerticalSizer     NodeAction_Sizer;
+               PushButton        NodeAction_PushButton;
+         Label             ServerMessage_Label;
+
+      Timer SynchronizeWithServer_Timer;
    };
 
 private:
 
-   typedef std::map<String,PropertyNode*> PropertyNodeMapType;
-   typedef std::map<String,PropertyTree*> PropertyTreeMapType;
-   typedef std::vector<PropertyNode*>     PropertyNodeVectorType;
-
-   INDIDeviceControllerInstance instance;
-
    GUIData* GUI;
 
-   PropertyNodeMapType m_rootNodeMap;
-   PropertyNodeMapType m_deviceRootNodeMap;
-   PropertyNodeMapType m_deviceNodeMap;
-   PropertyTreeMapType m_propertyTreeMap;
-
-   void UpdatePropertyList();
-
-   void __UpdateDeviceList_Timer( Timer& sender );
-   void __UpdatePropertyList_Timer( Timer& sender );
-   void __UpdateServerMessage_Timer( Timer& sender );
-
-   void UpdateDeviceList();
+   void UpdateDeviceLists();
+   void UpdateNodeActionButtons( TreeBox::Node* );
+   void AdjustTreeColumns();
 
    // Event Handlers
-   void __CameraListButtons_Click( Button& sender, bool checked );
-   void PropertyButton_Click( Button& sender, bool checked );
-
-   void __RealValueUpdated( NumericEdit& sender, double value );
-   void __IntegerValueUpdated( SpinBox& sender, int value );
-   void __ItemClicked( Button& sender, bool checked );
-   void __ItemSelected( ComboBox& sender, int itemIndex );
-   void __EditGetFocus( Control& sender );
-   void __EditCompleted( Edit& sender );
-   void __Close(Control& sender, bool& allowClose);
-   void __ToggleSection( SectionBar& sender, Control& section, bool start );
+   void e_Show( Control& );
+   void e_Hide( Control& );
+   void e_ToggleSection( SectionBar& sender, Control& section, bool start );
+   void e_Click( Button& sender, bool checked );
+   void e_EditCompleted( Edit& sender );
+   void e_SpinValueUpdated( SpinBox& sender, int value );
+   void e_CurrentNodeUpdated( TreeBox& sender, TreeBox::Node& current, TreeBox::Node& oldCurrent );
+   void e_NodeActivated( TreeBox& sender, TreeBox::Node&, int col );
+   void e_NodeDoubleClicked( TreeBox& sender, TreeBox::Node&, int col );
+   void e_NodeExpanded( TreeBox& sender, TreeBox::Node& );
+   void e_NodeCollapsed( TreeBox& sender, TreeBox::Node& );
+   void e_NodeSelectionUpdated( TreeBox& sender );
+   void e_Timer( Timer& sender );
 
    friend struct GUIData;
-   friend class  DevicePropertiesDialog;
-   friend class  INDIClient;
-   friend class  INDICCDFrameInstance;
-   friend class  INDICCDFrameInterface;
-   friend class  AbstractINDICCDFrameExecution;
-   friend class  INDIMountInterface;
 };
 
 // ----------------------------------------------------------------------------
@@ -315,4 +159,4 @@ PCL_END_LOCAL
 #endif   // __INDIDeviceControllerInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIDeviceControllerInterface.h - Released 2016/04/28 15:13:36 UTC
+// EOF INDIDeviceControllerInterface.h - Released 2016/05/08 20:36:42 UTC

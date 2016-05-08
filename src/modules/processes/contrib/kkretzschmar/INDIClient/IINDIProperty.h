@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.07.0141
+// Standard INDIClient Process Module Version 01.00.09.0153
 // ----------------------------------------------------------------------------
-// IINDIProperty.h - Released 2016/04/28 15:13:36 UTC
+// IINDIProperty.h - Released 2016/05/08 20:36:42 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -133,27 +133,27 @@ public:
       return m_property->getState();
    }
 
-   virtual size_t getNumOfElements() const
+   virtual size_type getNumOfElements() const
    {
       return 0;
    }
 
-   virtual String getElementName( size_t i ) const
+   virtual String getElementName( size_type i ) const
    {
       return "unsupported element";
    }
 
-   virtual String getElementLabel( size_t i ) const
+   virtual String getElementLabel( size_type i ) const
    {
       return "unsupported element";
    }
 
-   virtual String getElementValue( size_t i ) const
+   virtual String getElementValue( size_type i ) const
    {
       return "unsupported value";
    }
 
-   virtual String getNumberFormat( size_t i ) const
+   virtual String getNumberFormat( size_type i ) const
    {
       return String();
    }
@@ -170,18 +170,6 @@ public:
    {
    }
 
-//    virtual void setElementName( size_t i, IsoString elementName )
-//    {
-//    }
-//
-//    virtual void setElementLabel( size_t i, IsoString elementLabel )
-//    {
-//    }
-//
-//    virtual void setElementValue( size_t i, IsoString elementValue )
-//    {
-//    }
-
 protected:
 
    INDI::Property* m_property;
@@ -197,15 +185,15 @@ public:
    {
    }
 
-   virtual size_t getNumOfElements() const
+   virtual size_type getNumOfElements() const
    {
       return m_property->getNumber()->nnp;
    }
 
-   virtual String getElementName( size_t i ) const;
-   virtual String getElementLabel( size_t i ) const;
-   virtual String getElementValue( size_t i ) const;
-   virtual String getNumberFormat( size_t i ) const;
+   virtual String getElementName( size_type i ) const;
+   virtual String getElementLabel( size_type i ) const;
+   virtual String getElementValue( size_type i ) const;
+   virtual String getNumberFormat( size_type i ) const;
 
    virtual void addElement( IsoString elementName, IsoString value );
 
@@ -218,14 +206,6 @@ public:
    {
       strcpy( m_property->getNumber()->name, name.c_str() );
    }
-
-//    virtual void setElementName( size_t i, IsoString name )
-//    {
-//    }
-//
-//    virtual void setElementValue( size_t i, IsoString name )
-//    {
-//    }
 };
 
 // ----------------------------------------------------------------------------
@@ -238,14 +218,14 @@ public:
    {
    }
 
-   virtual size_t getNumOfElements() const
+   virtual size_type getNumOfElements() const
    {
       return m_property->getText()->ntp;
    }
 
-   virtual String getElementName( size_t i ) const;
-   virtual String getElementLabel( size_t i ) const;
-   virtual String getElementValue( size_t i ) const;
+   virtual String getElementName( size_type i ) const;
+   virtual String getElementLabel( size_type i ) const;
+   virtual String getElementValue( size_type i ) const;
 
    virtual void addElement( IsoString elementName, IsoString value );
 
@@ -258,13 +238,6 @@ public:
    {
       strcpy( m_property->getText()->name, name.c_str() );
    }
-
-//    virtual void setElementName( size_t i, IsoString name )
-//    {
-//       strcpy( m_property->getText()->tp[i].name, name.c_str() );
-//    }
-//
-//    virtual void setElementValue( size_t i, IsoString value );
 };
 
 // ----------------------------------------------------------------------------
@@ -277,14 +250,14 @@ public:
    {
    }
 
-   virtual size_t getNumOfElements() const
+   virtual size_type getNumOfElements() const
    {
       return m_property->getSwitch()->nsp;
    }
 
-   virtual String getElementName( size_t i ) const;
-   virtual String getElementLabel( size_t i ) const;
-   virtual String getElementValue( size_t i ) const;
+   virtual String getElementName( size_type i ) const;
+   virtual String getElementLabel( size_type i ) const;
+   virtual String getElementValue( size_type i ) const;
 
    virtual void addElement( IsoString elementName, IsoString value );
 
@@ -297,10 +270,6 @@ public:
    {
       strcpy( m_property->getSwitch()->name, name.c_str() );
    }
-
-//    virtual void setElementName( size_t i, IsoString name );
-//
-//    virtual void setElementValue( size_t i, IsoString value );
 };
 
 // ----------------------------------------------------------------------------
@@ -313,14 +282,14 @@ public:
    {
    }
 
-   virtual size_t getNumOfElements() const
+   virtual size_type getNumOfElements() const
    {
       return m_property->getLight()->nlp;
    }
 
-   virtual String getElementName( size_t i ) const;
-   virtual String getElementLabel( size_t i ) const;
-   virtual String getElementValue( size_t i ) const;
+   virtual String getElementName( size_type i ) const;
+   virtual String getElementLabel( size_type i ) const;
+   virtual String getElementValue( size_type i ) const;
 
    virtual void addElement( IsoString elementName, IsoString value );
 
@@ -333,13 +302,52 @@ public:
    {
       strcpy( m_property->getLight()->name, name.c_str() );
    }
+};
 
-//    virtual void setElementName( size_t i, IsoString name )
-//    {
-//       strcpy( m_property->getLight()->lp[i].name, name.c_str() );
-//    }
-//
-//    virtual void setElementValue( size_t i, IsoString value );
+// ----------------------------------------------------------------------------
+
+class PropertyUtils
+{
+public:
+
+   static String Device( const String& key )
+   {
+      size_type startpos = key.Find( '/' );
+      size_type endpos   = key.Find( '/', 1 );
+      return key.Substring( startpos+1, endpos-startpos-1 );
+   }
+
+   static String Property( const String& key )
+   {
+      size_type startpos = key.Find( '/', 1 );
+      size_type endpos   = key.Find( '/', startpos+1 );
+      return key.Substring( startpos+1, endpos-startpos-1 );
+   }
+
+   static String Element( const String& key )
+   {
+      size_type startpos1 = key.Find( '/', 1 );
+      size_type startpos2 = key.Find( '/', startpos1+1 );
+      size_type endpos    = key.Find( '/', startpos2+1 );
+      return key.Substring( startpos2+1, endpos-startpos2 );
+   }
+
+   static String Key( const String& device )
+   {
+      return '/' + device;
+   }
+
+   static String Key( const String& device, const String& property )
+   {
+      return '/' + device + '/' + property;
+   }
+
+   static String Key( const String& device, const String& property, const String& element )
+   {
+      return '/' + device + '/' + property + '/' + element;
+   }
+
+   static String FormattedNumber( const String& number, IsoString format );
 };
 
 // ----------------------------------------------------------------------------
@@ -348,8 +356,8 @@ class PropertyFactory
 {
 public:
 
-   static IProperty* create( INDI::Property* property );
-   static IProperty* create( INDI::Property* property, INDI_TYPE type );
+   static IProperty* Create( INDI::Property* );
+   static IProperty* Create( INDI::Property*, INDI_TYPE );
 };
 
 // ----------------------------------------------------------------------------
@@ -359,4 +367,4 @@ public:
 #endif   // __IINDIProperty_h
 
 // ----------------------------------------------------------------------------
-// EOF IINDIProperty.h - Released 2016/04/28 15:13:36 UTC
+// EOF IINDIProperty.h - Released 2016/05/08 20:36:42 UTC

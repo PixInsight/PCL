@@ -4,7 +4,7 @@
 # PixInsight Makefile Generator Script v1.101
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Thu, 28 Apr 2016 14:46:22 GMT
+# Automatically generated on Sun, 08 May 2016 09:33:49 GMT
 # Project id ...... INDIClient
 # Project type .... Module
 # Platform ........ Windows/vc12
@@ -238,11 +238,6 @@
     <ClCompile Include="..\..\INDIDeviceControllerInterface.cpp"/>
     <ClCompile Include="..\..\INDIDeviceControllerParameters.cpp"/>
     <ClCompile Include="..\..\INDIDeviceControllerProcess.cpp"/>
-    <ClCompile Include="..\..\INDIMountInstance.cpp"/>
-    <ClCompile Include="..\..\INDIMountInterface.cpp"/>
-    <ClCompile Include="..\..\INDIMountProcess.cpp"/>
-    <ClCompile Include="..\..\PropertyNode.cpp"/>
-    <ClCompile Include="..\..\SkyMap.cpp"/>
     <ClCompile Include="..\..\INDI\BaseClientImpl.cpp"/>
     <ClCompile Include="..\..\INDI\base64.c"/>
     <ClCompile Include="..\..\INDI\basedevice.cpp"/>
@@ -251,7 +246,6 @@
     <ClCompile Include="..\..\INDI\lilxml.c"/>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\IINDIDeviceControllerInstance.h"/>
     <ClInclude Include="..\..\IINDIProperty.h"/>
     <ClInclude Include="..\..\INDICCDFrameInstance.h"/>
     <ClInclude Include="..\..\INDICCDFrameInterface.h"/>
@@ -263,13 +257,7 @@
     <ClInclude Include="..\..\INDIDeviceControllerInterface.h"/>
     <ClInclude Include="..\..\INDIDeviceControllerParameters.h"/>
     <ClInclude Include="..\..\INDIDeviceControllerProcess.h"/>
-    <ClInclude Include="..\..\INDIMountInstance.h"/>
-    <ClInclude Include="..\..\INDIMountInterface.h"/>
-    <ClInclude Include="..\..\INDIMountProcess.h"/>
     <ClInclude Include="..\..\INDIParamListTypes.h"/>
-    <ClInclude Include="..\..\INDIPropertyBuilder.h"/>
-    <ClInclude Include="..\..\PropertyNode.h"/>
-    <ClInclude Include="..\..\SkyMap.h"/>
     <ClInclude Include="..\..\INDI\BaseClient.h"/>
     <ClInclude Include="..\..\INDI\BaseClientImpl.h"/>
     <ClInclude Include="..\..\INDI\base64.h"/>

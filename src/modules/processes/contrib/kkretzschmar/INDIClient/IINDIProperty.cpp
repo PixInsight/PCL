@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.07.0141
+// Standard INDIClient Process Module Version 01.00.09.0153
 // ----------------------------------------------------------------------------
-// IINDIProperty.cpp - Released 2016/04/28 15:13:36 UTC
+// IINDIProperty.cpp - Released 2016/05/08 20:36:42 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -60,66 +60,14 @@
 #include "IINDIProperty.h"
 
 #include <pcl/Exception.h>
+#include <pcl/StringList.h>
 
 #define CHECK_INDEX_THROWS( x )  \
    if ( int( i ) >= x )          \
-      throw Error( "*** Error: " + String( __func__ ) + ": Invalid element index '" + String( i ) + "'" );
+      throw Error( "*** Error: " + String( PCL_FUNCTION_NAME ) + ": Invalid element index '" + String( i ) + "'" );
 
 namespace pcl
 {
-
-// ----------------------------------------------------------------------------
-
-IProperty* PropertyFactory::create( INDI::Property* property )
-{
-   switch( property->getType() )
-   {
-   case INDI_NUMBER:
-      return new NumberProperty( property );
-   case INDI_TEXT:
-      return new TextProperty( property );
-   case INDI_SWITCH:
-      return new SwitchProperty( property );
-   case INDI_LIGHT:
-      return new LightProperty( property );
-   default:
-      return new IProperty( property );
-   }
-}
-
-IProperty* PropertyFactory::create( INDI::Property* property, INDI_TYPE type )
-{
-   property->setType( type );
-   switch( type )
-   {
-   case INDI_NUMBER:
-      {
-         INumberVectorProperty* nProperty = new INumberVectorProperty;
-         property->setProperty( nProperty );
-         return new NumberProperty( property );
-      }
-   case INDI_TEXT:
-      {
-         ITextVectorProperty* tProperty = new ITextVectorProperty;
-         property->setProperty( tProperty );
-         return new TextProperty( property );
-      }
-   case INDI_SWITCH:
-      {
-         ISwitchVectorProperty* sProperty = new ISwitchVectorProperty;
-         property->setProperty( sProperty );
-         return new SwitchProperty( property );
-      }
-   case INDI_LIGHT:
-      {
-         ILightVectorProperty* lProperty = new ILightVectorProperty;
-         property->setProperty( lProperty );
-         return new LightProperty( property );
-      }
-   default:
-      throw Error( "INDIDeviceController: Internal error: Unknown property type in PropertyFactory::create()" );
-   }
-}
 
 // ----------------------------------------------------------------------------
 
@@ -298,7 +246,7 @@ void LightProperty::addElement( IsoString elementName, IsoString value )
    else if (value == "ALERT")
       lp->s = IPS_ALERT;
    else
-      throw Error( "INDIDeviceController: Internal error: Invalid property value in LightProperty::addElement()" );
+      throw Error( "INDIDeviceController: Internal error: Invalid property value in " + String( PCL_FUNCTION_NAME ) );
    lp->lvp = lvp;
    lvp->nlp++;
    lvp->lp = lp;
@@ -306,7 +254,133 @@ void LightProperty::addElement( IsoString elementName, IsoString value )
 
 // ----------------------------------------------------------------------------
 
+String PropertyUtils::FormattedNumber( const String& number, IsoString format )
+{
+   if ( number.IsEmpty() )
+      return String();
+
+   float value = 0;
+   number.TryToFloat( value );
+
+   size_type im = format.Find( 'm' );
+   if ( im == String::notFound )
+      return String().Format( format.c_str(), value );
+
+   format.DeleteRight( im );
+   format.DeleteLeft( 1 );
+   StringList tokens;
+   format.Break( tokens, '.', true/*trim*/ );
+
+   int fraction = 0;
+   tokens[1].TryToInt( fraction );
+
+   int width = 0;
+   tokens[0].TryToInt( width );
+   width -= fraction;
+   if ( width <= 0 )
+      throw Error( "INDIClient: Internal error: Invalid number format in " + String( PCL_FUNCTION_NAME ) );
+
+   int hours = Trunc( value );
+
+   switch ( fraction )
+   {
+   case 3:
+      {
+         int minutes = Trunc( (value - hours)*60 );
+         IsoString formatStr = '%' + IsoString().Format( "%dd", width ) + ":%02d";
+         return String().Format( formatStr.c_str(), hours, Abs( minutes ) );
+      }
+   case 5:
+      {
+         int minutes     = Trunc( (value - hours)*60 );
+         int minutesfrac = Trunc( ((value - hours)*60 - minutes)*10);
+         IsoString formatStr = '%' + IsoString().Format( "%dd", width ) + ":%02d.%d";
+         return String().Format( formatStr.c_str(), hours, Abs( minutes ), Abs( minutesfrac ) );
+      }
+   case 6:
+      {
+         int minutes     = Trunc( (value - hours)*60 );
+         int seconds     = Trunc( ((value - hours)*60 - minutes)*60 );
+         IsoString formatStr = '%' + IsoString().Format( "%dd", width ) + ":%02d:%02d";
+         return String().Format( formatStr.c_str(), hours, Abs( minutes ), Abs( seconds ) );
+      }
+   case 8:
+      {
+         int minutes     = Trunc( (value - hours)*60 );
+         int seconds     = Trunc( ((value - hours)*60 - minutes)*60 );
+         int secondsfrac = Trunc( (((value - hours)*60 - minutes)*60 - seconds)*10 );
+         IsoString formatStr = '%' + IsoString().Format( "%dd", width ) + ":%02d:%02d.%d";
+         return String().Format( formatStr.c_str(), hours, Abs( minutes ), Abs( seconds ), Abs( secondsfrac ) );
+      }
+   case 9:
+      {
+         int minutes     = Trunc( (value - hours)*60 );
+         int seconds     = Trunc( ((value - hours)*60 - minutes)*60 );
+         int secondsfrac = Trunc( (((value - hours)*60 - minutes)*60 - seconds)*100 );
+         IsoString formatStr = '%' + IsoString().Format( "%dd", width ) + ":%02d:%02d.%02d";
+         return String().Format( formatStr.c_str(), hours, Abs( minutes ), Abs( seconds ), Abs( secondsfrac ) );
+      }
+   default:
+      return String();
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+IProperty* PropertyFactory::Create( INDI::Property* property )
+{
+   switch( property->getType() )
+   {
+   case INDI_NUMBER:
+      return new NumberProperty( property );
+   case INDI_TEXT:
+      return new TextProperty( property );
+   case INDI_SWITCH:
+      return new SwitchProperty( property );
+   case INDI_LIGHT:
+      return new LightProperty( property );
+   default:
+      return new IProperty( property );
+   }
+}
+
+IProperty* PropertyFactory::Create( INDI::Property* property, INDI_TYPE type )
+{
+   property->setType( type );
+   switch( type )
+   {
+   case INDI_NUMBER:
+      {
+         INumberVectorProperty* nProperty = new INumberVectorProperty;
+         property->setProperty( nProperty );
+         return new NumberProperty( property );
+      }
+   case INDI_TEXT:
+      {
+         ITextVectorProperty* tProperty = new ITextVectorProperty;
+         property->setProperty( tProperty );
+         return new TextProperty( property );
+      }
+   case INDI_SWITCH:
+      {
+         ISwitchVectorProperty* sProperty = new ISwitchVectorProperty;
+         property->setProperty( sProperty );
+         return new SwitchProperty( property );
+      }
+   case INDI_LIGHT:
+      {
+         ILightVectorProperty* lProperty = new ILightVectorProperty;
+         property->setProperty( lProperty );
+         return new LightProperty( property );
+      }
+   default:
+      throw Error( "INDIClient: Internal error: Unknown property type in " + String( PCL_FUNCTION_NAME ) );
+   }
+}
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF IINDIProperty.cpp - Released 2016/04/28 15:13:36 UTC
+// EOF IINDIProperty.cpp - Released 2016/05/08 20:36:42 UTC

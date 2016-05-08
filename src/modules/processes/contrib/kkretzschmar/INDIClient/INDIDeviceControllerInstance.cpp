@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.07.0141
+// Standard INDIClient Process Module Version 01.00.09.0153
 // ----------------------------------------------------------------------------
-// INDIDeviceControllerInstance.cpp - Released 2016/04/28 15:13:36 UTC
+// INDIDeviceControllerInstance.cpp - Released 2016/05/08 20:36:42 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -53,17 +53,13 @@
 #include "INDIClient.h"
 #include "INDIDeviceControllerInstance.h"
 #include "INDIDeviceControllerParameters.h"
-#include "PropertyNode.h"
-
-#include "INDI/basedevice.h"
-#include "INDI/indicom.h"
+#include "INDIDeviceControllerProcess.h"
 
 #include <pcl/AutoViewLock.h>
 #include <pcl/Console.h>
 #include <pcl/MetaModule.h>
 #include <pcl/Mutex.h>
 #include <pcl/StdStatus.h>
-#include <pcl/View.h>
 
 #ifdef __PCL_LINUX
 #include <memory>
@@ -86,11 +82,9 @@ INDIDeviceControllerInstance::INDIDeviceControllerInstance( const MetaProcess* m
    p_getCommandParameters(),
    o_devices(),
    o_properties(),
-   o_getCommandResult(),
-   m_currentMessage(),
-   m_internalAbortFlag( false ),
-   m_downloadedImagePath()
+   o_getCommandResult()
 {
+   AcquireINDIClientProperties();
 }
 
 INDIDeviceControllerInstance::INDIDeviceControllerInstance( const INDIDeviceControllerInstance& x ) :
@@ -109,406 +103,157 @@ void INDIDeviceControllerInstance::Assign( const ProcessImplementation& p )
       p_serverConnect = x->p_serverConnect;
       p_serverCommand = x->p_serverCommand;
       p_abort = x->p_abort;
+      p_verbosity = x->p_verbosity;
       p_newProperties = x->p_newProperties;
       p_getCommandParameters = x->p_getCommandParameters;
-      p_verbosity = x->p_verbosity;
       o_devices = x->o_devices;
       o_properties = x->o_properties;
       o_getCommandResult = x->o_getCommandResult;
    }
 }
 
-bool INDIDeviceControllerInstance::CanExecuteOn( const View&, pcl::String& whyNot ) const
+bool INDIDeviceControllerInstance::CanExecuteOn( const View&, String& whyNot ) const
 {
    whyNot = "INDIDeviceController can only be executed in the global context.";
    return false;
 }
 
-bool INDIDeviceControllerInstance::CanExecuteGlobal( pcl::String& whyNot ) const
+bool INDIDeviceControllerInstance::CanExecuteGlobal( String& whyNot ) const
 {
    whyNot.Clear();
    return true;
 }
 
-bool INDIDeviceControllerInstance::getPropertyFromKeyString( INDINewPropertyListItem& propertyKey, const String& keyString )
+static void GetNewPropertyListItemParametersFromKey( INDINewPropertyListItem& item )
 {
-   size_type start = 0;
-   size_type nextStart = keyString.FindFirst( "/", start );
-   size_type count = 0;
-
-   while ( nextStart != String::notFound )
-   {
-      if ( count == 0 )
+   StringList items;
+   item.PropertyKey.Break( items, '/', true/*trim*/, item.PropertyKey.StartsWith( '/' ) ? 1 : 0 );
+   if ( items.Length() == 3 )
+      if ( !items[0].IsEmpty() && !items[1].IsEmpty() && !items[2].IsEmpty() )
       {
-         start = nextStart + 1;
-         count++;
-         nextStart = keyString.FindFirst( "/", start );
-         continue;
+         item.Device = items[0];
+         item.Property = items[1];
+         item.Element = items[2];
+         item.PropertyKey = '/' + items[0] + '/' + items[1] + '/' + items[2];
+         return;
       }
-
-      if ( count == 1 )
-         propertyKey.Device = keyString.Substring( start, nextStart-start );
-      else if ( count == 2 )
-         propertyKey.Property = keyString.Substring( start, nextStart-start );
-      else if ( count == 3 )
-         break;
-      else
-      {
-         if ( p_verbosity > 0 )
-            Console().CriticalLn( "<end><cbr>*** Error: Internal: Assertion in getPropertyFromKeyString(): Should not be here!" );
-         return false;
-      }
-
-      count++;
-      start = nextStart + 1;
-      nextStart = keyString.FindFirst( "/", start );
-   }
-
-   if ( nextStart == String::notFound && count != 0 )
-   {
-      propertyKey.Element = keyString.Substring( start, keyString.Length()-start );
-      return true;
-   }
-
-   return false;
-}
-
-bool INDIDeviceControllerInstance::sendNewPropertyVector( const NewPropertyListType& propVector, bool isAsynch )
-{
-   p_newProperties.Append( propVector );
-   return sendNewProperty( isAsynch );
-}
-
-bool INDIDeviceControllerInstance::sendNewPropertyValue( const INDINewPropertyListItem& propItem, bool isAsynch )
-{
-   p_newProperties.Append( propItem );
-   return sendNewProperty( isAsynch );
-}
-
-bool INDIDeviceControllerInstance::sendNewProperty( bool isAsynchCall )
-{
-   //Precondition: NewPropertyList contains only elements of the same property
-   String deviceStr;
-   String propertyStr;
-   String propertyTypeStr;
-   INDI::BaseDevice* device = nullptr;
-   bool firstTime = true;
-   INumberVectorProperty* numberVecProp = nullptr;
-   ITextVectorProperty* textVecProp = nullptr;
-   ISwitchVectorProperty* switchVecProp = nullptr;
-
-   if ( p_newProperties.IsEmpty() )
-      return false; // nothing to do
-
-   try
-   {
-      if ( !INDIClient::HasClient() )
-         throw String( "Internal: The INDI device controller has not been initialized." );
-
-      if ( p_verbosity > 1 )
-      {
-         Console().WriteLn( "<end><cbr><br>------------------------------------------------------------------------------" );
-         Console().WriteLn( "Sending new property value(s) to INDI server '" + String( p_serverHostName ) + ':' + String( p_serverPort ) + "':" );
-      }
-
-      Array<INDINewPropertyListItem> watchNewProperties;
-
-      for ( Array<INDINewPropertyListItem>::iterator iter = p_newProperties.Begin(); iter != p_newProperties.End(); ++iter )
-      {
-         if ( iter->NewPropertyValue.IsEmpty() )
-            throw String( "Internal: Empty property value in " + String( __func__ ) );
-
-         // initialize
-         if ( firstTime )
-         {
-            if (    getPropertyFromKeyString( *iter,iter->PropertyKey )
-               || (!iter->Device.IsEmpty() && !iter->Property.IsEmpty() && !iter->PropertyType.IsEmpty()) )
-            {
-               deviceStr = iter->Device;
-               propertyStr = iter->Property;
-               propertyTypeStr = iter->PropertyType;
-               firstTime = false;
-
-               // get device
-               {
-                  IsoString s( deviceStr );
-                  device = INDIClient::TheClient()->getDevice( s.c_str() );
-               }
-               if ( device == nullptr )
-                  throw String( "Device '" + String( deviceStr ) + "' not found." );
-
-               // get property vector
-               if ( iter->PropertyType == "INDI_SWITCH" )
-               {
-                  {
-                     IsoString s( propertyStr );
-                     switchVecProp = device->getSwitch( s.c_str() );
-                  }
-                  if ( switchVecProp == nullptr )
-                     throw String( "Could not get switch property '" + String( propertyStr ) + "' from server. "
-                                   "Please check that INDI device '" + String( deviceStr ) + "' is connected." );
-               }
-               else if ( iter->PropertyType == "INDI_NUMBER" )
-               {
-                  {
-                     IsoString s( propertyStr );
-                     numberVecProp = device->getNumber( s.c_str() );
-                  }
-                  if ( numberVecProp == nullptr )
-                     throw String( "Could not get number property '" + String( propertyStr ) + "' from server."
-                                   "Please check that INDI device '" + String( deviceStr ) + "' is connected." );
-               }
-               else if ( iter->PropertyType == "INDI_TEXT" )
-               {
-                  {
-                     IsoString s( propertyStr );
-                     textVecProp = device->getText( s.c_str() );
-                  }
-                  if ( textVecProp == nullptr )
-                        throw String( "Could not get text property '" + String( propertyStr ) + "' from server. "
-                                      "Please check that INDI device '" + String( deviceStr ) + "' is connected." );
-               }
-               else
-               {
-                  throw String( "Property '" + String( propertyStr ) + "' is not supported." );
-               }
-            }
-            else
-            {
-               throw String( "Invalid property key '" + String( iter->PropertyKey ) + "' not supported." );
-            }
-         }
-
-         if (    getPropertyFromKeyString( *iter, iter->PropertyKey )
-            || !iter->Device.IsEmpty() && !iter->Property.IsEmpty() && !iter->PropertyType.IsEmpty() )
-         {
-            if ( switchVecProp != nullptr )
-            {
-               // set new switch
-               ISwitch* sp;
-               {
-                  IsoString s( iter->Element );
-                  sp = IUFindSwitch( switchVecProp, s.c_str() );
-               }
-               if ( sp == nullptr )
-                  throw String( "Could not find element '" + String( iter->Element ) + "'." );
-               IUResetSwitch( switchVecProp );
-               if ( iter->NewPropertyValue == "ON" )
-                  sp->s = ISS_ON;
-               else
-                  sp->s = ISS_OFF;
-            }
-            else if ( numberVecProp != nullptr )
-            {
-               // set new number value
-               INumber* np;
-               {
-                  IsoString s( iter->Element );
-                  np = IUFindNumber( numberVecProp, s.c_str() );
-               }
-               if ( np == nullptr )
-                  throw String( "Could not find element '" + String( iter->Element ) + "'." );
-               np->value = iter->NewPropertyValue.ToDouble();
-            }
-            else if ( textVecProp != nullptr )
-            {
-               // set new text value
-               IText* np;
-               {
-                  IsoString s( iter->Element );
-                  np = IUFindText( textVecProp, s.c_str() );
-               }
-               if ( np == nullptr )
-                  throw String( "Could not find element '" + String( iter->Element ) + "'." );
-               IsoString s( iter->NewPropertyValue );
-               IUSaveText( np, s.c_str() );
-            }
-            else
-            {
-               throw String( "Internal: Wrong property type in INDIDeviceControllerInstance::sendNewProperty()" );
-            }
-         }
-         else
-         {
-            throw String( "Invalid property key '" + String( iter->PropertyKey ) + "'." );
-         }
-
-         if ( isAsynchCall )
-            watchNewProperties << *iter;
-
-         if ( p_verbosity > 1 )
-         {
-            Console().WriteLn( "<end><cbr>"
-                               "Device   : '" + String( deviceStr ) + "'" );
-            Console().WriteLn( "Property : '" + String( propertyStr ) + "'" );
-            Console().WriteLn( "Element  : '" + String( iter->Element ) + "'" );
-            Console().WriteLn( "Value    : '" + String( iter->NewPropertyValue ) + "'" );
-         }
-      } // for
-
-      if ( p_verbosity > 1 )
-         Console().WriteLn( "<end><cbr>------------------------------------------------------------------------------" );
-
-      // Send new properties to server
-      if ( switchVecProp != nullptr )
-         INDIClient::TheClient()->sendNewSwitch( switchVecProp );
-      else if ( numberVecProp != nullptr )
-         INDIClient::TheClient()->sendNewNumber( numberVecProp );
-      else if ( textVecProp != nullptr )
-         INDIClient::TheClient()->sendNewText( textVecProp );
-
-      p_newProperties.Clear();
-
-      m_internalAbortFlag = false;
-
-      // In asynchronous calls, wait until the server has processed all of our
-      // new property requests.
-      for ( auto item : watchNewProperties )
-      {
-         Module->ProcessEvents();
-         INDIPropertyListItem p;
-         if ( !getINDIPropertyItem( item.Device, item.Property, item.Element, p, false/*formatted*/ ) )
-            throw String( "Unable to watch '"
-                     + item.Device + '.' + item.Property + '.' + item.Element
-                     + "' property item. Message from INDI server: " + String( m_currentMessage ) );
-         if ( p_abort || m_internalAbortFlag )
-            break;
-         if ( p.PropertyState == IPS_OK || p.PropertyState == IPS_IDLE )
-            break;
-         if ( p.PropertyState == IPS_ALERT )
-            throw String( "Failure to send '"
-                     + item.Device + '.' + item.Property + '.' + item.Element
-                     + "' property item. Message from INDI server: " + String( m_currentMessage ) );
-      }
-
-      return true;
-   }
-   catch ( const String& message )
-   {
-      if ( p_verbosity > 0 )
-         Console().CriticalLn( "*** Error: " + message );
-      return false;
-   }
-   catch ( ... )
-   {
-      throw;
-   }
-}
-
-bool INDIDeviceControllerInstance::getINDIPropertyItem( String device, String property, String element, INDIPropertyListItem& result, bool formatted )
-{
-   // get popertyList with exclusive access
-   ExclPropertyList propertyList = getExclusivePropertyList();
-
-   for ( pcl::Array<INDIPropertyListItem>::iterator iter = propertyList.get()->Begin(); iter != propertyList.get()->End(); ++iter )
-      if ( iter->Device == device && iter->Property == property && iter->Element == element )
-      {
-         result.Device = device;
-         result.Property = property;
-         result.Element = element;
-         if ( formatted && iter->PropertyTypeStr == "INDI_NUMBER" )
-         {
-            result.PropertyValue = PropertyUtils::getFormattedNumber( iter->PropertyValue, IsoString( iter->PropertyNumberFormat ) );
-            if ( result.PropertyValue.IsEmpty() ) // invalid property value?
-               return false;
-         }
-         else
-         {
-            result.PropertyValue = iter->PropertyValue;
-         }
-         result.PropertyState = iter->PropertyState;
-         return true;
-      }
-
-   return false;
+   throw Error( "Invalid property key '" + item.PropertyKey + "'" );
 }
 
 bool INDIDeviceControllerInstance::ExecuteGlobal()
 {
    Console console;
 
-   if ( p_verbosity > 0 )
+   Exception::DisableGUIOutput();
+
+   INDIClient* indi = INDIClient::TheClient();
+
+   try
    {
-      console.NoteLn( "<end><cbr>INDI Control Client --- (C) Klaus Kretzschmar, 2014-2016" );
-      console.Flush();
-   }
-
-   o_getCommandResult.Clear();
-
-   INDIClient* indiClient = INDIClient::TheClient();
-
-   if ( !p_serverConnect )
-   {
-      // disconnect from server
-      if ( indiClient == nullptr )
-         throw Error( "The INDI device controller has not been initialized" );
-      if ( indiClient->serverIsConnected() )
+      if ( p_serverConnect )
       {
-         if ( p_verbosity > 0 )
-            console.NoteLn( "* Disconnect from INDI server " + p_serverHostName + ", port=" + String( p_serverPort ) );
-         indiClient->disconnectServer();
-      }
-      INDIClient::DestroyClient();
-      return true;
-   }
+         if ( indi == nullptr )
+         {
+            indi = INDIClient::NewClient( p_serverHostName.ToUTF8(), p_serverPort );
+            if ( p_verbosity > 0 )
+            {
+               console.NoteLn( "<end><cbr>INDI Control Client --- (C) Klaus Kretzschmar, 2014-2016" );
+               console.Flush();
+            }
+         }
 
-   if ( indiClient == nullptr )
-      indiClient = INDIClient::NewClient( this, p_serverHostName.ToUTF8(), p_serverPort );
+         indi->SetVerbosity( p_verbosity );
 
-   if ( !indiClient->serverIsConnected() )
-      indiClient->connectServer();
+         if ( !indi->IsServerConnected() )
+         {
+            indi->connectServer();
+            if ( !indi->IsServerConnected() )
+               throw Error( "INDIDeviceControllerInstance: Failure to connect to INDI server " + p_serverHostName + ", port=" + String( p_serverPort ) );
 
-   if ( p_verbosity > 0 )
-      if ( indiClient->serverIsConnected() )
-         console.NoteLn( "* Successfully connected to INDI server " + p_serverHostName + ", port=" + String( p_serverPort ) );
+            if ( p_verbosity > 0 )
+            {
+               console.NoteLn( "* Successfully connected to INDI server " + p_serverHostName + ", port=" + String( p_serverPort ) );
+               console.Flush();
+            }
+         }
 
-   console.Flush();
-   console.EnableAbort();
+         if ( !p_serverCommand.IsEmpty() )
+         {
+            console.EnableAbort();
 
-   if ( p_serverCommand == "GET" )
-   {
-      INDIPropertyListItem propItem;
-      String device( PropertyUtils::getDevice( p_getCommandParameters ) );
-      String property( PropertyUtils::getProperty( p_getCommandParameters ) );
-      String element( PropertyUtils::getElement( p_getCommandParameters ) );
-      if ( p_verbosity > 1 )
-         console.WriteLn( "Device=" + String( device ) + ", Property=" + String( property ) + ", Element=" + String( element ) );
-      if ( getINDIPropertyItem( device, property, element, propItem ) )
-      {
-         o_getCommandResult = propItem.PropertyValue;
-         if ( p_verbosity > 1 )
-            console.WriteLn( "Value=" + String( o_getCommandResult ) );
+            if ( p_serverCommand == "GET" )
+            {
+               o_getCommandResult.Clear();
+               String device( PropertyUtils::Device( p_getCommandParameters ) );
+               String property( PropertyUtils::Property( p_getCommandParameters ) );
+               String element( PropertyUtils::Element( p_getCommandParameters ) );
+               INDIPropertyListItem item;
+               if ( !indi->GetPropertyItem( device, property, element, item ) )
+                  throw Error( "INDIDeviceControllerInstance: Could not get value of property '" + String( p_getCommandParameters ) + "'" );
+               o_getCommandResult = item.PropertyValue;
+               if ( p_verbosity > 1 )
+                  console.WriteLn( "<end><cbr>Device=" + device +
+                                   ", Property=" + property +
+                                   ", Element=" + element +
+                                   ", Value=" + o_getCommandResult );
+            }
+            else if ( p_serverCommand == "SET" )
+            {
+               for ( auto newProperty : p_newProperties )
+               {
+                  GetNewPropertyListItemParametersFromKey( newProperty );
+                  if ( !indi->SendNewPropertyItem( newProperty, false/*async*/ ) )
+                     throw Error( "INDIDeviceControllerInstance: Failure to send new property values." );
+               }
+               p_newProperties.Clear();
+            }
+            else if ( p_serverCommand == "SET_ASYNC" )
+            {
+               for ( auto newProperty : p_newProperties )
+               {
+                  GetNewPropertyListItemParametersFromKey( newProperty );
+                  if ( !indi->SendNewPropertyItem( newProperty, true/*async*/ ) )
+                     throw Error( "INDIDeviceControllerInstance: Failure to send new property values (asynchronous)." );
+               }
+               p_newProperties.Clear();
+            }
+            else
+               throw Error( "INDIDeviceControllerInstance: Unknown command '" + p_serverCommand + "'" );
+
+            console.Flush();
+         }
+
+         AcquireINDIClientProperties();
       }
       else
       {
-         if ( p_verbosity > 0 )
-            console.CriticalLn( "*** Error: Could not get value for property '" + String( p_getCommandParameters ) + "'." );
+         if ( indi != nullptr )
+         {
+            if ( indi->IsServerConnected() )
+            {
+               AcquireINDIClientProperties();
+               indi->SetVerbosity( p_verbosity );
+               indi->disconnectServer();
+               if ( p_verbosity > 0 )
+                  console.NoteLn( "* Disconnected from INDI server " + p_serverHostName + ", port=" + String( p_serverPort ) );
+            }
+
+            INDIClient::DestroyClient();
+         }
       }
-   }
-   else if ( p_serverCommand == "SET_ASYNCH" )
-   {
-      if ( !sendNewProperty( true/*isAsynchCall*/ ) )
-         p_newProperties.Clear(); // cleanup new propertyList
-   }
-   else if ( p_serverCommand == "REGISTER_INSTANCE" )
-   {
-      indiClient->RegisterScriptInstance( this );
-   }
-   else if ( p_serverCommand == "RELEASE_INSTANCE" )
-   {
-      indiClient->RegisterScriptInstance( nullptr );
-   }
-   else
-   {
-      if ( !sendNewProperty() )
-         p_newProperties.Clear(); // cleanup new propertyList
-   }
 
-   // disable abort to continue running
-   p_abort = false;
-   m_internalAbortFlag = false;
-
-   return true;
+      return true;
+   }
+   catch ( const Exception& x )
+   {
+      if ( p_verbosity > 0 )
+         x.Show();
+      return false;
+   }
+   catch ( ... )
+   {
+      throw;
+   }
 }
 
 void* INDIDeviceControllerInstance::LockParameter( const MetaParameter* p, size_type tableRow )
@@ -688,9 +433,28 @@ size_type INDIDeviceControllerInstance::ParameterLength( const MetaParameter* p,
    return 0;
 }
 
+void INDIDeviceControllerInstance::AcquireINDIClientProperties()
+{
+   o_devices.Clear();
+   o_properties.Clear();
+
+   if ( INDIClient::HasClient() )
+      if ( INDIClient::TheClient()->IsServerConnected() )
+      {
+         {
+            ExclConstDeviceList x = INDIClient::TheClient()->ConstDeviceList();
+            o_devices = static_cast<const INDIDeviceListItemArray&>( x );
+         }
+         {
+            ExclConstPropertyList y = INDIClient::TheClient()->ConstPropertyList();
+            o_properties = static_cast<const INDIPropertyListItemArray&>( y );
+         }
+      }
+}
+
 // ----------------------------------------------------------------------------
 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIDeviceControllerInstance.cpp - Released 2016/04/28 15:13:36 UTC
+// EOF INDIDeviceControllerInstance.cpp - Released 2016/05/08 20:36:42 UTC

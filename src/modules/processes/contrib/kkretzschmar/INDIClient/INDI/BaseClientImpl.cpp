@@ -30,7 +30,7 @@
 #if defined(WIN32)
 #include <winsock2.h>
 #include <WS2tcpip.h>
-//#include <winsock.h>
+#include <memory>
 #pragma comment(lib, "Ws2_32.lib")
 #else
 #include <sys/socket.h>
@@ -61,15 +61,10 @@ void INDIListener::Run(){
 }
 
 
-INDI::BaseClientImpl::BaseClientImpl(){}
+INDI::BaseClientImpl::BaseClientImpl() :m_listener(nullptr), cDevices(), cDeviceNames(), cServer(""), cPort(0), sConnected(false), svrwfp(nullptr){}
 
-INDI::BaseClientImpl::BaseClientImpl(const char* hostname, unsigned int port)
-{
-    cServer = hostname;
-    cPort   = port;
-    svrwfp = NULL;
-    sConnected = false;
-
+INDI::BaseClientImpl::BaseClientImpl(const char* hostname, unsigned int port) : m_listener(nullptr), cDevices(), cDeviceNames(), cServer(hostname), cPort(port), sConnected(false), svrwfp(nullptr){
+	
     pcl::Thread::NumberOfThreads (1);
 #if defined(WIN32)
     WORD wVersionRequested;
@@ -105,40 +100,83 @@ void INDI::BaseClientImpl::watchDevice(const char * deviceName)
 
 bool INDI::BaseClientImpl::connectServer()
 {
-    struct sockaddr_in serv_addr;
-    struct hostent *hp;
+   
+	int ret = 0;
 #if defined(WIN32)
     SOCKET pipefd[2];
+	struct addrinfo hints, *res, *p;
+	int status;
+	memset(&hints, 0, sizeof hints);
+	hints.ai_family = AF_INET; // only IPv4 for now
+	hints.ai_socktype = SOCK_STREAM;
+
+
+
+	if ((status = getaddrinfo(cServer.c_str(), NULL, &hints, &res)) != 0) {
+		perror("getaddrinfo");
+		return false;
+	}
+
+	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+	{
+		perror("socket");
+		return false;
+	}
+
+	for (p = res; p != NULL; p = p->ai_next) {
+
+		// get the pointer to the address itself,
+		struct sockaddr_in *ipv4 = (struct sockaddr_in *)p->ai_addr;
+		/* create a socket to the INDI server */
+		ipv4->sin_port = htons(cPort);
+		
+
+		/* connect */
+		if (::connect(sockfd, (struct sockaddr *)ipv4, sizeof(sockaddr))<0)
+		{
+			perror("connect");
+			return false;
+		}
+		else {
+			break;
+		}
+
+	}
+
+
 #else
 	int pipefd[2];
-#endif
-    int ret = 0;
-
-    /* lookup host address */
+	struct hostent *hp;
+	struct sockaddr_in serv_addr;
+	/* lookup host address */
 	hp = gethostbyname(cServer.c_str());
-    if (!hp)
-    {
-        perror ("gethostbyname");
-        return false;
-    }
+	if (!hp)
+	{
+		perror("gethostbyname");
+		return false;
+	}
+	serv_addr.sin_addr.s_addr = ((struct in_addr *)(hp->h_addr_list[0]))->s_addr;
 
-    /* create a socket to the INDI server */
-    //(void) memset ((char *)&serv_addr, 0, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = ((struct in_addr *)(hp->h_addr_list[0]))->s_addr;
-    serv_addr.sin_port = htons(cPort);
-    if ((sockfd = socket (AF_INET, SOCK_STREAM, 0)) < 0)
-    {
-        perror ("socket");
-        return false;
-    }
+	/* create a socket to the INDI server */
+	//(void) memset ((char *)&serv_addr, 0, sizeof(serv_addr));
+	serv_addr.sin_family = AF_INET;
 
-    /* connect */
-    if (::connect (sockfd,(struct sockaddr *)&serv_addr,sizeof(sockaddr))<0)
-    {
-        perror ("connect");
-        return false;
-    }
+	serv_addr.sin_port = htons(cPort);
+	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+	{
+		perror("socket");
+		return false;
+	}
+
+	/* connect */
+	if (::connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(sockaddr))<0)
+	{
+		perror("connect");
+		return false;
+	}
+
+#endif
+   
 
 
 #if defined(WIN32)
@@ -185,10 +223,13 @@ bool INDI::BaseClientImpl::disconnectServer()
 
     shutdown(sockfd, SHUT_RDWR);
 
+#if !defined(WIN32)
     if (svrwfp != NULL)
         fclose(svrwfp);
    svrwfp = NULL;
-
+#else
+	closesocket(sockfd);
+#endif
 
    return true;
 }
@@ -592,8 +633,9 @@ void INDI::BaseClientImpl::sendNewText (ITextVectorProperty *tvp)
         sendCommand((char*)"  </oneText>\n");
     }
     sendCommand((char*)"</newTextVector>\n");
-
+#if !defined(WIN32)
     fflush(svrwfp);
+#endif
 }
 
 void INDI::BaseClientImpl::sendNewText (const char * deviceName, const char * propertyName, const char* elementName, const char *text)
@@ -635,8 +677,9 @@ void INDI::BaseClientImpl::sendNewNumber (INumberVectorProperty *nvp)
         sendCommand((char*)"  </oneNumber>\n");
     }
     sendCommand((char*)"</newNumberVector>\n");
-
+#if !defined(WIN32)
    fflush(svrwfp);
+#endif
 }
 
 void INDI::BaseClientImpl::sendNewNumber (const char *deviceName, const char *propertyName, const char* elementName, double value)
@@ -692,8 +735,9 @@ void INDI::BaseClientImpl::sendNewSwitch (ISwitchVectorProperty *svp)
     }
 
     sendCommand((char*)"</newSwitchVector>\n");
-
+#if !defined(WIN32)
     fflush(svrwfp);
+#endif
 }
 
 void INDI::BaseClientImpl::sendNewSwitch (const char *deviceName, const char *propertyName, const char *elementName)
@@ -745,8 +789,9 @@ void INDI::BaseClientImpl::sendOneBlob( const char *blobName, unsigned int blobS
 void INDI::BaseClientImpl::finishBlob()
 {
     sendCommand((char*)"</newBLOBVector>\n");
+#if !defined(WIN32)
     fflush(svrwfp);
-
+#endif
 }
 
 void INDI::BaseClientImpl::setBLOBMode(BLOBHandling blobH, const char *dev, const char *prop)
@@ -773,8 +818,9 @@ void INDI::BaseClientImpl::setBLOBMode(BLOBHandling blobH, const char *dev, cons
         sendCommand((char*)"%sOnly</enableBLOB>\n", blobOpenTag);
         break;
     }
-
+#if !defined(WIN32)
     fflush(svrwfp);
+#endif
 }
 
 #if defined(WIN32)

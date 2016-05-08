@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.07.0141
+// Standard INDIClient Process Module Version 01.00.09.0153
 // ----------------------------------------------------------------------------
-// INDICCDFrameParameters.cpp - Released 2016/04/28 15:13:36 UTC
+// INDICCDFrameParameters.cpp - Released 2016/05/08 20:36:42 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -71,6 +71,10 @@ ICFNewImageIdTemplate*     TheICFNewImageIdTemplateParameter = nullptr;
 ICFReuseImageWindow*       TheICFReuseImageWindowParameter = nullptr;
 ICFAutoStretch*            TheICFAutoStretchParameter = nullptr;
 ICFLinkedAutoStretch*      TheICFLinkedAutoStretchParameter = nullptr;
+ICFClientFrames*           TheICFClientFramesParameter = nullptr;
+ICFClientFrame*            TheICFClientFrameParameter = nullptr;
+ICFServerFrames*           TheICFServerFramesParameter = nullptr;
+ICFServerFrame*            TheICFServerFrameParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -405,7 +409,75 @@ bool ICFLinkedAutoStretch::DefaultValue() const
 
 // ----------------------------------------------------------------------------
 
+ICFClientFrames::ICFClientFrames( MetaProcess* P ) : MetaTable( P )
+{
+   TheICFClientFramesParameter = this;
+}
+
+IsoString ICFClientFrames::Id() const
+{
+   return "clientFrames";
+}
+
+bool ICFClientFrames::IsReadOnly() const
+{
+   return true;
+}
+
+// ----------------------------------------------------------------------------
+
+ICFClientFrame::ICFClientFrame( MetaTable* T ) : MetaString( T )
+{
+   TheICFClientFrameParameter = this;
+}
+
+IsoString ICFClientFrame::Id() const
+{
+   return "imageId";
+}
+
+bool ICFClientFrame::IsReadOnly() const
+{
+   return true;
+}
+
+// ----------------------------------------------------------------------------
+
+ICFServerFrames::ICFServerFrames( MetaProcess* P ) : MetaTable( P )
+{
+   TheICFServerFramesParameter = this;
+}
+
+IsoString ICFServerFrames::Id() const
+{
+   return "serverFrames";
+}
+
+bool ICFServerFrames::IsReadOnly() const
+{
+   return true;
+}
+
+// ----------------------------------------------------------------------------
+
+ICFServerFrame::ICFServerFrame( MetaTable* T ) : MetaString( T )
+{
+   TheICFServerFrameParameter = this;
+}
+
+IsoString ICFServerFrame::Id() const
+{
+   return "fileName";
+}
+
+bool ICFServerFrame::IsReadOnly() const
+{
+   return true;
+}
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameParameters.cpp - Released 2016/04/28 15:13:36 UTC
+// EOF INDICCDFrameParameters.cpp - Released 2016/05/08 20:36:42 UTC

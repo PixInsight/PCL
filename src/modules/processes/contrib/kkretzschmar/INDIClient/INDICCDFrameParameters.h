@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.07.0141
+// Standard INDIClient Process Module Version 01.00.09.0153
 // ----------------------------------------------------------------------------
-// INDICCDFrameParameters.h - Released 2016/04/28 15:13:36 UTC
+// INDICCDFrameParameters.h - Released 2016/05/08 20:36:42 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -286,6 +286,63 @@ public:
 extern ICFLinkedAutoStretch* TheICFLinkedAutoStretchParameter;
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+class ICFClientFrames : public MetaTable
+{
+public:
+
+   ICFClientFrames( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool IsReadOnly() const;
+};
+
+extern ICFClientFrames* TheICFClientFramesParameter;
+
+// ----------------------------------------------------------------------------
+
+class ICFClientFrame : public MetaString
+{
+public:
+
+   ICFClientFrame( MetaTable* );
+
+   virtual IsoString Id() const;
+   virtual bool IsReadOnly() const;
+};
+
+extern ICFClientFrame* TheICFClientFrameParameter;
+
+// ----------------------------------------------------------------------------
+
+class ICFServerFrames : public MetaTable
+{
+public:
+
+   ICFServerFrames( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool IsReadOnly() const;
+};
+
+extern ICFServerFrames* TheICFServerFramesParameter;
+
+// ----------------------------------------------------------------------------
+
+class ICFServerFrame : public MetaString
+{
+public:
+
+   ICFServerFrame( MetaTable* );
+
+   virtual IsoString Id() const;
+   virtual bool IsReadOnly() const;
+};
+
+extern ICFServerFrame* TheICFServerFrameParameter;
+
+// ----------------------------------------------------------------------------
 
 PCL_END_LOCAL
 
@@ -294,4 +351,4 @@ PCL_END_LOCAL
 #endif   // __INDICCDFrameParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameParameters.h - Released 2016/04/28 15:13:36 UTC
+// EOF INDICCDFrameParameters.h - Released 2016/05/08 20:36:42 UTC

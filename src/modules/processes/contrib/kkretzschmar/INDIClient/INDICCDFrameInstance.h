@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.07.0141
+// Standard INDIClient Process Module Version 01.00.09.0153
 // ----------------------------------------------------------------------------
-// INDICCDFrameInstance.h - Released 2016/04/28 15:13:36 UTC
+// INDICCDFrameInstance.h - Released 2016/05/08 20:36:42 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -98,22 +98,25 @@ public:
 
 private:
 
-   String   p_deviceName;
-   pcl_enum p_uploadMode;
-   String   p_serverUploadDirectory;
-   String   p_serverFileNameTemplate;
-   pcl_enum p_frameType;
-   int32    p_binningX;
-   int32    p_binningY;
-   double   p_exposureTime;
-   double   p_exposureDelay;
-   int32    p_exposureCount;
-   String   p_newImageIdTemplate;
-   pcl_bool p_reuseImageWindow;
-   pcl_bool p_autoStretch;
-   pcl_bool p_linkedAutoStretch;
+   String     p_deviceName;
+   pcl_enum   p_uploadMode;
+   String     p_serverUploadDirectory;
+   String     p_serverFileNameTemplate;
+   pcl_enum   p_frameType;
+   int32      p_binningX;
+   int32      p_binningY;
+   double     p_exposureTime;
+   double     p_exposureDelay;
+   int32      p_exposureCount;
+   String     p_newImageIdTemplate;
+   pcl_bool   p_reuseImageWindow;
+   pcl_bool   p_autoStretch;
+   pcl_bool   p_linkedAutoStretch;
 
-   int      m_exposureNumber;
+   StringList o_clientFrames;
+   StringList o_serverFrames;
+
+   int        m_exposureNumber;
 
    friend class INDICCDFrameInterface;
    friend class AbstractINDICCDFrameExecution;
@@ -140,8 +143,6 @@ public:
 
    virtual void Perform();
    virtual void Abort();
-
-   INDIDeviceControllerInstance& DeviceControllerInstance() const;
 
    const INDICCDFrameInstance& Instance() const
    {
@@ -209,4 +210,4 @@ private:
 #endif   // __INDICCDFrameInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInstance.h - Released 2016/04/28 15:13:36 UTC
+// EOF INDICCDFrameInstance.h - Released 2016/05/08 20:36:42 UTC

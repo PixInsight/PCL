@@ -111,6 +111,15 @@ public:
    }
 
    /*!
+    * Move constructor.
+    */
+   AutoLock( AutoLock&& x ) :
+      m_mutex( x.m_mutex ), m_lock( x.m_lock )
+   {
+      x.m_mutex = nullptr;
+   }
+
+   /*!
     * Destroys this %AutoLock object.
     *
     * If the monitored mutex object (that was specified in the constructor) is
@@ -148,6 +157,7 @@ private:
    // Cannot copy an AutoLock object
    AutoLock( const AutoLock& ) = delete;
    void operator =( const AutoLock& ) = delete;
+   void operator =( AutoLock&& ) = delete;
 };
 
 // ----------------------------------------------------------------------------

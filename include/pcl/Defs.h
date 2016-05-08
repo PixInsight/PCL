@@ -434,6 +434,15 @@ __pragma(warning( disable : 4267 ))
 #endif
 
 /*
+ * Current function name.
+ */
+#ifdef _MSC_VER
+#  define PCL_FUNCTION_NAME   __FUNCTION__
+#else
+#  define PCL_FUNCTION_NAME   __func__
+#endif
+
+/*
  * Minimum Win32 versions supported.
  */
 #ifdef __PCL_WINDOWS

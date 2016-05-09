@@ -177,19 +177,19 @@ public:
 
    bool IsServerConnected() const
    {
-      // ### FIXME: Rewrite INDI::BaseDevice - it is trash
+      // Should be: INDI::BaseClientImpl::serverIsConnected() const
       return const_cast<INDIClient*>( this )->serverIsConnected();
    }
 
    IsoString HostName() const
    {
-      // ### FIXME: Rewrite INDI::BaseDevice - it is trash
+      // Should be: INDI::BaseClientImpl::getHost() const
       return const_cast<INDIClient*>( this )->getHost();
    }
 
    uint32 Port() const
    {
-      // ### FIXME: Rewrite INDI::BaseDevice - it is trash
+      // Should be: INDI::BaseClientImpl::getPort() const
       return uint32( const_cast<INDIClient*>( this )->getPort() );
    }
 

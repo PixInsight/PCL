@@ -220,6 +220,8 @@ public:
          SetText( VALUE_COLUMN, m_item.PropertyValue );
 
       SetText( LABEL_COLUMN, m_item.ElementLabel );
+
+      SetToolTip( 0, m_item.PropertyKey );
    }
 
    const INDIPropertyListItem& Item() const
@@ -743,24 +745,37 @@ void INDIDeviceControllerInterface::UpdateNodeActionButtons( TreeBox::Node* node
             {
                GUI->NodeAction_PushButton.Enable();
                if ( device->isConnected() )
+               {
                   GUI->NodeAction_PushButton.SetText( "Disconnect" );
+                  GUI->NodeAction_PushButton.SetToolTip( "<p>Disconnect from '" + deviceNode->DeviceName() + "' device.</p>" );
+               }
                else
+               {
                   GUI->NodeAction_PushButton.SetText( "Connect" );
+                  GUI->NodeAction_PushButton.SetToolTip( "<p>Connect to '" + deviceNode->DeviceName() + "' device.</p>" );
+               }
                return;
             }
          }
          else
          {
-            if ( dynamic_cast<PropertyElementNode*>( node ) != nullptr )
+            PropertyElementNode* elementNode = dynamic_cast<PropertyElementNode*>( node );
+            if ( elementNode != nullptr )
             {
                GUI->NodeAction_PushButton.Enable();
                GUI->NodeAction_PushButton.SetText( "Edit" );
+               GUI->NodeAction_PushButton.SetToolTip( "<p>Edit '" + elementNode->Item().PropertyKey + "' property element.</p>" );
                return;
             }
          }
       }
 
    GUI->NodeAction_PushButton.SetText( "<?>" );
+   GUI->NodeAction_PushButton.SetToolTip( (GUI->Devices_TreeBox.NumberOfChildren() > 0) ?
+      "<p>No action available for the selected tree item.</p>"
+      "<p>Please select a device or editable property element.</p>"
+      :
+      "<p>No devices available.</p>" );
    GUI->NodeAction_PushButton.Disable();
 }
 
@@ -783,8 +798,6 @@ void INDIDeviceControllerInterface::UpdateDeviceLists()
    haveChanges |= INDIClient::TheClient()->ReportChangedPropertyLists( createdProperties, removedProperties, updatedProperties );
 
    GUI->Devices_TreeBox.DisableUpdates();
-
-   int changeCount = 0;
 
    if ( !createdDevices.IsEmpty() )
       for ( auto item : createdDevices )

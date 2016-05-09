@@ -81,7 +81,11 @@
 #endif
 
 #ifndef __PCL_IndirectArray_h
-#include <pcl/IndirectArray.h>  // for TreeBox::SelectedNodes()
+#include <pcl/IndirectArray.h>
+#endif
+
+#ifndef __PCL_SortedArray_h
+#include <pcl/SortedArray.h>
 #endif
 
 namespace pcl
@@ -124,9 +128,7 @@ public:
       /*!
        * Destroys a %TreeBox::Node object.
        */
-      virtual ~Node()
-      {
-      }
+      virtual ~Node();
 
       /*! #
        */
@@ -176,6 +178,10 @@ public:
       {
          return Child( idx );
       }
+
+      /*! #
+       */
+      int ChildIndex( const Node* ) const;
 
       /*! #
        */
@@ -345,6 +351,12 @@ public:
        */
       virtual void* CloneHandle() const;
 
+   private:
+
+      typedef SortedArray<Node*> child_node_list;
+      child_node_list m_children;
+      bool            m_removed = false;
+
       friend class TreeBox;
    };
 
@@ -358,9 +370,7 @@ public:
    /*!
     * Destroys a %TreeBox control.
     */
-   virtual ~TreeBox()
-   {
-   }
+   virtual ~TreeBox();
 
    /*! #
     */
@@ -908,6 +918,9 @@ private:
    };
 
    AutoPointer<EventHandlers> m_handlers;
+
+   typedef SortedArray<Node*> child_node_list;
+   child_node_list m_children;
 
    static pcl::Font FontFromHandle( void* h )
    {

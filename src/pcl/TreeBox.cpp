@@ -71,6 +71,17 @@ TreeBox::TreeBox( Control& parent ) :
       throw APIFunctionError( "CreateTreeBox" );
 }
 
+TreeBox::~TreeBox()
+{
+   child_node_list children( m_children );
+   m_children.Clear();
+   for ( auto node : children )
+   {
+      node->m_removed = true;
+      delete node;
+   }
+}
+
 // ----------------------------------------------------------------------------
 
 TreeBox& TreeBox::NullTree()
@@ -119,14 +130,29 @@ int TreeBox::ChildIndex( const TreeBox::Node* node ) const
 void TreeBox::Insert( int idx, TreeBox::Node* node )
 {
    if ( node != nullptr )
-      (*API->TreeBox->InsertTreeBoxNode)( handle, idx, node->handle );
+   {
+      PCL_CHECK( node->ParentTree().IsNull() )
+      PCL_CHECK( node->Parent() == nullptr )
+      if ( !m_children.Contains( node ) )
+      {
+         (*API->TreeBox->InsertTreeBoxNode)( handle, idx, node->handle );
+         m_children << node;
+      }
+   }
 }
 
 // ----------------------------------------------------------------------------
 
 void TreeBox::Remove( int idx )
 {
-   (*API->TreeBox->RemoveTreeBoxNode)( handle, idx );
+   Node* node = Child( idx );
+   if ( node != nullptr )
+   {
+      (*API->TreeBox->RemoveTreeBoxNode)( handle, idx );
+      m_children.Remove( node );
+      node->m_removed = true;
+      delete node;
+   }
 }
 
 // ----------------------------------------------------------------------------
@@ -134,6 +160,13 @@ void TreeBox::Remove( int idx )
 void TreeBox::Clear()
 {
    (*API->TreeBox->ClearTreeBox)( handle );
+   child_node_list children( m_children );
+   m_children.Clear();
+   for ( auto node : children )
+   {
+      node->m_removed = true;
+      delete node;
+   }
 }
 
 // ----------------------------------------------------------------------------
@@ -536,6 +569,41 @@ TreeBox::Node::Node( TreeBox& parentTree, int index ) :
       parentTree.Insert( index, this );
 }
 
+TreeBox::Node::~Node()
+{
+   if ( !m_removed )
+   {
+      m_removed = true;
+      Node* parentNode = reinterpret_cast<Node*>( (*API->TreeBox->GetTreeBoxNodeParent)( handle ) );
+      if ( parentNode != nullptr )
+      {
+         parentNode->m_children.Remove( this );
+         int idx = parentNode->ChildIndex( this );
+         if ( idx >= 0 )
+            (*API->TreeBox->RemoveTreeBoxNodeChild)( parentNode->handle, idx );
+      }
+      else
+      {
+         TreeBox* parentTree = reinterpret_cast<TreeBox*>( (*API->TreeBox->GetTreeBoxNodeParentBox)( handle ) );
+         if ( parentTree != nullptr )
+         {
+            parentTree->m_children.Remove( this );
+            int idx = parentTree->ChildIndex( this );
+            if ( idx >= 0 )
+               (*API->TreeBox->RemoveTreeBoxNode)( parentTree->handle, idx );
+         }
+      }
+   }
+
+   child_node_list children( m_children );
+   m_children.Clear();
+   for ( auto node : children )
+   {
+      node->m_removed = true;
+      delete node;
+   }
+}
+
 // ----------------------------------------------------------------------------
 
 const TreeBox& TreeBox::Node::ParentTree() const
@@ -591,16 +659,42 @@ TreeBox::Node* TreeBox::Node::Child( int idx )
 
 // ----------------------------------------------------------------------------
 
+int TreeBox::Node::ChildIndex( const TreeBox::Node* node ) const
+{
+   for ( int i = 0, n = NumberOfChildren(); i < n; ++i )
+      if ( Child( i ) == node )
+         return i;
+   return -1;
+}
+
+// ----------------------------------------------------------------------------
+
 void TreeBox::Node::Insert( int idx, TreeBox::Node* node )
 {
-   (*API->TreeBox->InsertTreeBoxNodeChild)( handle, idx, node->handle );
+   if ( node != nullptr )
+   {
+      PCL_CHECK( node->ParentTree().IsNull() )
+      PCL_CHECK( node->Parent() == nullptr )
+      if ( !m_children.Contains( node ) )
+      {
+         (*API->TreeBox->InsertTreeBoxNodeChild)( handle, idx, node->handle );
+         m_children << node;
+      }
+   }
 }
 
 // ----------------------------------------------------------------------------
 
 void TreeBox::Node::Remove( int idx )
 {
-   (*API->TreeBox->RemoveTreeBoxNodeChild)( handle, idx );
+   TreeBox::Node* node = Child( idx );
+   if ( node != nullptr )
+   {
+      (*API->TreeBox->RemoveTreeBoxNodeChild)( handle, idx );
+      m_children.Remove( node );
+      node->m_removed = true;
+      delete node;
+   }
 }
 
 // ----------------------------------------------------------------------------

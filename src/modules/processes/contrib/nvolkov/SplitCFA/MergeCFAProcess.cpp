@@ -4,14 +4,14 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard SplitCFA Process Module Version 01.00.05.0104
+// Standard SplitCFA Process Module Version 01.00.06.0116
 // ----------------------------------------------------------------------------
-// MergeCFAProcess.cpp - Released 2016/02/21 20:22:43 UTC
+// MergeCFAProcess.cpp - Released 2016/05/12 12:53:00 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard SplitCFA PixInsight module.
 //
-// Copyright (c) 2013-2015 Nikolay Volkov
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
+// Copyright (c) 2013-2016 Nikolay Volkov
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -70,7 +70,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-MergeCFAProcess* TheMergeCFAProcess = 0;
+MergeCFAProcess* TheMergeCFAProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -83,6 +83,7 @@ MergeCFAProcess::MergeCFAProcess() : MetaProcess()
    new MergeCFASourceImage1( this );
    new MergeCFASourceImage2( this );
    new MergeCFASourceImage3( this );
+   new MergeCFAOutputViewId( this );
 }
 
 // ----------------------------------------------------------------------------
@@ -103,7 +104,7 @@ IsoString MergeCFAProcess::Category() const
 
 uint32 MergeCFAProcess::Version() const
 {
-   return 0x100; // required
+   return 0x100;
 }
 
 // ----------------------------------------------------------------------------
@@ -140,7 +141,7 @@ ProcessImplementation* MergeCFAProcess::Create() const
 ProcessImplementation* MergeCFAProcess::Clone( const ProcessImplementation& p ) const
 {
    const MergeCFAInstance* instPtr = dynamic_cast<const MergeCFAInstance*>( &p );
-   return (instPtr != 0) ? new MergeCFAInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new MergeCFAInstance( *instPtr ) : nullptr;
 }
 
 
@@ -149,4 +150,4 @@ ProcessImplementation* MergeCFAProcess::Clone( const ProcessImplementation& p ) 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF MergeCFAProcess.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF MergeCFAProcess.cpp - Released 2016/05/12 12:53:00 UTC

@@ -4,14 +4,14 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard SplitCFA Process Module Version 01.00.05.0104
+// Standard SplitCFA Process Module Version 01.00.06.0116
 // ----------------------------------------------------------------------------
-// SplitCFAInstance.h - Released 2016/02/21 20:22:43 UTC
+// SplitCFAInstance.h - Released 2016/05/12 12:53:00 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard SplitCFA PixInsight module.
 //
-// Copyright (c) 2013-2015 Nikolay Volkov
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
+// Copyright (c) 2013-2016 Nikolay Volkov
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -65,6 +65,7 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
+
 class SplitCFAThread;
 struct SplitCFAThreadData;
 
@@ -98,38 +99,36 @@ private:
       String   folder;  // absolute file folder
       pcl_bool enabled; // if disabled, skip (ignore) this image
 
-
-      ImageItem( const String& p = String(), const String& f = String() ) : path( p ), folder( f ), enabled( true )
+      ImageItem( const String& p = String(), const String& f = String() ) :
+         path( p ),
+         folder( f ),
+         enabled( true )
       {
       }
 
-      ImageItem( const ImageItem& i ) : path( i.path ), folder(i.folder), enabled( i.enabled)
-      {
-      }
+      ImageItem( const ImageItem& ) = default;
    };
 
 #define outputExtension ".xisf"
 
    typedef Array<ImageItem> image_list;
 
+   image_list p_targetFrames;
+   pcl_bool   p_outputTree;
+   pcl_bool   p_outputSubDirCFA;
+   String     p_outputDir;
+   pcl_bool   p_overwrite;
+   String     p_prefix;
+   String     p_postfix;
 
-   // instance ---------------------------------------------------------------
-   image_list  p_targetFrames;
-   pcl_bool    p_outputTree;
-   pcl_bool    p_outputSubDirCFA;
-   String      p_outputDir;
-   pcl_bool    p_overwrite;
-   String      p_prefix;
-   String      p_postfix;
+   String     o_outputViewId[ 4 ];
 
-   // -------------------------------------------------------------------------
    template <class P>
-   void SplitCFA_Engine( const GenericImage<P>& source,
-                         const SplitCFAInstance& instance, const View& view ); // Engine for ExecuteOn(View& view)
+   void SplitCFAViewImage( const GenericImage<P>& source, const View& view ); // for ExecuteOn()
 
-   inline thread_list LoadTargetFrame( size_t fileIndex );
-   inline String      OutputFilePath( const String&, const String&, const size_t, const int );
-   inline void        SaveImage( const SplitCFAThread* );
+   thread_list LoadTargetFrame( size_t fileIndex );
+   String      OutputFilePath( const String&, const String&, const size_t, const int );
+   void        SaveImage( const SplitCFAThread* );
 
    friend class SplitCFAThread;
    friend class SplitCFAInterface;
@@ -141,4 +140,4 @@ private:
 #endif   // __SplitCFAInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF SplitCFAInstance.h - Released 2016/02/21 20:22:43 UTC
+// EOF SplitCFAInstance.h - Released 2016/05/12 12:53:00 UTC

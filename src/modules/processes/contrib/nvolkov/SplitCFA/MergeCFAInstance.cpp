@@ -4,14 +4,14 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard SplitCFA Process Module Version 01.00.05.0104
+// Standard SplitCFA Process Module Version 01.00.06.0116
 // ----------------------------------------------------------------------------
-// MergeCFAInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// MergeCFAInstance.cpp - Released 2016/05/12 12:53:00 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard SplitCFA PixInsight module.
 //
-// Copyright (c) 2013-2015 Nikolay Volkov
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
+// Copyright (c) 2013-2016 Nikolay Volkov
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,169 +53,172 @@
 
 #include "MergeCFAInstance.h"
 #include "MergeCFAParameters.h"
+
 #include <pcl/AutoViewLock.h>
-#include <pcl/View.h>
-//#include <pcl/StdStatus.h>
+#include <pcl/AutoPointer.h>
 #include <pcl/Console.h>
+#include <pcl/StdStatus.h>
+#include <pcl/View.h>
 
 namespace pcl {
 
 // ----------------------------------------------------------------------------
 
-MergeCFAInstance::MergeCFAInstance(const MetaProcess* m) :
-ProcessImplementation(m),
-p_viewId()
+MergeCFAInstance::MergeCFAInstance( const MetaProcess* m ) :
+   ProcessImplementation( m ),
+   p_viewId( 4 ),
+   o_outputViewId()
 {
-   for (int i = 0; i<4; ++i)
-      p_viewId.Add(String());
 }
 
-MergeCFAInstance::MergeCFAInstance(const MergeCFAInstance& x) :
-ProcessImplementation(x)
+MergeCFAInstance::MergeCFAInstance( const MergeCFAInstance& x ) :
+   ProcessImplementation( x )
 {
-   Assign(x);
+   Assign( x );
 }
 
-void MergeCFAInstance::Assign(const ProcessImplementation& p)
+void MergeCFAInstance::Assign( const ProcessImplementation& p )
 {
-   const MergeCFAInstance* x = dynamic_cast<const MergeCFAInstance*> (&p);
-   if (x != 0)
+   const MergeCFAInstance* x = dynamic_cast<const MergeCFAInstance*>( &p );
+   if ( x != nullptr )
    {
       p_viewId = x->p_viewId;
+      o_outputViewId = x->o_outputViewId;
    }
 }
 
-bool MergeCFAInstance::CanExecuteOn(const View&, pcl::String& whyNot) const
+bool MergeCFAInstance::CanExecuteOn( const View&, pcl::String& whyNot ) const
 {
-   whyNot = "Merge CFA can only be executed in the global context.";
+   whyNot = "MergeCFA can only be executed in the global context.";
    return false;
 }
 
-template <class P>
-static void __Combine( GenericImage<P>& t, GenericImage<P>& s0, GenericImage<P>& s1, GenericImage<P>& s2, GenericImage<P>& s3)
-{
-   for ( int c = 0; c < t.NumberOfChannels(); ++c )
-   {
-      for ( int sY = 0, tY = 0; tY < t.Height(); tY+=2, ++sY )
-      {
-         for ( int sX = 0, tX = 0; tX < t.Width(); tX+=2, ++sX )
-         {
-            t( tX,   tY,   c ) = s0( sX, sY, c);
-            t( tX,   tY+1, c ) = s1( sX, sY, c);
-            t( tX+1, tY,   c ) = s2( sX, sY, c);
-            t( tX+1, tY+1, c ) = s3( sX, sY, c);
-         }
-      }
-   }
-}
-
-bool MergeCFAInstance::CanExecuteGlobal(String& whyNot) const
+bool MergeCFAInstance::CanExecuteGlobal( String& whyNot ) const
 {
    whyNot.Clear();
    return true;
 }
-View MergeCFAInstance::GetView(int n)
+
+View MergeCFAInstance::GetView( int n )
 {
    const String id = p_viewId[n];
    if ( id.IsEmpty() )
-      throw Error( "MergeCFA: Source image #" +String(n)+ " not set.");
+      throw Error( "MergeCFA: Source image #" + String( n ) + " not set." );
 
    ImageWindow w = ImageWindow::WindowById( id );
-
    if ( w.IsNull() )
       throw Error( "MergeCFA: Source image not found: " + id );
 
-   ImageVariant i = w.MainView().Image();
-
+   ImageVariant image = w.MainView().Image();
    if ( n == 0 )
    {
-      m_width = i.Width();
-      m_height = i.Height();
-      m_isColor = i.IsColor();
-      m_isFloatSample = i.IsFloatSample();
-      m_bitsPerSample = i.BitsPerSample();
-      m_numberOfChannels = i.NumberOfChannels();
+      m_width = image.Width();
+      m_height = image.Height();
+      m_isColor = image.IsColor();
+      m_isFloatSample = image.IsFloatSample();
+      m_bitsPerSample = image.BitsPerSample();
+      m_numberOfChannels = image.NumberOfChannels();
    }
    else
    {
       const String str = "MergeCFA: Incompatible source image ";
-      if ( i.Width() != m_width || i.Height() != m_height )
-         throw Error( str + "dimensions: " + id );
-      if ( i.BitsPerSample() != m_bitsPerSample )
-         throw Error( str + "bitsPerSample: " + id );
-      if ( i.IsFloatSample() != m_isFloatSample )
-         throw Error( str + "FloatSample: " + id );
-      if ( i.IsColor() != m_isColor  )
-         throw Error( str + "Color spaces: " + id );
-      if ( i.NumberOfChannels() != m_numberOfChannels  )
-         throw Error( str + "number of channels: " + id );
+      if ( image.Width() != m_width || image.Height() != m_height || image.NumberOfChannels() != m_numberOfChannels )
+         throw Error( str + "geometry: " + id );
+      if ( image.BitsPerSample() != m_bitsPerSample || image.IsFloatSample() != m_isFloatSample )
+         throw Error( str + "sample type : " + id );
+      if ( image.IsColor() != m_isColor )
+         throw Error( str + "color space: " + id );
    }
    return w.MainView();
 }
 
+template <class P>
+static void MergeCFAImage( GenericImage<P>& outputImage,
+                           const GenericImage<P>& inputImage0,
+                           const GenericImage<P>& inputImage1,
+                           const GenericImage<P>& inputImage2,
+                           const GenericImage<P>& inputImage3 )
+{
+   for ( int c = 0; c < outputImage.NumberOfChannels(); ++c )
+      for ( int sY = 0, tY = 0; tY < outputImage.Height(); tY += 2, ++sY )
+      {
+         for ( int sX = 0, tX = 0; tX < outputImage.Width(); tX += 2, ++sX )
+         {
+            outputImage( tX,   tY,   c ) = inputImage0( sX, sY, c );
+            outputImage( tX,   tY+1, c ) = inputImage1( sX, sY, c );
+            outputImage( tX+1, tY,   c ) = inputImage2( sX, sY, c );
+            outputImage( tX+1, tY+1, c ) = inputImage3( sX, sY, c );
+         }
+         outputImage.Status() += outputImage.Width()/2;
+      }
+}
+
 bool MergeCFAInstance::ExecuteGlobal()
 {
-   View s0View = GetView(0);
-   View s1View = GetView(1);
-   View s2View = GetView(2);
-   View s3View = GetView(3);
+   o_outputViewId.Clear();
 
-   ImageWindow w( m_width*2, m_height*2, m_numberOfChannels, m_bitsPerSample, m_isFloatSample, m_isColor, true );
+   Array<View> sourceView;
+   for ( int i = 0; i < 4; ++i )
+      sourceView << GetView( i );
 
-   if ( w.IsNull() )
+   ImageWindow outputWindow( m_width*2, m_height*2, m_numberOfChannels, m_bitsPerSample, m_isFloatSample, m_isColor, true );
+   if ( outputWindow.IsNull() )
       throw Error( "MergeCFA: Unable to create target image." );
-
-   View mainView = w.MainView();
+   View outputView = outputWindow.MainView();
 
    try
    {
-      mainView.Lock();
-      s0View.Lock();
-      s1View.Lock();
-      s2View.Lock();
-      s3View.Lock();
+      volatile AutoViewLock outputLock( outputView );
+      Array<AutoPointer<AutoViewWriteLock> > sourceViewLock;
+      sourceViewLock << new AutoViewWriteLock( sourceView[0] );
+      for ( int i = 1; i < 4; ++i )
+         if ( sourceView[i].CanWrite() ) // allow the same view selected for several input channels
+            sourceViewLock << new AutoViewWriteLock( sourceView[i] );
+
+      ImageVariant outputImage = outputView.Image();
+      Array<ImageVariant> inputImage;
+      for ( int i = 0; i < 4; ++i )
+         inputImage << sourceView[i].Image();
+
+      StandardStatus status;
+      outputImage.SetStatusCallback( &status );
+      outputImage.Status().Initialize( "Merging CFA components", outputImage.NumberOfSamples()/4 );
 
       Console().EnableAbort();
 
-      ImageVariant v = mainView.Image();
-      ImageVariant s0 = s0View.Image();
-      ImageVariant s1 = s1View.Image();
-      ImageVariant s2 = s2View.Image();
-      ImageVariant s3 = s3View.Image();
+#define MERGE_CFA_IMAGE( I )                                \
+   MergeCFAImage( static_cast<I&>( *outputImage ),          \
+                  static_cast<const I&>( *inputImage[0] ),  \
+                  static_cast<const I&>( *inputImage[1] ),  \
+                  static_cast<const I&>( *inputImage[2] ),  \
+                  static_cast<const I&>( *inputImage[3] ) )
 
-      if ( v.IsFloatSample() )
-         switch ( v.BitsPerSample() )
+      if ( outputImage.IsFloatSample() )
+         switch ( outputImage.BitsPerSample() )
          {
-         case 32 : __Combine( static_cast<Image&>(*v), static_cast<Image&>(*s0), static_cast<Image&>(*s1), static_cast<Image&>(*s2), static_cast<Image&>(*s3) ); break;
-         case 64 : __Combine( static_cast<DImage&>( *v ), static_cast<DImage&>(*s0), static_cast<DImage&>(*s1), static_cast<DImage&>(*s2), static_cast<DImage&>(*s3) ); break;
+         case 32: MERGE_CFA_IMAGE( Image ); break;
+         case 64: MERGE_CFA_IMAGE( DImage ); break;
          }
       else
-         switch ( v.BitsPerSample() )
+         switch ( outputImage.BitsPerSample() )
          {
-         case  8 : __Combine( static_cast<UInt8Image&>( *v ), static_cast<UInt8Image&>(*s0), static_cast<UInt8Image&>(*s1), static_cast<UInt8Image&>(*s2), static_cast<UInt8Image&>(*s3) ); break;
-         case 16 : __Combine( static_cast<UInt16Image&>( *v ), static_cast<UInt16Image&>(*s0), static_cast<UInt16Image&>(*s1), static_cast<UInt16Image&>(*s2), static_cast<UInt16Image&>(*s3) ); break;
-         case 32 : __Combine( static_cast<UInt32Image&>( *v ), static_cast<UInt32Image&>(*s0), static_cast<UInt32Image&>(*s1), static_cast<UInt32Image&>(*s2), static_cast<UInt32Image&>(*s3) ); break;
+         case  8: MERGE_CFA_IMAGE( UInt8Image ); break;
+         case 16: MERGE_CFA_IMAGE( UInt16Image ); break;
+         case 32: MERGE_CFA_IMAGE( UInt32Image ); break;
          }
 
-      mainView.Unlock();
-      s0View.Unlock();
-      s1View.Unlock();
-      s2View.Unlock();
-      s3View.Unlock();
+#undef MERGE_CFA_IMAGE
 
-      w.Show();
+      Console().DisableAbort();
 
+      o_outputViewId = outputView.Id();
+
+      outputWindow.Show();
       return true;
    }
-
    catch ( ... )
    {
-      s0View.Unlock();
-      s1View.Unlock();
-      s2View.Unlock();
-      s3View.Unlock();
-      mainView.Unlock();
-      w.Close();
+      outputWindow.Close();
       throw;
    }
 }
@@ -230,7 +233,9 @@ void* MergeCFAInstance::LockParameter( const MetaParameter* p, size_type /*table
       return p_viewId[2].Begin();
    if ( p == TheMergeCFASourceImage3Parameter )
       return p_viewId[3].Begin();
-   return 0;
+   if ( p == TheMergeCFAOutputViewIdParameter )
+      return o_outputViewId.Begin();
+   return nullptr;
 }
 
 bool MergeCFAInstance::AllocateParameter( size_type length, const MetaParameter* p, size_type /*tableRow*/ )
@@ -244,12 +249,14 @@ bool MergeCFAInstance::AllocateParameter( size_type length, const MetaParameter*
       s = p_viewId.At( 2 );
    else if ( p == TheMergeCFASourceImage3Parameter )
       s = p_viewId.At( 3 );
+   else if ( p == TheMergeCFAOutputViewIdParameter )
+      s = &o_outputViewId;
    else
       return false;
 
    s->Clear();
    if ( length > 0 )
-      s->Reserve( length );
+      s->SetLength( length );
    return true;
 }
 
@@ -263,6 +270,8 @@ size_type MergeCFAInstance::ParameterLength( const MetaParameter* p, size_type /
       return p_viewId[2].Length();
    if ( p == TheMergeCFASourceImage3Parameter )
       return p_viewId[3].Length();
+   if ( p == TheMergeCFAOutputViewIdParameter )
+      return o_outputViewId.Length();
    return 0;
 }
 
@@ -271,4 +280,4 @@ size_type MergeCFAInstance::ParameterLength( const MetaParameter* p, size_type /
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF MergeCFAInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF MergeCFAInstance.cpp - Released 2016/05/12 12:53:00 UTC

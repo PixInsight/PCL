@@ -4,14 +4,14 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard SplitCFA Process Module Version 01.00.05.0104
+// Standard SplitCFA Process Module Version 01.00.06.0116
 // ----------------------------------------------------------------------------
-// MergeCFAParameters.cpp - Released 2016/02/21 20:22:43 UTC
+// MergeCFAParameters.cpp - Released 2016/05/12 12:53:00 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard SplitCFA PixInsight module.
 //
-// Copyright (c) 2013-2015 Nikolay Volkov
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
+// Copyright (c) 2013-2016 Nikolay Volkov
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,10 +58,11 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-MergeCFASourceImage0* TheMergeCFASourceImage0Parameter = 0;
-MergeCFASourceImage1* TheMergeCFASourceImage1Parameter = 0;
-MergeCFASourceImage2* TheMergeCFASourceImage2Parameter = 0;
-MergeCFASourceImage3* TheMergeCFASourceImage3Parameter = 0;
+MergeCFASourceImage0* TheMergeCFASourceImage0Parameter = nullptr;
+MergeCFASourceImage1* TheMergeCFASourceImage1Parameter = nullptr;
+MergeCFASourceImage2* TheMergeCFASourceImage2Parameter = nullptr;
+MergeCFASourceImage3* TheMergeCFASourceImage3Parameter = nullptr;
+MergeCFAOutputViewId* TheMergeCFAOutputViewIdParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -113,7 +114,24 @@ IsoString MergeCFASourceImage3::Id() const
 
 // ----------------------------------------------------------------------------
 
+MergeCFAOutputViewId::MergeCFAOutputViewId( MetaProcess* P ) : MetaString( P )
+{
+   TheMergeCFAOutputViewIdParameter = this;
+}
+
+IsoString MergeCFAOutputViewId::Id() const
+{
+   return "outputViewId";
+}
+
+bool MergeCFAOutputViewId::IsReadOnly() const
+{
+   return true;
+}
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF MergeCFAParameters.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF MergeCFAParameters.cpp - Released 2016/05/12 12:53:00 UTC

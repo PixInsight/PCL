@@ -167,7 +167,8 @@ public:
     * Constructs an %AutoViewLock object to monitor the specified \a view.
     *
     * \param view    A %View object that will be monitored by this
-    *                %AutoViewLock instance.
+    *                %AutoViewLock instance. The object must remain valid for
+    *                the whole lifetime of this %AutoViewLock instance.
     *
     * \param lock    Whether the specified \a view should be locked for read
     *                and write operations by this constructor. The default
@@ -189,6 +190,9 @@ public:
     *    ...
     * }
     * \endcode
+    *
+    * See AutoViewWriteLock for a convenience class to implements this
+    * functionality in a cleaner way.
     */
    explicit AutoViewLock( View& view, bool lock = true ) :
       m_view( view ), m_readLock( 0 ), m_writeLock( 0 )
@@ -297,6 +301,37 @@ private:
    // Cannot copy an AutoViewLock object
    AutoViewLock( const AutoViewLock& ) = delete;
    void operator =( const AutoViewLock& ) = delete;
+};
+
+/*!
+ * \class AutoViewWriteLock
+ * \brief Automatic write-only view lock/unlock.
+ *
+ * %AutoViewWriteLock performs automatic write-only locking/unlocking of View
+ * objects. See the documentation for the base class, AutoViewLock, for
+ * complete information.
+ *
+ * \sa View, AutoViewLock
+ */
+class PCL_CLASS AutoViewWriteLock : public AutoViewLock
+{
+public:
+
+   /*!
+    * Constructs an %AutoViewWriteLock object to monitor the specified \a view
+    * and lock it for write operations exclusively.
+    *
+    * This constructor is equivalent to the following:
+    *
+    * \code
+    * AutoViewLock lock( view, false ); // do not lock for read-write ops.
+    * lock.LockForWrite();
+    * \endcode
+    */
+   explicit AutoViewWriteLock( View& view ) : AutoViewLock( view, false/*lock*/ )
+   {
+      LockForWrite();
+   }
 };
 
 // ----------------------------------------------------------------------------

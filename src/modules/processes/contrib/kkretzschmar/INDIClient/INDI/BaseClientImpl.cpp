@@ -217,11 +217,6 @@ bool INDI::BaseClientImpl::disconnectServer()
         return true;
 
     sConnected = false;
-#if defined(WIN32)
-#define SHUT_RDWR SD_BOTH
-#endif
-
-    
 
 #if !defined(WIN32)
 	shutdown(sockfd, SHUT_RDWR);

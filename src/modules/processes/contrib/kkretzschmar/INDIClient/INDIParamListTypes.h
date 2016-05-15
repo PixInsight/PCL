@@ -112,57 +112,51 @@ struct INDIPropertyListItem
    }
 };
 
-struct INDINewPropertyListItem
-{
-   String Device;
-   String Property;
-   String PropertyKey;
-   String PropertyType;
-   String Element;
-   String NewPropertyValue;
 
-   bool operator ==( const INDINewPropertyListItem& rhs ) const
-   {
-      return Device == rhs.Device &&
-             Property == rhs.Property &&
-             PropertyKey == rhs.PropertyKey &&
-             PropertyType == rhs.PropertyType &&
-             Element == rhs.Element &&
-             NewPropertyValue == rhs.NewPropertyValue;
-   }
-};
-
-struct ElementValue {
+struct ElementValuePair {
 	String Element;
 	String Value;
-	ElementValue(String element, String value):Element(element), Value(value){}
-	bool operator == (const ElementValue& rhs) const
+	ElementValuePair(String element, String value):Element(element), Value(value){}
+	bool operator == (const ElementValuePair& rhs) const
 	{
 		return Element == rhs.Element &&
 			   Value == rhs.Value;
 	}
 };
 
-struct INDINewVectorPropertyListItem
+struct INDINewPropertyItem
 {
-   INDINewVectorPropertyListItem()
-   {
-   }
 
    String Device;
    String Property;
    String PropertyKey;
    String PropertyType;
-   Array<ElementValue> ElementValuePairs;
+   Array<ElementValuePair> ElementValue;
 
-   bool operator ==( const INDINewVectorPropertyListItem& rhs ) const
+   bool operator ==( const INDINewPropertyItem& rhs ) const
    {
       return Device == rhs.Device &&
              Property == rhs.Property &&
-             PropertyKey == rhs.PropertyKey &&
+			 PropertyKey == rhs.PropertyKey &&
              PropertyType == rhs.PropertyType &&
-			 ElementValuePairs == rhs.ElementValuePairs ;
+			 ElementValue == rhs.ElementValue ;
    }
+};
+
+
+struct INDINewPropertyListItem
+{
+	String PropertyKey;
+	String PropertyType;
+	String NewPropertyValue;
+
+	bool operator ==( const INDINewPropertyListItem& rhs ) const
+	   {
+	      return PropertyKey == rhs.PropertyKey &&
+	             PropertyType == rhs.PropertyType &&
+				 NewPropertyValue == rhs.NewPropertyValue ;
+	   }
+
 };
 
 typedef Array<INDIDeviceListItem>      INDIDeviceListItemArray;

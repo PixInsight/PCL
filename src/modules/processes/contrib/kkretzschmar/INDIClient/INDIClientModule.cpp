@@ -175,8 +175,8 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
       new pcl::INDIDeviceControllerInterface;
       new pcl::INDICCDFrameProcess;
       new pcl::INDICCDFrameInterface;
-       new pcl::INDIMountProcess;
-       new pcl::INDIMountInterface;
+      new pcl::INDIMountProcess;
+      new pcl::INDIMountInterface;
    }
 
    /*

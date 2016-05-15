@@ -239,8 +239,7 @@ public:
       return GetPropertyItem( device, property, element, dum, false/*formatted*/ );
    }
 
-   bool SendNewPropertyItem( const INDINewPropertyListItem& item, bool async = false );
-   bool SendNewVectorPropertyItem( const INDINewVectorPropertyListItem& item, bool async = false );
+   bool SendNewPropertyItem( const INDINewPropertyItem& item, bool async = false );
 
    String CurrentServerMessage() const
    {

@@ -1035,16 +1035,16 @@ void INDIMountInterface::Button_Click(Button& sender, bool checked){
    else if ( sender == GUI->MountGoto_PushButton )
    {
 
-      INDINewVectorPropertyListItem newPropertyListItem;
+      INDINewPropertyItem newPropertyListItem;
       newPropertyListItem.Device = m_Device;
       newPropertyListItem.Property = "EQUATORIAL_EOD_COORD";
       newPropertyListItem.PropertyType = "INDI_NUMBER";
 
-      newPropertyListItem.ElementValuePairs.Add(ElementValue("RA",m_TargetRA));
-      newPropertyListItem.ElementValuePairs.Add(ElementValue("DEC",m_TargetDEC));
+      newPropertyListItem.ElementValue.Add(ElementValuePair("RA",m_TargetRA));
+      newPropertyListItem.ElementValue.Add(ElementValuePair("DEC",m_TargetDEC));
 
       // send (RA,DEC) coordinates in propertyVector
-      indi->SendNewVectorPropertyItem( newPropertyListItem, true/*async*/ );
+      indi->SendNewPropertyItem( newPropertyListItem, true/*async*/ );
    }
    else if ( sender == GUI->MountSearch_PushButton )
    {
@@ -1071,29 +1071,28 @@ void INDIMountInterface::Button_Click(Button& sender, bool checked){
    {
 
 
-      INDINewPropertyListItem newPropertyListItem;
+      INDINewPropertyItem newPropertyListItem;
       newPropertyListItem.Device = m_Device;
       newPropertyListItem.Property = "ON_COORD_SET";
-      newPropertyListItem.Element = "SYNC";
       newPropertyListItem.PropertyType = "INDI_SWITCH";
-      newPropertyListItem.NewPropertyValue = "ON";
-      indi->SendNewPropertyItem( newPropertyListItem, true/*async*/ );
+      newPropertyListItem.ElementValue.Add(ElementValuePair("SYNC","ON"));
 
-      INDINewVectorPropertyListItem newVectorPropertyListItem;
-      newVectorPropertyListItem.Property = "EQUATORIAL_EOD_COORD";
-      newVectorPropertyListItem.PropertyType = "INDI_NUMBER";
-      newVectorPropertyListItem.ElementValuePairs.Add(ElementValue("RA",m_TargetRA));
-      newVectorPropertyListItem.ElementValuePairs.Add(ElementValue("DEC",m_TargetDEC));
+      indi->SendNewPropertyItem( newPropertyListItem, true/*async*/ );
+      newPropertyListItem.ElementValue.Clear();
+
+      newPropertyListItem.Property = "EQUATORIAL_EOD_COORD";
+      newPropertyListItem.PropertyType = "INDI_NUMBER";
+      newPropertyListItem.ElementValue.Add(ElementValuePair("RA",m_TargetRA));
+      newPropertyListItem.ElementValue.Add(ElementValuePair("DEC",m_TargetDEC));
 
 
       // send (RA,DEC) coordinates in propertyVector
-      indi->SendNewVectorPropertyItem( newVectorPropertyListItem, true/*async*/ );
+      indi->SendNewPropertyItem( newPropertyListItem, true/*async*/ );
+      newPropertyListItem.ElementValue.Clear();
 
-      newPropertyListItem.Device = m_Device;
       newPropertyListItem.Property = "ON_COORD_SET";
-      newPropertyListItem.Element = "TRACK";
       newPropertyListItem.PropertyType = "INDI_SWITCH";
-      newPropertyListItem.NewPropertyValue = "ON";
+      newPropertyListItem.ElementValue.Add(ElementValuePair("TRACK","ON"));
       indi->SendNewPropertyItem( newPropertyListItem, true/*async*/ );
    }
 }

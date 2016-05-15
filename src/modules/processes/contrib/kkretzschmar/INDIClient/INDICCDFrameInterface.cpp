@@ -840,7 +840,7 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
       return;
 
    INDIClient* indi = INDIClient::TheClient();
-   INDINewPropertyListItem newItem;
+   INDINewPropertyItem newItem;
    newItem.Device = m_device;
 
    if ( sender == GUI->CCDDevice_Combo )
@@ -857,9 +857,8 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
             if ( item.PropertyValue == "OFF" )
             {
                newItem.Property = "COOLER_CONNECTION";
-               newItem.Element = "CONNECT_COOLER";
                newItem.PropertyType = "INDI_SWITCH";
-               newItem.NewPropertyValue = "ON";
+               newItem.ElementValue.Add(ElementValuePair("CONNECT_COOLER","ON"));
                indi->SendNewPropertyItem( newItem, true/*async*/ );
             }
       }
@@ -869,9 +868,8 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
       if ( indi->HasPropertyItem( m_device, "CCD_BINNING", "HOR_BIN" ) )
       {
          newItem.Property = "CCD_BINNING";
-         newItem.Element = "HOR_BIN";
          newItem.PropertyType = "INDI_NUMBER";
-         newItem.NewPropertyValue = GUI->CCDBinX_Combo.ItemText( itemIndex ).Trimmed();
+         newItem.ElementValue.Add(ElementValuePair("HOR_BIN",GUI->CCDBinX_Combo.ItemText( itemIndex ).Trimmed()));
          indi->SendNewPropertyItem( newItem, true/*async*/ );
       }
    }
@@ -880,9 +878,8 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
       if ( indi->HasPropertyItem( m_device, "CCD_BINNING", "VER_BIN" ) )
       {
          newItem.Property = "CCD_BINNING";
-         newItem.Element = "VER_BIN";
          newItem.PropertyType = "INDI_NUMBER";
-         newItem.NewPropertyValue = GUI->CCDBinY_Combo.ItemText( itemIndex ).Trimmed();
+         newItem.ElementValue.Add(ElementValuePair("VER_BIN",GUI->CCDBinY_Combo.ItemText( itemIndex ).Trimmed()));
          indi->SendNewPropertyItem( newItem, true/*async*/ );
       }
    }
@@ -892,9 +889,8 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
       if ( indi->HasPropertyItem( m_device, "UPLOAD_MODE", PropertyElement ) )
       {
          newItem.Property = "UPLOAD_MODE";
-         newItem.Element = PropertyElement;
          newItem.PropertyType = "INDI_SWITCH";
-         newItem.NewPropertyValue = "ON";
+         newItem.ElementValue.Add(ElementValuePair(PropertyElement,"ON"));
          indi->SendNewPropertyItem( newItem, true/*async*/ );
       }
    }
@@ -904,9 +900,8 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
       if ( indi->HasPropertyItem( m_device, "CCD_FRAME_TYPE", PropertyElement ) )
       {
          newItem.Property = "CCD_FRAME_TYPE";
-         newItem.Element = PropertyElement;
          newItem.PropertyType = "INDI_SWITCH";
-         newItem.NewPropertyValue = "ON";
+         newItem.ElementValue.Add(ElementValuePair(PropertyElement,"ON"));
          indi->SendNewPropertyItem( newItem, true/*async*/ );
       }
    }
@@ -1052,15 +1047,14 @@ void INDICCDFrameInterface::e_Click( Button& sender, bool checked )
       return;
 
    INDIClient* indi = INDIClient::TheClient();
-   INDINewPropertyListItem newItem;
+   INDINewPropertyItem newItem;
    newItem.Device = m_device;
 
    if ( sender == GUI->CCDTargetTemp_PushButton )
    {
       newItem.Property = "CCD_TEMPERATURE";
-      newItem.Element = "CCD_TEMPERATURE_VALUE";
       newItem.PropertyType = "INDI_NUMBER";
-      newItem.NewPropertyValue = String( GUI->CCDTargetTemp_NumericEdit.Value() );
+      newItem.ElementValue.Add(ElementValuePair("CCD_TEMPERATURE_VALUE",String( GUI->CCDTargetTemp_NumericEdit.Value() )));
       indi->SendNewPropertyItem( newItem, true/*async*/ );
    }
    else if ( sender == GUI->UploadDir_PushButton )
@@ -1069,9 +1063,8 @@ void INDICCDFrameInterface::e_Click( Button& sender, bool checked )
       if ( dialog.Execute() )
       {
          newItem.Property = "UPLOAD_SETTINGS";
-         newItem.Element = "UPLOAD_DIR";
          newItem.PropertyType = "INDI_TEXT";
-         newItem.NewPropertyValue = dialog.Text();
+         newItem.ElementValue.Add(ElementValuePair("UPLOAD_DIR",dialog.Text()));
          indi->SendNewPropertyItem( newItem, true/*async*/ );
       }
    }

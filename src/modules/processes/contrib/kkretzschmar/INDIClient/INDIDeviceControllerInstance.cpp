@@ -124,17 +124,18 @@ bool INDIDeviceControllerInstance::CanExecuteGlobal( String& whyNot ) const
    return true;
 }
 
-static void GetNewPropertyListItemParametersFromKey( INDINewPropertyListItem& item )
+static void GetNewPropertyListItemParametersFromKey( const INDINewPropertyListItem& listItem, INDINewPropertyItem& item )
 {
    StringList items;
-   item.PropertyKey.Break( items, '/', true/*trim*/, item.PropertyKey.StartsWith( '/' ) ? 1 : 0 );
+   listItem.PropertyKey.Break( items, '/', true/*trim*/, listItem.PropertyKey.StartsWith( '/' ) ? 1 : 0 );
    if ( items.Length() == 3 )
       if ( !items[0].IsEmpty() && !items[1].IsEmpty() && !items[2].IsEmpty() )
       {
          item.Device = items[0];
          item.Property = items[1];
-         item.Element = items[2];
          item.PropertyKey = '/' + items[0] + '/' + items[1] + '/' + items[2];
+         item.PropertyType = listItem.PropertyType;
+         item.ElementValue.Add(ElementValuePair(items[2],listItem.NewPropertyValue));
          return;
       }
    throw Error( "Invalid property key '" + item.PropertyKey + "'" );
@@ -199,9 +200,10 @@ bool INDIDeviceControllerInstance::ExecuteGlobal()
             }
             else if ( p_serverCommand == "SET" )
             {
-               for ( auto newProperty : p_newProperties )
+               for ( auto newListProperty : p_newProperties )
                {
-                  GetNewPropertyListItemParametersFromKey( newProperty );
+            	  INDINewPropertyItem newProperty;
+                  GetNewPropertyListItemParametersFromKey( newListProperty, newProperty );
                   if ( !indi->SendNewPropertyItem( newProperty, false/*async*/ ) )
                      throw Error( "INDIDeviceControllerInstance: Failure to send new property values." );
                }
@@ -209,9 +211,10 @@ bool INDIDeviceControllerInstance::ExecuteGlobal()
             }
             else if ( p_serverCommand == "SET_ASYNC" )
             {
-               for ( auto newProperty : p_newProperties )
+               for ( auto newListProperty : p_newProperties )
                {
-                  GetNewPropertyListItemParametersFromKey( newProperty );
+            	  INDINewPropertyItem newProperty;
+                  GetNewPropertyListItemParametersFromKey( newListProperty, newProperty );
                   if ( !indi->SendNewPropertyItem( newProperty, true/*async*/ ) )
                      throw Error( "INDIDeviceControllerInstance: Failure to send new property values (asynchronous)." );
                }

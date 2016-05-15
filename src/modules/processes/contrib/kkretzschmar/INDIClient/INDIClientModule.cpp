@@ -65,8 +65,8 @@
 #include "INDIClientModule.h"
 #include "INDIDeviceControllerInterface.h"
 #include "INDIDeviceControllerProcess.h"
-//#include "INDIMountInterface.h"
-//#include "INDIMountProcess.h"
+#include "INDIMountInterface.h"
+#include "INDIMountProcess.h"
 
 namespace pcl
 {
@@ -175,8 +175,8 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
       new pcl::INDIDeviceControllerInterface;
       new pcl::INDICCDFrameProcess;
       new pcl::INDICCDFrameInterface;
-//       new pcl::INDIMountProcess;
-//       new pcl::INDIMountInterface;
+       new pcl::INDIMountProcess;
+       new pcl::INDIMountInterface;
    }
 
    /*

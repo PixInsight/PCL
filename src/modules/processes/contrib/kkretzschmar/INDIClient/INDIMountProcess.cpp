@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.09.0153
+// Standard INDIClient Process Module Version 01.00.07.0141
 // ----------------------------------------------------------------------------
-// INDIParamListTypes.h - Released 2016/05/08 20:36:42 UTC
+// INDIMountProcess.cpp - Released 2016/04/28 15:13:36 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -50,130 +50,123 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-/*
- * INDIParamListTypes.h
- *
- *  Created on: May 26, 2014
- *      Author: klaus
- */
+#include "INDIMountProcess.h"
+#include "INDIMountInterface.h"
+#include "INDIMountInstance.h"
 
-#ifndef __INDIParamListTypes_h
-#define __INDIParamListTypes_h
-
-#include "INDI/indibase.h"
-
-#include <pcl/Array.h>
-#include <pcl/String.h>
+#include <pcl/Arguments.h>
+#include <pcl/Console.h>
+#include <pcl/Exception.h>
+#include <pcl/View.h>
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-struct INDIDeviceListItem
+//#include "PixInsightINDIIcon.xpm"
+
+// ----------------------------------------------------------------------------
+
+INDIMountProcess* TheINDIMountProcess = 0;
+
+// ----------------------------------------------------------------------------
+
+INDIMountProcess::INDIMountProcess() : MetaProcess()
 {
-   String DeviceName;
-   String DeviceLabel;
+   TheINDIMountProcess = this;
+}
 
-   bool operator ==( const INDIDeviceListItem& rhs ) const
-   {
-      return DeviceName == rhs.DeviceName;
-   }
+// ----------------------------------------------------------------------------
 
-   bool operator <( const INDIDeviceListItem& rhs ) const
-   {
-      return DeviceName < rhs.DeviceName;
-   }
-};
-
-struct INDIPropertyListItem
+IsoString INDIMountProcess::Id() const
 {
-   String    Device;
-   String    Property;
-   INDI_TYPE PropertyType;
-   String    PropertyTypeStr;
-   String    Element;
-   unsigned  PropertyState;
-   String    PropertyNumberFormat;
-   String    PropertyLabel;
-   String    ElementLabel;
-   String    PropertyKey;
-   String    PropertyValue;
-   String    NewPropertyValue;
+   return "INDIMount";
+}
 
-   bool operator ==( const INDIPropertyListItem& rhs ) const
-   {
-      return PropertyKey == rhs.PropertyKey;
-   }
+// ----------------------------------------------------------------------------
 
-   bool operator <( const INDIPropertyListItem& rhs ) const
-   {
-      return PropertyKey < rhs.PropertyKey;
-   }
-};
-
-struct INDINewPropertyListItem
+IsoString INDIMountProcess::Category() const
 {
-   String Device;
-   String Property;
-   String PropertyKey;
-   String PropertyType;
-   String Element;
-   String NewPropertyValue;
+   return IsoString("INDI"); // No category
+}
 
-   bool operator ==( const INDINewPropertyListItem& rhs ) const
-   {
-      return Device == rhs.Device &&
-             Property == rhs.Property &&
-             PropertyKey == rhs.PropertyKey &&
-             PropertyType == rhs.PropertyType &&
-             Element == rhs.Element &&
-             NewPropertyValue == rhs.NewPropertyValue;
-   }
-};
+// ----------------------------------------------------------------------------
 
-struct ElementValue {
-	String Element;
-	String Value;
-	ElementValue(String element, String value):Element(element), Value(value){}
-	bool operator == (const ElementValue& rhs) const
-	{
-		return Element == rhs.Element &&
-			   Value == rhs.Value;
-	}
-};
-
-struct INDINewVectorPropertyListItem
+uint32 INDIMountProcess::Version() const
 {
-   INDINewVectorPropertyListItem()
-   {
-   }
+   return 0x100; // required
+}
 
-   String Device;
-   String Property;
-   String PropertyKey;
-   String PropertyType;
-   Array<ElementValue> ElementValuePairs;
+// ----------------------------------------------------------------------------
 
-   bool operator ==( const INDINewVectorPropertyListItem& rhs ) const
-   {
-      return Device == rhs.Device &&
-             Property == rhs.Property &&
-             PropertyKey == rhs.PropertyKey &&
-             PropertyType == rhs.PropertyType &&
-			 ElementValuePairs == rhs.ElementValuePairs ;
-   }
-};
+String INDIMountProcess::Description() const
+{
+   return
+   "<html>"
+   "<p>Control INDI Mount devices./p>"
+   "</html>";
+}
 
-typedef Array<INDIDeviceListItem>      INDIDeviceListItemArray;
-typedef Array<INDIPropertyListItem>    INDIPropertyListItemArray;
-typedef Array<INDINewPropertyListItem> INDINewPropertyListItemArray;
+// ----------------------------------------------------------------------------
+
+const char** INDIMountProcess::IconImageXPM() const
+{
+   return 0; // PixInsightINDIIcon_XPM; ---> put a nice icon here
+}
+
+// ----------------------------------------------------------------------------
+
+bool INDIMountProcess::PrefersGlobalExecution() const
+{
+	return true;
+}
+// ----------------------------------------------------------------------------
+
+ProcessInterface* INDIMountProcess::DefaultInterface() const
+{
+   return TheINDIMountInterface;
+}
+// ----------------------------------------------------------------------------
+
+ProcessImplementation* INDIMountProcess::Create() const
+{
+   return new INDIMountInstance( this );
+}
+
+// ----------------------------------------------------------------------------
+
+ProcessImplementation* INDIMountProcess::Clone( const ProcessImplementation& p ) const
+{
+   const INDIMountInstance* instPtr = dynamic_cast<const INDIMountInstance*>( &p );
+   return (instPtr != 0) ? new INDIMountInstance( *instPtr ) : 0;
+}
+
+// ----------------------------------------------------------------------------
+
+bool INDIMountProcess::CanProcessCommandLines() const
+{
+   return false;
+}
+
+// ----------------------------------------------------------------------------
+
+static void ShowHelp()
+{
+   Console().Write(
+"<raw>"
+"Nothing to show."
+"</raw>" );
+}
+
+int INDIMountProcess::ProcessCommandLine( const StringList& argv ) const
+{
+   return 0;
+}
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-#endif   // __INDIParamListTypes_h
-
 // ----------------------------------------------------------------------------
-// EOF INDIParamListTypes.h - Released 2016/05/08 20:36:42 UTC
+// EOF INDIMountProcess.cpp - Released 2016/04/28 15:13:36 UTC

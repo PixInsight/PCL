@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.09.0153
+// Standard INDIClient Process Module Version 01.00.04.0108
 // ----------------------------------------------------------------------------
-// INDIParamListTypes.h - Released 2016/05/08 20:36:42 UTC
+// INDICCDFrameParameters.h - Released 2016/04/15 15:37:39 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -50,130 +50,135 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-/*
- * INDIParamListTypes.h
- *
- *  Created on: May 26, 2014
- *      Author: klaus
- */
 
-#ifndef __INDIParamListTypes_h
-#define __INDIParamListTypes_h
+#ifndef INDIMOUNTPARAMETERS_H_
+#define INDIMOUNTPARAMETERS_H_
 
-#include "INDI/indibase.h"
-
-#include <pcl/Array.h>
-#include <pcl/String.h>
+#include <pcl/MetaParameter.h>
 
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-
-struct INDIDeviceListItem
-{
-   String DeviceName;
-   String DeviceLabel;
-
-   bool operator ==( const INDIDeviceListItem& rhs ) const
-   {
-      return DeviceName == rhs.DeviceName;
-   }
-
-   bool operator <( const INDIDeviceListItem& rhs ) const
-   {
-      return DeviceName < rhs.DeviceName;
-   }
-};
-
-struct INDIPropertyListItem
-{
-   String    Device;
-   String    Property;
-   INDI_TYPE PropertyType;
-   String    PropertyTypeStr;
-   String    Element;
-   unsigned  PropertyState;
-   String    PropertyNumberFormat;
-   String    PropertyLabel;
-   String    ElementLabel;
-   String    PropertyKey;
-   String    PropertyValue;
-   String    NewPropertyValue;
-
-   bool operator ==( const INDIPropertyListItem& rhs ) const
-   {
-      return PropertyKey == rhs.PropertyKey;
-   }
-
-   bool operator <( const INDIPropertyListItem& rhs ) const
-   {
-      return PropertyKey < rhs.PropertyKey;
-   }
-};
-
-struct INDINewPropertyListItem
-{
-   String Device;
-   String Property;
-   String PropertyKey;
-   String PropertyType;
-   String Element;
-   String NewPropertyValue;
-
-   bool operator ==( const INDINewPropertyListItem& rhs ) const
-   {
-      return Device == rhs.Device &&
-             Property == rhs.Property &&
-             PropertyKey == rhs.PropertyKey &&
-             PropertyType == rhs.PropertyType &&
-             Element == rhs.Element &&
-             NewPropertyValue == rhs.NewPropertyValue;
-   }
-};
-
-struct ElementValue {
-	String Element;
-	String Value;
-	ElementValue(String element, String value):Element(element), Value(value){}
-	bool operator == (const ElementValue& rhs) const
-	{
-		return Element == rhs.Element &&
-			   Value == rhs.Value;
-	}
-};
-
-struct INDINewVectorPropertyListItem
-{
-   INDINewVectorPropertyListItem()
-   {
-   }
-
-   String Device;
-   String Property;
-   String PropertyKey;
-   String PropertyType;
-   Array<ElementValue> ElementValuePairs;
-
-   bool operator ==( const INDINewVectorPropertyListItem& rhs ) const
-   {
-      return Device == rhs.Device &&
-             Property == rhs.Property &&
-             PropertyKey == rhs.PropertyKey &&
-             PropertyType == rhs.PropertyType &&
-			 ElementValuePairs == rhs.ElementValuePairs ;
-   }
-};
-
-typedef Array<INDIDeviceListItem>      INDIDeviceListItemArray;
-typedef Array<INDIPropertyListItem>    INDIPropertyListItemArray;
-typedef Array<INDINewPropertyListItem> INDINewPropertyListItemArray;
+PCL_BEGIN_LOCAL
 
 // ----------------------------------------------------------------------------
+
+class IMCDeviceName : public MetaString
+{
+public:
+
+   IMCDeviceName( MetaProcess* );
+
+   virtual IsoString Id() const;
+};
+
+extern IMCDeviceName* TheIMCDeviceNameParameter;
+
+// ----------------------------------------------------------------------------
+
+class IMCCommandType : public MetaEnumeration
+{
+public:
+
+   enum { Goto,
+          Synch,
+		  Park,
+//          MoveWest,
+//          MoveEast,
+//          MoveNorth,
+//		  MoveSouth,
+		  NumberOfCommands,
+          Default = Goto };
+
+   IMCCommandType( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual size_type NumberOfElements() const;
+   virtual IsoString ElementId( size_type ) const;
+   virtual int ElementValue( size_type ) const;
+   virtual size_type DefaultValueIndex() const;
+};
+
+extern IMCCommandType* TheIMCCommandTypeParameter;
+
+// ----------------------------------------------------------------------------
+
+class IMCTargetRightascension : public MetaDouble
+{
+public:
+
+	IMCTargetRightascension( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern IMCTargetRightascension* TheIMCTargetRightAscensionParameter;
+
+// ----------------------------------------------------------------------------
+
+class IMCTargetDeclination : public MetaDouble
+{
+public:
+
+	IMCTargetDeclination( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern IMCTargetDeclination* TheIMCTargetDeclinationParameter;
+
+
+// ----------------------------------------------------------------------------
+
+class IMCCurrentRightascension : public MetaDouble
+{
+public:
+
+	IMCCurrentRightascension( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+   virtual bool IsReadOnly() const;
+
+};
+
+extern IMCCurrentRightascension* TheIMCCurrentRightAscensionParameter;
+
+// ----------------------------------------------------------------------------
+
+class IMCCurrentDeclination : public MetaDouble
+{
+public:
+
+	IMCCurrentDeclination( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+   virtual bool IsReadOnly() const;
+
+};
+
+extern IMCCurrentDeclination* TheIMCCurrentDeclinationParameter;
+
+
+PCL_END_LOCAL
 
 } // pcl
 
-#endif   // __INDIParamListTypes_h
 
-// ----------------------------------------------------------------------------
-// EOF INDIParamListTypes.h - Released 2016/05/08 20:36:42 UTC
+
+#endif /* INDIMOUNTPARAMETERS_H_ */

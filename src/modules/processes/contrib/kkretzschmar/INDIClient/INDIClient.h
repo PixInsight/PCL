@@ -240,6 +240,7 @@ public:
    }
 
    bool SendNewPropertyItem( const INDINewPropertyListItem& item, bool async = false );
+   bool SendNewVectorPropertyItem( const INDINewVectorPropertyListItem& item, bool async = false );
 
    String CurrentServerMessage() const
    {

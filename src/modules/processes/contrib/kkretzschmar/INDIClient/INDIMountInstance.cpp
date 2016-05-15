@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.09.0153
+// Standard INDIClient Process Module Version 01.00.07.0141
 // ----------------------------------------------------------------------------
-// INDIParamListTypes.h - Released 2016/05/08 20:36:42 UTC
+// INDIMountInstance.cpp - Released 2016/04/28 15:13:36 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -50,130 +50,56 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-/*
- * INDIParamListTypes.h
- *
- *  Created on: May 26, 2014
- *      Author: klaus
- */
-
-#ifndef __INDIParamListTypes_h
-#define __INDIParamListTypes_h
-
-#include "INDI/indibase.h"
-
-#include <pcl/Array.h>
-#include <pcl/String.h>
+#include "INDIMountInstance.h"
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-struct INDIDeviceListItem
+INDIMountInstance::INDIMountInstance( const MetaProcess* m ) :
+   ProcessImplementation( m )
+   // ### TODO: Process parameters
 {
-   String DeviceName;
-   String DeviceLabel;
 
-   bool operator ==( const INDIDeviceListItem& rhs ) const
-   {
-      return DeviceName == rhs.DeviceName;
-   }
+}
 
-   bool operator <( const INDIDeviceListItem& rhs ) const
-   {
-      return DeviceName < rhs.DeviceName;
-   }
-};
-
-struct INDIPropertyListItem
+INDIMountInstance::INDIMountInstance( const INDIMountInstance& x ) :
+   ProcessImplementation( x )
 {
-   String    Device;
-   String    Property;
-   INDI_TYPE PropertyType;
-   String    PropertyTypeStr;
-   String    Element;
-   unsigned  PropertyState;
-   String    PropertyNumberFormat;
-   String    PropertyLabel;
-   String    ElementLabel;
-   String    PropertyKey;
-   String    PropertyValue;
-   String    NewPropertyValue;
+   Assign( x );
+}
 
-   bool operator ==( const INDIPropertyListItem& rhs ) const
-   {
-      return PropertyKey == rhs.PropertyKey;
-   }
-
-   bool operator <( const INDIPropertyListItem& rhs ) const
-   {
-      return PropertyKey < rhs.PropertyKey;
-   }
-};
-
-struct INDINewPropertyListItem
+void INDIMountInstance::Assign( const ProcessImplementation& p )
 {
-   String Device;
-   String Property;
-   String PropertyKey;
-   String PropertyType;
-   String Element;
-   String NewPropertyValue;
-
-   bool operator ==( const INDINewPropertyListItem& rhs ) const
+   const INDIMountInstance* x = dynamic_cast<const INDIMountInstance*>( &p );
+   if ( x != nullptr )
    {
-      return Device == rhs.Device &&
-             Property == rhs.Property &&
-             PropertyKey == rhs.PropertyKey &&
-             PropertyType == rhs.PropertyType &&
-             Element == rhs.Element &&
-             NewPropertyValue == rhs.NewPropertyValue;
+      // ### TODO: Process parameters
    }
-};
+}
 
-struct ElementValue {
-	String Element;
-	String Value;
-	ElementValue(String element, String value):Element(element), Value(value){}
-	bool operator == (const ElementValue& rhs) const
-	{
-		return Element == rhs.Element &&
-			   Value == rhs.Value;
-	}
-};
-
-struct INDINewVectorPropertyListItem
+bool INDIMountInstance::CanExecuteOn( const View&, pcl::String& whyNot ) const
 {
-   INDINewVectorPropertyListItem()
-   {
-   }
+   whyNot = "INDI client can only be executed in the global context";
+   return false;
+}
 
-   String Device;
-   String Property;
-   String PropertyKey;
-   String PropertyType;
-   Array<ElementValue> ElementValuePairs;
+bool INDIMountInstance::CanExecuteGlobal( pcl::String& whyNot ) const
+{
+   whyNot.Clear();
+   return true;
+}
 
-   bool operator ==( const INDINewVectorPropertyListItem& rhs ) const
-   {
-      return Device == rhs.Device &&
-             Property == rhs.Property &&
-             PropertyKey == rhs.PropertyKey &&
-             PropertyType == rhs.PropertyType &&
-			 ElementValuePairs == rhs.ElementValuePairs ;
-   }
-};
-
-typedef Array<INDIDeviceListItem>      INDIDeviceListItemArray;
-typedef Array<INDIPropertyListItem>    INDIPropertyListItemArray;
-typedef Array<INDINewPropertyListItem> INDINewPropertyListItemArray;
+bool INDIMountInstance::ExecuteGlobal()
+{
+   // ### TODO
+   return true;
+}
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-#endif   // __INDIParamListTypes_h
-
 // ----------------------------------------------------------------------------
-// EOF INDIParamListTypes.h - Released 2016/05/08 20:36:42 UTC
+// EOF INDIMountInstance.cpp - Released 2016/04/28 15:13:36 UTC

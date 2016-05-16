@@ -1,18 +1,15 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.101
+# PixInsight Makefile Generator Script v1.100
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Sun, 08 May 2016 09:33:49 GMT
+# Automatically generated on Mon, 16 May 2016 08:59:07 GMT
 # Project id ...... INDIClient
 # Project type .... Module
 # Platform ........ MacOSX/g++
 # Configuration ... Release/x64
-# --------------------------------------------------------------------
-# Additional libraries:
-# zlib-pxi
 ######################################################################
 
-OBJ_DIR="$(PCLSRCDIR)/modules/processes/contrib/kkretzschmar/INDIClient/macosx/g++/x64/Release"
+OBJ_DIR="/media/klaus/DATA/Cpp/PCL/src/modules/processes/contrib/kkretzschmar/INDIClient/macosx/g++/x64/Release"
 
 .PHONY: all
 all: $(OBJ_DIR)/INDIClient-pxm.dylib
@@ -33,6 +30,11 @@ SRC_FILES= \
 ../../INDIDeviceControllerInterface.cpp \
 ../../INDIDeviceControllerParameters.cpp \
 ../../INDIDeviceControllerProcess.cpp \
+../../INDIMountInstance.cpp \
+../../INDIMountInterface.cpp \
+../../INDIMountParameters.cpp \
+../../INDIMountProcess.cpp \
+../../SkyMap.cpp \
 ../../INDI/BaseClientImpl.cpp \
 ../../INDI/base64.c \
 ../../INDI/basedevice.cpp \
@@ -56,6 +58,11 @@ OBJ_FILES= \
 ./x64/Release/INDIDeviceControllerInterface.o \
 ./x64/Release/INDIDeviceControllerParameters.o \
 ./x64/Release/INDIDeviceControllerProcess.o \
+./x64/Release/INDIMountInstance.o \
+./x64/Release/INDIMountInterface.o \
+./x64/Release/INDIMountParameters.o \
+./x64/Release/INDIMountProcess.o \
+./x64/Release/SkyMap.o \
 ./x64/Release/INDI/BaseClientImpl.o \
 ./x64/Release/INDI/base64.o \
 ./x64/Release/INDI/basedevice.o \
@@ -79,6 +86,11 @@ DEP_FILES= \
 ./x64/Release/INDIDeviceControllerInterface.d \
 ./x64/Release/INDIDeviceControllerParameters.d \
 ./x64/Release/INDIDeviceControllerProcess.d \
+./x64/Release/INDIMountInstance.d \
+./x64/Release/INDIMountInterface.d \
+./x64/Release/INDIMountParameters.d \
+./x64/Release/INDIMountProcess.d \
+./x64/Release/SkyMap.d \
 ./x64/Release/INDI/BaseClientImpl.d \
 ./x64/Release/INDI/base64.d \
 ./x64/Release/INDI/basedevice.d \
@@ -93,7 +105,7 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/INDIClient-pxm.dylib: $(OBJ_FILES)
-	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -stdlib=libc++ -Wl,-dead_strip -dynamiclib -install_name @executable_path/INDIClient-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/INDIClient-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lzlib-pxi -lpthread -lPCL-pxi
+	clang++ -arch x86_64 -fPIC -headerpad_max_install_names -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -stdlib=libc++ -Wl,-dead_strip -dynamiclib -install_name @executable_path/INDIClient-pxm.dylib -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/INDIClient-pxm.dylib $(OBJ_FILES) -framework CoreFoundation -lpthread -lPCL-pxi
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean
@@ -103,7 +115,6 @@ clean:
 .PHONY: post-build
 post-build:
 	cp $(OBJ_DIR)/INDIClient-pxm.dylib $(PCLBINDIR64)
-	install_name_tool -change @executable_path/libzlib-pxi.dylib @loader_path/libzlib-pxi.dylib $(PCLBINDIR64)/INDIClient-pxm.dylib
 
 ./x64/Release/%.o: ../../%.cpp
 	clang++ -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -std=c++11 -stdlib=libc++ -Wall -Wno-parentheses -Wno-extern-c-compat -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"

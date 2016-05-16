@@ -83,7 +83,7 @@ INDIMountInterface* TheINDIMountInterface = nullptr;
 INDIMountInterface::INDIMountInterface() :
    ProcessInterface(),
    instance( TheINDIMountProcess ),
-   GUI( 0 ),
+   GUI( nullptr ),
    m_serverMessage(),
    m_Device(),
    m_TargetRA( "0" ),
@@ -1043,7 +1043,7 @@ void INDIMountInterface::Button_Click(Button& sender, bool checked){
       newPropertyListItem.ElementValue.Add(ElementValuePair("RA",m_TargetRA));
       newPropertyListItem.ElementValue.Add(ElementValuePair("DEC",m_TargetDEC));
 
-      // send (RA,DEC) coordinates in propertyVector
+      // send (RA,DEC) coordinates in a bulk request
       indi->SendNewPropertyItem( newPropertyListItem, true/*async*/ );
    }
    else if ( sender == GUI->MountSearch_PushButton )

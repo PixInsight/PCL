@@ -840,8 +840,7 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
       return;
 
    INDIClient* indi = INDIClient::TheClient();
-   INDINewPropertyItem newItem;
-   newItem.Device = m_device;
+
 
    if ( sender == GUI->CCDDevice_Combo )
    {
@@ -856,6 +855,8 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
          if ( indi->GetPropertyItem( m_device, "COOLER_CONNECTION", "CONNECT_COOLER", item ) )
             if ( item.PropertyValue == "OFF" )
             {
+               INDINewPropertyItem newItem;
+               newItem.Device = m_device;
                newItem.Property = "COOLER_CONNECTION";
                newItem.PropertyType = "INDI_SWITCH";
                newItem.ElementValue.Add(ElementValuePair("CONNECT_COOLER","ON"));
@@ -867,6 +868,8 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
    {
       if ( indi->HasPropertyItem( m_device, "CCD_BINNING", "HOR_BIN" ) )
       {
+    	 INDINewPropertyItem newItem;
+    	 newItem.Device = m_device;
          newItem.Property = "CCD_BINNING";
          newItem.PropertyType = "INDI_NUMBER";
          newItem.ElementValue.Add(ElementValuePair("HOR_BIN",GUI->CCDBinX_Combo.ItemText( itemIndex ).Trimmed()));
@@ -877,6 +880,8 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
    {
       if ( indi->HasPropertyItem( m_device, "CCD_BINNING", "VER_BIN" ) )
       {
+    	 INDINewPropertyItem newItem;
+    	 newItem.Device = m_device;
          newItem.Property = "CCD_BINNING";
          newItem.PropertyType = "INDI_NUMBER";
          newItem.ElementValue.Add(ElementValuePair("VER_BIN",GUI->CCDBinY_Combo.ItemText( itemIndex ).Trimmed()));
@@ -888,6 +893,8 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
       String PropertyElement = INDICCDFrameInstance::UploadModePropertyString( itemIndex );
       if ( indi->HasPropertyItem( m_device, "UPLOAD_MODE", PropertyElement ) )
       {
+    	 INDINewPropertyItem newItem;
+    	 newItem.Device = m_device;
          newItem.Property = "UPLOAD_MODE";
          newItem.PropertyType = "INDI_SWITCH";
          newItem.ElementValue.Add(ElementValuePair(PropertyElement,"ON"));
@@ -899,6 +906,8 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
       String PropertyElement = INDICCDFrameInstance::CCDFrameTypePropertyString( itemIndex );
       if ( indi->HasPropertyItem( m_device, "CCD_FRAME_TYPE", PropertyElement ) )
       {
+    	 INDINewPropertyItem newItem;
+    	 newItem.Device = m_device;
          newItem.Property = "CCD_FRAME_TYPE";
          newItem.PropertyType = "INDI_SWITCH";
          newItem.ElementValue.Add(ElementValuePair(PropertyElement,"ON"));

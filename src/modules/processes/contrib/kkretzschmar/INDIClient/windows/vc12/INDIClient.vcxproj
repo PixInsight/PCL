@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.101
+# PixInsight Makefile Generator Script v1.100
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Sun, 08 May 2016 09:33:49 GMT
+# Automatically generated on Mon, 16 May 2016 08:59:07 GMT
 # Project id ...... INDIClient
 # Project type .... Module
 # Platform ........ Windows/vc12
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Additional libraries:
-# zlib-pxi
 ######################################################################
 -->
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -117,7 +114,7 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>PCL-pxi.lib;zlib-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR64)\INDIClient-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile></ModuleDefinitionFile>
@@ -155,7 +152,7 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>PCL-pxi.lib;zlib-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\INDIClient-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile></ModuleDefinitionFile>
@@ -188,7 +185,7 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>PCL-pxi.lib;zlib-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR64)\INDIClient-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile></ModuleDefinitionFile>
@@ -215,7 +212,7 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>PCL-pxi.lib;zlib-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\INDIClient-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile></ModuleDefinitionFile>
@@ -238,6 +235,11 @@
     <ClCompile Include="..\..\INDIDeviceControllerInterface.cpp"/>
     <ClCompile Include="..\..\INDIDeviceControllerParameters.cpp"/>
     <ClCompile Include="..\..\INDIDeviceControllerProcess.cpp"/>
+    <ClCompile Include="..\..\INDIMountInstance.cpp"/>
+    <ClCompile Include="..\..\INDIMountInterface.cpp"/>
+    <ClCompile Include="..\..\INDIMountParameters.cpp"/>
+    <ClCompile Include="..\..\INDIMountProcess.cpp"/>
+    <ClCompile Include="..\..\SkyMap.cpp"/>
     <ClCompile Include="..\..\INDI\BaseClientImpl.cpp"/>
     <ClCompile Include="..\..\INDI\base64.c"/>
     <ClCompile Include="..\..\INDI\basedevice.cpp"/>
@@ -257,7 +259,12 @@
     <ClInclude Include="..\..\INDIDeviceControllerInterface.h"/>
     <ClInclude Include="..\..\INDIDeviceControllerParameters.h"/>
     <ClInclude Include="..\..\INDIDeviceControllerProcess.h"/>
+    <ClInclude Include="..\..\INDIMountInstance.h"/>
+    <ClInclude Include="..\..\INDIMountInterface.h"/>
+    <ClInclude Include="..\..\INDIMountParameters.h"/>
+    <ClInclude Include="..\..\INDIMountProcess.h"/>
     <ClInclude Include="..\..\INDIParamListTypes.h"/>
+    <ClInclude Include="..\..\SkyMap.h"/>
     <ClInclude Include="..\..\INDI\BaseClient.h"/>
     <ClInclude Include="..\..\INDI\BaseClientImpl.h"/>
     <ClInclude Include="..\..\INDI\base64.h"/>

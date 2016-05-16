@@ -1,18 +1,15 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.101
+# PixInsight Makefile Generator Script v1.100
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Sun, 08 May 2016 09:33:49 GMT
+# Automatically generated on Mon, 16 May 2016 08:59:07 GMT
 # Project id ...... INDIClient
 # Project type .... Module
 # Platform ........ Linux/g++
 # Configuration ... Release/x64
-# --------------------------------------------------------------------
-# Additional libraries:
-# zlib-pxi
 ######################################################################
 
-OBJ_DIR="$(PCLSRCDIR)/modules/processes/contrib/kkretzschmar/INDIClient/linux/g++/x64/Release"
+OBJ_DIR="/media/klaus/DATA/Cpp/PCL/src/modules/processes/contrib/kkretzschmar/INDIClient/linux/g++/x64/Release"
 
 .PHONY: all
 all: $(OBJ_DIR)/INDIClient-pxm.so
@@ -33,6 +30,11 @@ SRC_FILES= \
 ../../INDIDeviceControllerInterface.cpp \
 ../../INDIDeviceControllerParameters.cpp \
 ../../INDIDeviceControllerProcess.cpp \
+../../INDIMountInstance.cpp \
+../../INDIMountInterface.cpp \
+../../INDIMountParameters.cpp \
+../../INDIMountProcess.cpp \
+../../SkyMap.cpp \
 ../../INDI/BaseClientImpl.cpp \
 ../../INDI/base64.c \
 ../../INDI/basedevice.cpp \
@@ -56,6 +58,11 @@ OBJ_FILES= \
 ./x64/Release/INDIDeviceControllerInterface.o \
 ./x64/Release/INDIDeviceControllerParameters.o \
 ./x64/Release/INDIDeviceControllerProcess.o \
+./x64/Release/INDIMountInstance.o \
+./x64/Release/INDIMountInterface.o \
+./x64/Release/INDIMountParameters.o \
+./x64/Release/INDIMountProcess.o \
+./x64/Release/SkyMap.o \
 ./x64/Release/INDI/BaseClientImpl.o \
 ./x64/Release/INDI/base64.o \
 ./x64/Release/INDI/basedevice.o \
@@ -79,6 +86,11 @@ DEP_FILES= \
 ./x64/Release/INDIDeviceControllerInterface.d \
 ./x64/Release/INDIDeviceControllerParameters.d \
 ./x64/Release/INDIDeviceControllerProcess.d \
+./x64/Release/INDIMountInstance.d \
+./x64/Release/INDIMountInterface.d \
+./x64/Release/INDIMountParameters.d \
+./x64/Release/INDIMountProcess.d \
+./x64/Release/SkyMap.d \
 ./x64/Release/INDI/BaseClientImpl.d \
 ./x64/Release/INDI/base64.d \
 ./x64/Release/INDI/basedevice.d \
@@ -93,7 +105,7 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/INDIClient-pxm.so: $(OBJ_FILES)
-	g++ -m64 -fPIC -pthread -Wl,-fuse-ld=gold -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -s -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/INDIClient-pxm.so $(OBJ_FILES) -lzlib-pxi -lpthread -lPCL-pxi
+	g++ -m64 -fPIC -pthread -Wl,-fuse-ld=gold -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -s -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/INDIClient-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean

@@ -53,6 +53,7 @@
 #include "INDIMountProcess.h"
 #include "INDIMountInterface.h"
 #include "INDIMountInstance.h"
+#include "INDIMountParameters.h"
 
 #include <pcl/Arguments.h>
 #include <pcl/Console.h>
@@ -75,6 +76,12 @@ INDIMountProcess* TheINDIMountProcess = 0;
 INDIMountProcess::INDIMountProcess() : MetaProcess()
 {
    TheINDIMountProcess = this;
+   new IMCDeviceName( this );
+   new IMCCommandType( this );
+   new IMCTargetRightascension( this );
+   new IMCTargetDeclination( this );
+   new IMCCurrentRightascension( this );
+   new IMCCurrentDeclination( this );
 }
 
 // ----------------------------------------------------------------------------
@@ -88,7 +95,7 @@ IsoString INDIMountProcess::Id() const
 
 IsoString INDIMountProcess::Category() const
 {
-   return IsoString("INDI"); // No category
+   return IsoString("INDI, Instrumentation");
 }
 
 // ----------------------------------------------------------------------------
@@ -112,7 +119,7 @@ String INDIMountProcess::Description() const
 
 const char** INDIMountProcess::IconImageXPM() const
 {
-   return 0; // PixInsightINDIIcon_XPM; ---> put a nice icon here
+   return nullptr; // PixInsightINDIIcon_XPM; ---> put a nice icon here
 }
 
 // ----------------------------------------------------------------------------
@@ -150,7 +157,7 @@ bool INDIMountProcess::CanProcessCommandLines() const
 }
 
 // ----------------------------------------------------------------------------
-
+#if 0
 static void ShowHelp()
 {
    Console().Write(
@@ -158,7 +165,7 @@ static void ShowHelp()
 "Nothing to show."
 "</raw>" );
 }
-
+#endif
 int INDIMountProcess::ProcessCommandLine( const StringList& argv ) const
 {
    return 0;

@@ -56,6 +56,7 @@
 #include <pcl/MetaParameter.h>
 #include <pcl/ProcessImplementation.h>
 
+
 namespace pcl
 {
 
@@ -71,14 +72,82 @@ public:
    virtual void Assign( const ProcessImplementation& );
 
    virtual bool CanExecuteOn( const View&, pcl::String& whyNot ) const;
-   virtual bool CanExecuteGlobal( pcl::String& whyNot ) const;
+   virtual bool CanExecuteGlobal( String& whyNot ) const;
 
    virtual bool ExecuteGlobal();
 
+   virtual void* LockParameter( const MetaParameter* p, size_type tableRow );
+   virtual bool  AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
+   virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
+
+   bool ValidateDevice( bool throwErrors = true ) const;
+
 private:
 
-   // ### TODO
+   String   p_deviceName;
+   pcl_enum p_commandType;
+   double   p_targetRA;
+   double   p_targetDEC;
+   double   p_currentRA;
+   double   p_currentDEC;
+
+   friend class AbstractINDIMountExecution;
 };
+
+
+class AbstractINDIMountExecution
+{
+public:
+
+   AbstractINDIMountExecution( INDIMountInstance& instance ) :
+      m_instance( instance ),
+      m_running( false ),
+      m_aborted( false )
+   {
+   }
+
+   virtual ~AbstractINDIMountExecution()
+   {
+   }
+
+   virtual void Perform();
+   virtual void Abort();
+
+   const INDIMountInstance& Instance() const
+   {
+      return m_instance;
+   }
+
+   bool IsRunning() const
+   {
+      return m_running;
+   }
+
+   bool WasAborted() const
+   {
+      return m_aborted;
+   }
+
+
+protected:
+
+   INDIMountInstance& m_instance;
+
+   virtual void StartMountGotoEvent() = 0;
+   virtual void EndMountGotoEvent() = 0;
+
+
+private:
+
+   bool m_running, m_aborted;
+
+};
+
+
+
+
+
+
 
 // ----------------------------------------------------------------------------
 

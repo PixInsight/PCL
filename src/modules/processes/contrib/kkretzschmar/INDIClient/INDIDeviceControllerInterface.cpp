@@ -445,32 +445,36 @@ public:
    CoordinatesPropertyEditDialog( const INDIPropertyListItem& item ) :
       PropertyEditDialog( item )
    {
-      Hours_Edit.SetFixedWidth( 4*Font().Width( '0' ) );
-      Minutes_Edit.SetFixedWidth( 4*Font().Width( '0' ) );
-      Seconds_Edit.SetFixedWidth( 4*Font().Width( '0' ) );
+      Hours_Edit.SetFixedWidth( 8*Font().Width( '0' ) );
+      Colon1_Label.SetText( ':' );
+      Colon1_Label.SetTextAlignment( TextAlign::Center|TextAlign::VertCenter );
+      Minutes_Edit.SetFixedWidth( 8*Font().Width( '0' ) );
+      Colon2_Label.SetText( ':' );
+      Colon2_Label.SetTextAlignment( TextAlign::Center|TextAlign::VertCenter );
+      Seconds_Edit.SetFixedWidth( 8*Font().Width( '0' ) );
+
       Text_Sizer.AddSpacing( 4 );
       Text_Sizer.Add( Hours_Edit );
-      Text_Sizer.AddSpacing( 4 );
       Text_Sizer.Add( Colon1_Label );
-      Text_Sizer.AddSpacing( 4 );
       Text_Sizer.Add( Minutes_Edit );
-      Text_Sizer.AddSpacing( 4 );
       Text_Sizer.Add( Colon2_Label );
-      Text_Sizer.AddSpacing( 4 );
       Text_Sizer.Add( Seconds_Edit );
       Text_Sizer.AddStretch();
 
       StringList tokens;
-      item.PropertyValue.Break( tokens, ':', true/*trim*/ );
-      Hours_Edit.SetText( tokens[0] );
+      item.PropertyValue.Break( tokens, ':' );
+      double value = tokens[0].ToDouble();
       if ( tokens.Length() > 1 )
-         Minutes_Edit.SetText( tokens[1] );
-      else
-         Minutes_Edit.SetText( "0" );
-      if ( tokens.Length() > 2 )
-         Seconds_Edit.SetText( tokens[2] );
-      else
-         Seconds_Edit.SetText( "0" );
+      {
+         value += ((value < 0) ? -1 : 1) * tokens[1].ToDouble()/60;
+         if ( tokens.Length() > 2 )
+            value += ((value < 0) ? -1 : 1) * tokens[2].ToDouble()/3600;
+      }
+      double m = Frac( Abs( value ) )*60;
+      double s = Frac( m )*60;
+      Hours_Edit.SetText( String( TruncInt( value ) ) );
+      Minutes_Edit.SetText( String( TruncInt( m ) ) );
+      Seconds_Edit.SetText( String().Format( "%.2lf", s ) );
    }
 
 private:

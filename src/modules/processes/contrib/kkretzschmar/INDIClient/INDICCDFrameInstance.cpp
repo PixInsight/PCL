@@ -603,14 +603,16 @@ void AbstractINDICCDFrameExecution::Perform()
       m_instance.SendDeviceProperties( false/*async*/ );
 
       INDIPropertyListItem item;
-      bool serverSendsImage = false;
+      bool serverSendsImage = true; // be compatible with legacy drivers not implementing UPLOAD_MODE
       bool serverKeepsImage = false;
       if ( indi->GetPropertyItem( m_instance.p_deviceName, "UPLOAD_MODE", "UPLOAD_LOCAL", item ) )
          if ( item.PropertyValue == "ON" )
+         {
+            serverSendsImage = false;
             serverKeepsImage = true;
+         }
          else
          {
-            serverSendsImage = true;
             if ( indi->GetPropertyItem( m_instance.p_deviceName, "UPLOAD_MODE", "UPLOAD_BOTH", item ) )
                if ( item.PropertyValue == "ON" )
                   serverKeepsImage = true;

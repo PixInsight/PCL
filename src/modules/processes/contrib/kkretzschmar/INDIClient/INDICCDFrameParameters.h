@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.09.0154
+// Standard INDIClient Process Module Version 01.00.10.0163
 // ----------------------------------------------------------------------------
-// INDICCDFrameParameters.h - Released 2016/05/13 10:47:52 UTC
+// INDICCDFrameParameters.h - Released 2016/05/17 15:40:50 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -181,6 +181,22 @@ extern ICFBinningY* TheICFBinningYParameter;
 
 // ----------------------------------------------------------------------------
 
+class ICFFilterSlot : public MetaInt32
+{
+public:
+
+   ICFFilterSlot( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern ICFFilterSlot* TheICFFilterSlotParameter;
+
+// ----------------------------------------------------------------------------
+
 class ICFExposureTime : public MetaDouble
 {
 public:
@@ -228,6 +244,20 @@ public:
 };
 
 extern ICFExposureCount* TheICFExposureCountParameter;
+
+// ----------------------------------------------------------------------------
+
+class ICFOpenClientImages : public MetaBoolean
+{
+public:
+
+   ICFOpenClientImages( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern ICFOpenClientImages* TheICFOpenClientImagesParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -286,6 +316,75 @@ public:
 extern ICFLinkedAutoStretch* TheICFLinkedAutoStretchParameter;
 
 // ----------------------------------------------------------------------------
+
+class ICFSaveClientImages : public MetaBoolean
+{
+public:
+
+   ICFSaveClientImages( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern ICFSaveClientImages* TheICFSaveClientImagesParameter;
+
+// ----------------------------------------------------------------------------
+
+class ICFOverwriteClientImages : public MetaBoolean
+{
+public:
+
+   ICFOverwriteClientImages( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern ICFOverwriteClientImages* TheICFOverwriteClientImagesParameter;
+
+// ----------------------------------------------------------------------------
+
+class ICFClientDownloadDirectory : public MetaString
+{
+public:
+
+   ICFClientDownloadDirectory( MetaProcess* );
+
+   virtual IsoString Id() const;
+};
+
+extern ICFClientDownloadDirectory* TheICFClientDownloadDirectoryParameter;
+
+// ----------------------------------------------------------------------------
+
+class ICFClientFileNameTemplate : public MetaString
+{
+public:
+
+   ICFClientFileNameTemplate( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual String DefaultValue() const;
+};
+
+extern ICFClientFileNameTemplate* TheICFClientFileNameTemplateParameter;
+
+// ----------------------------------------------------------------------------
+
+class ICFClientOutputFormatHints : public MetaString
+{
+public:
+
+   ICFClientOutputFormatHints( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual String DefaultValue() const;
+};
+
+extern ICFClientOutputFormatHints* TheICFClientOutputFormatHintsParameter;
+
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 class ICFClientFrames : public MetaTable
@@ -302,17 +401,31 @@ extern ICFClientFrames* TheICFClientFramesParameter;
 
 // ----------------------------------------------------------------------------
 
-class ICFClientFrame : public MetaString
+class ICFClientViewId : public MetaString
 {
 public:
 
-   ICFClientFrame( MetaTable* );
+   ICFClientViewId( MetaTable* );
 
    virtual IsoString Id() const;
    virtual bool IsReadOnly() const;
 };
 
-extern ICFClientFrame* TheICFClientFrameParameter;
+extern ICFClientViewId* TheICFClientViewIdParameter;
+
+// ----------------------------------------------------------------------------
+
+class ICFClientFilePath : public MetaString
+{
+public:
+
+   ICFClientFilePath( MetaTable* );
+
+   virtual IsoString Id() const;
+   virtual bool IsReadOnly() const;
+};
+
+extern ICFClientFilePath* TheICFClientFilePathParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -351,4 +464,4 @@ PCL_END_LOCAL
 #endif   // __INDICCDFrameParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameParameters.h - Released 2016/05/13 10:47:52 UTC
+// EOF INDICCDFrameParameters.h - Released 2016/05/17 15:40:50 UTC

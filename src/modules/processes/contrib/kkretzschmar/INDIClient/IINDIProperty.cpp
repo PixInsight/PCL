@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.09.0154
+// Standard INDIClient Process Module Version 01.00.10.0163
 // ----------------------------------------------------------------------------
-// IINDIProperty.cpp - Released 2016/05/13 10:47:52 UTC
+// IINDIProperty.cpp - Released 2016/05/17 15:40:49 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -383,4 +383,4 @@ IProperty* PropertyFactory::Create( INDI::Property* property, INDI_TYPE type )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF IINDIProperty.cpp - Released 2016/05/13 10:47:52 UTC
+// EOF IINDIProperty.cpp - Released 2016/05/17 15:40:49 UTC

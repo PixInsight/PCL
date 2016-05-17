@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.09.0153
+// Standard INDIClient Process Module Version 01.00.10.0163
 // ----------------------------------------------------------------------------
-// INDICCDFrameInstance.h - Released 2016/05/08 20:36:42 UTC
+// INDICCDFrameInstance.h - Released 2016/05/17 15:40:49 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -85,12 +85,9 @@ public:
 
    void SendDeviceProperties( bool asynchronous = true ) const;
 
-   String ServerFileName( const String& fileNameTemplate ) const;
-
-   String ServerFileName() const
-   {
-      return ServerFileName( p_serverFileNameTemplate );
-   }
+   String FileNameFromTemplate( const String& fileNameTemplate ) const;
+   String ServerFileName() const;
+   String ClientFileName() const;
 
    static String UploadModePropertyString( int uploadModeIdx );
    static String CCDFrameTypePropertyString( int frameTypeIdx );
@@ -105,15 +102,23 @@ private:
    pcl_enum   p_frameType;
    int32      p_binningX;
    int32      p_binningY;
+   int32      p_filterSlot;
    double     p_exposureTime;
    double     p_exposureDelay;
    int32      p_exposureCount;
+   pcl_bool   p_openClientImages;
    String     p_newImageIdTemplate;
    pcl_bool   p_reuseImageWindow;
    pcl_bool   p_autoStretch;
    pcl_bool   p_linkedAutoStretch;
+   pcl_bool   p_saveClientImages;
+   pcl_bool   p_overwriteClientImages;
+   String     p_clientDownloadDirectory;
+   String     p_clientFileNameTemplate;
+   String     p_clientOutputFormatHints;
 
-   StringList o_clientFrames;
+   StringList o_clientViewIds;
+   StringList o_clientFilePaths;
    StringList o_serverFrames;
 
    int        m_exposureNumber;
@@ -189,6 +194,7 @@ protected:
    virtual void WaitingForServerEvent() = 0;
 
    virtual void NewFrameEvent( ImageWindow&, bool reusedWindow ) = 0;
+   virtual void NewFrameEvent( const String& filePath ) = 0;
 
    virtual void EndAcquisitionEvent() = 0;
 
@@ -198,8 +204,6 @@ private:
 
    bool m_running, m_aborted;
    int  m_successCount, m_errorCount;
-
-   void AutoStretch( ImageWindow& ) const;
 };
 
 // ----------------------------------------------------------------------------
@@ -210,4 +214,4 @@ private:
 #endif   // __INDICCDFrameInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInstance.h - Released 2016/05/08 20:36:42 UTC
+// EOF INDICCDFrameInstance.h - Released 2016/05/17 15:40:49 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.09.0153
+// Standard INDIClient Process Module Version 01.00.10.0163
 // ----------------------------------------------------------------------------
-// INDICCDFrameParameters.cpp - Released 2016/05/08 20:36:42 UTC
+// INDICCDFrameParameters.cpp - Released 2016/05/17 15:40:50 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -57,24 +57,32 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ICFDeviceName*             TheICFDeviceNameParameter = nullptr;
-ICFUploadMode*             TheICFUploadModeParameter = nullptr;
-ICFServerUploadDirectory*  TheICFServerUploadDirectoryParameter = nullptr;
-ICFServerFileNameTemplate* TheICFServerFileNameTemplateParameter = nullptr;
-ICFFrameType*              TheICFFrameTypeParameter = nullptr;
-ICFBinningX*               TheICFBinningXParameter = nullptr;
-ICFBinningY*               TheICFBinningYParameter = nullptr;
-ICFExposureTime*           TheICFExposureTimeParameter = nullptr;
-ICFExposureDelay*          TheICFExposureDelayParameter = nullptr;
-ICFExposureCount*          TheICFExposureCountParameter = nullptr;
-ICFNewImageIdTemplate*     TheICFNewImageIdTemplateParameter = nullptr;
-ICFReuseImageWindow*       TheICFReuseImageWindowParameter = nullptr;
-ICFAutoStretch*            TheICFAutoStretchParameter = nullptr;
-ICFLinkedAutoStretch*      TheICFLinkedAutoStretchParameter = nullptr;
-ICFClientFrames*           TheICFClientFramesParameter = nullptr;
-ICFClientFrame*            TheICFClientFrameParameter = nullptr;
-ICFServerFrames*           TheICFServerFramesParameter = nullptr;
-ICFServerFrame*            TheICFServerFrameParameter = nullptr;
+ICFDeviceName*              TheICFDeviceNameParameter = nullptr;
+ICFUploadMode*              TheICFUploadModeParameter = nullptr;
+ICFServerUploadDirectory*   TheICFServerUploadDirectoryParameter = nullptr;
+ICFServerFileNameTemplate*  TheICFServerFileNameTemplateParameter = nullptr;
+ICFFrameType*               TheICFFrameTypeParameter = nullptr;
+ICFBinningX*                TheICFBinningXParameter = nullptr;
+ICFBinningY*                TheICFBinningYParameter = nullptr;
+ICFFilterSlot*              TheICFFilterSlotParameter = nullptr;
+ICFExposureTime*            TheICFExposureTimeParameter = nullptr;
+ICFExposureDelay*           TheICFExposureDelayParameter = nullptr;
+ICFExposureCount*           TheICFExposureCountParameter = nullptr;
+ICFOpenClientImages*        TheICFOpenClientImagesParameter = nullptr;
+ICFNewImageIdTemplate*      TheICFNewImageIdTemplateParameter = nullptr;
+ICFReuseImageWindow*        TheICFReuseImageWindowParameter = nullptr;
+ICFAutoStretch*             TheICFAutoStretchParameter = nullptr;
+ICFLinkedAutoStretch*       TheICFLinkedAutoStretchParameter = nullptr;
+ICFSaveClientImages*        TheICFSaveClientImagesParameter = nullptr;
+ICFOverwriteClientImages*   TheICFOverwriteClientImagesParameter = nullptr;
+ICFClientDownloadDirectory* TheICFClientDownloadDirectoryParameter = nullptr;
+ICFClientFileNameTemplate*  TheICFClientFileNameTemplateParameter = nullptr;
+ICFClientOutputFormatHints* TheICFClientOutputFormatHintsParameter = nullptr;
+ICFClientFrames*            TheICFClientFramesParameter = nullptr;
+ICFClientViewId*            TheICFClientViewIdParameter = nullptr;
+ICFClientFilePath*          TheICFClientFilePathParameter = nullptr;
+ICFServerFrames*            TheICFServerFramesParameter = nullptr;
+ICFServerFrame*             TheICFServerFrameParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -213,7 +221,7 @@ double ICFBinningX::DefaultValue() const
 
 double ICFBinningX::MinimumValue() const
 {
-   return 1;
+   return 0; // 0 -> no change
 }
 
 double ICFBinningX::MaximumValue() const
@@ -240,12 +248,39 @@ double ICFBinningY::DefaultValue() const
 
 double ICFBinningY::MinimumValue() const
 {
-   return 1;
+   return 0; // 0 -> no change
 }
 
 double ICFBinningY::MaximumValue() const
 {
    return 64;
+}
+
+// ----------------------------------------------------------------------------
+
+ICFFilterSlot::ICFFilterSlot( MetaProcess* P ) : MetaInt32( P )
+{
+   TheICFFilterSlotParameter = this;
+}
+
+IsoString ICFFilterSlot::Id() const
+{
+   return "filterSlot";
+}
+
+double ICFFilterSlot::DefaultValue() const
+{
+   return 1;
+}
+
+double ICFFilterSlot::MinimumValue() const
+{
+   return 0; // 0 -> no change
+}
+
+double ICFFilterSlot::MaximumValue() const
+{
+   return 256;
 }
 
 // ----------------------------------------------------------------------------
@@ -358,6 +393,23 @@ String ICFNewImageIdTemplate::DefaultValue() const
 
 // ----------------------------------------------------------------------------
 
+ICFOpenClientImages::ICFOpenClientImages( MetaProcess* P ) : MetaBoolean( P )
+{
+   TheICFOpenClientImagesParameter = this;
+}
+
+IsoString ICFOpenClientImages::Id() const
+{
+   return "openClientImages";
+}
+
+bool ICFOpenClientImages::DefaultValue() const
+{
+   return true;
+}
+
+// ----------------------------------------------------------------------------
+
 ICFReuseImageWindow::ICFReuseImageWindow( MetaProcess* P ) : MetaBoolean( P )
 {
    TheICFReuseImageWindowParameter = this;
@@ -409,6 +461,87 @@ bool ICFLinkedAutoStretch::DefaultValue() const
 
 // ----------------------------------------------------------------------------
 
+ICFSaveClientImages::ICFSaveClientImages( MetaProcess* P ) : MetaBoolean( P )
+{
+   TheICFSaveClientImagesParameter = this;
+}
+
+IsoString ICFSaveClientImages::Id() const
+{
+   return "saveClientImages";
+}
+
+bool ICFSaveClientImages::DefaultValue() const
+{
+   return false;
+}
+
+// ----------------------------------------------------------------------------
+
+ICFOverwriteClientImages::ICFOverwriteClientImages( MetaProcess* P ) : MetaBoolean( P )
+{
+   TheICFOverwriteClientImagesParameter = this;
+}
+
+IsoString ICFOverwriteClientImages::Id() const
+{
+   return "overwriteClientImages";
+}
+
+bool ICFOverwriteClientImages::DefaultValue() const
+{
+   return false;
+}
+
+// ----------------------------------------------------------------------------
+
+ICFClientDownloadDirectory::ICFClientDownloadDirectory( MetaProcess* P ) : MetaString( P )
+{
+   TheICFClientDownloadDirectoryParameter = this;
+}
+
+IsoString ICFClientDownloadDirectory::Id() const
+{
+   return "clientDownloadDirectory";
+}
+
+// ----------------------------------------------------------------------------
+
+ICFClientFileNameTemplate::ICFClientFileNameTemplate( MetaProcess* P ) : MetaString( P )
+{
+   TheICFClientFileNameTemplateParameter = this;
+}
+
+IsoString ICFClientFileNameTemplate::Id() const
+{
+   return "clientFileNameTemplate";
+}
+
+String ICFClientFileNameTemplate::DefaultValue() const
+{
+   return "%f_B%b_E%e_%n";
+}
+
+// ----------------------------------------------------------------------------
+
+ICFClientOutputFormatHints::ICFClientOutputFormatHints( MetaProcess* P ) : MetaString( P )
+{
+   TheICFClientOutputFormatHintsParameter = this;
+}
+
+IsoString ICFClientOutputFormatHints::Id() const
+{
+   return "clientOutputFormatHints";
+}
+
+String ICFClientOutputFormatHints::DefaultValue() const
+{
+   return String();
+}
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
 ICFClientFrames::ICFClientFrames( MetaProcess* P ) : MetaTable( P )
 {
    TheICFClientFramesParameter = this;
@@ -426,17 +559,34 @@ bool ICFClientFrames::IsReadOnly() const
 
 // ----------------------------------------------------------------------------
 
-ICFClientFrame::ICFClientFrame( MetaTable* T ) : MetaString( T )
+ICFClientViewId::ICFClientViewId( MetaTable* T ) : MetaString( T )
 {
-   TheICFClientFrameParameter = this;
+   TheICFClientViewIdParameter = this;
 }
 
-IsoString ICFClientFrame::Id() const
+IsoString ICFClientViewId::Id() const
 {
-   return "imageId";
+   return "viewId";
 }
 
-bool ICFClientFrame::IsReadOnly() const
+bool ICFClientViewId::IsReadOnly() const
+{
+   return true;
+}
+
+// ----------------------------------------------------------------------------
+
+ICFClientFilePath::ICFClientFilePath( MetaTable* T ) : MetaString( T )
+{
+   TheICFClientFilePathParameter = this;
+}
+
+IsoString ICFClientFilePath::Id() const
+{
+   return "filePath";
+}
+
+bool ICFClientFilePath::IsReadOnly() const
 {
    return true;
 }
@@ -480,4 +630,4 @@ bool ICFServerFrame::IsReadOnly() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameParameters.cpp - Released 2016/05/08 20:36:42 UTC
+// EOF INDICCDFrameParameters.cpp - Released 2016/05/17 15:40:50 UTC

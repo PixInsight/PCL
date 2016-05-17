@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.09.0153
+// Standard INDIClient Process Module Version 01.00.10.0163
 // ----------------------------------------------------------------------------
-// INDICCDFrameProcess.cpp - Released 2016/05/08 20:36:42 UTC
+// INDICCDFrameProcess.cpp - Released 2016/05/17 15:40:50 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -84,16 +84,24 @@ INDICCDFrameProcess::INDICCDFrameProcess() : MetaProcess()
    new ICFFrameType( this );
    new ICFBinningX( this );
    new ICFBinningY( this );
+   new ICFFilterSlot( this );
    new ICFExposureTime( this );
    new ICFExposureDelay( this );
    new ICFExposureCount( this );
+   new ICFOpenClientImages( this );
    new ICFNewImageIdTemplate( this );
    new ICFReuseImageWindow( this );
    new ICFAutoStretch( this );
    new ICFLinkedAutoStretch( this );
+   new ICFSaveClientImages( this );
+   new ICFOverwriteClientImages( this );
+   new ICFClientDownloadDirectory( this );
+   new ICFClientFileNameTemplate( this );
+   new ICFClientOutputFormatHints( this );
 
    new ICFClientFrames( this );
-   new ICFClientFrame( TheICFClientFramesParameter );
+   new ICFClientViewId( TheICFClientFramesParameter );
+   new ICFClientFilePath( TheICFClientFramesParameter );
    new ICFServerFrames( this );
    new ICFServerFrame( TheICFServerFramesParameter );
 }
@@ -194,4 +202,4 @@ int INDICCDFrameProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameProcess.cpp - Released 2016/05/08 20:36:42 UTC
+// EOF INDICCDFrameProcess.cpp - Released 2016/05/17 15:40:50 UTC

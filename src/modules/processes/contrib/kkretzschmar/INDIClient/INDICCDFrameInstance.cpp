@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.09.0153
+// Standard INDIClient Process Module Version 01.00.10.0163
 // ----------------------------------------------------------------------------
-// INDICCDFrameInstance.cpp - Released 2016/05/08 20:36:42 UTC
+// INDICCDFrameInstance.cpp - Released 2016/05/17 15:40:50 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -54,15 +54,18 @@
 #include "INDICCDFrameParameters.h"
 #include "INDIClient.h"
 
+#include <pcl/ColorFilterArray.h>
 #include <pcl/Console.h>
+#include <pcl/DisplayFunction.h>
 #include <pcl/ElapsedTime.h>
 #include <pcl/FileFormat.h>
 #include <pcl/FileFormatInstance.h>
+#include <pcl/GlobalSettings.h>
 #include <pcl/ICCProfile.h>
-#include <pcl/ImageStatistics.h>
 #include <pcl/MetaModule.h>
 #include <pcl/SpinStatus.h>
 #include <pcl/StdStatus.h>
+#include <pcl/Version.h>
 
 #include <time.h>
 
@@ -80,14 +83,23 @@ INDICCDFrameInstance::INDICCDFrameInstance( const MetaProcess* m ) :
    p_frameType( ICFFrameType::Default ),
    p_binningX( int32( TheICFBinningXParameter->DefaultValue() ) ),
    p_binningY( int32( TheICFBinningYParameter->DefaultValue() ) ),
+   p_filterSlot( int32( TheICFFilterSlotParameter->DefaultValue() ) ),
    p_exposureTime( TheICFExposureTimeParameter->DefaultValue() ),
    p_exposureDelay( TheICFExposureDelayParameter->DefaultValue() ),
    p_exposureCount( TheICFExposureCountParameter->DefaultValue() ),
+   p_openClientImages( TheICFOpenClientImagesParameter->DefaultValue() ),
    p_newImageIdTemplate( TheICFNewImageIdTemplateParameter->DefaultValue() ),
    p_reuseImageWindow( TheICFReuseImageWindowParameter->DefaultValue() ),
    p_autoStretch( TheICFAutoStretchParameter->DefaultValue() ),
    p_linkedAutoStretch( TheICFLinkedAutoStretchParameter->DefaultValue() ),
-   o_clientFrames(),
+   p_saveClientImages( TheICFSaveClientImagesParameter->DefaultValue() ),
+   p_overwriteClientImages( TheICFOverwriteClientImagesParameter->DefaultValue() ),
+   p_clientDownloadDirectory( TheICFClientDownloadDirectoryParameter->DefaultValue() ),
+   p_clientFileNameTemplate( TheICFClientFileNameTemplateParameter->DefaultValue() ),
+   p_clientOutputFormatHints( TheICFClientOutputFormatHintsParameter->DefaultValue() ),
+
+   o_clientViewIds(),
+   o_clientFilePaths(),
    o_serverFrames(),
    m_exposureNumber( 0 )
 {
@@ -104,22 +116,30 @@ void INDICCDFrameInstance::Assign( const ProcessImplementation& p )
    const INDICCDFrameInstance* x = dynamic_cast<const INDICCDFrameInstance*>( &p );
    if ( x != nullptr )
    {
-      p_deviceName             = x->p_deviceName;
-      p_uploadMode             = x->p_uploadMode;
-      p_serverUploadDirectory  = x->p_serverUploadDirectory;
-      p_serverFileNameTemplate = x->p_serverFileNameTemplate;
-      p_frameType              = x->p_frameType;
-      p_binningX               = x->p_binningX;
-      p_binningY               = x->p_binningY;
-      p_exposureTime           = x->p_exposureTime;
-      p_exposureDelay          = x->p_exposureDelay;
-      p_exposureCount          = x->p_exposureCount;
-      p_newImageIdTemplate     = x->p_newImageIdTemplate;
-      p_reuseImageWindow       = x->p_reuseImageWindow;
-      p_autoStretch            = x->p_autoStretch;
-      p_linkedAutoStretch      = x->p_linkedAutoStretch;
-      o_clientFrames           = x->o_clientFrames;
-      o_serverFrames           = x->o_serverFrames;
+      p_deviceName              = x->p_deviceName;
+      p_uploadMode              = x->p_uploadMode;
+      p_serverUploadDirectory   = x->p_serverUploadDirectory;
+      p_serverFileNameTemplate  = x->p_serverFileNameTemplate;
+      p_frameType               = x->p_frameType;
+      p_binningX                = x->p_binningX;
+      p_binningY                = x->p_binningY;
+      p_filterSlot              = x->p_filterSlot;
+      p_exposureTime            = x->p_exposureTime;
+      p_exposureDelay           = x->p_exposureDelay;
+      p_exposureCount           = x->p_exposureCount;
+      p_openClientImages        = x->p_openClientImages;
+      p_newImageIdTemplate      = x->p_newImageIdTemplate;
+      p_reuseImageWindow        = x->p_reuseImageWindow;
+      p_autoStretch             = x->p_autoStretch;
+      p_linkedAutoStretch       = x->p_linkedAutoStretch;
+      p_saveClientImages        = x->p_saveClientImages;
+      p_overwriteClientImages   = x->p_overwriteClientImages;
+      p_clientDownloadDirectory = x->p_clientDownloadDirectory;
+      p_clientFileNameTemplate  = x->p_clientFileNameTemplate;
+      p_clientOutputFormatHints = x->p_clientOutputFormatHints;
+      o_clientViewIds           = x->o_clientViewIds;
+      o_clientFilePaths         = x->o_clientFilePaths;
+      o_serverFrames            = x->o_serverFrames;
    }
 }
 
@@ -209,29 +229,41 @@ void INDICCDFrameInstance::SendDeviceProperties( bool async ) const
       indi->SendNewPropertyItem( newItem, async );
    }
 
-   if ( indi->GetPropertyItem( p_deviceName, "CCD_BINNING", "HOR_BIN", item ) )
-   {
-	  INDINewPropertyItem newItem;
-	  newItem.Device = p_deviceName;
-      newItem.Property = "CCD_BINNING";
-      newItem.PropertyType = "INDI_NUMBER";
-      newItem.ElementValue.Add(ElementValuePair("HOR_BIN",String(p_binningX)));
-      indi->SendNewPropertyItem( newItem, async );
-   }
 
-   if ( indi->GetPropertyItem( p_deviceName, "CCD_BINNING", "VER_BIN", item ) )
-   {
-	  INDINewPropertyItem newItem;
-	  newItem.Device = p_deviceName;
-      newItem.Property = "CCD_BINNING";
-      newItem.PropertyType = "INDI_NUMBER";
-      newItem.ElementValue.Add(ElementValuePair("VER_BIN",String(p_binningY)));
+   if ( p_binningX > 0 )
+      if ( indi->GetPropertyItem( p_deviceName, "CCD_BINNING", "HOR_BIN", item ) )
+      {
+    	  INDINewPropertyItem newItem;
+    	  newItem.Device = p_deviceName;
+    	  newItem.Property = "CCD_BINNING";
+    	  newItem.PropertyType = "INDI_NUMBER";
+    	  newItem.ElementValue.Add(ElementValuePair("HOR_BIN",String(p_binningX)));
+    	  indi->SendNewPropertyItem( newItem, async );
+      }
 
-      indi->SendNewPropertyItem( newItem, async );
-   }
+   if ( p_binningY > 0 )
+      if ( indi->GetPropertyItem( p_deviceName, "CCD_BINNING", "VER_BIN", item ) )
+      {
+    	  INDINewPropertyItem newItem;
+    	  newItem.Device = p_deviceName;
+    	  newItem.Property = "CCD_BINNING";
+    	  newItem.PropertyType = "INDI_NUMBER";
+    	  newItem.ElementValue.Add(ElementValuePair("VER_BIN",String(p_binningY)));
+    	  indi->SendNewPropertyItem( newItem, async );
+      }
+
+   if ( p_filterSlot > 0 )
+      if ( indi->GetPropertyItem( p_deviceName, "FILTER_SLOT", "FILTER_SLOT_VALUE", item ) )
+      {
+    	 INDINewPropertyItem newItem;
+         newItem.Property = "FILTER_SLOT";
+         newItem.PropertyType = "INDI_NUMBER";
+         newItem.ElementValue.Add(ElementValuePair("FILTER_SLOT_VALUE",String(p_filterSlot)));
+         indi->SendNewPropertyItem( newItem, async );
+      }
 }
 
-String INDICCDFrameInstance::ServerFileName( const String& fileNameTemplate ) const
+String INDICCDFrameInstance::FileNameFromTemplate( const String& fileNameTemplate ) const
 {
    INDIClient* indi = INDIClient::TheClientOrDie();
    INDIPropertyListItem item;
@@ -291,11 +323,24 @@ String INDICCDFrameInstance::ServerFileName( const String& fileNameTemplate ) co
          break;
       }
 
-   fileName.Trim();
+   return fileName.Trimmed();
+}
+
+String INDICCDFrameInstance::ServerFileName() const
+{
+   String fileName = FileNameFromTemplate( p_serverFileNameTemplate );
    if ( !fileName.IsEmpty() )
       return fileName;
+   return FileNameFromTemplate( TheICFServerFileNameTemplateParameter->DefaultValue() );
 
-   return ServerFileName( TheICFServerFileNameTemplateParameter->DefaultValue() );
+}
+
+String INDICCDFrameInstance::ClientFileName() const
+{
+   String fileName = FileNameFromTemplate( p_clientFileNameTemplate );
+   if ( !fileName.IsEmpty() )
+      return fileName;
+   return FileNameFromTemplate( TheICFClientFileNameTemplateParameter->DefaultValue() );
 }
 
 class INDICCDFrameInstanceExecution : public AbstractINDICCDFrameExecution
@@ -395,11 +440,15 @@ private:
       }
    }
 
+   virtual void NewFrameEvent( const String& filePath )
+   {
+   }
+
    virtual void EndAcquisitionEvent()
    {
       m_console.DisableAbort();
       m_console.NoteLn( String().Format( "<end><cbr><br>===== INDICCDFrame: %d succeeded, %d failed =====",
-                                       SuccessCount(), ErrorCount() ) );
+                                         SuccessCount(), ErrorCount() ) );
    }
 
    virtual void AbortEvent()
@@ -429,12 +478,16 @@ void* INDICCDFrameInstance::LockParameter( const MetaParameter* p, size_type tab
       return &p_binningX;
    if ( p == TheICFBinningYParameter )
       return &p_binningY;
+   if ( p == TheICFFilterSlotParameter )
+      return &p_filterSlot;
    if ( p == TheICFExposureTimeParameter )
       return &p_exposureTime;
    if ( p == TheICFExposureDelayParameter )
       return &p_exposureDelay;
    if ( p == TheICFExposureCountParameter )
       return &p_exposureCount;
+   if ( p == TheICFOpenClientImagesParameter )
+      return &p_openClientImages;
    if ( p == TheICFNewImageIdTemplateParameter )
       return p_newImageIdTemplate.Begin();
    if ( p == TheICFReuseImageWindowParameter )
@@ -443,9 +496,20 @@ void* INDICCDFrameInstance::LockParameter( const MetaParameter* p, size_type tab
       return &p_autoStretch;
    if ( p == TheICFLinkedAutoStretchParameter )
       return &p_linkedAutoStretch;
-
-   if ( p == TheICFClientFrameParameter )
-      return o_clientFrames[tableRow].Begin();
+   if ( p == TheICFSaveClientImagesParameter )
+      return &p_saveClientImages;
+   if ( p == TheICFOverwriteClientImagesParameter )
+      return &p_overwriteClientImages;
+   if ( p == TheICFClientDownloadDirectoryParameter )
+      return p_clientDownloadDirectory.Begin();
+   if ( p == TheICFClientFileNameTemplateParameter )
+      return p_clientFileNameTemplate.Begin();
+   if ( p == TheICFClientOutputFormatHintsParameter )
+      return p_clientOutputFormatHints.Begin();
+   if ( p == TheICFClientViewIdParameter )
+      return o_clientViewIds[tableRow].Begin();
+   if ( p == TheICFClientFilePathParameter )
+      return o_clientFilePaths[tableRow].Begin();
    if ( p == TheICFServerFrameParameter )
       return o_serverFrames[tableRow].Begin();
 
@@ -478,17 +542,42 @@ bool INDICCDFrameInstance::AllocateParameter( size_type sizeOrLength, const Meta
       if ( sizeOrLength > 0 )
          p_newImageIdTemplate.SetLength( sizeOrLength );
    }
+   else if ( p == TheICFClientDownloadDirectoryParameter )
+   {
+      p_clientDownloadDirectory.Clear();
+      if ( sizeOrLength > 0 )
+         p_clientDownloadDirectory.SetLength( sizeOrLength );
+   }
+   else if ( p == TheICFClientFileNameTemplateParameter )
+   {
+      p_clientFileNameTemplate.Clear();
+      if ( sizeOrLength > 0 )
+         p_clientFileNameTemplate.SetLength( sizeOrLength );
+   }
+   else if ( p == TheICFClientOutputFormatHintsParameter )
+   {
+      p_clientOutputFormatHints.Clear();
+      if ( sizeOrLength > 0 )
+         p_clientOutputFormatHints.SetLength( sizeOrLength );
+   }
+
    else if ( p == TheICFClientFramesParameter )
    {
-      o_clientFrames.Clear();
+      o_clientViewIds.Clear();
       if ( sizeOrLength > 0 )
-         o_clientFrames.Add( String(), sizeOrLength );
+         o_clientViewIds.Add( String(), sizeOrLength );
    }
-   else if ( p == TheICFClientFrameParameter )
+   else if ( p == TheICFClientViewIdParameter )
    {
-      o_clientFrames[tableRow].Clear();
+      o_clientViewIds[tableRow].Clear();
       if ( sizeOrLength > 0 )
-         o_clientFrames[tableRow].SetLength( sizeOrLength );
+         o_clientViewIds[tableRow].SetLength( sizeOrLength );
+   }
+   else if ( p == TheICFClientFilePathParameter )
+   {
+      o_clientFilePaths[tableRow].Clear();
+      if ( sizeOrLength > 0 )
+         o_clientFilePaths[tableRow].SetLength( sizeOrLength );
    }
    else if ( p == TheICFServerFramesParameter )
    {
@@ -518,11 +607,19 @@ size_type INDICCDFrameInstance::ParameterLength( const MetaParameter* p, size_ty
       return p_serverFileNameTemplate.Length();
    if ( p == TheICFNewImageIdTemplateParameter )
       return p_newImageIdTemplate.Length();
+   if ( p == TheICFClientDownloadDirectoryParameter )
+      return p_clientDownloadDirectory.Length();
+   if ( p == TheICFClientFileNameTemplateParameter )
+      return p_clientFileNameTemplate.Length();
+   if ( p == TheICFClientOutputFormatHintsParameter )
+      return p_clientOutputFormatHints.Length();
 
    if ( p == TheICFClientFramesParameter )
-      return o_clientFrames.Length();
-   if ( p == TheICFClientFrameParameter )
-      return o_clientFrames[tableRow].Length();
+      return o_clientViewIds.Length();
+   if ( p == TheICFClientViewIdParameter )
+      return o_clientViewIds[tableRow].Length();
+   if ( p == TheICFClientFilePathParameter )
+      return o_clientFilePaths[tableRow].Length();
    if ( p == TheICFServerFramesParameter )
       return o_serverFrames.Length();
    if ( p == TheICFServerFrameParameter )
@@ -583,9 +680,22 @@ String INDICCDFrameInstance::CCDFrameTypePrefix( int frameTypeIdx )
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
+static String UniqueFilePath( const String& filePath )
+{
+   if ( !File::Exists( filePath ) )
+      return filePath;
+   for ( unsigned u = 1; ; ++u )
+   {
+      String tryFilePath = File::AppendToName( filePath, '_' + String( u ) );
+      if ( !File::Exists( tryFilePath ) )
+         return tryFilePath;
+   }
+}
+
 void AbstractINDICCDFrameExecution::Perform()
 {
-   m_instance.o_clientFrames.Clear();
+   m_instance.o_clientViewIds.Clear();
+   m_instance.o_clientFilePaths.Clear();
    m_instance.o_serverFrames.Clear();
 
    if ( IsRunning() )
@@ -606,14 +716,16 @@ void AbstractINDICCDFrameExecution::Perform()
       m_instance.SendDeviceProperties( false/*async*/ );
 
       INDIPropertyListItem item;
-      bool serverSendsImage = false;
+      bool serverSendsImage = true; // be compatible with legacy drivers not implementing UPLOAD_MODE
       bool serverKeepsImage = false;
       if ( indi->GetPropertyItem( m_instance.p_deviceName, "UPLOAD_MODE", "UPLOAD_LOCAL", item ) )
          if ( item.PropertyValue == "ON" )
+         {
+            serverSendsImage = false;
             serverKeepsImage = true;
+         }
          else
          {
-            serverSendsImage = true;
             if ( indi->GetPropertyItem( m_instance.p_deviceName, "UPLOAD_MODE", "UPLOAD_BOTH", item ) )
                if ( item.PropertyValue == "ON" )
                   serverKeepsImage = true;
@@ -710,89 +822,241 @@ void AbstractINDICCDFrameExecution::Perform()
                   WaitingForServerEvent();
 
             String filePath = indi->DownloadedImagePath();
-            FileFormat format( File::ExtractExtension( filePath ), true/*read*/, false/*write*/ );
-            FileFormatInstance file( format );
+            FileFormat inputFormat( File::ExtractExtension( filePath ), true/*read*/, false/*write*/ );
+            FileFormatInstance inputFile( inputFormat );
 
             ImageDescriptionArray images;
-            if ( !file.Open( images, filePath, "raw cfa verbosity 0 up-bottom signed-is-physical" ) )
+            if ( !inputFile.Open( images, filePath, "raw cfa verbosity 0 up-bottom signed-is-physical" ) )
                throw CatchedException();
             if ( images.IsEmpty() )
                throw Error( filePath + ": Empty image file." );
             if ( !images[0].info.supported || images[0].info.NumberOfSamples() == 0 )
                throw Error( filePath + ": Invalid or unsupported image." );
 
-            ImageWindow window;
-            if ( m_instance.p_reuseImageWindow )
+            IsoStringList propertyNames;
+            Array<Variant> propertyValues;
+            if ( inputFormat.CanStoreProperties() )
             {
-               window = ImageWindow::WindowById( m_instance.p_newImageIdTemplate );
-               if ( !window.IsNull() ) // Make sure our window is valid and has not been write-locked by other task.
-                  if ( !window.MainView().CanWrite() )
-                     window = ImageWindow::Null();
-            }
-            bool reusedWindow = !window.IsNull();
-            if ( !reusedWindow )
-               window = ImageWindow( 1, 1, 1,
-                                     images[0].options.bitsPerSample,
-                                     images[0].options.ieeefpSampleFormat,
-                                     false/*color*/,
-                                     true/*initialProcessing*/,
-                                     m_instance.p_newImageIdTemplate );
-
-            m_instance.o_clientFrames << String( window.MainView().Id() );
-
-            ImageVariant image = window.MainView().Image();
-            if ( !file.ReadImage( image ) )
-               throw CatchedException();
-
-            if ( format.CanStoreProperties() )
-            {
-               View view = window.MainView();
-               ImagePropertyDescriptionArray properties = file.Properties();
+               ImagePropertyDescriptionArray properties = inputFile.Properties();
                for ( auto property : properties )
                {
-                  Variant value = file.ReadProperty( property.id );
-                  if ( value.IsValid() )
-                     view.SetPropertyValue( property.id, value, false/*notify*/,
-                                          ViewPropertyAttribute::Storable|ViewPropertyAttribute::Permanent );
-
+                  propertyNames << property.id;
+                  propertyValues << inputFile.ReadProperty( property.id );
                }
             }
+            /*
+             * ### TODO: ASAP: Create standard XISF properties from FITS header
+             *           keywords. We cannot rely on instance parameters here,
+             *           since the INDI device driver can impose restrictions
+             *           and the acquisition process can suffer from
+             *           unpredictable variations. Header keywords supposedly
+             *           reflect actual acquisition parameters.
+             *
+            propertyNames << "Instrument:ExposureTime";
+            propertyValues << m_instance.p_exposureTime; // unreliable?
+            ...
+             */
 
-            if ( format.CanStoreKeywords() )
+            FITSKeywordArray keywords;
+            if ( inputFormat.CanStoreKeywords() )
+               inputFile.Extract( keywords );
+            keywords << FITSHeaderKeyword( "COMMENT", IsoString(), "Acquired with " + PixInsightVersion::AsString() )
+                     << FITSHeaderKeyword( "HISTORY", IsoString(), "Acquired with " + Module->ReadableVersion() )
+                     << FITSHeaderKeyword( "HISTORY", IsoString(), "Acquired with " + m_instance.Meta()->Id() + " process" );
+
+            ICCProfile iccProfile;
+            if ( inputFormat.CanStoreICCProfiles() )
+               inputFile.Extract( iccProfile );
+
+            RGBColorSystem rgbws;
+            if ( inputFormat.CanStoreRGBWS() )
+               inputFile.ReadRGBWS( rgbws );
+
+            DisplayFunction df;
+            if ( inputFormat.CanStoreDisplayFunctions() )
+               inputFile.ReadDisplayFunction( df );
+
+            ColorFilterArray cfa;
+            if ( inputFormat.CanStoreColorFilterArrays() )
+               inputFile.ReadColorFilterArray( cfa );
+
+            ImageWindow window;
+            bool reusedWindow = false;
+
+            if ( m_instance.p_saveClientImages )
             {
-               FITSKeywordArray keywords;
-               if ( !file.Extract( keywords ) )
+               ImageVariant image;
+               image.CreateSharedImage( images[0].options.ieeefpSampleFormat,
+                                        false/*isComplex*/,
+                                        images[0].options.bitsPerSample );
+               if ( !inputFile.ReadImage( image ) )
                   throw CatchedException();
-               window.SetKeywords( keywords );
+
+               inputFile.Close();
+
+               FileFormat outputFormat( ".xisf", false/*read*/, true/*write*/ );
+               FileFormatInstance outputFile( outputFormat );
+
+               String outputFilePath = m_instance.p_clientDownloadDirectory.Trimmed();
+               if ( outputFilePath.IsEmpty() )
+               {
+                  outputFilePath = PixInsightSettings::GlobalString( "ImageWindow/DownloadsDirectory" );
+                  if ( outputFilePath.IsEmpty() ) // this cannot happen
+                     outputFilePath = File::SystemTempDirectory();
+               }
+               if ( !outputFilePath.EndsWith( '/' ) )
+                  outputFilePath += '/';
+               outputFilePath += m_instance.ClientFileName();
+               outputFilePath += ".xisf";
+               if ( !m_instance.p_overwriteClientImages )
+                  outputFilePath = UniqueFilePath( outputFilePath );
+
+               String outputHints = m_instance.p_clientOutputFormatHints.Trimmed();
+               if ( !outputHints.IsEmpty() )
+                  outputHints += ' ';
+               outputHints += "image-type " + m_instance.CCDFrameTypePrefix( m_instance.p_frameType ).Lowercase();
+
+               if ( !outputFile.Create( outputFilePath, outputHints ) )
+                  throw CatchedException();
+
+               if ( !propertyNames.IsEmpty() )
+                  if ( outputFormat.CanStoreProperties() )
+                     for ( size_type i = 0; i < propertyNames.Length(); ++i )
+                        outputFile.WriteProperty( propertyNames[i], propertyValues[i] );
+
+               if ( outputFormat.CanStoreKeywords() )
+                  outputFile.Embed( keywords );
+
+               if ( iccProfile.IsProfile() )
+                  if ( outputFormat.CanStoreICCProfiles() )
+                     outputFile.Embed( iccProfile );
+
+               if ( rgbws != RGBColorSystem::sRGB )
+                  if ( outputFormat.CanStoreRGBWS() )
+                     outputFile.WriteRGBWS( rgbws );
+
+               if ( outputFormat.CanStoreDisplayFunctions() )
+               {
+                  if ( m_instance.p_autoStretch )
+                  {
+                     int n = image.NumberOfNominalChannels();
+                     DVector center( n );
+                     DVector sigma( n );
+                     for ( int i = 0; i < n; ++i )
+                     {
+                        center[i] = image.Median( Rect( 0 ), i, i );
+                        sigma[i] = 1.4826 * image.MAD( center[i], Rect( 0 ), i, i );
+                     }
+                     df.SetLinkedRGB( m_instance.p_linkedAutoStretch );
+                     df.ComputeAutoStretch( sigma, center );
+                  }
+
+                  if ( !df.IsIdentityTransformation() )
+                     outputFile.WriteDisplayFunction( df );
+               }
+
+               if ( !cfa.IsEmpty() )
+                  if ( outputFormat.CanStoreColorFilterArrays() )
+                     outputFile.WriteColorFilterArray( cfa );
+
+               outputFile.SetOptions( images[0].options );
+
+               if ( !outputFile.WriteImage( image ) )
+                  throw CatchedException();
+
+               outputFile.Close();
+
+               m_instance.o_clientFilePaths << outputFilePath;
+
+               NewFrameEvent( outputFilePath );
+
+               if ( m_instance.p_openClientImages )
+               {
+                  Array<ImageWindow> windows = ImageWindow::Open( outputFilePath, IsoString()/*id*/, false/*asCopy*/, false/*allowMessages*/ );
+                  if ( !windows.IsEmpty() )
+                     window = windows[0];
+               }
             }
-
-            if ( format.CanStoreResolution() )
-               window.SetResolution( images[0].options.xResolution, images[0].options.yResolution, images[0].options.metricResolution );
-
-            if ( format.CanStoreICCProfiles() )
+            else
             {
-               ICCProfile icc;
-               if ( file.Extract( icc ) )
-                  if ( icc )
-                     window.SetICCProfile( icc );
+               if ( m_instance.p_openClientImages )
+               {
+                  if ( m_instance.p_reuseImageWindow )
+                  {
+                     window = ImageWindow::WindowById( m_instance.p_newImageIdTemplate );
+                     if ( !window.IsNull() ) // Make sure our window is valid and has not been write-locked by other task.
+                        if ( !window.MainView().CanWrite() )
+                           window = ImageWindow::Null();
+                  }
+                  reusedWindow = !window.IsNull();
+                  if ( !reusedWindow )
+                     window = ImageWindow( 1, 1, 1,
+                                          images[0].options.bitsPerSample,
+                                          images[0].options.ieeefpSampleFormat,
+                                          false/*color*/,
+                                          true/*initialProcessing*/,
+                                          m_instance.p_newImageIdTemplate );
+
+                  View view = window.MainView();
+
+                  ImageVariant image = view.Image();
+                  if ( !inputFile.ReadImage( image ) )
+                     throw CatchedException();
+
+                  inputFile.Close();
+
+                  if ( !propertyNames.IsEmpty() )
+                     for ( size_type i = 0; i < propertyNames.Length(); ++i )
+                        if ( propertyValues[i].IsValid() )
+                           view.SetPropertyValue( propertyNames[i], propertyValues[i], false/*notify*/,
+                                                ViewPropertyAttribute::Storable|ViewPropertyAttribute::Permanent );
+
+                  window.SetKeywords( keywords );
+
+                  if ( inputFormat.CanStoreResolution() )
+                     window.SetResolution( images[0].options.xResolution, images[0].options.yResolution, images[0].options.metricResolution );
+
+                  if ( iccProfile )
+                     window.SetICCProfile( iccProfile );
+
+                  if ( inputFormat.CanStoreRGBWS() )
+                     window.SetRGBWS( rgbws );
+
+                  if ( !cfa.IsEmpty() )
+                  {
+                     // ### TODO - Cannot be implemented until the core provides support for CFAs
+                  }
+
+                  if ( m_instance.p_autoStretch )
+                  {
+                     int n = image.NumberOfNominalChannels();
+                     DVector center( n );
+                     DVector sigma( n );
+                     for ( int i = 0; i < n; ++i )
+                     {
+                        center[i] = image.Median( Rect( 0 ), i, i );
+                        sigma[i] = 1.4826 * image.MAD( center[i], Rect( 0 ), i, i );
+                     }
+                     df.SetLinkedRGB( m_instance.p_linkedAutoStretch );
+                     df.ComputeAutoStretch( sigma, center );
+                     View::stf_list stf( 4 );
+                     for ( int i = 0; i < n; ++i )
+                        stf[i] = df[i];
+                     view.SetScreenTransferFunctions( stf );
+                     view.EnableScreenTransferFunctions();
+                  }
+               }
+
+               m_instance.o_clientFilePaths << String();
             }
 
-            if ( format.CanStoreRGBWS() )
+            if ( window.IsNull() )
+               m_instance.o_clientViewIds << String();
+            else
             {
-               RGBColorSystem rgbws;
-               if ( file.ReadRGBWS( rgbws ) )
-                  window.SetRGBWS( rgbws );
+               m_instance.o_clientViewIds << window.MainView().Id();
+               NewFrameEvent( window, reusedWindow );
             }
-
-            if ( format.CanStoreColorFilterArrays() )
-            {
-               // ### TODO - Cannot be implemented until the core provides support for CFAs
-            }
-
-            if ( m_instance.p_autoStretch )
-               AutoStretch( window );
-
-            NewFrameEvent( window, reusedWindow );
          }
       }
 
@@ -841,74 +1105,9 @@ void AbstractINDICCDFrameExecution::Abort()
       throw ProcessAborted();
 }
 
-void AbstractINDICCDFrameExecution::AutoStretch( ImageWindow& window ) const
-{
-   /*
-    * AutoStretch parameters
-    */
-   static const double s_shadowsClipping = -2.80 * 1.4826; // in MAD units from the median
-   static const double s_targetBackground = 0.25;
-
-   ImageVariant image = window.MainView().Image();
-   Array<ImageStatistics> S;
-   for( int c = 0; c < image->NumberOfNominalChannels(); ++c )
-   {
-      image->SelectChannel( c );
-      ImageStatistics s;
-      s.EnableRejection();
-      s.SetRejectionLimits( 0.0, 1.0 );
-      s.DisableSumOfSquares();
-      s.DisableBWMV();
-      s.DisablePBMV();
-      s << image;
-      S << s;
-   }
-
-   int n = image->NumberOfNominalChannels();
-   double c0 = 0, m = 0;
-
-   View::stf_list stf( 4 );
-
-   if ( n == 1 || m_instance.p_linkedAutoStretch )
-   {
-      for ( int c = 0; c < n; c++ )
-      {
-         if ( 1 + S[c].MAD() != 1 )
-            c0 += S[c].Median() + s_shadowsClipping * S[c].MAD();
-         m += S[c].Median();
-      }
-      c0 = Range( c0/n, 0.0, 1.0 );
-      m = HistogramTransformation::MTF( s_targetBackground, m/n - c0 );
-      for ( int i = 0; i < 3; i++ )
-      {
-         stf[i].SetMidtonesBalance( m );
-         stf[i].SetClipping( c0, 1 );
-         stf[i].SetRange( 0, 1 );
-      }
-   }
-   else
-   {
-      for ( int c = 0; c < n; c++ )
-      {
-         c0 = (1 +  S[c].MAD() != 1) ? Range( S[c].Median() + s_shadowsClipping * S[c].MAD(), 0.0, 1.0 ) : 0.0;
-         m = HistogramTransformation::MTF( s_targetBackground, S[c].Median() - c0 );
-         stf[c].SetMidtonesBalance( m );
-         stf[c].SetClipping( c0, 1 );
-         stf[c].SetRange( 0, 1 );
-      }
-   }
-
-   stf[3].SetMidtonesBalance( 0.5 );
-   stf[3].SetClipping( 0, 1 );
-   stf[3].SetRange( 0, 1 );
-
-   window.MainView().SetScreenTransferFunctions( stf );
-   window.MainView().EnableScreenTransferFunctions();
-}
-
 // ----------------------------------------------------------------------------
 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInstance.cpp - Released 2016/05/08 20:36:42 UTC
+// EOF INDICCDFrameInstance.cpp - Released 2016/05/17 15:40:50 UTC

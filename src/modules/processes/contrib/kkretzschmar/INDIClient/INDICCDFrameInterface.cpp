@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.09.0153
+// Standard INDIClient Process Module Version 01.00.10.0163
 // ----------------------------------------------------------------------------
-// INDICCDFrameInterface.cpp - Released 2016/05/08 20:36:42 UTC
+// INDICCDFrameInterface.cpp - Released 2016/05/17 15:40:49 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -62,11 +62,7 @@
 
 #include <pcl/Console.h>
 #include <pcl/Dialog.h>
-
-#include <assert.h>
-
-// time out in seconds
-#define PCL_TIMEOUT 60
+#include <pcl/FileDialog.h>
 
 namespace pcl
 {
@@ -193,7 +189,7 @@ InterfaceFeatures INDICCDFrameInterface::Features() const
 
 void INDICCDFrameInterface::ResetInstance()
 {
-   INDIDeviceControllerInstance defaultInstance( TheINDICCDFrameProcess );
+   INDICCDFrameInstance defaultInstance( TheINDICCDFrameProcess );
    ImportProcess( defaultInstance );
 }
 
@@ -203,6 +199,7 @@ bool INDICCDFrameInterface::Launch( const MetaProcess& P, const ProcessImplement
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "INDI CCD Controller" );
+      ResetInstance();
       UpdateControls();
    }
 
@@ -215,25 +212,32 @@ ProcessImplementation* INDICCDFrameInterface::NewProcess() const
    INDICCDFrameInstance* instance = new INDICCDFrameInstance( TheINDICCDFrameProcess );
    instance->p_deviceName = m_device;
    instance->p_uploadMode = GUI->UploadMode_Combo.CurrentItem();
-   instance->p_serverUploadDirectory = GUI->UploadDir_Edit.Text().Trimmed();
+   instance->p_serverUploadDirectory = GUI->ServerUploadDir_Edit.Text().Trimmed();
    instance->p_serverFileNameTemplate = GUI->ServerFileNameTemplate_Edit.Text().Trimmed();
    instance->p_frameType = GUI->CCDFrameType_Combo.CurrentItem();
    instance->p_binningX = GUI->CCDBinX_Combo.CurrentItem() + 1;
    instance->p_binningY = GUI->CCDBinY_Combo.CurrentItem() + 1;
+   instance->p_filterSlot = GUI->CCDFilter_Combo.CurrentItem() + 1;
    instance->p_exposureTime = GUI->ExposureTime_NumericEdit.Value();
    instance->p_exposureDelay = GUI->ExposureDelay_NumericEdit.Value();
    instance->p_exposureCount = GUI->ExposureCount_SpinBox.Value();
+   instance->p_openClientImages = GUI->OpenClientFrames_CheckBox.IsChecked();
    //instance->p_newImageIdTemplate = ; // ### TODO
    instance->p_reuseImageWindow = GUI->ReuseImageWindow_CheckBox.IsChecked();
    instance->p_autoStretch = GUI->AutoStretch_CheckBox.IsChecked();
    instance->p_linkedAutoStretch = GUI->LinkedAutoStretch_CheckBox.IsChecked();
+   instance->p_saveClientImages = GUI->SaveClientFrames_CheckBox.IsChecked();
+   instance->p_overwriteClientImages = GUI->OverwriteClientFrames_CheckBox.IsChecked();
+   instance->p_clientDownloadDirectory = GUI->ClientDownloadDir_Edit.Text().Trimmed();
+   instance->p_clientFileNameTemplate = GUI->ClientFileNameTemplate_Edit.Text().Trimmed();
+   instance->p_clientOutputFormatHints = GUI->ClientOutputFormatHints_Edit.Text().Trimmed();
    return instance;
 }
 
 bool INDICCDFrameInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const INDICCDFrameInstance* r = dynamic_cast<const INDICCDFrameInstance*>( &p );
-   if ( r == nullptr )
+   const INDICCDFrameInstance* instance = dynamic_cast<const INDICCDFrameInstance*>( &p );
+   if ( instance == nullptr )
    {
       whyNot = "Not an INDICCDFrame instance.";
       return false;
@@ -249,24 +253,31 @@ bool INDICCDFrameInterface::RequiresInstanceValidation() const
 
 bool INDICCDFrameInterface::ImportProcess( const ProcessImplementation& p )
 {
-   const INDICCDFrameInstance* r = dynamic_cast<const INDICCDFrameInstance*>( &p );
-   if ( r != nullptr )
+   const INDICCDFrameInstance* instance = dynamic_cast<const INDICCDFrameInstance*>( &p );
+   if ( instance != nullptr )
    {
-      if ( r->ValidateDevice( false/*throwErrors*/ ) )
+      GUI->ServerFileNameTemplate_Edit.SetText( instance->p_serverFileNameTemplate );
+      GUI->ExposureTime_NumericEdit.SetValue( instance->p_exposureTime );
+      GUI->ExposureDelay_NumericEdit.SetValue( instance->p_exposureDelay );
+      GUI->ExposureCount_SpinBox.SetValue( instance->p_exposureCount );
+      GUI->OpenClientFrames_CheckBox.SetChecked( instance->p_openClientImages );
+      GUI->ReuseImageWindow_CheckBox.SetChecked( instance->p_reuseImageWindow );
+      GUI->AutoStretch_CheckBox.SetChecked( instance->p_autoStretch );
+      GUI->LinkedAutoStretch_CheckBox.SetChecked( instance->p_linkedAutoStretch );
+      GUI->SaveClientFrames_CheckBox.SetChecked( instance->p_saveClientImages );
+      GUI->OverwriteClientFrames_CheckBox.SetChecked( instance->p_overwriteClientImages );
+      GUI->ClientDownloadDir_Edit.SetText( instance->p_clientDownloadDirectory );
+      GUI->ClientFileNameTemplate_Edit.SetText( instance->p_clientFileNameTemplate );
+      GUI->ClientOutputFormatHints_Edit.SetText( instance->p_clientOutputFormatHints );
+
+      if ( instance->ValidateDevice( false/*throwErrors*/ ) )
       {
-         m_device = r->p_deviceName;
-         r->SendDeviceProperties();
-         GUI->ServerFileNameTemplate_Edit.SetText( r->p_serverFileNameTemplate );
-         GUI->ExposureTime_NumericEdit.SetValue( r->p_exposureTime );
-         GUI->ExposureDelay_NumericEdit.SetValue( r->p_exposureDelay );
-         GUI->ExposureCount_SpinBox.SetValue( r->p_exposureCount );
-         GUI->ReuseImageWindow_CheckBox.SetChecked( r->p_reuseImageWindow );
-         GUI->AutoStretch_CheckBox.SetChecked( r->p_autoStretch );
-         GUI->LinkedAutoStretch_CheckBox.SetChecked( r->p_linkedAutoStretch );
-         return true;
+         m_device = instance->p_deviceName;
+         instance->SendDeviceProperties();
       }
       else
          m_device.Clear();
+
       return true;
    }
    return false;
@@ -283,9 +294,8 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
 
    //
 
-   CCDParam_SectionBar.SetTitle( "CCD Device" );
-   CCDParam_SectionBar.SetSection( CCDParam_Control );
-   CCDParam_Control.SetSizer( CCDParam_Sizer );
+   ServerParameters_SectionBar.SetTitle( "Device Properties" );
+   ServerParameters_SectionBar.SetSection( ServerParameters_Control );
 
    CCDDevice_Label.SetText( "INDI CCD device:" );
    CCDDevice_Label.SetToolTip( "<p>Select an INDI CCD device.</p>" );
@@ -317,15 +327,16 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    CCDTargetTemp_NumericEdit.SetToolTip( "<p>Target chip temperature in degrees Celsius.</p>" );
    CCDTargetTemp_NumericEdit.Disable();
 
-   CCDTargetTemp_PushButton.SetText( "Set" );
-   CCDTargetTemp_PushButton.OnClick( (Button::click_event_handler)&INDICCDFrameInterface::e_Click, w );
-   CCDTargetTemp_PushButton.Disable();
+   CCDTargetTemp_ToolButton.SetIcon( w.ScaledResource( ":/icons/arrow-right-limit.png" ) );
+   CCDTargetTemp_ToolButton.SetScaledFixedSize( 22, 22 );
+   CCDTargetTemp_ToolButton.SetToolTip( "<p>Send a target chip temperature request.</p>" );
+   CCDTargetTemp_ToolButton.OnClick( (Button::click_event_handler)&INDICCDFrameInterface::e_Click, w );
 
    CCDTemp_HSizer.SetSpacing( 4 );
    CCDTemp_HSizer.Add( CCDTemp_NumericEdit );
    CCDTemp_HSizer.Add( CCDTargetTemp_NumericEdit, 100 );
    CCDTemp_HSizer.AddSpacing( 4 );
-   CCDTemp_HSizer.Add( CCDTargetTemp_PushButton );
+   CCDTemp_HSizer.Add( CCDTargetTemp_ToolButton );
 
    const char* ccdBinXToolTipText =
       "<p>Horizontal (X-axis) pixel binning factor.</p>";
@@ -381,8 +392,26 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    CCDBinY_HSizer.Add( CCDBinY_Combo );
    CCDBinY_HSizer.AddStretch();
 
+   const char* ccdFilterToolTipText =
+      "<p>Filter for frame acquisition, if available. "
+      "The selected filter name will be stored as a standard property and FITS header keyword in each acquired frame.</p>";
+
+   CCDFilter_Label.SetText( "Filter:" );
+   CCDFilter_Label.SetFixedWidth( labelWidth1 );
+   CCDFilter_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   CCDFilter_Label.SetToolTip( ccdFilterToolTipText );
+   CCDFilter_Label.Disable();
+
+   CCDFilter_Combo.OnItemSelected( (ComboBox::item_event_handler)&INDICCDFrameInterface::e_ItemSelected, w );
+   CCDFilter_Combo.SetToolTip( ccdFilterToolTipText );
+   CCDFilter_Combo.Disable();
+
+   CCDFilter_HSizer.SetSpacing( 4 );
+   CCDFilter_HSizer.Add( CCDFilter_Label );
+   CCDFilter_HSizer.Add( CCDFilter_Combo, 100 );
+
    const char* ccdFrameTypeToolTipText =
-      "<p>The frame type will be stored as a standard FITS header keyword in each acquired frame.</p>";
+      "<p>The frame type will be stored as a standard property and FITS header keyword in each acquired frame.</p>";
 
    CCDFrameType_Label.SetText( "Frame type:" );
    CCDFrameType_Label.SetFixedWidth( labelWidth1 );
@@ -431,32 +460,32 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    UploadMode_HSizer.AddStretch();
 
    const char* uploadDirToolTipText =
-      "<p>The directory where acquired CCD frames will be stored on the INDI server.</p>";
+      "<p>The directory where newly acquired CCD frames will be stored on the INDI server.</p>";
 
-   UploadDir_Label.SetText( "Server upload directory:" );
-   UploadDir_Label.SetToolTip( uploadDirToolTipText );
-   UploadDir_Label.SetMinWidth( labelWidth1 );
-   UploadDir_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
-   UploadDir_Label.Disable();
+   ServerUploadDir_Label.SetText( "Server upload directory:" );
+   ServerUploadDir_Label.SetToolTip( uploadDirToolTipText );
+   ServerUploadDir_Label.SetMinWidth( labelWidth1 );
+   ServerUploadDir_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   ServerUploadDir_Label.Disable();
 
-   UploadDir_Edit.SetReadOnly();
-   UploadDir_Edit.SetToolTip( uploadDirToolTipText );
+   ServerUploadDir_Edit.SetReadOnly();
+   ServerUploadDir_Edit.SetToolTip( uploadDirToolTipText );
 
-   UploadDir_PushButton.SetText( "Set" );
-   UploadDir_PushButton.OnClick( (Button::click_event_handler)&INDICCDFrameInterface::e_Click, w );
-   UploadDir_PushButton.Disable();
+   ServerUploadDir_ToolButton.SetIcon( w.ScaledResource( ":/icons/network-folder.png" ) );
+   ServerUploadDir_ToolButton.SetScaledFixedSize( 22, 22 );
+   ServerUploadDir_ToolButton.SetToolTip( "<p>Set the server upload directory.</p>" );
+   ServerUploadDir_ToolButton.OnClick( (Button::click_event_handler)&INDICCDFrameInterface::e_Click, w );
 
-   UploadDir_HSizer.SetSpacing( 4 );
-   UploadDir_HSizer.Add( UploadDir_Label );
-   UploadDir_HSizer.Add( UploadDir_Edit, 100 );
-   UploadDir_HSizer.AddSpacing( 4 );
-   UploadDir_HSizer.Add( UploadDir_PushButton );
+   ServerUploadDir_HSizer.SetSpacing( 4 );
+   ServerUploadDir_HSizer.Add( ServerUploadDir_Label );
+   ServerUploadDir_HSizer.Add( ServerUploadDir_Edit, 100 );
+   ServerUploadDir_HSizer.AddSpacing( 4 );
+   ServerUploadDir_HSizer.Add( ServerUploadDir_ToolButton );
 
-   const char* serverFileNameTemplateToolTipText =
-      "<p>A template to build the file name prefixes of CCD frames stored on the INDI server.</p>"
-      "<p>The template can be any valid text suitable to specify file names on the server's filesystem, and may include "
+   const char* fileNameTemplateToolTipText =
+      "<p>A file name template can be any valid text suitable to specify file names on the target filesystem, and may include "
       "one or more <i>template specifiers</i>. Template specifiers are replaced automatically with selected tokens when "
-      "CCD frames are acquired. Supported template specifiers are the following:</p>"
+      "new frames are acquired. Supported template specifiers are the following:</p>"
       "<p><table border=\"1\" cellspacing=\"1\" cellpadding=\"4\">"
       "<tr>"
          "<td><i>Template specifier</i></td>"
@@ -499,9 +528,13 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
          "<td>A universally unique identifier (UUID) in canonical form (36 characters).</td>"
       "</tr>"
       "</table></p>"
-      "<p>For example, the default template %f_B%b_E%e_%n would produce the following server file name:</p>"
+      "<p>For example, the default template %f_B%b_E%e_%n would produce the following file name:</p>"
       "<p>LIGHT_B2x2_E300.00_002.fits</p>"
       "<p>for the second light frame of a series with exposure time of 300 seconds at binning 2x2.</p>";
+
+   const String serverFileNameTemplateToolTipText =
+      String( "<p>A template to build the file names of newly acquired frames stored on the INDI server.</p>" )
+      + fileNameTemplateToolTipText;
 
    ServerFileNameTemplate_Label.SetText( "Server file name template:" );
    ServerFileNameTemplate_Label.SetToolTip( serverFileNameTemplateToolTipText );
@@ -521,16 +554,144 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    CCDProperties_Sizer.Add( CCDTemp_HSizer );
    CCDProperties_Sizer.Add( CCDBinX_HSizer );
    CCDProperties_Sizer.Add( CCDBinY_HSizer );
+   CCDProperties_Sizer.Add( CCDFilter_HSizer );
    CCDProperties_Sizer.Add( CCDFrameType_HSizer );
    CCDProperties_Sizer.Add( UploadMode_HSizer );
-   CCDProperties_Sizer.Add( UploadDir_HSizer );
+   CCDProperties_Sizer.Add( ServerUploadDir_HSizer );
    CCDProperties_Sizer.Add( ServerFileNameTemplate_HSizer );
 
    CCDProperties_Control.SetSizer( CCDProperties_Sizer );
 
-   CCDParam_Sizer.SetSpacing( 4 );
-   CCDParam_Sizer.Add( CCDDevice_Sizer );
-   CCDParam_Sizer.Add( CCDProperties_Control );
+   ServerParameters_Sizer.SetSpacing( 4 );
+   ServerParameters_Sizer.Add( CCDDevice_Sizer );
+   ServerParameters_Sizer.Add( CCDProperties_Control );
+
+   ServerParameters_Control.SetSizer( ServerParameters_Sizer );
+
+   //
+
+   ClientParameters_SectionBar.SetTitle( "Client Frames" );
+   ClientParameters_SectionBar.SetSection( ClientParameters_Control );
+
+   OpenClientFrames_CheckBox.SetText( "Open client frames" );
+   OpenClientFrames_CheckBox.SetToolTip( "<p>Load newly acquired frames as image windows.</p>" );
+
+   OpenClientFrames_Sizer.AddSpacing( labelWidth1 + 4 );
+   OpenClientFrames_Sizer.Add( OpenClientFrames_CheckBox );
+   OpenClientFrames_Sizer.AddStretch();
+
+   ReuseImageWindow_CheckBox.SetText( "Reuse image window" );
+   ReuseImageWindow_CheckBox.SetToolTip( "<p>Load newly acquired client frames on the same image window, if available.</p>" );
+   ReuseImageWindow_Sizer.AddSpacing( labelWidth1 + 4 );
+   ReuseImageWindow_Sizer.Add( ReuseImageWindow_CheckBox );
+   ReuseImageWindow_Sizer.AddStretch();
+
+   AutoStretch_CheckBox.SetText( "AutoStretch" );
+   AutoStretch_CheckBox.SetToolTip( "<p>Compute and apply adaptive screen transfer functions (STF) for newly acquired client frames.</p>" );
+   AutoStretch_Sizer.AddSpacing( labelWidth1 + 4 );
+   AutoStretch_Sizer.Add( AutoStretch_CheckBox );
+   AutoStretch_Sizer.AddStretch();
+
+   LinkedAutoStretch_CheckBox.SetText( "Linked AutoStretch" );
+   LinkedAutoStretch_CheckBox.SetToolTip( "<p>If enabled, compute and apply a single adaptive STF for all nominal channels of "
+      "each acquired color image.</p>"
+      "<p>If disabled, compute a separate adaptive STF for each nominal color channel.</p>" );
+   LinkedAutoStretch_Sizer.AddSpacing( labelWidth1 + 4 );
+   LinkedAutoStretch_Sizer.Add( LinkedAutoStretch_CheckBox );
+   LinkedAutoStretch_Sizer.AddStretch();
+
+   SaveClientFrames_CheckBox.SetText( "Save client frames" );
+   SaveClientFrames_CheckBox.SetToolTip( "<p>Save newly acquired frames to local image files in XISF format.</p>" );
+
+   SaveClientFrames_Sizer.AddSpacing( labelWidth1 + 4 );
+   SaveClientFrames_Sizer.Add( SaveClientFrames_CheckBox );
+   SaveClientFrames_Sizer.AddStretch();
+
+   OverwriteClientFrames_CheckBox.SetText( "Overwrite existing files" );
+   OverwriteClientFrames_CheckBox.SetToolTip( "<p>If this option is selected, INDICCDFrame will overwrite "
+      "existing files with the same names as generated output files. This can be dangerous because the original "
+      "contents of overwritten files will be lost.</p>"
+      "<p><b>Enable this option <u>at your own risk.</u></b></p>" );
+
+   OverwriteClientFrames_Sizer.AddSpacing( labelWidth1 + 4 );
+   OverwriteClientFrames_Sizer.Add( OverwriteClientFrames_CheckBox );
+   OverwriteClientFrames_Sizer.AddStretch();
+
+   const char* downloadDirToolTipText =
+      "<p>The directory where newly acquired frames will be stored on the local filesystem.</p>"
+      "<p>If you leave this parameter empty, new files will be created on the current downloads directory, as defined by global settings.</p>";
+
+   ClientDownloadDir_Label.SetText( "Client download directory:" );
+   ClientDownloadDir_Label.SetToolTip( downloadDirToolTipText );
+   ClientDownloadDir_Label.SetMinWidth( labelWidth1 );
+   ClientDownloadDir_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   ClientDownloadDir_Label.Disable();
+
+   ClientDownloadDir_Edit.SetToolTip( downloadDirToolTipText );
+
+   ClientDownloadDir_ToolButton.SetIcon( w.ScaledResource( ":/icons/select-file.png" ) );
+   ClientDownloadDir_ToolButton.SetScaledFixedSize( 22, 22 );
+   ClientDownloadDir_ToolButton.SetToolTip( "<p>Select the client download directory</p>" );
+   ClientDownloadDir_ToolButton.OnClick( (Button::click_event_handler)&INDICCDFrameInterface::e_Click, w );
+
+   ClientDownloadDir_HSizer.SetSpacing( 4 );
+   ClientDownloadDir_HSizer.Add( ClientDownloadDir_Label );
+   ClientDownloadDir_HSizer.Add( ClientDownloadDir_Edit, 100 );
+   ClientDownloadDir_HSizer.AddSpacing( 4 );
+   ClientDownloadDir_HSizer.Add( ClientDownloadDir_ToolButton );
+
+   const String clientFileNameTemplateToolTipText =
+      String( "<p>A template to build the file names of newly acquired frames stored on the INDI client.</p>" )
+      + fileNameTemplateToolTipText;
+
+   ClientFileNameTemplate_Label.SetText( "Client file name template:" );
+   ClientFileNameTemplate_Label.SetToolTip( clientFileNameTemplateToolTipText );
+   ClientFileNameTemplate_Label.SetMinWidth( labelWidth1 );
+   ClientFileNameTemplate_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   ClientFileNameTemplate_Label.Disable();
+
+   ClientFileNameTemplate_Edit.SetToolTip( clientFileNameTemplateToolTipText );
+   ClientFileNameTemplate_Edit.SetText( TheICFClientFileNameTemplateParameter->DefaultValue() );
+   ClientFileNameTemplate_Edit.Disable();
+
+   ClientFileNameTemplate_HSizer.SetSpacing( 4 );
+   ClientFileNameTemplate_HSizer.Add( ClientFileNameTemplate_Label );
+   ClientFileNameTemplate_HSizer.Add( ClientFileNameTemplate_Edit, 100 );
+
+   const char* clientOutputFormatHintsToolTipText =
+      "<p><i>Format hints</i> allow you to override global file format settings for image files used by specific processes. "
+      "In INDICCDFrame, output hints allow you to control the way newly acquired image files are generated on the INDI client.</p>"
+      "<p>For example, you can use the \"compression-codec zlib\" hint to force the XISF format support module to compress "
+      "images using the Zlib data compression algorithm. To gain more control on compression, you can use the \"compression-level <i>n</i>\""
+      "hint to specify a compression level <i>n</i> in the range from 0 (default compression) to 100 (maximum compression). See the XISF "
+      "format documentation for detailed information on supported XISF format hints.</p>";
+
+   ClientOutputFormatHints_Label.SetText( "Output format hints:" );
+   ClientOutputFormatHints_Label.SetToolTip( clientOutputFormatHintsToolTipText );
+   ClientOutputFormatHints_Label.SetMinWidth( labelWidth1 );
+   ClientOutputFormatHints_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   ClientOutputFormatHints_Label.Disable();
+
+   ClientOutputFormatHints_Edit.SetToolTip( clientOutputFormatHintsToolTipText );
+   ClientOutputFormatHints_Edit.SetText( TheICFClientOutputFormatHintsParameter->DefaultValue() );
+   ClientOutputFormatHints_Edit.Disable();
+
+   ClientOutputFormatHints_HSizer.SetSpacing( 4 );
+   ClientOutputFormatHints_HSizer.Add( ClientOutputFormatHints_Label );
+   ClientOutputFormatHints_HSizer.Add( ClientOutputFormatHints_Edit, 100 );
+
+   ClientParameters_Sizer.SetSpacing( 4 );
+   ClientParameters_Sizer.Add( OpenClientFrames_Sizer );
+   ClientParameters_Sizer.Add( ReuseImageWindow_Sizer );
+   ClientParameters_Sizer.Add( AutoStretch_Sizer );
+   ClientParameters_Sizer.Add( LinkedAutoStretch_Sizer );
+   ClientParameters_Sizer.Add( SaveClientFrames_Sizer );
+   ClientParameters_Sizer.Add( OverwriteClientFrames_Sizer );
+   ClientParameters_Sizer.Add( ClientDownloadDir_HSizer );
+   ClientParameters_Sizer.Add( ClientFileNameTemplate_HSizer );
+   ClientParameters_Sizer.Add( ClientOutputFormatHints_HSizer );
+
+   ClientParameters_Control.SetSizer( ClientParameters_Sizer );
 
    //
 
@@ -571,33 +732,10 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    ExposureCount_Sizer.Add( ExposureCount_SpinBox );
    ExposureCount_Sizer.AddStretch();
 
-   ReuseImageWindow_CheckBox.SetText( "Reuse image window" );
-   ReuseImageWindow_CheckBox.SetToolTip( "<p>Load newly acquired client frames on the same image window, if available.</p>" );
-   ReuseImageWindow_Sizer.AddSpacing( labelWidth1 + 4 );
-   ReuseImageWindow_Sizer.Add( ReuseImageWindow_CheckBox );
-   ReuseImageWindow_Sizer.AddStretch();
-
-   AutoStretch_CheckBox.SetText( "AutoStretch" );
-   AutoStretch_CheckBox.SetToolTip( "<p>Compute and apply adaptive screen transfer functions (STF) for newly acquired client frames.</p>" );
-   AutoStretch_Sizer.AddSpacing( labelWidth1 + 4 );
-   AutoStretch_Sizer.Add( AutoStretch_CheckBox );
-   AutoStretch_Sizer.AddStretch();
-
-   LinkedAutoStretch_CheckBox.SetText( "Linked AutoStretch" );
-   LinkedAutoStretch_CheckBox.SetToolTip( "<p>If enabled, compute and apply a single adaptive STF for all nominal channels of "
-      "each acquired color image.</p>"
-      "<p>If disabled, compute a separate adaptive STF for each nominal color channel.</p>" );
-   LinkedAutoStretch_Sizer.AddSpacing( labelWidth1 + 4 );
-   LinkedAutoStretch_Sizer.Add( LinkedAutoStretch_CheckBox );
-   LinkedAutoStretch_Sizer.AddStretch();
-
    FrameAcquisitionLeft_Sizer.SetSpacing( 4 );
    FrameAcquisitionLeft_Sizer.Add( ExposureTime_NumericEdit );
    FrameAcquisitionLeft_Sizer.Add( ExposureDelay_NumericEdit );
    FrameAcquisitionLeft_Sizer.Add( ExposureCount_Sizer );
-   FrameAcquisitionLeft_Sizer.Add( ReuseImageWindow_Sizer );
-   FrameAcquisitionLeft_Sizer.Add( AutoStretch_Sizer );
-   FrameAcquisitionLeft_Sizer.Add( LinkedAutoStretch_Sizer );
 
    StartExposure_PushButton.SetText( "Start" );
    StartExposure_PushButton.SetIcon( w.ScaledResource( ":/icons/play.png" ) );
@@ -630,8 +768,10 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
 
    Global_Sizer.SetMargin( 8 );
    Global_Sizer.SetSpacing( 4 );
-   Global_Sizer.Add( CCDParam_SectionBar );
-   Global_Sizer.Add( CCDParam_Control );
+   Global_Sizer.Add( ServerParameters_SectionBar );
+   Global_Sizer.Add( ServerParameters_Control );
+   Global_Sizer.Add( ClientParameters_SectionBar );
+   Global_Sizer.Add( ClientParameters_Control );
    Global_Sizer.Add( FrameAcquisition_SectionBar );
    Global_Sizer.Add( FrameAcquisition_Control );
 
@@ -660,7 +800,9 @@ void INDICCDFrameInterface::UpdateControls()
    if ( m_device.IsEmpty() )
    {
       GUI->UpdateDeviceProperties_Timer.Stop();
+
       GUI->CCDProperties_Control.Disable();
+      GUI->ClientParameters_Control.Disable();
       GUI->FrameAcquisition_Control.Disable();
    }
    else
@@ -669,6 +811,7 @@ void INDICCDFrameInterface::UpdateControls()
          GUI->UpdateDeviceProperties_Timer.Start();
 
       GUI->CCDProperties_Control.Enable();
+      GUI->ClientParameters_Control.Enable();
       GUI->FrameAcquisition_Control.Enable();
    }
 }
@@ -742,8 +885,14 @@ __device_found:
       {
          GUI->CCDTargetTemp_NumericEdit.Enable();
          GUI->CCDTargetTemp_NumericEdit.label.Enable();
-         GUI->CCDTargetTemp_PushButton.Enable();
+         GUI->CCDTargetTemp_ToolButton.Enable();
          GUI->CCDTemp_NumericEdit.SetValue( item.PropertyValue.ToDouble() );
+      }
+      else
+      {
+         GUI->CCDTargetTemp_NumericEdit.Disable();
+         GUI->CCDTargetTemp_NumericEdit.label.Disable();
+         GUI->CCDTargetTemp_ToolButton.Disable();
       }
 
       if ( indi->GetPropertyItem( m_device, "CCD_BINNING", "HOR_BIN", item ) )
@@ -752,12 +901,44 @@ __device_found:
          GUI->CCDBinX_Label.Enable();
          GUI->CCDBinX_Combo.SetCurrentItem( item.PropertyValue.ToInt() - 1 );
       }
+      else
+      {
+         GUI->CCDBinX_Combo.Disable();
+         GUI->CCDBinX_Label.Disable();
+      }
 
       if ( indi->GetPropertyItem( m_device, "CCD_BINNING", "VER_BIN", item ) )
       {
          GUI->CCDBinY_Combo.Enable();
          GUI->CCDBinY_Label.Enable();
          GUI->CCDBinY_Combo.SetCurrentItem( item.PropertyValue.ToInt() - 1 );
+      }
+      else
+      {
+         GUI->CCDBinY_Combo.Disable();
+         GUI->CCDBinY_Label.Disable();
+      }
+
+      if ( indi->GetPropertyItem( m_device, "FILTER_SLOT", "FILTER_SLOT_VALUE", item ) )
+      {
+         int currentFilterIndex = item.PropertyValue.ToInt() - 1;
+         GUI->CCDFilter_Combo.Clear();
+         for ( int i = 1; i <= 256; ++i )
+         {
+            if ( !indi->GetPropertyItem( m_device, "FILTER_NAME", "FILTER_SLOT_NAME_" + String( i ), item ) )
+               break;
+            GUI->CCDFilter_Combo.AddItem( item.PropertyValue );
+         }
+
+         GUI->CCDFilter_Combo.Enable();
+         GUI->CCDFilter_Label.Enable();
+         GUI->CCDFilter_Combo.SetCurrentItem( currentFilterIndex );
+      }
+      else
+      {
+         GUI->CCDFilter_Combo.Clear();
+         GUI->CCDFilter_Combo.Disable();
+         GUI->CCDFilter_Label.Disable();
       }
 
       int uploadModeIndex = -1;
@@ -784,28 +965,50 @@ __device_found:
          if ( m_execution == nullptr )
             if ( uploadModeIndex == ICFUploadMode::UploadClient || uploadModeIndex == ICFUploadMode::UploadServerAndClient )
             {
-               GUI->ReuseImageWindow_CheckBox.Enable();
-               GUI->AutoStretch_CheckBox.Enable();
-               GUI->LinkedAutoStretch_CheckBox.Enable( GUI->AutoStretch_CheckBox.IsChecked() );
+               bool openClientFrames = GUI->OpenClientFrames_CheckBox.IsChecked();
+               bool saveClientFrames = GUI->SaveClientFrames_CheckBox.IsChecked();
+               GUI->OpenClientFrames_CheckBox.Enable();
+               GUI->ReuseImageWindow_CheckBox.Enable( openClientFrames && !saveClientFrames );
+               GUI->AutoStretch_CheckBox.Enable( openClientFrames || saveClientFrames );
+               GUI->LinkedAutoStretch_CheckBox.Enable( (openClientFrames || saveClientFrames) && GUI->AutoStretch_CheckBox.IsChecked() );
+               GUI->SaveClientFrames_CheckBox.Enable();
+               GUI->OverwriteClientFrames_CheckBox.Enable( saveClientFrames );
+               GUI->ClientDownloadDir_Label.Enable( saveClientFrames );
+               GUI->ClientDownloadDir_Edit.Enable( saveClientFrames );
+               GUI->ClientDownloadDir_ToolButton.Enable( saveClientFrames );
+               GUI->ClientFileNameTemplate_Label.Enable( saveClientFrames );
+               GUI->ClientFileNameTemplate_Edit.Enable( saveClientFrames );
+               GUI->ClientOutputFormatHints_Label.Enable( saveClientFrames );
+               GUI->ClientOutputFormatHints_Edit.Enable( saveClientFrames );
             }
             else
             {
+               GUI->OpenClientFrames_CheckBox.Disable();
                GUI->ReuseImageWindow_CheckBox.Disable();
                GUI->AutoStretch_CheckBox.Disable();
                GUI->LinkedAutoStretch_CheckBox.Disable();
+               GUI->SaveClientFrames_CheckBox.Disable();
+               GUI->OverwriteClientFrames_CheckBox.Disable();
+               GUI->ClientDownloadDir_Label.Disable();
+               GUI->ClientDownloadDir_Edit.Disable();
+               GUI->ClientDownloadDir_ToolButton.Disable();
+               GUI->ClientFileNameTemplate_Label.Disable();
+               GUI->ClientFileNameTemplate_Edit.Disable();
+               GUI->ClientOutputFormatHints_Label.Disable();
+               GUI->ClientOutputFormatHints_Edit.Disable();
             }
 
          if ( uploadModeIndex == ICFUploadMode::UploadServer || uploadModeIndex == ICFUploadMode::UploadServerAndClient )
          {
-            GUI->UploadDir_Label.Enable();
-            GUI->UploadDir_PushButton.Enable();
+            GUI->ServerUploadDir_Label.Enable();
+            GUI->ServerUploadDir_ToolButton.Enable();
             GUI->ServerFileNameTemplate_Label.Enable();
             GUI->ServerFileNameTemplate_Edit.Enable();
          }
          else
          {
-            GUI->UploadDir_Label.Disable();
-            GUI->UploadDir_PushButton.Disable();
+            GUI->ServerUploadDir_Label.Disable();
+            GUI->ServerUploadDir_ToolButton.Disable();
             GUI->ServerFileNameTemplate_Label.Disable();
             GUI->ServerFileNameTemplate_Edit.Disable();
          }
@@ -830,7 +1033,7 @@ __device_found:
       }
 
       if ( indi->GetPropertyItem( m_device, "UPLOAD_SETTINGS", "UPLOAD_DIR", item ) )
-         GUI->UploadDir_Edit.SetText( item.PropertyValue );
+         GUI->ServerUploadDir_Edit.SetText( item.PropertyValue );
    }
 }
 
@@ -885,6 +1088,17 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
          newItem.Property = "CCD_BINNING";
          newItem.PropertyType = "INDI_NUMBER";
          newItem.ElementValue.Add(ElementValuePair("VER_BIN",GUI->CCDBinY_Combo.ItemText( itemIndex ).Trimmed()));
+         indi->SendNewPropertyItem( newItem, true/*async*/ );
+      }
+   }
+   else if ( sender == GUI->CCDFilter_Combo )
+   {
+      if ( indi->HasPropertyItem( m_device, "FILTER_SLOT", "FILTER_SLOT_VALUE" ) )
+      {
+    	 INDINewPropertyItem newItem;
+         newItem.Property = "FILTER_SLOT";
+         newItem.PropertyType = "INDI_NUMBER";
+         newItem.ElementValue.Add(ElementValuePair("FILTER_SLOT_VALUE",String( itemIndex + 1 )));
          indi->SendNewPropertyItem( newItem, true/*async*/ );
       }
    }
@@ -946,9 +1160,19 @@ private:
       m_iface->GUI->ExposureDelay_NumericEdit.Disable();
       m_iface->GUI->ExposureCount_Label.Disable();
       m_iface->GUI->ExposureCount_SpinBox.Disable();
+      m_iface->GUI->OpenClientFrames_CheckBox.Disable();
       m_iface->GUI->ReuseImageWindow_CheckBox.Disable();
       m_iface->GUI->AutoStretch_CheckBox.Disable();
       m_iface->GUI->LinkedAutoStretch_CheckBox.Disable();
+      m_iface->GUI->SaveClientFrames_CheckBox.Disable();
+      m_iface->GUI->OverwriteClientFrames_CheckBox.Disable();
+      m_iface->GUI->ClientDownloadDir_Label.Disable();
+      m_iface->GUI->ClientDownloadDir_Edit.Disable();
+      m_iface->GUI->ClientDownloadDir_ToolButton.Disable();
+      m_iface->GUI->ClientFileNameTemplate_Label.Disable();
+      m_iface->GUI->ClientFileNameTemplate_Edit.Disable();
+      m_iface->GUI->ClientOutputFormatHints_Label.Disable();
+      m_iface->GUI->ClientOutputFormatHints_Edit.Disable();
       m_iface->GUI->StartExposure_PushButton.Disable();
       m_iface->GUI->CancelExposure_PushButton.Enable();
       m_iface->GUI->ExposureInfo_Label.Clear();
@@ -1027,6 +1251,11 @@ private:
       m_iface->ProcessEvents();
    }
 
+   virtual void NewFrameEvent( const String& filePath )
+   {
+      m_iface->ProcessEvents();
+   }
+
    virtual void EndAcquisitionEvent()
    {
       m_iface->m_execution = nullptr;
@@ -1034,13 +1263,12 @@ private:
       m_iface->GUI->ExposureDelay_NumericEdit.Enable();
       m_iface->GUI->ExposureCount_Label.Enable();
       m_iface->GUI->ExposureCount_SpinBox.Enable();
-      m_iface->GUI->ReuseImageWindow_CheckBox.Enable();
-      m_iface->GUI->AutoStretch_CheckBox.Enable();
-      m_iface->GUI->LinkedAutoStretch_CheckBox.Enable();
       m_iface->GUI->StartExposure_PushButton.Enable();
       m_iface->GUI->CancelExposure_PushButton.Disable();
       m_iface->GUI->ExposureInfo_Label.Clear();
       m_iface->ProcessEvents();
+      // N.B.: The rest of client interface items will be enabled/disabled by
+      // timer event handlers.
    }
 
    virtual void AbortEvent()
@@ -1055,27 +1283,35 @@ void INDICCDFrameInterface::e_Click( Button& sender, bool checked )
    if ( !INDIClient::HasClient() )
       return;
 
-   INDIClient* indi = INDIClient::TheClient();
-   INDINewPropertyItem newItem;
-   newItem.Device = m_device;
 
-   if ( sender == GUI->CCDTargetTemp_PushButton )
+   if ( sender == GUI->CCDTargetTemp_ToolButton )
    {
+      INDINewPropertyItem newItem;
+      newItem.Device = m_device;
       newItem.Property = "CCD_TEMPERATURE";
       newItem.PropertyType = "INDI_NUMBER";
       newItem.ElementValue.Add(ElementValuePair("CCD_TEMPERATURE_VALUE",String( GUI->CCDTargetTemp_NumericEdit.Value() )));
-      indi->SendNewPropertyItem( newItem, true/*async*/ );
+	  INDIClient::TheClient()->SendNewPropertyItem( newItem, true/*async*/ );
    }
-   else if ( sender == GUI->UploadDir_PushButton )
+   else if ( sender == GUI->ServerUploadDir_ToolButton )
    {
-      SimpleGetStringDialog dialog( "Server upload directory:", GUI->UploadDir_Edit.Text() );
+      SimpleGetStringDialog dialog( "Server upload directory:", GUI->ServerUploadDir_Edit.Text() );
       if ( dialog.Execute() )
       {
+         INDINewPropertyItem newItem;
+         newItem.Device = m_device;
          newItem.Property = "UPLOAD_SETTINGS";
          newItem.PropertyType = "INDI_TEXT";
          newItem.ElementValue.Add(ElementValuePair("UPLOAD_DIR",dialog.Text()));
-         indi->SendNewPropertyItem( newItem, true/*async*/ );
+         INDIClient::TheClient()->SendNewPropertyItem( newItem, true/*async*/ );
       }
+   }
+   else if ( sender == GUI->ClientDownloadDir_ToolButton )
+   {
+      GetDirectoryDialog d;
+      d.SetCaption( "INDICCDFrame: Select Client Download Directory" );
+      if ( d.Execute() )
+         GUI->ClientDownloadDir_Edit.SetText( d.Directory() );
    }
    else if ( sender == GUI->StartExposure_PushButton )
    {
@@ -1093,4 +1329,4 @@ void INDICCDFrameInterface::e_Click( Button& sender, bool checked )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInterface.cpp - Released 2016/05/08 20:36:42 UTC
+// EOF INDICCDFrameInterface.cpp - Released 2016/05/17 15:40:49 UTC

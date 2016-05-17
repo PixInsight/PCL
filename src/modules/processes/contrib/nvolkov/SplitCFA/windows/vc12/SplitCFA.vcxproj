@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
 # PixInsight Makefile Generator Script v1.101
@@ -30,7 +30,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9A65FDD9-FFE1-48A6-B8F0-DD61A64D9799}</ProjectGuid>
+    <ProjectGuid>{1B316B97-4D51-4A2E-B717-EA33A9F94BA0}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -107,9 +107,11 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat></DebugInformationFormat>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -117,7 +119,8 @@
       <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR64)\SplitCFA-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile></ModuleDefinitionFile>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -148,9 +151,11 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat></DebugInformationFormat>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -158,7 +163,8 @@
       <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\SplitCFA-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile></ModuleDefinitionFile>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -184,7 +190,8 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -194,7 +201,8 @@
       <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR64)\SplitCFA-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR64);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile></ModuleDefinitionFile>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <ImportLibrary>$(Platform)\$(Configuration)\$(ProjectName).lib</ImportLibrary>
@@ -214,7 +222,8 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -224,7 +233,8 @@
       <AdditionalDependencies>PCL-pxi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\SplitCFA-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR32);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile></ModuleDefinitionFile>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <ImportLibrary>$(Platform)\$(Configuration)\$(ProjectName).lib</ImportLibrary>
@@ -236,28 +246,28 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\MergeCFAInstance.cpp"/>
-    <ClCompile Include="..\..\MergeCFAInterface.cpp"/>
-    <ClCompile Include="..\..\MergeCFAParameters.cpp"/>
-    <ClCompile Include="..\..\MergeCFAProcess.cpp"/>
-    <ClCompile Include="..\..\SplitCFAInstance.cpp"/>
-    <ClCompile Include="..\..\SplitCFAInterface.cpp"/>
-    <ClCompile Include="..\..\SplitCFAModule.cpp"/>
-    <ClCompile Include="..\..\SplitCFAParameters.cpp"/>
-    <ClCompile Include="..\..\SplitCFAProcess.cpp"/>
+    <ClCompile Include="..\..\MergeCFAInstance.cpp" />
+    <ClCompile Include="..\..\MergeCFAInterface.cpp" />
+    <ClCompile Include="..\..\MergeCFAParameters.cpp" />
+    <ClCompile Include="..\..\MergeCFAProcess.cpp" />
+    <ClCompile Include="..\..\SplitCFAInstance.cpp" />
+    <ClCompile Include="..\..\SplitCFAInterface.cpp" />
+    <ClCompile Include="..\..\SplitCFAModule.cpp" />
+    <ClCompile Include="..\..\SplitCFAParameters.cpp" />
+    <ClCompile Include="..\..\SplitCFAProcess.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\MergeCFAInstance.h"/>
-    <ClInclude Include="..\..\MergeCFAInterface.h"/>
-    <ClInclude Include="..\..\MergeCFAParameters.h"/>
-    <ClInclude Include="..\..\MergeCFAProcess.h"/>
-    <ClInclude Include="..\..\SplitCFAInstance.h"/>
-    <ClInclude Include="..\..\SplitCFAInterface.h"/>
-    <ClInclude Include="..\..\SplitCFAModule.h"/>
-    <ClInclude Include="..\..\SplitCFAParameters.h"/>
-    <ClInclude Include="..\..\SplitCFAProcess.h"/>
+    <ClInclude Include="..\..\MergeCFAInstance.h" />
+    <ClInclude Include="..\..\MergeCFAInterface.h" />
+    <ClInclude Include="..\..\MergeCFAParameters.h" />
+    <ClInclude Include="..\..\MergeCFAProcess.h" />
+    <ClInclude Include="..\..\SplitCFAInstance.h" />
+    <ClInclude Include="..\..\SplitCFAInterface.h" />
+    <ClInclude Include="..\..\SplitCFAModule.h" />
+    <ClInclude Include="..\..\SplitCFAParameters.h" />
+    <ClInclude Include="..\..\SplitCFAProcess.h" />
   </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

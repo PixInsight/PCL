@@ -4,14 +4,14 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard SplitCFA Process Module Version 01.00.05.0104
+// Standard SplitCFA Process Module Version 01.00.06.0116
 // ----------------------------------------------------------------------------
-// SplitCFAParameters.h - Released 2016/02/21 20:22:43 UTC
+// SplitCFAParameters.h - Released 2016/05/12 12:53:00 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard SplitCFA PixInsight module.
 //
-// Copyright (c) 2013-2015 Nikolay Volkov
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
+// Copyright (c) 2013-2016 Nikolay Volkov
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -142,6 +142,39 @@ public:
    virtual bool DefaultValue() const;
 };
 
+class SplitCFAOutputViewId0 : public MetaString
+{
+public:
+   SplitCFAOutputViewId0( MetaProcess* );
+   virtual IsoString Id() const;
+   virtual bool IsReadOnly() const;
+};
+
+class SplitCFAOutputViewId1 : public MetaString
+{
+public:
+   SplitCFAOutputViewId1( MetaProcess* );
+   virtual IsoString Id() const;
+   virtual bool IsReadOnly() const;
+};
+
+class SplitCFAOutputViewId2 : public MetaString
+{
+public:
+   SplitCFAOutputViewId2( MetaProcess* );
+   virtual IsoString Id() const;
+   virtual bool IsReadOnly() const;
+};
+
+class SplitCFAOutputViewId3 : public MetaString
+{
+public:
+   SplitCFAOutputViewId3( MetaProcess* );
+   virtual IsoString Id() const;
+   virtual bool IsReadOnly() const;
+};
+
+
 extern SplitCFATargetFrames*       TheTargetFramesParameter;
 extern SplitCFATargetFrameEnabled* TheTargetFrameEnabledParameter;
 extern SplitCFATargetFramePath*    TheTargetFramePathParameter;
@@ -154,6 +187,11 @@ extern SplitCFAPrefix*             ThePrefixParameter;
 extern SplitCFAPostfix*            ThePostfixParameter;
 extern SplitCFAOverwrite*          TheOverwriteParameter;
 
+extern SplitCFAOutputViewId0*      TheSplitCFAOutputViewId0Parameter;
+extern SplitCFAOutputViewId1*      TheSplitCFAOutputViewId1Parameter;
+extern SplitCFAOutputViewId2*      TheSplitCFAOutputViewId2Parameter;
+extern SplitCFAOutputViewId3*      TheSplitCFAOutputViewId3Parameter;
+
 // ----------------------------------------------------------------------------
 
 PCL_END_LOCAL
@@ -165,4 +203,4 @@ PCL_END_LOCAL
 #endif   // __SplitCFAParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF SplitCFAParameters.h - Released 2016/02/21 20:22:43 UTC
+// EOF SplitCFAParameters.h - Released 2016/05/12 12:53:00 UTC

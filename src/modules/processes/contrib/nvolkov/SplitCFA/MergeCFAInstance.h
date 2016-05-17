@@ -4,14 +4,14 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard SplitCFA Process Module Version 01.00.05.0104
+// Standard SplitCFA Process Module Version 01.00.06.0116
 // ----------------------------------------------------------------------------
-// MergeCFAInstance.h - Released 2016/02/21 20:22:43 UTC
+// MergeCFAInstance.h - Released 2016/05/12 12:53:00 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard SplitCFA PixInsight module.
 //
-// Copyright (c) 2013-2015 Nikolay Volkov
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
+// Copyright (c) 2013-2016 Nikolay Volkov
+// Copyright (c) 2003-2016 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -55,57 +55,48 @@
 #define __MergeCFAInstance_h
 
 #include <pcl/ProcessImplementation.h>
-//#include <pcl/MetaParameter.h> // for pcl_bool, pcl_enum
-//#include <pcl/Rectangle.h>
 #include <pcl/ImageWindow.h>
 
+namespace pcl
+{
 
-namespace pcl {
+// ----------------------------------------------------------------------------
 
+class MergeCFAInstance : public ProcessImplementation
+{
+public:
 
-    // ----------------------------------------------------------------------------
-    // MergeCFAInstance
-    // ----------------------------------------------------------------------------
+   MergeCFAInstance( const MetaProcess* );
+   MergeCFAInstance( const MergeCFAInstance& );
 
-    class MergeCFAInstance : public ProcessImplementation {
-    public:
+   virtual void Assign(const ProcessImplementation&);
+   virtual bool CanExecuteOn(const View&, pcl::String& whyNot) const;
+   virtual bool CanExecuteGlobal( String& whyNot ) const;
+   virtual bool ExecuteGlobal();
 
-        MergeCFAInstance(const MetaProcess*);
-        MergeCFAInstance(const MergeCFAInstance&);
+   virtual void* LockParameter(const MetaParameter*, size_type tableRow);
+   virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
+   virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
 
-        virtual void Assign(const ProcessImplementation&);
+private:
 
-        virtual bool CanExecuteOn(const View&, pcl::String& whyNot) const;
+   StringList p_viewId;
+   String     o_outputViewId;
 
-        //virtual bool IsHistoryUpdater(const View& v) const;
-        //virtual bool ExecuteOn(View&);
+   int m_width, m_height, m_bitsPerSample, m_numberOfChannels;
+   bool m_isFloatSample, m_isColor;
 
-        virtual bool CanExecuteGlobal( String& whyNot ) const;
-        virtual bool ExecuteGlobal();
+   View GetView( const int );
 
-        virtual void* LockParameter(const MetaParameter*, size_type tableRow);
-        virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
-        virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
+   friend class MergeCFAProcess;
+   friend class MergeCFAInterface;
+};
 
-
-
-    private:
-        StringList p_viewId;
-        int m_width, m_height, m_bitsPerSample, m_numberOfChannels;
-        bool m_isFloatSample, m_isColor;
-        View GetView(const int);
-
-        friend class MergeCFAProcess;
-        friend class MergeCFAInterface;
-    };
-
-
-
-    // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 } // pcl
 
 #endif   // __MergeCFAInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF MergeCFAInstance.h - Released 2016/02/21 20:22:43 UTC
+// EOF MergeCFAInstance.h - Released 2016/05/12 12:53:00 UTC

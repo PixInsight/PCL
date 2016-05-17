@@ -936,6 +936,7 @@ __device_found:
       }
       else
       {
+         GUI->CCDFilter_Combo.Clear();
          GUI->CCDFilter_Combo.Disable();
          GUI->CCDFilter_Label.Disable();
       }

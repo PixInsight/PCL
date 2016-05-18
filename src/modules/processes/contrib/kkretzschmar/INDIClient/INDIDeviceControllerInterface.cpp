@@ -871,6 +871,7 @@ void INDIDeviceControllerInterface::UpdateDeviceLists()
                   PropertyNode* propertyNode = static_cast<PropertyNode*>( (*deviceNode)[i] );
                   if ( propertyNode->PropertyName() == item.Property )
                   {
+                     propertyNode->Update( item );
                      for ( int n = propertyNode->NumberOfChildren(), i = 0; i < n; ++i )
                      {
                         PropertyElementNode* elementNode = static_cast<PropertyElementNode*>( (*propertyNode)[i] );

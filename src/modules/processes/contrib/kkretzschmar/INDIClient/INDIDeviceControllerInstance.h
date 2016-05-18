@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.10.0163
+// Standard INDIClient Process Module Version 01.00.10.0168
 // ----------------------------------------------------------------------------
-// INDIDeviceControllerInstance.h - Released 2016/05/17 15:40:50 UTC
+// INDIDeviceControllerInstance.h - Released 2016/05/18 10:06:42 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -108,4 +108,4 @@ private:
 #endif   // __INDIDeviceControllerInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIDeviceControllerInstance.h - Released 2016/05/17 15:40:50 UTC
+// EOF INDIDeviceControllerInstance.h - Released 2016/05/18 10:06:42 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.10.0164
+// Standard INDIClient Process Module Version 01.00.10.0168
 // ----------------------------------------------------------------------------
-// INDICCDFrameInterface.cpp - Released 2016/05/18 08:23:50 UTC
+// INDICCDFrameInterface.cpp - Released 2016/05/18 10:06:42 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -1328,4 +1328,4 @@ void INDICCDFrameInterface::e_Click( Button& sender, bool checked )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInterface.cpp - Released 2016/05/18 08:23:50 UTC
+// EOF INDICCDFrameInterface.cpp - Released 2016/05/18 10:06:42 UTC

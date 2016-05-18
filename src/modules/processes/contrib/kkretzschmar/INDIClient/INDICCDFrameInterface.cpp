@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.10.0163
+// Standard INDIClient Process Module Version 01.00.10.0164
 // ----------------------------------------------------------------------------
-// INDICCDFrameInterface.cpp - Released 2016/05/17 15:40:49 UTC
+// INDICCDFrameInterface.cpp - Released 2016/05/18 08:23:50 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -327,7 +327,7 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    CCDTargetTemp_NumericEdit.SetToolTip( "<p>Target chip temperature in degrees Celsius.</p>" );
    CCDTargetTemp_NumericEdit.Disable();
 
-   CCDTargetTemp_ToolButton.SetIcon( w.ScaledResource( ":/icons/arrow-right-limit.png" ) );
+   CCDTargetTemp_ToolButton.SetIcon( w.ScaledResource( ":/icons/upload.png" ) );
    CCDTargetTemp_ToolButton.SetScaledFixedSize( 22, 22 );
    CCDTargetTemp_ToolButton.SetToolTip( "<p>Send a target chip temperature request.</p>" );
    CCDTargetTemp_ToolButton.OnClick( (Button::click_event_handler)&INDICCDFrameInterface::e_Click, w );
@@ -739,6 +739,7 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
 
    StartExposure_PushButton.SetText( "Start" );
    StartExposure_PushButton.SetIcon( w.ScaledResource( ":/icons/play.png" ) );
+   StartExposure_PushButton.SetStyleSheet( "QPushButton { text-align: left; }" );
    StartExposure_PushButton.OnClick( (Button::click_event_handler)&INDICCDFrameInterface::e_Click, w );
 
    StartExposure_Sizer.Add( StartExposure_PushButton );
@@ -746,6 +747,7 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
 
    CancelExposure_PushButton.SetText( "Cancel" );
    CancelExposure_PushButton.SetIcon( w.ScaledResource( ":/icons/stop.png" ) );
+   CancelExposure_PushButton.SetStyleSheet( "QPushButton { text-align: left; }" );
    CancelExposure_PushButton.OnClick( (Button::click_event_handler)&INDICCDFrameInterface::e_Click, w );
    CancelExposure_PushButton.Disable();
 
@@ -1326,4 +1328,4 @@ void INDICCDFrameInterface::e_Click( Button& sender, bool checked )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInterface.cpp - Released 2016/05/17 15:40:49 UTC
+// EOF INDICCDFrameInterface.cpp - Released 2016/05/18 08:23:50 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.10.0163
+// Standard INDIClient Process Module Version 01.00.10.0164
 // ----------------------------------------------------------------------------
-// INDIDeviceControllerInterface.cpp - Released 2016/05/17 15:40:50 UTC
+// INDIDeviceControllerInterface.cpp - Released 2016/05/18 08:23:50 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -625,6 +625,9 @@ INDIDeviceControllerInterface::GUIData::GUIData( INDIDeviceControllerInterface& 
 {
    pcl::Font fnt = w.Font();
    int editWidth1 = fnt.Width( String( '0', 14 ) );
+   int buttonWidth1 = fnt.Width( "Disconnect" ) + w.LogicalPixelsToPhysical( 30 );
+
+   String buttonStyle = "QPushButton { text-align: left; min-width: " + String( buttonWidth1 ) + "px; }";
 
    Server_SectionBar.SetTitle( "INDI Server Connection" );
    Server_SectionBar.SetSection( Server_Control );
@@ -643,9 +646,13 @@ INDIDeviceControllerInterface::GUIData::GUIData( INDIDeviceControllerInterface& 
    Port_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&INDIDeviceControllerInterface::e_SpinValueUpdated, w );
 
    Connect_PushButton.SetText( "Connect" );
+   Connect_PushButton.SetIcon( w.ScaledResource( ":/icons/power.png" ) );
+   Connect_PushButton.SetStyleSheet( buttonStyle );
    Connect_PushButton.OnClick( (Button::click_event_handler)&INDIDeviceControllerInterface::e_Click, w );
 
    Disconnect_PushButton.SetText( "Disconnect" );
+   Disconnect_PushButton.SetIcon( w.ScaledResource( ":/icons/stop.png" ) );
+   Disconnect_PushButton.SetStyleSheet( buttonStyle );
    Disconnect_PushButton.OnClick( (Button::click_event_handler)&INDIDeviceControllerInterface::e_Click, w );
 
    ServerAction_Sizer.SetSpacing( 6 );
@@ -694,6 +701,7 @@ INDIDeviceControllerInterface::GUIData::GUIData( INDIDeviceControllerInterface& 
    Devices_TreeBox.OnNodeSelectionUpdated( (TreeBox::tree_event_handler)&INDIDeviceControllerInterface::e_NodeSelectionUpdated, w );
 
    NodeAction_PushButton.SetText( String() ); // updated dynamically
+   NodeAction_PushButton.SetStyleSheet( buttonStyle );
    NodeAction_PushButton.OnClick( (Button::click_event_handler)&INDIDeviceControllerInterface::e_Click, w );
 
    NodeAction_Sizer.SetSpacing( 6 );
@@ -751,11 +759,13 @@ void INDIDeviceControllerInterface::UpdateNodeActionButtons( TreeBox::Node* node
                if ( device->isConnected() )
                {
                   GUI->NodeAction_PushButton.SetText( "Disconnect" );
+                  GUI->NodeAction_PushButton.SetIcon( ScaledResource( ":/icons/stop.png" ) );
                   GUI->NodeAction_PushButton.SetToolTip( "<p>Disconnect from '" + deviceNode->DeviceName() + "' device.</p>" );
                }
                else
                {
                   GUI->NodeAction_PushButton.SetText( "Connect" );
+                  GUI->NodeAction_PushButton.SetIcon( ScaledResource( ":/icons/power.png" ) );
                   GUI->NodeAction_PushButton.SetToolTip( "<p>Connect to '" + deviceNode->DeviceName() + "' device.</p>" );
                }
                return;
@@ -768,13 +778,15 @@ void INDIDeviceControllerInterface::UpdateNodeActionButtons( TreeBox::Node* node
             {
                GUI->NodeAction_PushButton.Enable();
                GUI->NodeAction_PushButton.SetText( "Edit" );
+               GUI->NodeAction_PushButton.SetIcon( ScaledResource( ":/icons/item-edit.png" ) );
                GUI->NodeAction_PushButton.SetToolTip( "<p>Edit '" + elementNode->Item().PropertyKey + "' property element.</p>" );
                return;
             }
          }
       }
 
-   GUI->NodeAction_PushButton.SetText( "<?>" );
+   GUI->NodeAction_PushButton.SetText( "Unavailable" );
+   GUI->NodeAction_PushButton.SetIcon( ScaledResource( ":/icons/delete.png" ) );
    GUI->NodeAction_PushButton.SetToolTip( (GUI->Devices_TreeBox.NumberOfChildren() > 0) ?
       "<p>No action available for the selected tree item.</p>"
       "<p>Please select a device or editable property element.</p>"
@@ -948,13 +960,11 @@ void INDIDeviceControllerInterface::e_Click( Button& sender, bool checked )
       if ( INDIClient::HasClient() )
          if ( INDIClient::TheClient()->IsServerConnected() )
          {
-            if ( MessageBox( "<p>About to disconnect from INDI server at "
-                     + INDIClient::TheClient()->HostName() + ":"
-                     + IsoString( INDIClient::TheClient()->Port() ) + "</p>"
-                     "<p>Are you sure?</p>",
-                     "INDI Device Controller",
-                     StdIcon::Warning,
-                     StdButton::No, StdButton::Yes ).Execute() != StdButton::Yes )
+            if ( MessageBox( "<p>About to disconnect from INDI server:</p>"
+                     "<p>" + INDIClient::TheClient()->HostName() + ":" + IsoString( INDIClient::TheClient()->Port() ) + "</p>"
+                     "<p><b>Are you sure?</b></p>",
+                     WindowTitle(),
+                     StdIcon::Warning, StdButton::No, StdButton::Yes ).Execute() != StdButton::Yes )
             {
                return;
             }
@@ -971,7 +981,11 @@ void INDIDeviceControllerInterface::e_Click( Button& sender, bool checked )
          INDIClient::NewClient( hostName8, port );
 
       if ( !INDIClient::TheClient()->connectServer() )
-         GUI->ServerMessage_Label.SetText( "Connection to INDI server failed. Please check server host and port." );
+         MessageBox( "<p>Failure to connect to INDI server:</p>"
+                     "<p>" + GUI->HostName_Edit.Text().Trimmed() + ":" + String( port ) + "</p>"
+                     "<p><b>Please check server host name and port.</b></p>",
+                     WindowTitle(),
+                     StdIcon::Error, StdButton::Ok ).Execute();
 
       UpdateDeviceLists();
    }
@@ -985,7 +999,7 @@ void INDIDeviceControllerInterface::e_Click( Button& sender, bool checked )
          if ( !INDIClient::TheClient()->IsServerConnected() )
          {
             INDIClient::DestroyClient();
-            GUI->ServerMessage_Label.SetText( "Successfully disconnected from server" );
+            GUI->ServerMessage_Label.SetText( "Successfully disconnected from server." );
          }
       }
 
@@ -1002,10 +1016,18 @@ void INDIDeviceControllerInterface::e_Click( Button& sender, bool checked )
                IsoString deviceName( deviceNode->DeviceName().To7BitASCII() );
                INDI::BaseDevice* device = INDIClient::TheClient()->getDevice( deviceName.c_str() );
                if ( device != nullptr )
+               {
                   if ( device->isConnected() )
                      INDIClient::TheClient()->disconnectDevice( deviceName.c_str() );
                   else
                      INDIClient::TheClient()->connectDevice( deviceName.c_str() );
+               }
+               else
+               {
+                  MessageBox( "<p>Unable to find INDI device '" + deviceName + "'</p>",
+                              WindowTitle(),
+                              StdIcon::Error, StdButton::Ok ).Execute();
+               }
             }
             else
             {
@@ -1014,7 +1036,11 @@ void INDIDeviceControllerInterface::e_Click( Button& sender, bool checked )
                {
                   INDINewPropertyListItem result;
                   if ( PropertyEditDialog::EditProperty( result, elementNode->Item() ) )
-                     INDIClient::TheClient()->SendNewPropertyItem( result );
+                     if ( !INDIClient::TheClient()->SendNewPropertyItem( result ) )
+                        MessageBox( "<p>Failure to send new property item value:</p>"
+                                    "<p>" + elementNode->Item().PropertyKey + "</p>",
+                                    WindowTitle(),
+                                    StdIcon::Error, StdButton::Ok ).Execute();
                }
             }
          }
@@ -1055,7 +1081,7 @@ void INDIDeviceControllerInterface::e_NodeActivated( TreeBox& sender, TreeBox::N
             {
                if ( MessageBox( "<p>About to disconnect from INDI device '" + deviceNode->DeviceName() + "'</p>"
                         "<p>Are you sure?</p>",
-                        "INDI Device Controller",
+                        WindowTitle(),
                         StdIcon::Warning,
                         StdButton::No, StdButton::Yes ).Execute() != StdButton::Yes )
                {
@@ -1112,4 +1138,4 @@ void INDIDeviceControllerInterface::e_Timer( Timer& sender )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIDeviceControllerInterface.cpp - Released 2016/05/17 15:40:50 UTC
+// EOF INDIDeviceControllerInterface.cpp - Released 2016/05/18 08:23:50 UTC

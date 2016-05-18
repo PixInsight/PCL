@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.10.0163
+// Standard INDIClient Process Module Version 01.00.10.0165
 // ----------------------------------------------------------------------------
-// IINDIProperty.cpp - Released 2016/05/17 15:40:49 UTC
+// IINDIProperty.cpp - Released 2016/05/18 09:48:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -293,14 +293,14 @@ String PropertyUtils::FormattedNumber( const String& number, IsoString format )
    case 5:
       {
          int minutes     = Trunc( (value - hours)*60 );
-         int minutesfrac = Trunc( ((value - hours)*60 - minutes)*10);
+         int minutesfrac = RoundInt( ((value - hours)*60 - minutes)*10);
          IsoString formatStr = '%' + IsoString().Format( "%dd", width ) + ":%02d.%d";
          return String().Format( formatStr.c_str(), hours, Abs( minutes ), Abs( minutesfrac ) );
       }
    case 6:
       {
          int minutes     = Trunc( (value - hours)*60 );
-         int seconds     = Trunc( ((value - hours)*60 - minutes)*60 );
+         int seconds     = RoundInt( ((value - hours)*60 - minutes)*60 );
          IsoString formatStr = '%' + IsoString().Format( "%dd", width ) + ":%02d:%02d";
          return String().Format( formatStr.c_str(), hours, Abs( minutes ), Abs( seconds ) );
       }
@@ -308,7 +308,7 @@ String PropertyUtils::FormattedNumber( const String& number, IsoString format )
       {
          int minutes     = Trunc( (value - hours)*60 );
          int seconds     = Trunc( ((value - hours)*60 - minutes)*60 );
-         int secondsfrac = Trunc( (((value - hours)*60 - minutes)*60 - seconds)*10 );
+         int secondsfrac = RoundInt( (((value - hours)*60 - minutes)*60 - seconds)*10 );
          IsoString formatStr = '%' + IsoString().Format( "%dd", width ) + ":%02d:%02d.%d";
          return String().Format( formatStr.c_str(), hours, Abs( minutes ), Abs( seconds ), Abs( secondsfrac ) );
       }
@@ -316,7 +316,7 @@ String PropertyUtils::FormattedNumber( const String& number, IsoString format )
       {
          int minutes     = Trunc( (value - hours)*60 );
          int seconds     = Trunc( ((value - hours)*60 - minutes)*60 );
-         int secondsfrac = Trunc( (((value - hours)*60 - minutes)*60 - seconds)*100 );
+         int secondsfrac = RoundInt( (((value - hours)*60 - minutes)*60 - seconds)*100 );
          IsoString formatStr = '%' + IsoString().Format( "%dd", width ) + ":%02d:%02d.%02d";
          return String().Format( formatStr.c_str(), hours, Abs( minutes ), Abs( seconds ), Abs( secondsfrac ) );
       }
@@ -383,4 +383,4 @@ IProperty* PropertyFactory::Create( INDI::Property* property, INDI_TYPE type )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF IINDIProperty.cpp - Released 2016/05/17 15:40:49 UTC
+// EOF IINDIProperty.cpp - Released 2016/05/18 09:48:58 UTC

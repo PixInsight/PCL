@@ -57,6 +57,8 @@
 #include <pcl/Console.h>
 #include <pcl/SpinStatus.h>
 #include <pcl/StdStatus.h>
+#include <pcl/Math.h>
+#include <pcl/MetaModule.h>
 
 namespace pcl
 {
@@ -132,15 +134,32 @@ private:
    Console        m_console;
    StandardStatus m_status;
    StatusMonitor  m_monitor;
-   SpinStatus     m_spin;
 
-   virtual void StartMountGotoEvent()
+   double targetDistance(double targetRA, double currentRA, double targetDEC, double currentDEC)
    {
-          m_console.EnableAbort();
+	   return Abs(targetRA - currentRA) + Abs(targetDEC-currentDEC);
    }
-   void EndMountGotoEvent()
+
+   virtual void StartMountGotoEvent(double targetRA, double currentRA, double targetDEC, double currentDEC)
    {
-          m_console.DisableAbort();
+	   m_console.EnableAbort();
+	   m_monitor.Initialize( String().Format( "<end><cbr>Telescope is slewing"), RoundInt( targetDistance(targetRA, currentRA, targetDEC, currentDEC)  ) );
+   }
+
+   virtual void MountGotoEvent(double targetRA, double currentRA, double targetDEC, double currentDEC)
+   {
+	   m_monitor += m_monitor.Total() - size_type( RoundInt( targetDistance(targetRA, currentRA, targetDEC, currentDEC) ) ) - m_monitor.Count() ;
+   }
+
+   virtual void EndMountGotoEvent()
+   {
+	   m_console.DisableAbort();
+	   m_monitor.Complete();
+   }
+
+   virtual void AbortEvent()
+   {
+
    }
 
 };
@@ -228,6 +247,21 @@ bool INDIMountInstance::ValidateDevice( bool throwErrors ) const
    return false;
 }
 
+void AbstractINDIMountExecution::GetCurrentCoordinates(const INDIClient* indi)
+{
+	  INDIPropertyListItem RA_item;
+	  INDIPropertyListItem DEC_item;
+	  if ( indi->GetPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "RA", RA_item, false/*formatted*/ )
+		&&  indi->GetPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "DEC", DEC_item, false/*formatted*/ ))
+	  {
+		  m_instance.p_currentRA = RA_item.PropertyValue.ToDouble();
+		  m_instance.p_currentDEC = DEC_item.PropertyValue.ToDouble();
+	  } else {
+		  throw Error("Cannot get current mount coordinates");
+	  }
+
+}
+
 void AbstractINDIMountExecution::Perform()
 {
    if ( IsRunning() )
@@ -245,12 +279,14 @@ void AbstractINDIMountExecution::Perform()
 
 	   m_instance.ValidateDevice();
 
+	   GetCurrentCoordinates(indi);
+
 	   m_running = true;
 	   m_aborted = false;
 	   switch (m_instance.p_commandType)
 	   {
 	   case IMCCommandType::Goto:
-          StartMountGotoEvent();
+          StartMountGotoEvent(m_instance.p_targetRA, m_instance.p_currentRA, m_instance.p_targetDEC, m_instance.p_currentDEC);
           {
 
         	  INDINewPropertyItem newItem;
@@ -261,9 +297,29 @@ void AbstractINDIMountExecution::Perform()
         	  newItem.ElementValue.Add(ElementValuePair("DEC",String(m_instance.p_targetDEC)));
 
         	  // send (RA,DEC) coordinates in bulk request
-        	  indi->SendNewPropertyItem( newItem, false/*async*/ );
+        	  indi->SendNewPropertyItem( newItem, true/*async*/ );
+
+        	  for (;;)
+        	  {
+        		  Sleep(200);
+        		  Module->ProcessEvents();
+        		  INDIPropertyListItem RA_item;
+        		  INDIPropertyListItem DEC_item;
+        		  if (     indi->GetPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "RA", RA_item, false/*formatted*/ )
+        			   &&  indi->GetPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "DEC", DEC_item, false/*formatted*/ ))
+        			  if ( (RA_item.PropertyState == IPS_BUSY) || (DEC_item.PropertyState == IPS_BUSY)  )
+        			  {
+        				  m_instance.p_currentRA = RA_item.PropertyValue.ToDouble();
+        				  m_instance.p_currentDEC = DEC_item.PropertyValue.ToDouble();
+        				  MountGotoEvent(m_instance.p_targetRA, m_instance.p_currentRA, m_instance.p_targetDEC, m_instance.p_currentDEC);
+        			  } else
+        			  {
+        				  EndMountGotoEvent();
+        				  break;
+        			  }
+        	  }
+
           }
-          EndMountGotoEvent();
           break;
 	   case IMCCommandType::Synch:
           break;
@@ -273,6 +329,33 @@ void AbstractINDIMountExecution::Perform()
    } catch ( ... )
    {
       m_running = false;
+
+      try
+      {
+    	  throw;
+      }
+      catch ( ProcessAborted& )
+      {
+    	  m_aborted = true;
+    	  INDIPropertyListItem item;
+    	  // check if driver supports TELESCOPE_ABORT_MOTION
+    	  if ( indi->GetPropertyItem( m_instance.p_deviceName, "TELESCOPE_ABORT_MOTION", "ABORT", item ) )
+    	  {
+    		  INDINewPropertyItem newItem;
+
+    		  newItem.Device = m_instance.p_deviceName;
+    		  newItem.Property = "TELESCOPE_ABORT_MOTION";
+    		  newItem.PropertyType = "INDI_SWITCH";
+    		  newItem.ElementValue.Add(ElementValuePair("ABORT","ON"));
+    		  indi->SendNewPropertyItem( newItem, true/*async*/ );
+    	  }
+    	  AbortEvent();
+    	  throw;
+      }
+      catch ( ... )
+      {
+    	  throw;
+      }
    }
 
 }

@@ -60,6 +60,7 @@
 namespace pcl
 {
 
+class INDIClient;
 // ----------------------------------------------------------------------------
 
 class INDIMountInstance : public ProcessImplementation
@@ -133,11 +134,16 @@ protected:
 
    INDIMountInstance& m_instance;
 
-   virtual void StartMountGotoEvent() = 0;
+   virtual void StartMountGotoEvent(double targetRA, double currentRA, double targetDEC, double currentDEC) = 0;
+   virtual void MountGotoEvent(double targetRA, double currentRA, double targetDEC, double currentDEC) = 0;
    virtual void EndMountGotoEvent() = 0;
+
+   virtual void AbortEvent() = 0;
 
 
 private:
+
+   void GetCurrentCoordinates(const INDIClient* indi);
 
    bool m_running, m_aborted;
 

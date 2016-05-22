@@ -187,6 +187,8 @@ bool INDIClient::SendNewPropertyItem( const INDINewPropertyItem& newItem, bool a
             }
          }
          sendNewNumber( numberVecProp );
+         // property state has changed
+         newNumber( numberVecProp );
       }
       else if ( newItem.PropertyType == "INDI_TEXT" )
       {
@@ -220,6 +222,9 @@ bool INDIClient::SendNewPropertyItem( const INDINewPropertyItem& newItem, bool a
             }
          }
          sendNewText( textVecProp );
+         // property state has changed
+         newText( textVecProp );
+
       }
       else if ( newItem.PropertyType == "INDI_SWITCH" )
       {
@@ -252,6 +257,8 @@ bool INDIClient::SendNewPropertyItem( const INDINewPropertyItem& newItem, bool a
             }
          }
          sendNewSwitch( switchVecProp );
+         // property state has changed
+         newSwitch( switchVecProp );
       }
       else
       {

@@ -16,9 +16,11 @@ function INDIMountControllerTests( parent )
          let mountController = new INDIMount;
          mountController.deviceName = MOUNT_DEVICE_NAME;
          // execute in the global context
+         mountController.targetRightascension=0;
+         mountController.targetDeclination=0;
          assertTrue( mountController.executeGlobal() );
-         expectEquals(0,mountController.currentDeclination);
-         expectEquals(0,mountController.currentRightascension);
+         expectEqualsWithPrecision(0.0,mountController.currentDeclination,0.1);
+         expectEqualsWithPrecision(0.0,mountController.currentRightascension,0.1);
       }
    );
 
@@ -33,8 +35,8 @@ function INDIMountControllerTests( parent )
          // execute in the global context
          assertTrue( mountController.executeGlobal() );
          // check current coordinates
-         expectEquals(1,mountController.currentRightascension);
-         expectEquals(15,mountController.currentDeclination);
+         expectEqualsWithPrecision(1.0,mountController.currentRightascension,0.1);
+         expectEqualsWithPrecision(15.0,mountController.currentDeclination,0.1);
       }
    );
 }

@@ -256,6 +256,7 @@ void INDICCDFrameInstance::SendDeviceProperties( bool async ) const
       if ( indi->GetPropertyItem( p_deviceName, "FILTER_SLOT", "FILTER_SLOT_VALUE", item ) )
       {
     	 INDINewPropertyItem newItem;
+    	 newItem.Device = p_deviceName;
          newItem.Property = "FILTER_SLOT";
          newItem.PropertyType = "INDI_NUMBER";
          newItem.ElementValue.Add(ElementValuePair("FILTER_SLOT_VALUE",String(p_filterSlot)));

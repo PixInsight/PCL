@@ -1096,6 +1096,7 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
       if ( indi->HasPropertyItem( m_device, "FILTER_SLOT", "FILTER_SLOT_VALUE" ) )
       {
     	 INDINewPropertyItem newItem;
+    	 newItem.Device = m_device;
          newItem.Property = "FILTER_SLOT";
          newItem.PropertyType = "INDI_NUMBER";
          newItem.ElementValue.Add(ElementValuePair("FILTER_SLOT_VALUE",String( itemIndex + 1 )));

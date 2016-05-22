@@ -96,9 +96,10 @@ IsoString IMCCommandType::ElementId( size_type i ) const
    switch ( i )
    {
    default:
+   case Unpark:   return "CommandType_Unpark";
+   case Park:          return "CommandType_Park";
    case Goto:          return "CommandType_Goto";
    case Synch:         return "CommandType_Synch";
-   case Park:          return "CommandType_Park";
    }
 }
 

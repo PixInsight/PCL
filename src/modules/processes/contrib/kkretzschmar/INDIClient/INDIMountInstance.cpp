@@ -140,22 +140,35 @@ private:
 	   return Abs(targetRA - currentRA) + Abs(targetDEC-currentDEC);
    }
 
-   virtual void StartMountGotoEvent(double targetRA, double currentRA, double targetDEC, double currentDEC)
+   virtual void StartMountEvent(double targetRA, double currentRA, double targetDEC, double currentDEC, pcl_enum commandType)
    {
 	   m_console.EnableAbort();
-	   m_monitor.Initialize( String().Format( "<end><cbr>Telescope is slewing"), RoundInt( targetDistance(targetRA, currentRA, targetDEC, currentDEC)  ) );
+	   if (commandType == IMCCommandType::Goto)
+		   m_monitor.Initialize( String().Format( "<end><cbr>Telescope is slewing"), RoundInt( targetDistance(targetRA, currentRA, targetDEC, currentDEC)  ) );
+	   else if (commandType == IMCCommandType::Park)
+		   m_monitor.Initialize( String().Format( "<end><cbr>Telescope is parking"), RoundInt( targetDistance(targetRA, currentRA, targetDEC, currentDEC)  ) );
+	   else if (commandType == IMCCommandType::Synch)
+	   {
+		   double ra_m = Frac(Abs(targetRA-currentRA))*60;
+		   double ra_s = Frac(ra_m)*60;
+		   double dec_m = Frac(Abs(targetDEC-currentDEC))*60;
+		   double dec_s = Frac(dec_m)*60;
+		   m_console.WriteLn(String().Format("<end><cbr>Synch: Delta-RA: %d::%d::%.2lf (h::m::s), Delta-DEC: %d::%d::%.2lf (h::m::s) ",
+				   TruncInt(Abs(targetRA-currentRA)), TruncInt(ra_m), ra_s, TruncInt(Abs(targetDEC-currentDEC)), TruncInt(dec_m), dec_s ));
+	   }
    }
 
-   virtual void MountGotoEvent(double targetRA, double currentRA, double targetDEC, double currentDEC)
+   virtual void MountEvent(double targetRA, double currentRA, double targetDEC, double currentDEC)
    {
 	   m_monitor += m_monitor.Total() - size_type( RoundInt( targetDistance(targetRA, currentRA, targetDEC, currentDEC) ) ) - m_monitor.Count() ;
    }
 
-   virtual void EndMountGotoEvent()
+   virtual void EndMountEvent()
    {
 	   m_console.DisableAbort();
 	   m_monitor.Complete();
    }
+
 
    virtual void AbortEvent()
    {
@@ -285,44 +298,118 @@ void AbstractINDIMountExecution::Perform()
 	   m_aborted = false;
 	   switch (m_instance.p_commandType)
 	   {
+	   case IMCCommandType::Unpark:
+	   {
+		   INDIPropertyListItem item;
+		   if ( indi->GetPropertyItem( m_instance.p_deviceName, "TELESCOPE_PARK", "PARK", item ) )
+		   	{
+		   		INDINewPropertyItem newItem;
+		   		newItem.Device = m_instance.p_deviceName;
+		   		newItem.Property = "TELESCOPE_PARK";
+		   		newItem.PropertyType = "INDI_SWITCH";
+		   		newItem.ElementValue.Add(ElementValuePair("UNPARK","ON"));
+		   		indi->SendNewPropertyItem( newItem, false );
+		   	}
+	   }
+	   break;
 	   case IMCCommandType::Goto:
-          StartMountGotoEvent(m_instance.p_targetRA, m_instance.p_currentRA, m_instance.p_targetDEC, m_instance.p_currentDEC);
-          {
+	   {
+		   StartMountEvent(m_instance.p_targetRA, m_instance.p_currentRA, m_instance.p_targetDEC, m_instance.p_currentDEC,m_instance.p_commandType);
+		   {
+			   INDINewPropertyItem newItem;
+			   newItem.Device = m_instance.p_deviceName;
+			   newItem.Property = "EQUATORIAL_EOD_COORD";
+			   newItem.PropertyType = "INDI_NUMBER";
+			   newItem.ElementValue.Add(ElementValuePair("RA",String(m_instance.p_targetRA)));
+			   newItem.ElementValue.Add(ElementValuePair("DEC",String(m_instance.p_targetDEC)));
+			   // send (RA,DEC) coordinates in bulk request
+			   indi->SendNewPropertyItem( newItem, true/*async*/ );
+		   }
 
-        	  INDINewPropertyItem newItem;
-        	  newItem.Device = m_instance.p_deviceName;
-        	  newItem.Property = "EQUATORIAL_EOD_COORD";
-        	  newItem.PropertyType = "INDI_NUMBER";
-        	  newItem.ElementValue.Add(ElementValuePair("RA",String(m_instance.p_targetRA)));
-        	  newItem.ElementValue.Add(ElementValuePair("DEC",String(m_instance.p_targetDEC)));
+		   for (;;)
+		   {
+			   Sleep(200);
+			   Module->ProcessEvents();
+			   INDIPropertyListItem RA_item;
+			   INDIPropertyListItem DEC_item;
+			   if (     indi->GetPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "RA", RA_item, false/*formatted*/ )
+					   &&  indi->GetPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "DEC", DEC_item, false/*formatted*/ ))
+				   if ( (RA_item.PropertyState == IPS_BUSY) || (DEC_item.PropertyState == IPS_BUSY)  )
+				   {
+					   m_instance.p_currentRA = RA_item.PropertyValue.ToDouble();
+					   m_instance.p_currentDEC = DEC_item.PropertyValue.ToDouble();
+					   MountEvent(m_instance.p_targetRA, m_instance.p_currentRA, m_instance.p_targetDEC, m_instance.p_currentDEC);
+				   } else
+				   {
+					   EndMountEvent();
+					   break;
+				   }
+		   }
 
-        	  // send (RA,DEC) coordinates in bulk request
-        	  indi->SendNewPropertyItem( newItem, true/*async*/ );
+	   }
+	   break;
+	   case IMCCommandType::Park:
+	   {
+		   StartMountEvent(m_instance.p_targetRA, m_instance.p_currentRA, m_instance.p_targetDEC, m_instance.p_currentDEC,m_instance.p_commandType);
+		   {
+			   INDINewPropertyItem newItem;
+			   newItem.Device = m_instance.p_deviceName;
+			   newItem.Property = "TELESCOPE_PARK";
+			   newItem.PropertyType = "INDI_SWITCH";
+			   newItem.ElementValue.Add(ElementValuePair("PARK","ON"));
+			   // send (RA,DEC) coordinates in bulk request
+			   indi->SendNewPropertyItem( newItem, true/*async*/  );
+		   }
+		   for (;;)
+		   {
+			   Sleep(200);
+			   Module->ProcessEvents();
+			   INDIPropertyListItem item;
+			   if ( indi->GetPropertyItem( m_instance.p_deviceName, "TELESCOPE_PARK", "PARK", item, false/*formatted*/ ))
+				   if ( item.PropertyState == IPS_BUSY )
+				   {
+					   GetCurrentCoordinates(indi);
+					   MountEvent(m_instance.p_targetRA, m_instance.p_currentRA, m_instance.p_targetDEC, m_instance.p_currentDEC);
+				   } else
+				   {
+					   EndMountEvent();
+					   break;
+				   }
+		   }
 
-        	  for (;;)
-        	  {
-        		  Sleep(200);
-        		  Module->ProcessEvents();
-        		  INDIPropertyListItem RA_item;
-        		  INDIPropertyListItem DEC_item;
-        		  if (     indi->GetPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "RA", RA_item, false/*formatted*/ )
-        			   &&  indi->GetPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "DEC", DEC_item, false/*formatted*/ ))
-        			  if ( (RA_item.PropertyState == IPS_BUSY) || (DEC_item.PropertyState == IPS_BUSY)  )
-        			  {
-        				  m_instance.p_currentRA = RA_item.PropertyValue.ToDouble();
-        				  m_instance.p_currentDEC = DEC_item.PropertyValue.ToDouble();
-        				  MountGotoEvent(m_instance.p_targetRA, m_instance.p_currentRA, m_instance.p_targetDEC, m_instance.p_currentDEC);
-        			  } else
-        			  {
-        				  EndMountGotoEvent();
-        				  break;
-        			  }
-        	  }
-
-          }
-          break;
+	   }
+	   break;
 	   case IMCCommandType::Synch:
-          break;
+	   {
+		   StartMountEvent(m_instance.p_targetRA, m_instance.p_currentRA, m_instance.p_targetDEC, m_instance.p_currentDEC,m_instance.p_commandType);
+
+		   INDINewPropertyItem newItem;
+		   newItem.Device = m_instance.p_deviceName;
+		   newItem.Property = "ON_COORD_SET";
+		   newItem.PropertyType = "INDI_SWITCH";
+		   newItem.ElementValue.Add(ElementValuePair("SYNC","ON"));
+
+		   indi->SendNewPropertyItem( newItem, false );
+		   newItem.ElementValue.Clear();
+
+		   newItem.Property = "EQUATORIAL_EOD_COORD";
+		   newItem.PropertyType = "INDI_NUMBER";
+		   newItem.ElementValue.Add(ElementValuePair("RA",String(m_instance.p_targetRA)));
+		   newItem.ElementValue.Add(ElementValuePair("DEC",String(m_instance.p_targetDEC)));
+
+
+		   // send (RA,DEC) coordinates in propertyVector
+		   indi->SendNewPropertyItem( newItem, false );
+		   newItem.ElementValue.Clear();
+
+		   newItem.Property = "ON_COORD_SET";
+		   newItem.PropertyType = "INDI_SWITCH";
+		   newItem.ElementValue.Add(ElementValuePair("TRACK","ON"));
+		   indi->SendNewPropertyItem( newItem, false );
+
+		   GetCurrentCoordinates(indi);
+	   }
+	   break;
 	   default:
           throw Error("Unknown INDI Mount command type");
 	   }

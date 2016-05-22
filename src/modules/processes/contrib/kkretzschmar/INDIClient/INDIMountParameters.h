@@ -80,15 +80,12 @@ class IMCCommandType : public MetaEnumeration
 {
 public:
 
-   enum { Goto,
-          Synch,
+   enum { Unpark,
 		  Park,
-//          MoveWest,
-//          MoveEast,
-//          MoveNorth,
-//		  MoveSouth,
+	      Goto,
+          Synch,
 		  NumberOfCommands,
-          Default = Goto };
+          Default = Unpark };
 
    IMCCommandType( MetaProcess* );
 

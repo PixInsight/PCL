@@ -134,9 +134,9 @@ protected:
 
    INDIMountInstance& m_instance;
 
-   virtual void StartMountGotoEvent(double targetRA, double currentRA, double targetDEC, double currentDEC) = 0;
-   virtual void MountGotoEvent(double targetRA, double currentRA, double targetDEC, double currentDEC) = 0;
-   virtual void EndMountGotoEvent() = 0;
+   virtual void StartMountEvent(double targetRA, double currentRA, double targetDEC, double currentDEC, pcl_enum commandType) = 0;
+   virtual void MountEvent(double targetRA, double currentRA, double targetDEC, double currentDEC) = 0;
+   virtual void EndMountEvent() = 0;
 
    virtual void AbortEvent() = 0;
 

@@ -207,7 +207,8 @@ function INDICCDControllerTests( parent )
          // remove uploaded file
          File.remove( defaultServerFilePath );
          // check that we have created one client image and close it
-         let window = ImageWindow.windowById( ccdController.clientFrames[0].toString() );
+         //assertTrue(false,"clientFrames: " + ccdController.clientFrames[0].toString())
+         let window = ImageWindow.windowById( ccdController.clientFrames[0][0].toString() );
          assertTrue( window && window.isWindow, "Image window not found" );
          window.close();
       }

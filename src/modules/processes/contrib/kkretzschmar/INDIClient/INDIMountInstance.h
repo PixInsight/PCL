@@ -92,6 +92,7 @@ private:
    double   p_currentRA;
    double   p_currentDEC;
 
+   friend class INDIMountInterface;
    friend class AbstractINDIMountExecution;
 };
 

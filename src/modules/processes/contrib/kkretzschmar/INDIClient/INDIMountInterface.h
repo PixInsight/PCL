@@ -193,81 +193,88 @@ public:
    virtual IsoString Id() const;
    virtual MetaProcess* Process() const;
    virtual const char** IconImageXPM() const;
-
+   virtual InterfaceFeatures Features() const;
+   virtual void ResetInstance();
    virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ );
-
    virtual ProcessImplementation* NewProcess() const;
-
    virtual bool ValidateProcess( const ProcessImplementation&, String& whyNot ) const;
    virtual bool RequiresInstanceValidation() const;
-
    virtual bool ImportProcess( const ProcessImplementation& );
 
-   virtual InterfaceFeatures Features() const;
-
-   void UpdateControls();
-
-
+private:
 
    struct GUIData
    {
 	   GUIData(INDIMountInterface& w);
 
 	   Timer			  UpdateDeviceList_Timer;
-	   Timer              UpdateMount_Timer;
+	   Timer              UpdateDeviceProperties_Timer;
 
 	   VerticalSizer      Global_Sizer;
-	   SectionBar         MountDevice_SectionBar;
-	   Control			  MountDevice_Control;
-		HorizontalSizer		MountDevice_Sizer;
-		 Label				 MountDevice_Label;
-		 ComboBox            MountDevice_Combo;
-	   SectionBar         SkyChart_SectionBar;
-	   Control            SkyChart_Control;
-	    HorizontalSizer		SkyChart_HSizer;
-	     TabBox				SkyChart_TabBox;
-	     Control             SkyChart_AllSkyGraphicsControl;
-	     Control             SkyChart_FoVGraphicsControl;
-	   SectionBar         MountCoordAndTime_SectionBar;
-	   Control			  MountCoordAndTime_Control;
-	    HorizontalSizer		MountCoordAndTime_HSizer;
-	   	 VerticalSizer		MountCAT_Label_VSizer;
-	   	   Label                MountTime_Label;
-	   	   Label                MountEQC_Label;
-	   	   Label                MountHZC_Label;
-		 VerticalSizer        MountCAT_First_VSizer;
-		   HorizontalSizer      MountTime_Sizer;
-		    GUI_LABELED_CONTROL(UTC,Edit);
-		   HorizontalSizer    MountEQC_Sizer;
-		   	GUI_LABELED_CONTROL(RA,Edit);
-	       HorizontalSizer    MountHZC_Sizer;
-		   	GUI_LABELED_CONTROL(AZ,Edit);
-		 VerticalSizer        MountCAT_Second_VSizer;
-		    HorizontalSizer      MountTime_2_Sizer;
-		   	  GUI_LABELED_CONTROL(LST,Edit);
-		   	HorizontalSizer    MountEQC_2_Sizer;
-		   	  GUI_LABELED_CONTROL(DEC,Edit);
-		    HorizontalSizer    MountHZC_2_Sizer;
-		   	  GUI_LABELED_CONTROL(ALT,Edit);
-	   SectionBar         MountGoto_SectionBar;
-	   Control			  MountGoto_Control;
-	    VerticalSizer        MountGoto_VSizer;
-	     HorizontalSizer	  MountGoto_HSizer;
-	      Label                MountGoto_Label;
-	      GUI_LABELED_CONTROL(TRA,Edit);
-	      GUI_LABELED_CONTROL(TDEC,Edit);
-	      PushButton		    MountSet_PushButton;
-	      PushButton		    MountSearch_PushButton;
-	     HorizontalSizer	  MountGoto_Second_HSizer;
-	      PushButton		   MountGoto_PushButton;
-	      PushButton		   MountSynch_PushButton;
+	   	   SectionBar         ServerParameters_SectionBar;
+	   	   Control			  ServerParameters_Control;
+	   	   VerticalSizer      ServerParameters_Sizer;
+	   	   	   HorizontalSizer	   MountDevice_Sizer;
+	   	   	   	   Label			   MountDevice_Label;
+	   	   	   	   ComboBox            MountDevice_Combo;
+	   	   	   	Control			   MountProperties_Control;
+	   	   	   	VerticalSizer	   MountProperties_Sizer;
+	   	   	   		HorizontalSizer      MountLST_Sizer;
+	   	   	   			Label            	LST_Label;
+	   	   	   			NumericEdit			LST_H_Edit;
+	   	   	   			NumericEdit			LST_M_Edit;
+	   	   	   			NumericEdit			LST_S_Edit;
+	   	   	   		HorizontalSizer    MountEQRA_Sizer;
+	   	   	   			Label 				RA_Label;
+	   	   	   			NumericEdit			RA_H_Edit;
+	   	   	   			NumericEdit			RA_M_Edit;
+	   	   	   			NumericEdit			RA_S_Edit;
+	   	  		   	HorizontalSizer    MountEQDEC_Sizer;
+	   	  		   		Label 				DEC_Label;
+	   	  		   		NumericEdit			DEC_D_Edit;
+	   	  		   		NumericEdit			DEC_M_Edit;
+	   	  		   		NumericEdit			DEC_S_Edit;
+	   	  		   	HorizontalSizer    MountHZAZ_Sizer;
+	   	  		   		Label 				AZ_Label;
+	   	  		   		NumericEdit			AZ_D_Edit;
+	   	  		   		NumericEdit			AZ_M_Edit;
+	   	  		   		NumericEdit			AZ_S_Edit;
+	   	  		    HorizontalSizer    MountHZALT_Sizer;
+	   	  		    	Label 				ALT_Label;
+	   	  		   		NumericEdit			ALT_D_Edit;
+	   	  		   		NumericEdit			ALT_M_Edit;
+	   	  		   		NumericEdit			ALT_S_Edit;
+	   	  	SectionBar        MountGoto_SectionBar;
+	   	  	Control			  MountGoto_Control;
+	   	  	VerticalSizer     MountGoto_Sizer;
+	   	        HorizontalSizer MountGotoCoord_HSizer;
+	   	        	VerticalSizer     MountGotoLeft_Sizer;
+	   	  				HorizontalSizer	  MountTargetRA_Sizer;
+	   	  					Label             TargetRA_Label;
+	   	  					SpinBox			  TargetRA_H_SpinBox;
+	   	  					SpinBox			  TargetRA_M_SpinBox;
+	   	  					NumericEdit		  TargetRA_S_NumericEdit;
+	   	  				HorizontalSizer	  MountTargetDEC_Sizer;
+	   	  					Label             TargetDEC_Label;
+	   	  					SpinBox			  TargetDEC_H_SpinBox;
+	   	  					SpinBox			  TargetDEC_M_SpinBox;
+	   	  					NumericEdit		  TargetDEC_S_NumericEdit;
+	   	  					CheckBox      	  MountTargetDECIsSouth_CheckBox;
+	   	  			VerticalSizer     MountGotoRight_Sizer;
+	   	  				PushButton		    MountSearch_PushButton;
+	   	  		HorizontalSizer	  MountGotoStart_Sizer;
+	   	  			Label              MountGotoCommand_Label;
+	   	  			PushButton		   MountGotoStart_PushButton;
+	   	  			PushButton		   MountGotoCancel_PushButton;
+	   	  		HorizontalSizer	  MountSynch_Sizer;
+	   	  			Label              MountSynchCommand_Label;
+	   	  			PushButton		   MountSynch_PushButton;
    };
-
-   private:
 
    INDIMountInstance instance;
 
    GUIData* GUI;
+   void UpdateControls();
 
    IsoString m_serverMessage;
 
@@ -290,12 +297,10 @@ public:
 
    void UpdateDeviceList_Timer( Timer& sender );
    void UpdateMount_Timer( Timer &sender );
-   void EditCompleted( Edit& sender );
-   void ComboItemSelected(ComboBox& sender, int itemIndex);
-   void Button_Click(Button& sender, bool checked);
-   void SkyChart_Paint( Control& sender, const Rect& updateRect );
-   bool DownloadObjectCoordinates(NetworkTransfer &sender, const void *buffer, fsize_type size);
-   void TabPageSelected( TabBox& sender, int pageIndex );
+   void e_Edit( Edit& sender );
+   void e_ItemSelected(ComboBox& sender, int itemIndex);
+   void e_Click(Button& sender, bool checked);
+   bool e_DownloadDataAvailable(NetworkTransfer &sender, const void *buffer, fsize_type size);
 };
 
 // ----------------------------------------------------------------------------

@@ -127,7 +127,13 @@ const char** INDIMountInterface::IconImageXPM() const
 
 InterfaceFeatures INDIMountInterface::Features() const
 {
-   return InterfaceFeature::BrowseDocumentationButton;
+   return InterfaceFeature::DefaultGlobal;
+}
+
+void INDIMountInterface::ResetInstance()
+{
+   INDIMountInstance defaultInstance( TheINDIMountProcess );
+   ImportProcess( defaultInstance );
 }
 
 bool INDIMountInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
@@ -136,6 +142,7 @@ bool INDIMountInterface::Launch( const MetaProcess& P, const ProcessImplementati
    {
       GUI = new GUIData(*this );
       SetWindowTitle( "INDI Mount Controller" );
+      ResetInstance();
       UpdateControls();
    }
 
@@ -145,7 +152,11 @@ bool INDIMountInterface::Launch( const MetaProcess& P, const ProcessImplementati
 
 ProcessImplementation* INDIMountInterface::NewProcess() const
 {
-   return new INDIMountInstance( instance );
+   INDIMountInstance* instance = new INDIMountInstance(TheINDIMountProcess);
+   instance->p_deviceName = m_Device;
+   // TODO copy other process parameters
+   return instance ;
+
 }
 
 bool INDIMountInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
@@ -168,9 +179,22 @@ bool INDIMountInterface::RequiresInstanceValidation() const
 
 bool INDIMountInterface::ImportProcess( const ProcessImplementation& p )
 {
-   instance.Assign( p );
-   UpdateControls();
-   return true;
+   const INDIMountInstance* instance = dynamic_cast<const INDIMountInstance*>( &p );
+   if (instance != nullptr)
+   {
+	   // set GUI parameters from imported process instance
+	   UpdateControls(); // Remove
+	   if ( instance->ValidateDevice( false/*throwErrors*/ ) )
+	   {
+		   m_Device = instance->p_deviceName;
+		   // instance->SendDeviceProperties();
+	   }
+	   else
+		   m_Device.Clear();
+
+	   return true;
+   }
+   return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -179,16 +203,16 @@ void INDIMountInterface::UpdateControls()
 {
 	if ( m_Device.IsEmpty() )
 	{
-		GUI->UpdateMount_Timer.Stop();
-		GUI->MountCoordAndTime_Control.Disable();
+		GUI->UpdateDeviceProperties_Timer.Stop();
+		GUI->MountProperties_Control.Disable();
 		GUI->MountGoto_Control.Disable();
 	}
 	else
 	{
-		if ( !GUI->UpdateMount_Timer.IsRunning() )
-			GUI->UpdateMount_Timer.Start();
+		if ( !GUI->UpdateDeviceProperties_Timer.IsRunning() )
+			GUI->UpdateDeviceProperties_Timer.Start();
 
-		GUI->MountCoordAndTime_Control.Enable();
+		GUI->MountProperties_Control.Enable();
 		GUI->MountGoto_Control.Enable();
 	}
 }
@@ -382,7 +406,9 @@ EditEqCoordPropertyDialog::EditEqCoordPropertyDialog(String raCoord, String decC
 
 CoordSearchDialog::CoordSearchDialog():m_targetObj(""),m_RA_TargetCoord(0),m_DEC_TargetCoord(0),m_downloadedFile(""){
    pcl::Font fnt = Font();
-   int editWidth = fnt.Width(String('0', 8));
+
+   int emWidth = fnt.Width( 'm' );
+   int editWidth = 8*emWidth;
    int searchEditWidth = fnt.Width(String('0', 15));
    SetWindowTitle( "Online Search" );
 
@@ -520,321 +546,297 @@ void CoordSearchDialog::Button_Click(Button& sender, bool checked){
 
 INDIMountInterface::GUIData::GUIData(INDIMountInterface& w )
 {
-   pcl::Font fnt = pcl::Font();
-   int editWidth = fnt.Width( String( '0', 8 ) );
+   int emWidth = w.Font().Width( 'm' );
+   int labelWidth1 = w.Font().Width( "Server file name template:" ) + emWidth;
+   int editWidth1 = 6*emWidth;
+   int editWidth2 = 8*emWidth;
 
-   // Mount Device Selection Section ==============================================================
-   MountDevice_SectionBar.SetTitle( "INDI Mount Device Selection" );
-   MountDevice_SectionBar.SetSection( MountDevice_Control );
-   MountDevice_Control.SetSizer( MountDevice_Sizer );
+   // Mount Device Properties Section ==============================================================
+   ServerParameters_SectionBar.SetTitle( "Device Properties" );
+   ServerParameters_SectionBar.SetSection( ServerParameters_Control );
 
-   MountDevice_Label.SetText( "INDI Mount Device:" );
+   MountDevice_Label.SetText( "INDI Mount device:" );
    MountDevice_Label.SetToolTip( "<p>Select an INDI Mount device.</p>" );
-   MountDevice_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+   MountDevice_Label.SetMinWidth( labelWidth1 );
+   MountDevice_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
-   MountDevice_Combo.OnItemSelected( (ComboBox::item_event_handler)& INDIMountInterface::ComboItemSelected, w );
+   MountDevice_Combo.OnItemSelected( (ComboBox::item_event_handler)& INDIMountInterface::e_ItemSelected, w );
 
-   MountDevice_Sizer.SetSpacing( 10 );
-   MountDevice_Sizer.SetMargin( 10 );
+   MountDevice_Sizer.SetSpacing( 4);
    MountDevice_Sizer.Add( MountDevice_Label );
-   MountDevice_Sizer.AddSpacing( 10 );
-   MountDevice_Sizer.Add( MountDevice_Combo );
+   MountDevice_Sizer.Add( MountDevice_Combo, 100 );
 
-   // SkyChart Section ================================================================================
-   SkyChart_SectionBar.SetTitle( "Sky Chart" );
-   SkyChart_SectionBar.SetSection( SkyChart_Control );
-   SkyChart_Control.SetSizer( SkyChart_HSizer );
 
-   SkyChart_AllSkyGraphicsControl.SetBackgroundColor( StringToRGBAColor( "black" ) );
-   SkyChart_AllSkyGraphicsControl.SetFixedSize( SkyChart_Control.Width(), SkyChart_Control.Width() );
-   SkyChart_AllSkyGraphicsControl.OnPaint( (Control::paint_event_handler)&INDIMountInterface::SkyChart_Paint, w );
-   SkyChart_TabBox.AddPage( SkyChart_AllSkyGraphicsControl, "Sky" );
+   LST_Label.SetText( "Local Siderial Time (h:m:s):" );
+   LST_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   LST_Label.SetFixedWidth(labelWidth1);
+   LST_Label.SetToolTip( "<p>Local Siderial Time (LST)</p>" );
 
-   SkyChart_FoVGraphicsControl.SetBackgroundColor( StringToRGBAColor( "black" ) );
-   SkyChart_FoVGraphicsControl.SetFixedSize( SkyChart_Control.Width(), SkyChart_Control.Width() );
-   SkyChart_FoVGraphicsControl.OnPaint( (Control::paint_event_handler)&INDIMountInterface::SkyChart_Paint, w );
-   SkyChart_TabBox.AddPage( SkyChart_FoVGraphicsControl, "Field of View" );
+   LST_H_Edit.SetInteger();
+   LST_H_Edit.SetRange(0,23);
+   LST_H_Edit.edit.SetFixedWidth(editWidth1);
+   LST_H_Edit.SetToolTip( "<p>Local Siderial Time: (hour)</p>" );
+   LST_H_Edit.Disable();
+   LST_M_Edit.SetInteger();
+   LST_M_Edit.SetRange(0,59);
+   LST_M_Edit.edit.SetFixedWidth(editWidth1);
+   LST_M_Edit.SetToolTip( "<p>Local Siderial Time: (minutes)</p>" );
+   LST_M_Edit.Disable();
+   LST_S_Edit.SetReal();
+   LST_S_Edit.SetPrecision(3);
+   LST_S_Edit.SetRange(0,59);
+   LST_S_Edit.edit.SetFixedWidth(editWidth1);
+   LST_S_Edit.SetToolTip( "<p>Local Siderial Time: (seconds)</p>" );
+   LST_S_Edit.Disable();
+   MountLST_Sizer.Add(LST_Label);
+   MountLST_Sizer.Add(LST_H_Edit);
+   MountLST_Sizer.Add(LST_M_Edit);
+   MountLST_Sizer.Add(LST_S_Edit);
+   MountLST_Sizer.AddStretch();
 
-   SkyChart_TabBox.OnPageSelected( (TabBox::page_event_handler)&INDIMountInterface::TabPageSelected, w );
-   SkyChart_HSizer.Add( SkyChart_TabBox );
+   RA_Label.SetText( "Right Ascension (h:m:s):" );
+   RA_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   RA_Label.SetFixedWidth(labelWidth1);
+   RA_H_Edit.SetInteger();
+   RA_H_Edit.SetRange(0,23);
+   RA_H_Edit.SetToolTip( "<p>Telescope position in equatorial coordinates: Right Ascension (hour)</p>" );
+   RA_H_Edit.edit.SetFixedWidth(editWidth1);
+   RA_H_Edit.Disable();
+   RA_M_Edit.SetInteger();
+   RA_M_Edit.SetRange(0,59);
+   RA_M_Edit.edit.SetFixedWidth(editWidth1);
+   RA_M_Edit.SetToolTip( "<p>Telescope position in equatorial coordinates: Right Ascension (minutes)</p>" );
+   RA_M_Edit.Disable();
+   RA_S_Edit.SetReal();
+   RA_S_Edit.SetPrecision(3);
+   RA_S_Edit.SetRange(0,59);
+   RA_S_Edit.edit.SetFixedWidth(editWidth1);
+   RA_S_Edit.SetToolTip( "<p>Telescope position in equatorial coordinates: Right Ascension (seconds)</p>" );
+   RA_S_Edit.Disable();
+   MountEQRA_Sizer.Add(RA_Label);
+   MountEQRA_Sizer.Add(RA_H_Edit);
+   MountEQRA_Sizer.Add(RA_M_Edit);
+   MountEQRA_Sizer.Add(RA_S_Edit);
+   MountEQRA_Sizer.AddStretch();
 
-   // Mount Coordinates and time Section ==============================================================
-   //--> Labels
-   MountCoordAndTime_SectionBar.SetTitle( "Time & Coordinates" );
-   MountCoordAndTime_SectionBar.SetSection( MountCoordAndTime_Control );
-   MountCoordAndTime_Control.SetSizer( MountCoordAndTime_HSizer );
-   MountCoordAndTime_HSizer.SetSpacing( 10 );
-   MountCoordAndTime_HSizer.SetMargin( 10 );
-   MountCoordAndTime_HSizer.Add( MountCAT_Label_VSizer );
-   MountCoordAndTime_HSizer.Add( MountCAT_First_VSizer );
-   MountCoordAndTime_HSizer.Add( MountCAT_Second_VSizer );
-   MountCoordAndTime_HSizer.AddStretch();
+   DEC_Label.SetText( "Declination (d:m:s):" );
+   DEC_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   DEC_Label.SetFixedWidth(labelWidth1);
+   DEC_D_Edit.SetInteger();
+   DEC_D_Edit.SetRange(0,59);
+   DEC_D_Edit.edit.SetFixedWidth(editWidth1);
+   DEC_D_Edit.SetToolTip( "<p>Telescope position in equatorial coordinates: Declination (degrees)</p>" );
+   DEC_D_Edit.Disable();
+   DEC_M_Edit.SetInteger();
+   DEC_M_Edit.SetRange(0,59);
+   DEC_M_Edit.edit.SetFixedWidth(editWidth1);
+   DEC_M_Edit.SetToolTip( "<p>Telescope position in equatorial coordinates: Declination (minutes)</p>" );
+   DEC_M_Edit.Disable();
+   DEC_S_Edit.SetReal();
+   DEC_S_Edit.SetPrecision(3);
+   DEC_S_Edit.SetRange(0,59);
+   DEC_S_Edit.edit.SetFixedWidth(editWidth1);
+   DEC_S_Edit.SetToolTip( "<p>Telescope position in equatorial coordinates: Declination (seconds)</p>" );
+   DEC_S_Edit.Disable();
+   MountEQDEC_Sizer.Add(DEC_Label);
+   MountEQDEC_Sizer.Add(DEC_D_Edit);
+   MountEQDEC_Sizer.Add(DEC_M_Edit);
+   MountEQDEC_Sizer.Add(DEC_S_Edit);
+   MountEQDEC_Sizer.AddStretch();
 
-   MountTime_Label.SetText( "Current Date/Time:" );
-   MountTime_Label.SetToolTip( "<p>Current Julian Date (JD) and Local Sideral Time (LST).</p>" );
-   MountTime_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
-   MountCAT_Label_VSizer.Add( MountTime_Label );
+   AZ_Label.SetText( "Azimuth (d:m:s):" );
+   AZ_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   AZ_Label.SetFixedWidth(labelWidth1);
+   AZ_D_Edit.SetInteger();
+   AZ_D_Edit.SetRange(0,59);
+   AZ_D_Edit.edit.SetFixedWidth(editWidth1);
+   AZ_D_Edit.SetToolTip( "<p>Telescope position in equatorial coordinates: Azimuth (degrees)</p>" );
+   AZ_D_Edit.Disable();
+   AZ_M_Edit.SetInteger();
+   AZ_M_Edit.SetRange(0,59);
+   AZ_M_Edit.edit.SetFixedWidth(editWidth1);
+   AZ_M_Edit.SetToolTip( "<p>Telescope position in equatorial coordinates: Azimuth (minutes)</p>" );
+   AZ_M_Edit.Disable();
+   AZ_S_Edit.SetReal();
+   AZ_S_Edit.SetPrecision(3);
+   AZ_S_Edit.SetRange(0,59);
+   AZ_S_Edit.edit.SetFixedWidth(editWidth1);
+   AZ_S_Edit.SetToolTip( "<p>Telescope position in equatorial coordinates: Azimuth (seconds)</p>" );
+   AZ_S_Edit.Disable();
+   MountHZAZ_Sizer.Add(AZ_Label);
+   MountHZAZ_Sizer.Add(AZ_D_Edit);
+   MountHZAZ_Sizer.Add(AZ_M_Edit);
+   MountHZAZ_Sizer.Add(AZ_S_Edit);
+   MountHZAZ_Sizer.AddStretch();
 
-   MountEQC_Label.SetText( "Equatorial Coordinates:" );
-   MountEQC_Label.SetToolTip( "<p>Current equatorial coordinates the telescope is pointing to.</p>" );
-   MountEQC_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
-   MountCAT_Label_VSizer.Add( MountEQC_Label );
+   ALT_Label.SetText( "Altitude (d:m:s):" );
+   ALT_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   ALT_Label.SetFixedWidth(labelWidth1);
+   ALT_D_Edit.SetInteger();
+   ALT_D_Edit.SetRange(0,59);
+   ALT_D_Edit.edit.SetFixedWidth(editWidth1);
+   ALT_D_Edit.SetToolTip( "<p>Telescope position in equatorial coordinates: Altitude (degrees)</p>" );
+   ALT_D_Edit.Disable();
+   ALT_M_Edit.SetInteger();
+   ALT_M_Edit.SetRange(0,59);
+   ALT_M_Edit.edit.SetFixedWidth(editWidth1);
+   ALT_M_Edit.SetToolTip( "<p>Telescope position in equatorial coordinates: Altitude (minutes)</p>" );
+   ALT_M_Edit.Disable();
+   ALT_S_Edit.SetReal();
+   ALT_S_Edit.SetPrecision(3);
+   ALT_S_Edit.SetRange(0,59);
+   ALT_S_Edit.edit.SetFixedWidth(editWidth1);
+   ALT_S_Edit.SetToolTip( "<p>Telescope position in equatorial coordinates: Altitude (seconds)</p>" );
+   ALT_S_Edit.Disable();
+   MountHZALT_Sizer.Add(ALT_Label);
+   MountHZALT_Sizer.Add(ALT_D_Edit);
+   MountHZALT_Sizer.Add(ALT_M_Edit);
+   MountHZALT_Sizer.Add(ALT_M_Edit);
+   MountHZALT_Sizer.AddStretch();
 
-   MountHZC_Label.SetText( "Horizonzal Coordinates:" );
-   MountHZC_Label.SetToolTip( "<p>Current horizonzal coordinates the telescope is pointing to.</p>" );
-   MountHZC_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
-   MountCAT_Label_VSizer.Add( MountHZC_Label );
+   MountProperties_Sizer.SetSpacing(4);
+   MountProperties_Sizer.Add(MountLST_Sizer);
+   MountProperties_Sizer.Add(MountEQRA_Sizer);
+   MountProperties_Sizer.Add(MountEQDEC_Sizer);
+   MountProperties_Sizer.Add(MountHZAZ_Sizer);
+   MountProperties_Sizer.Add(MountHZALT_Sizer);
 
-   //--> Labeled Controls
-   MountCAT_First_VSizer.Add( MountTime_Sizer );
-   MountCAT_First_VSizer.Add( MountEQC_Sizer );
-   MountCAT_First_VSizer.Add( MountHZC_Sizer );
+   MountProperties_Control.SetSizer(MountProperties_Sizer);
 
-   MountTime_Sizer.SetSpacing( 10 );
-   MountTime_Sizer.SetMargin( 10 );
+   ServerParameters_Sizer.SetSpacing( 4 );
+   ServerParameters_Sizer.Add( MountDevice_Sizer );
+   ServerParameters_Sizer.Add( MountProperties_Control );
 
-   UTC_Label.SetText( "JD:");
-   UTC_Label.SetToolTip( "<p>Current Julian Date (UT)</p>" );
-   UTC_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+   ServerParameters_Control.SetSizer( ServerParameters_Sizer );
 
-   UTC_Edit.SetScaledMinWidth( 50 );
-   UTC_Edit.SetScaledMaxWidth( 70 );
-   UTC_Edit.Disable();
+   // Mount Device Goto Section
+   MountGoto_SectionBar.SetTitle("Goto Target");
+   MountGoto_SectionBar.SetSection(MountGoto_Control);
 
-   MountTime_Sizer.Add( UTC_Label );
-   MountTime_Sizer.Add( UTC_Edit );
+   TargetRA_Label.SetText( "Right Ascension (h::m::s):" );
+   TargetRA_Label.SetToolTip("<p>Target object position in equatorial coordinates: Right Ascension (h::m::s)""");
+   TargetRA_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   TargetRA_Label.SetFixedWidth(labelWidth1);
+   TargetRA_H_SpinBox.SetRange(0,23);
+   TargetRA_H_SpinBox.SetFixedWidth( editWidth2 );
+   TargetRA_M_SpinBox.SetRange(0,59);
+   TargetRA_M_SpinBox.SetFixedWidth( editWidth2 );
 
-   MountEQC_Sizer.SetSpacing( 10 );
-   MountEQC_Sizer.SetMargin( 10 );
+   TargetRA_S_NumericEdit.SetReal();
+   TargetRA_S_NumericEdit.SetPrecision( 3 );
+   TargetRA_S_NumericEdit.SetRange(0,59.999);
+   TargetRA_S_NumericEdit.edit.SetFixedWidth( editWidth2 );
+   TargetRA_S_NumericEdit.sizer.AddStretch();
 
-   RA_Label.SetText( "RA:" );
-   RA_Label.SetToolTip( "<p>Current right ascension position </p>" );
-   RA_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+   MountTargetRA_Sizer.SetSpacing(4);
+   MountTargetRA_Sizer.Add(TargetRA_Label);
+   MountTargetRA_Sizer.Add(TargetRA_H_SpinBox);
+   MountTargetRA_Sizer.Add(TargetRA_M_SpinBox);
+   MountTargetRA_Sizer.Add(TargetRA_S_NumericEdit);
+   MountTargetRA_Sizer.AddStretch();
 
-   RA_Edit.SetScaledMinWidth( 50 );
-   RA_Edit.SetScaledMaxWidth( 70 );
-   RA_Edit.Disable();
+   TargetDEC_Label.SetText( "Declination (d::m::s):" );
+   TargetDEC_Label.SetToolTip("<p>Target object position in equatorial coordinates: Declination (d::m::s)""");
+   TargetDEC_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   TargetDEC_Label.SetFixedWidth(labelWidth1);
+   TargetDEC_H_SpinBox.SetRange(0,90);
+   TargetDEC_H_SpinBox.SetFixedWidth( editWidth2 );
+   TargetDEC_M_SpinBox.SetRange(0,59);
+   TargetDEC_M_SpinBox.SetFixedWidth( editWidth2 );
+   TargetDEC_S_NumericEdit.SetReal();
+   TargetDEC_S_NumericEdit.SetPrecision( 3 );
+   TargetDEC_S_NumericEdit.SetRange(0,59.999);
+   TargetDEC_S_NumericEdit.edit.SetFixedWidth( editWidth2 );
+   MountTargetDECIsSouth_CheckBox.SetText("Southern hemisphere");
+   MountTargetDECIsSouth_CheckBox.SetToolTip( "<p>When checked coordinates are negative</p>");
 
-   MountEQC_Sizer.Add( RA_Label );
-   MountEQC_Sizer.Add( RA_Edit );
+   MountTargetDEC_Sizer.SetSpacing(4);
+   MountTargetDEC_Sizer.Add(TargetDEC_Label);
+   MountTargetDEC_Sizer.Add(TargetDEC_H_SpinBox);
+   MountTargetDEC_Sizer.Add(TargetDEC_M_SpinBox);
+   MountTargetDEC_Sizer.Add(TargetDEC_S_NumericEdit);
+   MountTargetDEC_Sizer.Add(MountTargetDECIsSouth_CheckBox);
+   MountTargetDEC_Sizer.AddStretch();
 
-   MountHZC_Sizer.SetSpacing( 10 );
-   MountHZC_Sizer.SetMargin( 10 );
-
-   AZ_Label.SetText( "AZ:" );
-   AZ_Label.SetToolTip( "<p>Current azimutal position </p>" );
-   AZ_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
-
-   AZ_Edit.SetScaledMinWidth( 50 );
-   AZ_Edit.SetScaledMaxWidth( 70 );
-   AZ_Edit.Disable();
-
-   MountHZC_Sizer.Add( AZ_Label );
-   MountHZC_Sizer.Add( AZ_Edit );
-
-   MountCAT_Second_VSizer.Add( MountTime_2_Sizer );
-   MountCAT_Second_VSizer.Add( MountEQC_2_Sizer );
-   MountCAT_Second_VSizer.Add( MountHZC_2_Sizer );
-
-   MountTime_2_Sizer.SetSpacing( 10 );
-   MountTime_2_Sizer.SetMargin( 10 );
-
-   LST_Label.SetText( "LST:" );
-   LST_Label.SetToolTip( "<p>Current Local Siderial Time (LST)</p>" );
-   LST_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
-
-   LST_Edit.SetScaledMinWidth( 50 );
-   LST_Edit.SetScaledMaxWidth( 70 );
-   LST_Edit.Disable();
-
-   MountTime_2_Sizer.Add( LST_Label );
-   MountTime_2_Sizer.Add( LST_Edit );
-
-   MountEQC_2_Sizer.SetSpacing( 10 );
-   MountEQC_2_Sizer.SetMargin( 10 );
-
-   DEC_Label.SetText( "Dec:" );
-   DEC_Label.SetToolTip( "<p>Current declination position </p>" );
-   DEC_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
-
-   DEC_Edit.SetScaledMinWidth( 50 );
-   DEC_Edit.SetScaledMaxWidth( 70 );
-   DEC_Edit.Disable();
-
-   MountEQC_2_Sizer.Add( DEC_Label );
-   MountEQC_2_Sizer.Add( DEC_Edit );
-
-   MountHZC_2_Sizer.SetSpacing( 10 );
-   MountHZC_2_Sizer.SetMargin( 10 );
-
-   ALT_Label.SetText( "Alt:" );
-   ALT_Label.SetToolTip( "<p>Current altitude position </p>" );
-   ALT_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
-
-   ALT_Edit.SetScaledMinWidth( 50 );
-   ALT_Edit.SetScaledMaxWidth( 70 );
-   ALT_Edit.Disable();
-
-   MountHZC_2_Sizer.Add( ALT_Label );
-   MountHZC_2_Sizer.Add( ALT_Edit );
-
-   // Mount Goto Target Section ==============================================================
-   MountGoto_SectionBar.SetTitle( "Goto Target" );
-   MountGoto_SectionBar.SetSection( MountGoto_Control );
-   MountGoto_Control.SetSizer( MountGoto_VSizer );
-
-   // MountGoto_HSizer
-   MountGoto_HSizer.SetSpacing( 10 );
-   MountGoto_HSizer.SetMargin( 10 );
-
-   TRA_Label.SetText( "Target RA:" );
-   TRA_Label.SetToolTip( "<p>Target right ascension position</p>" );
-   TRA_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
-
-   TRA_Edit.SetMinWidth( editWidth );
-   TRA_Edit.SetScaledMaxWidth( 70 );
-   TRA_Edit.SetText( "00:00:00" );
-   TRA_Edit.Disable();
-
-   TDEC_Label.SetText( "Target Dec:" );
-   TDEC_Label.SetToolTip( "<p>Target declination position</p>" );
-   TDEC_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
-
-   TDEC_Edit.SetMinWidth( editWidth );
-   TDEC_Edit.SetScaledMaxWidth( 70 );
-   TDEC_Edit.SetText( "00:00:00" );
-   TDEC_Edit.Disable();
-
-   MountSet_PushButton.SetText( "Set" );
-   MountSet_PushButton.OnClick( (Button::click_event_handler) &INDIMountInterface::Button_Click, w );
+   MountGotoLeft_Sizer.SetSpacing(4);
+   MountGotoLeft_Sizer.Add(MountTargetRA_Sizer);
+   MountGotoLeft_Sizer.Add(MountTargetDEC_Sizer);
 
    MountSearch_PushButton.SetText( "Search" );
-   MountSearch_PushButton.OnClick( (Button::click_event_handler) &INDIMountInterface::Button_Click, w );
+   MountSearch_PushButton.SetIcon(w.ScaledResource( ":/icons/find.png" ));
+   MountSearch_PushButton.SetStyleSheet( "QPushButton { text-align: left; }" );
+   MountSearch_PushButton.OnClick( (Button::click_event_handler) &INDIMountInterface::e_Click, w );
 
+   MountGotoRight_Sizer.SetSpacing(4);
+   MountGotoRight_Sizer.Add(MountSearch_PushButton);
 
-   MountGoto_HSizer.Add( TRA_Label );
-   MountGoto_HSizer.Add( TRA_Edit );
-   MountGoto_HSizer.Add( TDEC_Label );
-   MountGoto_HSizer.Add( TDEC_Edit );
-   MountGoto_HSizer.Add( MountSet_PushButton );
-   MountGoto_HSizer.Add( MountSearch_PushButton );
+   MountGotoCoord_HSizer.SetSpacing(4);
+   MountGotoCoord_HSizer.Add(MountGotoLeft_Sizer);
+   MountGotoCoord_HSizer.Add(MountGotoRight_Sizer);
+   MountGotoCoord_HSizer.AddStretch();
 
-   MountGoto_VSizer.Add( MountGoto_HSizer );
+   MountGotoCommand_Label.SetText("Goto:");
+   MountGotoCommand_Label.SetToolTip("<p>Start or stop goto execution");
+   MountGotoCommand_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   MountGotoCommand_Label.SetFixedWidth(labelWidth1);
+   MountGotoStart_PushButton.SetText( "Goto" );
+   MountGotoStart_PushButton.SetIcon(w.ScaledResource( ":/icons/play.png" ));
+   MountGotoStart_PushButton.SetStyleSheet( "QPushButton { text-align: left; }" );
+   MountGotoStart_PushButton.OnClick( (Button::click_event_handler) &INDIMountInterface::e_Click, w );
+   MountGotoCancel_PushButton.SetText( "Cancel" );
+   MountGotoCancel_PushButton.SetIcon(w.ScaledResource( ":/icons/stop.png" ));
+   MountGotoCancel_PushButton.SetStyleSheet( "QPushButton { text-align: left; }" );
 
-   //MountGoto_Second_HSizer
-   MountGoto_Second_HSizer.SetSpacing( 10 );
-   MountGoto_Second_HSizer.SetMargin( 10 );
+   MountGotoStart_Sizer.SetSpacing(4);
+   MountGotoStart_Sizer.Add(MountGotoCommand_Label);
+   MountGotoStart_Sizer.Add(MountGotoStart_PushButton);
+   MountGotoStart_Sizer.Add(MountGotoCancel_PushButton);
+   MountGotoStart_Sizer.AddStretch();
 
-   MountGoto_PushButton.SetText( "Goto" );
-   MountGoto_PushButton.OnClick( (Button::click_event_handler) &INDIMountInterface::Button_Click, w );
-
+   MountSynchCommand_Label.SetText("Synch:");
+   MountSynchCommand_Label.SetToolTip("<p>Synchronize ...");
+   MountSynchCommand_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   MountSynchCommand_Label.SetFixedWidth(labelWidth1);
    MountSynch_PushButton.SetText( "Synch" );
-   MountSynch_PushButton.OnClick( (Button::click_event_handler) &INDIMountInterface::Button_Click, w );
+   MountSynch_PushButton.SetIcon(w.ScaledResource( ":/toolbar/image-mode-pan-horz.png" ));
+   MountSynch_PushButton.SetStyleSheet( "QPushButton { text-align: left; }" );
+   MountSynch_PushButton.OnClick( (Button::click_event_handler) &INDIMountInterface::e_Click, w );
 
+   MountSynch_Sizer.SetSpacing(4);
+   MountSynch_Sizer.Add(MountSynchCommand_Label);
+   MountSynch_Sizer.Add(MountSynch_PushButton);
+   MountSynch_Sizer.AddStretch();
 
-   MountGoto_Second_HSizer.Add( MountGoto_PushButton );
-   MountGoto_Second_HSizer.Add( MountSynch_PushButton );
-   MountGoto_VSizer.Add( MountGoto_Second_HSizer );
+   MountGoto_Sizer.SetSpacing(4);
+   MountGoto_Sizer.Add(MountGotoCoord_HSizer);
+   MountGoto_Sizer.Add(MountGotoStart_Sizer);
+   MountGoto_Sizer.Add(MountSynch_Sizer);
+
+   MountGoto_Control.SetSizer(MountGoto_Sizer);
 
    // Global Sizer
    Global_Sizer.SetMargin( 8 );
-   Global_Sizer.SetSpacing( 6 );
-   Global_Sizer.Add( MountDevice_SectionBar );
-   Global_Sizer.Add( MountDevice_Control );
-   Global_Sizer.Add( SkyChart_SectionBar );
-   Global_Sizer.Add( SkyChart_Control );
-   Global_Sizer.Add( MountCoordAndTime_SectionBar );
-   Global_Sizer.Add( MountCoordAndTime_Control );
+   Global_Sizer.SetSpacing( 4 );
+   Global_Sizer.Add( ServerParameters_SectionBar );
+   Global_Sizer.Add( ServerParameters_Control );
    Global_Sizer.Add( MountGoto_SectionBar );
    Global_Sizer.Add( MountGoto_Control );
 
    w.SetSizer( Global_Sizer );
+   w.AdjustToContents();
+   w.SetFixedHeight();
 
    UpdateDeviceList_Timer.SetInterval( 0.5 );
    UpdateDeviceList_Timer.SetPeriodic( true );
    UpdateDeviceList_Timer.OnTimer( (Timer::timer_event_handler)&INDIMountInterface::UpdateDeviceList_Timer, w );
    UpdateDeviceList_Timer.Start();
 
-   UpdateMount_Timer.SetInterval( 1 );
-   UpdateMount_Timer.SetPeriodic( true );
-   UpdateMount_Timer.OnTimer( (Timer::timer_event_handler)&INDIMountInterface::UpdateMount_Timer, w );
+   UpdateDeviceProperties_Timer.SetInterval( 1 );
+   UpdateDeviceProperties_Timer.SetPeriodic( true );
+   UpdateDeviceProperties_Timer.OnTimer( (Timer::timer_event_handler)&INDIMountInterface::UpdateMount_Timer, w );
 }
 
-void INDIMountInterface::TabPageSelected( TabBox& sender, int pageIndex )
-{
-   if ( sender == GUI->SkyChart_TabBox )
-   {
-      if ( pageIndex == 0 ) // AllSky tab page
-      {
-         m_isAllSkyView = true;
-      }
-      else if ( pageIndex==1 ) // FoV tab page
-      {
-         double CCD_chipHeight = 2200;
-         double CCD_chipWidth = 2750;
-         double CCD_pixelSize = 4.54/1000;
-         double TEL_focalLength = 700;
-         double FoV_width = CCD_chipWidth*CCD_pixelSize / TEL_focalLength*3438/60;
-         double FoV_height = CCD_chipHeight*CCD_pixelSize / TEL_focalLength*3438/60;
-         double limitStarMag = 13;
-
-         double ra_center = m_scopeRA*360/24;
-         double dec_center = m_scopeDEC;
-
-         // download stars
-         NetworkTransfer transfer;
-         IsoString url( "http://simbad.u-strasbg.fr/simbad/sim-tap/sync?request=doQuery&lang=adql&format=text&query=" );
-         IsoString select_stmt = m_skymap->getASDLFoVQueryString( ra_center, dec_center, FoV_width, FoV_height, limitStarMag );
-         Console().WriteLn( "QueryStr = " + select_stmt );
-         url.Append( select_stmt );
-         transfer.SetURL( url );
-         transfer.OnDownloadDataAvailable(
-               (NetworkTransfer::download_event_handler)&INDIMountInterface::DownloadObjectCoordinates, *this );
-         if ( !transfer.Download() )
-         {
-            Console().WriteLn( "Download failed with error '" + transfer.ErrorInformation() + "'" );
-         }
-         else
-         {
-            Console().WriteLn( String().Format( "%d bytes downloaded @ %.3g KiB/s",
-                                                transfer.BytesTransferred(), transfer.TotalSpeed() ) );
-            StringList lines;
-            m_downloadedFile.Break( lines, '\n', true/*trim*/ );
-            m_skymap->clearFoVObjectList();
-            if ( lines.Length() > 0 )
-            {
-               for ( size_t i = 0; i < lines.Length(); i++ )
-               {
-                  if (i <= 1)
-                     continue;
-
-                  StringList tokens;
-                  lines[i].Break( tokens, '|', true/*trim*/ );
-                  if ( tokens.Length() < 4 )
-                     continue;
-                  if ( !tokens[1].IsNumeral() || !tokens[2].IsNumeral() || !tokens[3].IsNumeral() )
-                     continue;
-                  SkyMap::object star;
-                  star.mainId = tokens[0];
-                  star.ra = tokens[1].ToDouble();
-                  star.dec = tokens[2].ToDouble();
-                  star.v = tokens[3].ToDouble();
-                  if ( tokens.Length() == 6 )
-                     star.spType = tokens[5];
-#if DEBUG
-                  Console().WriteLn( IsoString().Format( "star=%s, ra=%f, dec=%f", star.mainId.c_str(), star.ra, star.dec ) );
-#endif
-                  m_skymap->addObjectToFoV( star );
-               }
-            }
-         }
-         m_downloadedFile.Clear();
-         m_isAllSkyView = false;
-      }
-   }
-}
-
-bool INDIMountInterface::DownloadObjectCoordinates( NetworkTransfer& sender, const void* buffer, fsize_type size )
+bool INDIMountInterface::e_DownloadDataAvailable( NetworkTransfer& sender, const void* buffer, fsize_type size )
 {
    m_downloadedFile.Append( static_cast<const char*>(buffer), size );
    return true;
@@ -883,30 +885,36 @@ void INDIMountInterface::UpdateMount_Timer( Timer& sender )
    if ( !INDIClient::HasClient() )
 	   return;
 
-   if ( sender == GUI->UpdateMount_Timer )
+   if ( sender == GUI->UpdateDeviceProperties_Timer )
    {
       INDIClient* indi = INDIClient::TheClient();
       INDIPropertyListItem MountProp;
-      if ( indi->GetPropertyItem( m_Device, "JULIAN", "JULIANDATE", MountProp ) )
-         GUI->UTC_Edit.SetText( MountProp.PropertyValue );
-
       if ( indi->GetPropertyItem( m_Device, "TIME_LST", "LST", MountProp ) )
       {
-         GUI->LST_Edit.SetText( MountProp.PropertyValue );
+    	 CoordUtils::HMS hms = CoordUtils::parse(MountProp.PropertyValue);
+    	 GUI->LST_H_Edit.SetValue(hms.hour);
+    	 GUI->LST_M_Edit.SetValue(hms.minute);
+    	 GUI->LST_S_Edit.SetValue(hms.second);
          indi->GetPropertyItem( m_Device, "TIME_LST", "LST", MountProp, false/*formatted*/ );
          m_lst = MountProp.PropertyValue.ToDouble();
       }
 
       if ( indi->GetPropertyItem( m_Device, "EQUATORIAL_EOD_COORD", "RA", MountProp ) )
       {
-         GUI->RA_Edit.SetText( MountProp.PropertyValue );
+    	 CoordUtils::HMS hms = CoordUtils::parse(MountProp.PropertyValue);
+         GUI->RA_H_Edit.SetValue(hms.hour);
+         GUI->RA_M_Edit.SetValue(hms.minute);
+         GUI->RA_S_Edit.SetValue(hms.second);
          indi->GetPropertyItem( m_Device, "EQUATORIAL_EOD_COORD", "RA", MountProp, false/*formatted*/ );
          m_scopeRA = MountProp.PropertyValue.ToDouble();
       }
 
       if (indi->GetPropertyItem( m_Device, "EQUATORIAL_EOD_COORD", "DEC", MountProp ) )
       {
-         GUI->DEC_Edit.SetText( MountProp.PropertyValue );
+    	 CoordUtils::HMS hms = CoordUtils::parse(MountProp.PropertyValue);
+         GUI->DEC_D_Edit.SetValue(hms.hour);
+         GUI->DEC_M_Edit.SetValue(hms.minute);
+         GUI->DEC_S_Edit.SetValue(hms.second);
          indi->GetPropertyItem( m_Device, "EQUATORIAL_EOD_COORD", "DEC", MountProp, false/*formatted*/ );
          m_scopeDEC = MountProp.PropertyValue.ToDouble();
       }
@@ -918,22 +926,25 @@ void INDIMountInterface::UpdateMount_Timer( Timer& sender )
          m_alignedDEC = MountProp.PropertyValue.ToDouble();
 
       if ( indi->GetPropertyItem( m_Device, "HORIZONTAL_COORD", "ALT", MountProp ) )
-         GUI->ALT_Edit.SetText( MountProp.PropertyValue );
-
+      {
+    	 CoordUtils::HMS hms = CoordUtils::parse(MountProp.PropertyValue);
+    	 GUI->ALT_D_Edit.SetValue(hms.hour);
+    	 GUI->ALT_M_Edit.SetValue(hms.minute);
+    	 GUI->ALT_S_Edit.SetValue(hms.second);
+      }
       if ( indi->GetPropertyItem( m_Device, "HORIZONTAL_COORD", "AZ", MountProp ) )
-         GUI->AZ_Edit.SetText( MountProp.PropertyValue );
-
+      {
+    	 CoordUtils::HMS hms = CoordUtils::parse(MountProp.PropertyValue);
+    	 GUI->AZ_D_Edit.SetValue(hms.hour);
+    	 GUI->AZ_M_Edit.SetValue(hms.minute);
+    	 GUI->AZ_S_Edit.SetValue(hms.second);
+      }
       if ( indi->GetPropertyItem( m_Device, "GEOGRAPHIC_COORD", "LAT", MountProp, false/*formatted*/ ) )
          m_geoLat = MountProp.PropertyValue.ToDouble();
    }
-
-   if ( m_isAllSkyView )
-      GUI->SkyChart_AllSkyGraphicsControl.Update();
-   else
-      GUI->SkyChart_FoVGraphicsControl.Update();
 }
 
-void INDIMountInterface::ComboItemSelected( ComboBox& sender, int itemIndex )
+void INDIMountInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
 {
    if ( !INDIClient::HasClient() )
 	  return;
@@ -942,98 +953,32 @@ void INDIMountInterface::ComboItemSelected( ComboBox& sender, int itemIndex )
    {
       m_Device = (itemIndex > 0) ? sender.ItemText( itemIndex ).Trimmed() : String();
       UpdateControls();
-
-      pcl::Sleep( 2 );
-      // Download stars from simbad database
-      NetworkTransfer transfer;
-      IsoString url( "http://simbad.u-strasbg.fr/simbad/sim-tap/sync?request=doQuery&lang=adql&format=text&query=" );
-      //IsoString url( "http://simbad.cfa.harvard.edu/simbad/sim-tap/sync?request=doQuery&lang=adql&format=text&query=" );
-
-      SkyMap::geoCoord geoCoord;
-      geoCoord.geo_lat = m_geoLat;
-      SkyMap::filter filter;
-      filter.dec_lowerLimit = (m_geoLat < 0) ? 90.0 - m_geoLat : m_geoLat - 90.0;
-      filter.dec_upperLimit = (m_geoLat < 0) ? -90.0 : 90.0;
-      filter.v_upperLimit = m_limitStarMag;
-
-      m_skymap = new SkyMap( filter, geoCoord );
-      IsoString select_stmt = m_skymap->getASDLQueryString();
-      Console().WriteLn( "QueryStr = " + m_skymap->getASDLQueryString() );
-      url.Append( select_stmt );
-      transfer.SetURL( url );
-      transfer.OnDownloadDataAvailable(
-         (NetworkTransfer::download_event_handler) &INDIMountInterface::DownloadObjectCoordinates, *this );
-      if ( !transfer.Download() )
-      {
-         Console().WriteLn( "Download failed with error '" + transfer.ErrorInformation() + "'" );
-         if ( transfer.WasAborted() )
-            Console().WriteLn( "Download was aborted" );
-      }
-      else
-      {
-         Console().WriteLn( String().Format( "%u bytes downloaded @ %.3g KiB/s",
-                                             transfer.BytesTransferred(), transfer.TotalSpeed() ) );
-         StringList lines;
-         m_downloadedFile.Break( lines, '\n', true/*trim*/ );
-         Console().WriteLn( m_downloadedFile.c_str() );
-         for ( size_t i = 0; i < lines.Length(); i++ )
-         {
-            if ( i <= 1 )
-               continue;
-
-            StringList tokens;
-            lines[i].Break( tokens, '|', true/*trim*/ );
-            if ( tokens.Length() != 5 )
-               continue;
-            if ( !tokens[1].IsNumeral() || !tokens[2].IsNumeral() || !tokens[3].IsNumeral() )
-               continue;
-            SkyMap::object star;
-            star.mainId = tokens[0];
-            star.ra = tokens[1].ToDouble();
-            star.dec = tokens[2].ToDouble();
-            star.v = tokens[3].ToDouble();
-            star.spType = tokens[4];
-#if DEBUG
-            Console().WriteLn( IsoString().Format(
-               "star=%s, ra=%f, dec=%f, vmag=%f, sp=%s", star.mainId.c_str(), star.ra, star.dec, star.v, star.spType.c_str() ) );
-#endif
-            m_skymap->addObject( star );
-         }
-      }
-      m_downloadedFile.Clear();
    }
 }
 
-void INDIMountInterface::EditCompleted( Edit& sender )
-{
-}
 
-void INDIMountInterface::Button_Click(Button& sender, bool checked){
+void INDIMountInterface::e_Click(Button& sender, bool checked){
 
    if ( !INDIClient::HasClient() )
 	  return;
 
    INDIClient* indi = INDIClient::TheClient();
 
-   if ( sender == GUI->MountSet_PushButton )
+   if ( sender == GUI->MountGotoStart_PushButton )
    {
-      EditEqCoordPropertyDialog eqCoordDialog( GUI->RA_Edit.Text(), GUI->DEC_Edit.Text() );
-      if ( eqCoordDialog.Execute() )
-      {
-         GUI->TRA_Edit.SetText( String().Format( "%02d:%02d:%2.2f",
-                                             int( eqCoordDialog.getRaHour() ),
-                                             int( eqCoordDialog.getRaMinute() ),
-                                             eqCoordDialog.getRaSecond() ) );
-         GUI->TDEC_Edit.SetText( String().Format( "%02d:%02d:%2.2f",
-                                             int( eqCoordDialog.getDecDeg() ),
-                                             int( eqCoordDialog.getDecArcMinute() ),
-                                             eqCoordDialog.getDecArcSecond() ) );
-         m_TargetRA = eqCoordDialog.getTargetRaCoord();
-         m_TargetDEC = eqCoordDialog.getTargetDECCoord();
-      }
-   }
-   else if ( sender == GUI->MountGoto_PushButton )
-   {
+	   double tg_ra=   (double) GUI->TargetRA_H_SpinBox.Value()
+	   				    + (double) GUI->TargetRA_M_SpinBox.Value() / 60
+	   			    	+ GUI->TargetRA_S_NumericEdit.Value() / 3600;
+	   m_TargetRA = String(tg_ra);
+
+	   double tg_dec  =   (double) GUI->TargetDEC_H_SpinBox.Value()
+	   	   			    + (double) GUI->TargetDEC_M_SpinBox.Value() / 60
+	   	   			   	+ GUI->TargetDEC_S_NumericEdit.Value() / 3600;
+
+	   if (GUI->MountTargetDECIsSouth_CheckBox.IsChecked())
+		   tg_dec *=-1;
+
+	   m_TargetDEC = String(tg_dec);
 
       INDINewPropertyItem newPropertyListItem;
       newPropertyListItem.Device = m_Device;
@@ -1055,14 +1000,15 @@ void INDIMountInterface::Button_Click(Button& sender, bool checked){
          double target_dec = coordSearchDialog.getTargetDECCoord();
          CoordUtils::HMS coord_RA_HMS = CoordUtils::convertToHMS( target_ra );
          CoordUtils::HMS coord_DEC_HMS = CoordUtils::convertToHMS( target_dec );
-         GUI->TRA_Edit.SetText( String().Format( "%02d:%02d:%2.2f",
-                                             int( coord_RA_HMS.hour ),
-                                             int( coord_RA_HMS.minute ),
-                                             coord_RA_HMS.second ) );
-         GUI->TDEC_Edit.SetText( String().Format( "%02d:%02d:%2.2f",
-                                             int( coord_DEC_HMS.hour ),
-                                             int( coord_DEC_HMS.minute ),
-                                             coord_DEC_HMS.second ) );
+         GUI->TargetRA_H_SpinBox.SetValue(coord_RA_HMS.hour);
+         GUI->TargetRA_M_SpinBox.SetValue(coord_RA_HMS.minute);
+         GUI->TargetRA_S_NumericEdit.SetValue(coord_RA_HMS.second);
+         GUI->TargetDEC_H_SpinBox.SetValue(coord_DEC_HMS.hour);
+         GUI->TargetDEC_M_SpinBox.SetValue(coord_DEC_HMS.minute);
+         GUI->TargetDEC_S_NumericEdit.SetValue(coord_DEC_HMS.second);
+         if (target_dec <0)
+        	 GUI->MountTargetDECIsSouth_CheckBox.Check();
+
          m_TargetRA = String( target_ra );
          m_TargetDEC = String( target_dec );
       }
@@ -1097,105 +1043,6 @@ void INDIMountInterface::Button_Click(Button& sender, bool checked){
    }
 }
 
-void INDIMountInterface::SkyChart_Paint( Control& sender, const Rect& updateRect )
-{
-   Graphics g( sender );
-
-   RGBA darkRed = RGBAColor( 153, 0, 0 );
-   RGBA darkYellow = RGBAColor( 153, 153, 0 );
-   RGBA darkGreen = RGBAColor( 0, 153, 0 );
-
-   Rect r( sender.BoundsRect() );
-
-   int w = r.Width();
-   int h = r.Height();
-   int x0 = w >> 1;
-   int y0 = h >> 1;
-
-   g.FillRect( r, 0u );
-   g.SetBrush( Brush::Null() );
-
-   g.SetPen( darkRed );
-   const int margin = 10;
-   g.DrawLine( x0, 0+margin, x0, h-margin );
-   g.DrawLine( 0+margin, y0, w-margin, y0 );
-
-   g.EnableAntialiasing();
-
-   if ( m_isAllSkyView )
-   {
-      double chartRadius = x0 - margin;
-      g.DrawCircle( x0, y0, chartRadius );
-
-      // draw telescope position
-      StereoProjection::Spherical s;
-      double hourAngle = (m_TargetRA.ToDouble() - m_lst)*360/24;
-      double currentAlt = SkyMap::getObjectAltitude( m_TargetDEC.ToDouble(), hourAngle, m_geoLat );
-      double currentAz = SkyMap::getObjectAzimut( m_TargetDEC.ToDouble(), hourAngle, m_geoLat );
-      s.phi = Rad( currentAz );
-      s.theta = Rad( 90 + currentAlt );
-      StereoProjection::Polar p = s.Projected( chartRadius );
-      StereoProjection::Rectangular r = p.ToRectangular();
-#if 0
-      Console().WriteLn( String().Format( "x=%f, y=%f, r=%f", r.x, r.y, chartRadius ) );
-      Console().WriteLn( String().Format( "x0=%d, y0=%d", x0, y0 ) );
-      Console().WriteLn( String().Format( "w=%d, h=%d", w, h ) );
-      Console().WriteLn( String().Format( "phi=%f, theta=%f", s.phi, s.theta ) );
-      Console().WriteLn( String().Format( "r=%f, pphi=%f", p.r, p.phi ) );
-#endif
-      g.DrawCircle( x0+r.x, y0+r.y, 5 );
-
-      g.SetPen( darkGreen );
-      hourAngle = (m_scopeRA - m_lst)*360/24;
-      currentAlt = SkyMap::getObjectAltitude( m_scopeDEC, hourAngle, m_geoLat );
-      currentAz = SkyMap::getObjectAzimut( m_scopeDEC, hourAngle, m_geoLat );
-      s.phi = Rad( currentAz );
-      s.theta = Rad( 90 + currentAlt );
-      r = s.Projected( chartRadius ).ToRectangular();
-      g.DrawCircle( x0+r.x, y0+r.y, 5 );
-
-      g.SetPen( darkYellow );
-      if ( m_skymap != nullptr )
-         m_skymap->plotStars( m_lst, m_geoLat, x0, y0, chartRadius, g, m_limitStarMag );
-   }
-   else
-   {
-      if ( m_skymap != nullptr )
-      {
-         double CCD_chipHeight = 2200;
-         double CCD_chipWidth = 2750;
-         double CCD_pixelSize = 4.54/1000;
-         double TEL_focalLength = 700;
-         double FoV_width = CCD_chipWidth*CCD_pixelSize  / TEL_focalLength*3438/60;
-         double FoV_height = CCD_chipHeight*CCD_pixelSize / TEL_focalLength*3438/60;
-         double scale = 180.0/FoV_width;
-
-         // draw scope position
-         double currentAlt = SkyMap::getObjectAltitude( m_scopeDEC, m_scopeRA*360/24, m_geoLat );
-         double currentAz = SkyMap::getObjectAzimut( m_scopeDEC, m_scopeRA*360/24, m_geoLat );
-
-         StereoProjection::Spherical spherical( Rad( currentAz ), Rad( 90 + currentAlt ) );
-         StereoProjection::Polar p = spherical.Projected( scale*x0 );
-         StereoProjection::Rectangular r = p.ToRectangular();
-
-         //Console().WriteLn( String().Format( "xx=%f, yy=%f, r=%f", r.x, r.y, scale * x0 ) );
-         g.DrawCircle( x0, y0, 5 );
-
-         // draw alignment deviation
-         double alignAlt = SkyMap::getObjectAltitude( m_alignedDEC, m_alignedRA*360/24, m_geoLat );
-         double alignAz = SkyMap::getObjectAzimut( m_alignedDEC, m_alignedRA*360/24, m_geoLat );
-         StereoProjection::Rectangular rAlign =
-            StereoProjection::Spherical( Rad( alignAz ), Rad( 90 + alignAlt ) ).Projected( scale*x0 ).ToRectangular();
-         g.SetPen( darkGreen );
-         g.DrawLine( x0 - r.x + r.x,
-                     y0 - r.y + r.y,
-                     x0 - r.x + rAlign.x,
-                     y0 - r.y + rAlign.y );
-
-         m_skymap->plotFoVStars( m_lst, m_geoLat, x0-r.x, y0-r.y, scale*x0, g, 13 );
-      }
-   }
-}
 
 // ----------------------------------------------------------------------------
 

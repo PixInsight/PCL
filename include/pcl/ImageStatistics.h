@@ -635,7 +635,7 @@ public:
     */
    bool IsHighRejectionEnabled() const
    {
-      return m_data.rejectLow;
+      return m_data.rejectHigh;
    }
 
    /*!

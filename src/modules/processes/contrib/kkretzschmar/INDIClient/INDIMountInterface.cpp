@@ -57,6 +57,7 @@
 #include "INDIDeviceControllerInterface.h"
 #include "INDIMountInterface.h"
 #include "INDIMountProcess.h"
+#include "INDIMountParameters.h"
 #include "SkyMap.h"
 
 #include "INDI/basedevice.h"
@@ -86,18 +87,16 @@ INDIMountInterface::INDIMountInterface() :
    GUI( nullptr ),
    m_serverMessage(),
    m_Device(),
+   m_execution( nullptr ),
    m_TargetRA( "0" ),
    m_TargetDEC( "0" ),
    m_downloadedFile( "2" ),
-   m_skymap( nullptr ),
    m_geoLat( 0 ),
    m_lst( 0 ),
    m_scopeRA( 0 ),
    m_scopeDEC( 0 ),
    m_alignedRA( 0 ),
-   m_alignedDEC( 0 ),
-   m_limitStarMag( 4.5 ),
-   m_isAllSkyView( true )
+   m_alignedDEC( 0 )
 {
    TheINDIMountInterface = this;
 }
@@ -106,8 +105,6 @@ INDIMountInterface::~INDIMountInterface()
 {
    if ( GUI != nullptr )
       delete GUI, GUI = nullptr;
-   if ( m_skymap != nullptr )
-      delete m_skymap, m_skymap = nullptr;
 }
 
 IsoString INDIMountInterface::Id() const
@@ -152,8 +149,14 @@ bool INDIMountInterface::Launch( const MetaProcess& P, const ProcessImplementati
 
 ProcessImplementation* INDIMountInterface::NewProcess() const
 {
-   INDIMountInstance* instance = new INDIMountInstance(TheINDIMountProcess);
+   INDIMountInstance* instance = new INDIMountInstance( TheINDIMountProcess );
    instance->p_deviceName = m_Device;
+   instance->p_currentRA = CoordUtils::convertFromHMS(GUI->RA_H_Edit.Value(), GUI->RA_M_Edit.Value(),GUI->RA_S_Edit.Value());
+   instance->p_currentDEC = CoordUtils::convertFromHMS(GUI->DEC_D_Edit.Value(), GUI->DEC_M_Edit.Value(),GUI->DEC_S_Edit.Value());
+   instance->p_targetRA = CoordUtils::convertFromHMS(GUI->TargetRA_H_SpinBox.Value(), GUI->TargetRA_M_SpinBox.Value(),GUI->TargetRA_S_NumericEdit.Value());
+   instance->p_targetDEC = CoordUtils::convertFromHMS(GUI->TargetDEC_H_SpinBox.Value(), GUI->TargetDEC_M_SpinBox.Value(),GUI->TargetDEC_S_NumericEdit.Value());
+   if (GUI->MountTargetDECIsSouth_CheckBox.IsChecked())
+	   instance->p_currentDEC *= -1.0;
    // TODO copy other process parameters
    return instance ;
 
@@ -182,12 +185,35 @@ bool INDIMountInterface::ImportProcess( const ProcessImplementation& p )
    const INDIMountInstance* instance = dynamic_cast<const INDIMountInstance*>( &p );
    if (instance != nullptr)
    {
-	   // set GUI parameters from imported process instance
+	   CoordUtils::HMS hms;
+
+	   hms = CoordUtils::convertToHMS( instance->p_currentRA );
+	   GUI->RA_H_Edit.SetValue(hms.hour);
+	   GUI->RA_M_Edit.SetValue(hms.minute);
+	   GUI->RA_S_Edit.SetValue(hms.second);
+
+	   hms = CoordUtils::convertToHMS( instance->p_currentDEC );
+	   GUI->DEC_D_Edit.SetValue(hms.hour);
+	   GUI->DEC_M_Edit.SetValue(hms.minute);
+	   GUI->DEC_S_Edit.SetValue(hms.second);
+
+	   hms = CoordUtils::convertToHMS( instance->p_targetRA );
+	   GUI->TargetRA_H_SpinBox.SetValue(hms.hour);
+	   GUI->TargetRA_M_SpinBox.SetValue(hms.minute);
+	   GUI->TargetRA_S_NumericEdit.SetValue(hms.second);
+
+	   hms = CoordUtils::convertToHMS( instance->p_targetDEC );
+	   GUI->TargetDEC_H_SpinBox.SetValue(hms.hour);
+	   GUI->TargetDEC_M_SpinBox.SetValue(hms.minute);
+	   GUI->TargetDEC_S_NumericEdit.SetValue(hms.second);
+	   if (instance->p_targetDEC <0)
+		   GUI->MountTargetDECIsSouth_CheckBox.Check();
+
+
 	   UpdateControls(); // Remove
 	   if ( instance->ValidateDevice( false/*throwErrors*/ ) )
 	   {
 		   m_Device = instance->p_deviceName;
-		   // instance->SendDeviceProperties();
 	   }
 	   else
 		   m_Device.Clear();
@@ -218,191 +244,6 @@ void INDIMountInterface::UpdateControls()
 }
 
 // ----------------------------------------------------------------------------
-
-void EditEqCoordPropertyDialog::setRACoords(String value){
-   StringList tokens;
-   value.Break(tokens,':',true);
-   assert(tokens.Length()==3);
-   tokens[0].TrimLeft();
-   RA_Hour_Edit.SetText(tokens[0]);
-   RA_Minute_Edit.SetText(tokens[1]);
-   RA_Second_Edit.SetText(tokens[2]);
-   m_ra_hour=tokens[0].ToDouble();
-   m_ra_minute=tokens[1].ToDouble();
-   m_ra_second=tokens[2].ToDouble();
-   double coord_ra=m_ra_hour + m_ra_minute / 60 + m_ra_second / 3600;
-   m_RA_TargetCoord = String(coord_ra);
-}
-
-void EditEqCoordPropertyDialog::setDECCoords(String value){
-   StringList tokens;
-   value.Break(tokens,':',true);
-   assert(tokens.Length()==3);
-   tokens[0].TrimLeft();
-   DEC_Hour_Edit.SetText(tokens[0]);
-   DEC_Minute_Edit.SetText(tokens[1]);
-   DEC_Second_Edit.SetText(tokens[2]);
-   m_dec_deg=tokens[0].ToDouble();
-   m_dec_arcminute=tokens[1].ToDouble();
-   m_dec_arcsecond=tokens[2].ToDouble();
-   int sign=m_dec_deg >= 0 ? 1 : -1;
-   double coord_dec=sign * (fabs(m_dec_deg) + m_dec_arcminute / 60 + m_dec_arcsecond / 3600);
-   m_DEC_TargetCoord = String(coord_dec);
-}
-
-void EditEqCoordPropertyDialog::EditCompleted( Edit& sender )
-{
-   if (sender==RA_Hour_Edit){
-      m_ra_hour=sender.Text().ToDouble();
-      m_ra_minute=RA_Minute_Edit.Text().ToDouble();
-      m_ra_second=RA_Second_Edit.Text().ToDouble();
-   }
-   if (sender==RA_Minute_Edit){
-      m_ra_hour=RA_Hour_Edit.Text().ToDouble();
-      m_ra_minute=sender.Text().ToDouble();
-      m_ra_second=RA_Second_Edit.Text().ToDouble();
-   }
-   if (sender==RA_Second_Edit){
-      m_ra_hour=RA_Hour_Edit.Text().ToDouble();
-      m_ra_minute=RA_Minute_Edit.Text().ToDouble();
-      m_ra_second=sender.Text().ToDouble();
-   }
-   double coord_ra=m_ra_hour + m_ra_minute / 60 + m_ra_second / 3600;
-   m_RA_TargetCoord = String(coord_ra);
-
-   if (sender == DEC_Hour_Edit) {
-      m_dec_deg = sender.Text().ToDouble();
-      m_dec_arcminute = DEC_Minute_Edit.Text().ToDouble();
-      m_dec_arcsecond = DEC_Second_Edit.Text().ToDouble();
-   }
-   if (sender == DEC_Minute_Edit) {
-      m_dec_deg = DEC_Hour_Edit.Text().ToDouble();
-      m_dec_arcminute = sender.Text().ToDouble();
-      m_dec_arcsecond = DEC_Second_Edit.Text().ToDouble();
-   }
-   if (sender == DEC_Second_Edit) {
-      m_dec_deg = DEC_Hour_Edit.Text().ToDouble();
-      m_dec_arcminute = DEC_Minute_Edit.Text().ToDouble();
-      m_dec_arcsecond = sender.Text().ToDouble();
-   }
-   double sign=m_dec_deg >= 0 ? 1.0 : -1.0;
-   double coord_dec = sign * (fabs(m_dec_deg) + m_dec_arcminute / 60 + m_dec_arcsecond / 3600);
-   m_DEC_TargetCoord = String(coord_dec);
-
-}
-
-void EditEqCoordPropertyDialog::Ok_Button_Click( Button& sender, bool checked ){
-   Ok();
-}
-void EditEqCoordPropertyDialog::Cancel_Button_Click( Button& sender, bool checked ){
-   Cancel();
-}
-
-EditEqCoordPropertyDialog::EditEqCoordPropertyDialog(String raCoord, String decCoord):m_ra_hour(0),m_ra_minute(0),m_ra_second(0),m_dec_deg(0),m_dec_arcsecond(0),m_dec_arcminute(0),m_DEC_TargetCoord(String("")){
-   pcl::Font fnt = Font();
-   int labelWidth = fnt.Width(String('0', 20));
-   int editWidth = fnt.Width(String('0', 4));
-
-   CoordUtils::HMS ra_hms = CoordUtils::parse(raCoord);
-   CoordUtils::HMS dec_hms = CoordUtils::parse(decCoord);
-
-   SetWindowTitle( "Set equatorial coordinates for target object." );
-
-   RA_Property_Label.SetMinWidth(labelWidth);
-   RA_Property_Label.SetText( "RA (hh:mm:ss.ss)" );
-   RA_Property_Label.SetTextAlignment(TextAlign::Left | TextAlign::VertCenter);
-
-   RA_Hour_Edit.SetMaxWidth(editWidth);
-   RA_Hour_Edit.SetText(IsoString(ra_hms.hour));
-   RA_Hour_Edit.OnEditCompleted(
-         (Edit::edit_event_handler) &EditEqCoordPropertyDialog::EditCompleted,
-         *this);
-
-   RA_Colon1_Label.SetText(":");
-
-   RA_Minute_Edit.SetMaxWidth(editWidth);
-   RA_Minute_Edit.SetText(IsoString(ra_hms.minute));
-   RA_Minute_Edit.OnEditCompleted(
-         (Edit::edit_event_handler) &EditEqCoordPropertyDialog::EditCompleted,
-         *this);
-
-   RA_Colon2_Label.SetText(":");
-
-   RA_Second_Edit.SetMaxWidth(editWidth);
-   RA_Second_Edit.SetText(IsoString(ra_hms.second));
-   RA_Second_Edit.OnEditCompleted(
-         (Edit::edit_event_handler) &EditEqCoordPropertyDialog::EditCompleted,
-         *this);
-
-   DEC_Property_Label.SetMinWidth(labelWidth);
-   DEC_Property_Label.SetText( "Dec (dd:mm:ss.ss)" );
-   DEC_Property_Label.SetTextAlignment(TextAlign::Left | TextAlign::VertCenter);
-
-   DEC_Hour_Edit.SetMaxWidth(editWidth);
-   DEC_Hour_Edit.SetText(IsoString(dec_hms.hour));
-   DEC_Hour_Edit.OnEditCompleted(
-         (Edit::edit_event_handler) &EditEqCoordPropertyDialog::EditCompleted,
-         *this);
-
-   DEC_Colon1_Label.SetText( ":" );
-
-   DEC_Minute_Edit.SetMaxWidth(editWidth);
-   DEC_Minute_Edit.SetText(IsoString(dec_hms.minute));
-   DEC_Minute_Edit.OnEditCompleted(
-         (Edit::edit_event_handler) &EditEqCoordPropertyDialog::EditCompleted,
-         *this);
-
-   DEC_Colon2_Label.SetText( ":" );
-
-   DEC_Second_Edit.SetMaxWidth(editWidth);
-   DEC_Second_Edit.SetText(IsoString(dec_hms.second));
-   DEC_Second_Edit.OnEditCompleted(
-         (Edit::edit_event_handler) &EditEqCoordPropertyDialog::EditCompleted,
-         *this);
-
-   OK_PushButton.SetText( "OK" );
-   OK_PushButton.OnClick(
-         (Button::click_event_handler) &EditEqCoordPropertyDialog::Ok_Button_Click,
-         *this);
-   Cancel_PushButton.SetText( "Cancel" );
-   Cancel_PushButton.OnClick(
-         (Button::click_event_handler) &EditEqCoordPropertyDialog::Cancel_Button_Click,
-         *this);
-
-   RA_Property_Sizer.SetMargin(10);
-   RA_Property_Sizer.SetSpacing(4);
-   RA_Property_Sizer.Add(RA_Property_Label);
-   RA_Property_Sizer.Add(RA_Hour_Edit);
-   RA_Property_Sizer.Add(RA_Colon1_Label);
-   RA_Property_Sizer.Add(RA_Minute_Edit);
-   RA_Property_Sizer.Add(RA_Colon2_Label);
-   RA_Property_Sizer.Add(RA_Second_Edit);
-   RA_Property_Sizer.AddStretch();
-
-   DEC_Property_Sizer.SetMargin(10);
-   DEC_Property_Sizer.SetSpacing(4);
-   DEC_Property_Sizer.Add(DEC_Property_Label);
-   DEC_Property_Sizer.Add(DEC_Hour_Edit);
-   DEC_Property_Sizer.Add(DEC_Colon1_Label);
-   DEC_Property_Sizer.Add(DEC_Minute_Edit);
-   DEC_Property_Sizer.Add(DEC_Colon2_Label);
-   DEC_Property_Sizer.Add(DEC_Second_Edit);
-   DEC_Property_Sizer.AddStretch();
-
-   Buttons_Sizer.SetSpacing(4);
-   Buttons_Sizer.AddSpacing(10);
-   Buttons_Sizer.AddStretch();
-   Buttons_Sizer.Add(OK_PushButton);
-   Buttons_Sizer.AddStretch();
-   Buttons_Sizer.Add(Cancel_PushButton);
-   Buttons_Sizer.AddStretch();
-
-   Global_Sizer.Add(RA_Property_Sizer);
-   Global_Sizer.Add(DEC_Property_Sizer);
-   Global_Sizer.Add(Buttons_Sizer);
-
-   SetSizer(Global_Sizer);
-}
 
 CoordSearchDialog::CoordSearchDialog():m_targetObj(""),m_RA_TargetCoord(0),m_DEC_TargetCoord(0),m_downloadedFile(""){
    pcl::Font fnt = Font();
@@ -623,7 +464,7 @@ INDIMountInterface::GUIData::GUIData(INDIMountInterface& w )
    DEC_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    DEC_Label.SetFixedWidth(labelWidth1);
    DEC_D_Edit.SetInteger();
-   DEC_D_Edit.SetRange(0,59);
+   DEC_D_Edit.SetRange(-90,90);
    DEC_D_Edit.edit.SetFixedWidth(editWidth1);
    DEC_D_Edit.SetToolTip( "<p>Telescope position in equatorial coordinates: Declination (degrees)</p>" );
    DEC_D_Edit.Disable();
@@ -648,7 +489,7 @@ INDIMountInterface::GUIData::GUIData(INDIMountInterface& w )
    AZ_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    AZ_Label.SetFixedWidth(labelWidth1);
    AZ_D_Edit.SetInteger();
-   AZ_D_Edit.SetRange(0,59);
+   AZ_D_Edit.SetRange(0,359);
    AZ_D_Edit.edit.SetFixedWidth(editWidth1);
    AZ_D_Edit.SetToolTip( "<p>Telescope position in equatorial coordinates: Azimuth (degrees)</p>" );
    AZ_D_Edit.Disable();
@@ -673,7 +514,7 @@ INDIMountInterface::GUIData::GUIData(INDIMountInterface& w )
    ALT_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    ALT_Label.SetFixedWidth(labelWidth1);
    ALT_D_Edit.SetInteger();
-   ALT_D_Edit.SetRange(0,59);
+   ALT_D_Edit.SetRange(-90,90);
    ALT_D_Edit.edit.SetFixedWidth(editWidth1);
    ALT_D_Edit.SetToolTip( "<p>Telescope position in equatorial coordinates: Altitude (degrees)</p>" );
    ALT_D_Edit.Disable();
@@ -786,6 +627,8 @@ INDIMountInterface::GUIData::GUIData(INDIMountInterface& w )
    MountGotoCancel_PushButton.SetText( "Cancel" );
    MountGotoCancel_PushButton.SetIcon(w.ScaledResource( ":/icons/stop.png" ));
    MountGotoCancel_PushButton.SetStyleSheet( "QPushButton { text-align: left; }" );
+   MountGotoCancel_PushButton.OnClick( (Button::click_event_handler) &INDIMountInterface::e_Click, w );
+   MountGotoCancel_PushButton.Disable();
 
    MountGotoStart_Sizer.SetSpacing(4);
    MountGotoStart_Sizer.Add(MountGotoCommand_Label);
@@ -957,6 +800,83 @@ void INDIMountInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
 }
 
 
+
+class INDIMountInterfaceExecution : public AbstractINDIMountExecution
+{
+public:
+
+	INDIMountInterfaceExecution( INDIMountInterface* iface ) :
+		AbstractINDIMountExecution( *dynamic_cast<INDIMountInstance*>( iface->NewProcess() ) ),
+      m_iface( iface ),
+      m_instanceAuto( &m_instance ),
+      m_abortRequested( false ),
+	  m_commandType(IMCCommandType::Default)
+   {
+   }
+
+   virtual void Abort()
+   {
+      m_abortRequested = true;
+   }
+
+private:
+
+   INDIMountInterface*            m_iface;
+   AutoPointer<INDIMountInstance> m_instanceAuto;
+   bool                           m_abortRequested;
+
+   pcl_enum                       m_commandType;
+
+virtual void StartMountEvent(double targetRA, double currentRA, double targetDEC, double currentDEC, pcl_enum commandType)
+{
+	m_iface->m_execution = this;
+	m_commandType = commandType;
+	m_iface->GUI->TargetRA_H_SpinBox.Disable();
+	m_iface->GUI->TargetRA_M_SpinBox.Disable();
+	m_iface->GUI->TargetDEC_H_SpinBox.Disable();
+	m_iface->GUI->TargetDEC_M_SpinBox.Disable();
+	m_iface->GUI->TargetRA_S_NumericEdit.Disable();
+	m_iface->GUI->TargetDEC_S_NumericEdit.Disable();
+	m_iface->GUI->MountTargetDECIsSouth_CheckBox.Disable();
+	m_iface->GUI->MountSynch_PushButton.Disable();
+	m_iface->GUI->MountSearch_PushButton.Disable();
+	m_iface->GUI->MountGotoStart_PushButton.Disable();
+	m_iface->GUI->MountGotoCancel_PushButton.Enable();
+	m_iface->ProcessEvents();
+
+}
+
+virtual void MountEvent(double targetRA, double currentRA, double targetDEC, double currentDEC)
+{
+	if ( m_abortRequested )
+		AbstractINDIMountExecution::Abort();
+	m_iface->ProcessEvents();
+}
+
+virtual void EndMountEvent()
+{
+	m_iface->m_execution = nullptr;
+	m_iface->GUI->TargetRA_H_SpinBox.Enable();
+	m_iface->GUI->TargetRA_M_SpinBox.Enable();
+	m_iface->GUI->TargetDEC_H_SpinBox.Enable();
+	m_iface->GUI->TargetDEC_M_SpinBox.Enable();
+	m_iface->GUI->TargetRA_S_NumericEdit.Enable();
+	m_iface->GUI->TargetDEC_S_NumericEdit.Enable();
+	m_iface->GUI->MountTargetDECIsSouth_CheckBox.Enable();
+	m_iface->GUI->MountSynch_PushButton.Enable();
+	m_iface->GUI->MountSearch_PushButton.Enable();
+	m_iface->GUI->MountGotoStart_PushButton.Enable();
+	m_iface->GUI->MountGotoCancel_PushButton.Disable();
+	m_iface->ProcessEvents();
+}
+
+virtual void AbortEvent()
+{
+	EndMountEvent();
+}
+
+};
+
 void INDIMountInterface::e_Click(Button& sender, bool checked){
 
    if ( !INDIClient::HasClient() )
@@ -966,30 +886,14 @@ void INDIMountInterface::e_Click(Button& sender, bool checked){
 
    if ( sender == GUI->MountGotoStart_PushButton )
    {
-	   double tg_ra=   (double) GUI->TargetRA_H_SpinBox.Value()
-	   				    + (double) GUI->TargetRA_M_SpinBox.Value() / 60
-	   			    	+ GUI->TargetRA_S_NumericEdit.Value() / 3600;
-	   m_TargetRA = String(tg_ra);
+	  INDIMountInterfaceExecution mountExecution(this);
+	  mountExecution.setCommandType(IMCCommandType::Goto);
+	  mountExecution.Perform();
 
-	   double tg_dec  =   (double) GUI->TargetDEC_H_SpinBox.Value()
-	   	   			    + (double) GUI->TargetDEC_M_SpinBox.Value() / 60
-	   	   			   	+ GUI->TargetDEC_S_NumericEdit.Value() / 3600;
-
-	   if (GUI->MountTargetDECIsSouth_CheckBox.IsChecked())
-		   tg_dec *=-1;
-
-	   m_TargetDEC = String(tg_dec);
-
-      INDINewPropertyItem newPropertyListItem;
-      newPropertyListItem.Device = m_Device;
-      newPropertyListItem.Property = "EQUATORIAL_EOD_COORD";
-      newPropertyListItem.PropertyType = "INDI_NUMBER";
-
-      newPropertyListItem.ElementValue.Add(ElementValuePair("RA",m_TargetRA));
-      newPropertyListItem.ElementValue.Add(ElementValuePair("DEC",m_TargetDEC));
-
-      // send (RA,DEC) coordinates in a bulk request
-      indi->SendNewPropertyItem( newPropertyListItem, true/*async*/ );
+   }
+   else if (sender == GUI->MountGotoCancel_PushButton){
+	   if ( m_execution != nullptr )
+		   m_execution->Abort();
    }
    else if ( sender == GUI->MountSearch_PushButton )
    {
@@ -1015,34 +919,11 @@ void INDIMountInterface::e_Click(Button& sender, bool checked){
    }
    else if ( sender == GUI->MountSynch_PushButton )
    {
-
-
-      INDINewPropertyItem newPropertyListItem;
-      newPropertyListItem.Device = m_Device;
-      newPropertyListItem.Property = "ON_COORD_SET";
-      newPropertyListItem.PropertyType = "INDI_SWITCH";
-      newPropertyListItem.ElementValue.Add(ElementValuePair("SYNC","ON"));
-
-      indi->SendNewPropertyItem( newPropertyListItem, true/*async*/ );
-      newPropertyListItem.ElementValue.Clear();
-
-      newPropertyListItem.Property = "EQUATORIAL_EOD_COORD";
-      newPropertyListItem.PropertyType = "INDI_NUMBER";
-      newPropertyListItem.ElementValue.Add(ElementValuePair("RA",m_TargetRA));
-      newPropertyListItem.ElementValue.Add(ElementValuePair("DEC",m_TargetDEC));
-
-
-      // send (RA,DEC) coordinates in propertyVector
-      indi->SendNewPropertyItem( newPropertyListItem, true/*async*/ );
-      newPropertyListItem.ElementValue.Clear();
-
-      newPropertyListItem.Property = "ON_COORD_SET";
-      newPropertyListItem.PropertyType = "INDI_SWITCH";
-      newPropertyListItem.ElementValue.Add(ElementValuePair("TRACK","ON"));
-      indi->SendNewPropertyItem( newPropertyListItem, true/*async*/ );
+	   INDIMountInterfaceExecution mountExecution(this);
+	   mountExecution.setCommandType(IMCCommandType::Synch);
+	   mountExecution.Perform();
    }
 }
-
 
 // ----------------------------------------------------------------------------
 

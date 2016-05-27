@@ -130,7 +130,10 @@ public:
       return m_aborted;
    }
 
-
+   void setCommandType(pcl_enum commandType)
+   {
+	   m_instance.p_commandType = commandType;
+   }
 protected:
 
    INDIMountInstance& m_instance;

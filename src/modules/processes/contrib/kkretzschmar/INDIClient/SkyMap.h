@@ -70,11 +70,14 @@ public:
       double hour;
       double minute;
       double second;
+      HMS( ):hour(0),minute(0),second(0) {}
+      HMS(double h,double m,double s ):hour(h),minute(m),second(s) {}
    };
 
    static HMS convertToHMS( double coord );
    static HMS parse( String coordStr );
    static double convertFromHMS( const HMS& coord );
+   static double convertFromHMS( double hour, double minutes, double seconds );
    static double convertDegFromHMS( const HMS& coord );
    static double convertRadFromHMS( const HMS& coord );
 };

@@ -90,63 +90,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-
-class SkyMap;
-
-class EditEqCoordPropertyDialog : public Dialog {
-private:
-	VerticalSizer       Global_Sizer;
-		HorizontalSizer		RA_Property_Sizer;
-			Label               RA_Property_Label;
-			Edit				RA_Hour_Edit;
-			Label               RA_Colon1_Label;
-			Edit				RA_Minute_Edit;
-			Label               RA_Colon2_Label;
-			Edit				RA_Second_Edit;
-			PushButton          Search_PushButton;
-		HorizontalSizer		DEC_Property_Sizer;
-			Label               DEC_Property_Label;
-			Edit				DEC_Hour_Edit;
-			Label               DEC_Colon1_Label;
-			Edit				DEC_Minute_Edit;
-			Label               DEC_Colon2_Label;
-			Edit				DEC_Second_Edit;
-		HorizontalSizer	Buttons_Sizer;
-			PushButton			OK_PushButton;
-			PushButton			Cancel_PushButton;
-
-	double m_ra_hour;
-	double m_ra_minute;
-	double m_ra_second;
-	double m_dec_deg;
-	double m_dec_arcsecond;
-	double m_dec_arcminute;
-
-	String m_RA_TargetCoord;
-	String m_DEC_TargetCoord;
-
-public:
-
-	EditEqCoordPropertyDialog(String raCoord, String decCoord);
-	virtual ~EditEqCoordPropertyDialog(){}
-
-	virtual void setRACoords(String value);
-	virtual void setDECCoords(String value);
-	void EditCompleted( Edit& sender);
-	String getTargetRaCoord() const {return m_RA_TargetCoord;}
-	String getTargetDECCoord() const {return m_DEC_TargetCoord;}
-
-	double getRaHour() {return m_ra_hour;}
-	double getRaMinute() {return m_ra_minute;}
-	double getRaSecond() {return m_ra_second;}
-
-	double getDecDeg() {return m_dec_deg;}
-	double getDecArcMinute() {return m_dec_arcminute;}
-	double getDecArcSecond() {return m_dec_arcsecond;}
-
-	void Ok_Button_Click( Button& sender, bool checked );
-	void Cancel_Button_Click( Button& sender, bool checked );
-};
+class INDIMountInterfaceExecution;
 
 
 class CoordSearchDialog : public Dialog {
@@ -279,11 +223,13 @@ private:
    IsoString m_serverMessage;
 
    //INDINewPropertyListItem m_newPropertyListItem;
-   String                  m_Device;
+   String                       m_Device;
+   INDIMountInterfaceExecution* m_execution;
+
+
    String                  m_TargetRA;
    String                  m_TargetDEC;
    IsoString               m_downloadedFile;
-   SkyMap*                 m_skymap;
 
 
    double                  m_geoLat;
@@ -292,8 +238,6 @@ private:
    double				   m_scopeDEC;
    double				   m_alignedRA;
    double			       m_alignedDEC;
-   double                  m_limitStarMag;
-   bool                    m_isAllSkyView;
 
    void UpdateDeviceList_Timer( Timer& sender );
    void UpdateMount_Timer( Timer &sender );
@@ -301,6 +245,8 @@ private:
    void e_ItemSelected(ComboBox& sender, int itemIndex);
    void e_Click(Button& sender, bool checked);
    bool e_DownloadDataAvailable(NetworkTransfer &sender, const void *buffer, fsize_type size);
+
+   friend class INDIMountInterfaceExecution;
 };
 
 // ----------------------------------------------------------------------------

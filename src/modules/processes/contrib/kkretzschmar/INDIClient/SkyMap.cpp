@@ -79,8 +79,13 @@ CoordUtils::HMS CoordUtils::parse(String coordStr){
 double CoordUtils::convertFromHMS(const CoordUtils::HMS& coord_in_HMS){
    int sign=coord_in_HMS.hour >= 0 ? 1 : -1;
    // seconds are rounded to two fractional decimals
-   double coord=sign * (fabs(coord_in_HMS.hour) + coord_in_HMS.minute / 60 + coord_in_HMS.second / 3600);
+   double coord=sign * (fabs(coord_in_HMS.hour) + coord_in_HMS.minute / 60.0 + coord_in_HMS.second / 3600.0);
    return coord;
+}
+
+double CoordUtils::convertFromHMS( double hour, double minutes, double seconds ){
+	HMS hms(hour,minutes,seconds);
+	return convertFromHMS(hms);
 }
 
 double CoordUtils::convertDegFromHMS(const CoordUtils::HMS& coord_in_HMS){

@@ -53,15 +53,57 @@
 #include "INDIMountInstance.h"
 #include "INDIMountParameters.h"
 #include "INDIClient.h"
-
 #include <pcl/Console.h>
 #include <pcl/SpinStatus.h>
 #include <pcl/StdStatus.h>
 #include <pcl/Math.h>
 #include <pcl/MetaModule.h>
+#include <pcl/MessageBox.h>
 
 namespace pcl
 {
+
+// ----------------------------------------------------------------------------
+CoordUtils::HMS CoordUtils::convertToHMS(double coord){
+   HMS coordInHMS;
+   coordInHMS.hour   = trunc(coord);
+   coordInHMS.minute = trunc((coord - coordInHMS.hour) * 60);
+   coordInHMS.second = fabs(trunc(((coord - coordInHMS.hour) * 60 - coordInHMS.minute ) * 60*100)/100.0);
+   coordInHMS.minute = fabs(coordInHMS.minute);
+   return coordInHMS;
+}
+
+CoordUtils::HMS CoordUtils::parse(String coordStr, String sep){
+   CoordUtils::HMS result;
+   StringList tokens;
+   coordStr.Break(tokens,IsoString(sep).c_str(),true);
+   tokens[0].TrimLeft();
+   result.hour=tokens[0].ToDouble();
+   result.minute=tokens[1].ToDouble();
+   result.second=tokens[2].ToDouble();
+   return result;
+}
+
+double CoordUtils::convertFromHMS(const CoordUtils::HMS& coord_in_HMS){
+   int sign=coord_in_HMS.hour >= 0 ? 1 : -1;
+   // seconds are rounded to two fractional decimals
+   double coord=sign * (fabs(coord_in_HMS.hour) + coord_in_HMS.minute / 60.0 + coord_in_HMS.second / 3600.0);
+   return coord;
+}
+
+double CoordUtils::convertFromHMS( double hour, double minutes, double seconds ){
+	HMS hms(hour,minutes,seconds);
+	return convertFromHMS(hms);
+}
+
+double CoordUtils::convertDegFromHMS(const CoordUtils::HMS& coord_in_HMS){
+   return CoordUtils::convertFromHMS(coord_in_HMS) * 360.0 / 24.0 ;
+}
+
+double CoordUtils::convertRadFromHMS( const CoordUtils::HMS& coord )
+{
+   return Rad( CoordUtils::convertDegFromHMS( coord ) );
+}
 
 // ----------------------------------------------------------------------------
 
@@ -71,6 +113,7 @@ INDIMountInstance::INDIMountInstance( const MetaProcess* m ) :
    p_commandType( IMCCommandType::Default),
    p_targetRA( TheIMCTargetRightAscensionParameter->DefaultValue()),
    p_targetDEC (TheIMCTargetDeclinationParameter->DefaultValue()),
+   p_lst(TheIMCLocalSiderialTimeParameter->DefaultValue()),
    p_currentRA( TheIMCCurrentRightAscensionParameter->DefaultValue()),
    p_currentDEC( TheIMCCurrentDeclinationParameter->DefaultValue() )
 
@@ -91,6 +134,7 @@ void INDIMountInstance::Assign( const ProcessImplementation& p )
    {
 	   p_deviceName  = x->p_deviceName;
 	   p_commandType = x->p_commandType;
+	   p_lst         = x->p_lst;
 	   p_targetRA    = x->p_targetRA;
 	   p_targetDEC   = x->p_currentDEC;
 	   p_currentRA   = x->p_currentRA;
@@ -99,7 +143,7 @@ void INDIMountInstance::Assign( const ProcessImplementation& p )
    }
 }
 
-bool INDIMountInstance::CanExecuteOn( const View&, pcl::String& whyNot ) const
+bool INDIMountInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) const
 {
 	if (p_deviceName.IsEmpty())
 	{
@@ -107,8 +151,19 @@ bool INDIMountInstance::CanExecuteOn( const View&, pcl::String& whyNot ) const
 		return false;
 	}
 
-   whyNot = "INDI Mount only be executed in the global context";
-   return false;
+	if ( !view.IsMainView() )
+	{
+		whyNot = "IMDI Mount can only be executed on main views, not on previews.";
+		return false;
+	}
+	FITSKeywordArray K;
+	view.Window().GetKeywords( K );
+	for ( FITSKeywordArray::iterator i = K.Begin(); i != K.End(); ++i )
+		if (i->name == "OBJCTRA" || i->name == "OBJCTDEC")
+			return true;
+
+    whyNot = "INDI Mount can only be executed on solved views with OBJCTRA and OBJCTDEC keywords";
+    return false;
 }
 
 bool INDIMountInstance::CanExecuteGlobal( pcl::String& whyNot ) const
@@ -181,8 +236,50 @@ private:
 
 bool INDIMountInstance::ExecuteGlobal()
 {
-	       INDIMountInstanceExecution( *this ).Perform();
-	       return true;
+	INDIMountInstanceExecution( *this ).Perform();
+	return true;
+}
+
+bool INDIMountInstance::ExecuteOn( View& view )
+{
+	FITSKeywordArray K;
+	view.Window().GetKeywords( K );
+	double storedTargetRA=p_targetRA;
+	double storedTargetDEC=p_targetDEC;
+	pcl_enum storedCommandType=p_commandType;
+	for ( FITSKeywordArray::iterator i = K.Begin(); i != K.End(); ++i )
+	{
+		if (i->name == "OBJCTRA" )
+		{
+			IsoString valueStr = i->value.Substring(1,i->value.Length()-2);
+			CoordUtils::HMS hms=CoordUtils::parse(valueStr," ");
+			double centerRA=CoordUtils::convertFromHMS(hms);
+
+			p_targetRA = 2 * p_currentRA - centerRA;
+			if (p_targetRA < p_lst)
+			{
+				MessageBox warningMsg("New center right ascension coordinate crossed the meridian and will possibly trigger a meridian flip. Continue?","",StdIcon::NoIcon,StdButton::Ok,StdButton::Cancel);
+				MessageBox::std_button button = warningMsg.Execute();
+				if (button == StdButton::Cancel)
+					return false;
+			}
+
+		}
+		if (i->name == "OBJCTDEC" )
+		{
+			IsoString valueStr = i->value.Substring(1,i->value.Length()-2);
+			CoordUtils::HMS hms=CoordUtils::parse(valueStr," ");
+			double centerDEC=CoordUtils::convertFromHMS(hms);
+			p_targetDEC = 2 * p_currentDEC - centerDEC;
+		}
+	}
+	p_commandType = IMCCommandType::Goto;
+	INDIMountInstanceExecution( *this ).Perform();
+	// restore original target values;;
+	p_targetRA=storedTargetRA;
+	p_targetDEC=storedTargetDEC;
+	p_commandType=storedCommandType;
+	return true;
 }
 
 void* INDIMountInstance::LockParameter( const MetaParameter* p, size_type tableRow )
@@ -195,6 +292,8 @@ void* INDIMountInstance::LockParameter( const MetaParameter* p, size_type tableR
 		return &p_targetRA;
 	if ( p == TheIMCTargetDeclinationParameter )
 		return &p_targetDEC;
+	if (p == TheIMCLocalSiderialTimeParameter )
+		return &p_lst;
 	if ( p == TheIMCCurrentRightAscensionParameter )
 		return &p_currentRA;
 	if ( p == TheIMCCurrentDeclinationParameter )
@@ -301,7 +400,7 @@ void AbstractINDIMountExecution::Perform()
 	   case IMCCommandType::Unpark:
 	   {
 		   INDIPropertyListItem item;
-		   if ( indi->GetPropertyItem( m_instance.p_deviceName, "TELESCOPE_PARK", "PARK", item ) )
+		   if ( indi->GetPropertyItem( m_instance.p_deviceName, "TELESCOPE_PARK", "UNPARK", item ) )
 		   	{
 		   		INDINewPropertyItem newItem;
 		   		newItem.Device = m_instance.p_deviceName;
@@ -408,6 +507,7 @@ void AbstractINDIMountExecution::Perform()
 		   indi->SendNewPropertyItem( newItem, false );
 
 		   GetCurrentCoordinates(indi);
+		   EndMountEvent();
 	   }
 	   break;
 	   default:

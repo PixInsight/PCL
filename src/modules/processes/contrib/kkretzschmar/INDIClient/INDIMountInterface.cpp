@@ -58,7 +58,6 @@
 #include "INDIMountInterface.h"
 #include "INDIMountProcess.h"
 #include "INDIMountParameters.h"
-#include "SkyMap.h"
 
 #include "INDI/basedevice.h"
 #include "INDI/indiapi.h"
@@ -88,15 +87,7 @@ INDIMountInterface::INDIMountInterface() :
    m_serverMessage(),
    m_Device(),
    m_execution( nullptr ),
-   m_TargetRA( "0" ),
-   m_TargetDEC( "0" ),
-   m_downloadedFile( "2" ),
-   m_geoLat( 0 ),
-   m_lst( 0 ),
-   m_scopeRA( 0 ),
-   m_scopeDEC( 0 ),
-   m_alignedRA( 0 ),
-   m_alignedDEC( 0 )
+   m_downloadedFile( "2" )
 {
    TheINDIMountInterface = this;
 }
@@ -151,13 +142,13 @@ ProcessImplementation* INDIMountInterface::NewProcess() const
 {
    INDIMountInstance* instance = new INDIMountInstance( TheINDIMountProcess );
    instance->p_deviceName = m_Device;
+   instance->p_lst = CoordUtils::convertFromHMS(GUI->LST_H_Edit.Value(), GUI->LST_M_Edit.Value(),GUI->LST_S_Edit.Value());
    instance->p_currentRA = CoordUtils::convertFromHMS(GUI->RA_H_Edit.Value(), GUI->RA_M_Edit.Value(),GUI->RA_S_Edit.Value());
    instance->p_currentDEC = CoordUtils::convertFromHMS(GUI->DEC_D_Edit.Value(), GUI->DEC_M_Edit.Value(),GUI->DEC_S_Edit.Value());
    instance->p_targetRA = CoordUtils::convertFromHMS(GUI->TargetRA_H_SpinBox.Value(), GUI->TargetRA_M_SpinBox.Value(),GUI->TargetRA_S_NumericEdit.Value());
    instance->p_targetDEC = CoordUtils::convertFromHMS(GUI->TargetDEC_H_SpinBox.Value(), GUI->TargetDEC_M_SpinBox.Value(),GUI->TargetDEC_S_NumericEdit.Value());
    if (GUI->MountTargetDECIsSouth_CheckBox.IsChecked())
-	   instance->p_currentDEC *= -1.0;
-   // TODO copy other process parameters
+	   instance->p_targetDEC *= -1.0;
    return instance ;
 
 }
@@ -187,6 +178,11 @@ bool INDIMountInterface::ImportProcess( const ProcessImplementation& p )
    {
 	   CoordUtils::HMS hms;
 
+	   hms = CoordUtils::convertToHMS( instance->p_lst );
+	   GUI->LST_H_Edit.SetValue(hms.hour);
+	   GUI->LST_M_Edit.SetValue(hms.minute);
+	   GUI->LST_S_Edit.SetValue(hms.second);
+
 	   hms = CoordUtils::convertToHMS( instance->p_currentRA );
 	   GUI->RA_H_Edit.SetValue(hms.hour);
 	   GUI->RA_M_Edit.SetValue(hms.minute);
@@ -203,12 +199,13 @@ bool INDIMountInterface::ImportProcess( const ProcessImplementation& p )
 	   GUI->TargetRA_S_NumericEdit.SetValue(hms.second);
 
 	   hms = CoordUtils::convertToHMS( instance->p_targetDEC );
-	   GUI->TargetDEC_H_SpinBox.SetValue(hms.hour);
+	   GUI->TargetDEC_H_SpinBox.SetValue(fabs(hms.hour));
 	   GUI->TargetDEC_M_SpinBox.SetValue(hms.minute);
 	   GUI->TargetDEC_S_NumericEdit.SetValue(hms.second);
 	   if (instance->p_targetDEC <0)
 		   GUI->MountTargetDECIsSouth_CheckBox.Check();
-
+	   else
+		   GUI->MountTargetDECIsSouth_CheckBox.Uncheck();
 
 	   UpdateControls(); // Remove
 	   if ( instance->ValidateDevice( false/*throwErrors*/ ) )
@@ -532,7 +529,7 @@ INDIMountInterface::GUIData::GUIData(INDIMountInterface& w )
    MountHZALT_Sizer.Add(ALT_Label);
    MountHZALT_Sizer.Add(ALT_D_Edit);
    MountHZALT_Sizer.Add(ALT_M_Edit);
-   MountHZALT_Sizer.Add(ALT_M_Edit);
+   MountHZALT_Sizer.Add(ALT_S_Edit);
    MountHZALT_Sizer.AddStretch();
 
    MountProperties_Sizer.SetSpacing(4);
@@ -588,7 +585,7 @@ INDIMountInterface::GUIData::GUIData(INDIMountInterface& w )
    TargetDEC_S_NumericEdit.SetPrecision( 3 );
    TargetDEC_S_NumericEdit.SetRange(0,59.999);
    TargetDEC_S_NumericEdit.edit.SetFixedWidth( editWidth2 );
-   MountTargetDECIsSouth_CheckBox.SetText("Southern hemisphere");
+   MountTargetDECIsSouth_CheckBox.SetText("South");
    MountTargetDECIsSouth_CheckBox.SetToolTip( "<p>When checked coordinates are negative</p>");
 
    MountTargetDEC_Sizer.SetSpacing(4);
@@ -616,7 +613,18 @@ INDIMountInterface::GUIData::GUIData(INDIMountInterface& w )
    MountGotoCoord_HSizer.Add(MountGotoRight_Sizer);
    MountGotoCoord_HSizer.AddStretch();
 
-   MountGotoCommand_Label.SetText("Goto:");
+
+   MountParking_Label.SetText("Park telescope:");
+   MountParking_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   MountParking_Label.SetFixedWidth(labelWidth1);
+   MountParking_CheckBox.SetToolTip("<p>When checked goto execution will park the telescope.</p>");
+
+   MountParking_Sizer.SetSpacing(4);
+   MountParking_Sizer.Add(MountParking_Label);
+   MountParking_Sizer.Add(MountParking_CheckBox);
+   MountParking_Sizer.AddStretch();
+
+
    MountGotoCommand_Label.SetToolTip("<p>Start or stop goto execution");
    MountGotoCommand_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    MountGotoCommand_Label.SetFixedWidth(labelWidth1);
@@ -634,9 +642,9 @@ INDIMountInterface::GUIData::GUIData(INDIMountInterface& w )
    MountGotoStart_Sizer.Add(MountGotoCommand_Label);
    MountGotoStart_Sizer.Add(MountGotoStart_PushButton);
    MountGotoStart_Sizer.Add(MountGotoCancel_PushButton);
+   MountGotoStart_Sizer.Add(MountGotoInfo_Label,20);
    MountGotoStart_Sizer.AddStretch();
 
-   MountSynchCommand_Label.SetText("Synch:");
    MountSynchCommand_Label.SetToolTip("<p>Synchronize ...");
    MountSynchCommand_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
    MountSynchCommand_Label.SetFixedWidth(labelWidth1);
@@ -652,6 +660,7 @@ INDIMountInterface::GUIData::GUIData(INDIMountInterface& w )
 
    MountGoto_Sizer.SetSpacing(4);
    MountGoto_Sizer.Add(MountGotoCoord_HSizer);
+   MountGoto_Sizer.Add(MountParking_Sizer);
    MountGoto_Sizer.Add(MountGotoStart_Sizer);
    MountGoto_Sizer.Add(MountSynch_Sizer);
 
@@ -688,7 +697,7 @@ bool INDIMountInterface::e_DownloadDataAvailable( NetworkTransfer& sender, const
 
 void INDIMountInterface::UpdateDeviceList_Timer( Timer& sender )
 {
-   if ( sender == GUI->UpdateDeviceList_Timer )
+   if ( sender == GUI->UpdateDeviceList_Timer)
    {
 	   GUI->MountDevice_Combo.Clear();
 	   if ( INDIClient::HasClient() )
@@ -738,8 +747,6 @@ void INDIMountInterface::UpdateMount_Timer( Timer& sender )
     	 GUI->LST_H_Edit.SetValue(hms.hour);
     	 GUI->LST_M_Edit.SetValue(hms.minute);
     	 GUI->LST_S_Edit.SetValue(hms.second);
-         indi->GetPropertyItem( m_Device, "TIME_LST", "LST", MountProp, false/*formatted*/ );
-         m_lst = MountProp.PropertyValue.ToDouble();
       }
 
       if ( indi->GetPropertyItem( m_Device, "EQUATORIAL_EOD_COORD", "RA", MountProp ) )
@@ -748,8 +755,6 @@ void INDIMountInterface::UpdateMount_Timer( Timer& sender )
          GUI->RA_H_Edit.SetValue(hms.hour);
          GUI->RA_M_Edit.SetValue(hms.minute);
          GUI->RA_S_Edit.SetValue(hms.second);
-         indi->GetPropertyItem( m_Device, "EQUATORIAL_EOD_COORD", "RA", MountProp, false/*formatted*/ );
-         m_scopeRA = MountProp.PropertyValue.ToDouble();
       }
 
       if (indi->GetPropertyItem( m_Device, "EQUATORIAL_EOD_COORD", "DEC", MountProp ) )
@@ -758,15 +763,8 @@ void INDIMountInterface::UpdateMount_Timer( Timer& sender )
          GUI->DEC_D_Edit.SetValue(hms.hour);
          GUI->DEC_M_Edit.SetValue(hms.minute);
          GUI->DEC_S_Edit.SetValue(hms.second);
-         indi->GetPropertyItem( m_Device, "EQUATORIAL_EOD_COORD", "DEC", MountProp, false/*formatted*/ );
-         m_scopeDEC = MountProp.PropertyValue.ToDouble();
       }
 
-      if ( indi->GetPropertyItem( m_Device, "ALIGNTELESCOPECOORDS", "ALIGNTELESCOPE_RA", MountProp, false/*formatted*/ ) )
-         m_alignedRA = MountProp.PropertyValue.ToDouble();
-
-      if ( indi->GetPropertyItem( m_Device, "ALIGNTELESCOPECOORDS", "ALIGNTELESCOPE_DE", MountProp, false/*formatted*/ ) )
-         m_alignedDEC = MountProp.PropertyValue.ToDouble();
 
       if ( indi->GetPropertyItem( m_Device, "HORIZONTAL_COORD", "ALT", MountProp ) )
       {
@@ -775,6 +773,7 @@ void INDIMountInterface::UpdateMount_Timer( Timer& sender )
     	 GUI->ALT_M_Edit.SetValue(hms.minute);
     	 GUI->ALT_S_Edit.SetValue(hms.second);
       }
+
       if ( indi->GetPropertyItem( m_Device, "HORIZONTAL_COORD", "AZ", MountProp ) )
       {
     	 CoordUtils::HMS hms = CoordUtils::parse(MountProp.PropertyValue);
@@ -782,23 +781,8 @@ void INDIMountInterface::UpdateMount_Timer( Timer& sender )
     	 GUI->AZ_M_Edit.SetValue(hms.minute);
     	 GUI->AZ_S_Edit.SetValue(hms.second);
       }
-      if ( indi->GetPropertyItem( m_Device, "GEOGRAPHIC_COORD", "LAT", MountProp, false/*formatted*/ ) )
-         m_geoLat = MountProp.PropertyValue.ToDouble();
    }
 }
-
-void INDIMountInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
-{
-   if ( !INDIClient::HasClient() )
-	  return;
-
-   if ( sender == GUI->MountDevice_Combo )
-   {
-      m_Device = (itemIndex > 0) ? sender.ItemText( itemIndex ).Trimmed() : String();
-      UpdateControls();
-   }
-}
-
 
 
 class INDIMountInterfaceExecution : public AbstractINDIMountExecution
@@ -840,8 +824,10 @@ virtual void StartMountEvent(double targetRA, double currentRA, double targetDEC
 	m_iface->GUI->MountTargetDECIsSouth_CheckBox.Disable();
 	m_iface->GUI->MountSynch_PushButton.Disable();
 	m_iface->GUI->MountSearch_PushButton.Disable();
+	m_iface->GUI->MountParking_CheckBox.Disable();
 	m_iface->GUI->MountGotoStart_PushButton.Disable();
 	m_iface->GUI->MountGotoCancel_PushButton.Enable();
+	m_iface->GUI->MountGotoInfo_Label.Clear();
 	m_iface->ProcessEvents();
 
 }
@@ -850,6 +836,26 @@ virtual void MountEvent(double targetRA, double currentRA, double targetDEC, dou
 {
 	if ( m_abortRequested )
 		AbstractINDIMountExecution::Abort();
+
+	switch (m_commandType){
+	case IMCCommandType::Goto:
+	{
+		double deltaRA = fabs(targetRA - currentRA) * 60;
+		double deltaDEC = fabs(targetDEC - currentDEC) * 60;
+		m_iface->GUI->MountGotoInfo_Label.SetText(String().Format("Slewing: Delta (ra,dec) = (%.3lf,  %.3lf) (arc min)",deltaRA,deltaDEC));
+	}
+	break;
+	case IMCCommandType::Park:
+	{
+		m_iface->GUI->MountGotoInfo_Label.SetText(String().Format("Parking telescope"));
+	}
+	break;
+	case IMCCommandType::Synch:
+	break;
+	default:
+	break;
+	};
+
 	m_iface->ProcessEvents();
 }
 
@@ -865,8 +871,10 @@ virtual void EndMountEvent()
 	m_iface->GUI->MountTargetDECIsSouth_CheckBox.Enable();
 	m_iface->GUI->MountSynch_PushButton.Enable();
 	m_iface->GUI->MountSearch_PushButton.Enable();
+	m_iface->GUI->MountParking_CheckBox.Enable();
 	m_iface->GUI->MountGotoStart_PushButton.Enable();
 	m_iface->GUI->MountGotoCancel_PushButton.Disable();
+	m_iface->GUI->MountGotoInfo_Label.Clear();
 	m_iface->ProcessEvents();
 }
 
@@ -882,12 +890,13 @@ void INDIMountInterface::e_Click(Button& sender, bool checked){
    if ( !INDIClient::HasClient() )
 	  return;
 
-   INDIClient* indi = INDIClient::TheClient();
-
    if ( sender == GUI->MountGotoStart_PushButton )
    {
 	  INDIMountInterfaceExecution mountExecution(this);
-	  mountExecution.setCommandType(IMCCommandType::Goto);
+	  if (GUI->MountParking_CheckBox.IsChecked())
+		  mountExecution.setCommandType(IMCCommandType::Park);
+	  else
+		  mountExecution.setCommandType(IMCCommandType::Goto);
 	  mountExecution.Perform();
 
    }
@@ -907,14 +916,14 @@ void INDIMountInterface::e_Click(Button& sender, bool checked){
          GUI->TargetRA_H_SpinBox.SetValue(coord_RA_HMS.hour);
          GUI->TargetRA_M_SpinBox.SetValue(coord_RA_HMS.minute);
          GUI->TargetRA_S_NumericEdit.SetValue(coord_RA_HMS.second);
-         GUI->TargetDEC_H_SpinBox.SetValue(coord_DEC_HMS.hour);
+         GUI->TargetDEC_H_SpinBox.SetValue(fabs(coord_DEC_HMS.hour));
          GUI->TargetDEC_M_SpinBox.SetValue(coord_DEC_HMS.minute);
          GUI->TargetDEC_S_NumericEdit.SetValue(coord_DEC_HMS.second);
          if (target_dec <0)
         	 GUI->MountTargetDECIsSouth_CheckBox.Check();
+         else
+        	 GUI->MountTargetDECIsSouth_CheckBox.Uncheck();
 
-         m_TargetRA = String( target_ra );
-         m_TargetDEC = String( target_dec );
       }
    }
    else if ( sender == GUI->MountSynch_PushButton )
@@ -924,6 +933,52 @@ void INDIMountInterface::e_Click(Button& sender, bool checked){
 	   mountExecution.Perform();
    }
 }
+
+void INDIMountInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
+{
+   if ( !INDIClient::HasClient() )
+	  return;
+
+   if ( sender == GUI->MountDevice_Combo )
+   {
+      m_Device = (itemIndex > 0) ? sender.ItemText( itemIndex ).Trimmed() : String();
+      UpdateControls();
+
+      // get initial roperties and unpark mount
+      if ( !m_Device.IsEmpty() )
+      {
+    	  INDIClient* indi = INDIClient::TheClient();
+    	  INDIPropertyListItem MountProp;
+
+    	  // get initial target coordinates
+    	  if ( indi->GetPropertyItem( m_Device, "TARGET_EOD_COORD", "RA", MountProp ) )
+    	  {
+    		  CoordUtils::HMS hms = CoordUtils::parse(MountProp.PropertyValue);
+    		  GUI->TargetRA_H_SpinBox.SetValue(hms.hour);
+    		  GUI->TargetRA_M_SpinBox.SetValue(hms.minute);
+    		  GUI->TargetRA_S_NumericEdit.SetValue(hms.second);
+    	  }
+
+    	  if (indi->GetPropertyItem( m_Device, "TARGET_EOD_COORD", "DEC", MountProp ) )
+    	  {
+    		  CoordUtils::HMS hms = CoordUtils::parse(MountProp.PropertyValue);
+    		  GUI->TargetDEC_H_SpinBox.SetValue(fabs(hms.hour));
+    		  GUI->TargetDEC_M_SpinBox.SetValue(hms.minute);
+    		  GUI->TargetDEC_S_NumericEdit.SetValue(hms.second);
+    		  if (hms.hour<0)
+    			  GUI->MountTargetDECIsSouth_CheckBox.Check();
+    		  else
+    			  GUI->MountTargetDECIsSouth_CheckBox.Uncheck();
+    	  }
+
+    	  // unpark mount
+    	  INDIMountInterfaceExecution mountExecution(this);
+    	  mountExecution.setCommandType(IMCCommandType::Unpark);
+    	  mountExecution.Perform();
+      }
+   }
+}
+
 
 // ----------------------------------------------------------------------------
 

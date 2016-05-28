@@ -76,6 +76,7 @@ public:
    virtual bool CanExecuteGlobal( String& whyNot ) const;
 
    virtual bool ExecuteGlobal();
+   virtual bool ExecuteOn( View& view );
 
    virtual void* LockParameter( const MetaParameter* p, size_type tableRow );
    virtual bool  AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
@@ -89,6 +90,7 @@ private:
    pcl_enum p_commandType;
    double   p_targetRA;
    double   p_targetDEC;
+   double   p_lst;
    double   p_currentRA;
    double   p_currentDEC;
 
@@ -153,6 +155,26 @@ private:
 
 };
 
+// helper class
+class CoordUtils
+{
+public:
+   struct HMS
+   {
+      double hour;
+      double minute;
+      double second;
+      HMS( ):hour(0),minute(0),second(0) {}
+      HMS(double h,double m,double s ):hour(h),minute(m),second(s) {}
+   };
+
+   static HMS convertToHMS( double coord );
+   static HMS parse( String coordStr, String sep=":" );
+   static double convertFromHMS( const HMS& coord );
+   static double convertFromHMS( double hour, double minutes, double seconds );
+   static double convertDegFromHMS( const HMS& coord );
+   static double convertRadFromHMS( const HMS& coord );
+};
 
 
 

@@ -80,6 +80,7 @@ INDIMountProcess::INDIMountProcess() : MetaProcess()
    new IMCCommandType( this );
    new IMCTargetRightascension( this );
    new IMCTargetDeclination( this );
+   new IMCLocalSiderialTime( this );
    new IMCCurrentRightascension( this );
    new IMCCurrentDeclination( this );
 }

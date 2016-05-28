@@ -59,6 +59,7 @@ IMCDeviceName*                 TheIMCDeviceNameParameter             = nullptr;
 IMCCommandType*                TheIMCCommandTypeParameter            = nullptr;
 IMCTargetRightascension*       TheIMCTargetRightAscensionParameter   = nullptr;
 IMCTargetDeclination*          TheIMCTargetDeclinationParameter      = nullptr;
+IMCLocalSiderialTime*          TheIMCLocalSiderialTimeParameter      = nullptr;
 IMCCurrentRightascension*      TheIMCCurrentRightAscensionParameter  = nullptr;
 IMCCurrentDeclination*         TheIMCCurrentDeclinationParameter     = nullptr;
 
@@ -175,6 +176,43 @@ double IMCTargetDeclination::MinimumValue() const
 double IMCTargetDeclination::MaximumValue() const
 {
    return 23.999999;
+}
+
+// ----------------------------------------------------------------------------
+
+IMCLocalSiderialTime::IMCLocalSiderialTime( MetaProcess* P ) : MetaDouble( P )
+{
+	TheIMCLocalSiderialTimeParameter = this;
+}
+
+IsoString IMCLocalSiderialTime::Id() const
+{
+   return "localSiderialTime";
+}
+
+int IMCLocalSiderialTime::Precision() const
+{
+   return 6;
+}
+
+double IMCLocalSiderialTime::DefaultValue() const
+{
+   return 0;
+}
+
+double IMCLocalSiderialTime::MinimumValue() const
+{
+   return 0;
+}
+
+double IMCLocalSiderialTime::MaximumValue() const
+{
+   return 23.999999;
+}
+
+bool IMCLocalSiderialTime::IsReadOnly() const
+{
+   return true;
 }
 
 

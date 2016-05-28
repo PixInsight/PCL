@@ -206,10 +206,14 @@ private:
 	   	  					CheckBox      	  MountTargetDECIsSouth_CheckBox;
 	   	  			VerticalSizer     MountGotoRight_Sizer;
 	   	  				PushButton		    MountSearch_PushButton;
+	   	  		HorizontalSizer	  MountParking_Sizer;
+	   	  			Label              MountParking_Label;
+	   	  			CheckBox 		   MountParking_CheckBox;
 	   	  		HorizontalSizer	  MountGotoStart_Sizer;
 	   	  			Label              MountGotoCommand_Label;
 	   	  			PushButton		   MountGotoStart_PushButton;
 	   	  			PushButton		   MountGotoCancel_PushButton;
+	   	  			Label              MountGotoInfo_Label;
 	   	  		HorizontalSizer	  MountSynch_Sizer;
 	   	  			Label              MountSynchCommand_Label;
 	   	  			PushButton		   MountSynch_PushButton;
@@ -222,22 +226,13 @@ private:
 
    IsoString m_serverMessage;
 
-   //INDINewPropertyListItem m_newPropertyListItem;
    String                       m_Device;
    INDIMountInterfaceExecution* m_execution;
 
 
-   String                  m_TargetRA;
-   String                  m_TargetDEC;
+
    IsoString               m_downloadedFile;
 
-
-   double                  m_geoLat;
-   double                  m_lst;
-   double				   m_scopeRA;
-   double				   m_scopeDEC;
-   double				   m_alignedRA;
-   double			       m_alignedDEC;
 
    void UpdateDeviceList_Timer( Timer& sender );
    void UpdateMount_Timer( Timer &sender );

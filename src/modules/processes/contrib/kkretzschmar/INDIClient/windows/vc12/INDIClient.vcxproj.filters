@@ -4,7 +4,7 @@
 # PixInsight Makefile Generator Script v1.100
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Tue, 17 May 2016 15:44:50 GMT
+# Automatically generated on Sat, 28 May 2016 13:02:00 GMT
 # Project id ...... INDIClient
 # Project type .... Module
 # Platform ........ Windows/vc12
@@ -63,9 +63,6 @@
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\INDIMountProcess.cpp">
-        <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SkyMap.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\INDI\BaseClientImpl.cpp">
@@ -134,9 +131,6 @@
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\INDIParamListTypes.h">
-        <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SkyMap.h">
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\INDI\BaseClient.h">

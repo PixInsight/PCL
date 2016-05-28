@@ -132,6 +132,23 @@ public:
 
 extern IMCTargetDeclination* TheIMCTargetDeclinationParameter;
 
+// ----------------------------------------------------------------------------
+
+class IMCLocalSiderialTime : public MetaDouble
+{
+public:
+
+	IMCLocalSiderialTime( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+   virtual bool IsReadOnly() const;
+};
+
+extern IMCLocalSiderialTime* TheIMCLocalSiderialTimeParameter;
 
 // ----------------------------------------------------------------------------
 

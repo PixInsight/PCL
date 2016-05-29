@@ -558,10 +558,14 @@ INDIMountInterface::GUIData::GUIData(INDIMountInterface& w )
    MountMoveSpeed_Label.SetText("Slew speed:");
    MountMoveSpeed_Label.SetFixedWidth(labelWidth1);
    MountMoveSpeed_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   const char* slewSpeedTooltipText =
+		   "<p>Predefined slew rates (ascending order): Guide, Centering, Find, Maximum</p>"
+		   "<p> There might be more device specific slew rates, which can be changed with the Device Controller</p>";
    MountMoveSpeed_ComboBox.AddItem("Guide");
    MountMoveSpeed_ComboBox.AddItem("Centering");
    MountMoveSpeed_ComboBox.AddItem("Find");
    MountMoveSpeed_ComboBox.AddItem("Max");
+   MountMoveSpeed_ComboBox.SetToolTip(slewSpeedTooltipText);
    MountMoveSpeed_ComboBox.OnItemSelected( (ComboBox::item_event_handler)& INDIMountInterface::e_ItemSelected, w );
 
    MountMoveSpeed_Sizer.SetSpacing(4);

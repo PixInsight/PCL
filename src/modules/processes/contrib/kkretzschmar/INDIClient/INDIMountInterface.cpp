@@ -142,6 +142,7 @@ ProcessImplementation* INDIMountInterface::NewProcess() const
 {
    INDIMountInstance* instance = new INDIMountInstance( TheINDIMountProcess );
    instance->p_deviceName = m_Device;
+   instance->p_slewRate = GUI->MountMoveSpeed_ComboBox.CurrentItem();
    instance->p_lst = CoordUtils::convertFromHMS(GUI->LST_H_Edit.Value(), GUI->LST_M_Edit.Value(),GUI->LST_S_Edit.Value());
    instance->p_currentRA = CoordUtils::convertFromHMS(GUI->RA_H_Edit.Value(), GUI->RA_M_Edit.Value(),GUI->RA_S_Edit.Value());
    instance->p_currentDEC = CoordUtils::convertFromHMS(GUI->DEC_D_Edit.Value(), GUI->DEC_M_Edit.Value(),GUI->DEC_S_Edit.Value());
@@ -228,6 +229,7 @@ void INDIMountInterface::UpdateControls()
 	{
 		GUI->UpdateDeviceProperties_Timer.Stop();
 		GUI->MountProperties_Control.Disable();
+		GUI->MountMove_Control.Disable();
 		GUI->MountGoto_Control.Disable();
 	}
 	else
@@ -236,6 +238,7 @@ void INDIMountInterface::UpdateControls()
 			GUI->UpdateDeviceProperties_Timer.Start();
 
 		GUI->MountProperties_Control.Enable();
+		GUI->MountMove_Control.Enable();
 		GUI->MountGoto_Control.Enable();
 	}
 }
@@ -547,6 +550,78 @@ INDIMountInterface::GUIData::GUIData(INDIMountInterface& w )
 
    ServerParameters_Control.SetSizer( ServerParameters_Sizer );
 
+   // Mount Device Move Section
+   MountMove_SectionBar.SetTitle("Slew control:");
+   MountMove_SectionBar.SetSection(MountMove_Control);
+
+
+   MountMoveSpeed_Label.SetText("Slew speed:");
+   MountMoveSpeed_Label.SetFixedWidth(labelWidth1);
+   MountMoveSpeed_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   MountMoveSpeed_ComboBox.AddItem("Guide");
+   MountMoveSpeed_ComboBox.AddItem("Centering");
+   MountMoveSpeed_ComboBox.AddItem("Find");
+   MountMoveSpeed_ComboBox.AddItem("Max");
+   MountMoveSpeed_ComboBox.OnItemSelected( (ComboBox::item_event_handler)& INDIMountInterface::e_ItemSelected, w );
+
+   MountMoveSpeed_Sizer.SetSpacing(4);
+   MountMoveSpeed_Sizer.Add(MountMoveSpeed_Label);
+   MountMoveSpeed_Sizer.Add(MountMoveSpeed_ComboBox,100);
+
+
+   MountMove_Label.SetFixedWidth(labelWidth1);
+   MountMove_Label.SetText("Slew direction:");
+   MountMove_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   MountMoveLeft_PushButton.SetText("West");
+   MountMoveLeft_PushButton.SetIcon(w.ScaledResource( ":/icons/arrow-left.png" ));
+   MountMoveLeft_PushButton.SetStyleSheet( "QPushButton { text-align: left; }" );
+   MountMoveLeft_PushButton.OnPress((Button::press_event_handler) &INDIMountInterface::e_Press, w);
+   MountMoveLeft_PushButton.OnRelease((Button::press_event_handler) &INDIMountInterface::e_Release, w);
+   MountLeft_Sizer.SetSpacing(4);
+   MountLeft_Sizer.Add(MountMoveLeft_PushButton);
+
+   MountMoveTop_PushButton.SetText("North");
+   MountMoveTop_PushButton.SetIcon(w.ScaledResource( ":/icons/arrow-up.png" ));
+   MountMoveTop_PushButton.SetStyleSheet( "QPushButton { text-align: left; }" );
+   MountMoveTop_PushButton.OnPress((Button::press_event_handler) &INDIMountInterface::e_Press, w);
+   MountMoveTop_PushButton.OnRelease((Button::press_event_handler) &INDIMountInterface::e_Release, w);
+   MountMoveStop_PushButton.SetText("Stop");
+   MountMoveStop_PushButton.SetIcon(w.ScaledResource( ":/icons/delete.png" ));
+   MountMoveStop_PushButton.SetStyleSheet( "QPushButton { text-align: left; }" );
+   MountMoveStop_PushButton.OnClick( (Button::click_event_handler) &INDIMountInterface::e_Click, w );
+   MountMoveBottom_PushButton.SetText("South");
+   MountMoveBottom_PushButton.SetIcon(w.ScaledResource( ":/icons/arrow-down.png" ));
+   MountMoveBottom_PushButton.SetStyleSheet( "QPushButton { text-align: left; }" );
+   MountMoveBottom_PushButton.OnPress((Button::press_event_handler) &INDIMountInterface::e_Press, w);
+   MountMoveBottom_PushButton.OnRelease((Button::press_event_handler) &INDIMountInterface::e_Release, w);
+   MountTopBottom_Sizer.SetSpacing(4);
+   MountTopBottom_Sizer.Add(MountMoveTop_PushButton);
+   MountTopBottom_Sizer.Add(MountMoveStop_PushButton);
+   MountTopBottom_Sizer.Add(MountMoveBottom_PushButton);
+
+   MountMoveRight_PushButton.SetText("East");
+   MountMoveRight_PushButton.SetIcon(w.ScaledResource( ":/icons/arrow-right.png" ));
+   MountMoveRight_PushButton.SetStyleSheet( "QPushButton { text-align: center; }" );
+   MountMoveRight_PushButton.OnPress((Button::press_event_handler) &INDIMountInterface::e_Press, w);
+   MountMoveRight_PushButton.OnRelease((Button::press_event_handler) &INDIMountInterface::e_Release, w);
+   MountRight_Sizer.SetSpacing(4);
+   MountRight_Sizer.Add(MountMoveRight_PushButton);
+
+   MountMoveDirection_Sizer.SetSpacing(4);
+   MountMoveDirection_Sizer.Add(MountMove_Label);
+   MountMoveDirection_Sizer.Add(MountLeft_Sizer);
+   MountMoveDirection_Sizer.Add(MountTopBottom_Sizer);
+   MountMoveDirection_Sizer.Add(MountRight_Sizer);
+   MountMoveDirection_Sizer.AddStretch();
+
+   MountMove_Sizer.SetSpacing(4);
+   MountMove_Sizer.Add(MountMoveSpeed_Sizer);
+   MountMove_Sizer.Add(MountMoveDirection_Sizer);
+
+
+   MountMove_Control.SetSizer(MountMove_Sizer);
+
    // Mount Device Goto Section
    MountGoto_SectionBar.SetTitle("Goto Target");
    MountGoto_SectionBar.SetSection(MountGoto_Control);
@@ -671,6 +746,8 @@ INDIMountInterface::GUIData::GUIData(INDIMountInterface& w )
    Global_Sizer.SetSpacing( 4 );
    Global_Sizer.Add( ServerParameters_SectionBar );
    Global_Sizer.Add( ServerParameters_Control );
+   Global_Sizer.Add( MountMove_SectionBar );
+   Global_Sizer.Add( MountMove_Control );
    Global_Sizer.Add( MountGoto_SectionBar );
    Global_Sizer.Add( MountGoto_Control );
 
@@ -781,6 +858,20 @@ void INDIMountInterface::UpdateMount_Timer( Timer& sender )
     	 GUI->AZ_M_Edit.SetValue(hms.minute);
     	 GUI->AZ_S_Edit.SetValue(hms.second);
       }
+
+      {
+    	  static const char* indiSewRates[] = { "SLEW_GUIDE", "SLEW_CENTERING", "SLEW_FIND", "SLEW_MAX" };
+    	  for ( size_type i = 0; i < ItemsInArray( indiSewRates ); ++i )
+    		  if ( indi->GetPropertyItem( m_Device, "TELESCOPE_SLEW_RATE", indiSewRates[i], MountProp ) )
+    			  if ( MountProp.PropertyValue == "ON" )
+    			  {
+    				  GUI->MountMoveSpeed_Label.Enable();
+    				  GUI->MountMoveSpeed_ComboBox.SetCurrentItem( i );
+    				  GUI->MountMoveSpeed_ComboBox.Enable();
+    				  break;
+    			  }
+      }
+
    }
 }
 
@@ -826,6 +917,11 @@ virtual void StartMountEvent(double targetRA, double currentRA, double targetDEC
 	m_iface->GUI->MountSearch_PushButton.Disable();
 	m_iface->GUI->MountParking_CheckBox.Disable();
 	m_iface->GUI->MountGotoStart_PushButton.Disable();
+	m_iface->GUI->MountMoveLeft_PushButton.Disable();
+	m_iface->GUI->MountMoveRight_PushButton.Disable();
+	m_iface->GUI->MountMoveTop_PushButton.Disable();
+	m_iface->GUI->MountMoveBottom_PushButton.Disable();
+	m_iface->GUI->MountMoveStop_PushButton.Disable();
 	m_iface->GUI->MountGotoCancel_PushButton.Enable();
 	m_iface->GUI->MountGotoInfo_Label.Clear();
 	m_iface->ProcessEvents();
@@ -873,6 +969,11 @@ virtual void EndMountEvent()
 	m_iface->GUI->MountSearch_PushButton.Enable();
 	m_iface->GUI->MountParking_CheckBox.Enable();
 	m_iface->GUI->MountGotoStart_PushButton.Enable();
+	m_iface->GUI->MountMoveLeft_PushButton.Enable();
+	m_iface->GUI->MountMoveRight_PushButton.Enable();
+	m_iface->GUI->MountMoveTop_PushButton.Enable();
+	m_iface->GUI->MountMoveBottom_PushButton.Enable();
+	m_iface->GUI->MountMoveStop_PushButton.Enable();
 	m_iface->GUI->MountGotoCancel_PushButton.Disable();
 	m_iface->GUI->MountGotoInfo_Label.Clear();
 	m_iface->ProcessEvents();
@@ -900,7 +1001,7 @@ void INDIMountInterface::e_Click(Button& sender, bool checked){
 	  mountExecution.Perform();
 
    }
-   else if (sender == GUI->MountGotoCancel_PushButton){
+   else if (sender == GUI->MountGotoCancel_PushButton ){
 	   if ( m_execution != nullptr )
 		   m_execution->Abort();
    }
@@ -932,6 +1033,126 @@ void INDIMountInterface::e_Click(Button& sender, bool checked){
 	   mountExecution.setCommandType(IMCCommandType::Synch);
 	   mountExecution.Perform();
    }
+   else if ( sender == GUI->MountMoveStop_PushButton )
+   {
+	   INDIClient* indi = INDIClient::TheClient();
+	   INDINewPropertyItem newItem;
+	   newItem.Device = m_Device;
+	   newItem.Property = "TELESCOPE_ABORT_MOTION";
+	   newItem.PropertyType = "INDI_SWITCH";
+	   newItem.ElementValue.Add(ElementValuePair("ABORT","ON"));
+
+	   indi->SendNewPropertyItem( newItem, true /*async*/  );
+   }
+}
+
+void INDIMountInterface::e_Press(Button& sender)
+{
+	if ( !INDIClient::HasClient() )
+		return;
+
+	if ( sender == GUI->MountMoveTop_PushButton )
+	{
+		INDIClient* indi = INDIClient::TheClient();
+		INDINewPropertyItem newItem;
+		newItem.Device = m_Device;
+		newItem.Property = "TELESCOPE_MOTION_NS";
+		newItem.PropertyType = "INDI_SWITCH";
+		newItem.ElementValue.Add(ElementValuePair("MOTION_NORTH","ON"));
+
+		indi->SendNewPropertyItem( newItem, true /*async*/  );
+	}
+
+	if ( sender == GUI->MountMoveBottom_PushButton )
+	{
+		INDIClient* indi = INDIClient::TheClient();
+		INDINewPropertyItem newItem;
+		newItem.Device = m_Device;
+		newItem.Property = "TELESCOPE_MOTION_NS";
+		newItem.PropertyType = "INDI_SWITCH";
+		newItem.ElementValue.Add(ElementValuePair("MOTION_SOUTH","ON"));
+
+		indi->SendNewPropertyItem( newItem, true /*async*/  );
+	}
+
+	if ( sender == GUI->MountMoveLeft_PushButton )
+	{
+		INDIClient* indi = INDIClient::TheClient();
+		INDINewPropertyItem newItem;
+		newItem.Device = m_Device;
+		newItem.Property = "TELESCOPE_MOTION_WE";
+		newItem.PropertyType = "INDI_SWITCH";
+		newItem.ElementValue.Add(ElementValuePair("MOTION_WEST","ON"));
+
+		indi->SendNewPropertyItem( newItem, true /*async*/  );
+	}
+
+	if ( sender == GUI->MountMoveRight_PushButton )
+	{
+		INDIClient* indi = INDIClient::TheClient();
+		INDINewPropertyItem newItem;
+		newItem.Device = m_Device;
+		newItem.Property = "TELESCOPE_MOTION_WE";
+		newItem.PropertyType = "INDI_SWITCH";
+		newItem.ElementValue.Add(ElementValuePair("MOTION_EAST","ON"));
+
+		indi->SendNewPropertyItem( newItem, true /*async*/  );
+	}
+
+}
+
+void INDIMountInterface::e_Release(Button& sender)
+{
+	if ( !INDIClient::HasClient() )
+		return;
+
+	if ( sender == GUI->MountMoveTop_PushButton )
+	{
+		INDIClient* indi = INDIClient::TheClient();
+		INDINewPropertyItem newItem;
+		newItem.Device = m_Device;
+		newItem.Property = "TELESCOPE_MOTION_NS";
+		newItem.PropertyType = "INDI_SWITCH";
+		newItem.ElementValue.Add(ElementValuePair("MOTION_NORTH","OFF"));
+
+		indi->SendNewPropertyItem( newItem, true /*async*/  );
+	}
+
+	if ( sender == GUI->MountMoveBottom_PushButton )
+	{
+		INDIClient* indi = INDIClient::TheClient();
+		INDINewPropertyItem newItem;
+		newItem.Device = m_Device;
+		newItem.Property = "TELESCOPE_MOTION_NS";
+		newItem.PropertyType = "INDI_SWITCH";
+		newItem.ElementValue.Add(ElementValuePair("MOTION_SOUTH","OFF"));
+
+		indi->SendNewPropertyItem( newItem, true /*async*/  );
+	}
+
+	if ( sender == GUI->MountMoveLeft_PushButton )
+	{
+		INDIClient* indi = INDIClient::TheClient();
+		INDINewPropertyItem newItem;
+		newItem.Device = m_Device;
+		newItem.Property = "TELESCOPE_MOTION_WE";
+		newItem.PropertyType = "INDI_SWITCH";
+		newItem.ElementValue.Add(ElementValuePair("MOTION_WEST","OFF"));
+
+		indi->SendNewPropertyItem( newItem, true /*async*/  );
+	}
+
+	if ( sender == GUI->MountMoveRight_PushButton )
+	{
+		INDIClient* indi = INDIClient::TheClient();
+		INDINewPropertyItem newItem;
+		newItem.Device = m_Device;
+		newItem.Property = "TELESCOPE_MOTION_WE";
+		newItem.PropertyType = "INDI_SWITCH";
+		newItem.ElementValue.Add(ElementValuePair("MOTION_EAST","OFF"));
+
+		indi->SendNewPropertyItem( newItem, true /*async*/  );
+	}
 }
 
 void INDIMountInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
@@ -976,6 +1197,21 @@ void INDIMountInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
     	  mountExecution.setCommandType(IMCCommandType::Unpark);
     	  mountExecution.Perform();
       }
+   }
+   else if (sender == GUI->MountMoveSpeed_ComboBox)
+   {
+	   INDIClient* indi = INDIClient::TheClient();
+	   String PropertyElement = INDIMountInstance::MountSlewRatePropertyString( itemIndex );
+	   if ( indi->HasPropertyItem( m_Device, "TELESCOPE_SLEW_RATE", PropertyElement ) )
+	   {
+		   INDINewPropertyItem newItem;
+		   newItem.Device = m_Device;
+		   newItem.Property = "TELESCOPE_SLEW_RATE";
+		   newItem.PropertyType = "INDI_SWITCH";
+		   newItem.ElementValue.Add(ElementValuePair(PropertyElement,"ON"));
+		   indi->SendNewPropertyItem( newItem, true/*async*/ );
+	   }
+
    }
 }
 

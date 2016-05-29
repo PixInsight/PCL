@@ -83,11 +83,14 @@ public:
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
 
    bool ValidateDevice( bool throwErrors = true ) const;
+   void SendDeviceProperties( bool asynchronous = true ) const;
 
+   static String MountSlewRatePropertyString( int slewRateIdx );
 private:
 
    String   p_deviceName;
    pcl_enum p_commandType;
+   pcl_enum p_slewRate;
    double   p_targetRA;
    double   p_targetDEC;
    double   p_lst;

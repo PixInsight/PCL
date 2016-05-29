@@ -57,6 +57,7 @@ namespace pcl {
 
 IMCDeviceName*                 TheIMCDeviceNameParameter             = nullptr;
 IMCCommandType*                TheIMCCommandTypeParameter            = nullptr;
+IMCSlewRate*                   TheIMCSlewRateParameter               = nullptr;
 IMCTargetRightascension*       TheIMCTargetRightAscensionParameter   = nullptr;
 IMCTargetDeclination*          TheIMCTargetDeclinationParameter      = nullptr;
 IMCLocalSiderialTime*          TheIMCLocalSiderialTimeParameter      = nullptr;
@@ -97,10 +98,18 @@ IsoString IMCCommandType::ElementId( size_type i ) const
    switch ( i )
    {
    default:
-   case Unpark:   return "CommandType_Unpark";
-   case Park:          return "CommandType_Park";
-   case Goto:          return "CommandType_Goto";
-   case Synch:         return "CommandType_Synch";
+   case Unpark:            	return "CommandType_Unpark";
+   case Park:              	return "CommandType_Park";
+   case MoveNorthStart: 	return "CommandType_MoveNorth_Start";
+   case MoveNorthStop:		return "CommandType_MoveNorth_Stop";
+   case MoveSouthStart:		return "CommandType_MoveSouth_Start";
+   case MoveSouthStop:		return "CommandType_MoveSouth_Stop";
+   case MoveWestStart:		return "CommandType_MoveWest_Start";
+   case MoveWestStop:		return "CommandType_MoveWest_Stop";
+   case MoveEastStart:		return "CommandType_MoveEast_Start";
+   case MoveEastStop:		return "CommandType_MoveEast_Stop";
+   case Goto:          		return "CommandType_Goto";
+   case Synch:         		return "CommandType_Synch";
    }
 }
 
@@ -177,6 +186,46 @@ double IMCTargetDeclination::MaximumValue() const
 {
    return 23.999999;
 }
+
+// ----------------------------------------------------------------------------
+
+IMCSlewRate::IMCSlewRate( MetaProcess* P ) : MetaEnumeration( P )
+{
+	TheIMCSlewRateParameter = this;
+}
+
+IsoString IMCSlewRate::Id() const
+{
+   return "slewRate";
+}
+
+size_type IMCSlewRate::NumberOfElements() const
+{
+   return NumberOfCommands;
+}
+
+IsoString IMCSlewRate::ElementId( size_type i ) const
+{
+   switch ( i )
+   {
+   default:
+   case Guide:            	return "SlewRate_Guide";
+   case Centering:        	return "SlewRate_Centering";
+   case Find: 				return "SlewRate_Find";
+   case Max:				return "SlewRate_Max";
+   }
+}
+
+int IMCSlewRate::ElementValue( size_type i ) const
+{
+   return int( i );
+}
+
+size_type IMCSlewRate::DefaultValueIndex() const
+{
+   return size_type( Default );
+}
+
 
 // ----------------------------------------------------------------------------
 

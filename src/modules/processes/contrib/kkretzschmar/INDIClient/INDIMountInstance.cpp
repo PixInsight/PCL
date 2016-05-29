@@ -111,6 +111,7 @@ INDIMountInstance::INDIMountInstance( const MetaProcess* m ) :
    ProcessImplementation( m ),
    p_deviceName( TheIMCDeviceNameParameter->DefaultValue() ),
    p_commandType( IMCCommandType::Default),
+   p_slewRate (IMCSlewRate::Default),
    p_targetRA( TheIMCTargetRightAscensionParameter->DefaultValue()),
    p_targetDEC (TheIMCTargetDeclinationParameter->DefaultValue()),
    p_lst(TheIMCLocalSiderialTimeParameter->DefaultValue()),
@@ -134,6 +135,7 @@ void INDIMountInstance::Assign( const ProcessImplementation& p )
    {
 	   p_deviceName  = x->p_deviceName;
 	   p_commandType = x->p_commandType;
+	   p_slewRate    = x->p_slewRate;
 	   p_lst         = x->p_lst;
 	   p_targetRA    = x->p_targetRA;
 	   p_targetDEC   = x->p_currentDEC;
@@ -182,6 +184,7 @@ public:
                AbstractINDIMountExecution( instance )
    {
       m_monitor.SetCallback( &m_status );
+      m_commandType = IMCCommandType::Default;
    }
 
 private:
@@ -189,6 +192,7 @@ private:
    Console        m_console;
    StandardStatus m_status;
    StatusMonitor  m_monitor;
+   pcl_enum		  m_commandType;
 
    double targetDistance(double targetRA, double currentRA, double targetDEC, double currentDEC)
    {
@@ -198,6 +202,7 @@ private:
    virtual void StartMountEvent(double targetRA, double currentRA, double targetDEC, double currentDEC, pcl_enum commandType)
    {
 	   m_console.EnableAbort();
+	   m_commandType = commandType;
 	   if (commandType == IMCCommandType::Goto)
 		   m_monitor.Initialize( String().Format( "<end><cbr>Telescope is slewing"), RoundInt( targetDistance(targetRA, currentRA, targetDEC, currentDEC)  ) );
 	   else if (commandType == IMCCommandType::Park)
@@ -211,17 +216,39 @@ private:
 		   m_console.WriteLn(String().Format("<end><cbr>Synch: Delta-RA: %d::%d::%.2lf (h::m::s), Delta-DEC: %d::%d::%.2lf (h::m::s) ",
 				   TruncInt(Abs(targetRA-currentRA)), TruncInt(ra_m), ra_s, TruncInt(Abs(targetDEC-currentDEC)), TruncInt(dec_m), dec_s ));
 	   }
+	   else if (commandType == IMCCommandType::MoveNorthStart)
+	   {
+		   m_console.WriteLn("Start slewing toward North");
+	   }
+	   else if (commandType == IMCCommandType::MoveSouthStart)
+	   {
+		   m_console.WriteLn("Start slewing toward South");
+	   }
+	   else if (commandType == IMCCommandType::MoveWestStart)
+	   {
+		   m_console.WriteLn("Start slewing toward West");
+	   }
+	   else if (commandType == IMCCommandType::MoveEastStart)
+	   {
+		   m_console.WriteLn("Start slewing toward East");
+	   }
+	   else if (commandType == IMCCommandType::MoveNorthStop || commandType == IMCCommandType::MoveSouthStop || commandType == IMCCommandType::MoveWestStop || commandType == IMCCommandType::MoveEastStop)
+	   {
+		   m_console.WriteLn("Stop slewing");
+	   }
    }
 
    virtual void MountEvent(double targetRA, double currentRA, double targetDEC, double currentDEC)
    {
-	   m_monitor += m_monitor.Total() - size_type( RoundInt( targetDistance(targetRA, currentRA, targetDEC, currentDEC) ) ) - m_monitor.Count() ;
+	   if (m_commandType == IMCCommandType::Goto || m_commandType == IMCCommandType::Park )
+		   m_monitor += m_monitor.Total() - size_type( RoundInt( targetDistance(targetRA, currentRA, targetDEC, currentDEC) ) ) - m_monitor.Count() ;
    }
 
    virtual void EndMountEvent()
    {
 	   m_console.DisableAbort();
-	   m_monitor.Complete();
+	   if (m_commandType == IMCCommandType::Goto || m_commandType == IMCCommandType::Park )
+		   m_monitor.Complete();
    }
 
 
@@ -288,6 +315,8 @@ void* INDIMountInstance::LockParameter( const MetaParameter* p, size_type tableR
 		return p_deviceName.Begin();
 	if ( p == TheIMCCommandTypeParameter )
 		return &p_commandType;
+	if ( p == TheIMCSlewRateParameter )
+			return &p_slewRate;
 	if ( p == TheIMCTargetRightAscensionParameter )
 		return &p_targetRA;
 	if ( p == TheIMCTargetDeclinationParameter )
@@ -325,6 +354,23 @@ size_type INDIMountInstance::ParameterLength( const MetaParameter* p, size_type 
    return 0;
 }
 
+String INDIMountInstance::MountSlewRatePropertyString( int slewRateIdx )
+{
+	switch ( slewRateIdx )
+	{
+	case IMCSlewRate::Guide:
+		return "SLEW_GUIDE";
+	case IMCSlewRate::Centering:
+		return "SLEW_CENTERING";
+	case IMCSlewRate::Find:
+		return "SLEW_FIND";
+	case IMCSlewRate::Max:
+		return "SLEW_MAX";
+	default:
+		throw Error( "Internal error: INDIMountInstance: Invalid slew rate." );
+	}
+}
+
 
 bool INDIMountInstance::ValidateDevice( bool throwErrors ) const
 {
@@ -359,6 +405,23 @@ bool INDIMountInstance::ValidateDevice( bool throwErrors ) const
    return false;
 }
 
+void INDIMountInstance::SendDeviceProperties( bool async ) const
+{
+	INDIClient* indi = INDIClient::TheClientOrDie();
+	INDIPropertyListItem item;
+
+	if ( indi->GetPropertyItem( p_deviceName, "TELESCOPE_SLEW_RATE", MountSlewRatePropertyString( p_slewRate ), item ) )
+	{
+		INDINewPropertyItem newItem;
+		newItem.Device = p_deviceName;
+		newItem.Property = "TELESCOPE_SLEW_RATE";
+		newItem.PropertyType = "INDI_SWITCH";
+		newItem.ElementValue.Add(ElementValuePair(MountSlewRatePropertyString( p_slewRate ),"ON"));
+		indi->SendNewPropertyItem( newItem, async );
+	}
+}
+
+
 void AbstractINDIMountExecution::GetCurrentCoordinates(const INDIClient* indi)
 {
 	  INDIPropertyListItem RA_item;
@@ -390,7 +453,7 @@ void AbstractINDIMountExecution::Perform()
    try {
 
 	   m_instance.ValidateDevice();
-
+	   m_instance.SendDeviceProperties(false /*async*/);
 	   GetCurrentCoordinates(indi);
 
 	   m_running = true;
@@ -505,6 +568,86 @@ void AbstractINDIMountExecution::Perform()
 		   newItem.PropertyType = "INDI_SWITCH";
 		   newItem.ElementValue.Add(ElementValuePair("TRACK","ON"));
 		   indi->SendNewPropertyItem( newItem, false );
+
+		   GetCurrentCoordinates(indi);
+		   EndMountEvent();
+	   }
+	   break;
+	   case IMCCommandType::MoveNorthStart:
+	   case IMCCommandType::MoveNorthStop:
+	   {
+		   StartMountEvent(m_instance.p_targetRA, m_instance.p_currentRA, m_instance.p_targetDEC, m_instance.p_currentDEC,m_instance.p_commandType);
+
+		   INDINewPropertyItem newItem;
+		   newItem.Device = m_instance.p_deviceName;
+		   newItem.Property = "TELESCOPE_MOTION_NS";
+		   newItem.PropertyType = "INDI_SWITCH";
+		   if (m_instance.p_commandType == IMCCommandType::MoveNorthStart)
+			   newItem.ElementValue.Add(ElementValuePair("MOTION_NORTH","ON"));
+		   else
+			   newItem.ElementValue.Add(ElementValuePair("MOTION_NORTH","OFF"));
+
+		   indi->SendNewPropertyItem( newItem, true /*async*/  );
+
+		   GetCurrentCoordinates(indi);
+		   EndMountEvent();
+	   }
+	   break;
+	   case IMCCommandType::MoveSouthStart:
+	   case IMCCommandType::MoveSouthStop:
+	   {
+		   StartMountEvent(m_instance.p_targetRA, m_instance.p_currentRA, m_instance.p_targetDEC, m_instance.p_currentDEC,m_instance.p_commandType);
+
+		   INDINewPropertyItem newItem;
+		   newItem.Device = m_instance.p_deviceName;
+		   newItem.Property = "TELESCOPE_MOTION_NS";
+		   newItem.PropertyType = "INDI_SWITCH";
+		   if (m_instance.p_commandType == IMCCommandType::MoveSouthStart)
+			   newItem.ElementValue.Add(ElementValuePair("MOTION_SOUTH","ON"));
+		   else
+			   newItem.ElementValue.Add(ElementValuePair("MOTION_SOUTH","OFF"));
+
+		   indi->SendNewPropertyItem( newItem, true /*async*/  );
+
+		   GetCurrentCoordinates(indi);
+		   EndMountEvent();
+	   }
+	   break;
+	   case IMCCommandType::MoveWestStart:
+	   case IMCCommandType::MoveWestStop:
+	   {
+		   StartMountEvent(m_instance.p_targetRA, m_instance.p_currentRA, m_instance.p_targetDEC, m_instance.p_currentDEC,m_instance.p_commandType);
+
+		   INDINewPropertyItem newItem;
+		   newItem.Device = m_instance.p_deviceName;
+		   newItem.Property = "TELESCOPE_MOTION_WE";
+		   newItem.PropertyType = "INDI_SWITCH";
+		   if (m_instance.p_commandType == IMCCommandType::MoveWestStart)
+			   newItem.ElementValue.Add(ElementValuePair("MOTION_WEST","ON"));
+		   else
+			   newItem.ElementValue.Add(ElementValuePair("MOTION_WEST","OFF"));
+
+		   indi->SendNewPropertyItem( newItem, true /*async*/  );
+
+		   GetCurrentCoordinates(indi);
+		   EndMountEvent();
+	   }
+	   break;
+	   case IMCCommandType::MoveEastStart:
+	   case IMCCommandType::MoveEastStop:
+	   {
+		   StartMountEvent(m_instance.p_targetRA, m_instance.p_currentRA, m_instance.p_targetDEC, m_instance.p_currentDEC,m_instance.p_commandType);
+
+		   INDINewPropertyItem newItem;
+		   newItem.Device = m_instance.p_deviceName;
+		   newItem.Property = "TELESCOPE_MOTION_WE";
+		   newItem.PropertyType = "INDI_SWITCH";
+		   if (m_instance.p_commandType == IMCCommandType::MoveEastStart)
+			   newItem.ElementValue.Add(ElementValuePair("MOTION_EAST","ON"));
+		   else
+			   newItem.ElementValue.Add(ElementValuePair("MOTION_EAST","OFF"));
+
+		   indi->SendNewPropertyItem( newItem, true /*async*/  );
 
 		   GetCurrentCoordinates(indi);
 		   EndMountEvent();

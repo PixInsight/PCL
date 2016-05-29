@@ -188,6 +188,22 @@ private:
 	   	  		   		NumericEdit			ALT_D_Edit;
 	   	  		   		NumericEdit			ALT_M_Edit;
 	   	  		   		NumericEdit			ALT_S_Edit;
+	   	  	SectionBar        MountMove_SectionBar;
+	   	  	Control			  MountMove_Control;
+	   	  	VerticalSizer     MountMove_Sizer;
+	   	  		HorizontalSizer   	MountMoveSpeed_Sizer;
+	   	  			Label				MountMoveSpeed_Label;
+	   	  			ComboBox			MountMoveSpeed_ComboBox;
+	   	  		HorizontalSizer   	MountMoveDirection_Sizer;
+	   	  			Label				MountMove_Label;
+	   	  			VerticalSizer		MountLeft_Sizer;
+	   	  				PushButton      	MountMoveLeft_PushButton;
+	   	  			VerticalSizer		MountTopBottom_Sizer;
+	   	  				PushButton      	MountMoveTop_PushButton;
+	   	  				PushButton      	MountMoveStop_PushButton;
+	   	  				PushButton      	MountMoveBottom_PushButton;
+	   	  			VerticalSizer   	MountRight_Sizer;
+	   	  				PushButton      	MountMoveRight_PushButton;
 	   	  	SectionBar        MountGoto_SectionBar;
 	   	  	Control			  MountGoto_Control;
 	   	  	VerticalSizer     MountGoto_Sizer;
@@ -239,6 +255,8 @@ private:
    void e_Edit( Edit& sender );
    void e_ItemSelected(ComboBox& sender, int itemIndex);
    void e_Click(Button& sender, bool checked);
+   void e_Press(Button& sender);
+   void e_Release(Button& sender);
    bool e_DownloadDataAvailable(NetworkTransfer &sender, const void *buffer, fsize_type size);
 
    friend class INDIMountInterfaceExecution;

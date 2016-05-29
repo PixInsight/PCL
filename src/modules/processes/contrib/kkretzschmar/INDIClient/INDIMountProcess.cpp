@@ -78,6 +78,7 @@ INDIMountProcess::INDIMountProcess() : MetaProcess()
    TheINDIMountProcess = this;
    new IMCDeviceName( this );
    new IMCCommandType( this );
+   new IMCSlewRate( this );
    new IMCTargetRightascension( this );
    new IMCTargetDeclination( this );
    new IMCLocalSiderialTime( this );

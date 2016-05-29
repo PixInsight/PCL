@@ -82,6 +82,14 @@ public:
 
    enum { Unpark,
 		  Park,
+		  MoveNorthStart,
+		  MoveNorthStop,
+		  MoveSouthStart,
+		  MoveSouthStop,
+		  MoveWestStart,
+		  MoveWestStop,
+		  MoveEastStart,
+		  MoveEastStop,
 	      Goto,
           Synch,
 		  NumberOfCommands,
@@ -131,6 +139,30 @@ public:
 };
 
 extern IMCTargetDeclination* TheIMCTargetDeclinationParameter;
+
+// ----------------------------------------------------------------------------
+
+class IMCSlewRate : public MetaEnumeration
+{
+public:
+
+   enum { Guide,
+		  Centering,
+		  Find,
+		  Max,
+		  NumberOfCommands,
+          Default = Max };
+
+   IMCSlewRate( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual size_type NumberOfElements() const;
+   virtual IsoString ElementId( size_type ) const;
+   virtual int ElementValue( size_type ) const;
+   virtual size_type DefaultValueIndex() const;
+};
+
+extern IMCSlewRate* TheIMCSlewRateParameter;
 
 // ----------------------------------------------------------------------------
 

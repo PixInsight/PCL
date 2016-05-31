@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.10.0168
+// Standard INDIClient Process Module Version 01.00.07.0141
 // ----------------------------------------------------------------------------
-// INDIParamListTypes.h - Released 2016/05/18 10:06:42 UTC
+// INDIMountProcess.h - Released 2016/04/28 15:13:36 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -50,124 +50,53 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-/*
- * INDIParamListTypes.h
- *
- *  Created on: May 26, 2014
- *      Author: klaus
- */
+#ifndef __INDIMountProcess_h
+#define __INDIMountProcess_h
 
-#ifndef __INDIParamListTypes_h
-#define __INDIParamListTypes_h
-
-#include "INDI/indibase.h"
-
-#include <pcl/Array.h>
-#include <pcl/String.h>
+#include <pcl/MetaProcess.h>
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-struct INDIDeviceListItem
+class INDIMountProcess : public MetaProcess
 {
-   String DeviceName;
-   String DeviceLabel;
+public:
 
-   bool operator ==( const INDIDeviceListItem& rhs ) const
-   {
-      return DeviceName == rhs.DeviceName;
-   }
+   INDIMountProcess();
 
-   bool operator <( const INDIDeviceListItem& rhs ) const
-   {
-      return DeviceName < rhs.DeviceName;
-   }
+   virtual IsoString Id() const;
+   virtual IsoString Category() const;
+
+   virtual uint32 Version() const;
+
+   virtual String Description() const;
+
+   virtual const char** IconImageXPM() const;
+
+   virtual bool PrefersGlobalExecution() const;
+
+   virtual ProcessInterface* DefaultInterface() const;
+
+   virtual ProcessImplementation* Create() const;
+   virtual ProcessImplementation* Clone( const ProcessImplementation& ) const;
+
+   virtual bool CanProcessCommandLines() const;
+   virtual int ProcessCommandLine( const StringList& ) const;
 };
 
-struct INDIPropertyListItem
-{
-   String    Device;
-   String    Property;
-   INDI_TYPE PropertyType;
-   String    PropertyTypeStr;
-   String    Element;
-   unsigned  PropertyState;
-   String    PropertyNumberFormat;
-   String    PropertyLabel;
-   String    ElementLabel;
-   String    PropertyKey;
-   String    PropertyValue;
-   String    NewPropertyValue;
+// ----------------------------------------------------------------------------
 
-   bool operator ==( const INDIPropertyListItem& rhs ) const
-   {
-      return PropertyKey == rhs.PropertyKey;
-   }
-
-   bool operator <( const INDIPropertyListItem& rhs ) const
-   {
-      return PropertyKey < rhs.PropertyKey;
-   }
-};
-
-
-struct ElementValuePair {
-	String Element;
-	String Value;
-	ElementValuePair(String element, String value):Element(element), Value(value){}
-	bool operator == (const ElementValuePair& rhs) const
-	{
-		return Element == rhs.Element &&
-			   Value == rhs.Value;
-	}
-};
-
-struct INDINewPropertyItem
-{
-
-   String Device;
-   String Property;
-   String PropertyKey;
-   String PropertyType;
-   Array<ElementValuePair> ElementValue;
-
-   bool operator ==( const INDINewPropertyItem& rhs ) const
-   {
-      return Device == rhs.Device &&
-             Property == rhs.Property &&
-			 PropertyKey == rhs.PropertyKey &&
-             PropertyType == rhs.PropertyType &&
-			 ElementValue == rhs.ElementValue ;
-   }
-};
-
-
-struct INDINewPropertyListItem
-{
-	String PropertyKey;
-	String PropertyType;
-	String NewPropertyValue;
-
-	bool operator ==( const INDINewPropertyListItem& rhs ) const
-	   {
-	      return PropertyKey == rhs.PropertyKey &&
-	             PropertyType == rhs.PropertyType &&
-				 NewPropertyValue == rhs.NewPropertyValue ;
-	   }
-
-};
-
-typedef Array<INDIDeviceListItem>      INDIDeviceListItemArray;
-typedef Array<INDIPropertyListItem>    INDIPropertyListItemArray;
-typedef Array<INDINewPropertyListItem> INDINewPropertyListItemArray;
+PCL_BEGIN_LOCAL
+extern INDIMountProcess* TheINDIMountProcess;
+PCL_END_LOCAL
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-#endif   // __INDIParamListTypes_h
+#endif   // __INDIMountProcess_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIParamListTypes.h - Released 2016/05/18 10:06:42 UTC
+// EOF INDIMountProcess.h - Released 2016/04/28 15:13:36 UTC

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.101
+# PixInsight Makefile Generator Script v1.100
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Tue, 17 May 2016 15:44:50 GMT
+# Automatically generated on Sat, 28 May 2016 13:02:00 GMT
 # Project id ...... INDIClient
 # Project type .... Module
 # Platform ........ Windows/vc12
@@ -51,6 +51,18 @@
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\INDIDeviceControllerProcess.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\INDIMountInstance.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\INDIMountInterface.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\INDIMountParameters.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\INDIMountProcess.cpp">
         <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\INDI\BaseClientImpl.cpp">
@@ -104,6 +116,18 @@
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\INDIDeviceControllerProcess.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\INDIMountInstance.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\INDIMountInterface.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\INDIMountParameters.h">
+        <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\INDIMountProcess.h">
         <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\INDIParamListTypes.h">

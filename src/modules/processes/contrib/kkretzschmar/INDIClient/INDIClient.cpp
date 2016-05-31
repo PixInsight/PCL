@@ -52,6 +52,7 @@
 
 #include "INDIClient.h"
 
+#include <map>
 #include <pcl/AutoPointer.h>
 #include <pcl/Console.h>
 #include <pcl/File.h>
@@ -119,7 +120,10 @@ bool INDIClient::GetPropertyItem( const String& device, const String& property, 
    return false;
 }
 
-bool INDIClient::SendNewPropertyItem( const INDINewPropertyListItem& newItem, bool async )
+
+
+
+bool INDIClient::SendNewPropertyItem( const INDINewPropertyItem& newItem, bool async )
 {
    if ( !IsServerConnected() )
       return false;
@@ -135,10 +139,7 @@ bool INDIClient::SendNewPropertyItem( const INDINewPropertyListItem& newItem, bo
          console.WriteLn( "Sending new property element to INDI server '" + HostName() + ':' + IsoString( Port() ) + "':" );
       }
 
-      if ( newItem.NewPropertyValue.IsEmpty() )
-         throw String( "INDIClient: Internal error: Empty property value in " + String( PCL_FUNCTION_NAME ) );
-
-      if ( newItem.Device.IsEmpty() || newItem.Property.IsEmpty() || newItem.Element.IsEmpty() || newItem.PropertyType.IsEmpty() )
+      if ( newItem.Device.IsEmpty() || newItem.Property.IsEmpty() || newItem.ElementValue.IsEmpty() || newItem.PropertyType.IsEmpty() )
          throw String( "INDIClient: Internal error: Invalid property data in " + String( PCL_FUNCTION_NAME ) );
 
       if ( verbosity > 1 )
@@ -146,10 +147,10 @@ bool INDIClient::SendNewPropertyItem( const INDINewPropertyListItem& newItem, bo
          console.WriteLn( "<end><cbr>"
                           "Device   : '" + newItem.Device + "'" );
          console.WriteLn( "Property : '" + newItem.Property + "'" );
-         console.WriteLn( "Element  : '" + newItem.Element + "'" );
-         console.WriteLn( "Value    : '" + newItem.NewPropertyValue + "'" );
+         console.Flush();
       }
 
+      std::map<String,bool> requestDoneMap;
       INDI::BaseDevice* device = nullptr;
       {
          IsoString s( newItem.Device );
@@ -169,14 +170,25 @@ bool INDIClient::SendNewPropertyItem( const INDINewPropertyListItem& newItem, bo
             throw String( "Could not get number property '" + newItem.Property + "' from server."
                           "Please check that INDI device '" + newItem.Device + "' is connected." );
          INumber* np;
-         {
-            IsoString s( newItem.Element );
+         for (auto elementValuePair : newItem.ElementValue){
+        	if ( elementValuePair.Value.IsEmpty() )
+        		throw String( "INDIClient: Internal error: Empty property value in " + String( PCL_FUNCTION_NAME ) );
+            IsoString s( elementValuePair.Element );
             np = IUFindNumber( numberVecProp, s.c_str() );
+
+            if ( np == nullptr )
+            	throw String( "Could not find element '" + String( elementValuePair.Element ) + "'." );
+            np->value = elementValuePair.Value.ToDouble();
+            requestDoneMap[elementValuePair.Element]=false;
+            if ( verbosity > 1 )
+            {
+            	console.WriteLn( "Element  : '" + elementValuePair.Element + "'" );
+            	console.WriteLn( "Value    : '" + elementValuePair.Value + "'" );
+            }
          }
-         if ( np == nullptr )
-            throw String( "Could not find element '" + String( newItem.Element ) + "'." );
-         np->value = newItem.NewPropertyValue.ToDouble();
          sendNewNumber( numberVecProp );
+         // property state has changed
+         newNumber( numberVecProp );
       }
       else if ( newItem.PropertyType == "INDI_TEXT" )
       {
@@ -189,15 +201,30 @@ bool INDIClient::SendNewPropertyItem( const INDINewPropertyListItem& newItem, bo
             throw String( "Could not get text property '" + newItem.Property + "' from server. "
                           "Please check that INDI device '" + newItem.Device + "' is connected." );
          IText* np;
-         {
-            IsoString s( newItem.Element );
-            np = IUFindText( textVecProp, s.c_str() );
+         for (auto elementValuePair : newItem.ElementValue){
+           if ( elementValuePair.Value.IsEmpty() )
+        	   throw String( "INDIClient: Internal error: Empty property value in " + String( PCL_FUNCTION_NAME ) );
+           {
+        	   IsoString s( elementValuePair.Element );
+        	   np = IUFindText( textVecProp, s.c_str() );
+           }
+            if ( np == nullptr )
+            	throw String( "Could not find element '" + String( elementValuePair.Element ) + "'." );
+            {
+            	IsoString s( elementValuePair.Value.ToUTF8() );
+            	IUSaveText( np, s.c_str() );
+            }
+            requestDoneMap[elementValuePair.Element]=false;
+            if ( verbosity > 1 )
+            {
+            	console.WriteLn( "Element  : '" + elementValuePair.Element + "'" );
+            	console.WriteLn( "Value    : '" + elementValuePair.Value + "'" );
+            }
          }
-         if ( np == nullptr )
-            throw String( "Could not find element '" + String( newItem.Element ) + "'." );
-         IsoString s( newItem.NewPropertyValue.ToUTF8() );
-         IUSaveText( np, s.c_str() );
          sendNewText( textVecProp );
+         // property state has changed
+         newText( textVecProp );
+
       }
       else if ( newItem.PropertyType == "INDI_SWITCH" )
       {
@@ -210,18 +237,28 @@ bool INDIClient::SendNewPropertyItem( const INDINewPropertyListItem& newItem, bo
             throw String( "Could not get switch property '" + newItem.Property + "' from server. "
                           "Please check that INDI device '" + newItem.Device + "' is connected." );
          ISwitch* sp;
-         {
-            IsoString s( newItem.Element );
+         for (auto elementValuePair : newItem.ElementValue){
+        	if ( elementValuePair.Value.IsEmpty() )
+        		throw String( "INDIClient: Internal error: Empty property value in " + String( PCL_FUNCTION_NAME ) );
+            IsoString s( elementValuePair.Element );
             sp = IUFindSwitch( switchVecProp, s.c_str() );
+
+            if ( sp == nullptr )
+            	throw String( "Could not find element '" + String( elementValuePair.Element ) + "'." );
+            IUResetSwitch( switchVecProp );
+            if ( elementValuePair.Value == "ON" )
+            	sp->s = ISS_ON;
+            else
+            	sp->s = ISS_OFF;
+            requestDoneMap[elementValuePair.Element]=false;
+            if ( verbosity > 1 ) {
+            	console.WriteLn( "Element  : '" + elementValuePair.Element + "'" );
+            	console.WriteLn( "Value    : '" + elementValuePair.Value + "'" );
+            }
          }
-         if ( sp == nullptr )
-            throw String( "Could not find element '" + String( newItem.Element ) + "'." );
-         IUResetSwitch( switchVecProp );
-         if ( newItem.NewPropertyValue == "ON" )
-            sp->s = ISS_ON;
-         else
-            sp->s = ISS_OFF;
          sendNewSwitch( switchVecProp );
+         // property state has changed
+         newSwitch( switchVecProp );
       }
       else
       {
@@ -238,15 +275,23 @@ bool INDIClient::SendNewPropertyItem( const INDINewPropertyListItem& newItem, bo
                throw ProcessAborted();
 
             INDIPropertyListItem p;
-            if ( GetPropertyItem( newItem.Device, newItem.Property, newItem.Element, p, false/*formatted*/ ) )
-            {
-               if ( p.PropertyState == IPS_OK || p.PropertyState == IPS_IDLE )
-                  break;
-               if ( p.PropertyState == IPS_ALERT )
-                  throw String( "Failure to send '"
-                           + newItem.Device + '.' + newItem.Property + '.' + newItem.Element
+            for (auto elementValuePair : newItem.ElementValue) {
+            	if ( GetPropertyItem( newItem.Device, newItem.Property, elementValuePair.Element, p, false/*formatted*/ ) )
+            	{
+            		if ( p.PropertyState == IPS_OK || p.PropertyState == IPS_IDLE )
+            			requestDoneMap[elementValuePair.Element]=true;
+            		if ( p.PropertyState == IPS_ALERT )
+            			throw String( "Failure to send '"
+                           + newItem.Device + '.' + newItem.Property + '.' + elementValuePair.Element
                            + "' property newItem. Message from INDI server: " + CurrentServerMessage() );
+            	}
             }
+            bool requestDone=true;
+            for (auto requestStates : requestDoneMap){
+            	requestDone = requestDone && requestStates.second;
+            }
+            if (requestDone)
+            	break;
          }
 
       return true;

@@ -1,15 +1,15 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.101
+# PixInsight Makefile Generator Script v1.100
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Tue, 17 May 2016 15:44:49 GMT
+# Automatically generated on Sat, 28 May 2016 13:01:59 GMT
 # Project id ...... INDIClient
 # Project type .... Module
 # Platform ........ FreeBSD/g++
 # Configuration ... Release/x64
 ######################################################################
 
-OBJ_DIR="$(PCLSRCDIR)/modules/processes/contrib/kkretzschmar/INDIClient/freebsd/g++/x64/Release"
+OBJ_DIR="/media/klaus/DATA/Cpp/PCL/src/modules/processes/contrib/kkretzschmar/INDIClient/freebsd/g++/x64/Release"
 
 .PHONY: all
 all: $(OBJ_DIR)/INDIClient-pxm.so
@@ -30,6 +30,10 @@ SRC_FILES= \
 ../../INDIDeviceControllerInterface.cpp \
 ../../INDIDeviceControllerParameters.cpp \
 ../../INDIDeviceControllerProcess.cpp \
+../../INDIMountInstance.cpp \
+../../INDIMountInterface.cpp \
+../../INDIMountParameters.cpp \
+../../INDIMountProcess.cpp \
 ../../INDI/BaseClientImpl.cpp \
 ../../INDI/base64.c \
 ../../INDI/basedevice.cpp \
@@ -53,6 +57,10 @@ OBJ_FILES= \
 ./x64/Release/INDIDeviceControllerInterface.o \
 ./x64/Release/INDIDeviceControllerParameters.o \
 ./x64/Release/INDIDeviceControllerProcess.o \
+./x64/Release/INDIMountInstance.o \
+./x64/Release/INDIMountInterface.o \
+./x64/Release/INDIMountParameters.o \
+./x64/Release/INDIMountProcess.o \
 ./x64/Release/INDI/BaseClientImpl.o \
 ./x64/Release/INDI/base64.o \
 ./x64/Release/INDI/basedevice.o \
@@ -76,6 +84,10 @@ DEP_FILES= \
 ./x64/Release/INDIDeviceControllerInterface.d \
 ./x64/Release/INDIDeviceControllerParameters.d \
 ./x64/Release/INDIDeviceControllerProcess.d \
+./x64/Release/INDIMountInstance.d \
+./x64/Release/INDIMountInterface.d \
+./x64/Release/INDIMountParameters.d \
+./x64/Release/INDIMountProcess.d \
 ./x64/Release/INDI/BaseClientImpl.d \
 ./x64/Release/INDI/base64.d \
 ./x64/Release/INDI/basedevice.d \

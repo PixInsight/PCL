@@ -1045,8 +1045,7 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
       return;
 
    INDIClient* indi = INDIClient::TheClient();
-   INDINewPropertyListItem newItem;
-   newItem.Device = m_device;
+
 
    if ( sender == GUI->CCDDevice_Combo )
    {
@@ -1061,10 +1060,11 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
          if ( indi->GetPropertyItem( m_device, "COOLER_CONNECTION", "CONNECT_COOLER", item ) )
             if ( item.PropertyValue == "OFF" )
             {
+               INDINewPropertyItem newItem;
+               newItem.Device = m_device;
                newItem.Property = "COOLER_CONNECTION";
-               newItem.Element = "CONNECT_COOLER";
                newItem.PropertyType = "INDI_SWITCH";
-               newItem.NewPropertyValue = "ON";
+               newItem.ElementValue.Add(ElementValuePair("CONNECT_COOLER","ON"));
                indi->SendNewPropertyItem( newItem, true/*async*/ );
             }
       }
@@ -1073,10 +1073,11 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
    {
       if ( indi->HasPropertyItem( m_device, "CCD_BINNING", "HOR_BIN" ) )
       {
+    	 INDINewPropertyItem newItem;
+    	 newItem.Device = m_device;
          newItem.Property = "CCD_BINNING";
-         newItem.Element = "HOR_BIN";
          newItem.PropertyType = "INDI_NUMBER";
-         newItem.NewPropertyValue = GUI->CCDBinX_Combo.ItemText( itemIndex ).Trimmed();
+         newItem.ElementValue.Add(ElementValuePair("HOR_BIN",GUI->CCDBinX_Combo.ItemText( itemIndex ).Trimmed()));
          indi->SendNewPropertyItem( newItem, true/*async*/ );
       }
    }
@@ -1084,10 +1085,11 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
    {
       if ( indi->HasPropertyItem( m_device, "CCD_BINNING", "VER_BIN" ) )
       {
+    	 INDINewPropertyItem newItem;
+    	 newItem.Device = m_device;
          newItem.Property = "CCD_BINNING";
-         newItem.Element = "VER_BIN";
          newItem.PropertyType = "INDI_NUMBER";
-         newItem.NewPropertyValue = GUI->CCDBinY_Combo.ItemText( itemIndex ).Trimmed();
+         newItem.ElementValue.Add(ElementValuePair("VER_BIN",GUI->CCDBinY_Combo.ItemText( itemIndex ).Trimmed()));
          indi->SendNewPropertyItem( newItem, true/*async*/ );
       }
    }
@@ -1095,10 +1097,11 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
    {
       if ( indi->HasPropertyItem( m_device, "FILTER_SLOT", "FILTER_SLOT_VALUE" ) )
       {
+    	 INDINewPropertyItem newItem;
+    	 newItem.Device = m_device;
          newItem.Property = "FILTER_SLOT";
-         newItem.Element = "FILTER_SLOT_VALUE";
          newItem.PropertyType = "INDI_NUMBER";
-         newItem.NewPropertyValue = String( itemIndex + 1 );
+         newItem.ElementValue.Add(ElementValuePair("FILTER_SLOT_VALUE",String( itemIndex + 1 )));
          indi->SendNewPropertyItem( newItem, true/*async*/ );
       }
    }
@@ -1107,10 +1110,11 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
       String PropertyElement = INDICCDFrameInstance::UploadModePropertyString( itemIndex );
       if ( indi->HasPropertyItem( m_device, "UPLOAD_MODE", PropertyElement ) )
       {
+    	 INDINewPropertyItem newItem;
+    	 newItem.Device = m_device;
          newItem.Property = "UPLOAD_MODE";
-         newItem.Element = PropertyElement;
          newItem.PropertyType = "INDI_SWITCH";
-         newItem.NewPropertyValue = "ON";
+         newItem.ElementValue.Add(ElementValuePair(PropertyElement,"ON"));
          indi->SendNewPropertyItem( newItem, true/*async*/ );
       }
    }
@@ -1119,10 +1123,11 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
       String PropertyElement = INDICCDFrameInstance::CCDFrameTypePropertyString( itemIndex );
       if ( indi->HasPropertyItem( m_device, "CCD_FRAME_TYPE", PropertyElement ) )
       {
+    	 INDINewPropertyItem newItem;
+    	 newItem.Device = m_device;
          newItem.Property = "CCD_FRAME_TYPE";
-         newItem.Element = PropertyElement;
          newItem.PropertyType = "INDI_SWITCH";
-         newItem.NewPropertyValue = "ON";
+         newItem.ElementValue.Add(ElementValuePair(PropertyElement,"ON"));
          indi->SendNewPropertyItem( newItem, true/*async*/ );
       }
    }
@@ -1281,27 +1286,26 @@ void INDICCDFrameInterface::e_Click( Button& sender, bool checked )
    if ( !INDIClient::HasClient() )
       return;
 
+
    if ( sender == GUI->CCDTargetTemp_ToolButton )
    {
-      INDINewPropertyListItem newItem;
+      INDINewPropertyItem newItem;
       newItem.Device = m_device;
       newItem.Property = "CCD_TEMPERATURE";
-      newItem.Element = "CCD_TEMPERATURE_VALUE";
       newItem.PropertyType = "INDI_NUMBER";
-      newItem.NewPropertyValue = String( GUI->CCDTargetTemp_NumericEdit.Value() );
-      INDIClient::TheClient()->SendNewPropertyItem( newItem, true/*async*/ );
+      newItem.ElementValue.Add(ElementValuePair("CCD_TEMPERATURE_VALUE",String( GUI->CCDTargetTemp_NumericEdit.Value() )));
+	  INDIClient::TheClient()->SendNewPropertyItem( newItem, true/*async*/ );
    }
    else if ( sender == GUI->ServerUploadDir_ToolButton )
    {
       SimpleGetStringDialog dialog( "Server upload directory:", GUI->ServerUploadDir_Edit.Text() );
       if ( dialog.Execute() )
       {
-         INDINewPropertyListItem newItem;
+         INDINewPropertyItem newItem;
          newItem.Device = m_device;
          newItem.Property = "UPLOAD_SETTINGS";
-         newItem.Element = "UPLOAD_DIR";
          newItem.PropertyType = "INDI_TEXT";
-         newItem.NewPropertyValue = dialog.Text();
+         newItem.ElementValue.Add(ElementValuePair("UPLOAD_DIR",dialog.Text()));
          INDIClient::TheClient()->SendNewPropertyItem( newItem, true/*async*/ );
       }
    }

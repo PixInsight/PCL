@@ -301,14 +301,13 @@ public:
       OnShow( (Control::event_handler)&PropertyEditDialog::e_Show, *this );
    }
 
-   INDINewPropertyListItem NewItem() const
+   INDINewPropertyItem NewItem() const
    {
-      INDINewPropertyListItem newItem;
+      INDINewPropertyItem newItem;
       newItem.Device = m_item.Device;
       newItem.Property = m_item.Property;
       newItem.PropertyKey = m_item.PropertyKey;
-      newItem.Element = m_item.Element;
-      newItem.NewPropertyValue = NewItemValue();
+      newItem.ElementValue.Add(ElementValuePair(m_item.Element, NewItemValue()));
 
       switch( m_item.PropertyType )
       {
@@ -332,7 +331,7 @@ public:
       return newItem;
    }
 
-   static bool EditProperty( INDINewPropertyListItem& result, const INDIPropertyListItem& );
+   static bool EditProperty( INDINewPropertyItem& result, const INDIPropertyListItem& );
 
 protected:
 
@@ -497,7 +496,7 @@ private:
    }
 };
 
-bool PropertyEditDialog::EditProperty( INDINewPropertyListItem& result, const INDIPropertyListItem& item )
+bool PropertyEditDialog::EditProperty( INDINewPropertyItem& result, const INDIPropertyListItem& item )
 {
    AutoPointer<PropertyEditDialog> dialog;
    switch ( item.PropertyType )
@@ -1034,7 +1033,7 @@ void INDIDeviceControllerInterface::e_Click( Button& sender, bool checked )
                PropertyElementNode* elementNode = dynamic_cast<PropertyElementNode*>( GUI->Devices_TreeBox.CurrentNode() );
                if ( elementNode != nullptr )
                {
-                  INDINewPropertyListItem result;
+                  INDINewPropertyItem result;
                   if ( PropertyEditDialog::EditProperty( result, elementNode->Item() ) )
                      if ( !INDIClient::TheClient()->SendNewPropertyItem( result ) )
                         MessageBox( "<p>Failure to send new property item value:</p>"
@@ -1098,7 +1097,7 @@ void INDIDeviceControllerInterface::e_NodeActivated( TreeBox& sender, TreeBox::N
          PropertyElementNode* elementNode = dynamic_cast<PropertyElementNode*>( GUI->Devices_TreeBox.CurrentNode() );
          if ( elementNode != nullptr )
          {
-            INDINewPropertyListItem result;
+            INDINewPropertyItem result;
             if ( PropertyEditDialog::EditProperty( result, elementNode->Item() ) )
                INDIClient::TheClient()->SendNewPropertyItem( result );
          }

@@ -196,63 +196,70 @@ void INDICCDFrameInstance::SendDeviceProperties( bool async ) const
 {
    INDIClient* indi = INDIClient::TheClientOrDie();
    INDIPropertyListItem item;
-   INDINewPropertyListItem newItem;
-   newItem.Device = p_deviceName;
+
+
 
    if ( indi->GetPropertyItem( p_deviceName, "UPLOAD_MODE", UploadModePropertyString( p_uploadMode ), item ) )
    {
+	  INDINewPropertyItem newItem;
+	  newItem.Device = p_deviceName;
       newItem.Property = "UPLOAD_MODE";
-      newItem.Element = UploadModePropertyString( p_uploadMode );
       newItem.PropertyType = "INDI_SWITCH";
-      newItem.NewPropertyValue = "ON";
+      newItem.ElementValue.Add(ElementValuePair(UploadModePropertyString( p_uploadMode ),"ON"));
       indi->SendNewPropertyItem( newItem, async );
    }
 
    if ( !p_serverUploadDirectory.IsEmpty() )
    {
+	  INDINewPropertyItem newItem;
+	  newItem.Device = p_deviceName;
       newItem.Property = "UPLOAD_SETTINGS";
-      newItem.Element = "UPLOAD_DIR";
       newItem.PropertyType = "INDI_TEXT";
-      newItem.NewPropertyValue = p_serverUploadDirectory;
+      newItem.ElementValue.Add(ElementValuePair("UPLOAD_DIR",p_serverUploadDirectory));
       indi->SendNewPropertyItem( newItem, async );
    }
 
    if ( indi->GetPropertyItem( p_deviceName, "CCD_FRAME_TYPE", CCDFrameTypePropertyString( p_frameType ), item ) )
    {
+	  INDINewPropertyItem newItem;
+	  newItem.Device = p_deviceName;
       newItem.Property = "CCD_FRAME_TYPE";
-      newItem.Element = CCDFrameTypePropertyString( p_frameType );
       newItem.PropertyType = "INDI_SWITCH";
-      newItem.NewPropertyValue = "ON";
+      newItem.ElementValue.Add(ElementValuePair(CCDFrameTypePropertyString( p_frameType ),"ON"));
       indi->SendNewPropertyItem( newItem, async );
    }
+
 
    if ( p_binningX > 0 )
       if ( indi->GetPropertyItem( p_deviceName, "CCD_BINNING", "HOR_BIN", item ) )
       {
-         newItem.Property = "CCD_BINNING";
-         newItem.Element = "HOR_BIN";
-         newItem.PropertyType = "INDI_NUMBER";
-         newItem.NewPropertyValue = String( p_binningX );
-         indi->SendNewPropertyItem( newItem, async );
+    	  INDINewPropertyItem newItem;
+    	  newItem.Device = p_deviceName;
+    	  newItem.Property = "CCD_BINNING";
+    	  newItem.PropertyType = "INDI_NUMBER";
+    	  newItem.ElementValue.Add(ElementValuePair("HOR_BIN",String(p_binningX)));
+    	  indi->SendNewPropertyItem( newItem, async );
       }
 
    if ( p_binningY > 0 )
       if ( indi->GetPropertyItem( p_deviceName, "CCD_BINNING", "VER_BIN", item ) )
       {
-         newItem.Property = "CCD_BINNING";
-         newItem.Element = "VER_BIN";
-         newItem.PropertyType = "INDI_NUMBER";
-         newItem.NewPropertyValue = String( p_binningY );
-         indi->SendNewPropertyItem( newItem, async );
+    	  INDINewPropertyItem newItem;
+    	  newItem.Device = p_deviceName;
+    	  newItem.Property = "CCD_BINNING";
+    	  newItem.PropertyType = "INDI_NUMBER";
+    	  newItem.ElementValue.Add(ElementValuePair("VER_BIN",String(p_binningY)));
+    	  indi->SendNewPropertyItem( newItem, async );
       }
 
    if ( p_filterSlot > 0 )
       if ( indi->GetPropertyItem( p_deviceName, "FILTER_SLOT", "FILTER_SLOT_VALUE", item ) )
       {
+    	 INDINewPropertyItem newItem;
+    	 newItem.Device = p_deviceName;
          newItem.Property = "FILTER_SLOT";
-         newItem.Element = "FILTER_SLOT_VALUE";
          newItem.PropertyType = "INDI_NUMBER";
-         newItem.NewPropertyValue = String( p_filterSlot );
+         newItem.ElementValue.Add(ElementValuePair("FILTER_SLOT_VALUE",String(p_filterSlot)));
          indi->SendNewPropertyItem( newItem, async );
       }
 }
@@ -703,9 +710,6 @@ void AbstractINDICCDFrameExecution::Perform()
    if ( !indi->HasDevices() )
       throw Error( "No INDI device has been connected." );
 
-   INDINewPropertyListItem newItem;
-   newItem.Device = m_instance.p_deviceName;
-
    try
    {
       m_instance.ValidateDevice();
@@ -756,17 +760,19 @@ void AbstractINDICCDFrameExecution::Perform()
             String serverFileName = m_instance.ServerFileName();
             m_instance.o_serverFrames << serverFileName;
 
+            INDINewPropertyItem newItem;
+            newItem.Device = m_instance.p_deviceName;
             newItem.Property = "UPLOAD_SETTINGS";
-            newItem.Element = "UPLOAD_PREFIX";
             newItem.PropertyType = "INDI_TEXT";
-            newItem.NewPropertyValue = serverFileName;
+            newItem.ElementValue.Add(ElementValuePair("UPLOAD_PREFIX",serverFileName));
             indi->SendNewPropertyItem( newItem, false/*async*/ );
          }
+         INDINewPropertyItem newItem;
 
+         newItem.Device = m_instance.p_deviceName;
          newItem.Property = "CCD_EXPOSURE";
-         newItem.Element = "CCD_EXPOSURE_VALUE";
          newItem.PropertyType = "INDI_NUMBER";
-         newItem.NewPropertyValue = String( m_instance.p_exposureTime );
+         newItem.ElementValue.Add(ElementValuePair("CCD_EXPOSURE_VALUE",String( m_instance.p_exposureTime )));
          if ( !indi->SendNewPropertyItem( newItem, true/*async*/ ) )
          {
             ExposureErrorEvent( "Failure to send new property values to INDI server" );
@@ -1072,11 +1078,18 @@ void AbstractINDICCDFrameExecution::Perform()
       catch ( ProcessAborted& )
       {
          m_aborted = true;
-         newItem.Property = "CCD_ABORT_EXPOSURE";
-         newItem.Element = "ABORT";
-         newItem.PropertyType = "INDI_SWITCH";
-         newItem.NewPropertyValue = "ON";
-         indi->SendNewPropertyItem( newItem, true/*async*/ );
+         INDIPropertyListItem item;
+         // check if driver supports CCD_ABORT_EXPOSURE
+         if ( indi->GetPropertyItem( m_instance.p_deviceName, "CCD_ABORT_EXPOSURE", "ABORT", item ) )
+         {
+        	 INDINewPropertyItem newItem;
+
+        	 newItem.Device = m_instance.p_deviceName;
+        	 newItem.Property = "CCD_ABORT_EXPOSURE";
+        	 newItem.PropertyType = "INDI_SWITCH";
+        	 newItem.ElementValue.Add(ElementValuePair("ABORT","ON"));
+        	 indi->SendNewPropertyItem( newItem, true/*async*/ );
+         }
          AbortEvent();
          throw;
       }

@@ -1885,6 +1885,51 @@ void PCL_FUNC JDToComplexTime( int& year, int& month, int& day, double& dayf, do
 // ----------------------------------------------------------------------------
 
 /*!
+ * Conversion of a decimal scalar \a d to the equivalent sexagesimal decimal
+ * components \a sign, \a s1, \a s2 and \a s3, such that:
+ *
+ * d = sign * (s1 + s2/60 + s3/3600)
+ *
+ * with the following constraints:
+ *
+ * sign = -1 iff d &lt; 0 \n
+ * sign = +1 iff d &ge; 0 \n
+ * 0 &le; s1 \n
+ * 0 &le; s2 &lt; 60 \n
+ * 0 &le; s3 &lt; 60 \n
+ *
+ * \ingroup mathematical_functions
+ */
+template <typename S1, typename S2, typename S3, typename D>
+inline void DecimalToSexagesimal( int& sign, S1& s1, S2& s2, S3& s3, const D& d )
+{
+   double t1 = Abs( d );
+   double t2 = Frac( t1 )*60;
+   double t3 = Frac( t2 )*60;
+   sign = (d < 0) ? -1 : +1;
+   s1 = S1( TruncInt( t1 ) );
+   s2 = S2( TruncInt( t2 ) );
+   s3 = S3( t3 );
+}
+
+/*!
+ * Conversion of the sexagesimal decimal components \a sign, \a s1, \a s2 and
+ * \a s3 to their equivalent decimal scalar. The returned value is equal to:
+ *
+ * ((sign < 0) ? -1 : +1)*(Abs( s1 ) + (s2 + s3/60)/60);
+ *
+ * \ingroup mathematical_functions
+ */
+template <typename S1, typename S2, typename S3>
+inline double SexagesimalToDecimal( int sign, const S1& s1, const S2& s2 = S2( 0 ), const S3& s3 = S3( 0 ) )
+{
+   double d = Abs( s1 ) + (s2 + s3/60)/60;
+   return (sign < 0) ? -d : d;
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
  * \defgroup statistical_functions Statistical Functions
  */
 

@@ -1694,7 +1694,7 @@ IsoString& IsoString::ToDecodedHTMLSpecialChars()
 // ----------------------------------------------------------------------------
 
 template <class T> static
-void ParseSexagesimal( double& s1, double& s2, double& s3, const T& separator, const T& str )
+void ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const T& separator, const T& str )
 {
    Array<T> tokens;
    str.Break( tokens, separator, true/*trim*/ );
@@ -1708,25 +1708,20 @@ void ParseSexagesimal( double& s1, double& s2, double& s3, const T& separator, c
          throw ParseError( "Parsing sexagesimal expression: empty component(s)" );
    try
    {
-      int g;
+      double t1;
       if ( n == 1 )
       {
-         s1 = tokens[0].ToDouble();
-         g = (s1 < 0) ? -1 : +1;
-         s1 = Abs( s1 );
+         t1 = Abs( tokens[0].ToDouble() );
       }
       else
       {
-         int d = tokens[0].ToInt();
-         g = (d < 0) ? -1 : +1;
-         d = Abs( d );
-
+         int d = Abs( tokens[0].ToInt() );
          if ( n == 2 )
          {
             double m = tokens[1].ToDouble();
             if ( m < 0 /*|| m >= 60*/ ) // uncomment for strict component range checks
                throw ParseError( "second component out of range", tokens[1] );
-            s1 = d + m/60;
+            t1 = d + m/60;
          }
          else
          {
@@ -1736,14 +1731,14 @@ void ParseSexagesimal( double& s1, double& s2, double& s3, const T& separator, c
             double s = tokens[2].ToDouble();
             if ( s < 0 /*|| s >= 60*/ ) // uncomment for strict component range checks
                throw ParseError( "third component out of range", tokens[2] );
-            s1 = d + (m + s/60)/60;
+            t1 = d + (m + s/60)/60;
          }
       }
-
-      s2 = Frac( s1 )*60;
-      s3 = Frac( s2 )*60;
-      s2 = TruncInt( s2 );
-      s1 = g*TruncInt( s1 );
+      double t2 = Frac( t1 )*60;
+      sign = tokens[0].StartsWith( '-' ) ? -1 : +1;
+      s1 = TruncInt( t1 );
+      s2 = TruncInt( t2 );
+      s3 = Frac( t2 )*60;
    }
    catch ( const ParseError& e )
    {
@@ -1755,20 +1750,20 @@ void ParseSexagesimal( double& s1, double& s2, double& s3, const T& separator, c
    }
 }
 
-void String::ParseSexagesimal( double& s1, double& s2, double& s3, const String& separator ) const
+void String::ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const String& separator ) const
 {
-   pcl::ParseSexagesimal( s1, s2, s3, separator, *this );
+   pcl::ParseSexagesimal( sign, s1, s2, s3, separator, *this );
 }
 
-void IsoString::ParseSexagesimal( double& s1, double& s2, double& s3, const IsoString& separator ) const
+void IsoString::ParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const IsoString& separator ) const
 {
-   pcl::ParseSexagesimal( s1, s2, s3, separator, *this );
+   pcl::ParseSexagesimal( sign, s1, s2, s3, separator, *this );
 }
 
 // ----------------------------------------------------------------------------
 
 template <class T> static
-bool TryParseSexagesimal( double& s1, double& s2, double& s3, const T& separator, const T& str )
+bool TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const T& separator, const T& str )
 {
    Array<T> tokens;
    str.Break( tokens, separator, true/*trim*/ );
@@ -1779,20 +1774,18 @@ bool TryParseSexagesimal( double& s1, double& s2, double& s3, const T& separator
       if ( tokens[i].IsEmpty() )
          return false;
 
-   int g;
+   double t1;
    if ( n == 1 )
    {
-      if ( !tokens[0].TryToDouble( s1 ) )
+      if ( !tokens[0].TryToDouble( t1 ) )
          return false;
-      g = (s1 < 0) ? -1 : +1;
-      s1 = Abs( s1 );
+      t1 = Abs( t1 );
    }
    else
    {
       int d;
       if ( !tokens[0].TryToInt( d ) )
          return false;
-      g = (d < 0) ? -1 : +1;
       d = Abs( d );
 
       if ( n == 2 )
@@ -1802,7 +1795,7 @@ bool TryParseSexagesimal( double& s1, double& s2, double& s3, const T& separator
             return false;
          if ( m < 0 /*|| m >= 60*/ ) // uncomment for strict component range checks
             return false;
-         s1 = d + m/60;
+         t1 = d + m/60;
       }
       else
       {
@@ -1816,33 +1809,32 @@ bool TryParseSexagesimal( double& s1, double& s2, double& s3, const T& separator
             return false;
          if ( s < 0 /*|| s >= 60*/ ) // uncomment for strict component range checks
             return false;
-         s1 = d + (m + s/60)/60;
+         t1 = d + (m + s/60)/60;
       }
    }
-
-   s2 = Frac( s1 )*60;
-   s3 = Frac( s2 )*60;
-   s2 = TruncInt( s2 );
-   s1 = g*TruncInt( s1 );
+   double t2 = Frac( t1 )*60;
+   sign = tokens[0].StartsWith( '-' ) ? -1 : +1;
+   s1 = TruncInt( t1 );
+   s2 = TruncInt( t2 );
+   s3 = Frac( t2 )*60;
    return true;
 }
 
-bool String::TryParseSexagesimal( double& s1, double& s2, double& s3, const String& separator ) const
+bool String::TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const String& separator ) const
 {
-   return pcl::TryParseSexagesimal( s1, s2, s3, separator, *this );
+   return pcl::TryParseSexagesimal( sign, s1, s2, s3, separator, *this );
 }
 
-bool IsoString::TryParseSexagesimal( double& s1, double& s2, double& s3, const IsoString& separator ) const
+bool IsoString::TryParseSexagesimal( int& sign, int& s1, int& s2, double& s3, const IsoString& separator ) const
 {
-   return pcl::TryParseSexagesimal( s1, s2, s3, separator, *this );
+   return pcl::TryParseSexagesimal( sign, s1, s2, s3, separator, *this );
 }
 
 // ----------------------------------------------------------------------------
 
 template <class T> static
-T ToSexagesimal( double s1, double s2, double s3, const SexagesimalConversionOptions& options )
+T ToSexagesimal( int sign, double s1, double s2, double s3, const SexagesimalConversionOptions& options )
 {
-   int g = (s1 < 0) ? -1 : +1;
    s1 = Abs( s1 ) + (s2 + s3/60)/60;
    s2 = Frac( s1 )*60;
    s3 = Frac( s2 )*60;
@@ -1886,8 +1878,8 @@ T ToSexagesimal( double s1, double s2, double s3, const SexagesimalConversionOpt
       break;
    }
 
-   if ( options.sign || g < 0 )
-      tokens[0].Prepend( (g < 0) ? '-' : '+' );
+   if ( options.sign || sign < 0 )
+      tokens[0].Prepend( (sign < 0) ? '-' : '+' );
 
    if ( options.width > 0 )
       tokens[0].JustifyRight( options.width, options.padding );
@@ -1895,14 +1887,14 @@ T ToSexagesimal( double s1, double s2, double s3, const SexagesimalConversionOpt
    return T().ToSeparated( tokens, options.separator );
 }
 
-String String::ToSexagesimal( double s1, double s2, double s3, const SexagesimalConversionOptions& options )
+String String::ToSexagesimal( int sign, double s1, double s2, double s3, const SexagesimalConversionOptions& options )
 {
-   return pcl::ToSexagesimal<String>( s1, s2, s3, options );
+   return pcl::ToSexagesimal<String>( sign, s1, s2, s3, options );
 }
 
-IsoString IsoString::ToSexagesimal( double s1, double s2, double s3, const SexagesimalConversionOptions& options )
+IsoString IsoString::ToSexagesimal( int sign, double s1, double s2, double s3, const SexagesimalConversionOptions& options )
 {
-   return pcl::ToSexagesimal<IsoString>( s1, s2, s3, options );
+   return pcl::ToSexagesimal<IsoString>( sign, s1, s2, s3, options );
 }
 
 // ----------------------------------------------------------------------------

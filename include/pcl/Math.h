@@ -1105,7 +1105,7 @@ template <typename T> inline int64 TruncInt64( T x )
  * TruncI64 function: Truncated integer part of \a x as a 64-bit signed
  * integer.
  *
- * This function is a convenience synonym for TruncInt64().
+ * \deprecated Use TruncInt64() in newly produced code.
  *
  * \ingroup mathematical_functions
  */
@@ -1751,8 +1751,8 @@ inline void Rotate( int& x, int& y, T1 sa, T1 ca, T2 xc, T2 yc )
 {
    T1 dx = T1( x ) - T1( xc );
    T1 dy = T1( y ) - T1( yc );
-   x = RoundI( T1( xc ) + ca*dx + sa*dy );
-   y = RoundI( T1( yc ) - sa*dx + ca*dy );
+   x = RoundInt( T1( xc ) + ca*dx + sa*dy );
+   y = RoundInt( T1( yc ) - sa*dx + ca*dy );
 }
 
 /*!
@@ -1770,8 +1770,8 @@ inline void Rotate( long& x, long& y, T1 sa, T1 ca, T2 xc, T2 yc )
 {
    T1 dx = T1( x ) - T1( xc );
    T1 dy = T1( y ) - T1( yc );
-   x = (long)RoundI( T1( xc ) + ca*dx + sa*dy );
-   y = (long)RoundI( T1( yc ) - sa*dx + ca*dy );
+   x = (long)RoundInt( T1( xc ) + ca*dx + sa*dy );
+   y = (long)RoundInt( T1( yc ) - sa*dx + ca*dy );
 }
 
 /*!
@@ -1789,8 +1789,8 @@ inline void Rotate( int64& x, int64& y, T1 sa, T1 ca, T2 xc, T2 yc )
 {
    T1 dx = T1( x ) - T1( xc );
    T1 dy = T1( y ) - T1( yc );
-   x = RoundI64( T1( xc ) + ca*dx + sa*dy );
-   y = RoundI64( T1( yc ) - sa*dx + ca*dy );
+   x = RoundInt64( T1( xc ) + ca*dx + sa*dy );
+   y = RoundInt64( T1( yc ) - sa*dx + ca*dy );
 }
 
 /*!

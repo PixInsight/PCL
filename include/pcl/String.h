@@ -194,6 +194,87 @@ typedef Flags<RandomizationOption::mask_type>  RandomizationOptions;
 // ----------------------------------------------------------------------------
 
 /*!
+ * \class SexagesimalConversionOptions
+ * \brief Formatting options for string sexagesimal representations
+ *
+ * \sa IsoString::ToSexagesimal(), String::ToSexagesimal()
+ */
+struct PCL_CLASS SexagesimalConversionOptions
+{
+   /*!
+    * Number of represented items. Can be 1, 2 or 3. All items but the last one
+    * are represented as integer values. The last item is represented as a
+    * floating point value with the specified precision. The default value is 3
+    * items.
+    */
+   unsigned items     : 2;
+
+   /*!
+    * Number of decimal digits for the last represented sexagesimal item. The
+    * default value is two decimal digits.
+    */
+   unsigned precision : 4;
+
+   /*!
+    * Whether to always prepend a sign character to the first represented item,
+    * even '+' for positive values. This is false by default.
+    */
+   bool     sign      : 1;
+
+   /*!
+    * Width of the integer part of the first represented item in characters,
+    * including the sign when applicable. When the specified width is larger
+    * than the length of the represented item, it is left-padded with padding
+    * characters as necessary. The default is zero, which means that no padding
+    * is performed for the first item by default.
+    */
+   unsigned width     : 4;
+
+   /*!
+    * A single character used for separation of sexagesimal components. The
+    * default separator is a colon character, ':'.
+    */
+   char     separator;
+
+   /*!
+    * A single character used for padding right-justified representations of
+    * first sexagesimal components. See the width member. The default padding
+    * character is the white space, ' '.
+    */
+   char     padding;
+
+   /*!
+    * Default constructor.
+    */
+   SexagesimalConversionOptions( unsigned _items = 3,
+                                 unsigned _precision = 2,
+                                 bool _sign = false,
+                                 unsigned _width = 0,
+                                 char _separator = ':',
+                                 char _padding = ' ' ) :
+      items( _items ),
+      precision( _precision ),
+      sign( _sign ),
+      width( _width ),
+      separator( _separator ),
+      padding( _padding )
+   {
+   }
+
+   /*!
+    * Copy constructor.
+    */
+   SexagesimalConversionOptions( const SexagesimalConversionOptions& ) = default;
+
+   /*!
+    * Copy assignment operator. Returns a reference to this object.
+    */
+   SexagesimalConversionOptions& operator =( const SexagesimalConversionOptions& ) = default;
+};
+
+// ----------------------------------------------------------------------------
+
+/*!
  * \class GenericString
  * \brief Generic string.
  *
@@ -201,7 +282,8 @@ typedef Flags<RandomizationOption::mask_type>  RandomizationOptions;
  * fundamental behavior is specified by an instantiation R of GenericCharTraits
  * for a character type T (typically GenericCharTraits, or a derived class such
  * as CharTraits or IsoCharTraits), and where A provides dynamic allocation for
- * contiguous sequences of elements of type T (StandardAllocator by default).
+ * contiguous sequences of elements of type T (StandardAllocator is used by
+ * default).
  *
  * In the PixInsight platform, all dynamically allocated strings have been
  * implemented as instantiations of the %GenericString template class.
@@ -6420,6 +6502,184 @@ public:
    bool TryToUInt64( unsigned long long& value, int base ) const;
 
    /*!
+    * Evaluates this string as a sexagesimal numeric literal representation,
+    * and returns the result as a \c double value.
+    *
+    * The source string is expected to have the following format:
+    *
+    * [+|-]\<s1\>[\<sep\>\<s2\>[\<sep\>\<s3\>]][.[\<decimal-part\>]]
+    *
+    * where \<s1\>, \<s2\>, \<s3\> and \<decimal-part\> are sequences of
+    * decimal digits from 0 to 9, and \<sep\> is any sequence of characters
+    * specified as the \a separator argument. The default separator is the
+    * colon character, ':'.
+    *
+    * The result is equal to:
+    *
+    * \<sign\> * (\<s1\> + \<s2\>/60 + \<s3\>/3600)
+    *
+    * where omitted optional components are taken as zero, and \<sign\> is -1
+    * iff a minus sign '-' leads the representation, or +1 otherwise.
+    *
+    * If this string doesn't contain a valid sexagesimal numeric literal, or if
+    * the range of \c double is exceeded, this member function throws a
+    * ParseError exception.
+    *
+    * \sa TrySexagesimalToDouble(), ParseSexagesimal(), TryParseSexagesimal()
+    */
+   double SexagesimalToDouble( const IsoString& separator = ':' ) const
+   {
+      double s1, s2, s3;
+      ParseSexagesimal( s1, s2, s3, separator );
+      return s1 + (s2 + s3/60)/60;
+   }
+
+   template <class S>
+   double SexagesimalToDouble( const S& separator ) const
+   {
+      return SexagesimalToDouble( IsoString( separator ) );
+   }
+
+   /*!
+    * Attempts to evaluate this string as a sexagesimal numeric literal with
+    * the specified \a separator.
+    *
+    * If this string can legally be evaluated as a sexagesimal literal and
+    * converted to a floating point number, this function stores the evaluation
+    * result in the specified \a value variable and returns \c true. For
+    * information about the legal syntax of a sexagesimal literal, see the
+    * documentation for SexagesimalToDouble().
+    *
+    * If this string cannot be evaluated as a sexagesimal literal, this
+    * function returns \c false and does not change the \a value variable. This
+    * function does not throw any exception.
+    *
+    * \sa SexagesimalToDouble(), ParseSexagesimal(), TryParseSexagesimal()
+    */
+   bool TrySexagesimalToDouble( double& value, const IsoString& separator = ':' ) const
+   {
+      double s1, s2, s3;
+      if ( TryParseSexagesimal( s1, s2, s3, separator ) )
+      {
+         value = s1 + (s2 + s3/60)/60;
+         return true;
+      }
+      return false;
+   }
+
+   template <class S>
+   bool TrySexagesimalToDouble( double& value, const S& separator ) const
+   {
+      return TrySexagesimalToDouble( value, IsoString( separator ) );
+   }
+
+   /*!
+    * Evaluates this string as a sexagesimal numeric literal representation,
+    * using the specified \a separator, and stores the resulting three
+    * components in the specified \a s1, \a s2 and \a s3 variables. For
+    * information about the legal syntax of a sexagesimal literal, see the
+    * documentation for SexagesimalToDouble().
+    *
+    * This function stores \e canonical minutes and seconds components,
+    * irrespective of the actual component values represented by this string.
+    * This means that the stored components always follow these rules:
+    *
+    * 0 &le; \a s2 &lt; 60
+    * 0 &le; \a s3 &lt; 60
+    *
+    * When none of the \<s2\> and \<s3\> tokens are included in the string, the
+    * result is \a s2 = \a s3 = 0.
+    *
+    * If this string doesn't contain a valid sexagesimal numeric literal, or if
+    * the range of \c double is exceeded, this member function throws a
+    * ParseError exception.
+    *
+    * \sa TryParseSexagesimal(), SexagesimalToDouble(), TrySexagesimalToDouble()
+    */
+   void ParseSexagesimal( double& s1, double& s2, double& s3, const IsoString& separator = ':' ) const;
+
+   template <class S>
+   void ParseSexagesimal( double& s1, double& s2, double& s3, const S& separator ) const
+   {
+      ParseSexagesimal( s1, s2, s3, IsoString( separator ) );
+   }
+
+   /*!
+    * Attempts to evaluate this string as a sexagesimal numeric literal
+    * representation, using the specified \a separator. If successful, stores
+    * the resulting three components in the specified \a s1, \a s2 and \a s3
+    * variables and returns \c true. For more information on syntax and
+    * output ranges, see the documentation for ParseSexagesimal().
+    *
+    * If this string cannot be evaluated as a sexagesimal literal, this
+    * function returns \c false and does not change any of the \a s1, \a s2 and
+    * \a s3 variables. This function does not throw any exception.
+    *
+    * \sa ParseSexagesimal(), SexagesimalToDouble(), TrySexagesimalToDouble()
+    */
+   bool TryParseSexagesimal( double& s1, double& s2, double& s3, const IsoString& separator = ':' ) const;
+
+   template <class S>
+   bool TryParseSexagesimal( double& s1, double& s2, double& s3, const S& separator ) const
+   {
+      return TryParseSexagesimal( s1, s2, s3, IsoString( separator ) );
+   }
+
+   /*!
+    * Returns a sexagesimal ASCII representation of the specified components
+    * \a s1, \a s2 and \a s3, generated with the specified conversion
+    * \a options.
+    *
+    * The generated representation is of the form:
+    *
+    * [+|-]\<s1\>[\<sep\>\<s2\>[\<sep\>\<s3\>]][.[\<decimal-part\>]]
+    *
+    * where the second and third sexagesimal components are canonicalized:
+    *
+    * 0 &le; \<s2\> &lt; 60
+    * 0 &le; \<s3\> &lt; 60
+    *
+    * irrespective of the original \a s2 and \a s3 argument values.
+    *
+    * \sa SexagesimalToDouble(), SexagesimalConversionOptions
+    */
+   static IsoString ToSexagesimal( double s1, double s2, double s3, const SexagesimalConversionOptions& options = SexagesimalConversionOptions() );
+
+   /*!
+    * Returns a sexagesimal ASCII representation of the specified value \a s1,
+    * generated with the specified conversion \a options.
+    *
+    * Calling this member function is equivalent to:
+    *
+    * \code ToSexagesimal( double( s1 ), 0.0, 0.0, options ); \endcode
+    */
+   template <typename S1>
+   static IsoString ToSexagesimal( S1 s1, const SexagesimalConversionOptions& options = SexagesimalConversionOptions() )
+   {
+      return ToSexagesimal( double( s1 ), 0.0, 0.0, options );
+   }
+
+   /*!
+    * Returns a sexagesimal ASCII representation of the specified components
+    * \a s1 and \a s2, generated with the specified conversion \a options.
+    *
+    * Calling this member function is equivalent to:
+    *
+    * \code ToSexagesimal( double( s1 ), double( s2 ), 0.0, options ); \endcode
+    */
+   template <typename S1, typename S2>
+   static IsoString ToSexagesimal( S1 s1, S2 s2, const SexagesimalConversionOptions& options = SexagesimalConversionOptions() )
+   {
+      return ToSexagesimal( double( s1 ), double( s2 ), 0.0, options );
+   }
+
+   template <typename S1, typename S2, typename S3>
+   static IsoString ToSexagesimal( S1 s1, S2 s2, S3 s3, const SexagesimalConversionOptions& options = SexagesimalConversionOptions() )
+   {
+      return ToSexagesimal( double( s1 ), double( s2 ), double( s3 ), options );
+   }
+
+   /*!
     * Returns an hex-encoded string for a binary \a data block of the specified
     * \a length in bytes. The hex-encoded string is composed of hexadecimal
     * digits: 0-9 and a-f, and its length is twice that of the input length.
@@ -6510,8 +6770,7 @@ public:
     *
     * \sa RandomizationOption
     */
-   static IsoString Random( size_type n,
-                            RandomizationOptions options = RandomizationOption::Default );
+   static IsoString Random( size_type n, RandomizationOptions options = RandomizationOption::Default );
 
    /*!
     * Generates a universally unique identifier (UUID) in canonical form.
@@ -8896,6 +9155,12 @@ public:
    // -------------------------------------------------------------------------
 
    template <class C>
+   size_type Break( C& list, const String& s, bool trim = false, size_type i = 0 ) const
+   {
+      return string_base::Break( list, s, trim, i );
+   }
+
+   template <class C>
    size_type Break( C& list, const string8_base& s, bool trim = false, size_type i = 0 ) const
    {
       return string_base::Break( list, String( s ), trim, i );
@@ -9973,13 +10238,190 @@ public:
    bool TryToUInt64( unsigned long long& value, int base ) const;
 
    /*!
+    * Evaluates this string as a sexagesimal numeric literal representation,
+    * and returns the result as a \c double value.
+    *
+    * The source string is expected to have the following format:
+    *
+    * [+|-]\<s1\>[\<sep\>\<s2\>[\<sep\>\<s3\>]][.[\<decimal-part\>]]
+    *
+    * where \<s1\>, \<s2\>, \<s3\> and \<decimal-part\> are sequences of
+    * decimal digits from 0 to 9, and \<sep\> is any sequence of characters
+    * specified as the \a separator argument. The default separator is the
+    * colon character, ':'.
+    *
+    * The result is equal to:
+    *
+    * \<sign\> * (\<s1\> + \<s2\>/60 + \<s3\>/3600)
+    *
+    * where omitted optional components are taken as zero, and \<sign\> is -1
+    * iff a minus sign '-' leads the representation, or +1 otherwise.
+    *
+    * If this string doesn't contain a valid sexagesimal numeric literal, or if
+    * the range of \c double is exceeded, this member function throws a
+    * ParseError exception.
+    *
+    * \sa TrySexagesimalToDouble(), ParseSexagesimal(), TryParseSexagesimal()
+    */
+   double SexagesimalToDouble( const String& separator = ':' ) const
+   {
+      double s1, s2, s3;
+      ParseSexagesimal( s1, s2, s3, separator );
+      return s1 + (s2 + s3/60)/60;
+   }
+
+   template <class S>
+   double SexagesimalToDouble( const S& separator ) const
+   {
+      return SexagesimalToDouble( String( separator ) );
+   }
+
+   /*!
+    * Attempts to evaluate this string as a sexagesimal numeric literal with
+    * the specified \a separator.
+    *
+    * If this string can legally be evaluated as a sexagesimal literal and
+    * converted to a floating point number, this function stores the evaluation
+    * result in the specified \a value variable and returns \c true. For
+    * information about the legal syntax of a sexagesimal literal, see the
+    * documentation for SexagesimalToDouble().
+    *
+    * If this string cannot be evaluated as a sexagesimal literal, this
+    * function returns \c false and does not change the \a value variable. This
+    * function does not throw any exception.
+    *
+    * \sa SexagesimalToDouble(), ParseSexagesimal(), TryParseSexagesimal()
+    */
+   bool TrySexagesimalToDouble( double& value, const String& separator = ':' ) const
+   {
+      double s1, s2, s3;
+      if ( TryParseSexagesimal( s1, s2, s3, separator ) )
+      {
+         value = s1 + (s2 + s3/60)/60;
+         return true;
+      }
+      return false;
+   }
+
+   template <class S>
+   bool TrySexagesimalToDouble( double& value, const S& separator ) const
+   {
+      return TrySexagesimalToDouble( value, String( separator ) );
+   }
+
+   /*!
+    * Evaluates this string as a sexagesimal numeric literal representation,
+    * using the specified \a separator, and stores the resulting three
+    * components in the specified \a s1, \a s2 and \a s3 variables. For
+    * information about the legal syntax of a sexagesimal literal, see the
+    * documentation for SexagesimalToDouble().
+    *
+    * This function stores \e canonical minutes and seconds components,
+    * irrespective of the actual component values represented by this string.
+    * This means that the stored components always follow these rules:
+    *
+    * 0 &le; \a s2 &lt; 60
+    * 0 &le; \a s3 &lt; 60
+    *
+    * When none of the \<s2\> and \<s3\> tokens are included in the string, the
+    * result is \a s2 = \a s3 = 0.
+    *
+    * If this string doesn't contain a valid sexagesimal numeric literal, or if
+    * the range of \c double is exceeded, this member function throws a
+    * ParseError exception.
+    *
+    * \sa TryParseSexagesimal(), SexagesimalToDouble(), TrySexagesimalToDouble()
+    */
+   void ParseSexagesimal( double& s1, double& s2, double& s3, const String& separator = ':' ) const;
+
+   template <class S>
+   void ParseSexagesimal( double& s1, double& s2, double& s3, const S& separator ) const
+   {
+      ParseSexagesimal( s1, s2, s3, String( separator ) );
+   }
+
+   /*!
+    * Attempts to evaluate this string as a sexagesimal numeric literal
+    * representation, using the specified \a separator. If successful, stores
+    * the resulting three components in the specified \a s1, \a s2 and \a s3
+    * variables and returns \c true. For more information on syntax and
+    * output ranges, see the documentation for ParseSexagesimal().
+    *
+    * If this string cannot be evaluated as a sexagesimal literal, this
+    * function returns \c false and does not change any of the \a s1, \a s2 and
+    * \a s3 variables. This function does not throw any exception.
+    *
+    * \sa ParseSexagesimal(), SexagesimalToDouble(), TrySexagesimalToDouble()
+    */
+   bool TryParseSexagesimal( double& s1, double& s2, double& s3, const String& separator = ':' ) const;
+
+   template <class S>
+   bool TryParseSexagesimal( double& s1, double& s2, double& s3, const S& separator ) const
+   {
+      return TryParseSexagesimal( s1, s2, s3, String( separator ) );
+   }
+
+   /*!
+    * Returns a sexagesimal string representation of the specified components
+    * \a s1, \a s2 and \a s3, generated with the specified conversion
+    * \a options.
+    *
+    * The generated representation is of the form:
+    *
+    * [+|-]\<s1\>[\<sep\>\<s2\>[\<sep\>\<s3\>]][.[\<decimal-part\>]]
+    *
+    * where the second and third sexagesimal components are canonicalized:
+    *
+    * 0 &le; \<s2\> &lt; 60
+    * 0 &le; \<s3\> &lt; 60
+    *
+    * irrespective of the original \a s2 and \a s3 argument values.
+    *
+    * \sa SexagesimalToDouble(), SexagesimalConversionOptions
+    */
+   static String ToSexagesimal( double s1, double s2, double s3, const SexagesimalConversionOptions& options = SexagesimalConversionOptions() );
+
+   /*!
+    * Returns a sexagesimal string representation of the specified value \a s1,
+    * generated with the specified conversion \a options.
+    *
+    * Calling this member function is equivalent to:
+    *
+    * \code ToSexagesimal( double( s1 ), 0.0, 0.0, options ); \endcode
+    */
+   template <typename S1>
+   static String ToSexagesimal( S1 s1, const SexagesimalConversionOptions& options = SexagesimalConversionOptions() )
+   {
+      return ToSexagesimal( double( s1 ), 0.0, 0.0, options );
+   }
+
+   /*!
+    * Returns a sexagesimal string representation of the specified components
+    * \a s1 and \a s2, generated with the specified conversion \a options.
+    *
+    * Calling this member function is equivalent to:
+    *
+    * \code ToSexagesimal( double( s1 ), double( s2 ), 0.0, options ); \endcode
+    */
+   template <typename S1, typename S2>
+   static String ToSexagesimal( S1 s1, S2 s2, const SexagesimalConversionOptions& options = SexagesimalConversionOptions() )
+   {
+      return ToSexagesimal( double( s1 ), double( s2 ), 0.0, options );
+   }
+
+   template <typename S1, typename S2, typename S3>
+   static String ToSexagesimal( S1 s1, S2 s2, S3 s3, const SexagesimalConversionOptions& options = SexagesimalConversionOptions() )
+   {
+      return ToSexagesimal( double( s1 ), double( s2 ), double( s3 ), options );
+   }
+
+   /*!
     * Generates a string of \a n random 16-bit code points, with character
     * types and ranges as prescribed by the specified \a options.
     *
     * \sa RandomizationOption
     */
-   static String Random( size_type n,
-                         RandomizationOptions options = RandomizationOption::Default );
+   static String Random( size_type n, RandomizationOptions options = RandomizationOption::Default );
 
    /*!
     * Generates a universally unique identifier (UUID) in canonical form.

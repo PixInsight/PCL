@@ -1859,7 +1859,7 @@ T ToSexagesimal( int sign, double s1, double s2, double s3, const SexagesimalCon
       }
       tokens << T().Format( "%.0lf", s1 )
              << T().Format( "%02.0lf", s2 )
-             << T().Format( "%0*.*lf", 3+options.precision, options.precision, s3 );
+             << T().Format( "%0*.*lf", (options.precision > 0) ? 3+options.precision : 2, options.precision, s3 );
       break;
 
    case 2:
@@ -1870,7 +1870,7 @@ T ToSexagesimal( int sign, double s1, double s2, double s3, const SexagesimalCon
          s1 += 1;
       }
       tokens << T().Format( "%.0lf", s1 )
-             << T().Format( "%0*.*lf", 3+options.precision, options.precision, s2 );
+             << T().Format( "%0*.*lf", (options.precision > 0) ? 3+options.precision : 2, options.precision, s2 );
       break;
 
    case 1:

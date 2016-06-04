@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.10.0168
+// Standard INDIClient Process Module Version 01.00.12.0183
 // ----------------------------------------------------------------------------
-// INDICCDFrameInterface.cpp - Released 2016/05/18 10:06:42 UTC
+// INDICCDFrameInterface.cpp - Released 2016/06/04 15:14:47 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -769,7 +769,7 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    //
 
    Global_Sizer.SetMargin( 8 );
-   Global_Sizer.SetSpacing( 4 );
+   Global_Sizer.SetSpacing( 6 );
    Global_Sizer.Add( ServerParameters_SectionBar );
    Global_Sizer.Add( ServerParameters_Control );
    Global_Sizer.Add( ClientParameters_SectionBar );
@@ -1046,7 +1046,6 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
 
    INDIClient* indi = INDIClient::TheClient();
 
-
    if ( sender == GUI->CCDDevice_Combo )
    {
       // The first item in the combo box list has been reserved for a "no device" selection.
@@ -1059,77 +1058,33 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
          INDIPropertyListItem item;
          if ( indi->GetPropertyItem( m_device, "COOLER_CONNECTION", "CONNECT_COOLER", item ) )
             if ( item.PropertyValue == "OFF" )
-            {
-               INDINewPropertyItem newItem;
-               newItem.Device = m_device;
-               newItem.Property = "COOLER_CONNECTION";
-               newItem.PropertyType = "INDI_SWITCH";
-               newItem.ElementValue.Add(ElementValuePair("CONNECT_COOLER","ON"));
-               indi->SendNewPropertyItem( newItem, true/*async*/ );
-            }
+               indi->SendNewPropertyItem( m_device, "COOLER_CONNECTION", "INDI_SWITCH", "CONNECT_COOLER", "ON", true/*async*/ );
       }
    }
    else if ( sender == GUI->CCDBinX_Combo )
    {
-      if ( indi->HasPropertyItem( m_device, "CCD_BINNING", "HOR_BIN" ) )
-      {
-    	 INDINewPropertyItem newItem;
-    	 newItem.Device = m_device;
-         newItem.Property = "CCD_BINNING";
-         newItem.PropertyType = "INDI_NUMBER";
-         newItem.ElementValue.Add(ElementValuePair("HOR_BIN",GUI->CCDBinX_Combo.ItemText( itemIndex ).Trimmed()));
-         indi->SendNewPropertyItem( newItem, true/*async*/ );
-      }
+      indi->MaybeSendNewPropertyItem( m_device, "CCD_BINNING", "INDI_NUMBER",
+                                      "HOR_BIN", GUI->CCDBinX_Combo.ItemText( itemIndex ).Trimmed(), true/*async*/ );
    }
    else if ( sender == GUI->CCDBinY_Combo )
    {
-      if ( indi->HasPropertyItem( m_device, "CCD_BINNING", "VER_BIN" ) )
-      {
-    	 INDINewPropertyItem newItem;
-    	 newItem.Device = m_device;
-         newItem.Property = "CCD_BINNING";
-         newItem.PropertyType = "INDI_NUMBER";
-         newItem.ElementValue.Add(ElementValuePair("VER_BIN",GUI->CCDBinY_Combo.ItemText( itemIndex ).Trimmed()));
-         indi->SendNewPropertyItem( newItem, true/*async*/ );
-      }
+      indi->MaybeSendNewPropertyItem( m_device, "CCD_BINNING", "INDI_NUMBER",
+                                      "VER_BIN", GUI->CCDBinY_Combo.ItemText( itemIndex ).Trimmed(), true/*async*/ );
    }
    else if ( sender == GUI->CCDFilter_Combo )
    {
-      if ( indi->HasPropertyItem( m_device, "FILTER_SLOT", "FILTER_SLOT_VALUE" ) )
-      {
-    	 INDINewPropertyItem newItem;
-    	 newItem.Device = m_device;
-         newItem.Property = "FILTER_SLOT";
-         newItem.PropertyType = "INDI_NUMBER";
-         newItem.ElementValue.Add(ElementValuePair("FILTER_SLOT_VALUE",String( itemIndex + 1 )));
-         indi->SendNewPropertyItem( newItem, true/*async*/ );
-      }
+      indi->MaybeSendNewPropertyItem( m_device, "FILTER_SLOT", "INDI_NUMBER",
+                                      "FILTER_SLOT_VALUE", itemIndex+1, true/*async*/ );
    }
    else if ( sender == GUI->UploadMode_Combo )
    {
-      String PropertyElement = INDICCDFrameInstance::UploadModePropertyString( itemIndex );
-      if ( indi->HasPropertyItem( m_device, "UPLOAD_MODE", PropertyElement ) )
-      {
-    	 INDINewPropertyItem newItem;
-    	 newItem.Device = m_device;
-         newItem.Property = "UPLOAD_MODE";
-         newItem.PropertyType = "INDI_SWITCH";
-         newItem.ElementValue.Add(ElementValuePair(PropertyElement,"ON"));
-         indi->SendNewPropertyItem( newItem, true/*async*/ );
-      }
+      indi->MaybeSendNewPropertyItem( m_device, "UPLOAD_MODE", "INDI_SWITCH",
+                                      INDICCDFrameInstance::UploadModePropertyString( itemIndex ), "ON", true/*async*/ );
    }
    else if ( sender == GUI->CCDFrameType_Combo )
    {
-      String PropertyElement = INDICCDFrameInstance::CCDFrameTypePropertyString( itemIndex );
-      if ( indi->HasPropertyItem( m_device, "CCD_FRAME_TYPE", PropertyElement ) )
-      {
-    	 INDINewPropertyItem newItem;
-    	 newItem.Device = m_device;
-         newItem.Property = "CCD_FRAME_TYPE";
-         newItem.PropertyType = "INDI_SWITCH";
-         newItem.ElementValue.Add(ElementValuePair(PropertyElement,"ON"));
-         indi->SendNewPropertyItem( newItem, true/*async*/ );
-      }
+      indi->MaybeSendNewPropertyItem( m_device, "CCD_FRAME_TYPE", "INDI_SWITCH",
+                                      INDICCDFrameInstance::CCDFrameTypePropertyString( itemIndex ), "ON", true/*async*/ );
    }
 }
 
@@ -1286,28 +1241,16 @@ void INDICCDFrameInterface::e_Click( Button& sender, bool checked )
    if ( !INDIClient::HasClient() )
       return;
 
-
    if ( sender == GUI->CCDTargetTemp_ToolButton )
    {
-      INDINewPropertyItem newItem;
-      newItem.Device = m_device;
-      newItem.Property = "CCD_TEMPERATURE";
-      newItem.PropertyType = "INDI_NUMBER";
-      newItem.ElementValue.Add(ElementValuePair("CCD_TEMPERATURE_VALUE",String( GUI->CCDTargetTemp_NumericEdit.Value() )));
-	  INDIClient::TheClient()->SendNewPropertyItem( newItem, true/*async*/ );
+      INDIClient::TheClient()->SendNewPropertyItem( m_device, "CCD_TEMPERATURE", "INDI_NUMBER",
+                                                    "CCD_TEMPERATURE_VALUE", GUI->CCDTargetTemp_NumericEdit.Value(), true/*async*/ );
    }
    else if ( sender == GUI->ServerUploadDir_ToolButton )
    {
       SimpleGetStringDialog dialog( "Server upload directory:", GUI->ServerUploadDir_Edit.Text() );
       if ( dialog.Execute() )
-      {
-         INDINewPropertyItem newItem;
-         newItem.Device = m_device;
-         newItem.Property = "UPLOAD_SETTINGS";
-         newItem.PropertyType = "INDI_TEXT";
-         newItem.ElementValue.Add(ElementValuePair("UPLOAD_DIR",dialog.Text()));
-         INDIClient::TheClient()->SendNewPropertyItem( newItem, true/*async*/ );
-      }
+         INDIClient::TheClient()->SendNewPropertyItem( m_device, "UPLOAD_SETTINGS", "INDI_TEXT", "UPLOAD_DIR", dialog.Text(), true/*async*/ );
    }
    else if ( sender == GUI->ClientDownloadDir_ToolButton )
    {
@@ -1332,4 +1275,4 @@ void INDICCDFrameInterface::e_Click( Button& sender, bool checked )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInterface.cpp - Released 2016/05/18 10:06:42 UTC
+// EOF INDICCDFrameInterface.cpp - Released 2016/06/04 15:14:47 UTC

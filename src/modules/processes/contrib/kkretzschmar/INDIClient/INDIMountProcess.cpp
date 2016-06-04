@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.07.0141
+// Standard INDIClient Process Module Version 01.00.12.0183
 // ----------------------------------------------------------------------------
-// INDIMountProcess.cpp - Released 2016/04/28 15:13:36 UTC
+// INDIMountProcess.cpp - Released 2016/06/04 15:14:47 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -50,10 +50,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#include "INDIMountProcess.h"
-#include "INDIMountInterface.h"
 #include "INDIMountInstance.h"
+#include "INDIMountInterface.h"
 #include "INDIMountParameters.h"
+#include "INDIMountProcess.h"
 
 #include <pcl/Arguments.h>
 #include <pcl/Console.h>
@@ -69,7 +69,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-INDIMountProcess* TheINDIMountProcess = 0;
+INDIMountProcess* TheINDIMountProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -77,13 +77,13 @@ INDIMountProcess::INDIMountProcess() : MetaProcess()
 {
    TheINDIMountProcess = this;
    new IMCDeviceName( this );
-   new IMCCommandType( this );
+   new IMCCommand( this );
    new IMCSlewRate( this );
-   new IMCTargetRightascension( this );
-   new IMCTargetDeclination( this );
-   new IMCLocalSiderialTime( this );
-   new IMCCurrentRightascension( this );
-   new IMCCurrentDeclination( this );
+   new IMCTargetRA( this );
+   new IMCTargetDec( this );
+   new IMCCurrentLST( this );
+   new IMCCurrentRA( this );
+   new IMCCurrentDec( this );
 }
 
 // ----------------------------------------------------------------------------
@@ -97,7 +97,7 @@ IsoString INDIMountProcess::Id() const
 
 IsoString INDIMountProcess::Category() const
 {
-   return IsoString("INDI, Instrumentation");
+   return "INDI,Instrumentation";
 }
 
 // ----------------------------------------------------------------------------
@@ -128,7 +128,7 @@ const char** INDIMountProcess::IconImageXPM() const
 
 bool INDIMountProcess::PrefersGlobalExecution() const
 {
-	return true;
+   return true;
 }
 // ----------------------------------------------------------------------------
 
@@ -148,7 +148,7 @@ ProcessImplementation* INDIMountProcess::Create() const
 ProcessImplementation* INDIMountProcess::Clone( const ProcessImplementation& p ) const
 {
    const INDIMountInstance* instPtr = dynamic_cast<const INDIMountInstance*>( &p );
-   return (instPtr != 0) ? new INDIMountInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new INDIMountInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -178,4 +178,4 @@ int INDIMountProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountProcess.cpp - Released 2016/04/28 15:13:36 UTC
+// EOF INDIMountProcess.cpp - Released 2016/06/04 15:14:47 UTC

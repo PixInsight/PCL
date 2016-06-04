@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.10.0168
+// Standard INDIClient Process Module Version 01.00.12.0183
 // ----------------------------------------------------------------------------
-// IINDIProperty.cpp - Released 2016/05/18 10:06:42 UTC
+// IINDIProperty.cpp - Released 2016/06/04 15:14:47 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -246,7 +246,7 @@ void LightProperty::addElement( IsoString elementName, IsoString value )
    else if (value == "ALERT")
       lp->s = IPS_ALERT;
    else
-      throw Error( "INDIDeviceController: Internal error: Invalid property value in " + String( PCL_FUNCTION_NAME ) );
+      throw Error( "Internal error: INDIDeviceController: Invalid property value in " + String( PCL_FUNCTION_NAME ) );
    lp->lvp = lvp;
    lvp->nlp++;
    lvp->lp = lp;
@@ -278,51 +278,72 @@ String PropertyUtils::FormattedNumber( const String& number, IsoString format )
    tokens[0].TryToInt( width );
    width -= fraction;
    if ( width <= 0 )
-      throw Error( "INDIClient: Internal error: Invalid number format in " + String( PCL_FUNCTION_NAME ) );
+      throw Error( "Internal error: INDIClient: Invalid number format in " + String( PCL_FUNCTION_NAME ) );
 
-   int hours = TruncInt( value );
+//    int hours = TruncInt( value );
+
+   int items, precision;
 
    switch ( fraction )
    {
    case 3:
-      {
-         int minutes = RoundInt( (value - hours)*60 );
-         IsoString formatStr = '%' + IsoString().Format( "%dd", width ) + ":%02d";
-         return String().Format( formatStr.c_str(), hours, Abs( minutes ) );
-      }
+      items = 2;
+      precision = 0;
+      break;
+//       {
+//          int minutes = RoundInt( (value - hours)*60 );
+//          IsoString formatStr = '%' + IsoString().Format( "%dd", width ) + ":%02d";
+//          return String().Format( formatStr.c_str(), hours, Abs( minutes ) );
+//       }
    case 5:
-      {
-         int minutes     = TruncInt( (value - hours)*60 );
-         int minutesfrac = RoundInt( ((value - hours)*60 - minutes)*10 );
-         IsoString formatStr = '%' + IsoString().Format( "%dd", width ) + ":%02d.%d";
-         return String().Format( formatStr.c_str(), hours, Abs( minutes ), Abs( minutesfrac ) );
-      }
+      items = 2;
+      precision = 1;
+      break;
+//       {
+//          int minutes     = TruncInt( (value - hours)*60 );
+//          int minutesfrac = RoundInt( ((value - hours)*60 - minutes)*10 );
+//          IsoString formatStr = '%' + IsoString().Format( "%dd", width ) + ":%02d.%d";
+//          return String().Format( formatStr.c_str(), hours, Abs( minutes ), Abs( minutesfrac ) );
+//       }
    case 6:
-      {
-         int minutes     = TruncInt( (value - hours)*60 );
-         int seconds     = RoundInt( ((value - hours)*60 - minutes)*60 );
-         IsoString formatStr = '%' + IsoString().Format( "%dd", width ) + ":%02d:%02d";
-         return String().Format( formatStr.c_str(), hours, Abs( minutes ), Abs( seconds ) );
-      }
+      items = 3;
+      precision = 0;
+      break;
+//       {
+//          int minutes     = TruncInt( (value - hours)*60 );
+//          int seconds     = RoundInt( ((value - hours)*60 - minutes)*60 );
+//          IsoString formatStr = '%' + IsoString().Format( "%dd", width ) + ":%02d:%02d";
+//          return String().Format( formatStr.c_str(), hours, Abs( minutes ), Abs( seconds ) );
+//       }
    case 8:
-      {
-         int minutes     = TruncInt( (value - hours)*60 );
-         int seconds     = TruncInt( ((value - hours)*60 - minutes)*60 );
-         int secondsfrac = RoundInt( (((value - hours)*60 - minutes)*60 - seconds)*10 );
-         IsoString formatStr = '%' + IsoString().Format( "%dd", width ) + ":%02d:%02d.%d";
-         return String().Format( formatStr.c_str(), hours, Abs( minutes ), Abs( seconds ), Abs( secondsfrac ) );
-      }
+      items = 3;
+      precision = 1;
+      break;
+//       {
+//          int minutes     = TruncInt( (value - hours)*60 );
+//          int seconds     = TruncInt( ((value - hours)*60 - minutes)*60 );
+//          int secondsfrac = RoundInt( (((value - hours)*60 - minutes)*60 - seconds)*10 );
+//          IsoString formatStr = '%' + IsoString().Format( "%dd", width ) + ":%02d:%02d.%d";
+//          return String().Format( formatStr.c_str(), hours, Abs( minutes ), Abs( seconds ), Abs( secondsfrac ) );
+//       }
    case 9:
-      {
-         int minutes     = TruncInt( (value - hours)*60 );
-         int seconds     = TruncInt( ((value - hours)*60 - minutes)*60 );
-         int secondsfrac = RoundInt( (((value - hours)*60 - minutes)*60 - seconds)*100 );
-         IsoString formatStr = '%' + IsoString().Format( "%dd", width ) + ":%02d:%02d.%02d";
-         return String().Format( formatStr.c_str(), hours, Abs( minutes ), Abs( seconds ), Abs( secondsfrac ) );
-      }
-   default:
-      return String();
+      items = 3;
+      precision = 2;
+      break;
+//       {
+//          int minutes     = TruncInt( (value - hours)*60 );
+//          int seconds     = TruncInt( ((value - hours)*60 - minutes)*60 );
+//          int secondsfrac = RoundInt( (((value - hours)*60 - minutes)*60 - seconds)*100 );
+//          IsoString formatStr = '%' + IsoString().Format( "%dd", width ) + ":%02d:%02d.%02d";
+//          return String().Format( formatStr.c_str(), hours, Abs( minutes ), Abs( seconds ), Abs( secondsfrac ) );
+//       }
+   default: // ?!
+      items = 3;
+      precision = 2;
+      break;
    }
+
+   return String::ToSexagesimal( value, SexagesimalConversionOptions( items, precision, false/*sign*/, width ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -374,7 +395,7 @@ IProperty* PropertyFactory::Create( INDI::Property* property, INDI_TYPE type )
          return new LightProperty( property );
       }
    default:
-      throw Error( "INDIClient: Internal error: Unknown property type in " + String( PCL_FUNCTION_NAME ) );
+      throw Error( "Internal error: INDIClient: Unknown property type in " + String( PCL_FUNCTION_NAME ) );
    }
 }
 
@@ -383,4 +404,4 @@ IProperty* PropertyFactory::Create( INDI::Property* property, INDI_TYPE type )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF IINDIProperty.cpp - Released 2016/05/18 10:06:42 UTC
+// EOF IINDIProperty.cpp - Released 2016/06/04 15:14:47 UTC

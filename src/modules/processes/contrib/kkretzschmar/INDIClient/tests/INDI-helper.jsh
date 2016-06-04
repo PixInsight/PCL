@@ -101,4 +101,3 @@ function propertyEquals( propertyTable, propertyKey, propertyValue )
 }
 
 #endif //_INDI_helper_jsh
-

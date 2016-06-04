@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.10.0168
+// Standard INDIClient Process Module Version 01.00.12.0183
 // ----------------------------------------------------------------------------
-// INDICCDFrameInterface.h - Released 2016/05/18 10:06:42 UTC
+// INDICCDFrameInterface.h - Released 2016/06/04 15:14:47 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -94,7 +94,7 @@ public:
 
 private:
 
-   String m_device;
+   String                          m_device;
    INDICCDFrameInterfaceExecution* m_execution;
 
    struct GUIData
@@ -105,81 +105,84 @@ private:
       Timer UpdateDeviceProperties_Timer;
 
       VerticalSizer     Global_Sizer;
-         SectionBar        ServerParameters_SectionBar;
-         Control           ServerParameters_Control;
-         VerticalSizer     ServerParameters_Sizer;
-            HorizontalSizer   CCDDevice_Sizer;
-               Label             CCDDevice_Label;
-               ComboBox          CCDDevice_Combo;
-            Control           CCDProperties_Control;
-            VerticalSizer     CCDProperties_Sizer;
-               HorizontalSizer   CCDTemp_HSizer;
-                  NumericEdit       CCDTemp_NumericEdit;
-                  NumericControl    CCDTargetTemp_NumericEdit;
-                  ToolButton        CCDTargetTemp_ToolButton;
-               HorizontalSizer   CCDBinX_HSizer;
-                  Label             CCDBinX_Label;
-                  ComboBox          CCDBinX_Combo;
-               HorizontalSizer   CCDBinY_HSizer;
-                  Label             CCDBinY_Label;
-                  ComboBox          CCDBinY_Combo;
-               HorizontalSizer   CCDFilter_HSizer;
-                  Label             CCDFilter_Label;
-                  ComboBox          CCDFilter_Combo;
-               HorizontalSizer   CCDFrameType_HSizer;
-                  Label             CCDFrameType_Label;
-                  ComboBox          CCDFrameType_Combo;
-               HorizontalSizer   UploadMode_HSizer;
-                  Label             UploadMode_Label;
-                  ComboBox          UploadMode_Combo;
-               HorizontalSizer   ServerUploadDir_HSizer;
-                  Label             ServerUploadDir_Label;
-                  Edit              ServerUploadDir_Edit;
-                  ToolButton        ServerUploadDir_ToolButton;
-               HorizontalSizer   ServerFileNameTemplate_HSizer;
-                  Label             ServerFileNameTemplate_Label;
-                  Edit              ServerFileNameTemplate_Edit;
-                  PushButton        ServerFileNameTemplate_PushButton;
-         SectionBar        ClientParameters_SectionBar;
-         Control           ClientParameters_Control;
-         VerticalSizer     ClientParameters_Sizer;
-            HorizontalSizer   OpenClientFrames_Sizer;
-               CheckBox          OpenClientFrames_CheckBox;
-            HorizontalSizer   ReuseImageWindow_Sizer;
-               CheckBox          ReuseImageWindow_CheckBox;
-            HorizontalSizer   AutoStretch_Sizer;
-               CheckBox          AutoStretch_CheckBox;
-            HorizontalSizer   LinkedAutoStretch_Sizer;
-               CheckBox          LinkedAutoStretch_CheckBox;
-            HorizontalSizer   SaveClientFrames_Sizer;
-               CheckBox          SaveClientFrames_CheckBox;
-            HorizontalSizer   OverwriteClientFrames_Sizer;
-               CheckBox          OverwriteClientFrames_CheckBox;
-            HorizontalSizer   ClientDownloadDir_HSizer;
-               Label             ClientDownloadDir_Label;
-               Edit              ClientDownloadDir_Edit;
-               ToolButton        ClientDownloadDir_ToolButton;
-            HorizontalSizer   ClientFileNameTemplate_HSizer;
-               Label             ClientFileNameTemplate_Label;
-               Edit              ClientFileNameTemplate_Edit;
-            HorizontalSizer   ClientOutputFormatHints_HSizer;
-               Label             ClientOutputFormatHints_Label;
-               Edit              ClientOutputFormatHints_Edit;
-         SectionBar        FrameAcquisition_SectionBar;
-         Control           FrameAcquisition_Control;
-         HorizontalSizer   FrameAcquisition_Sizer;
-            VerticalSizer     FrameAcquisitionLeft_Sizer;
-               NumericEdit       ExposureTime_NumericEdit;
-               NumericEdit       ExposureDelay_NumericEdit;
-               HorizontalSizer   ExposureCount_Sizer;
-                  Label             ExposureCount_Label;
-                  SpinBox           ExposureCount_SpinBox;
-            VerticalSizer     FrameAcquisitionRight_Sizer;
-               HorizontalSizer   StartExposure_Sizer;
-                  PushButton        StartExposure_PushButton;
-               HorizontalSizer   CancelExposure_Sizer;
-                  PushButton        CancelExposure_PushButton;
-               Label             ExposureInfo_Label;
+
+      SectionBar        ServerParameters_SectionBar;
+      Control           ServerParameters_Control;
+      VerticalSizer     ServerParameters_Sizer;
+         HorizontalSizer   CCDDevice_Sizer;
+            Label             CCDDevice_Label;
+            ComboBox          CCDDevice_Combo;
+         Control           CCDProperties_Control;
+         VerticalSizer     CCDProperties_Sizer;
+            HorizontalSizer   CCDTemp_HSizer;
+               NumericEdit       CCDTemp_NumericEdit;
+               NumericControl    CCDTargetTemp_NumericEdit;
+               ToolButton        CCDTargetTemp_ToolButton;
+            HorizontalSizer   CCDBinX_HSizer;
+               Label             CCDBinX_Label;
+               ComboBox          CCDBinX_Combo;
+            HorizontalSizer   CCDBinY_HSizer;
+               Label             CCDBinY_Label;
+               ComboBox          CCDBinY_Combo;
+            HorizontalSizer   CCDFilter_HSizer;
+               Label             CCDFilter_Label;
+               ComboBox          CCDFilter_Combo;
+            HorizontalSizer   CCDFrameType_HSizer;
+               Label             CCDFrameType_Label;
+               ComboBox          CCDFrameType_Combo;
+            HorizontalSizer   UploadMode_HSizer;
+               Label             UploadMode_Label;
+               ComboBox          UploadMode_Combo;
+            HorizontalSizer   ServerUploadDir_HSizer;
+               Label             ServerUploadDir_Label;
+               Edit              ServerUploadDir_Edit;
+               ToolButton        ServerUploadDir_ToolButton;
+            HorizontalSizer   ServerFileNameTemplate_HSizer;
+               Label             ServerFileNameTemplate_Label;
+               Edit              ServerFileNameTemplate_Edit;
+               PushButton        ServerFileNameTemplate_PushButton;
+
+      SectionBar        ClientParameters_SectionBar;
+      Control           ClientParameters_Control;
+      VerticalSizer     ClientParameters_Sizer;
+         HorizontalSizer   OpenClientFrames_Sizer;
+            CheckBox          OpenClientFrames_CheckBox;
+         HorizontalSizer   ReuseImageWindow_Sizer;
+            CheckBox          ReuseImageWindow_CheckBox;
+         HorizontalSizer   AutoStretch_Sizer;
+            CheckBox          AutoStretch_CheckBox;
+         HorizontalSizer   LinkedAutoStretch_Sizer;
+            CheckBox          LinkedAutoStretch_CheckBox;
+         HorizontalSizer   SaveClientFrames_Sizer;
+            CheckBox          SaveClientFrames_CheckBox;
+         HorizontalSizer   OverwriteClientFrames_Sizer;
+            CheckBox          OverwriteClientFrames_CheckBox;
+         HorizontalSizer   ClientDownloadDir_HSizer;
+            Label             ClientDownloadDir_Label;
+            Edit              ClientDownloadDir_Edit;
+            ToolButton        ClientDownloadDir_ToolButton;
+         HorizontalSizer   ClientFileNameTemplate_HSizer;
+            Label             ClientFileNameTemplate_Label;
+            Edit              ClientFileNameTemplate_Edit;
+         HorizontalSizer   ClientOutputFormatHints_HSizer;
+            Label             ClientOutputFormatHints_Label;
+            Edit              ClientOutputFormatHints_Edit;
+
+      SectionBar        FrameAcquisition_SectionBar;
+      Control           FrameAcquisition_Control;
+      HorizontalSizer   FrameAcquisition_Sizer;
+         VerticalSizer     FrameAcquisitionLeft_Sizer;
+            NumericEdit       ExposureTime_NumericEdit;
+            NumericEdit       ExposureDelay_NumericEdit;
+            HorizontalSizer   ExposureCount_Sizer;
+               Label             ExposureCount_Label;
+               SpinBox           ExposureCount_SpinBox;
+         VerticalSizer     FrameAcquisitionRight_Sizer;
+            HorizontalSizer   StartExposure_Sizer;
+               PushButton        StartExposure_PushButton;
+            HorizontalSizer   CancelExposure_Sizer;
+               PushButton        CancelExposure_PushButton;
+            Label             ExposureInfo_Label;
    };
 
    GUIData* GUI;
@@ -208,4 +211,4 @@ PCL_END_LOCAL
 #endif   // __INDICCDFrameInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInterface.h - Released 2016/05/18 10:06:42 UTC
+// EOF INDICCDFrameInterface.h - Released 2016/06/04 15:14:47 UTC

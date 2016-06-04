@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.10.0168
+// Standard INDIClient Process Module Version 01.00.12.0183
 // ----------------------------------------------------------------------------
-// INDIDeviceControllerInterface.cpp - Released 2016/05/18 10:06:42 UTC
+// INDIDeviceControllerInterface.cpp - Released 2016/06/04 15:14:47 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -276,23 +276,14 @@ public:
 
       SetSizer( Global_Sizer );
 
-      const char* typeTitleChunk = "";
+      const char* typeTitleChunk;
       switch( m_item.PropertyType )
       {
-      case INDI_SWITCH:
-         typeTitleChunk = "Switch ";
-         break;
-      case INDI_NUMBER:
-         typeTitleChunk = "Number ";
-         break;
-      case INDI_LIGHT:
-         typeTitleChunk = "Light ";
-         break;
-      case INDI_TEXT:
-         typeTitleChunk = "Text ";
-         break;
-      default:
-         break;
+      case INDI_SWITCH: typeTitleChunk = "Switch "; break;
+      case INDI_NUMBER: typeTitleChunk = "Number "; break;
+      case INDI_LIGHT:  typeTitleChunk = "Light ";  break;
+      case INDI_TEXT:   typeTitleChunk = "Text ";   break;
+      default:          typeTitleChunk = "";        break;
       }
       SetWindowTitle( "INDI " + String( typeTitleChunk ) + "Property" );
 
@@ -303,31 +294,17 @@ public:
 
    INDINewPropertyItem NewItem() const
    {
-      INDINewPropertyItem newItem;
-      newItem.Device = m_item.Device;
-      newItem.Property = m_item.Property;
-      newItem.PropertyKey = m_item.PropertyKey;
-      newItem.ElementValue.Add(ElementValuePair(m_item.Element, NewItemValue()));
-
+      const char* typeName;
       switch( m_item.PropertyType )
       {
-      case INDI_SWITCH:
-         newItem.PropertyType = "INDI_SWITCH";
-         break;
-      case INDI_NUMBER:
-         newItem.PropertyType = "INDI_NUMBER";
-         break;
-      case INDI_LIGHT:
-         newItem.PropertyType = "INDI_LIGHT";
-         break;
-      case INDI_TEXT:
-         newItem.PropertyType = "INDI_TEXT";
-         break;
-      default:
-         newItem.PropertyType = "INDI_UNKNOWN";
-         break;
+      case INDI_SWITCH: typeName = "INDI_SWITCH";  break;
+      case INDI_NUMBER: typeName = "INDI_NUMBER";  break;
+      case INDI_LIGHT:  typeName = "INDI_LIGHT";   break;
+      case INDI_TEXT:   typeName = "INDI_TEXT";    break;
+      default:          typeName = "INDI_UNKNOWN"; break;
       }
-
+      INDINewPropertyItem newItem( m_item.Device, m_item.Property, typeName, m_item.Element, NewItemValue() );
+      newItem.PropertyKey = m_item.PropertyKey;
       return newItem;
    }
 
@@ -450,7 +427,8 @@ public:
       Minutes_Edit.SetFixedWidth( 8*Font().Width( '0' ) );
       Colon2_Label.SetText( ':' );
       Colon2_Label.SetTextAlignment( TextAlign::Center|TextAlign::VertCenter );
-      Seconds_Edit.SetFixedWidth( 8*Font().Width( '0' ) );
+      Seconds_Edit.SetFixedWidth( 9*Font().Width( '0' ) );
+      Negative_CheckBox.SetText( "Negative" );
 
       Text_Sizer.AddSpacing( 4 );
       Text_Sizer.Add( Hours_Edit );
@@ -458,40 +436,34 @@ public:
       Text_Sizer.Add( Minutes_Edit );
       Text_Sizer.Add( Colon2_Label );
       Text_Sizer.Add( Seconds_Edit );
+      Text_Sizer.AddSpacing( 4 );
+      Text_Sizer.Add( Negative_CheckBox );
       Text_Sizer.AddStretch();
 
-      StringList tokens;
-      item.PropertyValue.Break( tokens, ':' );
-      double value = tokens[0].ToDouble();
-      if ( tokens.Length() > 1 )
-      {
-         value += ((value < 0) ? -1 : 1) * tokens[1].ToDouble()/60;
-         if ( tokens.Length() > 2 )
-            value += ((value < 0) ? -1 : 1) * tokens[2].ToDouble()/3600;
-      }
-      double m = Frac( Abs( value ) )*60;
-      double s = Frac( m )*60;
-      Hours_Edit.SetText( String( TruncInt( value ) ) );
-      Minutes_Edit.SetText( String( TruncInt( m ) ) );
-      Seconds_Edit.SetText( String().Format( "%.2lf", s ) );
+      int sign, s1, s2; double s3;
+      DecimalToSexagesimal( sign, s1, s2, s3, item.PropertyValue.ToDouble() );
+      Hours_Edit.SetText( String( s1 ) );
+      Minutes_Edit.SetText( String( s2 ) );
+      Seconds_Edit.SetText( String().Format( "%.3lf", s3 ) );
+      Negative_CheckBox.SetChecked( sign < 0 );
    }
 
 private:
 
-   Edit  Hours_Edit;
-   Label Colon1_Label;
-   Edit  Minutes_Edit;
-   Label Colon2_Label;
-   Edit  Seconds_Edit;
+   Edit     Hours_Edit;
+   Label    Colon1_Label;
+   Edit     Minutes_Edit;
+   Label    Colon2_Label;
+   Edit     Seconds_Edit;
+   CheckBox Negative_CheckBox;
 
    virtual String NewItemValue() const
    {
-      double h = Hours_Edit.Text().ToDouble();
-      double m = Minutes_Edit.Text().ToDouble();
-      double s = Seconds_Edit.Text().ToDouble();
-      double c = Abs( h ) + (m + s/60)/60;
-      if ( h < 0 )
-         c = -c;
+      int sign = Negative_CheckBox.IsChecked() ? -1 : +1;
+      double s1 = Hours_Edit.Text().ToDouble();
+      double s2 = Minutes_Edit.Text().ToDouble();
+      double s3 = Seconds_Edit.Text().ToDouble();
+      double c = sign*(s1 + (s2 + s3/60)/60);
       return String( c );
    }
 };
@@ -1137,4 +1109,4 @@ void INDIDeviceControllerInterface::e_Timer( Timer& sender )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIDeviceControllerInterface.cpp - Released 2016/05/18 10:06:42 UTC
+// EOF INDIDeviceControllerInterface.cpp - Released 2016/06/04 15:14:47 UTC

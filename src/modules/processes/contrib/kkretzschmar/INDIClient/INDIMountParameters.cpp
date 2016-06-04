@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.04.0108
+// Standard INDIClient Process Module Version 01.00.12.0183
 // ----------------------------------------------------------------------------
-// INDICCDFrameParameters.h - Released 2016/04/15 15:37:39 UTC
+// INDIMountParameters.cpp - Released 2016/06/04 15:14:47 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -50,19 +50,21 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-
 #include "INDIMountParameters.h"
 
-namespace pcl {
+namespace pcl
+{
 
-IMCDeviceName*                 TheIMCDeviceNameParameter             = nullptr;
-IMCCommandType*                TheIMCCommandTypeParameter            = nullptr;
-IMCSlewRate*                   TheIMCSlewRateParameter               = nullptr;
-IMCTargetRightascension*       TheIMCTargetRightAscensionParameter   = nullptr;
-IMCTargetDeclination*          TheIMCTargetDeclinationParameter      = nullptr;
-IMCLocalSiderialTime*          TheIMCLocalSiderialTimeParameter      = nullptr;
-IMCCurrentRightascension*      TheIMCCurrentRightAscensionParameter  = nullptr;
-IMCCurrentDeclination*         TheIMCCurrentDeclinationParameter     = nullptr;
+// ----------------------------------------------------------------------------
+
+IMCDeviceName* TheIMCDeviceNameParameter = nullptr;
+IMCCommand*    TheIMCCommandParameter = nullptr;
+IMCSlewRate*   TheIMCSlewRateParameter = nullptr;
+IMCTargetRA*   TheIMCTargetRAParameter = nullptr;
+IMCTargetDec*  TheIMCTargetDecParameter = nullptr;
+IMCCurrentLST* TheIMCCurrentLSTParameter = nullptr;
+IMCCurrentRA*  TheIMCCurrentRAParameter = nullptr;
+IMCCurrentDec* TheIMCCurrentDecParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -78,120 +80,121 @@ IsoString IMCDeviceName::Id() const
 
 // ----------------------------------------------------------------------------
 
-IMCCommandType::IMCCommandType( MetaProcess* P ) : MetaEnumeration( P )
+IMCCommand::IMCCommand( MetaProcess* P ) : MetaEnumeration( P )
 {
-   TheIMCCommandTypeParameter = this;
+   TheIMCCommandParameter = this;
 }
 
-IsoString IMCCommandType::Id() const
+IsoString IMCCommand::Id() const
 {
-   return "commandType";
+   return "command";
 }
 
-size_type IMCCommandType::NumberOfElements() const
+size_type IMCCommand::NumberOfElements() const
 {
    return NumberOfCommands;
 }
 
-IsoString IMCCommandType::ElementId( size_type i ) const
+IsoString IMCCommand::ElementId( size_type i ) const
 {
    switch ( i )
    {
    default:
-   case Unpark:            	return "CommandType_Unpark";
-   case Park:              	return "CommandType_Park";
-   case MoveNorthStart: 	return "CommandType_MoveNorth_Start";
-   case MoveNorthStop:		return "CommandType_MoveNorth_Stop";
-   case MoveSouthStart:		return "CommandType_MoveSouth_Start";
-   case MoveSouthStop:		return "CommandType_MoveSouth_Stop";
-   case MoveWestStart:		return "CommandType_MoveWest_Start";
-   case MoveWestStop:		return "CommandType_MoveWest_Stop";
-   case MoveEastStart:		return "CommandType_MoveEast_Start";
-   case MoveEastStop:		return "CommandType_MoveEast_Stop";
-   case Goto:          		return "CommandType_Goto";
-   case Synch:         		return "CommandType_Synch";
+   case Unpark:         return "Command_Unpark";
+   case Park:           return "Command_Park";
+   case MoveNorthStart: return "Command_MoveNorth_Start";
+   case MoveNorthStop:  return "Command_MoveNorth_Stop";
+   case MoveSouthStart: return "Command_MoveSouth_Start";
+   case MoveSouthStop:  return "Command_MoveSouth_Stop";
+   case MoveWestStart:  return "Command_MoveWest_Start";
+   case MoveWestStop:   return "Command_MoveWest_Stop";
+   case MoveEastStart:  return "Command_MoveEast_Start";
+   case MoveEastStop:   return "Command_MoveEast_Stop";
+   case Goto:           return "Command_Goto";
+   case Sync:           return "Command_Sync";
+   case ParkDefault:    return "Command_ParkDefault";
    }
 }
 
-int IMCCommandType::ElementValue( size_type i ) const
+int IMCCommand::ElementValue( size_type i ) const
 {
    return int( i );
 }
 
-size_type IMCCommandType::DefaultValueIndex() const
+size_type IMCCommand::DefaultValueIndex() const
 {
    return size_type( Default );
 }
 
 // ----------------------------------------------------------------------------
 
-IMCTargetRightascension::IMCTargetRightascension( MetaProcess* P ) : MetaDouble( P )
+IMCTargetRA::IMCTargetRA( MetaProcess* P ) : MetaDouble( P )
 {
-   TheIMCTargetRightAscensionParameter = this;
+   TheIMCTargetRAParameter = this;
 }
 
-IsoString IMCTargetRightascension::Id() const
+IsoString IMCTargetRA::Id() const
 {
-   return "targetRightascension";
+   return "targetRA";
 }
 
-int IMCTargetRightascension::Precision() const
+int IMCTargetRA::Precision() const
 {
-   return 6;
+   return 8;
 }
 
-double IMCTargetRightascension::DefaultValue() const
+double IMCTargetRA::DefaultValue() const
 {
    return 0;
 }
 
-double IMCTargetRightascension::MinimumValue() const
+double IMCTargetRA::MinimumValue() const
 {
    return 0;
 }
 
-double IMCTargetRightascension::MaximumValue() const
+double IMCTargetRA::MaximumValue() const
 {
-   return 23.999999;
+   return 24;
 }
 
 // ----------------------------------------------------------------------------
 
-IMCTargetDeclination::IMCTargetDeclination( MetaProcess* P ) : MetaDouble( P )
+IMCTargetDec::IMCTargetDec( MetaProcess* P ) : MetaDouble( P )
 {
-   TheIMCTargetDeclinationParameter = this;
+   TheIMCTargetDecParameter = this;
 }
 
-IsoString IMCTargetDeclination::Id() const
+IsoString IMCTargetDec::Id() const
 {
-   return "targetDeclination";
+   return "targetDec";
 }
 
-int IMCTargetDeclination::Precision() const
+int IMCTargetDec::Precision() const
 {
-   return 6;
+   return 7;
 }
 
-double IMCTargetDeclination::DefaultValue() const
+double IMCTargetDec::DefaultValue() const
 {
    return 0;
 }
 
-double IMCTargetDeclination::MinimumValue() const
+double IMCTargetDec::MinimumValue() const
 {
-   return 0;
+   return -90;
 }
 
-double IMCTargetDeclination::MaximumValue() const
+double IMCTargetDec::MaximumValue() const
 {
-   return 23.999999;
+   return +90;
 }
 
 // ----------------------------------------------------------------------------
 
 IMCSlewRate::IMCSlewRate( MetaProcess* P ) : MetaEnumeration( P )
 {
-	TheIMCSlewRateParameter = this;
+   TheIMCSlewRateParameter = this;
 }
 
 IsoString IMCSlewRate::Id() const
@@ -209,10 +212,10 @@ IsoString IMCSlewRate::ElementId( size_type i ) const
    switch ( i )
    {
    default:
-   case Guide:            	return "SlewRate_Guide";
-   case Centering:        	return "SlewRate_Centering";
-   case Find: 				return "SlewRate_Find";
-   case Max:				return "SlewRate_Max";
+   case Guide:     return "SlewRate_Guide";
+   case Centering: return "SlewRate_Centering";
+   case Find:      return "SlewRate_Find";
+   case Max:       return "SlewRate_Max";
    }
 }
 
@@ -226,124 +229,120 @@ size_type IMCSlewRate::DefaultValueIndex() const
    return size_type( Default );
 }
 
-
 // ----------------------------------------------------------------------------
 
-IMCLocalSiderialTime::IMCLocalSiderialTime( MetaProcess* P ) : MetaDouble( P )
+IMCCurrentLST::IMCCurrentLST( MetaProcess* P ) : MetaDouble( P )
 {
-	TheIMCLocalSiderialTimeParameter = this;
+   TheIMCCurrentLSTParameter = this;
 }
 
-IsoString IMCLocalSiderialTime::Id() const
+IsoString IMCCurrentLST::Id() const
 {
-   return "localSiderialTime";
+   return "currentLST";
 }
 
-int IMCLocalSiderialTime::Precision() const
+int IMCCurrentLST::Precision() const
 {
    return 6;
 }
 
-double IMCLocalSiderialTime::DefaultValue() const
+double IMCCurrentLST::DefaultValue() const
 {
-   return 0;
+   return -1; // < 0 -> unknown LST
 }
 
-double IMCLocalSiderialTime::MinimumValue() const
+double IMCCurrentLST::MinimumValue() const
 {
-   return 0;
+   return -1; // < 0 -> unknown LST
 }
 
-double IMCLocalSiderialTime::MaximumValue() const
+double IMCCurrentLST::MaximumValue() const
 {
-   return 23.999999;
+   return 24;
 }
 
-bool IMCLocalSiderialTime::IsReadOnly() const
-{
-   return true;
-}
-
-
-// ----------------------------------------------------------------------------
-
-IMCCurrentRightascension::IMCCurrentRightascension( MetaProcess* P ) : MetaDouble( P )
-{
-   TheIMCCurrentRightAscensionParameter = this;
-}
-
-IsoString IMCCurrentRightascension::Id() const
-{
-   return "currentRightascension";
-}
-
-int IMCCurrentRightascension::Precision() const
-{
-   return 6;
-}
-
-double IMCCurrentRightascension::DefaultValue() const
-{
-   return 0;
-}
-
-double IMCCurrentRightascension::MinimumValue() const
-{
-   return 0;
-}
-
-double IMCCurrentRightascension::MaximumValue() const
-{
-   return 23.999999;
-}
-
-bool IMCCurrentRightascension::IsReadOnly() const
+bool IMCCurrentLST::IsReadOnly() const
 {
    return true;
 }
 
 // ----------------------------------------------------------------------------
 
-IMCCurrentDeclination::IMCCurrentDeclination( MetaProcess* P ) : MetaDouble( P )
+IMCCurrentRA::IMCCurrentRA( MetaProcess* P ) : MetaDouble( P )
 {
-   TheIMCCurrentDeclinationParameter = this;
+   TheIMCCurrentRAParameter = this;
 }
 
-IsoString IMCCurrentDeclination::Id() const
+IsoString IMCCurrentRA::Id() const
 {
-   return "currentDeclination";
+   return "currentRA";
 }
 
-int IMCCurrentDeclination::Precision() const
+int IMCCurrentRA::Precision() const
 {
    return 6;
 }
 
-double IMCCurrentDeclination::DefaultValue() const
+double IMCCurrentRA::DefaultValue() const
 {
-   return 0;
+   return -1; // < 0 -> unknown RA
 }
 
-double IMCCurrentDeclination::MinimumValue() const
+double IMCCurrentRA::MinimumValue() const
 {
-   return 0;
+   return -1; // < 0 -> unknown RA
 }
 
-double IMCCurrentDeclination::MaximumValue() const
+double IMCCurrentRA::MaximumValue() const
 {
-   return 23.999999;
+   return 24;
 }
 
-bool IMCCurrentDeclination::IsReadOnly() const
+bool IMCCurrentRA::IsReadOnly() const
 {
    return true;
 }
 
+// ----------------------------------------------------------------------------
 
-
-
-
-
+IMCCurrentDec::IMCCurrentDec( MetaProcess* P ) : MetaDouble( P )
+{
+   TheIMCCurrentDecParameter = this;
 }
 
+IsoString IMCCurrentDec::Id() const
+{
+   return "currentDec";
+}
 
+int IMCCurrentDec::Precision() const
+{
+   return 6;
+}
+
+double IMCCurrentDec::DefaultValue() const
+{
+   return -91; // < -90 -> unknown Dec
+}
+
+double IMCCurrentDec::MinimumValue() const
+{
+   return -91; // < -90 -> unknown Dec
+}
+
+double IMCCurrentDec::MaximumValue() const
+{
+   return +90;
+}
+
+bool IMCCurrentDec::IsReadOnly() const
+{
+   return true;
+}
+
+// ----------------------------------------------------------------------------
+
+} // pcl
+
+// ----------------------------------------------------------------------------
+// EOF INDIMountParameters.cpp - Released 2016/06/04 15:14:47 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.10.0168
+// Standard INDIClient Process Module Version 01.00.12.0183
 // ----------------------------------------------------------------------------
-// INDIParamListTypes.h - Released 2016/05/18 10:06:42 UTC
+// INDIParamListTypes.h - Released 2016/06/04 15:14:47 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -112,51 +112,84 @@ struct INDIPropertyListItem
    }
 };
 
+struct ElementValue
+{
+   String Element;
+   String Value;
 
-struct ElementValuePair {
-	String Element;
-	String Value;
-	ElementValuePair(String element, String value):Element(element), Value(value){}
-	bool operator == (const ElementValuePair& rhs) const
-	{
-		return Element == rhs.Element &&
-			   Value == rhs.Value;
-	}
+   template <typename T>
+   ElementValue( const String& element, const T& value ) : Element( element ), Value( String( value ) )
+   {
+   }
+
+   bool operator ==( const ElementValue& rhs ) const
+   {
+      return Element == rhs.Element && Value == rhs.Value;
+   }
+
+   bool operator <( const ElementValue& rhs ) const
+   {
+      return (Element != rhs.Element) ? Element < rhs.Element : Value < rhs.Value;
+   }
 };
 
 struct INDINewPropertyItem
 {
+   typedef Array<ElementValue> element_value_list;
 
-   String Device;
-   String Property;
-   String PropertyKey;
-   String PropertyType;
-   Array<ElementValuePair> ElementValue;
+   String             Device;
+   String             Property;
+   String             PropertyKey;
+   String             PropertyType;
+   element_value_list ElementValues;
+
+   INDINewPropertyItem() = default;
+
+   INDINewPropertyItem( const String& device, const String& property, const String& type ) :
+      Device( device ), Property( property ), PropertyType( type )
+   {
+   }
+
+   template <typename T>
+   INDINewPropertyItem( const String& device, const String& property, const String& type,
+                        const String& element, const T& value ) :
+      Device( device ), Property( property ), PropertyType( type )
+   {
+      ElementValues << ElementValue( element, value );
+   }
+
+   template <typename T1, typename T2>
+   INDINewPropertyItem( const String& device, const String& property, const String& type,
+                        const String& element1, const T1& value1,
+                        const String& element2, const T2& value2 ) :
+      Device( device ), Property( property ), PropertyType( type )
+   {
+      ElementValues << ElementValue( element1, value1 )
+                    << ElementValue( element2, value2 );
+   }
 
    bool operator ==( const INDINewPropertyItem& rhs ) const
    {
       return Device == rhs.Device &&
              Property == rhs.Property &&
-			 PropertyKey == rhs.PropertyKey &&
+             PropertyKey == rhs.PropertyKey &&
              PropertyType == rhs.PropertyType &&
-			 ElementValue == rhs.ElementValue ;
+             ElementValues == rhs.ElementValues;
    }
 };
 
-
 struct INDINewPropertyListItem
 {
-	String PropertyKey;
-	String PropertyType;
-	String NewPropertyValue;
+   String PropertyKey;
+   String PropertyType;
+   String NewPropertyValue;
 
-	bool operator ==( const INDINewPropertyListItem& rhs ) const
-	   {
-	      return PropertyKey == rhs.PropertyKey &&
-	             PropertyType == rhs.PropertyType &&
-				 NewPropertyValue == rhs.NewPropertyValue ;
-	   }
-
+   bool operator ==( const INDINewPropertyListItem& rhs ) const
+   {
+      return PropertyKey == rhs.PropertyKey &&
+             PropertyType == rhs.PropertyType &&
+             NewPropertyValue == rhs.NewPropertyValue;
+   }
 };
 
 typedef Array<INDIDeviceListItem>      INDIDeviceListItemArray;
@@ -170,4 +203,4 @@ typedef Array<INDINewPropertyListItem> INDINewPropertyListItemArray;
 #endif   // __INDIParamListTypes_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIParamListTypes.h - Released 2016/05/18 10:06:42 UTC
+// EOF INDIParamListTypes.h - Released 2016/06/04 15:14:47 UTC

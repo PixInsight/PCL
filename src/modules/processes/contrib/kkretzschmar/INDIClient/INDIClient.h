@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.10.0168
+// Standard INDIClient Process Module Version 01.00.12.0183
 // ----------------------------------------------------------------------------
-// INDIClient.h - Released 2016/05/18 10:06:42 UTC
+// INDIClient.h - Released 2016/06/04 15:14:47 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -241,6 +241,39 @@ public:
 
    bool SendNewPropertyItem( const INDINewPropertyItem& item, bool async = false );
 
+   template <typename T>
+   bool SendNewPropertyItem( const String& device, const String& property, const String& type,
+                             const String& element, const T& value, bool async = false )
+   {
+      return SendNewPropertyItem( INDINewPropertyItem( device, property, type, element, value ), async );
+   }
+
+   template <typename T>
+   bool MaybeSendNewPropertyItem( const String& device, const String& property, const String& type,
+                                  const String& element, const T& value, bool async = false )
+   {
+      return HasPropertyItem( device, property, element ) &&
+             SendNewPropertyItem( device, property, type, element, value, async );
+   }
+
+   template <typename T1, typename T2>
+   bool SendNewPropertyItem( const String& device, const String& property, const String& type,
+                             const String& element1, const T1& value1,
+                             const String& element2, const T2& value2, bool async = false )
+   {
+      return SendNewPropertyItem( INDINewPropertyItem( device, property, type, element1, value1, element2, value2 ), async );
+   }
+
+   template <typename T1, typename T2>
+   bool MaybeSendNewPropertyItem( const String& device, const String& property, const String& type,
+                                  const String& element1, const T1& value1,
+                                  const String& element2, const T2& value2, bool async = false )
+   {
+      return HasPropertyItem( device, property, element1 ) &&
+             HasPropertyItem( device, property, element2 ) &&
+             SendNewPropertyItem( device, property, type, element1, value1, element2, value2, async );
+   }
+
    String CurrentServerMessage() const
    {
       volatile AutoLock lock( m_mutex );
@@ -428,4 +461,4 @@ private:
 #endif   // __INDIClient_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIClient.h - Released 2016/05/18 10:06:42 UTC
+// EOF INDIClient.h - Released 2016/06/04 15:14:47 UTC

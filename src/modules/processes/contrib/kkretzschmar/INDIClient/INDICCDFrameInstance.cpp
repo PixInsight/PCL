@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.10.0168
+// Standard INDIClient Process Module Version 01.00.12.0183
 // ----------------------------------------------------------------------------
-// INDICCDFrameInstance.cpp - Released 2016/05/18 10:06:42 UTC
+// INDICCDFrameInstance.cpp - Released 2016/06/04 15:14:47 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -195,73 +195,22 @@ bool INDICCDFrameInstance::ValidateDevice( bool throwErrors ) const
 void INDICCDFrameInstance::SendDeviceProperties( bool async ) const
 {
    INDIClient* indi = INDIClient::TheClientOrDie();
-   INDIPropertyListItem item;
 
-
-
-   if ( indi->GetPropertyItem( p_deviceName, "UPLOAD_MODE", UploadModePropertyString( p_uploadMode ), item ) )
-   {
-	  INDINewPropertyItem newItem;
-	  newItem.Device = p_deviceName;
-      newItem.Property = "UPLOAD_MODE";
-      newItem.PropertyType = "INDI_SWITCH";
-      newItem.ElementValue.Add(ElementValuePair(UploadModePropertyString( p_uploadMode ),"ON"));
-      indi->SendNewPropertyItem( newItem, async );
-   }
+   indi->MaybeSendNewPropertyItem( p_deviceName, "UPLOAD_MODE", "INDI_SWITCH", UploadModePropertyString( p_uploadMode ), "ON", async );
 
    if ( !p_serverUploadDirectory.IsEmpty() )
-   {
-	  INDINewPropertyItem newItem;
-	  newItem.Device = p_deviceName;
-      newItem.Property = "UPLOAD_SETTINGS";
-      newItem.PropertyType = "INDI_TEXT";
-      newItem.ElementValue.Add(ElementValuePair("UPLOAD_DIR",p_serverUploadDirectory));
-      indi->SendNewPropertyItem( newItem, async );
-   }
+      indi->MaybeSendNewPropertyItem( p_deviceName, "UPLOAD_SETTINGS", "INDI_TEXT", "UPLOAD_DIR", p_serverUploadDirectory, async );
 
-   if ( indi->GetPropertyItem( p_deviceName, "CCD_FRAME_TYPE", CCDFrameTypePropertyString( p_frameType ), item ) )
-   {
-	  INDINewPropertyItem newItem;
-	  newItem.Device = p_deviceName;
-      newItem.Property = "CCD_FRAME_TYPE";
-      newItem.PropertyType = "INDI_SWITCH";
-      newItem.ElementValue.Add(ElementValuePair(CCDFrameTypePropertyString( p_frameType ),"ON"));
-      indi->SendNewPropertyItem( newItem, async );
-   }
-
+   indi->MaybeSendNewPropertyItem( p_deviceName, "CCD_FRAME_TYPE", "INDI_SWITCH", CCDFrameTypePropertyString( p_frameType ), "ON", async );
 
    if ( p_binningX > 0 )
-      if ( indi->GetPropertyItem( p_deviceName, "CCD_BINNING", "HOR_BIN", item ) )
-      {
-    	  INDINewPropertyItem newItem;
-    	  newItem.Device = p_deviceName;
-    	  newItem.Property = "CCD_BINNING";
-    	  newItem.PropertyType = "INDI_NUMBER";
-    	  newItem.ElementValue.Add(ElementValuePair("HOR_BIN",String(p_binningX)));
-    	  indi->SendNewPropertyItem( newItem, async );
-      }
+      indi->MaybeSendNewPropertyItem( p_deviceName, "CCD_BINNING", "INDI_NUMBER", "HOR_BIN", p_binningX, async );
 
    if ( p_binningY > 0 )
-      if ( indi->GetPropertyItem( p_deviceName, "CCD_BINNING", "VER_BIN", item ) )
-      {
-    	  INDINewPropertyItem newItem;
-    	  newItem.Device = p_deviceName;
-    	  newItem.Property = "CCD_BINNING";
-    	  newItem.PropertyType = "INDI_NUMBER";
-    	  newItem.ElementValue.Add(ElementValuePair("VER_BIN",String(p_binningY)));
-    	  indi->SendNewPropertyItem( newItem, async );
-      }
+      indi->MaybeSendNewPropertyItem( p_deviceName, "CCD_BINNING", "INDI_NUMBER", "VER_BIN", p_binningY, async );
 
    if ( p_filterSlot > 0 )
-      if ( indi->GetPropertyItem( p_deviceName, "FILTER_SLOT", "FILTER_SLOT_VALUE", item ) )
-      {
-    	 INDINewPropertyItem newItem;
-    	 newItem.Device = p_deviceName;
-         newItem.Property = "FILTER_SLOT";
-         newItem.PropertyType = "INDI_NUMBER";
-         newItem.ElementValue.Add(ElementValuePair("FILTER_SLOT_VALUE",String(p_filterSlot)));
-         indi->SendNewPropertyItem( newItem, async );
-      }
+      indi->MaybeSendNewPropertyItem( p_deviceName, "FILTER_SLOT", "INDI_NUMBER", "FILTER_SLOT_VALUE", p_filterSlot, async );
 }
 
 String INDICCDFrameInstance::FileNameFromTemplate( const String& fileNameTemplate ) const
@@ -759,21 +708,10 @@ void AbstractINDICCDFrameExecution::Perform()
          {
             String serverFileName = m_instance.ServerFileName();
             m_instance.o_serverFrames << serverFileName;
-
-            INDINewPropertyItem newItem;
-            newItem.Device = m_instance.p_deviceName;
-            newItem.Property = "UPLOAD_SETTINGS";
-            newItem.PropertyType = "INDI_TEXT";
-            newItem.ElementValue.Add(ElementValuePair("UPLOAD_PREFIX",serverFileName));
-            indi->SendNewPropertyItem( newItem, false/*async*/ );
+            indi->SendNewPropertyItem( m_instance.p_deviceName, "UPLOAD_SETTINGS", "INDI_TEXT", "UPLOAD_PREFIX", serverFileName, false/*async*/ );
          }
-         INDINewPropertyItem newItem;
 
-         newItem.Device = m_instance.p_deviceName;
-         newItem.Property = "CCD_EXPOSURE";
-         newItem.PropertyType = "INDI_NUMBER";
-         newItem.ElementValue.Add(ElementValuePair("CCD_EXPOSURE_VALUE",String( m_instance.p_exposureTime )));
-         if ( !indi->SendNewPropertyItem( newItem, true/*async*/ ) )
+         if ( !indi->SendNewPropertyItem( m_instance.p_deviceName, "CCD_EXPOSURE", "INDI_NUMBER", "CCD_EXPOSURE_VALUE", m_instance.p_exposureTime, true/*async*/ ) )
          {
             ExposureErrorEvent( "Failure to send new property values to INDI server" );
             ++m_errorCount;
@@ -783,7 +721,6 @@ void AbstractINDICCDFrameExecution::Perform()
          ElapsedTime T;
 
          for ( bool inExposure = false; ; )
-         {
             if ( indi->GetPropertyItem( m_instance.p_deviceName, "CCD_EXPOSURE", "CCD_EXPOSURE_VALUE", item, false/*formatted*/ ) )
                if ( item.PropertyState == IPS_BUSY )
                {
@@ -814,7 +751,6 @@ void AbstractINDICCDFrameExecution::Perform()
                   if ( T() > 1 )
                      WaitingForServerEvent();
                }
-         }
 
          if ( serverSendsImage )
          {
@@ -1078,18 +1014,7 @@ void AbstractINDICCDFrameExecution::Perform()
       catch ( ProcessAborted& )
       {
          m_aborted = true;
-         INDIPropertyListItem item;
-         // check if driver supports CCD_ABORT_EXPOSURE
-         if ( indi->GetPropertyItem( m_instance.p_deviceName, "CCD_ABORT_EXPOSURE", "ABORT", item ) )
-         {
-        	 INDINewPropertyItem newItem;
-
-        	 newItem.Device = m_instance.p_deviceName;
-        	 newItem.Property = "CCD_ABORT_EXPOSURE";
-        	 newItem.PropertyType = "INDI_SWITCH";
-        	 newItem.ElementValue.Add(ElementValuePair("ABORT","ON"));
-        	 indi->SendNewPropertyItem( newItem, true/*async*/ );
-         }
+         indi->MaybeSendNewPropertyItem( m_instance.p_deviceName, "CCD_ABORT_EXPOSURE", "INDI_SWITCH", "ABORT", "ON", true/*async*/ );
          AbortEvent();
          throw;
       }
@@ -1111,4 +1036,4 @@ void AbstractINDICCDFrameExecution::Abort()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInstance.cpp - Released 2016/05/18 10:06:42 UTC
+// EOF INDICCDFrameInstance.cpp - Released 2016/06/04 15:14:47 UTC

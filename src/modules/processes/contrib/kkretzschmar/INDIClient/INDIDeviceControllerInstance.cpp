@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.10.0168
+// Standard INDIClient Process Module Version 01.00.12.0183
 // ----------------------------------------------------------------------------
-// INDIDeviceControllerInstance.cpp - Released 2016/05/18 10:06:42 UTC
+// INDIDeviceControllerInstance.cpp - Released 2016/06/04 15:14:47 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -135,7 +135,7 @@ static void GetNewPropertyListItemParametersFromKey( const INDINewPropertyListIt
          item.Property = items[1];
          item.PropertyKey = '/' + items[0] + '/' + items[1] + '/' + items[2];
          item.PropertyType = listItem.PropertyType;
-         item.ElementValue.Add(ElementValuePair(items[2],listItem.NewPropertyValue));
+         item.ElementValues << ElementValue( items[2], listItem.NewPropertyValue );
          return;
       }
    throw Error( "Invalid property key '" + item.PropertyKey + "'" );
@@ -202,7 +202,7 @@ bool INDIDeviceControllerInstance::ExecuteGlobal()
             {
                for ( auto newListProperty : p_newProperties )
                {
-            	  INDINewPropertyItem newProperty;
+                  INDINewPropertyItem newProperty;
                   GetNewPropertyListItemParametersFromKey( newListProperty, newProperty );
                   if ( !indi->SendNewPropertyItem( newProperty, false/*async*/ ) )
                      throw Error( "INDIDeviceControllerInstance: Failure to send new property values." );
@@ -213,7 +213,7 @@ bool INDIDeviceControllerInstance::ExecuteGlobal()
             {
                for ( auto newListProperty : p_newProperties )
                {
-            	  INDINewPropertyItem newProperty;
+                  INDINewPropertyItem newProperty;
                   GetNewPropertyListItemParametersFromKey( newListProperty, newProperty );
                   if ( !indi->SendNewPropertyItem( newProperty, true/*async*/ ) )
                      throw Error( "INDIDeviceControllerInstance: Failure to send new property values (asynchronous)." );
@@ -460,4 +460,4 @@ void INDIDeviceControllerInstance::AcquireINDIClientProperties()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIDeviceControllerInstance.cpp - Released 2016/05/18 10:06:42 UTC
+// EOF INDIDeviceControllerInstance.cpp - Released 2016/06/04 15:14:47 UTC

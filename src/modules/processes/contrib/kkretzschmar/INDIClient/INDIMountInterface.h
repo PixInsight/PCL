@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.07.0141
+// Standard INDIClient Process Module Version 01.00.12.0183
 // ----------------------------------------------------------------------------
-// INDIMountInterface.h - Released 2016/04/28 15:13:36 UTC
+// INDIMountInterface.h - Released 2016/06/04 15:14:47 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -53,79 +53,91 @@
 #ifndef __INDIMountInterface_h
 #define __INDIMountInterface_h
 
-#include <pcl/Dialog.h>
 #include <pcl/CheckBox.h>
 #include <pcl/ComboBox.h>
+#include <pcl/Dialog.h>
 #include <pcl/Edit.h>
 #include <pcl/Label.h>
+#include <pcl/NetworkTransfer.h>
 #include <pcl/NumericControl.h>
 #include <pcl/ProcessInterface.h>
-#include <pcl/Sizer.h>
-#include <pcl/SectionBar.h>
-#include <pcl/SpinBox.h>
 #include <pcl/PushButton.h>
-#include <pcl/RadioButton.h>
-//#include <pcl/TreeBox.h>
-#include <pcl/TabBox.h>
-#include <pcl/ErrorHandler.h>
+#include <pcl/SectionBar.h>
+#include <pcl/Sizer.h>
+#include <pcl/SpinBox.h>
+#include <pcl/TextBox.h>
 #include <pcl/Timer.h>
-#include <pcl/NetworkTransfer.h>
-#include <map>
+#include <pcl/ToolButton.h>
 
 #include "INDIClient.h"
 #include "INDIMountInstance.h"
 
-
-#if defined(__PCL_LINUX)
-#include <memory>
-#endif
-
 namespace pcl
 {
 
+// ----------------------------------------------------------------------------
 
-#define GUI_LABELED_CONTROL(NAME,CONTROL) \
-	Label    NAME ## _Label; \
-	CONTROL  NAME ## _ ## CONTROL;
+class CoordinateSearchDialog : public Dialog
+{
+public:
+
+   CoordinateSearchDialog();
+
+   double TargetRA() const
+   {
+      return m_targetRA;
+   }
+
+   double TargetDec() const
+   {
+      return m_targetDec;
+   }
+
+   bool HasValidTargetCoordinates() const
+   {
+      return m_valid;
+   }
+
+   bool GoToTarget() const
+   {
+      return m_goto;
+   }
+
+private:
+
+   VerticalSizer       Global_Sizer;
+      HorizontalSizer      Search_Sizer;
+         Label                ObjectName_Label;
+         Edit                 ObjectName_Edit;
+         PushButton           Search_Button;
+      TextBox              SearchInfo_TextBox;
+      HorizontalSizer      Buttons_Sizer;
+         PushButton           Get_Button;
+         PushButton           GoTo_Button;
+         PushButton           Cancel_Button;
+
+   double    m_targetRA;
+   double    m_targetDec;
+   bool      m_valid;
+   bool      m_goto;
+   bool      m_downloading;
+   bool      m_abort;
+   bool      m_firstTimeShown;
+   IsoString m_downloadData;
+
+   void e_Show( Control& sender );
+   void e_GetFocus( Control& sender );
+   void e_LoseFocus( Control& sender );
+   bool e_Download( NetworkTransfer& sender, const void* buffer, fsize_type size );
+   bool e_Progress( NetworkTransfer& sender,
+                    fsize_type downloadTotal, fsize_type downloadCurrent,
+                    fsize_type uploadTotal, fsize_type uploadCurrent );
+   void e_Click( Button& sender, bool checked );
+};
 
 // ----------------------------------------------------------------------------
 
 class INDIMountInterfaceExecution;
-
-
-class CoordSearchDialog : public Dialog {
-private:
-	VerticalSizer       Global_Sizer;
-		HorizontalSizer      Search_Sizer;
-		 GUI_LABELED_CONTROL(Search,Edit);
-		 PushButton           Search_PushButton;
-		HorizontalSizer      SearchResult_Sizer;
-		 GUI_LABELED_CONTROL(TRA,Edit);
-		 GUI_LABELED_CONTROL(TDEC,Edit);
-		HorizontalSizer      SearchControl_Sizer;
-		 PushButton           SearchOK_PushButton;
-		 PushButton           SearchCancel_PushButton;
-
-
-	String m_targetObj;
-	double m_RA_TargetCoord;
-	double m_DEC_TargetCoord;
-
-	IsoString m_downloadedFile;
-
-	bool DownloadObjectCoordinates(NetworkTransfer &sender, const void *buffer, fsize_type size);
-	void Button_Click(Button& sender, bool checked);
-	void EditCompleted( Edit& sender);
-public:
-
-	CoordSearchDialog();
-	virtual ~CoordSearchDialog(){}
-	double getTargetRaCoord() const {return m_RA_TargetCoord;}
-	double getTargetDECCoord() const {return m_DEC_TargetCoord;}
-
-
-
-};
 
 class INDIMountInterface : public ProcessInterface
 {
@@ -147,117 +159,99 @@ public:
 
 private:
 
+   String                       m_device;
+   INDIMountInterfaceExecution* m_execution;
+   CoordinateSearchDialog*      m_searchDialog;
+
    struct GUIData
    {
-	   GUIData(INDIMountInterface& w);
+      GUIData(INDIMountInterface& w);
 
-	   Timer			  UpdateDeviceList_Timer;
-	   Timer              UpdateDeviceProperties_Timer;
+      Timer UpdateDeviceList_Timer;
+      Timer UpdateDeviceProperties_Timer;
 
-	   VerticalSizer      Global_Sizer;
-	   	   SectionBar         ServerParameters_SectionBar;
-	   	   Control			  ServerParameters_Control;
-	   	   VerticalSizer      ServerParameters_Sizer;
-	   	   	   HorizontalSizer	   MountDevice_Sizer;
-	   	   	   	   Label			   MountDevice_Label;
-	   	   	   	   ComboBox            MountDevice_Combo;
-	   	   	   	Control			   MountProperties_Control;
-	   	   	   	VerticalSizer	   MountProperties_Sizer;
-	   	   	   		HorizontalSizer      MountLST_Sizer;
-	   	   	   			Label            	LST_Label;
-	   	   	   			NumericEdit			LST_H_Edit;
-	   	   	   			NumericEdit			LST_M_Edit;
-	   	   	   			NumericEdit			LST_S_Edit;
-	   	   	   		HorizontalSizer    MountEQRA_Sizer;
-	   	   	   			Label 				RA_Label;
-	   	   	   			NumericEdit			RA_H_Edit;
-	   	   	   			NumericEdit			RA_M_Edit;
-	   	   	   			NumericEdit			RA_S_Edit;
-	   	  		   	HorizontalSizer    MountEQDEC_Sizer;
-	   	  		   		Label 				DEC_Label;
-	   	  		   		NumericEdit			DEC_D_Edit;
-	   	  		   		NumericEdit			DEC_M_Edit;
-	   	  		   		NumericEdit			DEC_S_Edit;
-	   	  		   	HorizontalSizer    MountHZAZ_Sizer;
-	   	  		   		Label 				AZ_Label;
-	   	  		   		NumericEdit			AZ_D_Edit;
-	   	  		   		NumericEdit			AZ_M_Edit;
-	   	  		   		NumericEdit			AZ_S_Edit;
-	   	  		    HorizontalSizer    MountHZALT_Sizer;
-	   	  		    	Label 				ALT_Label;
-	   	  		   		NumericEdit			ALT_D_Edit;
-	   	  		   		NumericEdit			ALT_M_Edit;
-	   	  		   		NumericEdit			ALT_S_Edit;
-	   	  	SectionBar        MountMove_SectionBar;
-	   	  	Control			  MountMove_Control;
-	   	  	VerticalSizer     MountMove_Sizer;
-	   	  		HorizontalSizer   	MountMoveSpeed_Sizer;
-	   	  			Label				MountMoveSpeed_Label;
-	   	  			ComboBox			MountMoveSpeed_ComboBox;
-	   	  		HorizontalSizer   	MountMoveDirection_Sizer;
-	   	  			Label				MountMove_Label;
-	   	  			VerticalSizer		MountLeft_Sizer;
-	   	  				PushButton      	MountMoveLeft_PushButton;
-	   	  			VerticalSizer		MountTopBottom_Sizer;
-	   	  				PushButton      	MountMoveTop_PushButton;
-	   	  				PushButton      	MountMoveStop_PushButton;
-	   	  				PushButton      	MountMoveBottom_PushButton;
-	   	  			VerticalSizer   	MountRight_Sizer;
-	   	  				PushButton      	MountMoveRight_PushButton;
-	   	  	SectionBar        MountGoto_SectionBar;
-	   	  	Control			  MountGoto_Control;
-	   	  	VerticalSizer     MountGoto_Sizer;
-	   	        HorizontalSizer MountGotoCoord_HSizer;
-	   	        	VerticalSizer     MountGotoLeft_Sizer;
-	   	  				HorizontalSizer	  MountTargetRA_Sizer;
-	   	  					Label             TargetRA_Label;
-	   	  					SpinBox			  TargetRA_H_SpinBox;
-	   	  					SpinBox			  TargetRA_M_SpinBox;
-	   	  					NumericEdit		  TargetRA_S_NumericEdit;
-	   	  				HorizontalSizer	  MountTargetDEC_Sizer;
-	   	  					Label             TargetDEC_Label;
-	   	  					SpinBox			  TargetDEC_H_SpinBox;
-	   	  					SpinBox			  TargetDEC_M_SpinBox;
-	   	  					NumericEdit		  TargetDEC_S_NumericEdit;
-	   	  					CheckBox      	  MountTargetDECIsSouth_CheckBox;
-	   	  			VerticalSizer     MountGotoRight_Sizer;
-	   	  				PushButton		    MountSearch_PushButton;
-	   	  		HorizontalSizer	  MountParking_Sizer;
-	   	  			Label              MountParking_Label;
-	   	  			CheckBox 		   MountParking_CheckBox;
-	   	  		HorizontalSizer	  MountGotoStart_Sizer;
-	   	  			Label              MountGotoCommand_Label;
-	   	  			PushButton		   MountGotoStart_PushButton;
-	   	  			PushButton		   MountGotoCancel_PushButton;
-	   	  			Label              MountGotoInfo_Label;
-	   	  		HorizontalSizer	  MountSynch_Sizer;
-	   	  			Label              MountSynchCommand_Label;
-	   	  			PushButton		   MountSynch_PushButton;
+      VerticalSizer        Global_Sizer;
+
+      SectionBar        ServerParameters_SectionBar;
+      Control           ServerParameters_Control;
+      VerticalSizer     ServerParameters_Sizer;
+         HorizontalSizer   MountDevice_Sizer;
+            Label             MountDevice_Label;
+            ComboBox          MountDevice_Combo;
+         Control           MountProperties_Control;
+         VerticalSizer     MountProperties_Sizer;
+            HorizontalSizer   MountLST_Sizer;
+               Label             LST_Label;
+               Label             LST_Value_Label;
+            HorizontalSizer   MountEQRA_Sizer;
+               Label             RA_Label;
+               Label             RA_Value_Label;
+            HorizontalSizer   MountEQDec_Sizer;
+               Label             Dec_Label;
+               Label             Dec_Value_Label;
+            HorizontalSizer   MountHZAZ_Sizer;
+               Label             AZ_Label;
+               Label             AZ_Value_Label;
+            HorizontalSizer   MountHZALT_Sizer;
+               Label             ALT_Label;
+               Label             ALT_Value_Label;
+
+      SectionBar        MountMove_SectionBar;
+      Control           MountMove_Control;
+      HorizontalSizer   MountMove_Sizer;
+         Control           SlewLeft_Control;
+         VerticalSizer     SlewLeft_Sizer;
+            HorizontalSizer   MountMoveTopRow_Sizer;
+               ToolButton        MountMoveTopLeft_Button;
+               ToolButton        MountMoveTop_Button;
+               ToolButton        MountMoveTopRight_Button;
+            HorizontalSizer   MountMoveMiddleRow_Sizer;
+               ToolButton        MountMoveLeft_Button;
+               ToolButton        MountMoveStop_Button;
+               ToolButton        MountMoveRight_Button;
+            HorizontalSizer   MountMoveBottomRow_Sizer;
+               ToolButton        MountMoveBottomLeft_Button;
+               ToolButton        MountMoveBottom_Button;
+               ToolButton        MountMoveBottomRight_Button;
+         VerticalSizer     SlewRight_Sizer;
+            Label             MountMoveSpeed_Label;
+            ComboBox          MountMoveSpeed_ComboBox;
+
+      SectionBar        MountGoTo_SectionBar;
+      Control           MountGoTo_Control;
+      VerticalSizer     MountGoTo_Sizer;
+         HorizontalSizer   MountTargetRA_Sizer;
+            Label             TargetRA_Label;
+            SpinBox           TargetRA_H_SpinBox;
+            SpinBox           TargetRA_M_SpinBox;
+            NumericEdit       TargetRA_S_NumericEdit;
+         HorizontalSizer   MountTargetDec_Sizer;
+            Label             TargetDec_Label;
+            SpinBox           TargetDec_H_SpinBox;
+            SpinBox           TargetDec_M_SpinBox;
+            NumericEdit       TargetDec_S_NumericEdit;
+            CheckBox          MountTargetDECIsSouth_CheckBox;
+         HorizontalSizer   MountSearch_Sizer;
+            PushButton        MountSearch_Button;
+         HorizontalSizer   MountGoToStart_Sizer;
+            PushButton        MountGoToStart_Button;
+            PushButton        MountSync_Button;
+            PushButton        MountPark_Button;
+         HorizontalSizer   MountGoToCancel_Sizer;
+            PushButton        MountGoToCancel_Button;
+         Label             MountGoToInfo_Label;
    };
 
-   INDIMountInstance instance;
-
    GUIData* GUI;
+
    void UpdateControls();
 
-   IsoString m_serverMessage;
-
-   String                       m_Device;
-   INDIMountInterfaceExecution* m_execution;
-
-
-
-   IsoString               m_downloadedFile;
-
-
-   void UpdateDeviceList_Timer( Timer& sender );
-   void UpdateMount_Timer( Timer &sender );
+   void e_Timer( Timer& sender );
    void e_Edit( Edit& sender );
-   void e_ItemSelected(ComboBox& sender, int itemIndex);
-   void e_Click(Button& sender, bool checked);
-   void e_Press(Button& sender);
-   void e_Release(Button& sender);
-   bool e_DownloadDataAvailable(NetworkTransfer &sender, const void *buffer, fsize_type size);
+   void e_ItemSelected( ComboBox& sender, int itemIndex );
+   void e_Click( Button& sender, bool checked );
+   void e_Press( Button& sender );
+   void e_Release( Button& sender );
 
    friend class INDIMountInterfaceExecution;
 };
@@ -275,4 +269,4 @@ PCL_END_LOCAL
 #endif   // __INDIMountInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInterface.h - Released 2016/04/28 15:13:36 UTC
+// EOF INDIMountInterface.h - Released 2016/06/04 15:14:47 UTC

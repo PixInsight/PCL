@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.10.0168
+// Standard INDIClient Process Module Version 01.00.12.0183
 // ----------------------------------------------------------------------------
-// INDICCDFrameProcess.h - Released 2016/05/18 10:06:42 UTC
+// INDICCDFrameProcess.h - Released 2016/06/04 15:14:47 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -99,4 +99,4 @@ PCL_END_LOCAL
 #endif   // __INDICCDFrameProcess_h
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameProcess.h - Released 2016/05/18 10:06:42 UTC
+// EOF INDICCDFrameProcess.h - Released 2016/06/04 15:14:47 UTC

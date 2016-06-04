@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.04.0108
+// Standard INDIClient Process Module Version 01.00.12.0183
 // ----------------------------------------------------------------------------
-// INDICCDFrameParameters.h - Released 2016/04/15 15:37:39 UTC
+// INDIMountParameters.h - Released 2016/06/04 15:14:47 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -50,9 +50,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-
-#ifndef INDIMOUNTPARAMETERS_H_
-#define INDIMOUNTPARAMETERS_H_
+#ifndef __INDIMountParameters_h
+#define __INDIMountParameters_h
 
 #include <pcl/MetaParameter.h>
 
@@ -76,26 +75,30 @@ extern IMCDeviceName* TheIMCDeviceNameParameter;
 
 // ----------------------------------------------------------------------------
 
-class IMCCommandType : public MetaEnumeration
+class IMCCommand : public MetaEnumeration
 {
 public:
 
-   enum { Unpark,
-		  Park,
-		  MoveNorthStart,
-		  MoveNorthStop,
-		  MoveSouthStart,
-		  MoveSouthStop,
-		  MoveWestStart,
-		  MoveWestStop,
-		  MoveEastStart,
-		  MoveEastStop,
-	      Goto,
-          Synch,
-		  NumberOfCommands,
-          Default = Unpark };
+   enum
+   {
+      Unpark,
+      Park,
+      MoveNorthStart,
+      MoveNorthStop,
+      MoveSouthStart,
+      MoveSouthStop,
+      MoveWestStart,
+      MoveWestStop,
+      MoveEastStart,
+      MoveEastStop,
+      Goto,
+      Sync,
+      ParkDefault,
+      NumberOfCommands,
+      Default = Unpark
+   };
 
-   IMCCommandType( MetaProcess* );
+   IMCCommand( MetaProcess* );
 
    virtual IsoString Id() const;
    virtual size_type NumberOfElements() const;
@@ -104,15 +107,15 @@ public:
    virtual size_type DefaultValueIndex() const;
 };
 
-extern IMCCommandType* TheIMCCommandTypeParameter;
+extern IMCCommand* TheIMCCommandParameter;
 
 // ----------------------------------------------------------------------------
 
-class IMCTargetRightascension : public MetaDouble
+class IMCTargetRA : public MetaDouble
 {
 public:
 
-	IMCTargetRightascension( MetaProcess* );
+   IMCTargetRA( MetaProcess* );
 
    virtual IsoString Id() const;
    virtual int Precision() const;
@@ -121,15 +124,15 @@ public:
    virtual double MaximumValue() const;
 };
 
-extern IMCTargetRightascension* TheIMCTargetRightAscensionParameter;
+extern IMCTargetRA* TheIMCTargetRAParameter;
 
 // ----------------------------------------------------------------------------
 
-class IMCTargetDeclination : public MetaDouble
+class IMCTargetDec : public MetaDouble
 {
 public:
 
-	IMCTargetDeclination( MetaProcess* );
+   IMCTargetDec( MetaProcess* );
 
    virtual IsoString Id() const;
    virtual int Precision() const;
@@ -138,7 +141,7 @@ public:
    virtual double MaximumValue() const;
 };
 
-extern IMCTargetDeclination* TheIMCTargetDeclinationParameter;
+extern IMCTargetDec* TheIMCTargetDecParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -146,12 +149,15 @@ class IMCSlewRate : public MetaEnumeration
 {
 public:
 
-   enum { Guide,
-		  Centering,
-		  Find,
-		  Max,
-		  NumberOfCommands,
-          Default = Max };
+   enum
+   {
+      Guide,
+      Centering,
+      Find,
+      Max,
+      NumberOfCommands,
+      Default = Max
+   };
 
    IMCSlewRate( MetaProcess* );
 
@@ -166,11 +172,11 @@ extern IMCSlewRate* TheIMCSlewRateParameter;
 
 // ----------------------------------------------------------------------------
 
-class IMCLocalSiderialTime : public MetaDouble
+class IMCCurrentLST : public MetaDouble
 {
 public:
 
-	IMCLocalSiderialTime( MetaProcess* );
+   IMCCurrentLST( MetaProcess* );
 
    virtual IsoString Id() const;
    virtual int Precision() const;
@@ -180,15 +186,15 @@ public:
    virtual bool IsReadOnly() const;
 };
 
-extern IMCLocalSiderialTime* TheIMCLocalSiderialTimeParameter;
+extern IMCCurrentLST* TheIMCCurrentLSTParameter;
 
 // ----------------------------------------------------------------------------
 
-class IMCCurrentRightascension : public MetaDouble
+class IMCCurrentRA : public MetaDouble
 {
 public:
 
-	IMCCurrentRightascension( MetaProcess* );
+   IMCCurrentRA( MetaProcess* );
 
    virtual IsoString Id() const;
    virtual int Precision() const;
@@ -199,15 +205,15 @@ public:
 
 };
 
-extern IMCCurrentRightascension* TheIMCCurrentRightAscensionParameter;
+extern IMCCurrentRA* TheIMCCurrentRAParameter;
 
 // ----------------------------------------------------------------------------
 
-class IMCCurrentDeclination : public MetaDouble
+class IMCCurrentDec : public MetaDouble
 {
 public:
 
-	IMCCurrentDeclination( MetaProcess* );
+   IMCCurrentDec( MetaProcess* );
 
    virtual IsoString Id() const;
    virtual int Precision() const;
@@ -218,13 +224,15 @@ public:
 
 };
 
-extern IMCCurrentDeclination* TheIMCCurrentDeclinationParameter;
+extern IMCCurrentDec* TheIMCCurrentDecParameter;
 
+// ----------------------------------------------------------------------------
 
 PCL_END_LOCAL
 
 } // pcl
 
+#endif   // __INDIMountParameters_h
 
-
-#endif /* INDIMOUNTPARAMETERS_H_ */
+// ----------------------------------------------------------------------------
+// EOF INDIMountParameters.h - Released 2016/06/04 15:14:47 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.07.0141
+// Standard INDIClient Process Module Version 01.00.12.0183
 // ----------------------------------------------------------------------------
-// INDIMountInstance.h - Released 2016/04/28 15:13:36 UTC
+// INDIMountInstance.h - Released 2016/06/04 15:14:47 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -50,17 +50,15 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#ifndef ____INDIMountInstance_h
-#define ____INDIMountInstance_h
+#ifndef __INDIMountInstance_h
+#define __INDIMountInstance_h
 
 #include <pcl/MetaParameter.h>
 #include <pcl/ProcessImplementation.h>
 
-
 namespace pcl
 {
 
-class INDIClient;
 // ----------------------------------------------------------------------------
 
 class INDIMountInstance : public ProcessImplementation
@@ -72,35 +70,40 @@ public:
 
    virtual void Assign( const ProcessImplementation& );
 
-   virtual bool CanExecuteOn( const View&, pcl::String& whyNot ) const;
+   virtual bool CanExecuteOn( const View&, String& whyNot ) const;
    virtual bool CanExecuteGlobal( String& whyNot ) const;
 
    virtual bool ExecuteGlobal();
    virtual bool ExecuteOn( View& view );
 
    virtual void* LockParameter( const MetaParameter* p, size_type tableRow );
-   virtual bool  AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
+   virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
 
    bool ValidateDevice( bool throwErrors = true ) const;
    void SendDeviceProperties( bool asynchronous = true ) const;
 
    static String MountSlewRatePropertyString( int slewRateIdx );
+
+   void GetCurrentCoordinates();
+
 private:
 
    String   p_deviceName;
-   pcl_enum p_commandType;
+   pcl_enum p_command;
    pcl_enum p_slewRate;
    double   p_targetRA;
-   double   p_targetDEC;
-   double   p_lst;
-   double   p_currentRA;
-   double   p_currentDEC;
+   double   p_targetDec;
+
+   double   o_currentLST;
+   double   o_currentRA;
+   double   o_currentDec;
 
    friend class INDIMountInterface;
    friend class AbstractINDIMountExecution;
 };
 
+// ----------------------------------------------------------------------------
 
 class AbstractINDIMountExecution
 {
@@ -118,6 +121,13 @@ public:
    }
 
    virtual void Perform();
+
+   void Perform( pcl_enum command )
+   {
+      m_instance.p_command = command;
+      Perform();
+   }
+
    virtual void Abort();
 
    const INDIMountInstance& Instance() const
@@ -135,61 +145,26 @@ public:
       return m_aborted;
    }
 
-   void setCommandType(pcl_enum commandType)
-   {
-	   m_instance.p_commandType = commandType;
-   }
 protected:
 
    INDIMountInstance& m_instance;
 
-   virtual void StartMountEvent(double targetRA, double currentRA, double targetDEC, double currentDEC, pcl_enum commandType) = 0;
-   virtual void MountEvent(double targetRA, double currentRA, double targetDEC, double currentDEC) = 0;
+   virtual void StartMountEvent( double targetRA, double currentRA, double targetDec, double currentDec, pcl_enum command ) = 0;
+   virtual void MountEvent( double targetRA, double currentRA, double targetDec, double currentDec ) = 0;
    virtual void EndMountEvent() = 0;
-
+   virtual void WaitEvent() = 0;
    virtual void AbortEvent() = 0;
-
 
 private:
 
-   void GetCurrentCoordinates(const INDIClient* indi);
-
    bool m_running, m_aborted;
-
 };
-
-// helper class
-class CoordUtils
-{
-public:
-   struct HMS
-   {
-      double hour;
-      double minute;
-      double second;
-      HMS( ):hour(0),minute(0),second(0) {}
-      HMS(double h,double m,double s ):hour(h),minute(m),second(s) {}
-   };
-
-   static HMS convertToHMS( double coord );
-   static HMS parse( String coordStr, String sep=":" );
-   static double convertFromHMS( const HMS& coord );
-   static double convertFromHMS( double hour, double minutes, double seconds );
-   static double convertDegFromHMS( const HMS& coord );
-   static double convertRadFromHMS( const HMS& coord );
-};
-
-
-
-
-
 
 // ----------------------------------------------------------------------------
-
 
 } // pcl
 
 #endif   // __INDIMountInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInstance.h - Released 2016/04/28 15:13:36 UTC
+// EOF INDIMountInstance.h - Released 2016/06/04 15:14:47 UTC

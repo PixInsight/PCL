@@ -81,7 +81,6 @@ function INDICCDTestSuite()
    };
 };
 
-
 #include "INDIMountControllerTests.js"
 
 function INDIMountTestSuite()
@@ -160,8 +159,6 @@ function INDIMountTestSuite()
       this.executeController();
    };
 };
-
-
 
 // run CCD tests
 //INDICCDTestSuite.prototype = new Test;

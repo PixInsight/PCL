@@ -27,32 +27,32 @@ function INDIMountControllerTests( parent )
          mountController.deviceName = MOUNT_DEVICE_NAME;
          // execute in the global context to unpark
          assertTrue( mountController.executeGlobal() );
-         var origPosRA=mountController.currentRightascension;
-         var origPosDEC=mountController.currentDeclination;
+         var origPosRA = mountController.currentRA;
+         var origPosDEC = mountController.currentDec;
          // set command type
-         mountController.commandType=2; // MoveNorth_Start
+         mountController.command = 2; // MoveNorth_Start
          // execute in the global context
          assertTrue( mountController.executeGlobal() );
          msleep( 2000 );
-         mountController.commandType=3; // MoveNorth_Stop
+         mountController.command = 3; // MoveNorth_Stop
          // execute in the global context
          assertTrue( mountController.executeGlobal() );
          // check current coordinates
-         expectEqualsWithPrecision(origPosRA,mountController.currentRightascension,0.1);
-         expectTrue(origPosDEC < mountController.currentDeclination);
-         origPosRA=mountController.currentRightascension;
-         origPosDEC=mountController.currentDeclination;
+         expectEqualsWithPrecision( origPosRA, mountController.currentRA, 0.1 );
+         expectTrue( origPosDEC < mountController.currentDec );
+         origPosRA = mountController.currentRA;
+         origPosDEC = mountController.currentDec;
          // set command type
-         mountController.commandType=4; // MoveSouth_Start
+         mountController.command = 4; // MoveSouth_Start
          // execute in the global context
          assertTrue( mountController.executeGlobal() );
          msleep( 2000 );
-         mountController.commandType=5; // MoveSouth_Stop
+         mountController.command = 5; // MoveSouth_Stop
          // execute in the global context
          assertTrue( mountController.executeGlobal() );
          // check current coordinates
-         expectEqualsWithPrecision(origPosRA,mountController.currentRightascension,0.1);
-         expectTrue(origPosDEC > mountController.currentDeclination);
+         expectEqualsWithPrecision( origPosRA, mountController.currentRA, 0.1 );
+         expectTrue( origPosDEC > mountController.currentDec );
       }
    );
 
@@ -63,32 +63,32 @@ function INDIMountControllerTests( parent )
          mountController.deviceName = MOUNT_DEVICE_NAME;
          // execute in the global context to unpark
          assertTrue( mountController.executeGlobal() );
-         var origPosRA=mountController.currentRightascension;
-         var origPosDEC=mountController.currentDeclination;
+         var origPosRA = mountController.currentRA;
+         var origPosDEC = mountController.currentDec;
          // set command type
-         mountController.commandType=6; // MoveWest_Start
+         mountController.command = 6; // MoveWest_Start
          // execute in the global context
          assertTrue( mountController.executeGlobal() );
          msleep( 2000 );
-         mountController.commandType=7; // MoveWest_Stop
+         mountController.command = 7; // MoveWest_Stop
          // execute in the global context
          assertTrue( mountController.executeGlobal() );
          // check current coordinates
-         expectTrue(origPosRA < mountController.currentRightascension);
-         expectEqualsWithPrecision(origPosDEC,mountController.currentDeclination,0.1);
-         origPosRA=mountController.currentRightascension;
-         origPosDEC=mountController.currentDeclination;
+         expectTrue( origPosRA < mountController.currentRA );
+         expectEqualsWithPrecision( origPosDEC, mountController.currentDec, 0.1 );
+         origPosRA = mountController.currentRA;
+         origPosDEC = mountController.currentDec;
          // set command type
-         mountController.commandType=8; // MoveEast_Start
+         mountController.command = 8; // MoveEast_Start
          // execute in the global context
          assertTrue( mountController.executeGlobal() );
          msleep( 2000 );
-         mountController.commandType=9; // MoveEst_Stop
+         mountController.command = 9; // MoveEast_Stop
          // execute in the global context
          assertTrue( mountController.executeGlobal() );
          // check current coordinates
-         expectTrue(origPosRA > mountController.currentRightascension);
-         expectEqualsWithPrecision(origPosDEC,mountController.currentDeclination,0.1);
+         expectTrue( origPosRA > mountController.currentRA );
+         expectEqualsWithPrecision( origPosDEC, mountController.currentDec, 0.1 );
       }
    );
 
@@ -100,42 +100,42 @@ function INDIMountControllerTests( parent )
          // execute in the global context to unpark
          assertTrue( mountController.executeGlobal() );
          // set target coordinates
-         mountController.targetRightascension=1;
-         mountController.targetDeclination=15;
-         mountController.commandType=10; // Goto
+         mountController.targetRA = 1;
+         mountController.targetDec = 15;
+         mountController.command = 10; // Goto
          // execute in the global context
          assertTrue( mountController.executeGlobal() );
          // check current coordinates
-         expectEqualsWithPrecision(1.0,mountController.currentRightascension,0.1);
-         expectEqualsWithPrecision(15.0,mountController.currentDeclination,0.1);
+         expectEqualsWithPrecision( 1.0, mountController.currentRA, 0.1 );
+         expectEqualsWithPrecision( 15.0, mountController.currentDec, 0.1 );
       }
    );
 
    this.add(
-      function testSynch()
+      function testSync()
       {
          let mountController = new INDIMount;
          mountController.deviceName = MOUNT_DEVICE_NAME;
          // execute in the global context to unpark
          assertTrue( mountController.executeGlobal() );
          // set synch command
-         mountController.commandType=11; // Synch
-         mountController.targetRightascension=mountController.currentRightascension - 0.01;
-         mountController.targetDeclination=mountController.currentDeclination + 0.01;
+         mountController.command = 11; // Sync
+         mountController.targetRA = mountController.currentRA - 0.01;
+         mountController.targetDec = mountController.currentDec + 0.01;
          // execute in the global context
          assertTrue( mountController.executeGlobal() );
          // check current coordinates
-         expectEqualsWithPrecision(mountController.targetRightascension,mountController.currentRightascension,0.1);
-         expectEqualsWithPrecision(mountController.targetDeclination,mountController.currentDeclination,0.1);
+         expectEqualsWithPrecision( mountController.targetRA, mountController.currentRA, 0.1 );
+         expectEqualsWithPrecision( mountController.targetDec, mountController.currentDec, 0.1 );
 
          // restore original positions
-         mountController.targetRightascension=mountController.currentRightascension + 0.01;
-         mountController.targetDeclination=mountController.currentDeclination - 0.01;
+         mountController.targetRA = mountController.currentRA + 0.01;
+         mountController.targetDec = mountController.currentDec - 0.01;
          // execute in the global context
          assertTrue( mountController.executeGlobal() );
          // check current coordinates
-         expectEqualsWithPrecision(mountController.targetRightascension,mountController.currentRightascension,0.1);
-         expectEqualsWithPrecision(mountController.targetDeclination,mountController.currentDeclination,0.1);
+         expectEqualsWithPrecision( mountController.targetRA, mountController.currentRA, 0.1 );
+         expectEqualsWithPrecision( mountController.targetDec, mountController.currentDec, 0.1 );
       }
    );
 
@@ -145,15 +145,16 @@ function INDIMountControllerTests( parent )
          let mountController = new INDIMount;
          mountController.deviceName = MOUNT_DEVICE_NAME;
          // set park command
-         mountController.commandType=1; // Park
+         mountController.command = 1; // Park
+         mountController.targetRA = 0;
+         mountController.targetDec = +90;
          // execute in the global context
          assertTrue( mountController.executeGlobal() );
          // check current coordinates
-         expectEqualsWithPrecision(0.0,mountController.currentRightascension,0.1);
-         expectEqualsWithPrecision(0.0,mountController.currentDeclination,0.1);
+         expectEqualsWithPrecision( 0.0, mountController.currentRA, 0.1 );
+         expectEqualsWithPrecision( +90.0, mountController.currentDec, 0.1 );
       }
    );
-
 }
 
 INDIMountControllerTests.prototype = new Test;

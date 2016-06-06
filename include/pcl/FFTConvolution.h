@@ -140,7 +140,9 @@ public:
     */
    FFTConvolution() :
       ImageTransformation(),
-      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      m_parallel( true ),
+      m_outputRealCmp( false ),
+      m_maxProcessors( PCL_MAX_PROCESSORS )
    {
    }
 
@@ -156,7 +158,9 @@ public:
    FFTConvolution( const KernelFilter& filter ) :
       ImageTransformation(),
       m_filter( filter.Clone() ),
-      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      m_parallel( true ),
+      m_outputRealCmp( false ),
+      m_maxProcessors( PCL_MAX_PROCESSORS )
    {
       PCL_CHECK( bool( m_filter ) )
    }
@@ -177,7 +181,9 @@ public:
    FFTConvolution( const ImageVariant& f ) :
       ImageTransformation(),
       m_image( f ),
-      m_parallel( true ), m_maxProcessors( PCL_MAX_PROCESSORS )
+      m_parallel( true ),
+      m_outputRealCmp( false ),
+      m_maxProcessors( PCL_MAX_PROCESSORS )
    {
       PCL_CHECK( bool( m_image ) )
    }
@@ -188,7 +194,9 @@ public:
    FFTConvolution( const FFTConvolution& x ) :
       ImageTransformation( x ),
       m_image( x.m_image ),
-      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors )
+      m_parallel( x.m_parallel ),
+      m_outputRealCmp( x.m_outputRealCmp ),
+      m_maxProcessors( x.m_maxProcessors )
    {
       if ( x.m_filter )
          m_filter = x.m_filter->Clone();
@@ -199,8 +207,11 @@ public:
     */
    FFTConvolution( FFTConvolution&& x ) :
       ImageTransformation( x ),
-      m_filter( x.m_filter ), m_image( std::move( x.m_image ) ),
-      m_parallel( x.m_parallel ), m_maxProcessors( x.m_maxProcessors ),
+      m_filter( x.m_filter ),
+      m_image( std::move( x.m_image ) ),
+      m_parallel( x.m_parallel ),
+      m_outputRealCmp( x.m_outputRealCmp ),
+      m_maxProcessors( x.m_maxProcessors ),
       m_h( x.m_h )
    {
       //x.m_filter = nullptr; // already done by AutoPointer
@@ -228,6 +239,7 @@ public:
          else
             m_image = x.m_image;
          m_parallel = x.m_parallel;
+         m_outputRealCmp = x.m_outputRealCmp;
          m_maxProcessors = x.m_maxProcessors;
       }
       return *this;
@@ -244,6 +256,7 @@ public:
          m_filter = x.m_filter;
          m_image = std::move( x.m_image );
          m_parallel = x.m_parallel;
+         m_outputRealCmp = x.m_outputRealCmp;
          m_maxProcessors = x.m_maxProcessors;
          m_h = x.m_h;
          //x.m_filter = nullptr; // already done by AutoPointer
@@ -348,6 +361,58 @@ public:
    }
 
    /*!
+    * Returns true if this object applies to real images by copying the real
+    * component of the complex convolved result.
+    *
+    * Returns false if this object applies to real images by storing the
+    * magnitude of the complex convolution result. This is the default
+    * behavior.
+    *
+    * \sa IsMagnitudeOutputEnabled(), EnableRealComponentOutput()
+    */
+   bool IsRealComponentOutputEnabled() const
+   {
+      return m_outputRealCmp;
+   }
+
+   /*!
+    * Returns true if this object applies to real images by storing the
+    * magnitude of the complex convolution result. This is the default
+    * behavior.
+    *
+    * Returns false if this object applies to real images by copying the real
+    * component of the complex convolved result.
+    *
+    * \sa IsRealComponentOutputEnabled(), EnableMagnitudeOutput()
+    */
+   bool IsMagnitudeOutputEnabled() const
+   {
+      return !m_outputRealCmp;
+   }
+
+   /*!
+    * Causes this object to apply to real images by copying the real component
+    * of the complex convolved result.
+    *
+    * \sa IsRealComponentOutputEnabled(), EnableMagnitudeOutput()
+    */
+   void EnableRealComponentOutput( bool enable = true )
+   {
+      m_outputRealCmp = enable;
+   }
+
+   /*!
+    * Causes this object to apply to real images by storing the magnitude of
+    * the complex convolution result. This is the default behavior.
+    *
+    * \sa IsMagnitudeOutputEnabled(), EnableRealComponentOutput()
+    */
+   void EnableMagnitudeOutput( bool enable = true )
+   {
+      m_outputRealCmp = !enable;
+   }
+
+   /*!
     * Returns true iff this object is allowed to use multiple parallel execution
     * threads (when multiple threads are permitted and available).
     */
@@ -429,6 +494,7 @@ protected:
    AutoPointer<KernelFilter> m_filter;
    ImageVariant              m_image;
    bool                      m_parallel      : 1;
+   bool                      m_outputRealCmp : 1;
    unsigned                  m_maxProcessors : PCL_MAX_PROCESSORS_BITCOUNT;
 
    /*

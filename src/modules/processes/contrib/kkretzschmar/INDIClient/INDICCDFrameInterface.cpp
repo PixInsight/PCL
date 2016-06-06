@@ -851,7 +851,7 @@ void INDICCDFrameInterface::e_Timer( Timer& sender )
             GUI->CCDDevice_Combo.AddItem( "<No Device Available>" );
          else
          {
-            GUI->CCDDevice_Combo.AddItem( "<No Device Selected>" );
+            GUI->CCDDevice_Combo.AddItem( String() );
 
             for ( auto device : devices )
             {
@@ -859,6 +859,9 @@ void INDICCDFrameInterface::e_Timer( Timer& sender )
                if ( indi->HasPropertyItem( device.DeviceName, "CCD_FRAME", "WIDTH" ) ) // is this a camera device?
                   GUI->CCDDevice_Combo.AddItem( device.DeviceName );
             }
+
+            GUI->CCDDevice_Combo.SetItemText( 0,
+                  (GUI->CCDDevice_Combo.NumberOfItems() > 1) ? "<No Device Selected>" : "<No Camera Device Available>" );
 
             int i = Max( 0, GUI->CCDDevice_Combo.FindItem( m_device ) );
             GUI->CCDDevice_Combo.SetCurrentItem( i );

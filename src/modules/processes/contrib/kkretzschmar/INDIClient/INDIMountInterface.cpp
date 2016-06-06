@@ -839,10 +839,14 @@ void INDIMountInterface::e_Timer( Timer& sender )
             GUI->MountDevice_Combo.AddItem( "<No Device Available>" );
          else
          {
-            GUI->MountDevice_Combo.AddItem( "<No Device Selected>" );
+            GUI->MountDevice_Combo.AddItem( String() );
+
             for ( auto device : devices )
                if ( indi->HasPropertyItem( device.DeviceName, "EQUATORIAL_EOD_COORD", "RA" ) ) // is this a mount device?
                   GUI->MountDevice_Combo.AddItem( device.DeviceName );
+
+            GUI->MountDevice_Combo.SetItemText( 0,
+                  (GUI->MountDevice_Combo.NumberOfItems() > 1) ? "<No Device Selected>" : "<No Mount Device Available>" );
 
             int i = Max( 0, GUI->MountDevice_Combo.FindItem( m_device ) );
             GUI->MountDevice_Combo.SetCurrentItem( i );

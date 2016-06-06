@@ -322,8 +322,8 @@ bool INDIMountInstance::ExecuteOn( View& view )
 
    GetCurrentCoordinates();
 
-   double deltaRA = imageCenterRA - observationCenterRA;
-   double deltaDec = imageCenterDec - observationCenterDec;
+   double deltaRA = observationCenterRA - imageCenterRA;
+   double deltaDec = observationCenterDec - imageCenterDec;
 
    p_targetRA = o_currentRA + deltaRA;
    p_targetDec = o_currentDec + deltaDec;

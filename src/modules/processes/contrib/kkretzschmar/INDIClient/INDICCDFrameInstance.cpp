@@ -378,10 +378,15 @@ private:
          m_waitMonitor.Initialize( "Waiting for INDI server" );
    }
 
-   virtual void NewFrameEvent( ImageWindow& window, bool reusedWindow )
+   virtual void NewFrameEvent( ImageWindow& window, bool reusedWindow, bool geometryChanged )
    {
       if ( reusedWindow )
-         window.Regenerate();
+      {
+         if ( geometryChanged )
+            window.ZoomToFit( false/*allowZoom*/ );
+         else
+            window.Regenerate();
+      }
       else
       {
          window.BringToFront();
@@ -927,12 +932,16 @@ void AbstractINDICCDFrameExecution::Perform()
                   }
                   reusedWindow = !window.IsNull();
                   if ( !reusedWindow )
+                  {
                      window = ImageWindow( 1, 1, 1,
                                           images[0].options.bitsPerSample,
                                           images[0].options.ieeefpSampleFormat,
                                           false/*color*/,
                                           true/*initialProcessing*/,
                                           m_instance.p_newImageIdTemplate );
+
+                     s_width = s_height = s_numberOfChannels = 0;
+                  }
 
                   View view = window.MainView();
 
@@ -992,7 +1001,15 @@ void AbstractINDICCDFrameExecution::Perform()
             else
             {
                m_instance.o_clientViewIds << window.MainView().Id();
-               NewFrameEvent( window, reusedWindow );
+
+               ImageVariant image = window.MainView().Image();
+               bool geometryChanged = s_width > 0 &&
+                  (image.Width() != s_width || image.Height() != s_height || image.NumberOfChannels() != s_numberOfChannels);
+               s_width = image.Width();
+               s_height = image.Height();
+               s_numberOfChannels = image.NumberOfChannels();
+
+               NewFrameEvent( window, reusedWindow, geometryChanged );
             }
          }
       }
@@ -1030,6 +1047,10 @@ void AbstractINDICCDFrameExecution::Abort()
    if ( IsRunning() )
       throw ProcessAborted();
 }
+
+int AbstractINDICCDFrameExecution::s_width = 0;
+int AbstractINDICCDFrameExecution::s_height = 0;
+int AbstractINDICCDFrameExecution::s_numberOfChannels = 0;
 
 // ----------------------------------------------------------------------------
 

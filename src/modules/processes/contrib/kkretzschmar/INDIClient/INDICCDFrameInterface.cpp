@@ -1196,10 +1196,15 @@ private:
       m_iface->ProcessEvents();
    }
 
-   virtual void NewFrameEvent( ImageWindow& window, bool reusedWindow )
+   virtual void NewFrameEvent( ImageWindow& window, bool reusedWindow, bool geometryChanged )
    {
       if ( reusedWindow )
-         window.Regenerate();
+      {
+         if ( geometryChanged )
+            window.ZoomToFit( false/*allowZoom*/ );
+         else
+            window.Regenerate();
+      }
       else
       {
          window.BringToFront();

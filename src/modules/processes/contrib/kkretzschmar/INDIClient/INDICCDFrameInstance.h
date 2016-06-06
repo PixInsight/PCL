@@ -191,7 +191,7 @@ protected:
 
    virtual void WaitingForServerEvent() = 0;
 
-   virtual void NewFrameEvent( ImageWindow&, bool reusedWindow ) = 0;
+   virtual void NewFrameEvent( ImageWindow&, bool reusedWindow, bool geometryChanged ) = 0;
    virtual void NewFrameEvent( const String& filePath ) = 0;
 
    virtual void EndAcquisitionEvent() = 0;
@@ -200,8 +200,15 @@ protected:
 
 private:
 
-   bool m_running, m_aborted;
-   int  m_successCount, m_errorCount;
+   bool m_running;
+   bool m_aborted;
+   int  m_successCount;
+   int  m_errorCount;
+
+   // Geometry of the current image window
+   static int s_width;
+   static int s_height;
+   static int s_numberOfChannels;
 };
 
 // ----------------------------------------------------------------------------

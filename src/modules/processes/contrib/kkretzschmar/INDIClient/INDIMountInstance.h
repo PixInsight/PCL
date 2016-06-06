@@ -71,10 +71,11 @@ public:
    virtual void Assign( const ProcessImplementation& );
 
    virtual bool CanExecuteOn( const View&, String& whyNot ) const;
-   virtual bool CanExecuteGlobal( String& whyNot ) const;
-
-   virtual bool ExecuteGlobal();
+   virtual bool IsHistoryUpdater( const View& v ) const;
    virtual bool ExecuteOn( View& view );
+
+   virtual bool CanExecuteGlobal( String& whyNot ) const;
+   virtual bool ExecuteGlobal();
 
    virtual void* LockParameter( const MetaParameter* p, size_type tableRow );
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );

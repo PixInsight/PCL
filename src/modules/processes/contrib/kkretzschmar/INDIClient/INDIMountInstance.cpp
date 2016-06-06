@@ -131,6 +131,11 @@ bool INDIMountInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) co
    return false;
 }
 
+bool INDIMountInstance::IsHistoryUpdater( const View& ) const
+{
+   return false;
+}
+
 bool INDIMountInstance::CanExecuteGlobal( pcl::String& whyNot ) const
 {
    whyNot.Clear();

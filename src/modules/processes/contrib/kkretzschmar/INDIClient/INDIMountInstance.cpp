@@ -113,7 +113,13 @@ bool INDIMountInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) co
 
    if ( !view.IsMainView() )
    {
-      whyNot = "IMDI Mount can only be executed on main views, not on previews.";
+      whyNot = "IMDIMount can only be executed on main views, not on previews.";
+      return false;
+   }
+
+   if ( !view.HasProperty( "Observation:Center:RA" ) || !view.HasProperty( "Observation:Center:Dec" ) )
+   {
+      whyNot = "The view does not define valid observation coordinates.";
       return false;
    }
 
@@ -127,7 +133,7 @@ bool INDIMountInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) co
          keysExist |= 2;
    if ( keysExist == 3 )
       return true;
-   whyNot = "INDI Mount can only be executed on solved views with valid OBJCTRA and OBJCTDEC keywords.";
+   whyNot = "The view does not define valid center coordinates.";
    return false;
 }
 
@@ -285,49 +291,83 @@ bool INDIMountInstance::ExecuteGlobal()
 
 bool INDIMountInstance::ExecuteOn( View& view )
 {
-   FITSKeywordArray K;
+   double observationCenterRA, observationCenterDec;
+   double imageCenterRA = -1, imageCenterDec = -91;
    {
       AutoViewLock lock( view );
-      view.Window().GetKeywords( K );
+
+      Variant ra = view.PropertyValue( "Observation:Center:RA" );
+      Variant dec = view.PropertyValue( "Observation:Center:Dec" );
+      if ( !ra.IsValid() || !dec.IsValid() )
+         throw Error( "The view does not define valid observation coordinates." );
+      observationCenterRA = ra.ToDouble()/15;
+      observationCenterDec = dec.ToDouble();
+
+      // ### TODO: Implement this via standard XISF properties.
+      FITSKeywordArray keywords;
+      view.Window().GetKeywords( keywords );
+      for ( auto k : keywords )
+         if ( k.name == "OBJCTRA" )
+            k.StripValueDelimiters().TrySexagesimalToDouble( imageCenterRA, ' ' );
+         else if ( k.name == "OBJCTDEC" )
+            k.StripValueDelimiters().TrySexagesimalToDouble( imageCenterDec, ' ' );
+      if ( imageCenterRA < 0 || imageCenterDec < -90 )
+         throw Error( "The view does not define valid center coordinates." );
    }
 
    // Save original parameters
    double storedTargetRA = p_targetRA;
-   double storedTargetDEC = p_targetDec;
-   pcl_enum storedCommandType = p_command;
+   double storedTargetDec = p_targetDec;
+   pcl_enum storedCommand = p_command;
 
    GetCurrentCoordinates();
 
-   for ( FITSKeywordArray::iterator i = K.Begin(); i != K.End(); ++i )
-      if ( i->name == "OBJCTRA" )
-      {
-         p_targetRA = i->StripValueDelimiters().SexagesimalToDouble( ' ' );
-         if ( o_currentLST >= 0 ) // ### N.B.: o_currentLST < 0 if LST property could not be retrieved
+   double deltaRA = imageCenterRA - observationCenterRA;
+   double deltaDec = imageCenterDec - observationCenterDec;
+
+   p_targetRA = o_currentRA + deltaRA;
+   p_targetDec = o_currentDec + deltaDec;
+
+   if ( o_currentLST >= 0 ) // ### N.B.: o_currentLST < 0 if LST property could not be retrieved
+   {
+      double currentHourAngle = o_currentLST - o_currentRA;
+      double newHourAngle = o_currentLST - p_targetRA;
+      if ( (currentHourAngle < 0) != (newHourAngle < 0) )
+         if ( MessageBox( "<p>New center right ascension coordinate crosses the meridian, and will possibly trigger a meridian flip.</p>"
+                           "<p><b>Continue?</b></p>",
+                           Meta()->Id(),
+                           StdIcon::Warning,
+                           StdButton::Yes, StdButton::No ).Execute() != StdButton::Yes )
          {
-            int currentHourAngle = o_currentLST - o_currentRA;
-            int newHourAngle = o_currentLST - p_targetRA;
-            if ( (currentHourAngle < 0) != (newHourAngle < 0) )
-               if ( MessageBox( "<p>New center right ascension coordinate crosses the meridian, and will possibly trigger a meridian flip.</p>"
-                                "<p><b>Continue?</b></p>",
-                                Meta()->Id(),
-                                StdIcon::Warning,
-                                StdButton::Yes, StdButton::No ).Execute() != StdButton::Yes )
-               {
-                  return false;
-               }
+            return false;
          }
-      }
-      else if ( i->name == "OBJCTDEC" )
-         p_targetDec = i->StripValueDelimiters().SexagesimalToDouble( ' ' );
+   }
 
-   p_command = IMCCommand::Goto;
-   INDIMountInstanceExecution( *this ).Perform();
+   try
+   {
+      Console().WriteLn( "<end><cbr>Applying differential correction: dRA = "
+                  + String::ToSexagesimal( deltaRA,
+                           SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, true/*sign*/ ) )
+                  + ", dDec = "
+                  + String::ToSexagesimal( deltaDec,
+                           SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, true/*sign*/ ) ) );
 
-   // Restore original parameters
-   p_targetRA = storedTargetRA;
-   p_targetDec = storedTargetDEC;
-   p_command = storedCommandType;
-   return true;
+      p_command = IMCCommand::Goto;
+      INDIMountInstanceExecution( *this ).Perform();
+
+      // Restore original parameters
+      p_targetRA = storedTargetRA;
+      p_targetDec = storedTargetDec;
+      p_command = storedCommand;
+      return true;
+   }
+   catch( ... )
+   {
+      p_targetRA = storedTargetRA;
+      p_targetDec = storedTargetDec;
+      p_command = storedCommand;
+      throw;
+   }
 }
 
 void* INDIMountInstance::LockParameter( const MetaParameter* p, size_type tableRow )

@@ -806,6 +806,27 @@ void AbstractINDICCDFrameExecution::Perform()
                      << FITSHeaderKeyword( "HISTORY", IsoString(), "Acquired with " + Module->ReadableVersion() )
                      << FITSHeaderKeyword( "HISTORY", IsoString(), "Acquired with " + m_instance.Meta()->Id() + " process" );
 
+            /*
+             * Store the coordinates of the observation point. We need these
+             * to implement differential pointing corrections; see for example
+             * INDIMountInstance::ExecuteOn().
+             */
+            {
+               double centerRA = -1, centerDec = -91;
+               for ( auto k : keywords )
+                  if ( k.name == "OBJCTRA" )
+                     k.StripValueDelimiters().TrySexagesimalToDouble( centerRA, ' ' );
+                  else if ( k.name == "OBJCTDEC" )
+                     k.StripValueDelimiters().TrySexagesimalToDouble( centerDec, ' ' );
+               if ( centerRA >= 0 && centerDec >= -90 )
+               {
+                  propertyNames << "Observation:Center:RA";
+                  propertyValues << centerRA*15;
+                  propertyNames << "Observation:Center:Dec";
+                  propertyValues << centerDec;
+               }
+            }
+
             ICCProfile iccProfile;
             if ( inputFormat.CanStoreICCProfiles() )
                inputFile.Extract( iccProfile );
@@ -955,7 +976,7 @@ void AbstractINDICCDFrameExecution::Perform()
                      for ( size_type i = 0; i < propertyNames.Length(); ++i )
                         if ( propertyValues[i].IsValid() )
                            view.SetPropertyValue( propertyNames[i], propertyValues[i], false/*notify*/,
-                                                ViewPropertyAttribute::Storable|ViewPropertyAttribute::Permanent );
+                                                  ViewPropertyAttribute::Storable|ViewPropertyAttribute::Permanent );
 
                   window.SetKeywords( keywords );
 

@@ -280,7 +280,11 @@ bool INDIMountInstance::ExecuteGlobal()
 
 bool INDIMountInstance::ExecuteOn( View& view )
 {
-   AutoViewLock lock( view );
+   FITSKeywordArray K;
+   {
+      AutoViewLock lock( view );
+      view.Window().GetKeywords( K );
+   }
 
    // Save original parameters
    double storedTargetRA = p_targetRA;
@@ -289,16 +293,16 @@ bool INDIMountInstance::ExecuteOn( View& view )
 
    GetCurrentCoordinates();
 
-   FITSKeywordArray K;
-   view.Window().GetKeywords( K );
    for ( FITSKeywordArray::iterator i = K.Begin(); i != K.End(); ++i )
       if ( i->name == "OBJCTRA" )
       {
-         double centerRA = i->StripValueDelimiters().SexagesimalToDouble( ' ' );
-         p_targetRA = 2*o_currentRA - centerRA;
+         p_targetRA = i->StripValueDelimiters().SexagesimalToDouble( ' ' );
          if ( o_currentLST >= 0 ) // ### N.B.: o_currentLST < 0 if LST property could not be retrieved
-            if ( p_targetRA < o_currentLST )
-               if ( MessageBox( "<p>New center right ascension coordinate crossed the meridian and will possibly trigger a meridian flip.</p>"
+         {
+            int currentHourAngle = o_currentLST - o_currentRA;
+            int newHourAngle = o_currentLST - p_targetRA;
+            if ( (currentHourAngle < 0) != (newHourAngle < 0) )
+               if ( MessageBox( "<p>New center right ascension coordinate crosses the meridian, and will possibly trigger a meridian flip.</p>"
                                 "<p><b>Continue?</b></p>",
                                 Meta()->Id(),
                                 StdIcon::Warning,
@@ -306,12 +310,10 @@ bool INDIMountInstance::ExecuteOn( View& view )
                {
                   return false;
                }
+         }
       }
       else if ( i->name == "OBJCTDEC" )
-      {
-         double centerDEC = i->StripValueDelimiters().SexagesimalToDouble( ' ' );
-         p_targetDec = 2*o_currentDec - centerDEC;
-      }
+         p_targetDec = i->StripValueDelimiters().SexagesimalToDouble( ' ' );
 
    p_command = IMCCommand::Goto;
    INDIMountInstanceExecution( *this ).Perform();

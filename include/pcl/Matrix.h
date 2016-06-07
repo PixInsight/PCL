@@ -1564,6 +1564,246 @@ public:
    }
 
    /*!
+    * Rotates this 3x3 matrix about the X axis.
+    *
+    * \param sphi    Sine of the rotation angle.
+    *
+    * \param cphi    Cosine of the rotation angle.
+    *
+    * Positive rotation angles apply anticlockwise rotations about the X axis,
+    * as seen looking towards the origin from positive x. The applied
+    * transformation can be represented by the matrix:
+    *
+    * \verbatim
+    * 1     0        0
+    * 0   +cphi   +sphi
+    * 0   -sphi   +cphi
+    * \endverbatim
+    *
+    * If this matrix has dimensions different from 3 rows and 3 columns, this
+    * function invokes undefined behavior. For the sake of performance, this
+    * condition is not explicitly verified.
+    *
+    * \sa RotateX( double ), RotatedX()
+    */
+   void RotateX( double sphi, double cphi )
+   {
+      PCL_PRECONDITION( Rows() == 3 && Cols() == 3 )
+      block_iterator A1 = m_data->v[1];
+      block_iterator A2 = m_data->v[2];
+      double a10 =  cphi*A1[0] + sphi*A2[0];
+      double a11 =  cphi*A1[1] + sphi*A2[1];
+      double a12 =  cphi*A1[2] + sphi*A2[2];
+      double a20 = -sphi*A1[0] + cphi*A2[0];
+      double a21 = -sphi*A1[1] + cphi*A2[1];
+      double a22 = -sphi*A1[2] + cphi*A2[2];
+      A1[0] = element( a10 );
+      A1[1] = element( a11 );
+      A1[2] = element( a12 );
+      A2[0] = element( a20 );
+      A2[1] = element( a21 );
+      A2[2] = element( a22 );
+   }
+
+   /*!
+    * Rotates this 3x3 matrix about the X axis by the specified angle \a phi in
+    * radians.
+    *
+    * Calling this function is equivalent to:
+    *
+    * \code RotateX( Sin( phi ), Cos( phi ) ) \endcode
+    */
+   void RotateX( double phi )
+   {
+      double sphi, cphi;
+      SinCos( phi, sphi, cphi );
+      RotateX( sphi, cphi );
+   }
+
+   /*!
+    * Returns a rotated copy of this 3x3 matrix about the X axis by a rotation
+    * angle given by its sine \a sphi and cosine \a cphi.
+    * See RotateX( double, double ).
+    */
+   GenericMatrix RotatedX( double sphi, double cphi ) const
+   {
+      GenericMatrix R( *this );
+      R.RotateX( sphi, cphi );
+      return R;
+   }
+
+   /*!
+    * Returns a rotated copy of this 3x3 matrix about the X axis by the
+    * specified rotation angle \a phi in radians. See RotateX( double ).
+    */
+   GenericMatrix RotatedX( double phi ) const
+   {
+      GenericMatrix R( *this );
+      R.RotateX( phi );
+      return R;
+   }
+
+   /*!
+    * Rotates this 3x3 matrix about the Y axis.
+    *
+    * \param sphi    Sine of the rotation angle.
+    *
+    * \param cphi    Cosine of the rotation angle.
+    *
+    * Positive rotation angles apply anticlockwise rotations about the Y axis,
+    * as seen looking towards the origin from positive y. The applied
+    * transformation can be represented by the matrix:
+    *
+    * \verbatim
+    * +cphi  0  -sphi
+    *   0    1    0
+    * +sphi  0  +cphi
+    * \endverbatim
+    *
+    * If this matrix has dimensions different from 3 rows and 3 columns, this
+    * function invokes undefined behavior. For the sake of performance, this
+    * condition is not explicitly verified.
+    *
+    * \sa RotateY( double ), RotatedY()
+    */
+   void RotateY( double sphi, double cphi )
+   {
+      PCL_PRECONDITION( Rows() == 3 && Cols() == 3 )
+      block_iterator A0 = m_data->v[0];
+      block_iterator A2 = m_data->v[2];
+      double a00 = cphi*A0[0] - sphi*A2[0];
+      double a01 = cphi*A0[1] - sphi*A2[1];
+      double a02 = cphi*A0[2] - sphi*A2[2];
+      double a20 = sphi*A0[0] + cphi*A2[0];
+      double a21 = sphi*A0[1] + cphi*A2[1];
+      double a22 = sphi*A0[2] + cphi*A2[2];
+      A0[0] = a00;
+      A0[1] = a01;
+      A0[2] = a02;
+      A2[0] = a20;
+      A2[1] = a21;
+      A2[2] = a22;
+   }
+
+   /*!
+    * Rotates this 3x3 matrix about the Y axis by the specified angle \a phi in
+    * radians.
+    *
+    * Calling this function is equivalent to:
+    *
+    * \code RotateY( Sin( phi ), Cos( phi ) ) \endcode
+    */
+   void RotateY( double phi )
+   {
+      double sphi, cphi;
+      SinCos( phi, sphi, cphi );
+      RotateY( sphi, cphi );
+   }
+
+   /*!
+    * Returns a rotated copy of this 3x3 matrix about the Y axis by a rotation
+    * angle given by its sine \a sphi and cosine \a cphi.
+    * See RotateY( double, double ).
+    */
+   GenericMatrix RotatedY( double sphi, double cphi ) const
+   {
+      GenericMatrix R( *this );
+      R.RotateY( sphi, cphi );
+      return R;
+   }
+
+   /*!
+    * Returns a rotated copy of this 3x3 matrix about the Y axis by the
+    * specified rotation angle \a phi in radians. See RotateY( double ).
+    */
+   GenericMatrix RotatedY( double phi ) const
+   {
+      GenericMatrix R( *this );
+      R.RotateY( phi );
+      return R;
+   }
+
+   /*!
+    * Rotates this 3x3 matrix about the Z axis.
+    *
+    * \param sphi    Sine of the rotation angle.
+    *
+    * \param cphi    Cosine of the rotation angle.
+    *
+    * Positive rotation angles apply anticlockwise rotations about the Z axis,
+    * as seen looking towards the origin from positive z. The applied
+    * transformation can be represented by the matrix:
+    *
+    * \verbatim
+    * +cphi  +sphi  0
+    * -sphi  +cphi  0
+    *   0      0    1
+    * \endverbatim
+    *
+    * If this matrix has dimensions different from 3 rows and 3 columns, this
+    * function invokes undefined behavior. For the sake of performance, this
+    * condition is not explicitly verified.
+    *
+    * \sa RotateZ( double ), RotatedZ()
+    */
+   void RotateZ( double sphi, double cphi )
+   {
+      PCL_PRECONDITION( Rows() == 3 && Cols() == 3 )
+      block_iterator A0 = m_data->v[0];
+      block_iterator A1 = m_data->v[1];
+      double a00 =  cphi*A0[0] + sphi*A1[0];
+      double a01 =  cphi*A0[1] + sphi*A1[1];
+      double a02 =  cphi*A0[2] + sphi*A1[2];
+      double a10 = -sphi*A0[0] + cphi*A1[0];
+      double a11 = -sphi*A0[1] + cphi*A1[1];
+      double a12 = -sphi*A0[2] + cphi*A1[2];
+      A0[0] = a00;
+      A0[1] = a01;
+      A0[2] = a02;
+      A1[0] = a10;
+      A1[1] = a11;
+      A1[2] = a12;
+   }
+
+   /*!
+    * Rotates this 3x3 matrix about the Z axis by the specified angle \a phi in
+    * radians.
+    *
+    * Calling this function is equivalent to:
+    *
+    * \code RotateZ( Sin( phi ), Cos( phi ) ) \endcode
+    */
+   void RotateZ( double phi )
+   {
+      double sphi, cphi;
+      SinCos( phi, sphi, cphi );
+      RotateZ( sphi, cphi );
+   }
+
+   /*!
+    * Returns a rotated copy of this 3x3 matrix about the Z axis by a rotation
+    * angle given by its sine \a sphi and cosine \a cphi.
+    * See RotateZ( double, double ).
+    */
+   GenericMatrix RotatedZ( double sphi, double cphi ) const
+   {
+      GenericMatrix R( *this );
+      R.RotateZ( sphi, cphi );
+      return R;
+   }
+
+   /*!
+    * Returns a rotated copy of this 3x3 matrix about the Z axis by the
+    * specified rotation angle \a phi in radians. See RotateZ( double ).
+    */
+   GenericMatrix RotatedZ( double phi ) const
+   {
+      GenericMatrix R( *this );
+      R.RotateZ( phi );
+      return R;
+   }
+
+   /*!
     * Truncates all matrix elements to the specified range.
     *
     * \param f0   Lower bound of the truncation range. If not specified, the

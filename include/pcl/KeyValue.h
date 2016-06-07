@@ -101,12 +101,29 @@ public:
    }
 
    /*!
-    * Assignment operator. Returns a reference to this object.
+    * Move constructor.
+    */
+   KeyValue( KeyValue&& x ) : key( std::move( x.key ) ), value( std::move( x.value ) )
+   {
+   }
+
+   /*!
+    * Copy assignment operator. Returns a reference to this object.
     */
    KeyValue& operator =( const KeyValue& x )
    {
       key = x.key;
       value = x.value;
+      return *this;
+   }
+
+   /*!
+    * Move assignment operator. Returns a reference to this object.
+    */
+   KeyValue& operator =( KeyValue&& x )
+   {
+      key = std::move( x.key );
+      value = std::move( x.value );
       return *this;
    }
 
@@ -121,9 +138,9 @@ public:
    }
 
    /*!
-    * Returns true iff this key-value association is less than another object
-    * \a x. In key-value comparisons, key members have precedence over value
-    * members. The comparison algorithm is as follows:
+    * Returns true iff this key-value association precedes another object \a x.
+    * In key-value comparisons, key members have precedence over value members.
+    * The comparison algorithm is as follows:
     *
     * \code
     * if ( this->key != x.key )

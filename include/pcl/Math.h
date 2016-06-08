@@ -643,7 +643,7 @@ template <typename T> inline constexpr T Floor( T x )
 
 /*!
  * Fractional part of x.
- * The returned value is within ]-1,+1[, and has the same sign as x.
+ * The returned value is within (-1,+1), and has the same sign as x.
  * \ingroup mathematical_functions
  */
 template <typename T> inline constexpr T Frac( T x )
@@ -1818,6 +1818,48 @@ inline void Rotate( T& x, T& y, T1 a, T2 xc, T2 yc )
 
 /*!
  * Computes the Julian day number (JD) corresponding to a time point expressed
+ * as a date and a day fraction, providing the result by its separate integer
+ * and fractional parts.
+ *
+ * \param jdi     On output, the integer part of the resulting JD.
+ *
+ * \param jdf     On output, the fractional part of the resulting JD.
+ *
+ * \param year    The year of the date. Positive and negative years are
+ *                supported. Years are counted arithmetically: the year zero is
+ *                the year before the year +1, that is, what historians call
+ *                the year 1 B.C.
+ *
+ * \param month   The month of the date. Usually in the [1,12] range but can be
+ *                any integer number.
+ *
+ * \param day     The day of the date. Usually in the [1,31] range but can be
+ *                any integer number.
+ *
+ * \param dayf    The day fraction. The default value is zero, which computes
+ *                the JD at zero hours. Usually in the [0,1) range but can be
+ *                any real number.
+ *
+ * This routine, as well as JDToComplexTime(), implement modified versions of
+ * the original algorithms due to Jean Meeus. Our modifications allow for
+ * negative Julian day numbers, which extends the range of allowed dates to the
+ * past considerably. We developed these modifications in the context of
+ * large-scale solar system ephemeris calculations.
+ *
+ * The computed value is the JD corresponding to the specified date and day
+ * fraction, which is equal to the sum of the \a jdi and \a jdf variables.
+ *
+ * \b References
+ *
+ * Meeus, Jean (1991), <em>Astronomical Algorithms</em>, Willmann-Bell, Inc.,
+ * chapter 7.
+ *
+ * \ingroup mathematical_functions
+ */
+void PCL_FUNC ComplexTimeToJD( int& jdi, double& jdf, int year, int month, int day, double dayf = 0 );
+
+/*!
+ * Computes the Julian day number (JD) corresponding to a time point expressed
  * as a date and a day fraction.
  *
  * \param year    The year of the date. Positive and negative years are
@@ -1842,9 +1884,11 @@ inline void Rotate( T& x, T& y, T1 a, T2 xc, T2 yc )
  * large-scale solar system ephemeris calculations.
  *
  * The returned value is the JD corresponding to the specified date and day
- * fraction. Due to the numerical precision of the double type (IEEE 64-bit
- * floating point), this routine can return JD values accurate only to within
- * one millisecond.
+ * fraction.
+ *
+ * Because of the numerical precision of the double type (IEEE 64-bit floating
+ * point), this routine can return JD values accurate only to within one
+ * millisecond.
  *
  * \b References
  *
@@ -1853,7 +1897,45 @@ inline void Rotate( T& x, T& y, T1 a, T2 xc, T2 yc )
  *
  * \ingroup mathematical_functions
  */
-double PCL_FUNC ComplexTimeToJD( int year, int month, int day, double dayf = 0 );
+inline double ComplexTimeToJD( int year, int month, int day, double dayf = 0 )
+{
+   int jdi;
+   double jdf;
+   ComplexTimeToJD( jdi, jdf, year, month, day, dayf );
+   return jdi + jdf;
+}
+
+/*!
+ * Computes the date and day fraction corresponding to a time point expressed
+ * as a Julian day number (JD), specified by its separate integer and
+ * fractional parts.
+ *
+ * \param[out] year  On output, this variable receives the year of the
+ *                   resulting date.
+ *
+ * \param[out] month On output, this variable receives the month of the
+ *                   resulting date in the range [1,12].
+ *
+ * \param[out] day   On output, this variable receives the day of the
+ *                   resulting date in the range [1,31]. Different month day
+ *                   counts and leap years are taken into account, so the
+ *                   returned day corresponds to an existing calendar date.
+ *
+ * \param[out] dayf  On output, this variable receives the day fraction for the
+ *                   specified time point, in the [0,1) range.
+ *
+ * \param jdi        The integer part of the input Julian day number.
+ *
+ * \param jdf        The fractional part of the input Julian day number.
+ *
+ * The input time point must be equal to the sum of \a jdi and \a jdf.
+ *
+ * For more information about the implemented algorithms and references, see
+ * the documentation for ComplexTimeToJD().
+ *
+ * \ingroup mathematical_functions
+ */
+void PCL_FUNC JDToComplexTime( int& year, int& month, int& day, double& dayf, int jdi, double jdf );
 
 /*!
  * Computes the date and day fraction corresponding to a time point expressed
@@ -1875,12 +1957,19 @@ double PCL_FUNC ComplexTimeToJD( int year, int month, int day, double dayf = 0 )
  *
  * \param jd         The input time point as a Julian day number.
  *
- * For more information about the implemented algorithms, references and
- * limitations of these routines, see the documentation for ComplexTimeToJD().
+ * Because of the numerical precision of the double type (IEEE 64-bit floating
+ * point), this routine can handle JD values accurate only to within one
+ * millisecond.
+ *
+ * For more information about the implemented algorithms and references, see
+ * the documentation for ComplexTimeToJD().
  *
  * \ingroup mathematical_functions
  */
-void PCL_FUNC JDToComplexTime( int& year, int& month, int& day, double& dayf, double jd );
+inline void JDToComplexTime( int& year, int& month, int& day, double& dayf, double jd )
+{
+   JDToComplexTime( year, month, day, dayf, TruncInt( jd ), Frac( jd ) );
+}
 
 // ----------------------------------------------------------------------------
 

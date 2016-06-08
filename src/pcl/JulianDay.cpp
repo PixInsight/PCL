@@ -66,65 +66,59 @@ namespace pcl
  * day numbers.
  */
 
-double ComplexTimeToJD( int y, int m, int d, double f )
+void PCL_FUNC ComplexTimeToJD( int& jdi, double& jdf, int year, int month, int day, double dayf )
 {
-   if ( m <= 2 )
+   if ( month <= 2 )
    {
-      --y;
-      m += 12;
+      --year;
+      month += 12;
    }
 
-   int i = TruncInt( Floor( 365.25*(y + 4716) ) ) + TruncInt( 30.6001*(m + 1) ) + d - 1524;
+   jdi = TruncInt( Floor( 365.25*(year + 4716) ) ) + TruncInt( 30.6001*(month + 1) ) + day - 1524;
+   jdf = dayf - 0.5;
 
-   f -= 0.5;
-
-   if ( i > 0 && f < 0  )
+   if ( jdi > 0 && jdf < 0  )
    {
-      f += 1;
-      --i;
+      jdf += 1;
+      --jdi;
    }
-   else if ( i < 0 && f > 0 )
+   else if ( jdi < 0 && jdf > 0 )
    {
-      f -= 1;
-      ++i;
-   }
-
-   if ( i > 2299160 || i == 2299160 && f >= 0.5 )
-   {
-      int a = TruncInt( 0.01*y );
-      i += 2 - a + (a >> 2);
+      jdf -= 1;
+      ++jdi;
    }
 
-   return i + f;
+   if ( jdi > 2299160 || jdi == 2299160 && jdf >= 0.5 )
+   {
+      int a = TruncInt( 0.01*year );
+      jdi += 2 - a + (a >> 2);
+   }
 }
 
-void JDToComplexTime( int& year, int& month, int& day, double& dayf, double jd )
+void PCL_FUNC JDToComplexTime( int& year, int& month, int& day, double& dayf, int jdi, double jdf )
 {
-   int A = TruncInt( jd );
-
-   dayf = jd - A + 0.5;
-
+   dayf = jdf + 0.5;
    if ( dayf >= 1 )
    {
       dayf -= 1;
-      ++A;
+      ++jdi;
    }
    else if ( dayf < 0 )
    {
       dayf += 1;
-      --A;
+      --jdi;
    }
 
-   if ( A > 2299160 )
+   if ( jdi > 2299160 )
    {
-      int a = TruncInt( (A - 1867216.25)/36524.25 );
-      A += 1 + a - (a >> 2);
+      int a = TruncInt( (jdi - 1867216.25)/36524.25 );
+      jdi += 1 + a - (a >> 2);
    }
 
-   int B = A + 1524;
+   int B = jdi + 1524;
    int C = TruncInt( (B - 122.1)/365.25 );
 
-   if ( A < -1401 )  // -1400.5 = -4716 feb 29
+   if ( jdi < -1401 )  // -1400.5 = -4716 feb 29
       --C;
 
    int D = TruncInt( Floor( 365.25*C ) );

@@ -275,6 +275,68 @@ struct PCL_CLASS SexagesimalConversionOptions
 // ----------------------------------------------------------------------------
 
 /*!
+ * \class ISO8601ConversionOptions
+ * \brief Formatting options for string representations of dates and times in
+ * ISO 8601 format.
+ *
+ * \sa IsoString::ToISO8601DateTime(), String::ToISO8601DateTime()
+ */
+struct ISO8601ConversionOptions
+{
+   /*!
+    * Number of represented time items. Can be 0, 1, 2 or 3. All items but the
+    * last one are represented as integer values. The last item is represented
+    * as a floating point value with the specified precision. The default value
+    * is 3 time items.
+    */
+   unsigned timeItems : 2;
+
+   /*!
+    * Number of decimal digits for the last represented time item. The default
+    * value is two decimal digits.
+    */
+   unsigned precision : 4;
+
+   /*!
+    * Whether to append a time zone specifier to the ISO 8601 representation.
+    * The default value is false.
+    */
+   bool     timeZone  : 1;
+
+   /*!
+    * Whether to append the 'Z' special time zone specifier for UTC time, or
+    * the '+00:00' specifier otherwise. The default value is true.
+    */
+   bool     zuluTime  : 1;
+
+   /*!
+    * Default constructor.
+    */
+   ISO8601ConversionOptions( unsigned _timeItems = 3,
+                             unsigned _precision = 2,
+                             bool     _timeZone = false,
+                             bool     _zuluTime = true ) :
+      timeItems( _timeItems ),
+      precision( _precision ),
+      timeZone( _timeZone ),
+      zuluTime( _zuluTime )
+   {
+   }
+
+   /*!
+    * Copy constructor.
+    */
+   ISO8601ConversionOptions( const ISO8601ConversionOptions& ) = default;
+
+   /*!
+    * Copy assignment operator. Returns a reference to this object.
+    */
+   ISO8601ConversionOptions& operator =( const ISO8601ConversionOptions& ) = default;
+};
+
+// ----------------------------------------------------------------------------
+
+/*!
  * \class GenericString
  * \brief Generic string.
  *
@@ -6665,6 +6727,69 @@ public:
    }
 
    /*!
+    * Evaluates this string as a date and time specification in ISO 8601
+    * extended format, and stores the resulting components in the specified
+    * variables.
+    *
+    * \param year    On output, the year of the date.
+    *
+    * \param month   On output, the month of the date in the range [1,12].
+    *
+    * \param day     On output, the day of the date in the range [1,31].
+    *
+    * \param dayf    On output, the day fraction corresponding to the time
+    *                specification, in the range [0,1).
+    *
+    * \param tz      On output, the time zone offset >= 0, in hours.
+    *
+    * In ISO 8601 extended representations, decimal fractions must be divided
+    * from integer parts exclusively by the full stop or dot character ('.',
+    * ASCII code point 46(10) = 2E(16)).
+    *
+    * \sa TryParseISO8601DateTime()
+    */
+   void ParseISO8601DateTime( int& year, int& month, int& day, double& dayf, double& tz ) const;
+
+   /*!
+    * Attempts to evaluate this string as a date and time specification in ISO
+    * 8601 extended format. If successful, stores the resulting components in
+    * the specified \a year, \a month, \a day and \a dayf and \a tz variables,
+    * and returns \c true. For more information on syntax and
+    * output values and ranges, see the ParseISO8601DateTime().
+    *
+    * If this string cannot be evaluated as a valid date and time in ISO 8601
+    * format, this function returns \c false and does not change any of the
+    * passed variables. This function does not throw any exception.
+    *
+    * \sa ParseISO8601DateTime()
+    */
+   bool TryParseISO8601DateTime( int& year, int& month, int& day, double& dayf, double& tz ) const;
+
+   /*!
+    * Returns an ASCII representation of a date and time in ISO 8601 extended
+    * format.
+    *
+    * \param year    The year of the date.
+    *
+    * \param month   The month of the date in the range [1,12].
+    *
+    * \param day     The day of the date in the range [1,31].
+    *
+    * \param dayf    The day fraction corresponding to the time specification,
+    *                in the range [0,1).
+    *
+    * \param tz      The time zone offset in hours. The default value is zero,
+    *                to be interpreted as UTC.
+    *
+    * \param options Optional settings to control the representation of date
+    *                and time in ISO 8601 format.
+    *
+    * \sa ParseISO8601DateTime(), ISO8601ConversionOptions
+    */
+   static IsoString ToISO8601DateTime( int year, int month, int day, double dayf, double tz = 0,
+                                       const ISO8601ConversionOptions& options = ISO8601ConversionOptions() );
+
+   /*!
     * Returns an hex-encoded string for a binary \a data block of the specified
     * \a length in bytes. The hex-encoded string is composed of hexadecimal
     * digits: 0-9 and a-f, and its length is twice that of the input length.
@@ -10384,6 +10509,69 @@ public:
    {
       return ToSexagesimal( (d < 0) ? -1 : +1, Abs( d ), 0, 0, options );
    }
+
+   /*!
+    * Evaluates this string as a date and time specification in ISO 8601
+    * extended format, and stores the resulting components in the specified
+    * variables.
+    *
+    * \param year    On output, the year of the date.
+    *
+    * \param month   On output, the month of the date in the range [1,12].
+    *
+    * \param day     On output, the day of the date in the range [1,31].
+    *
+    * \param dayf    On output, the day fraction corresponding to the time
+    *                specification, in the range [0,1).
+    *
+    * \param tz      On output, the time zone offset >= 0, in hours.
+    *
+    * In ISO 8601 extended representations, decimal fractions must be divided
+    * from integer parts exclusively by the full stop or dot character ('.',
+    * ASCII code point 46(10) = 2E(16)).
+    *
+    * \sa TryParseISO8601DateTime()
+    */
+   void ParseISO8601DateTime( int& year, int& month, int& day, double& dayf, double& tz ) const;
+
+   /*!
+    * Attempts to evaluate this string as a date and time specification in ISO
+    * 8601 extended format. If successful, stores the resulting components in
+    * the specified \a year, \a month, \a day and \a dayf and \a tz variables,
+    * and returns \c true. For more information on syntax and
+    * output values and ranges, see the ParseISO8601DateTime().
+    *
+    * If this string cannot be evaluated as a valid date and time in ISO 8601
+    * format, this function returns \c false and does not change any of the
+    * passed variables. This function does not throw any exception.
+    *
+    * \sa ParseISO8601DateTime()
+    */
+   bool TryParseISO8601DateTime( int& year, int& month, int& day, double& dayf, double& tz ) const;
+
+   /*!
+    * Returns a string representation of a date and time in ISO 8601 extended
+    * format.
+    *
+    * \param year    The year of the date.
+    *
+    * \param month   The month of the date in the range [1,12].
+    *
+    * \param day     The day of the date in the range [1,31].
+    *
+    * \param dayf    The day fraction corresponding to the time specification,
+    *                in the range [0,1).
+    *
+    * \param tz      The time zone offset in hours. The default value is zero,
+    *                to be interpreted as UTC.
+    *
+    * \param options Optional settings to control the representation of date
+    *                and time in ISO 8601 format.
+    *
+    * \sa ParseISO8601DateTime(), ISO8601ConversionOptions
+    */
+   static String ToISO8601DateTime( int year, int month, int day, double dayf, double tz = 0,
+                                    const ISO8601ConversionOptions& options = ISO8601ConversionOptions() );
 
    /*!
     * Generates a string of \a n random 16-bit code points, with character

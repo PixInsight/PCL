@@ -6740,7 +6740,8 @@ public:
     * \param dayf    On output, the day fraction corresponding to the time
     *                specification, in the range [0,1).
     *
-    * \param tz      On output, the time zone offset >= 0, in hours.
+    * \param tz      On output, the time zone offset in hours, in the range
+    *                [-12,+12].
     *
     * In ISO 8601 extended representations, decimal fractions must be divided
     * from integer parts exclusively by the full stop or dot character ('.',
@@ -6778,8 +6779,8 @@ public:
     * \param dayf    The day fraction corresponding to the time specification,
     *                in the range [0,1).
     *
-    * \param tz      The time zone offset in hours. The default value is zero,
-    *                to be interpreted as UTC.
+    * \param tz      The time zone offset in hours, in the range [-12,+12]. The
+    *                default value is zero, to be interpreted as UTC.
     *
     * \param options Optional settings to control the representation of date
     *                and time in ISO 8601 format.
@@ -10524,7 +10525,8 @@ public:
     * \param dayf    On output, the day fraction corresponding to the time
     *                specification, in the range [0,1).
     *
-    * \param tz      On output, the time zone offset >= 0, in hours.
+    * \param tz      On output, the time zone offset in hours, in the range
+    *                [-12,+12].
     *
     * In ISO 8601 extended representations, decimal fractions must be divided
     * from integer parts exclusively by the full stop or dot character ('.',
@@ -10562,8 +10564,8 @@ public:
     * \param dayf    The day fraction corresponding to the time specification,
     *                in the range [0,1).
     *
-    * \param tz      The time zone offset in hours. The default value is zero,
-    *                to be interpreted as UTC.
+    * \param tz      The time zone offset in hours, in the range [-12,+12]. The
+    *                default value is zero, to be interpreted as UTC.
     *
     * \param options Optional settings to control the representation of date
     *                and time in ISO 8601 format.

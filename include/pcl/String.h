@@ -3082,10 +3082,18 @@ public:
       if ( len > 1 )
          if ( *m_data->string == R::SingleQuote() && *(m_data->end-1) == R::SingleQuote() ||
               *m_data->string == R::DoubleQuote() && *(m_data->end-1) == R::DoubleQuote() )
-         {
-            R::CopyOverlapped( m_data->string, m_data->string+1, len-2 );
-            m_data->SetLength( len-2 );
-         }
+            if ( IsUnique() )
+            {
+               R::CopyOverlapped( m_data->string, m_data->string+1, len-2 );
+               m_data->SetLength( len-2 );
+            }
+            else
+            {
+               Data* newData = Data::New( len-2 );
+               R::Copy( newData->string, m_data->string+1, len-2 );
+               DetachFromData();
+               m_data = newData;
+            }
    }
 
    /*!

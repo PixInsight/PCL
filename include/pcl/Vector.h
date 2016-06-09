@@ -696,6 +696,48 @@ public:
    }
 
    /*!
+    * Returns the norm of this vector. For any real p > 0, the norm N of a
+    * vector v is given by:
+    *
+    * N = sum( abs( x )^p )^(1/p)
+    *
+    * for all vector components x of v.
+    *
+    * \sa L1Norm(), L2Norm()
+    */
+   double Norm( double p ) const
+   {
+      return pcl::Norm( m_data->Begin(), m_data->End(), p );
+   }
+
+   /*!
+   * Returns the L1 norm (or Manhattan norm) of this vector. The L1 norm is the
+   * sum of the absolute values of all vector components.
+   */
+   double L1Norm() const
+   {
+      return pcl::L1Norm( m_data->Begin(), m_data->End() );
+   }
+
+   /*!
+   * Returns the L2 norm (or Euclidean norm) of this vector. The L2 norm is the
+   * square root of the sum of squared vector components.
+   */
+   double L2Norm() const
+   {
+      return pcl::L2Norm( m_data->Begin(), m_data->End() );
+   }
+
+   /*!
+   * Returns the L2 norm (or Euclidean norm) of this vector. This function is a
+   * synonym for L2Norm().
+   */
+   double Norm() const
+   {
+      return L2Norm();
+   }
+
+   /*!
     * Sorts the components of this vector in ascending order.
     */
    void Sort()

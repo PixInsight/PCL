@@ -1817,6 +1817,67 @@ inline void Rotate( T& x, T& y, T1 a, T2 xc, T2 yc )
 // ----------------------------------------------------------------------------
 
 /*!
+ * Computes the norm of the elements in the sequence [i,j). For any real p > 0,
+ * the norm N is given by:
+ *
+ * N = sum( abs( x )^p )^(1/p)
+ *
+ * for all x in [i,j).
+ *
+ * \ingroup mathematical_functions
+ * \sa L1Norm(), L2Norm()
+ */
+template <typename T> inline double Norm( const T* i, const T* j, double p )
+{
+   PCL_PRECONDITION( p > 0 )
+   double N = 0;
+   for ( ; i < j; ++i )
+      N += Pow( Abs( double( *i ) ), p );
+   return Pow( N, 1/p );
+}
+
+/*!
+ * Computes the L1 norm (or Manhattan norm) of the elements in the sequence
+ * [i,j). The L1 norm is the sum of the absolute values of the elements.
+ *
+ * \ingroup mathematical_functions
+ */
+template <typename T> inline double L1Norm( const T* i, const T* j )
+{
+   double N = 0;
+   for ( ; i < j; ++i )
+      N += Abs( *i );
+   return N;
+}
+
+/*!
+ * Computes the L2 norm (or Euclidean norm) of the elements in the sequence
+ * [i,j). The L2 norm is the square root of the sum of squared elements.
+ *
+ * \ingroup mathematical_functions
+ */
+template <typename T> inline double L2Norm( const T* i, const T* j )
+{
+   double N = 0;
+   for ( ; i < j; ++i )
+      N += double( *i ) * *i;
+   return Sqrt( N );
+}
+
+/*!
+ * Computes the L2 norm (or Euclidean norm) of the elements in the sequence
+ * [i,j). This function is a synonym for L2Norm().
+ *
+ * \ingroup mathematical_functions
+ */
+template <typename T> inline double Norm( const T* i, const T* j )
+{
+   return L2Norm( i, j );
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
  * Computes the Julian day number (JD) corresponding to a time point expressed
  * as a date and a day fraction, providing the result by its separate integer
  * and fractional parts.

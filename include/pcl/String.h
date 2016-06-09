@@ -2984,6 +2984,8 @@ public:
     * Trimable characters are determined by the traits class R. A character
     * \a c is trimable if R::IsTrimable( c ) is true. Generally, the set of
     * trimable characters corresponds to the set of white space characters.
+    *
+    * \sa Trimmed();
     */
    void Trim()
    {
@@ -2999,6 +3001,8 @@ public:
     * Trimable characters are determined by the traits class R. A character
     * \a c is trimable if R::IsTrimable( c ) is true. Generally, the set of
     * trimable characters corresponds to the set of white space characters.
+    *
+    * \sa TrimmedLeft();
     */
    void TrimLeft()
    {
@@ -3013,6 +3017,8 @@ public:
     * Trimable characters are determined by the traits class R. A character
     * \a c is trimable if R::IsTrimable( c ) is true. Generally, the set of
     * trimable characters corresponds to the set of white space characters.
+    *
+    * \sa TrimmedRight();
     */
    void TrimRight()
    {
@@ -3054,6 +3060,42 @@ public:
    {
       GenericString s( *this );
       s.TrimRight();
+      return s;
+   }
+
+   /*!
+    * Unquotes this string.
+    *
+    * If the string starts and ends with single quote
+    * characters, the result is the same string with the quotes removed and its
+    * length decremented by two. The same happens if the string starts and ends
+    * with double quote characters.
+    *
+    * If the string does not start and end with the same quote character, this
+    * function has no effect.
+    *
+    * \sa Unquoted()
+    */
+   void Unquote()
+   {
+      size_type len = Length();
+      if ( len > 1 )
+         if ( *m_data->string == R::SingleQuote() && *(m_data->end-1) == R::SingleQuote() ||
+              *m_data->string == R::DoubleQuote() && *(m_data->end-1) == R::DoubleQuote() )
+         {
+            R::CopyOverlapped( m_data->string, m_data->string+1, len-2 );
+            m_data->SetLength( len-2 );
+         }
+   }
+
+   /*!
+    * Returns an unquoted duplicate of this string.
+    * \sa Unquote()
+    */
+   GenericString Unquoted() const
+   {
+      GenericString s( *this );
+      s.Unquote();
       return s;
    }
 

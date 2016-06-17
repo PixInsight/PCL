@@ -196,6 +196,43 @@ public:
     */
    void SetPrecision( int n );
 
+   /*!
+    * Returns true if the precision property is being applied literally as a
+    * fixed number of digits after the decimal separator. Returns false if
+    * precision refers to the number of represented significant digits.
+    *
+    * For example, if the current value is 123.45678 and precision is 4, the
+    * represented value would be:
+    *
+    * With fixed precision enabled: 123.4568 \n
+    * With fixed precision disabled: 123.5
+    *
+    * By default, the precision property of a %NumericEdit control refers to
+    * the number of represented significant digits, so fixed precision is
+    * disabled by default.
+    *
+    * \sa EnableFixedPrecision(), Precision()
+    */
+   bool IsFixedPrecision() const
+   {
+      return m_fixed;
+   }
+
+   /*!
+    * Enables the fixed precision property of this %NumericEdit object. See
+    * IsFixedPrecision() for detailed information.
+    */
+   void EnableFixedPrecision( bool enable = true );
+
+   /*!
+    * Disables the fixed precision property of this %NumericEdit object. See
+    * IsFixedPrecision() for detailed information.
+    */
+   void DisableFixedPrecision( bool disable = true )
+   {
+      EnableFixedPrecision( !disable );
+   }
+
    /*! #
     */
    bool IsScientificNotation() const
@@ -279,8 +316,9 @@ protected:
    double   m_upperBound;        // acceptable range, upper bound
    unsigned m_precision     : 4; // number of decimal digits in non-sci mode, [0,15]
    bool     m_real          : 1; // whether this is a real or integer parameter
-   bool     m_autoEditWidth : 1; // set width of edit control automatically
+   bool     m_fixed         : 1; // precision is literal instead of significant digits?
    bool     m_scientific    : 1; // scientific notation enabled?
+   bool     m_autoEditWidth : 1; // set width of edit control automatically
    int      m_sciTriggerExp;     // exponent (of ten) to trigger sci notation
 
    PCL_MEMBER_REENTRANCY_GUARD( EditCompleted )
@@ -293,7 +331,7 @@ protected:
    virtual void LoseFocus( Control& );
    virtual void MousePress( Control&, const pcl::Point&, int, unsigned, unsigned );
 
-   static int PrecisionForValue( int, double );
+   int PrecisionForValue( double ) const;
 };
 
 // ----------------------------------------------------------------------------

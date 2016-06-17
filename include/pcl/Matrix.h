@@ -3080,6 +3080,36 @@ GenericMatrix<T> operator *( const GenericMatrix<T>& A, const GenericMatrix<T>& 
 }
 
 /*!
+ * Returns the product of a matrix \a A by a vector \a x.
+ *
+ * If the specified objects are incompatible for multiplication (because the
+ * number of components in \a x is not equal to the number of columns in \a A),
+ * this function throws the appropriate Error exception.
+ *
+ * The result of the product of a matrix with \e m rows and \e n columns by a
+ * vector of \e n components is a vector of \e m components.
+ *
+ * \ingroup matrix_operators
+ */
+template <typename T> inline
+GenericVector<T> operator *( const GenericMatrix<T>& A, const GenericVector<T>& x )
+{
+   int n = A.Cols();
+   int m = A.Rows();
+   if ( x.Length() != n )
+      throw Error( "Invalid matrix-vector multiplication." );
+   GenericVector<T> r( m );
+   for ( int i = 0; i < m; ++i )
+   {
+      T ri = 0;
+      for ( int j = 0; j < n; ++j )
+         ri += A[i][j] * x[j];
+      r[i] = ri;
+   }
+   return r;
+}
+
+/*!
  * Returns the product of a matrix \a A and a scalar \a x.
  *
  * \ingroup matrix_operators

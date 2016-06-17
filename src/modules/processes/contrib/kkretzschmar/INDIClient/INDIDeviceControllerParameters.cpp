@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.12.0183
+// Standard INDIClient Process Module Version 01.00.14.0193
 // ----------------------------------------------------------------------------
-// INDIDeviceControllerParameters.cpp - Released 2016/06/04 15:14:47 UTC
+// INDIDeviceControllerParameters.cpp - Released 2016/06/17 12:50:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -416,4 +416,4 @@ IsoString IDCNewPropertyValue::Id() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIDeviceControllerParameters.cpp - Released 2016/06/04 15:14:47 UTC
+// EOF INDIDeviceControllerParameters.cpp - Released 2016/06/17 12:50:37 UTC

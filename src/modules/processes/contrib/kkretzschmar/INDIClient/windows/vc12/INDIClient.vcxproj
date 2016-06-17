@@ -4,7 +4,7 @@
 # PixInsight Makefile Generator Script v1.102
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Fri, 03 Jun 2016 12:29:53 GMT
+# Automatically generated on Wed, 15 Jun 2016 14:52:51 GMT
 # Project id ...... INDIClient
 # Project type .... Module
 # Platform ........ Windows/vc12
@@ -239,6 +239,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\ApparentPosition.cpp"/>
     <ClCompile Include="..\..\IINDIProperty.cpp"/>
     <ClCompile Include="..\..\INDICCDFrameInstance.cpp"/>
     <ClCompile Include="..\..\INDICCDFrameInterface.cpp"/>
@@ -262,6 +263,7 @@
     <ClCompile Include="..\..\INDI\lilxml.c"/>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\ApparentPosition.h"/>
     <ClInclude Include="..\..\IINDIProperty.h"/>
     <ClInclude Include="..\..\INDICCDFrameInstance.h"/>
     <ClInclude Include="..\..\INDICCDFrameInterface.h"/>

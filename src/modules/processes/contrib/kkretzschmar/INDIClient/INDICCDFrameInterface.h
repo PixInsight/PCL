@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.12.0183
+// Standard INDIClient Process Module Version 01.00.14.0193
 // ----------------------------------------------------------------------------
-// INDICCDFrameInterface.h - Released 2016/06/04 15:14:47 UTC
+// INDICCDFrameInterface.h - Released 2016/06/17 12:50:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -177,6 +177,9 @@ private:
             HorizontalSizer   ExposureCount_Sizer;
                Label             ExposureCount_Label;
                SpinBox           ExposureCount_SpinBox;
+            HorizontalSizer   ObjectName_Sizer;
+               Label             ObjectName_Label;
+               Edit              ObjectName_Edit;
          VerticalSizer     FrameAcquisitionRight_Sizer;
             HorizontalSizer   StartExposure_Sizer;
                PushButton        StartExposure_PushButton;
@@ -211,4 +214,4 @@ PCL_END_LOCAL
 #endif   // __INDICCDFrameInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInterface.h - Released 2016/06/04 15:14:47 UTC
+// EOF INDICCDFrameInterface.h - Released 2016/06/17 12:50:37 UTC

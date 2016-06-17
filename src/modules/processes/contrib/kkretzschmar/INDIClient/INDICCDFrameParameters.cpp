@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.12.0183
+// Standard INDIClient Process Module Version 01.00.14.0193
 // ----------------------------------------------------------------------------
-// INDICCDFrameParameters.cpp - Released 2016/06/04 15:14:47 UTC
+// INDICCDFrameParameters.cpp - Released 2016/06/17 12:50:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -78,6 +78,10 @@ ICFOverwriteClientImages*   TheICFOverwriteClientImagesParameter = nullptr;
 ICFClientDownloadDirectory* TheICFClientDownloadDirectoryParameter = nullptr;
 ICFClientFileNameTemplate*  TheICFClientFileNameTemplateParameter = nullptr;
 ICFClientOutputFormatHints* TheICFClientOutputFormatHintsParameter = nullptr;
+ICFObjectName*              TheICFObjectNameParameter = nullptr;
+ICFTelescopeSelection*  TheICFTelescopeSelectionParameter = nullptr;
+ICFRequireSelectedTelescope*        TheICFRequireSelectedTelescopeParameter = nullptr;
+ICFTelescopeDeviceName*     TheICFTelescopeDeviceNameParameter = nullptr;
 ICFClientFrames*            TheICFClientFramesParameter = nullptr;
 ICFClientViewId*            TheICFClientViewIdParameter = nullptr;
 ICFClientFilePath*          TheICFClientFilePathParameter = nullptr;
@@ -540,6 +544,97 @@ String ICFClientOutputFormatHints::DefaultValue() const
 }
 
 // ----------------------------------------------------------------------------
+
+ICFObjectName::ICFObjectName( MetaProcess* P ) : MetaString( P )
+{
+   TheICFObjectNameParameter = this;
+}
+
+IsoString ICFObjectName::Id() const
+{
+   return "objectName";
+}
+
+String ICFObjectName::DefaultValue() const
+{
+   return String();
+}
+
+// ----------------------------------------------------------------------------
+
+ICFTelescopeSelection::ICFTelescopeSelection( MetaProcess* P ) : MetaEnumeration( P )
+{
+   TheICFTelescopeSelectionParameter = this;
+}
+
+IsoString ICFTelescopeSelection::Id() const
+{
+   return "telescopeSelection";
+}
+
+size_type ICFTelescopeSelection::NumberOfElements() const
+{
+   return NumberOfTelescopeSelections;
+}
+
+IsoString ICFTelescopeSelection::ElementId( size_type i ) const
+{
+   switch ( i )
+   {
+   default:
+   case NoTelescope:                      return "TelescopeSelection_NoTelescope";
+   case ActiveTelescope:                  return "TelescopeSelection_ActiveTelescope";
+   case MountControllerTelescope:         return "TelescopeSelection_MountController";
+   case ActiveOrMountControllerTelescope: return "TelescopeSelection_ActiveOrMountController";
+   case TelescopeDeviceName:              return "TelescopeSelection_DeviceName";
+   }
+}
+
+int ICFTelescopeSelection::ElementValue( size_type i ) const
+{
+   return int( i );
+}
+
+size_type ICFTelescopeSelection::DefaultValueIndex() const
+{
+   return size_type( Default );
+}
+
+// ----------------------------------------------------------------------------
+
+ICFRequireSelectedTelescope::ICFRequireSelectedTelescope( MetaProcess* P ) : MetaBoolean( P )
+{
+   TheICFRequireSelectedTelescopeParameter = this;
+}
+
+IsoString ICFRequireSelectedTelescope::Id() const
+{
+   return "requireSelectedTelescope";
+}
+
+bool ICFRequireSelectedTelescope::DefaultValue() const
+{
+   return false;
+}
+
+// ----------------------------------------------------------------------------
+
+ICFTelescopeDeviceName::ICFTelescopeDeviceName( MetaProcess* P ) : MetaString( P )
+{
+   TheICFTelescopeDeviceNameParameter = this;
+}
+
+IsoString ICFTelescopeDeviceName::Id() const
+{
+   return "telescopeDeviceName";
+}
+
+String ICFTelescopeDeviceName::DefaultValue() const
+{
+   return String();
+}
+
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 ICFClientFrames::ICFClientFrames( MetaProcess* P ) : MetaTable( P )
@@ -630,4 +725,4 @@ bool ICFServerFrame::IsReadOnly() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameParameters.cpp - Released 2016/06/04 15:14:47 UTC
+// EOF INDICCDFrameParameters.cpp - Released 2016/06/17 12:50:37 UTC

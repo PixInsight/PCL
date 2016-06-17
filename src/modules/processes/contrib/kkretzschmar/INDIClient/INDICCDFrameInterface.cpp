@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.12.0183
+// Standard INDIClient Process Module Version 01.00.14.0193
 // ----------------------------------------------------------------------------
-// INDICCDFrameInterface.cpp - Released 2016/06/04 15:14:47 UTC
+// INDICCDFrameInterface.cpp - Released 2016/06/17 12:50:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -221,6 +221,7 @@ ProcessImplementation* INDICCDFrameInterface::NewProcess() const
    instance->p_exposureTime = GUI->ExposureTime_NumericEdit.Value();
    instance->p_exposureDelay = GUI->ExposureDelay_NumericEdit.Value();
    instance->p_exposureCount = GUI->ExposureCount_SpinBox.Value();
+   instance->p_objectName = GUI->ObjectName_Edit.Text().Trimmed();
    instance->p_openClientImages = GUI->OpenClientFrames_CheckBox.IsChecked();
    //instance->p_newImageIdTemplate = ; // ### TODO
    instance->p_reuseImageWindow = GUI->ReuseImageWindow_CheckBox.IsChecked();
@@ -260,6 +261,7 @@ bool INDICCDFrameInterface::ImportProcess( const ProcessImplementation& p )
       GUI->ExposureTime_NumericEdit.SetValue( instance->p_exposureTime );
       GUI->ExposureDelay_NumericEdit.SetValue( instance->p_exposureDelay );
       GUI->ExposureCount_SpinBox.SetValue( instance->p_exposureCount );
+      GUI->ObjectName_Edit.SetText( instance->p_objectName );
       GUI->OpenClientFrames_CheckBox.SetChecked( instance->p_openClientImages );
       GUI->ReuseImageWindow_CheckBox.SetChecked( instance->p_reuseImageWindow );
       GUI->AutoStretch_CheckBox.SetChecked( instance->p_autoStretch );
@@ -732,10 +734,28 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    ExposureCount_Sizer.Add( ExposureCount_SpinBox );
    ExposureCount_Sizer.AddStretch();
 
+   const char* objectNameToolTip =
+      "<p>Name of the main astronomical object or subject in the acquired images. The specified text will be the "
+      "value of Observation:Object:Name standard XISF properties and OBJECT FITS keywords in newly created images.</p>";
+
+   ObjectName_Label.SetText( "Object name:" );
+   ObjectName_Label.SetToolTip( objectNameToolTip );
+   ObjectName_Label.SetMinWidth( labelWidth1 );
+   ObjectName_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+
+   ObjectName_Edit.SetToolTip( objectNameToolTip );
+   ObjectName_Edit.SetText( TheICFObjectNameParameter->DefaultValue() );
+
+   ObjectName_Sizer.SetSpacing( 4 );
+   ObjectName_Sizer.Add( ObjectName_Label );
+   ObjectName_Sizer.Add( ObjectName_Edit );
+   ObjectName_Sizer.AddStretch();
+
    FrameAcquisitionLeft_Sizer.SetSpacing( 4 );
    FrameAcquisitionLeft_Sizer.Add( ExposureTime_NumericEdit );
    FrameAcquisitionLeft_Sizer.Add( ExposureDelay_NumericEdit );
    FrameAcquisitionLeft_Sizer.Add( ExposureCount_Sizer );
+   FrameAcquisitionLeft_Sizer.Add( ObjectName_Sizer );
 
    StartExposure_PushButton.SetText( "Start" );
    StartExposure_PushButton.SetIcon( w.ScaledResource( ":/icons/play.png" ) );
@@ -1283,4 +1303,4 @@ void INDICCDFrameInterface::e_Click( Button& sender, bool checked )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInterface.cpp - Released 2016/06/04 15:14:47 UTC
+// EOF INDICCDFrameInterface.cpp - Released 2016/06/17 12:50:37 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.12.0183
+// Standard INDIClient Process Module Version 01.00.14.0193
 // ----------------------------------------------------------------------------
-// INDIClientModule.cpp - Released 2016/06/04 15:14:47 UTC
+// INDIClientModule.cpp - Released 2016/06/17 12:50:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -52,13 +52,13 @@
 
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
-#define MODULE_VERSION_REVISION  12
-#define MODULE_VERSION_BUILD     0183
+#define MODULE_VERSION_REVISION  14
+#define MODULE_VERSION_BUILD     0193
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2016
 #define MODULE_RELEASE_MONTH     6
-#define MODULE_RELEASE_DAY       4
+#define MODULE_RELEASE_DAY       17
 
 #include "INDICCDFrameInterface.h"
 #include "INDICCDFrameProcess.h"
@@ -186,4 +186,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF INDIClientModule.cpp - Released 2016/06/04 15:14:47 UTC
+// EOF INDIClientModule.cpp - Released 2016/06/17 12:50:37 UTC

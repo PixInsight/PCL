@@ -6,7 +6,7 @@
 // ----------------------------------------------------------------------------
 // Standard INDIClient Process Module Version 01.00.14.0193
 // ----------------------------------------------------------------------------
-// INDIClientModule.h - Released 2016/06/17 12:50:37 UTC
+// ApparentPosition.h - Released 2016/06/17 12:50:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -50,38 +50,110 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#ifndef __INDIClientModule_h
-#define __INDIClientModule_h
+#ifndef __ApparentPosition_h
+#define __ApparentPosition_h
 
-#include <pcl/MetaModule.h>
+#include <pcl/Matrix.h>
+#include <pcl/Vector.h>
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-class INDIClientModule : public MetaModule
+/*
+ * Apparent positions with corrections for:
+ *
+ * - Proper motions
+ * - Stellar aberration
+ * - Precession
+ * - Nutation
+ * - Frame bias
+ *
+ * Implementation of the IAU 2006 Precession/Nutation model.
+ *
+ * We neglect (for now) the effects of parallax / radial velocity.
+ *
+ * Adapted from:
+ *
+ *    IAU−SOFA SOFTWARE LIBRARIES
+ *    Copyright (C) 2016
+ *    Standards Of Fundamental Astronomy Board
+ *    of the International Astronomical Union.
+ *    http://www.iausofa.org/
+ */
+class ApparentPosition
 {
 public:
 
-   INDIClientModule();
+   ApparentPosition( double jd1, double jd2 = 0 );
 
-   virtual const char* Version() const;
-   virtual IsoString Name() const;
-   virtual String Description() const;
-   virtual String Company() const;
-   virtual String Author() const;
-   virtual String Copyright() const;
-   virtual String TradeMarks() const;
-   virtual String OriginalFileName() const;
-   virtual void GetReleaseDate( int& year, int& month, int& day ) const;
+   /*
+    * ra       Right Ascension, radians
+    *
+    * dec      Declination, radians
+    *
+    * muRA     Proper motion in R.A. = mu_alpha*cos(delta), mas/year
+    *
+    * muDec    Proper motion in Dec., mas/year
+    *
+    * inverse  if true, apply the inverse transformation to get mean position,
+    *          ignoring proper motions. If false, compute apparent position.
+    */
+   void Apply( double& ra, double& dec, double muRA = 0, double muDec = 0, bool inverse = false ) const;
+
+   void ApplyInverse( double& ra, double& dec ) const
+   {
+      Apply( ra, dec, 0, 0, true/*inverse*/ );
+   }
+
+   /*
+    * Approximate DeltaT in days for the specified year. Adapted from:
+    * http://eclipse.gsfc.nasa.gov/SEcat5/deltatpoly.html
+    */
+   static double DeltaT( int year, int month );
+
+private:
+
+   // Time in Julian years since J2000.0
+   double t;
+   // Time in Julian centuries since J2000.0
+   double T;
+   // Bias+precession angles
+   double gamb, phib, psib, epsa;
+   // Nutation angles
+   double dpsi, deps;
+   // Precession * nutation * frame bias matrix
+   Matrix r, rinv;
+   // Barycentric and Heliocentric position and velocity of Earth (in AU and
+   // AU/day, resp.)
+   Vector pb, vb, ph, vh;
+
+   void Time( double jd1, double jd2 );
+   void Precession();
+   void Nutation();
+   void EarthPosVel();
+   void Aberration( Vector&, bool inverse ) const;
+
+   /*
+    * Assignment matrix-vector product.
+    */
+   static void MatrixVectorMulAssign( const Matrix& r, Vector& p )
+   {
+      double x = p[0];
+      double y = p[1];
+      double z = p[2];
+      p[0] = x*r[0][0] + y*r[0][1] + z*r[0][2];
+      p[1] = x*r[1][0] + y*r[1][1] + z*r[1][2];
+      p[2] = x*r[2][0] + y*r[2][1] + z*r[2][2];
+   }
 };
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
-#endif   // __INDIClientModule_h
+#endif   // __ApparentPosition_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIClientModule.h - Released 2016/06/17 12:50:37 UTC
+// EOF ApparentPosition.h - Released 2016/06/17 12:50:37 UTC

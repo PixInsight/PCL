@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.12.0183
+// Standard INDIClient Process Module Version 01.00.14.0193
 // ----------------------------------------------------------------------------
-// INDIMountInterface.cpp - Released 2016/06/04 15:14:47 UTC
+// INDIMountInterface.cpp - Released 2016/06/17 12:50:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -55,6 +55,7 @@
 #include <pcl/Math.h>
 #include <pcl/MetaModule.h>
 
+#include "ApparentPosition.h"
 #include "INDIDeviceControllerInterface.h"
 #include "INDIMountInterface.h"
 #include "INDIMountParameters.h"
@@ -64,8 +65,15 @@
 #include "INDI/indiapi.h"
 #include "INDI/indibase.h"
 
+#include <time.h>
+
 namespace pcl
 {
+
+// ----------------------------------------------------------------------------
+
+// km/s -> AU/day
+static const double KMS2AUY = 365.25*86400/149597870e3;
 
 // ----------------------------------------------------------------------------
 
@@ -79,8 +87,12 @@ INDIMountInterface* TheINDIMountInterface = nullptr;
 
 CoordinateSearchDialog::CoordinateSearchDialog() :
    Dialog(),
-   m_targetRA( 0 ),
-   m_targetDec( 0 ),
+   m_objectName(),
+   m_RA( 0 ),
+   m_Dec( 0 ),
+   m_muRA( 0 ),
+   m_muDec( 0 ),
+   m_parallax( 0 ),
    m_valid( false ),
    m_goto( false ),
    m_downloading( false ),
@@ -108,7 +120,6 @@ CoordinateSearchDialog::CoordinateSearchDialog() :
    Search_Sizer.Add( ObjectName_Edit, 100 );
    Search_Sizer.Add( Search_Button );
 
-   SearchInfo_TextBox.SetScaledMinSize( 500, 300 );
    SearchInfo_TextBox.SetReadOnly();
    SearchInfo_TextBox.SetStyleSheet( ScaledStyleSheet(
          "QTextEdit {"
@@ -118,6 +129,8 @@ CoordinateSearchDialog::CoordinateSearchDialog() :
             "color: #E8E8E8;"
          "}"
       ) );
+   SearchInfo_TextBox.Restyle();
+   SearchInfo_TextBox.SetScaledMinSize( SearchInfo_TextBox.Font().Width( 'm' )*81, SearchInfo_TextBox.Font().Height()*22 );
 
    Get_Button.SetText( "Get" );
    Get_Button.SetIcon( ScaledResource( ":/icons/window-import.png" ) );
@@ -222,10 +235,10 @@ void CoordinateSearchDialog::e_Click( Button& sender, bool checked )
       //String url( "http://vizier.cfa.harvard.edu/viz-bin/nph-sesame/-oI/A?" );
       //url << objectName;
       String url( "http://simbad.u-strasbg.fr/simbad/sim-tap/sync?request=doQuery&lang=adql&format=text&query=" );
-      String select_stmt = "SELECT basic.OID, RA, DEC, main_id "
-                           "AS \"Main identifier\" "
-                           "FROM basic JOIN ident "
-                           "ON oidref = oid "
+      String select_stmt = "SELECT oid, ra, dec, pmra, pmdec, plx_value, rvz_radvel, main_id, otype_txt, sp_type, flux "
+                           "FROM basic "
+                           "JOIN ident ON ident.oidref = oid "
+                           "LEFT OUTER JOIN flux ON flux.oidref = oid AND flux.filter = 'V' "
                            "WHERE id = '" + objectName + "';";
       url << select_stmt;
 
@@ -234,7 +247,7 @@ void CoordinateSearchDialog::e_Click( Button& sender, bool checked )
       transfer.OnDownloadDataAvailable( (NetworkTransfer::download_event_handler)&CoordinateSearchDialog::e_Download, *this );
       transfer.OnTransferProgress( (NetworkTransfer::progress_event_handler)&CoordinateSearchDialog::e_Progress, *this );
 
-      SearchInfo_TextBox.SetText( "Performing online search:<br><wrap><raw>" + url + "</raw><br><br><flush>" );
+      SearchInfo_TextBox.SetText( "<wrap><raw>" + url + "</raw><br><br><flush>" );
       Module->ProcessEvents();
 
       m_downloadData.Clear();
@@ -245,9 +258,9 @@ void CoordinateSearchDialog::e_Click( Button& sender, bool checked )
 
       if ( ok )
       {
-         SearchInfo_TextBox.Insert( String().Format( "<end><cbr>%d bytes downloaded @ %.3g KiB/s<br>",
+         SearchInfo_TextBox.Insert( String().Format( "<end><clrbol>%d bytes downloaded @ %.3g KiB/s<br>",
                                                      transfer.BytesTransferred(), transfer.TotalSpeed() ) );
-         SearchInfo_TextBox.Insert( "<end><cbr><br><raw>" + m_downloadData + "</raw>" );
+         //SearchInfo_TextBox.Insert( "<end><cbr><br><raw>" + m_downloadData + "</raw>" );
 
          StringList lines;
          m_downloadData.Break( lines, '\n', true/*trim*/ );
@@ -255,20 +268,59 @@ void CoordinateSearchDialog::e_Click( Button& sender, bool checked )
          {
             StringList tokens;
             lines[2].Break( tokens, '|', true/*trim*/ );
-            if ( tokens.Length() == 4 )
+            if ( tokens.Length() == 11 )
             {
-               m_targetRA = tokens[1].ToDouble()/360*24;
-               m_targetDec = tokens[2].ToDouble();
+               m_RA = tokens[1].ToDouble();                                         // degrees
+               m_Dec = tokens[2].ToDouble();                                        // degrees
+               m_muRA = tokens[3].IsEmpty() ? 0.0 : tokens[3].ToDouble();           // mas/yr
+               m_muDec = tokens[4].IsEmpty() ? 0.0 : tokens[4].ToDouble();          // mas/yr
+               m_parallax = tokens[5].IsEmpty() ? 0.0 : tokens[5].ToDouble();       // mas
+               m_radVel = tokens[6].IsEmpty() ? 0.0 : tokens[6].ToDouble()*KMS2AUY; // km/s -> AU/year
+               m_objectName = tokens[7].Unquoted().Trimmed();
+               m_objectType = tokens[8].Unquoted().Trimmed();
+               m_spectralType = tokens[9].Unquoted().Trimmed();
+               m_vmag = tokens[10].IsEmpty() ? 101.0 : tokens[10].ToDouble();
+
                try
                {
-                  SearchInfo_TextBox.Insert(
-                        "<end><cbr><br><b>Right Ascension : "
-                        + String::ToSexagesimal( m_targetRA,
+                  String info =
+                           "<end><cbr><br><b>Object            :</b> "
+                        + m_objectName
+                        +            "<br><b>Object type       :</b> "
+                        + m_objectType
+                        +            "<br><b>Right Ascension   :</b> "
+                        + String::ToSexagesimal( m_RA/15,
                                        SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, false/*sign*/, 3/*width*/ ) )
-                        +            "<br>Declination     : "
-                        + String::ToSexagesimal( m_targetDec,
-                                       SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, true/*sign*/, 3/*width*/ ) )
-                        +            "</b><br>" );
+                        +            "<br><b>Declination       :</b> "
+                        + String::ToSexagesimal( m_Dec,
+                                       SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, true/*sign*/, 3/*width*/ ) );
+                  if ( m_muRA != 0 )
+                     info
+                        +=           "<br><b>Proper motion RA  :</b> "
+                        + String().Format( "%+8.2lf mas/year", m_muRA );
+                  if ( m_muDec != 0 )
+                     info
+                        +=           "<br><b>Proper motion Dec :</b> "
+                        + String().Format( "%+8.2lf mas/year", m_muDec );
+                  if ( m_parallax != 0 )
+                     info
+                        +=           "<br><b>Parallax          :</b> "
+                        + String().Format( "%8.2lf mas", m_parallax );
+                  if ( m_radVel != 0 )
+                     info
+                        +=           "<br><b>Radial velocity   :</b> "
+                        + String().Format( "%+.4lg AU/year", m_radVel );
+                  if ( !m_spectralType.IsEmpty() )
+                     info
+                        +=           "<br><b>Spectral type     :</b> "
+                        + m_spectralType;
+                  if ( m_vmag < 100 )
+                     info
+                        +=           "<br><b>V Magnitude       :</b> "
+                        + String().Format( "%.4lg", m_vmag );
+                  info += "<br>";
+
+                  SearchInfo_TextBox.Insert( info );
                   m_valid = true;
                   Get_Button.Enable();
                   GoTo_Button.Enable();
@@ -380,7 +432,7 @@ ProcessImplementation* INDIMountInterface::NewProcess() const
 {
    INDIMountInstance* instance = new INDIMountInstance( TheINDIMountProcess );
    instance->p_deviceName = m_device;
-   instance->p_slewRate = GUI->MountMoveSpeed_ComboBox.CurrentItem();
+   instance->p_slewRate = GUI->SlewSpeed_ComboBox.CurrentItem();
 
    instance->p_targetRA = SexagesimalToDecimal( 0,
                               GUI->TargetRA_H_SpinBox.Value(), GUI->TargetRA_M_SpinBox.Value(), GUI->TargetRA_S_NumericEdit.Value() );
@@ -416,13 +468,16 @@ bool INDIMountInterface::ImportProcess( const ProcessImplementation& p )
    const INDIMountInstance* instance = dynamic_cast<const INDIMountInstance*>( &p );
    if ( instance != nullptr )
    {
+      double targetRA, targetDec;
+      instance->GetTargetCoordinates( targetRA, targetDec );
+
       int sign, s1, s2; double s3;
-      DecimalToSexagesimal( sign, s1, s2, s3, instance->p_targetRA );
+      DecimalToSexagesimal( sign, s1, s2, s3, targetRA );
       GUI->TargetRA_H_SpinBox.SetValue( s1 );
       GUI->TargetRA_M_SpinBox.SetValue( s2 );
       GUI->TargetRA_S_NumericEdit.SetValue( s3 );
 
-      DecimalToSexagesimal( sign, s1, s2, s3, instance->p_targetDec );
+      DecimalToSexagesimal( sign, s1, s2, s3, targetDec );
       GUI->TargetDec_H_SpinBox.SetValue( s1 );
       GUI->TargetDec_M_SpinBox.SetValue( s2 );
       GUI->TargetDec_S_NumericEdit.SetValue( s3 );
@@ -449,7 +504,7 @@ void INDIMountInterface::UpdateControls()
    {
       GUI->UpdateDeviceProperties_Timer.Stop();
       GUI->MountProperties_Control.Disable();
-      GUI->MountMove_Control.Disable();
+      GUI->Slew_Control.Disable();
       GUI->MountGoTo_Control.Disable();
    }
    else
@@ -458,7 +513,7 @@ void INDIMountInterface::UpdateControls()
          GUI->UpdateDeviceProperties_Timer.Start();
 
       GUI->MountProperties_Control.Enable();
-      GUI->MountMove_Control.Enable();
+      GUI->Slew_Control.Enable();
       GUI->MountGoTo_Control.Enable();
    }
 }
@@ -570,127 +625,6 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
 
    //
 
-   MountMove_SectionBar.SetTitle( "Slew" );
-   MountMove_SectionBar.SetSection( MountMove_Control );
-
-   MountMoveTopLeft_Button.SetIcon( w.ScaledResource( ":/icons/move-left-up.png" ) );
-   MountMoveTopLeft_Button.SetScaledFixedSize( 32, 32 );
-   MountMoveTopLeft_Button.SetToolTip( "Northwest" );
-   MountMoveTopLeft_Button.SetStyleSheet( moveButtonStyleSheet );
-   MountMoveTopLeft_Button.OnPress( (Button::press_event_handler)&INDIMountInterface::e_Press, w );
-   MountMoveTopLeft_Button.OnRelease( (Button::press_event_handler)&INDIMountInterface::e_Release, w );
-
-   MountMoveTop_Button.SetIcon( w.ScaledResource( ":/icons/up.png" ) );
-   MountMoveTop_Button.SetScaledFixedSize( 32, 32 );
-   MountMoveTop_Button.SetToolTip( "North" );
-   MountMoveTop_Button.SetStyleSheet( moveButtonStyleSheet );
-   MountMoveTop_Button.OnPress( (Button::press_event_handler)&INDIMountInterface::e_Press, w );
-   MountMoveTop_Button.OnRelease( (Button::press_event_handler)&INDIMountInterface::e_Release, w );
-
-   MountMoveTopRight_Button.SetIcon( w.ScaledResource( ":/icons/move-right-up.png" ) );
-   MountMoveTopRight_Button.SetScaledFixedSize( 32, 32 );
-   MountMoveTopRight_Button.SetToolTip( "Northeast" );
-   MountMoveTopRight_Button.SetStyleSheet( moveButtonStyleSheet );
-   MountMoveTopRight_Button.OnPress( (Button::press_event_handler)&INDIMountInterface::e_Press, w );
-   MountMoveTopRight_Button.OnRelease( (Button::press_event_handler)&INDIMountInterface::e_Release, w );
-
-   MountMoveTopRow_Sizer.SetSpacing( 8 );
-   MountMoveTopRow_Sizer.AddSpacing( labelWidth1 + 4 );
-   MountMoveTopRow_Sizer.Add( MountMoveTopLeft_Button );
-   MountMoveTopRow_Sizer.Add( MountMoveTop_Button );
-   MountMoveTopRow_Sizer.Add( MountMoveTopRight_Button );
-
-   MountMoveLeft_Button.SetIcon( w.ScaledResource( ":/icons/left.png" ) );
-   MountMoveLeft_Button.SetScaledFixedSize( 32, 32 );
-   MountMoveLeft_Button.SetToolTip( "West" );
-   MountMoveLeft_Button.SetStyleSheet( moveButtonStyleSheet );
-   MountMoveLeft_Button.OnPress( (Button::press_event_handler)&INDIMountInterface::e_Press, w );
-   MountMoveLeft_Button.OnRelease( (Button::press_event_handler)&INDIMountInterface::e_Release, w );
-
-   MountMoveStop_Button.SetIcon( w.ScaledResource( ":/icons/stop.png" ) );
-   MountMoveStop_Button.SetScaledFixedSize( 32, 32 );
-   MountMoveStop_Button.SetToolTip( "Stop" );
-   MountMoveStop_Button.SetStyleSheet( moveButtonStyleSheet );
-   MountMoveStop_Button.OnPress( (Button::press_event_handler)&INDIMountInterface::e_Press, w );
-   MountMoveStop_Button.OnRelease( (Button::press_event_handler)&INDIMountInterface::e_Release, w );
-
-   MountMoveRight_Button.SetIcon( w.ScaledResource( ":/icons/right.png" ) );
-   MountMoveRight_Button.SetScaledFixedSize( 32, 32 );
-   MountMoveRight_Button.SetToolTip( "East" );
-   MountMoveRight_Button.SetStyleSheet( moveButtonStyleSheet );
-   MountMoveRight_Button.OnPress( (Button::press_event_handler)&INDIMountInterface::e_Press, w );
-   MountMoveRight_Button.OnRelease( (Button::press_event_handler)&INDIMountInterface::e_Release, w );
-
-   MountMoveMiddleRow_Sizer.SetSpacing( 8 );
-   MountMoveMiddleRow_Sizer.AddSpacing( labelWidth1 + 4 );
-   MountMoveMiddleRow_Sizer.Add( MountMoveLeft_Button );
-   MountMoveMiddleRow_Sizer.Add( MountMoveStop_Button );
-   MountMoveMiddleRow_Sizer.Add( MountMoveRight_Button );
-
-   MountMoveBottomLeft_Button.SetIcon( w.ScaledResource( ":/icons/move-left-down.png" ) );
-   MountMoveBottomLeft_Button.SetScaledFixedSize( 32, 32 );
-   MountMoveBottomLeft_Button.SetToolTip( "Southwest" );
-   MountMoveBottomLeft_Button.SetStyleSheet( moveButtonStyleSheet );
-   MountMoveBottomLeft_Button.OnPress( (Button::press_event_handler)&INDIMountInterface::e_Press, w );
-   MountMoveBottomLeft_Button.OnRelease( (Button::press_event_handler)&INDIMountInterface::e_Release, w );
-
-   MountMoveBottom_Button.SetIcon( w.ScaledResource( ":/icons/down.png" ) );
-   MountMoveBottom_Button.SetScaledFixedSize( 32, 32 );
-   MountMoveBottom_Button.SetToolTip( "South" );
-   MountMoveBottom_Button.SetStyleSheet( moveButtonStyleSheet );
-   MountMoveBottom_Button.OnPress( (Button::press_event_handler)&INDIMountInterface::e_Press, w );
-   MountMoveBottom_Button.OnRelease( (Button::press_event_handler)&INDIMountInterface::e_Release, w );
-
-   MountMoveBottomRight_Button.SetIcon( w.ScaledResource( ":/icons/move-right-down.png" ) );
-   MountMoveBottomRight_Button.SetScaledFixedSize( 32, 32 );
-   MountMoveBottomRight_Button.SetToolTip( "Southeast" );
-   MountMoveBottomRight_Button.SetStyleSheet( moveButtonStyleSheet );
-   MountMoveBottomRight_Button.OnPress( (Button::press_event_handler)&INDIMountInterface::e_Press, w );
-   MountMoveBottomRight_Button.OnRelease( (Button::press_event_handler)&INDIMountInterface::e_Release, w );
-
-   MountMoveBottomRow_Sizer.SetSpacing( 8 );
-   MountMoveBottomRow_Sizer.AddSpacing( labelWidth1 + 4 );
-   MountMoveBottomRow_Sizer.Add( MountMoveBottomLeft_Button );
-   MountMoveBottomRow_Sizer.Add( MountMoveBottom_Button );
-   MountMoveBottomRow_Sizer.Add( MountMoveBottomRight_Button );
-
-   SlewLeft_Sizer.SetSpacing( 8 );
-   SlewLeft_Sizer.Add( MountMoveTopRow_Sizer );
-   SlewLeft_Sizer.Add( MountMoveMiddleRow_Sizer );
-   SlewLeft_Sizer.Add( MountMoveBottomRow_Sizer );
-
-   SlewLeft_Control.SetSizer( SlewLeft_Sizer );
-
-   const char* slewSpeedTooltipText =
-      "<p>Predefined slew rates, in ascending speed order: Guide, Centering, Find, Maximum.</p>"
-      "<p>There might be more device-specific slew rates, which can be selected with INDI Device Controller.</p>";
-
-   MountMoveSpeed_Label.SetText( "Slew speed:" );
-   MountMoveSpeed_Label.SetToolTip( slewSpeedTooltipText );
-   MountMoveSpeed_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
-
-   MountMoveSpeed_ComboBox.AddItem( "Guide" );
-   MountMoveSpeed_ComboBox.AddItem( "Centering" );
-   MountMoveSpeed_ComboBox.AddItem( "Find" );
-   MountMoveSpeed_ComboBox.AddItem( "Maximum" );
-   MountMoveSpeed_ComboBox.SetToolTip( slewSpeedTooltipText );
-   MountMoveSpeed_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&INDIMountInterface::e_ItemSelected, w );
-
-   SlewRight_Sizer.AddStretch();
-   SlewRight_Sizer.Add( MountMoveSpeed_Label );
-   SlewRight_Sizer.AddSpacing( 2 );
-   SlewRight_Sizer.Add( MountMoveSpeed_ComboBox );
-   SlewRight_Sizer.AddStretch();
-
-   MountMove_Sizer.SetSpacing( 32 );
-   MountMove_Sizer.Add( SlewLeft_Control );
-   MountMove_Sizer.Add( SlewRight_Sizer );
-   MountMove_Sizer.AddStretch();
-
-   MountMove_Control.SetSizer( MountMove_Sizer );
-
-   //
-
    MountGoTo_SectionBar.SetTitle( "GoTo" );
    MountGoTo_SectionBar.SetSection( MountGoTo_Control );
 
@@ -707,7 +641,8 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
 
    TargetRA_S_NumericEdit.SetReal();
    TargetRA_S_NumericEdit.SetPrecision( 3 );
-   TargetRA_S_NumericEdit.SetRange( 0, 59.9999999999999 );
+   TargetRA_S_NumericEdit.EnableFixedPrecision();
+   TargetRA_S_NumericEdit.SetRange( 0, 59.999 );
    TargetRA_S_NumericEdit.label.Hide();
    TargetRA_S_NumericEdit.edit.SetFixedWidth( editWidth2 );
 
@@ -731,7 +666,8 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
 
    TargetDec_S_NumericEdit.SetReal();
    TargetDec_S_NumericEdit.SetPrecision( 2 );
-   TargetDec_S_NumericEdit.SetRange( 0, 59.9999999999999 );
+   TargetDec_S_NumericEdit.EnableFixedPrecision();
+   TargetDec_S_NumericEdit.SetRange( 0, 59.99 );
    TargetDec_S_NumericEdit.label.Hide();
    TargetDec_S_NumericEdit.edit.SetFixedWidth( editWidth2 );
 
@@ -802,14 +738,135 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
 
    //
 
+   Slew_SectionBar.SetTitle( "Slew" );
+   Slew_SectionBar.SetSection( Slew_Control );
+
+   SlewTopLeft_Button.SetIcon( w.ScaledResource( ":/icons/move-left-up.png" ) );
+   SlewTopLeft_Button.SetScaledFixedSize( 32, 32 );
+   SlewTopLeft_Button.SetToolTip( "Northwest" );
+   SlewTopLeft_Button.SetStyleSheet( moveButtonStyleSheet );
+   SlewTopLeft_Button.OnPress( (Button::press_event_handler)&INDIMountInterface::e_Press, w );
+   SlewTopLeft_Button.OnRelease( (Button::press_event_handler)&INDIMountInterface::e_Release, w );
+
+   SlewTop_Button.SetIcon( w.ScaledResource( ":/icons/up.png" ) );
+   SlewTop_Button.SetScaledFixedSize( 32, 32 );
+   SlewTop_Button.SetToolTip( "North" );
+   SlewTop_Button.SetStyleSheet( moveButtonStyleSheet );
+   SlewTop_Button.OnPress( (Button::press_event_handler)&INDIMountInterface::e_Press, w );
+   SlewTop_Button.OnRelease( (Button::press_event_handler)&INDIMountInterface::e_Release, w );
+
+   SlewTopRight_Button.SetIcon( w.ScaledResource( ":/icons/move-right-up.png" ) );
+   SlewTopRight_Button.SetScaledFixedSize( 32, 32 );
+   SlewTopRight_Button.SetToolTip( "Northeast" );
+   SlewTopRight_Button.SetStyleSheet( moveButtonStyleSheet );
+   SlewTopRight_Button.OnPress( (Button::press_event_handler)&INDIMountInterface::e_Press, w );
+   SlewTopRight_Button.OnRelease( (Button::press_event_handler)&INDIMountInterface::e_Release, w );
+
+   SlewTopRow_Sizer.SetSpacing( 8 );
+   SlewTopRow_Sizer.AddSpacing( labelWidth1 + 4 );
+   SlewTopRow_Sizer.Add( SlewTopLeft_Button );
+   SlewTopRow_Sizer.Add( SlewTop_Button );
+   SlewTopRow_Sizer.Add( SlewTopRight_Button );
+
+   SlewLeft_Button.SetIcon( w.ScaledResource( ":/icons/left.png" ) );
+   SlewLeft_Button.SetScaledFixedSize( 32, 32 );
+   SlewLeft_Button.SetToolTip( "West" );
+   SlewLeft_Button.SetStyleSheet( moveButtonStyleSheet );
+   SlewLeft_Button.OnPress( (Button::press_event_handler)&INDIMountInterface::e_Press, w );
+   SlewLeft_Button.OnRelease( (Button::press_event_handler)&INDIMountInterface::e_Release, w );
+
+   SlewStop_Button.SetIcon( w.ScaledResource( ":/icons/stop.png" ) );
+   SlewStop_Button.SetScaledFixedSize( 32, 32 );
+   SlewStop_Button.SetToolTip( "Stop" );
+   SlewStop_Button.SetStyleSheet( moveButtonStyleSheet );
+   SlewStop_Button.OnPress( (Button::press_event_handler)&INDIMountInterface::e_Press, w );
+   SlewStop_Button.OnRelease( (Button::press_event_handler)&INDIMountInterface::e_Release, w );
+
+   SlewRight_Button.SetIcon( w.ScaledResource( ":/icons/right.png" ) );
+   SlewRight_Button.SetScaledFixedSize( 32, 32 );
+   SlewRight_Button.SetToolTip( "East" );
+   SlewRight_Button.SetStyleSheet( moveButtonStyleSheet );
+   SlewRight_Button.OnPress( (Button::press_event_handler)&INDIMountInterface::e_Press, w );
+   SlewRight_Button.OnRelease( (Button::press_event_handler)&INDIMountInterface::e_Release, w );
+
+   SlewMiddleRow_Sizer.SetSpacing( 8 );
+   SlewMiddleRow_Sizer.AddSpacing( labelWidth1 + 4 );
+   SlewMiddleRow_Sizer.Add( SlewLeft_Button );
+   SlewMiddleRow_Sizer.Add( SlewStop_Button );
+   SlewMiddleRow_Sizer.Add( SlewRight_Button );
+
+   SlewBottomLeft_Button.SetIcon( w.ScaledResource( ":/icons/move-left-down.png" ) );
+   SlewBottomLeft_Button.SetScaledFixedSize( 32, 32 );
+   SlewBottomLeft_Button.SetToolTip( "Southwest" );
+   SlewBottomLeft_Button.SetStyleSheet( moveButtonStyleSheet );
+   SlewBottomLeft_Button.OnPress( (Button::press_event_handler)&INDIMountInterface::e_Press, w );
+   SlewBottomLeft_Button.OnRelease( (Button::press_event_handler)&INDIMountInterface::e_Release, w );
+
+   SlewBottom_Button.SetIcon( w.ScaledResource( ":/icons/down.png" ) );
+   SlewBottom_Button.SetScaledFixedSize( 32, 32 );
+   SlewBottom_Button.SetToolTip( "South" );
+   SlewBottom_Button.SetStyleSheet( moveButtonStyleSheet );
+   SlewBottom_Button.OnPress( (Button::press_event_handler)&INDIMountInterface::e_Press, w );
+   SlewBottom_Button.OnRelease( (Button::press_event_handler)&INDIMountInterface::e_Release, w );
+
+   SlewBottomRight_Button.SetIcon( w.ScaledResource( ":/icons/move-right-down.png" ) );
+   SlewBottomRight_Button.SetScaledFixedSize( 32, 32 );
+   SlewBottomRight_Button.SetToolTip( "Southeast" );
+   SlewBottomRight_Button.SetStyleSheet( moveButtonStyleSheet );
+   SlewBottomRight_Button.OnPress( (Button::press_event_handler)&INDIMountInterface::e_Press, w );
+   SlewBottomRight_Button.OnRelease( (Button::press_event_handler)&INDIMountInterface::e_Release, w );
+
+   SlewBottomRow_Sizer.SetSpacing( 8 );
+   SlewBottomRow_Sizer.AddSpacing( labelWidth1 + 4 );
+   SlewBottomRow_Sizer.Add( SlewBottomLeft_Button );
+   SlewBottomRow_Sizer.Add( SlewBottom_Button );
+   SlewBottomRow_Sizer.Add( SlewBottomRight_Button );
+
+   SlewLeft_Sizer.SetSpacing( 8 );
+   SlewLeft_Sizer.Add( SlewTopRow_Sizer );
+   SlewLeft_Sizer.Add( SlewMiddleRow_Sizer );
+   SlewLeft_Sizer.Add( SlewBottomRow_Sizer );
+
+   SlewLeft_Control.SetSizer( SlewLeft_Sizer );
+
+   const char* slewSpeedTooltipText =
+      "<p>Predefined slew rates, in ascending speed order: Guide, Centering, Find, Maximum.</p>"
+      "<p>There might be more device-specific slew rates, which can be selected with INDI Device Controller.</p>";
+
+   SlewSpeed_Label.SetText( "Slew speed:" );
+   SlewSpeed_Label.SetToolTip( slewSpeedTooltipText );
+   SlewSpeed_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
+
+   SlewSpeed_ComboBox.AddItem( "Guide" );
+   SlewSpeed_ComboBox.AddItem( "Centering" );
+   SlewSpeed_ComboBox.AddItem( "Find" );
+   SlewSpeed_ComboBox.AddItem( "Maximum" );
+   SlewSpeed_ComboBox.SetToolTip( slewSpeedTooltipText );
+   SlewSpeed_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&INDIMountInterface::e_ItemSelected, w );
+
+   SlewRight_Sizer.AddStretch();
+   SlewRight_Sizer.Add( SlewSpeed_Label );
+   SlewRight_Sizer.AddSpacing( 2 );
+   SlewRight_Sizer.Add( SlewSpeed_ComboBox );
+   SlewRight_Sizer.AddStretch();
+
+   Slew_Sizer.SetSpacing( 32 );
+   Slew_Sizer.Add( SlewLeft_Control );
+   Slew_Sizer.Add( SlewRight_Sizer );
+   Slew_Sizer.AddStretch();
+
+   Slew_Control.SetSizer( Slew_Sizer );
+
+   //
+
    Global_Sizer.SetMargin( 8 );
    Global_Sizer.SetSpacing( 6 );
    Global_Sizer.Add( ServerParameters_SectionBar );
    Global_Sizer.Add( ServerParameters_Control );
-   Global_Sizer.Add( MountMove_SectionBar );
-   Global_Sizer.Add( MountMove_Control );
    Global_Sizer.Add( MountGoTo_SectionBar );
    Global_Sizer.Add( MountGoTo_Control );
+   Global_Sizer.Add( Slew_SectionBar );
+   Global_Sizer.Add( Slew_Control );
 
    w.SetSizer( Global_Sizer );
    w.AdjustToContents();
@@ -908,11 +965,11 @@ __device_found:
             if ( mountProp.PropertyValue == "ON" )
             {
                foundSlewRate = true;
-               GUI->MountMoveSpeed_ComboBox.SetCurrentItem( i );
+               GUI->SlewSpeed_ComboBox.SetCurrentItem( i );
                break;
             }
-      GUI->MountMoveSpeed_Label.Enable( foundSlewRate );
-      GUI->MountMoveSpeed_ComboBox.Enable( foundSlewRate );
+      GUI->SlewSpeed_Label.Enable( foundSlewRate );
+      GUI->SlewSpeed_ComboBox.Enable( foundSlewRate );
    }
 }
 
@@ -969,7 +1026,7 @@ private:
 
       switch ( m_command )
       {
-      case IMCCommand::Goto:
+      case IMCCommand::GoTo:
          m_iface->GUI->MountGoToInfo_Label.SetText(
               "Slewing: dRA = "
             + String::ToSexagesimal( targetRA - currentRA,
@@ -1032,7 +1089,7 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
 
    if ( sender == GUI->MountGoToStart_Button )
    {
-      INDIMountInterfaceExecution( this ).Perform( IMCCommand::Goto );
+      INDIMountInterfaceExecution( this ).Perform( IMCCommand::GoTo );
    }
    else if ( sender == GUI->MountSync_Button )
    {
@@ -1052,25 +1109,32 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
       if ( m_searchDialog == nullptr )
          m_searchDialog = new CoordinateSearchDialog;
       if ( m_searchDialog->Execute() )
-         if ( m_searchDialog->HasValidTargetCoordinates() )
+         if ( m_searchDialog->HasValidCoordinates() )
          {
+            time_t t0 = ::time( 0 );
+            const tm* t = ::gmtime( &t0 );
+            double jd = ComplexTimeToJD( t->tm_year+1900, t->tm_mon+1, t->tm_mday, (t->tm_hour + (t->tm_min + t->tm_sec/60.0)/60.0)/24.0 );
+            double ra = Rad( m_searchDialog->RA() );
+            double dec = Rad( m_searchDialog->Dec() );
+            ApparentPosition( jd ).Apply( ra, dec, m_searchDialog->MuRA(), m_searchDialog->MuDec() );
+
             int sign, s1, s2; double s3;
-            DecimalToSexagesimal( sign, s1, s2, s3, m_searchDialog->TargetRA() );
+            DecimalToSexagesimal( sign, s1, s2, s3, Deg( ra )/15 );
             GUI->TargetRA_H_SpinBox.SetValue( s1 );
             GUI->TargetRA_M_SpinBox.SetValue( s2 );
             GUI->TargetRA_S_NumericEdit.SetValue( s3 );
 
-            DecimalToSexagesimal( sign, s1, s2, s3, m_searchDialog->TargetDec() );
+            DecimalToSexagesimal( sign, s1, s2, s3, Deg( dec ) );
             GUI->TargetDec_H_SpinBox.SetValue( s1 );
             GUI->TargetDec_M_SpinBox.SetValue( s2 );
             GUI->TargetDec_S_NumericEdit.SetValue( s3 );
             GUI->MountTargetDECIsSouth_CheckBox.SetChecked( sign < 0 );
 
             if ( m_searchDialog->GoToTarget() )
-               INDIMountInterfaceExecution( this ).Perform( IMCCommand::Goto );
+               INDIMountInterfaceExecution( this ).Perform( IMCCommand::GoTo );
          }
    }
-   else if ( sender == GUI->MountMoveStop_Button )
+   else if ( sender == GUI->SlewStop_Button )
    {
       INDIClient::TheClient()->MaybeSendNewPropertyItem( m_device, "TELESCOPE_ABORT_MOTION", "INDI_SWITCH", "ABORT", "ON", true/*async*/ );
    }
@@ -1081,38 +1145,38 @@ void INDIMountInterface::e_Press( Button& sender )
    if ( !INDIClient::HasClient() )
       return;
 
-   if ( sender == GUI->MountMoveTopLeft_Button )
+   if ( sender == GUI->SlewTopLeft_Button )
    {
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_NORTH", "ON", true/*async*/ );
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_WEST", "ON", true/*async*/ );
    }
-   else if ( sender == GUI->MountMoveTop_Button )
+   else if ( sender == GUI->SlewTop_Button )
    {
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_NORTH", "ON", true/*async*/ );
    }
-   if ( sender == GUI->MountMoveTopRight_Button )
+   if ( sender == GUI->SlewTopRight_Button )
    {
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_NORTH", "ON", true/*async*/ );
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_EAST", "ON", true/*async*/ );
    }
-   else if ( sender == GUI->MountMoveLeft_Button )
+   else if ( sender == GUI->SlewLeft_Button )
    {
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_WEST", "ON", true/*async*/ );
    }
-   else if ( sender == GUI->MountMoveRight_Button )
+   else if ( sender == GUI->SlewRight_Button )
    {
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_EAST", "ON", true/*async*/ );
    }
-   else if ( sender == GUI->MountMoveBottomLeft_Button )
+   else if ( sender == GUI->SlewBottomLeft_Button )
    {
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_SOUTH", "ON", true/*async*/ );
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_WEST", "ON", true/*async*/ );
    }
-   else if ( sender == GUI->MountMoveBottom_Button )
+   else if ( sender == GUI->SlewBottom_Button )
    {
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_SOUTH", "ON", true/*async*/ );
    }
-   else if ( sender == GUI->MountMoveBottomRight_Button )
+   else if ( sender == GUI->SlewBottomRight_Button )
    {
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_SOUTH", "ON", true/*async*/ );
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_EAST", "ON", true/*async*/ );
@@ -1124,38 +1188,38 @@ void INDIMountInterface::e_Release( Button& sender )
    if ( !INDIClient::HasClient() )
       return;
 
-   if ( sender == GUI->MountMoveTopLeft_Button )
+   if ( sender == GUI->SlewTopLeft_Button )
    {
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_NORTH", "OFF", true/*async*/ );
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_WEST", "OFF", true/*async*/ );
    }
-   else if ( sender == GUI->MountMoveTop_Button )
+   else if ( sender == GUI->SlewTop_Button )
    {
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_NORTH", "OFF", true/*async*/ );
    }
-   if ( sender == GUI->MountMoveTopRight_Button )
+   if ( sender == GUI->SlewTopRight_Button )
    {
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_NORTH", "OFF", true/*async*/ );
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_EAST", "OFF", true/*async*/ );
    }
-   else if ( sender == GUI->MountMoveLeft_Button )
+   else if ( sender == GUI->SlewLeft_Button )
    {
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_WEST", "OFF", true/*async*/ );
    }
-   else if ( sender == GUI->MountMoveRight_Button )
+   else if ( sender == GUI->SlewRight_Button )
    {
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_EAST", "OFF", true/*async*/ );
    }
-   else if ( sender == GUI->MountMoveBottomLeft_Button )
+   else if ( sender == GUI->SlewBottomLeft_Button )
    {
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_SOUTH", "OFF", true/*async*/ );
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_WEST", "OFF", true/*async*/ );
    }
-   else if ( sender == GUI->MountMoveBottom_Button )
+   else if ( sender == GUI->SlewBottom_Button )
    {
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_SOUTH", "OFF", true/*async*/ );
    }
-   else if ( sender == GUI->MountMoveBottomRight_Button )
+   else if ( sender == GUI->SlewBottomRight_Button )
    {
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_NS", "INDI_SWITCH", "MOTION_SOUTH", "OFF", true/*async*/ );
       INDIClient::TheClient()->SendNewPropertyItem( m_device, "TELESCOPE_MOTION_WE", "INDI_SWITCH", "MOTION_EAST", "OFF", true/*async*/ );
@@ -1200,7 +1264,7 @@ void INDIMountInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
          INDIMountInterfaceExecution( this ).Perform( IMCCommand::Unpark );
       }
    }
-   else if ( sender == GUI->MountMoveSpeed_ComboBox )
+   else if ( sender == GUI->SlewSpeed_ComboBox )
    {
       INDIClient::TheClient()->MaybeSendNewPropertyItem( m_device, "TELESCOPE_SLEW_RATE", "INDI_SWITCH",
                      INDIMountInstance::MountSlewRatePropertyString( itemIndex ), "ON", true/*async*/ );
@@ -1212,4 +1276,4 @@ void INDIMountInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInterface.cpp - Released 2016/06/04 15:14:47 UTC
+// EOF INDIMountInterface.cpp - Released 2016/06/17 12:50:37 UTC

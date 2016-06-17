@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.12.0183
+// Standard INDIClient Process Module Version 01.00.14.0193
 // ----------------------------------------------------------------------------
-// INDICCDFrameInstance.cpp - Released 2016/06/04 15:14:47 UTC
+// INDICCDFrameInstance.cpp - Released 2016/06/17 12:50:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -50,9 +50,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
+#include "ApparentPosition.h"
 #include "INDICCDFrameInstance.h"
 #include "INDICCDFrameParameters.h"
 #include "INDIClient.h"
+#include "INDIMountInterface.h"
 
 #include <pcl/ColorFilterArray.h>
 #include <pcl/Console.h>
@@ -97,6 +99,10 @@ INDICCDFrameInstance::INDICCDFrameInstance( const MetaProcess* m ) :
    p_clientDownloadDirectory( TheICFClientDownloadDirectoryParameter->DefaultValue() ),
    p_clientFileNameTemplate( TheICFClientFileNameTemplateParameter->DefaultValue() ),
    p_clientOutputFormatHints( TheICFClientOutputFormatHintsParameter->DefaultValue() ),
+   p_objectName( TheICFObjectNameParameter->DefaultValue() ),
+   p_telescopeSelection( ICFTelescopeSelection::Default ),
+   p_requireSelectedTelescope( TheICFRequireSelectedTelescopeParameter->DefaultValue() ),
+   p_telescopeDeviceName( TheICFTelescopeDeviceNameParameter->DefaultValue() ),
 
    o_clientViewIds(),
    o_clientFilePaths(),
@@ -116,30 +122,35 @@ void INDICCDFrameInstance::Assign( const ProcessImplementation& p )
    const INDICCDFrameInstance* x = dynamic_cast<const INDICCDFrameInstance*>( &p );
    if ( x != nullptr )
    {
-      p_deviceName              = x->p_deviceName;
-      p_uploadMode              = x->p_uploadMode;
-      p_serverUploadDirectory   = x->p_serverUploadDirectory;
-      p_serverFileNameTemplate  = x->p_serverFileNameTemplate;
-      p_frameType               = x->p_frameType;
-      p_binningX                = x->p_binningX;
-      p_binningY                = x->p_binningY;
-      p_filterSlot              = x->p_filterSlot;
-      p_exposureTime            = x->p_exposureTime;
-      p_exposureDelay           = x->p_exposureDelay;
-      p_exposureCount           = x->p_exposureCount;
-      p_openClientImages        = x->p_openClientImages;
-      p_newImageIdTemplate      = x->p_newImageIdTemplate;
-      p_reuseImageWindow        = x->p_reuseImageWindow;
-      p_autoStretch             = x->p_autoStretch;
-      p_linkedAutoStretch       = x->p_linkedAutoStretch;
-      p_saveClientImages        = x->p_saveClientImages;
-      p_overwriteClientImages   = x->p_overwriteClientImages;
-      p_clientDownloadDirectory = x->p_clientDownloadDirectory;
-      p_clientFileNameTemplate  = x->p_clientFileNameTemplate;
-      p_clientOutputFormatHints = x->p_clientOutputFormatHints;
-      o_clientViewIds           = x->o_clientViewIds;
-      o_clientFilePaths         = x->o_clientFilePaths;
-      o_serverFrames            = x->o_serverFrames;
+      p_deviceName               = x->p_deviceName;
+      p_uploadMode               = x->p_uploadMode;
+      p_serverUploadDirectory    = x->p_serverUploadDirectory;
+      p_serverFileNameTemplate   = x->p_serverFileNameTemplate;
+      p_frameType                = x->p_frameType;
+      p_binningX                 = x->p_binningX;
+      p_binningY                 = x->p_binningY;
+      p_filterSlot               = x->p_filterSlot;
+      p_exposureTime             = x->p_exposureTime;
+      p_exposureDelay            = x->p_exposureDelay;
+      p_exposureCount            = x->p_exposureCount;
+      p_openClientImages         = x->p_openClientImages;
+      p_newImageIdTemplate       = x->p_newImageIdTemplate;
+      p_reuseImageWindow         = x->p_reuseImageWindow;
+      p_autoStretch              = x->p_autoStretch;
+      p_linkedAutoStretch        = x->p_linkedAutoStretch;
+      p_saveClientImages         = x->p_saveClientImages;
+      p_overwriteClientImages    = x->p_overwriteClientImages;
+      p_clientDownloadDirectory  = x->p_clientDownloadDirectory;
+      p_clientFileNameTemplate   = x->p_clientFileNameTemplate;
+      p_clientOutputFormatHints  = x->p_clientOutputFormatHints;
+      p_objectName               = x->p_objectName;
+      p_telescopeSelection       = x->p_telescopeSelection;
+      p_requireSelectedTelescope = x->p_requireSelectedTelescope;
+      p_telescopeDeviceName      = x->p_telescopeDeviceName;
+
+      o_clientViewIds            = x->o_clientViewIds;
+      o_clientFilePaths          = x->o_clientFilePaths;
+      o_serverFrames             = x->o_serverFrames;
    }
 }
 
@@ -186,10 +197,80 @@ bool INDICCDFrameInstance::ValidateDevice( bool throwErrors ) const
          }
          return true;
       }
-
    if ( throwErrors )
       throw Error( "INDI device not available: '" + p_deviceName + "'" );
    return false;
+}
+
+String INDICCDFrameInstance::TelescopeDeviceName( bool throwErrors ) const
+{
+   INDIClient* indi = INDIClient::TheClientOrDie();
+   throwErrors &= p_requireSelectedTelescope;
+   String deviceName;
+   INDIPropertyListItem item;
+   switch ( p_telescopeSelection )
+   {
+   case ICFTelescopeSelection::NoTelescope:
+      break;
+   case ICFTelescopeSelection::ActiveTelescope:
+      if ( indi->GetPropertyItem( p_deviceName, "ACTIVE_DEVICES", "ACTIVE_TELESCOPE", item ) )
+      {
+         deviceName = item.PropertyValue.Trimmed();
+         if ( deviceName.IsEmpty() )
+            if ( throwErrors )
+               throw Error( "Cannot retrieve the active telescope device: No active telescope has been defined" );
+      }
+      else
+      {
+         if ( throwErrors )
+            throw Error( "Cannot retrieve the active telescope device: The active telescope property is not available" );
+         break;
+      }
+      break;
+   case ICFTelescopeSelection::MountControllerTelescope:
+      deviceName = TheINDIMountInterface->CurrentDeviceName();
+      if ( deviceName.IsEmpty() )
+         if ( throwErrors )
+            throw Error( "Cannot retrieve required telescope device: The INDI Mount Controller interface has no selected device" );
+      break;
+   default:
+   case ICFTelescopeSelection::ActiveOrMountControllerTelescope:
+      if ( indi->GetPropertyItem( p_deviceName, "ACTIVE_DEVICES", "ACTIVE_TELESCOPE", item ) )
+         deviceName = item.PropertyValue.Trimmed();
+      if ( deviceName.IsEmpty() )
+         deviceName = TheINDIMountInterface->CurrentDeviceName();
+      if ( deviceName.IsEmpty() )
+         if ( throwErrors )
+            throw Error( "Cannot retrieve required telescope device: No telescope device is available or selected on the INDI server and/or INDI Mount Controller interface" );
+      break;
+   case ICFTelescopeSelection::TelescopeDeviceName:
+      deviceName = p_telescopeDeviceName.Trimmed();
+      if ( deviceName.IsEmpty() )
+         if ( throwErrors )
+            throw Error( "Cannot retrieve required telescope device: No telescope device name has been specified" );
+      break;
+   }
+
+   if ( !deviceName.IsEmpty() )
+   {
+      ExclConstDeviceList x = indi->ConstDeviceList();
+      const INDIDeviceListItemArray& devices( x );
+      for ( auto device : devices )
+         if ( device.DeviceName == deviceName )
+         {
+            if ( !indi->HasPropertyItem( deviceName, "EQUATORIAL_EOD_COORD", "RA" ) ) // is this a mount device?
+            {
+               if ( throwErrors )
+                  throw Error( "The required device '" + deviceName + "' does not seem to be a valid INDI mount device" );
+               deviceName.Clear();
+            }
+            return deviceName;
+         }
+      if ( throwErrors )
+         throw Error( "Required INDI device not available: '" + deviceName + '\'' );
+   }
+
+   return String();
 }
 
 void INDICCDFrameInstance::SendDeviceProperties( bool async ) const
@@ -461,6 +542,15 @@ void* INDICCDFrameInstance::LockParameter( const MetaParameter* p, size_type tab
       return p_clientFileNameTemplate.Begin();
    if ( p == TheICFClientOutputFormatHintsParameter )
       return p_clientOutputFormatHints.Begin();
+   if ( p == TheICFObjectNameParameter )
+      return p_objectName.Begin();
+   if ( p == TheICFTelescopeSelectionParameter )
+      return &p_telescopeSelection;
+   if ( p == TheICFRequireSelectedTelescopeParameter )
+      return &p_requireSelectedTelescope;
+   if ( p == TheICFTelescopeDeviceNameParameter )
+      return p_telescopeDeviceName.Begin();
+
    if ( p == TheICFClientViewIdParameter )
       return o_clientViewIds[tableRow].Begin();
    if ( p == TheICFClientFilePathParameter )
@@ -515,6 +605,18 @@ bool INDICCDFrameInstance::AllocateParameter( size_type sizeOrLength, const Meta
       if ( sizeOrLength > 0 )
          p_clientOutputFormatHints.SetLength( sizeOrLength );
    }
+   else if ( p == TheICFObjectNameParameter )
+   {
+      p_objectName.Clear();
+      if ( sizeOrLength > 0 )
+         p_objectName.SetLength( sizeOrLength );
+   }
+   else if ( p == TheICFTelescopeDeviceNameParameter )
+   {
+      p_telescopeDeviceName.Clear();
+      if ( sizeOrLength > 0 )
+         p_telescopeDeviceName.SetLength( sizeOrLength );
+   }
 
    else if ( p == TheICFClientFramesParameter )
    {
@@ -568,6 +670,10 @@ size_type INDICCDFrameInstance::ParameterLength( const MetaParameter* p, size_ty
       return p_clientFileNameTemplate.Length();
    if ( p == TheICFClientOutputFormatHintsParameter )
       return p_clientOutputFormatHints.Length();
+   if ( p == TheICFObjectNameParameter )
+      return p_objectName.Length();
+   if ( p == TheICFTelescopeDeviceNameParameter )
+      return p_telescopeDeviceName.Length();
 
    if ( p == TheICFClientFramesParameter )
       return o_clientViewIds.Length();
@@ -635,6 +741,172 @@ String INDICCDFrameInstance::CCDFrameTypePrefix( int frameTypeIdx )
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
+typedef KeyValue<IsoString,Variant> ImageProperty;
+typedef Array<ImageProperty>        ImagePropertyList;
+
+template <typename T>
+struct Definable
+{
+   T    value;
+   bool defined = false;
+
+   T& operator =( const T& x )
+   {
+      value = x;
+      defined = true;
+      return value;
+   }
+
+   Definable& operator =( const Definable& x )
+   {
+      if ( (defined = x.defined) != false )
+         value = x.value;
+      return *this;
+   }
+};
+
+struct ImageMetadata
+{
+   Definable<String>    cameraName;
+   Definable<String>    frameType;
+   Definable<String>    filterName;
+   Definable<double>    expTime;
+   Definable<double>    sensorTemp;
+   Definable<double>    xPixSize;
+   Definable<double>    yPixSize;
+   Definable<unsigned>  xBinning;
+   Definable<unsigned>  yBinning;
+   Definable<unsigned>  xOrigin;
+   Definable<unsigned>  yOrigin;
+
+   Definable<String>    telescopeName;
+   Definable<double>    focalLength;
+   Definable<double>    aperture;
+   Definable<double>    apertureArea;
+
+   Definable<String>    objectName;
+   Definable<int>       year;
+   Definable<int>       month;
+   Definable<int>       day;
+   Definable<double>    dayf;
+   Definable<double>    tz;
+   Definable<double>    ra;
+   Definable<double>    dec;
+   Definable<double>    equinox;
+};
+
+static ImageMetadata
+ImageMetadataFromFITSKeywords( const FITSKeywordArray& keywords )
+{
+   ImageMetadata data;
+   for ( auto k : keywords )
+   {
+      IsoString value = k.StripValueDelimiters();
+      if ( k.name == "INSTRUME" )
+         data.cameraName = String( value );
+      else if ( k.name == "FRAME" || k.name == "IMAGETYP" )
+         data.frameType = String( value );
+      else if ( k.name == "FILTER" )
+         data.filterName = String( value );
+      else if ( k.name == "EXPTIME" )
+         data.expTime = value.ToDouble();
+      else if ( k.name == "CCD-TEMP" )
+         data.sensorTemp = value.ToDouble();
+      else if ( k.name == "PIXSIZE1" )
+         data.xPixSize = value.ToDouble();
+      else if ( k.name == "PIXSIZE2" )
+         data.yPixSize = value.ToDouble();
+      else if ( k.name == "XBINNING" )
+         data.xBinning = value.ToUInt( 10 );
+      else if ( k.name == "YBINNING" )
+         data.yBinning = value.ToUInt( 10 );
+      else if ( k.name == "XORGSUBF" )
+         data.xOrigin = value.ToUInt( 10 );
+      else if ( k.name == "YORGSUBF" )
+         data.yOrigin = value.ToUInt( 10 );
+      else if ( k.name == "TELESCOP" )
+         data.telescopeName = String( value );
+      else if ( k.name == "FOCALLEN" )
+         data.focalLength = value.ToDouble()/1000;
+      else if ( k.name == "APTDIA" )
+         data.aperture = value.ToDouble()/1000;
+      else if ( k.name == "APTAREA" )
+         data.apertureArea = value.ToDouble()/1000;
+      else if ( k.name == "OBJNAME" || k.name == "OBJECT" )
+         data.objectName = String( value );
+      else if ( k.name == "DATE-OBS" )
+      {
+         int year, month, day;
+         double dayf, tz;
+         value.ParseISO8601DateTime( year, month, day, dayf, tz );
+         data.year = year;
+         data.month = month;
+         data.day = day;
+         data.dayf = dayf;
+         data.tz = tz;
+      }
+      else if ( k.name == "OBJCTRA" )
+         data.ra = value.SexagesimalToDouble( ' ' ) * 15;
+      else if ( k.name == "OBJCTDEC" )
+         data.dec = value.SexagesimalToDouble( ' ' );
+      else if ( k.name == "EQUINOX" )
+         data.equinox = value.ToDouble();
+   }
+   if ( !data.equinox.defined )
+      if ( data.ra.defined && data.dec.defined )
+         data.equinox = 2000;
+   return data;
+}
+
+static ImagePropertyList
+ImagePropertiesFromImageMetadata( const ImageMetadata& data )
+{
+   ImagePropertyList properties;
+   if ( data.cameraName.defined )
+      properties << ImageProperty( "Instrument:Camera:Name", data.cameraName.value );
+   if ( data.frameType.defined )
+      properties << ImageProperty( "Observation:Image:Type", data.frameType.value );
+   if ( data.filterName.defined )
+      properties << ImageProperty( "Instrument:Filter:Name", data.filterName.value );
+   if ( data.expTime.defined )
+      properties << ImageProperty( "Instrument:ExposureTime", Round( data.expTime.value, 4 ) );
+   if ( data.sensorTemp.defined )
+      properties << ImageProperty( "Instrument:Sensor:Temperature", data.sensorTemp.value );
+   if ( data.xPixSize.defined )
+      properties << ImageProperty( "Instrument:Sensor:XPixelSize", Round( data.xPixSize.value, 3 ) );
+   if ( data.yPixSize.defined )
+      properties << ImageProperty( "Instrument:Sensor:YPixelSize", Round( data.yPixSize.value, 3 ) );
+   if ( data.xBinning.defined )
+      properties << ImageProperty( "Instrument:Camera:XBinning", data.xBinning.value );
+   if ( data.yBinning.defined )
+      properties << ImageProperty( "Instrument:Camera:YBinning", data.yBinning.value );
+   if ( data.xOrigin.defined )
+      properties << ImageProperty( "Instrument:Camera:XOrigin", data.xOrigin.value );
+   if ( data.yOrigin.defined )
+      properties << ImageProperty( "Instrument:Camera:YOrigin", data.yOrigin.value );
+   if ( data.telescopeName.defined )
+      properties << ImageProperty( "Instrument:Telescope:Name", data.telescopeName.value );
+   if ( data.focalLength.defined )
+      properties << ImageProperty( "Instrument:Telescope:FocalLength", Round( data.focalLength.value, 3 ) );
+   if ( data.aperture.defined )
+      properties << ImageProperty( "Instrument:Telescope:Aperture", Round( data.aperture.value, 3 ) );
+   if ( data.apertureArea.defined )
+      properties << ImageProperty( "Instrument:Telescope:CollectingArea", Round( data.apertureArea.value, 3 ) );
+   if ( data.objectName.defined )
+      properties << ImageProperty( "Observation:Object:Name", data.objectName.value );
+   if ( data.year.defined )
+      properties << ImageProperty( "Observation:Time:Start",
+            IsoString::ToISO8601DateTime( data.year.value, data.month.value, data.day.value, data.dayf.value + data.tz.value/24, 0/*tz*/,
+                                          ISO8601ConversionOptions( 3/*timeItems*/, 3/*precision*/, true/*timeZone*/ ) ) );
+   if ( data.ra.defined )
+      properties << ImageProperty( "Observation:Center:RA", data.ra.value );
+   if ( data.dec.defined )
+      properties << ImageProperty( "Observation:Center:Dec", data.dec.value );
+   if ( data.equinox.defined )
+      properties << ImageProperty( "Observation:Equinox", data.equinox.value );
+   return properties;
+}
+
 static String UniqueFilePath( const String& filePath )
 {
    if ( !File::Exists( filePath ) )
@@ -667,6 +939,8 @@ void AbstractINDICCDFrameExecution::Perform()
    try
    {
       m_instance.ValidateDevice();
+
+      String telescopeName = m_instance.TelescopeDeviceName();
 
       m_instance.SendDeviceProperties( false/*async*/ );
 
@@ -723,6 +997,18 @@ void AbstractINDICCDFrameExecution::Perform()
             continue; // ### TODO: Implement a p_onError process parameter
          }
 
+         double telescopeRA, telescopeDec;
+         if ( !telescopeName.IsEmpty() )
+         {
+            // Get telescope apparent epoch-of-date coordinates.
+            INDIPropertyListItem itemRA, itemDec;
+            if ( !indi->GetPropertyItem( telescopeName, "EQUATORIAL_EOD_COORD", "RA", itemRA, false/*formatted*/ ) ||
+                 !indi->GetPropertyItem( telescopeName, "EQUATORIAL_EOD_COORD", "DEC", itemDec, false/*formatted*/ ) )
+               throw Error( "Cannot get current mount coordinates for device '" + telescopeName + "'" );
+            telescopeRA = Rad( itemRA.PropertyValue.ToDouble()*15 );
+            telescopeDec = Rad( itemDec.PropertyValue.ToDouble() );
+         }
+
          ElapsedTime T;
 
          for ( bool inExposure = false; ; )
@@ -775,57 +1061,119 @@ void AbstractINDICCDFrameExecution::Perform()
             if ( !images[0].info.supported || images[0].info.NumberOfSamples() == 0 )
                throw Error( filePath + ": Invalid or unsupported image." );
 
-            IsoStringList propertyNames;
-            Array<Variant> propertyValues;
+            ImagePropertyList properties;
             if ( inputFormat.CanStoreProperties() )
             {
-               ImagePropertyDescriptionArray properties = inputFile.Properties();
-               for ( auto property : properties )
-               {
-                  propertyNames << property.id;
-                  propertyValues << inputFile.ReadProperty( property.id );
-               }
+               ImagePropertyDescriptionArray descriptions = inputFile.Properties();
+               for ( auto description : descriptions )
+                  properties << ImageProperty( description.id, inputFile.ReadProperty( description.id ) );
             }
-            /*
-             * ### TODO: ASAP: Create standard XISF properties from FITS header
-             *           keywords. We cannot rely on instance parameters here,
-             *           since the INDI device driver can impose restrictions
-             *           and the acquisition process can suffer from
-             *           unpredictable variations. Header keywords supposedly
-             *           reflect actual acquisition parameters.
-             *
-            propertyNames << "Instrument:ExposureTime";
-            propertyValues << m_instance.p_exposureTime; // unreliable?
-            ...
-             */
 
             FITSKeywordArray keywords;
             if ( inputFormat.CanStoreKeywords() )
+            {
                inputFile.Extract( keywords );
+               if ( !keywords.IsEmpty() )
+               {
+                  ImageMetadata data = ImageMetadataFromFITSKeywords( keywords );
+
+                  if ( !m_instance.p_objectName.IsEmpty() )
+                  {
+                     // Replace or add OBJNAME/OBJECT keywords.
+                     if ( data.objectName.defined )
+                     {
+                        for ( FITSHeaderKeyword& k : keywords )
+                           if ( k.name == "OBJNAME" || k.name == "OBJECT" )
+                           {
+                              k.value = m_instance.p_objectName;
+                              k.comment = "Name of observed object";
+                           }
+                     }
+                     else
+                        keywords << FITSHeaderKeyword( "OBJECT", m_instance.p_objectName, "Name of observed object" );
+
+                     data.objectName = m_instance.p_objectName;
+                  }
+
+                  if ( !telescopeName.IsEmpty() )
+                  {
+                     data.telescopeName = telescopeName;
+
+                     // Compute mean J2000 coordinates from telescope apparent
+                     // EOD coordinates.
+                     if ( data.year.defined )
+                     {
+                        double jd = ComplexTimeToJD( data.year.value, data.month.value, data.day.value, data.dayf.value + data.tz.value/24 );
+                        ApparentPosition( jd ).ApplyInverse( telescopeRA, telescopeDec );
+                        data.ra = Deg( telescopeRA );
+                        data.dec = Deg( telescopeDec );
+                        data.equinox = 2000;
+                     }
+                  }
+
+                  // Replace existing coordinate keywords with accurate mean
+                  // coordinates.
+                  if ( data.ra.defined && data.dec.defined )
+                     for ( FITSHeaderKeyword& k : keywords )
+                        if ( k.name == "OBJCTRA" )
+                        {
+                           k.value = IsoString::ToSexagesimal( data.ra.value/15,
+                                 SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, false/*sign*/, 0/*width*/, ' '/*separator*/ ) );
+                           k.comment = "Right Ascension of the center of the image";
+                        }
+                        else if ( k.name == "OBJCTDEC" )
+                        {
+                           k.value = IsoString::ToSexagesimal( data.dec.value,
+                                 SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, true/*sign*/, 0/*width*/, ' '/*separator*/ ) );
+                           k.comment = "Declination of the center of the image";
+                        }
+                        else if ( k.name == "EQUINOX" )
+                        {
+                           k.value = "2000.0";
+                           k.comment = "Equinox of the celestial coordinate system";
+                        }
+
+                  // If not already available, try to get the telescope
+                  // aperture from standard device properties.
+                  if ( !data.aperture.defined )
+                     if ( indi->GetPropertyItem( telescopeName, "TELESCOPE_INFO", "TELESCOPE_APERTURE", item, false/*formatted*/ ) )
+                     {
+                        double apertureMM = Round( item.PropertyValue.ToDouble(), 3 );
+                        data.aperture = apertureMM/1000;
+                        keywords << FITSHeaderKeyword( "APTDIA", apertureMM, "Aperture diameter (mm)" );
+                     }
+
+                  // If not already available, try to get the telescope
+                  // focal length from standard device properties.
+                  if ( !data.focalLength.defined )
+                     if ( indi->GetPropertyItem( telescopeName, "TELESCOPE_INFO", "TELESCOPE_FOCAL_LENGTH", item, false/*formatted*/ ) )
+                     {
+                        double focalLengthMM = Round( item.PropertyValue.ToDouble(), 3 );
+                        data.focalLength = focalLengthMM/1000;
+                        keywords << FITSHeaderKeyword( "FOCALLEN", focalLengthMM, "Focal length (mm)" );
+                     }
+
+                  properties << ImagePropertiesFromImageMetadata( data );
+               }
+            }
+
+            // Generate an initial XISF history record.
+            {
+               time_t t0 = ::time( nullptr );
+               const tm* t = ::gmtime( &t0 );
+               String timeStamp = String::ToISO8601DateTime( t->tm_year+1900, t->tm_mon+1, t->tm_mday,
+                                                   (t->tm_hour + (t->tm_min + t->tm_sec/60.0)/60.0)/24.0, 0/*tz*/,
+                                                   ISO8601ConversionOptions( 3/*timeItems*/, 3/*precision*/, true/*timeZone*/ ) );
+               properties << ImageProperty( "Processing:History",
+                                            timeStamp + " Acquired with " + PixInsightVersion::AsString() + '\n' +
+                                            timeStamp + " Acquired with " + Module->ReadableVersion() + '\n' +
+                                            timeStamp + " Acquired with " + m_instance.Meta()->Id() + " process\n" );
+            }
+
+            // Generate FITS COMMENT and HISTORY records
             keywords << FITSHeaderKeyword( "COMMENT", IsoString(), "Acquired with " + PixInsightVersion::AsString() )
                      << FITSHeaderKeyword( "HISTORY", IsoString(), "Acquired with " + Module->ReadableVersion() )
                      << FITSHeaderKeyword( "HISTORY", IsoString(), "Acquired with " + m_instance.Meta()->Id() + " process" );
-
-            /*
-             * Store the coordinates of the observation point. We need these
-             * to implement differential pointing corrections; see for example
-             * INDIMountInstance::ExecuteOn().
-             */
-            {
-               double centerRA = -1, centerDec = -91;
-               for ( auto k : keywords )
-                  if ( k.name == "OBJCTRA" )
-                     k.StripValueDelimiters().TrySexagesimalToDouble( centerRA, ' ' );
-                  else if ( k.name == "OBJCTDEC" )
-                     k.StripValueDelimiters().TrySexagesimalToDouble( centerDec, ' ' );
-               if ( centerRA >= 0 && centerDec >= -90 )
-               {
-                  propertyNames << "Observation:Center:RA";
-                  propertyValues << centerRA*15;
-                  propertyNames << "Observation:Center:Dec";
-                  propertyValues << centerDec;
-               }
-            }
 
             ICCProfile iccProfile;
             if ( inputFormat.CanStoreICCProfiles() )
@@ -882,45 +1230,36 @@ void AbstractINDICCDFrameExecution::Perform()
                if ( !outputFile.Create( outputFilePath, outputHints ) )
                   throw CatchedException();
 
-               if ( !propertyNames.IsEmpty() )
-                  if ( outputFormat.CanStoreProperties() )
-                     for ( size_type i = 0; i < propertyNames.Length(); ++i )
-                        outputFile.WriteProperty( propertyNames[i], propertyValues[i] );
+               for ( auto property : properties )
+                  outputFile.WriteProperty( property.key, property.value );
 
-               if ( outputFormat.CanStoreKeywords() )
-                  outputFile.Embed( keywords );
+               outputFile.Embed( keywords );
 
                if ( iccProfile.IsProfile() )
-                  if ( outputFormat.CanStoreICCProfiles() )
-                     outputFile.Embed( iccProfile );
+                  outputFile.Embed( iccProfile );
 
                if ( rgbws != RGBColorSystem::sRGB )
-                  if ( outputFormat.CanStoreRGBWS() )
-                     outputFile.WriteRGBWS( rgbws );
+                  outputFile.WriteRGBWS( rgbws );
 
-               if ( outputFormat.CanStoreDisplayFunctions() )
+               if ( m_instance.p_autoStretch )
                {
-                  if ( m_instance.p_autoStretch )
+                  int n = image.NumberOfNominalChannels();
+                  DVector center( n );
+                  DVector sigma( n );
+                  for ( int i = 0; i < n; ++i )
                   {
-                     int n = image.NumberOfNominalChannels();
-                     DVector center( n );
-                     DVector sigma( n );
-                     for ( int i = 0; i < n; ++i )
-                     {
-                        center[i] = image.Median( Rect( 0 ), i, i );
-                        sigma[i] = 1.4826 * image.MAD( center[i], Rect( 0 ), i, i );
-                     }
-                     df.SetLinkedRGB( m_instance.p_linkedAutoStretch );
-                     df.ComputeAutoStretch( sigma, center );
+                     center[i] = image.Median( Rect( 0 ), i, i );
+                     sigma[i] = 1.4826 * image.MAD( center[i], Rect( 0 ), i, i );
                   }
-
-                  if ( !df.IsIdentityTransformation() )
-                     outputFile.WriteDisplayFunction( df );
+                  df.SetLinkedRGB( m_instance.p_linkedAutoStretch );
+                  df.ComputeAutoStretch( sigma, center );
                }
 
+               if ( !df.IsIdentityTransformation() )
+                  outputFile.WriteDisplayFunction( df );
+
                if ( !cfa.IsEmpty() )
-                  if ( outputFormat.CanStoreColorFilterArrays() )
-                     outputFile.WriteColorFilterArray( cfa );
+                  outputFile.WriteColorFilterArray( cfa );
 
                outputFile.SetOptions( images[0].options );
 
@@ -972,11 +1311,9 @@ void AbstractINDICCDFrameExecution::Perform()
 
                   inputFile.Close();
 
-                  if ( !propertyNames.IsEmpty() )
-                     for ( size_type i = 0; i < propertyNames.Length(); ++i )
-                        if ( propertyValues[i].IsValid() )
-                           view.SetPropertyValue( propertyNames[i], propertyValues[i], false/*notify*/,
-                                                  ViewPropertyAttribute::Storable|ViewPropertyAttribute::Permanent );
+                  for ( auto property : properties )
+                     view.SetPropertyValue( property.key, property.value, false/*notify*/,
+                                            ViewPropertyAttribute::Storable|ViewPropertyAttribute::Permanent );
 
                   window.SetKeywords( keywords );
 
@@ -1078,4 +1415,4 @@ int AbstractINDICCDFrameExecution::s_numberOfChannels = 0;
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInstance.cpp - Released 2016/06/04 15:14:47 UTC
+// EOF INDICCDFrameInstance.cpp - Released 2016/06/17 12:50:37 UTC

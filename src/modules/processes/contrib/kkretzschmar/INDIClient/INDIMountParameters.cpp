@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.12.0183
+// Standard INDIClient Process Module Version 01.00.14.0193
 // ----------------------------------------------------------------------------
-// INDIMountParameters.cpp - Released 2016/06/04 15:14:47 UTC
+// INDIMountParameters.cpp - Released 2016/06/17 12:50:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -57,14 +57,17 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-IMCDeviceName* TheIMCDeviceNameParameter = nullptr;
-IMCCommand*    TheIMCCommandParameter = nullptr;
-IMCSlewRate*   TheIMCSlewRateParameter = nullptr;
-IMCTargetRA*   TheIMCTargetRAParameter = nullptr;
-IMCTargetDec*  TheIMCTargetDecParameter = nullptr;
-IMCCurrentLST* TheIMCCurrentLSTParameter = nullptr;
-IMCCurrentRA*  TheIMCCurrentRAParameter = nullptr;
-IMCCurrentDec* TheIMCCurrentDecParameter = nullptr;
+IMCDeviceName*              TheIMCDeviceNameParameter = nullptr;
+IMCCommand*                 TheIMCCommandParameter = nullptr;
+IMCSlewRate*                TheIMCSlewRateParameter = nullptr;
+IMCTargetRA*                TheIMCTargetRAParameter = nullptr;
+IMCTargetDec*               TheIMCTargetDecParameter = nullptr;
+IMCComputeApparentPosition* TheIMCComputeApparentPositionParameter = nullptr;
+IMCCurrentLST*              TheIMCCurrentLSTParameter = nullptr;
+IMCCurrentRA*               TheIMCCurrentRAParameter = nullptr;
+IMCCurrentDec*              TheIMCCurrentDecParameter = nullptr;
+IMCApparentTargetRA*        TheIMCApparentTargetRAParameter = nullptr;
+IMCApparentTargetDec*       TheIMCApparentTargetDecParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -110,7 +113,7 @@ IsoString IMCCommand::ElementId( size_type i ) const
    case MoveWestStop:   return "Command_MoveWest_Stop";
    case MoveEastStart:  return "Command_MoveEast_Start";
    case MoveEastStop:   return "Command_MoveEast_Stop";
-   case Goto:           return "Command_Goto";
+   case GoTo:           return "Command_GoTo";
    case Sync:           return "Command_Sync";
    case ParkDefault:    return "Command_ParkDefault";
    }
@@ -122,6 +125,45 @@ int IMCCommand::ElementValue( size_type i ) const
 }
 
 size_type IMCCommand::DefaultValueIndex() const
+{
+   return size_type( Default );
+}
+
+// ----------------------------------------------------------------------------
+
+IMCSlewRate::IMCSlewRate( MetaProcess* P ) : MetaEnumeration( P )
+{
+   TheIMCSlewRateParameter = this;
+}
+
+IsoString IMCSlewRate::Id() const
+{
+   return "slewRate";
+}
+
+size_type IMCSlewRate::NumberOfElements() const
+{
+   return NumberOfCommands;
+}
+
+IsoString IMCSlewRate::ElementId( size_type i ) const
+{
+   switch ( i )
+   {
+   default:
+   case Guide:     return "SlewRate_Guide";
+   case Centering: return "SlewRate_Centering";
+   case Find:      return "SlewRate_Find";
+   case Max:       return "SlewRate_Max";
+   }
+}
+
+int IMCSlewRate::ElementValue( size_type i ) const
+{
+   return int( i );
+}
+
+size_type IMCSlewRate::DefaultValueIndex() const
 {
    return size_type( Default );
 }
@@ -192,41 +234,19 @@ double IMCTargetDec::MaximumValue() const
 
 // ----------------------------------------------------------------------------
 
-IMCSlewRate::IMCSlewRate( MetaProcess* P ) : MetaEnumeration( P )
+IMCComputeApparentPosition::IMCComputeApparentPosition( MetaProcess* P ) : MetaBoolean( P )
 {
-   TheIMCSlewRateParameter = this;
+   TheIMCComputeApparentPositionParameter = this;
 }
 
-IsoString IMCSlewRate::Id() const
+IsoString IMCComputeApparentPosition::Id() const
 {
-   return "slewRate";
+   return "computeApparentPosition";
 }
 
-size_type IMCSlewRate::NumberOfElements() const
+bool IMCComputeApparentPosition::DefaultValue() const
 {
-   return NumberOfCommands;
-}
-
-IsoString IMCSlewRate::ElementId( size_type i ) const
-{
-   switch ( i )
-   {
-   default:
-   case Guide:     return "SlewRate_Guide";
-   case Centering: return "SlewRate_Centering";
-   case Find:      return "SlewRate_Find";
-   case Max:       return "SlewRate_Max";
-   }
-}
-
-int IMCSlewRate::ElementValue( size_type i ) const
-{
-   return int( i );
-}
-
-size_type IMCSlewRate::DefaultValueIndex() const
-{
-   return size_type( Default );
+   return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -243,7 +263,7 @@ IsoString IMCCurrentLST::Id() const
 
 int IMCCurrentLST::Precision() const
 {
-   return 6;
+   return 8;
 }
 
 double IMCCurrentLST::DefaultValue() const
@@ -280,7 +300,7 @@ IsoString IMCCurrentRA::Id() const
 
 int IMCCurrentRA::Precision() const
 {
-   return 6;
+   return 8;
 }
 
 double IMCCurrentRA::DefaultValue() const
@@ -317,7 +337,7 @@ IsoString IMCCurrentDec::Id() const
 
 int IMCCurrentDec::Precision() const
 {
-   return 6;
+   return 7;
 }
 
 double IMCCurrentDec::DefaultValue() const
@@ -342,7 +362,81 @@ bool IMCCurrentDec::IsReadOnly() const
 
 // ----------------------------------------------------------------------------
 
+IMCApparentTargetRA::IMCApparentTargetRA( MetaProcess* P ) : MetaDouble( P )
+{
+   TheIMCApparentTargetRAParameter = this;
+}
+
+IsoString IMCApparentTargetRA::Id() const
+{
+   return "apparentTargetRA";
+}
+
+int IMCApparentTargetRA::Precision() const
+{
+   return 8;
+}
+
+double IMCApparentTargetRA::DefaultValue() const
+{
+   return -1; // < 0 -> unknown RA
+}
+
+double IMCApparentTargetRA::MinimumValue() const
+{
+   return -1; // < 0 -> unknown RA
+}
+
+double IMCApparentTargetRA::MaximumValue() const
+{
+   return 24;
+}
+
+bool IMCApparentTargetRA::IsReadOnly() const
+{
+   return true;
+}
+
+// ----------------------------------------------------------------------------
+
+IMCApparentTargetDec::IMCApparentTargetDec( MetaProcess* P ) : MetaDouble( P )
+{
+   TheIMCApparentTargetDecParameter = this;
+}
+
+IsoString IMCApparentTargetDec::Id() const
+{
+   return "apparentTargetDec";
+}
+
+int IMCApparentTargetDec::Precision() const
+{
+   return 7;
+}
+
+double IMCApparentTargetDec::DefaultValue() const
+{
+   return -91; // < -90 -> unknown Dec
+}
+
+double IMCApparentTargetDec::MinimumValue() const
+{
+   return -91; // < -90 -> unknown Dec
+}
+
+double IMCApparentTargetDec::MaximumValue() const
+{
+   return +90;
+}
+
+bool IMCApparentTargetDec::IsReadOnly() const
+{
+   return true;
+}
+
+// ----------------------------------------------------------------------------
+
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountParameters.cpp - Released 2016/06/04 15:14:47 UTC
+// EOF INDIMountParameters.cpp - Released 2016/06/17 12:50:37 UTC

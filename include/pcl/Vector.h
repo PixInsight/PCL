@@ -1725,13 +1725,13 @@ public:
     * Computes spherical coordinates from this three-component vector.
     *
     * \param[out] lon   Reference to a variable where the computed longitude
-    *                   in radians, in the range [-pi/2,+pi/2], will be stored.
-    *                   If the vector points to one pole, that is, if *lat is
-    *                   either -pi/4 or +pi/4, the computed longitude will be
+    *                   in radians, in the range [-pi,+pi], will be stored. If
+    *                   the vector points to one pole, that is, if *lat is
+    *                   either -pi/2 or +pi/2, the computed longitude will be
     *                   zero.
     *
     * \param[out] lat   Reference to a variable where the computed latitude
-    *                   in radians, in the range [-pi/4,+pi/4], will be stored.
+    *                   in radians, in the range [-pi/2,+pi/2], will be stored.
     *
     * This function requires a vector with at least three coordinates. For
     * performance reasons, the vector length is not verified.
@@ -1751,7 +1751,7 @@ public:
       double z = *At( 2 );
       double m2 = x*x + y*y;
       lon = T1( (m2 == 0) ? 0.0 : ArcTan( y, x ) );
-      lat = T2( (z == 0)  ? 0.0 : ArcTan( z, Sqrt( m2 ) ) );
+      lat = T2( (z == 0)  ? 0.0 : ArcTan( z, pcl::Sqrt( m2 ) ) );
    }
 
    /*!

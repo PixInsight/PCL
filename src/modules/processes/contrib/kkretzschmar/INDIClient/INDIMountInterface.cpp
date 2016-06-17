@@ -234,7 +234,7 @@ void CoordinateSearchDialog::e_Click( Button& sender, bool checked )
 
       //String url( "http://vizier.cfa.harvard.edu/viz-bin/nph-sesame/-oI/A?" );
       //url << objectName;
-      String url( "http://simbad.u-strasbg.fr/simbad/sim-tap/sync?request=doQuery&lang=adql&format=text&query=" );
+      String url( "http://simbad.u-strasbg.fr/simbad/sim-tap/sync?request=doQuery&lang=adql&format=TSV&query=" );
       String select_stmt = "SELECT oid, ra, dec, pmra, pmdec, plx_value, rvz_radvel, main_id, otype_txt, sp_type, flux "
                            "FROM basic "
                            "JOIN ident ON ident.oidref = oid "
@@ -263,11 +263,12 @@ void CoordinateSearchDialog::e_Click( Button& sender, bool checked )
          //SearchInfo_TextBox.Insert( "<end><cbr><br><raw>" + m_downloadData + "</raw>" );
 
          StringList lines;
-         m_downloadData.Break( lines, '\n', true/*trim*/ );
-         if ( lines.Length() >= 3 )
+         m_downloadData.Break( lines, '\n' );
+         if ( lines.Length() >= 2 )
          {
+            // The first line has column titles. The second line has values.
             StringList tokens;
-            lines[2].Break( tokens, '|', true/*trim*/ );
+            lines[1].Break( tokens, '\t', true/*trim*/ );
             if ( tokens.Length() == 11 )
             {
                m_RA = tokens[1].ToDouble();                                         // degrees

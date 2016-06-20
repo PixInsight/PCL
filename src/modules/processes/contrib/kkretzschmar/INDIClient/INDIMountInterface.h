@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.14.0193
+// Standard INDIClient Process Module Version 01.00.15.0199
 // ----------------------------------------------------------------------------
-// INDIMountInterface.h - Released 2016/06/17 12:50:37 UTC
+// INDIMountInterface.h - Released 2016/06/20 17:47:31 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -328,4 +328,4 @@ PCL_END_LOCAL
 #endif   // __INDIMountInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInterface.h - Released 2016/06/17 12:50:37 UTC
+// EOF INDIMountInterface.h - Released 2016/06/20 17:47:31 UTC

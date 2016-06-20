@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.14.0193
+// Standard INDIClient Process Module Version 01.00.15.0199
 // ----------------------------------------------------------------------------
-// INDIMountInterface.cpp - Released 2016/06/17 12:50:37 UTC
+// INDIMountInterface.cpp - Released 2016/06/20 17:47:31 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -134,11 +134,13 @@ CoordinateSearchDialog::CoordinateSearchDialog() :
 
    Get_Button.SetText( "Get" );
    Get_Button.SetIcon( ScaledResource( ":/icons/window-import.png" ) );
+   Get_Button.SetToolTip( "<p>Acquire apparent coordinates.</p>" );
    Get_Button.OnClick( (Button::click_event_handler)&CoordinateSearchDialog::e_Click, *this );
    Get_Button.Disable();
 
    GoTo_Button.SetText( "GoTo" );
    GoTo_Button.SetIcon( ScaledResource( ":/icons/play.png" ) );
+   GoTo_Button.SetToolTip( "<p>Slew to apparent coordinates.</p>" );
    GoTo_Button.OnClick( (Button::click_event_handler)&CoordinateSearchDialog::e_Click, *this );
    GoTo_Button.Disable();
 
@@ -686,6 +688,7 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    MountSearch_Button.SetText( "Search" );
    MountSearch_Button.SetIcon( w.ScaledResource( ":/icons/find.png" ) );
    MountSearch_Button.SetStyleSheet( "QPushButton { text-align: left; }" );
+   MountSearch_Button.SetToolTip( "<p>Open the Online Coordinate Search dialog.</p>" );
    MountSearch_Button.OnClick( (Button::click_event_handler)&INDIMountInterface::e_Click, w );
 
    MountSearch_Sizer.SetSpacing( 8 );
@@ -1277,4 +1280,4 @@ void INDIMountInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInterface.cpp - Released 2016/06/17 12:50:37 UTC
+// EOF INDIMountInterface.cpp - Released 2016/06/20 17:47:31 UTC

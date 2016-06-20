@@ -126,7 +126,7 @@ int NumericEdit::PrecisionForValue( double value ) const
    {
       value = Abs( value );
       if ( value >= 10 )
-         return Max( 0, m_precision - Max( 0, TruncInt( Log( value ) ) ) );
+         return Max( 0, int( m_precision ) - Max( 0, TruncInt( Log( value ) ) ) );
    }
    return m_precision;
 }

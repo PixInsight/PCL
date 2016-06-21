@@ -208,7 +208,7 @@ String INDICCDFrameInstance::TelescopeDeviceName( bool throwErrors ) const
       return String();
 
    INDIClient* indi = INDIClient::TheClientOrDie();
-   throwErrors &= p_requireSelectedTelescope;
+   throwErrors &= bool( p_requireSelectedTelescope );
    String deviceName;
    INDIPropertyListItem item;
    switch ( p_telescopeSelection )

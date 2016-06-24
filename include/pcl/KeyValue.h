@@ -94,6 +94,14 @@ public:
    }
 
    /*!
+    * Constructs a key-value association with the specified key and a
+    * default-constructed value.
+    */
+   KeyValue( const T1& k ) : key( k ), value()
+   {
+   }
+
+   /*!
     * Copy constructor.
     */
    KeyValue( const KeyValue& x ) : key( x.key ), value( x.value )

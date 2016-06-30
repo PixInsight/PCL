@@ -4,7 +4,7 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// pcl/ChebyshevFit.h - Released 2016/06/30 10:12:37 UTC
+// pcl/ChebyshevFit.h - Released 2016/06/30 18:03:15 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
@@ -115,6 +115,11 @@ class GenericChebyshevFit
 public:
 
    /*!
+    * Represents an ordered list of Chebyshev polynomial coefficients.
+    */
+   typedef GenericVector<Ty>        coefficients;
+
+   /*!
     * Represents a set of ordered lists of Chebyshev polynomial coefficients.
     */
    typedef GenericMultiVector<Ty>   coefficient_series;
@@ -132,7 +137,7 @@ public:
    /*!
     * Constructs a truncated Chebyshev polynomial expansion with \a n
     * coefficients to approximate the specified N-dimensional, vector-valued
-    * function \a f in the range [\a x1,\a x2] of the independent variable.
+    * function \a f in the interval [\a x1,\a x2] of the independent variable.
     *
     * The function \a f will be called \a n times and should have the following
     * prototype (or equivalent by means of suitable type conversions and/or
@@ -145,13 +150,13 @@ public:
     * The expansion process will compute n^2 + n cosines, which may dominate the
     * complexity of the process if the function \a f is comparatively fast.
     *
-    * The range [\a x1,\a x2] must not be empty or insignificant with respect
-    * to the machine epsilon. If that happens, this constructor will throw an
-    * appropriate Error exception. The range bounds can be specified in any
-    * order, that is, \a x2 can legally be < \a x1; in such case the bounds
-    * will be implicitly swapped by this constructor.
+    * The interval [\a x1,\a x2] must not be empty or insignificant with
+    * respect to the machine epsilon. If that happens, this constructor will
+    * throw an appropriate Error exception. The interval bounds can be
+    * specified in any order, that is, \a x2 can legally be < \a x1; in such
+    * case the bounds will be implicitly swapped by this constructor.
     *
-    * The range [\a x1,\a x2] will be also the valid range of evaluation for
+    * The interval [\a x1,\a x2] will be also the valid range of evaluation for
     * this object, which can be retrieved with LowerBound() and UpperBound().
     * See also the Evaluate() member function.
     *
@@ -159,7 +164,7 @@ public:
     * \a n &le; 1, the specified value will be ignored and \a n = 2 will be
     * forced. Typically, a relatively large series length should be used, say
     * between 30 and 100 coefficients, depending on the rate and amplitude of
-    * function variations within the fitting range. The polynomial expansion
+    * function variations within the fitting interval. The polynomial expansion
     * can be further truncated to approximate the function to the desired error
     * bound. See the Truncate() and Evaluate() member functions for details.
     */
@@ -172,7 +177,7 @@ public:
       PCL_PRECONDITION( N > 0 )
       PCL_PRECONDITION( n > 1 )
       if ( 1 + dx == 1 )
-         throw Error( "GenericChebyshevFit: Empty or insignificant function evaluation range." );
+         throw Error( "GenericChebyshevFit: Empty or insignificant function evaluation interval." );
       N = m.Length();
       n = m[0];
       Tx dx2 = dx/2;
@@ -189,6 +194,34 @@ public:
                s += y[k][i] * Cos( Const<Ty>::pi()*j*(k + 0.5)/n );
             c[i][j] = k*s;
          }
+   }
+
+   /*!
+    * Constructs a truncated Chebyshev polynomial expansion from the specified
+    * coefficient series \a ck to approximate a vector-valued function in the
+    * interval [\a x1,\a x2] of the independent variable. The dimension of the
+    * approximated function and the coefficient series lengths are acquired
+    * from the specified container \a ck.
+    *
+    * This constructor performs basic coherence and structural integrity checks
+    * on the specified parameters, and throws the appropriate Error exception
+    * if it detects any problem. However, the validity of polynomial expansion
+    * coefficients cannot be verified; ensuring it is the responsibility of the
+    * caller.
+    */
+   GenericChebyshevFit( const coefficient_series& ck, Tx x1, Tx x2 ) :
+      dx( Abs( x2 - x1 ) ),
+      x0( (x1 + x2)/2 ),
+      c( ck ),
+      m( ck.Length() )
+   {
+      if ( 1 + dx == 1 )
+         throw Error( "GenericChebyshevFit: Empty or insignificant function evaluation interval." );
+      if ( c.IsEmpty() )
+         throw Error( "GenericChebyshevFit: Empty polynomial expansion." );
+      for ( int i = 0; i < m.Length(); ++i )
+         if ( (m[i] = c[i].Length()) < 1 )
+            throw Error( "GenericChebyshevFit: Invalid coefficient series for dimension " + String( i ) + '.' );
    }
 
    /*!
@@ -249,14 +282,16 @@ public:
 
    /*!
     * Returns the number of coefficients in the generated Chebyshev polynomial
-    * expansion. This is the number of coefficients that was specified in the
-    * class constructor.
+    * expansion for the specified zero-based vector component index \a i. This
+    * is the number of coefficients that was specified or acquired in a class
+    * constructor.
     *
     * \sa TruncatedLength()
     */
-   int Length() const
+   int Length( int i = 0 ) const
    {
-      return c[0].Length();
+      PCL_PRECONDITION( i >= 0 && i < NumberOfComponents() )
+      return c[i].Length();
    }
 
    /*!
@@ -335,7 +370,7 @@ public:
     * Sum_i( |ci| ) < e
     *
     * where ci is a polynomial coefficient and the zero-based subindex i is in
-    * the range [m,n-1].
+    * the interval [m,n-1].
     *
     * The truncated Chebyshev expansion will approximate the fitted function
     * component with a maximum error close to &plusmn;|e| within the fitting
@@ -372,11 +407,20 @@ public:
    }
 
    /*!
+    * Returns a reference to the immutable set of Chebyshev polynomial
+    * expansion coefficients in this object.
+    */
+   const coefficient_series& Coefficients() const
+   {
+      return c;
+   }
+
+   /*!
     * Evaluates the truncated Chebyshev polynomial expansion for the specified
     * value \a x of the independent variable, and returns the approximated
     * function value.
     *
-    * The specified evaluation point \a x must lie within the fitting range,
+    * The specified evaluation point \a x must lie within the fitting interval,
     * given by LowerBound() and UpperBound(), which was specified as the \a x1
     * and \a x2 arguments when the function was initially fitted by the class
     * constructor. For performance reasons, this precondition is not verified
@@ -425,7 +469,8 @@ public:
     * the function fitted by this object.
     *
     * The returned object can be used to evaluate the derivative within the
-    * fitting range of this object, defined by LowerBound() and UpperBound().
+    * fitting interval of this object, defined by LowerBound() and
+    * UpperBound().
     *
     * The returned object will always own Chebyshev polynomials with the length
     * of the originally fitted series, \e not of the current truncated lengths,
@@ -435,15 +480,18 @@ public:
     */
    GenericChebyshevFit Derivative() const
    {
-      int n = Max( 1, c[0].Length() - 1 );
       int N = NumberOfComponents();
       GenericChebyshevFit ch1;
       ch1.dx = dx;
       ch1.x0 = x0;
-      ch1.c = coefficient_series( N, n );
-      ch1.m = IVector( n, N );
-      if ( n > 1 )
-         for ( int i = 0; i < N; ++i )
+      ch1.c = coefficient_series( N );
+      ch1.m = IVector( N );
+      for ( int i = 0; i < N; ++i )
+      {
+         int n = Max( 1, c[i].Length()-1 );
+         ch1.c[i] = coefficients( n );
+         ch1.m[i] = n;
+         if ( n > 1 )
          {
             ch1.c[i][n-1] = 2*n*c[i][n];
             ch1.c[i][n-2] = 2*(n-1)*c[i][n-1];
@@ -451,8 +499,9 @@ public:
                ch1.c[i][j] = ch1.c[i][j+2] + 2*(j+1)*c[i][j+1];
             ch1.c[i] *= Ty( 2 )/dx;
          }
-      else
-         ch1.c = Ty( 0 );
+         else
+            ch1.c[i] = Ty( 0 );
+      }
       return ch1;
    }
 
@@ -461,7 +510,7 @@ public:
     * integral of the function fitted by this object.
     *
     * The returned object can be used to evaluate the integral within the
-    * fitting range of this object, as defined by LowerBound() and
+    * fitting interval of this object, as defined by LowerBound() and
     * UpperBound(). The constant of integration is set to a value such that the
     * integral is zero at the lower fitting bound.
     *
@@ -473,27 +522,29 @@ public:
     */
    GenericChebyshevFit Integral() const
    {
-      int n = c[0].Length();
       int N = NumberOfComponents();
       GenericChebyshevFit ch;
       ch.dx = dx;
       ch.x0 = x0;
-      ch.c = coefficient_series( N, n );
-      ch.m = IVector( n, N );
-      if ( n > 1 )
+      ch.c = coefficient_series( N );
+      ch.m = IVector( N );
+      for ( int i = 0; i < N; ++i )
       {
-         const Ty k = Ty( dx )/4;
-         for ( int i = 0; i < N; ++i )
+         int n = c[i].Length();
+         ch.c[i] = coefficients( n );
+         ch.m[i] = n;
+         if ( n > 1 )
          {
+            const Ty k = Ty( dx )/4;
             Ty s = Ty( 0 );
             int f = 1;
             for ( int j = 1; j < n-1; ++j, f = -f )
                s += f*(ch.c[i][j] = k*(c[i][j-1] - c[i][j+1])/j);
             ch.c[i][0] = 2*(s + f*(ch.c[i][n-1] = k*c[i][n-2]/(n-1)));
          }
+         else
+            ch.c[i] = Ty( 0 );
       }
-      else
-         ch.c = Ty( 0 );
       return ch;
    }
 
@@ -833,4 +884,4 @@ typedef F80ScalarChebyshevFit                         LDScalarChebyshevFit;
 #endif  // __PCL_ChebyshevFit_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ChebyshevFit.h - Released 2016/06/30 10:12:37 UTC
+// EOF pcl/ChebyshevFit.h - Released 2016/06/30 18:03:15 UTC

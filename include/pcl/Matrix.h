@@ -3423,6 +3423,36 @@ typedef GenericMatrix<Complex32>    C32Matrix;
  */
 typedef GenericMatrix<Complex64>    C64Matrix;
 
+#ifndef _MSC_VER
+
+/*!
+ * \class pcl::F80Matrix
+ * \ingroup matrix_types
+ * \brief 80-bit extended precision floating point real matrix.
+ *
+ * %F80Matrix is a template instantiation of GenericMatrix for \c long
+ * \c double.
+ *
+ * \note This template instantiation is not available on Windows with Visual
+ * C++ compilers.
+ */
+typedef GenericMatrix<long double>  F80Matrix;
+
+/*!
+ * \class pcl::LDMatrix
+ * \ingroup matrix_types
+ * \brief 80-bit extended precision floating point real matrix.
+ *
+ * %LDMatrix is an alias for F80Matrix. It is a template instantiation of
+ * GenericMatrix for \c long \c double.
+ *
+ * \note This template instantiation is not available on Windows with Visual
+ * C++ compilers.
+ */
+typedef F80Matrix                   LDMatrix;
+
+#endif   // !_MSC_VER
+
 #endif   // !__PCL_NO_MATRIX_INSTANTIATE
 
 // ----------------------------------------------------------------------------

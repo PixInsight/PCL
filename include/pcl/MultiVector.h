@@ -174,6 +174,23 @@ public:
    }
 
    /*!
+    * Constructs a multivector with uninitialized component vectors.
+    *
+    * \param length        Number of multivector components.
+    *
+    * \param vectorLength  Number of vector components (>= 0).
+    *
+    * This constructor does not initialize vector components. The newly created
+    * vectors will contain unpredictable values.
+    */
+   GenericMultiVector( size_type length, int vectorLength ) :
+      multivector_implementation( length )
+   {
+      for ( iterator i = this->Begin(), j = this->End(); i < j; ++i )
+         *i = vector( vectorLength );
+   }
+
+   /*!
     * Constructs a multivector and fills it with a constant scalar.
     *
     * \param value         Initial value for all vector components.

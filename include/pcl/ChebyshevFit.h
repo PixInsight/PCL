@@ -79,6 +79,8 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
+template <typename Tx, typename Ty> class GenericScalarChebyshevFit;
+
 /*!
  * \class GenericChebyshevFit
  * \brief Function approximation by Chebyshev polynomial expansion
@@ -413,7 +415,7 @@ public:
    /*!
     * A synonym for Evaluate().
     */
-   Ty operator ()( Tx x ) const
+   function_value operator ()( Tx x ) const
    {
       return Evaluate( x );
    }
@@ -509,6 +511,144 @@ private:
    GenericChebyshevFit()
    {
    }
+
+   friend class GenericScalarChebyshevFit<Tx,Ty>;
+};
+
+// ----------------------------------------------------------------------------
+
+template <typename Tx, typename Ty>
+class GenericScalarChebyshevFit : public GenericChebyshevFit<Tx,Ty>
+{
+public:
+
+   /*!
+    * Constructs a truncated Chebyshev polynomial expansion with \a n
+    * coefficients to approximate the specified N-dimensional, scalar-valued
+    * function \a f in the interval [\a x1,\a x2] of the independent variable.
+    *
+    * See GenericChebyshevFit::GenericChebyshevFit() for detailed information.
+    */
+   template <class F>
+   GenericScalarChebyshevFit( F f, Tx x1, Tx x2, int n ) :
+      GenericChebyshevFit<Tx,Ty>( [f]( Tx x ){ return GenericVector<Ty>( f( x ), 1 ); }, x1, x2, 1, n )
+   {
+   }
+
+   /*!
+    * Copy constructor.
+    */
+   GenericScalarChebyshevFit( const GenericScalarChebyshevFit& ) = default;
+
+   /*!
+    * Move constructor.
+    */
+   GenericScalarChebyshevFit( GenericScalarChebyshevFit&& ) = default;
+
+   /*!
+    * Copy assignment operator.
+    */
+   GenericScalarChebyshevFit& operator =( const GenericScalarChebyshevFit& ) = default;
+
+   /*!
+    * Move assignment operator.
+    */
+   GenericScalarChebyshevFit& operator =( GenericScalarChebyshevFit&& ) = default;
+
+   /*!
+    * Returns the number of coefficients in the truncated Chebyshev polynomial
+    * expansion.
+    *
+    * \sa Truncate(), Length()
+    */
+   int TruncatedLength() const
+   {
+      return GenericChebyshevFit<Tx,Ty>::TruncatedLength( 0 );
+   }
+
+   /*!
+    * Returns true iff the Chebyshev polynomial expansion has been truncated.
+    *
+    * \sa Truncate(), TruncatedLength()
+    */
+   bool IsTruncated() const
+   {
+      return GenericChebyshevFit<Tx,Ty>::IsTruncated( 0 );
+   }
+
+   /*!
+    * Returns an estimate of the maximum error in the truncated Chebyshev
+    * polynomial expansion.
+    *
+    * \sa Truncate()
+    */
+   Ty TruncationError() const
+   {
+      return GenericChebyshevFit<Tx,Ty>::TruncationError( 0 );
+   }
+
+   /*!
+    * Evaluates the truncated Chebyshev polynomial expansion for the specified
+    * value \a x of the independent variable, and returns the approximated
+    * function value.
+    *
+    * \sa operator ()()
+    */
+   Ty Evaluate( Tx x ) const
+   {
+      return GenericChebyshevFit<Tx,Ty>::Evaluate( x )[0];
+   }
+
+   /*!
+    * A synonym for Evaluate().
+    */
+   Ty operator ()( Tx x ) const
+   {
+      return Evaluate( x );
+   }
+
+   /*!
+    * Returns a %GenericChebyshevFit object that approximates the derivative of
+    * the function fitted by this object.
+    *
+    * See GenericChebyshevFit::Derivative() for detailed information.
+    *
+    * \sa Integral()
+    */
+   GenericScalarChebyshevFit Derivative() const
+   {
+      return GenericChebyshevFit<Tx,Ty>::Derivative();
+   }
+
+   /*!
+    * Returns a %GenericChebyshevFit object that approximates the indefinite
+    * integral of the function fitted by this object.
+    *
+    * See GenericChebyshevFit::Integral() for detailed information.
+    *
+    * \sa Derivative()
+    */
+   GenericScalarChebyshevFit Integral() const
+   {
+      return GenericChebyshevFit<Tx,Ty>::Integral();
+   }
+
+private:
+
+   /*!
+    * \internal
+    * Private constructor from the base class.
+    */
+   GenericScalarChebyshevFit( const GenericChebyshevFit<Tx,Ty>& T ) :
+      GenericChebyshevFit<Tx,Ty>()
+   {
+      this->dx = T.dx;
+      this->x0 = T.x0;
+      this->c = typename GenericChebyshevFit<Tx,Ty>::coefficient_series( 1 );
+      this->c[0] = T.c[0];
+      this->m = IVector( 1 );
+      this->m[0] = T.m[0];
+   }
 };
 
 // ----------------------------------------------------------------------------
@@ -598,6 +738,89 @@ typedef GenericChebyshevFit<long double, long double> F80ChebyshevFit;
  * C++ compilers.
  */
 typedef F80ChebyshevFit                               LDChebyshevFit;
+
+#endif   // !_MSC_VER
+
+/*!
+ * \class pcl::F32ScalarChebyshevFit
+ * \ingroup chebyshev_fit_types
+ * \brief 32-bit floating point scalar Chebyshev function approximation.
+ *
+ * %F32ScalarChebyshevFit is a template instantiation of
+ * GenericScalarChebyshevFit for the \c float type.
+ */
+typedef GenericScalarChebyshevFit<float, float>       F32ScalarChebyshevFit;
+
+/*!
+ * \class pcl::FScalarChebyshevFit
+ * \ingroup chebyshev_fit_types
+ * \brief 32-bit floating point scalar Chebyshev function approximation.
+ *
+ * %FScalarChebyshevFit is an alias for F32ScalarChebyshevFit. It is a template
+ * instantiation of GenericScalarChebyshevFit for the \c float type.
+ */
+typedef F32ScalarChebyshevFit                         FScalarChebyshevFit;
+
+/*!
+ * \class pcl::F64ScalarChebyshevFit
+ * \ingroup chebyshev_fit_types
+ * \brief 64-bit floating point scalar Chebyshev function approximation.
+ *
+ * %F64ScalarChebyshevFit is a template instantiation of
+ * GenericScalarChebyshevFit for the \c double type.
+ */
+typedef GenericScalarChebyshevFit<double, double>     F64ScalarChebyshevFit;
+
+/*!
+ * \class pcl::DScalarChebyshevFit
+ * \ingroup chebyshev_fit_types
+ * \brief 64-bit floating point scalar Chebyshev function approximation.
+ *
+ * %DScalarChebyshevFit is an alias for F64ScalarChebyshevFit. It is a template
+ * instantiation of GenericScalarChebyshevFit for the \c double type.
+ */
+typedef F64ScalarChebyshevFit                         DScalarChebyshevFit;
+
+/*!
+ * \class pcl::ScalarChebyshevFit
+ * \ingroup chebyshev_fit_types
+ * \brief 64-bit floating point scalar Chebyshev function approximation.
+ *
+ * %ScalarChebyshevFit is an alias for DScalarChebyshevFit. It is a template
+ * instantiation of GenericScalarChebyshevFit for the \c double type.
+ */
+typedef DScalarChebyshevFit                           ScalarChebyshevFit;
+
+#ifndef _MSC_VER
+
+/*!
+ * \class pcl::F80ScalarChebyshevFit
+ * \ingroup chebyshev_fit_types
+ * \brief 80-bit extended precision floating point scalar Chebyshev function
+ * approximation.
+ *
+ * %F80ScalarChebyshevFit is a template instantiation of
+ * GenericScalarChebyshevFit for the \c long \c double type.
+ *
+ * \note This template instantiation is not available on Windows with Visual
+ * C++ compilers.
+ */
+typedef GenericScalarChebyshevFit<long double, long double> F80ScalarChebyshevFit;
+
+/*!
+ * \class pcl::LDScalarChebyshevFit
+ * \ingroup chebyshev_fit_types
+ * \brief 80-bit extended precision floating point scalar Chebyshev function
+ * approximation.
+ *
+ * %LDScalarChebyshevFit is an alias for F80ScalarChebyshevFit. It is a
+ * template instantiation of GenericScalarChebyshevFit for the \c long
+ * \c double type.
+ *
+ * \note This template instantiation is not available on Windows with Visual
+ * C++ compilers.
+ */
+typedef F80ScalarChebyshevFit                         LDScalarChebyshevFit;
 
 #endif   // !_MSC_VER
 

@@ -68,25 +68,25 @@ using namespace pcl;
 /*
  * The test function
  */
-static Vector f( double x )
+static double f( double x )
 {
-   return Vector( 2*x*x + 3*x*x*x - x*Sin( x ) + Cos( 2*x ), 1 );
+   return 2*x*x + 3*x*x*x - x*Sin( x ) + Cos( 2*x );
 }
 
 /*
  * The derivative of f(x)
  */
-static Vector fd( double x )
+static double fd( double x )
 {
-   return Vector( x*(4 + 9*x) - x*Cos( x ) - Sin( x ) - 2*Sin( 2*x ), 1 );
+   return x*(4 + 9*x) - x*Cos( x ) - Sin( x ) - 2*Sin( 2*x );
 }
 
 /*
  * The indefinite integral of f(x)
  */
-static Vector fi( double x )
+static double fi( double x )
 {
-   return Vector( 1.0/12 * x*x*x*(8 + 9*x) - Sin( x ) + Cos( x )*(x + Sin( x )), 1 );
+   return 1.0/12 * x*x*x*(8 + 9*x) - Sin( x ) + Cos( x )*(x + Sin( x ));
 }
 
 int main( int argc, const char* argv[] )
@@ -108,9 +108,9 @@ int main( int argc, const char* argv[] )
 
       // Construct Chebyshev expansions for the function, its derivative and
       // its indefinite integral.
-      ChebyshevFit T( f, x1, x2, 1, n );
-      ChebyshevFit Td = T.Derivative();
-      ChebyshevFit Ti = T.Integral();
+      ScalarChebyshevFit T( f, x1, x2, n );
+      ScalarChebyshevFit Td = T.Derivative();
+      ScalarChebyshevFit Ti = T.Integral();
 
       std::cout << IsoString().Format( "n = %d  e = %.3lg\n", T.Length(), T.TruncationError() );
 
@@ -124,7 +124,7 @@ int main( int argc, const char* argv[] )
 
       // Set the arbitrary constant of integration to vanish the indefinite
       // integral at x = x1.
-      double C = fi( x1 )[0];
+      double C = fi( x1 );
       std::cout << IsoString().Format( "C = %+.15le\n", C );
 
       // Tabulate values for the function, its derivative and integral, with
@@ -135,14 +135,14 @@ int main( int argc, const char* argv[] )
          double x   = x1 + i*(x2 - x1)/numTests;
 
          // Function and its analytic derivative and integral.
-         double y   = f( x )[0];
-         double yd  = fd( x )[0];
-         double yi  = fi( x )[0] - C;
+         double y   = f( x );
+         double yd  = fd( x );
+         double yi  = fi( x ) - C;
 
          // Approximated function, derivative and integral.
-         double yT  = T.Evaluate( x )[0];
-         double yTd = Td.Evaluate( x )[0];
-         double yTi = Ti.Evaluate( x )[0];
+         double yT  = T.Evaluate( x );
+         double yTd = Td.Evaluate( x );
+         double yTi = Ti.Evaluate( x );
 
 //          1         2         3
 // 1234567890123456789012345678901234

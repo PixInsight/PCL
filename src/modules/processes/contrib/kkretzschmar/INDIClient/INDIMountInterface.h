@@ -271,6 +271,18 @@ private:
             CheckBox          MountTargetDECIsSouth_CheckBox;
          HorizontalSizer   MountSearch_Sizer;
             PushButton        MountSearch_Button;
+         HorizontalSizer   MountAlignmentFile_Sizer;
+            Label             AlignmentFile_Label;
+            Edit              AlignmentFile_Edit;
+            ToolButton        AlignmentFile_ToolButton;
+         HorizontalSizer   MountAlignmentMethod_Sizer;
+            Label             AlignmentMethod_Label;
+            ComboBox          AlignmentMethod_ComboBox;
+         HorizontalSizer   MountAlignmentPierSide_Sizer;
+         	Label             AlignmentPierSide_Label;
+            ComboBox          AlignmentPierSide_ComboBox;
+         HorizontalSizer   MountAlignmentCorrection_Sizer;
+         	 CheckBox         MountAlignmentCorrection_CheckBox;
          HorizontalSizer   MountGoToStart_Sizer;
             PushButton        MountGoToStart_Button;
             PushButton        MountSync_Button;

@@ -55,9 +55,14 @@
 
 #include <pcl/MetaParameter.h>
 #include <pcl/ProcessImplementation.h>
+#include <pcl/Array.h>
+
+#include "Alignment.h"
 
 namespace pcl
 {
+
+
 
 // ----------------------------------------------------------------------------
 
@@ -89,20 +94,38 @@ public:
    void GetCurrentCoordinates();
    void GetTargetCoordinates( double& ra, double& dec ) const;
 
+   void AddSyncDataPoint(const SyncDataPoint& syncDataPoint);
+
+
 private:
 
            String   p_deviceName;
            pcl_enum p_command;
            pcl_enum p_slewRate;
+           pcl_enum p_alignmentMethod;
+           pcl_enum p_pierSide;
            double   p_targetRA;
            double   p_targetDec;
            pcl_bool p_computeApparentPosition;
+           pcl_bool p_enableAlignmentCorrection;
+           String   p_alignmentFile;
 
            double   o_currentLST;
            double   o_currentRA;
            double   o_currentDec;
    mutable double   o_apparentTargetRA;
    mutable double   o_apparentTargetDec;
+   	   	   double   o_syncLST;
+   	   	   double   o_syncCelestialRA;
+  	   	   double   o_syncCelestialDEC;
+  	   	   double   o_syncTelescopeRA;
+  	   	   double   o_syncTelescopeDEC;
+
+
+
+
+   Array<SyncDataPoint>  syncDataArray;
+   AlignmentModel* m_align;
 
    friend class INDIMountInterface;
    friend class AbstractINDIMountExecution;
@@ -118,6 +141,7 @@ public:
       m_instance( instance ),
       m_running( false ),
       m_aborted( false )
+
    {
    }
 
@@ -163,6 +187,7 @@ protected:
 private:
 
    bool m_running, m_aborted;
+
 };
 
 // ----------------------------------------------------------------------------

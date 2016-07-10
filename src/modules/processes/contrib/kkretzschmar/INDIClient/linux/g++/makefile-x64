@@ -23,6 +23,7 @@ all: $(OBJ_DIR)/INDIClient-pxm.so
 
 SRC_FILES= \
 ../../ApparentPosition.cpp \
+../../Alignment.cpp \
 ../../IINDIProperty.cpp \
 ../../INDICCDFrameInstance.cpp \
 ../../INDICCDFrameInterface.cpp \
@@ -51,6 +52,7 @@ SRC_FILES= \
 
 OBJ_FILES= \
 ./x64/Release/ApparentPosition.o \
+./x64/Release/Alignment.o \
 ./x64/Release/IINDIProperty.o \
 ./x64/Release/INDICCDFrameInstance.o \
 ./x64/Release/INDICCDFrameInterface.o \
@@ -79,6 +81,7 @@ OBJ_FILES= \
 
 DEP_FILES= \
 ./x64/Release/ApparentPosition.d \
+./x64/Release/Alignment.d \
 ./x64/Release/IINDIProperty.d \
 ./x64/Release/INDICCDFrameInstance.d \
 ./x64/Release/INDICCDFrameInterface.d \

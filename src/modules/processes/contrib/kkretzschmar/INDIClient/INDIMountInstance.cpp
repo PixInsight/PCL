@@ -51,6 +51,7 @@
 // ----------------------------------------------------------------------------
 
 #include "ApparentPosition.h"
+#include "Alignment.h"
 #include "INDIClient.h"
 #include "INDIMountInstance.h"
 #include "INDIMountParameters.h"
@@ -63,6 +64,7 @@
 #include <pcl/MessageBox.h>
 #include <pcl/MetaModule.h>
 #include <pcl/StdStatus.h>
+#include <pcl/File.h>
 
 namespace pcl
 {
@@ -74,14 +76,24 @@ INDIMountInstance::INDIMountInstance( const MetaProcess* m ) :
    p_deviceName( TheIMCDeviceNameParameter->DefaultValue() ),
    p_command( IMCCommand::Default ),
    p_slewRate( IMCSlewRate::Default ),
+   p_alignmentMethod(IMCAlignmentMethod::Default),
+   p_pierSide( IMCPierSide::Default),
    p_targetRA( TheIMCTargetRAParameter->DefaultValue() ),
    p_targetDec( TheIMCTargetDecParameter->DefaultValue() ),
    p_computeApparentPosition( TheIMCComputeApparentPositionParameter->DefaultValue() ),
+   p_enableAlignmentCorrection(TheIMCEnableAlignmentCorrectionParameter->DefaultValue()),
+   p_alignmentFile(TheIMCAlignmentFileParameter->DefaultValue()),
    o_currentLST( TheIMCCurrentLSTParameter->DefaultValue() ),
    o_currentRA( TheIMCCurrentRAParameter->DefaultValue() ),
    o_currentDec( TheIMCCurrentDecParameter->DefaultValue() ),
    o_apparentTargetRA( TheIMCApparentTargetRAParameter->DefaultValue() ),
-   o_apparentTargetDec( TheIMCApparentTargetDecParameter->DefaultValue() )
+   o_apparentTargetDec( TheIMCApparentTargetDecParameter->DefaultValue() ),
+   o_syncLST(TheIMCSyncLSTParameter->DefaultValue()),
+   o_syncCelestialRA(TheIMCSyncCelestialRAParameter->DefaultValue()) ,
+   o_syncCelestialDEC(TheIMCSyncCelestialDecParameter->DefaultValue()),
+   o_syncTelescopeRA(TheIMCSyncTelescopeRAParameter->DefaultValue()),
+   o_syncTelescopeDEC(TheIMCSyncTelescopeDecParameter->DefaultValue()),
+   m_align(LowellPointingModel::create())
 {
 }
 
@@ -96,17 +108,26 @@ void INDIMountInstance::Assign( const ProcessImplementation& p )
    const INDIMountInstance* x = dynamic_cast<const INDIMountInstance*>( &p );
    if ( x != nullptr )
    {
-      p_deviceName              = x->p_deviceName;
-      p_command                 = x->p_command;
-      p_slewRate                = x->p_slewRate;
-      p_targetRA                = x->p_targetRA;
-      p_targetDec               = x->p_targetDec;
-      p_computeApparentPosition = x->p_computeApparentPosition;
-      o_currentLST              = x->o_currentLST;
-      o_currentRA               = x->o_currentRA;
-      o_currentDec              = x->o_currentDec;
-      o_apparentTargetRA        = x->o_apparentTargetRA;
-      o_apparentTargetDec       = x->o_apparentTargetDec;
+      p_deviceName                = x->p_deviceName;
+      p_command                   = x->p_command;
+      p_slewRate                  = x->p_slewRate;
+      p_targetRA                  = x->p_targetRA;
+      p_targetDec                 = x->p_targetDec;
+      p_pierSide                  = x->p_pierSide;
+      p_computeApparentPosition   = x->p_computeApparentPosition;
+      p_enableAlignmentCorrection = x->p_computeApparentPosition;
+      p_alignmentMethod           = x->p_alignmentMethod;
+      p_alignmentFile             = x->p_alignmentFile;
+      o_currentLST                = x->o_currentLST;
+      o_currentRA                 = x->o_currentRA;
+      o_currentDec                = x->o_currentDec;
+      o_apparentTargetRA          = x->o_apparentTargetRA;
+      o_apparentTargetDec         = x->o_apparentTargetDec;
+      o_syncLST                   = x->o_syncLST;
+      o_syncCelestialRA           = x->o_syncCelestialRA;
+      o_syncCelestialDEC          = x->o_syncCelestialDEC;
+      o_syncTelescopeRA           = x->o_syncTelescopeRA;
+      o_syncTelescopeDEC          = x->o_syncTelescopeDEC;
    }
 }
 
@@ -357,6 +378,7 @@ bool INDIMountInstance::ExecuteOn( View& view )
    pcl_enum storedCommand = p_command;
    double storedTargetRA = p_targetRA;
    double storedTargetDec = p_targetDec;
+   bool stored_alignmentMode = this->p_enableAlignmentCorrection;
    pcl_bool storedComputeApparentPosition = p_computeApparentPosition;
 
    try
@@ -365,6 +387,7 @@ bool INDIMountInstance::ExecuteOn( View& view )
       p_targetRA = o_currentRA + deltaRA;
       p_targetDec = o_currentDec + deltaDec;
       p_computeApparentPosition = false;
+      p_enableAlignmentCorrection = false;
 
       Console().WriteLn( "<end><cbr>Applying differential correction: dRA = "
                   + String::ToSexagesimal( deltaRA,
@@ -380,6 +403,7 @@ bool INDIMountInstance::ExecuteOn( View& view )
       p_targetRA = storedTargetRA;
       p_targetDec = storedTargetDec;
       p_computeApparentPosition = storedComputeApparentPosition;
+      p_enableAlignmentCorrection = stored_alignmentMode;
       return true;
    }
    catch( ... )
@@ -400,12 +424,18 @@ void* INDIMountInstance::LockParameter( const MetaParameter* p, size_type tableR
       return &p_command;
    if ( p == TheIMCSlewRateParameter )
       return &p_slewRate;
+   if ( p == TheIMCAlignmentMethodParameter )
+         return &p_alignmentMethod;
+   if ( p == TheIMCEnableAlignmentCorrectionParameter )
+	   return &p_enableAlignmentCorrection;
    if ( p == TheIMCTargetRAParameter )
       return &p_targetRA;
    if ( p == TheIMCTargetDecParameter )
       return &p_targetDec;
    if ( p == TheIMCComputeApparentPositionParameter )
       return &p_computeApparentPosition;
+   if ( p == TheIMCAlignmentFileParameter )
+	   return &p_alignmentFile;
    if (p == TheIMCCurrentLSTParameter )
       return &o_currentLST;
    if ( p == TheIMCCurrentRAParameter )
@@ -416,6 +446,18 @@ void* INDIMountInstance::LockParameter( const MetaParameter* p, size_type tableR
       return &o_apparentTargetRA;
    if ( p == TheIMCApparentTargetDecParameter )
       return &o_apparentTargetDec;
+   if ( p == TheIMCPierSideParameter )
+	   return &p_pierSide;
+   if ( p == TheIMCSyncLSTParameter )
+   	   return &o_syncLST;
+   if ( p == TheIMCSyncCelestialRAParameter )
+	   return &o_syncCelestialRA;
+   if ( p == TheIMCSyncCelestialDecParameter )
+	   return &o_syncCelestialDEC;
+   if ( p == TheIMCSyncTelescopeRAParameter )
+	   return &o_syncTelescopeRA;
+   if ( p == TheIMCSyncTelescopeDecParameter )
+	   return &o_syncTelescopeDEC;
 
    return nullptr;
 }
@@ -427,6 +469,11 @@ bool INDIMountInstance::AllocateParameter( size_type sizeOrLength, const MetaPar
       p_deviceName.Clear();
       if ( sizeOrLength > 0 )
          p_deviceName.SetLength( sizeOrLength );
+   } else if ( p == TheIMCAlignmentFileParameter )
+   {
+	   p_alignmentFile.Clear();
+	   if ( sizeOrLength > 0 )
+		   p_alignmentFile.SetLength( sizeOrLength );
    }
    else
       return false;
@@ -438,6 +485,9 @@ size_type INDIMountInstance::ParameterLength( const MetaParameter* p, size_type 
 {
    if ( p == TheIMCDeviceNameParameter )
       return p_deviceName.Length();
+
+   if ( p == TheIMCAlignmentFileParameter )
+         return p_alignmentFile.Length();
 
    return 0;
 }
@@ -535,6 +585,11 @@ void INDIMountInstance::GetTargetCoordinates( double& targetRA, double& targetDe
    }
 }
 
+void INDIMountInstance::AddSyncDataPoint(const SyncDataPoint& syncDataPoint){
+	this->syncDataArray.Add(syncDataPoint);
+}
+
+
 void AbstractINDIMountExecution::Perform()
 {
    if ( IsRunning() )
@@ -564,10 +619,53 @@ void AbstractINDIMountExecution::Perform()
 
       case IMCCommand::GoTo:
          {
-            double targetRA, targetDec;
-            m_instance.GetTargetCoordinates( targetRA, targetDec );
+            double targetRARaw, targetDecRaw;
+            m_instance.GetTargetCoordinates( targetRARaw, targetDecRaw );
+            double targetRA, targetDec, hourAngle;
 
-            StartMountEvent( targetRA, m_instance.o_currentRA, targetDec, m_instance.o_currentDec, m_instance.p_command );
+            // Do not apply telescope pointing model in differential correction or during collecting sync points
+            if (m_instance.p_enableAlignmentCorrection){
+
+            	IsoStringList syncPointDataList = File::ReadLines(m_instance.p_alignmentFile);
+
+            	for (auto line : syncPointDataList){
+
+            		SyncDataPoint syncPoint;
+            		IsoStringList tokens;
+            		line.Break(tokens,",",true);
+
+            		syncPoint.localSiderialTime = tokens[0].ToDouble();
+            		syncPoint.celestialRA = tokens[1].ToDouble();
+            		syncPoint.celestialDEC = tokens[2].ToDouble();
+            		syncPoint.telecopeRA = tokens[3].ToDouble();
+            		syncPoint.telecopeDEC = tokens[4].ToDouble();
+            		if (tokens[5] == TheIMCPierSideParameter->ElementId( IMCPierSide::East)){
+            			syncPoint.pierSide =  IMCPierSide::East;
+            		} else if (tokens[5] == TheIMCPierSideParameter->ElementId( IMCPierSide::West)){
+            			syncPoint.pierSide =  IMCPierSide::West;
+            		} else {
+            			syncPoint.pierSide = IMCPierSide::None;
+            		}
+
+            		Console().WriteLn(IsoString().Format("%f, %f, %f, %f, %f, %s\n",syncPoint.localSiderialTime,syncPoint.celestialRA,syncPoint.celestialDEC,syncPoint.telecopeRA,syncPoint.telecopeDEC,TheIMCPierSideParameter->ElementId( syncPoint.pierSide).c_str()));
+
+            		m_instance.AddSyncDataPoint(syncPoint);
+
+            	}
+
+                m_instance.m_align->fitModel(m_instance.syncDataArray);
+
+            	m_instance.m_align->Apply(hourAngle,targetDec,m_instance.o_currentLST - targetRARaw,targetDecRaw);
+                targetRA=m_instance.o_currentLST-hourAngle;
+
+                Console().WriteLn(String().Format("Old Coord (ra,dec): (%f,%f)", targetRARaw, targetDecRaw));
+                Console().WriteLn(String().Format("New Coord (ha,dec): (%f,%f)", targetRA, targetDec));
+            } else {
+            	targetRA = targetRARaw;
+            	targetDec = targetDecRaw;
+            }
+
+			StartMountEvent( targetRA, m_instance.o_currentRA, targetDec, m_instance.o_currentDec, m_instance.p_command );
             indi->SendNewPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "INDI_NUMBER",  // send (RA,DEC) coordinates in bulk request
                                        "RA", targetRA,
                                        "DEC", targetDec, true/*async*/ );
@@ -672,12 +770,64 @@ void AbstractINDIMountExecution::Perform()
             m_instance.GetTargetCoordinates( targetRA, targetDec );
 
             StartMountEvent( targetRA, m_instance.o_currentRA, targetDec, m_instance.o_currentDec, m_instance.p_command );
-            indi->SendNewPropertyItem( m_instance.p_deviceName, "ON_COORD_SET", "INDI_SWITCH", "SYNC", "ON", false/*async*/ );
-            indi->SendNewPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "INDI_NUMBER",
-                                       "RA", targetRA,
-                                       "DEC", targetDec, false/*async*/ );
-            indi->SendNewPropertyItem( m_instance.p_deviceName, "ON_COORD_SET", "INDI_SWITCH", "TRACK", "ON", false/*async*/ );
+            switch (m_instance.p_alignmentMethod){
+            case IMCAlignmentMethod::ServerModel:
+            {
+            	indi->SendNewPropertyItem( m_instance.p_deviceName, "ON_COORD_SET", "INDI_SWITCH", "SYNC", "ON", false/*async*/ );
+            	indi->SendNewPropertyItem( m_instance.p_deviceName, "EQUATORIAL_EOD_COORD", "INDI_NUMBER",
+            			                  "RA", targetRA,
+						                  "DEC", targetDec, false/*async*/ );
+            	indi->SendNewPropertyItem( m_instance.p_deviceName, "ON_COORD_SET", "INDI_SWITCH", "TRACK", "ON", false/*async*/ );
+
+            	// TODO: get sync point coordinates from server and set parameter
+            }
+            break;
+            case IMCAlignmentMethod::AnalyticalModel:
+            {
+                m_instance.GetCurrentCoordinates();
+                SyncDataPoint syncPoint;
+                syncPoint.localSiderialTime = m_instance.o_currentLST;
+                syncPoint.celestialRA       = targetRA;
+                syncPoint.celestialDEC      = targetDec;
+                syncPoint.telecopeRA        = m_instance.o_currentRA;
+                syncPoint.telecopeDEC       = m_instance.o_currentDec;
+                syncPoint.pierSide          = m_instance.p_pierSide;
+
+                // set instance sync point parameters
+                m_instance.o_syncCelestialRA   = syncPoint.celestialRA ;
+                m_instance.o_syncCelestialDEC  = syncPoint.celestialDEC;
+                m_instance.o_syncTelescopeRA   = syncPoint.telecopeRA;
+                m_instance.o_apparentTargetDec = syncPoint.telecopeDEC;
+                m_instance.p_pierSide          = syncPoint.pierSide;
+
+                Console().WriteLn(IsoString().Format("%f, %f, %f, %f, %f, %s\n",syncPoint.localSiderialTime,syncPoint.celestialRA,syncPoint.celestialDEC,syncPoint.telecopeRA,syncPoint.telecopeDEC,TheIMCPierSideParameter->ElementId( syncPoint.pierSide).c_str()));
+
+            	m_instance.AddSyncDataPoint(syncPoint);
+                m_instance.m_align->fitModel(m_instance.syncDataArray);
+
+                // save model parameters to disk
+                IsoString fileContent;
+                for (auto syncPoint : m_instance.syncDataArray){
+                	fileContent.Append(IsoString().Format("%f, %f, %f, %f, %f, %s\n",syncPoint.localSiderialTime,syncPoint.celestialRA,syncPoint.celestialDEC,syncPoint.telecopeRA,syncPoint.telecopeDEC,TheIMCPierSideParameter->ElementId( syncPoint.pierSide).c_str() ));
+                }
+                m_instance.p_alignmentFile;
+                if (File::Exists(m_instance.p_alignmentFile)){
+                	IsoStringList syncPointDataList = File::ReadLines(m_instance.p_alignmentFile);
+                	for (auto line : syncPointDataList){
+                		fileContent.Append(line);
+                		fileContent.Append("\n");
+                	}
+                	File::Remove(m_instance.p_alignmentFile);
+                }
+                File::WriteTextFile(m_instance.p_alignmentFile,fileContent);
+
+
+
+            }
+            break;
+            }
             m_instance.GetCurrentCoordinates();
+
             EndMountEvent();
          }
          break;

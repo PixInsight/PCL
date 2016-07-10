@@ -54,8 +54,10 @@
 #include <pcl/Graphics.h>
 #include <pcl/Math.h>
 #include <pcl/MetaModule.h>
+#include <pcl/FileDialog.h>
 
 #include "ApparentPosition.h"
+#include "Alignment.h"
 #include "INDIDeviceControllerInterface.h"
 #include "INDIMountInterface.h"
 #include "INDIMountParameters.h"
@@ -441,6 +443,14 @@ ProcessImplementation* INDIMountInterface::NewProcess() const
    instance->p_targetDec = SexagesimalToDecimal( GUI->MountTargetDECIsSouth_CheckBox.IsChecked() ? -1 : +1,
                               GUI->TargetDec_H_SpinBox.Value(), GUI->TargetDec_M_SpinBox.Value(), GUI->TargetDec_S_NumericEdit.Value() );
 
+   instance->p_pierSide = GUI->AlignmentPierSide_ComboBox.CurrentItem();
+
+   instance->p_enableAlignmentCorrection =  GUI->MountAlignmentCorrection_CheckBox.IsChecked();
+
+   instance->p_alignmentMethod = GUI->AlignmentMethod_ComboBox.CurrentItem();
+
+   instance->p_alignmentFile = GUI->AlignmentFile_Edit.Text();
+
    instance->GetCurrentCoordinates();
 
    return instance;
@@ -693,6 +703,75 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    MountSearch_Sizer.Add( MountSearch_Button );
    MountSearch_Sizer.AddStretch();
 
+   const char* alignmentfileToolTipText =
+		   "<p>File which store the telescope pointing model. </p>";
+
+   AlignmentFile_Label.SetText( "Alignment model:" );
+   AlignmentFile_Label.SetToolTip( alignmentfileToolTipText  );
+   AlignmentFile_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   AlignmentFile_Label.SetFixedWidth( labelWidth1 );
+
+   AlignmentFile_Edit.SetToolTip( alignmentfileToolTipText );
+   AlignmentFile_Edit.SetReadOnly();
+
+   AlignmentFile_ToolButton.SetIcon( w.ScaledResource( ":/icons/select-file.png" ) );
+   AlignmentFile_ToolButton.SetScaledFixedSize( 22, 22 );
+   AlignmentFile_ToolButton.SetToolTip( "<p>Select the alignment file:</p>" );
+   AlignmentFile_ToolButton.OnClick( (Button::click_event_handler)&INDIMountInterface::e_Click, w );
+
+   MountAlignmentFile_Sizer.SetSpacing( 8 );
+   MountAlignmentFile_Sizer.Add( AlignmentFile_Label );
+   MountAlignmentFile_Sizer.Add( AlignmentFile_Edit, 100 );
+   MountAlignmentFile_Sizer.AddSpacing( 4 );
+   MountAlignmentFile_Sizer.Add( AlignmentFile_ToolButton );
+
+
+   const char* alignmentMethodToolTipText =
+   		   "<p>Alignment methods:</p>";
+
+   AlignmentMethod_Label.SetText( "Alignment method:" );
+   AlignmentMethod_Label.SetToolTip( alignmentMethodToolTipText  );
+   AlignmentMethod_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   AlignmentMethod_Label.SetFixedWidth( labelWidth1 );
+
+   AlignmentMethod_ComboBox.AddItem( "Analytical Model" );
+   AlignmentMethod_ComboBox.AddItem( "Server Model" );
+   AlignmentMethod_ComboBox.SetToolTip( alignmentMethodToolTipText );
+   AlignmentMethod_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&INDIMountInterface::e_ItemSelected, w );
+
+
+   MountAlignmentMethod_Sizer.SetSpacing( 8 );
+   MountAlignmentMethod_Sizer.Add( AlignmentMethod_Label );
+   MountAlignmentMethod_Sizer.Add( AlignmentMethod_ComboBox );
+   MountAlignmentMethod_Sizer.AddStretch();
+
+
+   const char* alignmentPierSideToolTipText =
+      		   "<p>Alignment pier side:</p>";
+
+   AlignmentPierSide_Label.SetText( "Alignment pier side:" );
+   AlignmentPierSide_Label.SetToolTip( alignmentPierSideToolTipText  );
+   AlignmentPierSide_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   AlignmentPierSide_Label.SetFixedWidth( labelWidth1 );
+
+   AlignmentPierSide_ComboBox.AddItem( "None" );
+   AlignmentPierSide_ComboBox.AddItem( "West" );
+   AlignmentPierSide_ComboBox.AddItem( "East" );
+   AlignmentPierSide_ComboBox.SetToolTip( alignmentPierSideToolTipText );
+   AlignmentPierSide_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&INDIMountInterface::e_ItemSelected, w );
+
+   MountAlignmentPierSide_Sizer.SetSpacing( 8 );
+   MountAlignmentPierSide_Sizer.Add( AlignmentPierSide_Label );
+   MountAlignmentPierSide_Sizer.Add( AlignmentPierSide_ComboBox );
+   MountAlignmentPierSide_Sizer.AddStretch();
+
+   MountAlignmentCorrection_CheckBox.SetText( "Alignment Correction" );
+   MountAlignmentCorrection_CheckBox.SetToolTip( "<p>Compute and apply alignment correction to target coordinates.</p>" );
+   MountAlignmentCorrection_Sizer.AddSpacing( labelWidth1 + 4 );
+   MountAlignmentCorrection_Sizer.Add( MountAlignmentCorrection_CheckBox );
+   MountAlignmentCorrection_Sizer.AddStretch();
+
+
    MountGoToStart_Button.SetText( "GoTo" );
    MountGoToStart_Button.SetIcon( w.ScaledResource( ":/icons/play.png" ) );
    MountGoToStart_Button.SetStyleSheet( "QPushButton { text-align: left; }" );
@@ -731,6 +810,10 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    MountGoTo_Sizer.Add( MountTargetRA_Sizer );
    MountGoTo_Sizer.Add( MountTargetDec_Sizer );
    MountGoTo_Sizer.Add( MountSearch_Sizer );
+   MountGoTo_Sizer.Add( MountAlignmentFile_Sizer );
+   MountGoTo_Sizer.Add( MountAlignmentMethod_Sizer );
+   MountGoTo_Sizer.Add( MountAlignmentPierSide_Sizer );
+   MountGoTo_Sizer.Add( MountAlignmentCorrection_Sizer );
    MountGoTo_Sizer.Add( MountGoToStart_Sizer );
    MountGoTo_Sizer.Add( MountGoToCancel_Sizer );
    MountGoTo_Sizer.Add( MountGoToInfo_Label );
@@ -1139,6 +1222,14 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
    {
       INDIClient::TheClient()->MaybeSendNewPropertyItem( m_device, "TELESCOPE_ABORT_MOTION", "INDI_SWITCH", "ABORT", "ON", true/*async*/ );
    }
+   else if ( sender == GUI->AlignmentFile_ToolButton)
+   {
+	   OpenFileDialog f;
+	   f.SetCaption( "INDIMount: Select Alignment File" );
+	   if ( f.Execute() )
+		   GUI->AlignmentFile_Edit.SetText( f.FileName() );
+
+   }
 }
 
 void INDIMountInterface::e_Press( Button& sender )
@@ -1270,6 +1361,7 @@ void INDIMountInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
       INDIClient::TheClient()->MaybeSendNewPropertyItem( m_device, "TELESCOPE_SLEW_RATE", "INDI_SWITCH",
                      INDIMountInstance::MountSlewRatePropertyString( itemIndex ), "ON", true/*async*/ );
    }
+
 }
 
 // ----------------------------------------------------------------------------

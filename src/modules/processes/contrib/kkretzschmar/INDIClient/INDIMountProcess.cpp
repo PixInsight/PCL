@@ -87,6 +87,15 @@ INDIMountProcess::INDIMountProcess() : MetaProcess()
    new IMCCurrentDec( this );
    new IMCApparentTargetRA( this );
    new IMCApparentTargetDec( this );
+   new IMCPierSide ( this );
+   new IMCSyncLST( this );
+   new IMCSyncCelestialRA( this );
+   new IMCSyncCelestialDec ( this );
+   new IMCSyncTelescopeRA ( this );
+   new IMCSyncTelescopeDec ( this );
+   new IMCEnableAlignmentCorrection (this);
+   new IMCAlignmentMethod(this);
+   new IMCAlignmentFile(this);
 }
 
 // ----------------------------------------------------------------------------

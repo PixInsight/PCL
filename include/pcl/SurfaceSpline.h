@@ -245,19 +245,34 @@ public:
     * \param n       Number of nodes. Must be >= 3
     *                (3 nodes * 2 coordinates = six degrees of freedom).
     *
-    * \param weights    When the smoothing factor of this spline is > 0, this
-    *                is a vector of \e weights corresponding to the input
-    *                nodes. If this parameter is zero, equal weights are
-    *                assumed for all nodes. When the smoothing factor is zero
-    *                (interpolating spline), this parameter is ignored.
+    * \param w       When the smoothing factor of this spline is > 0, this is a
+    *                vector of positive weights > 0 corresponding to the
+    *                specified input nodes. If this parameter is \c nullptr,
+    *                unit weights are assumed for all input nodes. When the
+    *                smoothing factor is zero (interpolating spline), this
+    *                parameter is ignored.
     *
     * The input nodes can be arbitrarily distributed, and they don't need to
     * follow any specific order. However, all nodes must be distinct with
     * respect to the machine epsilon for the floating point type T.
+    *
+    * For an interpolating surface spline (smoothness = 0), all node values
+    * will be reproduced exactly at their respective coordinates. In this case
+    * the vector \a w of node weights will be ignored.
+    *
+    * For an approximating surface spline (smoothness > 0), the specified
+    * vector \a w of node weights will be used to assign a different
+    * interpolation \e strength to each interpolation node. In this case the
+    * vector \a w must have at least \a n values greater than zero. A node
+    * weight larger than one will reduce the smoothness of the interpolating
+    * surface at the corresponding node coordinates, or in other words, it will
+    * give more prominence to the corresponding data point. A node weight of
+    * one will apply the current surface smoothness at its node position. A
+    * node weight smaller than one will increase the interpolation smoothness.
     */
-   void Initialize( const T* x, const T* y, const T* z, int n, const float* weights = 0 )
+   void Initialize( const T* x, const T* y, const T* z, int n, const float* w = nullptr )
    {
-      PCL_PRECONDITION( x != 0 && y != 0 && && z != 0 )
+      PCL_PRECONDITION( x != nullptr && y != nullptr && && z != nullptr )
       PCL_PRECONDITION( n > 2 )
 
       if ( n < 3 )
@@ -270,8 +285,13 @@ public:
          m_x = vector_type( x, n );
          m_y = vector_type( y, n );
 
-         if ( m_smoothing > 0 && weights != 0 )
-            m_weights = FVector( weights, n );
+         if ( m_smoothing > 0 && w != nullptr )
+         {
+            m_weights = FVector( w, n );
+            for ( float& w : m_weights )
+               if ( w <= 0 )
+                  w = 1.0F;
+         }
 
          m_spline = vector_type( T( 0 ), n + ((m_order*(m_order + 1)) >> 1) );
 

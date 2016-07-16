@@ -272,7 +272,7 @@ public:
     */
    void Initialize( const T* x, const T* y, const T* z, int n, const float* w = nullptr )
    {
-      PCL_PRECONDITION( x != nullptr && y != nullptr && && z != nullptr )
+      PCL_PRECONDITION( x != nullptr && y != nullptr && z != nullptr )
       PCL_PRECONDITION( n > 2 )
 
       if ( n < 3 )

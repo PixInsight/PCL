@@ -88,9 +88,9 @@ public:
          // Rejection bounds in the native range
          double s0 = 0, s1 = 0;
          if ( data.rejectLow )
-            s0 = data.low * P::MaxSampleValue();
+            s0 = P::MinSampleValue() + data.low*(P::MaxSampleValue() - P::MinSampleValue());
          if ( data.rejectHigh )
-            s1 = data.high * P::MaxSampleValue();
+            s1 = P::MinSampleValue() + data.high*(P::MaxSampleValue() - P::MinSampleValue());
 
          Array<double> v;
          v.Reserve( N ); // clearly, optimize for speed
@@ -110,7 +110,7 @@ public:
                         if ( *i < s1 )
                         {
                            double f; P::FromSample( f, *i );
-                           v.Append( f );
+                           v << f;
                         }
                }
                else
@@ -119,7 +119,7 @@ public:
                      if ( *i > s0 )
                      {
                         double f; P::FromSample( f, *i );
-                        v.Append( f );
+                        v << f;
                      }
                }
             }
@@ -129,7 +129,7 @@ public:
                   if ( *i < s1 )
                   {
                      double f; P::FromSample( f, *i );
-                     v.Append( f );
+                     v << f;
                   }
             }
          }
@@ -146,7 +146,7 @@ public:
                            if ( *i < s1 )
                            {
                               double f; P::FromSample( f, *i );
-                              v.Append( f );
+                              v << f;
 
                               if ( extremesSeen )
                               {
@@ -179,7 +179,7 @@ public:
                         if ( *i > s0 )
                         {
                            double f; P::FromSample( f, *i );
-                           v.Append( f );
+                           v << f;
 
                            if ( extremesSeen )
                            {
@@ -213,7 +213,7 @@ public:
                      if ( *i < s1 )
                      {
                         double f; P::FromSample( f, *i );
-                        v.Append( f );
+                        v << f;
 
                         if ( extremesSeen )
                         {

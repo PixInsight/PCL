@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.101
+# PixInsight Makefile Generator Script v1.100
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Fri, 18 Mar 2016 13:16:45 GMT
+# Automatically generated on Fri, 24 Jun 2016 18:54:22 GMT
 # Project id ...... XISF
 # Project type .... Module
 # Platform ........ Windows/vc12
@@ -45,7 +45,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9A65FDD9-FFE1-48A6-B8F0-DD61A64D9799}</ProjectGuid>
+    <ProjectGuid>{DA695FD0-02FC-4102-9124-44507AF18FB1}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -122,9 +122,11 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat></DebugInformationFormat>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -132,7 +134,8 @@
       <AdditionalDependencies>PCL-pxi.lib;Qt5Core.lib;Qt5Xml.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR64)\XISF-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR64);$(QTDIR64)\qtbase\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile></ModuleDefinitionFile>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -163,9 +166,11 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat></DebugInformationFormat>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -173,7 +178,8 @@
       <AdditionalDependencies>PCL-pxi.lib;Qt5Core.lib;Qt5Xml.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\XISF-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR32);$(QTDIR32)\qtbase\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile></ModuleDefinitionFile>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -199,7 +205,8 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -209,7 +216,8 @@
       <AdditionalDependencies>PCL-pxi.lib;Qt5Core.lib;Qt5Xml.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR64)\XISF-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR64);$(QTDIR64)\qtbase\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile></ModuleDefinitionFile>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <ImportLibrary>$(Platform)\$(Configuration)\$(ProjectName).lib</ImportLibrary>
@@ -229,7 +237,8 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader></PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -239,7 +248,8 @@
       <AdditionalDependencies>PCL-pxi.lib;Qt5Core.lib;Qt5Xml.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(PCLBINDIR32)\XISF-pxm.dll</OutputFile>
       <AdditionalLibraryDirectories>$(PCLLIBDIR32);$(QTDIR32)\qtbase\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile></ModuleDefinitionFile>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <ImportLibrary>$(Platform)\$(Configuration)\$(ProjectName).lib</ImportLibrary>
@@ -251,22 +261,22 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\XISF.cpp"/>
-    <ClCompile Include="..\..\XISFFormat.cpp"/>
-    <ClCompile Include="..\..\XISFInstance.cpp"/>
-    <ClCompile Include="..\..\XISFModule.cpp"/>
-    <ClCompile Include="..\..\XISFOptionsDialog.cpp"/>
-    <ClCompile Include="..\..\XISFPreferencesDialog.cpp"/>
+    <ClCompile Include="..\..\XISF.cpp" />
+    <ClCompile Include="..\..\XISFFormat.cpp" />
+    <ClCompile Include="..\..\XISFInstance.cpp" />
+    <ClCompile Include="..\..\XISFModule.cpp" />
+    <ClCompile Include="..\..\XISFOptionsDialog.cpp" />
+    <ClCompile Include="..\..\XISFPreferencesDialog.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\XISF.h"/>
-    <ClInclude Include="..\..\XISFFormat.h"/>
-    <ClInclude Include="..\..\XISFInstance.h"/>
-    <ClInclude Include="..\..\XISFModule.h"/>
-    <ClInclude Include="..\..\XISFOptionsDialog.h"/>
-    <ClInclude Include="..\..\XISFPreferencesDialog.h"/>
+    <ClInclude Include="..\..\XISF.h" />
+    <ClInclude Include="..\..\XISFFormat.h" />
+    <ClInclude Include="..\..\XISFInstance.h" />
+    <ClInclude Include="..\..\XISFModule.h" />
+    <ClInclude Include="..\..\XISFOptionsDialog.h" />
+    <ClInclude Include="..\..\XISFPreferencesDialog.h" />
   </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

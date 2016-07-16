@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.05.0105
+// Standard XISF File Format Module Version 01.00.06.0107
 // ----------------------------------------------------------------------------
-// XISFPreferencesDialog.cpp - Released 2016/02/21 20:22:34 UTC
+// XISFPreferencesDialog.cpp - Released 2016/07/05 10:44:57 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
@@ -334,4 +334,4 @@ void XISFPreferencesDialog::Dialog_Return( Dialog& sender, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISFPreferencesDialog.cpp - Released 2016/02/21 20:22:34 UTC
+// EOF XISFPreferencesDialog.cpp - Released 2016/07/05 10:44:57 UTC

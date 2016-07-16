@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.05.0105
+// Standard XISF File Format Module Version 01.00.06.0107
 // ----------------------------------------------------------------------------
-// XISF.cpp - Released 2016/02/21 20:22:34 UTC
+// XISF.cpp - Released 2016/07/05 10:44:57 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
@@ -1914,9 +1914,9 @@ public:
       CheckImageAccess();
 
       const pcl::ImageOptions& options = m_images[m_currentImage].options;
-      if ( options.bitsPerSample != P::BitsPerSample() ||
-           options.ieeefpSampleFormat && !options.complexSample != P::IsFloatSample() ||
-           options.complexSample != P::IsComplexSample() )
+      if (  options.bitsPerSample != P::BitsPerSample() ||
+           (options.ieeefpSampleFormat && !options.complexSample) != P::IsFloatSample() ||
+            options.complexSample != P::IsComplexSample() )
       {
          ImageVariant tmp;
          tmp.CreateImage( options.ieeefpSampleFormat, options.complexSample, options.bitsPerSample );
@@ -3791,9 +3791,9 @@ public:
 
       CloseRandomAccessBlock();
 
-      if ( m_options.bitsPerSample != P::BitsPerSample() ||
-           m_options.ieeefpSampleFormat != P::IsFloatSample() ||
-           m_options.complexSample != P::IsComplexSample() )
+      if (  m_options.bitsPerSample != P::BitsPerSample() ||
+           (m_options.ieeefpSampleFormat && !m_options.complexSample) != P::IsFloatSample() ||
+            m_options.complexSample != P::IsComplexSample() )
       {
          ImageVariant tmp;
          tmp.CreateImage( m_options.ieeefpSampleFormat,
@@ -4769,4 +4769,4 @@ void XISFWriter::CheckClosedStream( const char* memberFunction ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISF.cpp - Released 2016/02/21 20:22:34 UTC
+// EOF XISF.cpp - Released 2016/07/05 10:44:57 UTC

@@ -153,7 +153,7 @@ JPLEphemeris::JPLEphemeris( const String& filePath ) :
 
          case 1050:
             {
-               int numberOfItems = tokens.Length()/3;
+               int numberOfItems = int( tokens.Length()/3 );
                if ( numberOfItems < JPLEphemerisItem::NumberOfRequiredItems )
                   throw Error( "Invalid group 1050: expected three lines with at least " + String( int( JPLEphemerisItem::NumberOfRequiredItems ) ) + " items each." );
                for ( int i = 0, n = Min( numberOfItems, int( JPLEphemerisItem::NumberOfNativeItems ) ); i < n; ++i )

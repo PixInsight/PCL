@@ -69,7 +69,7 @@ void dumpMatrix(const Matrix & matrix){
 	Console().WriteLn("Matrix:");
 	for (int i = 0; i < matrix.Rows(); ++i) {
 		for (int j = 0; j < matrix.Columns(); ++j) {
-			Console().Write(String().Format("m[%d,%d]=%6.3f, ", i,j,matrix[i][j]));
+			Console().Write(String().Format("m[%d,%d]=%6.6f, ", i,j,matrix[i][j]));
 		}
 		Console().WriteLn();
 	}
@@ -78,12 +78,34 @@ void dumpMatrix(const Matrix & matrix){
 void dumpVector(const Vector & vector){
 	Console().WriteLn("Vector:");
 	for (int j = 0; j < vector.Length(); ++j) {
-		Console().Write(String().Format("v[%d]=%6.3f, ", j, vector[j]));
+		Console().Write(String().Format("v[%d]=%6.6f, ", j, vector[j]));
 	}
 	Console().WriteLn();
 }
 
-void LowellPointingModel::Apply(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) {
+void AlignmentModel::getPseudoInverse(Matrix& pseudoInverse, const Matrix& matrix){
+	if (pseudoInverse.Rows() != matrix.Columns() || pseudoInverse.Columns() != matrix.Rows()){
+		throw Error( "Internal error: AlignmentModel::getPseudoInverse: Matrix dimensions do not match" );
+	}
+
+	SVD svd(matrix);
+	dumpVector(svd.W);
+	Matrix WInverse(matrix.Columns(),matrix.Columns());
+	for (int j = 0; j < matrix.Columns(); ++j){
+		for (int i = 0; i < matrix.Columns(); ++i) {
+			if (i == j && svd.W[i] != 0) {
+				WInverse[i][j] = 1.0 / svd.W[i];
+			}
+			if (i != j){
+				WInverse[i][j] = 0;
+			}
+		}
+	}
+	pseudoInverse = svd.V * WInverse * svd.U.Transpose();
+}
+
+
+void LowellPointingModel::Apply(double& hourAngleCor, double& decCor, double hourAngle, double dec) {
 	double t_dec = 0;
 	double t_ha = 0;
 	double siteLatitude = 49.237 * Const<double>::rad();
@@ -217,15 +239,7 @@ void LowellPointingModel::fitModel(const Array<SyncDataPoint>& syncDataPointArra
 		m_modelCoefficientsWest =  pseudoInverseWest * decDeltaWest;
 	}
 
-	for (int i=0; i < m_modelCoefficientsEast.Length(); ++i){
-		Console().Write(String().Format("a[%d]=%f, ",i,m_modelCoefficientsEast[i]));
-		Console().WriteLn();
-	}
 
-	for (int i=0; i < m_modelCoefficientsWest.Length(); ++i){
-		Console().Write(String().Format("a[%d]=%f, ",i,m_modelCoefficientsWest[i]));
-		Console().WriteLn();
-	}
 
 	/*
 	 * Model hourAngle  correction
@@ -280,11 +294,6 @@ void LowellPointingModel::fitModel(const Array<SyncDataPoint>& syncDataPointArra
 		}
 	}
 
-	dumpMatrix(haDesignMatrixWest);
-	dumpVector(haDeltaWest);
-	dumpMatrix(haDesignMatrixEast);
-	dumpVector(haDeltaEast);
-
 	// compute model parameters
 
 	if (eastCount >=4 ){
@@ -322,18 +331,256 @@ void LowellPointingModel::fitModel(const Array<SyncDataPoint>& syncDataPointArra
 		m_modelHACoefficientsWest =  pseudoInverseWest * haDeltaWest;
 	}
 
+	dumpVector(m_modelCoefficientsEast);
+			dumpVector(m_modelCoefficientsWest);
+			dumpVector(m_modelHACoefficientsEast);
+			dumpVector(m_modelHACoefficientsWest);
+}
 
+
+void LowellPointingModel::writeObject(const String& fileName)
+{
+	// save model parameters to disk
+	IsoString fileContent;
+
+	for (int i=0; i < m_modelCoefficientsEast.Length(); ++i){
+		if (i < m_modelCoefficientsEast.Length()-1)
+			fileContent.Append(IsoString().Format("%f,",m_modelCoefficientsEast[i]));
+		else
+			fileContent.Append(IsoString().Format("%f",m_modelCoefficientsEast[i]));
+	}
+	fileContent.Append("\n");
+	for (int i=0; i < m_modelCoefficientsWest.Length(); ++i){
+		if (i < m_modelCoefficientsWest.Length()-1)
+			fileContent.Append(IsoString().Format("%f,",m_modelCoefficientsWest[i]));
+		else
+			fileContent.Append(IsoString().Format("%f",m_modelCoefficientsWest[i]));
+	}
+	fileContent.Append("\n");
 	for (int i=0; i < m_modelHACoefficientsEast.Length(); ++i){
-		Console().Write(String().Format("b[%d]=%f, ",i,m_modelHACoefficientsEast[i]));
-		Console().WriteLn();
+		if (i < m_modelHACoefficientsEast.Length()-1)
+			fileContent.Append(IsoString().Format("%f,",m_modelHACoefficientsEast[i]));
+		else
+			fileContent.Append(IsoString().Format("%f",m_modelHACoefficientsEast[i]));
+	}
+	fileContent.Append("\n");
+	for (int i=0; i < m_modelHACoefficientsWest.Length(); ++i){
+		if (i < m_modelHACoefficientsWest.Length()-1)
+			fileContent.Append(IsoString().Format("%f,",m_modelHACoefficientsWest[i]));
+		else
+			fileContent.Append(IsoString().Format("%f",m_modelHACoefficientsWest[i]));
+	}
+	fileContent.Append("\n");
+
+
+	if (File::Exists(fileName)){
+		IsoStringList syncPointDataList = File::ReadLines(fileName);
+		for (auto line : syncPointDataList){
+			fileContent.Append(line);
+			fileContent.Append("\n");
+		}
+		File::Remove(fileName);
+	}
+	File::WriteTextFile(fileName,fileContent);
+}
+
+void LowellPointingModel::readObject(const String& fileName)
+{
+	IsoStringList modeParameterList = File::ReadLines(fileName);
+
+	for (size_t i = 0 ; i < modeParameterList.Length(); ++i) {
+
+		IsoStringList tokens;
+		modeParameterList[i].Break(tokens, ",", true);
+
+		switch (i){
+		case 0:
+			for (int j = 0; j < m_modelCoefficientsEast.Length(); ++j){
+				m_modelCoefficientsEast[j] = tokens[j].ToDouble();
+			}
+		break;
+		case 1:
+			for (int j = 0; j < m_modelCoefficientsWest.Length(); ++j){
+				m_modelCoefficientsWest[j] = tokens[j].ToDouble();
+			}
+		break;
+		case 2:
+			for (int j = 0; j < m_modelHACoefficientsEast.Length(); ++j){
+				m_modelHACoefficientsEast[j] = tokens[j].ToDouble();
+			}
+		break;
+		case 3:
+			for (int j = 0; j < m_modelHACoefficientsWest.Length(); ++j){
+				m_modelHACoefficientsWest[j] = tokens[j].ToDouble();
+			}
+		break;
+		}
+	}
+}
+
+
+void AnalyticalPointingModel::evaluateBasis(Matrix& basisVectors, double hourAngle, double dec)
+{
+	if (basisVectors.Rows() != 3 || basisVectors.Columns() != 6)
+	{
+		throw Error( "Internal error: AnalyticalPointingModel::evaluateBasis: Matrix dimensions do not match" );
 	}
 
-	for (int i=0; i < m_modelHACoefficientsWest.Length(); ++i){
-		Console().Write(String().Format("b[%d]=%f, ",i,m_modelHACoefficientsWest[i]));
-		Console().WriteLn();
-	}
+	double ctc  = Cos(hourAngle * Const<double>::rad());
+	double cdc  = Cos(dec * Const<double>::rad());
+
+	double stc  = Sin(hourAngle * Const<double>::rad());
+	double sdc  = Sin(dec * Const<double>::rad());
+
+	// p1
+	basisVectors[0][0] = 0;
+	basisVectors[1][0] = -sdc;
+	basisVectors[2][0] = cdc * stc ;
+	// p2
+	basisVectors[0][1] = sdc;
+	basisVectors[1][1] = 0;
+	basisVectors[2][1] = -cdc * ctc ;
+	// p3
+	basisVectors[0][2] = -cdc * stc;
+	basisVectors[1][2] =  cdc * ctc;
+	basisVectors[2][2] = 0;
+	// p4
+	basisVectors[0][3] = sdc * stc;
+	basisVectors[1][3] = -sdc * ctc;
+	basisVectors[2][3] = 0;
+	// p5
+	basisVectors[0][4] = sdc * ctc;
+	basisVectors[1][4] = sdc * stc;
+	basisVectors[2][4] = -cdc ;
+	// p6
+	basisVectors[0][5] = -stc;
+	basisVectors[1][5] =  ctc;
+	basisVectors[2][5] = 0;
 
 }
+
+void AnalyticalPointingModel::Apply(double& hourAngleCor, double& decCor, double hourAngle, double dec)
+{
+	Matrix basisVectors(3,m_numOfModelParameters);
+
+	evaluateBasis(basisVectors,hourAngle*15,dec);
+
+	// compute correction vector
+	Vector alignCorrection(3);
+	alignCorrection = (*m_modelParameters)[0] * basisVectors.ColumnVector(0);
+	for (size_t modelIndex = 1; modelIndex < m_numOfModelParameters; modelIndex++){
+		alignCorrection +=  (*m_modelParameters)[modelIndex] * basisVectors.ColumnVector(modelIndex);
+	}
+
+	dumpVector(alignCorrection);
+	// compute p0
+	Vector p0(3);
+	p0[0] = Cos(hourAngle * 15 * Const<double>::rad()) * Cos(dec * Const<double>::rad());
+	p0[1] = Sin(hourAngle * 15 * Const<double>::rad()) * Cos(dec * Const<double>::rad());
+	p0[2] = Sin(dec * Const<double>::rad());
+
+	dumpVector(p0);
+	dumpVector(alignCorrection);
+	// compute corrected p (pCorr)
+	Vector pCorr(3);
+	pCorr = p0 + alignCorrection;
+
+	hourAngleCor  = ArcTan(pCorr[1],pCorr[0]) * Const<double>::deg() / 15;
+	decCor = ArcTan(pCorr[2],Sqrt(pCorr[0]*pCorr[0] + pCorr[1] * pCorr[1])) * Const<double>::deg();
+
+}
+
+void AnalyticalPointingModel::fitModel(const Array<SyncDataPoint>& syncPointArray)
+{
+	//  design matrix
+	Matrix designMatrix(3 * syncPointArray.Length(),m_numOfModelParameters);
+	// alignmentErrorVecotr
+	Vector alignmentError(3 * syncPointArray.Length());
+
+	size_t count=0;
+	for (auto syncPoint : syncPointArray) {
+		double celestialHourAngle = (syncPoint.localSiderialTime - syncPoint.celestialRA) * 15 ;
+		double telescopeHourAngle = (syncPoint.localSiderialTime - syncPoint.telecopeRA)  * 15 ;
+
+		// calculate design matrix
+		Matrix basisVectors(3,m_numOfModelParameters);
+
+		evaluateBasis(basisVectors,celestialHourAngle,syncPoint.celestialDEC);
+
+		for (size_t modelIndex = 0; modelIndex < m_numOfModelParameters; modelIndex++){
+			designMatrix[3*count]    [modelIndex] = basisVectors[0][modelIndex];
+			designMatrix[3*count + 1][modelIndex] = basisVectors[1][modelIndex];
+			designMatrix[3*count + 2][modelIndex] = basisVectors[2][modelIndex];
+		}
+
+		// calculate alignment error
+		double ctc  = Cos(celestialHourAngle * Const<double>::rad());
+		double cdc  = Cos(syncPoint.celestialDEC * Const<double>::rad());
+		double stc  = Sin(celestialHourAngle * Const<double>::rad());
+		double sdc  = Sin(syncPoint.celestialDEC * Const<double>::rad());
+
+		double ctt  = Cos(telescopeHourAngle * Const<double>::rad());
+		double cdt  = Cos(syncPoint.telecopeDEC * Const<double>::rad());
+		double stt  = Sin(telescopeHourAngle * Const<double>::rad());
+		double sdt  = Sin(syncPoint.telecopeDEC * Const<double>::rad());
+
+		alignmentError[3*count] = ctt * cdt - ctc * cdc;
+		alignmentError[3*count + 1] = stt * cdt - stc * cdc;
+		alignmentError[3*count + 2] = sdt  - sdc;
+
+		count++;
+	}
+
+	// compute pseudo inverse
+	Matrix pseudoInverse(designMatrix.Columns(),designMatrix.Rows());
+	AnalyticalPointingModel::getPseudoInverse(pseudoInverse,designMatrix);
+
+	// fit parameters
+	*m_modelParameters = pseudoInverse * alignmentError;
+}
+
+
+void AnalyticalPointingModel::writeObject(const String& fileName)
+{
+	// save model parameters to disk
+	IsoString fileContent;
+
+	for (int i=0; i < this->m_numOfModelParameters; ++i){
+		if (i < m_numOfModelParameters-1)
+			fileContent.Append(IsoString().Format("%f,",(*m_modelParameters)[i]));
+		else
+			fileContent.Append(IsoString().Format("%f",(*m_modelParameters)[i]));
+	}
+
+	fileContent.Append("\n");
+
+
+	if (File::Exists(fileName)){
+		IsoStringList syncPointDataList = File::ReadLines(fileName);
+		for (auto line : syncPointDataList){
+			fileContent.Append(line);
+			fileContent.Append("\n");
+		}
+		File::Remove(fileName);
+	}
+	File::WriteTextFile(fileName,fileContent);
+}
+
+void AnalyticalPointingModel::readObject(const String& fileName)
+{
+	IsoStringList modelParameterList = File::ReadLines(fileName);
+
+	for (size_t i = 0 ; i < modelParameterList.Length(); ++i) {
+
+		IsoStringList tokens;
+		modelParameterList[i].Break(tokens, ",", true);
+
+		for (int j = 0; j < m_numOfModelParameters; ++j){
+			(*m_modelParameters)[j] = tokens[j].ToDouble();
+		}
+	}
+}
+
 
 // ----------------------------------------------------------------------------
 

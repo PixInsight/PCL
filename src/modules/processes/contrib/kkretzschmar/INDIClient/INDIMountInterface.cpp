@@ -449,6 +449,17 @@ ProcessImplementation* INDIMountInterface::NewProcess() const
 
    instance->p_alignmentMethod = GUI->AlignmentMethod_ComboBox.CurrentItem();
 
+   switch(instance->p_alignmentMethod){
+   	case IMCAlignmentMethod::AnalyticalModel:
+   		instance->m_align = LowellPointingModel::create();
+   	    break;
+   	case IMCAlignmentMethod::AnalyticalSpericalHarmonicsModel:
+   		instance->m_align = AnalyticalPointingModel::create(0);
+   		break;
+   	default:
+   		instance->m_align = LowellPointingModel::create();
+   	}
+
    instance->p_alignmentFile = GUI->AlignmentFile_Edit.Text();
 
    instance->GetCurrentCoordinates();
@@ -735,6 +746,7 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    AlignmentMethod_Label.SetFixedWidth( labelWidth1 );
 
    AlignmentMethod_ComboBox.AddItem( "Analytical Model" );
+   AlignmentMethod_ComboBox.AddItem( "Isotropic Analytical Model (L=0)" );
    AlignmentMethod_ComboBox.AddItem( "Server Model" );
    AlignmentMethod_ComboBox.SetToolTip( alignmentMethodToolTipText );
    AlignmentMethod_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&INDIMountInterface::e_ItemSelected, w );

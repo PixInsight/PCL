@@ -94,6 +94,12 @@ public:
 
 	virtual void fitModel(const Array<SyncDataPoint>& syncPointArray) = 0;
 
+	virtual void writeObject(const String& fileName) = 0;
+
+	virtual void readObject(const String& fileName) = 0;
+
+	static void getPseudoInverse(Matrix& pseudoInverse, const Matrix& matrix);
+
 };
 
 // ----------------------------------------------------------------------------
@@ -116,7 +122,7 @@ public:
 	LowellPointingModel() : AlignmentModel (), m_modelCoefficientsWest(4), m_modelCoefficientsEast(4), m_modelHACoefficientsWest(4), m_modelHACoefficientsEast(4)
  	{
  	}
-	~LowellPointingModel()
+	virtual ~LowellPointingModel()
 	{
 
 	}
@@ -128,6 +134,11 @@ public:
 	static AlignmentModel* create(){
 		return new LowellPointingModel();
 	}
+
+	virtual void writeObject(const String& fileName);
+
+	virtual void readObject(const String& fileName);
+
 private:
 
 	Vector m_modelCoefficientsWest;
@@ -135,6 +146,58 @@ private:
 	Vector m_modelHACoefficientsWest;
 	Vector m_modelHACoefficientsEast;
 };
+
+ /*
+  * Analytical telescope pointing model,
+  * using Spherical Harmonics to model
+  * anisotropic effects.
+  *
+  *
+  * http://
+  *
+  *
+  */
+ class AnalyticalPointingModel : public AlignmentModel {
+ public:
+	 AnalyticalPointingModel(size_t spericalHarmonicsOrder):m_orderOfSphericalHarmonics(spericalHarmonicsOrder),m_numOfModelParameters(0),m_modelParameters(nullptr){
+		 if (m_orderOfSphericalHarmonics == 0){
+			 m_numOfModelParameters=6;
+		 } else if (m_orderOfSphericalHarmonics == 1){
+			 m_numOfModelParameters=22;
+		 } else if (m_orderOfSphericalHarmonics == 2){
+			 m_numOfModelParameters=46;
+		 } else {
+			 throw Error( "Internal error: AnalyticalPointingModel: Order of spherical harmonics > 2 not supported" );
+		 }
+
+		 m_modelParameters = new Vector(m_numOfModelParameters);
+	 }
+
+	 virtual ~AnalyticalPointingModel(){
+		 delete m_modelParameters;
+	 }
+
+	 virtual void Apply(double& hourAngleCor, double& decCor,  double hourAngle, double dec);
+
+	 virtual void fitModel(const Array<SyncDataPoint>& syncPointArray);
+
+	 static AlignmentModel* create(size_t spericalHarmonicsOrder){
+		 return new AnalyticalPointingModel(spericalHarmonicsOrder);
+	 }
+
+	 virtual void writeObject(const String& fileName);
+
+	 virtual void readObject(const String& fileName);
+ private:
+
+	 static void evaluateBasis(Matrix& basisMatrix, double hourAngle, double dec);
+
+	 size_t m_orderOfSphericalHarmonics;
+	 size_t m_numOfModelParameters;
+
+	 Vector* m_modelParameters;
+
+ };
 
 
 } // pcl

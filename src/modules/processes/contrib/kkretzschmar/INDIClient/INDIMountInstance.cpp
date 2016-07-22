@@ -95,6 +95,7 @@ INDIMountInstance::INDIMountInstance( const MetaProcess* m ) :
    o_syncTelescopeDEC(TheIMCSyncTelescopeDecParameter->DefaultValue()),
    m_align(LowellPointingModel::create())
 {
+
 }
 
 INDIMountInstance::INDIMountInstance( const INDIMountInstance& x ) :
@@ -626,34 +627,7 @@ void AbstractINDIMountExecution::Perform()
             // Do not apply telescope pointing model in differential correction or during collecting sync points
             if (m_instance.p_enableAlignmentCorrection){
 
-            	IsoStringList syncPointDataList = File::ReadLines(m_instance.p_alignmentFile);
-
-            	for (auto line : syncPointDataList){
-
-            		SyncDataPoint syncPoint;
-            		IsoStringList tokens;
-            		line.Break(tokens,",",true);
-
-            		syncPoint.localSiderialTime = tokens[0].ToDouble();
-            		syncPoint.celestialRA = tokens[1].ToDouble();
-            		syncPoint.celestialDEC = tokens[2].ToDouble();
-            		syncPoint.telecopeRA = tokens[3].ToDouble();
-            		syncPoint.telecopeDEC = tokens[4].ToDouble();
-            		if (tokens[5] == TheIMCPierSideParameter->ElementId( IMCPierSide::East)){
-            			syncPoint.pierSide =  IMCPierSide::East;
-            		} else if (tokens[5] == TheIMCPierSideParameter->ElementId( IMCPierSide::West)){
-            			syncPoint.pierSide =  IMCPierSide::West;
-            		} else {
-            			syncPoint.pierSide = IMCPierSide::None;
-            		}
-
-            		Console().WriteLn(IsoString().Format("%f, %f, %f, %f, %f, %s\n",syncPoint.localSiderialTime,syncPoint.celestialRA,syncPoint.celestialDEC,syncPoint.telecopeRA,syncPoint.telecopeDEC,TheIMCPierSideParameter->ElementId( syncPoint.pierSide).c_str()));
-
-            		m_instance.AddSyncDataPoint(syncPoint);
-
-            	}
-
-                m_instance.m_align->fitModel(m_instance.syncDataArray);
+                m_instance.m_align->readObject(m_instance.p_alignmentFile);
 
             	m_instance.m_align->Apply(hourAngle,targetDec,m_instance.o_currentLST - targetRARaw,targetDecRaw);
                 targetRA=m_instance.o_currentLST-hourAngle;
@@ -782,6 +756,7 @@ void AbstractINDIMountExecution::Perform()
             	// TODO: get sync point coordinates from server and set parameter
             }
             break;
+            case IMCAlignmentMethod::AnalyticalSpericalHarmonicsModel:
             case IMCAlignmentMethod::AnalyticalModel:
             {
                 m_instance.GetCurrentCoordinates();
@@ -800,29 +775,24 @@ void AbstractINDIMountExecution::Perform()
                 m_instance.o_apparentTargetDec = syncPoint.telecopeDEC;
                 m_instance.p_pierSide          = syncPoint.pierSide;
 
-                Console().WriteLn(IsoString().Format("%f, %f, %f, %f, %f, %s\n",syncPoint.localSiderialTime,syncPoint.celestialRA,syncPoint.celestialDEC,syncPoint.telecopeRA,syncPoint.telecopeDEC,TheIMCPierSideParameter->ElementId( syncPoint.pierSide).c_str()));
+                //m_instance.AddSyncDataPoint(syncPoint);
 
-            	m_instance.AddSyncDataPoint(syncPoint);
+               /* m_instance.AddSyncDataPoint({18.709270, 15.042896, 40.331868, 14.971350, 40.267620, IMCPierSide::West});
+                m_instance.AddSyncDataPoint({18.650702, 16.515700, 21.459100, 16.446741, 21.294694,IMCPierSide::West});
+                m_instance.AddSyncDataPoint({18.569906, 17.256970, 14.376531, 17.185182, 14.207593, IMCPierSide::West});
+                m_instance.AddSyncDataPoint({18.517187, 14.273599, 19.101173, 14.209110, 19.056064, IMCPierSide::West});
+                m_instance.AddSyncDataPoint({18.478823, 13.409574, 54.845648, 13.328467, 54.807207, IMCPierSide::West});*/
+                m_instance.AddSyncDataPoint({18.286485, 21.750214, 9.952588, 21.728272, 9.962314, IMCPierSide::East});
+                m_instance.AddSyncDataPoint({18.253073, 23.076539, 28.171271, 23.055036, 28.222380, IMCPierSide::East});
+                m_instance.AddSyncDataPoint({18.181295, 19.860142, 8.915623, 19.846936, 8.907846, IMCPierSide::East});
+                m_instance.AddSyncDataPoint({18.151661, 19.523534, 27.997829, 19.516738, 27.990000, IMCPierSide::East});
+                m_instance.AddSyncDataPoint({18.121164, 20.700483, 45.340619, 20.701178, 45.337181, IMCPierSide::East});
+                m_instance.AddSyncDataPoint({18.016187, 18.625431, 38.803376, 18.627985, 38.821077, IMCPierSide::East});
+
                 m_instance.m_align->fitModel(m_instance.syncDataArray);
 
                 // save model parameters to disk
-                IsoString fileContent;
-                for (auto syncPoint : m_instance.syncDataArray){
-                	fileContent.Append(IsoString().Format("%f, %f, %f, %f, %f, %s\n",syncPoint.localSiderialTime,syncPoint.celestialRA,syncPoint.celestialDEC,syncPoint.telecopeRA,syncPoint.telecopeDEC,TheIMCPierSideParameter->ElementId( syncPoint.pierSide).c_str() ));
-                }
-                m_instance.p_alignmentFile;
-                if (File::Exists(m_instance.p_alignmentFile)){
-                	IsoStringList syncPointDataList = File::ReadLines(m_instance.p_alignmentFile);
-                	for (auto line : syncPointDataList){
-                		fileContent.Append(line);
-                		fileContent.Append("\n");
-                	}
-                	File::Remove(m_instance.p_alignmentFile);
-                }
-                File::WriteTextFile(m_instance.p_alignmentFile,fileContent);
-
-
-
+                m_instance.m_align->writeObject(m_instance.p_alignmentFile);
             }
             break;
             }

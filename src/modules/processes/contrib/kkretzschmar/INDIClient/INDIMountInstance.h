@@ -96,6 +96,8 @@ public:
 
    void AddSyncDataPoint(const SyncDataPoint& syncDataPoint);
 
+   void loadSyncData();
+   static void loadSyncData(Array<SyncDataPoint>& syncDataList);
 
 private:
 

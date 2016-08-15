@@ -75,7 +75,7 @@ DECLARE_STRING_PARAMETER_CLASS(IMCDeviceName);
 				ENUM_ITEM(MoveWestStart) ENUM_ITEM(MoveWestStop)\
 				ENUM_ITEM(MoveEastStart) ENUM_ITEM(MoveEastStop)\
 				ENUM_ITEM(GoTo) ENUM_ITEM(Sync)\
-				ENUM_ITEM(ParkDefault)
+				ENUM_ITEM(ParkDefault) ENUM_ITEM(FitAlignmentModel)
 
 
 
@@ -122,7 +122,7 @@ DECLARE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCApparentTargetDec);
 
 // ----------------------------------------------------------------------------
 
-#define PIERSIDE_ENUM ENUM_ITEM(None) ENUM_ITEM(West) ENUM_ITEM(East)
+#define PIERSIDE_ENUM  ENUM_ITEM(West) ENUM_ITEM(East) ENUM_ITEM(None)
 DECLARE_ENUM_PARAMETER(IMCPierSide,PIERSIDE_ENUM,None);
 
 DECLARE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCSyncLST);
@@ -139,7 +139,7 @@ DECLARE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCSyncTelescopeDec);
 
 DECLARE_BOOLEAN_PARAMETER_CLASS(IMCEnableAlignmentCorrection);
 
-#define ALIGNMENT_ENUM ENUM_ITEM(AnalyticalModel) ENUM_ITEM(AnalyticalSpericalHarmonicsModel) ENUM_ITEM(ServerModel)
+#define ALIGNMENT_ENUM ENUM_ITEM(AnalyticalModel) ENUM_ITEM(TPointAnalyticalModel) ENUM_ITEM(ServerModel)
 DECLARE_ENUM_PARAMETER(IMCAlignmentMethod,ALIGNMENT_ENUM,AnalyticalModel);
 
 // ----------------------------------------------------------------------------
@@ -147,6 +147,7 @@ DECLARE_ENUM_PARAMETER(IMCAlignmentMethod,ALIGNMENT_ENUM,AnalyticalModel);
 DECLARE_STRING_PARAMETER_CLASS(IMCAlignmentFile);
 
 // ----------------------------------------------------------------------------
+
 
 
 PCL_END_LOCAL

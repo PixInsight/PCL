@@ -68,6 +68,7 @@
 #include <pcl/TextBox.h>
 #include <pcl/Timer.h>
 #include <pcl/ToolButton.h>
+#include <pcl/TreeBox.h>
 
 #include "INDIClient.h"
 #include "INDIMountInstance.h"
@@ -189,6 +190,29 @@ private:
    void e_Click( Button& sender, bool checked );
 };
 
+class SyncDataListDialog : public Dialog {
+public:
+	SyncDataListDialog(Array<SyncDataPoint>& syncDataArray);
+
+private:
+	VerticalSizer       Global_Sizer;
+      HorizontalSizer      SyncDataList_Sizer;
+		TreeBox             SnycData_TreeBox;
+	  HorizontalSizer      SyncDataListButton_Sizer;
+	    PushButton           Enable_Button;
+	    PushButton           Disable_Button;
+	    PushButton           Delete_Button;
+
+
+	  void e_Click( Button& sender, bool checked );
+	  void e_Show( Control& sender );
+	  void e_Close( Control& sender , bool& allowClose);
+
+	  Array<SyncDataPoint>&  m_syncDataList;
+	  bool      m_firstTimeShown;
+};
+
+
 // ----------------------------------------------------------------------------
 
 class INDIMountInterfaceExecution;
@@ -221,6 +245,7 @@ private:
    String                       m_device;
    INDIMountInterfaceExecution* m_execution;
    CoordinateSearchDialog*      m_searchDialog;
+   SyncDataListDialog*          m_syncDataListDialog;
 
    struct GUIData
    {
@@ -254,7 +279,32 @@ private:
             HorizontalSizer   MountHZALT_Sizer;
                Label             ALT_Label;
                Label             ALT_Value_Label;
-
+      SectionBar        MountAlignment_SectionBar;
+      Control           MountAlignment_Control;
+      VerticalSizer     MountAlignment_Sizer;
+      	  HorizontalSizer   MountAlignmentFile_Sizer;
+              Label             AlignmentFile_Label;
+              Edit              AlignmentFile_Edit;
+              ToolButton        AlignmentFile_ToolButton;
+          HorizontalSizer   MountAlignmentMethod_Sizer;
+              Label             AlignmentMethod_Label;
+              ComboBox          AlignmentMethod_ComboBox;
+          HorizontalSizer   MountAlignmentPierSide_Sizer;
+              Label             AlignmentPierSide_Label;
+              ComboBox          AlignmentPierSide_ComboBox;
+          HorizontalSizer   MountAlignmentConfig_Sizer;
+          	  Label            AlignmentConfig_Label;
+          	  CheckBox         MountAlignmentConfigOffset_CheckBox;
+          	  CheckBox         MountAlignmentConfigCollimation_CheckBox;
+          	  CheckBox         MountAlignmentConfigNonPerpendicular_CheckBox;
+          	  CheckBox         MountAlignmentConfigPAHorDisp_CheckBox;
+          	  CheckBox         MountAlignmentConfigPAVertDisp_CheckBox;
+          	  CheckBox         MountAlignmentConfigTubeFlexure_CheckBox;
+          	  CheckBox         MountAlignmentConfigForkFlexure_CheckBox;
+          HorizontalSizer   MountAligmentModelFit_Sizer;
+          	  PushButton       MountAligmentModelFit_Button;
+          	  PushButton       MountAligmentModelSyncDataList_Button;
+          	  CheckBox         MountAlignmentPlotResiduals_CheckBox;
       SectionBar        MountGoTo_SectionBar;
       Control           MountGoTo_Control;
       VerticalSizer     MountGoTo_Sizer;
@@ -271,16 +321,6 @@ private:
             CheckBox          MountTargetDECIsSouth_CheckBox;
          HorizontalSizer   MountSearch_Sizer;
             PushButton        MountSearch_Button;
-         HorizontalSizer   MountAlignmentFile_Sizer;
-            Label             AlignmentFile_Label;
-            Edit              AlignmentFile_Edit;
-            ToolButton        AlignmentFile_ToolButton;
-         HorizontalSizer   MountAlignmentMethod_Sizer;
-            Label             AlignmentMethod_Label;
-            ComboBox          AlignmentMethod_ComboBox;
-         HorizontalSizer   MountAlignmentPierSide_Sizer;
-         	Label             AlignmentPierSide_Label;
-            ComboBox          AlignmentPierSide_ComboBox;
          HorizontalSizer   MountAlignmentCorrection_Sizer;
          	 CheckBox         MountAlignmentCorrection_CheckBox;
          HorizontalSizer   MountGoToStart_Sizer;
@@ -316,6 +356,8 @@ private:
    GUIData* GUI;
 
    void UpdateControls();
+
+   void plotAlignemtResiduals(AlignmentModel* model, const Array<SyncDataPoint>& syncDatapointList);
 
    void e_Timer( Timer& sender );
    void e_Edit( Edit& sender );

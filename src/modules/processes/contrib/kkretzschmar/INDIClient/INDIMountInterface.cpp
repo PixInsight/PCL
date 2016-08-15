@@ -55,6 +55,8 @@
 #include <pcl/Math.h>
 #include <pcl/MetaModule.h>
 #include <pcl/FileDialog.h>
+#include <pcl/ExternalProcess.h>
+
 
 #include "ApparentPosition.h"
 #include "Alignment.h"
@@ -370,6 +372,124 @@ void CoordinateSearchDialog::e_Click( Button& sender, bool checked )
          Cancel();
    }
 }
+#define SHIFT_HA(HA)( HA > 12 ? HA - 24 : ( HA < -12 ? HA + 24 : HA) )
+SyncDataListDialog::SyncDataListDialog(Array<SyncDataPoint>& syncDataArray) :
+   Dialog(), m_syncDataList(syncDataArray), m_firstTimeShown(true)
+{
+
+	SnycData_TreeBox.SetMinHeight( Font().Width( 'm' )*20 );
+	SnycData_TreeBox.SetScaledMinWidth(  Font().Height()  * 50 );
+	SnycData_TreeBox.SetNumberOfColumns( 7 );
+	SnycData_TreeBox.SetHeaderText( 2, "HA" );
+	SnycData_TreeBox.SetHeaderText( 3, "Dec" );
+	SnycData_TreeBox.SetHeaderText( 4, "Delta HA" );
+	SnycData_TreeBox.SetHeaderText( 5, "Delta Dec" );
+	SnycData_TreeBox.SetHeaderText( 6, "Pier side");
+	SnycData_TreeBox.EnableAlternateRowColor();
+	//SnycData_TreeBox.DisableMultipleSelections();
+
+	for (size_t index = 0;  index < syncDataArray.Length(); ++index) {
+		TreeBox::Node* node =  new TreeBox::Node();
+		auto syncDataPoint = syncDataArray[index];
+		node->SetText(0,String().Format("%i",index));
+		node->SetIcon(1, syncDataPoint.enabled ? ScaledResource(":/browser/enabled.png") : ScaledResource(":/browser/disabled.png") );
+		node->SetText(2,String().Format("%2.3f",SHIFT_HA(syncDataPoint.localSiderialTime-syncDataPoint.celestialRA)));
+		node->SetText(3,String().Format("%2.3f",syncDataPoint.celestialDEC));
+		node->SetText(4,String().Format("%2.5f",syncDataPoint.telecopeRA-syncDataPoint.celestialRA));
+		node->SetText(5,String().Format("%2.5f",syncDataPoint.celestialDEC-syncDataPoint.telecopeDEC));
+		node->SetText(6,String(syncDataPoint.pierSide == IMCPierSide::West ? "West" :  syncDataPoint.pierSide == IMCPierSide::East ? "East" : "" ));
+		SnycData_TreeBox.Add(node);
+	}
+
+	for (int i = 0 ; i < SnycData_TreeBox.NumberOfColumns(); ++i){
+		SnycData_TreeBox.AdjustColumnWidthToContents( i );
+	}
+
+	SyncDataList_Sizer.SetSpacing( 8 );
+	SyncDataList_Sizer.Add(SnycData_TreeBox, 100);
+
+	Delete_Button.SetText( "Delete" );
+	//Delete_Button.SetIcon( ScaledResource( ":/icons/window-import.png" ) );
+	Delete_Button.OnClick( (Button::click_event_handler)&SyncDataListDialog::e_Click, *this );
+
+	Enable_Button.SetText( "Enable" );
+	//Delete_Button.SetIcon( ScaledResource( ":/icons/window-import.png" ) );
+	Enable_Button.OnClick( (Button::click_event_handler)&SyncDataListDialog::e_Click, *this );
+
+	Disable_Button.SetText( "Disable" );
+	//Delete_Button.SetIcon( ScaledResource( ":/icons/window-import.png" ) );
+	Disable_Button.OnClick( (Button::click_event_handler)&SyncDataListDialog::e_Click, *this );
+
+	SyncDataListButton_Sizer.SetSpacing(8);
+	SyncDataListButton_Sizer.AddStretch();
+	SyncDataListButton_Sizer.Add(Enable_Button);
+	SyncDataListButton_Sizer.Add(Disable_Button);
+	SyncDataListButton_Sizer.Add(Delete_Button);
+
+	Global_Sizer.SetSpacing( 8 );
+	Global_Sizer.SetMargin( 8 );
+	Global_Sizer.Add(SyncDataList_Sizer);
+	Global_Sizer.Add(SyncDataListButton_Sizer);
+	SetSizer( Global_Sizer );
+
+	SetWindowTitle( "List of syncdata points" );
+
+	OnShow( (Control::event_handler)&SyncDataListDialog::e_Show, *this );
+	OnClose( (Control::close_event_handler)&SyncDataListDialog::e_Close, *this );
+
+}
+
+void SyncDataListDialog::e_Show( Control& )
+{
+   if ( m_firstTimeShown )
+   {
+      m_firstTimeShown = false;
+      AdjustToContents();
+      SetMinSize();
+   }
+}
+
+void SyncDataListDialog::e_Close( Control& sender , bool& allowClose){
+	IsoString fileContent;
+	String syncDataPath = File::SystemTempDirectory();
+	if (!syncDataPath.EndsWith('/'))
+		syncDataPath += '/';
+	syncDataPath += "SyncData.dat";
+	if (File::Exists(syncDataPath)) {
+		for (auto syncPoint : m_syncDataList) {
+			fileContent.Append(IsoString().Format("%f,%f,%f,%f,%f,%s,%s\n",syncPoint.localSiderialTime,syncPoint.celestialRA,syncPoint.celestialDEC,syncPoint.telecopeRA,syncPoint.telecopeDEC, syncPoint.pierSide == IMCPierSide::West ? "West" : "East",syncPoint.enabled ? "true" : "false" ));
+		}
+		File::Remove(syncDataPath);
+	}
+	File::WriteTextFile(syncDataPath, fileContent);
+	allowClose = true;
+}
+
+void SyncDataListDialog::e_Click( Button& sender, bool checked ){
+
+	if (sender == Disable_Button){
+		for ( auto node: SnycData_TreeBox.SelectedNodes()){
+			int index = SnycData_TreeBox.ChildIndex(node);
+			m_syncDataList[index].enabled = false;
+			node->SetIcon(1, ScaledResource(":/browser/disabled.png") );
+		}
+	}
+	if (sender == Enable_Button){
+		for ( auto node: SnycData_TreeBox.SelectedNodes()){
+			int index = SnycData_TreeBox.ChildIndex(node);
+			m_syncDataList[index].enabled = true;
+			node->SetIcon(1, ScaledResource(":/browser/enabled.png") );
+		}
+	}
+	if (sender == Delete_Button){
+		for ( auto node: SnycData_TreeBox.SelectedNodes()){
+			int index = SnycData_TreeBox.ChildIndex(node);
+			m_syncDataList.Remove(m_syncDataList[index]);
+			SnycData_TreeBox.Remove(index);
+		}
+	}
+
+}
 
 // ----------------------------------------------------------------------------
 
@@ -378,6 +498,7 @@ INDIMountInterface::INDIMountInterface() :
    m_device(),
    m_execution( nullptr ),
    m_searchDialog( nullptr ),
+   m_syncDataListDialog ( nullptr ),
    GUI( nullptr )
 {
    TheINDIMountInterface = this;
@@ -453,14 +574,41 @@ ProcessImplementation* INDIMountInterface::NewProcess() const
    	case IMCAlignmentMethod::AnalyticalModel:
    		instance->m_align = LowellPointingModel::create();
    	    break;
-   	case IMCAlignmentMethod::AnalyticalSpericalHarmonicsModel:
-   		instance->m_align = AnalyticalPointingModel::create(0);
-   		break;
+   	case IMCAlignmentMethod::TPointAnalyticalModel:
+   	{
+   		uint32_t config = 0;
+   		if (GUI->MountAlignmentConfigOffset_CheckBox.IsChecked()){
+   			config |= 1 << 1;// offset
+   		}
+   		if (GUI->MountAlignmentConfigCollimation_CheckBox.IsChecked()){
+   			config |= 1 << 2;// collimation error
+   		}
+   		if (GUI->MountAlignmentConfigNonPerpendicular_CheckBox.IsChecked()){
+   			config |= 1 << 3;// non-perpendicular dec-ra axis error
+   		}
+   		if (GUI->MountAlignmentConfigPAHorDisp_CheckBox.IsChecked()){
+   			config |= 1 << 4;// polar-axis horizontal displacement
+   		}
+   		if (GUI->MountAlignmentConfigPAVertDisp_CheckBox.IsChecked()){
+   			config |= 1 << 5;// polar-axis vertical displacement
+   		}
+   		if (GUI->MountAlignmentConfigTubeFlexure_CheckBox.IsChecked()){
+   			config |= 1 << 6;// tube flexure
+   		}
+   		if (GUI->MountAlignmentConfigForkFlexure_CheckBox.IsChecked()){
+   			config |= 1 << 7;// fork flexure
+   		}
+   		//config |= 1 << 8;// delta-axis flexure
+   		instance->m_align = TpointPointingModel::create(49.237,config);
+   	}
+   	break;
    	default:
    		instance->m_align = LowellPointingModel::create();
    	}
 
    instance->p_alignmentFile = GUI->AlignmentFile_Edit.Text();
+
+   instance->loadSyncData();
 
    instance->GetCurrentCoordinates();
 
@@ -526,6 +674,7 @@ void INDIMountInterface::UpdateControls()
    {
       GUI->UpdateDeviceProperties_Timer.Stop();
       GUI->MountProperties_Control.Disable();
+      GUI->MountAlignment_Control.Disable();
       GUI->Slew_Control.Disable();
       GUI->MountGoTo_Control.Disable();
    }
@@ -535,6 +684,7 @@ void INDIMountInterface::UpdateControls()
          GUI->UpdateDeviceProperties_Timer.Start();
 
       GUI->MountProperties_Control.Enable();
+      GUI->MountAlignment_Control.Enable();
       GUI->Slew_Control.Enable();
       GUI->MountGoTo_Control.Enable();
    }
@@ -646,6 +796,134 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    ServerParameters_Control.SetSizer( ServerParameters_Sizer );
 
    //
+   MountAlignment_SectionBar.SetTitle( "Alignment" );
+   MountAlignment_SectionBar.SetSection(MountAlignment_Control);
+
+   const char* alignmentfileToolTipText =
+      		   "<p>File which store the telescope pointing model. </p>";
+
+   AlignmentFile_Label.SetText("Alignment model:");
+   AlignmentFile_Label.SetToolTip(alignmentfileToolTipText);
+   AlignmentFile_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
+   AlignmentFile_Label.SetFixedWidth(labelWidth1);
+
+   AlignmentFile_Edit.SetToolTip(alignmentfileToolTipText);
+   AlignmentFile_Edit.SetReadOnly();
+
+   AlignmentFile_ToolButton.SetIcon(w.ScaledResource(":/icons/select-file.png"));
+   AlignmentFile_ToolButton.SetScaledFixedSize(22, 22);
+   AlignmentFile_ToolButton.SetToolTip("<p>Select the alignment file:</p>");
+   AlignmentFile_ToolButton.OnClick((Button::click_event_handler) &INDIMountInterface::e_Click, w);
+
+   MountAlignmentFile_Sizer.SetSpacing(8);
+   MountAlignmentFile_Sizer.Add(AlignmentFile_Label);
+   MountAlignmentFile_Sizer.Add(AlignmentFile_Edit, 100);
+   MountAlignmentFile_Sizer.AddSpacing(4);
+   MountAlignmentFile_Sizer.Add(AlignmentFile_ToolButton);
+
+   const char* alignmentMethodToolTipText = "<p>Alignment methods:</p>";
+
+   AlignmentMethod_Label.SetText("Alignment method:");
+   AlignmentMethod_Label.SetToolTip(alignmentMethodToolTipText);
+   AlignmentMethod_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
+   AlignmentMethod_Label.SetFixedWidth(labelWidth1);
+
+   AlignmentMethod_ComboBox.AddItem("Analytical Model");
+   AlignmentMethod_ComboBox.AddItem("Isotropic Analytical Model (L=0)");
+   AlignmentMethod_ComboBox.AddItem("Server Model");
+   AlignmentMethod_ComboBox.SetToolTip(alignmentMethodToolTipText);
+   AlignmentMethod_ComboBox.OnItemSelected((ComboBox::item_event_handler) &INDIMountInterface::e_ItemSelected,	w);
+
+   MountAlignmentMethod_Sizer.SetSpacing(8);
+   MountAlignmentMethod_Sizer.Add(AlignmentMethod_Label);
+   MountAlignmentMethod_Sizer.Add(AlignmentMethod_ComboBox);
+   MountAlignmentMethod_Sizer.AddStretch();
+
+   const char* alignmentConfigToolTipText = "<p>Alignment config:</p>";
+
+   AlignmentConfig_Label.SetText("Alignment config:");
+   AlignmentConfig_Label.SetToolTip(alignmentConfigToolTipText);
+   AlignmentConfig_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
+   AlignmentConfig_Label.SetFixedWidth(labelWidth1);
+   MountAlignmentConfigOffset_CheckBox.SetText("Zero-point");
+   MountAlignmentConfigOffset_CheckBox.SetToolTip(
+   			"<p>Zero-point offset</p>");
+   MountAlignmentConfigCollimation_CheckBox.SetText("Collimation");
+   MountAlignmentConfigCollimation_CheckBox.SetToolTip(
+   			"<p>Collimation error</p>");
+   MountAlignmentConfigNonPerpendicular_CheckBox.SetText("Non-perpendicular");
+   MountAlignmentConfigNonPerpendicular_CheckBox.SetToolTip("<p>Non-perpendicular</p>");
+   MountAlignmentConfigPAHorDisp_CheckBox.SetText("Polar horizontal");
+   MountAlignmentConfigPAHorDisp_CheckBox.SetToolTip(
+   			"<p>Polar-axis horizontal displacement</p>");
+   MountAlignmentConfigPAVertDisp_CheckBox.SetText("Polar  vertical");
+   MountAlignmentConfigPAVertDisp_CheckBox.SetToolTip(
+   			"<p>Polar-axis vertical displacement</p>");
+   MountAlignmentConfigTubeFlexure_CheckBox.SetText("Tube flexure");
+   MountAlignmentConfigTubeFlexure_CheckBox.SetToolTip("<p>Tube flexure</p>");
+   MountAlignmentConfigForkFlexure_CheckBox.SetText("Fork flexure");
+   MountAlignmentConfigForkFlexure_CheckBox.SetToolTip("<p>Fork flexure</p>");
+
+   MountAlignmentConfig_Sizer.AddSpacing(4);
+   MountAlignmentConfig_Sizer.Add(AlignmentConfig_Label);
+   MountAlignmentConfig_Sizer.Add(MountAlignmentConfigOffset_CheckBox);
+   MountAlignmentConfig_Sizer.Add(MountAlignmentConfigCollimation_CheckBox);
+   MountAlignmentConfig_Sizer.Add(MountAlignmentConfigNonPerpendicular_CheckBox);
+   MountAlignmentConfig_Sizer.Add(MountAlignmentConfigPAHorDisp_CheckBox);
+   MountAlignmentConfig_Sizer.Add(MountAlignmentConfigPAVertDisp_CheckBox);
+   MountAlignmentConfig_Sizer.Add(MountAlignmentConfigTubeFlexure_CheckBox);
+   MountAlignmentConfig_Sizer.Add(MountAlignmentConfigForkFlexure_CheckBox);
+   MountAlignmentConfig_Sizer.AddStretch();
+
+   const char* alignmentPierSideToolTipText = "<p>Alignment pier side:</p>";
+
+   AlignmentPierSide_Label.SetText("Alignment pier side:");
+   AlignmentPierSide_Label.SetToolTip(alignmentPierSideToolTipText);
+   AlignmentPierSide_Label.SetTextAlignment(TextAlign::Right | TextAlign::VertCenter);
+   AlignmentPierSide_Label.SetFixedWidth(labelWidth1);
+
+   AlignmentPierSide_ComboBox.AddItem("West");
+   AlignmentPierSide_ComboBox.AddItem("East");
+   AlignmentPierSide_ComboBox.AddItem("None");
+   AlignmentPierSide_ComboBox.SetCurrentItem(IMCPierSide::None);
+   AlignmentPierSide_ComboBox.SetToolTip(alignmentPierSideToolTipText);
+   AlignmentPierSide_ComboBox.OnItemSelected((ComboBox::item_event_handler) &INDIMountInterface::e_ItemSelected,w);
+
+   MountAlignmentPierSide_Sizer.SetSpacing(8);
+   MountAlignmentPierSide_Sizer.Add(AlignmentPierSide_Label);
+   MountAlignmentPierSide_Sizer.Add(AlignmentPierSide_ComboBox);
+   MountAlignmentPierSide_Sizer.AddStretch();
+
+   MountAligmentModelFit_Button.SetText("Fit Model");
+   //MountAligmentModelFit_Button.SetIcon( w.ScaledResource( ":/icons/find.png" ) );
+   MountAligmentModelFit_Button.SetStyleSheet("QPushButton { text-align: left; }");
+   MountAligmentModelFit_Button.OnClick((Button::click_event_handler) &INDIMountInterface::e_Click, w);
+
+   MountAligmentModelSyncDataList_Button.SetText("Syncdata List");
+   //MountAligmentModelSyncDataList_Button.SetIcon( w.ScaledResource( ":/icons/find.png" ) );
+   MountAligmentModelSyncDataList_Button.SetStyleSheet("QPushButton { text-align: left; }");
+   MountAligmentModelSyncDataList_Button.OnClick((Button::click_event_handler) &INDIMountInterface::e_Click, w);
+
+   MountAlignmentPlotResiduals_CheckBox.SetText("plot residuals");
+   MountAlignmentPlotResiduals_CheckBox.SetToolTip("<p>plot residuals</p>");
+
+   MountAligmentModelFit_Sizer.SetSpacing(8);
+   MountAligmentModelFit_Sizer.AddSpacing(labelWidth1 + 4);
+   MountAligmentModelFit_Sizer.Add(MountAligmentModelFit_Button);
+   MountAligmentModelFit_Sizer.Add(MountAligmentModelSyncDataList_Button);
+   MountAligmentModelFit_Sizer.Add(MountAlignmentPlotResiduals_CheckBox);
+   MountAligmentModelFit_Sizer.AddStretch();
+
+   MountAlignment_Sizer.SetSpacing( 8 );
+   MountAlignment_Sizer.Add( MountAlignmentFile_Sizer );
+   MountAlignment_Sizer.Add( MountAlignmentMethod_Sizer );
+   MountAlignment_Sizer.Add( MountAlignmentConfig_Sizer );
+   MountAlignment_Sizer.Add( MountAlignmentPierSide_Sizer );
+   MountAlignment_Sizer.Add( MountAligmentModelFit_Sizer );
+
+   MountAlignment_Control.SetSizer(MountAlignment_Sizer);
+
+   //
 
    MountGoTo_SectionBar.SetTitle( "GoTo" );
    MountGoTo_SectionBar.SetSection( MountGoTo_Control );
@@ -714,68 +992,6 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    MountSearch_Sizer.Add( MountSearch_Button );
    MountSearch_Sizer.AddStretch();
 
-   const char* alignmentfileToolTipText =
-		   "<p>File which store the telescope pointing model. </p>";
-
-   AlignmentFile_Label.SetText( "Alignment model:" );
-   AlignmentFile_Label.SetToolTip( alignmentfileToolTipText  );
-   AlignmentFile_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
-   AlignmentFile_Label.SetFixedWidth( labelWidth1 );
-
-   AlignmentFile_Edit.SetToolTip( alignmentfileToolTipText );
-   AlignmentFile_Edit.SetReadOnly();
-
-   AlignmentFile_ToolButton.SetIcon( w.ScaledResource( ":/icons/select-file.png" ) );
-   AlignmentFile_ToolButton.SetScaledFixedSize( 22, 22 );
-   AlignmentFile_ToolButton.SetToolTip( "<p>Select the alignment file:</p>" );
-   AlignmentFile_ToolButton.OnClick( (Button::click_event_handler)&INDIMountInterface::e_Click, w );
-
-   MountAlignmentFile_Sizer.SetSpacing( 8 );
-   MountAlignmentFile_Sizer.Add( AlignmentFile_Label );
-   MountAlignmentFile_Sizer.Add( AlignmentFile_Edit, 100 );
-   MountAlignmentFile_Sizer.AddSpacing( 4 );
-   MountAlignmentFile_Sizer.Add( AlignmentFile_ToolButton );
-
-
-   const char* alignmentMethodToolTipText =
-   		   "<p>Alignment methods:</p>";
-
-   AlignmentMethod_Label.SetText( "Alignment method:" );
-   AlignmentMethod_Label.SetToolTip( alignmentMethodToolTipText  );
-   AlignmentMethod_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
-   AlignmentMethod_Label.SetFixedWidth( labelWidth1 );
-
-   AlignmentMethod_ComboBox.AddItem( "Analytical Model" );
-   AlignmentMethod_ComboBox.AddItem( "Isotropic Analytical Model (L=0)" );
-   AlignmentMethod_ComboBox.AddItem( "Server Model" );
-   AlignmentMethod_ComboBox.SetToolTip( alignmentMethodToolTipText );
-   AlignmentMethod_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&INDIMountInterface::e_ItemSelected, w );
-
-
-   MountAlignmentMethod_Sizer.SetSpacing( 8 );
-   MountAlignmentMethod_Sizer.Add( AlignmentMethod_Label );
-   MountAlignmentMethod_Sizer.Add( AlignmentMethod_ComboBox );
-   MountAlignmentMethod_Sizer.AddStretch();
-
-
-   const char* alignmentPierSideToolTipText =
-      		   "<p>Alignment pier side:</p>";
-
-   AlignmentPierSide_Label.SetText( "Alignment pier side:" );
-   AlignmentPierSide_Label.SetToolTip( alignmentPierSideToolTipText  );
-   AlignmentPierSide_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
-   AlignmentPierSide_Label.SetFixedWidth( labelWidth1 );
-
-   AlignmentPierSide_ComboBox.AddItem( "None" );
-   AlignmentPierSide_ComboBox.AddItem( "West" );
-   AlignmentPierSide_ComboBox.AddItem( "East" );
-   AlignmentPierSide_ComboBox.SetToolTip( alignmentPierSideToolTipText );
-   AlignmentPierSide_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&INDIMountInterface::e_ItemSelected, w );
-
-   MountAlignmentPierSide_Sizer.SetSpacing( 8 );
-   MountAlignmentPierSide_Sizer.Add( AlignmentPierSide_Label );
-   MountAlignmentPierSide_Sizer.Add( AlignmentPierSide_ComboBox );
-   MountAlignmentPierSide_Sizer.AddStretch();
 
    MountAlignmentCorrection_CheckBox.SetText( "Alignment Correction" );
    MountAlignmentCorrection_CheckBox.SetToolTip( "<p>Compute and apply alignment correction to target coordinates.</p>" );
@@ -822,17 +1038,13 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    MountGoTo_Sizer.Add( MountTargetRA_Sizer );
    MountGoTo_Sizer.Add( MountTargetDec_Sizer );
    MountGoTo_Sizer.Add( MountSearch_Sizer );
-   MountGoTo_Sizer.Add( MountAlignmentFile_Sizer );
-   MountGoTo_Sizer.Add( MountAlignmentMethod_Sizer );
-   MountGoTo_Sizer.Add( MountAlignmentPierSide_Sizer );
    MountGoTo_Sizer.Add( MountAlignmentCorrection_Sizer );
    MountGoTo_Sizer.Add( MountGoToStart_Sizer );
    MountGoTo_Sizer.Add( MountGoToCancel_Sizer );
    MountGoTo_Sizer.Add( MountGoToInfo_Label );
 
    MountGoTo_Control.SetSizer( MountGoTo_Sizer );
-
-   //
+	//
 
    Slew_SectionBar.SetTitle( "Slew" );
    Slew_SectionBar.SetSection( Slew_Control );
@@ -959,6 +1171,8 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    Global_Sizer.SetSpacing( 6 );
    Global_Sizer.Add( ServerParameters_SectionBar );
    Global_Sizer.Add( ServerParameters_Control );
+   Global_Sizer.Add( MountAlignment_SectionBar );
+   Global_Sizer.Add( MountAlignment_Control );
    Global_Sizer.Add( MountGoTo_SectionBar );
    Global_Sizer.Add( MountGoTo_Control );
    Global_Sizer.Add( Slew_SectionBar );
@@ -1112,6 +1326,23 @@ private:
       m_iface->GUI->MountPark_Button.Disable();
       m_iface->GUI->MountGoToCancel_Button.Enable();
       m_iface->GUI->MountGoToInfo_Label.Clear();
+      m_iface->GUI->AlignmentFile_Label.Disable();
+      m_iface->GUI->AlignmentFile_Edit.Disable();
+      m_iface->GUI->AlignmentFile_ToolButton.Disable();
+      m_iface->GUI->AlignmentMethod_Label.Disable();
+      m_iface->GUI->AlignmentMethod_ComboBox.Disable();
+      m_iface->GUI->AlignmentPierSide_ComboBox.Disable();
+      m_iface->GUI->AlignmentPierSide_Label.Disable();
+      m_iface->GUI->AlignmentPierSide_ComboBox.Disable();
+      m_iface->GUI->MountAligmentModelFit_Button.Disable();
+      m_iface->GUI->MountAlignmentConfigCollimation_CheckBox.Disable();
+      m_iface->GUI->MountAlignmentConfigForkFlexure_CheckBox.Disable();
+      m_iface->GUI->MountAlignmentConfigNonPerpendicular_CheckBox.Disable();
+      m_iface->GUI->MountAlignmentConfigOffset_CheckBox.Disable();
+      m_iface->GUI->MountAlignmentConfigPAHorDisp_CheckBox.Disable();
+      m_iface->GUI->MountAlignmentConfigPAVertDisp_CheckBox.Disable();
+      m_iface->GUI->MountAlignmentConfigTubeFlexure_CheckBox.Disable();
+      m_iface->GUI->MountAlignmentCorrection_CheckBox.Disable();
       Module->ProcessEvents();
    }
 
@@ -1164,6 +1395,24 @@ private:
       m_iface->GUI->MountPark_Button.Enable();
       m_iface->GUI->MountGoToCancel_Button.Disable();
       m_iface->GUI->MountGoToInfo_Label.Clear();
+      m_iface->GUI->AlignmentFile_Label.Enable();
+      m_iface->GUI->AlignmentFile_Edit.Enable();
+      m_iface->GUI->AlignmentFile_ToolButton.Enable();
+      m_iface->GUI->AlignmentMethod_Label.Enable();
+      m_iface->GUI->AlignmentMethod_ComboBox.Enable();
+      m_iface->GUI->AlignmentPierSide_ComboBox.Enable();
+      m_iface->GUI->AlignmentPierSide_Label.Enable();
+      m_iface->GUI->AlignmentPierSide_ComboBox.Enable();
+      m_iface->GUI->MountAligmentModelFit_Button.Enable();
+      m_iface->GUI->MountAlignmentConfigCollimation_CheckBox.Enable();
+      m_iface->GUI->MountAlignmentConfigForkFlexure_CheckBox.Enable();
+      m_iface->GUI->MountAlignmentConfigNonPerpendicular_CheckBox.Enable();
+      m_iface->GUI->MountAlignmentConfigOffset_CheckBox.Enable();
+      m_iface->GUI->MountAlignmentConfigPAHorDisp_CheckBox.Enable();
+      m_iface->GUI->MountAlignmentConfigPAVertDisp_CheckBox.Enable();
+      m_iface->GUI->MountAlignmentConfigTubeFlexure_CheckBox.Enable();
+      m_iface->GUI->MountAlignmentCorrection_CheckBox.Enable();
+
       Module->ProcessEvents();
    }
 
@@ -1240,6 +1489,30 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
 	   f.SetCaption( "INDIMount: Select Alignment File" );
 	   if ( f.Execute() )
 		   GUI->AlignmentFile_Edit.SetText( f.FileName() );
+
+   } else if ( sender == GUI->MountAligmentModelFit_Button)
+   {
+	   INDIMountInterfaceExecution( this ).Perform( IMCCommand::FitAlignmentModel );
+	   if (GUI->MountAlignmentPlotResiduals_CheckBox.IsChecked()){
+		   // plot model residuals
+		   Array<SyncDataPoint> syncDataList;
+		   INDIMountInstance::loadSyncData(syncDataList);
+
+		   // create alignment model
+		   AutoPointer<AlignmentModel> alignModel(TpointPointingModel::create(49.237));
+		   alignModel.Ptr()->readObject(GUI->AlignmentFile_Edit.Text());
+		   plotAlignemtResiduals(alignModel.Ptr(), syncDataList);
+	   }
+   }
+   else if ( sender == GUI->MountAligmentModelSyncDataList_Button)
+   {
+	   Array<SyncDataPoint> syncDataList;
+	   INDIMountInstance::loadSyncData(syncDataList);
+	   if ( m_searchDialog == nullptr ){
+		   m_syncDataListDialog = new SyncDataListDialog(syncDataList);
+	   }
+	   if ( m_syncDataListDialog->Execute() ){
+	   }
 
    }
 }
@@ -1374,6 +1647,127 @@ void INDIMountInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
                      INDIMountInstance::MountSlewRatePropertyString( itemIndex ), "ON", true/*async*/ );
    }
 
+}
+
+const char* RESIDUAL_GNUPLOT_TEMPLATE = R"(
+
+set terminal svg size 800,600 enhanced background rgb 'white' font 'helvetica,12'
+set ticslevel 0
+set xzeroaxis
+set output '%s'
+set xlabel "hourangle [deg]"
+set xlabel "residual hourangle [deg]"
+plot '%s' index 0 using 1:3 title "west", '%s' index 1 using 1:3 title "east"
+set output '%s'
+set ylabel "residual declination [deg]"
+plot '%s' index 0 using 2:3 title "west", '%s' index 1 using 2:3 title "east"
+set output '%s'
+set xlabel "declination [deg]"
+set xlabel "residual hourangle [deg]"
+plot '%s' index 0 using 1:4 title "west", '%s' index 1 using 1:4 title "east"
+set output '%s'
+set ylabel "residual declination [deg]"
+plot '%s' index 0 using 2:4 title "west", '%s' index 1 using 2:4 title "east"
+set xrange[ -0.2:0.2]
+set yrange[ -0.2:0.2]
+unset border
+set xlabel "residual hourangle [deg]"
+set ylabel "residual declination [deg]"
+set xtics axis nomirror
+set ytics axis nomirror
+set output '%s'
+set object 10 circle size scr 0.0833 
+set object 20 circle size scr 0.01666
+set yzeroaxis
+plot '%s' index 0 using 3:4 title "west", '%s' index 1 using 3:4 title "east"
+
+)";
+
+void INDIMountInterface::plotAlignemtResiduals(AlignmentModel* model, const Array<SyncDataPoint>& syncDatapointList){
+
+	// create residual data file
+	IsoString fileContent;
+	String modelResidualDataPath = File::SystemTempDirectory();
+	if (!modelResidualDataPath.EndsWith('/'))
+		modelResidualDataPath += '/';
+	modelResidualDataPath += "ModelResidual.dat";
+	// pier side is west or None
+	for (auto syncPoint : syncDatapointList) {
+		if (!syncPoint.enabled || syncPoint.pierSide == IMCPierSide::East)
+			continue;
+		double ha = SHIFT_HA(
+				syncPoint.localSiderialTime - syncPoint.celestialRA);
+		double dec = syncPoint.celestialDEC;
+		double del_ha = syncPoint.telecopeRA - syncPoint.celestialRA;
+		double del_dec = syncPoint.celestialDEC - syncPoint.telecopeDEC;
+
+		// compute alignment correction
+		double haCor = 0;
+		double decCor = 0;
+		model->Apply(haCor, decCor, ha, dec);
+		double del_haCor = ha - haCor;
+		double del_decCor = dec - decCor;
+		fileContent.Append(	IsoString().Format("%f %f %f %f\n", ha, dec, del_ha - del_haCor,del_dec - del_decCor));
+
+	}
+	fileContent.Append("\n");
+	fileContent.Append("\n");
+	// pier side is east
+	for (auto syncPoint : syncDatapointList) {
+		if (!syncPoint.enabled || syncPoint.pierSide != IMCPierSide::East)
+			continue;
+		double ha = SHIFT_HA(
+				syncPoint.localSiderialTime - syncPoint.celestialRA);
+		double dec = syncPoint.celestialDEC;
+		double del_ha = syncPoint.telecopeRA - syncPoint.celestialRA;
+		double del_dec = syncPoint.celestialDEC - syncPoint.telecopeDEC;
+
+		// compute alignment correction
+		double haCor = 0;
+		double decCor = 0;
+		model->Apply(haCor, decCor, ha, dec);
+		double del_haCor = ha - haCor;
+		double del_decCor = dec - decCor;
+		fileContent.Append(IsoString().Format("%f %f %f %f\n", ha, dec, del_ha - del_haCor,	del_dec - del_decCor));
+	}
+	if (File::Exists(modelResidualDataPath)) {
+		File::Remove(modelResidualDataPath);
+	}
+	File::WriteTextFile(modelResidualDataPath, fileContent);
+
+	// now create gnuplot file
+	IsoString gnufileContent;
+	String tmpFilePath = File::SystemTempDirectory();
+	if (!tmpFilePath.EndsWith('/'))
+		tmpFilePath += '/';
+	String gnuFilePath = tmpFilePath + "AlignmentResiduals.gnu";
+
+	// output file names
+	Array<String> outputFiles;
+	outputFiles.Add(tmpFilePath +  "residuals_ha_ha.svg");
+	outputFiles.Add(tmpFilePath +  "residuals_dec_ha.svg");
+	outputFiles.Add(tmpFilePath +  "residuals_ha_dec.svg");
+	outputFiles.Add(tmpFilePath +  "residuals_dec_dec.svg");
+	outputFiles.Add(tmpFilePath +  "residuals_delha_deldec.svg");
+
+	gnufileContent = IsoString().Format(RESIDUAL_GNUPLOT_TEMPLATE, outputFiles[0].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
+			outputFiles[1].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
+			outputFiles[2].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
+			outputFiles[3].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
+			outputFiles[4].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str());
+
+	if (File::Exists(gnuFilePath)) {
+		File::Remove(gnuFilePath);
+	}
+	File::WriteTextFile(gnuFilePath, gnufileContent);
+
+	StringList options;
+	options.Add(gnuFilePath);
+	ExternalProcess::ExecuteProgram("/opt/PixInsight/bin/gnuplot",options);
+
+	for (auto imagePath :outputFiles ){
+		ImageWindow::Open(imagePath)[0].Show();
+	}
 }
 
 // ----------------------------------------------------------------------------

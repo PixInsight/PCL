@@ -388,7 +388,7 @@ bool INDIMountInstance::ExecuteOn( View& view )
       p_targetRA = o_currentRA + deltaRA;
       p_targetDec = o_currentDec + deltaDec;
       p_computeApparentPosition = false;
-      p_enableAlignmentCorrection = false;
+      //p_enableAlignmentCorrection = false;
 
       Console().WriteLn( "<end><cbr>Applying differential correction: dRA = "
                   + String::ToSexagesimal( deltaRA,
@@ -590,7 +590,24 @@ void INDIMountInstance::AddSyncDataPoint(const SyncDataPoint& syncDataPoint){
 	this->syncDataArray.Add(syncDataPoint);
 }
 
+void INDIMountInstance::loadSyncData() {
+	loadSyncData(syncDataArray);
+}
 
+void INDIMountInstance::loadSyncData(Array<SyncDataPoint>& syncDataList) {
+	String syncDataPath = File::SystemTempDirectory();
+	if ( !syncDataPath.EndsWith( '/' ) )
+		syncDataPath += '/';
+	syncDataPath += "SyncData.dat";
+	IsoStringList syncDataRows = File::ReadLines(syncDataPath);
+	for (size_t i = 0 ; i < syncDataRows.Length(); ++i) {
+		IsoStringList tokens;
+		syncDataRows[i].Break(tokens, ",", true);
+		syncDataList.Add({tokens[0].ToDouble(),tokens[1].ToDouble(),tokens[2].ToDouble(),tokens[3].ToDouble(),tokens[4].ToDouble(), tokens[5] == "West" ? IMCPierSide::West : ( tokens[5] == "East" ? IMCPierSide::East : IMCPierSide::None ), tokens[6] == "true" ? true : false});
+	}
+}
+
+#define SHIFT_HA(HA)( HA > 12 ? HA - 24 : ( HA < -12 ? HA +24 : HA) )
 void AbstractINDIMountExecution::Perform()
 {
    if ( IsRunning() )
@@ -624,16 +641,17 @@ void AbstractINDIMountExecution::Perform()
             m_instance.GetTargetCoordinates( targetRARaw, targetDecRaw );
             double targetRA, targetDec, hourAngle;
 
-            // Do not apply telescope pointing model in differential correction or during collecting sync points
+            // Do not apply telescope pointing model in differential correction or during collection of sync points
             if (m_instance.p_enableAlignmentCorrection){
 
                 m_instance.m_align->readObject(m_instance.p_alignmentFile);
 
-            	m_instance.m_align->Apply(hourAngle,targetDec,m_instance.o_currentLST - targetRARaw,targetDecRaw);
+            	m_instance.m_align->Apply(hourAngle,targetDec,SHIFT_HA(m_instance.o_currentLST - targetRARaw),targetDecRaw);
                 targetRA=m_instance.o_currentLST-hourAngle;
 
                 Console().WriteLn(String().Format("Old Coord (ra,dec): (%f,%f)", targetRARaw, targetDecRaw));
                 Console().WriteLn(String().Format("New Coord (ha,dec): (%f,%f)", targetRA, targetDec));
+
             } else {
             	targetRA = targetRARaw;
             	targetDec = targetDecRaw;
@@ -756,7 +774,7 @@ void AbstractINDIMountExecution::Perform()
             	// TODO: get sync point coordinates from server and set parameter
             }
             break;
-            case IMCAlignmentMethod::AnalyticalSpericalHarmonicsModel:
+            case IMCAlignmentMethod::TPointAnalyticalModel:
             case IMCAlignmentMethod::AnalyticalModel:
             {
                 m_instance.GetCurrentCoordinates();
@@ -775,24 +793,26 @@ void AbstractINDIMountExecution::Perform()
                 m_instance.o_apparentTargetDec = syncPoint.telecopeDEC;
                 m_instance.p_pierSide          = syncPoint.pierSide;
 
-                //m_instance.AddSyncDataPoint(syncPoint);
+                IsoString fileContent;
 
-               /* m_instance.AddSyncDataPoint({18.709270, 15.042896, 40.331868, 14.971350, 40.267620, IMCPierSide::West});
-                m_instance.AddSyncDataPoint({18.650702, 16.515700, 21.459100, 16.446741, 21.294694,IMCPierSide::West});
-                m_instance.AddSyncDataPoint({18.569906, 17.256970, 14.376531, 17.185182, 14.207593, IMCPierSide::West});
-                m_instance.AddSyncDataPoint({18.517187, 14.273599, 19.101173, 14.209110, 19.056064, IMCPierSide::West});
-                m_instance.AddSyncDataPoint({18.478823, 13.409574, 54.845648, 13.328467, 54.807207, IMCPierSide::West});*/
-                m_instance.AddSyncDataPoint({18.286485, 21.750214, 9.952588, 21.728272, 9.962314, IMCPierSide::East});
-                m_instance.AddSyncDataPoint({18.253073, 23.076539, 28.171271, 23.055036, 28.222380, IMCPierSide::East});
-                m_instance.AddSyncDataPoint({18.181295, 19.860142, 8.915623, 19.846936, 8.907846, IMCPierSide::East});
-                m_instance.AddSyncDataPoint({18.151661, 19.523534, 27.997829, 19.516738, 27.990000, IMCPierSide::East});
-                m_instance.AddSyncDataPoint({18.121164, 20.700483, 45.340619, 20.701178, 45.337181, IMCPierSide::East});
-                m_instance.AddSyncDataPoint({18.016187, 18.625431, 38.803376, 18.627985, 38.821077, IMCPierSide::East});
+                fileContent.Append(IsoString().Format("%s,%f,%f,%f,%f,%f,%s\n","true",syncPoint.localSiderialTime,syncPoint.celestialRA,syncPoint.celestialDEC,syncPoint.telecopeRA,syncPoint.telecopeDEC, syncPoint.pierSide == IMCPierSide::West ? "West" : "East" ));
 
-                m_instance.m_align->fitModel(m_instance.syncDataArray);
 
-                // save model parameters to disk
-                m_instance.m_align->writeObject(m_instance.p_alignmentFile);
+                String syncDataPath = File::SystemTempDirectory();
+                	if ( !syncDataPath.EndsWith( '/' ) )
+                		syncDataPath += '/';
+                	syncDataPath += "SyncData.dat";
+            	if (File::Exists(syncDataPath)){
+            		IsoStringList syncPointDataList = File::ReadLines(syncDataPath);
+            		for (auto line : syncPointDataList){
+            			fileContent.Append(line);
+            			fileContent.Append("\n");
+            		}
+            		File::Remove(syncDataPath);
+            	}
+            	File::WriteTextFile(syncDataPath,fileContent);
+
+
             }
             break;
             }
@@ -837,7 +857,13 @@ void AbstractINDIMountExecution::Perform()
          m_instance.GetCurrentCoordinates();
          EndMountEvent();
          break;
-
+      case IMCCommand::FitAlignmentModel:
+      {
+    	 m_instance.loadSyncData();
+    	 m_instance.m_align->fitModel(m_instance.syncDataArray,m_instance.p_pierSide);
+    	 m_instance.m_align->writeObject(m_instance.p_alignmentFile, m_instance.p_pierSide);
+    	 break;
+      }
       default:
          throw Error( "Internal error: AbstractINDIMountExecution::Perform(): Unknown INDI Mount command." );
       }

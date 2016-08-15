@@ -73,6 +73,16 @@ struct SyncDataPoint {
 	double    telecopeRA;  //
 	double    telecopeDEC;
 	pcl_enum  pierSide;
+	bool      enabled;
+
+	bool operator ==( const SyncDataPoint& rhs ) const
+	{
+		return     localSiderialTime == rhs.localSiderialTime
+		       &&  celestialRA       == rhs.celestialRA
+			   &&  celestialDEC      == rhs.celestialDEC
+			   &&  telecopeRA        == rhs.telecopeRA
+			   &&  pierSide          == rhs.pierSide;
+	 }
 };
 
 /*
@@ -92,9 +102,9 @@ public:
 
 	virtual void Apply(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) = 0;
 
-	virtual void fitModel(const Array<SyncDataPoint>& syncPointArray) = 0;
+	virtual void fitModel(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide) = 0;
 
-	virtual void writeObject(const String& fileName) = 0;
+	virtual void writeObject(const String& fileName, pcl_enum pierSide) = 0;
 
 	virtual void readObject(const String& fileName) = 0;
 
@@ -129,13 +139,13 @@ public:
 
 	virtual void Apply(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) ;
 
-	virtual void fitModel(const Array<SyncDataPoint>& syncPointArray);
+	virtual void fitModel(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide);
 
 	static AlignmentModel* create(){
 		return new LowellPointingModel();
 	}
 
-	virtual void writeObject(const String& fileName);
+	virtual void writeObject(const String& fileName, pcl_enum pierSide);
 
 	virtual void readObject(const String& fileName);
 
@@ -146,6 +156,67 @@ private:
 	Vector m_modelHACoefficientsWest;
 	Vector m_modelHACoefficientsEast;
 };
+
+
+
+ /*
+  * Analytical telescope pointing model.
+  *
+  * Model to capture the effects of
+  * - zero point offsets in declination and hour angle
+  * - ...
+  *
+  * http://www.boulder.swri.edu/~buie/idl/downloads/pointing/pointing.pdf
+  *
+  *
+  */
+  class TpointPointingModel : public AlignmentModel {
+  public:
+
+	 TpointPointingModel(double siteLatitude) : AlignmentModel (), m_numOfModelParameters(9), m_siteLatitude(siteLatitude * Const<double>::rad()), m_pointingModelWest(nullptr), m_pointingModelEast(nullptr),m_modelConfig(((uint32_t)1 << m_numOfModelParameters) - 1)
+	 {
+		 m_pointingModelWest = new Vector(m_numOfModelParameters);
+		 m_pointingModelEast = new Vector(m_numOfModelParameters);
+	 }
+	TpointPointingModel(double siteLatitude,uint32_t modelConfig) : AlignmentModel (), m_numOfModelParameters(9), m_siteLatitude(siteLatitude * Const<double>::rad()), m_pointingModelWest(nullptr), m_pointingModelEast(nullptr),m_modelConfig(modelConfig)
+  	{
+		m_pointingModelWest = new Vector(m_numOfModelParameters);
+		m_pointingModelEast = new Vector(m_numOfModelParameters);
+  	}
+
+ 	virtual ~TpointPointingModel()
+ 	{
+ 		delete m_pointingModelWest;
+ 		delete m_pointingModelEast;
+ 	}
+
+ 	virtual void Apply(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) ;
+
+ 	virtual void fitModel(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide);
+
+ 	// siteLatidude given in degrees
+ 	static AlignmentModel* create( double siteLatitude, uint32_t modelConfig){
+ 		return new TpointPointingModel(siteLatitude,modelConfig);
+ 	}
+ 	static AlignmentModel* create( double siteLatitude){
+ 		return new TpointPointingModel(siteLatitude);
+ 	}
+
+ 	virtual void writeObject(const String& fileName, pcl_enum pierSide);
+
+ 	virtual void readObject(const String& fileName);
+
+ private:
+
+ 	void evaluateBasis(Matrix& basisMatrix, double hourAngle, double dec);
+
+ 	size_t m_numOfModelParameters;
+ 	double m_siteLatitude; // in radians
+
+ 	Vector*  m_pointingModelWest;
+ 	Vector*  m_pointingModelEast;
+ 	uint32_t m_modelConfig;
+ };
 
  /*
   * Analytical telescope pointing model,
@@ -159,7 +230,7 @@ private:
   */
  class AnalyticalPointingModel : public AlignmentModel {
  public:
-	 AnalyticalPointingModel(size_t spericalHarmonicsOrder):m_orderOfSphericalHarmonics(spericalHarmonicsOrder),m_numOfModelParameters(0),m_modelParameters(nullptr){
+	 AnalyticalPointingModel(size_t spericalHarmonicsOrder):AlignmentModel (), m_orderOfSphericalHarmonics(spericalHarmonicsOrder),m_numOfModelParameters(0),m_modelParameters(nullptr){
 		 if (m_orderOfSphericalHarmonics == 0){
 			 m_numOfModelParameters=6;
 		 } else if (m_orderOfSphericalHarmonics == 1){
@@ -179,13 +250,13 @@ private:
 
 	 virtual void Apply(double& hourAngleCor, double& decCor,  double hourAngle, double dec);
 
-	 virtual void fitModel(const Array<SyncDataPoint>& syncPointArray);
+	 virtual void fitModel(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide);
 
 	 static AlignmentModel* create(size_t spericalHarmonicsOrder){
 		 return new AnalyticalPointingModel(spericalHarmonicsOrder);
 	 }
 
-	 virtual void writeObject(const String& fileName);
+	 virtual void writeObject(const String& fileName, pcl_enum pierSide);
 
 	 virtual void readObject(const String& fileName);
  private:

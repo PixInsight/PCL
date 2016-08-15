@@ -89,12 +89,15 @@ void AlignmentModel::getPseudoInverse(Matrix& pseudoInverse, const Matrix& matri
 	}
 
 	SVD svd(matrix);
-	dumpVector(svd.W);
 	Matrix WInverse(matrix.Columns(),matrix.Columns());
 	for (int j = 0; j < matrix.Columns(); ++j){
 		for (int i = 0; i < matrix.Columns(); ++i) {
-			if (i == j && svd.W[i] != 0) {
-				WInverse[i][j] = 1.0 / svd.W[i];
+			if (i == j ) {
+				if (Abs(svd.W[i]) > 1e-15)
+					WInverse[i][j] = 1.0 / svd.W[i];
+				else {
+					WInverse[i][j] =  0;
+				}
 			}
 			if (i != j){
 				WInverse[i][j] = 0;
@@ -116,8 +119,7 @@ void LowellPointingModel::Apply(double& hourAngleCor, double& decCor, double hou
 		t_dec = m_modelCoefficientsWest[0] + m_modelCoefficientsWest[1] * Cos(hA_rad) + m_modelCoefficientsWest[2] * Sin(hA_rad) +
 				m_modelCoefficientsWest[3] * (Sin(siteLatitude) * Cos(dec * Const<double>::rad()) - Cos(siteLatitude) * Sin(dec * Const<double>::rad()) * Cos(hA_rad));
 
-		double H = 0;// (m_modelCoefficientsWest[1] * Sin(hA_rad) - m_modelCoefficientsWest[2] *  Cos(hA_rad)) * Tan(dec * Const<double>::rad()) - m_modelCoefficientsWest[3] * Cos(siteLatitude) / Cos(dec * Const<double>::rad()) * Sin(hA_rad);
-		t_ha  = m_modelHACoefficientsWest[0] + m_modelHACoefficientsWest[1] / Cos(dec * Const<double>::rad()) + m_modelHACoefficientsWest[2] * Tan(dec * Const<double>::rad()) + m_modelHACoefficientsWest[3] *  hA_rad + H;
+		t_ha  = m_modelHACoefficientsWest[0] + m_modelHACoefficientsWest[1] / Cos(dec * Const<double>::rad()) + m_modelHACoefficientsWest[2] * Tan(dec * Const<double>::rad()) + m_modelHACoefficientsWest[3] *  hA_rad ;
 
 	} else {
 		// east
@@ -126,8 +128,7 @@ void LowellPointingModel::Apply(double& hourAngleCor, double& decCor, double hou
 				m_modelCoefficientsEast[3] * (	Sin(siteLatitude) * Cos(dec * Const<double>::rad()) - Cos(siteLatitude) * Sin(dec * Const<double>::rad()) * Cos(hA_rad));
 
 
-		double H = 0; //(m_modelCoefficientsEast[1] * Sin(hA_rad) - m_modelCoefficientsEast[2] *  Cos(hA_rad)) * Tan(dec * Const<double>::rad()) - m_modelCoefficientsEast[3] * Cos(siteLatitude) / Cos(dec * Const<double>::rad()) * Sin(hA_rad);
-		t_ha  = m_modelHACoefficientsEast[0] + m_modelHACoefficientsEast[1] / Cos(dec * Const<double>::rad()) + m_modelHACoefficientsEast[2] * Tan(dec * Const<double>::rad()) + m_modelHACoefficientsEast[3] *  hA_rad + H;
+		t_ha  = m_modelHACoefficientsEast[0] + m_modelHACoefficientsEast[1] / Cos(dec * Const<double>::rad()) + m_modelHACoefficientsEast[2] * Tan(dec * Const<double>::rad()) + m_modelHACoefficientsEast[3] *  hA_rad ;
 
 	}
 	// apply correction
@@ -135,7 +136,7 @@ void LowellPointingModel::Apply(double& hourAngleCor, double& decCor, double hou
 	decCor       =  ( dec - t_dec) ;
 }
 
-void LowellPointingModel::fitModel(const Array<SyncDataPoint>& syncDataPointArray){
+void LowellPointingModel::fitModel(const Array<SyncDataPoint>& syncDataPointArray, pcl_enum pierSide){
 
 	// Count data points for each pier side
 	size_t numOfWestPoints=0;
@@ -176,7 +177,7 @@ void LowellPointingModel::fitModel(const Array<SyncDataPoint>& syncDataPointArra
 		double siteLatitude = 49.237 * Const<double>::rad();
 		double x = Cos(celestialHourAngle);
 		double y = Sin(celestialHourAngle);
-		double z = Sin(siteLatitude) * Cos(dataPoint.celestialDEC * Const<double>::rad()) - Cos(siteLatitude) * Sin(dataPoint.celestialDEC * Const<double>::rad()) * Cos(celestialHourAngle);
+		double z = 0;//Sin(siteLatitude) * Cos(dataPoint.celestialDEC * Const<double>::rad()) - Cos(siteLatitude) * Sin(dataPoint.celestialDEC * Const<double>::rad()) * Cos(celestialHourAngle);
 
 		if ( dataPoint.pierSide == IMCPierSide::West){
 			designMatrixWest[westCount][0]=1;
@@ -201,41 +202,16 @@ void LowellPointingModel::fitModel(const Array<SyncDataPoint>& syncDataPointArra
 	}
 
 	// compute model parameters
-
 	if (eastCount >=4 ){
-		SVD svdEast(designMatrixEast);
 		Matrix pseudoInverseEast(4,designMatrixEast.Rows());
-		Matrix WInverseEast(4,designMatrixEast.Columns());
-		for (int j = 0; j < designMatrixEast.Columns(); ++j){
-			for (int i = 0; i < 4; ++i){
-				if (i == j && svdEast.W[i] != 0){
-					WInverseEast[i][j] = 1.0 / svdEast.W[i];
-				}
-				if (i != j){
-					WInverseEast[i][j] = 0;
-				}
-			}
-		}
-		pseudoInverseEast = svdEast.V * WInverseEast * svdEast.U.Transpose();
+		getPseudoInverse(pseudoInverseEast,designMatrixEast);
+
 		m_modelCoefficientsEast =  pseudoInverseEast * decDeltaEast;
 	}
 	if (westCount >=4){
-		SVD svdWest(designMatrixWest); // n x m, m, m x m  , n ==  designMatrixWest.Rows() == num of data points
 		Matrix pseudoInverseWest(4,designMatrixWest.Rows());
-		Matrix WInverseWest(4,designMatrixWest.Columns());
-		for (int j = 0; j < designMatrixWest.Columns(); ++j){
-			for (int i = 0; i < 4; ++i) {
-				if (i == j && svdWest.W[i] != 0) {
-					WInverseWest[i][j] = 1.0 / svdWest.W[i];
-				}
-				if (i != j){
-					WInverseWest[i][j] = 0;
-				}
-			}
-		}
+		getPseudoInverse(pseudoInverseWest,designMatrixWest);
 
-
-		pseudoInverseWest = svdWest.V * WInverseWest * svdWest.U.Transpose();
 		m_modelCoefficientsWest =  pseudoInverseWest * decDeltaWest;
 	}
 
@@ -276,7 +252,7 @@ void LowellPointingModel::fitModel(const Array<SyncDataPoint>& syncDataPointArra
 			haDesignMatrixWest[westCount][0]=1;
 			haDesignMatrixWest[westCount][1]=S;
 			haDesignMatrixWest[westCount][2]=T;
-			haDesignMatrixWest[westCount][3]=celestialHourAngle;
+			haDesignMatrixWest[westCount][3]=0;/*celestialHourAngle;*/
 
 			haDeltaWest[westCount] = deltaHourAngle - H;
 			westCount++;
@@ -287,7 +263,7 @@ void LowellPointingModel::fitModel(const Array<SyncDataPoint>& syncDataPointArra
 			haDesignMatrixEast[eastCount][0]=1;
 			haDesignMatrixEast[eastCount][1]=S;
 			haDesignMatrixEast[eastCount][2]=T;
-			haDesignMatrixEast[eastCount][3]=celestialHourAngle;
+			haDesignMatrixEast[eastCount][3]=0; /*celestialHourAngle;*/
 
 			haDeltaEast[eastCount] = deltaHourAngle - H;
 			eastCount++;
@@ -295,50 +271,25 @@ void LowellPointingModel::fitModel(const Array<SyncDataPoint>& syncDataPointArra
 	}
 
 	// compute model parameters
-
 	if (eastCount >=4 ){
-		SVD svdEast(haDesignMatrixEast);
+
 		Matrix pseudoInverseEast(4,haDesignMatrixEast.Rows());
-		Matrix WInverseEast(4,haDesignMatrixEast.Columns());
-		for (int j = 0; j < haDesignMatrixEast.Columns(); ++j){
-			for (int i = 0; i < 4; ++i){
-				if (i == j && svdEast.W[i] != 0){
-					WInverseEast[i][i] = 1.0 / svdEast.W[i];
-				}
-				if (i != j){
-					WInverseEast[i][j] = 0.0;
-				}
-			}
-		}
-		pseudoInverseEast = svdEast.V * WInverseEast * svdEast.U.Transpose();
+		getPseudoInverse(pseudoInverseEast,haDesignMatrixEast);
+
 		m_modelHACoefficientsEast =  pseudoInverseEast * haDeltaEast;
 	}
 	if (westCount >=4){
-		SVD svdWest(haDesignMatrixWest);
+
 		Matrix pseudoInverseWest(4,haDesignMatrixWest.Rows());
-		Matrix WInverseWest(4,haDesignMatrixWest.Columns());
-		for (int j = 0; j < haDesignMatrixWest.Columns(); ++j){
-			for (int i = 0; i < 4; ++i) {
-				if ( i == j && svdWest.W[i] != 0) {
-					WInverseWest[i][i] = 1.0 / svdWest.W[i];
-				}
-				if (i != j){
-					WInverseWest[i][j] = 0.0;
-				}
-			}
-		}
-		pseudoInverseWest = svdWest.V * WInverseWest * svdWest.U.Transpose();
+		getPseudoInverse(pseudoInverseWest,haDesignMatrixWest);
+
 		m_modelHACoefficientsWest =  pseudoInverseWest * haDeltaWest;
 	}
 
-	dumpVector(m_modelCoefficientsEast);
-			dumpVector(m_modelCoefficientsWest);
-			dumpVector(m_modelHACoefficientsEast);
-			dumpVector(m_modelHACoefficientsWest);
 }
 
 
-void LowellPointingModel::writeObject(const String& fileName)
+void LowellPointingModel::writeObject(const String& fileName, pcl_enum pierSide)
 {
 	// save model parameters to disk
 	IsoString fileContent;
@@ -418,6 +369,275 @@ void LowellPointingModel::readObject(const String& fileName)
 	}
 }
 
+#define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
+
+void TpointPointingModel::evaluateBasis(Matrix& basisVectors, double hourAngle, double dec)
+{
+	if (basisVectors.Rows() != 2 || basisVectors.Columns() != m_numOfModelParameters)
+	{
+		throw Error( "Internal error: TpointPointingModel::evaluateBasis: Matrix dimensions do not match" );
+	}
+	double ctc  = Cos(hourAngle * Const<double>::rad() * 15);
+	double cdc  = Cos(dec * Const<double>::rad());
+
+	double stc  = Sin(hourAngle * Const<double>::rad() * 15);
+/*	double stcd4  = Sin(hourAngle * Const<double>::rad() * 15 * 0.4);
+
+	double stcd5  = Sin(hourAngle * Const<double>::rad() * 15 * 0.5);
+	double stcd6  = Sin(hourAngle * Const<double>::rad() * 15 * 0.6);
+	double stc2  = Sin(hourAngle * Const<double>::rad() * 15 * 2);
+	double stc4  = Sin(hourAngle * Const<double>::rad() * 15 * 4);
+	double stc3  = Sin(hourAngle * Const<double>::rad() * 15 * 3);*/
+
+	double sdc  = Sin(dec * Const<double>::rad());
+
+	double secdc = 1.0 / Cos(dec * Const<double>::rad());
+	double tandc = Tan(dec * Const<double>::rad());
+
+	double clat  = Cos(m_siteLatitude);
+	double slat  = Sin(m_siteLatitude);
+
+
+	if (CHECK_BIT(m_modelConfig,1)){
+		// zero-point offset in ra readout
+		basisVectors[0][0] = 1;
+		basisVectors[1][0] = 0;
+		// zero-point offset in dec readout
+		basisVectors[0][1] = 0;
+		basisVectors[1][1] = 1;
+	} else{
+		basisVectors[0][0] = 0;
+		basisVectors[1][0] = 0;
+		basisVectors[0][1] = 0;
+		basisVectors[1][1] = 0;
+	}
+
+	if (CHECK_BIT(m_modelConfig,2)){
+		// collimation error
+		basisVectors[0][2] = secdc;
+		basisVectors[1][2] =  0;
+
+	} else {
+		// collimation error
+		basisVectors[0][2] =  0;
+		basisVectors[1][2] =  0;
+	}
+	if (CHECK_BIT(m_modelConfig,3)){
+		// non-perpendicular dec-ra axis error
+		basisVectors[0][3] = tandc;
+		basisVectors[1][3] = 0;
+	} else {
+		// non-perpendicular dec-ra axis error
+		basisVectors[0][3] =  0;
+		basisVectors[1][3] =  0;
+
+	}
+	if (CHECK_BIT(m_modelConfig,4)){
+		// polar-axis horizontal displacement
+		basisVectors[0][4] = -ctc * tandc;
+		basisVectors[1][4] = stc;
+	} else {
+		// polar-axis horizontal displacement
+		basisVectors[0][4] = 0;
+		basisVectors[1][4] = 0;
+	}
+	if (CHECK_BIT(m_modelConfig,5)){
+		// polar-axis vertical displacement
+		basisVectors[0][5] = stc * tandc;
+		basisVectors[1][5] = ctc;
+	} else {
+		// polar-axis vertical displacement
+		basisVectors[0][5] = 0;
+		basisVectors[1][5] = 0;
+	}
+	if (CHECK_BIT(m_modelConfig,6)){
+		// tube flexure
+		basisVectors[0][6] = clat * stc * secdc;
+		basisVectors[1][6] = clat * ctc * sdc - slat * cdc;
+	} else {
+		basisVectors[0][6] = 0;
+		basisVectors[1][6] = 0;
+	}
+	if (CHECK_BIT(m_modelConfig,7)){
+		// fork flexure
+		basisVectors[0][7] = 0;
+		basisVectors[1][7] = ctc;
+	} else {
+		basisVectors[0][7] = 0;
+		basisVectors[1][7] = 0;
+	}
+
+	if (CHECK_BIT(m_modelConfig,8)){
+		// delta-axis flexure
+		basisVectors[0][8] = 0;//cdc * ctc + slat * tandc;
+		basisVectors[1][8] = dec * Const<double>::rad();
+	} else {
+		basisVectors[0][8] = 0;
+		basisVectors[1][8] = 0;
+
+	}
+
+}
+
+void TpointPointingModel::Apply(double& hourAngleCor, double& decCor, double hourAngle, double dec)
+{
+	Matrix basisVectors(2,m_numOfModelParameters);
+
+	evaluateBasis(basisVectors,hourAngle,dec);
+
+	// compute correction vector
+	Vector alignCorrection(2);
+
+	Vector* modelParameters = hourAngle >= 0 ? m_pointingModelWest : m_pointingModelEast;
+
+	alignCorrection = (*modelParameters)[0] * basisVectors.ColumnVector(0);
+	for (size_t modelIndex = 1; modelIndex < m_numOfModelParameters; modelIndex++){
+		alignCorrection +=  (*modelParameters)[modelIndex] * basisVectors.ColumnVector(modelIndex);
+	}
+
+	dumpVector(alignCorrection);
+
+
+	hourAngleCor  = hourAngle - alignCorrection[0] ;
+	decCor        = dec - alignCorrection[1];
+
+}
+#define SHIFT_HA(HA)( HA > 12 ? HA - 24 : ( HA < -12 ? HA + 24 : HA) )
+void TpointPointingModel::fitModel(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide)
+{
+
+	// Count data points for each pier side
+	size_t numOfPoints  = 0;
+	for (auto dataPoint : syncPointArray) {
+		if (!dataPoint.enabled || ( pierSide != IMCPierSide::None && dataPoint.pierSide != pierSide) )
+			continue;
+		numOfPoints++;
+	}
+
+	// fill a design matrix and an displacement vector
+	Matrix* designMatrices        = nullptr;
+	Vector* meauredDisplacements  = nullptr;
+
+
+	//  design matrix
+	designMatrices = new Matrix(2 * numOfPoints, m_numOfModelParameters);
+	// alignmentErrorVecotr
+	meauredDisplacements = new Vector (2 * numOfPoints);
+
+	// fill design matrices
+	size_t counts = 0;
+	for (auto syncPoint : syncPointArray) {
+		if (!syncPoint.enabled || (pierSide != IMCPierSide::None && syncPoint.pierSide != pierSide))
+			continue;
+
+		double celestialHourAngle = SHIFT_HA(syncPoint.localSiderialTime - syncPoint.celestialRA)  ;
+		double telescopeHourAngle = SHIFT_HA(syncPoint.localSiderialTime - syncPoint.telecopeRA );
+
+		// calculate design matrix
+		Matrix basisVectors(2,m_numOfModelParameters);
+
+		evaluateBasis(basisVectors,celestialHourAngle,syncPoint.celestialDEC);
+
+		for (size_t modelIndex = 0; modelIndex < m_numOfModelParameters; modelIndex++){
+
+			designMatrices->Element(2*counts,modelIndex)     = basisVectors[0][modelIndex];
+			designMatrices->Element(2*counts + 1,modelIndex) = basisVectors[1][modelIndex];
+		}
+
+		// compute measured alignment error
+		(*meauredDisplacements) [2*counts]     = celestialHourAngle - telescopeHourAngle;;
+		(*meauredDisplacements) [2*counts + 1] = syncPoint.celestialDEC - syncPoint.telecopeDEC;
+
+		counts++;
+	}
+
+
+	// compute pseudo inverse
+	Matrix pseudoInverse((*designMatrices).Columns(),(*designMatrices).Rows());
+	AnalyticalPointingModel::getPseudoInverse(pseudoInverse,(*designMatrices));
+
+	// fit parameters
+	if (pierSide == IMCPierSide::None || pierSide == IMCPierSide::West) {
+		*m_pointingModelWest = pseudoInverse * *meauredDisplacements;
+
+	}
+	if (pierSide == IMCPierSide::None || pierSide == IMCPierSide::East) {
+		*m_pointingModelEast = pseudoInverse * *meauredDisplacements;
+	}
+	delete designMatrices;
+	delete meauredDisplacements;
+
+
+}
+
+
+void TpointPointingModel::writeObject(const String& fileName, pcl_enum pierSide)
+{
+	// save model parameters to disk
+	IsoString fileContent;
+
+	// west
+	if (pierSide == IMCPierSide::None || pierSide == IMCPierSide::West) {
+		fileContent.Append(IsoString().Format("%d,",pierSide));
+		for (size_t i=0; i < this->m_numOfModelParameters; ++i){
+			if (i < m_numOfModelParameters-1)
+				fileContent.Append(IsoString().Format("%f,",(*m_pointingModelWest)[i]));
+			else
+				fileContent.Append(IsoString().Format("%f",(*m_pointingModelWest)[i]));
+		}
+		fileContent.Append("\n");
+	}
+
+
+	// east
+	if (pierSide == IMCPierSide::None || pierSide == IMCPierSide::East) {
+		fileContent.Append(IsoString().Format("%d,",pierSide));
+		for (size_t i=0; i < this->m_numOfModelParameters; ++i){
+			if (i < m_numOfModelParameters-1)
+				fileContent.Append(IsoString().Format("%f,",(*m_pointingModelEast)[i]));
+			else
+				fileContent.Append(IsoString().Format("%f",(*m_pointingModelEast)[i]));
+		}
+		fileContent.Append("\n");
+	}
+
+
+	if (File::Exists(fileName)){
+		IsoStringList syncPointDataList = File::ReadLines(fileName);
+		for (auto line : syncPointDataList){
+			fileContent.Append(line);
+			fileContent.Append("\n");
+		}
+		File::Remove(fileName);
+	}
+	File::WriteTextFile(fileName,fileContent);
+
+
+}
+
+void TpointPointingModel::readObject(const String& fileName)
+{
+	IsoStringList modelParameterList = File::ReadLines(fileName);
+
+	for (size_t i = 0 ; i < modelParameterList.Length(); ++i) {
+		IsoStringList tokens;
+		modelParameterList[i].Break(tokens, ",", true);
+
+		if ((pcl_enum) tokens[0].ToInt() == IMCPierSide::None || (pcl_enum) tokens[0].ToInt() == IMCPierSide::West){
+			// west
+			for (size_t j = 0; j < m_numOfModelParameters; ++j){
+				(*m_pointingModelWest)[j] = tokens[j+1].ToDouble();
+			}
+		}
+		if ((pcl_enum) tokens[0].ToInt() == IMCPierSide::None || (pcl_enum) tokens[0].ToInt() == IMCPierSide::East){
+			// east
+			for (size_t j = 0; j < m_numOfModelParameters; ++j){
+				(*m_pointingModelEast)[j] = tokens[j+1].ToDouble();
+			}
+		}
+	}
+}
+
 
 void AnalyticalPointingModel::evaluateBasis(Matrix& basisVectors, double hourAngle, double dec)
 {
@@ -426,10 +646,10 @@ void AnalyticalPointingModel::evaluateBasis(Matrix& basisVectors, double hourAng
 		throw Error( "Internal error: AnalyticalPointingModel::evaluateBasis: Matrix dimensions do not match" );
 	}
 
-	double ctc  = Cos(hourAngle * Const<double>::rad());
+	double ctc  = Cos(hourAngle * 15 * Const<double>::rad());
 	double cdc  = Cos(dec * Const<double>::rad());
 
-	double stc  = Sin(hourAngle * Const<double>::rad());
+	double stc  = Sin(hourAngle * 15 * Const<double>::rad());
 	double sdc  = Sin(dec * Const<double>::rad());
 
 	// p1
@@ -463,7 +683,7 @@ void AnalyticalPointingModel::Apply(double& hourAngleCor, double& decCor, double
 {
 	Matrix basisVectors(3,m_numOfModelParameters);
 
-	evaluateBasis(basisVectors,hourAngle*15,dec);
+	evaluateBasis(basisVectors,hourAngle,dec);
 
 	// compute correction vector
 	Vector alignCorrection(3);
@@ -485,12 +705,12 @@ void AnalyticalPointingModel::Apply(double& hourAngleCor, double& decCor, double
 	Vector pCorr(3);
 	pCorr = p0 + alignCorrection;
 
-	hourAngleCor  = ArcTan(pCorr[1],pCorr[0]) * Const<double>::deg() / 15;
+	hourAngleCor  = ArcTan(pCorr[1],pCorr[0]) * Const<double>::deg() ;
 	decCor = ArcTan(pCorr[2],Sqrt(pCorr[0]*pCorr[0] + pCorr[1] * pCorr[1])) * Const<double>::deg();
 
 }
 
-void AnalyticalPointingModel::fitModel(const Array<SyncDataPoint>& syncPointArray)
+void AnalyticalPointingModel::fitModel(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide)
 {
 	//  design matrix
 	Matrix designMatrix(3 * syncPointArray.Length(),m_numOfModelParameters);
@@ -499,8 +719,8 @@ void AnalyticalPointingModel::fitModel(const Array<SyncDataPoint>& syncPointArra
 
 	size_t count=0;
 	for (auto syncPoint : syncPointArray) {
-		double celestialHourAngle = (syncPoint.localSiderialTime - syncPoint.celestialRA) * 15 ;
-		double telescopeHourAngle = (syncPoint.localSiderialTime - syncPoint.telecopeRA)  * 15 ;
+		double celestialHourAngle = (syncPoint.localSiderialTime - syncPoint.celestialRA)  ;
+		double telescopeHourAngle = (syncPoint.localSiderialTime - syncPoint.telecopeRA)   ;
 
 		// calculate design matrix
 		Matrix basisVectors(3,m_numOfModelParameters);
@@ -514,14 +734,14 @@ void AnalyticalPointingModel::fitModel(const Array<SyncDataPoint>& syncPointArra
 		}
 
 		// calculate alignment error
-		double ctc  = Cos(celestialHourAngle * Const<double>::rad());
+		double ctc  = Cos(celestialHourAngle * 15 * Const<double>::rad());
 		double cdc  = Cos(syncPoint.celestialDEC * Const<double>::rad());
-		double stc  = Sin(celestialHourAngle * Const<double>::rad());
+		double stc  = Sin(celestialHourAngle * 15 * Const<double>::rad());
 		double sdc  = Sin(syncPoint.celestialDEC * Const<double>::rad());
 
-		double ctt  = Cos(telescopeHourAngle * Const<double>::rad());
+		double ctt  = Cos(telescopeHourAngle * 15 * Const<double>::rad());
 		double cdt  = Cos(syncPoint.telecopeDEC * Const<double>::rad());
-		double stt  = Sin(telescopeHourAngle * Const<double>::rad());
+		double stt  = Sin(telescopeHourAngle * 15 * Const<double>::rad());
 		double sdt  = Sin(syncPoint.telecopeDEC * Const<double>::rad());
 
 		alignmentError[3*count] = ctt * cdt - ctc * cdc;
@@ -540,12 +760,12 @@ void AnalyticalPointingModel::fitModel(const Array<SyncDataPoint>& syncPointArra
 }
 
 
-void AnalyticalPointingModel::writeObject(const String& fileName)
+void AnalyticalPointingModel::writeObject(const String& fileName, pcl_enum pierSide)
 {
 	// save model parameters to disk
 	IsoString fileContent;
 
-	for (int i=0; i < this->m_numOfModelParameters; ++i){
+	for (size_t i=0; i < this->m_numOfModelParameters; ++i){
 		if (i < m_numOfModelParameters-1)
 			fileContent.Append(IsoString().Format("%f,",(*m_modelParameters)[i]));
 		else
@@ -575,7 +795,7 @@ void AnalyticalPointingModel::readObject(const String& fileName)
 		IsoStringList tokens;
 		modelParameterList[i].Break(tokens, ",", true);
 
-		for (int j = 0; j < m_numOfModelParameters; ++j){
+		for (size_t j = 0; j < m_numOfModelParameters; ++j){
 			(*m_modelParameters)[j] = tokens[j].ToDouble();
 		}
 	}

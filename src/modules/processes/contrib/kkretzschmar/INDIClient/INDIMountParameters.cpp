@@ -81,6 +81,7 @@ REGISTER_MODULE_PARAMETER(IMCAlignmentMethod);
 REGISTER_MODULE_PARAMETER(IMCEnableAlignmentCorrection);
 REGISTER_MODULE_PARAMETER(IMCAlignmentFile);
 
+
 // ----------------------------------------------------------------------------
 
 DEFINE_STRING_PARAMETER_CLASS(IMCDeviceName,"deviceName");
@@ -154,7 +155,6 @@ DEFINE_ENUM_PARAMETER_CLASS(IMCAlignmentMethod,"AlignmentMethod",ALIGNMENT_ENUM,
 DEFINE_STRING_PARAMETER_CLASS(IMCAlignmentFile,"alignmentModelFile");
 
 // ----------------------------------------------------------------------------
-
 
 
 } // pcl

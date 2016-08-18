@@ -329,6 +329,7 @@ bool INDIMountInstance::ExecuteGlobal()
    return true;
 }
 
+#define SHIFT_HA(HA)( HA > 12 ? HA - 24 : ( HA < -12 ? HA +24 : HA) )
 bool INDIMountInstance::ExecuteOn( View& view )
 {
    double observationCenterRA, observationCenterDec;
@@ -342,6 +343,26 @@ bool INDIMountInstance::ExecuteOn( View& view )
          throw Error( "The view does not define valid observation coordinates." );
       observationCenterRA = ra.ToDouble()/15;
       observationCenterDec = dec.ToDouble();
+
+
+      if (p_enableAlignmentCorrection){
+          Variant eodRa = view.PropertyValue( "Observation:Center:EOD_RA" );
+          Variant eodDec = view.PropertyValue( "Observation:Center:EOD_Dec" );
+    	  Variant lst = view.PropertyValue( "Observation:LocalSiderealTime" );
+    	  m_align->readObject(p_alignmentFile);
+    	  double newHourAngle=-1;
+    	  double newDec=-1;
+    	  double observationCenterEodRA = eodRa.ToDouble()/15;
+    	  double observationCenterEodDec = eodDec.ToDouble();
+    	  m_align->ApplyInverse(newHourAngle, newDec, SHIFT_HA(lst.ToDouble() - observationCenterEodRA), observationCenterEodDec);
+    	  double newObservationCenterRA=lst.ToDouble()-newHourAngle;
+    	  double newObservationCenterDec=newDec;
+
+    	  observationCenterRA  = observationCenterRA + newObservationCenterRA - observationCenterEodRA;
+    	  observationCenterDec = observationCenterDec + newObservationCenterDec - observationCenterEodDec;
+    	  Console().WriteLn(String().Format("Old Coord (ra,dec): (%f,%f)", observationCenterEodRA, observationCenterEodDec));
+    	  Console().WriteLn(String().Format("New Coord (ha,dec): (%f,%f)", observationCenterRA, observationCenterDec));
+      }
 
       // ### TODO: Implement this via standard XISF properties.
       FITSKeywordArray keywords;
@@ -381,6 +402,7 @@ bool INDIMountInstance::ExecuteOn( View& view )
    double storedTargetDec = p_targetDec;
    bool stored_alignmentMode = this->p_enableAlignmentCorrection;
    pcl_bool storedComputeApparentPosition = p_computeApparentPosition;
+   pcl_bool storedEnableAlignmentCorrection = p_enableAlignmentCorrection;
 
    try
    {
@@ -388,7 +410,7 @@ bool INDIMountInstance::ExecuteOn( View& view )
       p_targetRA = o_currentRA + deltaRA;
       p_targetDec = o_currentDec + deltaDec;
       p_computeApparentPosition = false;
-      //p_enableAlignmentCorrection = false;
+      p_enableAlignmentCorrection = false;
 
       Console().WriteLn( "<end><cbr>Applying differential correction: dRA = "
                   + String::ToSexagesimal( deltaRA,
@@ -405,6 +427,7 @@ bool INDIMountInstance::ExecuteOn( View& view )
       p_targetDec = storedTargetDec;
       p_computeApparentPosition = storedComputeApparentPosition;
       p_enableAlignmentCorrection = stored_alignmentMode;
+      p_enableAlignmentCorrection = storedEnableAlignmentCorrection;
       return true;
    }
    catch( ... )
@@ -413,6 +436,7 @@ bool INDIMountInstance::ExecuteOn( View& view )
       p_targetRA = storedTargetRA;
       p_targetDec = storedTargetDec;
       p_computeApparentPosition = storedComputeApparentPosition;
+      p_enableAlignmentCorrection = storedEnableAlignmentCorrection;
       throw;
    }
 }
@@ -607,7 +631,6 @@ void INDIMountInstance::loadSyncData(Array<SyncDataPoint>& syncDataList) {
 	}
 }
 
-#define SHIFT_HA(HA)( HA > 12 ? HA - 24 : ( HA < -12 ? HA +24 : HA) )
 void AbstractINDIMountExecution::Perform()
 {
    if ( IsRunning() )

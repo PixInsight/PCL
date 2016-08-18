@@ -136,6 +136,10 @@ void LowellPointingModel::Apply(double& hourAngleCor, double& decCor, double hou
 	decCor       =  ( dec - t_dec) ;
 }
 
+void LowellPointingModel::ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec){
+
+}
+
 void LowellPointingModel::fitModel(const Array<SyncDataPoint>& syncDataPointArray, pcl_enum pierSide){
 
 	// Count data points for each pier side
@@ -495,13 +499,30 @@ void TpointPointingModel::Apply(double& hourAngleCor, double& decCor, double hou
 		alignCorrection +=  (*modelParameters)[modelIndex] * basisVectors.ColumnVector(modelIndex);
 	}
 
-	dumpVector(alignCorrection);
-
-
 	hourAngleCor  = hourAngle - alignCorrection[0] ;
 	decCor        = dec - alignCorrection[1];
 
 }
+
+void TpointPointingModel::ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) {
+	Matrix basisVectors(2,m_numOfModelParameters);
+
+	evaluateBasis(basisVectors,hourAngle,dec);
+
+	// compute correction vector
+	Vector alignCorrection(2);
+
+	Vector* modelParameters = hourAngle >= 0 ? m_pointingModelWest : m_pointingModelEast;
+
+	alignCorrection = (*modelParameters)[0] * basisVectors.ColumnVector(0);
+	for (size_t modelIndex = 1; modelIndex < m_numOfModelParameters; modelIndex++){
+		alignCorrection +=  (*modelParameters)[modelIndex] * basisVectors.ColumnVector(modelIndex);
+	}
+
+	hourAngleCor  = hourAngle + alignCorrection[0] ;
+	decCor        = dec + alignCorrection[1];
+}
+
 #define SHIFT_HA(HA)( HA > 12 ? HA - 24 : ( HA < -12 ? HA + 24 : HA) )
 void TpointPointingModel::fitModel(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide)
 {
@@ -707,6 +728,10 @@ void AnalyticalPointingModel::Apply(double& hourAngleCor, double& decCor, double
 
 	hourAngleCor  = ArcTan(pCorr[1],pCorr[0]) * Const<double>::deg() ;
 	decCor = ArcTan(pCorr[2],Sqrt(pCorr[0]*pCorr[0] + pCorr[1] * pCorr[1])) * Const<double>::deg();
+
+}
+
+void AnalyticalPointingModel::ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) {
 
 }
 

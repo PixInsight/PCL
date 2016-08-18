@@ -102,6 +102,8 @@ public:
 
 	virtual void Apply(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) = 0;
 
+	virtual void ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) = 0;
+
 	virtual void fitModel(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide) = 0;
 
 	virtual void writeObject(const String& fileName, pcl_enum pierSide) = 0;
@@ -138,6 +140,8 @@ public:
 	}
 
 	virtual void Apply(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) ;
+
+	virtual void ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec);
 
 	virtual void fitModel(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide);
 
@@ -191,6 +195,8 @@ private:
  	}
 
  	virtual void Apply(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) ;
+
+ 	virtual void ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec);
 
  	virtual void fitModel(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide);
 
@@ -249,6 +255,8 @@ private:
 	 }
 
 	 virtual void Apply(double& hourAngleCor, double& decCor,  double hourAngle, double dec);
+
+	 virtual void ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec);
 
 	 virtual void fitModel(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide);
 

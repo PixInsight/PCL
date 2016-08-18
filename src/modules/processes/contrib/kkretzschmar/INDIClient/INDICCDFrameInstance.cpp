@@ -793,6 +793,10 @@ struct ImageMetadata
    Definable<double>    ra;
    Definable<double>    dec;
    Definable<double>    equinox;
+   Definable<double>    localSiderealTime;
+   Definable<double>    eodRa;
+   Definable<double>    eodDec;
+
 };
 
 static ImageMetadata
@@ -851,6 +855,8 @@ ImageMetadataFromFITSKeywords( const FITSKeywordArray& keywords )
          data.dec = value.SexagesimalToDouble( ' ' );
       else if ( k.name == "EQUINOX" )
          data.equinox = value.ToDouble();
+      else if ( k.name == "LOCALLST" )
+    	  data.localSiderealTime = value.SexagesimalToDouble( ' ' );;
    }
    if ( !data.equinox.defined )
       if ( data.ra.defined && data.dec.defined )
@@ -904,6 +910,12 @@ ImagePropertiesFromImageMetadata( const ImageMetadata& data )
       properties << ImageProperty( "Observation:Center:Dec", data.dec.value );
    if ( data.equinox.defined )
       properties << ImageProperty( "Observation:Equinox", data.equinox.value );
+   if ( data.localSiderealTime.defined )
+         properties << ImageProperty( "Observation:LocalSiderealTime", data.localSiderealTime.value );
+   if ( data.eodRa.defined )
+        properties << ImageProperty( "Observation:Center:EOD_RA", data.eodRa.value );
+   if ( data.eodDec.defined )
+        properties << ImageProperty( "Observation:Center:EOD_Dec", data.eodDec.value );
    return properties;
 }
 
@@ -1002,8 +1014,8 @@ void AbstractINDICCDFrameExecution::Perform()
          {
             // Get telescope apparent epoch-of-date coordinates.
             INDIPropertyListItem itemRA, itemDec;
-            if ( !indi->GetPropertyItem( telescopeName, "EQUATORIAL_EOD_COORD", "RA", itemRA, false/*formatted*/ ) ||
-                 !indi->GetPropertyItem( telescopeName, "EQUATORIAL_EOD_COORD", "DEC", itemDec, false/*formatted*/ ) )
+            if ( !indi->GetPropertyItem( telescopeName, "TARGET_EOD_COORD", "RA", itemRA, false/*formatted*/ ) ||
+                 !indi->GetPropertyItem( telescopeName, "TARGET_EOD_COORD", "DEC", itemDec, false/*formatted*/ ) )
                throw Error( "Cannot get current mount coordinates for device '" + telescopeName + "'" );
             telescopeRA = Rad( itemRA.PropertyValue.ToDouble()*15 );
             telescopeDec = Rad( itemDec.PropertyValue.ToDouble() );
@@ -1098,6 +1110,13 @@ void AbstractINDICCDFrameExecution::Perform()
                   if ( !telescopeName.IsEmpty() )
                   {
                      data.telescopeName = telescopeName;
+                     // Store the epoche-of-date coordinates
+                     if (!data.eodRa.defined && !data.eodDec.defined)
+                     {
+                    	 data.eodRa =  Deg( telescopeRA );
+                    	 data.eodDec =  Deg( telescopeDec );
+                     }
+
 
                      // Compute mean J2000 coordinates from telescope apparent
                      // EOD coordinates.
@@ -1132,7 +1151,6 @@ void AbstractINDICCDFrameExecution::Perform()
                            k.value = "2000.0";
                            k.comment = "Equinox of the celestial coordinate system";
                         }
-
                   // If not already available, try to get the telescope
                   // aperture from standard device properties.
                   if ( !data.aperture.defined )
@@ -1152,7 +1170,20 @@ void AbstractINDICCDFrameExecution::Perform()
                         data.focalLength = focalLengthMM/1000;
                         keywords << FITSHeaderKeyword( "FOCALLEN", focalLengthMM, "Focal length (mm)" );
                      }
+                  // If not already available, try to get the local
+                  // sidereal time.
+                  if (!data.localSiderealTime.defined)
+                	  if ( indi->GetPropertyItem( telescopeName, "TIME_LST", "LST", item, false/*formatted*/ ))
+                	  {
+                		  data.localSiderealTime = item.PropertyValue.ToDouble();;
 
+                		  IsoString lstSexagesimal = IsoString::ToSexagesimal( data.localSiderealTime.value,
+                				  SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, false/*sign*/, 0/*width*/, ':'/*separator*/ ) );
+
+                		  keywords << FITSHeaderKeyword( "LOCALLST", lstSexagesimal, "Local sidereal time (LST) - after exposure" );
+
+
+                	  }
                   properties << ImagePropertiesFromImageMetadata( data );
                }
             }

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.101
+# PixInsight Makefile Generator Script v1.100
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Fri, 18 Mar 2016 13:16:28 GMT
+# Automatically generated on Fri, 24 Jun 2016 18:54:10 GMT
 # Project id ...... PCL
 # Project type .... StaticLibrary
 # Platform ........ Windows/vc12
@@ -254,6 +254,7 @@
     <ClCompile Include="..\..\ImageWindow.cpp"/>
     <ClCompile Include="..\..\ImageWindow_CM.cpp"/>
     <ClCompile Include="..\..\IntegerResample.cpp"/>
+    <ClCompile Include="..\..\JPLEphemeris.cpp"/>
     <ClCompile Include="..\..\JulianDay.cpp"/>
     <ClCompile Include="..\..\KernelFilter.cpp"/>
     <ClCompile Include="..\..\Keyboard.cpp"/>

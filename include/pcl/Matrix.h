@@ -1441,78 +1441,7 @@ public:
     * its determinant is zero or insignificant), then this function throws the
     * appropriate Error exception.
     */
-   GenericMatrix Inverse() const
-   {
-      if ( Rows() != Cols() || Rows() == 0 )
-         throw Error( "Invalid matrix inversion: Non-square or empty matrix." );
-
-      /*
-       * Use direct formulae to invert 1x1, 2x2 and 3x3 matrices.
-       * Use Gauss-Jordan elimination to invert larger matrices.
-       */
-      switch ( Rows() )
-      {
-      case 1:
-         {
-            if ( 1 + *m_data->v[0] == 1 )
-               throw Error( "Invalid matrix inversion: Singular matrix." );
-            GenericMatrix Ai( 1, 1 );
-            Ai[0][0] = 1/(*m_data->v[0]);
-            return Ai;
-         }
-      case 2:
-         {
-            const_block_iterator A0 = m_data->v[0];
-            const_block_iterator A1 = m_data->v[1];
-
-            // Determinant
-            element d = A0[0]*A1[1] - A0[1]*A1[0];
-            if ( 1 + d == 1 )
-               throw Error( "Invalid matrix inversion: Singular matrix." );
-
-            GenericMatrix Ai( 2, 2 );
-            Ai[0][0] =  A1[1]/d;
-            Ai[0][1] = -A0[1]/d;
-            Ai[1][0] = -A1[0]/d;
-            Ai[1][1] =  A0[0]/d;
-            return Ai;
-         }
-      case 3:
-         {
-            const_block_iterator A0 = m_data->v[0];
-            const_block_iterator A1 = m_data->v[1];
-            const_block_iterator A2 = m_data->v[2];
-
-            // Determinant
-            element d1 = A1[1]*A2[2] - A1[2]*A2[1];
-            element d2 = A1[2]*A2[0] - A1[0]*A2[2];
-            element d3 = A1[0]*A2[1] - A1[1]*A2[0];
-            element d  = A0[0]*d1 + A0[1]*d2 + A0[2]*d3;
-            if ( 1 + d == 1 )
-               throw Error( "Invalid matrix inversion: Singular matrix." );
-
-            GenericMatrix Ai( 3, 3 );
-            Ai[0][0] = d1/d;
-            Ai[0][1] = (A2[1]*A0[2] - A2[2]*A0[1])/d;
-            Ai[0][2] = (A0[1]*A1[2] - A0[2]*A1[1])/d;
-            Ai[1][0] = d2/d;
-            Ai[1][1] = (A2[2]*A0[0] - A2[0]*A0[2])/d;
-            Ai[1][2] = (A0[2]*A1[0] - A0[0]*A1[2])/d;
-            Ai[2][0] = d3/d;
-            Ai[2][1] = (A2[0]*A0[1] - A2[1]*A0[0])/d;
-            Ai[2][2] = (A0[0]*A1[1] - A0[1]*A1[0])/d;
-            return Ai;
-         }
-      default:
-         {
-            void PCL_FUNC InPlaceGaussJordan( GenericMatrix<T>&, GenericMatrix<T>& );
-            GenericMatrix Ai( *this );
-            GenericMatrix B = UnitMatrix( Rows() );
-            InPlaceGaussJordan( Ai, B );
-            return Ai;
-         }
-      }
-   }
+   GenericMatrix Inverse() const;
 
    /*!
     * Inverts this matrix.
@@ -1524,20 +1453,7 @@ public:
     * its determinant is zero or insignificant), then this function throws the
     * appropriate Error exception.
     */
-   void Invert()
-   {
-      if ( Rows() <= 3 )
-         Transfer( Inverse() );
-      else
-      {
-         if ( Rows() != Cols() || Rows() == 0 )
-            throw Error( "Invalid matrix inversion: Non-square or empty matrix." );
-         void PCL_FUNC InPlaceGaussJordan( GenericMatrix<T>&, GenericMatrix<T>& );
-         EnsureUnique();
-         GenericMatrix B = UnitMatrix( Rows() );
-         InPlaceGaussJordan( *this, B );
-      }
-   }
+   void Invert();
 
    /*!
     * Flips this matrix. Flipping a matrix consists of rotating its elements by
@@ -2917,7 +2833,110 @@ private:
       if ( !m_data->Detach() )
          delete m_data;
    }
+
+   /*!
+    * \internal
+    * Invert a small matrix of dimension <= 3.
+    */
+   static bool Invert( block_iterator* Ai, const_block_iterator const* A, int n )
+   {
+      switch ( n )
+      {
+      case 1:
+         if ( 1 + **A == 1 )
+            return false;
+         **Ai = 1/(**A);
+         break;
+      case 2:
+         {
+            const_block_iterator A0 = A[0];
+            const_block_iterator A1 = A[1];
+            element d = A0[0]*A1[1] - A0[1]*A1[0];
+            if ( 1 + d == 1 )
+               return false;
+            Ai[0][0] =  A1[1]/d;
+            Ai[0][1] = -A0[1]/d;
+            Ai[1][0] = -A1[0]/d;
+            Ai[1][1] =  A0[0]/d;
+         }
+         break;
+      case 3:
+         {
+            const_block_iterator A0 = A[0];
+            const_block_iterator A1 = A[1];
+            const_block_iterator A2 = A[2];
+            element d1 = A1[1]*A2[2] - A1[2]*A2[1];
+            element d2 = A1[2]*A2[0] - A1[0]*A2[2];
+            element d3 = A1[0]*A2[1] - A1[1]*A2[0];
+            element d  = A0[0]*d1 + A0[1]*d2 + A0[2]*d3;
+            if ( 1 + d == 1 )
+               return false;
+            Ai[0][0] = d1/d;
+            Ai[0][1] = (A2[1]*A0[2] - A2[2]*A0[1])/d;
+            Ai[0][2] = (A0[1]*A1[2] - A0[2]*A1[1])/d;
+            Ai[1][0] = d2/d;
+            Ai[1][1] = (A2[2]*A0[0] - A2[0]*A0[2])/d;
+            Ai[1][2] = (A0[2]*A1[0] - A0[0]*A1[2])/d;
+            Ai[2][0] = d3/d;
+            Ai[2][1] = (A2[0]*A0[1] - A2[1]*A0[0])/d;
+            Ai[2][2] = (A0[0]*A1[1] - A0[1]*A1[0])/d;
+         }
+         break;
+      default: // ?!
+         return false;
+      }
+      return true;
+   }
 };
+
+// ### N.B.: Visual C++ is unable to compile the next two member functions if
+//           the following external function declarations are placed within the
+//           member function bodies. This forces us to implement them after the
+//           GenericMatrix<> class declaration.
+
+void PCL_FUNC InPlaceGaussJordan( GenericMatrix<double>&, GenericMatrix<double>& );
+void PCL_FUNC InPlaceGaussJordan( GenericMatrix<float>&, GenericMatrix<float>& );
+
+template <typename T> inline
+GenericMatrix<T> GenericMatrix<T>::Inverse() const
+{
+   if ( Rows() != Cols() || Rows() == 0 )
+      throw Error( "Invalid matrix inversion: Non-square or empty matrix." );
+
+   /*
+    * - Use direct formulae to invert 1x1, 2x2 and 3x3 matrices.
+    * - Use Gauss-Jordan elimination to invert 4x4 and larger matrices.
+    */
+   if ( Rows() < 4 )
+   {
+      GenericMatrix Ai( Rows(), Rows() );
+      if ( !Invert( Ai.m_data->v, m_data->v, Rows() ) )
+         throw Error( "Invalid matrix inversion: Singular matrix." );
+      return Ai;
+   }
+   else
+   {
+      GenericMatrix Ai( *this );
+      GenericMatrix B = UnitMatrix( Rows() );
+      InPlaceGaussJordan( Ai, B );
+      return Ai;
+   }
+}
+
+template <typename T> inline
+void GenericMatrix<T>::Invert()
+{
+   if ( Rows() <= 3 )
+      Transfer( Inverse() );
+   else
+   {
+      if ( Rows() != Cols() || Rows() == 0 )
+         throw Error( "Invalid matrix inversion: Non-square or empty matrix." );
+      EnsureUnique();
+      GenericMatrix B = UnitMatrix( Rows() );
+      InPlaceGaussJordan( *this, B );
+   }
+}
 
 // ----------------------------------------------------------------------------
 
@@ -3403,6 +3422,36 @@ typedef GenericMatrix<Complex32>    C32Matrix;
  * %C64Matrix is a template instantiation of GenericMatrix for \c Complex64.
  */
 typedef GenericMatrix<Complex64>    C64Matrix;
+
+#ifndef _MSC_VER
+
+/*!
+ * \class pcl::F80Matrix
+ * \ingroup matrix_types
+ * \brief 80-bit extended precision floating point real matrix.
+ *
+ * %F80Matrix is a template instantiation of GenericMatrix for \c long
+ * \c double.
+ *
+ * \note This template instantiation is not available on Windows with Visual
+ * C++ compilers.
+ */
+typedef GenericMatrix<long double>  F80Matrix;
+
+/*!
+ * \class pcl::LDMatrix
+ * \ingroup matrix_types
+ * \brief 80-bit extended precision floating point real matrix.
+ *
+ * %LDMatrix is an alias for F80Matrix. It is a template instantiation of
+ * GenericMatrix for \c long \c double.
+ *
+ * \note This template instantiation is not available on Windows with Visual
+ * C++ compilers.
+ */
+typedef F80Matrix                   LDMatrix;
+
+#endif   // !_MSC_VER
 
 #endif   // !__PCL_NO_MATRIX_INSTANTIATE
 

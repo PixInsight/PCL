@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.14.0193
+// Standard INDIClient Process Module Version 01.00.15.0199
 // ----------------------------------------------------------------------------
-// INDICCDFrameInstance.cpp - Released 2016/06/17 12:50:37 UTC
+// INDICCDFrameInstance.cpp - Released 2016/06/20 17:47:31 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -204,8 +204,11 @@ bool INDICCDFrameInstance::ValidateDevice( bool throwErrors ) const
 
 String INDICCDFrameInstance::TelescopeDeviceName( bool throwErrors ) const
 {
+   if ( p_frameType != ICFFrameType::LightFrame )
+      return String();
+
    INDIClient* indi = INDIClient::TheClientOrDie();
-   throwErrors &= p_requireSelectedTelescope;
+   throwErrors &= bool( p_requireSelectedTelescope );
    String deviceName;
    INDIPropertyListItem item;
    switch ( p_telescopeSelection )
@@ -234,14 +237,16 @@ String INDICCDFrameInstance::TelescopeDeviceName( bool throwErrors ) const
             throw Error( "Cannot retrieve required telescope device: The INDI Mount Controller interface has no selected device" );
       break;
    default:
-   case ICFTelescopeSelection::ActiveOrMountControllerTelescope:
-      if ( indi->GetPropertyItem( p_deviceName, "ACTIVE_DEVICES", "ACTIVE_TELESCOPE", item ) )
-         deviceName = item.PropertyValue.Trimmed();
+   case ICFTelescopeSelection::MountControllerOrActiveTelescope:
+      deviceName = TheINDIMountInterface->CurrentDeviceName();
       if ( deviceName.IsEmpty() )
-         deviceName = TheINDIMountInterface->CurrentDeviceName();
-      if ( deviceName.IsEmpty() )
-         if ( throwErrors )
-            throw Error( "Cannot retrieve required telescope device: No telescope device is available or selected on the INDI server and/or INDI Mount Controller interface" );
+      {
+         if ( indi->GetPropertyItem( p_deviceName, "ACTIVE_DEVICES", "ACTIVE_TELESCOPE", item ) )
+            deviceName = item.PropertyValue.Trimmed();
+         if ( deviceName.IsEmpty() )
+            if ( throwErrors )
+               throw Error( "Cannot retrieve required telescope device: No telescope device is available or selected on the INDI server and/or INDI Mount Controller interface" );
+      }
       break;
    case ICFTelescopeSelection::TelescopeDeviceName:
       deviceName = p_telescopeDeviceName.Trimmed();
@@ -1089,23 +1094,24 @@ void AbstractINDICCDFrameExecution::Perform()
                {
                   ImageMetadata data = ImageMetadataFromFITSKeywords( keywords );
 
-                  if ( !m_instance.p_objectName.IsEmpty() )
-                  {
-                     // Replace or add OBJNAME/OBJECT keywords.
-                     if ( data.objectName.defined )
+                  if ( m_instance.p_frameType == ICFFrameType::LightFrame )
+                     if ( !m_instance.p_objectName.IsEmpty() )
                      {
-                        for ( FITSHeaderKeyword& k : keywords )
-                           if ( k.name == "OBJNAME" || k.name == "OBJECT" )
-                           {
-                              k.value = m_instance.p_objectName;
-                              k.comment = "Name of observed object";
-                           }
-                     }
-                     else
-                        keywords << FITSHeaderKeyword( "OBJECT", m_instance.p_objectName, "Name of observed object" );
+                        // Replace or add OBJNAME/OBJECT keywords.
+                        if ( data.objectName.defined )
+                        {
+                           for ( FITSHeaderKeyword& k : keywords )
+                              if ( k.name == "OBJNAME" || k.name == "OBJECT" )
+                              {
+                                 k.value = '\'' + m_instance.p_objectName + '\'';
+                                 k.comment = "Name of observed object";
+                              }
+                        }
+                        else
+                           keywords << FITSHeaderKeyword( "OBJECT", m_instance.p_objectName, "Name of observed object" );
 
-                     data.objectName = m_instance.p_objectName;
-                  }
+                        data.objectName = m_instance.p_objectName;
+                     }
 
                   if ( !telescopeName.IsEmpty() )
                   {
@@ -1128,6 +1134,26 @@ void AbstractINDICCDFrameExecution::Perform()
                         data.dec = Deg( telescopeDec );
                         data.equinox = 2000;
                      }
+
+                     // If not already available, try to get the telescope
+                     // aperture from standard device properties.
+                     if ( !data.aperture.defined )
+                        if ( indi->GetPropertyItem( telescopeName, "TELESCOPE_INFO", "TELESCOPE_APERTURE", item, false/*formatted*/ ) )
+                        {
+                           double apertureMM = Round( item.PropertyValue.ToDouble(), 3 );
+                           data.aperture = apertureMM/1000;
+                           keywords << FITSHeaderKeyword( "APTDIA", apertureMM, "Aperture diameter (mm)" );
+                        }
+
+                     // If not already available, try to get the telescope
+                     // focal length from standard device properties.
+                     if ( !data.focalLength.defined )
+                        if ( indi->GetPropertyItem( telescopeName, "TELESCOPE_INFO", "TELESCOPE_FOCAL_LENGTH", item, false/*formatted*/ ) )
+                        {
+                           double focalLengthMM = Round( item.PropertyValue.ToDouble(), 3 );
+                           data.focalLength = focalLengthMM/1000;
+                           keywords << FITSHeaderKeyword( "FOCALLEN", focalLengthMM, "Focal length (mm)" );
+                        }
                   }
 
                   // Replace existing coordinate keywords with accurate mean
@@ -1136,14 +1162,14 @@ void AbstractINDICCDFrameExecution::Perform()
                      for ( FITSHeaderKeyword& k : keywords )
                         if ( k.name == "OBJCTRA" )
                         {
-                           k.value = IsoString::ToSexagesimal( data.ra.value/15,
-                                 SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, false/*sign*/, 0/*width*/, ' '/*separator*/ ) );
+                           k.value = '\'' + IsoString::ToSexagesimal( data.ra.value/15,
+                                 SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, false/*sign*/, 0/*width*/, ' '/*separator*/ ) ) + '\'';
                            k.comment = "Right Ascension of the center of the image";
                         }
                         else if ( k.name == "OBJCTDEC" )
                         {
-                           k.value = IsoString::ToSexagesimal( data.dec.value,
-                                 SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, true/*sign*/, 0/*width*/, ' '/*separator*/ ) );
+                           k.value = '\'' + IsoString::ToSexagesimal( data.dec.value,
+                                 SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, true/*sign*/, 0/*width*/, ' '/*separator*/ ) ) + '\'';
                            k.comment = "Declination of the center of the image";
                         }
                         else if ( k.name == "EQUINOX" )
@@ -1446,4 +1472,4 @@ int AbstractINDICCDFrameExecution::s_numberOfChannels = 0;
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInstance.cpp - Released 2016/06/17 12:50:37 UTC
+// EOF INDICCDFrameInstance.cpp - Released 2016/06/20 17:47:31 UTC

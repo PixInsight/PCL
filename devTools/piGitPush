@@ -1,9 +1,0 @@
-#!/bin/bash
-#
-# Push content of repositories to your clone on github, using current branch
-
-cd $PCLDIR
-# use --all?
-git push origin HEAD
-cd $PJSRDIR
-git push origin HEAD

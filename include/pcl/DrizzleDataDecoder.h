@@ -327,7 +327,8 @@ class DrizzleSplineDecoder : public DrizzleDecoderBase
 {
 public:
 
-   typedef PointSurfaceSpline::spline spline;
+   typedef PointSurfaceSpline<FPoint>     vector_spline;
+   typedef typename vector_spline::spline spline;
 
    DrizzleSplineDecoder() : DrizzleDecoderBase()
    {
@@ -395,6 +396,8 @@ class DrizzleDataDecoder : public DrizzleDecoderBase
 {
 public:
 
+   typedef PointSurfaceSpline<FPoint>  vector_spline;
+
    DrizzleDataDecoder() : DrizzleDecoderBase()
    {
    }
@@ -433,7 +436,7 @@ public:
       return m_H;
    }
 
-   const PointSurfaceSpline& AlignmentSplines() const
+   const vector_spline& AlignmentSplines() const
    {
       return m_S;
    }
@@ -495,34 +498,34 @@ public:
 
 protected:
 
-   typedef PointSurfaceSpline::spline   spline;
-   typedef Array<Point>                 rejection_coordinates;
-   typedef Array<rejection_coordinates> rejection_data;
+   typedef typename vector_spline::spline spline;
+   typedef Array<Point>                   rejection_coordinates;
+   typedef Array<rejection_coordinates>   rejection_data;
 
    /*
     * Drizzle data
     */
-   String             m_filePath;
-   String             m_targetPath;
-   int                m_referenceWidth;
-   int                m_referenceHeight;
-   Matrix             m_H;
-   PointSurfaceSpline m_S;
-   Vector             m_location;
-   Vector             m_referenceLocation;
-   Vector             m_scale;
-   Vector             m_weight;
-   UI64Vector         m_rejectionLowCount;
-   UI64Vector         m_rejectionHighCount;
-   UInt8Image         m_rejectionMap;
+   String         m_filePath;
+   String         m_targetPath;
+   int            m_referenceWidth;
+   int            m_referenceHeight;
+   Matrix         m_H;
+   vector_spline  m_S;
+   Vector         m_location;
+   Vector         m_referenceLocation;
+   Vector         m_scale;
+   Vector         m_weight;
+   UI64Vector     m_rejectionLowCount;
+   UI64Vector     m_rejectionHighCount;
+   UInt8Image     m_rejectionMap;
 
    /*
     * Intermediate working data
     */
-   spline             m_Sx;
-   spline             m_Sy;
-   rejection_data     m_rejectLowData;
-   rejection_data     m_rejectHighData;
+   spline         m_Sx;
+   spline         m_Sy;
+   rejection_data m_rejectLowData;
+   rejection_data m_rejectHighData;
 
    virtual void Initialize()
    {

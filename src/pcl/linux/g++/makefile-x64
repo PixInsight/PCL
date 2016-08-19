@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.101
+# PixInsight Makefile Generator Script v1.100
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Fri, 18 Mar 2016 13:16:28 GMT
+# Automatically generated on Fri, 24 Jun 2016 18:54:09 GMT
 # Project id ...... PCL
 # Project type .... StaticLibrary
 # Platform ........ Linux/g++
@@ -87,6 +87,7 @@ SRC_FILES= \
 ../../ImageWindow.cpp \
 ../../ImageWindow_CM.cpp \
 ../../IntegerResample.cpp \
+../../JPLEphemeris.cpp \
 ../../JulianDay.cpp \
 ../../KernelFilter.cpp \
 ../../Keyboard.cpp \
@@ -234,6 +235,7 @@ OBJ_FILES= \
 ./x64/Release/ImageWindow.o \
 ./x64/Release/ImageWindow_CM.o \
 ./x64/Release/IntegerResample.o \
+./x64/Release/JPLEphemeris.o \
 ./x64/Release/JulianDay.o \
 ./x64/Release/KernelFilter.o \
 ./x64/Release/Keyboard.o \
@@ -381,6 +383,7 @@ DEP_FILES= \
 ./x64/Release/ImageWindow.d \
 ./x64/Release/ImageWindow_CM.d \
 ./x64/Release/IntegerResample.d \
+./x64/Release/JPLEphemeris.d \
 ./x64/Release/JulianDay.d \
 ./x64/Release/KernelFilter.d \
 ./x64/Release/Keyboard.d \

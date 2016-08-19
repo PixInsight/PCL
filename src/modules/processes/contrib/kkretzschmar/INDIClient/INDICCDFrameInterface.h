@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.14.0193
+// Standard INDIClient Process Module Version 01.00.15.0199
 // ----------------------------------------------------------------------------
-// INDICCDFrameInterface.h - Released 2016/06/17 12:50:37 UTC
+// INDICCDFrameInterface.h - Released 2016/06/20 17:47:31 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -170,22 +170,26 @@ private:
 
       SectionBar        FrameAcquisition_SectionBar;
       Control           FrameAcquisition_Control;
-      HorizontalSizer   FrameAcquisition_Sizer;
-         VerticalSizer     FrameAcquisitionLeft_Sizer;
-            NumericEdit       ExposureTime_NumericEdit;
-            NumericEdit       ExposureDelay_NumericEdit;
-            HorizontalSizer   ExposureCount_Sizer;
-               Label             ExposureCount_Label;
-               SpinBox           ExposureCount_SpinBox;
-            HorizontalSizer   ObjectName_Sizer;
-               Label             ObjectName_Label;
-               Edit              ObjectName_Edit;
-         VerticalSizer     FrameAcquisitionRight_Sizer;
-            HorizontalSizer   StartExposure_Sizer;
-               PushButton        StartExposure_PushButton;
-            HorizontalSizer   CancelExposure_Sizer;
-               PushButton        CancelExposure_PushButton;
-            Label             ExposureInfo_Label;
+      VerticalSizer     FrameAcquisition_Sizer;
+         HorizontalSizer   ExposureParameters_Sizer;
+            VerticalSizer     ExposureParametersLeft_Sizer;
+               NumericEdit       ExposureTime_NumericEdit;
+               NumericEdit       ExposureDelay_NumericEdit;
+               HorizontalSizer   ExposureCount_Sizer;
+                  Label             ExposureCount_Label;
+                  SpinBox           ExposureCount_SpinBox;
+            VerticalSizer     ExposureParametersRight_Sizer;
+               HorizontalSizer   StartExposure_Sizer;
+                  PushButton        StartExposure_PushButton;
+               HorizontalSizer   CancelExposure_Sizer;
+                  PushButton        CancelExposure_PushButton;
+               Label             ExposureInfo_Label;
+         HorizontalSizer   ObjectName_Sizer;
+            Label             ObjectName_Label;
+            Edit              ObjectName_Edit;
+         HorizontalSizer   TelescopeDevice_Sizer;
+            Label             TelescopeDevice_Label;
+            ComboBox          TelescopeDevice_Combo;
    };
 
    GUIData* GUI;
@@ -214,4 +218,4 @@ PCL_END_LOCAL
 #endif   // __INDICCDFrameInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF INDICCDFrameInterface.h - Released 2016/06/17 12:50:37 UTC
+// EOF INDICCDFrameInterface.h - Released 2016/06/20 17:47:31 UTC

@@ -2710,6 +2710,36 @@ typedef GenericVector<Complex32>    C32Vector;
  */
 typedef GenericVector<Complex64>    C64Vector;
 
+#ifndef _MSC_VER
+
+/*!
+ * \class pcl::F80Vector
+ * \ingroup vector_types
+ * \brief 80-bit extended precision floating point real vector.
+ *
+ * %F80Vector is a template instantiation of GenericVector for \c long
+ * \c double.
+ *
+ * \note This template instantiation is not available on Windows with Visual
+ * C++ compilers.
+ */
+typedef GenericVector<long double>  F80Vector;
+
+/*!
+ * \class pcl::LDVector
+ * \ingroup vector_types
+ * \brief 80-bit extended precision floating point real vector.
+ *
+ * %LDVector is an alias for F80Vector. It is a template instantiation of
+ * GenericVector for \c long \c double.
+ *
+ * \note This template instantiation is not available on Windows with Visual
+ * C++ compilers.
+ */
+typedef F80Vector                   LDVector;
+
+#endif   // !_MSC_VER
+
 #endif   // !__PCL_NO_VECTOR_INSTANTIATE
 
 // ----------------------------------------------------------------------------

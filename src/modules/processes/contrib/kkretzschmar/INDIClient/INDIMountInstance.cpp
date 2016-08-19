@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard INDIClient Process Module Version 01.00.14.0193
+// Standard INDIClient Process Module Version 01.00.15.0199
 // ----------------------------------------------------------------------------
-// INDIMountInstance.cpp - Released 2016/06/17 12:50:37 UTC
+// INDIMountInstance.cpp - Released 2016/06/20 17:47:31 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard INDIClient PixInsight module.
 //
@@ -152,18 +152,25 @@ bool INDIMountInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) co
       return false;
    }
 
-   FITSKeywordArray keywords;
-   view.Window().GetKeywords( keywords );
-   int keysExist = 0;
-   for ( const FITSHeaderKeyword& key : keywords )
-      if ( key.name == "OBJCTRA" )
-         keysExist |= 1;
-      else if ( key.name == "OBJCTDEC" )
-         keysExist |= 2;
-   if ( keysExist == 3 )
-      return true;
-   whyNot = "The view does not define valid center coordinates.";
-   return false;
+   if ( !view.HasProperty( "Image:Center:RA" ) || !view.HasProperty( "Image:Center:Dec" ) )
+   {
+      FITSKeywordArray keywords;
+      view.Window().GetKeywords( keywords );
+      int keysExist = 0;
+      for ( const FITSHeaderKeyword& key : keywords )
+         if ( key.name == "OBJCTRA" )
+            keysExist |= 1;
+         else if ( key.name == "OBJCTDEC" )
+            keysExist |= 2;
+      if ( keysExist != 3 )
+      {
+         whyNot = "The view does not define valid image center coordinates.";
+         return false;
+      }
+   }
+
+   whyNot.Clear();
+   return true;
 }
 
 bool INDIMountInstance::IsHistoryUpdater( const View& ) const
@@ -280,9 +287,9 @@ private:
    {
       if ( m_console.AbortRequested() )
       {
-         // We have to do this here because there is no complete guarantee that
+         // N.B.: We have to do this here because there is no guarantee that
          // m_monitor will check for abortion below. For example, for very
-         // small slew distances m_monitor could never be updated.
+         // small slew distances, m_monitor could never be updated.
          m_console.Abort();
          Abort();
       }
@@ -364,16 +371,28 @@ bool INDIMountInstance::ExecuteOn( View& view )
     	  Console().WriteLn(String().Format("New Coord (ha,dec): (%f,%f)", observationCenterRA, observationCenterDec));
       }
 
-      // ### TODO: Implement this via standard XISF properties.
-      FITSKeywordArray keywords;
-      view.Window().GetKeywords( keywords );
-      for ( auto k : keywords )
-         if ( k.name == "OBJCTRA" )
-            k.StripValueDelimiters().TrySexagesimalToDouble( imageCenterRA, ' ' );
-         else if ( k.name == "OBJCTDEC" )
-            k.StripValueDelimiters().TrySexagesimalToDouble( imageCenterDec, ' ' );
-      if ( imageCenterRA < 0 || imageCenterDec < -90 )
-         throw Error( "The view does not define valid center coordinates." );
+      if ( view.HasProperty( "Image:Center:RA" ) && view.HasProperty( "Image:Center:Dec" ) )
+      {
+         ra = view.PropertyValue( "Image:Center:RA" );
+         dec = view.PropertyValue( "Image:Center:Dec" );
+         if ( !ra.IsValid() || !dec.IsValid() )
+            throw Error( "The view does not define valid image center coordinates." );
+         imageCenterRA = ra.ToDouble()/15;
+         imageCenterDec = dec.ToDouble();
+      }
+      else
+      {
+         FITSKeywordArray keywords;
+         view.Window().GetKeywords( keywords );
+         for ( auto k : keywords )
+            if ( k.name == "OBJCTRA" )
+               k.StripValueDelimiters().TrySexagesimalToDouble( imageCenterRA, ' ' );
+            else if ( k.name == "OBJCTDEC" )
+               k.StripValueDelimiters().TrySexagesimalToDouble( imageCenterDec, ' ' );
+         if ( imageCenterRA < 0 || imageCenterDec < -90 )
+            throw Error( "The view does not define image center coordinates." );
+         Console().WarningLn( "<end><cbr>Warning: Retrieved image center coordinates from obsolete FITS keywords 'OBJCTRA' and 'OBJCTDEC'" );
+      }
    }
 
    GetCurrentCoordinates();
@@ -924,4 +943,4 @@ void AbstractINDIMountExecution::Abort()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF INDIMountInstance.cpp - Released 2016/06/17 12:50:37 UTC
+// EOF INDIMountInstance.cpp - Released 2016/06/20 17:47:31 UTC

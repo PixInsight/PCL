@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.10.00.0331
+// Standard ImageIntegration Process Module Version 01.10.00.0336
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInstance.cpp - Released 2016/10/28 01:46:20 UTC
+// DrizzleIntegrationInstance.cpp - Released 2016/10/28 11:51:28 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -68,7 +68,7 @@
 
 #define DRIZZLE_RESOLUTION       5
 #define DRIZZLE_TOLERANCE        1.0e-5
-#define DRIZZLE_KERNEL_EPSILON   0.01
+#define DRIZZLE_KERNEL_EPSILON   0.025
 
 namespace pcl
 {
@@ -148,8 +148,8 @@ private:
 
 /*
  * Abstract base class of drizzle kernel functions. Discretizes a
- * two-dimensional function on a uniform lattice and computes LUT tables for
- * fast double integration over arbitrary regions on the XY plane.
+ * two-dimensional function on a uniform square lattice and computes LUT tables
+ * for fast double integration over arbitrary regions on the XY plane.
  */
 class DrizzleKernelFunction
 {
@@ -164,8 +164,8 @@ public:
    }
 
    /*
-    * Initialize microdrop LUTs for the specified drop rectangle and grid
-    * size.
+    * Initialize microdrop LUTs for the specified drop region and integration
+    * grid size.
     */
    void Initialize( double dropSize, int n )
    {
@@ -183,9 +183,11 @@ public:
          {
             m_xlut[k] = x;
             m_ylut[k] = j*d + d2;
-            m_zlut[k] = Value( x - r, m_ylut[k] - r )/n2;
+            m_zlut[k] = Value( x - r, m_ylut[k] - r );
          }
       }
+      // Normalize for unit integration volume.
+      m_zlut /= n2*Value( 0, 0 );
    }
 
    /*
@@ -198,7 +200,7 @@ public:
    }
 
    /*
-    * Iterator for fast LUT-based double integration.
+    * Immutable iterator for fast LUT-based double integration.
     */
    class const_iterator : public ForwardIterator
    {
@@ -210,7 +212,9 @@ public:
       }
 
       const_iterator( const const_iterator& ) = default;
+#ifndef _MSC_VER
       const_iterator( const_iterator&& ) = default;
+#endif
 
       /*
        * Returns true iff this iterator is valid.
@@ -221,7 +225,7 @@ public:
       }
 
       /*
-       * Horizontal microdrop coordinate for the specified LUT item.
+       * Horizontal microdrop coordinate for the current LUT item.
        */
       double X() const
       {
@@ -229,7 +233,7 @@ public:
       }
 
       /*
-       * Vertical microdrop coordinate for the specified LUT item.
+       * Vertical microdrop coordinate for the current LUT item.
        */
       double Y() const
       {
@@ -237,7 +241,7 @@ public:
       }
 
       /*
-       * Function value for the specified LUT item.
+       * Function value for the current LUT item.
        */
       double Z() const
       {
@@ -286,8 +290,10 @@ protected:
    virtual void Reset( double dropSize ) = 0;
 
    /*
-    * Function value at the specified local coordinates. Kernel functions
-    * are symmetric with respect to the origin at dx=dy=0.
+    * Function value at the specified local coordinates in the [0,1] range. The
+    * origin of coordinates dx=dy=0 is at the center of the sampling region.
+    * The kernel function must be rotationally symmetric with its global
+    * maximum at the origin.
     */
    virtual double Value( double dx, double dy ) const = 0;
 
@@ -299,7 +305,7 @@ private:
    DPoint m_pos;
 
    /*
-    * Microdrop LUT tables.
+    * Microdrop LUT for fast double integration.
     */
    DVector m_xlut; // horizontal coordinates
    DVector m_ylut; // vertical coordinates
@@ -335,32 +341,32 @@ private:
 };
 
 /*
- * Moffat drizzle kernel function.
+ * Variable shape drizzle kernel function.
  */
-class MoffatDrizzleKernelFunction : public DrizzleKernelFunction
+class VariableShapeDrizzleKernelFunction : public DrizzleKernelFunction
 {
 public:
 
-   MoffatDrizzleKernelFunction( double beta ) : DrizzleKernelFunction(), m_mbeta( -beta )
+   VariableShapeDrizzleKernelFunction( double shape ) : DrizzleKernelFunction(), m_shape( shape ), m_rk( 1 )
    {
-      PCL_PRECONDITION( m_mbeta < 0 )
+      PCL_PRECONDITION( m_shape > 0 )
    }
 
 private:
 
-   double m_mbeta;
-   double m_s2;
+   double m_shape;
+   double m_rk;
 
    virtual void Reset( double dropSize )
    {
-      double sigma = dropSize/2/Sqrt( Pow( DRIZZLE_KERNEL_EPSILON, 1/m_mbeta ) - 1 );
+      double sigma = dropSize/2/Pow( -m_shape*Ln( DRIZZLE_KERNEL_EPSILON ), 1/m_shape );
       PCL_CHECK( sigma > 0 )
-      m_s2 = sigma*sigma;
+      m_rk = m_shape * Pow( sigma, m_shape );
    }
 
    virtual double Value( double dx, double dy ) const
    {
-      return Pow( 1 + (dx*dx + dy*dy)/m_s2, m_mbeta );
+      return Exp( -Pow( Sqrt( (dx*dx + dy*dy) ), m_shape )/m_rk );
    }
 };
 
@@ -520,6 +526,7 @@ private:
 
          totalDropArea = 0;
 
+         m_kernel.Reset();
          bool circular = false;
          switch ( m_data.engine.m_instance.p_kernelFunction )
          {
@@ -532,26 +539,23 @@ private:
          case DZKernelFunction::Gaussian:
             m_kernel = new GaussianDrizzleKernelFunction;
             break;
-         case DZKernelFunction::MoffatA:
-            m_kernel = new MoffatDrizzleKernelFunction( 10.0 );
+         case DZKernelFunction::Variable10:
+            m_kernel = new VariableShapeDrizzleKernelFunction( 1.0 );
             break;
-         case DZKernelFunction::Moffat8:
-            m_kernel = new MoffatDrizzleKernelFunction( 8.0 );
+         case DZKernelFunction::Variable15:
+            m_kernel = new VariableShapeDrizzleKernelFunction( 1.5 );
             break;
-         case DZKernelFunction::Moffat6:
-            m_kernel = new MoffatDrizzleKernelFunction( 6.0 );
+         case DZKernelFunction::Variable30:
+            m_kernel = new VariableShapeDrizzleKernelFunction( 3.0 );
             break;
-         case DZKernelFunction::Moffat4:
-            m_kernel = new MoffatDrizzleKernelFunction( 4.0 );
+         case DZKernelFunction::Variable40:
+            m_kernel = new VariableShapeDrizzleKernelFunction( 4.0 );
             break;
-         case DZKernelFunction::Moffat25:
-            m_kernel = new MoffatDrizzleKernelFunction( 2.5 );
+         case DZKernelFunction::Variable50:
+            m_kernel = new VariableShapeDrizzleKernelFunction( 5.0 );
             break;
-         case DZKernelFunction::Moffat15:
-            m_kernel = new MoffatDrizzleKernelFunction( 1.5 );
-            break;
-         case DZKernelFunction::Lorentzian:
-            m_kernel = new MoffatDrizzleKernelFunction( 1.0 );
+         case DZKernelFunction::Variable60:
+            m_kernel = new VariableShapeDrizzleKernelFunction( 6.0 );
             break;
          }
 
@@ -635,7 +639,7 @@ private:
 
                      double area;
                      if ( circular ?
-                            GetAreaOfIntersectionOfQuadAndCircle( area, dropRect.Center(), dropRect.Width(), sourceP0, sourceP1, sourceP2, sourceP3 )
+                            GetAreaOfIntersectionOfQuadAndCircle( area, dropRect.Center(), dropRect.Width()/2, sourceP0, sourceP1, sourceP2, sourceP3 )
                           : GetAreaOfIntersectionOfQuadAndRect( area, dropRect, sourceP0, sourceP1, sourceP2, sourceP3, m_kernel ) )
                      {
                         for ( int c = 0; c < m_data.engine.m_numberOfChannels; ++c )
@@ -831,7 +835,9 @@ private:
    }
 
    /*
-    * Returns the area of a polygon defined by the set of points P.
+    * Returns the area of a polygon defined by the set of points P. The points
+    * must be sorted in clockwise or counter-clockwise direction with respect
+    * to a common location.
     *
     * Adapted from a public-domain function by Darel Rex Finley, 2006:
     * http://alienryderflex.com/polygon_area/
@@ -844,7 +850,7 @@ private:
          s += (P[j].x + P[i].x)*(P[j].y - P[i].y);
          j = i;
       }
-      return ((s < 0) ? -s : s)/2; // s > 0 if points are listed clockwise
+      return ((s < 0) ? -s : s)/2; // s < 0 if points are listed counter-clockwise
    }
 
    /*
@@ -1084,15 +1090,6 @@ private:
       }
 
       /*
-       * Special case: Circle completely inside quad.
-       */
-      if ( !p0Inside && !p1Inside && !p2Inside && !p3Inside && PointInsideConvexQuad( C, p0, p1, p2, p3 ) )
-      {
-         f = Const<double>::pi()*R2;
-         return true;
-      }
-
-      /*
        * Intersections with quad sides.
        */
       Array<DPoint> P;
@@ -1112,7 +1109,7 @@ private:
          {
             double dx = P[i].x - P[i-1].x;
             double dy = P[i].y - P[i-1].y;
-            double theta = 2*ArcSin( Sqrt( dx*dx + dy*dy )/R/2 );
+            double theta = 2*ArcSin( Min( Sqrt( dx*dx + dy*dy )/R/2, 1.0 ) );
             f += R2*(theta - Sin( theta ))/2;
          }
       }
@@ -1130,7 +1127,19 @@ private:
          P << p3;
 
       if ( P.Length() < 3 )
+      {
+         /*
+          * Special case: Circle completely inside quad, or only two
+          * intersections with one quad side.
+          */
+         if ( PointInsideConvexQuad( C, p0, p1, p2, p3 ) )
+         {
+            // If there are two intersections, subtract circular segment.
+            f = Const<double>::pi()*R2 - f;
+            return true;
+         }
          return false;
+      }
 
       /*
        * Add area of intersected polygon.
@@ -1427,15 +1436,15 @@ void DrizzleIntegrationEngine::Perform()
 
             console.Write( "<end><cbr>Scale factors : " );
             for ( int c = 0; c < m_numberOfChannels; ++c )
-               console.Write( String().Format( " %8.5f", m_decoder.Scale()[c] ) );
+               console.Write( String().Format( " %8.5lf", m_decoder.Scale()[c] ) );
             console.Write(       "<br>Zero offset   : " );
             for ( int c = 0; c < m_numberOfChannels; ++c )
-               console.Write( String().Format( " %+.6e", m_decoder.ReferenceLocation()[c] - m_decoder.Location()[c] ) );
+               console.Write( String().Format( " %+.6le", m_decoder.ReferenceLocation()[c] - m_decoder.Location()[c] ) );
             if ( m_instance.p_enableImageWeighting )
             {
                console.Write(    "<br>Weight        : " );
                for ( int c = 0; c < m_numberOfChannels; ++c )
-                  console.Write( String().Format( " %10.5f", m_decoder.Weight()[c] ) );
+                  console.Write( String().Format( " %10.5lf", m_decoder.Weight()[c] ) );
                console.WriteLn();
             }
 
@@ -1486,8 +1495,8 @@ void DrizzleIntegrationEngine::Perform()
 
             sourceImage.FreeData();
 
-            console.WriteLn( String().Format( "<end><cbr>Input data  : %.3f", inputData ) );
-            console.WriteLn( String().Format( "<end><cbr>Output data : %.3f", outputData ) );
+            console.WriteLn( String().Format( "<end><cbr>Input data    : %.3lf", inputData ) );
+            console.WriteLn( String().Format( "<end><cbr>Output data   : %.3lf", outputData ) );
 
             for ( int i = 0; i < m_numberOfChannels && i < 3; ++i )
             {
@@ -1578,7 +1587,7 @@ void DrizzleIntegrationEngine::Perform()
 
       Normalize( resultImage, weightImage );
 
-      console.WriteLn( String().Format( "<end><cbr><br>Total output data : %.3f", totalOutputData ) );
+      console.WriteLn( String().Format( "<end><cbr><br>Total output data : %.3lf", totalOutputData ) );
 
       m_instance.o_output.integrationImageId = resultWindow.MainView().Id();
       m_instance.o_output.weightImageId = weightWindow.MainView().Id();
@@ -1595,9 +1604,13 @@ void DrizzleIntegrationEngine::Perform()
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(), "Integration with DrizzleIntegration process" ) );
 
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
-                                       IsoString().Format( "DrizzleIntegration.scale: %.2f", m_instance.p_scale ) ) );
+                                       IsoString().Format( "DrizzleIntegration.scale: %.2lf", m_instance.p_scale ) ) );
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
-                                       IsoString().Format( "DrizzleIntegration.dropShrink: %.2f", m_instance.p_dropShrink ) ) );
+                                       IsoString().Format( "DrizzleIntegration.dropShrink: %.2lf", m_instance.p_dropShrink ) ) );
+      keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
+                                       "DrizzleIntegration.kernelFunction: " + TheDZKernelFunctionParameter->ElementId( m_instance.p_kernelFunction ) ) );
+      keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
+                                       IsoString().Format( "DrizzleIntegration.kernelGridSize: %d", m_instance.p_kernelGridSize ) ) );
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
                                        "DrizzleIntegration.enableRejection: " + IsoString( bool( m_instance.p_enableRejection ) ) ) );
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
@@ -1615,7 +1628,7 @@ void DrizzleIntegrationEngine::Perform()
                                        IsoString().Format( "DrizzleIntegration.drizzleGeometry: left=%d, top=%d, width=%d, height=%d",
                                                          m_origin.x, m_origin.y, m_width, m_height ) ) );
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
-                                       IsoString().Format( "DrizzleIntegration.pixelSize: %.3f", m_pixelSize ) ) );
+                                       IsoString().Format( "DrizzleIntegration.pixelSize: %.3lf", m_pixelSize ) ) );
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
                                        IsoString().Format( "DrizzleIntegration.numberOfImages: %d", succeeded ) ) );
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
@@ -1623,17 +1636,17 @@ void DrizzleIntegrationEngine::Perform()
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
                                        IsoString().Format( "DrizzleIntegration.integratedPixels: %lu", m_instance.o_output.integratedPixels ) ) );
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
-                                       IsoString().Format( "DrizzleIntegration.outputData: %.3f", totalOutputData ) ) );
+                                       IsoString().Format( "DrizzleIntegration.outputData: %.3lf", totalOutputData ) ) );
       if ( !ignoringPedestal )
          if ( havePedestal )
             if ( pedestal > 0 )
             {
                keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
-                                                IsoString().Format( "DrizzleIntegration.outputPedestal: %.4g DN", pedestal ) ) );
+                                                IsoString().Format( "DrizzleIntegration.outputPedestal: %.4lg DN", pedestal ) ) );
                keywords.Add( FITSHeaderKeyword( "PEDESTAL",
-                                                IsoString().Format( "%.4g", pedestal ),
+                                                IsoString().Format( "%.4lg", pedestal ),
                                                 "Value in DN added to enforce positivity" ) );
-               console.NoteLn( String().Format( "* PEDESTAL keyword created with value: %.4g DN", pedestal ) );
+               console.NoteLn( String().Format( "* PEDESTAL keyword created with value: %.4lg DN", pedestal ) );
             }
 
       resultWindow.SetKeywords( keywords );
@@ -1876,4 +1889,4 @@ size_type DrizzleIntegrationInstance::ParameterLength( const MetaParameter* p, s
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInstance.cpp - Released 2016/10/28 01:46:20 UTC
+// EOF DrizzleIntegrationInstance.cpp - Released 2016/10/28 11:51:28 UTC

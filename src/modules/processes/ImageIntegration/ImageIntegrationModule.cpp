@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.10.00.0331
+// Standard ImageIntegration Process Module Version 01.10.00.0336
 // ----------------------------------------------------------------------------
-// ImageIntegrationModule.cpp - Released 2016/10/28 01:46:20 UTC
+// ImageIntegrationModule.cpp - Released 2016/10/28 11:51:28 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -53,7 +53,7 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     10
 #define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0331
+#define MODULE_VERSION_BUILD     0336
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2016
@@ -204,4 +204,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationModule.cpp - Released 2016/10/28 01:46:20 UTC
+// EOF ImageIntegrationModule.cpp - Released 2016/10/28 11:51:28 UTC

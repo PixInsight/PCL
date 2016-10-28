@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.10.00.0331
+// Standard ImageIntegration Process Module Version 01.10.00.0336
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInstance.h - Released 2016/10/28 01:46:20 UTC
+// DrizzleIntegrationInstance.h - Released 2016/10/28 11:51:28 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -111,7 +111,7 @@ private:
    String          p_inputDirectory;       // if nonempty, replace dirs in .drz files
    float           p_scale;                // input_pixel_size/output_pixel_size
    float           p_dropShrink;           // pixel shrink factor
-   pcl_enum        p_kernelFunction;       // drop kernel function (square, circular, Gaussian, Moffat...)
+   pcl_enum        p_kernelFunction;       // drop kernel function (square, circular, Gaussian, VariableShape...)
    int32           p_kernelGridSize;       // grid size for double integration of kernel functions
    pcl_bool        p_enableRejection;      // enable pixel rejection
    pcl_bool        p_enableImageWeighting; // enable image weights
@@ -231,4 +231,4 @@ private:
 #endif   // __DrizzleIntegrationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInstance.h - Released 2016/10/28 01:46:20 UTC
+// EOF DrizzleIntegrationInstance.h - Released 2016/10/28 11:51:28 UTC

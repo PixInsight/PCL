@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.10.00.0331
+// Standard ImageIntegration Process Module Version 01.10.00.0336
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationParameters.h - Released 2016/10/28 01:46:20 UTC
+// DrizzleIntegrationParameters.h - Released 2016/10/28 11:51:28 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -169,13 +169,12 @@ public:
    enum { Square,
           Circular,
           Gaussian,
-          MoffatA,
-          Moffat8,
-          Moffat6,
-          Moffat4,
-          Moffat25,
-          Moffat15,
-          Lorentzian,
+          Variable10,
+          Variable15,
+          Variable30,
+          Variable40,
+          Variable50,
+          Variable60,
           Count,
           Default = Square };
 
@@ -848,4 +847,4 @@ PCL_END_LOCAL
 #endif   // __DrizzleIntegrationParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationParameters.h - Released 2016/10/28 01:46:20 UTC
+// EOF DrizzleIntegrationParameters.h - Released 2016/10/28 11:51:28 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.10.00.0331
+// Standard ImageIntegration Process Module Version 01.10.00.0336
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInterface.cpp - Released 2016/10/28 01:46:20 UTC
+// DrizzleIntegrationInterface.cpp - Released 2016/10/28 11:51:28 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -490,7 +490,7 @@ void DrizzleIntegrationInterface::__CheckSection( SectionBar& sender, bool check
 DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
 {
    pcl::Font fnt = w.Font();
-   int labelWidth1 = fnt.Width( String( "Input directory:" ) + 'T' );
+   int labelWidth1 = fnt.Width( String( "Kernel function:" ) + 'M' );
    int editWidth1 = fnt.Width( String( '0', 8 ) );
    //int spinWidth1 = fnt.Width( String( '0', 11 ) );
    int ui4 = w.LogicalPixelsToPhysical( 4 );
@@ -664,12 +664,12 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
 
    const char* kernelFunctionToolTip = "<p>Drizzle drop kernel function. This parameter defines the shape of an input "
       "drop as a two-dimensional surface function. Square and circular kernels are applied by computing the area of the "
-      "intersection between each drop and the projected output pixel. Gaussian, Moffat and Lorentzian kernels are applied by "
-      "computing the double integral of the surface function over the intersection on the XY plane between the drop and the "
-      "projected output pixel. Square kernels are used by default.</p>"
-      "<p>Gaussian and Moffat drizzle kernels (the latter providing finer control on function shapes) can be used to improve "
-      "resolution of the integrated image. However, these functions tend to require much more and much better dithered data "
-      "than the standard square and circular kernels to achieve optimal results.</p>";
+      "intersection between each drop and the projected output pixel. Gaussian and VariableShape kernels are applied by "
+      "computing the double integral of the surface function over the intersection between the drop and the projected output "
+      "pixel on the XY plane. Square kernels are used by default.</p>"
+      "<p>Gaussian and VariableShape drizzle kernels (the latter providing finer control on function profiles) can be used "
+      "to improve resolution of the integrated image. However, these functions tend to require much more and much better "
+      "dithered data than the standard square and circular kernels to achieve optimal results.</p>";
 
    KernelFunction_Label.SetText( "Kernel function:" );
    KernelFunction_Label.SetFixedWidth( labelWidth1 );
@@ -679,13 +679,12 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
    KernelFunction_ComboBox.AddItem( "Square" );
    KernelFunction_ComboBox.AddItem( "Circular" );
    KernelFunction_ComboBox.AddItem( "Gaussian" );
-   KernelFunction_ComboBox.AddItem( "Moffat, beta = 10" );
-   KernelFunction_ComboBox.AddItem( "Moffat, beta = 8" );
-   KernelFunction_ComboBox.AddItem( "Moffat, beta = 6" );
-   KernelFunction_ComboBox.AddItem( "Moffat, beta = 4" );
-   KernelFunction_ComboBox.AddItem( "Moffat, beta = 2.5" );
-   KernelFunction_ComboBox.AddItem( "Moffat, beta = 1.5" );
-   KernelFunction_ComboBox.AddItem( "Lorentzian" );
+   KernelFunction_ComboBox.AddItem( "VariableShape, k = 1" );
+   KernelFunction_ComboBox.AddItem( "VariableShape, k = 1.5" );
+   KernelFunction_ComboBox.AddItem( "VariableShape, k = 3" );
+   KernelFunction_ComboBox.AddItem( "VariableShape, k = 4" );
+   KernelFunction_ComboBox.AddItem( "VariableShape, k = 5" );
+   KernelFunction_ComboBox.AddItem( "VariableShape, k = 6" );
 
    KernelFunction_ComboBox.SetToolTip( kernelFunctionToolTip );
    KernelFunction_ComboBox.OnItemSelected( (ComboBox::item_event_handler)&DrizzleIntegrationInterface::__ItemSelected, w );
@@ -695,11 +694,10 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
    KernelFunction_Sizer.Add( KernelFunction_ComboBox );
    KernelFunction_Sizer.AddStretch();
 
-   const char* gridSizeToolTip = "<p>When Gaussian and Moffat drizzle kernel functions are used, this parameter defines "
-      "the number of discrete function values computed to approximate the double integral of the kernel surface function "
-      "on a rectangular lattice. More function values improve the accuracy of numerical integration at the cost of more "
-      "computational work. The default value of this parameter is 16, meaning that 16*16=256 function values are computed to "
-      "integrate drizzle kernel functions.</p>";
+   const char* gridSizeToolTip = "<p>When Gaussian and VariableShape drizzle kernel functions are used, this parameter defines "
+      "the number of discrete function values computed to approximate the double integral of the kernel surface function. More "
+      "function evaluations improve the accuracy of numerical integration at the cost of more computational work. The default "
+      "value of this parameter is 16, meaning that 16*16=256 function values are computed to integrate drizzle kernel functions.</p>";
 
    GridSize_Label.SetText( "Grid size:" );
    GridSize_Label.SetFixedWidth( labelWidth1 );
@@ -900,4 +898,4 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInterface.cpp - Released 2016/10/28 01:46:20 UTC
+// EOF DrizzleIntegrationInterface.cpp - Released 2016/10/28 11:51:28 UTC

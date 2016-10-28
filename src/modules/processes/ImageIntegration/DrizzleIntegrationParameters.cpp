@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.10.00.0331
+// Standard ImageIntegration Process Module Version 01.10.00.0336
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationParameters.cpp - Released 2016/10/28 01:46:20 UTC
+// DrizzleIntegrationParameters.cpp - Released 2016/10/28 11:51:28 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -266,13 +266,12 @@ IsoString DZKernelFunction::ElementId( size_type i ) const
    case Square:     return "Kernel_Square";
    case Circular:   return "Kernel_Circular";
    case Gaussian:   return "Kernel_Gaussian";
-   case MoffatA:    return "Kernel_Moffat10";
-   case Moffat8:    return "Kernel_Moffat8";
-   case Moffat6:    return "Kernel_Moffat6";
-   case Moffat4:    return "Kernel_Moffat4";
-   case Moffat25:   return "Kernel_Moffat25";
-   case Moffat15:   return "Kernel_Moffat15";
-   case Lorentzian: return "Kernel_Lorentzian";
+   case Variable10: return "Kernel_Variable10";
+   case Variable15: return "Kernel_Variable15";
+   case Variable30: return "Kernel_Variable30";
+   case Variable40: return "Kernel_Variable40";
+   case Variable50: return "Kernel_Variable50";
+   case Variable60: return "Kernel_Variable60";
    }
 }
 
@@ -1214,4 +1213,4 @@ bool DZImageOutputData::IsReadOnly() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationParameters.cpp - Released 2016/10/28 01:46:20 UTC
+// EOF DrizzleIntegrationParameters.cpp - Released 2016/10/28 11:51:28 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.09.04.0322
+// Standard ImageIntegration Process Module Version 01.10.00.0331
 // ----------------------------------------------------------------------------
-// HDRCompositionProcess.cpp - Released 2016/02/21 20:22:43 UTC
+// HDRCompositionProcess.cpp - Released 2016/10/28 01:46:20 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -156,4 +156,4 @@ ProcessImplementation* HDRCompositionProcess::Clone( const ProcessImplementation
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF HDRCompositionProcess.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF HDRCompositionProcess.cpp - Released 2016/10/28 01:46:20 UTC

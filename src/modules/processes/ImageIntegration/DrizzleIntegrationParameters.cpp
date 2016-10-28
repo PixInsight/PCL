@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.09.04.0322
+// Standard ImageIntegration Process Module Version 01.10.00.0331
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationParameters.cpp - Released 2016/02/21 20:22:43 UTC
+// DrizzleIntegrationParameters.cpp - Released 2016/10/28 01:46:20 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -57,58 +57,60 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-DZInputData*                TheDZInputDataParameter = 0;
-DZItemEnabled*              TheDZItemEnabledParameter = 0;
-DZItemPath*                 TheDZItemPathParameter = 0;
-DZInputHints*               TheDZInputHintsParameter = 0;
-DZInputDirectory*           TheDZInputDirectoryParameter = 0;
-DZScale*                    TheDZScaleParameter = 0;
-DZDropShrink*               TheDZDropShrinkParameter = 0;
-DZEnableRejection*          TheDZEnableRejectionParameter = 0;
-DZEnableImageWeighting*     TheDZEnableImageWeightingParameter = 0;
-DZEnableSurfaceSplines*     TheDZEnableSurfaceSplinesParameter = 0;
-DZUseROI*                   TheDZUseROIParameter = 0;
-DZROIX0*                    TheDZROIX0Parameter = 0;
-DZROIY0*                    TheDZROIY0Parameter = 0;
-DZROIX1*                    TheDZROIX1Parameter = 0;
-DZROIY1*                    TheDZROIY1Parameter = 0;
-DZClosePreviousImages*      TheDZClosePreviousImagesParameter = 0;
-DZNoGUIMessages*            TheDZNoGUIMessagesParameter = 0;
-DZOnError*                  TheDZOnErrorParameter = 0;
+DZInputData*                TheDZInputDataParameter = nullptr;
+DZItemEnabled*              TheDZItemEnabledParameter = nullptr;
+DZItemPath*                 TheDZItemPathParameter = nullptr;
+DZInputHints*               TheDZInputHintsParameter = nullptr;
+DZInputDirectory*           TheDZInputDirectoryParameter = nullptr;
+DZScale*                    TheDZScaleParameter = nullptr;
+DZDropShrink*               TheDZDropShrinkParameter = nullptr;
+DZKernelFunction*           TheDZKernelFunctionParameter = nullptr;
+DZKernelGridSize*           TheDZKernelGridSizeParameter = nullptr;
+DZEnableRejection*          TheDZEnableRejectionParameter = nullptr;
+DZEnableImageWeighting*     TheDZEnableImageWeightingParameter = nullptr;
+DZEnableSurfaceSplines*     TheDZEnableSurfaceSplinesParameter = nullptr;
+DZUseROI*                   TheDZUseROIParameter = nullptr;
+DZROIX0*                    TheDZROIX0Parameter = nullptr;
+DZROIY0*                    TheDZROIY0Parameter = nullptr;
+DZROIX1*                    TheDZROIX1Parameter = nullptr;
+DZROIY1*                    TheDZROIY1Parameter = nullptr;
+DZClosePreviousImages*      TheDZClosePreviousImagesParameter = nullptr;
+DZNoGUIMessages*            TheDZNoGUIMessagesParameter = nullptr;
+DZOnError*                  TheDZOnErrorParameter = nullptr;
 
-DZIntegrationImageId*       TheDZIntegrationImageIdParameter = 0;
-DZWeightImageId*            TheDZWeightImageIdParameter = 0;
-DZNumberOfChannels*         TheDZNumberOfChannelsParameter = 0;
-DZOutputPixels*             TheDZOutputPixelsParameter = 0;
-DZIntegratedPixels*         TheDZIntegratedPixelsParameter = 0;
-DZTotalRejectedLowRK*       TheDZTotalRejectedLowRKParameter = 0;
-DZTotalRejectedLowG*        TheDZTotalRejectedLowGParameter = 0;
-DZTotalRejectedLowB*        TheDZTotalRejectedLowBParameter = 0;
-DZTotalRejectedHighRK*      TheDZTotalRejectedHighRKParameter = 0;
-DZTotalRejectedHighG*       TheDZTotalRejectedHighGParameter = 0;
-DZTotalRejectedHighB*       TheDZTotalRejectedHighBParameter = 0;
-DZOutputData*               TheDZOutputDataParameter = 0;
-DZImageData*                TheDZImageDataParameter = 0;
-DZImageFilePath*            TheDZImageFilePathParameter = 0;
-DZImageWeightRK*            TheDZImageWeightRKParameter = 0;
-DZImageWeightG*             TheDZImageWeightGParameter = 0;
-DZImageWeightB*             TheDZImageWeightBParameter = 0;
-DZImageLocationRK*          TheDZImageLocationRKParameter = 0;
-DZImageLocationG*           TheDZImageLocationGParameter = 0;
-DZImageLocationB*           TheDZImageLocationBParameter = 0;
-DZImageReferenceLocationRK* TheDZImageReferenceLocationRKParameter = 0;
-DZImageReferenceLocationG*  TheDZImageReferenceLocationGParameter = 0;
-DZImageReferenceLocationB*  TheDZImageReferenceLocationBParameter = 0;
-DZImageScaleRK*             TheDZImageScaleRKParameter = 0;
-DZImageScaleG*              TheDZImageScaleGParameter = 0;
-DZImageScaleB*              TheDZImageScaleBParameter = 0;
-DZImageRejectedLowRK*       TheDZImageRejectedLowRKParameter = 0;
-DZImageRejectedLowG*        TheDZImageRejectedLowGParameter = 0;
-DZImageRejectedLowB*        TheDZImageRejectedLowBParameter = 0;
-DZImageRejectedHighRK*      TheDZImageRejectedHighRKParameter = 0;
-DZImageRejectedHighG*       TheDZImageRejectedHighGParameter = 0;
-DZImageRejectedHighB*       TheDZImageRejectedHighBParameter = 0;
-DZImageOutputData*          TheDZImageOutputDataParameter = 0;
+DZIntegrationImageId*       TheDZIntegrationImageIdParameter = nullptr;
+DZWeightImageId*            TheDZWeightImageIdParameter = nullptr;
+DZNumberOfChannels*         TheDZNumberOfChannelsParameter = nullptr;
+DZOutputPixels*             TheDZOutputPixelsParameter = nullptr;
+DZIntegratedPixels*         TheDZIntegratedPixelsParameter = nullptr;
+DZTotalRejectedLowRK*       TheDZTotalRejectedLowRKParameter = nullptr;
+DZTotalRejectedLowG*        TheDZTotalRejectedLowGParameter = nullptr;
+DZTotalRejectedLowB*        TheDZTotalRejectedLowBParameter = nullptr;
+DZTotalRejectedHighRK*      TheDZTotalRejectedHighRKParameter = nullptr;
+DZTotalRejectedHighG*       TheDZTotalRejectedHighGParameter = nullptr;
+DZTotalRejectedHighB*       TheDZTotalRejectedHighBParameter = nullptr;
+DZOutputData*               TheDZOutputDataParameter = nullptr;
+DZImageData*                TheDZImageDataParameter = nullptr;
+DZImageFilePath*            TheDZImageFilePathParameter = nullptr;
+DZImageWeightRK*            TheDZImageWeightRKParameter = nullptr;
+DZImageWeightG*             TheDZImageWeightGParameter = nullptr;
+DZImageWeightB*             TheDZImageWeightBParameter = nullptr;
+DZImageLocationRK*          TheDZImageLocationRKParameter = nullptr;
+DZImageLocationG*           TheDZImageLocationGParameter = nullptr;
+DZImageLocationB*           TheDZImageLocationBParameter = nullptr;
+DZImageReferenceLocationRK* TheDZImageReferenceLocationRKParameter = nullptr;
+DZImageReferenceLocationG*  TheDZImageReferenceLocationGParameter = nullptr;
+DZImageReferenceLocationB*  TheDZImageReferenceLocationBParameter = nullptr;
+DZImageScaleRK*             TheDZImageScaleRKParameter = nullptr;
+DZImageScaleG*              TheDZImageScaleGParameter = nullptr;
+DZImageScaleB*              TheDZImageScaleBParameter = nullptr;
+DZImageRejectedLowRK*       TheDZImageRejectedLowRKParameter = nullptr;
+DZImageRejectedLowG*        TheDZImageRejectedLowGParameter = nullptr;
+DZImageRejectedLowB*        TheDZImageRejectedLowBParameter = nullptr;
+DZImageRejectedHighRK*      TheDZImageRejectedHighRKParameter = nullptr;
+DZImageRejectedHighG*       TheDZImageRejectedHighGParameter = nullptr;
+DZImageRejectedHighB*       TheDZImageRejectedHighBParameter = nullptr;
+DZImageOutputData*          TheDZImageOutputDataParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -237,6 +239,78 @@ double DZDropShrink::MinimumValue() const
 double DZDropShrink::MaximumValue() const
 {
    return 1.0;
+}
+
+// ----------------------------------------------------------------------------
+
+DZKernelFunction::DZKernelFunction( MetaProcess* p ) : MetaEnumeration( p )
+{
+   TheDZKernelFunctionParameter = this;
+}
+
+IsoString DZKernelFunction::Id() const
+{
+   return "kernelFunction";
+}
+
+size_type DZKernelFunction::NumberOfElements() const
+{
+   return Count;
+}
+
+IsoString DZKernelFunction::ElementId( size_type i ) const
+{
+   switch ( i )
+   {
+   default:
+   case Square:     return "Kernel_Square";
+   case Circular:   return "Kernel_Circular";
+   case Gaussian:   return "Kernel_Gaussian";
+   case MoffatA:    return "Kernel_Moffat10";
+   case Moffat8:    return "Kernel_Moffat8";
+   case Moffat6:    return "Kernel_Moffat6";
+   case Moffat4:    return "Kernel_Moffat4";
+   case Moffat25:   return "Kernel_Moffat25";
+   case Moffat15:   return "Kernel_Moffat15";
+   case Lorentzian: return "Kernel_Lorentzian";
+   }
+}
+
+int DZKernelFunction::ElementValue( size_type i ) const
+{
+   return int( i );
+}
+
+size_type DZKernelFunction::DefaultValueIndex() const
+{
+   return size_type( Default );
+}
+
+// ----------------------------------------------------------------------------
+
+DZKernelGridSize::DZKernelGridSize( MetaProcess* P ) : MetaInt32( P )
+{
+   TheDZKernelGridSizeParameter = this;
+}
+
+IsoString DZKernelGridSize::Id() const
+{
+   return "kernelGridSize";
+}
+
+double DZKernelGridSize::DefaultValue() const
+{
+   return 16;
+}
+
+double DZKernelGridSize::MinimumValue() const
+{
+   return 4;
+}
+
+double DZKernelGridSize::MaximumValue() const
+{
+   return 100;
 }
 
 // ----------------------------------------------------------------------------
@@ -463,7 +537,7 @@ IsoString DZOnError::Id() const
 
 size_type DZOnError::NumberOfElements() const
 {
-   return NumberOfErrorPolicies;
+   return Count;
 }
 
 IsoString DZOnError::ElementId( size_type i ) const
@@ -1140,4 +1214,4 @@ bool DZImageOutputData::IsReadOnly() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationParameters.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF DrizzleIntegrationParameters.cpp - Released 2016/10/28 01:46:20 UTC

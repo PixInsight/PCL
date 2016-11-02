@@ -336,6 +336,49 @@ public:
    }
 
    /*!
+    * Returns an approximation to the inverse surface spline of this object.
+    *
+    * The returned object can be used to perform an inverse interpolation:
+    * Given an interpolation point P2, the returned spline will interpolate the
+    * corresponding node point P1. See Initialize() for more information on
+    * spline initialization.
+    *
+    * In general, the returned object can only provide an approximation to the
+    * inverse of the underlying coordinate transformation. In particular, if
+    * this object has been initialized as an approximating surface spline, its
+    * inverse spline will compute node point coordinates from approximate
+    * (smoothed) interpolated coordinates, instead of the original ones.
+    *
+    * If two or more interpolation points were identical when this object was
+    * initialized, calling this member function may lead to an ill-conditioned
+    * linear system. In such case, an Error exception will be thrown.
+    *
+    * If this object has not been initialized, this function returns an
+    * uninitialized %PointSurfaceSpline object.
+    */
+   PointSurfaceSpline Inverse() const
+   {
+      PointSurfaceSpline inverse;
+      if ( IsValid() )
+      {
+         DVector X = m_Sx.X(),
+                 Y = m_Sx.Y(),
+                 Zx( X.Length() ),
+                 Zy( X.Length() );
+         for ( int i = 0; i < X.Length(); ++i )
+         {
+            Zx[i] = m_Sx( X[i], Y[i] );
+            Zy[i] = m_Sy( X[i], Y[i] );
+         }
+         inverse.m_Sx.SetOrder( m_Sx.Order() );
+         inverse.m_Sy.SetOrder( m_Sy.Order() );
+         inverse.m_Sx.Initialize( Zx.Begin(), Zy.Begin(), X.Begin(), X.Length() );
+         inverse.m_Sy.Initialize( Zx.Begin(), Zy.Begin(), Y.Begin(), X.Length() );
+      }
+      return inverse;
+   }
+
+   /*!
     * Deallocates internal structures, yielding an empty spline that cannot be
     * used before a new call to Initialize().
     */
@@ -456,7 +499,8 @@ public:
     *                within the boundaries of this rectangle at discrete
     *                \a delta coordinate intervals.
     *
-    * \param delta   Grid distance for discrete initialization. Must be > 0.
+    * \param delta   Grid distance for calculation of discrete function values.
+    *                Must be > 0.
     *
     * \param S       Reference to a PointSurfaceSpline object that will be used
     *                as the underlying interpolation to compute interpolation
@@ -513,6 +557,24 @@ public:
    bool IsValid() const
    {
       return !(m_Gx.IsEmpty() || m_Gy.IsEmpty());
+   }
+
+   /*!
+    * Returns the current interpolation reference rectangle. See Initialize()
+    * for more information.
+    */
+   const Rect& ReferenceRect() const
+   {
+      return m_rect;
+   }
+
+   /*!
+    * Returns the current grid distance for calculation of discrete function
+    * values. See Initialize() for more information.
+    */
+   int Delta() const
+   {
+      return m_delta;
    }
 
    /*!

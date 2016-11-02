@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.10.00.0336
+// Standard ImageIntegration Process Module Version 01.10.01.0339
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationParameters.h - Released 2016/10/28 11:51:28 UTC
+// DrizzleIntegrationParameters.h - Released 2016/11/02 15:30:54 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -209,6 +209,40 @@ public:
 };
 
 extern DZKernelGridSize* TheDZKernelGridSizeParameter;
+
+// ----------------------------------------------------------------------------
+
+class DZOriginX : public MetaFloat
+{
+public:
+
+   DZOriginX( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern DZOriginX* TheDZOriginXParameter;
+
+// ----------------------------------------------------------------------------
+
+class DZOriginY : public MetaFloat
+{
+public:
+
+   DZOriginY( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern DZOriginY* TheDZOriginYParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -847,4 +881,4 @@ PCL_END_LOCAL
 #endif   // __DrizzleIntegrationParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationParameters.h - Released 2016/10/28 11:51:28 UTC
+// EOF DrizzleIntegrationParameters.h - Released 2016/11/02 15:30:54 UTC

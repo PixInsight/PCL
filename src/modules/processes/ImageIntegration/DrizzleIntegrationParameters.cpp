@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.10.00.0336
+// Standard ImageIntegration Process Module Version 01.10.01.0339
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationParameters.cpp - Released 2016/10/28 11:51:28 UTC
+// DrizzleIntegrationParameters.cpp - Released 2016/11/02 15:30:54 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -66,6 +66,8 @@ DZScale*                    TheDZScaleParameter = nullptr;
 DZDropShrink*               TheDZDropShrinkParameter = nullptr;
 DZKernelFunction*           TheDZKernelFunctionParameter = nullptr;
 DZKernelGridSize*           TheDZKernelGridSizeParameter = nullptr;
+DZOriginX*                  TheDZOriginXParameter = nullptr;
+DZOriginY*                  TheDZOriginYParameter = nullptr;
 DZEnableRejection*          TheDZEnableRejectionParameter = nullptr;
 DZEnableImageWeighting*     TheDZEnableImageWeightingParameter = nullptr;
 DZEnableSurfaceSplines*     TheDZEnableSurfaceSplinesParameter = nullptr;
@@ -310,6 +312,70 @@ double DZKernelGridSize::MinimumValue() const
 double DZKernelGridSize::MaximumValue() const
 {
    return 100;
+}
+
+// ----------------------------------------------------------------------------
+
+DZOriginX::DZOriginX( MetaProcess* P ) : MetaFloat( P )
+{
+   TheDZOriginXParameter = this;
+}
+
+IsoString DZOriginX::Id() const
+{
+   return "originX";
+}
+
+int DZOriginX::Precision() const
+{
+   return 2;
+}
+
+double DZOriginX::DefaultValue() const
+{
+   return 0.50;
+}
+
+double DZOriginX::MinimumValue() const
+{
+   return 0.00;
+}
+
+double DZOriginX::MaximumValue() const
+{
+   return 1.00;
+}
+
+// ----------------------------------------------------------------------------
+
+DZOriginY::DZOriginY( MetaProcess* P ) : MetaFloat( P )
+{
+   TheDZOriginYParameter = this;
+}
+
+IsoString DZOriginY::Id() const
+{
+   return "originY";
+}
+
+int DZOriginY::Precision() const
+{
+   return 2;
+}
+
+double DZOriginY::DefaultValue() const
+{
+   return 0.50;
+}
+
+double DZOriginY::MinimumValue() const
+{
+   return 0.00;
+}
+
+double DZOriginY::MaximumValue() const
+{
+   return 1.00;
 }
 
 // ----------------------------------------------------------------------------
@@ -1213,4 +1279,4 @@ bool DZImageOutputData::IsReadOnly() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationParameters.cpp - Released 2016/10/28 11:51:28 UTC
+// EOF DrizzleIntegrationParameters.cpp - Released 2016/11/02 15:30:54 UTC

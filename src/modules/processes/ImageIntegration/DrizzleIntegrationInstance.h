@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.10.00.0336
+// Standard ImageIntegration Process Module Version 01.10.01.0339
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInstance.h - Released 2016/10/28 11:51:28 UTC
+// DrizzleIntegrationInstance.h - Released 2016/11/02 15:30:54 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -113,6 +113,7 @@ private:
    float           p_dropShrink;           // pixel shrink factor
    pcl_enum        p_kernelFunction;       // drop kernel function (square, circular, Gaussian, VariableShape...)
    int32           p_kernelGridSize;       // grid size for double integration of kernel functions
+   FPoint          p_origin;               // origin of image registration coordinates in reference image pixels
    pcl_bool        p_enableRejection;      // enable pixel rejection
    pcl_bool        p_enableImageWeighting; // enable image weights
    pcl_bool        p_enableSurfaceSplines; // enable registration surface splines
@@ -137,7 +138,7 @@ private:
       uint64     integratedPixels;         // total integrated source pixels
       UI64Vector totalRejectedLow;         // per-channel total low rejected pixels
       UI64Vector totalRejectedHigh;        // per-channel total high rejected pixels
-      float      outputData;                // total data gathered in input image units
+      float      outputData;               // total data gathered in input image units
 
       // Per-channel data for each integrated image
 
@@ -150,7 +151,7 @@ private:
          DVector    scale;                 // scaling factors
          UI64Vector rejectedLow;           // number of low rejected pixels
          UI64Vector rejectedHigh;          // number of high rejected pixels
-         float      outputData;             // total data gathered from this image in [0,1]
+         float      outputData;            // total data gathered from this image in [0,1]
 
          ImageData( const String& a_filePath = String() ) :
             filePath( a_filePath ),
@@ -231,4 +232,4 @@ private:
 #endif   // __DrizzleIntegrationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInstance.h - Released 2016/10/28 11:51:28 UTC
+// EOF DrizzleIntegrationInstance.h - Released 2016/11/02 15:30:54 UTC

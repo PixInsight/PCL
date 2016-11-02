@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.10.00.0336
+// Standard ImageIntegration Process Module Version 01.10.01.0339
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInstance.cpp - Released 2016/10/28 11:51:28 UTC
+// DrizzleIntegrationInstance.cpp - Released 2016/11/02 15:30:54 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -381,6 +381,7 @@ DrizzleIntegrationInstance::DrizzleIntegrationInstance( const MetaProcess* m ) :
    p_dropShrink( TheDZDropShrinkParameter->DefaultValue() ),
    p_kernelFunction( DZKernelFunction::Default ),
    p_kernelGridSize( TheDZKernelGridSizeParameter->DefaultValue() ),
+   p_origin( TheDZOriginXParameter->DefaultValue(), TheDZOriginYParameter->DefaultValue() ),
    p_enableRejection( TheDZEnableRejectionParameter->DefaultValue() ),
    p_enableImageWeighting( TheDZEnableImageWeightingParameter->DefaultValue() ),
    p_enableSurfaceSplines( TheDZEnableSurfaceSplinesParameter->DefaultValue() ),
@@ -411,6 +412,7 @@ void DrizzleIntegrationInstance::Assign( const ProcessImplementation& p )
       p_dropShrink           = x->p_dropShrink;
       p_kernelFunction       = x->p_kernelFunction;
       p_kernelGridSize       = x->p_kernelGridSize;
+      p_origin               = x->p_origin;
       p_enableRejection      = x->p_enableRejection;
       p_enableImageWeighting = x->p_enableImageWeighting;
       p_enableSurfaceSplines = x->p_enableSurfaceSplines;
@@ -499,8 +501,8 @@ private:
       const Image&                    source;
             Image&                    result;
             Image&                    weight;
-            Homography                H;
-            PointGridInterpolation    G;
+            Homography                H, Hinv;
+            PointGridInterpolation    G, Ginv;
             double                    dropDelta0;
             double                    dropDelta1;
             bool                      splines;
@@ -573,17 +575,10 @@ private:
             referenceRect.y0 = (y + m_data.engine.m_origin.y) * m_data.engine.m_pixelSize;
             referenceRect.y1 = referenceRect.y0 + m_data.engine.m_pixelSize;
 
-            Point referencePixel( 0 );
-            if ( m_data.rejection )
-               referencePixel.y = TruncInt( referenceRect.y0 );
-
             for ( int x = 0; x < m_data.engine.m_width; ++x, ++r, ++w )
             {
                referenceRect.x0 = (x + m_data.engine.m_origin.x) * m_data.engine.m_pixelSize;
                referenceRect.x1 = referenceRect.x0 + m_data.engine.m_pixelSize;
-
-               if ( m_data.rejection )
-                  referencePixel.x = TruncInt( referenceRect.x0 );
 
                DPoint sourceP0, sourceP1, sourceP2, sourceP3;
                if ( m_data.splines )
@@ -601,15 +596,15 @@ private:
                   sourceP3 = m_data.H( referenceRect.x1, referenceRect.y1 );
                }
 
-               sourceP0.Round( DRIZZLE_RESOLUTION );
-               sourceP1.Round( DRIZZLE_RESOLUTION );
-               sourceP2.Round( DRIZZLE_RESOLUTION );
-               sourceP3.Round( DRIZZLE_RESOLUTION );
+               sourceP0 += m_data.engine.m_instance.p_origin;
+               sourceP1 += m_data.engine.m_instance.p_origin;
+               sourceP2 += m_data.engine.m_instance.p_origin;
+               sourceP3 += m_data.engine.m_instance.p_origin;
 
-               DRect sourceBounds( Min( Min( Min( sourceP0.x, sourceP1.x ), sourceP2.x ), sourceP3.x ) + DRIZZLE_TOLERANCE,
-                                   Min( Min( Min( sourceP0.y, sourceP1.y ), sourceP2.y ), sourceP3.y ) + DRIZZLE_TOLERANCE,
-                                   Max( Max( Max( sourceP0.x, sourceP1.x ), sourceP2.x ), sourceP3.x ) - DRIZZLE_TOLERANCE,
-                                   Max( Max( Max( sourceP0.y, sourceP1.y ), sourceP2.y ), sourceP3.y ) - DRIZZLE_TOLERANCE );
+               DRect sourceBounds( Min( Min( Min( sourceP0.x, sourceP1.x ), sourceP2.x ), sourceP3.x ) - DRIZZLE_TOLERANCE,
+                                   Min( Min( Min( sourceP0.y, sourceP1.y ), sourceP2.y ), sourceP3.y ) - DRIZZLE_TOLERANCE,
+                                   Max( Max( Max( sourceP0.x, sourceP1.x ), sourceP2.x ), sourceP3.x ) + DRIZZLE_TOLERANCE,
+                                   Max( Max( Max( sourceP0.y, sourceP1.y ), sourceP2.y ), sourceP3.y ) + DRIZZLE_TOLERANCE );
 
                Array<Point> sourcePixels;
                {
@@ -630,8 +625,6 @@ private:
                                   p.x + m_data.dropDelta1,
                                   p.y + m_data.dropDelta1 );
 
-                  dropRect.Round( DRIZZLE_RESOLUTION );
-
                   if ( CanRectsIntersect( dropRect, sourceBounds ) )
                   {
                      if ( !m_kernel.IsNull() )
@@ -642,10 +635,14 @@ private:
                             GetAreaOfIntersectionOfQuadAndCircle( area, dropRect.Center(), dropRect.Width()/2, sourceP0, sourceP1, sourceP2, sourceP3 )
                           : GetAreaOfIntersectionOfQuadAndRect( area, dropRect, sourceP0, sourceP1, sourceP2, sourceP3, m_kernel ) )
                      {
+                        Point q;
+                        if ( m_data.rejection )
+                           q = (m_data.splines ? m_data.Ginv( p ) : m_data.Hinv( p )).RoundedToInt();
+
                         for ( int c = 0; c < m_data.engine.m_numberOfChannels; ++c )
-                           if ( !m_data.rejection || !m_data.engine.Reject( referencePixel, c ) )
+                           if ( !m_data.rejection || !m_data.engine.Reject( q, c ) )
                            {
-                              double value = m_data.source( TruncInt( p.x + 0.5 ), TruncInt( p.y + 0.5 ), c );
+                              double value = m_data.source( p, c );
                               if ( 1 + value != 1 )
                               {
                                  double normalizedValue = (value - m_data.engine.Location( c ))
@@ -1462,11 +1459,20 @@ void DrizzleIntegrationEngine::Perform()
             threadData.H = Homography( m_decoder.AlignmentMatrix() );
             if ( m_instance.p_enableSurfaceSplines )
                if ( m_decoder.HasSplines() )
-                  threadData.G.Initialize( Rect( m_referenceWidth, m_referenceHeight ), 8, m_decoder.AlignmentSplines() );
+               {
+                  console.WriteLn( "<end><cbr>Building 2D surface interpolation grids...<flush>" );
+                  threadData.G.Initialize( Rect( m_referenceWidth, m_referenceHeight ), 8, m_decoder.AlignmentSplines(), false/*verbose*/ );
+               }
             threadData.dropDelta0 = (1 - m_instance.p_dropShrink)/2;
             threadData.dropDelta1 = 1 - threadData.dropDelta0;
             threadData.splines = threadData.G.IsValid();
             threadData.rejection = m_instance.p_enableRejection && m_decoder.HasRejectionData();
+            if ( threadData.rejection )
+            {
+               threadData.Hinv = threadData.H.Inverse();
+               if ( threadData.splines )
+                  threadData.Ginv.Initialize( threadData.G.ReferenceRect(), threadData.G.Delta(), m_decoder.AlignmentSplines().Inverse(), false/*verbose*/ );
+            }
             threadData.status.Initialize( "Integrating pixels", m_height );
 
             int numberOfThreads = Thread::NumberOfThreads( m_height, Max( 1, 4096/m_width ) );
@@ -1612,6 +1618,10 @@ void DrizzleIntegrationEngine::Perform()
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
                                        IsoString().Format( "DrizzleIntegration.kernelGridSize: %d", m_instance.p_kernelGridSize ) ) );
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
+                                       IsoString().Format( "DrizzleIntegration.originX: %.2f", m_instance.p_origin.x ) ) );
+      keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
+                                       IsoString().Format( "DrizzleIntegration.originY: %.2f", m_instance.p_origin.y ) ) );
+      keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
                                        "DrizzleIntegration.enableRejection: " + IsoString( bool( m_instance.p_enableRejection ) ) ) );
       keywords.Add( FITSHeaderKeyword( "HISTORY", IsoString(),
                                        "DrizzleIntegration.enableImageWeighting: " + IsoString( bool( m_instance.p_enableImageWeighting ) ) ) );
@@ -1713,6 +1723,10 @@ void* DrizzleIntegrationInstance::LockParameter( const MetaParameter* p, size_ty
       return &p_kernelFunction;
    if ( p == TheDZKernelGridSizeParameter )
       return &p_kernelGridSize;
+   if ( p == TheDZOriginXParameter )
+      return &p_origin.x;
+   if ( p == TheDZOriginYParameter )
+      return &p_origin.y;
    if ( p == TheDZEnableRejectionParameter )
       return &p_enableRejection;
    if ( p == TheDZEnableImageWeightingParameter )
@@ -1889,4 +1903,4 @@ size_type DrizzleIntegrationInstance::ParameterLength( const MetaParameter* p, s
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInstance.cpp - Released 2016/10/28 11:51:28 UTC
+// EOF DrizzleIntegrationInstance.cpp - Released 2016/11/02 15:30:54 UTC

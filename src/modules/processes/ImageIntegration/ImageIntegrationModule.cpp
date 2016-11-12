@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.10.01.0339
+// Standard ImageIntegration Process Module Version 01.11.00.0343
 // ----------------------------------------------------------------------------
-// ImageIntegrationModule.cpp - Released 2016/11/02 15:30:54 UTC
+// ImageIntegrationModule.cpp - Released 2016/11/12 12:09:51 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -51,14 +51,14 @@
 // ----------------------------------------------------------------------------
 
 #define MODULE_VERSION_MAJOR     01
-#define MODULE_VERSION_MINOR     10
-#define MODULE_VERSION_REVISION  01
-#define MODULE_VERSION_BUILD     0339
+#define MODULE_VERSION_MINOR     11
+#define MODULE_VERSION_REVISION  00
+#define MODULE_VERSION_BUILD     0343
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2016
 #define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       2
+#define MODULE_RELEASE_DAY       12
 
 #include "DrizzleIntegrationInstance.h"
 #include "DrizzleIntegrationInterface.h"
@@ -204,4 +204,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationModule.cpp - Released 2016/11/02 15:30:54 UTC
+// EOF ImageIntegrationModule.cpp - Released 2016/11/12 12:09:51 UTC

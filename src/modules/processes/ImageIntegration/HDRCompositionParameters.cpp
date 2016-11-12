@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.10.01.0339
+// Standard ImageIntegration Process Module Version 01.11.00.0343
 // ----------------------------------------------------------------------------
-// HDRCompositionParameters.cpp - Released 2016/11/02 15:30:54 UTC
+// HDRCompositionParameters.cpp - Released 2016/11/12 12:09:51 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -57,23 +57,24 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-HCImages*                  TheHCImagesParameter = 0;
-HCImageEnabled*            TheHCImageEnabledParameter = 0;
-HCImagePath*               TheHCImagePathParameter = 0;
-HCInputHints*              TheHCInputHintsParameter = 0;
-HCMaskBinarizingThreshold* TheHCMaskBinarizingThresholdParameter = 0;
-HCMaskSmoothness*          TheHCMaskSmoothnessParameter = 0;
-HCMaskGrowth*              TheHCMaskGrowthParameter = 0;
-HCAutoExposures*           TheHCAutoExposuresParameter = 0;
-HCRejectBlack*             TheHCRejectBlackParameter = 0;
-HCUseFittingRegion*        TheHCUseFittingRegionParameter = 0;
-HCFittingRectX0*           TheHCFittingRectX0Parameter = 0;
-HCFittingRectY0*           TheHCFittingRectY0Parameter = 0;
-HCFittingRectX1*           TheHCFittingRectX1Parameter = 0;
-HCFittingRectY1*           TheHCFittingRectY1Parameter = 0;
-HCGenerate64BitResult*     TheHCGenerate64BitResultParameter = 0;
-HCOutputMasks*             TheHCOutputMasksParameter = 0;
-HCClosePreviousImages*     TheHCClosePreviousImagesParameter = 0;
+HCImages*                  TheHCImagesParameter = nullptr;
+HCImageEnabled*            TheHCImageEnabledParameter = nullptr;
+HCImagePath*               TheHCImagePathParameter = nullptr;
+HCInputHints*              TheHCInputHintsParameter = nullptr;
+HCMaskBinarizingThreshold* TheHCMaskBinarizingThresholdParameter = nullptr;
+HCMaskSmoothness*          TheHCMaskSmoothnessParameter = nullptr;
+HCMaskGrowth*              TheHCMaskGrowthParameter = nullptr;
+HCReplacedSmallScales*     TheHCReplacedSmallScalesParameter = nullptr;
+HCAutoExposures*           TheHCAutoExposuresParameter = nullptr;
+HCRejectBlack*             TheHCRejectBlackParameter = nullptr;
+HCUseFittingRegion*        TheHCUseFittingRegionParameter = nullptr;
+HCFittingRectX0*           TheHCFittingRectX0Parameter = nullptr;
+HCFittingRectY0*           TheHCFittingRectY0Parameter = nullptr;
+HCFittingRectX1*           TheHCFittingRectX1Parameter = nullptr;
+HCFittingRectY1*           TheHCFittingRectY1Parameter = nullptr;
+HCGenerate64BitResult*     TheHCGenerate64BitResultParameter = nullptr;
+HCOutputMasks*             TheHCOutputMasksParameter = nullptr;
+HCClosePreviousImages*     TheHCClosePreviousImagesParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -184,7 +185,7 @@ double HCMaskSmoothness::MinimumValue() const
 
 double HCMaskSmoothness::MaximumValue() const
 {
-   return 25;
+   return 100;
 }
 
 // ----------------------------------------------------------------------------
@@ -211,7 +212,34 @@ double HCMaskGrowth::MinimumValue() const
 
 double HCMaskGrowth::MaximumValue() const
 {
-   return 15;
+   return 25;
+}
+
+// ----------------------------------------------------------------------------
+
+HCReplacedSmallScales::HCReplacedSmallScales( MetaProcess* P ) : MetaInt32( P )
+{
+   TheHCReplacedSmallScalesParameter = this;
+}
+
+IsoString HCReplacedSmallScales::Id() const
+{
+   return "replacedSmallScales";
+}
+
+double HCReplacedSmallScales::DefaultValue() const
+{
+   return 0;
+}
+
+double HCReplacedSmallScales::MinimumValue() const
+{
+   return 0;
+}
+
+double HCReplacedSmallScales::MaximumValue() const
+{
+   return 8;
 }
 
 // ----------------------------------------------------------------------------
@@ -429,4 +457,4 @@ bool HCClosePreviousImages::DefaultValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF HDRCompositionParameters.cpp - Released 2016/11/02 15:30:54 UTC
+// EOF HDRCompositionParameters.cpp - Released 2016/11/12 12:09:51 UTC

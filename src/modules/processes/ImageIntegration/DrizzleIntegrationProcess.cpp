@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.10.01.0339
+// Standard ImageIntegration Process Module Version 01.11.00.0343
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationProcess.cpp - Released 2016/11/02 15:30:54 UTC
+// DrizzleIntegrationProcess.cpp - Released 2016/11/12 12:09:51 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -50,14 +50,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#include "DrizzleIntegrationProcess.h"
 #include "DrizzleIntegrationParameters.h"
+#include "DrizzleIntegrationProcess.h"
 #include "DrizzleIntegrationInstance.h"
 #include "DrizzleIntegrationInterface.h"
-
-#ifdef __PCL_WINDOWS
-# include <stdio.h>  // for _setmaxstdio()
-#endif
 
 namespace pcl
 {
@@ -198,4 +194,4 @@ ProcessImplementation* DrizzleIntegrationProcess::Clone( const ProcessImplementa
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationProcess.cpp - Released 2016/11/02 15:30:54 UTC
+// EOF DrizzleIntegrationProcess.cpp - Released 2016/11/12 12:09:51 UTC

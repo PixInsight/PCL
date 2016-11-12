@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.10.01.0339
+// Standard ImageIntegration Process Module Version 01.11.00.0343
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInstance.cpp - Released 2016/11/02 15:30:54 UTC
+// DrizzleIntegrationInstance.cpp - Released 2016/11/12 12:09:51 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -66,8 +66,7 @@
 #include <pcl/Version.h>
 #include <pcl/View.h>
 
-#define DRIZZLE_RESOLUTION       5
-#define DRIZZLE_TOLERANCE        1.0e-5
+#define DRIZZLE_BOUNDS_TOLERANCE 1.0e-5
 #define DRIZZLE_KERNEL_EPSILON   0.025
 
 namespace pcl
@@ -310,8 +309,6 @@ private:
    DVector m_xlut; // horizontal coordinates
    DVector m_ylut; // vertical coordinates
    DVector m_zlut; // function values
-
-   friend class ConstIterator;
 };
 
 /*
@@ -601,10 +598,10 @@ private:
                sourceP2 += m_data.engine.m_instance.p_origin;
                sourceP3 += m_data.engine.m_instance.p_origin;
 
-               DRect sourceBounds( Min( Min( Min( sourceP0.x, sourceP1.x ), sourceP2.x ), sourceP3.x ) - DRIZZLE_TOLERANCE,
-                                   Min( Min( Min( sourceP0.y, sourceP1.y ), sourceP2.y ), sourceP3.y ) - DRIZZLE_TOLERANCE,
-                                   Max( Max( Max( sourceP0.x, sourceP1.x ), sourceP2.x ), sourceP3.x ) + DRIZZLE_TOLERANCE,
-                                   Max( Max( Max( sourceP0.y, sourceP1.y ), sourceP2.y ), sourceP3.y ) + DRIZZLE_TOLERANCE );
+               DRect sourceBounds( Min( Min( Min( sourceP0.x, sourceP1.x ), sourceP2.x ), sourceP3.x ) - DRIZZLE_BOUNDS_TOLERANCE,
+                                   Min( Min( Min( sourceP0.y, sourceP1.y ), sourceP2.y ), sourceP3.y ) - DRIZZLE_BOUNDS_TOLERANCE,
+                                   Max( Max( Max( sourceP0.x, sourceP1.x ), sourceP2.x ), sourceP3.x ) + DRIZZLE_BOUNDS_TOLERANCE,
+                                   Max( Max( Max( sourceP0.y, sourceP1.y ), sourceP2.y ), sourceP3.y ) + DRIZZLE_BOUNDS_TOLERANCE );
 
                Array<Point> sourcePixels;
                {
@@ -1903,4 +1900,4 @@ size_type DrizzleIntegrationInstance::ParameterLength( const MetaParameter* p, s
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInstance.cpp - Released 2016/11/02 15:30:54 UTC
+// EOF DrizzleIntegrationInstance.cpp - Released 2016/11/12 12:09:51 UTC

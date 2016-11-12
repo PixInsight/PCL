@@ -55,6 +55,10 @@
 #include <pcl/api/APIException.h>
 #include <pcl/api/APIInterface.h>
 
+#ifdef __PCL_WINDOWS
+#  include <stdio.h> // _setmaxstdio()
+#endif
+
 namespace pcl
 {
 
@@ -153,6 +157,15 @@ public:
          API = new APIInterface( R );
 
          Module->PerformAPIDefinitions();
+
+#ifdef __PCL_WINDOWS
+         /*
+          * Win32 specific: Set the maximum possible number of simultaneously
+          * open files at the "stdio level":
+          * https://msdn.microsoft.com/en-us/library/6e3b887c.aspx
+          */
+         (void)_setmaxstdio( 2048 );
+#endif
 
          return 0; // ok
       }

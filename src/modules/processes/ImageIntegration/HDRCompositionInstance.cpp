@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0343
+// Standard ImageIntegration Process Module Version 01.11.00.0344
 // ----------------------------------------------------------------------------
-// HDRCompositionInstance.cpp - Released 2016/11/12 12:09:51 UTC
+// HDRCompositionInstance.cpp - Released 2016/11/13 17:30:54 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -87,7 +87,7 @@ HDRCompositionInstance::HDRCompositionInstance( const MetaProcess* m ) :
    p_maskBinarizingThreshold( TheHCMaskBinarizingThresholdParameter->DefaultValue() ),
    p_maskSmoothness( TheHCMaskSmoothnessParameter->DefaultValue() ),
    p_maskGrowth( TheHCMaskGrowthParameter->DefaultValue() ),
-   p_replacedSmallScales( TheHCReplacedSmallScalesParameter->DefaultValue() ),
+   p_replaceLargeScales( TheHCReplaceLargeScalesParameter->DefaultValue() ),
    p_autoExposures( TheHCAutoExposuresParameter->DefaultValue() ),
    p_rejectBlack( TheHCRejectBlackParameter->DefaultValue() ),
    p_useFittingRegion( TheHCUseFittingRegionParameter->DefaultValue() ),
@@ -114,7 +114,7 @@ void HDRCompositionInstance::Assign( const ProcessImplementation& p )
       p_maskBinarizingThreshold = x->p_maskBinarizingThreshold;
       p_maskSmoothness = x->p_maskSmoothness;
       p_maskGrowth = x->p_maskGrowth;
-      p_replacedSmallScales = x->p_replacedSmallScales;
+      p_replaceLargeScales = x->p_replaceLargeScales;
       p_autoExposures = x->p_autoExposures;
       p_rejectBlack = x->p_rejectBlack;
       p_useFittingRegion = x->p_useFittingRegion;
@@ -503,7 +503,7 @@ public:
                   << FITSHeaderKeyword( "HISTORY", IsoString(),
                                         IsoString().Format( "HDRComposition.maskGrowth: %d", instance->p_maskGrowth ) )
                   << FITSHeaderKeyword( "HISTORY", IsoString(),
-                                        IsoString().Format( "HDRComposition.replacedSmallScales: %d", instance->p_replacedSmallScales ) )
+                                        IsoString().Format( "HDRComposition.replaceLargeScales: %d", instance->p_replaceLargeScales ) )
                   << FITSHeaderKeyword( "HISTORY", IsoString(),
                                         "HDRComposition.autoExposures: " + IsoString( bool( instance->p_autoExposures ) ) )
                   << FITSHeaderKeyword( "HISTORY", IsoString(),
@@ -719,9 +719,9 @@ private:
             console.WriteLn( String().Format( "y%d = %+.6f + %.6f * x%d", c, L[c].a, L[c].b, c ) );
       }
 
-      if ( instance->p_replacedSmallScales > 0 )
+      if ( instance->p_replaceLargeScales > 0 )
       {
-         int J = instance->p_replacedSmallScales;
+         int J = 4 + instance->p_replaceLargeScales;
          image.SetStatusCallback( &status );
          image.Status().Initialize( "<end><cbr>Performing large-scale layer substitution", (2*J + 3)*N*hdr.NumberOfNominalChannels() );
          image.Status().DisableInitialization();
@@ -902,8 +902,8 @@ void* HDRCompositionInstance::LockParameter( const MetaParameter* p, size_type t
       return &p_maskSmoothness;
    if ( p == TheHCMaskGrowthParameter )
       return &p_maskGrowth;
-   if ( p == TheHCReplacedSmallScalesParameter )
-      return &p_replacedSmallScales;
+   if ( p == TheHCReplaceLargeScalesParameter )
+      return &p_replaceLargeScales;
    if ( p == TheHCAutoExposuresParameter )
       return &p_autoExposures;
    if ( p == TheHCRejectBlackParameter )
@@ -969,4 +969,4 @@ size_type HDRCompositionInstance::ParameterLength( const MetaParameter* p, size_
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF HDRCompositionInstance.cpp - Released 2016/11/12 12:09:51 UTC
+// EOF HDRCompositionInstance.cpp - Released 2016/11/13 17:30:54 UTC

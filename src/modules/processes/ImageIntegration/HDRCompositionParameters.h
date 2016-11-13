@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0343
+// Standard ImageIntegration Process Module Version 01.11.00.0344
 // ----------------------------------------------------------------------------
-// HDRCompositionParameters.h - Released 2016/11/12 12:09:51 UTC
+// HDRCompositionParameters.h - Released 2016/11/13 17:30:54 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -164,11 +164,11 @@ extern HCMaskGrowth* TheHCMaskGrowthParameter;
 
 // ----------------------------------------------------------------------------
 
-class HCReplacedSmallScales : public MetaInt32
+class HCReplaceLargeScales : public MetaInt32
 {
 public:
 
-   HCReplacedSmallScales( MetaProcess* );
+   HCReplaceLargeScales( MetaProcess* );
 
    virtual IsoString Id() const;
    virtual double DefaultValue() const;
@@ -176,7 +176,7 @@ public:
    virtual double MaximumValue() const;
 };
 
-extern HCReplacedSmallScales* TheHCReplacedSmallScalesParameter;
+extern HCReplaceLargeScales* TheHCReplaceLargeScalesParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -335,4 +335,4 @@ PCL_END_LOCAL
 #endif   // __HDRCompositionParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF HDRCompositionParameters.h - Released 2016/11/12 12:09:51 UTC
+// EOF HDRCompositionParameters.h - Released 2016/11/13 17:30:54 UTC

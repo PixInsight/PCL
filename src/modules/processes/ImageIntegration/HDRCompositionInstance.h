@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0343
+// Standard ImageIntegration Process Module Version 01.11.00.0344
 // ----------------------------------------------------------------------------
-// HDRCompositionInstance.h - Released 2016/11/12 12:09:51 UTC
+// HDRCompositionInstance.h - Released 2016/11/13 17:30:54 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -121,7 +121,7 @@ private:
    float       p_maskBinarizingThreshold; // binarizing threshold for composition masks
    int32       p_maskSmoothness;          // radius of low-pass filter (>= 1)
    int32       p_maskGrowth;              // radius of dilation filter (>= 0)
-   int32       p_replacedSmallScales;     // number of small-scale MMT layers replaced in combined images
+   int32       p_replaceLargeScales;      // number of small-scale MMT layers replaced in combined images - 4
    pcl_bool    p_autoExposures;           // sort images by relative exposures automatically; manual order otherwise
    pcl_bool    p_rejectBlack;             // reject black pixels
    pcl_bool    p_useFittingRegion;        // use a rectangular region for image fitting; entire image otherwise
@@ -144,4 +144,4 @@ private:
 #endif   // __HDRCompositionInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF HDRCompositionInstance.h - Released 2016/11/12 12:09:51 UTC
+// EOF HDRCompositionInstance.h - Released 2016/11/13 17:30:54 UTC

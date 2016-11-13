@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0343
+// Standard ImageIntegration Process Module Version 01.11.00.0344
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInstance.cpp - Released 2016/11/12 12:09:51 UTC
+// DrizzleIntegrationInstance.cpp - Released 2016/11/13 17:30:54 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -1150,7 +1150,7 @@ private:
    bool Reject( const Point& p, int c ) const
    {
       // Assume m_decoder.HasRejectionData() == true
-      return m_decoder.RejectionMap()( p.x, p.y, c ) != 0;
+      return m_decoder.RejectionMap().Includes( p ) && m_decoder.RejectionMap()( p.x, p.y, c ) != 0;
    }
 
    /*
@@ -1900,4 +1900,4 @@ size_type DrizzleIntegrationInstance::ParameterLength( const MetaParameter* p, s
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInstance.cpp - Released 2016/11/12 12:09:51 UTC
+// EOF DrizzleIntegrationInstance.cpp - Released 2016/11/13 17:30:54 UTC

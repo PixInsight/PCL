@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0343
+// Standard ImageIntegration Process Module Version 01.11.00.0344
 // ----------------------------------------------------------------------------
-// IntegrationCache.h - Released 2016/11/12 12:09:51 UTC
+// IntegrationCache.h - Released 2016/11/13 17:30:54 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -125,4 +125,4 @@ extern IntegrationCache* TheIntegrationCache;
 #endif   // __IntegrationCache_h
 
 // ----------------------------------------------------------------------------
-// EOF IntegrationCache.h - Released 2016/11/12 12:09:51 UTC
+// EOF IntegrationCache.h - Released 2016/11/13 17:30:54 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0343
+// Standard ImageIntegration Process Module Version 01.11.00.0344
 // ----------------------------------------------------------------------------
-// HDRCompositionParameters.cpp - Released 2016/11/12 12:09:51 UTC
+// HDRCompositionParameters.cpp - Released 2016/11/13 17:30:54 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -64,7 +64,7 @@ HCInputHints*              TheHCInputHintsParameter = nullptr;
 HCMaskBinarizingThreshold* TheHCMaskBinarizingThresholdParameter = nullptr;
 HCMaskSmoothness*          TheHCMaskSmoothnessParameter = nullptr;
 HCMaskGrowth*              TheHCMaskGrowthParameter = nullptr;
-HCReplacedSmallScales*     TheHCReplacedSmallScalesParameter = nullptr;
+HCReplaceLargeScales*      TheHCReplaceLargeScalesParameter = nullptr;
 HCAutoExposures*           TheHCAutoExposuresParameter = nullptr;
 HCRejectBlack*             TheHCRejectBlackParameter = nullptr;
 HCUseFittingRegion*        TheHCUseFittingRegionParameter = nullptr;
@@ -217,29 +217,29 @@ double HCMaskGrowth::MaximumValue() const
 
 // ----------------------------------------------------------------------------
 
-HCReplacedSmallScales::HCReplacedSmallScales( MetaProcess* P ) : MetaInt32( P )
+HCReplaceLargeScales::HCReplaceLargeScales( MetaProcess* P ) : MetaInt32( P )
 {
-   TheHCReplacedSmallScalesParameter = this;
+   TheHCReplaceLargeScalesParameter = this;
 }
 
-IsoString HCReplacedSmallScales::Id() const
+IsoString HCReplaceLargeScales::Id() const
 {
-   return "replacedSmallScales";
+   return "replaceLargeScales";
 }
 
-double HCReplacedSmallScales::DefaultValue() const
+double HCReplaceLargeScales::DefaultValue() const
 {
    return 0;
 }
 
-double HCReplacedSmallScales::MinimumValue() const
+double HCReplaceLargeScales::MinimumValue() const
 {
    return 0;
 }
 
-double HCReplacedSmallScales::MaximumValue() const
+double HCReplaceLargeScales::MaximumValue() const
 {
-   return 8;
+   return 6;
 }
 
 // ----------------------------------------------------------------------------
@@ -457,4 +457,4 @@ bool HCClosePreviousImages::DefaultValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF HDRCompositionParameters.cpp - Released 2016/11/12 12:09:51 UTC
+// EOF HDRCompositionParameters.cpp - Released 2016/11/13 17:30:54 UTC

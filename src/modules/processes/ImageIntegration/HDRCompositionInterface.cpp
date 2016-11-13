@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0343
+// Standard ImageIntegration Process Module Version 01.11.00.0344
 // ----------------------------------------------------------------------------
-// HDRCompositionInterface.cpp - Released 2016/11/12 12:09:51 UTC
+// HDRCompositionInterface.cpp - Released 2016/11/13 17:30:54 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -263,7 +263,7 @@ void HDRCompositionInterface::UpdateHDRCompositionControls()
    GUI->MaskBinarizingThreshold_NumericControl.SetValue( instance.p_maskBinarizingThreshold );
    GUI->MaskSmoothness_SpinBox.SetValue( instance.p_maskSmoothness );
    GUI->MaskGrowth_SpinBox.SetValue( instance.p_maskGrowth );
-   GUI->ReplacedSmallScales_SpinBox.SetValue( instance.p_replacedSmallScales );
+   GUI->ReplaceLargeScales_SpinBox.SetValue( instance.p_replaceLargeScales );
    GUI->AutoExposures_CheckBox.SetChecked( instance.p_autoExposures );
    GUI->RejectBlack_CheckBox.SetChecked( instance.p_rejectBlack );
    GUI->Generate64BitResult_CheckBox.SetChecked( instance.p_generate64BitResult );
@@ -449,8 +449,8 @@ void HDRCompositionInterface::__HDRComposition_SpinValueUpdated( SpinBox& sender
       instance.p_maskSmoothness = value;
    else if ( sender == GUI->MaskGrowth_SpinBox )
       instance.p_maskGrowth = value;
-   else if ( sender == GUI->ReplacedSmallScales_SpinBox )
-      instance.p_replacedSmallScales = value;
+   else if ( sender == GUI->ReplaceLargeScales_SpinBox )
+      instance.p_replaceLargeScales = value;
 }
 
 void HDRCompositionInterface::__HDRComposition_Click( Button& sender, bool checked )
@@ -525,7 +525,7 @@ void HDRCompositionInterface::__ToggleSection( SectionBar& sender, Control& sect
 HDRCompositionInterface::GUIData::GUIData( HDRCompositionInterface& w )
 {
    pcl::Font fnt = w.Font();
-   int labelWidth1 = fnt.Width( String( "Replace small scales:" ) + 'M' );
+   int labelWidth1 = fnt.Width( String( "Replace large scales:" ) + 'M' );
    int spinWidth1 = fnt.Width( String( '0', 9 ) );
    int spinWidth2 = fnt.Width( String( '0', 11 ) );
    int ui4 = w.LogicalPixelsToPhysical( 4 );
@@ -710,26 +710,26 @@ HDRCompositionInterface::GUIData::GUIData( HDRCompositionInterface& w )
 
    //
 
-   const char* replacedSmallScalesToolTip =
-      "<p>Number of small-scale multiscale layers replaced in source images at each HDR combination step.</p>"
+   const char* replaceLargeScalesToolTip =
+      "<p>Number of large-scale multiscale layers replaced in source images at each HDR combination step.</p>"
       "<p>By setting this parameter to an integer greater than zero, the HDR combination process will tend to "
       "ignore large-scale structures in short-exposure images. Along with <i>mask growth</i>, this parameter "
       "can be particularly useful to fix bloomings and other small-scale, high-contrast bright artifacts.</p>";
 
-   ReplacedSmallScales_Label.SetText( "Replace small scales:" );
-   ReplacedSmallScales_Label.SetFixedWidth( labelWidth1 );
-   ReplacedSmallScales_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
-   ReplacedSmallScales_Label.SetToolTip( replacedSmallScalesToolTip );
+   ReplaceLargeScales_Label.SetText( "Replace large scales:" );
+   ReplaceLargeScales_Label.SetFixedWidth( labelWidth1 );
+   ReplaceLargeScales_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   ReplaceLargeScales_Label.SetToolTip( replaceLargeScalesToolTip );
 
-   ReplacedSmallScales_SpinBox.SetRange( int( TheHCReplacedSmallScalesParameter->MinimumValue() ), int( TheHCReplacedSmallScalesParameter->MaximumValue() ) );
-   ReplacedSmallScales_SpinBox.SetFixedWidth( spinWidth1 );
-   ReplacedSmallScales_SpinBox.SetToolTip( replacedSmallScalesToolTip );
-   ReplacedSmallScales_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&HDRCompositionInterface::__HDRComposition_SpinValueUpdated, w );
+   ReplaceLargeScales_SpinBox.SetRange( int( TheHCReplaceLargeScalesParameter->MinimumValue() ), int( TheHCReplaceLargeScalesParameter->MaximumValue() ) );
+   ReplaceLargeScales_SpinBox.SetFixedWidth( spinWidth1 );
+   ReplaceLargeScales_SpinBox.SetToolTip( replaceLargeScalesToolTip );
+   ReplaceLargeScales_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&HDRCompositionInterface::__HDRComposition_SpinValueUpdated, w );
 
-   ReplacedSmallScales_Sizer.SetSpacing( 4 );
-   ReplacedSmallScales_Sizer.Add( ReplacedSmallScales_Label );
-   ReplacedSmallScales_Sizer.Add( ReplacedSmallScales_SpinBox );
-   ReplacedSmallScales_Sizer.AddStretch();
+   ReplaceLargeScales_Sizer.SetSpacing( 4 );
+   ReplaceLargeScales_Sizer.Add( ReplaceLargeScales_Label );
+   ReplaceLargeScales_Sizer.Add( ReplaceLargeScales_SpinBox );
+   ReplaceLargeScales_Sizer.AddStretch();
 
    //
 
@@ -811,7 +811,7 @@ HDRCompositionInterface::GUIData::GUIData( HDRCompositionInterface& w )
    HDRComposition_Sizer.Add( MaskBinarizingThreshold_NumericControl );
    HDRComposition_Sizer.Add( MaskSmoothness_Sizer );
    HDRComposition_Sizer.Add( MaskGrowth_Sizer );
-   HDRComposition_Sizer.Add( ReplacedSmallScales_Sizer );
+   HDRComposition_Sizer.Add( ReplaceLargeScales_Sizer );
    HDRComposition_Sizer.Add( AutoExposures_Sizer );
    HDRComposition_Sizer.Add( RejectBlack_Sizer );
    HDRComposition_Sizer.Add( Generate64BitResult_Sizer );
@@ -946,4 +946,4 @@ HDRCompositionInterface::GUIData::GUIData( HDRCompositionInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF HDRCompositionInterface.cpp - Released 2016/11/12 12:09:51 UTC
+// EOF HDRCompositionInterface.cpp - Released 2016/11/13 17:30:54 UTC

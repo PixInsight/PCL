@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// DynamicCropProcess.h - Released 2016/02/21 20:22:42 UTC
+// DynamicCropProcess.h - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -59,8 +59,6 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-// DynamicCropProcess
-// ----------------------------------------------------------------------------
 
 class DynamicCropProcess : public MetaProcess
 {
@@ -96,4 +94,4 @@ PCL_END_LOCAL
 #endif   // __DynamicCropProcess_h
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropProcess.h - Released 2016/02/21 20:22:42 UTC
+// EOF DynamicCropProcess.h - Released 2016/11/14 19:38:23 UTC

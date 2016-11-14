@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// CommonParameters.cpp - Released 2016/02/21 20:22:42 UTC
+// CommonParameters.cpp - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -60,7 +60,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-RotationAngle::RotationAngle( MetaProcess* p ) : MetaDouble( p )
+RotationAngle::RotationAngle( MetaProcess* P ) : MetaDouble( P )
 {
 }
 
@@ -91,7 +91,7 @@ double RotationAngle::MaximumValue() const
 
 // ----------------------------------------------------------------------------
 
-OptimizeFastRotations::OptimizeFastRotations( MetaProcess* p ) : MetaBoolean( p )
+OptimizeFastRotations::OptimizeFastRotations( MetaProcess* P ) : MetaBoolean( P )
 {
 }
 
@@ -107,7 +107,7 @@ bool OptimizeFastRotations::DefaultValue() const
 
 // ----------------------------------------------------------------------------
 
-InterpolationAlgorithm::InterpolationAlgorithm( MetaProcess* p ) : MetaEnumeration( p )
+InterpolationAlgorithm::InterpolationAlgorithm( MetaProcess* P ) : MetaEnumeration( P )
 {
 }
 
@@ -181,7 +181,7 @@ PixelInterpolation* NewInterpolation( int interpolation, int w, int h, int w0, i
 
 // ----------------------------------------------------------------------------
 
-ClampingThreshold::ClampingThreshold( MetaProcess* p ) : MetaFloat( p )
+ClampingThreshold::ClampingThreshold( MetaProcess* P ) : MetaFloat( P )
 {
 }
 
@@ -337,7 +337,7 @@ bool ForceResolution::DefaultValue() const
 
 // ----------------------------------------------------------------------------
 
-FillRed::FillRed( MetaProcess* p ) : MetaDouble( p )
+FillRed::FillRed( MetaProcess* P ) : MetaDouble( P )
 {
 }
 
@@ -368,7 +368,7 @@ double FillRed::MaximumValue() const
 
 // ----------------------------------------------------------------------------
 
-FillGreen::FillGreen( MetaProcess* p ) : MetaDouble( p )
+FillGreen::FillGreen( MetaProcess* P ) : MetaDouble( P )
 {
 }
 
@@ -399,7 +399,7 @@ double FillGreen::MaximumValue() const
 
 // ----------------------------------------------------------------------------
 
-FillBlue::FillBlue( MetaProcess* p ) : MetaDouble( p )
+FillBlue::FillBlue( MetaProcess* P ) : MetaDouble( P )
 {
 }
 
@@ -430,7 +430,7 @@ double FillBlue::MaximumValue() const
 
 // ----------------------------------------------------------------------------
 
-FillAlpha::FillAlpha( MetaProcess* p ) : MetaDouble( p )
+FillAlpha::FillAlpha( MetaProcess* P ) : MetaDouble( P )
 {
 }
 
@@ -464,4 +464,4 @@ double FillAlpha::MaximumValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CommonParameters.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF CommonParameters.cpp - Released 2016/11/14 19:38:23 UTC

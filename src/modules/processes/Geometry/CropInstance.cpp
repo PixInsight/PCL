@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// CropInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// CropInstance.cpp - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -52,10 +52,10 @@
 
 #include "CropInstance.h"
 #include "CropParameters.h"
+#include "GeometryModule.h"
 
 #include <pcl/AutoViewLock.h>
 #include <pcl/ImageWindow.h>
-#include <pcl/MessageBox.h>
 #include <pcl/StdStatus.h>
 #include <pcl/View.h>
 
@@ -65,22 +65,21 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 CropInstance::CropInstance( const MetaProcess* P ) :
-ProcessImplementation( P ),
-p_margins( 0.0 ),
-p_mode( CroppingMode::Default ),
-p_resolution( TheXResolutionCropParameter->DefaultValue(), TheYResolutionCropParameter->DefaultValue() ),
-p_metric( TheMetricResolutionCropParameter->DefaultValue() ),
-p_forceResolution( TheForceResolutionCropParameter->DefaultValue() ),
-p_fillColor( 4 )
+   ProcessImplementation( P ),
+   p_margins( 0.0 ),
+   p_mode( CRMode::Default ),
+   p_resolution( TheCRXResolutionParameter->DefaultValue(), TheCRYResolutionParameter->DefaultValue() ),
+   p_metric( TheCRMetricResolutionParameter->DefaultValue() ),
+   p_forceResolution( TheCRForceResolutionParameter->DefaultValue() ),
+   p_fillColor( TheCRFillRedParameter->DefaultValue(),
+                TheCRFillGreenParameter->DefaultValue(),
+                TheCRFillBlueParameter->DefaultValue(),
+                TheCRFillAlphaParameter->DefaultValue() )
 {
-   p_fillColor[0] = TheFillRedCropParameter->DefaultValue();
-   p_fillColor[1] = TheFillGreenCropParameter->DefaultValue();
-   p_fillColor[2] = TheFillBlueCropParameter->DefaultValue();
-   p_fillColor[3] = TheFillAlphaCropParameter->DefaultValue();
 }
 
 CropInstance::CropInstance( const CropInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
@@ -88,7 +87,7 @@ ProcessImplementation( x )
 void CropInstance::Assign( const ProcessImplementation& p )
 {
    const CropInstance* x = dynamic_cast<const CropInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       p_margins         = x->p_margins;
       p_mode            = x->p_mode;
@@ -99,7 +98,15 @@ void CropInstance::Assign( const ProcessImplementation& p )
    }
 }
 
-// ----------------------------------------------------------------------------
+bool CropInstance::IsMaskable( const View&, const ImageWindow& ) const
+{
+   return false;
+}
+
+UndoFlags CropInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData | UndoFlag::Keywords | (p_forceResolution ? UndoFlag::Resolution : 0);
+}
 
 bool CropInstance::CanExecuteOn( const View& v, String& whyNot ) const
 {
@@ -113,27 +120,10 @@ bool CropInstance::CanExecuteOn( const View& v, String& whyNot ) const
    return true;
 }
 
-// ----------------------------------------------------------------------------
-
 bool CropInstance::BeforeExecution( View& view )
 {
-   ImageWindow w = view.Window();
-
-   if ( w.HasPreviews() || w.HasMaskReferences() || !w.Mask().IsNull() )
-      if ( MessageBox( view.Id() + ":\n"
-                       "Existing previews and mask references will be destroyed.\n"
-                       "Some of these side effects could be irreversible. Proceed?",
-                       "Crop", // caption
-                       StdIcon::Warning,
-                       StdButton::No, StdButton::Yes ).Execute() != StdButton::Yes )
-      {
-         return false;
-      }
-
-   return true;
+   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id() );
 }
-
-// ----------------------------------------------------------------------------
 
 void CropInstance::GetNewSizes( int& w, int& h ) const
 {
@@ -143,8 +133,6 @@ void CropInstance::GetNewSizes( int& w, int& h ) const
    C.SetMetricResolution( p_metric );
    C.GetNewSizes( w, h );
 }
-
-// ----------------------------------------------------------------------------
 
 bool CropInstance::ExecuteOn( View& view )
 {
@@ -159,6 +147,7 @@ bool CropInstance::ExecuteOn( View& view )
 
    AutoViewLock lock( view );
 
+   ImageWindow window = view.Window();
    ImageVariant image = view.Image();
 
    Crop C( p_margins );
@@ -178,9 +167,7 @@ bool CropInstance::ExecuteOn( View& view )
    if ( width < 1 || height < 1 )
       throw Error( "Crop: Invalid operation: Null target image dimensions" );
 
-   /*
-    * On 32-bit systems, make sure the resulting image requires less than 4 GB.
-    */
+   // On 32-bit systems, make sure the resulting image requires less than 4 GB.
    if ( sizeof( void* ) == sizeof( uint32 ) )
    {
       uint64 sz = uint64( width )*uint64( height )*image.NumberOfChannels()*image.BytesPerSample();
@@ -188,11 +175,7 @@ bool CropInstance::ExecuteOn( View& view )
          throw Error( "Crop: Invalid operation: Target image dimensions would exceed four gigabytes" );
    }
 
-   ImageWindow window = view.Window();
-
-   window.RemoveMaskReferences();
-   window.RemoveMask();
-   window.DeletePreviews();
+   DeleteAstrometryMetadataAndPreviewsAndMask( window );
 
    Console().EnableAbort();
 
@@ -203,7 +186,7 @@ bool CropInstance::ExecuteOn( View& view )
 
    if ( p_forceResolution )
    {
-      Console().WriteLn( String().Format( "Setting resolution: h:%.3lf, image:%.3lf, px/%s",
+      Console().WriteLn( String().Format( "Setting resolution: h:%.3lf, v:%.3lf, u:px/%s",
                                           p_resolution.x, p_resolution.y, p_metric ? "cm" : "inch" ) );
       window.SetResolution( p_resolution.x, p_resolution.y, p_metric );
    }
@@ -215,33 +198,33 @@ bool CropInstance::ExecuteOn( View& view )
 
 void* CropInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/ )
 {
-   if ( p == TheLeftMarginParameter )
+   if ( p == TheCRLeftMarginParameter )
       return &p_margins.x0;
-   if ( p == TheTopMarginParameter )
+   if ( p == TheCRTopMarginParameter )
       return &p_margins.y0;
-   if ( p == TheRightMarginParameter )
+   if ( p == TheCRRightMarginParameter )
       return &p_margins.x1;
-   if ( p == TheBottomMarginParameter )
+   if ( p == TheCRBottomMarginParameter )
       return &p_margins.y1;
-   if ( p == TheCroppingModeParameter )
+   if ( p == TheCRModeParameter )
       return &p_mode;
-   if ( p == TheXResolutionCropParameter )
+   if ( p == TheCRXResolutionParameter )
       return &p_resolution.x;
-   if ( p == TheYResolutionCropParameter )
+   if ( p == TheCRYResolutionParameter )
       return &p_resolution.y;
-   if ( p == TheMetricResolutionCropParameter )
+   if ( p == TheCRMetricResolutionParameter )
       return &p_metric;
-   if ( p == TheForceResolutionCropParameter )
+   if ( p == TheCRForceResolutionParameter )
       return &p_forceResolution;
-   if ( p == TheFillRedCropParameter )
+   if ( p == TheCRFillRedParameter )
       return p_fillColor.At( 0 );
-   if ( p == TheFillGreenCropParameter )
+   if ( p == TheCRFillGreenParameter )
       return p_fillColor.At( 1 );
-   if ( p == TheFillBlueCropParameter )
+   if ( p == TheCRFillBlueParameter )
       return p_fillColor.At( 2 );
-   if ( p == TheFillAlphaCropParameter )
+   if ( p == TheCRFillAlphaParameter )
       return p_fillColor.At( 3 );
-   return 0;
+   return nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -249,4 +232,4 @@ void* CropInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CropInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF CropInstance.cpp - Released 2016/11/14 19:38:23 UTC

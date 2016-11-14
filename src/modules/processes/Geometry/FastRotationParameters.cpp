@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// FastRotationParameters.cpp - Released 2016/02/21 20:22:42 UTC
+// FastRotationParameters.cpp - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -57,26 +57,26 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-FastRotationMode* TheFastRotationModeParameter = 0;
+FRMode* TheFRModeParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
-FastRotationMode::FastRotationMode( MetaProcess* p ) : MetaEnumeration( p )
+FRMode::FRMode( MetaProcess* P ) : MetaEnumeration( P )
 {
-   TheFastRotationModeParameter = this;
+   TheFRModeParameter = this;
 }
 
-IsoString FastRotationMode::Id() const
+IsoString FRMode::Id() const
 {
    return "mode";
 }
 
-size_type FastRotationMode::NumberOfElements() const
+size_type FRMode::NumberOfElements() const
 {
    return NumberOfModes;
 }
 
-IsoString FastRotationMode::ElementId( size_type i ) const
+IsoString FRMode::ElementId( size_type i ) const
 {
    switch ( i )
    {
@@ -89,12 +89,12 @@ IsoString FastRotationMode::ElementId( size_type i ) const
    }
 }
 
-int FastRotationMode::ElementValue( size_type i ) const
+int FRMode::ElementValue( size_type i ) const
 {
    return int( i );
 }
 
-size_type FastRotationMode::DefaultValueIndex() const
+size_type FRMode::DefaultValueIndex() const
 {
    return Default;
 }
@@ -104,4 +104,4 @@ size_type FastRotationMode::DefaultValueIndex() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FastRotationParameters.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF FastRotationParameters.cpp - Released 2016/11/14 19:38:23 UTC

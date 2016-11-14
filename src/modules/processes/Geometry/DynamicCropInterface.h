@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// DynamicCropInterface.h - Released 2016/02/21 20:22:42 UTC
+// DynamicCropInterface.h - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -53,14 +53,14 @@
 #ifndef __DynamicCropInterface_h
 #define __DynamicCropInterface_h
 
-#include <pcl/ProcessInterface.h>
-
 #include <pcl/CheckBox.h>
 #include <pcl/ComboBox.h>
 #include <pcl/Edit.h>
 #include <pcl/Graphics.h>
 #include <pcl/Label.h>
 #include <pcl/NumericControl.h>
+#include <pcl/ProcessInterface.h>
+#include <pcl/RadioButton.h>
 #include <pcl/SectionBar.h>
 #include <pcl/Sizer.h>
 #include <pcl/SpinBox.h>
@@ -91,7 +91,7 @@ public:
    virtual void EditPreferences();
    virtual void ResetInstance();
 
-   virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ );
+   virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& flags );
 
    virtual ProcessImplementation* NewProcess() const;
 
@@ -123,10 +123,6 @@ public:
 private:
 
    DynamicCropInstance instance;
-
-   /*
-    * Workbench
-    */
 
    union Flags
    {
@@ -214,10 +210,6 @@ private:
       return ArcTan( rotationCenter.y - p.y, p.x - rotationCenter.x );
    }
 
-   /*
-    * GUI
-    */
-
    struct GUIData
    {
       GUIData( DynamicCropInterface& );
@@ -252,12 +244,16 @@ private:
       SectionBar        Scale_SectionBar;
       Control           Scale_Control;
       VerticalSizer     Scale_Sizer;
-         HorizontalSizer   ScaleX_Sizer;
-            NumericEdit       ScaleX_NumericEdit;
-            NumericEdit       ScaledWidth_NumericEdit;
-         HorizontalSizer   ScaleY_Sizer;
-            NumericEdit       ScaleY_NumericEdit;
-            NumericEdit       ScaledHeight_NumericEdit;
+         NumericEdit       ScaleX_NumericEdit;
+         NumericEdit       ScaleY_NumericEdit;
+         NumericEdit       ScaledWidthPx_NumericEdit;
+         NumericEdit       ScaledHeightPx_NumericEdit;
+         NumericEdit       ScaledWidthCm_NumericEdit;
+         NumericEdit       ScaledHeightCm_NumericEdit;
+         NumericEdit       ScaledWidthIn_NumericEdit;
+         NumericEdit       ScaledHeightIn_NumericEdit;
+         HorizontalSizer   PreserveAspectRatio_Sizer;
+            CheckBox          PreserveAspectRatio_CheckBox;
 
       SectionBar        Interpolation_SectionBar;
       Control           Interpolation_Control;
@@ -267,6 +263,17 @@ private:
             ComboBox          Algorithm_ComboBox;
          NumericEdit       ClampingThreshold_NumericEdit;
          NumericEdit       Smoothness_NumericEdit;
+
+      SectionBar        Resolution_SectionBar;
+      Control           Resolution_Control;
+      VerticalSizer     Resolution_Sizer;
+         NumericEdit       HorizontalResolution_NumericEdit;
+         NumericEdit       VerticalResolution_NumericEdit;
+         HorizontalSizer   ResolutionUnit_Sizer;
+            RadioButton       CentimeterUnits_RadioButton;
+            RadioButton       InchUnits_RadioButton;
+         HorizontalSizer   ForceResolution_Sizer;
+            CheckBox          ForceResolution_CheckBox;
 
       SectionBar        FillColor_SectionBar;
       Control           FillColor_Control;
@@ -280,19 +287,14 @@ private:
 
    GUIData* GUI;
 
-   /*
-    * GUI Updates
-    */
-
    void InitControls();
-
    void UpdateControls();
    void UpdateSizePosControls();
    void UpdateRotationControls();
    void UpdateScaleControls();
    void UpdateInterpolationControls();
+   void UpdateResolutionControls();
    void UpdateFillColorControls();
-
    void UpdateView();
 
    /*
@@ -323,6 +325,10 @@ private:
    void __Algorithm_ItemSelected( ComboBox& sender, int itemIndex );
    void __Algorithm_ValueUpdated( NumericEdit& sender, double value );
 
+   void __Resolution_ValueUpdated( NumericEdit& sender, double value );
+   void __Units_ButtonClick( Button& sender, bool checked );
+   void __ForceResolution_ButtonClick( Button& sender, bool checked );
+
    void __FilColor_ValueUpdated( NumericEdit& sender, double value );
 
    void __ColorSample_Paint( Control& sender, const Rect& updateRect );
@@ -346,4 +352,4 @@ PCL_END_LOCAL
 #endif   // __DynamicCropInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropInterface.h - Released 2016/02/21 20:22:42 UTC
+// EOF DynamicCropInterface.h - Released 2016/11/14 19:38:23 UTC

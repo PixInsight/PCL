@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// IntegerResampleInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// IntegerResampleInstance.cpp - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -50,12 +50,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
+#include "GeometryModule.h"
 #include "IntegerResampleInstance.h"
 #include "IntegerResampleParameters.h"
 
 #include <pcl/AutoViewLock.h>
 #include <pcl/ImageWindow.h>
-#include <pcl/MessageBox.h>
 #include <pcl/StdStatus.h>
 #include <pcl/View.h>
 
@@ -65,17 +65,17 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 IntegerResampleInstance::IntegerResampleInstance( const MetaProcess* P ) :
-ProcessImplementation( P ),
-p_zoomFactor( int32( TheZoomFactorParameter->DefaultValue() ) ),
-p_downsampleMode( TheIntegerDownsamplingModeParameter->Default ),
-p_resolution( TheXResolutionIntegerResampleParameter->DefaultValue(), TheYResolutionIntegerResampleParameter->DefaultValue() ),
-p_metric( TheMetricResolutionIntegerResampleParameter->DefaultValue() ),
-p_forceResolution( TheForceResolutionIntegerResampleParameter->DefaultValue() )
+   ProcessImplementation( P ),
+   p_zoomFactor( int32( TheIRZoomFactorParameter->DefaultValue() ) ),
+   p_downsampleMode( TheIRDownsamplingModeParameter->Default ),
+   p_resolution( TheIRXResolutionParameter->DefaultValue(), TheIRYResolutionParameter->DefaultValue() ),
+   p_metric( TheIRMetricResolutionParameter->DefaultValue() ),
+   p_forceResolution( TheIRForceResolutionParameter->DefaultValue() )
 {
 }
 
 IntegerResampleInstance::IntegerResampleInstance( const IntegerResampleInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
@@ -83,7 +83,7 @@ ProcessImplementation( x )
 void IntegerResampleInstance::Assign( const ProcessImplementation& p )
 {
    const IntegerResampleInstance* x = dynamic_cast<const IntegerResampleInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       p_zoomFactor      = x->p_zoomFactor;
       p_downsampleMode  = x->p_downsampleMode;
@@ -93,7 +93,15 @@ void IntegerResampleInstance::Assign( const ProcessImplementation& p )
    }
 }
 
-// ----------------------------------------------------------------------------
+bool IntegerResampleInstance::IsMaskable( const View&, const ImageWindow& ) const
+{
+   return false;
+}
+
+UndoFlags IntegerResampleInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData | UndoFlag::Keywords | (p_forceResolution ? UndoFlag::Resolution : 0);
+}
 
 bool IntegerResampleInstance::CanExecuteOn( const View& v, pcl::String& whyNot ) const
 {
@@ -107,35 +115,16 @@ bool IntegerResampleInstance::CanExecuteOn( const View& v, pcl::String& whyNot )
    return true;
 }
 
-// ----------------------------------------------------------------------------
-
 bool IntegerResampleInstance::BeforeExecution( View& view )
 {
-   ImageWindow w = view.Window();
-
-   if ( w.HasPreviews() || w.HasMaskReferences() || !w.Mask().IsNull() )
-      if ( MessageBox( view.Id() + ":\n"
-                       "Existing previews and mask references will be destroyed.\n"
-                       "Some of these side effects could be irreversible. Proceed?",
-                       "IntegerResample", // caption
-                       StdIcon::Warning,
-                       StdButton::No, StdButton::Yes ).Execute() != StdButton::Yes )
-      {
-         return false;
-      }
-
-   return true;
+   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id() );
 }
-
-// ----------------------------------------------------------------------------
 
 void IntegerResampleInstance::GetNewSizes( int& width, int& height ) const
 {
    IntegerResample R( p_zoomFactor );
    R.GetNewSizes( width, height );
 }
-
-// ----------------------------------------------------------------------------
 
 bool IntegerResampleInstance::ExecuteOn( View& view )
 {
@@ -154,9 +143,7 @@ bool IntegerResampleInstance::ExecuteOn( View& view )
       {
          IntegerResample I( p_zoomFactor, static_cast<IntegerResample::downsample_mode>( p_downsampleMode ) );
 
-         /*
-          * On 32-bit systems, make sure the resulting image requires less than 4 GB.
-          */
+         // On 32-bit systems, make sure the resulting image requires less than 4 GB.
          if ( sizeof( void* ) == sizeof( uint32 ) )
          {
             // Dimensions of target image
@@ -174,9 +161,7 @@ bool IntegerResampleInstance::ExecuteOn( View& view )
                throw Error( "IntegerResample: Invalid operation: Target image dimensions would exceed four gigabytes" );
          }
 
-         window.RemoveMaskReferences();
-         window.RemoveMask();
-         window.DeletePreviews();
+         DeleteAstrometryMetadataAndPreviewsAndMask( window );
 
          Console().EnableAbort();
 
@@ -188,7 +173,7 @@ bool IntegerResampleInstance::ExecuteOn( View& view )
 
    if ( p_forceResolution )
    {
-      Console().WriteLn( String().Format( "Setting resolution: h:%.3lf, image:%.3lf, px/%s",
+      Console().WriteLn( String().Format( "Setting resolution: h:%.3lf, v:%.3lf, u:px/%s",
                                           p_resolution.x, p_resolution.y, p_metric ? "cm" : "inch" ) );
       window.SetResolution( p_resolution.x, p_resolution.y, p_metric );
    }
@@ -200,19 +185,19 @@ bool IntegerResampleInstance::ExecuteOn( View& view )
 
 void* IntegerResampleInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/ )
 {
-   if ( p == TheZoomFactorParameter )
+   if ( p == TheIRZoomFactorParameter )
       return &p_zoomFactor;
-   if ( p == TheIntegerDownsamplingModeParameter )
+   if ( p == TheIRDownsamplingModeParameter )
       return &p_downsampleMode;
-   if ( p == TheXResolutionIntegerResampleParameter )
+   if ( p == TheIRXResolutionParameter )
       return &p_resolution.x;
-   if ( p == TheYResolutionIntegerResampleParameter )
+   if ( p == TheIRYResolutionParameter )
       return &p_resolution.y;
-   if ( p == TheMetricResolutionIntegerResampleParameter )
+   if ( p == TheIRMetricResolutionParameter )
       return &p_metric;
-   if ( p == TheForceResolutionIntegerResampleParameter )
+   if ( p == TheIRForceResolutionParameter )
       return &p_forceResolution;
-   return 0;
+   return nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -220,4 +205,4 @@ void* IntegerResampleInstance::LockParameter( const MetaParameter* p, size_type 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF IntegerResampleInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF IntegerResampleInstance.cpp - Released 2016/11/14 19:38:23 UTC

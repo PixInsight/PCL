@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// CropProcess.cpp - Released 2016/02/21 20:22:42 UTC
+// CropProcess.cpp - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -60,7 +60,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-CropProcess* TheCropProcess = 0;
+CropProcess* TheCropProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -72,78 +72,60 @@ CropProcess::CropProcess() : MetaProcess()
 {
    TheCropProcess = this;
 
-   // Instantiate process parameters
-
-   new LeftMargin( this );
-   new TopMargin( this );
-   new RightMargin( this );
-   new BottomMargin( this );
-   TheCroppingModeParameter = new CroppingMode( this );
-   TheXResolutionCropParameter = new XResolution( this );
-   TheYResolutionCropParameter = new YResolution( this );
-   TheMetricResolutionCropParameter = new MetricResolution( this );
-   TheForceResolutionCropParameter = new ForceResolution( this );
-   TheFillRedCropParameter = new FillRed( this );
-   TheFillGreenCropParameter = new FillGreen( this );
-   TheFillBlueCropParameter = new FillBlue( this );
-   TheFillAlphaCropParameter = new FillAlpha( this );
+   new CRLeftMargin( this );
+   new CRTopMargin( this );
+   new CRRightMargin( this );
+   new CRBottomMargin( this );
+   TheCRModeParameter = new CRMode( this );
+   TheCRXResolutionParameter = new XResolution( this );
+   TheCRYResolutionParameter = new YResolution( this );
+   TheCRMetricResolutionParameter = new MetricResolution( this );
+   TheCRForceResolutionParameter = new ForceResolution( this );
+   TheCRFillRedParameter = new FillRed( this );
+   TheCRFillGreenParameter = new FillGreen( this );
+   TheCRFillBlueParameter = new FillBlue( this );
+   TheCRFillAlphaParameter = new FillAlpha( this );
 }
-
-// ----------------------------------------------------------------------------
 
 IsoString CropProcess::Id() const
 {
    return "Crop";
 }
 
-// ----------------------------------------------------------------------------
-
 IsoString CropProcess::Category() const
 {
    return "Geometry";
 }
-
-// ----------------------------------------------------------------------------
 
 uint32 CropProcess::Version() const
 {
    return 0x100;
 }
 
-// ----------------------------------------------------------------------------
-
 String CropProcess::Description() const
 {
    return "";
 }
-
-// ----------------------------------------------------------------------------
 
 const char** CropProcess::IconImageXPM() const
 {
    return CropIcon_XPM;
 }
 
-// ----------------------------------------------------------------------------
-
 ProcessInterface* CropProcess::DefaultInterface() const
 {
    return TheCropInterface;
 }
-
-// -------------------------------------------------------------------------
 
 ProcessImplementation* CropProcess::Create() const
 {
    return new CropInstance( this );
 }
 
-// ----------------------------------------------------------------------------
-
 ProcessImplementation* CropProcess::Clone( const ProcessImplementation& p ) const
 {
    const CropInstance* instPtr = dynamic_cast<const CropInstance*>( &p );
-   return (instPtr != 0) ? new CropInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new CropInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -151,4 +133,4 @@ ProcessImplementation* CropProcess::Clone( const ProcessImplementation& p ) cons
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CropProcess.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF CropProcess.cpp - Released 2016/11/14 19:38:23 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// CropParameters.h - Released 2016/02/21 20:22:42 UTC
+// CropParameters.h - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -62,63 +62,63 @@ PCL_BEGIN_LOCAL
 
 // ----------------------------------------------------------------------------
 
-class LeftMargin : public MetaDouble
+class CRLeftMargin : public MetaDouble
 {
 public:
 
-   LeftMargin( MetaProcess* );
+   CRLeftMargin( MetaProcess* );
 
    virtual IsoString Id() const;
    virtual int Precision() const;
 };
 
-extern LeftMargin* TheLeftMarginParameter;
+extern CRLeftMargin* TheCRLeftMarginParameter;
 
 // ----------------------------------------------------------------------------
 
-class TopMargin : public MetaDouble
+class CRTopMargin : public MetaDouble
 {
 public:
 
-   TopMargin( MetaProcess* );
+   CRTopMargin( MetaProcess* );
 
    virtual IsoString Id() const;
    virtual int Precision() const;
 };
 
-extern TopMargin* TheTopMarginParameter;
+extern CRTopMargin* TheCRTopMarginParameter;
 
 // ----------------------------------------------------------------------------
 
-class RightMargin : public MetaDouble
+class CRRightMargin : public MetaDouble
 {
 public:
 
-   RightMargin( MetaProcess* );
+   CRRightMargin( MetaProcess* );
 
    virtual IsoString Id() const;
    virtual int Precision() const;
 };
 
-extern RightMargin* TheRightMarginParameter;
+extern CRRightMargin* TheCRRightMarginParameter;
 
 // ----------------------------------------------------------------------------
 
-class BottomMargin : public MetaDouble
+class CRBottomMargin : public MetaDouble
 {
 public:
 
-   BottomMargin( MetaProcess* );
+   CRBottomMargin( MetaProcess* );
 
    virtual IsoString Id() const;
    virtual int Precision() const;
 };
 
-extern BottomMargin* TheBottomMarginParameter;
+extern CRBottomMargin* TheCRBottomMarginParameter;
 
 // ----------------------------------------------------------------------------
 
-class CroppingMode : public MetaEnumeration // avoid conflict with PCL's CropMode class
+class CRMode : public MetaEnumeration
 {
 public:
 
@@ -126,10 +126,10 @@ public:
           AbsolutePixels,        // absolute margins in pixels
           AbsoluteCentimeters,   // absolute margins in centimeters
           AbsoluteInches,        // absolute margins in inches
-          NumberOfCroppingModes,
+          NumberOfCRModes,
           Default = AbsolutePixels };
 
-   CroppingMode( MetaProcess* );
+   CRMode( MetaProcess* );
 
    virtual IsoString Id() const;
    virtual size_type NumberOfElements() const;
@@ -138,19 +138,19 @@ public:
    virtual size_type DefaultValueIndex() const;
 };
 
-extern CroppingMode* TheCroppingModeParameter;
+extern CRMode* TheCRModeParameter;
 
 // ----------------------------------------------------------------------------
 
-extern XResolution* TheXResolutionCropParameter;
-extern YResolution* TheYResolutionCropParameter;
-extern MetricResolution* TheMetricResolutionCropParameter;
-extern ForceResolution* TheForceResolutionCropParameter;
+extern XResolution* TheCRXResolutionParameter;
+extern YResolution* TheCRYResolutionParameter;
+extern MetricResolution* TheCRMetricResolutionParameter;
+extern ForceResolution* TheCRForceResolutionParameter;
 
-extern FillRed* TheFillRedCropParameter;
-extern FillGreen* TheFillGreenCropParameter;
-extern FillBlue* TheFillBlueCropParameter;
-extern FillAlpha* TheFillAlphaCropParameter;
+extern FillRed* TheCRFillRedParameter;
+extern FillGreen* TheCRFillGreenParameter;
+extern FillBlue* TheCRFillBlueParameter;
+extern FillAlpha* TheCRFillAlphaParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -161,4 +161,4 @@ PCL_END_LOCAL
 #endif   // __CropParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF CropParameters.h - Released 2016/02/21 20:22:42 UTC
+// EOF CropParameters.h - Released 2016/11/14 19:38:23 UTC

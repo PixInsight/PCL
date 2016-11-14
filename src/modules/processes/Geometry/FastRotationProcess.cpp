@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// FastRotationProcess.cpp - Released 2016/02/21 20:22:42 UTC
+// FastRotationProcess.cpp - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -65,7 +65,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-FastRotationProcess* TheFastRotationProcess = 0;
+FastRotationProcess* TheFastRotationProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -77,32 +77,23 @@ FastRotationProcess::FastRotationProcess() : MetaProcess()
 {
    TheFastRotationProcess = this;
 
-   // Instantiate process parameter
-   new FastRotationMode( this );
+   new FRMode( this );
 }
-
-// ----------------------------------------------------------------------------
 
 IsoString FastRotationProcess::Id() const
 {
    return "FastRotation";
 }
 
-// ----------------------------------------------------------------------------
-
 IsoString FastRotationProcess::Category() const
 {
    return "Geometry";
 }
 
-// ----------------------------------------------------------------------------
-
 uint32 FastRotationProcess::Version() const
 {
    return 0x100;
 }
-
-// ----------------------------------------------------------------------------
 
 String FastRotationProcess::Description() const
 {
@@ -110,7 +101,7 @@ String FastRotationProcess::Description() const
 
    "<html>"
    "<p>The FastRotation process implements simple orthogonal and specular geometric "
-   "transforms: Rotate 180 degrees, rotate 90 degrees clockwise, rotate 90 "
+   "transformations: Rotate 180 degrees, rotate 90 degrees clockwise, rotate 90 "
    "degrees counter-clockwise, horizontal and vertical mirror.</p>"
 
    "<p>Notably, these transforms don't interpolate pixel values; they operate by "
@@ -120,43 +111,31 @@ String FastRotationProcess::Description() const
    "</html>";
 }
 
-// ----------------------------------------------------------------------------
-
 const char** FastRotationProcess::IconImageXPM() const
 {
    return FastRotationIcon_XPM;
 }
-
-// ----------------------------------------------------------------------------
 
 ProcessInterface* FastRotationProcess::DefaultInterface() const
 {
    return TheFastRotationInterface;
 }
 
-// -------------------------------------------------------------------------
-
 ProcessImplementation* FastRotationProcess::Create() const
 {
    return new FastRotationInstance( this );
 }
 
-// ----------------------------------------------------------------------------
-
 ProcessImplementation* FastRotationProcess::Clone( const ProcessImplementation& p ) const
 {
    const FastRotationInstance* instPtr = dynamic_cast<const FastRotationInstance*>( &p );
-   return (instPtr != 0) ? new FastRotationInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new FastRotationInstance( *instPtr ) : nullptr;
 }
-
-// ----------------------------------------------------------------------------
 
 bool FastRotationProcess::CanProcessCommandLines() const
 {
    return true;
 }
-
-// ----------------------------------------------------------------------------
 
 static void ShowHelp()
 {
@@ -200,10 +179,9 @@ static void ShowHelp()
 
 int FastRotationProcess::ProcessCommandLine( const StringList& argv ) const
 {
-   ArgumentList arguments =
-      ExtractArguments( argv,
-                        ArgumentItemMode::AsViews,
-                        ArgumentOption::AllowWildcards|ArgumentOption::NoPreviews );
+   ArgumentList arguments = ExtractArguments( argv,
+                                              ArgumentItemMode::AsViews,
+                                              ArgumentOption::AllowWildcards|ArgumentOption::NoPreviews );
 
    FastRotationInstance instance( this );
 
@@ -219,11 +197,11 @@ int FastRotationProcess::ProcessCommandLine( const StringList& argv ) const
          if ( arg.Id() == "a" || arg.Id() == "angle" )
          {
             if ( arg.NumericValue() == +180 || arg.NumericValue() == -180 )
-               instance.p_mode = FastRotationMode::Rotate180;
+               instance.p_mode = FRMode::Rotate180;
             else if ( arg.NumericValue() == 90 )
-               instance.p_mode = FastRotationMode::Rotate90CCW;
+               instance.p_mode = FRMode::Rotate90CCW;
             else if ( arg.NumericValue() == -90 )
-               instance.p_mode = FastRotationMode::Rotate90CW;
+               instance.p_mode = FRMode::Rotate90CW;
             else
                throw Error( "Invalid fast rotation angle - must be 180 or +/-90 degrees: " + arg.Token() );
          }
@@ -237,15 +215,15 @@ int FastRotationProcess::ProcessCommandLine( const StringList& argv ) const
       else if ( arg.IsLiteral() )
       {
          if ( arg.Id() == "r180" )
-            instance.p_mode = FastRotationMode::Rotate180;
+            instance.p_mode = FRMode::Rotate180;
          else if ( arg.Id() == "r90" || arg.Id() == "r90ccw" )
-            instance.p_mode = FastRotationMode::Rotate90CCW;
+            instance.p_mode = FRMode::Rotate90CCW;
          else if ( arg.Id() == "r90cw" )
-            instance.p_mode = FastRotationMode::Rotate90CW;
+            instance.p_mode = FRMode::Rotate90CW;
          else if ( arg.Id() == "mh" )
-            instance.p_mode = FastRotationMode::HorizontalMirror;
+            instance.p_mode = FRMode::HorizontalMirror;
          else if ( arg.Id() == "mv" )
-            instance.p_mode = FastRotationMode::VerticalMirror;
+            instance.p_mode = FRMode::VerticalMirror;
          else if ( arg.Id() == "-interface" )
             launchInterface = false;
          else if ( arg.Id() == "-help" )
@@ -293,4 +271,4 @@ int FastRotationProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FastRotationProcess.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF FastRotationProcess.cpp - Released 2016/11/14 19:38:23 UTC

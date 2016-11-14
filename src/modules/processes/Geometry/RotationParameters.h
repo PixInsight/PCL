@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// RotationParameters.h - Released 2016/02/21 20:22:42 UTC
+// RotationParameters.h - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -62,18 +62,15 @@ PCL_BEGIN_LOCAL
 
 // ----------------------------------------------------------------------------
 
-extern RotationAngle* TheRotationAngleRotationParameter;
-
-extern OptimizeFastRotations* TheOptimizeFastRotationsRotationParameter;
-
-extern InterpolationAlgorithm* TheInterpolationAlgorithmRotationParameter;
-extern ClampingThreshold* TheClampingThresholdRotationParameter;
-extern Smoothness* TheSmoothnessRotationParameter;
-
-extern FillRed* TheFillRedRotationParameter;
-extern FillGreen* TheFillGreenRotationParameter;
-extern FillBlue* TheFillBlueRotationParameter;
-extern FillAlpha* TheFillAlphaRotationParameter;
+extern RotationAngle* TheRTRotationAngleParameter;
+extern OptimizeFastRotations* TheRTOptimizeFastRotationsParameter;
+extern InterpolationAlgorithm* TheRTInterpolationAlgorithmParameter;
+extern ClampingThreshold* TheRTClampingThresholdParameter;
+extern Smoothness* TheRTSmoothnessParameter;
+extern FillRed* TheRTFillRedParameter;
+extern FillGreen* TheRTFillGreenParameter;
+extern FillBlue* TheRTFillBlueParameter;
+extern FillAlpha* TheRTFillAlphaParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -84,4 +81,4 @@ PCL_END_LOCAL
 #endif   // __RotationParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF RotationParameters.h - Released 2016/02/21 20:22:42 UTC
+// EOF RotationParameters.h - Released 2016/11/14 19:38:23 UTC

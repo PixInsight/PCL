@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// DynamicCropProcess.cpp - Released 2016/02/21 20:22:42 UTC
+// DynamicCropProcess.cpp - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -60,7 +60,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-DynamicCropProcess* TheDynamicCropProcess = 0;
+DynamicCropProcess* TheDynamicCropProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -72,47 +72,41 @@ DynamicCropProcess::DynamicCropProcess() : MetaProcess()
 {
    TheDynamicCropProcess = this;
 
-   // Instantiate process parameters
-   // Common parameters require explicit assignment to global instances.
-   new CropCenterX( this );
-   new CropCenterY( this );
-   new CropWidth( this );
-   new CropHeight( this );
-   TheRotationAngleDynamicCropParameter = new RotationAngle( this );
-   new ScaleX( this );
-   new ScaleY( this );
-   TheOptimizeFastRotationsDynamicCropParameter = new OptimizeFastRotations( this );
-   TheInterpolationAlgorithmDynamicCropParameter = new InterpolationAlgorithm( this );
-   TheClampingThresholdDynamicCropParameter = new ClampingThreshold( this );
-   TheSmoothnessDynamicCropParameter = new Smoothness( this );;
-   TheFillRedDynamicCropParameter = new FillRed( this );
-   TheFillGreenDynamicCropParameter = new FillGreen( this );
-   TheFillBlueDynamicCropParameter = new FillBlue( this );
-   TheFillAlphaDynamicCropParameter = new FillAlpha( this );
+   new DCCenterX( this );
+   new DCCenterY( this );
+   new DCWidth( this );
+   new DCHeight( this );
+   TheDCRotationAngleParameter = new RotationAngle( this );
+   new DCScaleX( this );
+   new DCScaleY( this );
+   TheDCOptimizeFastRotationsParameter = new OptimizeFastRotations( this );
+   TheDCInterpolationAlgorithmParameter = new InterpolationAlgorithm( this );
+   TheDCClampingThresholdParameter = new ClampingThreshold( this );
+   TheDCSmoothnessParameter = new Smoothness( this );
+   TheDCXResolutionParameter = new XResolution( this );
+   TheDCYResolutionParameter = new YResolution( this );
+   TheDCMetricResolutionParameter = new MetricResolution( this );
+   TheDCForceResolutionParameter = new ForceResolution( this );
+   TheDCFillRedParameter = new FillRed( this );
+   TheDCFillGreenParameter = new FillGreen( this );
+   TheDCFillBlueParameter = new FillBlue( this );
+   TheDCFillAlphaParameter = new FillAlpha( this );
 }
-
-// ----------------------------------------------------------------------------
 
 IsoString DynamicCropProcess::Id() const
 {
    return "DynamicCrop";
 }
 
-// ----------------------------------------------------------------------------
-
 IsoString DynamicCropProcess::Category() const
 {
    return "Geometry";
 }
 
-// ----------------------------------------------------------------------------
-
 uint32 DynamicCropProcess::Version() const
 {
    return 0x100;
 }
-
-// ----------------------------------------------------------------------------
 
 String DynamicCropProcess::Description() const
 {
@@ -156,33 +150,25 @@ String DynamicCropProcess::Description() const
    "</html>";
 }
 
-// ----------------------------------------------------------------------------
-
 const char** DynamicCropProcess::IconImageXPM() const
 {
    return DynamicCropIcon_XPM;
 }
-
-// ----------------------------------------------------------------------------
 
 ProcessInterface* DynamicCropProcess::DefaultInterface() const
 {
    return TheDynamicCropInterface;
 }
 
-// -------------------------------------------------------------------------
-
 ProcessImplementation* DynamicCropProcess::Create() const
 {
    return new DynamicCropInstance( this );
 }
 
-// ----------------------------------------------------------------------------
-
 ProcessImplementation* DynamicCropProcess::Clone( const ProcessImplementation& p ) const
 {
    const DynamicCropInstance* instPtr = dynamic_cast<const DynamicCropInstance*>( &p );
-   return (instPtr != 0) ? new DynamicCropInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new DynamicCropInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -190,4 +176,4 @@ ProcessImplementation* DynamicCropProcess::Clone( const ProcessImplementation& p
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropProcess.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF DynamicCropProcess.cpp - Released 2016/11/14 19:38:23 UTC

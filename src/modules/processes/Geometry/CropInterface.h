@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// CropInterface.h - Released 2016/02/21 20:22:42 UTC
+// CropInterface.h - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -70,8 +70,6 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-// CropInterface
-// ----------------------------------------------------------------------------
 
 class CropInterface : public ProcessInterface
 {
@@ -90,7 +88,7 @@ public:
    virtual void TrackViewUpdated( bool active );
    virtual void ResetInstance();
 
-   virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ );
+   virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& flags );
 
    virtual ProcessImplementation* NewProcess() const;
 
@@ -106,8 +104,6 @@ public:
    virtual bool WantsReadoutNotifications() const;
    virtual void UpdateReadout( const View&, const DPoint&, double R, double G, double B, double A );
 
-   // -------------------------------------------------------------------------
-
 private:
 
    CropInstance instance;
@@ -120,8 +116,6 @@ private:
    // 3 4 5
    // 6 7 8
    int anchor;
-
-   // -------------------------------------------------------------------------
 
    struct GUIData
    {
@@ -219,9 +213,9 @@ private:
    void UpdateNumericControls();
    void UpdateFillColorControls();
 
-   //
-   // GUI Event Handlers
-   //
+   /*
+    * Event Handlers
+    */
 
    void __ViewList_ViewSelected( ViewList& sender, View& view );
 
@@ -258,4 +252,4 @@ PCL_END_LOCAL
 #endif   // __CropInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF CropInterface.h - Released 2016/02/21 20:22:42 UTC
+// EOF CropInterface.h - Released 2016/11/14 19:38:23 UTC

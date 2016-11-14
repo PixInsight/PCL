@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// ResampleInterface.h - Released 2016/02/21 20:22:42 UTC
+// ResampleInterface.h - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -53,16 +53,15 @@
 #ifndef __ResampleInterface_h
 #define __ResampleInterface_h
 
-#include <pcl/ProcessInterface.h>
-
-#include <pcl/Sizer.h>
-#include <pcl/SectionBar.h>
-#include <pcl/Label.h>
-#include <pcl/SpinBox.h>
-#include <pcl/ComboBox.h>
 #include <pcl/CheckBox.h>
-#include <pcl/RadioButton.h>
+#include <pcl/ComboBox.h>
+#include <pcl/Label.h>
 #include <pcl/NumericControl.h>
+#include <pcl/ProcessInterface.h>
+#include <pcl/RadioButton.h>
+#include <pcl/SectionBar.h>
+#include <pcl/Sizer.h>
+#include <pcl/SpinBox.h>
 #include <pcl/ViewList.h>
 
 #include "ResampleInstance.h"
@@ -70,8 +69,6 @@
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-// ResampleInterface
 // ----------------------------------------------------------------------------
 
 class ResampleInterface : public ProcessInterface
@@ -91,7 +88,7 @@ public:
    virtual void TrackViewUpdated( bool active );
    virtual void ResetInstance();
 
-   virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ );
+   virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& flags );
 
    virtual ProcessImplementation* NewProcess() const;
 
@@ -104,16 +101,12 @@ public:
    virtual void ImageUpdated( const View& );
    virtual void ImageFocused( const View& );
 
-   // -------------------------------------------------------------------------
-
 private:
 
    ResampleInstance instance;
 
    // Source dimensions in pixels
    int sourceWidth, sourceHeight;
-
-   // -------------------------------------------------------------------------
 
    struct GUIData
    {
@@ -187,14 +180,13 @@ private:
    void UpdateControls();
 
    /*
-    * GUI Event Handlers
+    * Event Handlers
     */
 
    void __ViewList_ViewSelected( ViewList& sender, View& view );
 
    void __Width_ValueUpdated( NumericEdit& sender, double value );
    void __Height_ValueUpdated( NumericEdit& sender, double value );
-   void __PreserveAspectRatio_ButtonClick( Button& sender, bool checked );
 
    void __Resolution_ValueUpdated( NumericEdit& sender, double value );
    void __Units_ButtonClick( Button& sender, bool checked );
@@ -221,4 +213,4 @@ PCL_END_LOCAL
 #endif   // __ResampleInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF ResampleInterface.h - Released 2016/02/21 20:22:42 UTC
+// EOF ResampleInterface.h - Released 2016/11/14 19:38:23 UTC

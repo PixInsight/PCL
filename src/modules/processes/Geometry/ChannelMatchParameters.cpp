@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// ChannelMatchParameters.cpp - Released 2016/02/21 20:22:42 UTC
+// ChannelMatchParameters.cpp - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -57,128 +57,128 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ChannelTable*           TheChannelTableParameter = 0;
-ChannelEnabled*         TheChannelEnabledParameter = 0;
-ChannelXOffset*         TheChannelXOffsetParameter = 0;
-ChannelYOffset*         TheChannelYOffsetParameter = 0;
-ChannelFactor*          TheChannelFactorParameter = 0;
+CMChannels* TheCMChannelsParameter = nullptr;
+CMEnabled*  TheCMEnabledParameter = nullptr;
+CMXOffset*  TheCMXOffsetParameter = nullptr;
+CMYOffset*  TheCMYOffsetParameter = nullptr;
+CMFactor*   TheCMFactorParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
-ChannelTable::ChannelTable( MetaProcess* P ) : MetaTable( P )
+CMChannels::CMChannels( MetaProcess* P ) : MetaTable( P )
 {
-   TheChannelTableParameter = this;
+   TheCMChannelsParameter = this;
 }
 
-IsoString ChannelTable::Id() const
+IsoString CMChannels::Id() const
 {
    return "channels";
 }
 
-size_type ChannelTable::MinLength() const
+size_type CMChannels::MinLength() const
 {
    return 3;
 }
 
-size_type ChannelTable::MaxLength() const
+size_type CMChannels::MaxLength() const
 {
    return 3;
 }
 
 // ----------------------------------------------------------------------------
 
-ChannelEnabled::ChannelEnabled( MetaTable* T ) : MetaBoolean( T )
+CMEnabled::CMEnabled( MetaTable* T ) : MetaBoolean( T )
 {
-   TheChannelEnabledParameter = this;
+   TheCMEnabledParameter = this;
 }
 
-IsoString ChannelEnabled::Id() const
+IsoString CMEnabled::Id() const
 {
    return "enabled";
 }
 
-bool ChannelEnabled::DefaultValue() const
+bool CMEnabled::DefaultValue() const
 {
    return true;
 }
 
 // ----------------------------------------------------------------------------
 
-ChannelXOffset::ChannelXOffset( MetaTable* T ) : MetaFloat( T )
+CMXOffset::CMXOffset( MetaTable* T ) : MetaFloat( T )
 {
-   TheChannelXOffsetParameter = this;
+   TheCMXOffsetParameter = this;
 }
 
-IsoString ChannelXOffset::Id() const
+IsoString CMXOffset::Id() const
 {
    return "dx";
 }
 
-int ChannelXOffset::Precision() const
+int CMXOffset::Precision() const
 {
    return 2;
 }
 
-double ChannelXOffset::MinimumValue() const
+double CMXOffset::MinimumValue() const
 {
    return -100;
 }
 
-double ChannelXOffset::MaximumValue() const
+double CMXOffset::MaximumValue() const
 {
    return +100;
 }
 
 // ----------------------------------------------------------------------------
 
-ChannelYOffset::ChannelYOffset( MetaTable* T ) : MetaFloat( T )
+CMYOffset::CMYOffset( MetaTable* T ) : MetaFloat( T )
 {
-   TheChannelYOffsetParameter = this;
+   TheCMYOffsetParameter = this;
 }
 
-IsoString ChannelYOffset::Id() const
+IsoString CMYOffset::Id() const
 {
    return "dy";
 }
 
-int ChannelYOffset::Precision() const
+int CMYOffset::Precision() const
 {
    return 2;
 }
 
-double ChannelYOffset::MinimumValue() const
+double CMYOffset::MinimumValue() const
 {
    return -100;
 }
 
-double ChannelYOffset::MaximumValue() const
+double CMYOffset::MaximumValue() const
 {
    return +100;
 }
 
 // ----------------------------------------------------------------------------
 
-ChannelFactor::ChannelFactor( MetaTable* T ) : MetaDouble( T )
+CMFactor::CMFactor( MetaTable* T ) : MetaDouble( T )
 {
-   TheChannelFactorParameter = this;
+   TheCMFactorParameter = this;
 }
 
-IsoString ChannelFactor::Id() const
+IsoString CMFactor::Id() const
 {
    return "k";
 }
 
-int ChannelFactor::Precision() const
+int CMFactor::Precision() const
 {
    return 8;
 }
 
-double ChannelFactor::MinimumValue() const
+double CMFactor::MinimumValue() const
 {
    return 0;
 }
 
-double ChannelFactor::MaximumValue() const
+double CMFactor::MaximumValue() const
 {
    return 1;
 }
@@ -188,4 +188,4 @@ double ChannelFactor::MaximumValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ChannelMatchParameters.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF ChannelMatchParameters.cpp - Released 2016/11/14 19:38:23 UTC

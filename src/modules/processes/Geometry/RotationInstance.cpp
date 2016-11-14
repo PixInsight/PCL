@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// RotationInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// RotationInstance.cpp - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -50,6 +50,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
+#include "GeometryModule.h"
 #include "RotationInstance.h"
 #include "RotationParameters.h"
 
@@ -57,7 +58,6 @@
 #include <pcl/AutoViewLock.h>
 #include <pcl/FastRotation.h>
 #include <pcl/ImageWindow.h>
-#include <pcl/MessageBox.h>
 #include <pcl/Rotation.h>
 #include <pcl/StdStatus.h>
 #include <pcl/View.h>
@@ -68,34 +68,29 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 RotationInstance::RotationInstance( const MetaProcess* P ) :
-ProcessImplementation( P ),
-p_angle( TheRotationAngleRotationParameter->DefaultValue() ),
-p_optimizeFast( TheOptimizeFastRotationsRotationParameter->DefaultValue() ),
-p_interpolation( TheInterpolationAlgorithmRotationParameter->Default ),
-p_clampingThreshold( TheClampingThresholdRotationParameter->DefaultValue() ),
-p_smoothness( TheSmoothnessRotationParameter->DefaultValue() ),
-p_fillColor( 4 )
+   ProcessImplementation( P ),
+   p_angle( TheRTRotationAngleParameter->DefaultValue() ),
+   p_optimizeFast( TheRTOptimizeFastRotationsParameter->DefaultValue() ),
+   p_interpolation( TheRTInterpolationAlgorithmParameter->Default ),
+   p_clampingThreshold( TheRTClampingThresholdParameter->DefaultValue() ),
+   p_smoothness( TheRTSmoothnessParameter->DefaultValue() ),
+   p_fillColor( TheRTFillRedParameter->DefaultValue(),
+                TheRTFillGreenParameter->DefaultValue(),
+                TheRTFillBlueParameter->DefaultValue(),
+                TheRTFillAlphaParameter->DefaultValue() )
 {
-   p_fillColor[0] = TheFillRedRotationParameter->DefaultValue();
-   p_fillColor[1] = TheFillGreenRotationParameter->DefaultValue();
-   p_fillColor[2] = TheFillBlueRotationParameter->DefaultValue();
-   p_fillColor[3] = TheFillAlphaRotationParameter->DefaultValue();
 }
 
-// ----------------------------------------------------------------------------
-
 RotationInstance::RotationInstance( const RotationInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
 
-// -------------------------------------------------------------------------
-
 void RotationInstance::Assign( const ProcessImplementation& p )
 {
    const RotationInstance* x = dynamic_cast<const RotationInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       p_angle = x->p_angle;
       p_optimizeFast = x->p_optimizeFast;
@@ -106,7 +101,15 @@ void RotationInstance::Assign( const ProcessImplementation& p )
    }
 }
 
-// ----------------------------------------------------------------------------
+bool RotationInstance::IsMaskable( const View&, const ImageWindow& ) const
+{
+   return false;
+}
+
+UndoFlags RotationInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData | UndoFlag::Keywords;
+}
 
 bool RotationInstance::CanExecuteOn( const View& v, String& whyNot ) const
 {
@@ -120,27 +123,10 @@ bool RotationInstance::CanExecuteOn( const View& v, String& whyNot ) const
    return true;
 }
 
-// ----------------------------------------------------------------------------
-
 bool RotationInstance::BeforeExecution( View& view )
 {
-   ImageWindow w = view.Window();
-
-   if ( w.HasPreviews() || w.HasMaskReferences() || !w.Mask().IsNull() )
-      if ( MessageBox( view.Id() + ":\n"
-                       "Existing previews and mask references will be destroyed.\n"
-                       "Some of these side effects could be irreversible. Proceed?",
-                       "Rotation", // caption
-                       StdIcon::Warning,
-                       StdButton::No, StdButton::Yes ).Execute() != StdButton::Yes )
-      {
-         return false;
-      }
-
-   return true;
+   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id() );
 }
-
-// ----------------------------------------------------------------------------
 
 void RotationInstance::GetNewSizes( int& width, int& height ) const
 {
@@ -149,8 +135,6 @@ void RotationInstance::GetNewSizes( int& width, int& height ) const
    R.GetNewSizes( width, height );
 }
 
-// ----------------------------------------------------------------------------
-
 bool RotationInstance::ExecuteOn( View& view )
 {
    if ( !view.IsMainView() )
@@ -158,6 +142,7 @@ bool RotationInstance::ExecuteOn( View& view )
 
    AutoViewLock lock( view );
 
+   ImageWindow window = view.Window();
    ImageVariant image = view.Image();
 
    if ( image.IsComplexSample() )
@@ -170,11 +155,7 @@ bool RotationInstance::ExecuteOn( View& view )
       return true;
    }
 
-   ImageWindow window = view.Window();
-
-   window.RemoveMaskReferences();
-   window.RemoveMask();
-   window.DeletePreviews();
+   DeleteAstrometryMetadataAndPreviewsAndMask( window );
 
    Console().EnableAbort();
 
@@ -203,9 +184,7 @@ bool RotationInstance::ExecuteOn( View& view )
 
    Rotation T( *interpolation, p_angle );
 
-   /*
-    * On 32-bit systems, make sure the resulting image requires less than 4 GB.
-    */
+   // On 32-bit systems, make sure the resulting image requires less than 4 GB.
    if ( sizeof( void* ) == sizeof( uint32 ) )
    {
       int width = image.Width(), height = image.Height();
@@ -221,29 +200,27 @@ bool RotationInstance::ExecuteOn( View& view )
    return true;
 }
 
-// ----------------------------------------------------------------------------
-
 void* RotationInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/ )
 {
-   if ( p == TheRotationAngleRotationParameter )
+   if ( p == TheRTRotationAngleParameter )
       return &p_angle;
-   if ( p == TheOptimizeFastRotationsRotationParameter )
+   if ( p == TheRTOptimizeFastRotationsParameter )
       return &p_optimizeFast;
-   if ( p == TheInterpolationAlgorithmRotationParameter )
+   if ( p == TheRTInterpolationAlgorithmParameter )
       return &p_interpolation;
-   if ( p == TheClampingThresholdRotationParameter )
+   if ( p == TheRTClampingThresholdParameter )
       return &p_clampingThreshold;
-   if ( p == TheSmoothnessRotationParameter )
+   if ( p == TheRTSmoothnessParameter )
       return &p_smoothness;
-   if ( p == TheFillRedRotationParameter )
+   if ( p == TheRTFillRedParameter )
       return p_fillColor.At( 0 );
-   if ( p == TheFillGreenRotationParameter )
+   if ( p == TheRTFillGreenParameter )
       return p_fillColor.At( 1 );
-   if ( p == TheFillBlueRotationParameter )
+   if ( p == TheRTFillBlueParameter )
       return p_fillColor.At( 2 );
-   if ( p == TheFillAlphaRotationParameter )
+   if ( p == TheRTFillAlphaParameter )
       return p_fillColor.At( 3 );
-   return 0;
+   return nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -251,4 +228,4 @@ void* RotationInstance::LockParameter( const MetaParameter* p, size_type /*table
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RotationInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF RotationInstance.cpp - Released 2016/11/14 19:38:23 UTC

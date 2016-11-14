@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// RotationParameters.cpp - Released 2016/02/21 20:22:42 UTC
+// RotationParameters.cpp - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -57,19 +57,19 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-RotationAngle*          TheRotationAngleRotationParameter = 0;
-OptimizeFastRotations*  TheOptimizeFastRotationsRotationParameter = 0;
-InterpolationAlgorithm* TheInterpolationAlgorithmRotationParameter = 0;
-ClampingThreshold*      TheClampingThresholdRotationParameter = 0;
-Smoothness*             TheSmoothnessRotationParameter = 0;
-FillRed*                TheFillRedRotationParameter = 0;
-FillGreen*              TheFillGreenRotationParameter = 0;
-FillBlue*               TheFillBlueRotationParameter = 0;
-FillAlpha*              TheFillAlphaRotationParameter = 0;
+RotationAngle*          TheRTRotationAngleParameter = nullptr;
+OptimizeFastRotations*  TheRTOptimizeFastRotationsParameter = nullptr;
+InterpolationAlgorithm* TheRTInterpolationAlgorithmParameter = nullptr;
+ClampingThreshold*      TheRTClampingThresholdParameter = nullptr;
+Smoothness*             TheRTSmoothnessParameter = nullptr;
+FillRed*                TheRTFillRedParameter = nullptr;
+FillGreen*              TheRTFillGreenParameter = nullptr;
+FillBlue*               TheRTFillBlueParameter = nullptr;
+FillAlpha*              TheRTFillAlphaParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RotationParameters.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF RotationParameters.cpp - Released 2016/11/14 19:38:23 UTC

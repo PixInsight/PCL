@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// ChannelMatchInstance.h - Released 2016/02/21 20:22:42 UTC
+// ChannelMatchInstance.h - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -53,15 +53,13 @@
 #ifndef __ChannelMatchInstance_h
 #define __ChannelMatchInstance_h
 
-#include <pcl/ProcessImplementation.h>
-#include <pcl/Point.h>
 #include <pcl/MetaParameter.h>
+#include <pcl/Point.h>
+#include <pcl/ProcessImplementation.h>
 
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-// ChannelMatchInstance
 // ----------------------------------------------------------------------------
 
 class ChannelMatchInstance : public ProcessImplementation
@@ -100,4 +98,4 @@ private:
 #endif   // __ChannelMatchInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF ChannelMatchInstance.h - Released 2016/02/21 20:22:42 UTC
+// EOF ChannelMatchInstance.h - Released 2016/11/14 19:38:23 UTC

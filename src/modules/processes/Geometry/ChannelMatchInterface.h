@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// ChannelMatchInterface.h - Released 2016/02/21 20:22:42 UTC
+// ChannelMatchInterface.h - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -53,22 +53,19 @@
 #ifndef __ChannelMatchInterface_h
 #define __ChannelMatchInterface_h
 
-#include <pcl/ProcessInterface.h>
-
-#include <pcl/Sizer.h>
-#include <pcl/GroupBox.h>
 #include <pcl/CheckBox.h>
-#include <pcl/ToolButton.h>
-#include <pcl/NumericControl.h>
 #include <pcl/ComboBox.h>
+#include <pcl/GroupBox.h>
+#include <pcl/NumericControl.h>
+#include <pcl/ProcessInterface.h>
+#include <pcl/Sizer.h>
+#include <pcl/ToolButton.h>
 
 #include "ChannelMatchInstance.h"
 
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-// ChannelMatchInterface
 // ----------------------------------------------------------------------------
 
 class ChannelMatchInterface : public ProcessInterface
@@ -85,7 +82,7 @@ public:
    virtual void ApplyInstance() const;
    virtual void ResetInstance();
 
-   virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ );
+   virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& flags );
 
    virtual ProcessImplementation* NewProcess() const;
 
@@ -93,13 +90,9 @@ public:
    virtual bool RequiresInstanceValidation() const;
    virtual bool ImportProcess( const ProcessImplementation& );
 
-   // -------------------------------------------------------------------------
-
 private:
 
    ChannelMatchInstance instance;
-
-   // -------------------------------------------------------------------------
 
    struct GUIData
    {
@@ -175,4 +168,4 @@ PCL_END_LOCAL
 #endif   // __ChannelMatchInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF ChannelMatchInterface.h - Released 2016/02/21 20:22:42 UTC
+// EOF ChannelMatchInterface.h - Released 2016/11/14 19:38:23 UTC

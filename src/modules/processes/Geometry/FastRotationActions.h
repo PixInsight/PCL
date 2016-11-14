@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// FastRotationActions.h - Released 2016/02/21 20:22:42 UTC
+// FastRotationActions.h - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -59,8 +59,6 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-// Rotate180Action
-// ----------------------------------------------------------------------------
 
 class Rotate180Action : public Action
 {
@@ -71,8 +69,6 @@ public:
    virtual bool IsEnabled( ActionInfo ) const;
 };
 
-// ----------------------------------------------------------------------------
-// Rotate90CWAction
 // ----------------------------------------------------------------------------
 
 class Rotate90CWAction : public Action
@@ -85,8 +81,6 @@ public:
 };
 
 // ----------------------------------------------------------------------------
-// Rotate90CCWAction
-// ----------------------------------------------------------------------------
 
 class Rotate90CCWAction : public Action
 {
@@ -98,8 +92,6 @@ public:
 };
 
 // ----------------------------------------------------------------------------
-// HorizontalMirrorAction
-// ----------------------------------------------------------------------------
 
 class HorizontalMirrorAction : public Action
 {
@@ -110,8 +102,6 @@ public:
    virtual bool IsEnabled( ActionInfo ) const;
 };
 
-// ----------------------------------------------------------------------------
-// VerticalMirrorAction
 // ----------------------------------------------------------------------------
 
 class VerticalMirrorAction : public Action
@@ -130,4 +120,4 @@ public:
 #endif   // __FastRotationActions_h
 
 // ----------------------------------------------------------------------------
-// EOF FastRotationActions.h - Released 2016/02/21 20:22:42 UTC
+// EOF FastRotationActions.h - Released 2016/11/14 19:38:23 UTC

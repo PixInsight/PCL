@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// CropInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// CropInterface.cpp - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -62,7 +62,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-CropInterface* TheCropInterface = 0;
+CropInterface* TheCropInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -75,20 +75,20 @@ CropInterface* TheCropInterface = 0;
 // ----------------------------------------------------------------------------
 
 CropInterface::CropInterface() :
-ProcessInterface(),
-instance( TheCropProcess ),
-sourceWidth( 1000 ),
-sourceHeight( 1000 ),
-anchor( 4 ), // center
-GUI( 0 )
+   ProcessInterface(),
+   instance( TheCropProcess ),
+   sourceWidth( 1000 ),
+   sourceHeight( 1000 ),
+   anchor( 4 ), // center
+   GUI( nullptr )
 {
    TheCropInterface = this;
 }
 
 CropInterface::~CropInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString CropInterface::Id() const
@@ -118,15 +118,15 @@ void CropInterface::ApplyInstance() const
 
 void CropInterface::TrackViewUpdated( bool active )
 {
-   if ( GUI != 0 && active )
-   {
-      ImageWindow w = ImageWindow::ActiveWindow();
-
-      if ( !w.IsNull() )
-         ImageFocused( w.MainView() );
-      else
-         UpdateControls();
-   }
+   if ( GUI != nullptr )
+      if (active )
+      {
+         ImageWindow w = ImageWindow::ActiveWindow();
+         if ( !w.IsNull() )
+            ImageFocused( w.MainView() );
+         else
+            UpdateControls();
+      }
 }
 
 void CropInterface::ResetInstance()
@@ -137,7 +137,7 @@ void CropInterface::ResetInstance()
 
 bool CropInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "Crop" );
@@ -157,7 +157,7 @@ ProcessImplementation* CropInterface::NewProcess() const
 bool CropInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
    const CropInstance* r = dynamic_cast<const CropInstance*>( &p );
-   if ( r == 0 )
+   if ( r == nullptr )
    {
       whyNot = "Not a Crop instance.";
       return false;
@@ -188,35 +188,37 @@ bool CropInterface::WantsImageNotifications() const
 
 void CropInterface::ImageUpdated( const View& v )
 {
-   if ( GUI != 0 && v == currentView )
-   {
-      v.Window().MainView().GetSize( sourceWidth, sourceHeight );
-      UpdateControls();
-   }
+   if ( GUI != nullptr )
+      if ( v == currentView )
+      {
+         v.Window().MainView().GetSize( sourceWidth, sourceHeight );
+         UpdateControls();
+      }
 }
 
 void CropInterface::ImageFocused( const View& v )
 {
-   if ( GUI != 0 && IsTrackViewActive() )
-      if ( !v.IsNull() )
-      {
-         ImageWindow w = v.Window();
-         View mainView = w.MainView();
+   if ( !v.IsNull() )
+      if ( GUI != nullptr )
+         if ( IsTrackViewActive() )
+         {
+            ImageWindow w = v.Window();
+            View mainView = w.MainView();
 
-         mainView.GetSize( sourceWidth, sourceHeight );
+            mainView.GetSize( sourceWidth, sourceHeight );
 
-         GUI->AllImages_ViewList.SelectView( mainView ); // normally not necessary, but we can invoke this f() directly
+            GUI->AllImages_ViewList.SelectView( mainView ); // normally not necessary, but we can invoke this f() directly
 
-         double xRes, yRes;
-         bool metric;
-         w.GetResolution( xRes, yRes, metric );
+            double xRes, yRes;
+            bool metric;
+            w.GetResolution( xRes, yRes, metric );
 
-         instance.p_resolution.x = xRes;
-         instance.p_resolution.y = yRes;
-         instance.p_metric = metric;
+            instance.p_resolution.x = xRes;
+            instance.p_resolution.y = yRes;
+            instance.p_metric = metric;
 
-         UpdateControls();
-      }
+            UpdateControls();
+         }
 }
 
 bool CropInterface::WantsReadoutNotifications() const
@@ -226,13 +228,15 @@ bool CropInterface::WantsReadoutNotifications() const
 
 void CropInterface::UpdateReadout( const View&, const DPoint&, double R, double G, double B, double /*A*/ )
 {
-   if ( GUI != 0 && IsVisible() && GUI->FillColor_SectionBar.Section().IsVisible() )
-   {
-      instance.p_fillColor[0] = R;
-      instance.p_fillColor[1] = G;
-      instance.p_fillColor[2] = B;
-      UpdateFillColorControls();
-   }
+   if ( GUI != nullptr )
+      if ( IsVisible() )
+         if ( GUI->FillColor_SectionBar.Section().IsVisible() )
+         {
+            instance.p_fillColor[0] = R;
+            instance.p_fillColor[1] = G;
+            instance.p_fillColor[2] = B;
+            UpdateFillColorControls();
+         }
 }
 
 // ----------------------------------------------------------------------------
@@ -427,7 +431,7 @@ void CropInterface::UpdateAnchors()
 
 void CropInterface::UpdateNumericControls()
 {
-   if ( instance.p_mode == CroppingMode::AbsolutePixels )
+   if ( instance.p_mode == CRMode::AbsolutePixels )
    {
       GUI->LeftMargin_NumericEdit.SetInteger();
       GUI->TopMargin_NumericEdit.SetInteger();
@@ -441,7 +445,7 @@ void CropInterface::UpdateNumericControls()
       GUI->RightMargin_NumericEdit.SetReal();
       GUI->BottomMargin_NumericEdit.SetReal();
 
-      int p = (instance.p_mode == CroppingMode::RelativeMargins) ? 6 : 4;
+      int p = (instance.p_mode == CRMode::RelativeMargins) ? 6 : 4;
       GUI->LeftMargin_NumericEdit.SetPrecision( p );
       GUI->TopMargin_NumericEdit.SetPrecision( p );
       GUI->RightMargin_NumericEdit.SetPrecision( p );
@@ -532,7 +536,7 @@ void CropInterface::UpdateFillColorControls()
 
 // ----------------------------------------------------------------------------
 
-void CropInterface::__ViewList_ViewSelected( ViewList& /*sender*/, View& )
+void CropInterface::__ViewList_ViewSelected( ViewList& sender, View& )
 {
    DeactivateTrackView();
 
@@ -585,7 +589,7 @@ void CropInterface::__Anchor_ButtonClick( Button& sender, bool checked )
 
    if ( sender == GUI->TM_ToolButton || sender == GUI->MM_ToolButton || sender == GUI->BM_ToolButton )
    {
-      if ( instance.p_mode == CroppingMode::AbsolutePixels )
+      if ( instance.p_mode == CRMode::AbsolutePixels )
       {
          int px = int( instance.p_margins.x0 + instance.p_margins.x1 );
          instance.p_margins.x0 = px >> 1;
@@ -609,7 +613,7 @@ void CropInterface::__Anchor_ButtonClick( Button& sender, bool checked )
 
    if ( sender == GUI->ML_ToolButton || sender == GUI->MM_ToolButton || sender == GUI->MR_ToolButton )
    {
-      if ( instance.p_mode == CroppingMode::AbsolutePixels )
+      if ( instance.p_mode == CRMode::AbsolutePixels )
       {
          int px = int( instance.p_margins.y0 + instance.p_margins.y1 );
          instance.p_margins.y0 = px >> 1;
@@ -681,15 +685,15 @@ void CropInterface::__Width_ValueUpdated( NumericEdit& sender, double value )
       switch ( instance.p_mode )
       {
       default:
-      case CroppingMode::RelativeMargins:
+      case CRMode::RelativeMargins:
          instance.p_margins.x0 = double( dl )/sourceWidth;
          instance.p_margins.x1 = double( dr )/sourceWidth;
          break;
-      case CroppingMode::AbsolutePixels:
+      case CRMode::AbsolutePixels:
          instance.p_margins.x0 = dl;
          instance.p_margins.x1 = dr;
          break;
-      case CroppingMode::AbsoluteCentimeters:
+      case CRMode::AbsoluteCentimeters:
          instance.p_margins.x0 = dl/instance.p_resolution.x;
          instance.p_margins.x1 = dr/instance.p_resolution.x;
          if ( !instance.p_metric )
@@ -698,7 +702,7 @@ void CropInterface::__Width_ValueUpdated( NumericEdit& sender, double value )
             instance.p_margins.x1 *= 2.54;
          }
          break;
-      case CroppingMode::AbsoluteInches:
+      case CRMode::AbsoluteInches:
          instance.p_margins.x0 = dl/instance.p_resolution.x;
          instance.p_margins.x1 = dr/instance.p_resolution.x;
          if ( instance.p_metric )
@@ -771,15 +775,15 @@ void CropInterface::__Height_ValueUpdated( NumericEdit& sender, double value )
       switch ( instance.p_mode )
       {
       default:
-      case CroppingMode::RelativeMargins:
+      case CRMode::RelativeMargins:
          instance.p_margins.y0 = double( dt )/sourceHeight;
          instance.p_margins.y1 = double( db )/sourceHeight;
          break;
-      case CroppingMode::AbsolutePixels:
+      case CRMode::AbsolutePixels:
          instance.p_margins.y0 = dt;
          instance.p_margins.y1 = db;
          break;
-      case CroppingMode::AbsoluteCentimeters:
+      case CRMode::AbsoluteCentimeters:
          instance.p_margins.y0 = dt/instance.p_resolution.y;
          instance.p_margins.y1 = db/instance.p_resolution.y;
          if ( !instance.p_metric )
@@ -788,7 +792,7 @@ void CropInterface::__Height_ValueUpdated( NumericEdit& sender, double value )
             instance.p_margins.y1 *= 2.54;
          }
          break;
-      case CroppingMode::AbsoluteInches:
+      case CRMode::AbsoluteInches:
          instance.p_margins.y0 = dt/instance.p_resolution.y;
          instance.p_margins.y1 = db/instance.p_resolution.y;
          if ( instance.p_metric )
@@ -833,15 +837,15 @@ void CropInterface::__Mode_ItemSelected( ComboBox& /*sender*/, int itemIndex )
    switch ( instance.p_mode )
    {
    default:
-   case CroppingMode::RelativeMargins:
+   case CRMode::RelativeMargins:
       dpx.x0 *= sourceWidth;
       dpx.y0 *= sourceHeight;
       dpx.x1 *= sourceWidth;
       dpx.y1 *= sourceHeight;
       break;
-   case CroppingMode::AbsolutePixels:
+   case CRMode::AbsolutePixels:
       break;
-   case CroppingMode::AbsoluteCentimeters:
+   case CRMode::AbsoluteCentimeters:
       dpx.x0 *= instance.p_resolution.x;
       dpx.y0 *= instance.p_resolution.y;
       dpx.x1 *= instance.p_resolution.x;
@@ -849,7 +853,7 @@ void CropInterface::__Mode_ItemSelected( ComboBox& /*sender*/, int itemIndex )
       if ( !instance.p_metric )
          dpx *= 2.54;
       break;
-   case CroppingMode::AbsoluteInches:
+   case CRMode::AbsoluteInches:
       dpx.x0 *= instance.p_resolution.x;
       dpx.y0 *= instance.p_resolution.y;
       dpx.x1 *= instance.p_resolution.x;
@@ -864,19 +868,19 @@ void CropInterface::__Mode_ItemSelected( ComboBox& /*sender*/, int itemIndex )
    switch ( instance.p_mode )
    {
    default:
-   case CroppingMode::RelativeMargins:
+   case CRMode::RelativeMargins:
       instance.p_margins.x0 = dpx.x0/sourceWidth;
       instance.p_margins.y0 = dpx.y0/sourceHeight;
       instance.p_margins.x1 = dpx.x1/sourceWidth;
       instance.p_margins.y1 = dpx.y1/sourceHeight;
       break;
-   case CroppingMode::AbsolutePixels:
+   case CRMode::AbsolutePixels:
       instance.p_margins.x0 = RoundI( dpx.x0 );
       instance.p_margins.y0 = RoundI( dpx.y0 );
       instance.p_margins.x1 = RoundI( dpx.x1 );
       instance.p_margins.y1 = RoundI( dpx.y1 );
       break;
-   case CroppingMode::AbsoluteCentimeters:
+   case CRMode::AbsoluteCentimeters:
       instance.p_margins.x0 = dpx.x0/instance.p_resolution.x;
       instance.p_margins.y0 = dpx.y0/instance.p_resolution.y;
       instance.p_margins.x1 = dpx.x1/instance.p_resolution.x;
@@ -884,7 +888,7 @@ void CropInterface::__Mode_ItemSelected( ComboBox& /*sender*/, int itemIndex )
       if ( !instance.p_metric )
          dpx *= 2.54;
       break;
-   case CroppingMode::AbsoluteInches:
+   case CRMode::AbsoluteInches:
       instance.p_margins.x0 = dpx.x0/instance.p_resolution.x;
       instance.p_margins.y0 = dpx.y0/instance.p_resolution.y;
       instance.p_margins.x1 = dpx.x1/instance.p_resolution.x;
@@ -1232,8 +1236,8 @@ CropInterface::GUIData::GUIData( CropInterface& w ) :
    InchUnits_RadioButton.SetText( "Inches" );
    InchUnits_RadioButton.OnClick( (Button::click_event_handler)&CropInterface::__Units_ButtonClick, w );
 
-   ForceResolution_CheckBox.SetText( "Force Resolution" );
-   ForceResolution_CheckBox.SetToolTip( "Modify resolution of target image(s)" );
+   ForceResolution_CheckBox.SetText( "Force resolution" );
+   ForceResolution_CheckBox.SetToolTip( "Modify resolution metadata of target image(s)" );
    ForceResolution_CheckBox.OnClick( (Button::click_event_handler)&CropInterface::__ForceResolution_ButtonClick, w );
 
    ResolutionRow2_Sizer.SetSpacing( 8 );
@@ -1352,4 +1356,4 @@ CropInterface::GUIData::GUIData( CropInterface& w ) :
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CropInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF CropInterface.cpp - Released 2016/11/14 19:38:23 UTC

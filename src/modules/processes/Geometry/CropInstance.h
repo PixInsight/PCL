@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// CropInstance.h - Released 2016/02/21 20:22:42 UTC
+// CropInstance.h - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -73,10 +73,9 @@ public:
 
    virtual void Assign( const ProcessImplementation& );
 
-   virtual bool IsMaskable( const View&, const ImageWindow& ) const
-   {
-      return false;
-   }
+   virtual bool IsMaskable( const View&, const ImageWindow& ) const;
+
+   virtual UndoFlags UndoMode( const View& ) const;
 
    virtual bool CanExecuteOn( const View&, pcl::String& whyNot ) const;
    virtual bool BeforeExecution( View& );
@@ -106,4 +105,4 @@ private:
 #endif   // __CropInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF CropInstance.h - Released 2016/02/21 20:22:42 UTC
+// EOF CropInstance.h - Released 2016/11/14 19:38:23 UTC

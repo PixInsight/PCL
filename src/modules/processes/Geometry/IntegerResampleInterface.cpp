@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// IntegerResampleInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// IntegerResampleInterface.cpp - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -61,7 +61,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-IntegerResampleInterface* TheIntegerResampleInterface = 0;
+IntegerResampleInterface* TheIntegerResampleInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -76,19 +76,19 @@ IntegerResampleInterface* TheIntegerResampleInterface = 0;
 // ----------------------------------------------------------------------------
 
 IntegerResampleInterface::IntegerResampleInterface() :
-ProcessInterface(),
-instance( TheIntegerResampleProcess ),
-sourceWidth( 1000 ),
-sourceHeight( 1000 ),
-GUI( 0 )
+   ProcessInterface(),
+   instance( TheIntegerResampleProcess ),
+   sourceWidth( 1000 ),
+   sourceHeight( 1000 ),
+   GUI( nullptr )
 {
    TheIntegerResampleInterface = this;
 }
 
 IntegerResampleInterface::~IntegerResampleInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString IntegerResampleInterface::Id() const
@@ -118,15 +118,16 @@ void IntegerResampleInterface::ApplyInstance() const
 
 void IntegerResampleInterface::TrackViewUpdated( bool active )
 {
-   if ( GUI != 0 && active )
-   {
-      ImageWindow w = ImageWindow::ActiveWindow();
+   if ( GUI != nullptr )
+      if ( active )
+      {
+         ImageWindow w = ImageWindow::ActiveWindow();
 
-      if ( !w.IsNull() )
-         ImageFocused( w.MainView() );
-      else
-         UpdateControls();
-   }
+         if ( !w.IsNull() )
+            ImageFocused( w.MainView() );
+         else
+            UpdateControls();
+      }
 }
 
 void IntegerResampleInterface::ResetInstance()
@@ -137,7 +138,7 @@ void IntegerResampleInterface::ResetInstance()
 
 bool IntegerResampleInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "IntegerResample" );
@@ -157,8 +158,7 @@ ProcessImplementation* IntegerResampleInterface::NewProcess() const
 bool IntegerResampleInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
    const IntegerResampleInstance* r = dynamic_cast<const IntegerResampleInstance*>( &p );
-
-   if ( r == 0 )
+   if ( r == nullptr )
    {
       whyNot = "Not an IntegerResample instance.";
       return false;
@@ -190,35 +190,37 @@ bool IntegerResampleInterface::WantsImageNotifications() const
 
 void IntegerResampleInterface::ImageUpdated( const View& v )
 {
-   if ( GUI != 0 && v == currentView )
-   {
-      v.Window().MainView().GetSize( sourceWidth, sourceHeight );
-      UpdateControls();
-   }
+   if ( GUI != nullptr )
+      if ( v == currentView )
+      {
+         v.Window().MainView().GetSize( sourceWidth, sourceHeight );
+         UpdateControls();
+      }
 }
 
 void IntegerResampleInterface::ImageFocused( const View& v )
 {
-   if ( GUI != 0 && IsTrackViewActive() )
-      if ( !v.IsNull() )
-      {
-         ImageWindow w = v.Window();
-         View mainView = w.MainView();
+   if ( !v.IsNull() )
+      if ( GUI != nullptr )
+         if ( IsTrackViewActive() )
+         {
+            ImageWindow w = v.Window();
+            View mainView = w.MainView();
 
-         mainView.GetSize( sourceWidth, sourceHeight );
+            mainView.GetSize( sourceWidth, sourceHeight );
 
-         GUI->AllImages_ViewList.SelectView( mainView ); // normally not necessary, but we can invoke this f() directly
+            GUI->AllImages_ViewList.SelectView( mainView ); // normally not necessary, but we can invoke this f() directly
 
-         double xRes, yRes;
-         bool metric;
-         w.GetResolution( xRes, yRes, metric );
+            double xRes, yRes;
+            bool metric;
+            w.GetResolution( xRes, yRes, metric );
 
-         instance.p_resolution.x = xRes;
-         instance.p_resolution.y = yRes;
-         instance.p_metric = metric;
+            instance.p_resolution.x = xRes;
+            instance.p_resolution.y = yRes;
+            instance.p_metric = metric;
 
-         UpdateControls();
-      }
+            UpdateControls();
+         }
 }
 
 // ----------------------------------------------------------------------------
@@ -378,7 +380,7 @@ IntegerResampleInterface::GUIData::GUIData( IntegerResampleInterface& w )
    pcl::Font fnt = w.Font();
    int labelWidth1 = fnt.Width( String( "Height:" ) + 'M' );
    int labelWidth2 = fnt.Width( String( "Horizontal:" ) + 'M' );
-   int labelWidth3 = fnt.Width( String( "Resample Factor:" ) + 'M' );
+   int labelWidth3 = fnt.Width( String( "Resample factor:" ) + 'M' );
    int editWidth1 = fnt.Width( String( '0', 12 ) );
    int ui4 = w.LogicalPixelsToPhysical( 4 );
    int ui6 = w.LogicalPixelsToPhysical( 6 );
@@ -392,14 +394,14 @@ IntegerResampleInterface::GUIData::GUIData( IntegerResampleInterface& w )
    IntegerResample_SectionBar.SetTitle( "Integer Resample" );
    IntegerResample_SectionBar.SetSection( IntegerResample_Control );
 
-   ResampleFactor_Label.SetText( "Resample Factor:" );
+   ResampleFactor_Label.SetText( "Resample factor:" );
    ResampleFactor_Label.SetMinWidth( labelWidth3 );
    ResampleFactor_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
-   ResampleFactor_SpinBox.SetRange( 1, int( TheZoomFactorParameter->MaximumValue() ) );
+   ResampleFactor_SpinBox.SetRange( 1, int( TheIRZoomFactorParameter->MaximumValue() ) );
    ResampleFactor_SpinBox.OnValueUpdated( (SpinBox::value_event_handler)&IntegerResampleInterface::__ResampleFactor_ValueUpdated, w );
 
-   DownsampleMode_Label.SetText( "Downsample Mode:" );
+   DownsampleMode_Label.SetText( "Downsample mode:" );
    DownsampleMode_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
    DownsampleMode_ComboBox.AddItem( "Average" );
@@ -586,8 +588,8 @@ IntegerResampleInterface::GUIData::GUIData( IntegerResampleInterface& w )
    InchUnits_RadioButton.SetText( "Inches" );
    InchUnits_RadioButton.OnClick( (Button::click_event_handler)&IntegerResampleInterface::__Units_ButtonClick, w );
 
-   ForceResolution_CheckBox.SetText( "Force Resolution" );
-   ForceResolution_CheckBox.SetToolTip( "Modify resolution of target image(s)" );
+   ForceResolution_CheckBox.SetText( "Force resolution" );
+   ForceResolution_CheckBox.SetToolTip( "Modify resolution metadata of target image(s)" );
    ForceResolution_CheckBox.OnClick( (Button::click_event_handler)&IntegerResampleInterface::__ForceResolution_ButtonClick, w );
 
    ResolutionRow2_Sizer.SetSpacing( 8 );
@@ -627,4 +629,4 @@ IntegerResampleInterface::GUIData::GUIData( IntegerResampleInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF IntegerResampleInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF IntegerResampleInterface.cpp - Released 2016/11/14 19:38:23 UTC

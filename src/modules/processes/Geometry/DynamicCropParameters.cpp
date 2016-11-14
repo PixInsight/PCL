@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// DynamicCropParameters.cpp - Released 2016/02/21 20:22:42 UTC
+// DynamicCropParameters.cpp - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -59,150 +59,154 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-CropCenterX*            TheCropCenterXParameter = 0;
-CropCenterY*            TheCropCenterYParameter = 0;
-CropWidth*              TheCropWidthParameter = 0;
-CropHeight*             TheCropHeightParameter = 0;
-RotationAngle*          TheRotationAngleDynamicCropParameter = 0;
-ScaleX*                 TheScaleXParameter = 0;
-ScaleY*                 TheScaleYParameter = 0;
-OptimizeFastRotations*  TheOptimizeFastRotationsDynamicCropParameter = 0;
-InterpolationAlgorithm* TheInterpolationAlgorithmDynamicCropParameter = 0;
-ClampingThreshold*      TheClampingThresholdDynamicCropParameter = 0;
-Smoothness*             TheSmoothnessDynamicCropParameter = 0;
-FillRed*                TheFillRedDynamicCropParameter = 0;
-FillGreen*              TheFillGreenDynamicCropParameter = 0;
-FillBlue*               TheFillBlueDynamicCropParameter = 0;
-FillAlpha*              TheFillAlphaDynamicCropParameter = 0;
+DCCenterX*              TheDCCenterXParameter = nullptr;
+DCCenterY*              TheDCCenterYParameter = nullptr;
+DCWidth*                TheDCWidthParameter = nullptr;
+DCHeight*               TheDCHeightParameter = nullptr;
+RotationAngle*          TheDCRotationAngleParameter = nullptr;
+DCScaleX*               TheDCScaleXParameter = nullptr;
+DCScaleY*               TheDCScaleYParameter = nullptr;
+OptimizeFastRotations*  TheDCOptimizeFastRotationsParameter = nullptr;
+InterpolationAlgorithm* TheDCInterpolationAlgorithmParameter = nullptr;
+ClampingThreshold*      TheDCClampingThresholdParameter = nullptr;
+Smoothness*             TheDCSmoothnessParameter = nullptr;
+XResolution*            TheDCXResolutionParameter = nullptr;
+YResolution*            TheDCYResolutionParameter = nullptr;
+MetricResolution*       TheDCMetricResolutionParameter = nullptr;
+ForceResolution*        TheDCForceResolutionParameter = nullptr;
+FillRed*                TheDCFillRedParameter = nullptr;
+FillGreen*              TheDCFillGreenParameter = nullptr;
+FillBlue*               TheDCFillBlueParameter = nullptr;
+FillAlpha*              TheDCFillAlphaParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
-CropCenterX::CropCenterX( MetaProcess* p ) : MetaDouble( p )
+DCCenterX::DCCenterX( MetaProcess* P ) : MetaDouble( P )
 {
-   TheCropCenterXParameter = this;
+   TheDCCenterXParameter = this;
 }
 
-IsoString CropCenterX::Id() const
+IsoString DCCenterX::Id() const
 {
    return "centerX";
 }
 
-int CropCenterX::Precision() const
+int DCCenterX::Precision() const
 {
    return 5;
 }
 
-double CropCenterX::DefaultValue() const
+double DCCenterX::DefaultValue() const
 {
    return 0.5;
 }
 
 // ----------------------------------------------------------------------------
 
-CropCenterY::CropCenterY( MetaProcess* p ) : MetaDouble( p )
+DCCenterY::DCCenterY( MetaProcess* P ) : MetaDouble( P )
 {
-   TheCropCenterYParameter = this;
+   TheDCCenterYParameter = this;
 }
 
-IsoString CropCenterY::Id() const
+IsoString DCCenterY::Id() const
 {
    return "centerY";
 }
 
-int CropCenterY::Precision() const
+int DCCenterY::Precision() const
 {
    return 5;
 }
 
-double CropCenterY::DefaultValue() const
+double DCCenterY::DefaultValue() const
 {
    return 0.5;
 }
 
 // ----------------------------------------------------------------------------
 
-CropWidth::CropWidth( MetaProcess* p ) : MetaDouble( p )
+DCWidth::DCWidth( MetaProcess* P ) : MetaDouble( P )
 {
-   TheCropWidthParameter = this;
+   TheDCWidthParameter = this;
 }
 
-IsoString CropWidth::Id() const
+IsoString DCWidth::Id() const
 {
    return "width";
 }
 
-int CropWidth::Precision() const
+int DCWidth::Precision() const
 {
    return 5;
 }
 
-double CropWidth::DefaultValue() const
+double DCWidth::DefaultValue() const
 {
    return 1.0;
 }
 
 // ----------------------------------------------------------------------------
 
-CropHeight::CropHeight( MetaProcess* p ) : MetaDouble( p )
+DCHeight::DCHeight( MetaProcess* P ) : MetaDouble( P )
 {
-   TheCropHeightParameter = this;
+   TheDCHeightParameter = this;
 }
 
-IsoString CropHeight::Id() const
+IsoString DCHeight::Id() const
 {
    return "height";
 }
 
-int CropHeight::Precision() const
+int DCHeight::Precision() const
 {
    return 5;
 }
 
-double CropHeight::DefaultValue() const
+double DCHeight::DefaultValue() const
 {
    return 1.0;
 }
 
 // ----------------------------------------------------------------------------
 
-ScaleX::ScaleX( MetaProcess* p ) : MetaDouble( p )
+DCScaleX::DCScaleX( MetaProcess* P ) : MetaDouble( P )
 {
-   TheScaleXParameter = this;
+   TheDCScaleXParameter = this;
 }
 
-IsoString ScaleX::Id() const
+IsoString DCScaleX::Id() const
 {
    return "scaleX";
 }
 
-int ScaleX::Precision() const
+int DCScaleX::Precision() const
 {
    return 5;
 }
 
-double ScaleX::DefaultValue() const
+double DCScaleX::DefaultValue() const
 {
    return 1;
 }
 
 // ----------------------------------------------------------------------------
 
-ScaleY::ScaleY( MetaProcess* p ) : MetaDouble( p )
+DCScaleY::DCScaleY( MetaProcess* P ) : MetaDouble( P )
 {
-   TheScaleYParameter = this;
+   TheDCScaleYParameter = this;
 }
 
-IsoString ScaleY::Id() const
+IsoString DCScaleY::Id() const
 {
    return "scaleY";
 }
 
-int ScaleY::Precision() const
+int DCScaleY::Precision() const
 {
    return 5;
 }
 
-double ScaleY::DefaultValue() const
+double DCScaleY::DefaultValue() const
 {
    return 1;
 }
@@ -212,4 +216,4 @@ double ScaleY::DefaultValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropParameters.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF DynamicCropParameters.cpp - Released 2016/11/14 19:38:23 UTC

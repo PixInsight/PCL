@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0320
 // ----------------------------------------------------------------------------
-// ChannelMatchInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// ChannelMatchInstance.cpp - Released 2016/11/14 19:38:23 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -66,7 +66,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 ChannelMatchInstance::ChannelMatchInstance( const MetaProcess* P ) :
-ProcessImplementation( P )
+   ProcessImplementation( P )
 {
    for ( int i = 0; i < 3; ++i )
    {
@@ -77,35 +77,15 @@ ProcessImplementation( P )
 }
 
 ChannelMatchInstance::ChannelMatchInstance( const ChannelMatchInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
 
-// ----------------------------------------------------------------------------
-
-bool ChannelMatchInstance::Validate( String& info )
-{
-   int n = 0;
-   for ( int i = 0; i < 3; ++i )
-      if ( p_channelEnabled[i] )
-         ++n;
-
-   if ( n == 0 )
-   {
-      info = "No channel selected for matching";
-      return false;
-   }
-
-   return true;
-}
-
-// ----------------------------------------------------------------------------
-
 void ChannelMatchInstance::Assign( const ProcessImplementation& p )
 {
    const ChannelMatchInstance* x = dynamic_cast<const ChannelMatchInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
       for ( int i = 0; i < 3; ++i )
       {
          p_channelEnabled[i] = x->p_channelEnabled[i];
@@ -114,24 +94,30 @@ void ChannelMatchInstance::Assign( const ProcessImplementation& p )
       }
 }
 
-// ----------------------------------------------------------------------------
-
 bool ChannelMatchInstance::CanExecuteOn( const View& v, String& whyNot ) const
 {
+   if ( !v.IsColor() )
+   {
+      whyNot = "ChannelMatch cannot be executed on grayscale images.";
+      return false;
+   }
+
    if ( v.Image().IsComplexSample() )
    {
       whyNot = "ChannelMatch cannot be executed on complex images.";
       return false;
    }
 
-   if ( v.Image().ColorSpace() == ColorSpace::Gray )
-   {
-      whyNot = "ChannelMatch cannot be executed on grayscale images.";
-      return false;
-   }
-
    whyNot.Clear();
    return true;
+}
+
+bool ChannelMatchInstance::Validate( String& info )
+{
+   if ( p_channelEnabled[0] || p_channelEnabled[1] || p_channelEnabled[2] )
+      return true;
+   info = "No channel selected for matching";
+   return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -143,8 +129,8 @@ public:
    template <class P>
    static void Apply( GenericImage<P>& img, const ChannelMatchInstance& C )
    {
-      typename P::sample* f = 0;
-      typename P::sample** f0 = 0;
+      typename P::sample* f = nullptr;
+      typename P::sample** f0 = nullptr;
 
       int w = img.Width();
       int h = img.Height();
@@ -215,12 +201,12 @@ public:
       }
       catch ( ... )
       {
-         if ( f != 0 )
+         if ( f != nullptr )
             img.Allocator().Deallocate( f );
-         if ( f0 != 0 )
+         if ( f0 != nullptr )
          {
             for ( int c = 0; c < n; ++c )
-               if ( f0[c] != 0 )
+               if ( f0[c] != nullptr )
                   img.Allocator().Deallocate( f0[c] );
             img.Allocator().Deallocate( f0 );
          }
@@ -242,11 +228,9 @@ bool ChannelMatchInstance::ExecuteOn( View& view )
 
    ImageVariant image = view.Image();
 
-   if ( image.IsComplexSample() )
+   if ( !image.IsColor() )
       return false;
-
-   // Only color images are supported
-   if ( image.ColorSpace() == ColorSpace::Gray )
+   if ( image.IsComplexSample() )
       return false;
 
    StandardStatus status;
@@ -273,27 +257,27 @@ bool ChannelMatchInstance::ExecuteOn( View& view )
 
 void* ChannelMatchInstance::LockParameter( const MetaParameter* p, size_type tableRow )
 {
-   if ( p == TheChannelEnabledParameter )
+   if ( p == TheCMEnabledParameter )
       return p_channelEnabled+tableRow;
-   if ( p == TheChannelXOffsetParameter )
+   if ( p == TheCMXOffsetParameter )
       return &(p_channelOffset[tableRow].x);
-   if ( p == TheChannelYOffsetParameter )
+   if ( p == TheCMYOffsetParameter )
       return &(p_channelOffset[tableRow].y);
-   if ( p == TheChannelFactorParameter )
+   if ( p == TheCMFactorParameter )
       return p_channelFactor+tableRow;
-   return 0;
+   return nullptr;
 }
 
 bool ChannelMatchInstance::AllocateParameter( size_type length, const MetaParameter* p, size_type tableRow )
 {
-   if ( p == TheChannelTableParameter )
+   if ( p == TheCMChannelsParameter )
       return true;
    return false;
 }
 
-size_type ChannelMatchInstance::ParameterLength( const MetaParameter* p, size_type /*tableRow*/ ) const
+size_type ChannelMatchInstance::ParameterLength( const MetaParameter* p, size_type tableRow ) const
 {
-   if ( p == TheChannelTableParameter )
+   if ( p == TheCMChannelsParameter )
       return 3;
    return 0;
 }
@@ -303,4 +287,4 @@ size_type ChannelMatchInstance::ParameterLength( const MetaParameter* p, size_ty
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ChannelMatchInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF ChannelMatchInstance.cpp - Released 2016/11/14 19:38:23 UTC

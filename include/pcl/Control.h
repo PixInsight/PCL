@@ -1407,17 +1407,17 @@ public:
     * respectively for the standard scaling ratios 1.0, 1.5, 2.0, 2.5, 3.0, 3.5
     * and 4.0. For dynamic cursors this function must be used to calculate
     * scaled cursor hot spot coordinates, instead of simply scaling by
-    * multiplication with DisplayPixelRatio() and rounding. This also
+    * multiplication with ResourcePixelRatio() and rounding. This also
     * guarantees source code compatibility with future versions of PixInsight,
     * where standard cursor dimensions might change.
     *
     * \ingroup ui_scaling_functions
-    * \sa DisplayPixelRatio();
+    * \sa ResourcePixelRatio();
     */
    Point ScaledCursorHotSpot( int xHot, int yHot ) const
    {
-      double hotScale = (RoundInt( DisplayPixelRatio()*21 )|1)/21.0;
-      return Point( RoundInt( hotScale*xHot ), RoundInt( hotScale*yHot ) );
+      double hotScale = Round( (RoundInt( ResourcePixelRatio()*21 )|1)/21.0, 2 );
+      return Point( RoundIntArithmetic( hotScale*xHot ), RoundIntArithmetic( hotScale*yHot ) );
    }
 
    /*!

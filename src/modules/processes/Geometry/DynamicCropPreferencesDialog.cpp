@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0320
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// DynamicCropPreferencesDialog.cpp - Released 2016/11/14 19:38:23 UTC
+// DynamicCropPreferencesDialog.cpp - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -56,13 +56,13 @@
 namespace pcl
 {
 
-#define fillColor    TheDynamicCropInterface->fillColor
+#define m_fillColor  TheDynamicCropInterface->m_fillColor
 
 // ----------------------------------------------------------------------------
 
 DynamicCropPreferencesDialog::DynamicCropPreferencesDialog() : Dialog()
 {
-   savedColor = fillColor;
+   savedColor = m_fillColor;
 
    pcl::Font fnt = Font();
    int buttonWidth = fnt.Width( String( "Cancel" ) + String( 'M', 4 ) );
@@ -124,10 +124,10 @@ DynamicCropPreferencesDialog::DynamicCropPreferencesDialog() : Dialog()
 
    OnReturn( (pcl::Dialog::return_event_handler)&DynamicCropPreferencesDialog::__Return, *this );
 
-   Black_RadioButton.SetChecked( Red( fillColor ) == 0 );
-   White_RadioButton.SetChecked( Red( fillColor ) != 0 );
+   Black_RadioButton.SetChecked( Red( m_fillColor ) == 0 );
+   White_RadioButton.SetChecked( Red( m_fillColor ) != 0 );
 
-   Alpha_Slider.SetValue( Alpha( fillColor ) );
+   Alpha_Slider.SetValue( Alpha( m_fillColor ) );
 
    Update();
 }
@@ -141,9 +141,9 @@ void DynamicCropPreferencesDialog::Update()
 
    uint8 base = White_RadioButton.IsChecked() ? 0xFF : 0x00;
 
-   fillColor = RGBAColor( base, base, base, alpha );
+   m_fillColor = RGBAColor( base, base, base, alpha );
 
-   if ( TheDynamicCropInterface->view != 0 )
+   if ( !TheDynamicCropInterface->m_view.IsNull() )
       TheDynamicCropInterface->UpdateView();
 }
 
@@ -166,8 +166,8 @@ void DynamicCropPreferencesDialog::__Return( Dialog& sender, int retVal )
 {
    if ( retVal != StdDialogCode::Ok )
    {
-      fillColor = savedColor;
-      if ( TheDynamicCropInterface->view != nullptr )
+      m_fillColor = savedColor;
+      if ( !TheDynamicCropInterface->m_view.IsNull() )
          TheDynamicCropInterface->UpdateView();
    }
 }
@@ -177,4 +177,4 @@ void DynamicCropPreferencesDialog::__Return( Dialog& sender, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropPreferencesDialog.cpp - Released 2016/11/14 19:38:23 UTC
+// EOF DynamicCropPreferencesDialog.cpp - Released 2016/11/17 18:14:58 UTC

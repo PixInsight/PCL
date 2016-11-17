@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0320
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// DynamicCropInterface.h - Released 2016/11/14 19:38:23 UTC
+// DynamicCropInterface.h - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -148,25 +148,21 @@ private:
       bool operator ==( const Flags& x ) const { return allBits == x.allBits; }
    };
 
-   View*    view;             // dynamic target
-   double   width, height;    // dimensions of cropping rectangle
-   DPoint   center;           // center of cropping rectangle
-   DPoint   rotationCenter;   // center of rotation
-   bool     rotationFixed;    // rotationCenter fixed, or moves with crop rect.
-   int      anchorPoint;      // anchor point from 0=top/left to 8=bottom/right
-   DPoint   anchor;           // position of anchor point
-
-   Flags    flags;            // current operation flags
-
-   bool     dragging;         // dragging the mouse
-   DPoint   dragOrigin;       // initial drag position
-
-   bool     initializing;     // defining the initial cropping rectangle
-   Rect     rect;             // initial cropping rectangle
-
-   RGBA     selectionColor;   // color for the cropping rectangle
-   RGBA     centerColor;      // color for the center mark
-   RGBA     fillColor;        // color to fill the cropping rectangle
+   View     m_view;              // the dynamic target
+   double   m_width, m_height;   // dimensions of the cropping rectangle
+   DPoint   m_center;            // center of cropping rectangle
+   DPoint   m_rotationCenter;    // center of rotation
+   bool     m_rotationFixed;     // true if rotation center is fixed, false if it moves with the cropping rect.
+   int      m_anchorPoint;       // anchor point from 0=top/left to 8=bottom/right
+   DPoint   m_anchor;            // position of anchor point
+   Flags    m_flags;             // current operation flags
+   bool     m_dragging;          // dragging the mouse
+   DPoint   m_dragOrigin;        // initial drag position
+   bool     m_initializing;      // defining the initial cropping rectangle
+   Rect     m_rect;              // initial cropping rectangle
+   RGBA     m_selectionColor;    // color for the cropping rectangle
+   RGBA     m_centerColor;       // color for the center mark
+   RGBA     m_fillColor;         // color to fill the cropping rectangle
 
    void Initialize( const Rect& );
 
@@ -207,7 +203,7 @@ private:
    // Rotation angle of a point with respect to the center of the cropping system
    double RotationAngle( const DPoint& p ) const
    {
-      return ArcTan( rotationCenter.y - p.y, p.x - rotationCenter.x );
+      return ArcTan( m_rotationCenter.y - p.y, p.x - m_rotationCenter.x );
    }
 
    struct GUIData
@@ -352,4 +348,4 @@ PCL_END_LOCAL
 #endif   // __DynamicCropInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropInterface.h - Released 2016/11/14 19:38:23 UTC
+// EOF DynamicCropInterface.h - Released 2016/11/17 18:14:58 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0320
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// DynamicCropInterface.cpp - Released 2016/11/14 19:38:23 UTC
+// DynamicCropInterface.cpp - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -79,22 +79,22 @@ DynamicCropInterface* TheDynamicCropInterface = nullptr;
 DynamicCropInterface::DynamicCropInterface() :
    ProcessInterface(),
    instance( TheDynamicCropProcess ),
-   view( nullptr ),
-   width( 0 ),
-   height( 0 ),
-   center( 0 ),
-   rotationCenter( 0 ),
-   rotationFixed( false ),
-   anchorPoint( 4 ), // center
-   anchor( 0 ),
-   flags(),
-   dragging( false ),
-   dragOrigin( 0 ),
-   initializing( false ),
-   rect( 0 ),
-   selectionColor( 0xFFFFFFFF ),
-   centerColor( 0xFFFFFFFF ),
-   fillColor( 0x28FFFFFF ),
+   m_view(),
+   m_width( 0 ),
+   m_height( 0 ),
+   m_center( 0 ),
+   m_rotationCenter( 0 ),
+   m_rotationFixed( false ),
+   m_anchorPoint( 4 ), // center
+   m_anchor( 0 ),
+   m_flags(),
+   m_dragging( false ),
+   m_dragOrigin( 0 ),
+   m_initializing( false ),
+   m_rect( 0 ),
+   m_selectionColor( 0xFFFFFFFF ),
+   m_centerColor( 0xFFFFFFFF ),
+   m_fillColor( 0x28FFFFFF ),
    GUI( nullptr )
 {
    TheDynamicCropInterface = this;
@@ -128,36 +128,33 @@ InterfaceFeatures DynamicCropInterface::Features() const
 
 void DynamicCropInterface::Execute()
 {
-   if ( view != nullptr )
+   if ( !m_view.IsNull() )
    {
       /*
-       * Obtain local working references to the target view and window.
+       * Obtain local working references to the target view and window, then
+       * reset our reference to the target view now to prevent inconsistencies
+       * in case an exception is thrown.
        */
-      View v = *view;
-      ImageWindow w = v.Window();
-
-      /*
-       * Reset reference to the target view in the dynamic interface. This
-       * prevents inconsistent behavior during execution.
-       */
-      delete view, view = nullptr;
+      View view = m_view;
+      m_view = View();
+      ImageWindow window = view.Window();
 
       /*
        * Since active dynamic targets cannot be modified, we have to remove our
        * target view from the dynamic targets set before attempting to process.
        */
-      v.RemoveFromDynamicTargets();
+      view.RemoveFromDynamicTargets();
 
       /*
        * Ensure that our target view is selected as the current view.
        */
-      w.BringToFront();
-      w.SelectView( v );
+      window.BringToFront();
+      window.SelectView( view );
 
       /*
        * Execute the instance on the target window.
        */
-      instance.LaunchOn( w );
+      instance.LaunchOn( window );
 
       /*
        * Reset instance and interface to default states.
@@ -180,7 +177,7 @@ void DynamicCropInterface::ResetInstance()
    ImportProcess( defaultInstance );
 }
 
-bool DynamicCropInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
+bool DynamicCropInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& flags )
 {
    if ( GUI == nullptr )
    {
@@ -224,44 +221,42 @@ bool DynamicCropInterface::ImportProcess( const ProcessImplementation& p )
    if ( i == nullptr )
       throw Error( "Not a DynamicCrop instance." );
 
-   if ( view == nullptr )
+   if ( m_view.IsNull() )
    {
-      ImageWindow w = ImageWindow::ActiveWindow();
-      if ( w.IsNull() )
+      ImageWindow window = ImageWindow::ActiveWindow();
+      if ( window.IsNull() )
       {
          throw Error( "DynamicCrop: No active image window" );
          return false;
       }
 
-      view = new View( w.MainView() );
-
-      view->AddToDynamicTargets();
-
-      //Console().WriteLn( "<end><cbr>DynamicCrop: Selected target view: " + view->Id() );
+      m_view = window.MainView();
+      m_view.AddToDynamicTargets();
+      //Console().WriteLn( "<end><cbr>DynamicCrop: Selected target view: " + m_view.Id() );
    }
    else
       UpdateView();
 
    instance.Assign( *i );
 
-   int w0 = view->Width();
-   int h0 = view->Height();
+   int w0 = m_view.Width();
+   int h0 = m_view.Height();
 
-   width = Max( 1.0, Round( instance.p_width*w0, 2 ) );
-   height = Max( 1.0, Round( instance.p_height*h0, 2 ) );
+   m_width = Max( 1.0, Round( instance.p_width*w0, 2 ) );
+   m_height = Max( 1.0, Round( instance.p_height*h0, 2 ) );
 
-   anchor.x = center.x = rotationCenter.x = Round( instance.p_center.x*w0, 2 );
-   anchor.y = center.y = rotationCenter.y = Round( instance.p_center.y*h0, 2 );
-   anchorPoint = 4; // center
+   m_anchor.x = m_center.x = m_rotationCenter.x = Round( instance.p_center.x*w0, 2 );
+   m_anchor.y = m_center.y = m_rotationCenter.y = Round( instance.p_center.y*h0, 2 );
+   m_anchorPoint = 4; // center
 
-   rotationFixed = false;
+   m_rotationFixed = false;
 
-   if ( view->Window().CurrentView() != *view )
-      view->Window().SelectView( *view );
+   if ( m_view.Window().CurrentView() != m_view )
+      m_view.Window().SelectView( m_view );
    else
    {
       UpdateView();
-      //view->Window().CommitPendingUpdates();
+      //m_view.Window().CommitPendingUpdates();
    }
 
    InitControls();
@@ -280,8 +275,7 @@ void DynamicCropInterface::ExitDynamicMode()
    /*
     * Forget the current target view.
     */
-   if ( view != nullptr )
-      delete view, view = nullptr;
+   m_view = View();
 
    /*
     * Reset the instance. This ensures default GUI control values.
@@ -295,35 +289,33 @@ void DynamicCropInterface::ExitDynamicMode()
    UpdateControls();
 }
 
-void DynamicCropInterface::DynamicMouseEnter( View& v )
+void DynamicCropInterface::DynamicMouseEnter( View& view )
 {
-   if ( view == nullptr || v != *view )
+   if ( m_view.IsNull() || view != m_view )
       return;
 
    // Force a dynamic cursor update upon a subsequent mouse move event.
-   flags = Flags();
+   m_flags = Flags();
 }
 
-void DynamicCropInterface::DynamicMouseMove( View& v, const DPoint& p, unsigned buttons, unsigned modifiers )
+void DynamicCropInterface::DynamicMouseMove( View& view, const DPoint& p, unsigned buttons, unsigned modifiers )
 {
-   if ( view == nullptr || v != *view )
+   if ( m_view.IsNull() || view != m_view )
       return;
 
-   if ( dragging )
+   if ( m_dragging )
    {
-      if ( initializing )
+      if ( m_initializing )
       {
-         ImageWindow w = view->Window();
+         ImageWindow window = m_view.Window();
 
-         w.ModifySelection( RoundInt( p.x ), RoundInt( p.y ) );
-         //w.CommitPendingUpdates();
+         window.ModifySelection( RoundInt( p.x ), RoundInt( p.y ) );
+         //window.CommitPendingUpdates();
 
-         rect = w.SelectionRect();
-
-         width = Max( 1, rect.Width() );
-         height = Max( 1, rect.Height() );
-
-         rotationCenter = center = rect.Center();
+         m_rect = window.SelectionRect();
+         m_width = Max( 1, m_rect.Width() );
+         m_height = Max( 1, m_rect.Height() );
+         m_rotationCenter = m_center = m_rect.Center();
 
          UpdateSizePosControls();
          UpdateRotationControls();
@@ -335,25 +327,24 @@ void DynamicCropInterface::DynamicMouseMove( View& v, const DPoint& p, unsigned 
    else
    {
       Flags f = OperationInfo( p );
-
-      if ( f != flags )
+      if ( f != m_flags )
       {
-         flags = f;
+         m_flags = f;
          UpdateDynamicCursor();
       }
    }
 }
 
-void DynamicCropInterface::DynamicMousePress( View& v, const DPoint& p, int button, unsigned buttons, unsigned modifiers )
+void DynamicCropInterface::DynamicMousePress( View& view, const DPoint& p, int button, unsigned buttons, unsigned modifiers )
 {
    if ( button != MouseButton::Left )
       return;
 
-   dragging = true;
+   m_dragging = true;
 
-   if ( view != nullptr )
+   if ( !m_view.IsNull() )
    {
-      if ( v != *view )
+      if ( view != m_view )
          return;
 
       BeginOperation( p, modifiers );
@@ -361,51 +352,47 @@ void DynamicCropInterface::DynamicMousePress( View& v, const DPoint& p, int butt
    }
    else
    {
-      if ( !v.IsMainView() )
+      if ( !view.IsMainView() )
          throw Error( "DynamicCrop cannot run on previews. Please select a main view." );
 
-      initializing = true;
+      m_initializing = true;
 
-      view = new View( v );
+      m_view = view;
 
-      ImageWindow w = view->Window();
+      ImageWindow window = m_view.Window();
+      window.BeginSelection( RoundInt( p.x ), RoundInt( p.y ) );
 
-      w.BeginSelection( RoundInt( p.x ), RoundInt( p.y ) );
-
-      rect = w.SelectionRect();
-
-      width = height = 1;
-      rotationCenter = center = rect.Center();
+      m_rect = window.SelectionRect();
+      m_width = m_height = 1;
+      m_rotationCenter = m_center = m_rect.Center();
 
       UpdateControls();
    }
 }
 
-void DynamicCropInterface::DynamicMouseRelease( View& v, const DPoint& p, int button, unsigned buttons, unsigned modifiers )
+void DynamicCropInterface::DynamicMouseRelease( View& view, const DPoint& p, int button, unsigned buttons, unsigned modifiers )
 {
-   if ( dragging )
+   if ( m_dragging )
    {
-      dragging = false;
+      m_dragging = false;
 
-      if ( initializing )
+      if ( m_initializing )
       {
-         ImageWindow w = view->Window();
+         ImageWindow window = m_view.Window();
+         Rect r = window.SelectionRect();
+         window.EndSelection();
 
-         Rect r = w.SelectionRect();
+         m_view.AddToDynamicTargets();
 
-         w.EndSelection();
-
-         view->AddToDynamicTargets();
-
-         initializing = false;
+         m_initializing = false;
          Initialize( r );
 
-         flags = OperationInfo( p );
+         m_flags = OperationInfo( p );
          UpdateDynamicCursor();
       }
       else
       {
-         if ( view == nullptr || v != *view )
+         if ( m_view.IsNull() || view != m_view )
             return;
 
          UpdateDynamicCursor();
@@ -414,25 +401,25 @@ void DynamicCropInterface::DynamicMouseRelease( View& v, const DPoint& p, int bu
    }
 }
 
-void DynamicCropInterface::DynamicMouseDoubleClick( View& v, const DPoint& p, unsigned buttons, unsigned modifiers )
+void DynamicCropInterface::DynamicMouseDoubleClick( View& view, const DPoint& p, unsigned buttons, unsigned modifiers )
 {
-   if ( view == nullptr || v != *view )
+   if ( m_view.IsNull() || view != m_view )
       return;
 
    if ( IsPointOnRotationCenter( p ) )
    {
-      SetRotationCenter( center );
-      rotationFixed = false;
-      flags = OperationInfo( p );
+      SetRotationCenter( m_center );
+      m_rotationFixed = false;
+      m_flags = OperationInfo( p );
       UpdateDynamicCursor();
    }
    else if ( IsPointInsideRect( p ) )
       Execute();
 }
 
-bool DynamicCropInterface::DynamicKeyPress( View& v, int key, unsigned modifiers )
+bool DynamicCropInterface::DynamicKeyPress( View& view, int key, unsigned modifiers )
 {
-   if ( view == nullptr || v != *view )
+   if ( m_view.IsNull() || view != m_view )
       return false;
 
    switch ( key )
@@ -452,12 +439,12 @@ bool DynamicCropInterface::DynamicKeyPress( View& v, int key, unsigned modifiers
    return true;
 }
 
-bool DynamicCropInterface::RequiresDynamicUpdate( const View& v, const DRect& updateRect ) const
+bool DynamicCropInterface::RequiresDynamicUpdate( const View& view, const DRect& updateRect ) const
 {
-   if ( view == nullptr || v != *view || initializing )
+   if ( m_view.IsNull() || view != m_view || m_initializing )
       return false;
 
-   ImageWindow w = v.Window();
+   ImageWindow window = view.Window();
 
    // Check intersection with current cropping rectangle
    DRect r;
@@ -469,22 +456,22 @@ bool DynamicCropInterface::RequiresDynamicUpdate( const View& v, const DRect& up
       return true;
 
    // Obtain the half-size of center marks in image coordinates
-   double dr = w.ViewportScalarToImage( w.DisplayPixelRatio()*CENTER_RADIUS + 1 ); // add 1 pixel to guard against roundoff errors
+   double dr = window.ViewportScalarToImage( window.DisplayPixelRatio()*CENTER_RADIUS + 1 ); // add 1 pixel to guard against roundoff errors
 
    // Check intersection with the cropping rectangle's center mark
-   if ( DRect( center.x-dr, center.y-dr,
-               center.x+dr, center.y+dr ).Intersects( updateRect ) )
+   if ( DRect( m_center.x-dr, m_center.y-dr,
+               m_center.x+dr, m_center.y+dr ).Intersects( updateRect ) )
       return true;
 
    // Check intersection with the rotation center mark
-   if ( DRect( rotationCenter.x-dr, rotationCenter.y-dr,
-               rotationCenter.x+dr, rotationCenter.y+dr ).Intersects( updateRect ) )
+   if ( DRect( m_rotationCenter.x-dr, m_rotationCenter.y-dr,
+               m_rotationCenter.x+dr, m_rotationCenter.y+dr ).Intersects( updateRect ) )
       return true;
 
    return false;
 }
 
-void DynamicCropInterface::PaintRect( VectorGraphics& g, ImageWindow& w ) const
+void DynamicCropInterface::PaintRect( VectorGraphics& g, ImageWindow& window ) const
 {
    // Auxiliary routine to paint a cropping rectangle
 
@@ -493,41 +480,41 @@ void DynamicCropInterface::PaintRect( VectorGraphics& g, ImageWindow& w ) const
       // Optimize for zero rotation
       DRect r;
       GetUnrotatedRect( r );
-      g.DrawRect( w.ImageToViewport( r ) );
+      g.DrawRect( window.ImageToViewport( r ) );
    }
    else
    {
-      Array<DPoint> p( 4 );
-      GetRotatedRect( p[0], p[1], p[3], p[2] );
-      for ( int i = 0; i < 4; ++i )
-         w.ImageToViewport( p[i].x, p[i].y );
-      g.DrawPolygon( p );
+      Array<DPoint> r( 4 );
+      GetRotatedRect( r[0], r[1], r[3], r[2] );
+      for ( DPoint& p : r )
+         window.ImageToViewport( p.x, p.y );
+      g.DrawPolygon( r );
    }
 }
 
-void DynamicCropInterface::DynamicPaint( const View& v, VectorGraphics& g, const DRect& ur ) const
+void DynamicCropInterface::DynamicPaint( const View& view, VectorGraphics& g, const DRect& ur ) const
 {
-   if ( view == nullptr || v != *view )
+   if ( m_view.IsNull() || view != m_view )
       return;
 
-   ImageWindow window = view->Window();
+   ImageWindow window = m_view.Window();
 
    double f = window.DisplayPixelRatio();
 
    g.EnableAntialiasing();
 
    // Draw the translucent cropping rectangle
-   if ( Alpha( fillColor ) != 0 )
+   if ( Alpha( m_fillColor ) != 0 )
    {
       g.SetPen( Pen::Null() );
-      g.SetBrush( fillColor );
+      g.SetBrush( m_fillColor );
       PaintRect( g, window );
    }
 
    g.SetCompositionOperator( CompositionOp::Difference );
 
    // Draw the cropping rectangle
-   g.SetPen( selectionColor, f );
+   g.SetPen( m_selectionColor, f );
    g.SetBrush( Brush::Null() );
    PaintRect( g, window );
 
@@ -535,15 +522,15 @@ void DynamicCropInterface::DynamicPaint( const View& v, VectorGraphics& g, const
    double dr = f * CENTER_RADIUS;
 
    // Draw the center of the cropping rectangle
-   DPoint c0 = window.ImageToViewport( center );
+   DPoint c0 = window.ImageToViewport( m_center );
    DPoint c1( c0.x-dr, c0.y-dr );
    DPoint c2( c0.x+dr, c0.y+dr );
-   g.SetPen( centerColor, f );
+   g.SetPen( m_centerColor, f );
    g.DrawLine( c1.x, c1.y, c2.x, c2.y );
    g.DrawLine( c2.x, c1.y, c1.x, c2.y );
 
    // Draw the center of rotation
-   DPoint c3 = window.ImageToViewport( rotationCenter );
+   DPoint c3 = window.ImageToViewport( m_rotationCenter );
    if ( c3.ManhattanDistanceTo( c0 ) > 0.5 )
    {
       DPoint c4( c3.x-dr, c3.y-dr );
@@ -559,7 +546,7 @@ bool DynamicCropInterface::WantsReadoutNotifications() const
    return true;
 }
 
-void DynamicCropInterface::UpdateReadout( const View& v, const DPoint& p, double R, double G, double B, double /*A*/ )
+void DynamicCropInterface::UpdateReadout( const View& view, const DPoint& p, double R, double G, double B, double /*A*/ )
 {
    if ( GUI != nullptr )
       if ( IsVisible() )
@@ -574,47 +561,44 @@ void DynamicCropInterface::UpdateReadout( const View& v, const DPoint& p, double
 
 void DynamicCropInterface::SaveSettings() const
 {
-   Settings::Write( SettingsKey() + "SelectionColor", selectionColor );
-   Settings::Write( SettingsKey() + "CenterColor", centerColor );
-   Settings::Write( SettingsKey() + "FillColor", fillColor );
+   Settings::Write( SettingsKey() + "SelectionColor", m_selectionColor );
+   Settings::Write( SettingsKey() + "CenterColor", m_centerColor );
+   Settings::Write( SettingsKey() + "FillColor", m_fillColor );
 }
 
 void DynamicCropInterface::LoadSettings()
 {
-   Settings::Read( SettingsKey() + "SelectionColor", selectionColor );
-   Settings::Read( SettingsKey() + "CenterColor", centerColor );
-   Settings::Read( SettingsKey() + "FillColor", fillColor );
+   Settings::Read( SettingsKey() + "SelectionColor", m_selectionColor );
+   Settings::Read( SettingsKey() + "CenterColor", m_centerColor );
+   Settings::Read( SettingsKey() + "FillColor", m_fillColor );
 }
 
 // ----------------------------------------------------------------------------
 
 void DynamicCropInterface::Initialize( const Rect& r )
 {
-   if ( view == nullptr )
+   if ( m_view.IsNull() )
       return;
 
-   width = Max( 1, r.Width() );
-   height = Max( 1, r.Height() );
+   m_width = Max( 1, r.Width() );
+   m_height = Max( 1, r.Height() );
+   m_rect = Rect( TruncInt( m_width ), TruncInt( m_height ) ) + r.Ordered().LeftTop();
+   m_anchor = m_center = m_rotationCenter = DRect( m_rect ).Center();
+   m_anchorPoint = 4; // center
+   m_rotationFixed = false;
 
-   rect = Rect( TruncInt( width ), TruncInt( height ) ) + r.Ordered().LeftTop();
+   int w0 = m_view.Width();
+   int h0 = m_view.Height();
 
-   anchor = center = rotationCenter = DRect( rect ).Center();
-   anchorPoint = 4; // center
-
-   rotationFixed = false;
-
-   int w0 = view->Width();
-   int h0 = view->Height();
-
-   instance.p_center.x = center.x/w0;
-   instance.p_center.y = center.y/h0;
-   instance.p_width = width/w0;
-   instance.p_height = height/h0;
+   instance.p_center.x = m_center.x/w0;
+   instance.p_center.y = m_center.y/h0;
+   instance.p_width = m_width/w0;
+   instance.p_height = m_height/h0;
    instance.p_angle = 0;
    instance.p_scaleX = instance.p_scaleY = 1;
 
    UpdateView();
-   //view->Window().CommitPendingUpdates();
+   //m_view.Window().CommitPendingUpdates();
 
    InitControls();
    UpdateControls();
@@ -622,21 +606,21 @@ void DynamicCropInterface::Initialize( const Rect& r )
 
 void DynamicCropInterface::GetRotatedRect( DPoint& topLeft, DPoint& topRight, DPoint& bottomLeft, DPoint& bottomRight ) const
 {
-   double w2 = 0.5*width;
-   double h2 = 0.5*height;
-   bottomLeft.x   = topLeft.x    = center.x - w2;
-   topRight.y     = topLeft.y    = center.y - h2;
-   bottomRight.x  = topRight.x   = center.x + w2;
-   bottomRight.y  = bottomLeft.y = center.y + h2;
+   double w2 = 0.5*m_width;
+   double h2 = 0.5*m_height;
+   bottomLeft.x   = topLeft.x    = m_center.x - w2;
+   topRight.y     = topLeft.y    = m_center.y - h2;
+   bottomRight.x  = topRight.x   = m_center.x + w2;
+   bottomRight.y  = bottomLeft.y = m_center.y + h2;
 
    if ( instance.p_angle != 0 )
    {
       double sa, ca;
       SinCos( instance.p_angle, sa, ca );
-      Rotate( topLeft, sa, ca, center );
-      Rotate( topRight, sa, ca, center );
-      Rotate( bottomLeft, sa, ca, center );
-      Rotate( bottomRight, sa, ca, center );
+      Rotate( topLeft, sa, ca, m_center );
+      Rotate( topRight, sa, ca, m_center );
+      Rotate( bottomLeft, sa, ca, m_center );
+      Rotate( bottomRight, sa, ca, m_center );
    }
 }
 
@@ -652,12 +636,12 @@ void DynamicCropInterface::GetRotatedBounds( DRect& r ) const
 
 void DynamicCropInterface::GetUnrotatedRect( DRect& r ) const
 {
-   double w2 = 0.5*width;
-   double h2 = 0.5*height;
-   r.x0 = center.x - w2;
-   r.y0 = center.y - h2;
-   r.x1 = center.x + w2;
-   r.y1 = center.y + h2;
+   double w2 = 0.5*m_width;
+   double h2 = 0.5*m_height;
+   r.x0 = m_center.x - w2;
+   r.y0 = m_center.y - h2;
+   r.x1 = m_center.x + w2;
+   r.y1 = m_center.y + h2;
 }
 
 DynamicCropInterface::Flags DynamicCropInterface::OperationInfo( const DPoint& p ) const
@@ -671,7 +655,6 @@ DynamicCropInterface::Flags DynamicCropInterface::OperationInfo( const DPoint& p
    else if ( IsPointNearRect( p ) )
    {
       bool L, T, R, B;
-
       if ( IsPointOnRectEdges( p, L, T, R, B ) )
       {
          f.bits.resizing = true;
@@ -680,7 +663,7 @@ DynamicCropInterface::Flags DynamicCropInterface::OperationInfo( const DPoint& p
          f.bits.resizeRight = R;
          f.bits.resizeBottom = B;
       }
-      else // implies IsInsideRect( p )
+      else // implies IsPointInsideRect( p )
          f.bits.moving = true;
    }
    else // outside rect+tolerance
@@ -693,64 +676,64 @@ void DynamicCropInterface::UpdateDynamicCursor() const
 {
    String csr;
 
-   if ( flags.bits.movingCenter )
-      csr = dragging ? "move_point_drag.png" : "move_point.png";
-   else if ( flags.bits.resizing )
+   if ( m_flags.bits.movingCenter )
+      csr = m_dragging ? "move_point_drag.png" : "move_point.png";
+   else if ( m_flags.bits.resizing )
    {
-      if ( flags.bits.resizeLeft )
+      if ( m_flags.bits.resizeLeft )
       {
-         if ( flags.bits.resizeTop )
+         if ( m_flags.bits.resizeTop )
             csr = "resize_left_top.png";
-         else if ( flags.bits.resizeBottom )
+         else if ( m_flags.bits.resizeBottom )
             csr = "resize_left_bottom.png";
          else
             csr = "resize_left.png";
       }
-      else if ( flags.bits.resizeRight )
+      else if ( m_flags.bits.resizeRight )
       {
-         if ( flags.bits.resizeTop )
+         if ( m_flags.bits.resizeTop )
             csr = "resize_right_top.png";
-         else if ( flags.bits.resizeBottom )
+         else if ( m_flags.bits.resizeBottom )
             csr = "resize_right_bottom.png";
          else
             csr = "resize_right.png";
       }
-      else if ( flags.bits.resizeTop )
+      else if ( m_flags.bits.resizeTop )
          csr = "resize_top.png";
-      else if ( flags.bits.resizeBottom )
+      else if ( m_flags.bits.resizeBottom )
          csr = "resize_bottom.png";
    }
-   else if ( flags.bits.moving )
-      csr = dragging ? "move_drag.png" : "move.png";
-   else if ( flags.bits.rotating )
+   else if ( m_flags.bits.moving )
+      csr = m_dragging ? "move_drag.png" : "move.png";
+   else if ( m_flags.bits.rotating )
       csr = "rotate.png";
 
    if ( !csr.IsEmpty() )
-      view->Window().SetDynamicCursor( ScaledResource( ":/@module_root/" + csr ), ScaledCursorHotSpot( 10, 10 ) );
+      m_view.Window().SetDynamicCursor( ScaledResource( ":/@module_root/" + csr ), ScaledCursorHotSpot( 10, 10 ) );
    else
-      view->Window().ResetDynamicCursor();
+      m_view.Window().ResetDynamicCursor();
 }
 
 void DynamicCropInterface::BeginOperation( const DPoint& p, unsigned modifiers )
 {
-   flags = OperationInfo( p );
-   dragOrigin = (modifiers & KeyModifier::Shift) ? p.Rounded() : p;
+   m_flags = OperationInfo( p );
+   m_dragOrigin = (modifiers & KeyModifier::Shift) ? p.Rounded() : p;
 }
 
 void DynamicCropInterface::UpdateOperation( const DPoint& p, unsigned modifiers )
 {
    DPoint q = p;
 
-   if ( flags.bits.movingCenter )
+   if ( m_flags.bits.movingCenter )
       UpdateCenterMove( q, modifiers );
-   else if ( flags.bits.resizing )
+   else if ( m_flags.bits.resizing )
       UpdateResize( q, modifiers );
-   else if ( flags.bits.moving )
+   else if ( m_flags.bits.moving )
       UpdateMove( q, modifiers );
-   else if ( flags.bits.rotating )
+   else if ( m_flags.bits.rotating )
       UpdateRotation( q, modifiers );
 
-   dragOrigin = q;
+   m_dragOrigin = q;
 }
 
 #define CONSTRAINED_MOVE   (!(modifiers & KeyModifier::Shift) && instance.p_angle == 0)
@@ -759,9 +742,9 @@ void DynamicCropInterface::UpdateRotation( DPoint& p, unsigned /*modifiers*/ )
 {
    UpdateView();
 
-   double da = RotationAngle( p ) - RotationAngle( dragOrigin );
+   double da = RotationAngle( p ) - RotationAngle( m_dragOrigin );
 
-   Rotate( center, da, rotationCenter );
+   Rotate( m_center, da, m_rotationCenter );
 
    double a = instance.p_angle + da;
    instance.p_angle = ArcTan( Sin( a ), Cos( a ) );
@@ -771,7 +754,7 @@ void DynamicCropInterface::UpdateRotation( DPoint& p, unsigned /*modifiers*/ )
    UpdateInstance();
 
    UpdateView();
-   //view->Window().CommitPendingUpdates();
+   //m_view.Window().CommitPendingUpdates();
 
    UpdateSizePosControls();
    UpdateRotationControls();
@@ -790,14 +773,14 @@ void DynamicCropInterface::UpdateMove( DPoint& p, unsigned modifiers )
    if ( CONSTRAINED_MOVE )
    {
       UpdateView();
-      width = Round( width );
-      height = Round( height );
-      center.x = (int( width ) & 1) ? int( center.x ) + 0.5 : Round( center.x );
-      center.y = (int( height ) & 1) ? int( center.y ) + 0.5 : Round( center.y );
+      m_width = Round( m_width );
+      m_height = Round( m_height );
+      m_center.x = (int( m_width ) & 1) ? int( m_center.x ) + 0.5 : Round( m_center.x );
+      m_center.y = (int( m_height ) & 1) ? int( m_center.y ) + 0.5 : Round( m_center.y );
       p = p.Rounded();
    }
 
-   MoveTo( center + p - dragOrigin );
+   MoveTo( m_center + p - m_dragOrigin );
 }
 
 void DynamicCropInterface::UpdateResize( DPoint& p, unsigned modifiers )
@@ -807,47 +790,47 @@ void DynamicCropInterface::UpdateResize( DPoint& p, unsigned modifiers )
    if ( CONSTRAINED_MOVE )
       p = p.Rounded();
 
-   DPoint p0 = dragOrigin;
+   DPoint p0 = m_dragOrigin;
    DPoint p1 = p;
    double sa, ca;
    SinCos( -instance.p_angle, sa, ca );
-   Rotate( p0, sa, ca, center );
-   Rotate( p1, sa, ca, center );
+   Rotate( p0, sa, ca, m_center );
+   Rotate( p1, sa, ca, m_center );
 
    DPoint d = p1 - p0;
    DPoint d2 = 0.5*d;
 
-   DPoint c = center;
-   double w = width;
-   double h = height;
+   DPoint c = m_center;
+   double w = m_width;
+   double h = m_height;
 
-   if ( flags.bits.resizeLeft )   { center.x += d2.x; w -= d.x; }
-   if ( flags.bits.resizeTop )    { center.y += d2.y; h -= d.y; }
-   if ( flags.bits.resizeRight )  { center.x += d2.x; w += d.x; }
-   if ( flags.bits.resizeBottom ) { center.y += d2.y; h += d.y; }
+   if ( m_flags.bits.resizeLeft )   { m_center.x += d2.x; w -= d.x; }
+   if ( m_flags.bits.resizeTop )    { m_center.y += d2.y; h -= d.y; }
+   if ( m_flags.bits.resizeRight )  { m_center.x += d2.x; w += d.x; }
+   if ( m_flags.bits.resizeBottom ) { m_center.y += d2.y; h += d.y; }
 
-   width  = Max( 1.0, Abs( w ) );
-   height = Max( 1.0, Abs( h ) );
+   m_width  = Max( 1.0, Abs( w ) );
+   m_height = Max( 1.0, Abs( h ) );
 
    if ( CONSTRAINED_MOVE )
    {
-      width = Round( width );
-      height = Round( height );
-      center.x = (int( width ) & 1) ? int( center.x ) + 0.5 : Round( center.x );
-      center.y = (int( height ) & 1) ? int( center.y ) + 0.5 : Round( center.y );
+      m_width = Round( m_width );
+      m_height = Round( m_height );
+      m_center.x = (int( m_width ) & 1) ? int( m_center.x ) + 0.5 : Round( m_center.x );
+      m_center.y = (int( m_height ) & 1) ? int( m_center.y ) + 0.5 : Round( m_center.y );
    }
 
-   Rotate( center, instance.p_angle, c );
+   Rotate( m_center, instance.p_angle, c );
 
-   if ( !rotationFixed )
-      rotationCenter = center;
+   if ( !m_rotationFixed )
+      m_rotationCenter = m_center;
 
    UpdateAnchorPosition();
 
    UpdateInstance();
 
    UpdateView();
-   //view->Window().CommitPendingUpdates();
+   //m_view.Window().CommitPendingUpdates();
 
    UpdateSizePosControls();
    UpdateRotationControls();
@@ -870,7 +853,7 @@ void DynamicCropInterface::SetRotationAngle( double a )
    UpdateInstance();
 
    UpdateView();
-   //view->Window().CommitPendingUpdates();
+   //m_view.Window().CommitPendingUpdates();
 
    UpdateSizePosControls();
    UpdateRotationControls();
@@ -881,13 +864,13 @@ void DynamicCropInterface::SetRotationCenter( const DPoint& p )
 {
    UpdateView();
 
-   rotationCenter = p;
-   rotationFixed = p != center;
+   m_rotationCenter = p;
+   m_rotationFixed = p != m_center;
 
    UpdateInstance();
 
    UpdateView();
-   //view->Window().CommitPendingUpdates();
+   //m_view.Window().CommitPendingUpdates();
 
    UpdateRotationControls();
 }
@@ -896,17 +879,17 @@ void DynamicCropInterface::MoveTo( const DPoint& p )
 {
    UpdateView();
 
-   center = p;
+   m_center = p;
 
-   if ( !rotationFixed )
-      rotationCenter = p;
+   if ( !m_rotationFixed )
+      m_rotationCenter = p;
 
    UpdateAnchorPosition();
 
    UpdateInstance();
 
    UpdateView();
-   //view->Window().CommitPendingUpdates();
+   //m_view.Window().CommitPendingUpdates();
 
    UpdateSizePosControls();
    UpdateRotationControls();
@@ -916,27 +899,27 @@ void DynamicCropInterface::ResizeBy( double dL, double dT, double dR, double dB 
 {
    UpdateView();
 
-   double w2 = 0.5*width;
-   double h2 = 0.5*height;
-   DRect r( center.x - w2 - dL, center.y - h2 - dT,
-            center.x + w2 + dR, center.y + h2 + dB );
+   double w2 = 0.5*m_width;
+   double h2 = 0.5*m_height;
+   DRect r( m_center.x - w2 - dL, m_center.y - h2 - dT,
+            m_center.x + w2 + dR, m_center.y + h2 + dB );
 
-   width = Max( 1.0, r.Width() );
-   height = Max( 1.0, r.Height() );
+   m_width = Max( 1.0, r.Width() );
+   m_height = Max( 1.0, r.Height() );
 
-   DPoint c = center;
-   center = r.Center();
-   Rotate( center, instance.p_angle, c );
+   DPoint c = m_center;
+   m_center = r.Center();
+   Rotate( m_center, instance.p_angle, c );
 
-   if ( !rotationFixed )
-      rotationCenter = center;
+   if ( !m_rotationFixed )
+      m_rotationCenter = m_center;
 
    UpdateAnchorPosition();
 
    UpdateInstance();
 
    UpdateView();
-   //view->Window().CommitPendingUpdates();
+   //m_view.Window().CommitPendingUpdates();
 
    UpdateSizePosControls();
    UpdateRotationControls();
@@ -948,82 +931,81 @@ void DynamicCropInterface::UpdateAnchorPosition()
    DPoint tl, tr, bl, br;
    GetRotatedRect( tl, tr, bl, br );
 
-   switch ( anchorPoint )
+   switch ( m_anchorPoint )
    {
    case 0 : // top left
-      anchor = tl;
+      m_anchor = tl;
       break;
    case 1 : // top middle
-      anchor.x = 0.5*(tl.x + tr.x);
-      anchor.y = 0.5*(tl.y + tr.y);
+      m_anchor.x = 0.5*(tl.x + tr.x);
+      m_anchor.y = 0.5*(tl.y + tr.y);
       break;
    case 2 : // top right
-      anchor = tr;
+      m_anchor = tr;
       break;
    case 3 : // middle left
-      anchor.x = 0.5*(tl.x + bl.x);
-      anchor.y = 0.5*(tl.y + bl.y);
+      m_anchor.x = 0.5*(tl.x + bl.x);
+      m_anchor.y = 0.5*(tl.y + bl.y);
       break;
    case 4 : // center
-      anchor.x = 0.5*(tl.x + br.x);
-      anchor.y = 0.5*(tl.y + br.y);
+      m_anchor.x = 0.5*(tl.x + br.x);
+      m_anchor.y = 0.5*(tl.y + br.y);
       break;
    case 5 : // middle right
-      anchor.x = 0.5*(tr.x + br.x);
-      anchor.y = 0.5*(tr.y + br.y);
+      m_anchor.x = 0.5*(tr.x + br.x);
+      m_anchor.y = 0.5*(tr.y + br.y);
       break;
    case 6 : // bottom left
-      anchor = bl;
+      m_anchor = bl;
       break;
    case 7 : // bottom middle
-      anchor.x = 0.5*(bl.x + br.x);
-      anchor.y = 0.5*(bl.y + br.y);
+      m_anchor.x = 0.5*(bl.x + br.x);
+      m_anchor.y = 0.5*(bl.y + br.y);
       break;
    case 8 : // bottom right
-      anchor = br;
+      m_anchor = br;
       break;
    }
 }
 
 void DynamicCropInterface::UpdateInstance()
 {
-   if ( view != nullptr )
+   if ( !m_view.IsNull() )
    {
-      int w0 = view->Width();
-      int h0 = view->Height();
-      instance.p_width = width/w0;
-      instance.p_height = height/h0;
-      instance.p_center.x = center.x/w0;
-      instance.p_center.y = center.y/h0;
+      int w0 = m_view.Width();
+      int h0 = m_view.Height();
+      instance.p_width = m_width/w0;
+      instance.p_height = m_height/h0;
+      instance.p_center.x = m_center.x/w0;
+      instance.p_center.y = m_center.y/h0;
    }
 }
 
 bool DynamicCropInterface::IsPointInsideRect( const DPoint& p ) const
 {
    DPoint d = p;
-   Rotate( d, -instance.p_angle, center );
-   d -= center;
-   return Abs( d.x ) <= 0.5*width && Abs( d.y ) <= 0.5*height;
+   Rotate( d, -instance.p_angle, m_center );
+   d -= m_center;
+   return Abs( d.x ) <= 0.5*m_width && Abs( d.y ) <= 0.5*m_height;
 }
 
 bool DynamicCropInterface::IsPointNearRect( const DPoint& p ) const
 {
    DPoint d = p;
-   Rotate( d, -instance.p_angle, center );
-   d -= center;
-   double t = view->Window().ViewportScalarToImage( double( ImageWindow::CursorTolerance() ) );
-   return Abs( d.x ) <= 0.5*width + t && Abs( d.y ) <= 0.5*height + t;
+   Rotate( d, -instance.p_angle, m_center );
+   d -= m_center;
+   double t = m_view.Window().ViewportScalarToImage( double( ImageWindow::CursorTolerance() ) );
+   return Abs( d.x ) <= 0.5*m_width + t && Abs( d.y ) <= 0.5*m_height + t;
 }
 
-bool DynamicCropInterface::IsPointOnRectEdges( const DPoint& p,
-                     bool& left, bool& top, bool& right, bool& bottom ) const
+bool DynamicCropInterface::IsPointOnRectEdges( const DPoint& p, bool& left, bool& top, bool& right, bool& bottom ) const
 {
    DPoint d = p;
-   Rotate( d, -instance.p_angle, center );
-   d -= center;
-   double t = view->Window().ViewportScalarToImage( double( ImageWindow::CursorTolerance() ) );
-   double w2 = 0.5*width;
-   double h2 = 0.5*height;
+   Rotate( d, -instance.p_angle, m_center );
+   d -= m_center;
+   double t = m_view.Window().ViewportScalarToImage( double( ImageWindow::CursorTolerance() ) );
+   double w2 = 0.5*m_width;
+   double h2 = 0.5*m_height;
    left   = Abs( d.x + w2 ) <= t;
    top    = Abs( d.y + h2 ) <= t;
    right  = Abs( d.x - w2 ) <= t;
@@ -1033,15 +1015,15 @@ bool DynamicCropInterface::IsPointOnRectEdges( const DPoint& p,
 
 bool DynamicCropInterface::IsPointOnRectCenter( const DPoint& p ) const
 {
-   DPoint d = p - center;
-   double t = view->Window().ViewportScalarToImage( double( ImageWindow::CursorTolerance() ) );
+   DPoint d = p - m_center;
+   double t = m_view.Window().ViewportScalarToImage( double( ImageWindow::CursorTolerance() ) );
    return Abs( d.x ) <= t && Abs( d.y ) <= t;
 }
 
 bool DynamicCropInterface::IsPointOnRotationCenter( const DPoint& p ) const
 {
-   DPoint d = p - rotationCenter;
-   double t = view->Window().ViewportScalarToImage( double( ImageWindow::CursorTolerance() ) );
+   DPoint d = p - m_rotationCenter;
+   double t = m_view.Window().ViewportScalarToImage( double( ImageWindow::CursorTolerance() ) );
    return Abs( d.x ) <= t && Abs( d.y ) <= t;
 }
 
@@ -1049,9 +1031,9 @@ bool DynamicCropInterface::IsPointOnRotationCenter( const DPoint& p ) const
 
 void DynamicCropInterface::InitControls()
 {
-   bool isView = view != nullptr;
-   bool isColor = isView && view->IsColor();
-   bool hasAlpha = isView && view->Image().HasAlphaChannels();
+   bool isView = !m_view.IsNull();
+   bool isColor = isView && m_view.IsColor();
+   bool hasAlpha = isView && m_view.Image().HasAlphaChannels();
 
    GUI->SizePos_Control.Enable( isView );
    GUI->Rotation_Control.Enable( isView );
@@ -1076,18 +1058,18 @@ void DynamicCropInterface::UpdateControls()
 
 void DynamicCropInterface::UpdateSizePosControls()
 {
-   if ( !initializing )
+   if ( !m_initializing )
       GUI->AnchorSelectors_Control.Update();
 
-   GUI->Width_NumericEdit.SetValue( width );
-   GUI->Height_NumericEdit.SetValue( height );
-   GUI->PosX_NumericEdit.SetValue( anchor.x );
-   GUI->PosY_NumericEdit.SetValue( anchor.y );
+   GUI->Width_NumericEdit.SetValue( m_width );
+   GUI->Height_NumericEdit.SetValue( m_height );
+   GUI->PosX_NumericEdit.SetValue( m_anchor.x );
+   GUI->PosY_NumericEdit.SetValue( m_anchor.y );
 }
 
 void DynamicCropInterface::UpdateRotationControls()
 {
-   if ( !initializing )
+   if ( !m_initializing )
    {
       GUI->Angle_NumericEdit.SetValue( Abs( Deg( instance.p_angle ) ) );
       GUI->Clockwise_CheckBox.SetChecked( instance.p_angle < 0 );
@@ -1095,14 +1077,14 @@ void DynamicCropInterface::UpdateRotationControls()
       GUI->OptimizeFast_CheckBox.SetChecked( instance.p_optimizeFast );
    }
 
-   GUI->CenterX_NumericEdit.SetValue( rotationCenter.x );
-   GUI->CenterY_NumericEdit.SetValue( rotationCenter.y );
+   GUI->CenterX_NumericEdit.SetValue( m_rotationCenter.x );
+   GUI->CenterY_NumericEdit.SetValue( m_rotationCenter.y );
 }
 
 void DynamicCropInterface::UpdateScaleControls()
 {
-   double wPx = width*instance.p_scaleX;
-   double hPx = height*instance.p_scaleY;
+   double wPx = m_width*instance.p_scaleX;
+   double hPx = m_height*instance.p_scaleY;
    double wCm, hCm, wIn, hIn;
    if ( instance.p_metric )
    {
@@ -1162,53 +1144,53 @@ void DynamicCropInterface::UpdateFillColorControls()
 
 void DynamicCropInterface::UpdateView()
 {
-   ImageWindow w = view->Window();
+   ImageWindow window = m_view.Window();
 
    DPoint tl, tr, bl, br;
    GetRotatedRect( tl, tr, bl, br );
-   double d2 = w.ViewportScalarToImage( w.DisplayPixelRatio()/2 );
-   w.UpdateImageRect( Min( Min( Min( tl.x, tr.x ), bl.x ), br.x )-d2,
+   double d2 = window.ViewportScalarToImage( window.DisplayPixelRatio()/2 );
+   window.UpdateImageRect( Min( Min( Min( tl.x, tr.x ), bl.x ), br.x )-d2,
                       Min( Min( Min( tl.y, tr.y ), bl.y ), br.y )-d2,
                       Max( Max( Max( tl.x, tr.x ), bl.x ), br.x )+d2,
                       Max( Max( Max( tl.y, tr.y ), bl.y ), br.y )+d2 );
 
-   double x = center.x;
-   double y = center.y;
-   w.ImageToViewport( x, y );
+   double x = m_center.x;
+   double y = m_center.y;
+   window.ImageToViewport( x, y );
    int cx = RoundInt( x );
    int cy = RoundInt( y );
-   int dr = TruncInt( w.DisplayPixelRatio() * CENTER_RADIUS ) + 1;
-   w.UpdateViewportRect( cx-dr, cy-dr, cx+dr, cy+dr );
+   int dr = TruncInt( window.DisplayPixelRatio() * CENTER_RADIUS ) + 1;
+   window.UpdateViewportRect( cx-dr, cy-dr, cx+dr, cy+dr );
 
-   if ( rotationCenter != center )
+   if ( m_rotationCenter != m_center )
    {
-      x = rotationCenter.x;
-      y = rotationCenter.y;
-      w.ImageToViewport( x, y );
+      x = m_rotationCenter.x;
+      y = m_rotationCenter.y;
+      window.ImageToViewport( x, y );
       cx = RoundInt( x );
       cy = RoundInt( y );
-      w.UpdateViewportRect( cx-dr, cy-dr, cx+dr, cy+dr );
+      window.UpdateViewportRect( cx-dr, cy-dr, cx+dr, cy+dr );
    }
 }
 
 // ----------------------------------------------------------------------------
 
-#define ISCOLOR   (view != nullptr && view->IsColor())
-#define ISGRAY    (view != nullptr && !view->IsColor())
+#define ISCOLOR   (!m_view.IsNull() && m_view.IsColor())
+#define ISGRAY    (!m_view.IsNull() && !m_view.IsColor())
 
 void DynamicCropInterface::__Size_ValueUpdated( NumericEdit& sender, double value )
 {
-   if ( view == nullptr )
+   if ( m_view.IsNull() )
       return;
 
    if ( sender == GUI->Width_NumericEdit )
    {
-      if ( value != width )
+      if ( value != m_width )
       {
-         double dw = value - width;
+         double dw = value - m_width;
          double dL, dR;
 
-         switch ( anchorPoint )
+         switch ( m_anchorPoint )
          {
          default:
          case 0 : // top left
@@ -1235,12 +1217,12 @@ void DynamicCropInterface::__Size_ValueUpdated( NumericEdit& sender, double valu
    }
    else if ( sender == GUI->Height_NumericEdit )
    {
-      if ( value != height )
+      if ( value != m_height )
       {
-         double dh = value - height;
+         double dh = value - m_height;
          double dT, dB;
 
-         switch ( anchorPoint )
+         switch ( m_anchorPoint )
          {
          default:
          case 0 : // top left
@@ -1269,18 +1251,18 @@ void DynamicCropInterface::__Size_ValueUpdated( NumericEdit& sender, double valu
 
 void DynamicCropInterface::__Pos_ValueUpdated( NumericEdit& sender, double value )
 {
-   if ( view == nullptr )
+   if ( m_view.IsNull() )
       return;
 
    if ( sender == GUI->PosX_NumericEdit )
    {
-      if ( value != anchor.x )
-         MoveTo( center + DPoint( value - anchor.x, 0.0 ) );
+      if ( value != m_anchor.x )
+         MoveTo( m_center + DPoint( value - m_anchor.x, 0.0 ) );
    }
    else if ( sender == GUI->PosY_NumericEdit )
    {
-      if ( value != anchor.y )
-         MoveTo( center + DPoint( 0.0, value - anchor.y ) );
+      if ( value != m_anchor.y )
+         MoveTo( m_center + DPoint( 0.0, value - m_anchor.y ) );
    }
 }
 
@@ -1309,20 +1291,20 @@ void DynamicCropInterface::__AnchorSelector_Paint( Control& sender, const Rect& 
    g.DrawLine( 0, y6, r.x1, y6 );
 
    double x0, y0;
-   if ( anchorPoint < 3 )
+   if ( m_anchorPoint < 3 )
    {
       y0 = 0;
-      x0 = (anchorPoint == 0) ? 0 : ((anchorPoint == 1) ? x3 : x6);
+      x0 = (m_anchorPoint == 0) ? 0 : ((m_anchorPoint == 1) ? x3 : x6);
    }
-   else if ( anchorPoint < 6 )
+   else if ( m_anchorPoint < 6 )
    {
       y0 = y3;
-      x0 = (anchorPoint == 3) ? 0 : ((anchorPoint == 4) ? x3 : x6);
+      x0 = (m_anchorPoint == 3) ? 0 : ((m_anchorPoint == 4) ? x3 : x6);
    }
    else
    {
       y0 = y6;
-      x0 = (anchorPoint == 6) ? 0 : ((anchorPoint == 7) ? x3 : x6);
+      x0 = (m_anchorPoint == 6) ? 0 : ((m_anchorPoint == 7) ? x3 : x6);
    }
 
    g.SetPen( 0xffffffff, f );
@@ -1344,7 +1326,7 @@ void DynamicCropInterface::__AnchorSelector_MousePress( Control& sender, const P
    int row = (pos.y < y3) ? 0 : ((pos.y < y6) ? 1 : 2);
    int col = (pos.x < x3) ? 0 : ((pos.x < x6) ? 1 : 2);
 
-   anchorPoint = 3*row + col;
+   m_anchorPoint = 3*row + col;
 
    UpdateAnchorPosition();
    UpdateSizePosControls();
@@ -1352,51 +1334,50 @@ void DynamicCropInterface::__AnchorSelector_MousePress( Control& sender, const P
 
 void DynamicCropInterface::__AnchorSelector_MouseRelease( Control& sender, const Point& pos, int button, unsigned buttons, unsigned modifiers )
 {
-   dragging = false;
+   m_dragging = false;
 }
 
 void DynamicCropInterface::__AnchorSelector_MouseDoubleClick( Control& sender, const Point& pos, unsigned buttons, unsigned modifiers )
 {
-   if ( view == nullptr )
+   if ( m_view.IsNull() )
       return;
 
    if ( modifiers & KeyModifier::Shift )
    {
       // Shift+DoubleClick: Move cropping rectangle to anchor position.
+      int w = m_view.Width();
+      int h = m_view.Height();
 
-      int w = view->Width();
-      int h = view->Height();
+      DPoint p = m_center;
 
-      DPoint p = center;
-
-      switch ( anchorPoint )
+      switch ( m_anchorPoint )
       {
       case 0 : // top left
-         p = center - anchor;
+         p = m_center - m_anchor;
          break;
       case 1 : // top middle
-         p = center + DPoint( 0.5*w - anchor.x, -anchor.y );
+         p = m_center + DPoint( 0.5*w - m_anchor.x, -m_anchor.y );
          break;
       case 2 : // top right
-         p = center + DPoint( w-anchor.x, -anchor.y );
+         p = m_center + DPoint( w-m_anchor.x, -m_anchor.y );
          break;
       case 3 : // middle left
-         p = center + DPoint( -anchor.x, 0.5*h - anchor.y );
+         p = m_center + DPoint( -m_anchor.x, 0.5*h - m_anchor.y );
          break;
       case 4 : // center
          p = DPoint( 0.5*w, 0.5*h );
          break;
       case 5 : // middle right
-         p = center + DPoint( w - anchor.x, 0.5*h - anchor.y );
+         p = m_center + DPoint( w - m_anchor.x, 0.5*h - m_anchor.y );
          break;
       case 6 : // bottom left
-         p = center + DPoint( -anchor.x, h - anchor.y );
+         p = m_center + DPoint( -m_anchor.x, h - m_anchor.y );
          break;
       case 7 : // bottom middle
-         p = center + DPoint( 0.5*w - anchor.x, h - anchor.y );
+         p = m_center + DPoint( 0.5*w - m_anchor.x, h - m_anchor.y );
          break;
       case 8 : // bottom right
-         p = center + DPoint( w - anchor.x, h - anchor.y );
+         p = m_center + DPoint( w - m_anchor.x, h - m_anchor.y );
          break;
       }
 
@@ -1405,26 +1386,23 @@ void DynamicCropInterface::__AnchorSelector_MouseDoubleClick( Control& sender, c
    else if ( modifiers & KeyModifier::Control )
    {
       // Ctrl+DoubleClick: Set center of rotation to anchor.
-
-      SetRotationCenter( anchor );
+      SetRotationCenter( m_anchor );
    }
    else
    {
       // DoubleClick: Center view on anchor position coordinates.
-
-      view->Window().BringToFront();
-      view->Window().SelectMainView();
-      view->Window().SetViewport( anchor );
+      m_view.Window().BringToFront();
+      m_view.Window().SelectMainView();
+      m_view.Window().SetViewport( m_anchor );
    }
 }
 
 void DynamicCropInterface::__Angle_ValueUpdated( NumericEdit& sender, double value )
 {
-   if ( view == nullptr )
+   if ( m_view.IsNull() )
       return;
 
    double a = Rad( value );
-
    if ( GUI->Clockwise_CheckBox.IsChecked() )
       a = -a;
 
@@ -1433,7 +1411,7 @@ void DynamicCropInterface::__Angle_ValueUpdated( NumericEdit& sender, double val
 
 void DynamicCropInterface::__Clockwise_Click( Button& sender, bool checked )
 {
-   if ( view == nullptr )
+   if ( m_view.IsNull() )
       return;
 
    if ( Round( Abs( Deg( instance.p_angle ) ), 3 ) < 180 )
@@ -1444,13 +1422,13 @@ void DynamicCropInterface::__Clockwise_Click( Button& sender, bool checked )
 
 void DynamicCropInterface::__Center_ValueUpdated( NumericEdit& sender, double value )
 {
-   if ( view == nullptr )
+   if ( m_view.IsNull() )
       return;
 
    if ( sender == GUI->CenterX_NumericEdit )
-      SetRotationCenter( DPoint( value, rotationCenter.y ) );
+      SetRotationCenter( DPoint( value, m_rotationCenter.y ) );
    else if ( sender == GUI->CenterY_NumericEdit )
-      SetRotationCenter( DPoint( rotationCenter.x, value ) );
+      SetRotationCenter( DPoint( m_rotationCenter.x, value ) );
 }
 
 void DynamicCropInterface::__OptimizeFast_Click( Button& sender, bool checked )
@@ -1496,7 +1474,7 @@ void DynamicCropInterface::__AngleDial_Paint( Control& sender, const Rect& updat
 
 void DynamicCropInterface::__AngleDial_MouseMove( Control& sender, const Point& pos, unsigned buttons, unsigned modifiers )
 {
-   if ( dragging )
+   if ( m_dragging )
    {
       double a = Round( Deg( ArcTan( double( (sender.ClientHeight() >> 1) - pos.y ),
                                      double( pos.x - (sender.ClientWidth() >> 1) ) ) ), 3 );
@@ -1510,13 +1488,13 @@ void DynamicCropInterface::__AngleDial_MousePress( Control& sender, const Point&
    if ( button != MouseButton::Left )
       return;
 
-   dragging = true;
+   m_dragging = true;
    __AngleDial_MouseMove( sender, pos, buttons, modifiers );
 }
 
 void DynamicCropInterface::__AngleDial_MouseRelease( Control& sender, const Point& pos, int button, unsigned buttons, unsigned modifiers )
 {
-   dragging = false;
+   m_dragging = false;
 }
 
 void DynamicCropInterface::__Scale_ValueUpdated( NumericEdit& sender, double value )
@@ -1541,13 +1519,13 @@ void DynamicCropInterface::__ScaledSize_ValueUpdated( NumericEdit& sender, doubl
 {
    if ( sender == GUI->ScaledWidthPx_NumericEdit )
    {
-      instance.p_scaleX = value/width;
+      instance.p_scaleX = value/m_width;
       if ( GUI->PreserveAspectRatio_CheckBox.IsChecked() )
          instance.p_scaleY = instance.p_scaleX;
    }
    else if ( sender == GUI->ScaledHeightPx_NumericEdit )
    {
-      instance.p_scaleY = value/height;
+      instance.p_scaleY = value/m_height;
       if ( GUI->PreserveAspectRatio_CheckBox.IsChecked() )
          instance.p_scaleX = instance.p_scaleY;
    }
@@ -1558,7 +1536,7 @@ void DynamicCropInterface::__ScaledSize_ValueUpdated( NumericEdit& sender, doubl
          wPx /= 2.54;
       if ( wPx < 1 )
          wPx = 1;
-      instance.p_scaleX = wPx/width;
+      instance.p_scaleX = wPx/m_width;
       if ( GUI->PreserveAspectRatio_CheckBox.IsChecked() )
          instance.p_scaleY = instance.p_scaleX;
    }
@@ -1569,7 +1547,7 @@ void DynamicCropInterface::__ScaledSize_ValueUpdated( NumericEdit& sender, doubl
          hPx /= 2.54;
       if ( hPx < 1 )
          hPx = 1;
-      instance.p_scaleY = hPx/height;
+      instance.p_scaleY = hPx/m_height;
       if ( GUI->PreserveAspectRatio_CheckBox.IsChecked() )
          instance.p_scaleX = instance.p_scaleY;
    }
@@ -1580,7 +1558,7 @@ void DynamicCropInterface::__ScaledSize_ValueUpdated( NumericEdit& sender, doubl
          wPx *= 2.54;
       if ( wPx < 1 )
          wPx = 1;
-      instance.p_scaleX = wPx/width;
+      instance.p_scaleX = wPx/m_width;
       if ( GUI->PreserveAspectRatio_CheckBox.IsChecked() )
          instance.p_scaleY = instance.p_scaleX;
    }
@@ -1591,7 +1569,7 @@ void DynamicCropInterface::__ScaledSize_ValueUpdated( NumericEdit& sender, doubl
          hPx *= 2.54;
       if ( hPx < 1 )
          hPx = 1;
-      instance.p_scaleY = hPx/height;
+      instance.p_scaleY = hPx/m_height;
       if ( GUI->PreserveAspectRatio_CheckBox.IsChecked() )
          instance.p_scaleX = instance.p_scaleY;
    }
@@ -1660,7 +1638,7 @@ void DynamicCropInterface::__ColorSample_Paint( Control& sender, const Rect& upd
 
    RGBA color;
 
-   if ( view == nullptr || view->IsColor() )
+   if ( m_view.IsNull() || m_view.IsColor() )
    {
       color = RGBAColor( float( instance.p_fillColor[0] ),
                          float( instance.p_fillColor[1] ),
@@ -1669,7 +1647,7 @@ void DynamicCropInterface::__ColorSample_Paint( Control& sender, const Rect& upd
    else
    {
       RGBColorSystem rgb;
-      view->Window().GetRGBWS( rgb );
+      m_view.Window().GetRGBWS( rgb );
       float L = rgb.Lightness( instance.p_fillColor[0],
                                instance.p_fillColor[1],
                                instance.p_fillColor[2] );
@@ -1707,6 +1685,7 @@ DynamicCropInterface::GUIData::GUIData( DynamicCropInterface& w )
 
    Width_NumericEdit.SetReal();
    Width_NumericEdit.SetPrecision( 2 );
+   Width_NumericEdit.EnableFixedPrecision();
    Width_NumericEdit.SetRange( 1, int_max );
    Width_NumericEdit.label.SetText( "Width:" );
    Width_NumericEdit.label.SetFixedWidth( labelWidth1 );
@@ -1715,6 +1694,7 @@ DynamicCropInterface::GUIData::GUIData( DynamicCropInterface& w )
 
    Height_NumericEdit.SetReal();
    Height_NumericEdit.SetPrecision( 2 );
+   Height_NumericEdit.EnableFixedPrecision();
    Height_NumericEdit.SetRange( 1, int_max );
    Height_NumericEdit.label.SetText( "Height:" );
    Height_NumericEdit.label.SetFixedWidth( labelWidth1 );
@@ -1723,6 +1703,7 @@ DynamicCropInterface::GUIData::GUIData( DynamicCropInterface& w )
 
    PosX_NumericEdit.SetReal();
    PosX_NumericEdit.SetPrecision( 2 );
+   PosX_NumericEdit.EnableFixedPrecision();
    PosX_NumericEdit.SetRange( int_min, int_max );
    PosX_NumericEdit.label.SetText( "Anchor X:" );
    PosX_NumericEdit.label.SetFixedWidth( labelWidth1 );
@@ -1731,6 +1712,7 @@ DynamicCropInterface::GUIData::GUIData( DynamicCropInterface& w )
 
    PosY_NumericEdit.SetReal();
    PosY_NumericEdit.SetPrecision( 2 );
+   PosY_NumericEdit.EnableFixedPrecision();
    PosY_NumericEdit.SetRange( int_min, int_max );
    PosY_NumericEdit.label.SetText( "Anchor Y:" );
    PosY_NumericEdit.label.SetFixedWidth( labelWidth1 );
@@ -1767,6 +1749,7 @@ DynamicCropInterface::GUIData::GUIData( DynamicCropInterface& w )
 
    Angle_NumericEdit.SetReal();
    Angle_NumericEdit.SetPrecision( 3 );
+   Angle_NumericEdit.EnableFixedPrecision();
    Angle_NumericEdit.SetRange( 0, 180 );
    Angle_NumericEdit.label.SetText( "Angle (\xb0):" );
    Angle_NumericEdit.label.SetFixedWidth( labelWidth1 );
@@ -1786,6 +1769,7 @@ DynamicCropInterface::GUIData::GUIData( DynamicCropInterface& w )
 
    CenterX_NumericEdit.SetReal();
    CenterX_NumericEdit.SetPrecision( 2 );
+   CenterX_NumericEdit.EnableFixedPrecision();
    CenterX_NumericEdit.SetRange( int_min, int_max );
    CenterX_NumericEdit.label.SetText( "Center X:" );
    CenterX_NumericEdit.label.SetFixedWidth( labelWidth1 );
@@ -1794,6 +1778,7 @@ DynamicCropInterface::GUIData::GUIData( DynamicCropInterface& w )
 
    CenterY_NumericEdit.SetReal();
    CenterY_NumericEdit.SetPrecision( 2 );
+   CenterY_NumericEdit.EnableFixedPrecision();
    CenterY_NumericEdit.SetRange( int_min, int_max );
    CenterY_NumericEdit.label.SetText( "Center Y:" );
    CenterY_NumericEdit.label.SetFixedWidth( labelWidth1 );
@@ -2116,4 +2101,4 @@ DynamicCropInterface::GUIData::GUIData( DynamicCropInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropInterface.cpp - Released 2016/11/14 19:38:23 UTC
+// EOF DynamicCropInterface.cpp - Released 2016/11/17 18:14:58 UTC

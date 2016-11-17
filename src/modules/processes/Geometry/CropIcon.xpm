@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0320
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// CropIcon.xpm - Released 2016/11/14 19:38:23 UTC
+// CropIcon.xpm - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -325,4 +325,4 @@ static const char* CropIcon_XPM[] = {
 };
 
 // ----------------------------------------------------------------------------
-// EOF CropIcon.xpm - Released 2016/11/14 19:38:23 UTC
+// EOF CropIcon.xpm - Released 2016/11/17 18:14:58 UTC

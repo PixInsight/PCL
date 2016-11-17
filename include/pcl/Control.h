@@ -1416,8 +1416,8 @@ public:
     */
    Point ScaledCursorHotSpot( int xHot, int yHot ) const
    {
-      double hotScale = Round( (RoundInt( ResourcePixelRatio()*21 )|1)/21.0, 2 );
-      return Point( RoundIntArithmetic( hotScale*xHot ), RoundIntArithmetic( hotScale*yHot ) );
+      double r = ResourcePixelRatio();
+      return Point( RoundInt( r*(xHot + 0.499) ), RoundInt( r*(yHot + 0.499) ) );
    }
 
    /*!

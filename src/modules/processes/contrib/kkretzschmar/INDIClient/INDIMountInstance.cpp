@@ -83,6 +83,7 @@ INDIMountInstance::INDIMountInstance( const MetaProcess* m ) :
    p_computeApparentPosition( TheIMCComputeApparentPositionParameter->DefaultValue() ),
    p_enableAlignmentCorrection(TheIMCEnableAlignmentCorrectionParameter->DefaultValue()),
    p_alignmentFile(TheIMCAlignmentFileParameter->DefaultValue()),
+   p_alignmentConfig(TheIMCAlignmentConfigParameter->DefaultValue()),
    o_currentLST( TheIMCCurrentLSTParameter->DefaultValue() ),
    o_currentRA( TheIMCCurrentRAParameter->DefaultValue() ),
    o_currentDec( TheIMCCurrentDecParameter->DefaultValue() ),
@@ -92,10 +93,8 @@ INDIMountInstance::INDIMountInstance( const MetaProcess* m ) :
    o_syncCelestialRA(TheIMCSyncCelestialRAParameter->DefaultValue()) ,
    o_syncCelestialDEC(TheIMCSyncCelestialDecParameter->DefaultValue()),
    o_syncTelescopeRA(TheIMCSyncTelescopeRAParameter->DefaultValue()),
-   o_syncTelescopeDEC(TheIMCSyncTelescopeDecParameter->DefaultValue()),
-   m_align(LowellPointingModel::create())
+   o_syncTelescopeDEC(TheIMCSyncTelescopeDecParameter->DefaultValue())
 {
-
 }
 
 INDIMountInstance::INDIMountInstance( const INDIMountInstance& x ) :
@@ -119,6 +118,7 @@ void INDIMountInstance::Assign( const ProcessImplementation& p )
       p_enableAlignmentCorrection = x->p_computeApparentPosition;
       p_alignmentMethod           = x->p_alignmentMethod;
       p_alignmentFile             = x->p_alignmentFile;
+      p_alignmentConfig           = x->p_alignmentConfig;
       o_currentLST                = x->o_currentLST;
       o_currentRA                 = x->o_currentRA;
       o_currentDec                = x->o_currentDec;
@@ -336,7 +336,7 @@ bool INDIMountInstance::ExecuteGlobal()
    return true;
 }
 
-#define SHIFT_HA(HA)( HA > 12 ? HA - 24 : ( HA < -12 ? HA +24 : HA) )
+
 bool INDIMountInstance::ExecuteOn( View& view )
 {
    double observationCenterRA, observationCenterDec;
@@ -353,22 +353,35 @@ bool INDIMountInstance::ExecuteOn( View& view )
 
 
       if (p_enableAlignmentCorrection){
+
+    	  AutoPointer<AlignmentModel> aModel = nullptr;
+
+    	  switch (p_alignmentMethod){
+    	  case IMCAlignmentMethod::AnalyticalModel:
+    		  aModel = TpointPointingModel::create(49.237, p_alignmentConfig);
+    	  }
+
+
           Variant eodRa = view.PropertyValue( "Observation:Center:EOD_RA" );
           Variant eodDec = view.PropertyValue( "Observation:Center:EOD_Dec" );
-    	  Variant lst = view.PropertyValue( "Observation:LocalSiderealTime" );
-    	  m_align->readObject(p_alignmentFile);
+          double localSiderialTime = 0;
+          if (view.HasProperty("Observation:LocalSiderealTime")){
+        	  Variant lst = view.PropertyValue( "Observation:LocalSiderealTime" );
+        	  localSiderialTime = lst.ToDouble();
+          }
+    	  aModel->readObject(p_alignmentFile);
     	  double newHourAngle=-1;
     	  double newDec=-1;
     	  double observationCenterEodRA = eodRa.ToDouble()/15;
     	  double observationCenterEodDec = eodDec.ToDouble();
-    	  m_align->ApplyInverse(newHourAngle, newDec, SHIFT_HA(lst.ToDouble() - observationCenterEodRA), observationCenterEodDec);
-    	  double newObservationCenterRA=lst.ToDouble()-newHourAngle;
+    	  aModel->ApplyInverse(newHourAngle, newDec, AlignmentModel::rangeShiftHourAngle(localSiderialTime - observationCenterEodRA), observationCenterEodDec);
+    	  double newObservationCenterRA=localSiderialTime-newHourAngle;
     	  double newObservationCenterDec=newDec;
 
     	  observationCenterRA  = observationCenterRA + newObservationCenterRA - observationCenterEodRA;
     	  observationCenterDec = observationCenterDec + newObservationCenterDec - observationCenterEodDec;
     	  Console().WriteLn(String().Format("Old Coord (ra,dec): (%f,%f)", observationCenterEodRA, observationCenterEodDec));
-    	  Console().WriteLn(String().Format("New Coord (ha,dec): (%f,%f)", observationCenterRA, observationCenterDec));
+    	  Console().WriteLn(String().Format("New Coord (ra,dec): (%f,%f)", observationCenterRA, observationCenterDec));
       }
 
       if ( view.HasProperty( "Image:Center:RA" ) && view.HasProperty( "Image:Center:Dec" ) )
@@ -402,7 +415,7 @@ bool INDIMountInstance::ExecuteOn( View& view )
 
    if ( o_currentLST >= 0 ) // ### N.B.: o_currentLST < 0 if LST property could not be retrieved
    {
-      double currentHourAngle = o_currentLST - o_currentRA;
+      double currentHourAngle = AlignmentModel::rangeShiftHourAngle(o_currentLST - o_currentRA);
       double newHourAngle = currentHourAngle - deltaRA;
       if ( (currentHourAngle < 0) != (newHourAngle < 0) )
          if ( MessageBox( "<p>New center right ascension coordinate crosses the meridian, and will possibly trigger a meridian flip.</p>"
@@ -426,7 +439,7 @@ bool INDIMountInstance::ExecuteOn( View& view )
    try
    {
       p_command = IMCCommand::GoTo;
-      p_targetRA = o_currentRA + deltaRA;
+      p_targetRA = AlignmentModel::rangeShiftRighascension(o_currentRA + deltaRA);
       p_targetDec = o_currentDec + deltaDec;
       p_computeApparentPosition = false;
       p_enableAlignmentCorrection = false;
@@ -479,7 +492,9 @@ void* INDIMountInstance::LockParameter( const MetaParameter* p, size_type tableR
    if ( p == TheIMCComputeApparentPositionParameter )
       return &p_computeApparentPosition;
    if ( p == TheIMCAlignmentFileParameter )
-	   return &p_alignmentFile;
+	   return p_alignmentFile.Begin();
+   if ( p == TheIMCAlignmentConfigParameter )
+	   return &p_alignmentConfig;
    if (p == TheIMCCurrentLSTParameter )
       return &o_currentLST;
    if ( p == TheIMCCurrentRAParameter )
@@ -685,14 +700,22 @@ void AbstractINDIMountExecution::Perform()
 
             // Do not apply telescope pointing model in differential correction or during collection of sync points
             if (m_instance.p_enableAlignmentCorrection){
+          	  AutoPointer<AlignmentModel> aModel = nullptr;
 
-                m_instance.m_align->readObject(m_instance.p_alignmentFile);
+          	  switch (m_instance.p_alignmentMethod){
+          	  case IMCAlignmentMethod::AnalyticalModel:
+          		  aModel = TpointPointingModel::create(49.237, m_instance.p_alignmentConfig);
+          	  }
+          	  if (aModel==nullptr){
+          		throw Error( "Alignment model could not be loaded" );
+          	  }
+          	  aModel->readObject(m_instance.p_alignmentFile);
 
-            	m_instance.m_align->Apply(hourAngle,targetDec,SHIFT_HA(m_instance.o_currentLST - targetRARaw),targetDecRaw);
-                targetRA=m_instance.o_currentLST-hourAngle;
+          	  aModel->Apply(hourAngle,targetDec,AlignmentModel::rangeShiftHourAngle(m_instance.o_currentLST - targetRARaw),targetDecRaw);
+          	  targetRA=AlignmentModel::rangeShiftRighascension(m_instance.o_currentLST-hourAngle);
 
-                Console().WriteLn(String().Format("Old Coord (ra,dec): (%f,%f)", targetRARaw, targetDecRaw));
-                Console().WriteLn(String().Format("New Coord (ha,dec): (%f,%f)", targetRA, targetDec));
+          	  Console().WriteLn(String().Format("Old Coord (ra,dec): (%f,%f)", targetRARaw, targetDecRaw));
+          	  Console().WriteLn(String().Format("New Coord (ra,dec): (%f,%f)", targetRA, targetDec));
 
             } else {
             	targetRA = targetRARaw;
@@ -816,7 +839,6 @@ void AbstractINDIMountExecution::Perform()
             	// TODO: get sync point coordinates from server and set parameter
             }
             break;
-            case IMCAlignmentMethod::TPointAnalyticalModel:
             case IMCAlignmentMethod::AnalyticalModel:
             {
                 m_instance.GetCurrentCoordinates();
@@ -837,7 +859,7 @@ void AbstractINDIMountExecution::Perform()
 
                 IsoString fileContent;
 
-                fileContent.Append(IsoString().Format("%s,%f,%f,%f,%f,%f,%s\n","true",syncPoint.localSiderialTime,syncPoint.celestialRA,syncPoint.celestialDEC,syncPoint.telecopeRA,syncPoint.telecopeDEC, syncPoint.pierSide == IMCPierSide::West ? "West" : "East" ));
+                fileContent.Append(IsoString().Format("%f,%f,%f,%f,%f,%s,%s\n",syncPoint.localSiderialTime,syncPoint.celestialRA,syncPoint.celestialDEC,syncPoint.telecopeRA,syncPoint.telecopeDEC, syncPoint.pierSide == IMCPierSide::West ? "West" : "East", "true" ));
 
 
                 String syncDataPath = File::SystemTempDirectory();
@@ -901,9 +923,17 @@ void AbstractINDIMountExecution::Perform()
          break;
       case IMCCommand::FitAlignmentModel:
       {
+    	 AutoPointer<AlignmentModel> aModel = nullptr;
+
+    	 switch (m_instance.p_alignmentMethod){
+    	 case IMCAlignmentMethod::AnalyticalModel:
+    		 aModel = TpointPointingModel::create(49.237, m_instance.p_alignmentConfig);
+    	 }
+
     	 m_instance.loadSyncData();
-    	 m_instance.m_align->fitModel(m_instance.syncDataArray,m_instance.p_pierSide);
-    	 m_instance.m_align->writeObject(m_instance.p_alignmentFile, m_instance.p_pierSide);
+    	 aModel->fitModel(m_instance.syncDataArray,IMCPierSide::West);
+    	 aModel->fitModel(m_instance.syncDataArray,IMCPierSide::East);
+    	 aModel->writeObject(m_instance.p_alignmentFile, m_instance.p_pierSide);
     	 break;
       }
       default:

@@ -374,7 +374,7 @@ void CoordinateSearchDialog::e_Click( Button& sender, bool checked )
          Cancel();
    }
 }
-#define SHIFT_HA(HA)( HA > 12 ? HA - 24 : ( HA < -12 ? HA + 24 : HA) )
+
 SyncDataListDialog::SyncDataListDialog(Array<SyncDataPoint>& syncDataArray) :
    Dialog(), m_syncDataList(syncDataArray), m_firstTimeShown(true)
 {
@@ -395,7 +395,7 @@ SyncDataListDialog::SyncDataListDialog(Array<SyncDataPoint>& syncDataArray) :
 		auto syncDataPoint = syncDataArray[index];
 		node->SetText(0,String().Format("%i",index));
 		node->SetIcon(1, syncDataPoint.enabled ? ScaledResource(":/browser/enabled.png") : ScaledResource(":/browser/disabled.png") );
-		node->SetText(2,String().Format("%2.3f",SHIFT_HA(syncDataPoint.localSiderialTime-syncDataPoint.celestialRA)));
+		node->SetText(2,String().Format("%2.3f",AlignmentModel::rangeShiftHourAngle(syncDataPoint.localSiderialTime-syncDataPoint.celestialRA)));
 		node->SetText(3,String().Format("%2.3f",syncDataPoint.celestialDEC));
 		node->SetText(4,String().Format("%2.5f",syncDataPoint.telecopeRA-syncDataPoint.celestialRA));
 		node->SetText(5,String().Format("%2.5f",syncDataPoint.celestialDEC-syncDataPoint.telecopeDEC));
@@ -566,6 +566,8 @@ ProcessImplementation* INDIMountInterface::NewProcess() const
    instance->p_targetDec = SexagesimalToDecimal( GUI->MountTargetDECIsSouth_CheckBox.IsChecked() ? -1 : +1,
                               GUI->TargetDec_H_SpinBox.Value(), GUI->TargetDec_M_SpinBox.Value(), GUI->TargetDec_S_NumericEdit.Value() );
 
+   instance->p_computeApparentPosition = GUI->MountComputeApparentPosition_CheckBox.IsChecked();
+
    instance->p_pierSide = GUI->AlignmentPierSide_ComboBox.CurrentItem();
 
    instance->p_enableAlignmentCorrection =  GUI->MountAlignmentCorrection_CheckBox.IsChecked();
@@ -574,38 +576,30 @@ ProcessImplementation* INDIMountInterface::NewProcess() const
 
    switch(instance->p_alignmentMethod){
    	case IMCAlignmentMethod::AnalyticalModel:
-   		instance->m_align = LowellPointingModel::create();
-   	    break;
-   	case IMCAlignmentMethod::TPointAnalyticalModel:
    	{
-   		uint32_t config = 0;
    		if (GUI->MountAlignmentConfigOffset_CheckBox.IsChecked()){
-   			config |= 1 << 1;// offset
+   			instance->p_alignmentConfig |= 1 << 1;// offset
    		}
    		if (GUI->MountAlignmentConfigCollimation_CheckBox.IsChecked()){
-   			config |= 1 << 2;// collimation error
+   			instance->p_alignmentConfig |= 1 << 2;// collimation error
    		}
    		if (GUI->MountAlignmentConfigNonPerpendicular_CheckBox.IsChecked()){
-   			config |= 1 << 3;// non-perpendicular dec-ra axis error
+   			instance->p_alignmentConfig |= 1 << 3;// non-perpendicular dec-ra axis error
    		}
    		if (GUI->MountAlignmentConfigPAHorDisp_CheckBox.IsChecked()){
-   			config |= 1 << 4;// polar-axis horizontal displacement
+   			instance->p_alignmentConfig |= 1 << 4;// polar-axis horizontal displacement
    		}
    		if (GUI->MountAlignmentConfigPAVertDisp_CheckBox.IsChecked()){
-   			config |= 1 << 5;// polar-axis vertical displacement
+   			instance->p_alignmentConfig |= 1 << 5;// polar-axis vertical displacement
    		}
    		if (GUI->MountAlignmentConfigTubeFlexure_CheckBox.IsChecked()){
-   			config |= 1 << 6;// tube flexure
+   			instance->p_alignmentConfig |= 1 << 6;// tube flexure
    		}
    		if (GUI->MountAlignmentConfigForkFlexure_CheckBox.IsChecked()){
-   			config |= 1 << 7;// fork flexure
+   			instance->p_alignmentConfig |= 1 << 7;// fork flexure
    		}
-   		//config |= 1 << 8;// delta-axis flexure
-   		instance->m_align = TpointPointingModel::create(49.237,config);
+   		//instance->p_alignmentConfig |= 1 << 8;// delta-axis flexure
    	}
-   	break;
-   	default:
-   		instance->m_align = LowellPointingModel::create();
    	}
 
    instance->p_alignmentFile = GUI->AlignmentFile_Edit.Text();
@@ -831,7 +825,6 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    AlignmentMethod_Label.SetFixedWidth(labelWidth1);
 
    AlignmentMethod_ComboBox.AddItem("Analytical Model");
-   AlignmentMethod_ComboBox.AddItem("Isotropic Analytical Model (L=0)");
    AlignmentMethod_ComboBox.AddItem("Server Model");
    AlignmentMethod_ComboBox.SetToolTip(alignmentMethodToolTipText);
    AlignmentMethod_ComboBox.OnItemSelected((ComboBox::item_event_handler) &INDIMountInterface::e_ItemSelected,	w);
@@ -850,21 +843,28 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    MountAlignmentConfigOffset_CheckBox.SetText("Zero-point");
    MountAlignmentConfigOffset_CheckBox.SetToolTip(
    			"<p>Zero-point offset</p>");
+   MountAlignmentConfigOffset_CheckBox.Check();
    MountAlignmentConfigCollimation_CheckBox.SetText("Collimation");
    MountAlignmentConfigCollimation_CheckBox.SetToolTip(
    			"<p>Collimation error</p>");
+   MountAlignmentConfigCollimation_CheckBox.Check();
    MountAlignmentConfigNonPerpendicular_CheckBox.SetText("Non-perpendicular");
    MountAlignmentConfigNonPerpendicular_CheckBox.SetToolTip("<p>Non-perpendicular</p>");
+   MountAlignmentConfigNonPerpendicular_CheckBox.Check();
    MountAlignmentConfigPAHorDisp_CheckBox.SetText("Polar horizontal");
    MountAlignmentConfigPAHorDisp_CheckBox.SetToolTip(
    			"<p>Polar-axis horizontal displacement</p>");
+   MountAlignmentConfigPAHorDisp_CheckBox.Check();
    MountAlignmentConfigPAVertDisp_CheckBox.SetText("Polar  vertical");
    MountAlignmentConfigPAVertDisp_CheckBox.SetToolTip(
    			"<p>Polar-axis vertical displacement</p>");
+   MountAlignmentConfigPAVertDisp_CheckBox.Check();
    MountAlignmentConfigTubeFlexure_CheckBox.SetText("Tube flexure");
    MountAlignmentConfigTubeFlexure_CheckBox.SetToolTip("<p>Tube flexure</p>");
+   MountAlignmentConfigTubeFlexure_CheckBox.Check();
    MountAlignmentConfigForkFlexure_CheckBox.SetText("Fork flexure");
    MountAlignmentConfigForkFlexure_CheckBox.SetToolTip("<p>Fork flexure</p>");
+   MountAlignmentConfigForkFlexure_CheckBox.Check();
 
    MountAlignmentConfig_Sizer.AddSpacing(4);
    MountAlignmentConfig_Sizer.Add(AlignmentConfig_Label);
@@ -990,11 +990,16 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    MountSearch_Button.SetToolTip( "<p>Open the Online Coordinate Search dialog.</p>" );
    MountSearch_Button.OnClick( (Button::click_event_handler)&INDIMountInterface::e_Click, w );
 
+   MountComputeApparentPosition_CheckBox.SetText( "Apparent Position Correction" );
+   MountComputeApparentPosition_CheckBox.SetToolTip( "<p>Compute and apply apparent position correction to target coordinates.</p>" );
+   MountComputeApparentPosition_Sizer.AddSpacing( labelWidth1 + 4 );
+   MountComputeApparentPosition_Sizer.Add( MountComputeApparentPosition_CheckBox );
+   MountComputeApparentPosition_Sizer.AddStretch();
+
    MountSearch_Sizer.SetSpacing( 8 );
    MountSearch_Sizer.AddSpacing( labelWidth1 + 4 );
    MountSearch_Sizer.Add( MountSearch_Button );
    MountSearch_Sizer.AddStretch();
-
 
    MountAlignmentCorrection_CheckBox.SetText( "Alignment Correction" );
    MountAlignmentCorrection_CheckBox.SetToolTip( "<p>Compute and apply alignment correction to target coordinates.</p>" );
@@ -1040,6 +1045,7 @@ INDIMountInterface::GUIData::GUIData( INDIMountInterface& w )
    MountGoTo_Sizer.SetSpacing( 8 );
    MountGoTo_Sizer.Add( MountTargetRA_Sizer );
    MountGoTo_Sizer.Add( MountTargetDec_Sizer );
+   MountGoTo_Sizer.Add( MountComputeApparentPosition_Sizer );
    MountGoTo_Sizer.Add( MountSearch_Sizer );
    MountGoTo_Sizer.Add( MountAlignmentCorrection_Sizer );
    MountGoTo_Sizer.Add( MountGoToStart_Sizer );
@@ -1511,7 +1517,7 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
    {
 	   Array<SyncDataPoint> syncDataList;
 	   INDIMountInstance::loadSyncData(syncDataList);
-	   if ( m_searchDialog == nullptr ){
+	   if ( m_syncDataListDialog == nullptr ){
 		   m_syncDataListDialog = new SyncDataListDialog(syncDataList);
 	   }
 	   if ( m_syncDataListDialog->Execute() ){
@@ -1652,6 +1658,7 @@ void INDIMountInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
 
 }
 
+
 const char* RESIDUAL_GNUPLOT_TEMPLATE = R"(
 
 set terminal svg size 800,600 enhanced background rgb 'white' font 'helvetica,12'
@@ -1659,35 +1666,37 @@ set ticslevel 0
 set xzeroaxis
 set output '%s'
 set xlabel "hourangle [deg]"
-set xlabel "residual hourangle [deg]"
+set ylabel "residual hourangle [deg]"
 plot '%s' index 0 using 1:3 title "west", '%s' index 1 using 1:3 title "east"
 set output '%s'
 set ylabel "residual declination [deg]"
 plot '%s' index 0 using 2:3 title "west", '%s' index 1 using 2:3 title "east"
 set output '%s'
 set xlabel "declination [deg]"
-set xlabel "residual hourangle [deg]"
+set ylabel "residual hourangle [deg]"
 plot '%s' index 0 using 1:4 title "west", '%s' index 1 using 1:4 title "east"
 set output '%s'
 set ylabel "residual declination [deg]"
 plot '%s' index 0 using 2:4 title "west", '%s' index 1 using 2:4 title "east"
-set xrange[ -0.2:0.2]
-set yrange[ -0.2:0.2]
+set xrange[ %f:%f]
+set yrange[ %f:%f]
 unset border
 set xlabel "residual hourangle [deg]"
 set ylabel "residual declination [deg]"
 set xtics axis nomirror
 set ytics axis nomirror
 set output '%s'
-set object 10 circle size scr 0.0833 
-set object 20 circle size scr 0.01666
 set yzeroaxis
+set object 10 circle size 0.01666 fs transparent border 1
+set object 11 circle size 0.0084 fs transparent border 2
+set object 12 circle size 0.00166 fs transparent border 3
 plot '%s' index 0 using 3:4 title "west", '%s' index 1 using 3:4 title "east"
-
 )";
 
 void INDIMountInterface::plotAlignemtResiduals(AlignmentModel* model, const Array<SyncDataPoint>& syncDatapointList){
 
+	Array<double> delHAs;
+	Array<double> delDecs;
 	// create residual data file
 	IsoString fileContent;
 	String modelResidualDataPath = File::SystemTempDirectory();
@@ -1698,8 +1707,7 @@ void INDIMountInterface::plotAlignemtResiduals(AlignmentModel* model, const Arra
 	for (auto syncPoint : syncDatapointList) {
 		if (!syncPoint.enabled || syncPoint.pierSide == IMCPierSide::East)
 			continue;
-		double ha = SHIFT_HA(
-				syncPoint.localSiderialTime - syncPoint.celestialRA);
+		double ha = AlignmentModel::rangeShiftHourAngle(syncPoint.localSiderialTime - syncPoint.celestialRA);
 		double dec = syncPoint.celestialDEC;
 		double del_ha = syncPoint.telecopeRA - syncPoint.celestialRA;
 		double del_dec = syncPoint.celestialDEC - syncPoint.telecopeDEC;
@@ -1711,7 +1719,8 @@ void INDIMountInterface::plotAlignemtResiduals(AlignmentModel* model, const Arra
 		double del_haCor = ha - haCor;
 		double del_decCor = dec - decCor;
 		fileContent.Append(	IsoString().Format("%f %f %f %f\n", ha, dec, del_ha - del_haCor,del_dec - del_decCor));
-
+		delHAs.Append(del_ha - del_haCor);
+		delDecs.Append(del_dec - del_decCor);
 	}
 	fileContent.Append("\n");
 	fileContent.Append("\n");
@@ -1719,8 +1728,7 @@ void INDIMountInterface::plotAlignemtResiduals(AlignmentModel* model, const Arra
 	for (auto syncPoint : syncDatapointList) {
 		if (!syncPoint.enabled || syncPoint.pierSide != IMCPierSide::East)
 			continue;
-		double ha = SHIFT_HA(
-				syncPoint.localSiderialTime - syncPoint.celestialRA);
+		double ha = AlignmentModel::rangeShiftHourAngle(syncPoint.localSiderialTime - syncPoint.celestialRA);
 		double dec = syncPoint.celestialDEC;
 		double del_ha = syncPoint.telecopeRA - syncPoint.celestialRA;
 		double del_dec = syncPoint.celestialDEC - syncPoint.telecopeDEC;
@@ -1732,6 +1740,8 @@ void INDIMountInterface::plotAlignemtResiduals(AlignmentModel* model, const Arra
 		double del_haCor = ha - haCor;
 		double del_decCor = dec - decCor;
 		fileContent.Append(IsoString().Format("%f %f %f %f\n", ha, dec, del_ha - del_haCor,	del_dec - del_decCor));
+		delHAs.Append(del_ha - del_haCor);
+		delDecs.Append(del_dec - del_decCor);
 	}
 	if (File::Exists(modelResidualDataPath)) {
 		File::Remove(modelResidualDataPath);
@@ -1752,12 +1762,14 @@ void INDIMountInterface::plotAlignemtResiduals(AlignmentModel* model, const Arra
 	outputFiles.Add(tmpFilePath +  "residuals_ha_dec.svg");
 	outputFiles.Add(tmpFilePath +  "residuals_dec_dec.svg");
 	outputFiles.Add(tmpFilePath +  "residuals_delha_deldec.svg");
+	double maxDev=std::max(*delHAs.MaxItem(),*delDecs.MaxItem());
 
 	gnufileContent = IsoString().Format(RESIDUAL_GNUPLOT_TEMPLATE, outputFiles[0].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
 			outputFiles[1].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
 			outputFiles[2].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
 			outputFiles[3].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(),
-			outputFiles[4].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str());
+			-maxDev,maxDev,-maxDev,maxDev,
+			outputFiles[4].ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str(), modelResidualDataPath.ToIsoString().c_str() );
 
 	if (File::Exists(gnuFilePath)) {
 		File::Remove(gnuFilePath);

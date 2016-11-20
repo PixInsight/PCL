@@ -319,6 +319,8 @@ private:
             SpinBox           TargetDec_M_SpinBox;
             NumericEdit       TargetDec_S_NumericEdit;
             CheckBox          MountTargetDECIsSouth_CheckBox;
+         HorizontalSizer   MountComputeApparentPosition_Sizer;
+            CheckBox         MountComputeApparentPosition_CheckBox;
          HorizontalSizer   MountSearch_Sizer;
             PushButton        MountSearch_Button;
          HorizontalSizer   MountAlignmentCorrection_Sizer;

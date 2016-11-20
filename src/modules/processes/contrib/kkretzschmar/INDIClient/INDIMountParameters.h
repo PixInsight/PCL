@@ -139,8 +139,10 @@ DECLARE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCSyncTelescopeDec);
 
 DECLARE_BOOLEAN_PARAMETER_CLASS(IMCEnableAlignmentCorrection);
 
-#define ALIGNMENT_ENUM ENUM_ITEM(AnalyticalModel) ENUM_ITEM(TPointAnalyticalModel) ENUM_ITEM(ServerModel)
+#define ALIGNMENT_ENUM ENUM_ITEM(AnalyticalModel) ENUM_ITEM(ServerModel)
 DECLARE_ENUM_PARAMETER(IMCAlignmentMethod,ALIGNMENT_ENUM,AnalyticalModel);
+
+DECLARE_INT32_PARAMETER_CLASS(IMCAlignmentConfig);
 
 // ----------------------------------------------------------------------------
 

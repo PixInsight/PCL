@@ -61,10 +61,7 @@
 namespace pcl
 {
 
-enum PierSide {
-	West,
-	East
-};
+
 
 struct SyncDataPoint {
 	double    localSiderialTime;
@@ -112,54 +109,31 @@ public:
 
 	static void getPseudoInverse(Matrix& pseudoInverse, const Matrix& matrix);
 
+	static double rangeShiftHourAngle(double hourAngle){
+		double shiftedHA  = hourAngle;
+		while (shiftedHA < -12.0){
+			shiftedHA += 24.0;
+		}
+		while (shiftedHA >= 12.0){
+			shiftedHA -= 24.0;
+		}
+		return shiftedHA;
+	}
+
+	static double rangeShiftRighascension(double rightAscension){
+		double shiftedRA = rightAscension;
+		while (shiftedRA < 0.0) {
+			shiftedRA += 24.0;
+		}
+		while (shiftedRA > 24.0) {
+			shiftedRA -= 24.0;
+		}
+		return shiftedRA;
+	}
 };
 
 // ----------------------------------------------------------------------------
 
-
-/*
- * Analytical telescope pointing model.
- *
- * Model to capture the effects of
- * - zero point offsets in declination and hour angle
- * - ...
- *
- * http://www.boulder.swri.edu/~buie/idl/downloads/pointing/pointing.pdf
- *
- *
- */
- class LowellPointingModel : public AlignmentModel {
- public:
-
-	LowellPointingModel() : AlignmentModel (), m_modelCoefficientsWest(4), m_modelCoefficientsEast(4), m_modelHACoefficientsWest(4), m_modelHACoefficientsEast(4)
- 	{
- 	}
-	virtual ~LowellPointingModel()
-	{
-
-	}
-
-	virtual void Apply(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) ;
-
-	virtual void ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec);
-
-	virtual void fitModel(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide);
-
-	static AlignmentModel* create(){
-		return new LowellPointingModel();
-	}
-
-	virtual void writeObject(const String& fileName, pcl_enum pierSide);
-
-	virtual void readObject(const String& fileName);
-
-private:
-
-	Vector m_modelCoefficientsWest;
-	Vector m_modelCoefficientsEast;
-	Vector m_modelHACoefficientsWest;
-	Vector m_modelHACoefficientsEast;
-};
 
 
 
@@ -224,59 +198,7 @@ private:
  	uint32_t m_modelConfig;
  };
 
- /*
-  * Analytical telescope pointing model,
-  * using Spherical Harmonics to model
-  * anisotropic effects.
-  *
-  *
-  * http://
-  *
-  *
-  */
- class AnalyticalPointingModel : public AlignmentModel {
- public:
-	 AnalyticalPointingModel(size_t spericalHarmonicsOrder):AlignmentModel (), m_orderOfSphericalHarmonics(spericalHarmonicsOrder),m_numOfModelParameters(0),m_modelParameters(nullptr){
-		 if (m_orderOfSphericalHarmonics == 0){
-			 m_numOfModelParameters=6;
-		 } else if (m_orderOfSphericalHarmonics == 1){
-			 m_numOfModelParameters=22;
-		 } else if (m_orderOfSphericalHarmonics == 2){
-			 m_numOfModelParameters=46;
-		 } else {
-			 throw Error( "Internal error: AnalyticalPointingModel: Order of spherical harmonics > 2 not supported" );
-		 }
 
-		 m_modelParameters = new Vector(m_numOfModelParameters);
-	 }
-
-	 virtual ~AnalyticalPointingModel(){
-		 delete m_modelParameters;
-	 }
-
-	 virtual void Apply(double& hourAngleCor, double& decCor,  double hourAngle, double dec);
-
-	 virtual void ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec);
-
-	 virtual void fitModel(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide);
-
-	 static AlignmentModel* create(size_t spericalHarmonicsOrder){
-		 return new AnalyticalPointingModel(spericalHarmonicsOrder);
-	 }
-
-	 virtual void writeObject(const String& fileName, pcl_enum pierSide);
-
-	 virtual void readObject(const String& fileName);
- private:
-
-	 static void evaluateBasis(Matrix& basisMatrix, double hourAngle, double dec);
-
-	 size_t m_orderOfSphericalHarmonics;
-	 size_t m_numOfModelParameters;
-
-	 Vector* m_modelParameters;
-
- };
 
 
 } // pcl

@@ -80,6 +80,7 @@ REGISTER_MODULE_PARAMETER(IMCSyncTelescopeDec);
 REGISTER_MODULE_PARAMETER(IMCAlignmentMethod);
 REGISTER_MODULE_PARAMETER(IMCEnableAlignmentCorrection);
 REGISTER_MODULE_PARAMETER(IMCAlignmentFile);
+REGISTER_MODULE_PARAMETER(IMCAlignmentConfig);
 
 
 // ----------------------------------------------------------------------------
@@ -153,6 +154,8 @@ DEFINE_BOOLEAN_PARAMETER_CLASS(IMCEnableAlignmentCorrection,"enableAlignmentCorr
 DEFINE_ENUM_PARAMETER_CLASS(IMCAlignmentMethod,"AlignmentMethod",ALIGNMENT_ENUM, None);
 
 DEFINE_STRING_PARAMETER_CLASS(IMCAlignmentFile,"alignmentModelFile");
+
+DEFINE_INT32_PARAMETER_CLASS(IMCAlignmentConfig,"alignmentConfig",0,0,255);
 
 // ----------------------------------------------------------------------------
 

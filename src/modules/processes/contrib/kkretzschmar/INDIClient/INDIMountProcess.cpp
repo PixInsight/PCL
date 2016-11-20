@@ -96,6 +96,7 @@ INDIMountProcess::INDIMountProcess() : MetaProcess()
    new IMCEnableAlignmentCorrection (this);
    new IMCAlignmentMethod(this);
    new IMCAlignmentFile(this);
+   new IMCAlignmentConfig(this);
 }
 
 // ----------------------------------------------------------------------------

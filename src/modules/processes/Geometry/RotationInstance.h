@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// RotationInstance.h - Released 2016/02/21 20:22:42 UTC
+// RotationInstance.h - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -60,11 +60,9 @@
 namespace pcl
 {
 
-class PixelInterpolation;
+// ----------------------------------------------------------------------------
 
-// ----------------------------------------------------------------------------
-// RotationInstance
-// ----------------------------------------------------------------------------
+class PixelInterpolation;
 
 class RotationInstance : public ProcessImplementation
 {
@@ -75,16 +73,15 @@ public:
 
    virtual void Assign( const ProcessImplementation& );
 
-   virtual bool IsMaskable( const View&, const ImageWindow& ) const
-   {
-      return false;
-   }
+   virtual bool IsMaskable( const View&, const ImageWindow& ) const;
+
+   virtual UndoFlags UndoMode( const View& ) const;
 
    virtual bool CanExecuteOn( const View&, pcl::String& whyNot ) const;
    virtual bool BeforeExecution( View& );
    virtual bool ExecuteOn( View& );
 
-   virtual void* LockParameter( const MetaParameter*, size_type /*tableRow*/ );
+   virtual void* LockParameter( const MetaParameter*, size_type tableRow );
 
    void GetNewSizes( int& w, int& h ) const;
 
@@ -108,4 +105,4 @@ private:
 #endif   // __RotationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF RotationInstance.h - Released 2016/02/21 20:22:42 UTC
+// EOF RotationInstance.h - Released 2016/11/17 18:14:58 UTC

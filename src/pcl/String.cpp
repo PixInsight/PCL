@@ -2189,38 +2189,48 @@ T ToISO8601DateTime( int year, int month, int day, double dayf, double tz, const
    if ( options.timeItems > 0 )
    {
       double h, m, s;
-      for ( ;; )
+      switch ( options.timeItems )
       {
-         switch ( options.timeItems )
+      default:
+      case 3:
+         h = Frac( dayf )*24;
+         m = Frac( h )*60;
+         s = Round( Frac( m )*60, options.precision );
+         h = TruncInt( h );
+         m = TruncInt( m );
+         if ( s == 60 )
          {
-         default:
-         case 3:
-            h = dayf*24;
-            m = Frac( h )*60;
-            s = Round( Frac( m )*60, options.precision );
-            h = TruncInt( h );
-            m = TruncInt( m );
-            break;
-         case 2:
-            h = dayf*24;
-            m = Round( Frac( h )*60, options.precision );
             s = 0;
-            h = TruncInt( h );
-            break;
-         case 1:
-            h = Round( dayf*24, options.precision );
-            m = 0;
-            s = 0;
-            break;
+            m = TruncInt( m + 1 );
+            if ( m > 59 )
+            {
+               m = 0;
+               h += 1;
+            }
          }
+         break;
+      case 2:
+         h = Frac( dayf )*24;
+         m = Round( Frac( h )*60, options.precision );
+         s = 0;
+         h = TruncInt( h );
+         if ( m == 60 )
+         {
+            m = 0;
+            h += 1;
+         }
+         break;
+      case 1:
+         h = Round( Frac( dayf )*24, options.precision );
+         m = 0;
+         s = 0;
+         break;
+      }
 
-         if ( s < 60 && m < 60 && h < 24 )
-            break;
-
-         int jdi;
-         double jdf;
-         ComplexTimeToJD( jdi, jdf, year, month, day, (h + (m + s/60)/60)/24 );
-         JDToComplexTime( year, month, day, dayf, jdi, jdf );
+      if ( h == 24 )
+      {
+         h = 0;
+         ++day;
       }
 
       int w = (options.precision > 0) ? 3+options.precision : 2;
@@ -2253,6 +2263,8 @@ T ToISO8601DateTime( int year, int month, int day, double dayf, double tz, const
             time.AppendFormat( "%c%02d:%02d", (tz < 0) ? '-' : '+', TruncInt( h ), m );
          }
    }
+
+   JDToComplexTime( year, month, day, dayf, ComplexTimeToJD( year, month, day ) );
 
    return T().Format( "%d-%02d-%02d", year, month, day ) + time;
 }

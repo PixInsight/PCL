@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// ChannelMatchParameters.h - Released 2016/02/21 20:22:42 UTC
+// ChannelMatchParameters.h - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -62,11 +62,11 @@ PCL_BEGIN_LOCAL
 
 // ----------------------------------------------------------------------------
 
-class ChannelTable : public MetaTable
+class CMChannels : public MetaTable
 {
 public:
 
-   ChannelTable( MetaProcess* );
+   CMChannels( MetaProcess* );
 
    virtual IsoString Id() const;
 
@@ -74,30 +74,30 @@ public:
    virtual size_type MaxLength() const;
 };
 
-extern ChannelTable* TheChannelTableParameter;
+extern CMChannels* TheCMChannelsParameter;
 
 // ----------------------------------------------------------------------------
 
-class ChannelEnabled : public MetaBoolean
+class CMEnabled : public MetaBoolean
 {
 public:
 
-   ChannelEnabled( MetaTable* );
+   CMEnabled( MetaTable* );
 
    virtual IsoString Id() const;
 
    virtual bool DefaultValue() const;
 };
 
-extern ChannelEnabled* TheChannelEnabledParameter;
+extern CMEnabled* TheCMEnabledParameter;
 
 // ----------------------------------------------------------------------------
 
-class ChannelXOffset : public MetaFloat
+class CMXOffset : public MetaFloat
 {
 public:
 
-   ChannelXOffset( MetaTable* );
+   CMXOffset( MetaTable* );
 
    virtual IsoString Id() const;
    virtual int Precision() const;
@@ -106,15 +106,15 @@ public:
    virtual double MaximumValue() const;
 };
 
-extern ChannelXOffset* TheChannelXOffsetParameter;
+extern CMXOffset* TheCMXOffsetParameter;
 
 // ----------------------------------------------------------------------------
 
-class ChannelYOffset : public MetaFloat
+class CMYOffset : public MetaFloat
 {
 public:
 
-   ChannelYOffset( MetaTable* );
+   CMYOffset( MetaTable* );
 
    virtual IsoString Id() const;
    virtual int Precision() const;
@@ -123,15 +123,15 @@ public:
    virtual double MaximumValue() const;
 };
 
-extern ChannelYOffset* TheChannelYOffsetParameter;
+extern CMYOffset* TheCMYOffsetParameter;
 
 // ----------------------------------------------------------------------------
 
-class ChannelFactor : public MetaDouble
+class CMFactor : public MetaDouble
 {
 public:
 
-   ChannelFactor( MetaTable* );
+   CMFactor( MetaTable* );
 
    virtual IsoString Id() const;
    virtual int Precision() const;
@@ -140,7 +140,7 @@ public:
    virtual double MaximumValue() const;
 };
 
-extern ChannelFactor* TheChannelFactorParameter;
+extern CMFactor* TheCMFactorParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -151,4 +151,4 @@ PCL_END_LOCAL
 #endif   // __ChannelMatchParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF ChannelMatchParameters.h - Released 2016/02/21 20:22:42 UTC
+// EOF ChannelMatchParameters.h - Released 2016/11/17 18:14:58 UTC

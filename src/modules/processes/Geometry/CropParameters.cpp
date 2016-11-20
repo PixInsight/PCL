@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// CropParameters.cpp - Released 2016/02/21 20:22:42 UTC
+// CropParameters.cpp - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -57,123 +57,123 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-LeftMargin*       TheLeftMarginParameter = 0;
-TopMargin*        TheTopMarginParameter = 0;
-RightMargin*      TheRightMarginParameter = 0;
-BottomMargin*     TheBottomMarginParameter = 0;
-CroppingMode*     TheCroppingModeParameter = 0;
-XResolution*      TheXResolutionCropParameter = 0;
-YResolution*      TheYResolutionCropParameter = 0;
-MetricResolution* TheMetricResolutionCropParameter = 0;
-ForceResolution*  TheForceResolutionCropParameter = 0;
-FillRed*          TheFillRedCropParameter = 0;
-FillGreen*        TheFillGreenCropParameter = 0;
-FillBlue*         TheFillBlueCropParameter = 0;
-FillAlpha*        TheFillAlphaCropParameter = 0;
+CRLeftMargin*     TheCRLeftMarginParameter = nullptr;
+CRTopMargin*      TheCRTopMarginParameter = nullptr;
+CRRightMargin*    TheCRRightMarginParameter = nullptr;
+CRBottomMargin*   TheCRBottomMarginParameter = nullptr;
+CRMode*           TheCRModeParameter = nullptr;
+XResolution*      TheCRXResolutionParameter = nullptr;
+YResolution*      TheCRYResolutionParameter = nullptr;
+MetricResolution* TheCRMetricResolutionParameter = nullptr;
+ForceResolution*  TheCRForceResolutionParameter = nullptr;
+FillRed*          TheCRFillRedParameter = nullptr;
+FillGreen*        TheCRFillGreenParameter = nullptr;
+FillBlue*         TheCRFillBlueParameter = nullptr;
+FillAlpha*        TheCRFillAlphaParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
-LeftMargin::LeftMargin( MetaProcess* P ) : MetaDouble( P )
+CRLeftMargin::CRLeftMargin( MetaProcess* P ) : MetaDouble( P )
 {
-   TheLeftMarginParameter = this;
+   TheCRLeftMarginParameter = this;
 }
 
-IsoString LeftMargin::Id() const
+IsoString CRLeftMargin::Id() const
 {
    return "leftMargin";
 }
 
-int LeftMargin::Precision() const
+int CRLeftMargin::Precision() const
 {
    return -8;
 }
 
 // ----------------------------------------------------------------------------
 
-TopMargin::TopMargin( MetaProcess* P ) : MetaDouble( P )
+CRTopMargin::CRTopMargin( MetaProcess* P ) : MetaDouble( P )
 {
-   TheTopMarginParameter = this;
+   TheCRTopMarginParameter = this;
 }
 
-IsoString TopMargin::Id() const
+IsoString CRTopMargin::Id() const
 {
    return "topMargin";
 }
 
-int TopMargin::Precision() const
+int CRTopMargin::Precision() const
 {
    return -8;
 }
 
 // ----------------------------------------------------------------------------
 
-RightMargin::RightMargin( MetaProcess* P ) : MetaDouble( P )
+CRRightMargin::CRRightMargin( MetaProcess* P ) : MetaDouble( P )
 {
-   TheRightMarginParameter = this;
+   TheCRRightMarginParameter = this;
 }
 
-IsoString RightMargin::Id() const
+IsoString CRRightMargin::Id() const
 {
    return "rightMargin";
 }
 
-int RightMargin::Precision() const
+int CRRightMargin::Precision() const
 {
    return -8;
 }
 
 // ----------------------------------------------------------------------------
 
-BottomMargin::BottomMargin( MetaProcess* P ) : MetaDouble( P )
+CRBottomMargin::CRBottomMargin( MetaProcess* P ) : MetaDouble( P )
 {
-   TheBottomMarginParameter = this;
+   TheCRBottomMarginParameter = this;
 }
 
-IsoString BottomMargin::Id() const
+IsoString CRBottomMargin::Id() const
 {
    return "bottomMargin";
 }
 
-int BottomMargin::Precision() const
+int CRBottomMargin::Precision() const
 {
    return -8;
 }
 
 // ----------------------------------------------------------------------------
 
-CroppingMode::CroppingMode( MetaProcess* P ) : MetaEnumeration( P )
+CRMode::CRMode( MetaProcess* P ) : MetaEnumeration( P )
 {
-   TheCroppingModeParameter = this;
+   TheCRModeParameter = this;
 }
 
-IsoString CroppingMode::Id() const
+IsoString CRMode::Id() const
 {
    return "mode";
 }
 
-size_type CroppingMode::NumberOfElements() const
+size_type CRMode::NumberOfElements() const
 {
-   return NumberOfCroppingModes;
+   return NumberOfCRModes;
 }
 
-IsoString CroppingMode::ElementId( size_type i ) const
+IsoString CRMode::ElementId( size_type i ) const
 {
    switch ( i )
    {
    default:
-   case RelativeMargins:      return "RelativeMargins";
-   case AbsolutePixels:       return "AbsolutePixels";
-   case AbsoluteCentimeters:  return "AbsoluteCentimeters";
-   case AbsoluteInches:       return "AbsoluteInches";
+   case RelativeMargins:     return "RelativeMargins";
+   case AbsolutePixels:      return "AbsolutePixels";
+   case AbsoluteCentimeters: return "AbsoluteCentimeters";
+   case AbsoluteInches:      return "AbsoluteInches";
    }
 }
 
-int CroppingMode::ElementValue( size_type i ) const
+int CRMode::ElementValue( size_type i ) const
 {
    return int( i );
 }
 
-size_type CroppingMode::DefaultValueIndex() const
+size_type CRMode::DefaultValueIndex() const
 {
    return Default;
 }
@@ -183,4 +183,4 @@ size_type CroppingMode::DefaultValueIndex() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CropParameters.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF CropParameters.cpp - Released 2016/11/17 18:14:58 UTC

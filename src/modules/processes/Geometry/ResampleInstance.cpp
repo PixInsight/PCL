@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// ResampleInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// ResampleInstance.cpp - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -50,6 +50,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
+#include "GeometryModule.h"
 #include "ResampleInstance.h"
 #include "ResampleParameters.h"
 
@@ -57,7 +58,6 @@
 #include <pcl/AutoViewLock.h>
 #include <pcl/ImageWindow.h>
 #include <pcl/IntegerResample.h>
-#include <pcl/MessageBox.h>
 #include <pcl/StdStatus.h>
 #include <pcl/View.h>
 
@@ -67,48 +67,51 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 ResampleInstance::ResampleInstance( const MetaProcess* P ) :
-ProcessImplementation( P ),
-p_size( TheXSizeParameter->DefaultValue(), TheYSizeParameter->DefaultValue() ),
-p_mode( TheResampleModeParameter->Default ),
-p_absMode( TheAbsoluteResampleModeParameter->Default ),
-p_resolution( TheXResolutionResampleParameter->DefaultValue(), TheYResolutionResampleParameter->DefaultValue() ),
-p_metric( TheMetricResolutionResampleParameter->DefaultValue() ),
-p_forceResolution( TheForceResolutionResampleParameter->DefaultValue() ),
-p_interpolation( TheInterpolationAlgorithmResampleParameter->Default ),
-p_clampingThreshold( TheClampingThresholdResampleParameter->DefaultValue() ),
-p_smoothness( TheSmoothnessResampleParameter->DefaultValue() )
+   ProcessImplementation( P ),
+   p_size( TheRSXSizeParameter->DefaultValue(), TheRSYSizeParameter->DefaultValue() ),
+   p_mode( TheRSModeParameter->Default ),
+   p_absMode( TheRSAbsoluteModeParameter->Default ),
+   p_resolution( TheRSXResolutionParameter->DefaultValue(), TheRSYResolutionParameter->DefaultValue() ),
+   p_metric( TheRSMetricResolutionParameter->DefaultValue() ),
+   p_forceResolution( TheRSForceResolutionParameter->DefaultValue() ),
+   p_interpolation( TheRSInterpolationAlgorithmParameter->Default ),
+   p_clampingThreshold( TheRSClampingThresholdParameter->DefaultValue() ),
+   p_smoothness( TheRSSmoothnessParameter->DefaultValue() )
 {
 }
 
-// ----------------------------------------------------------------------------
-
 ResampleInstance::ResampleInstance( const ResampleInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
 
-// -------------------------------------------------------------------------
-
 void ResampleInstance::Assign( const ProcessImplementation& p )
 {
    const ResampleInstance* x = dynamic_cast<const ResampleInstance*>( &p );
-
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       p_size = x->p_size;
       p_mode = x->p_mode;
       p_absMode = x->p_absMode;
       p_resolution = x->p_resolution;
-      p_forceResolution = x->p_forceResolution;
       p_metric = x->p_metric;
+      p_forceResolution = x->p_forceResolution;
       p_interpolation = x->p_interpolation;
       p_clampingThreshold = x->p_clampingThreshold;
       p_smoothness = x->p_smoothness;
    }
 }
 
-// ----------------------------------------------------------------------------
+bool ResampleInstance::IsMaskable( const View&, const ImageWindow& ) const
+{
+   return false;
+}
+
+UndoFlags ResampleInstance::UndoMode( const View& ) const
+{
+   return UndoFlag::PixelData | UndoFlag::Keywords | (p_forceResolution ? UndoFlag::Resolution : 0);
+}
 
 bool ResampleInstance::CanExecuteOn( const View& v, String& whyNot ) const
 {
@@ -122,27 +125,10 @@ bool ResampleInstance::CanExecuteOn( const View& v, String& whyNot ) const
    return true;
 }
 
-// ----------------------------------------------------------------------------
-
 bool ResampleInstance::BeforeExecution( View& view )
 {
-   ImageWindow w = view.Window();
-
-   if ( w.HasPreviews() || w.HasMaskReferences() || !w.Mask().IsNull() )
-      if ( MessageBox( view.Id() + ":\n"
-                       "Existing previews and mask references will be destroyed.\n"
-                       "Some of these side effects could be irreversible. Proceed?",
-                       "Resample", // caption
-                       StdIcon::Warning,
-                       StdButton::No, StdButton::Yes ).Execute() != StdButton::Yes )
-      {
-         return false;
-      }
-
-   return true;
+   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id() );
 }
-
-// ----------------------------------------------------------------------------
 
 void ResampleInstance::GetNewSizes( int& width, int& height ) const
 {
@@ -155,17 +141,14 @@ void ResampleInstance::GetNewSizes( int& width, int& height ) const
    S.GetNewSizes( width, height );
 }
 
-// ----------------------------------------------------------------------------
-
 bool ResampleInstance::ExecuteOn( View& view )
 {
    if ( !view.IsMainView() )
       return false;
 
-   ImageWindow window = view.Window();
-
    AutoViewLock lock( view );
 
+   ImageWindow window = view.Window();
    ImageVariant image = view.Image();
 
    if ( !image.IsComplexSample() )
@@ -199,9 +182,7 @@ bool ResampleInstance::ExecuteOn( View& view )
       AutoPointer<PixelInterpolation> interpolation( NewInterpolation(
          p_interpolation, width, height, w0, h0, false, p_clampingThreshold, p_smoothness, image ) );
 
-      window.RemoveMaskReferences();
-      window.RemoveMask();
-      window.DeletePreviews();
+      DeleteAstrometryMetadataAndPreviewsAndMask( window );
 
       Console().EnableAbort();
 
@@ -217,7 +198,7 @@ bool ResampleInstance::ExecuteOn( View& view )
 
    if ( p_forceResolution )
    {
-      Console().WriteLn( String().Format( "Setting resolution: h:%.3lf, image:%.3lf, px/%s",
+      Console().WriteLn( String().Format( "Setting resolution: h:%.3lf, v:%.3lf, u:px/%s",
                                           p_resolution.x, p_resolution.y, p_metric ? "cm" : "inch" ) );
       window.SetResolution( p_resolution.x, p_resolution.y, p_metric );
    }
@@ -229,29 +210,29 @@ bool ResampleInstance::ExecuteOn( View& view )
 
 void* ResampleInstance::LockParameter( const MetaParameter* p, size_type /*tableRow*/ )
 {
-   if ( p == TheXSizeParameter )
+   if ( p == TheRSXSizeParameter )
       return &p_size.x;
-   if ( p == TheYSizeParameter )
+   if ( p == TheRSYSizeParameter )
       return &p_size.y;
-   if ( p == TheResampleModeParameter )
+   if ( p == TheRSModeParameter )
       return &p_mode;
-   if ( p == TheAbsoluteResampleModeParameter )
+   if ( p == TheRSAbsoluteModeParameter )
       return &p_absMode;
-   if ( p == TheXResolutionResampleParameter )
+   if ( p == TheRSXResolutionParameter )
       return &p_resolution.x;
-   if ( p == TheYResolutionResampleParameter )
+   if ( p == TheRSYResolutionParameter )
       return &p_resolution.y;
-   if ( p == TheMetricResolutionResampleParameter )
+   if ( p == TheRSMetricResolutionParameter )
       return &p_metric;
-   if ( p == TheForceResolutionResampleParameter )
+   if ( p == TheRSForceResolutionParameter )
       return &p_forceResolution;
-   if ( p == TheInterpolationAlgorithmResampleParameter )
+   if ( p == TheRSInterpolationAlgorithmParameter )
       return &p_interpolation;
-   if ( p == TheClampingThresholdResampleParameter )
+   if ( p == TheRSClampingThresholdParameter )
       return &p_clampingThreshold;
-   if ( p == TheSmoothnessResampleParameter )
+   if ( p == TheRSSmoothnessParameter )
       return &p_smoothness;
-   return 0;
+   return nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -259,4 +240,4 @@ void* ResampleInstance::LockParameter( const MetaParameter* p, size_type /*table
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ResampleInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF ResampleInstance.cpp - Released 2016/11/17 18:14:58 UTC

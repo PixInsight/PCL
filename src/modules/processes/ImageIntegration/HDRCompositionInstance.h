@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.09.04.0322
+// Standard ImageIntegration Process Module Version 01.11.00.0344
 // ----------------------------------------------------------------------------
-// HDRCompositionInstance.h - Released 2016/02/21 20:22:43 UTC
+// HDRCompositionInstance.h - Released 2016/11/13 17:30:54 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -82,8 +82,6 @@ public:
    virtual bool AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type tableRow );
    virtual size_type ParameterLength( const MetaParameter* p, size_type tableRow ) const;
 
-   // -------------------------------------------------------------------------
-
 private:
 
    struct ImageItem
@@ -118,25 +116,19 @@ private:
 
    typedef Array<ImageItem>  image_list;
 
-   image_list  images;
-
-   String      inputHints;              // input format hints
-
-   float       maskBinarizingThreshold; // binarizing threshold for composition masks
-   int32       maskSmoothness;          // radius of low-pass filter (>= 1)
-   int32       maskGrowth;              // radius of dilation filter (>= 0)
-
-   pcl_bool    autoExposures;           // sort images by relative exposures automatically; manual order otherwise
-   pcl_bool    rejectBlack;             // reject black pixels
-
-   pcl_bool    useFittingRegion;        // use a rectangular region for image fitting; entire image otherwise
-   Rect        fittingRect;             // image fitting rectangle
-
-   pcl_bool    generate64BitResult;     // generate a 64-bit floating point HDR image instead of 32-bit
-   pcl_bool    outputMasks;             // output the composition mask images
-   pcl_bool    closePreviousImages;     // close existing mask and HDR images before running
-
-   //
+   image_list  p_images;                  // source images
+   String      p_inputHints;              // input format hints
+   float       p_maskBinarizingThreshold; // binarizing threshold for composition masks
+   int32       p_maskSmoothness;          // radius of low-pass filter (>= 1)
+   int32       p_maskGrowth;              // radius of dilation filter (>= 0)
+   int32       p_replaceLargeScales;      // number of small-scale MMT layers replaced in combined images - 4
+   pcl_bool    p_autoExposures;           // sort images by relative exposures automatically; manual order otherwise
+   pcl_bool    p_rejectBlack;             // reject black pixels
+   pcl_bool    p_useFittingRegion;        // use a rectangular region for image fitting; entire image otherwise
+   Rect        p_fittingRect;             // image fitting rectangle
+   pcl_bool    p_generate64BitResult;     // generate a 64-bit floating point HDR image instead of 32-bit
+   pcl_bool    p_outputMasks;             // output the composition mask images
+   pcl_bool    p_closePreviousImages;     // close existing mask and HDR images before running
 
    void SortImages(); // sort by relative exposures
 
@@ -152,4 +144,4 @@ private:
 #endif   // __HDRCompositionInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF HDRCompositionInstance.h - Released 2016/02/21 20:22:43 UTC
+// EOF HDRCompositionInstance.h - Released 2016/11/13 17:30:54 UTC

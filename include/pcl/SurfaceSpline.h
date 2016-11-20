@@ -178,6 +178,34 @@ public:
    }
 
    /*!
+    * Returns a vector with the X node coordinates used to initialize this
+    * surface spline. If this object has not been initialized, this function
+    * returns an empty vector.
+    */
+   vector_type X() const
+   {
+      vector_type x( m_x.Length() );
+      if ( IsValid() )
+         for ( int i = 0; i < m_x.Length(); ++i )
+            x[i] = m_x0 + m_x[i]/m_r0;
+      return x;
+   }
+
+   /*!
+    * Returns a vector with the Y node coordinates used to initialize this
+    * surface spline. If this object has not been initialized, this function
+    * returns an empty vector.
+    */
+   vector_type Y() const
+   {
+      vector_type y( m_y.Length() );
+      if ( IsValid() )
+         for ( int i = 0; i < m_y.Length(); ++i )
+            y[i] = m_y0 + m_y[i]/m_r0;
+      return y;
+   }
+
+   /*!
     * Returns the derivative order of this surface spline.
     */
    int Order() const

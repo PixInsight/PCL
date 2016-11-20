@@ -82,7 +82,7 @@ public:
       Initialize();
 
       if ( end < 0 )
-         end = s.Length();
+         end = int( s.Length() );
       IsoString itemId;
       int block = 0;
       int blockStart = 0;
@@ -126,7 +126,7 @@ public:
       IsoString filtered;
 
       if ( end < 0 )
-         end = s.Length();
+         end = int( s.Length() );
       IsoString itemId;
       int block = 0;
       int blockStart = 0;
@@ -327,8 +327,8 @@ class DrizzleSplineDecoder : public DrizzleDecoderBase
 {
 public:
 
-   typedef PointSurfaceSpline<FPoint>     vector_spline;
-   typedef typename vector_spline::spline spline;
+   typedef PointSurfaceSpline<FPoint>  vector_spline;
+   typedef vector_spline::spline       spline;
 
    DrizzleSplineDecoder() : DrizzleDecoderBase()
    {
@@ -498,7 +498,7 @@ public:
 
 protected:
 
-   typedef typename vector_spline::spline spline;
+   typedef vector_spline::spline          spline;
    typedef Array<Point>                   rejection_coordinates;
    typedef Array<rejection_coordinates>   rejection_data;
 
@@ -671,8 +671,8 @@ protected:
             size_type j = s.Find( '}', ++i );
             if ( j >= size_type( end ) )
                throw Error( "At offset=" + String( i ) + ": Unterminated block." );
-            R.Append( ParseRejectionCoordinates( s, i, j ) );
-            i = j;
+            R.Append( ParseRejectionCoordinates( s, i, int( j ) ) );
+            i = int( j );
          }
          else if ( !IsoCharTraits::IsSpace( s[i] ) )
             throw Error( "At offset=" + String( i ) + ": Unexpected token \'" + s[i] + '\'' );

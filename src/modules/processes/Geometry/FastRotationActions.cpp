@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// FastRotationActions.cpp - Released 2016/02/21 20:22:42 UTC
+// FastRotationActions.cpp - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -68,15 +68,14 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 Rotate180Action::Rotate180Action() :
-Action( L"Image > Geometry > Rotate 180\xb0", Bitmap( Rotate180ActionIcon_XPM ), L"Geometry" )
+   Action( L"Image > Geometry > Rotate 180\xb0", Bitmap( Rotate180ActionIcon_XPM ), L"Geometry" )
 {
    SetToolTip( "Rotate 180\xb0" );
 }
 
 void Rotate180Action::Execute()
 {
-   FastRotationInstance( TheFastRotationProcess,
-                         FastRotationMode::Rotate180 ).LaunchOnCurrentWindow();
+   FastRotationInstance( TheFastRotationProcess, FRMode::Rotate180 ).LaunchOnCurrentWindow();
 }
 
 bool Rotate180Action::IsEnabled( ActionInfo info ) const
@@ -87,15 +86,14 @@ bool Rotate180Action::IsEnabled( ActionInfo info ) const
 // ----------------------------------------------------------------------------
 
 Rotate90CWAction::Rotate90CWAction() :
-Action( L"Image > Geometry > Rotate 90\xb0 Clockwise", Bitmap( Rotate90CWActionIcon_XPM ), L"Geometry" )
+   Action( L"Image > Geometry > Rotate 90\xb0 Clockwise", Bitmap( Rotate90CWActionIcon_XPM ), L"Geometry" )
 {
    SetToolTip( "Rotate 90\xb0 Clockwise" );
 }
 
 void Rotate90CWAction::Execute()
 {
-   FastRotationInstance( TheFastRotationProcess,
-                         FastRotationMode::Rotate90CW ).LaunchOnCurrentWindow();
+   FastRotationInstance( TheFastRotationProcess, FRMode::Rotate90CW ).LaunchOnCurrentWindow();
 }
 
 bool Rotate90CWAction::IsEnabled( ActionInfo info ) const
@@ -106,15 +104,14 @@ bool Rotate90CWAction::IsEnabled( ActionInfo info ) const
 // ----------------------------------------------------------------------------
 
 Rotate90CCWAction::Rotate90CCWAction() :
-Action( L"Image > Geometry > Rotate 90\xb0 Counter-clockwise", Bitmap( Rotate90CCWActionIcon_XPM ), L"Geometry" )
+   Action( L"Image > Geometry > Rotate 90\xb0 Counter-clockwise", Bitmap( Rotate90CCWActionIcon_XPM ), L"Geometry" )
 {
    SetToolTip( "Rotate 90\xb0 Counter-clockwise" );
 }
 
 void Rotate90CCWAction::Execute()
 {
-   FastRotationInstance( TheFastRotationProcess,
-                         FastRotationMode::Rotate90CCW ).LaunchOnCurrentWindow();
+   FastRotationInstance( TheFastRotationProcess, FRMode::Rotate90CCW ).LaunchOnCurrentWindow();
 }
 
 bool Rotate90CCWAction::IsEnabled( ActionInfo info ) const
@@ -125,15 +122,14 @@ bool Rotate90CCWAction::IsEnabled( ActionInfo info ) const
 // ----------------------------------------------------------------------------
 
 HorizontalMirrorAction::HorizontalMirrorAction() :
-Action( "Image > Geometry >> Horizontal Mirror", Bitmap( HorizontalMirrorActionIcon_XPM ), "Geometry" )
+   Action( "Image > Geometry >> Horizontal Mirror", Bitmap( HorizontalMirrorActionIcon_XPM ), "Geometry" )
 {
    SetToolTip( "Horizontal Mirror" );
 }
 
 void HorizontalMirrorAction::Execute()
 {
-   FastRotationInstance( TheFastRotationProcess,
-                         FastRotationMode::HorizontalMirror ).LaunchOnCurrentWindow();
+   FastRotationInstance( TheFastRotationProcess, FRMode::HorizontalMirror ).LaunchOnCurrentWindow();
 }
 
 bool HorizontalMirrorAction::IsEnabled( ActionInfo info ) const
@@ -144,15 +140,14 @@ bool HorizontalMirrorAction::IsEnabled( ActionInfo info ) const
 // ----------------------------------------------------------------------------
 
 VerticalMirrorAction::VerticalMirrorAction() :
-Action( "Image > Geometry > Vertical Mirror", Bitmap( VerticalMirrorActionIcon_XPM ), "Geometry" )
+   Action( "Image > Geometry > Vertical Mirror", Bitmap( VerticalMirrorActionIcon_XPM ), "Geometry" )
 {
    SetToolTip( "Vertical Mirror" );
 }
 
 void VerticalMirrorAction::Execute()
 {
-   FastRotationInstance( TheFastRotationProcess,
-                         FastRotationMode::VerticalMirror ).LaunchOnCurrentWindow();
+   FastRotationInstance( TheFastRotationProcess, FRMode::VerticalMirror ).LaunchOnCurrentWindow();
 }
 
 bool VerticalMirrorAction::IsEnabled( ActionInfo info ) const
@@ -165,4 +160,4 @@ bool VerticalMirrorAction::IsEnabled( ActionInfo info ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FastRotationActions.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF FastRotationActions.cpp - Released 2016/11/17 18:14:58 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// RotationInterface.h - Released 2016/02/21 20:22:42 UTC
+// RotationInterface.h - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -53,23 +53,20 @@
 #ifndef __RotationInterface_h
 #define __RotationInterface_h
 
-#include <pcl/ProcessInterface.h>
-
-#include <pcl/Sizer.h>
-#include <pcl/SectionBar.h>
-#include <pcl/Label.h>
-#include <pcl/SpinBox.h>
-#include <pcl/ComboBox.h>
 #include <pcl/CheckBox.h>
+#include <pcl/ComboBox.h>
+#include <pcl/Label.h>
 #include <pcl/NumericControl.h>
+#include <pcl/ProcessInterface.h>
+#include <pcl/SectionBar.h>
+#include <pcl/Sizer.h>
+#include <pcl/SpinBox.h>
 
 #include "RotationInstance.h"
 
 namespace pcl
 {
 
-// ----------------------------------------------------------------------------
-// RotationInterface
 // ----------------------------------------------------------------------------
 
 class RotationInterface : public ProcessInterface
@@ -86,7 +83,7 @@ public:
    virtual void ApplyInstance() const;
    virtual void ResetInstance();
 
-   virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ );
+   virtual bool Launch( const MetaProcess&, const ProcessImplementation*, bool& dynamic, unsigned& flags );
 
    virtual ProcessImplementation* NewProcess() const;
 
@@ -98,13 +95,9 @@ public:
    virtual bool WantsReadoutNotifications() const;
    virtual void UpdateReadout( const View&, const DPoint&, double R, double G, double B, double A );
 
-   // -------------------------------------------------------------------------
-
 private:
 
    RotationInstance instance;
-
-   // -------------------------------------------------------------------------
 
    struct GUIData
    {
@@ -153,7 +146,7 @@ private:
    void UpdateFillColorControls();
 
    /*
-    * GUI Event Handlers
+    * Event Handlers
     */
 
    void __Angle_ValueUpdated( NumericEdit& sender, double value );
@@ -188,4 +181,4 @@ PCL_END_LOCAL
 #endif   // __RotationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF RotationInterface.h - Released 2016/02/21 20:22:42 UTC
+// EOF RotationInterface.h - Released 2016/11/17 18:14:58 UTC

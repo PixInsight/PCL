@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.01.00.0314
+// Standard Geometry Process Module Version 01.02.00.0322
 // ----------------------------------------------------------------------------
-// ChannelMatchInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// ChannelMatchInterface.cpp - Released 2016/11/17 18:14:58 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -51,15 +51,15 @@
 // ----------------------------------------------------------------------------
 
 #include "ChannelMatchInterface.h"
-#include "ChannelMatchProcess.h"
 #include "ChannelMatchParameters.h"
+#include "ChannelMatchProcess.h"
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-ChannelMatchInterface* TheChannelMatchInterface = 0;
+ChannelMatchInterface* TheChannelMatchInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -68,15 +68,17 @@ ChannelMatchInterface* TheChannelMatchInterface = 0;
 // ----------------------------------------------------------------------------
 
 ChannelMatchInterface::ChannelMatchInterface() :
-ProcessInterface(), instance( TheChannelMatchProcess ), GUI( 0 )
+   ProcessInterface(),
+   instance( TheChannelMatchProcess ),
+   GUI( nullptr )
 {
    TheChannelMatchInterface = this;
 }
 
 ChannelMatchInterface::~ChannelMatchInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString ChannelMatchInterface::Id() const
@@ -107,8 +109,7 @@ void ChannelMatchInterface::ResetInstance()
 
 bool ChannelMatchInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "ChannelMatch" );
@@ -127,8 +128,7 @@ ProcessImplementation* ChannelMatchInterface::NewProcess() const
 bool ChannelMatchInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
    const ChannelMatchInstance* r = dynamic_cast<const ChannelMatchInstance*>( &p );
-
-   if ( r == 0 )
+   if ( r == nullptr )
    {
       whyNot = "Not a ChannelMatch instance.";
       return false;
@@ -384,15 +384,15 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
    Channels_Sizer.Add( G_CheckBox );
    Channels_Sizer.Add( B_CheckBox );
 
-   Channels_GroupBox.SetTitle( "RGB" );
+//    Channels_GroupBox.SetTitle( "RGB" );
    Channels_GroupBox.SetSizer( Channels_Sizer );
    Channels_GroupBox.AdjustToContents();
    Channels_GroupBox.SetFixedWidth();
 
    R_XOffset_NumericEdit.label.Hide();
    R_XOffset_NumericEdit.SetReal();
-   R_XOffset_NumericEdit.SetRange( TheChannelXOffsetParameter->MinimumValue(), TheChannelXOffsetParameter->MaximumValue() );
-   R_XOffset_NumericEdit.SetPrecision( TheChannelXOffsetParameter->Precision() );
+   R_XOffset_NumericEdit.SetRange( TheCMXOffsetParameter->MinimumValue(), TheCMXOffsetParameter->MaximumValue() );
+   R_XOffset_NumericEdit.SetPrecision( TheCMXOffsetParameter->Precision() );
    R_XOffset_NumericEdit.SetToolTip( "X-offset, red channel" );
    R_XOffset_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&ChannelMatchInterface::__Channel_Offset_ValueUpdated, w );
 
@@ -413,8 +413,8 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
 
    G_XOffset_NumericEdit.label.Hide();
    G_XOffset_NumericEdit.SetReal();
-   G_XOffset_NumericEdit.SetRange( TheChannelXOffsetParameter->MinimumValue(), TheChannelXOffsetParameter->MaximumValue() );
-   G_XOffset_NumericEdit.SetPrecision( TheChannelXOffsetParameter->Precision() );
+   G_XOffset_NumericEdit.SetRange( TheCMXOffsetParameter->MinimumValue(), TheCMXOffsetParameter->MaximumValue() );
+   G_XOffset_NumericEdit.SetPrecision( TheCMXOffsetParameter->Precision() );
    G_XOffset_NumericEdit.SetToolTip( "X-offset, green channel" );
    G_XOffset_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&ChannelMatchInterface::__Channel_Offset_ValueUpdated, w );
 
@@ -435,8 +435,8 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
 
    B_XOffset_NumericEdit.label.Hide();
    B_XOffset_NumericEdit.SetReal();
-   B_XOffset_NumericEdit.SetRange( TheChannelXOffsetParameter->MinimumValue(), TheChannelXOffsetParameter->MaximumValue() );
-   B_XOffset_NumericEdit.SetPrecision( TheChannelXOffsetParameter->Precision() );
+   B_XOffset_NumericEdit.SetRange( TheCMXOffsetParameter->MinimumValue(), TheCMXOffsetParameter->MaximumValue() );
+   B_XOffset_NumericEdit.SetPrecision( TheCMXOffsetParameter->Precision() );
    B_XOffset_NumericEdit.SetToolTip( "X-offset, blue channel" );
    B_XOffset_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&ChannelMatchInterface::__Channel_Offset_ValueUpdated, w );
 
@@ -466,8 +466,8 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
 
    R_YOffset_NumericEdit.label.Hide();
    R_YOffset_NumericEdit.SetReal();
-   R_YOffset_NumericEdit.SetRange( TheChannelXOffsetParameter->MinimumValue(), TheChannelXOffsetParameter->MaximumValue() );
-   R_YOffset_NumericEdit.SetPrecision( TheChannelXOffsetParameter->Precision() );
+   R_YOffset_NumericEdit.SetRange( TheCMXOffsetParameter->MinimumValue(), TheCMXOffsetParameter->MaximumValue() );
+   R_YOffset_NumericEdit.SetPrecision( TheCMXOffsetParameter->Precision() );
    R_YOffset_NumericEdit.SetToolTip( "Y-offset, red channel" );
    R_YOffset_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&ChannelMatchInterface::__Channel_Offset_ValueUpdated, w );
 
@@ -488,8 +488,8 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
 
    G_YOffset_NumericEdit.label.Hide();
    G_YOffset_NumericEdit.SetReal();
-   G_YOffset_NumericEdit.SetRange( TheChannelXOffsetParameter->MinimumValue(), TheChannelXOffsetParameter->MaximumValue() );
-   G_YOffset_NumericEdit.SetPrecision( TheChannelXOffsetParameter->Precision() );
+   G_YOffset_NumericEdit.SetRange( TheCMXOffsetParameter->MinimumValue(), TheCMXOffsetParameter->MaximumValue() );
+   G_YOffset_NumericEdit.SetPrecision( TheCMXOffsetParameter->Precision() );
    G_YOffset_NumericEdit.SetToolTip( "Y-offset, green channel" );
    G_YOffset_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&ChannelMatchInterface::__Channel_Offset_ValueUpdated, w );
 
@@ -510,8 +510,8 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
 
    B_YOffset_NumericEdit.label.Hide();
    B_YOffset_NumericEdit.SetReal();
-   B_YOffset_NumericEdit.SetRange( TheChannelXOffsetParameter->MinimumValue(), TheChannelXOffsetParameter->MaximumValue() );
-   B_YOffset_NumericEdit.SetPrecision( TheChannelXOffsetParameter->Precision() );
+   B_YOffset_NumericEdit.SetRange( TheCMXOffsetParameter->MinimumValue(), TheCMXOffsetParameter->MaximumValue() );
+   B_YOffset_NumericEdit.SetPrecision( TheCMXOffsetParameter->Precision() );
    B_YOffset_NumericEdit.SetToolTip( "Y-offset, blue channel" );
    B_YOffset_NumericEdit.OnValueUpdated( (NumericEdit::value_event_handler)&ChannelMatchInterface::__Channel_Offset_ValueUpdated, w );
 
@@ -545,8 +545,8 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
    R_Factor_NumericControl.slider.SetScaledMinWidth( 200 );
    R_Factor_NumericControl.slider.SetRange( 0, 100 );
    R_Factor_NumericControl.SetReal();
-   R_Factor_NumericControl.SetRange( TheChannelFactorParameter->MinimumValue(), TheChannelFactorParameter->MaximumValue() );
-   R_Factor_NumericControl.SetPrecision( TheChannelFactorParameter->Precision() );
+   R_Factor_NumericControl.SetRange( TheCMFactorParameter->MinimumValue(), TheCMFactorParameter->MaximumValue() );
+   R_Factor_NumericControl.SetPrecision( TheCMFactorParameter->Precision() );
    R_Factor_NumericControl.SetToolTip( "Linear correction factor, red channel" );
    R_Factor_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&ChannelMatchInterface::__Channel_Factor_ValueUpdated, w );
 
@@ -554,8 +554,8 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
    G_Factor_NumericControl.slider.SetScaledMinWidth( 200 );
    G_Factor_NumericControl.slider.SetRange( 0, 100 );
    G_Factor_NumericControl.SetReal();
-   G_Factor_NumericControl.SetRange( TheChannelFactorParameter->MinimumValue(), TheChannelFactorParameter->MaximumValue() );
-   G_Factor_NumericControl.SetPrecision( TheChannelFactorParameter->Precision() );
+   G_Factor_NumericControl.SetRange( TheCMFactorParameter->MinimumValue(), TheCMFactorParameter->MaximumValue() );
+   G_Factor_NumericControl.SetPrecision( TheCMFactorParameter->Precision() );
    G_Factor_NumericControl.SetToolTip( "Linear correction factor, green channel" );
    G_Factor_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&ChannelMatchInterface::__Channel_Factor_ValueUpdated, w );
 
@@ -563,8 +563,8 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
    B_Factor_NumericControl.slider.SetScaledMinWidth( 200 );
    B_Factor_NumericControl.slider.SetRange( 0, 100 );
    B_Factor_NumericControl.SetReal();
-   B_Factor_NumericControl.SetRange( TheChannelFactorParameter->MinimumValue(), TheChannelFactorParameter->MaximumValue() );
-   B_Factor_NumericControl.SetPrecision( TheChannelFactorParameter->Precision() );
+   B_Factor_NumericControl.SetRange( TheCMFactorParameter->MinimumValue(), TheCMFactorParameter->MaximumValue() );
+   B_Factor_NumericControl.SetPrecision( TheCMFactorParameter->Precision() );
    B_Factor_NumericControl.SetToolTip( "Linear correction factor, blue channel" );
    B_Factor_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&ChannelMatchInterface::__Channel_Factor_ValueUpdated, w );
 
@@ -596,4 +596,4 @@ ChannelMatchInterface::GUIData::GUIData( ChannelMatchInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ChannelMatchInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF ChannelMatchInterface.cpp - Released 2016/11/17 18:14:58 UTC

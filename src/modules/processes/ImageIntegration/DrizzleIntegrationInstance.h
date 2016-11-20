@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.09.04.0322
+// Standard ImageIntegration Process Module Version 01.11.00.0344
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInstance.h - Released 2016/02/21 20:22:43 UTC
+// DrizzleIntegrationInstance.h - Released 2016/11/13 17:30:54 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -53,9 +53,9 @@
 #ifndef __DrizzleIntegrationInstance_h
 #define __DrizzleIntegrationInstance_h
 
+#include <pcl/Matrix.h>
 #include <pcl/ProcessImplementation.h>
 #include <pcl/Vector.h>
-#include <pcl/Matrix.h>
 
 #include "DrizzleIntegrationParameters.h"
 
@@ -108,9 +108,12 @@ private:
 
    input_data_list p_inputData;            // input .drz files
    String          p_inputHints;           // input format hints
-   String          p_inputDirectory;       // if nonempty, replaces dirs in .drz files
+   String          p_inputDirectory;       // if nonempty, replace dirs in .drz files
    float           p_scale;                // input_pixel_size/output_pixel_size
    float           p_dropShrink;           // pixel shrink factor
+   pcl_enum        p_kernelFunction;       // drop kernel function (square, circular, Gaussian, VariableShape...)
+   int32           p_kernelGridSize;       // grid size for double integration of kernel functions
+   FPoint          p_origin;               // origin of image registration coordinates in reference image pixels
    pcl_bool        p_enableRejection;      // enable pixel rejection
    pcl_bool        p_enableImageWeighting; // enable image weights
    pcl_bool        p_enableSurfaceSplines; // enable registration surface splines
@@ -135,7 +138,7 @@ private:
       uint64     integratedPixels;         // total integrated source pixels
       UI64Vector totalRejectedLow;         // per-channel total low rejected pixels
       UI64Vector totalRejectedHigh;        // per-channel total high rejected pixels
-      float      outputData;                // total data gathered in input image units
+      float      outputData;               // total data gathered in input image units
 
       // Per-channel data for each integrated image
 
@@ -148,7 +151,7 @@ private:
          DVector    scale;                 // scaling factors
          UI64Vector rejectedLow;           // number of low rejected pixels
          UI64Vector rejectedHigh;          // number of high rejected pixels
-         float      outputData;             // total data gathered from this image in [0,1]
+         float      outputData;            // total data gathered from this image in [0,1]
 
          ImageData( const String& a_filePath = String() ) :
             filePath( a_filePath ),
@@ -229,4 +232,4 @@ private:
 #endif   // __DrizzleIntegrationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInstance.h - Released 2016/02/21 20:22:43 UTC
+// EOF DrizzleIntegrationInstance.h - Released 2016/11/13 17:30:54 UTC

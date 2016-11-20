@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.09.04.0322
+// Standard ImageIntegration Process Module Version 01.11.00.0344
 // ----------------------------------------------------------------------------
-// HDRCompositionInterface.h - Released 2016/02/21 20:22:43 UTC
+// HDRCompositionInterface.h - Released 2016/11/13 17:30:54 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -98,13 +98,9 @@ public:
 
    virtual void SaveSettings() const;
 
-   // -------------------------------------------------------------------------
-
 private:
 
    HDRCompositionInstance instance;
-
-   // -------------------------------------------------------------------------
 
    struct GUIData
    {
@@ -144,6 +140,9 @@ private:
          HorizontalSizer   MaskGrowth_Sizer;
             Label             MaskGrowth_Label;
             SpinBox           MaskGrowth_SpinBox;
+         HorizontalSizer   ReplaceLargeScales_Sizer;
+            Label             ReplaceLargeScales_Label;
+            SpinBox           ReplaceLargeScales_SpinBox;
          HorizontalSizer   AutoExposures_Sizer;
             CheckBox          AutoExposures_CheckBox;
          HorizontalSizer   RejectBlack_Sizer;
@@ -220,4 +219,4 @@ PCL_END_LOCAL
 #endif   // __HDRCompositionInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF HDRCompositionInterface.h - Released 2016/02/21 20:22:43 UTC
+// EOF HDRCompositionInterface.h - Released 2016/11/13 17:30:54 UTC

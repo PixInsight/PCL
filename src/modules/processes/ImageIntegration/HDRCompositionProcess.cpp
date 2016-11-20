@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.09.04.0322
+// Standard ImageIntegration Process Module Version 01.11.00.0344
 // ----------------------------------------------------------------------------
-// HDRCompositionProcess.cpp - Released 2016/02/21 20:22:43 UTC
+// HDRCompositionProcess.cpp - Released 2016/11/13 17:30:54 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -50,8 +50,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#include "HDRCompositionProcess.h"
 #include "HDRCompositionParameters.h"
+#include "HDRCompositionProcess.h"
 #include "HDRCompositionInstance.h"
 #include "HDRCompositionInterface.h"
 
@@ -60,7 +60,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-HDRCompositionProcess* TheHDRCompositionProcess = 0;
+HDRCompositionProcess* TheHDRCompositionProcess = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -72,7 +72,6 @@ HDRCompositionProcess::HDRCompositionProcess() : MetaProcess()
 {
    TheHDRCompositionProcess = this;
 
-   // Instantiate process parameters
    new HCImages( this );
    new HCImageEnabled( TheHCImagesParameter );
    new HCImagePath( TheHCImagesParameter );
@@ -80,6 +79,7 @@ HDRCompositionProcess::HDRCompositionProcess() : MetaProcess()
    new HCMaskBinarizingThreshold( this );
    new HCMaskSmoothness( this );
    new HCMaskGrowth( this );
+   new HCReplaceLargeScales( this );
    new HCAutoExposures( this );
    new HCRejectBlack( this );
    new HCUseFittingRegion( this );
@@ -148,7 +148,7 @@ ProcessImplementation* HDRCompositionProcess::Create() const
 ProcessImplementation* HDRCompositionProcess::Clone( const ProcessImplementation& p ) const
 {
    const HDRCompositionInstance* instPtr = dynamic_cast<const HDRCompositionInstance*>( &p );
-   return (instPtr != 0) ? new HDRCompositionInstance( *instPtr ) : 0;
+   return (instPtr != nullptr) ? new HDRCompositionInstance( *instPtr ) : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -156,4 +156,4 @@ ProcessImplementation* HDRCompositionProcess::Clone( const ProcessImplementation
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF HDRCompositionProcess.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF HDRCompositionProcess.cpp - Released 2016/11/13 17:30:54 UTC

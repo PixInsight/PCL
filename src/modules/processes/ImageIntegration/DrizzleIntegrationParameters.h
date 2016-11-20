@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.09.04.0322
+// Standard ImageIntegration Process Module Version 01.11.00.0344
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationParameters.h - Released 2016/02/21 20:22:43 UTC
+// DrizzleIntegrationParameters.h - Released 2016/11/13 17:30:54 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -159,6 +159,90 @@ public:
 };
 
 extern DZDropShrink* TheDZDropShrinkParameter;
+
+// ----------------------------------------------------------------------------
+
+class DZKernelFunction : public MetaEnumeration
+{
+public:
+
+   enum { Square,
+          Circular,
+          Gaussian,
+          Variable10,
+          Variable15,
+          Variable30,
+          Variable40,
+          Variable50,
+          Variable60,
+          Count,
+          Default = Square };
+
+   DZKernelFunction( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual size_type NumberOfElements() const;
+   virtual IsoString ElementId( size_type ) const;
+   virtual int ElementValue( size_type ) const;
+   virtual size_type DefaultValueIndex() const;
+
+   static bool IsIntegratedKernel( pcl_enum k )
+   {
+      return k != Square && k != Circular;
+   }
+};
+
+extern DZKernelFunction* TheDZKernelFunctionParameter;
+
+// ----------------------------------------------------------------------------
+
+class DZKernelGridSize : public MetaInt32
+{
+public:
+
+   DZKernelGridSize( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern DZKernelGridSize* TheDZKernelGridSizeParameter;
+
+// ----------------------------------------------------------------------------
+
+class DZOriginX : public MetaFloat
+{
+public:
+
+   DZOriginX( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern DZOriginX* TheDZOriginXParameter;
+
+// ----------------------------------------------------------------------------
+
+class DZOriginY : public MetaFloat
+{
+public:
+
+   DZOriginY( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern DZOriginY* TheDZOriginYParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -317,7 +401,7 @@ public:
    enum { Continue,
           Abort,
           AskUser,
-          NumberOfErrorPolicies,
+          Count,
           Default = Continue };
 
    DZOnError( MetaProcess* );
@@ -797,4 +881,4 @@ PCL_END_LOCAL
 #endif   // __DrizzleIntegrationParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationParameters.h - Released 2016/02/21 20:22:43 UTC
+// EOF DrizzleIntegrationParameters.h - Released 2016/11/13 17:30:54 UTC

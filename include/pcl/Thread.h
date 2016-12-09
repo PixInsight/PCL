@@ -376,6 +376,15 @@ public:
    static bool IsRootThread();
 
    /*!
+    * Returns the total number of running %Thread objects.
+    *
+    * \note This function knows nothing about threads out of PCL control, so it
+    * will return zero if no %Thread instance is currently active, even if
+    * there are other native threads being executed.
+    */
+   static int NumberOfRunningThreads();
+
+   /*!
     * %Thread execution routine.
     *
     * This member function is invoked by the PixInsight core application upon
@@ -575,9 +584,10 @@ public:
     *
     * This function takes into account the number of existing processors in
     * the system, as well as the maximum number of processors currently allowed
-    * for external processes by the core application. The following global
-    * variables are taken into account (see the PixInsightSettings class for
-    * more information about global variables on the PixInsight platform):
+    * for external processes by the core application, and the number of threads
+    * currently active. The following global variables are taken into account
+    * (see the PixInsightSettings class for more information about global
+    * variables on the PixInsight platform):
     *
     * <table border="1" cellpadding="4" cellspacing="0">
     * <tr><td>Process/EnableParallelProcessing</td>
@@ -605,17 +615,20 @@ public:
     * cores in multicore processors, and virtual processors in systems with
     * HyperThreading technology.
     *
+    * Since version 1.8.0 of the PixInsight core application, nested
+    * parallelism is fully supported. This means that multiple threads can be
+    * executed concurrently from a running thread. This function will take into
+    * account the number of already running threads, as provided by the
+    * Thread::NumberOfRunningThreads() static member function, to help prevent
+    * exceeding the maximum number of threads allowed by the platform (see the
+    * global variables in the table above). In any event, the calling module is
+    * entirely responsible to comply with these restrictions.
+    *
     * \note A module must always call this function before trying to execute
     * multiple threads concurrently in any execution context, and should never
     * try to run more threads simultaneously than the amount returned by this
     * function. Failure to follow these rules will invalidate a module for
     * certification.
-    *
-    * \note Since version 1.8.0 of the PixInsight core application, nested
-    * parallelism is fully supported. This means that multiple threads can be
-    * run from a running thread. The calling module is responsible for ensuring
-    * that the maximum number of threads allowed by the platform (see the
-    * global variables in the table above) will never be surpassed.
     */
    static int NumberOfThreads( size_type count, size_type overheadLimit = 16u );
 
@@ -624,8 +637,7 @@ private:
    Thread( void* );
    virtual void* CloneHandle() const;
 
-   int    m_processorIndex;
-   String m_consoleOutputText;
+   int m_processorIndex;
 
    friend class ThreadDispatcher;
 };

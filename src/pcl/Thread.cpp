@@ -49,6 +49,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
+#include <pcl/Atomic.h>
 #include <pcl/AutoLock.h>
 #include <pcl/Console.h>
 #include <pcl/GlobalSettings.h>
@@ -95,6 +96,7 @@ namespace pcl
 
 static bool s_enableAffinity = false;
 static bool s_featureDataInitialized = false;
+static AtomicInt s_numberOfRunningThreads;
 
 // ----------------------------------------------------------------------------
 
@@ -102,22 +104,42 @@ static bool s_featureDataInitialized = false;
 
 class ThreadDispatcher
 {
+private:
+
+   struct AutoCounter
+   {
+      AutoCounter()
+      {
+         s_numberOfRunningThreads.Increment();
+      }
+
+      ~AutoCounter()
+      {
+         s_numberOfRunningThreads.Decrement();
+      }
+   };
+
 public:
 
    static void api_func RunThread( thread_handle hThread )
    {
       try
       {
-         if ( s_enableAffinity && T->m_processorIndex >= 0 )
-            T->SetAffinity( T->m_processorIndex );
+         volatile AutoCounter counter;
+
+         if ( s_enableAffinity )
+            if ( T->m_processorIndex >= 0 )
+               T->SetAffinity( T->m_processorIndex );
+
          T->Run();
       }
       catch ( ... )
       {
-         /* ### Do _not_ propagate exceptions from a running thread */
+         /*
+          * ### Do _not_ propagate any exceptions from a running thread.
+          */
       }
    }
-
 }; // ThreadDispatcher
 
 #undef T
@@ -130,8 +152,7 @@ public:
 
 Thread::Thread() :
    UIObject( (*API->Thread->CreateThread)( ModuleHandle(), this, 0/*flags*/ ) ),
-   m_processorIndex( -1 ),
-   m_consoleOutputText()
+   m_processorIndex( -1 )
 {
    if ( IsNull() )
       throw APIFunctionError( "CreateThread" );
@@ -153,8 +174,7 @@ Thread::Thread() :
 
 Thread::Thread( void* h ) :
    UIObject( h ),
-   m_processorIndex( -1 ),
-   m_consoleOutputText()
+   m_processorIndex( -1 )
 {
 }
 
@@ -318,6 +338,11 @@ bool Thread::IsRootThread()
    return (*API->Thread->GetCurrentThread)() == 0;
 }
 
+int Thread::NumberOfRunningThreads()
+{
+   return s_numberOfRunningThreads.Load();
+}
+
 uint32 Thread::Status() const
 {
    return (*API->Thread->GetThreadStatus)( handle );
@@ -380,11 +405,17 @@ int Thread::NumberOfThreads( size_type N, size_type overheadLimit )
          return 1;
    }
 
-   if ( N > overheadLimit &&
+   int nf = numberOfProcessors;
+   int nr = NumberOfRunningThreads();
+   if ( nr > 0 )
+      nf -= nr - 1;
+
+   if ( nf > 1 &&
+        N > overheadLimit &&
         PixInsightSettings::GlobalFlag( "Process/EnableParallelProcessing" ) &&
         PixInsightSettings::GlobalFlag( "Process/EnableParallelModuleProcessing" ) )
    {
-      size_type np = Min( numberOfProcessors, PixInsightSettings::GlobalInteger( "Process/MaxProcessors" ) );
+      size_type np = Min( nf, PixInsightSettings::GlobalInteger( "Process/MaxProcessors" ) );
       return Max( 1, int( Min( np, N/Max( overheadLimit, N/np ) ) ) );
    }
 

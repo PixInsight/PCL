@@ -979,15 +979,17 @@ public:
     */
    struct ThreadData
    {
-              StatusMonitor status; //!< %Status monitoring object.
-      mutable Mutex         mutex;  //!< Mutual exclusion for synchronized thread access.
-      mutable size_type     count;  //!< current monitoring count.
-              size_type     total;  //!< Total monitoring count.
+      mutable StatusMonitor status;     //!< %Status monitoring object.
+      mutable Mutex         mutex;      //!< Mutual exclusion for synchronized thread access.
+      mutable size_type     count;      //!< current monitoring count.
+              size_type     total;      //!< Total monitoring count.
+              size_type     numThreads; //!< Number of concurrent threads being executed (set by RunThreads()).
 
       /*!
        * Constructs a default %ThreadData object.
        */
-      ThreadData() : count( 0 ), total( 0 )
+      ThreadData() :
+         count( 0 ), total( 0 ), numThreads( 0 )
       {
       }
 
@@ -1001,7 +1003,7 @@ public:
        * function for more information.
        */
       ThreadData( const AbstractImage& image, size_type N ) :
-      status( image.Status() ), count( 0 ), total( N )
+         status( image.Status() ), count( 0 ), total( N ), numThreads( 0 )
       {
       }
 
@@ -1014,7 +1016,7 @@ public:
        * function for more information.
        */
       ThreadData( const StatusMonitor& a_status, size_type N ) :
-      status( a_status ), count( 0 ), total( N )
+         status( a_status ), count( 0 ), total( N ), numThreads( 0 )
       {
       }
    };
@@ -1027,7 +1029,9 @@ public:
     *                   %ReferenceArray contains pointers to objects and allows
     *                   direct iteration and access by reference. It cannot
     *                   contain null pointers. Each %ReferenceArray element
-    *                   must be an instance of a derived class of Thread.
+    *                   must be an instance of a derived class of Thread, where
+    *                   a reimplemented Thread::Run() member function should
+    *                   perform the required parallel processing.
     *
     * \param data       Reference to a ThreadData object for synchronization.
     *
@@ -1040,32 +1044,46 @@ public:
     *                   of the three conditions above is false, the thread(s)
     *                   will be run without forcing their processor affinities.
     *
-    * This static member function launches the threads in sequence and waits
-    * until all threads have finished execution. While the threads are running,
-    * the \c status member of ThreadData is incremented to perform the process
-    * monitoring task. This also ensures that the graphical interface remains
-    * responsive during the whole process.
+    * When the \a threads array contains more than one thread, this static
+    * member function launches the threads in sequence and waits until all
+    * threads have finished execution. While the threads are running, the
+    * \c status member of ThreadData is incremented regularly to perform the
+    * process monitoring task. This also ensures that the graphical interface
+    * remains responsive during the whole process.
     *
-    * For normal thread execution with maximum performance, the \a useAffinity
-    * parameter should be true, in order to minimize cache invalidations due to
-    * processor reassignments of running threads. However, there are cases
-    * where forcing processor affinities can be counterproductive. An example
-    * is real-time previewing of intensive processes requiring continuous GUI
-    * updates. In these cases, disabling processor affinity can help to keep
-    * the GUI responsive with the required granularity.
+    * When the \a threads array contains just one thread, this member function
+    * simply calls the Thread::Run() member function for the unique thread in
+    * the array, so no additional parallel execution is performed in the
+    * single-threaded case. If the reimplemented Thread::Run() member function
+    * uses standard PCL macros to perform the thread monitoring task (see the
+    * INIT_THREAD_MONITOR() and UPDATE_THREAD_MONITOR() macros), all possible
+    * situations will be handled correctly and automatically.
+    *
+    * For normal execution of multiple concurrent threads with maximum
+    * performance, the \a useAffinity parameter should be true in order to
+    * minimize cache invalidations due to processor reassignments of running
+    * threads. However, there are cases where forcing processor affinities can
+    * be counterproductive. An example is real-time previewing of intensive
+    * processes requiring continuous GUI updates. In these cases, disabling
+    * processor affinity can help to keep the GUI responsive with the required
+    * granularity.
     *
     * The threads can be aborted asynchronously with the standard
     * Thread::Abort() mechanism, or through StatusMonitor/StatusCallback. If
     * one or more threads are aborted, this function destroys all the threads
     * by calling ReferenceArray::Destroy(), and then throws a ProcessAborted
-    * exception. Otherwise, if all threads complete execution normally, the
-    * \a threads array is left intact and the function returns. The caller is
-    * then responsible for destroying the threads, when appropriate.
+    * exception. In the single-threaded case, if the reimplemented
+    * Thread::Run() member function throws an exception, the array is also
+    * destroyed and the exception is thrown. Otherwise, if all threads complete
+    * execution normally, the \a threads array is left intact and the function
+    * returns. The caller is then responsible for destroying the threads when
+    * appropriate.
     *
-    * \warning Do not call this function from a high-priority thread. Doing so
-    * can lead to a significant performance loss because this function will
-    * consume too much processing time just for process monitoring. In general,
-    * you should call this function from normal priority threads.
+    * \warning For parallel execution of two or more threads, do not call this
+    * function from a high-priority thread. Doing so can lead to a significant
+    * performance loss because this function will consume too much processing
+    * time just for process monitoring. In general, you should call this
+    * function from normal priority threads.
     */
    template <class thread>
    static void RunThreads( ReferenceArray<thread>& threads, ThreadData& data, bool useAffinity = true )
@@ -1073,8 +1091,23 @@ public:
       if ( threads.IsEmpty() )
          return;
 
+      data.numThreads = threads.Length();
+      if ( data.numThreads == 1 )
+      {
+         try
+         {
+            threads[0].Run();
+            return;
+         }
+         catch ( ... )
+         {
+            threads.Destroy();
+            throw;
+         }
+      }
+
       if ( useAffinity )
-         if ( threads.Length() == 1 || !Thread::IsRootThread() )
+         if ( !Thread::IsRootThread() )
             useAffinity = false;
 
       for ( typename ReferenceArray<thread>::iterator i = threads.Begin(); i != threads.End(); ++i )
@@ -1303,17 +1336,27 @@ protected:
 #define UPDATE_THREAD_MONITOR( N )                    \
    if ( ++___n1___ == (N) )                           \
    {                                                  \
-      if ( this->TryIsAborted() )                     \
-         return;                                      \
-      ___n___ += ___n1___;                            \
+      if ( this->m_data.numThreads > 1 )              \
+      {                                               \
+         if ( this->TryIsAborted() )                  \
+            return;                                   \
+         ___n___ += (N);                              \
+         if ( this->m_data.total > 0 )                \
+            if ( this->m_data.mutex.TryLock() )       \
+            {                                         \
+               this->m_data.count += ___n___;         \
+               this->m_data.mutex.Unlock();           \
+               ___n___ = 0;                           \
+            }                                         \
+      }                                               \
+      else                                            \
+      {                                               \
+         if ( this->m_data.total > 0 )                \
+            this->m_data.status += (N);               \
+         else                                         \
+            ++this->m_data.status;                    \
+      }                                               \
       ___n1___ = 0;                                   \
-      if ( this->m_data.total > 0 )                   \
-         if ( this->m_data.mutex.TryLock() )          \
-         {                                            \
-            this->m_data.count += ___n___;            \
-            this->m_data.mutex.Unlock();              \
-            ___n___ = 0;                              \
-         }                                            \
    }
 
 /*!
@@ -1374,17 +1417,27 @@ protected:
 #define UPDATE_THREAD_MONITOR_CHUNK( N, chunkSize )   \
    if ( (___n1___ += (chunkSize)) == (N) )            \
    {                                                  \
-      if ( this->TryIsAborted() )                     \
-         return;                                      \
-      ___n___ += ___n1___;                            \
+      if ( this->m_data.numThreads > 1 )              \
+      {                                               \
+         if ( this->TryIsAborted() )                  \
+            return;                                   \
+         ___n___ += (N);                              \
+         if ( this->m_data.total > 0 )                \
+            if ( this->m_data.mutex.TryLock() )       \
+            {                                         \
+               this->m_data.count += ___n___;         \
+               this->m_data.mutex.Unlock();           \
+               ___n___ = 0;                           \
+            }                                         \
+      }                                               \
+      else                                            \
+      {                                               \
+         if ( this->m_data.total > 0 )                \
+            this->m_data.status += (N);               \
+         else                                         \
+            ++this->m_data.status;                    \
+      }                                               \
       ___n1___ = 0;                                   \
-      if ( this->m_data.total > 0 )                   \
-         if ( this->m_data.mutex.TryLock() )          \
-         {                                            \
-            this->m_data.count += ___n___;            \
-            this->m_data.mutex.Unlock();              \
-            ___n___ = 0;                              \
-         }                                            \
    }
 
 // ----------------------------------------------------------------------------

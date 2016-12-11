@@ -239,8 +239,12 @@ public:
    explicit AutoLockCounter( pcl::Mutex& mutex, AtomicInt& count, int limit ) :
       m_mutex( &mutex ), m_count( &count ), m_lock( 0 )
    {
-      if ( m_count->FetchAndAdd( 1 ) >= limit )
+      if ( m_count->FetchAndAdd( 1 ) >= limit-1 )
+      {
          Lock();
+         if ( m_count->Load() < limit )
+            Unlock();
+      }
    }
 
    /*!

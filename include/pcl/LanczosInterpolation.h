@@ -164,6 +164,18 @@ const float* PCL_FUNC PCL_InitializeLanczosIntLUT( int );
 template <typename T>
 class PCL_CLASS LanczosInterpolation : public BidimensionalInterpolation<T>
 {
+private:
+
+   struct Default
+   {
+      template <typename _T> static bool UseLUT( _T* ) { return false; }
+      static bool UseLUT( uint8* ) { return true; }
+      static bool UseLUT( int8* ) { return true; }
+      static bool UseLUT( uint16* ) { return true; }
+      static bool UseLUT( int16* ) { return true; }
+      static bool UseLUT( float* ) { return true; }
+   };
+
 public:
 
    /*!
@@ -502,16 +514,6 @@ private:
          PCL_LANCZOS_ACC()
       }
    }
-
-   struct Default
-   {
-      template <typename _T> static bool UseLUT( _T* ) { return false; }
-      static bool UseLUT( uint8* ) { return true; }
-      static bool UseLUT( int8* ) { return true; }
-      static bool UseLUT( uint16* ) { return true; }
-      static bool UseLUT( int16* ) { return true; }
-      static bool UseLUT( float* ) { return true; }
-   };
 };
 
 // ----------------------------------------------------------------------------

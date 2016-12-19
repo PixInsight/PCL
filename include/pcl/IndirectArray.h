@@ -1876,51 +1876,27 @@ bool operator <( const IndirectArray<T,A>& x1, const IndirectArray<T,A>& x2 )
 }
 
 /*!
- * Appends a pointer \a p to an indirect array \a x. Returns a reference to the
- * indirect array.
+ * Appends a pointer or indirect array \a y to an indirect array \a x. Returns
+ * a reference to the left-hand indirect array.
  * \ingroup array_insertion_operators
  */
-template <class T, class A> inline
-IndirectArray<T,A>& operator <<( IndirectArray<T,A>& x, const T* p )
+template <class T, class A, class Y> inline
+IndirectArray<T,A>& operator <<( IndirectArray<T,A>& x, Y y )
 {
-   x.Append( p );
+   x.Append( y );
    return x;
 }
 
 /*!
- * Appends a pointer \a p to an indirect array \a x. Returns a reference to the
- * indirect array.
+ * Appends a pointer or indirect array \a y to an indirect array \a x. Returns
+ * a reference to the left-hand indirect array.
  * \ingroup array_insertion_operators
  */
-template <class T, class A> inline
-IndirectArray<T,A>& operator <<( IndirectArray<T,A>&& x, const T* p )
+template <class T, class A, class Y> inline
+IndirectArray<T,A>& operator <<( IndirectArray<T,A>&& x, Y y )
 {
-   x.Append( p );
+   x.Append( y );
    return x;
-}
-
-/*!
- * Appends an indirect array \a x2 to an indirect array \a x1. Returns a
- * reference to the left-hand indirect array \a x1.
- * \ingroup array_insertion_operators
- */
-template <class T, class A> inline
-IndirectArray<T,A>& operator <<( IndirectArray<T,A>& x1, const IndirectArray<T,A>& x2 )
-{
-   x1.Append( x2 );
-   return x1;
-}
-
-/*!
- * Appends an indirect array \a x2 to an indirect array \a x1. Returns a
- * reference to the left-hand indirect array \a x1.
- * \ingroup array_insertion_operators
- */
-template <class T, class A> inline
-IndirectArray<T,A>& operator <<( IndirectArray<T,A>&& x1, const IndirectArray<T,A>& x2 )
-{
-   x1.Append( x2 );
-   return x1;
 }
 
 // ----------------------------------------------------------------------------

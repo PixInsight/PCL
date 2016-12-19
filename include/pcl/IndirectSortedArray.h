@@ -1190,75 +1190,27 @@ private:
 // ----------------------------------------------------------------------------
 
 /*!
- * Adds a pointer to an object \a p to an indirect sorted array \a x. Returns a
- * reference to the indirect sorted array.
+ * Adds a pointer or indirect array \a y to an indirect sorted array \a x.
+ * Returns a reference to the left-hand indirect sorted array.
  * \ingroup array_insertion_operators
  */
-template <class T, class A> inline
-IndirectSortedArray<T,A>& operator <<( IndirectSortedArray<T,A>& x, const T* p )
+template <class T, class A, class Y> inline
+IndirectSortedArray<T,A>& operator <<( IndirectSortedArray<T,A>& x, Y y )
 {
-   x.Add( p );
+   x.Add( y );
    return x;
 }
 
 /*!
- * Adds a pointer to an object \a p to an indirect sorted array \a x. Returns a
- * reference to the indirect sorted array.
+ * Adds a pointer or indirect array \a y to an indirect sorted array \a x.
+ * Returns a reference to the left-hand indirect sorted array.
  * \ingroup array_insertion_operators
  */
-template <class T, class A> inline
-IndirectSortedArray<T,A>& operator <<( IndirectSortedArray<T,A>&& x, const T* p )
+template <class T, class A, class Y> inline
+IndirectSortedArray<T,A>& operator <<( IndirectSortedArray<T,A>&& x, Y y )
 {
-   x.Add( p );
+   x.Add( y );
    return x;
-}
-
-/*!
- * Adds an indirect sorted array \a x2 to another indirect sorted array \a x1.
- * Returns a reference to the left-hand indirect sorted array \a x1.
- * \ingroup array_insertion_operators
- */
-template <class T, class A> inline
-IndirectSortedArray<T,A>& operator <<( IndirectSortedArray<T,A>& x1, const IndirectSortedArray<T,A>& x2 )
-{
-   x1.Add( x2 );
-   return x1;
-}
-
-/*!
- * Adds an indirect sorted array \a x2 to another indirect sorted array \a x1.
- * Returns a reference to the left-hand indirect sorted array \a x1.
- * \ingroup array_insertion_operators
- */
-template <class T, class A> inline
-IndirectSortedArray<T,A>& operator <<( IndirectSortedArray<T,A>&& x1, const IndirectSortedArray<T,A>& x2 )
-{
-   x1.Add( x2 );
-   return x1;
-}
-
-/*!
- * Adds an indirect array \a x2 to an indirect sorted array \a x1. Returns a
- * reference to the left-hand indirect sorted array \a x1.
- * \ingroup array_insertion_operators
- */
-template <class T, class A> inline
-IndirectSortedArray<T,A>& operator <<( IndirectSortedArray<T,A>& x1, const IndirectArray<T,A>& x2 )
-{
-   x1.Add( x2 );
-   return x1;
-}
-
-/*!
- * Adds an indirect array \a x2 to an indirect sorted array \a x1. Returns a
- * reference to the left-hand indirect sorted array \a x1.
- * \ingroup array_insertion_operators
- */
-template <class T, class A> inline
-IndirectSortedArray<T,A>& operator <<( IndirectSortedArray<T,A>&& x1, const IndirectArray<T,A>& x2 )
-{
-   x1.Add( x2 );
-   return x1;
 }
 
 // ----------------------------------------------------------------------------

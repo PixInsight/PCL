@@ -2157,75 +2157,27 @@ bool operator <( const ReferenceArray<T,A>& x1, const ReferenceArray<T,A>& x2 )
 }
 
 /*!
- * Appends a pointer \a p to a reference array \a x. Returns a reference to the
- * reference array.
+ * Appends a pointer, reference array or indirect array \a y to a reference
+ * array \a x. Returns a reference to the left-hand reference array.
  * \ingroup array_insertion_operators
  */
-template <class T, class A> inline
-ReferenceArray<T,A>& operator <<( ReferenceArray<T,A>& x, const T* p )
+template <class T, class A, class Y> inline
+ReferenceArray<T,A>& operator <<( ReferenceArray<T,A>& x, Y y )
 {
-   x.Append( p );
+   x.Append( y );
    return x;
 }
 
 /*!
- * Appends a pointer \a p to a reference array \a x. Returns a reference to the
- * reference array.
+ * Appends a pointer, reference array or indirect array \a y to a reference
+ * array \a x. Returns a reference to the left-hand reference array.
  * \ingroup array_insertion_operators
  */
-template <class T, class A> inline
-ReferenceArray<T,A>& operator <<( ReferenceArray<T,A>&& x, const T* p )
+template <class T, class A, class Y> inline
+ReferenceArray<T,A>& operator <<( ReferenceArray<T,A>&& x, Y y )
 {
-   x.Append( p );
+   x.Append( y );
    return x;
-}
-
-/*!
- * Appends a reference array \a x2 to a reference array \a x1. Returns a
- * reference to the left-hand reference array \a x1.
- * \ingroup array_insertion_operators
- */
-template <class T, class A> inline
-ReferenceArray<T,A>& operator <<( ReferenceArray<T,A>& x1, const ReferenceArray<T,A>& x2 )
-{
-   x1.Append( x2 );
-   return x1;
-}
-
-/*!
- * Appends a reference array \a x2 to a reference array \a x1. Returns a
- * reference to the left-hand reference array \a x1.
- * \ingroup array_insertion_operators
- */
-template <class T, class A> inline
-ReferenceArray<T,A>& operator <<( ReferenceArray<T,A>&& x1, const ReferenceArray<T,A>& x2 )
-{
-   x1.Append( x2 );
-   return x1;
-}
-
-/*!
- * Appends an indirect array \a x2 to a reference array \a x1. Returns a
- * reference to the left-hand reference array \a x1.
- * \ingroup array_insertion_operators
- */
-template <class T, class A> inline
-ReferenceArray<T,A>& operator <<( ReferenceArray<T,A>& x1, const IndirectArray<T,A>& x2 )
-{
-   x1.Append( x2 );
-   return x1;
-}
-
-/*!
- * Appends an indirect array \a x2 to a reference array \a x1. Returns a
- * reference to the left-hand reference array \a x1.
- * \ingroup array_insertion_operators
- */
-template <class T, class A> inline
-ReferenceArray<T,A>& operator <<( ReferenceArray<T,A>&& x1, const IndirectArray<T,A>& x2 )
-{
-   x1.Append( x2 );
-   return x1;
 }
 
 // ----------------------------------------------------------------------------

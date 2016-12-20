@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.12.00.0350
+// Standard ImageIntegration Process Module Version 01.12.00.0351
 // ----------------------------------------------------------------------------
-// ImageIntegrationInstance.cpp - Released 2016/12/20 11:41:37 UTC
+// ImageIntegrationInstance.cpp - Released 2016/12/20 17:42:14 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -1705,23 +1705,27 @@ void DataLoaderEngine::DataLoaderThread::Run()
 {
    INIT_THREAD_MONITOR()
 
-   for ( int k = m_firstStack; k < m_endStack; ++k )
+   RejectionMatrix* R = E.R.ComponentPtr( m_firstStack );
+   IVector* N = E.N.ComponentPtr( m_firstStack );
+   FVector* M = (I.p_rejection == IIRejection::LinearFit) ? E.M.ComponentPtr( m_firstStack ) : nullptr;
+
+   for ( int k = m_firstStack; k < m_endStack; ++k, ++R, ++N )
    {
       // Source pixels
-      E.R[k] = RejectionMatrix( IntegrationFile::Width(), IntegrationFile::NumberOfFiles() );
+      *R = RejectionMatrix( IntegrationFile::Width(), IntegrationFile::NumberOfFiles() );
       for ( int i = 0; i < IntegrationFile::NumberOfFiles(); ++i )
       {
          const float* b = IntegrationFile::FileByIndex( i )[E.r+k];
          for ( int x = 0; x < IntegrationFile::Width(); ++x )
-            E.R[k][x][i].Set( *b++, i );
+            R->RowPtr( x )[i].Set( *b++, i );
       }
 
       // Pixel counters
-      E.N[k] = IVector( IntegrationFile::NumberOfFiles(), IntegrationFile::Width() );
+      *N = IVector( IntegrationFile::NumberOfFiles(), IntegrationFile::Width() );
 
       // Rejection slopes for the linear fit clipping algorithm
       if ( I.p_rejection == IIRejection::LinearFit )
-         E.M[k] = FVector( .0F, IntegrationFile::Width() );
+         *M++ = FVector( .0F, IntegrationFile::Width() );
 
       UPDATE_THREAD_MONITOR( 10 )
    }
@@ -2871,16 +2875,17 @@ void IntegrationEngine::IntegrationThread::Run()
    else
       result32 = E.result32 + size_type( m_firstStack )*size_type( IntegrationFile::Width() );
 
-   for ( int k = m_firstStack; k < m_endStack; ++k )
+   RejectionMatrix* R = E.R.ComponentPtr( m_firstStack );
+
+   for ( int k = m_firstStack; k < m_endStack; ++k, ++R )
    {
-      RejectionMatrix& R = E.R[k];
       const IVector& N = E.N[k];
 
-      for ( int x = 0; x < R.Rows(); ++x )
+      for ( int x = 0; x < R->Rows(); ++x )
       {
-         RejectionDataItem* r = R[x];
-         double f;
+         RejectionDataItem* r = R->DataPtr()[x];
          int n = N[x];
+         double f;
 
          pcl_enum thisCombination = I.p_combination;
          if ( n == 0 )
@@ -2949,7 +2954,7 @@ void IntegrationEngine::IntegrationThread::Run()
          case IICombination::Median:
          case IICombination::Minimum:
          case IICombination::Maximum:
-            Sort( R[x], R[x]+n, RejectionDataItem::CompareRaw );
+            Sort( r, r+n, RejectionDataItem::CompareRaw );
             switch ( thisCombination )
             {
             default:
@@ -4224,4 +4229,4 @@ size_type ImageIntegrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationInstance.cpp - Released 2016/12/20 11:41:37 UTC
+// EOF ImageIntegrationInstance.cpp - Released 2016/12/20 17:42:14 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.12.00.0350
+// Standard ImageIntegration Process Module Version 01.12.00.0351
 // ----------------------------------------------------------------------------
-// FileDataCache.cpp - Released 2016/12/20 11:41:37 UTC
+// FileDataCache.cpp - Released 2016/12/20 17:42:14 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -325,4 +325,4 @@ void FileDataCacheItem::Save( const IsoString& keyPrefix, int index ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FileDataCache.cpp - Released 2016/12/20 11:41:37 UTC
+// EOF FileDataCache.cpp - Released 2016/12/20 17:42:14 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0327
 // ----------------------------------------------------------------------------
-// DynamicCropParameters.cpp - Released 2016/11/17 18:14:58 UTC
+// DynamicCropParameters.cpp - Released 2016/12/20 17:43:21 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -78,6 +78,7 @@ FillRed*                TheDCFillRedParameter = nullptr;
 FillGreen*              TheDCFillGreenParameter = nullptr;
 FillBlue*               TheDCFillBlueParameter = nullptr;
 FillAlpha*              TheDCFillAlphaParameter = nullptr;
+NoGUIMessages*          TheDCNoGUIMessagesParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -216,4 +217,4 @@ double DCScaleY::DefaultValue() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropParameters.cpp - Released 2016/11/17 18:14:58 UTC
+// EOF DynamicCropParameters.cpp - Released 2016/12/20 17:43:21 UTC

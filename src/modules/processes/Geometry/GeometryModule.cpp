@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0327
 // ----------------------------------------------------------------------------
-// GeometryModule.cpp - Released 2016/11/17 18:14:58 UTC
+// GeometryModule.cpp - Released 2016/12/20 17:43:21 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -52,14 +52,15 @@
 
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     02
-#define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0322
+#define MODULE_VERSION_REVISION  01
+#define MODULE_VERSION_BUILD     0327
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2016
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       17
+#define MODULE_RELEASE_MONTH     12
+#define MODULE_RELEASE_DAY       20
 
+#include <pcl/Console.h>
 #include <pcl/ImageWindow.h>
 #include <pcl/MessageBox.h>
 #include <pcl/View.h>
@@ -121,7 +122,7 @@ String GeometryModule::Author() const
 
 String GeometryModule::Copyright() const
 {
-   return "Copyright (c) 2005-2015, Pleiades Astrophoto";
+   return "Copyright (c) 2005-2016, Pleiades Astrophoto";
 }
 
 String GeometryModule::TradeMarks() const
@@ -165,18 +166,23 @@ void GeometryModule::OnLoad()
 
 static SortedIsoStringList s_astrometryKeywords;
 
-bool WarnOnAstrometryMetadataOrPreviewsOrMask( const ImageWindow& window, const IsoString& processId )
+bool WarnOnAstrometryMetadataOrPreviewsOrMask( const ImageWindow& window, const IsoString& processId, bool noGUIMessages )
 {
    if ( window.HasPreviews() || window.HasMaskReferences() || !window.Mask().IsNull() )
-      if ( MessageBox( "<p>" + window.MainView().Id() + "</p>"
-                       "<p>Existing previews and mask references will be deleted.</p>"
-                       "<p><b>Some of these side effects could be irreversible. Proceed?</b></p>",
-                       processId,
-                       StdIcon::Warning,
-                       StdButton::No, StdButton::Yes ).Execute() != StdButton::Yes )
-      {
-         return false;
-      }
+   {
+      if ( !noGUIMessages )
+         if ( MessageBox( "<p>" + window.MainView().Id() + "</p>"
+                          "<p>Existing previews and mask references will be deleted.</p>"
+                          "<p><b>Some of these side effects could be irreversible. Proceed?</b></p>",
+                          processId,
+                          StdIcon::Warning,
+                          StdButton::No, StdButton::Yes ).Execute() != StdButton::Yes )
+         {
+            return false;
+         }
+
+      Console().WarningLn( "<end><cbr><br>** Warning: " + processId + ": Existing previews and/or mask references will be deleted." );
+   }
 
    if ( s_astrometryKeywords.IsEmpty() )
       s_astrometryKeywords << "CTYPE1"
@@ -200,15 +206,18 @@ bool WarnOnAstrometryMetadataOrPreviewsOrMask( const ImageWindow& window, const 
    for ( auto k : keywords )
       if ( s_astrometryKeywords.Contains( k.name ) )
       {
-         if ( MessageBox( "<p>" + window.MainView().Id() + "</p>"
-                          "<p>The image contains an astrometric solution that will be deleted by the geometric transformation.</p>"
-                          "<p><b>This side effect could be irreversible. Proceed?</b></p>",
-                          processId,
-                          StdIcon::Warning,
-                          StdButton::No, StdButton::Yes ).Execute() != StdButton::Yes )
-         {
-            return false;
-         }
+         if ( !noGUIMessages )
+            if ( MessageBox( "<p>" + window.MainView().Id() + "</p>"
+                             "<p>The image contains an astrometric solution that will be deleted by the geometric transformation.</p>"
+                             "<p><b>This side effect could be irreversible. Proceed?</b></p>",
+                             processId,
+                             StdIcon::Warning,
+                             StdButton::No, StdButton::Yes ).Execute() != StdButton::Yes )
+            {
+               return false;
+            }
+
+         Console().WarningLn( "<end><cbr><br>** Warning: " + processId + ": Existing astrometric solution will be deleted." );
          break;
       }
 
@@ -290,4 +299,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF GeometryModule.cpp - Released 2016/11/17 18:14:58 UTC
+// EOF GeometryModule.cpp - Released 2016/12/20 17:43:21 UTC

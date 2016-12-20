@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0327
 // ----------------------------------------------------------------------------
-// ResampleProcess.cpp - Released 2016/11/17 18:14:58 UTC
+// ResampleProcess.cpp - Released 2016/12/20 17:43:21 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -83,6 +83,7 @@ ResampleProcess::ResampleProcess() : MetaProcess()
    TheRSInterpolationAlgorithmParameter = new InterpolationAlgorithm( this );
    TheRSClampingThresholdParameter = new ClampingThreshold( this );
    TheRSSmoothnessParameter = new Smoothness( this );
+   TheRSNoGUIMessagesParameter = new NoGUIMessages( this );
 }
 
 IsoString ResampleProcess::Id() const
@@ -131,4 +132,4 @@ ProcessImplementation* ResampleProcess::Clone( const ProcessImplementation& p ) 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ResampleProcess.cpp - Released 2016/11/17 18:14:58 UTC
+// EOF ResampleProcess.cpp - Released 2016/12/20 17:43:21 UTC

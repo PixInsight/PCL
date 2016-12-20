@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0327
 // ----------------------------------------------------------------------------
-// IntegerResampleProcess.cpp - Released 2016/11/17 18:14:58 UTC
+// IntegerResampleProcess.cpp - Released 2016/12/20 17:43:21 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -78,6 +78,7 @@ IntegerResampleProcess::IntegerResampleProcess() : MetaProcess()
    TheIRYResolutionParameter = new YResolution( this );
    TheIRMetricResolutionParameter = new MetricResolution( this );
    TheIRForceResolutionParameter = new ForceResolution( this );
+   TheIRNoGUIMessagesParameter = new NoGUIMessages( this );
 }
 
 IsoString IntegerResampleProcess::Id() const
@@ -126,4 +127,4 @@ ProcessImplementation* IntegerResampleProcess::Clone( const ProcessImplementatio
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF IntegerResampleProcess.cpp - Released 2016/11/17 18:14:58 UTC
+// EOF IntegerResampleProcess.cpp - Released 2016/12/20 17:43:21 UTC

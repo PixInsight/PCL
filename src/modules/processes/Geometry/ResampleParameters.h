@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0327
 // ----------------------------------------------------------------------------
-// ResampleParameters.h - Released 2016/11/17 18:14:58 UTC
+// ResampleParameters.h - Released 2016/12/20 17:43:21 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -144,9 +144,12 @@ extern XResolution* TheRSXResolutionParameter;
 extern YResolution* TheRSYResolutionParameter;
 extern MetricResolution* TheRSMetricResolutionParameter;
 extern ForceResolution* TheRSForceResolutionParameter;
+
 extern InterpolationAlgorithm* TheRSInterpolationAlgorithmParameter;
 extern ClampingThreshold* TheRSClampingThresholdParameter;
 extern Smoothness* TheRSSmoothnessParameter;
+
+extern NoGUIMessages* TheRSNoGUIMessagesParameter;
 
 // ----------------------------------------------------------------------------
 
@@ -157,4 +160,4 @@ PCL_END_LOCAL
 #endif   // __ResampleParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF ResampleParameters.h - Released 2016/11/17 18:14:58 UTC
+// EOF ResampleParameters.h - Released 2016/12/20 17:43:21 UTC

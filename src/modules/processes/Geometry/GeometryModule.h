@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0327
 // ----------------------------------------------------------------------------
-// GeometryModule.h - Released 2016/11/17 18:14:58 UTC
+// GeometryModule.h - Released 2016/12/20 17:43:21 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -81,7 +81,7 @@ public:
 
 class PCL_CLASS ImageWindow;
 
-bool WarnOnAstrometryMetadataOrPreviewsOrMask( const ImageWindow&, const IsoString& processId );
+bool WarnOnAstrometryMetadataOrPreviewsOrMask( const ImageWindow&, const IsoString& processId, bool noGUIMessages );
 void DeleteAstrometryMetadataAndPreviewsAndMask( ImageWindow& );
 void DeleteAstrometryMetadataAndPreviews( ImageWindow& );
 
@@ -92,4 +92,4 @@ void DeleteAstrometryMetadataAndPreviews( ImageWindow& );
 #endif   // __GeometryModule_h
 
 // ----------------------------------------------------------------------------
-// EOF GeometryModule.h - Released 2016/11/17 18:14:58 UTC
+// EOF GeometryModule.h - Released 2016/12/20 17:43:21 UTC

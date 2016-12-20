@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0327
 // ----------------------------------------------------------------------------
-// FastRotationParameters.h - Released 2016/11/17 18:14:58 UTC
+// FastRotationParameters.h - Released 2016/12/20 17:43:21 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -53,7 +53,7 @@
 #ifndef __FastRotationParameters_h
 #define __FastRotationParameters_h
 
-#include <pcl/MetaParameter.h>
+#include "CommonParameters.h"
 
 namespace pcl
 {
@@ -87,6 +87,10 @@ extern FRMode* TheFRModeParameter;
 
 // ----------------------------------------------------------------------------
 
+extern NoGUIMessages* TheFRNoGUIMessagesParameter;
+
+// ----------------------------------------------------------------------------
+
 PCL_END_LOCAL
 
 } // pcl
@@ -94,4 +98,4 @@ PCL_END_LOCAL
 #endif   // __FastRotationParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF FastRotationParameters.h - Released 2016/11/17 18:14:58 UTC
+// EOF FastRotationParameters.h - Released 2016/12/20 17:43:21 UTC

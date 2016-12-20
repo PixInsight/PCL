@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0327
 // ----------------------------------------------------------------------------
-// RotationProcess.cpp - Released 2016/11/17 18:14:58 UTC
+// RotationProcess.cpp - Released 2016/12/20 17:43:21 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -81,6 +81,7 @@ RotationProcess::RotationProcess() : MetaProcess()
    TheRTFillGreenParameter = new FillGreen( this );
    TheRTFillBlueParameter = new FillBlue( this );
    TheRTFillAlphaParameter = new FillAlpha( this );
+   TheRTNoGUIMessagesParameter = new NoGUIMessages( this );
 }
 
 IsoString RotationProcess::Id() const
@@ -129,4 +130,4 @@ ProcessImplementation* RotationProcess::Clone( const ProcessImplementation& p ) 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RotationProcess.cpp - Released 2016/11/17 18:14:58 UTC
+// EOF RotationProcess.cpp - Released 2016/12/20 17:43:21 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0327
 // ----------------------------------------------------------------------------
-// RotationParameters.cpp - Released 2016/11/17 18:14:58 UTC
+// RotationParameters.cpp - Released 2016/12/20 17:43:21 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -66,10 +66,11 @@ FillRed*                TheRTFillRedParameter = nullptr;
 FillGreen*              TheRTFillGreenParameter = nullptr;
 FillBlue*               TheRTFillBlueParameter = nullptr;
 FillAlpha*              TheRTFillAlphaParameter = nullptr;
+NoGUIMessages*          TheRTNoGUIMessagesParameter = nullptr;
 
 // ----------------------------------------------------------------------------
 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF RotationParameters.cpp - Released 2016/11/17 18:14:58 UTC
+// EOF RotationParameters.cpp - Released 2016/12/20 17:43:21 UTC

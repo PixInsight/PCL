@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0327
 // ----------------------------------------------------------------------------
-// DynamicCropInstance.cpp - Released 2016/11/17 18:14:58 UTC
+// DynamicCropInstance.cpp - Released 2016/12/20 17:43:21 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -85,7 +85,8 @@ DynamicCropInstance::DynamicCropInstance( const MetaProcess* P ) :
    p_fillColor( TheDCFillRedParameter->DefaultValue(),
                 TheDCFillGreenParameter->DefaultValue(),
                 TheDCFillBlueParameter->DefaultValue(),
-                TheDCFillAlphaParameter->DefaultValue() )
+                TheDCFillAlphaParameter->DefaultValue() ),
+   p_noGUIMessages( TheDCNoGUIMessagesParameter->DefaultValue() )
 {
 }
 
@@ -114,6 +115,7 @@ void DynamicCropInstance::Assign( const ProcessImplementation& p )
       p_metric            = x->p_metric;
       p_forceResolution   = x->p_forceResolution;
       p_fillColor         = x->p_fillColor;
+      p_noGUIMessages     = x->p_noGUIMessages;
    }
 }
 
@@ -141,7 +143,7 @@ bool DynamicCropInstance::CanExecuteOn( const View& v, String& whyNot ) const
 
 bool DynamicCropInstance::BeforeExecution( View& view )
 {
-   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id() );
+   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id(), p_noGUIMessages );
 }
 
 // ----------------------------------------------------------------------------
@@ -534,6 +536,8 @@ void* DynamicCropInstance::LockParameter( const MetaParameter* p, size_type /*ta
       return p_fillColor.At( 2 );
    if ( p == TheDCFillAlphaParameter )
       return p_fillColor.At( 3 );
+   if ( p == TheDCNoGUIMessagesParameter )
+      return &p_noGUIMessages;
    return nullptr;
 }
 
@@ -542,4 +546,4 @@ void* DynamicCropInstance::LockParameter( const MetaParameter* p, size_type /*ta
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropInstance.cpp - Released 2016/11/17 18:14:58 UTC
+// EOF DynamicCropInstance.cpp - Released 2016/12/20 17:43:21 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0327
 // ----------------------------------------------------------------------------
-// DynamicCropInstance.h - Released 2016/11/17 18:14:58 UTC
+// DynamicCropInstance.h - Released 2016/12/20 17:43:21 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -99,6 +99,7 @@ private:
    pcl_bool p_metric;            // metric resolution?
    pcl_bool p_forceResolution;   // set resolution of target image window?
    DVector  p_fillColor;         // Filling values for unused areas (R/K,G,B,A)
+   pcl_bool p_noGUIMessages;    // only show warning messages on the console
 
    friend class DynamicCropEngine;
    friend class DynamicCropInterface;
@@ -111,4 +112,4 @@ private:
 #endif   // __DynamicCropInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF DynamicCropInstance.h - Released 2016/11/17 18:14:58 UTC
+// EOF DynamicCropInstance.h - Released 2016/12/20 17:43:21 UTC

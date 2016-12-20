@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0327
 // ----------------------------------------------------------------------------
-// FastRotationInstance.h - Released 2016/11/17 18:14:58 UTC
+// FastRotationInstance.h - Released 2016/12/20 17:43:21 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -84,6 +84,7 @@ public:
 private:
 
    pcl_enum p_mode;
+   pcl_bool p_noGUIMessages;    // only show warning messages on the console
 
    friend class FastRotationProcess;
    friend class FastRotationInterface;
@@ -96,4 +97,4 @@ private:
 #endif   // __FastRotationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF FastRotationInstance.h - Released 2016/11/17 18:14:58 UTC
+// EOF FastRotationInstance.h - Released 2016/12/20 17:43:21 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.00.0322
+// Standard Geometry Process Module Version 01.02.01.0327
 // ----------------------------------------------------------------------------
-// ResampleInstance.cpp - Released 2016/11/17 18:14:58 UTC
+// ResampleInstance.cpp - Released 2016/12/20 17:43:21 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
@@ -76,7 +76,8 @@ ResampleInstance::ResampleInstance( const MetaProcess* P ) :
    p_forceResolution( TheRSForceResolutionParameter->DefaultValue() ),
    p_interpolation( TheRSInterpolationAlgorithmParameter->Default ),
    p_clampingThreshold( TheRSClampingThresholdParameter->DefaultValue() ),
-   p_smoothness( TheRSSmoothnessParameter->DefaultValue() )
+   p_smoothness( TheRSSmoothnessParameter->DefaultValue() ),
+   p_noGUIMessages( TheRSNoGUIMessagesParameter->DefaultValue() )
 {
 }
 
@@ -100,6 +101,7 @@ void ResampleInstance::Assign( const ProcessImplementation& p )
       p_interpolation = x->p_interpolation;
       p_clampingThreshold = x->p_clampingThreshold;
       p_smoothness = x->p_smoothness;
+      p_noGUIMessages = x->p_noGUIMessages;
    }
 }
 
@@ -127,7 +129,7 @@ bool ResampleInstance::CanExecuteOn( const View& v, String& whyNot ) const
 
 bool ResampleInstance::BeforeExecution( View& view )
 {
-   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id() );
+   return WarnOnAstrometryMetadataOrPreviewsOrMask( view.Window(), Meta()->Id(), p_noGUIMessages );
 }
 
 void ResampleInstance::GetNewSizes( int& width, int& height ) const
@@ -232,6 +234,8 @@ void* ResampleInstance::LockParameter( const MetaParameter* p, size_type /*table
       return &p_clampingThreshold;
    if ( p == TheRSSmoothnessParameter )
       return &p_smoothness;
+   if ( p == TheRSNoGUIMessagesParameter )
+      return &p_noGUIMessages;
    return nullptr;
 }
 
@@ -240,4 +244,4 @@ void* ResampleInstance::LockParameter( const MetaParameter* p, size_type /*table
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ResampleInstance.cpp - Released 2016/11/17 18:14:58 UTC
+// EOF ResampleInstance.cpp - Released 2016/12/20 17:43:21 UTC

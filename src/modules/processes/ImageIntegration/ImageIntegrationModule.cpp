@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0344
+// Standard ImageIntegration Process Module Version 01.12.00.0350
 // ----------------------------------------------------------------------------
-// ImageIntegrationModule.cpp - Released 2016/11/13 17:30:54 UTC
+// ImageIntegrationModule.cpp - Released 2016/12/20 11:41:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -51,14 +51,14 @@
 // ----------------------------------------------------------------------------
 
 #define MODULE_VERSION_MAJOR     01
-#define MODULE_VERSION_MINOR     11
+#define MODULE_VERSION_MINOR     12
 #define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0344
+#define MODULE_VERSION_BUILD     0350
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2016
-#define MODULE_RELEASE_MONTH     11
-#define MODULE_RELEASE_DAY       13
+#define MODULE_RELEASE_MONTH     12
+#define MODULE_RELEASE_DAY       20
 
 #include "DrizzleIntegrationInstance.h"
 #include "DrizzleIntegrationInterface.h"
@@ -112,7 +112,7 @@ String ImageIntegrationModule::Author() const
 
 String ImageIntegrationModule::Copyright() const
 {
-   return "Copyright (c) 2009-2015, Pleiades Astrophoto";
+   return "Copyright (c) 2009-2016, Pleiades Astrophoto";
 }
 
 String ImageIntegrationModule::TradeMarks() const
@@ -145,19 +145,18 @@ void ImageIntegrationModule::GetReleaseDate( int& year, int& month, int& day ) c
 
 void ImageIntegrationModule::OnLoad()
 {
-   // ### File caches are created and loaded the first time an instance
-   //     is executed, or the first time a preferences dialog is launched.
-   //     Loading them here would add unnecessary workload during startup.
-
    /*
-   if ( TheIntegrationCache == 0 )
-      new IntegrationCache;
-   */
+    * ### N.B.: File caches are created and loaded the first time an instance
+    * is executed, or the first time a preferences dialog is launched. Loading
+    * them here would add an unnecessary workload during startup.
+    */
+//    if ( TheIntegrationCache == nullptr )
+//       new IntegrationCache;
 }
 
 void ImageIntegrationModule::OnUnload()
 {
-   if ( TheIntegrationCache != 0 )
+   if ( TheIntegrationCache != nullptr )
       TheIntegrationCache->Save();
 }
 
@@ -204,4 +203,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationModule.cpp - Released 2016/11/13 17:30:54 UTC
+// EOF ImageIntegrationModule.cpp - Released 2016/12/20 11:41:37 UTC

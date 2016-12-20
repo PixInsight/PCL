@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0344
+// Standard ImageIntegration Process Module Version 01.12.00.0350
 // ----------------------------------------------------------------------------
-// FileDataCache.h - Released 2016/11/13 17:30:54 UTC
+// FileDataCache.h - Released 2016/12/20 11:41:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -54,9 +54,10 @@
 #define __FileDataCache_h
 
 #include <pcl/File.h>
-#include <pcl/IndirectSortedArray.h>
-#include <pcl/Vector.h>
+#include <pcl/Mutex.h>
+#include <pcl/ReferenceSortedArray.h>
 #include <pcl/StringList.h>
+#include <pcl/Vector.h>
 
 namespace pcl
 {
@@ -108,7 +109,7 @@ public:
          return time.second < t.second;
 #if 0
       /*
-       * File time milliseconds are only available on Windows, but they are
+       * File time milliseconds are available on Windows, but they are
        * unreliable and generate wrong cache invalidations.
        */
       if ( time.milliseconds != t.milliseconds )
@@ -173,7 +174,10 @@ class PCL_CLASS FileDataCache
 public:
 
    FileDataCache( const IsoString& key, int days = 30 ) :
-   m_cache(), m_keyPrefix( key.Trimmed() ), m_durationDays( Max( 0, days ) ), m_enabled( true )
+      m_cache(),
+      m_keyPrefix( key.Trimmed() ),
+      m_durationDays( Max( 0, days ) ),
+      m_enabled( true )
    {
       PCL_PRECONDITION( !m_keyPrefix.IsEmpty() )
       if ( m_keyPrefix.IsEmpty() )
@@ -224,24 +228,12 @@ public:
       return m_cache.Length();
    }
 
-   bool IsEmpty() const
-   {
-      return m_cache.IsEmpty();
-   }
-
-   const FileDataCacheItem* Find( const String& path ) const
-   {
-      cache_index::const_iterator i = m_cache.Search( FileDataCacheItem( path ) );
-      return (i == m_cache.End()) ? 0 : *i;
-   }
-
+   // Thread-safe routines.
+   bool IsEmpty() const;
+   const FileDataCacheItem* Find( const String& path ) const;
+   void Clear();
    void Add( const FileDataCacheItem& );
    bool Get( FileDataCacheItem&, const String& path );
-
-   void Clear()
-   {
-      m_cache.Destroy();
-   }
 
    virtual void Load();
    virtual void Save() const;
@@ -253,12 +245,13 @@ protected:
 
 private:
 
-   typedef IndirectSortedArray<FileDataCacheItem> cache_index;
+   typedef ReferenceSortedArray<FileDataCacheItem> cache_index;
 
-   cache_index m_cache;
-   IsoString   m_keyPrefix;
-   int         m_durationDays; // <= 0 -> never expires
-   bool        m_enabled;
+   mutable Mutex       m_mutex;
+           cache_index m_cache;
+           IsoString   m_keyPrefix;
+           int         m_durationDays; // <= 0 -> never expires
+           bool        m_enabled;
 };
 
 // ----------------------------------------------------------------------------
@@ -268,4 +261,4 @@ private:
 #endif   // __FileDataCache_h
 
 // ----------------------------------------------------------------------------
-// EOF FileDataCache.h - Released 2016/11/13 17:30:54 UTC
+// EOF FileDataCache.h - Released 2016/12/20 11:41:37 UTC

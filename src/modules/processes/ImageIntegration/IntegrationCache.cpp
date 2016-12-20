@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0344
+// Standard ImageIntegration Process Module Version 01.12.00.0350
 // ----------------------------------------------------------------------------
-// IntegrationCache.cpp - Released 2016/11/13 17:30:54 UTC
+// IntegrationCache.cpp - Released 2016/12/20 11:41:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -59,7 +59,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-IntegrationCache* TheIntegrationCache = 0;
+IntegrationCache* TheIntegrationCache = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -199,7 +199,7 @@ bool IntegrationCacheItem::GetDataFromTokens( const StringList& tokens )
 
 IntegrationCache::IntegrationCache() : FileDataCache( "/ImageIntegration/Cache" )
 {
-   if ( TheIntegrationCache == 0 )
+   if ( TheIntegrationCache == nullptr )
       TheIntegrationCache = this;
    Load();
 }
@@ -207,7 +207,7 @@ IntegrationCache::IntegrationCache() : FileDataCache( "/ImageIntegration/Cache" 
 IntegrationCache::~IntegrationCache()
 {
    if ( TheIntegrationCache == this )
-      TheIntegrationCache = 0;
+      TheIntegrationCache = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -215,4 +215,4 @@ IntegrationCache::~IntegrationCache()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF IntegrationCache.cpp - Released 2016/11/13 17:30:54 UTC
+// EOF IntegrationCache.cpp - Released 2016/12/20 11:41:37 UTC

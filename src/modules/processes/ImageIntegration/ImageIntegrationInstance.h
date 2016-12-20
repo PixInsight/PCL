@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0344
+// Standard ImageIntegration Process Module Version 01.12.00.0350
 // ----------------------------------------------------------------------------
-// ImageIntegrationInstance.h - Released 2016/11/13 17:30:54 UTC
+// ImageIntegrationInstance.h - Released 2016/12/20 11:41:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -168,6 +168,10 @@ private:
    float       p_mrsMinDataFraction; // minimum fraction of data for a valid MRS noise evaluation
 
    pcl_bool    p_noGUIMessages; // only show errors on the console
+
+   // High-level parallelism
+   pcl_bool    p_useFileThreads;
+   float       p_fileThreadOverload;
 
    /*
     * Read-only output properties
@@ -379,4 +383,4 @@ private:
 #endif   // __ImageIntegrationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationInstance.h - Released 2016/11/13 17:30:54 UTC
+// EOF ImageIntegrationInstance.h - Released 2016/12/20 11:41:37 UTC

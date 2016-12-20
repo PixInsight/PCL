@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0344
+// Standard ImageIntegration Process Module Version 01.12.00.0350
 // ----------------------------------------------------------------------------
-// ImageIntegrationParameters.h - Released 2016/11/13 17:30:54 UTC
+// ImageIntegrationParameters.h - Released 2016/12/20 11:41:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -849,6 +849,37 @@ public:
 extern IINoGUIMessages* TheIINoGUIMessagesParameter;
 
 // ----------------------------------------------------------------------------
+
+class IIUseFileThreads : public MetaBoolean
+{
+public:
+
+   IIUseFileThreads( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual bool DefaultValue() const;
+};
+
+extern IIUseFileThreads* TheIIUseFileThreadsParameter;
+
+// ----------------------------------------------------------------------------
+
+class IIFileThreadOverload : public MetaFloat
+{
+public:
+
+   IIFileThreadOverload( MetaProcess* );
+
+   virtual IsoString Id() const;
+   virtual int Precision() const;
+   virtual double DefaultValue() const;
+   virtual double MinimumValue() const;
+   virtual double MaximumValue() const;
+};
+
+extern IIFileThreadOverload* TheIIFileThreadOverloadParameter;
+
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 // Output properties
 // ----------------------------------------------------------------------------
@@ -1510,4 +1541,4 @@ PCL_END_LOCAL
 #endif   // __ImageIntegrationParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationParameters.h - Released 2016/11/13 17:30:54 UTC
+// EOF ImageIntegrationParameters.h - Released 2016/12/20 11:41:37 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.11.00.0344
+// Standard ImageIntegration Process Module Version 01.12.00.0350
 // ----------------------------------------------------------------------------
-// IntegrationCache.h - Released 2016/11/13 17:30:54 UTC
+// IntegrationCache.h - Released 2016/12/20 11:41:37 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -79,7 +79,8 @@ public:
    float   pedestal;
 
    IntegrationCacheItem( const String& path = String() ) :
-   FileDataCacheItem( path ), pedestal( -1 )
+      FileDataCacheItem( path ),
+      pedestal( -1 )
    {
    }
 
@@ -125,4 +126,4 @@ extern IntegrationCache* TheIntegrationCache;
 #endif   // __IntegrationCache_h
 
 // ----------------------------------------------------------------------------
-// EOF IntegrationCache.h - Released 2016/11/13 17:30:54 UTC
+// EOF IntegrationCache.h - Released 2016/12/20 11:41:37 UTC

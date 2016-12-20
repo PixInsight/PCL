@@ -1682,9 +1682,24 @@ public:
     * copies are not necessary. Typically this happens when two or more threads
     * work simultaneously on non-overlapping regions of the same vector.
     */
-   component* DataPtr()
+   iterator DataPtr()
    {
       return m_data->v;
+   }
+
+   /*!
+    * Returns a pointer to the \a ith component in this vector.
+    *
+    * All vector components are guaranteed to be stored at consecutive
+    * locations addressable from the iterator returned by this function.
+    *
+    * This member function does not ensure that the data referenced by this
+    * vector is unique. See DataPtr() for more information on how to use this
+    * member function.
+    */
+   iterator ComponentPtr( int i )
+   {
+      return m_data->At( i );
    }
 
 #ifndef __PCL_NO_STL_COMPATIBLE_ITERATORS

@@ -1266,6 +1266,21 @@ public:
       return m_data->v;
    }
 
+   /*!
+    * Returns a pointer to the first matrix element of row \a i.
+    *
+    * All elements in row \a i are guaranteed to be stored at consecutive
+    * locations addressable from the pointer returned by this function.
+    *
+    * This member function does not ensure that the data referenced by this
+    * matrix is unique. See DataPtr() for more information on how to use this
+    * member function.
+    */
+   block_iterator RowPtr( int i )
+   {
+      return m_data->v[i];
+   }
+
 #ifndef __PCL_NO_STL_COMPATIBLE_ITERATORS
    /*!
     * STL-compatible iteration. Equivalent to Begin().

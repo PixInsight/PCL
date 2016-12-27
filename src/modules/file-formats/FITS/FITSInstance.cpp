@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard FITS File Format Module Version 01.01.04.0358
+// Standard FITS File Format Module Version 01.01.04.0359
 // ----------------------------------------------------------------------------
-// FITSInstance.cpp - Released 2016/02/21 20:22:34 UTC
+// FITSInstance.cpp - Released 2016/12/27 17:12:52 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
@@ -55,8 +55,8 @@
 #include "FITSOptionsDialog.h"
 #include "FITSRangeOptionsDialog.h"
 
-#include <pcl/StdStatus.h>
 #include <pcl/ErrorHandler.h>
+#include <pcl/StdStatus.h>
 
 namespace pcl
 {
@@ -935,4 +935,4 @@ void FITSInstance::Write( const UInt32Image::sample* buffer, int startRow, int r
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FITSInstance.cpp - Released 2016/02/21 20:22:34 UTC
+// EOF FITSInstance.cpp - Released 2016/12/27 17:12:52 UTC

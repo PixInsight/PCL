@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard FITS File Format Module Version 01.01.04.0358
+// Standard FITS File Format Module Version 01.01.04.0359
 // ----------------------------------------------------------------------------
-// FITSModule.cpp - Released 2016/02/21 20:22:34 UTC
+// FITSModule.cpp - Released 2016/12/27 17:12:52 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     01
 #define MODULE_VERSION_REVISION  04
-#define MODULE_VERSION_BUILD     0358
+#define MODULE_VERSION_BUILD     0359
 #define MODULE_VERSION_LANGUAGE  eng
 
 #define MODULE_RELEASE_YEAR      2016
-#define MODULE_RELEASE_MONTH     2
-#define MODULE_RELEASE_DAY       21
+#define MODULE_RELEASE_MONTH     12
+#define MODULE_RELEASE_DAY       27
 
 #include "FITSModule.h"
 #include "FITSFormat.h"
@@ -113,10 +113,10 @@ String FITSModule::TradeMarks() const
 
 String FITSModule::OriginalFileName() const
 {
-#ifdef __PCL_LINUX
+#ifdef __PCL_FREEBSD
    return "FITS-pxm.so";
 #endif
-#ifdef __PCL_FREEBSD
+#ifdef __PCL_LINUX
    return "FITS-pxm.so";
 #endif
 #ifdef __PCL_MACOSX
@@ -170,4 +170,4 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 }
 
 // ----------------------------------------------------------------------------
-// EOF FITSModule.cpp - Released 2016/02/21 20:22:34 UTC
+// EOF FITSModule.cpp - Released 2016/12/27 17:12:52 UTC

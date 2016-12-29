@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.12.00.0351
+// Standard ImageIntegration Process Module Version 01.12.01.0356
 // ----------------------------------------------------------------------------
-// ImageIntegrationInstance.cpp - Released 2016/12/20 17:42:14 UTC
+// ImageIntegrationInstance.cpp - Released 2016/12/29 17:39:59 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -493,6 +493,16 @@ public:
    double Scale( int c ) const
    {
       return m_scale[c];
+   }
+
+   double ZeroOffset( int c ) const
+   {
+      return s_files[0]->m_location[c] - m_location[c];
+   }
+
+   double ImageWeight( int c ) const
+   {
+      return m_weight[c]/s_files[0]->m_weight[c];
    }
 
    double Mean( int c ) const
@@ -1259,7 +1269,7 @@ void IntegrationFile::Open( const String& path, const String& drzPath, const Ima
          console.Write( String().Format( " %8.5f", m_scale[c] ) );
       console.Write(       "<br>Zero offset     : " );
       for ( int c = 0; c < s_numberOfChannels; ++c )
-         console.Write( String().Format( " %+.6e", s_files[0]->m_location[c] - m_location[c] ) );
+         console.Write( String().Format( " %+.6e", ZeroOffset( c ) ) );
 
       if ( needNoise )
       {
@@ -1340,7 +1350,7 @@ void IntegrationFile::Open( const String& path, const String& drzPath, const Ima
 
          console.Write(           "Weight          : " );
          for ( int c = 0; c < s_numberOfChannels; ++c )
-            console.Write( String().Format( " %10.5f", m_weight[c]/s_files[0]->m_weight[c] ) );
+            console.Write( String().Format( " %10.5f", ImageWeight( c ) ) );
          console.WriteLn();
       }
       else
@@ -3802,11 +3812,77 @@ bool ImageIntegrationInstance::ExecuteGlobal()
                console.WarningLn( "** Warning: Inconsistent pedestal values detected - PEDESTAL keyword not created." );
          }
 
+         /*
+          * Per-image HISTORY keywords.
+          */
+         for ( int i = 0; i < IntegrationFile::NumberOfFiles(); ++i )
+         {
+            const IntegrationFile& file = IntegrationFile::FileByIndex( i );
+
+            if ( file.Dispersion( 0 ) > 0 )
+            {
+               IsoString dispersion = IsoString().Format( "ImageIntegration.scaleEstimates_%d: %.4e", i, file.Dispersion( 0 ) );
+               if ( IntegrationFile::NumberOfChannels() > 1 )
+                  dispersion.AppendFormat( " %.4e %.4e", file.Dispersion( 1 ), file.Dispersion( 2 ) );
+               keywords << FITSHeaderKeyword( "HISTORY", IsoString(), dispersion );
+            }
+
+            if ( file.Location( 0 ) > 0 )
+            {
+               IsoString location = IsoString().Format( "ImageIntegration.locationEstimates_%d: %.4e", i, file.Location( 0 ) );
+               if ( IntegrationFile::NumberOfChannels() > 1 )
+                  location.AppendFormat( " %.4e %.4e", file.Location( 1 ), file.Location( 2 ) );
+               keywords << FITSHeaderKeyword( "HISTORY", IsoString(), location );
+            }
+
+            if ( file.Noise( 0 ) > 0 )
+            {
+               IsoString noise = IsoString().Format( "ImageIntegration.noiseEstimates_%d: %.4e", i, file.Noise( 0 ) );
+               if ( IntegrationFile::NumberOfChannels() > 1 )
+                  noise.AppendFormat( " %.4e %.4e", file.Noise( 1 ), file.Noise( 2 ) );
+               keywords << FITSHeaderKeyword( "HISTORY", IsoString(), noise );
+            }
+
+            if ( file.ImageWeight( 0 ) > 0 )
+            {
+               IsoString weight = IsoString().Format( "ImageIntegration.imageWeights_%d: %.5e", i, file.ImageWeight( 0 ) );
+               if ( IntegrationFile::NumberOfChannels() > 1 )
+                  weight.AppendFormat( " %.5e %.5e", file.ImageWeight( 1 ), file.ImageWeight( 2 ) );
+               keywords << FITSHeaderKeyword( "HISTORY", IsoString(), weight );
+            }
+
+            if ( file.Scale( 0 ) > 0 )
+            {
+               IsoString scale = IsoString().Format( "ImageIntegration.scaleFactors_%d: %.5e", i, file.Scale( 0 ) );
+               if ( IntegrationFile::NumberOfChannels() > 1 )
+                  scale.AppendFormat( " %.5e %.5e", file.Scale( 1 ), file.Scale( 2 ) );
+               keywords << FITSHeaderKeyword( "HISTORY", IsoString(), scale );
+            }
+
+            if ( file.ZeroOffset( 0 ) >= 0 )
+            {
+               IsoString zeroOffset = IsoString().Format( "ImageIntegration.zeroOffsets_%d: %+.6e", i, file.ZeroOffset( 0 ) );
+               if ( IntegrationFile::NumberOfChannels() > 1 )
+                  zeroOffset.AppendFormat( " %+.6e %+.6e", file.ZeroOffset( 1 ), file.ZeroOffset( 2 ) );
+               keywords << FITSHeaderKeyword( "HISTORY", IsoString(), zeroOffset );
+            }
+
+            IsoString rejectedLow = IsoString().Format( "ImageIntegration.rejectedLow_%d: %lu", i, o_output.imageData[i].rejectedLow[0] );
+            if ( IntegrationFile::NumberOfChannels() > 1 )
+               rejectedLow.AppendFormat( " %lu %lu", o_output.imageData[i].rejectedLow[1], o_output.imageData[i].rejectedLow[2] );
+            keywords << FITSHeaderKeyword( "HISTORY", IsoString(), rejectedLow );
+
+            IsoString rejectedHigh = IsoString().Format( "ImageIntegration.rejectedHigh_%d: %lu", i, o_output.imageData[i].rejectedHigh[0] );
+            if ( IntegrationFile::NumberOfChannels() > 1 )
+               rejectedHigh.AppendFormat( " %lu %lu", o_output.imageData[i].rejectedHigh[1], o_output.imageData[i].rejectedHigh[2] );
+            keywords << FITSHeaderKeyword( "HISTORY", IsoString(), rejectedHigh );
+         }
+
          resultWindow.SetKeywords( keywords );
          resultWindow.Show();
 
          /*
-          * Update output properties.
+          * Update instance output properties.
           */
          o_output.integrationImageId = resultWindow.MainView().Id();
          for ( int i = 0; i < IntegrationFile::NumberOfFiles(); ++i )
@@ -4229,4 +4305,4 @@ size_type ImageIntegrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationInstance.cpp - Released 2016/12/20 17:42:14 UTC
+// EOF ImageIntegrationInstance.cpp - Released 2016/12/29 17:39:59 UTC

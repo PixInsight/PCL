@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.12.00.0351
+// Standard ImageIntegration Process Module Version 01.12.01.0356
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInstance.cpp - Released 2016/12/20 17:42:14 UTC
+// DrizzleIntegrationInstance.cpp - Released 2016/12/29 17:39:59 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -1900,4 +1900,4 @@ size_type DrizzleIntegrationInstance::ParameterLength( const MetaParameter* p, s
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInstance.cpp - Released 2016/12/20 17:42:14 UTC
+// EOF DrizzleIntegrationInstance.cpp - Released 2016/12/29 17:39:59 UTC

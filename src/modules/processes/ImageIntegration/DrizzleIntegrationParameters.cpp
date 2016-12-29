@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.12.01.0356
+// Standard ImageIntegration Process Module Version 01.12.01.0358
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationParameters.cpp - Released 2016/12/29 17:39:59 UTC
+// DrizzleIntegrationParameters.cpp - Released 2016/12/29 20:11:49 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -1279,4 +1279,4 @@ bool DZImageOutputData::IsReadOnly() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationParameters.cpp - Released 2016/12/29 17:39:59 UTC
+// EOF DrizzleIntegrationParameters.cpp - Released 2016/12/29 20:11:49 UTC

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.12.01.0356
+// Standard ImageIntegration Process Module Version 01.12.01.0358
 // ----------------------------------------------------------------------------
-// ImageIntegrationInstance.cpp - Released 2016/12/29 17:39:59 UTC
+// ImageIntegrationInstance.cpp - Released 2016/12/29 20:11:49 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -490,14 +490,29 @@ public:
       return m_image->ScanLine( row, m_currentChannel );
    }
 
+   bool HasScale() const
+   {
+      return !m_scale.IsEmpty();
+   }
+
    double Scale( int c ) const
    {
       return m_scale[c];
    }
 
+   bool HasZeroOffset() const
+   {
+      return !m_location.IsEmpty();
+   }
+
    double ZeroOffset( int c ) const
    {
       return s_files[0]->m_location[c] - m_location[c];
+   }
+
+   bool HasImageWeight() const
+   {
+      return !m_weight.IsEmpty();
    }
 
    double ImageWeight( int c ) const
@@ -568,6 +583,11 @@ public:
    double Median( int c ) const
    {
       return m_median[c];
+   }
+
+   bool HasNoise() const
+   {
+      return !m_noise.IsEmpty();
    }
 
    double Noise( int c ) const
@@ -3540,12 +3560,15 @@ bool ImageIntegrationInstance::ExecuteGlobal()
 
          if ( doReject )
          {
+            bool showReject = p_rejection != IIRejection::NoRejection || (p_rangeClipLow || p_rangeClipHigh) && p_reportRangeRejection;
+
             /*
              * Show rejection stats and update output rejection data.
              */
             Module->ProcessEvents();
 
-            console.WriteLn( "<end><cbr><br>Pixel rejection counts:" );
+            if ( showReject )
+               console.WriteLn( "<end><cbr><br>Pixel rejection counts:" );
 
             size_type N = IntegrationFile::NumberOfPixels();
             size_type NL = 0, NH = 0, NLR = 0, NHR = 0;
@@ -3561,15 +3584,18 @@ bool ImageIntegrationInstance::ExecuteGlobal()
                NH += nh;
                NHR += nhr;
 
-               console.WriteLn( IntegrationFile::FileByIndex( i ).Path() );
-               if ( p_reportRangeRejection )
-                  console.WriteLn( String().Format( "%5d : %9u %7.3f%% (%9u + %9u = %7.3f%% + %7.3f%%)",
-                                                    i+1, nl+nh+nlr+nhr, 100.0*(nl+nh+nlr+nhr)/N,
-                                                    nl+nlr, nh+nhr, 100.0*(nl+nlr)/N, 100.0*(nh+nhr)/N ) );
-               else
-                  console.WriteLn( String().Format( "%5d : %9u %7.3f%% (%9u + %9u = %7.3f%% + %7.3f%%)",
-                                                    i+1, nl+nh, 100.0*(nl+nh)/N,
-                                                    nl, nh, 100.0*nl/N, 100.0*nh/N ) );
+               if ( showReject )
+               {
+                  console.WriteLn( IntegrationFile::FileByIndex( i ).Path() );
+                  if ( p_reportRangeRejection )
+                     console.WriteLn( String().Format( "%5d : %9u %7.3f%% (%9u + %9u = %7.3f%% + %7.3f%%)",
+                                                       i+1, nl+nh+nlr+nhr, 100.0*(nl+nh+nlr+nhr)/N,
+                                                       nl+nlr, nh+nhr, 100.0*(nl+nlr)/N, 100.0*(nh+nhr)/N ) );
+                  else
+                     console.WriteLn( String().Format( "%5d : %9u %7.3f%% (%9u + %9u = %7.3f%% + %7.3f%%)",
+                                                       i+1, nl+nh, 100.0*(nl+nh)/N,
+                                                       nl, nh, 100.0*nl/N, 100.0*nh/N ) );
+               }
 
                if ( c < 3 )
                {
@@ -3578,15 +3604,18 @@ bool ImageIntegrationInstance::ExecuteGlobal()
                }
             }
 
-            N *= IntegrationFile::NumberOfFiles();
-            if ( p_reportRangeRejection )
-               console.WriteLn( String().Format( "<end><cbr><br><b>Total</b> : %9u %7.3f%% (%9u + %9u = %7.3f%% + %7.3f%%)",
-                                                 NL+NH+NLR+NHR, 100.0*(NL+NH+NLR+NHR)/N,
-                                                 NL+NLR, NH+NHR, 100.0*(NL+NLR)/N, 100.0*(NH+NHR)/N ) );
-            else
-               console.WriteLn( String().Format( "<end><cbr><br><b>Total</b> : %9u %7.3f%% (%9u + %9u = %7.3f%% + %7.3f%%)",
-                                                 NL+NH, 100.0*(NL+NH)/N,
-                                                 NL, NH, 100.0*NL/N, 100.0*NH/N ) );
+            if ( showReject )
+            {
+               N *= IntegrationFile::NumberOfFiles();
+               if ( p_reportRangeRejection )
+                  console.WriteLn( String().Format( "<end><cbr><br><b>Total</b> : %9u %7.3f%% (%9u + %9u = %7.3f%% + %7.3f%%)",
+                                                   NL+NH+NLR+NHR, 100.0*(NL+NH+NLR+NHR)/N,
+                                                   NL+NLR, NH+NHR, 100.0*(NL+NLR)/N, 100.0*(NH+NHR)/N ) );
+               else
+                  console.WriteLn( String().Format( "<end><cbr><br><b>Total</b> : %9u %7.3f%% (%9u + %9u = %7.3f%% + %7.3f%%)",
+                                                   NL+NH, 100.0*(NL+NH)/N,
+                                                   NL, NH, 100.0*NL/N, 100.0*NH/N ) );
+            }
 
             if ( c < 3 )
             {
@@ -3835,7 +3864,7 @@ bool ImageIntegrationInstance::ExecuteGlobal()
                keywords << FITSHeaderKeyword( "HISTORY", IsoString(), location );
             }
 
-            if ( file.Noise( 0 ) > 0 )
+            if ( file.HasNoise() )
             {
                IsoString noise = IsoString().Format( "ImageIntegration.noiseEstimates_%d: %.4e", i, file.Noise( 0 ) );
                if ( IntegrationFile::NumberOfChannels() > 1 )
@@ -3843,7 +3872,7 @@ bool ImageIntegrationInstance::ExecuteGlobal()
                keywords << FITSHeaderKeyword( "HISTORY", IsoString(), noise );
             }
 
-            if ( file.ImageWeight( 0 ) > 0 )
+            if ( file.HasImageWeight() )
             {
                IsoString weight = IsoString().Format( "ImageIntegration.imageWeights_%d: %.5e", i, file.ImageWeight( 0 ) );
                if ( IntegrationFile::NumberOfChannels() > 1 )
@@ -3851,7 +3880,7 @@ bool ImageIntegrationInstance::ExecuteGlobal()
                keywords << FITSHeaderKeyword( "HISTORY", IsoString(), weight );
             }
 
-            if ( file.Scale( 0 ) > 0 )
+            if ( file.HasScale() )
             {
                IsoString scale = IsoString().Format( "ImageIntegration.scaleFactors_%d: %.5e", i, file.Scale( 0 ) );
                if ( IntegrationFile::NumberOfChannels() > 1 )
@@ -3859,7 +3888,7 @@ bool ImageIntegrationInstance::ExecuteGlobal()
                keywords << FITSHeaderKeyword( "HISTORY", IsoString(), scale );
             }
 
-            if ( file.ZeroOffset( 0 ) >= 0 )
+            if ( file.HasZeroOffset() )
             {
                IsoString zeroOffset = IsoString().Format( "ImageIntegration.zeroOffsets_%d: %+.6e", i, file.ZeroOffset( 0 ) );
                if ( IntegrationFile::NumberOfChannels() > 1 )
@@ -4305,4 +4334,4 @@ size_type ImageIntegrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationInstance.cpp - Released 2016/12/29 17:39:59 UTC
+// EOF ImageIntegrationInstance.cpp - Released 2016/12/29 20:11:49 UTC

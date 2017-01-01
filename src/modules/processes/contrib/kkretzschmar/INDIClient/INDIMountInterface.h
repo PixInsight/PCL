@@ -192,7 +192,7 @@ private:
 
 class SyncDataListDialog : public Dialog {
 public:
-	SyncDataListDialog(Array<SyncDataPoint>& syncDataArray);
+	SyncDataListDialog(Array<SyncDataPoint>& syncDataArray, String syncDataListFile);
 
 private:
 	VerticalSizer       Global_Sizer;
@@ -209,7 +209,8 @@ private:
 	  void e_Close( Control& sender , bool& allowClose);
 
 	  Array<SyncDataPoint>&  m_syncDataList;
-	  bool      m_firstTimeShown;
+	  String                 m_syncDataListFile;
+	  bool                   m_firstTimeShown;
 };
 
 
@@ -286,6 +287,10 @@ private:
               Label             AlignmentFile_Label;
               Edit              AlignmentFile_Edit;
               ToolButton        AlignmentFile_ToolButton;
+          HorizontalSizer   SyncDataFile_Sizer;
+          	  Label             SyncDataFile_Label;
+          	  Edit              SyncDataFile_Edit;
+          	  ToolButton        SyncDataFile_ToolButton;
           HorizontalSizer   MountAlignmentMethod_Sizer;
               Label             AlignmentMethod_Label;
               ComboBox          AlignmentMethod_ComboBox;

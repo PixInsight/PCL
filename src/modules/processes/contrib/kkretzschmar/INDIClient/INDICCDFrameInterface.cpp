@@ -233,6 +233,7 @@ ProcessImplementation* INDICCDFrameInterface::NewProcess() const
    instance->p_clientOutputFormatHints = GUI->ClientOutputFormatHints_Edit.Text().Trimmed();
    instance->p_objectName = GUI->ObjectName_Edit.Text().Trimmed();
    instance->p_telescopeSelection = GUI->TelescopeDevice_Combo.CurrentItem();
+   instance->p_extFilterWheelDeviceName = GUI->ExternalFilterDevice_Combo.ItemText( GUI->ExternalFilterDevice_Combo.CurrentItem());
    return instance;
 }
 
@@ -823,10 +824,32 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    TelescopeDevice_Sizer.Add( TelescopeDevice_Label );
    TelescopeDevice_Sizer.Add( TelescopeDevice_Combo, 100 );
 
+
+   const char* externalFilterDeviceToolTip =
+         "<p>When the CCD device does not have an integrated filter wheel, it is possible to </p>"
+		 "specify the device name of an external filter wheel here.</p>";
+
+   ExternalFilterDevice_Label.SetText( "External filter wheel device:" );
+   ExternalFilterDevice_Label.SetToolTip( externalFilterDeviceToolTip );
+   ExternalFilterDevice_Label.SetMinWidth( labelWidth1 );
+   ExternalFilterDevice_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
+   ExternalFilterDevice_Label.Disable();
+
+   ExternalFilterDevice_Combo.AddItem( "<No filter wheel>" );
+   ExternalFilterDevice_Combo.SetToolTip( externalFilterDeviceToolTip );
+   ExternalFilterDevice_Combo.Disable();
+   //ExternalFilterDevice_Combo.OnItemSelected( (ComboBox::item_event_handler)&INDICCDFrameInterface::e_ItemSelected, w );
+
+   ExternalFilterDevice_Sizer.SetSpacing( 4 );
+   ExternalFilterDevice_Sizer.Add( ExternalFilterDevice_Label );
+   ExternalFilterDevice_Sizer.Add( ExternalFilterDevice_Combo, 100 );
+
+
    FrameAcquisition_Sizer.SetSpacing( 4 );
    FrameAcquisition_Sizer.Add( ExposureParameters_Sizer );
    FrameAcquisition_Sizer.Add( ObjectName_Sizer );
    FrameAcquisition_Sizer.Add( TelescopeDevice_Sizer );
+   FrameAcquisition_Sizer.Add( ExternalFilterDevice_Sizer );
 
    FrameAcquisition_Control.SetSizer( FrameAcquisition_Sizer );
 
@@ -988,13 +1011,14 @@ __device_found:
          GUI->CCDBinY_Label.Disable();
       }
 
-      if ( indi->GetPropertyItem( m_device, "FILTER_SLOT", "FILTER_SLOT_VALUE", item ) )
+      String externalFilterWheelDeviceName = GUI->ExternalFilterDevice_Combo.ItemText(GUI->ExternalFilterDevice_Combo.CurrentItem());
+      if ( indi->GetPropertyItem(  externalFilterWheelDeviceName != String("<No filter wheel>") ? externalFilterWheelDeviceName : m_device, "FILTER_SLOT", "FILTER_SLOT_VALUE", item ) )
       {
          int currentFilterIndex = item.PropertyValue.ToInt() - 1;
          GUI->CCDFilter_Combo.Clear();
          for ( int i = 1; i <= 256; ++i )
          {
-            if ( !indi->GetPropertyItem( m_device, "FILTER_NAME", "FILTER_SLOT_NAME_" + String( i ), item ) )
+            if ( !indi->GetPropertyItem(  externalFilterWheelDeviceName != String("<No filter wheel>") ? externalFilterWheelDeviceName : m_device, "FILTER_NAME", "FILTER_SLOT_NAME_" + String( i ), item ) )
                break;
             GUI->CCDFilter_Combo.AddItem( item.PropertyValue );
          }
@@ -1112,6 +1136,21 @@ __device_found:
 
       if ( indi->GetPropertyItem( m_device, "UPLOAD_SETTINGS", "UPLOAD_DIR", item ) )
          GUI->ServerUploadDir_Edit.SetText( item.PropertyValue );
+
+      {
+    	  if (!GUI->ExternalFilterDevice_Combo.IsEnabled() && !GUI->CCDFilter_Combo.IsEnabled() ){
+    		  GUI->ExternalFilterDevice_Combo.Clear();
+    		  ExclConstDeviceList x = indi->ConstDeviceList();
+    		  const INDIDeviceListItemArray& devices( x );
+    		  for ( auto device : devices )
+    		  {
+    			  GUI->ExternalFilterDevice_Combo.AddItem(device.DeviceName);
+    		  }
+    		  GUI->ExternalFilterDevice_Combo.Enable();
+    		  GUI->ExternalFilterDevice_Label.Enable();
+    	  }
+      }
+
    }
 }
 
@@ -1149,7 +1188,8 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
    }
    else if ( sender == GUI->CCDFilter_Combo )
    {
-      indi->MaybeSendNewPropertyItem( m_device, "FILTER_SLOT", "INDI_NUMBER",
+	  String externalFilterWheelDeviceName = GUI->ExternalFilterDevice_Combo.ItemText(GUI->ExternalFilterDevice_Combo.CurrentItem());
+      indi->MaybeSendNewPropertyItem( externalFilterWheelDeviceName != String("<No filter wheel>") ? externalFilterWheelDeviceName : m_device, "FILTER_SLOT", "INDI_NUMBER",
                                       "FILTER_SLOT_VALUE", itemIndex+1, true/*async*/ );
    }
    else if ( sender == GUI->UploadMode_Combo )
@@ -1161,6 +1201,9 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
    {
       indi->MaybeSendNewPropertyItem( m_device, "CCD_FRAME_TYPE", "INDI_SWITCH",
                                       INDICCDFrameInstance::CCDFrameTypePropertyString( itemIndex ), "ON", true/*async*/ );
+   } else if (sender == GUI->ExternalFilterDevice_Combo)
+   {
+
    }
 }
 

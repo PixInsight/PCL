@@ -55,6 +55,8 @@
 
 #include <pcl/MetaParameter.h>
 
+#include "ModuleParameterRegistration.h"
+
 namespace pcl
 {
 
@@ -523,6 +525,11 @@ public:
 extern ICFServerFrame* TheICFServerFrameParameter;
 
 // ----------------------------------------------------------------------------
+
+DECLARE_STRING_PARAMETER_CLASS(ICFExternalFilterWheelDeviceName);
+
+// ----------------------------------------------------------------------------
+
 
 PCL_END_LOCAL
 

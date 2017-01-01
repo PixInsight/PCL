@@ -95,6 +95,7 @@ INDIMountProcess::INDIMountProcess() : MetaProcess()
    new IMCSyncTelescopeDec ( this );
    new IMCEnableAlignmentCorrection (this);
    new IMCAlignmentMethod(this);
+   new IMCSyncDataFile(this);
    new IMCAlignmentFile(this);
    new IMCAlignmentConfig(this);
 }

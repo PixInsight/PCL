@@ -102,6 +102,7 @@ INDICCDFrameProcess::INDICCDFrameProcess() : MetaProcess()
    new ICFTelescopeSelection( this );
    new ICFRequireSelectedTelescope( this );
    new ICFTelescopeDeviceName( this );
+   new ICFExternalFilterWheelDeviceName( this );
 
    new ICFClientFrames( this );
    new ICFClientViewId( TheICFClientFramesParameter );

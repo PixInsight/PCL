@@ -103,6 +103,7 @@ INDICCDFrameInstance::INDICCDFrameInstance( const MetaProcess* m ) :
    p_telescopeSelection( ICFTelescopeSelection::Default ),
    p_requireSelectedTelescope( TheICFRequireSelectedTelescopeParameter->DefaultValue() ),
    p_telescopeDeviceName( TheICFTelescopeDeviceNameParameter->DefaultValue() ),
+   p_extFilterWheelDeviceName( TheICFExternalFilterWheelDeviceNameParameter->DefaultValue() ),
 
    o_clientViewIds(),
    o_clientFilePaths(),
@@ -147,6 +148,7 @@ void INDICCDFrameInstance::Assign( const ProcessImplementation& p )
       p_telescopeSelection       = x->p_telescopeSelection;
       p_requireSelectedTelescope = x->p_requireSelectedTelescope;
       p_telescopeDeviceName      = x->p_telescopeDeviceName;
+      p_extFilterWheelDeviceName = x->p_extFilterWheelDeviceName;
 
       o_clientViewIds            = x->o_clientViewIds;
       o_clientFilePaths          = x->o_clientFilePaths;
@@ -296,7 +298,7 @@ void INDICCDFrameInstance::SendDeviceProperties( bool async ) const
       indi->MaybeSendNewPropertyItem( p_deviceName, "CCD_BINNING", "INDI_NUMBER", "VER_BIN", p_binningY, async );
 
    if ( p_filterSlot > 0 )
-      indi->MaybeSendNewPropertyItem( p_deviceName, "FILTER_SLOT", "INDI_NUMBER", "FILTER_SLOT_VALUE", p_filterSlot, async );
+      indi->MaybeSendNewPropertyItem( p_extFilterWheelDeviceName != TheICFExternalFilterWheelDeviceNameParameter->DefaultValue()  ? p_extFilterWheelDeviceName : p_deviceName, "FILTER_SLOT", "INDI_NUMBER", "FILTER_SLOT_VALUE", p_filterSlot, async );
 }
 
 String INDICCDFrameInstance::FileNameFromTemplate( const String& fileNameTemplate ) const
@@ -555,6 +557,8 @@ void* INDICCDFrameInstance::LockParameter( const MetaParameter* p, size_type tab
       return &p_requireSelectedTelescope;
    if ( p == TheICFTelescopeDeviceNameParameter )
       return p_telescopeDeviceName.Begin();
+   if ( p == TheICFExternalFilterWheelDeviceNameParameter )
+            return p_extFilterWheelDeviceName.Begin();
 
    if ( p == TheICFClientViewIdParameter )
       return o_clientViewIds[tableRow].Begin();
@@ -562,6 +566,8 @@ void* INDICCDFrameInstance::LockParameter( const MetaParameter* p, size_type tab
       return o_clientFilePaths[tableRow].Begin();
    if ( p == TheICFServerFrameParameter )
       return o_serverFrames[tableRow].Begin();
+
+
 
    return nullptr;
 }
@@ -621,6 +627,11 @@ bool INDICCDFrameInstance::AllocateParameter( size_type sizeOrLength, const Meta
       p_telescopeDeviceName.Clear();
       if ( sizeOrLength > 0 )
          p_telescopeDeviceName.SetLength( sizeOrLength );
+   } else if ( p == TheICFExternalFilterWheelDeviceNameParameter )
+   {
+	   p_extFilterWheelDeviceName.Clear();
+	   if ( sizeOrLength > 0)
+		   p_extFilterWheelDeviceName.SetLength( sizeOrLength );
    }
 
    else if ( p == TheICFClientFramesParameter )
@@ -679,6 +690,8 @@ size_type INDICCDFrameInstance::ParameterLength( const MetaParameter* p, size_ty
       return p_objectName.Length();
    if ( p == TheICFTelescopeDeviceNameParameter )
       return p_telescopeDeviceName.Length();
+   if ( p == TheICFExternalFilterWheelDeviceNameParameter )
+	   return p_extFilterWheelDeviceName.Length();
 
    if ( p == TheICFClientFramesParameter )
       return o_clientViewIds.Length();

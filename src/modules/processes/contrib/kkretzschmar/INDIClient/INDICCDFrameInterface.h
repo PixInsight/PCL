@@ -190,6 +190,10 @@ private:
          HorizontalSizer   TelescopeDevice_Sizer;
             Label             TelescopeDevice_Label;
             ComboBox          TelescopeDevice_Combo;
+         HorizontalSizer   ExternalFilterDevice_Sizer;
+            Label             ExternalFilterDevice_Label;
+            ComboBox          ExternalFilterDevice_Combo;
+
    };
 
    GUIData* GUI;

@@ -4,9 +4,9 @@
 //  / ____// /___ / /___   PixInsight Class Library
 // /_/     \____//_____/   PCL 02.01.01.0784
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.12.01.0358
+// Standard ImageIntegration Process Module Version 01.12.01.0359
 // ----------------------------------------------------------------------------
-// ImageIntegrationInstance.cpp - Released 2016/12/29 20:11:49 UTC
+// ImageIntegrationInstance.cpp - Released 2016/12/30 01:41:29 UTC
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
@@ -490,6 +490,36 @@ public:
       return m_image->ScanLine( row, m_currentChannel );
    }
 
+   bool HasLocation() const
+   {
+      return !m_location.IsEmpty();
+   }
+
+   double Location( int c ) const
+   {
+      return m_location[c];
+   }
+
+   bool HasDispersion() const
+   {
+      return !m_dispersion.IsEmpty();
+   }
+
+   double Dispersion( int c ) const
+   {
+      return m_dispersion[c];
+   }
+
+   bool HasNoise() const
+   {
+      return !m_noise.IsEmpty();
+   }
+
+   double Noise( int c ) const
+   {
+      return m_noise[c];
+   }
+
    bool HasScale() const
    {
       return !m_scale.IsEmpty();
@@ -502,7 +532,7 @@ public:
 
    bool HasZeroOffset() const
    {
-      return !m_location.IsEmpty();
+      return HasLocation();
    }
 
    double ZeroOffset( int c ) const
@@ -510,9 +540,19 @@ public:
       return s_files[0]->m_location[c] - m_location[c];
    }
 
-   bool HasImageWeight() const
+   bool HasWeight() const
    {
       return !m_weight.IsEmpty();
+   }
+
+   double Weight( int c ) const
+   {
+      return m_weight[c];
+   }
+
+   bool HasImageWeight() const
+   {
+      return HasWeight();
    }
 
    double ImageWeight( int c ) const
@@ -570,34 +610,9 @@ public:
       return m_iksl[c];
    }
 
-   double Location( int c ) const
-   {
-      return m_location[c];
-   }
-
-   double Dispersion( int c ) const
-   {
-      return m_dispersion[c];
-   }
-
    double Median( int c ) const
    {
       return m_median[c];
-   }
-
-   bool HasNoise() const
-   {
-      return !m_noise.IsEmpty();
-   }
-
-   double Noise( int c ) const
-   {
-      return m_noise[c];
-   }
-
-   double Weight( int c ) const
-   {
-      return m_weight[c];
    }
 
    float Pedestal() const
@@ -3848,7 +3863,7 @@ bool ImageIntegrationInstance::ExecuteGlobal()
          {
             const IntegrationFile& file = IntegrationFile::FileByIndex( i );
 
-            if ( file.Dispersion( 0 ) > 0 )
+            if ( file.HasDispersion() )
             {
                IsoString dispersion = IsoString().Format( "ImageIntegration.scaleEstimates_%d: %.4e", i, file.Dispersion( 0 ) );
                if ( IntegrationFile::NumberOfChannels() > 1 )
@@ -3856,7 +3871,7 @@ bool ImageIntegrationInstance::ExecuteGlobal()
                keywords << FITSHeaderKeyword( "HISTORY", IsoString(), dispersion );
             }
 
-            if ( file.Location( 0 ) > 0 )
+            if ( file.HasLocation() )
             {
                IsoString location = IsoString().Format( "ImageIntegration.locationEstimates_%d: %.4e", i, file.Location( 0 ) );
                if ( IntegrationFile::NumberOfChannels() > 1 )
@@ -4334,4 +4349,4 @@ size_type ImageIntegrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationInstance.cpp - Released 2016/12/29 20:11:49 UTC
+// EOF ImageIntegrationInstance.cpp - Released 2016/12/30 01:41:29 UTC

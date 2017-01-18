@@ -940,6 +940,22 @@ public:
       return (m_data->string < m_data->end) ? m_data->string-1 : nullptr;
    }
 
+   /*!
+    * Returns the zero-based character index corresponding to a valid iterator
+    * \a i in this string. This is equivalent to \a i - Begin().
+    *
+    * The specified iterator must be posterior to or located at the starting
+    * iterator of this string, as returned by Begin(). However, for performance
+    * reasons this condition is neither enforced nor verified. If an invalid
+    * iterator is specified, then this function, as well as any subsequent use
+    * of the returned character index, may invoke undefined behavior.
+    */
+   size_type IndexAt( const_iterator i ) const
+   {
+      PCL_PRECONDITION( i >= m_data->string )
+      return i - m_data->string;
+   }
+
 #ifndef __PCL_NO_STL_COMPATIBLE_ITERATORS
    /*!
     * STL-compatible iteration. Equivalent to Begin().
@@ -1509,6 +1525,23 @@ public:
    }
 
    /*!
+    * Inserts a copy of the character sequence defined by the range [p,q) at
+    * the index \a i in this string.
+    *
+    * If \a p is greater than or equal to \a q, calling this member function
+    * has no effect.
+    */
+   void Insert( size_type i, const_iterator p, const_iterator q )
+   {
+      if ( p < q )
+      {
+         size_type n = q - p;
+         UninitializedGrow( i, n ); // -> 0 <= i <= len
+         R::Copy( m_data->string+i, p, n );
+      }
+   }
+
+   /*!
     * Inserts a null-terminated character sequence \a t at the index \a i in
     * this string.
     */
@@ -1568,6 +1601,18 @@ public:
    }
 
    /*!
+    * Appends a copy of the character sequence defined by the range [i,j) to
+    * this string.
+    *
+    * If \a i is greater than or equal to \a j, calling this member function
+    * has no effect.
+    */
+   void Append( const_iterator i, const_iterator j )
+   {
+      Insert( maxPos, i, j );
+   }
+
+   /*!
     * Appends a copy of the first \a n characters of a null-terminated
     * character sequence \a t to this string.
     */
@@ -1610,6 +1655,15 @@ public:
    void Add( const GenericString<T,R1,A1>& s )
    {
       Append( s );
+   }
+
+   /*!
+    * A synonym for Append( const_iterator, const_iterator ), provided for
+    * compatibility with PCL container classes.
+    */
+   void Add( const_iterator i, const_iterator j )
+   {
+      Append( i, j );
    }
 
    /*!
@@ -1668,6 +1722,18 @@ public:
    {
       Prepend( s );
       return *this;
+   }
+
+   /*!
+    * Inserts a copy of the character sequence defined by the range [i,j) at
+    * the beginning of this string.
+    *
+    * If \a i is greater than or equal to \a j, calling this member function
+    * has no effect.
+    */
+   void Prepend( const_iterator i, const_iterator j )
+   {
+      Insert( 0, i, j );
    }
 
    /*!
@@ -7995,6 +8061,11 @@ public:
       string_base::Insert( i, s );
    }
 
+   void Insert( size_type i, const_iterator p, const_iterator q )
+   {
+      string_base::Insert( i, p, q );
+   }
+
    void Insert( size_type i, const_iterator t )
    {
       string_base::Insert( i, t );
@@ -8079,8 +8150,6 @@ public:
          for ( iterator r = m_data->string+i, s = r+n; r < s; ++r, ++p )
             *r = char_type( uint8( *p ) );
       }
-      else
-         Clear();
    }
 
    void Insert( size_type i, char8_type c, size_type n = 1 )
@@ -8099,6 +8168,11 @@ public:
    {
       Append( s );
       return *this;
+   }
+
+   void Append( const_iterator i, const_iterator j )
+   {
+      string_base::Append( i, j );
    }
 
    void Append( const_iterator t )
@@ -8207,6 +8281,11 @@ public:
       Append( s );
    }
 
+   void Add( const_iterator i, const_iterator j )
+   {
+      Append( i, j );
+   }
+
    void Add( const_iterator t )
    {
       Append( t );
@@ -8273,6 +8352,11 @@ public:
    {
       Prepend( s );
       return *this;
+   }
+
+   void Prepend( const_iterator i, const_iterator j )
+   {
+      string_base::Prepend( i, j );
    }
 
    void Prepend( const_iterator t )

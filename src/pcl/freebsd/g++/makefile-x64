@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.100
+# PixInsight Makefile Generator Script v1.103
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Fri, 24 Jun 2016 18:54:09 GMT
+# Automatically generated on Mon, 16 Jan 2017 18:04:32 GMT
 # Project id ...... PCL
 # Project type .... StaticLibrary
 # Platform ........ FreeBSD/g++
@@ -74,6 +74,7 @@ SRC_FILES= \
 ../../GlobalSettings.cpp \
 ../../Graphics.cpp \
 ../../GroupBox.cpp \
+../../HTMLEntity.cpp \
 ../../HexString.cpp \
 ../../Histogram.cpp \
 ../../HistogramTransformation.cpp \
@@ -160,7 +161,9 @@ SRC_FILES= \
 ../../View.cpp \
 ../../ViewList.cpp \
 ../../ViewSelectionDialog.cpp \
-../../Win32Exception.cpp
+../../Win32Exception.cpp \
+../../XML.cpp \
+../../XMLReference.cpp
 
 #
 # Object files
@@ -222,6 +225,7 @@ OBJ_FILES= \
 ./x64/Release/GlobalSettings.o \
 ./x64/Release/Graphics.o \
 ./x64/Release/GroupBox.o \
+./x64/Release/HTMLEntity.o \
 ./x64/Release/HexString.o \
 ./x64/Release/Histogram.o \
 ./x64/Release/HistogramTransformation.o \
@@ -308,7 +312,9 @@ OBJ_FILES= \
 ./x64/Release/View.o \
 ./x64/Release/ViewList.o \
 ./x64/Release/ViewSelectionDialog.o \
-./x64/Release/Win32Exception.o
+./x64/Release/Win32Exception.o \
+./x64/Release/XML.o \
+./x64/Release/XMLReference.o
 
 #
 # Dependency files
@@ -370,6 +376,7 @@ DEP_FILES= \
 ./x64/Release/GlobalSettings.d \
 ./x64/Release/Graphics.d \
 ./x64/Release/GroupBox.d \
+./x64/Release/HTMLEntity.d \
 ./x64/Release/HexString.d \
 ./x64/Release/Histogram.d \
 ./x64/Release/HistogramTransformation.d \
@@ -456,7 +463,9 @@ DEP_FILES= \
 ./x64/Release/View.d \
 ./x64/Release/ViewList.d \
 ./x64/Release/ViewSelectionDialog.d \
-./x64/Release/Win32Exception.d
+./x64/Release/Win32Exception.d \
+./x64/Release/XML.d \
+./x64/Release/XMLReference.d
 
 #
 # Rules

@@ -885,7 +885,11 @@ void XMLDocument::Parse( const String& text )
          throw Error( "Incomplete element definition: Expected end-tag '/" + currentElement->Name()  + "'" );
 
       if ( skipCount > 0 )
-         throw Error( "Incomplete element definition: Expected end-tag '/" + skipElement->Name()  + "'" );
+      {
+         String skipName = skipElement->Name();
+         delete skipElement;
+         throw Error( "Incomplete element definition: Expected end-tag '/" + skipName  + "'" );
+      }
 
       if ( m_root == nullptr )
          throw Error( "No root element has been defined." );

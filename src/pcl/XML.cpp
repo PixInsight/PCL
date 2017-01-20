@@ -620,7 +620,7 @@ void XMLDocument::Parse( const String& text )
    try
    {
       XMLElement* currentElement = nullptr;
-      XMLElement* skipElement = nullptr;
+      String skipName;
       size_type skipCount = 0;
 
       for ( String::const_iterator i = text.Begin(), i0 = i; ; )
@@ -646,8 +646,9 @@ void XMLDocument::Parse( const String& text )
                   if ( !XML::IsWhiteSpaceChar( *j ) )
                   {
                      if ( currentElement == nullptr )
-                        if ( !m_parserOptions.IsFlagSet( XMLParserOption::IgnoreStrayCharacters ) )
-                           throw Error( String().Format( "Stray character #x%x outside markup.", int( *j ) ) );
+                        if ( skipCount == 0 )
+                           if ( !m_parserOptions.IsFlagSet( XMLParserOption::IgnoreStrayCharacters ) )
+                              throw Error( String().Format( "Stray character #x%x outside markup.", int( *j ) ) );
                      allspaces = false;
                   }
                ++m_location.column;
@@ -677,24 +678,12 @@ void XMLDocument::Parse( const String& text )
             {
                if ( skipCount == 0 )
                {
-                  XMLElement* element = new XMLElement( t.name );
-
-                  bool skip = false;
-                  if ( m_filter == nullptr )
-                     element->SetAttributes( XMLAttributeList( t.parameters ) );
-                  else if ( !(*m_filter)( currentElement, element->Name() ) )
-                     skip = true;
-                  else
+                  if ( m_filter == nullptr ||
+                       (*m_filter)( currentElement, t.name ) &&
+                       (*m_filter)( currentElement, t.name, XMLAttributeList( t.parameters ) ) )
                   {
-                     XMLAttributeList attributes( t.parameters );
-                     if ( !(*m_filter)( currentElement, element->Name(), attributes ) )
-                        skip = true;
-                     else
-                        element->SetAttributes( attributes );
-                  }
+                     XMLElement* element = new XMLElement( t.name, XMLAttributeList( t.parameters ) );
 
-                  if ( !skip )
-                  {
                      if ( currentElement != nullptr )
                         currentElement->AddChildNode( element, m_location );
                      else
@@ -703,28 +692,23 @@ void XMLDocument::Parse( const String& text )
                         if ( m_root == nullptr )
                            m_root = element;
                      }
-                  }
 
-                  if ( !t.end )
-                  {
-                     if ( skip )
-                     {
-                        skipElement = element;
-                        skipCount = 1;
-                     }
-                     else
+                     if ( !t.end )
                         currentElement = element;
                   }
                   else
                   {
-                     if ( skip )
-                        delete element;
+                     if ( !t.end )
+                     {
+                        skipName = t.name;
+                        skipCount = 1;
+                     }
                   }
                }
                else
                {
                   if ( !t.end )
-                     if ( t.name == skipElement->Name() )
+                     if ( t.name == skipName )
                         ++skipCount;
                }
             }
@@ -741,9 +725,8 @@ void XMLDocument::Parse( const String& text )
                }
                else
                {
-                  if ( t.name == skipElement->Name() )
-                     if ( --skipCount == 0 )
-                        delete skipElement;
+                  if ( t.name == skipName )
+                     --skipCount;
                }
             }
 
@@ -763,10 +746,10 @@ void XMLDocument::Parse( const String& text )
                   if ( skipCount == 0 )
                   {
                      XMLComment* comment = new XMLComment( String( j, k ) );
-                     if ( currentElement == nullptr )
-                        m_nodes << comment;
-                     else
+                     if ( currentElement != nullptr )
                         currentElement->AddChildNode( comment, m_location );
+                     else
+                        m_nodes << comment;
                   }
 
                i = k + 3;
@@ -819,10 +802,10 @@ void XMLDocument::Parse( const String& text )
                   if ( !m_parserOptions.IsFlagSet( XMLParserOption::IgnoreUnknownElements ) )
                   {
                      XMLUnknownElement* element = new XMLUnknownElement( t.name, t.parameters );
-                     if ( currentElement == nullptr )
-                        m_nodes << element;
-                     else
+                     if ( currentElement != nullptr )
                         currentElement->AddChildNode( element, m_location );
+                     else
+                        m_nodes << element;
                   }
 
                i = t.next;
@@ -866,10 +849,10 @@ void XMLDocument::Parse( const String& text )
                if ( skipCount == 0 )
                {
                   XMLProcessingInstructions* pi = new XMLProcessingInstructions( t.name, t.parameters );
-                  if ( currentElement == nullptr )
-                     m_nodes << pi;
-                  else
+                  if ( currentElement != nullptr )
                      currentElement->AddChildNode( pi, m_location );
+                  else
+                     m_nodes << pi;
                }
             }
 
@@ -885,11 +868,7 @@ void XMLDocument::Parse( const String& text )
          throw Error( "Incomplete element definition: Expected end-tag '/" + currentElement->Name()  + "'" );
 
       if ( skipCount > 0 )
-      {
-         String skipName = skipElement->Name();
-         delete skipElement;
          throw Error( "Incomplete element definition: Expected end-tag '/" + skipName  + "'" );
-      }
 
       if ( m_root == nullptr )
          throw Error( "No root element has been defined." );

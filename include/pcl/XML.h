@@ -199,9 +199,9 @@ public:
 
    /*!
     * Returns a copy of the text fragment defined by the range [i,j) of string
-    * iterators with all occurences of '&', '<', '>' and '"' replaced with
-    * their corresponding entity references. If \a apos is true, single quotes
-    * will also be replaced with "apos" entities.
+    * iterators with all occurences of '&', '<', '>' and '"' replaced with the
+    * entity references "amp", "lt", "gt" and "quot", respectively. If \a apos
+    * is true, single quotes will also be replaced with "apos" entities.
     */
    static String EncodedText( String::const_iterator i, String::const_iterator j, bool apos = true )
    {
@@ -210,9 +210,9 @@ public:
 
    /*!
     * Returns a copy of the specified \a text with all occurences of '&', '<',
-    * '>', '"' and "'" replaced with their corresponding entity references. If
-    * \a apos is true, single quotes will also be replaced with "apos"
-    * entities.
+    * '>' and '"' replaced with the entity references "amp", "lt", "gt" and
+    * "quot", respectively. If \a apos is true, single quotes will also be
+    * replaced with "apos" entities.
     */
    static String EncodedText( const String& text, bool apos = true );
 
@@ -248,7 +248,7 @@ public:
 
 /*!
  * \class XMLComponent
- * \brief Root class of all XML document component classes.
+ * \brief Root base class of all XML document components.
  *
  * %XMLComponent supports the hierarchical structure of an XML document by
  * implementing the basic concept of <em>parent element</em>.
@@ -279,6 +279,15 @@ public:
       return m_parent;
    }
 
+   /*!
+    * Returns true iff this is a top-level component. Top-level document
+    * components have no parent elements.
+    */
+   bool IsTopLevel() const
+   {
+      return m_parent == nullptr;
+   }
+
 private:
 
    XMLElement* m_parent = nullptr;
@@ -288,9 +297,11 @@ private:
 
 /*!
  * \namespace XMLNodeType
- * \brief     XML node types.
+ * \brief     XML document node types.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
+ * <tr><td>XMLNodeType::Undefined</td>              <td>Undefined XML node type.</td></tr>
+ * <tr><td>XMLNodeType::ChildNode</td>              <td>Signals a child XML document node - for internal use only.</td></tr>
  * <tr><td>XMLNodeType::Unknown</td>                <td>Represents an unsupported XML node type.</td></tr>
  * <tr><td>XMLNodeType::Element</td>                <td>An XML element.</td></tr>
  * <tr><td>XMLNodeType::Text</td>                   <td>A text block inside an element's contents.</td></tr>
@@ -316,8 +327,14 @@ namespace XMLNodeType
 }
 
 /*!
+ * \class XMLNodeTypes
+ * \brief A collection of XML node types.
+ */
+typedef Flags<XMLNodeType::mask_type>  XMLNodeTypes;
+
+/*!
  * \struct XMLNodeLocation
- * \brief Source code location of a parsed XML node.
+ * \brief Source code location of a parsed XML document node.
  */
 struct XMLNodeLocation
 {
@@ -356,10 +373,10 @@ struct XMLNodeLocation
  * \class XMLNode
  * \brief Abstract base class of all XML document node classes.
  *
- * XML nodes can be elements, text, CDATA sections, processing instructions
- * (PI), comments, and unknown special elements. This class extends the
- * XMLComponent root class to implement XML document node classification and
- * serialization.
+ * XML document nodes can be elements, text, CDATA sections, processing
+ * instructions, comments, and unknown special elements. This class extends the
+ * XMLComponent root base class to implement XML document node classification
+ * and serialization.
  */
 class PCL_CLASS XMLNode : public XMLComponent
 {
@@ -398,7 +415,7 @@ public:
     */
    bool IsChildNode() const
    {
-      return (m_type & XMLNodeType::ChildNode) != 0;
+      return m_type.IsFlagSet( XMLNodeType::ChildNode );
    }
 
    /*!
@@ -406,7 +423,7 @@ public:
     */
    node_type NodeType() const
    {
-      return node_type( m_type & ~XMLNodeType::ChildNode );
+      return static_cast<node_type>( XMLNodeTypes::flag_type( m_type & ~XMLNodeType::ChildNode ) );
    }
 
    /*!
@@ -428,16 +445,19 @@ public:
    /*!
     * Serializes this document node as an XML fragment encoded in UTF-8.
     *
-    * \param text          Reference to an 8-bit string where the UTF-8-encoded
-    *                      serialization of this node must be appended.
+    * \param text          Reference to an 8-bit string to which the UTF-8
+    *             encoded serialization of this node must be appended.
     *
-    * \param indentSize    Number of white space characters to be used for
-    *                      indentation of source code lines. A value of zero
-    *                      effectively disables indentation.
+    * \param indentSize    Number of white space characters used for
+    *             indentation of source code lines. A value of zero places the
+    *             document node in a separate line (with the exception of
+    *             XMLText child nodes, where spaces can be managed in special
+    *             ways) without indentation. A value less than zero disables
+    *             indentation and line breaks so no superfluous space
+    *             characters are generated.
     *
     * \param level         Recursion level. A value greater than zero denotes
-    *                      that this function is being called from a parent
-    *                      XML element.
+    *             that this function is being called from a parent XML element.
     */
    virtual void Serialize( IsoString& text, int indentSize, int level ) const = 0;
 
@@ -449,7 +469,7 @@ public:
 
 private:
 
-   unsigned        m_type;
+   XMLNodeTypes    m_type;
    XMLNodeLocation m_location;
 
    friend class XMLDocument;
@@ -747,6 +767,17 @@ public:
    }
 
    /*!
+    * Insertion operator. Returns a reference to this object.
+    *
+    * This operator is equivalent to SetAttribute( const XMLAttribute& ).
+    */
+   XMLAttributeList& operator <<( const XMLAttribute& attribute )
+   {
+      SetAttribute( attribute );
+      return *this;
+   }
+
+   /*!
     * Causes this list to contain the specified \a list of XML element
     * attributes.
     *
@@ -765,6 +796,17 @@ public:
    {
       for ( auto a : list )
          SetAttribute( a );
+   }
+
+   /*!
+    * Insertion operator. Returns a reference to this object.
+    *
+    * This operator is equivalent to SetAttributes( const XMLAttributeList& ).
+    */
+   XMLAttributeList& operator <<( const XMLAttributeList& list )
+   {
+      SetAttributes( list );
+      return *this;
    }
 
    /*!
@@ -988,6 +1030,17 @@ public:
    }
 
    /*!
+    * Insertion operator. Returns a reference to this object.
+    *
+    * This operator is equivalent to SetAttribute( const XMLAttribute& ).
+    */
+   XMLElement& operator <<( const XMLAttribute& attribute )
+   {
+      SetAttribute( attribute );
+      return *this;
+   }
+
+   /*!
     * Causes this XML element to contain the specified \a list of attributes.
     *
     * For each attribute in the specified \a list, if an attribute with the
@@ -1006,6 +1059,17 @@ public:
    {
       for ( auto a : list )
          SetAttribute( a );
+   }
+
+   /*!
+    * Insertion operator. Returns a reference to this object.
+    *
+    * This operator is equivalent to SetAttributes( const XMLAttributeList& ).
+    */
+   XMLElement& operator <<( const XMLAttributeList& list )
+   {
+      SetAttributes( list );
+      return *this;
    }
 
    /*!
@@ -1168,7 +1232,7 @@ public:
     */
    bool HasElements() const
    {
-      return (m_childTypes & XMLNodeType::Element) != 0;
+      return m_childTypes.IsFlagSet( XMLNodeType::Element );
    }
 
    /*!
@@ -1176,7 +1240,7 @@ public:
     */
    bool HasText() const
    {
-      return (m_childTypes & XMLNodeType::Text) != 0;
+      return m_childTypes.IsFlagSet( XMLNodeType::Text );
    }
 
    /*!
@@ -1184,7 +1248,7 @@ public:
     */
    bool HasCDATA() const
    {
-      return (m_childTypes & XMLNodeType::CDATA) != 0;
+      return m_childTypes.IsFlagSet( XMLNodeType::CDATA );
    }
 
    /*!
@@ -1193,7 +1257,7 @@ public:
     */
    bool HasProcessingInstructions() const
    {
-      return (m_childTypes & XMLNodeType::ProcessingInstructions) != 0;
+      return m_childTypes.IsFlagSet( XMLNodeType::ProcessingInstructions );
    }
 
    /*!
@@ -1202,7 +1266,7 @@ public:
     */
    bool HasComments() const
    {
-      return (m_childTypes & XMLNodeType::Comment) != 0;
+      return m_childTypes.IsFlagSet( XMLNodeType::Comment );
    }
 
    /*!
@@ -1236,29 +1300,29 @@ public:
    /*!
     * \internal
     */
-   void GetChildNodesByType_Recursive( XMLNodeList& list, node_type type ) const
+   void GetChildNodesByType_Recursive( XMLNodeList& list, XMLNodeTypes types ) const
    {
       for ( const XMLNode& node : m_childNodes )
-         if ( (node.NodeType() & type) != 0 )
+         if ( types.IsFlagSet( node.NodeType() ) )
          {
             list << &node;
             if ( node.IsElement() )
-               static_cast<const XMLElement&>( node ).GetChildNodesByType_Recursive( list, type );
+               static_cast<const XMLElement&>( node ).GetChildNodesByType_Recursive( list, types );
          }
    }
 
    /*!
     * Returns a list with all child nodes of this element of the specified
-    * \a type. The \a type argument can be an ORed combination of XMLNodeType
+    * \a types. The \a types argument can be an ORed combination of XMLNodeType
     * enumerated mask values.
     *
     * This member function performs a recursive search across the entire tree
     * structure rooted at this element.
     */
-   XMLNodeList ChildNodesByType( node_type type ) const
+   XMLNodeList ChildNodesByType( XMLNodeTypes types ) const
    {
       XMLNodeList list;
-      GetChildNodesByType_Recursive( list, type );
+      GetChildNodesByType_Recursive( list, types );
       return list;
    }
 
@@ -1305,8 +1369,19 @@ public:
    {
       m_childNodes << node;
       node->m_parent = this;
-      node->m_type |= XMLNodeType::ChildNode;
-      m_childTypes |= node->NodeType();
+      node->m_type.SetFlag( XMLNodeType::ChildNode );
+      m_childTypes.SetFlag( node->NodeType() );
+   }
+
+   /*!
+    * Insertion operator. Returns a reference to this object.
+    *
+    * This operator is equivalent to AddChildNode( node ).
+    */
+   XMLElement& operator <<( XMLNode* node )
+   {
+      AddChildNode( node );
+      return *this;
    }
 
    /*!
@@ -1336,6 +1411,8 @@ public:
     * Recursively serializes this XML element and its contents. Appends the
     * generated XML source code to the specified 8-bit \a text string, encoded
     * in UTF-8.
+    *
+    * See XMLNode::Serialize() for information on function parameters.
     */
    virtual void Serialize( IsoString& text, int indentSize, int level ) const;
 
@@ -1344,7 +1421,7 @@ private:
    String           m_name;
    XMLAttributeList m_attributes;
    XMLNodeList      m_childNodes;
-   unsigned         m_childTypes;
+   XMLNodeTypes     m_childTypes;
 };
 
 /*!
@@ -1436,6 +1513,10 @@ public:
 
    /*!
     * Serializes this XML text block with UTF-8 encoding.
+    *
+    * See XMLNode::Serialize() for information on function parameters. See also
+    * the class constructor for information on space preservation options in
+    * XML text blocks.
     */
    virtual void Serialize( IsoString& text, int indentSize, int level ) const;
 
@@ -1500,6 +1581,8 @@ public:
 
    /*!
     * Serializes this XML CDATA section with UTF-8 encoding.
+    *
+    * See XMLNode::Serialize() for information on function parameters.
     */
    virtual void Serialize( IsoString& text, int indentSize, int level ) const;
 
@@ -1559,6 +1642,8 @@ public:
 
    /*!
     * Serializes this XML PI section with UTF-8 encoding.
+    *
+    * See XMLNode::Serialize() for information on function parameters.
     */
    virtual void Serialize( IsoString& text, int indentSize, int level ) const;
 
@@ -1609,6 +1694,8 @@ public:
 
    /*!
     * Serializes this XML comment section with UTF-8 encoding.
+    *
+    * See XMLNode::Serialize() for information on function parameters.
     */
    virtual void Serialize( IsoString& text, int indentSize, int level ) const;
 
@@ -1665,6 +1752,8 @@ public:
 
    /*!
     * Serializes this XML unknown element with UTF-8 encoding.
+    *
+    * See XMLNode::Serialize() for information on function parameters.
     */
    virtual void Serialize( IsoString& text, int indentSize, int level ) const;
 
@@ -1682,7 +1771,7 @@ private:
  *
  * https://www.w3.org/TR/xml11/#sec-prolog-dtd
  */
-class PCL_CLASS XMLDeclaration
+class PCL_CLASS XMLDeclaration : public XMLComponent
 {
 public:
 
@@ -1691,6 +1780,7 @@ public:
     * optional \a encoding and \a standalone document specification.
     */
    XMLDeclaration( const String& version = String(), const String& encoding = String(), bool standalone = false ) :
+      XMLComponent(),
       m_version( version ),
       m_encoding( encoding ),
       m_standalone( standalone )
@@ -1736,15 +1826,15 @@ public:
    }
 
    /*!
-    * Serializes this XML declaration. If no version string has been defined,
-    * a 'version="1.0"' attribute will be generated. Similarly, if no encoding
-    * string has been specified, a 'encoding="UTF-8"' attribute will be
-    * generated.
+    * Serializes this XML declaration.
     *
     * The generated serialization will be appended to the specified 8-bit
-    * \a text string.
+    * \a text string. If no version string has been defined for this object, a
+    * 'version="1.0"' attribute will be generated. Similarly, if no encoding
+    * string has been defined, an 'encoding="UTF-8"' attribute will be
+    * generated.
     */
-   void Serialize( IsoString& text, int indentSize, int level ) const;
+   void Serialize( IsoString& text ) const;
 
 private:
 
@@ -1762,7 +1852,7 @@ private:
  *
  * https://www.w3.org/TR/xml11/#dt-doctype
  */
-class PCL_CLASS XMLDocTypeDeclaration
+class PCL_CLASS XMLDocTypeDeclaration : public XMLComponent
 {
 public:
 
@@ -1771,6 +1861,7 @@ public:
     * document type \a name and type \a definition.
     */
    XMLDocTypeDeclaration( const String& name = String(), const String& definition = String() ) :
+      XMLComponent(),
       m_name( name ),
       m_definition( definition )
    {
@@ -1808,15 +1899,103 @@ public:
    }
 
    /*!
-    * Serializes this DOCTYPE declaration.
+    * Serializes this DOCTYPE declaration with UTF-8 encoding.
+    *
+    * The generated serialization will be appended to the specified 8-bit
+    * \a text string, encoded in UTF-8. This function won't generate any
+    * characters if no document type name has been defined for this object.
     */
-   void Serialize( IsoString& text, int indentSize, int level ) const;
+   void Serialize( IsoString& text ) const;
 
 private:
 
    String m_name;
    String m_definition;
 };
+
+/*!
+ * \class XMLElementFilter
+ * \brief A functional class for filtering XML elements.
+ *
+ * Element filters can be used with XMLDocument objects to reject elements
+ * selectively while parsing an XML document.
+ *
+ * When an element filter has been defined, %XMLDocument calls its
+ * reimplemented operator()( const XMLElement*, const String& ) member function
+ * when an element's start-tag is found, passing its parent element and name to
+ * the function. If the function returns false, the element is rejected,
+ * including all of its child nodes, and the parsing process continues after
+ * the corresponding end-tag.
+ *
+ * If the first function call described above returns true, %XMLDocument calls
+ * operator()( const XMLElement*, const String&, const XMLAttributeList& ) with
+ * the parent, name and attributes of the element. Again, if the function
+ * returns false the element is skipped completely until its end-tag is found.
+ * If the function returns true, the element is accepted, added to the DOM
+ * being generated, and parsed.
+ *
+ * Element filters can be useful to accelerate XML document parsing and reduce
+ * its memory consumption considerably, when only a subset of possible elements
+ * is required.
+ */
+struct XMLElementFilter
+{
+   /*!
+    * Virtual destructor.
+    */
+   virtual ~XMLElementFilter()
+   {
+   }
+
+   /*!
+    * Returns true if an XML element with the specified \a name and \a parent
+    * element is acceptable; false if the element must be ignored.
+    */
+   virtual bool operator()( const XMLElement* parent, const String& name ) const = 0;
+
+   /*!
+    * Returns true if an XML element with the specified \a name, \a attributes
+    * and \a parent element is acceptable; false if the element must be
+    * ignored. This function is only called after a previous call to
+    * operator()( const XMLElement*, const String& ) has returned true for the
+    * same element.
+    *
+    * The default implementation returns true, which facilitates
+    * implementations where elements are only filtered by their names.
+    */
+   virtual bool operator()( const XMLElement* parent, const String& name, const XMLAttributeList& attributes ) const
+   {
+      return true;
+   }
+};
+
+/*!
+ * \namespace XMLParserOption
+ * \brief     XML document parsing options.
+ *
+ * <table border="1" cellpadding="4" cellspacing="0">
+ * <tr><td>XMLParserOption::IgnoreComments</td>           <td>Do not add comment nodes to the DOM.</td></tr>
+ * <tr><td>XMLParserOption::IgnoreUnknownElements</td>    <td>Do not add unknown/invalid elements to the DOM.</td></tr>
+ * <tr><td>XMLParserOption::IgnoreStrayCharacters</td>    <td>Be tolerant of non-space characters outside markup.</td></tr>
+ * <tr><td>XMLParserOption::NormalizeTextSpaces</td>      <td>Trim and collapse spaces in all child text nodes.</td></tr>
+ * </table>
+ */
+namespace XMLParserOption
+{
+   enum mask_type
+   {
+      IgnoreComments        = 0x00000001,
+      IgnoreUnknownElements = 0x00000002,
+      IgnoreStrayCharacters = 0x00000004,
+      NormalizeTextSpaces   = 0x00000008
+   };
+}
+
+/*!
+ * \class XMLParserOptions
+ * \brief A collection of XML document parsing options.
+ */
+typedef Flags<XMLParserOption::mask_type>  XMLParserOptions;
 
 /*!
  * \class XMLDocument
@@ -1826,18 +2005,18 @@ private:
  *
  * The Parse() member function reads and interprets a Unicode text string to
  * generate a read-only document object model (DOM) that represents the data
- * entities defined by an XML document. The DOM can then be inspected with
- * several member functions of the %XMLDocument class. All XML nodes and
+ * entities defined by a well-formed XML document. The DOM can be inspected
+ * with several member functions of the %XMLDocument class. All XML nodes and
  * elements in a document can be visited recursively with specialized accessor
  * functions and iterators. See the Begin() and End() functions (and their
  * STL-compatible equivalents, begin() and end()), as well as XML(), DocType(),
  * RootElement(), and operator []( int ), among others.
  *
- * For generation of well-formed XML documents, the Serialize() member function
- * builds a new XML document as a Unicode string encoded in UTF-8. The
- * document's root node and several nodes and critical components must be
- * defined before document generation - see the SetXML(), SetDocType(),
- * AddNode() and SetRootElement() member functions.
+ * For generation of XML documents, the Serialize() member function builds a
+ * new document as a Unicode string encoded in UTF-8. The document's root node
+ * and several nodes and critical components must be defined before document
+ * generation - see the SetXML(), SetDocType(), AddNode() and SetRootElement()
+ * member functions.
  *
  * For general information on XML, the authoritative sources are the W3C
  * recommendations:
@@ -1855,6 +2034,44 @@ private:
  * xml.Parse( File::ReadTextFile( "/path/to/file.xml" ).UTF8ToUTF16() );
  * File::WriteTextFile( "/tmp/test.xml", xml.Serialize( 3 ) );
  * \endcode
+ *
+ * In this case the new document is generated with automatic indentation of
+ * text lines with three spaces. To disable indentation and minimize generation
+ * of superfluous space characters, specify -1 as the first argument of
+ * Serialize().
+ *
+ * The following example:
+ *
+ * \code
+ * XMLElement* e1 = new XMLElement( "Foo", XMLAttributeList() << XMLAttribute( "version", "1.0" ) );
+ *
+ * XMLElement* e2 = new XMLElement( "Bar" );
+ * *e2 << new XMLElement( "bar_child_1" )
+ *       << new XMLElement( "bar_child_2" );
+ *
+ * XMLElement* e3 = new XMLElement( "FooBar" );
+ * *e3 << new XMLText( "This is FooBar." );
+ *
+ * *e1 << e2 << e3;
+ *
+ * XMLDocument xml;
+ * xml.SetXML( "1.0" );
+ * xml.SetRootElement( e1 );
+ * xml.SerializeToFile( "/tmp/foobar.xml" );
+ * \endcode
+ *
+ * generates this XML file in /tmp/foobar.xml:
+ *
+ * \code
+ * <?xml version="1.0" encoding="UTF-8"?>
+ * <Foo version="1.0">
+ *    <Bar>
+ *       <bar_child_1/>
+ *       <bar_child_2/>
+ *    </Bar>
+ *    <FooBar>This is FooBar.</FooBar>
+ * </Foo>
+ * \endcode
  */
 class PCL_CLASS XMLDocument
 {
@@ -1869,6 +2086,12 @@ public:
     * Represents an immutable child node list iterator.
     */
    typedef XMLNodeList::const_iterator    const_iterator;
+
+   /*!
+    * Represents an option to control the XML parser behavior. Valid options
+    * are defined in the XMLParserOption namespace.
+    */
+   typedef XMLParserOption::mask_type     parser_option;
 
    /*!
     * Default constructor. Constructs an empty XML document.
@@ -1886,6 +2109,7 @@ public:
    {
       m_nodes.Destroy();
       m_root = nullptr;
+      RemoveElementFilter();
    }
 
    /*!
@@ -1898,11 +2122,20 @@ public:
    }
 
    /*!
-    * Associates a new XML declaration object with this XML document.
+    * Defines an XML declaration in this XML document.
     */
    void SetXML( const XMLDeclaration& xml )
    {
       m_xml = xml;
+   }
+
+   /*!
+    * Defines an XML declaration in this XML document with the specified
+    * \a version, \a encoding and \a standalone attributes.
+    */
+   void SetXML( const String& version = "1.0", const String& encoding = "UTF-8", bool standalone = false )
+   {
+      SetXML( XMLDeclaration( version, encoding, standalone ) );
    }
 
    /*!
@@ -2014,6 +2247,17 @@ public:
    void AddNode( XMLNode* node );
 
    /*!
+    * Insertion operator. Returns a reference to this %XMLDocument object.
+    *
+    * This operator is equivalent to AddNode( XMLNode* ).
+    */
+   XMLDocument& operator <<( XMLNode* node )
+   {
+      AddNode( node );
+      return *this;
+   }
+
+   /*!
     * Sets the root element of this XML document.
     *
     * If the specified \a element already belongs to an %XMLDocument object, if
@@ -2030,8 +2274,57 @@ public:
     * Destroys and deallocates all nodes and elements in this XML document
     * object, and initializes all internal structures to a default state,
     * yielding an uninitialized object.
+    *
+    * If there is an element filter or a set of parser options defined for this
+    * object, they are preserved by this function. See RemoveElementFilter() to
+    * remove a filter set by a previous call to SetElementFilter(). See also
+    * ClearParserOptions() to reset parser options set by previous calls to
+    * SetParserOption().
     */
    void Clear();
+
+   /*!
+    * Sets a new element filter for this object. The specified object will be
+    * owned by this %XMLDocument instance, which will destroy and deallocate it
+    * when appropriate.
+    *
+    * See XMLElementFilter for a complete description of the element filtering
+    * functionality. See RemoveElementFilter() to remove the element filter
+    * set by this function.
+    */
+   void SetElementFilter( XMLElementFilter* filter )
+   {
+      delete m_filter, m_filter = filter;
+   }
+
+   /*!
+    * Removes an element filter set by a previous call to SetElementFilter().
+    * If no filter has been defined for this object, this function has no
+    * effect.
+    */
+   void RemoveElementFilter()
+   {
+      SetElementFilter( nullptr );
+   }
+
+   /*!
+    * Enables or disables an XML document parser option for this object. Valid
+    * options are defined in the XMLParserOption namespace. See
+    * ClearParserOptions() to reset all parser options to a default state.
+    */
+   void SetParserOption( parser_option option, bool on = true )
+   {
+      m_parserOptions.SetFlag( option, on );
+   }
+
+   /*!
+    * Resets all parser options defined for this object by a previous call to
+    * SetParserOptions().
+    */
+   void ClearParserOptions()
+   {
+      m_parserOptions.Clear();
+   }
 
    /*!
     * XML document parser. Reads and interprets the specified Unicode \a text
@@ -2048,14 +2341,33 @@ public:
    void Parse( const String& text );
 
    /*!
-    * Serializes this XML document. Returns the generated serialization as an
-    * 8-bit string encoded in UTF-8.
+    * Serializes this XML document. Returns the generated serialization as a
+    * Unicode string encoded in UTF-8.
+    *
+    * \param indentSize    Number of white space characters used for
+    *             indentation of source code lines. A value of zero places each
+    *             document node in a separate line (with the exception of
+    *             XMLText child nodes, where spaces can be managed in special
+    *             ways) without indentation. A value less than zero disables
+    *             indentation and line breaks so no superfluous space
+    *             characters are generated. The default value is 3.
     *
     * To serialize a well-formed XML document, this object must be initialized
     * first by defining a root element (see SetRootElement()) and other
     * document nodes, as necessary (see SetXML(), SetDocType(), and AddNode()).
     */
-   IsoString Serialize( int indentSize = -1, int level = 0 ) const;
+   IsoString Serialize( int indentSize = 3 ) const;
+
+   /*!
+    * Serializes this XML document and writes the result to a file at the
+    * specified \a path with UTF-8 encoding.
+    *
+    * See Serialize( int ) for more information.
+    *
+    * \warning If a file already exists at the specified path, its previous
+    * contents will be lost after calling this function.
+    */
+   void SerializeToFile( const String& path, int indentSize = 3 ) const;
 
 private:
 
@@ -2063,6 +2375,8 @@ private:
    XMLDocTypeDeclaration m_docType;
    XMLNodeList           m_nodes;
    XMLElement*           m_root = nullptr;
+   XMLElementFilter*     m_filter = nullptr;
+   XMLParserOptions      m_parserOptions;
    XMLNodeLocation       m_location;
 };
 

@@ -1,5 +1,6 @@
 
 #include <pcl/Exception.h>
+#include <pcl/File.h>
 #include <pcl/XML.h>
 
 namespace pcl
@@ -96,6 +97,13 @@ inline static bool IsToken( const String& s, Itr i, const char* t )
 
 template <typename Itr>
 inline static Itr FindToken( const String& s, Itr i, const char* t )
+{
+   size_type p = s.Find( t, s.IndexAt( i ) );
+   return (p != String::notFound) ? s.At( p ) : s.End();
+}
+
+template <typename Itr>
+inline static Itr FindToken( const String& s, Itr i, const String& t )
 {
    size_type p = s.Find( t, s.IndexAt( i ) );
    return (p != String::notFound) ? s.At( p ) : s.End();
@@ -418,12 +426,10 @@ void XMLUnknownElement::Serialize( IsoString& text, int indentSize, int level ) 
 
 // ----------------------------------------------------------------------------
 
-void XMLDeclaration::Serialize( IsoString& text, int indentSize, int level ) const
+void XMLDeclaration::Serialize( IsoString& text ) const
 {
-   if ( indentSize > 0 )
-      text.Append( ' ', indentSize*level );
    text << "<?xml version=\"" << (m_version.IsEmpty() ? IsoString( "1.0" ) : IsoString( m_version ))
-        << "\" encoding=\"" << (m_encoding.IsEmpty() ? IsoString( "UFT-8" ) : IsoString( m_encoding )) << '\"';
+        << "\" encoding=\"" << (m_encoding.IsEmpty() ? IsoString( "UTF-8" ) : IsoString( m_encoding )) << '\"';
    if ( m_standalone )
       text << " standalone=\"yes\"";
    text << "?>";
@@ -431,46 +437,52 @@ void XMLDeclaration::Serialize( IsoString& text, int indentSize, int level ) con
 
 // ----------------------------------------------------------------------------
 
-void XMLDocTypeDeclaration::Serialize( IsoString& text, int indentSize, int level ) const
+void XMLDocTypeDeclaration::Serialize( IsoString& text ) const
 {
-   if ( indentSize > 0 )
-      text.Append( ' ', indentSize*level );
-   text << "<!DOCTYPE " << m_name.ToUTF8();
-   if ( !m_definition.IsEmpty() )
-      text << ' ' << m_definition.ToUTF8();
-   text << '>';
+   if ( !m_name.IsEmpty() )
+   {
+      text << "<!DOCTYPE " << m_name.ToUTF8();
+      if ( !m_definition.IsEmpty() )
+         text << ' ' << m_definition.ToUTF8();
+      text << '>';
+   }
 }
 
 // ----------------------------------------------------------------------------
 
-IsoString XMLDocument::Serialize( int indentSize, int level ) const
+IsoString XMLDocument::Serialize( int indentSize ) const
 {
    indentSize = Range( indentSize, -1, 8 );
-   level = Max( 0, level );
 
    IsoString text;
 
    if ( m_xml.IsDefined() )
    {
-      m_xml.Serialize( text, indentSize, level );
+      m_xml.Serialize( text );
       if ( indentSize >= 0 )
          text << '\n';
    }
 
    if ( m_docType.IsDefined() )
    {
-      m_docType.Serialize( text, indentSize, level );
+      m_docType.Serialize( text );
       if ( indentSize >= 0 )
          text << '\n';
    }
 
    for ( const XMLNode& node : m_nodes )
-      node.Serialize( text, indentSize, level );
-
-   if ( indentSize >= 0 )
-      text << '\n';
+   {
+      node.Serialize( text, indentSize, 0 );
+      if ( indentSize >= 0 )
+         text << '\n';
+   }
 
    return text;
+}
+
+void XMLDocument::SerializeToFile( const String& path, int indentSize ) const
+{
+   File::WriteTextFile( path, Serialize( indentSize ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -485,7 +497,7 @@ void XMLDocument::AddNode( XMLNode* node )
          throw Error( "Child node specified." );
 
       m_nodes.Append( node );
-      node->m_type |= XMLNodeType::ChildNode;
+      node->m_type.SetFlag( XMLNodeType::ChildNode );
    }
    catch ( const Exception& x )
    {
@@ -508,7 +520,7 @@ void XMLDocument::SetRootElement( XMLElement* element )
 
       m_nodes.Append( element );
       m_root = element;
-      m_root->m_type |= XMLNodeType::ChildNode;
+      m_root->m_type.SetFlag( XMLNodeType::ChildNode );
    }
    catch ( const Exception& x )
    {
@@ -607,7 +619,9 @@ void XMLDocument::Parse( const String& text )
 
    try
    {
-      XMLElement* m_current = nullptr;
+      XMLElement* currentElement = nullptr;
+      XMLElement* skipElement = nullptr;
+      size_type skipCount = 0;
 
       for ( String::const_iterator i = text.Begin(), i0 = i; ; )
       {
@@ -618,7 +632,7 @@ void XMLDocument::Parse( const String& text )
                ++m_location.column;
 
          String::const_iterator j = i;
-         bool spaces = true;
+         bool allspaces = true;
          for ( ; j < text.End(); ++j )
          {
             if ( *j == '<' )
@@ -628,21 +642,24 @@ void XMLDocument::Parse( const String& text )
                ++m_location.line, m_location.column = 0;
             else
             {
-               if ( spaces )
+               if ( allspaces )
                   if ( !XML::IsWhiteSpaceChar( *j ) )
                   {
-                     if ( m_current == nullptr )
-                        throw Error( String().Format( "Stray character #x%x outside markup.", int( *j ) ) );
-                     spaces = false;
+                     if ( currentElement == nullptr )
+                        if ( !m_parserOptions.IsFlagSet( XMLParserOption::IgnoreStrayCharacters ) )
+                           throw Error( String().Format( "Stray character #x%x outside markup.", int( *j ) ) );
+                     allspaces = false;
                   }
                ++m_location.column;
             }
          }
 
-         if ( m_current != nullptr )
-            if ( j > i )
-               if ( !spaces || m_current->HasText() )
-                  m_current->AddChildNode( new XMLText( XML::DecodedText( i, j ) ), m_location );
+         if ( j > i )
+            if ( skipCount == 0 )
+               if ( currentElement != nullptr )
+                  if ( !allspaces || currentElement->HasText() )
+                     currentElement->AddChildNode( new XMLText( XML::DecodedText( i, j ),
+                                                         !m_parserOptions.IsFlagSet( XMLParserOption::NormalizeTextSpaces ) ), m_location );
          if ( j == text.End() )
             break;
 
@@ -658,27 +675,76 @@ void XMLDocument::Parse( const String& text )
 
             if ( t.start )
             {
-               XMLElement* element = new XMLElement( t.name, XMLAttributeList( t.parameters ) );
-               if ( m_current == nullptr )
+               if ( skipCount == 0 )
                {
-                  m_nodes << element;
-                  if ( m_root == nullptr )
-                     m_root = element;
+                  XMLElement* element = new XMLElement( t.name );
+
+                  bool skip = false;
+                  if ( m_filter == nullptr )
+                     element->SetAttributes( XMLAttributeList( t.parameters ) );
+                  else if ( !(*m_filter)( currentElement, element->Name() ) )
+                     skip = true;
+                  else
+                  {
+                     XMLAttributeList attributes( t.parameters );
+                     if ( !(*m_filter)( currentElement, element->Name(), attributes ) )
+                        skip = true;
+                     else
+                        element->SetAttributes( attributes );
+                  }
+
+                  if ( !skip )
+                  {
+                     if ( currentElement != nullptr )
+                        currentElement->AddChildNode( element, m_location );
+                     else
+                     {
+                        m_nodes << element;
+                        if ( m_root == nullptr )
+                           m_root = element;
+                     }
+                  }
+
+                  if ( !t.end )
+                  {
+                     if ( skip )
+                     {
+                        skipElement = element;
+                        skipCount = 1;
+                     }
+                     else
+                        currentElement = element;
+                  }
+                  else
+                  {
+                     if ( skip )
+                        delete element;
+                  }
                }
                else
-                  m_current->AddChildNode( element, m_location );
-
-               if ( !t.end )
-                  m_current = element;
+               {
+                  if ( !t.end )
+                     if ( t.name == skipElement->Name() )
+                        ++skipCount;
+               }
             }
             else
             {
-               if ( m_current == nullptr )
-                  throw Error( "Stray end-tag '" + t.name + "'"  );
-               if ( t.name != m_current->Name() )
-                  throw Error( "Unexpected end-tag '/" + t.name + "'; expected '/" + m_current->Name() + "'" );
+               if ( skipCount == 0 )
+               {
+                  if ( currentElement == nullptr )
+                     throw Error( "Stray end-tag '" + t.name + "'"  );
+                  if ( t.name != currentElement->Name() )
+                     throw Error( "Unexpected end-tag '/" + t.name + "'; expected '/" + currentElement->Name() + "'" );
 
-               m_current = m_current->ParentElement();
+                  currentElement = currentElement->ParentElement();
+               }
+               else
+               {
+                  if ( t.name == skipElement->Name() )
+                     if ( --skipCount == 0 )
+                        delete skipElement;
+               }
             }
 
             i = t.next;
@@ -693,17 +759,21 @@ void XMLDocument::Parse( const String& text )
                if ( k == text.End() )
                   throw Error( "Unmatched comment start." );
 
-               XMLComment* comment = new XMLComment( String( j, k ) );
-               if ( m_current == nullptr )
-                  m_nodes << comment;
-               else
-                  m_current->AddChildNode( comment, m_location );
+               if ( !m_parserOptions.IsFlagSet( XMLParserOption::IgnoreComments ) )
+                  if ( skipCount == 0 )
+                  {
+                     XMLComment* comment = new XMLComment( String( j, k ) );
+                     if ( currentElement == nullptr )
+                        m_nodes << comment;
+                     else
+                        currentElement->AddChildNode( comment, m_location );
+                  }
 
                i = k + 3;
             }
             else if ( IsToken( text, j, "DOCTYPE" ) )
             {
-               if ( m_root != nullptr )
+               if ( m_root != nullptr || skipCount > 0 )
                   throw Error( "Invalid DOCTYPE declaration after the root element." );
                if ( m_docType.IsDefined() )
                   throw Error( "Duplicate DOCTYPE declaration." );
@@ -727,25 +797,33 @@ void XMLDocument::Parse( const String& text )
             }
             else if ( IsToken( text, j, "[CDATA[" ) )
             {
-               if ( m_current == nullptr )
-                  throw Error( "Invalid CDATA section outside an element." );
                j += 7;
                String::const_iterator k = FindToken( text, j, "]]>" );
                if ( k == text.End() )
                   throw Error( "Unmatched CDATA start-tag." );
 
-               m_current->AddChildNode( new XMLCDATA( String( j, k ) ), m_location );
+               if ( skipCount == 0 )
+               {
+                  if ( currentElement == nullptr )
+                     throw Error( "Invalid CDATA section outside an element." );
+                  currentElement->AddChildNode( new XMLCDATA( String( j, k ) ), m_location );
+               }
 
                i = k + 3;
             }
             else
             {
                XMLTag t( text, j );
-               XMLUnknownElement* element = new XMLUnknownElement( t.name, t.parameters );
-               if ( m_current == nullptr )
-                  m_nodes << element;
-               else
-                  m_current->AddChildNode( element, m_location );
+
+               if ( skipCount == 0 )
+                  if ( !m_parserOptions.IsFlagSet( XMLParserOption::IgnoreUnknownElements ) )
+                  {
+                     XMLUnknownElement* element = new XMLUnknownElement( t.name, t.parameters );
+                     if ( currentElement == nullptr )
+                        m_nodes << element;
+                     else
+                        currentElement->AddChildNode( element, m_location );
+                  }
 
                i = t.next;
             }
@@ -758,7 +836,7 @@ void XMLDocument::Parse( const String& text )
 
             if ( t.name == "xml" )
             {
-               if ( m_root != nullptr )
+               if ( m_root != nullptr || skipCount > 0 )
                   throw Error( "Invalid XML declaration after the root element." );
                if ( m_xml.IsDefined() )
                   throw Error( "Duplicate XML declaration." );
@@ -785,11 +863,14 @@ void XMLDocument::Parse( const String& text )
             }
             else
             {
-               XMLProcessingInstructions* pi = new XMLProcessingInstructions( t.name, t.parameters );
-               if ( m_current == nullptr )
-                  m_nodes << pi;
-               else
-                  m_current->AddChildNode( pi, m_location );
+               if ( skipCount == 0 )
+               {
+                  XMLProcessingInstructions* pi = new XMLProcessingInstructions( t.name, t.parameters );
+                  if ( currentElement == nullptr )
+                     m_nodes << pi;
+                  else
+                     currentElement->AddChildNode( pi, m_location );
+               }
             }
 
             i = t.next;
@@ -800,11 +881,14 @@ void XMLDocument::Parse( const String& text )
          }
       }
 
-      if ( m_current != nullptr )
-         throw Error( "Incomplete element definition: Expected end-tag '/" + m_current->Name()  + "'" );
+      if ( currentElement != nullptr )
+         throw Error( "Incomplete element definition: Expected end-tag '/" + currentElement->Name()  + "'" );
+
+      if ( skipCount > 0 )
+         throw Error( "Incomplete element definition: Expected end-tag '/" + skipElement->Name()  + "'" );
 
       if ( m_root == nullptr )
-         throw Error( "No root element defined." );
+         throw Error( "No root element has been defined." );
    }
    catch ( const Exception& x )
    {

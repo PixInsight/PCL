@@ -2,7 +2,7 @@
 # PixInsight Makefile Generator Script v1.103
 # Copyright (C) 2009-2015 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Mon, 16 Jan 2017 18:04:32 GMT
+# Automatically generated on Mon, 23 Jan 2017 15:29:50 GMT
 # Project id ...... PCL
 # Project type .... StaticLibrary
 # Platform ........ FreeBSD/g++
@@ -74,7 +74,6 @@ SRC_FILES= \
 ../../GlobalSettings.cpp \
 ../../Graphics.cpp \
 ../../GroupBox.cpp \
-../../HTMLEntity.cpp \
 ../../HexString.cpp \
 ../../Histogram.cpp \
 ../../HistogramTransformation.cpp \
@@ -225,7 +224,6 @@ OBJ_FILES= \
 ./x64/Release/GlobalSettings.o \
 ./x64/Release/Graphics.o \
 ./x64/Release/GroupBox.o \
-./x64/Release/HTMLEntity.o \
 ./x64/Release/HexString.o \
 ./x64/Release/Histogram.o \
 ./x64/Release/HistogramTransformation.o \
@@ -376,7 +374,6 @@ DEP_FILES= \
 ./x64/Release/GlobalSettings.d \
 ./x64/Release/Graphics.d \
 ./x64/Release/GroupBox.d \
-./x64/Release/HTMLEntity.d \
 ./x64/Release/HexString.d \
 ./x64/Release/Histogram.d \
 ./x64/Release/HistogramTransformation.d \

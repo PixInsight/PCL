@@ -797,6 +797,7 @@ public:
     */
    char_type& operator *()
    {
+      EnsureUnique();
       return *m_data->string;
    }
 

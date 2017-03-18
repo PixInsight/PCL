@@ -186,7 +186,7 @@ protected:
     virtual void newLight(ILightVectorProperty *lvp){}
     virtual void newMessage(INDI::BaseDevice *dp, int messageID){}
     virtual void serverConnected(){}
-    virtual void serverDisconnected(int exit_code){}
+    virtual void serverDisconnected(int exit_code);//{}
 
     /** \brief Dispatch command received from INDI server to respective devices handled by the client */
     int dispatchCommand(XMLEle *root, char* errmsg);

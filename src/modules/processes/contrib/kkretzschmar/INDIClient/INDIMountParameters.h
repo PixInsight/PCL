@@ -75,7 +75,7 @@ DECLARE_STRING_PARAMETER_CLASS(IMCDeviceName);
 				ENUM_ITEM(MoveWestStart) ENUM_ITEM(MoveWestStop)\
 				ENUM_ITEM(MoveEastStart) ENUM_ITEM(MoveEastStop)\
 				ENUM_ITEM(GoTo) ENUM_ITEM(Sync)\
-				ENUM_ITEM(ParkDefault) ENUM_ITEM(FitAlignmentModel)
+				ENUM_ITEM(ParkDefault)
 
 
 

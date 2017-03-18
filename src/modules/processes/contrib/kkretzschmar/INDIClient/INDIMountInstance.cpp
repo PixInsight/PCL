@@ -360,7 +360,10 @@ bool INDIMountInstance::ExecuteOn( View& view )
 
     	  switch (p_alignmentMethod){
     	  case IMCAlignmentMethod::AnalyticalModel:
-    		  aModel = TpointPointingModel::create(49.237, p_alignmentConfig);
+    		  Variant geoLat = view.PropertyValue( "Instrument:Telescope:Geograhic:Latitude" );
+    		  if (!geoLat.IsValid() )
+    			  throw Error( "The view does not define valid geographic latitude coordinates." );
+    		  aModel = TpointPointingModel::create(geoLat.ToDouble(), p_alignmentConfig);
     	  }
 
 
@@ -833,6 +836,30 @@ void AbstractINDIMountExecution::Perform()
          {
             double targetRA, targetDec;
             m_instance.GetTargetCoordinates( targetRA, targetDec );
+            m_instance.GetCurrentCoordinates();
+
+            // if alignment correction is enabled, the original target coordinates
+            // before alignment correction have to be determined
+            if (this->m_instance.p_enableAlignmentCorrection){
+
+            	AutoPointer<AlignmentModel> aModel = nullptr;
+
+            	switch (m_instance.p_alignmentMethod){
+            	case IMCAlignmentMethod::AnalyticalModel:
+
+            		aModel = TpointPointingModel::create(49.14, m_instance.p_alignmentConfig);
+            	}
+
+            	double localSiderialTime = m_instance.o_currentLST;
+            	aModel->readObject(m_instance.p_alignmentFile);
+            	double newHourAngle=-1;
+            	double newDec=-1;
+
+            	aModel->ApplyInverse(newHourAngle, newDec, AlignmentModel::rangeShiftHourAngle(localSiderialTime - targetRA), targetDec);
+            	targetRA=localSiderialTime-newHourAngle;
+            	targetDec=newDec;
+
+            }
 
             StartMountEvent( targetRA, m_instance.o_currentRA, targetDec, m_instance.o_currentDec, m_instance.p_command );
             switch (m_instance.p_alignmentMethod){
@@ -849,7 +876,6 @@ void AbstractINDIMountExecution::Perform()
             break;
             case IMCAlignmentMethod::AnalyticalModel:
             {
-                m_instance.GetCurrentCoordinates();
                 SyncDataPoint syncPoint;
                 syncPoint.localSiderialTime = m_instance.o_currentLST;
                 syncPoint.celestialRA       = targetRA;
@@ -925,21 +951,6 @@ void AbstractINDIMountExecution::Perform()
          m_instance.GetCurrentCoordinates();
          EndMountEvent();
          break;
-      case IMCCommand::FitAlignmentModel:
-      {
-    	 AutoPointer<AlignmentModel> aModel = nullptr;
-
-    	 switch (m_instance.p_alignmentMethod){
-    	 case IMCAlignmentMethod::AnalyticalModel:
-    		 aModel = TpointPointingModel::create(49.237, m_instance.p_alignmentConfig);
-    	 }
-
-    	 m_instance.loadSyncData();
-    	 aModel->fitModel(m_instance.syncDataArray,IMCPierSide::West);
-    	 aModel->fitModel(m_instance.syncDataArray,IMCPierSide::East);
-    	 aModel->writeObject(m_instance.p_alignmentFile, m_instance.p_pierSide);
-    	 break;
-      }
       default:
          throw Error( "Internal error: AbstractINDIMountExecution::Perform(): Unknown INDI Mount command." );
       }

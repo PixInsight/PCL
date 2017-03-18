@@ -812,6 +812,8 @@ struct ImageMetadata
    Definable<double>    dec;
    Definable<double>    equinox;
    Definable<double>    localSiderealTime;
+   Definable<double>    geographicLatitude;
+   Definable<double>    geographicLongitude;
    Definable<double>    eodRa;
    Definable<double>    eodDec;
 
@@ -912,6 +914,10 @@ ImagePropertiesFromImageMetadata( const ImageMetadata& data )
       properties << ImageProperty( "Instrument:Telescope:Name", data.telescopeName.value );
    if ( data.focalLength.defined )
       properties << ImageProperty( "Instrument:Telescope:FocalLength", Round( data.focalLength.value, 3 ) );
+   if ( data.geographicLatitude.defined )
+	  properties << ImageProperty( "Instrument:Telescope:Geograhic:Latitude", data.geographicLatitude.value );
+   if ( data.geographicLongitude.defined )
+   	   properties << ImageProperty( "Instrument:Telescope:Geograhic:Longitude", data.geographicLongitude.value );
    if ( data.aperture.defined )
       properties << ImageProperty( "Instrument:Telescope:Aperture", Round( data.aperture.value, 3 ) );
    if ( data.apertureArea.defined )
@@ -929,7 +935,7 @@ ImagePropertiesFromImageMetadata( const ImageMetadata& data )
    if ( data.equinox.defined )
       properties << ImageProperty( "Observation:Equinox", data.equinox.value );
    if ( data.localSiderealTime.defined )
-         properties << ImageProperty( "Observation:LocalSiderealTime", data.localSiderealTime.value );
+	   properties << ImageProperty( "Observation:LocalSiderealTime", data.localSiderealTime.value );
    if ( data.eodRa.defined )
         properties << ImageProperty( "Observation:Center:EOD_RA", data.eodRa.value );
    if ( data.eodDec.defined )
@@ -1221,6 +1227,22 @@ void AbstractINDICCDFrameExecution::Perform()
 
                 		  keywords << FITSHeaderKeyword( "LOCALLST", lstSexagesimal, "Local sidereal time (LST) - after exposure" );
 
+
+                	  }
+                  // If not already available, try to get the local
+                  // geographic latitude of observatory.
+                  if (!data.geographicLatitude.defined)
+                	  if ( indi->GetPropertyItem( telescopeName, "GEOGRAPHIC_COORD", "LAT", item, false/*formatted*/ ))
+                	  {
+                		  data.geographicLatitude = item.PropertyValue.ToDouble();;
+
+                	  }
+                  // If not already available, try to get the local
+                  // geographic longitude of observatory.
+                  if (!data.geographicLongitude.defined)
+                	  if ( indi->GetPropertyItem( telescopeName, "GEOGRAPHIC_COORD", "LONG", item, false/*formatted*/ ))
+                	  {
+                		  data.geographicLongitude = item.PropertyValue.ToDouble();;
 
                 	  }
                   properties << ImagePropertiesFromImageMetadata( data );

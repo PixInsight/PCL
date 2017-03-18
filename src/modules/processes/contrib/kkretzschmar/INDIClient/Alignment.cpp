@@ -121,13 +121,7 @@ void TpointPointingModel::evaluateBasis(Matrix& basisVectors, double hourAngle, 
 	double cdc  = Cos(dec * Const<double>::rad());
 
 	double stc  = Sin(hourAngle * Const<double>::rad() * 15);
-/*	double stcd4  = Sin(hourAngle * Const<double>::rad() * 15 * 0.4);
 
-	double stcd5  = Sin(hourAngle * Const<double>::rad() * 15 * 0.5);
-	double stcd6  = Sin(hourAngle * Const<double>::rad() * 15 * 0.6);
-	double stc2  = Sin(hourAngle * Const<double>::rad() * 15 * 2);
-	double stc4  = Sin(hourAngle * Const<double>::rad() * 15 * 4);
-	double stc3  = Sin(hourAngle * Const<double>::rad() * 15 * 3);*/
 
 	double sdc  = Sin(dec * Const<double>::rad());
 
@@ -209,22 +203,53 @@ void TpointPointingModel::evaluateBasis(Matrix& basisVectors, double hourAngle, 
 
 	if (CHECK_BIT(m_modelConfig,8)){
 		// delta-axis flexure
-		basisVectors[0][8] = 0;//cdc * ctc + slat * tandc;
-		basisVectors[1][8] = dec * Const<double>::rad();
+		basisVectors[0][8] = cdc * ctc + slat * tandc;
+		basisVectors[1][8] = dec ;
 	} else {
 		basisVectors[0][8] = 0;
 		basisVectors[1][8] = 0;
 
 	}
 
+	if (CHECK_BIT(m_modelConfig, 9)) {
+		// linear term
+		basisVectors[0][9] = hourAngle;
+		basisVectors[1][9] = 1;
+		basisVectors[0][10] = 1;
+		basisVectors[1][10] = dec ;
+	} else {
+		basisVectors[0][9] = 0;
+		basisVectors[1][9] = 0;
+		basisVectors[0][10] = 0;
+		basisVectors[1][10] = 0;
+	}
+
+	if (CHECK_BIT(m_modelConfig, 10)) {
+		// quadratic term
+		basisVectors[0][11] = hourAngle * hourAngle ;
+		basisVectors[1][11] = 1;
+		basisVectors[0][12] = 1;
+		basisVectors[1][12] = dec * dec;
+		basisVectors[0][13] = dec * hourAngle;
+		basisVectors[1][13] = dec * hourAngle;
+	} else {
+		basisVectors[0][11] = 0;
+		basisVectors[1][11] = 0;
+		basisVectors[0][12] = 0;
+		basisVectors[1][12] = 0;
+		basisVectors[0][13] = 0;
+		basisVectors[1][13] = 0;
+	}
+
 }
 
-void TpointPointingModel::Apply(double& hourAngleCor, double& decCor, double hourAngle, double dec)
-{
+void TpointPointingModel::Apply(double& hourAngleCor, double& decCor, double hourAngle, double dec) {
 	Matrix basisVectors(2,m_numOfModelParameters);
 
 	evaluateBasis(basisVectors,hourAngle,dec);
-
+	Console().WriteLn(String().Format("modelCondig=%d, ",  m_modelConfig));
+	Console().WriteLn(String().Format("latitude=%f, ",  m_siteLatitude));
+	//for (size_t modelIndex = 1; modelIndex < m_numOfModelParameters; modelIndex++) dumpVector(basisVectors.ColumnVector(modelIndex));
 	// compute correction vector
 	Vector alignCorrection(2);
 
@@ -235,9 +260,8 @@ void TpointPointingModel::Apply(double& hourAngleCor, double& decCor, double hou
 		alignCorrection +=  (*modelParameters)[modelIndex] * basisVectors.ColumnVector(modelIndex);
 	}
 
-	hourAngleCor  = hourAngle - alignCorrection[0] ;
+	hourAngleCor  = hourAngle - alignCorrection[0];
 	decCor        = dec - alignCorrection[1];
-
 }
 
 void TpointPointingModel::ApplyInverse(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) {
@@ -255,7 +279,7 @@ void TpointPointingModel::ApplyInverse(double& hourAngleCor, double& decCor, con
 		alignCorrection +=  (*modelParameters)[modelIndex] * basisVectors.ColumnVector(modelIndex);
 	}
 
-	hourAngleCor  = hourAngle + alignCorrection[0] ;
+	hourAngleCor  = hourAngle + alignCorrection[0];
 	decCor        = dec + alignCorrection[1];
 }
 
@@ -322,41 +346,39 @@ void TpointPointingModel::fitModel(const Array<SyncDataPoint>& syncPointArray, p
 	}
 	delete designMatrices;
 	delete meauredDisplacements;
-
-
 }
 
 
-void TpointPointingModel::writeObject(const String& fileName, pcl_enum pierSide)
+void TpointPointingModel::writeObject(const String& fileName)
 {
 	// save model parameters to disk
 	IsoString fileContent;
 
 	// west
-	if (pierSide == IMCPierSide::None || pierSide == IMCPierSide::West || pierSide == IMCPierSide::East) {
-		fileContent.Append(IsoString().Format("%d,",pierSide == IMCPierSide::West));
-		for (size_t i=0; i < this->m_numOfModelParameters; ++i){
-			if (i < m_numOfModelParameters-1)
-				fileContent.Append(IsoString().Format("%f,",(*m_pointingModelWest)[i]));
-			else
-				fileContent.Append(IsoString().Format("%f",(*m_pointingModelWest)[i]));
-		}
-		fileContent.Append("\n");
+	fileContent.Append(IsoString().Format("%d,", IMCPierSide::West));
+	for (size_t i=0; i < this->m_numOfModelParameters; ++i){
+		if (i < m_numOfModelParameters-1)
+			fileContent.Append(IsoString().Format("%f,",(*m_pointingModelWest)[i]));
+		else
+			fileContent.Append(IsoString().Format("%f",(*m_pointingModelWest)[i]));
 	}
+	fileContent.Append("\n");
 
 
 	// east
-	if (pierSide == IMCPierSide::None || pierSide == IMCPierSide::East || pierSide == IMCPierSide::West) {
-		fileContent.Append(IsoString().Format("%d,",IMCPierSide::East));
-		for (size_t i=0; i < this->m_numOfModelParameters; ++i){
-			if (i < m_numOfModelParameters-1)
-				fileContent.Append(IsoString().Format("%f,",(*m_pointingModelEast)[i]));
-			else
-				fileContent.Append(IsoString().Format("%f",(*m_pointingModelEast)[i]));
-		}
-		fileContent.Append("\n");
+	fileContent.Append(IsoString().Format("%d,",IMCPierSide::East));
+	for (size_t i=0; i < this->m_numOfModelParameters; ++i){
+		if (i < m_numOfModelParameters-1)
+			fileContent.Append(IsoString().Format("%f,",(*m_pointingModelEast)[i]));
+		else
+			fileContent.Append(IsoString().Format("%f",(*m_pointingModelEast)[i]));
 	}
+	fileContent.Append("\n");
 
+	// model config
+	fileContent.Append(IsoString().Format("%d\n", m_modelConfig));
+	// geographic site latitude
+	fileContent.Append(IsoString().Format("%f\n", m_siteLatitude));
 
 	if (File::Exists(fileName)){
 		File::Remove(fileName);
@@ -370,12 +392,14 @@ void TpointPointingModel::readObject(const String& fileName)
 {
 	IsoStringList modelParameterList = File::ReadLines(fileName);
 
+	size_t lastIndex = 0;
 	for (size_t i = 0 ; i < modelParameterList.Length(); ++i) {
+		lastIndex=i;
 		IsoStringList tokens;
 		modelParameterList[i].Break(tokens, ",", true);
 
 		if (tokens.Length()!= m_numOfModelParameters + 1)
-			continue;
+			break;
 
 		if ((pcl_enum) tokens[0].ToInt() == IMCPierSide::None || (pcl_enum) tokens[0].ToInt() == IMCPierSide::West){
 			// west
@@ -389,7 +413,14 @@ void TpointPointingModel::readObject(const String& fileName)
 				(*m_pointingModelEast)[j] = tokens[j+1].ToDouble();
 			}
 		}
+
 	}
+
+	// read model config
+	m_modelConfig = modelParameterList[lastIndex].ToInt();
+
+	// read site latitude
+	m_siteLatitude = modelParameterList[++lastIndex].ToDouble();
 }
 
 

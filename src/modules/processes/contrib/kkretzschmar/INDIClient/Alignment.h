@@ -103,7 +103,7 @@ public:
 
 	virtual void fitModel(const Array<SyncDataPoint>& syncPointArray, pcl_enum pierSide) = 0;
 
-	virtual void writeObject(const String& fileName, pcl_enum pierSide) = 0;
+	virtual void writeObject(const String& fileName) = 0;
 
 	virtual void readObject(const String& fileName) = 0;
 
@@ -149,14 +149,15 @@ public:
   *
   */
   class TpointPointingModel : public AlignmentModel {
+	static const size_t modelParameters = 14;
   public:
 
-	 TpointPointingModel(double siteLatitude) : AlignmentModel (), m_numOfModelParameters(9), m_siteLatitude(siteLatitude * Const<double>::rad()), m_pointingModelWest(nullptr), m_pointingModelEast(nullptr),m_modelConfig(((uint32_t)1 << m_numOfModelParameters) - 1)
+	 TpointPointingModel(double siteLatitude) : AlignmentModel (), m_numOfModelParameters(modelParameters), m_siteLatitude(siteLatitude * Const<double>::rad()), m_pointingModelWest(nullptr), m_pointingModelEast(nullptr),m_modelConfig(((uint32_t)1 << m_numOfModelParameters) - 1)
 	 {
 		 m_pointingModelWest = new Vector(m_numOfModelParameters);
 		 m_pointingModelEast = new Vector(m_numOfModelParameters);
 	 }
-	TpointPointingModel(double siteLatitude,uint32_t modelConfig) : AlignmentModel (), m_numOfModelParameters(9), m_siteLatitude(siteLatitude * Const<double>::rad()), m_pointingModelWest(nullptr), m_pointingModelEast(nullptr),m_modelConfig(modelConfig)
+	TpointPointingModel(double siteLatitude,uint32_t modelConfig) : AlignmentModel (), m_numOfModelParameters(modelParameters), m_siteLatitude(siteLatitude * Const<double>::rad()), m_pointingModelWest(nullptr), m_pointingModelEast(nullptr),m_modelConfig(modelConfig)
   	{
 		m_pointingModelWest = new Vector(m_numOfModelParameters);
 		m_pointingModelEast = new Vector(m_numOfModelParameters);
@@ -182,7 +183,7 @@ public:
  		return new TpointPointingModel(siteLatitude);
  	}
 
- 	virtual void writeObject(const String& fileName, pcl_enum pierSide);
+ 	virtual void writeObject(const String& fileName);
 
  	virtual void readObject(const String& fileName);
 

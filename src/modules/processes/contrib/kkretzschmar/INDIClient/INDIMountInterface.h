@@ -69,9 +69,14 @@
 #include <pcl/Timer.h>
 #include <pcl/ToolButton.h>
 #include <pcl/TreeBox.h>
+#include <pcl/TabBox.h>
 
 #include "INDIClient.h"
 #include "INDIMountInstance.h"
+
+namespace pcl {
+	class INDIMountInterface;
+}
 
 namespace pcl
 {
@@ -213,6 +218,41 @@ private:
 	  bool                   m_firstTimeShown;
 };
 
+#define LABELED_CHECKBOX(NAME)        \
+	HorizontalSizer  NAME##_Sizer;    \
+	Label            NAME##_Label;    \
+    CheckBox         NAME##_CheckBox
+
+class AlignmentConfigDialog : public Dialog {
+public:
+	AlignmentConfigDialog(INDIMountInterface& w);
+private:
+
+	bool m_firstTimeShown = true;
+
+	INDIMountInterface& m_interface;
+
+	VerticalSizer      Global_Sizer;
+	  TabBox				AlignmentConfig_TabBox;
+		Control             AnalyticalAlignment_ConfigControl;
+          VerticalSizer       MountAlignmentConfig_Sizer;
+            LABELED_CHECKBOX(Offset);
+            LABELED_CHECKBOX(Collimation);
+            LABELED_CHECKBOX(NonPerpendicular);
+            LABELED_CHECKBOX(PolarAxisDisplacement);
+            LABELED_CHECKBOX(TubeFlexure);
+            LABELED_CHECKBOX(ForkFlexure);
+            LABELED_CHECKBOX(DeltaAxisFlexure);
+            LABELED_CHECKBOX(Linear);
+            LABELED_CHECKBOX(Quadratic);
+        //Control             SurfaceSplineAlignment_ConfigControl;
+      	  HorizontalSizer      AlignmentConfigButton_Sizer;
+      	    PushButton           Ok_Button;
+      	    PushButton           Cancel_Button;
+
+     void e_Show( Control& sender );
+     void e_Click( Button& sender, bool checked );
+};
 
 // ----------------------------------------------------------------------------
 
@@ -244,9 +284,10 @@ public:
 private:
 
    String                       m_device;
-   INDIMountInterfaceExecution* m_execution;
-   CoordinateSearchDialog*      m_searchDialog;
-   SyncDataListDialog*          m_syncDataListDialog;
+   INDIMountInterfaceExecution* m_execution              = nullptr;
+   CoordinateSearchDialog*      m_searchDialog           = nullptr;
+   SyncDataListDialog*          m_syncDataListDialog     = nullptr;
+   AlignmentConfigDialog*       m_alignmentConfigDialog  = nullptr;
 
    struct GUIData
    {
@@ -291,21 +332,12 @@ private:
           	  Label             SyncDataFile_Label;
           	  Edit              SyncDataFile_Edit;
           	  ToolButton        SyncDataFile_ToolButton;
-          HorizontalSizer   MountAlignmentMethod_Sizer;
-              Label             AlignmentMethod_Label;
-              ComboBox          AlignmentMethod_ComboBox;
           HorizontalSizer   MountAlignmentPierSide_Sizer;
               Label             AlignmentPierSide_Label;
               ComboBox          AlignmentPierSide_ComboBox;
           HorizontalSizer   MountAlignmentConfig_Sizer;
-          	  Label            AlignmentConfig_Label;
-          	  CheckBox         MountAlignmentConfigOffset_CheckBox;
-          	  CheckBox         MountAlignmentConfigCollimation_CheckBox;
-          	  CheckBox         MountAlignmentConfigNonPerpendicular_CheckBox;
-          	  CheckBox         MountAlignmentConfigPAHorDisp_CheckBox;
-          	  CheckBox         MountAlignmentConfigPAVertDisp_CheckBox;
-          	  CheckBox         MountAlignmentConfigTubeFlexure_CheckBox;
-          	  CheckBox         MountAlignmentConfigForkFlexure_CheckBox;
+          	  Label            MountAlignmentConfig_Label;
+          	  PushButton       MountAligmentModelConfig_Button;
           HorizontalSizer   MountAligmentModelFit_Sizer;
           	  PushButton       MountAligmentModelFit_Button;
           	  PushButton       MountAligmentModelSyncDataList_Button;
@@ -358,6 +390,21 @@ private:
          VerticalSizer     SlewRight_Sizer;
             Label             SlewSpeed_Label;
             ComboBox          SlewSpeed_ComboBox;
+
+
+      bool m_alignmentConfigOffset            = true;
+      bool m_alignmentConfigCollimation       = true;
+      bool m_alignmentConfigNonPerpendicular  = true;
+      bool m_alignmentConfigPolarAxisDisp     = true;
+      bool m_alignmentConfigTubeFlexure       = true;
+      bool m_alignmentConfigForkFlexure       = false;
+      bool m_alignmentConfigDecAxisFlexure    = true;
+      bool m_alignmentLinear                  = true;
+      bool m_alignmentQuadratic               = true;
+
+      int m_aignmentModelIndex                = 0;
+
+      void getAlignmentConfigParamter(int32& configParam);
    };
 
    GUIData* GUI;
@@ -373,6 +420,7 @@ private:
    void e_Press( Button& sender );
    void e_Release( Button& sender );
 
+   friend class AlignmentConfigDialog;
    friend class INDIMountInterfaceExecution;
 };
 

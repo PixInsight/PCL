@@ -119,6 +119,7 @@ private:
            double   o_currentDec;
    mutable double   o_apparentTargetRA;
    mutable double   o_apparentTargetDec;
+   	   	   double   o_geographicLatitude;
    	   	   double   o_syncLST;
    	   	   double   o_syncCelestialRA;
   	   	   double   o_syncCelestialDEC;

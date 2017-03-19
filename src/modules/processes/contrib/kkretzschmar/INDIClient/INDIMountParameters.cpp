@@ -71,6 +71,7 @@ REGISTER_MODULE_PARAMETER(IMCCurrentRA);
 REGISTER_MODULE_PARAMETER(IMCCurrentDec);
 REGISTER_MODULE_PARAMETER(IMCApparentTargetRA);
 REGISTER_MODULE_PARAMETER(IMCApparentTargetDec);
+REGISTER_MODULE_PARAMETER(IMCGeographicLatitude);
 REGISTER_MODULE_PARAMETER(IMCPierSide);
 REGISTER_MODULE_PARAMETER(IMCSyncLST);
 REGISTER_MODULE_PARAMETER(IMCSyncCelestialRA);
@@ -130,6 +131,10 @@ DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCApparentTargetRA,"apparentTargetRA",8
 // ----------------------------------------------------------------------------
 
 DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCApparentTargetDec,"apparentTargetDec",7,-91,-91,90);
+
+// ----------------------------------------------------------------------------
+
+DEFINE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCGeographicLatitude,"geographicLatitude",7,-91,-91,90);
 
 // ----------------------------------------------------------------------------
 

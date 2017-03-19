@@ -113,7 +113,7 @@ void AlignmentModel::getPseudoInverse(Matrix& pseudoInverse, const Matrix& matri
 
 void TpointPointingModel::evaluateBasis(Matrix& basisVectors, double hourAngle, double dec)
 {
-	if (basisVectors.Rows() != 2 || basisVectors.Columns() != m_numOfModelParameters)
+	if (basisVectors.Rows() != 2 || basisVectors.Columns() != static_cast<int>(m_numOfModelParameters))
 	{
 		throw Error( "Internal error: TpointPointingModel::evaluateBasis: Matrix dimensions do not match" );
 	}
@@ -247,9 +247,7 @@ void TpointPointingModel::Apply(double& hourAngleCor, double& decCor, double hou
 	Matrix basisVectors(2,m_numOfModelParameters);
 
 	evaluateBasis(basisVectors,hourAngle,dec);
-	Console().WriteLn(String().Format("modelCondig=%d, ",  m_modelConfig));
-	Console().WriteLn(String().Format("latitude=%f, ",  m_siteLatitude));
-	//for (size_t modelIndex = 1; modelIndex < m_numOfModelParameters; modelIndex++) dumpVector(basisVectors.ColumnVector(modelIndex));
+
 	// compute correction vector
 	Vector alignCorrection(2);
 

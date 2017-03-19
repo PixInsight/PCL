@@ -90,6 +90,7 @@ INDIMountInstance::INDIMountInstance( const MetaProcess* m ) :
    o_currentDec( TheIMCCurrentDecParameter->DefaultValue() ),
    o_apparentTargetRA( TheIMCApparentTargetRAParameter->DefaultValue() ),
    o_apparentTargetDec( TheIMCApparentTargetDecParameter->DefaultValue() ),
+   o_geographicLatitude( TheIMCGeographicLatitudeParameter->DefaultValue() ),
    o_syncLST(TheIMCSyncLSTParameter->DefaultValue()),
    o_syncCelestialRA(TheIMCSyncCelestialRAParameter->DefaultValue()) ,
    o_syncCelestialDEC(TheIMCSyncCelestialDecParameter->DefaultValue()),
@@ -126,6 +127,7 @@ void INDIMountInstance::Assign( const ProcessImplementation& p )
       o_currentDec                = x->o_currentDec;
       o_apparentTargetRA          = x->o_apparentTargetRA;
       o_apparentTargetDec         = x->o_apparentTargetDec;
+      o_geographicLatitude        = x->o_geographicLatitude;
       o_syncLST                   = x->o_syncLST;
       o_syncCelestialRA           = x->o_syncCelestialRA;
       o_syncCelestialDEC          = x->o_syncCelestialDEC;
@@ -385,8 +387,6 @@ bool INDIMountInstance::ExecuteOn( View& view )
 
     	  observationCenterRA  = observationCenterRA + newObservationCenterRA - observationCenterEodRA;
     	  observationCenterDec = observationCenterDec + newObservationCenterDec - observationCenterEodDec;
-    	  Console().WriteLn(String().Format("Old Coord (ra,dec): (%f,%f)", observationCenterEodRA, observationCenterEodDec));
-    	  Console().WriteLn(String().Format("New Coord (ra,dec): (%f,%f)", observationCenterRA, observationCenterDec));
       }
 
       if ( view.HasProperty( "Image:Center:RA" ) && view.HasProperty( "Image:Center:Dec" ) )
@@ -524,6 +524,8 @@ void* INDIMountInstance::LockParameter( const MetaParameter* p, size_type tableR
 	   return &o_syncTelescopeRA;
    if ( p == TheIMCSyncTelescopeDecParameter )
 	   return &o_syncTelescopeDEC;
+   if ( p == TheIMCGeographicLatitudeParameter)
+   	   return &o_geographicLatitude;
 
    return nullptr;
 }
@@ -715,7 +717,7 @@ void AbstractINDIMountExecution::Perform()
 
           	  switch (m_instance.p_alignmentMethod){
           	  case IMCAlignmentMethod::AnalyticalModel:
-          		  aModel = TpointPointingModel::create(49.237, m_instance.p_alignmentConfig);
+          		  aModel = TpointPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig);
           	  }
           	  if (aModel==nullptr){
           		throw Error( "Alignment model could not be loaded" );
@@ -725,8 +727,16 @@ void AbstractINDIMountExecution::Perform()
           	  aModel->Apply(hourAngle,targetDec,AlignmentModel::rangeShiftHourAngle(m_instance.o_currentLST - targetRARaw),targetDecRaw);
           	  targetRA=AlignmentModel::rangeShiftRighascension(m_instance.o_currentLST-hourAngle);
 
-          	  Console().WriteLn(String().Format("Old Coord (ra,dec): (%f,%f)", targetRARaw, targetDecRaw));
-          	  Console().WriteLn(String().Format("New Coord (ra,dec): (%f,%f)", targetRA, targetDec));
+          	  double deltaRA  = targetRA  - targetRARaw;
+          	  double deltaDec = targetDec - targetDecRaw;
+
+          	  Console().WriteLn( "<end><cbr>Applying pointing model correction: dRA = "
+          	                  + String::ToSexagesimal( deltaRA,
+          	                           SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, true/*sign*/ ) )
+          	                  + ", dDec = "
+          	                  + String::ToSexagesimal( deltaDec,
+          	                           SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, true/*sign*/ ) ) );
+
 
             } else {
             	targetRA = targetRARaw;
@@ -847,7 +857,7 @@ void AbstractINDIMountExecution::Perform()
             	switch (m_instance.p_alignmentMethod){
             	case IMCAlignmentMethod::AnalyticalModel:
 
-            		aModel = TpointPointingModel::create(49.14, m_instance.p_alignmentConfig);
+            		aModel = TpointPointingModel::create(m_instance.o_geographicLatitude, m_instance.p_alignmentConfig);
             	}
 
             	double localSiderialTime = m_instance.o_currentLST;

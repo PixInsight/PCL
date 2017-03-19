@@ -98,6 +98,7 @@ INDIMountProcess::INDIMountProcess() : MetaProcess()
    new IMCSyncDataFile(this);
    new IMCAlignmentFile(this);
    new IMCAlignmentConfig(this);
+   new IMCGeographicLatitude(this);
 }
 
 // ----------------------------------------------------------------------------

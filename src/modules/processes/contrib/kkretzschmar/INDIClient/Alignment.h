@@ -83,19 +83,14 @@ struct SyncDataPoint {
 };
 
 /*
- * Alignment interface
+ * Interface for telescope pointing models.
+ *
  */
 class AlignmentModel {
 
 public:
 
-	AlignmentModel()
-	{
-	}
-
-	virtual ~AlignmentModel()
-	{
-	}
+	virtual ~AlignmentModel(){}
 
 	virtual void Apply(double& hourAngleCor, double& decCor, const double hourAngle, const double dec) = 0;
 
@@ -152,11 +147,6 @@ public:
 	static const size_t modelParameters = 14;
   public:
 
-	 TpointPointingModel(double siteLatitude) : AlignmentModel (), m_numOfModelParameters(modelParameters), m_siteLatitude(siteLatitude * Const<double>::rad()), m_pointingModelWest(nullptr), m_pointingModelEast(nullptr),m_modelConfig(((uint32_t)1 << m_numOfModelParameters) - 1)
-	 {
-		 m_pointingModelWest = new Vector(m_numOfModelParameters);
-		 m_pointingModelEast = new Vector(m_numOfModelParameters);
-	 }
 	TpointPointingModel(double siteLatitude,uint32_t modelConfig) : AlignmentModel (), m_numOfModelParameters(modelParameters), m_siteLatitude(siteLatitude * Const<double>::rad()), m_pointingModelWest(nullptr), m_pointingModelEast(nullptr),m_modelConfig(modelConfig)
   	{
 		m_pointingModelWest = new Vector(m_numOfModelParameters);
@@ -178,9 +168,6 @@ public:
  	// siteLatidude given in degrees
  	static AlignmentModel* create( double siteLatitude, uint32_t modelConfig){
  		return new TpointPointingModel(siteLatitude,modelConfig);
- 	}
- 	static AlignmentModel* create( double siteLatitude){
- 		return new TpointPointingModel(siteLatitude);
  	}
 
  	virtual void writeObject(const String& fileName);

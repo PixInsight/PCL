@@ -254,6 +254,50 @@ private:
      void e_Click( Button& sender, bool checked );
 };
 
+
+class MountConfigDialog : public Dialog {
+public:
+	MountConfigDialog(INDIMountInterface& w);
+private:
+
+	bool m_firstTimeShown = true;
+
+	INDIMountInterface& m_interface;
+
+	VerticalSizer     Global_Sizer;
+	  HorizontalSizer   Latitude_Sizer;
+	  	  Label             Latitude_Label;
+	  	  SpinBox           Latitude_H_SpinBox;
+	  	  SpinBox           Latitude_M_SpinBox;
+	  	  NumericEdit       Latitude_S_NumericEdit;
+	      CheckBox          LatitudeIsSouth_CheckBox;
+
+	  HorizontalSizer   Longitude_Sizer;
+	      Label             Longitude_Label;
+	      SpinBox           Longitude_H_SpinBox;
+	      SpinBox           Longitude_M_SpinBox;
+	      NumericEdit       Longitude_S_NumericEdit;
+	      CheckBox          LongitudeIsWest_CheckBox;
+
+	  HorizontalSizer   TelescopeAperture_Sizer;
+	  	  NumericEdit		TelescopeAperture_NumericEdit;
+
+	  HorizontalSizer   TelescopeFocalLength_Sizer;
+	  	  NumericEdit		TelescopeFocalLength_NumericEdit;
+
+	  HorizontalSizer   MountConfigButton_Sizer;
+	  	  PushButton        SaveConfig_Button;
+	      PushButton        Ok_Button;
+	      PushButton        Cancel_Button;
+
+	void sendUpdatedProperties();
+
+	void e_Show( Control& sender );
+	void e_Click( Button& sender, bool checked );
+
+	friend class INDIMountInterface;
+};
+
 // ----------------------------------------------------------------------------
 
 class INDIMountInterfaceExecution;
@@ -281,13 +325,26 @@ public:
       return m_device;
    }
 
-private:
+   double getGeographicLatitude() const {
+	   return m_geoLatitude;
+   }
+   double getGeographicLongitude() const {
+	   return m_geoLongitude;
+   }
+   int getTelescopeAperture() const {
+	   return m_telescopeAperture;
+   }
+   int getTelescopeFocalLength() const {
+	   return m_telescopeFocalLength;
+   }
+ private:
 
    String                       m_device;
    INDIMountInterfaceExecution* m_execution              = nullptr;
    CoordinateSearchDialog*      m_searchDialog           = nullptr;
    SyncDataListDialog*          m_syncDataListDialog     = nullptr;
    AlignmentConfigDialog*       m_alignmentConfigDialog  = nullptr;
+
 
    struct GUIData
    {
@@ -304,6 +361,7 @@ private:
          HorizontalSizer   MountDevice_Sizer;
             Label             MountDevice_Label;
             ComboBox          MountDevice_Combo;
+            ToolButton        MountDeviceConfig_ToolButton;
          Control           MountProperties_Control;
          VerticalSizer     MountProperties_Sizer;
             HorizontalSizer   MountLST_Sizer;
@@ -332,15 +390,12 @@ private:
           	  Label             SyncDataFile_Label;
           	  Edit              SyncDataFile_Edit;
           	  ToolButton        SyncDataFile_ToolButton;
-          HorizontalSizer   MountAlignmentPierSide_Sizer;
-              Label             AlignmentPierSide_Label;
-              ComboBox          AlignmentPierSide_ComboBox;
+          	   PushButton       SyncDataList_Button;
           HorizontalSizer   MountAlignmentConfig_Sizer;
           	  Label            MountAlignmentConfig_Label;
           	  PushButton       MountAligmentModelConfig_Button;
           HorizontalSizer   MountAligmentModelFit_Sizer;
           	  PushButton       MountAligmentModelFit_Button;
-          	  PushButton       MountAligmentModelSyncDataList_Button;
           	  CheckBox         MountAlignmentPlotResiduals_CheckBox;
       SectionBar        MountGoTo_SectionBar;
       Control           MountGoTo_Control;
@@ -408,6 +463,11 @@ private:
    };
 
    GUIData* GUI;
+
+   double m_geoLatitude  = 0;
+   double m_geoLongitude = 0;
+   int    m_telescopeAperture    = 0;
+   int    m_telescopeFocalLength = 0;
 
    void UpdateControls();
 

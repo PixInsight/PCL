@@ -122,6 +122,10 @@ DECLARE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCApparentTargetDec);
 
 // ----------------------------------------------------------------------------
 
+DECLARE_DOUBLE_READ_ONLY_PARAMETER_CLASS(IMCGeographicLatitude);
+
+// ----------------------------------------------------------------------------
+
 #define PIERSIDE_ENUM  ENUM_ITEM(West) ENUM_ITEM(East) ENUM_ITEM(None)
 DECLARE_ENUM_PARAMETER(IMCPierSide,PIERSIDE_ENUM,None);
 

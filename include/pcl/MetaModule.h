@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/MetaModule.h - Released 2016/02/21 20:22:12 UTC
+// pcl/MetaModule.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,21 +56,11 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_MetaObject_h
 #include <pcl/MetaObject.h>
-#endif
-
-#ifndef __PCL_String_h
 #include <pcl/String.h>
-#endif
 
 namespace pcl
 {
@@ -123,6 +113,18 @@ public:
     * indirect recursion of MetaObject::~MetaObject().
     */
    virtual ~MetaModule();
+
+   /*!
+    * Copy constructor. This constructor is disabled because %MetaModule
+    * represents unique server-side objects.
+    */
+   MetaModule( const MetaModule& ) = delete;
+
+   /*!
+    * Copy assignment. This operator is disabled because %MetaModule represents
+    * unique server-side objects.
+    */
+   MetaModule& operator =( const MetaModule& ) = delete;
 
    /*!
     * \deprecated This member function has been deprecated. It is maintained for
@@ -558,10 +560,6 @@ public:
 
 private:
 
-   // MetaModule instances are unique objects.
-   MetaModule( const MetaModule& ) = delete;
-   void operator =( const MetaModule& ) = delete;
-
    virtual void PerformAPIDefinitions() const;
 
    friend class APIInitializer;
@@ -583,15 +581,13 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace  InstallMode
- * \brief      Module installation modes.
+ * \namespace pcl::InstallMode
+ * \brief     Module installation modes.
  *
  * This namespace enumerates module installation modes that the PixInsight core
- * application passes to the module installation routine, namely:
- *
- * \code
- * PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
- * \endcode
+ * application passes to the module installation entry point (PMINS). See the
+ * \ref module_entry_points "Module Entry Points" section for detailed
+ * information.
  *
  * The current installation modes are:\n
  *
@@ -623,7 +619,7 @@ namespace InstallMode
 /*!
  * \def        PCL_MODULE_UNIQUE_ID
  * \deprecated This macro has been deprecated. It is kept as part of PCL for
- *             compatibility with existing code. Do not use it in newly
+ *             compatibility with existing modules. Do not use it in newly
  *             produced code.
  * \ingroup    metamodule_utility_macros
  */
@@ -777,7 +773,147 @@ namespace InstallMode
 
 } // pcl
 
+// ----------------------------------------------------------------------------
+
+/*!
+ * \defgroup module_entry_points Module Entry Point Functions
+ *
+ * Module entry points are special functions required for module installation
+ * and initialization. Entry points are called directly by the PixInsight core
+ * application and must be implemented following the standard 'C' naming and
+ * calling conventions as nonstatic, publicly visible global symbols.
+ *
+ * In current versions of the PixInsight platform, there are two mandatory
+ * module entry points, namely the identification and initialization entry
+ * points (known as PMIDN and PMINI, respectively), and an optional (although
+ * usually necessary) installation entry point (PMINS). We describe these
+ * special functions in detail in this section.
+ *
+ * \n
+ * <h4>PixInsight Module Identification (PMIDN) entry point</h4>
+ *
+ * This function will be called by the PixInsight core application when it
+ * needs to retrieve identification and descriptive data from a module. This
+ * happens when a module is about to be installed, but also when a module is
+ * being inspected, either for security reasons or after a direct user request.
+ *
+ * A PMIDN must have the following declaration:
+ *
+ * \code
+ * PCL_MODULE_EXPORT uint32 IdentifyPixInsightModule( api_module_description** description, int32 phase );
+ * \endcode
+ *
+ * \param description   Pointer to a pointer to an API module description
+ *          structure. See the declaration of api_module_description in
+ *          API/APIDefs.h for details. This structure must be provided by the
+ *          called module as POD, and its starting address must be written to
+ *          the pointer pointed to by this argument in a call to this function
+ *          with \a phase = 1 (see below).
+ *
+ * \param phase         Module identification request:\n
+ *          \li \a phase = 0x00 - Prepare for module identification.\n
+ *          \li \a phase = 0x01 - Report module descriptive data in a structure
+ *          of type 'api_module_description', whose address must be stored in
+ *          the pointer pointed to by the \a description argument.\n
+ *          \li \a phase = 0xff - Module identification process completed. The
+ *          module description structure provided when \a phase = 1 can be
+ *          deallocated and disposed as necessary.
+ *
+ * Other values of \a phase may be passed in additional calls to a PMIDN. Those
+ * values and calls are reserved for special modules pertaining to the core of
+ * the PixInsight platform, and hence not in the user land. In current versions
+ * of PixInsight, such special calls must be ignored by the invoked module.
+ *
+ * A PMIDN must return zero upon success. Any other return value will be
+ * interpreted as a module-specific error code.
+ *
+ * Module developers using the standard PixInsight Class Library (PCL)
+ * distribution don't have to care about PMIDN, since it is already implemented
+ * internally by PCL.
+ *
+ * \note A PMIDN is mandatory for all PixInsight modules, and must be
+ * implemented as a nonstatic, publicly visible global symbol following the
+ * standard 'C' naming and calling conventions. The PCL_MODULE_EXPORT macro
+ * guarantees these conditions on all supported C++ compilers.
+ *
+ * \n
+ * <h4>PixInsight Module Initialization (PMINI) entry point</h4>
+ *
+ * This function will be called by the PixInsight core application when a
+ * module is being installed. It provides a module with the necessary elements
+ * to perform a bidirectional communication with the core application via the
+ * standard PCL API callback system.
+ *
+ * A PMINI must have the following declaration:
+ *
+ * \code
+ * PCL_MODULE_EXPORT uint32 InitializePixInsightModule( api_handle hModule, function_resolver R, uint32 apiVersion, void* reserved );
+ * \endcode
+ *
+ * \param hModule       Handle to the module being installed. This handle
+ *                      uniquely identifies the module, and must be used in all
+ *                      subsequent API calls requiring a module handle.
+ *
+ * \param R             Pointer to an API function resolver callback. See the
+ *                      declaration of function_resolver in API/APIDefs.h and
+ *                      the automatically generated file pcl/APIInterface.cpp
+ *                      for details.
+ *
+ * \param apiVersion    API version number.
+ *
+ * \param reserved      Reserved for special invocations to core platform
+ *                      modules. Must not be used or altered in any way.
+ *
+ * A PMINI must return zero upon success. Any other return value will be
+ * interpreted as a module-specific error code.
+ *
+ * Module developers using the standard PixInsight Class Library (PCL)
+ * distribution don't have to care about PMINI, since it is already implemented
+ * internally by PCL.
+ *
+ * \note A PMINI is mandatory for all PixInsight modules, and must be
+ * implemented as a nonstatic, publicly visible global symbol following the
+ * standard 'C' naming and calling conventions. The PCL_MODULE_EXPORT macro
+ * guarantees these conditions on all supported C++ compilers.
+ *
+ * \n
+ * <h4>PixInsight Module Installation (PMINS) entry point</h4>
+ *
+ * If this function is defined as a public symbol in a module, the PixInsight
+ * core application will call it just after loading and initializing the module
+ * shared object or dynamic-link library. This happens after calling the
+ * mandatory module entry points PMIDN and PMINI.
+ *
+ * A PMINS must have the following declaration:
+ *
+ * \code
+ * PCL_MODULE_EXPORT int32 InstallPixInsightModule( int32 mode );
+ * \endcode
+ *
+ * \param mode          Specifies the kind of installation being performed by
+ *                      the PixInsight core application. See the
+ *                      pcl::InstallMode namespace for more information.
+ *
+ * A PMINS must return zero upon successful installation. Any other return
+ * value will be interpreted as a module-specific error code.
+ *
+ * Although a PMINS is optional, it normally has to be defined by non-trivial
+ * modules in order to create and initialize the different objects and
+ * meta-objects required to implement their functionality, since most of these
+ * objects are dynamic in PCL. See the source code of the open-source standard
+ * modules for examples. Look for &lt;module_name&gt;Module.cpp files.
+ *
+ * \note If available, a PMINS must be implemented as a nonstatic, publicly
+ * visible global symbol following the standard 'C' naming and calling
+ * conventions. The PCL_MODULE_EXPORT macro guarantees these conditions on all
+ * supported C++ compilers.
+ */
+
+// ----------------------------------------------------------------------------
+
+// end global namespace
+
 #endif   // __PCL_MetaModule_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaModule.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/MetaModule.h - Released 2017-04-14T23:04:40Z

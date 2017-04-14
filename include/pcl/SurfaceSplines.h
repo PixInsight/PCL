@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/SurfaceSplines.h - Released 2016/02/21 20:22:12 UTC
+// pcl/SurfaceSplines.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -540,10 +540,11 @@ public:
          threads.Add( new GridInitializationThread<P>( *this, S,
                                                        i*rowsPerThread,
                                                        (j < numberOfThreads) ? j*rowsPerThread : rows ) );
-      for ( int i = 0; i < numberOfThreads; ++i )
-         threads[i].Start( ThreadPriority::DefaultMax, i );
-      for ( int i = 0; i < numberOfThreads; ++i )
-         threads[i].Wait();
+      int n = 0;
+      for ( GridInitializationThread<P>& thread : threads )
+         thread.Start( ThreadPriority::DefaultMax, n++ );
+      for ( GridInitializationThread<P>& thread : threads )
+         thread.Wait();
       threads.Destroy();
 
       m_Ix.Initialize( m_Gx.Begin(), cols, rows );
@@ -679,4 +680,4 @@ private:
 #endif   // __PCL_SurfaceSplines_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SurfaceSplines.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/SurfaceSplines.h - Released 2017-04-14T23:04:40Z

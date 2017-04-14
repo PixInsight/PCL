@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Fourier Process Module Version 01.00.04.0191
+// Standard Fourier Process Module Version 01.00.04.0200
 // ----------------------------------------------------------------------------
-// InverseFourierTransformInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// InverseFourierTransformInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Fourier PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -61,25 +61,24 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-InverseFourierTransformInterface* TheInverseFourierTransformInterface = 0;
+InverseFourierTransformInterface* TheInverseFourierTransformInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
 #include "InverseFourierTransformIcon.xpm"
 
 // ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
 
 InverseFourierTransformInterface::InverseFourierTransformInterface() :
-ProcessInterface(), instance( TheInverseFourierTransformProcess ), GUI( 0 )
+   instance( TheInverseFourierTransformProcess )
 {
    TheInverseFourierTransformInterface = this;
 }
 
 InverseFourierTransformInterface::~InverseFourierTransformInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString InverseFourierTransformInterface::Id() const
@@ -115,7 +114,7 @@ void InverseFourierTransformInterface::ResetInstance()
 
 bool InverseFourierTransformInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "InverseFourierTransform" );
@@ -133,15 +132,10 @@ ProcessImplementation* InverseFourierTransformInterface::NewProcess() const
 
 bool InverseFourierTransformInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const InverseFourierTransformInstance* r = dynamic_cast<const InverseFourierTransformInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not an InverseFourierTransform instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const InverseFourierTransformInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an InverseFourierTransform instance.";
+   return false;
 }
 
 bool InverseFourierTransformInterface::RequiresInstanceValidation() const
@@ -172,9 +166,7 @@ void InverseFourierTransformInterface::UpdateControls()
 void InverseFourierTransformInterface::__Click( Button& sender, bool checked )
 {
    bool firstComponent = sender == GUI->FirstComponent_ToolButton;
-
    String* id = firstComponent ? &instance.idOfFirstComponent : &instance.idOfSecondComponent;
-
    ViewSelectionDialog d( *id, false/*allowPreviews*/ );
    d.SetWindowTitle( "Select " + String( firstComponent ? "First" : "Second" ) + " DFT Component" );
    if ( d.Execute() == StdDialogCode::Ok )
@@ -196,7 +188,6 @@ void InverseFourierTransformInterface::__EditCompleted( Edit& sender )
       else if ( sender == GUI->SecondComponent_Edit )
         instance.idOfSecondComponent = id;
    }
-
    ERROR_HANDLER
 
    UpdateControls();
@@ -208,6 +199,25 @@ void InverseFourierTransformInterface::__ItemSelected( ComboBox& sender, int ite
       instance.onOutOfRangeResult = itemIndex;
 }
 
+void InverseFourierTransformInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->FirstComponent_Edit || sender == GUI->SecondComponent_Edit )
+      wantsView = view.IsMainView();
+}
+
+void InverseFourierTransformInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( view.IsMainView() )
+   {
+      if ( sender == GUI->FirstComponent_Edit )
+         GUI->FirstComponent_Edit.SetText( instance.idOfFirstComponent = view.Id() );
+      else if ( sender == GUI->SecondComponent_Edit )
+         GUI->SecondComponent_Edit.SetText( instance.idOfSecondComponent = view.Id() );
+
+      UpdateControls();
+   }
+}
+
 // ----------------------------------------------------------------------------
 
 InverseFourierTransformInterface::GUIData::GUIData( InverseFourierTransformInterface& w )
@@ -217,7 +227,7 @@ InverseFourierTransformInterface::GUIData::GUIData( InverseFourierTransformInter
 
    const char* firstComponentToolTip = "<p>First component of the discrete Fourier transform.</p>"
       "<p>The inverse transform can be computed either from complex (real and imaginary) components, "
-      "or from radial (magnitude and phase) components.</p>";
+      "or from polar (magnitude and phase) components.</p>";
 
    FirstComponent_Label.SetText( "First DFT component:" );
    FirstComponent_Label.SetFixedWidth( labelWidth1 );
@@ -227,6 +237,8 @@ InverseFourierTransformInterface::GUIData::GUIData( InverseFourierTransformInter
    FirstComponent_Edit.SetScaledMinWidth( 400 );
    FirstComponent_Edit.SetToolTip( firstComponentToolTip );
    FirstComponent_Edit.OnEditCompleted( (Edit::edit_event_handler)&InverseFourierTransformInterface::__EditCompleted, w );
+   FirstComponent_Edit.OnViewDrag( (Control::view_drag_event_handler)&InverseFourierTransformInterface::__ViewDrag, w );
+   FirstComponent_Edit.OnViewDrop( (Control::view_drop_event_handler)&InverseFourierTransformInterface::__ViewDrop, w );
 
    FirstComponent_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    FirstComponent_ToolButton.SetScaledFixedSize( 20, 20 );
@@ -238,11 +250,9 @@ InverseFourierTransformInterface::GUIData::GUIData( InverseFourierTransformInter
    FirstComponent_Sizer.Add( FirstComponent_Edit, 100 );
    FirstComponent_Sizer.Add( FirstComponent_ToolButton );
 
-   //
-
    const char* secondComponentToolTip = "<p>Second component of the discrete Fourier transform.</p>"
       "<p>The inverse transform can be computed either from complex (real and imaginary) components, "
-      "or from radial (magnitude and phase) components.</p>";
+      "or from polar (magnitude and phase) components.</p>";
 
    SecondComponent_Label.SetText( "Second DFT component:" );
    SecondComponent_Label.SetFixedWidth( labelWidth1 );
@@ -252,6 +262,8 @@ InverseFourierTransformInterface::GUIData::GUIData( InverseFourierTransformInter
    SecondComponent_Edit.SetScaledMinWidth( 400 );
    SecondComponent_Edit.SetToolTip( secondComponentToolTip );
    SecondComponent_Edit.OnEditCompleted( (Edit::edit_event_handler)&InverseFourierTransformInterface::__EditCompleted, w );
+   SecondComponent_Edit.OnViewDrag( (Control::view_drag_event_handler)&InverseFourierTransformInterface::__ViewDrag, w );
+   SecondComponent_Edit.OnViewDrop( (Control::view_drop_event_handler)&InverseFourierTransformInterface::__ViewDrop, w );
 
    SecondComponent_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    SecondComponent_ToolButton.SetScaledFixedSize( 20, 20 );
@@ -262,8 +274,6 @@ InverseFourierTransformInterface::GUIData::GUIData( InverseFourierTransformInter
    SecondComponent_Sizer.Add( SecondComponent_Label );
    SecondComponent_Sizer.Add( SecondComponent_Edit, 100 );
    SecondComponent_Sizer.Add( SecondComponent_ToolButton );
-
-   //
 
    const char* onOutOfRangeResultToolTip = "<p>Specify how to handle out-of-range results after "
       "the inverse Fourier transform.</p>"
@@ -295,8 +305,6 @@ InverseFourierTransformInterface::GUIData::GUIData( InverseFourierTransformInter
    OnOutOfRangeResult_Sizer.Add( OnOutOfRangeResult_ComboBox );
    OnOutOfRangeResult_Sizer.AddStretch();
 
-   //
-
    Global_Sizer.SetMargin( 8 );
    Global_Sizer.SetSpacing( 6 );
    Global_Sizer.Add( FirstComponent_Sizer );
@@ -313,4 +321,4 @@ InverseFourierTransformInterface::GUIData::GUIData( InverseFourierTransformInter
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF InverseFourierTransformInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF InverseFourierTransformInterface.cpp - Released 2017-04-14T23:07:12Z

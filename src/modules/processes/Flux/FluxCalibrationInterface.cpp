@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Flux Process Module Version 01.00.01.0135
+// Standard Flux Process Module Version 01.00.01.0144
 // ----------------------------------------------------------------------------
-// FluxCalibrationInterface.cpp - Released 2016/03/14 10:07:00 UTC
+// FluxCalibrationInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Flux PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,7 +59,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-FluxCalibrationInterface* TheFluxCalibrationInterface = 0;
+FluxCalibrationInterface* TheFluxCalibrationInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -74,15 +74,15 @@ int FluxCalibrationInterface::CalibrationParameter::m_keywordEditWidth;
 // ----------------------------------------------------------------------------
 
 FluxCalibrationInterface::FluxCalibrationInterface() :
-ProcessInterface(), instance( TheFluxCalibrationProcess ), GUI( 0 )
+   instance( TheFluxCalibrationProcess )
 {
    TheFluxCalibrationInterface = this;
 }
 
 FluxCalibrationInterface::~FluxCalibrationInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString FluxCalibrationInterface::Id() const
@@ -113,8 +113,7 @@ void FluxCalibrationInterface::ResetInstance()
 
 bool FluxCalibrationInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "FluxCalibration" );
@@ -132,15 +131,10 @@ ProcessImplementation* FluxCalibrationInterface::NewProcess() const
 
 bool FluxCalibrationInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const FluxCalibrationInstance* r = dynamic_cast<const FluxCalibrationInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not a FluxCalibration instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const FluxCalibrationInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a FluxCalibration instance.";
+   return false;
 }
 
 bool FluxCalibrationInterface::RequiresInstanceValidation() const
@@ -183,7 +177,6 @@ FluxCalibrationInterface::GUIData::GUIData( FluxCalibrationInterface& w )
    FluxCalibrationInterface::CalibrationParameter::m_keywordEditWidth =
          fnt.Width( String( 'M', 10 ) );
 
-   //
    Wavelength_Parameter.Build(            w.instance.p_wavelength,            "Wavelength (nm):",
       "<p>Effective filter wavelenth in nm (mandatory parameter).</p>",    true /* required parameter */ );
 
@@ -211,8 +204,6 @@ FluxCalibrationInterface::GUIData::GUIData( FluxCalibrationInterface& w )
    QuantumEfficiency_Parameter.Build(     w.instance.p_quantumEfficiency,     "Quantum efficiency:",
       "<p>Sensor quantum efficiency in the range [0,1[.</p>"                                             );
 
-   //
-
    Global_Sizer.SetMargin( 8 );
    Global_Sizer.SetSpacing( 6 );
 
@@ -236,4 +227,4 @@ FluxCalibrationInterface::GUIData::GUIData( FluxCalibrationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FluxCalibrationInterface.cpp - Released 2016/03/14 10:07:00 UTC
+// EOF FluxCalibrationInterface.cpp - Released 2017-04-14T23:07:12Z

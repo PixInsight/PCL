@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0355
+// Standard IntensityTransformations Process Module Version 01.07.01.0364
 // ----------------------------------------------------------------------------
-// ScreenTransferFunctionInterface.h - Released 2016/02/21 20:22:43 UTC
+// ScreenTransferFunctionInterface.h - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -67,9 +67,9 @@
 namespace pcl
 {
 
-class STFAutoStretchDialog;
-
 // ----------------------------------------------------------------------------
+
+class STFAutoStretchDialog;
 
 class ScreenTransferFunctionInterface : public ProcessInterface
 {
@@ -133,7 +133,7 @@ private:
    working_mode                   m_mode;
    readout_mode                   m_readoutMode;
    bool                           m_rgbLinked : 1;
-   STFAutoStretchDialog*          m_autoAdjustDialog;
+   STFAutoStretchDialog*          m_autoAdjustDialog = nullptr;
 
    PCL_CLASS_REENTRANCY_GUARD
 
@@ -160,7 +160,7 @@ private:
             ToolButton        STFEnabled_ToolButton;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateTitle( const View& );
    void UpdateControls();
@@ -181,6 +181,9 @@ private:
    void __STFAutoStretch_MouseRelease( Control& sender, const pcl::Point& pos,
                                        int button, unsigned buttons, unsigned modifiers );
 
+   void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
+   void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
+
    friend struct GUIData;
 };
 
@@ -197,4 +200,4 @@ PCL_END_LOCAL
 #endif   // __ScreenTransferFunctionInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF ScreenTransferFunctionInterface.h - Released 2016/02/21 20:22:43 UTC
+// EOF ScreenTransferFunctionInterface.h - Released 2017-04-14T23:07:12Z

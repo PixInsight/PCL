@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard FITS File Format Module Version 01.01.04.0359
+// Standard FITS File Format Module Version 01.01.05.0371
 // ----------------------------------------------------------------------------
-// FITSModule.h - Released 2016/12/27 17:12:52 UTC
+// FITSModule.h - Released 2017-04-14T23:07:03Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -84,4 +84,4 @@ public:
 #endif   // __FITSModule_h
 
 // ----------------------------------------------------------------------------
-// EOF FITSModule.h - Released 2016/12/27 17:12:52 UTC
+// EOF FITSModule.h - Released 2017-04-14T23:07:03Z

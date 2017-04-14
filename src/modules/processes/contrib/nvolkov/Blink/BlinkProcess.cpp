@@ -2,16 +2,16 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Blink Process Module Version 01.02.02.0225
+// Standard Blink Process Module Version 01.02.02.0234
 // ----------------------------------------------------------------------------
-// BlinkProcess.cpp - Released 2016/04/11 10:12:47 UTC
+// BlinkProcess.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Blink PixInsight module.
 //
-// Copyright (c) 2011-2016 Nikolay Volkov
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2017 Nikolay Volkov
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -124,4 +124,4 @@ bool BlinkProcess::IsAssignable() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BlinkProcess.cpp - Released 2016/04/11 10:12:47 UTC
+// EOF BlinkProcess.cpp - Released 2017-04-14T23:07:12Z

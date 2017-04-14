@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Convolution Process Module Version 01.01.03.0207
+// Standard Convolution Process Module Version 01.01.03.0216
 // ----------------------------------------------------------------------------
-// UnsharpMaskInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// UnsharpMaskInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Convolution PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -61,7 +61,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-UnsharpMaskInterface* TheUnsharpMaskInterface = 0;
+UnsharpMaskInterface* TheUnsharpMaskInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -75,8 +75,7 @@ enum { ToCIEL, ToCIEY, ToRGB };
 // ----------------------------------------------------------------------------
 
 UnsharpMaskInterface::UnsharpMaskInterface() :
-ProcessInterface(),
-instance( TheUnsharpMaskProcess ), m_realTimeThread( 0 ), GUI( 0 )
+   instance( TheUnsharpMaskProcess )
 {
    TheUnsharpMaskInterface = this;
 }
@@ -85,8 +84,8 @@ instance( TheUnsharpMaskProcess ), m_realTimeThread( 0 ), GUI( 0 )
 
 UnsharpMaskInterface::~UnsharpMaskInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -128,7 +127,7 @@ void UnsharpMaskInterface::ApplyInstance() const
 
 void UnsharpMaskInterface::RealTimePreviewUpdated( bool active )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( active )
          RealTimePreview::SetOwner( *this ); // implicitly updates the r-t preview
       else
@@ -147,7 +146,7 @@ void UnsharpMaskInterface::ResetInstance()
 
 bool UnsharpMaskInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "UnsharpMask" );
@@ -169,15 +168,10 @@ ProcessImplementation* UnsharpMaskInterface::NewProcess() const
 
 bool UnsharpMaskInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const UnsharpMaskInstance* r = dynamic_cast<const UnsharpMaskInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not an UnsharpMask instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const UnsharpMaskInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an UnsharpMask instance.";
+   return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -207,12 +201,11 @@ bool UnsharpMaskInterface::RequiresRealTimePreviewUpdate( const UInt16Image&, co
 // ----------------------------------------------------------------------------
 
 UnsharpMaskInterface::RealTimeThread::RealTimeThread() :
-Thread(), m_instance( TheUnsharpMaskProcess )
+   m_instance( TheUnsharpMaskProcess )
 {
 }
 
-void UnsharpMaskInterface::RealTimeThread::Reset( const UInt16Image& image,
-                                                  const UnsharpMaskInstance& instance )
+void UnsharpMaskInterface::RealTimeThread::Reset( const UInt16Image& image, const UnsharpMaskInstance& instance )
 {
    image.ResetSelections();
    m_image.Assign( image );
@@ -247,7 +240,7 @@ bool UnsharpMaskInterface::GenerateRealTimePreview( UInt16Image& image, const Vi
             m_realTimeThread->Wait();
 
             delete m_realTimeThread;
-            m_realTimeThread = 0;
+            m_realTimeThread = nullptr;
             return false;
          }
       }
@@ -257,7 +250,7 @@ bool UnsharpMaskInterface::GenerateRealTimePreview( UInt16Image& image, const Vi
          image.Assign( m_realTimeThread->m_image );
 
          delete m_realTimeThread;
-         m_realTimeThread = 0;
+         m_realTimeThread = nullptr;
          return true;
       }
    }
@@ -317,7 +310,7 @@ void UnsharpMaskInterface::UpdateRealTimePreview()
 {
    if ( IsRealTimePreviewActive() )
    {
-      if ( m_realTimeThread != 0 )
+      if ( m_realTimeThread != nullptr )
          m_realTimeThread->Abort();
       GUI->UpdateRealTimePreview_Timer.Start();
    }
@@ -414,7 +407,7 @@ void UnsharpMaskInterface::__Range_ValueUpdated( NumericEdit& sender, double val
 
 void UnsharpMaskInterface::__UpdateRealTimePreview_Timer( Timer& sender )
 {
-   if ( m_realTimeThread != 0 )
+   if ( m_realTimeThread != nullptr )
       if ( m_realTimeThread->IsActive() )
          return;
 
@@ -625,4 +618,4 @@ UnsharpMaskInterface::GUIData::GUIData( UnsharpMaskInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF UnsharpMaskInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF UnsharpMaskInterface.cpp - Released 2017-04-14T23:07:12Z

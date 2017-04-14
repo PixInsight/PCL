@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0328
+// Standard Global Process Module Version 01.02.07.0337
 // ----------------------------------------------------------------------------
-// ReadoutOptionsInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// ReadoutOptionsInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,7 +58,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ReadoutOptionsInterface* TheReadoutOptionsInterface = 0;
+ReadoutOptionsInterface* TheReadoutOptionsInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -67,7 +67,7 @@ ReadoutOptionsInterface* TheReadoutOptionsInterface = 0;
 // ----------------------------------------------------------------------------
 
 ReadoutOptionsInterface::ReadoutOptionsInterface() :
-ProcessInterface(), instance( TheReadoutOptionsProcess ), GUI( 0 )
+   instance( TheReadoutOptionsProcess )
 {
    TheReadoutOptionsInterface = this;
 }
@@ -76,8 +76,8 @@ ProcessInterface(), instance( TheReadoutOptionsProcess ), GUI( 0 )
 
 ReadoutOptionsInterface::~ReadoutOptionsInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -127,8 +127,7 @@ void ReadoutOptionsInterface::ResetInstance()
 
 bool ReadoutOptionsInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "ReadoutOptions" );
@@ -150,16 +149,10 @@ ProcessImplementation* ReadoutOptionsInterface::NewProcess() const
 
 bool ReadoutOptionsInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const ReadoutOptionsInstance* r = dynamic_cast<const ReadoutOptionsInstance*>( &p );
-
-   if ( r == 0 )
-   {
-      whyNot = "Not a ReadoutOptions instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const ReadoutOptionsInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a ReadoutOptions instance.";
+   return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -659,7 +652,7 @@ ReadoutOptionsInterface::GUIData::GUIData( ReadoutOptionsInterface& w )
 
    //
 
-   LoadCurrentOptions_PushButton.SetText( "  Load Current Readout Options  " );
+   LoadCurrentOptions_PushButton.SetText( "Load Current Readout Options" );
    LoadCurrentOptions_PushButton.OnClick( (Button::click_event_handler)&ReadoutOptionsInterface::__ButtonClick, w );
 
    LoadCurrentOptions_Sizer.AddStretch();
@@ -693,4 +686,4 @@ ReadoutOptionsInterface::GUIData::GUIData( ReadoutOptionsInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ReadoutOptionsInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF ReadoutOptionsInterface.cpp - Released 2017-04-14T23:07:12Z

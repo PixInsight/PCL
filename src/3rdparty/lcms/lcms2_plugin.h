@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------------
 //
 //  Little Color Management System
-//  Copyright (c) 1998-2011 Marti Maria Saguer
+//  Copyright (c) 1998-2016 Marti Maria Saguer
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -128,7 +128,7 @@ struct _cms_io_handler {
                                                                    const void* Buffer);
 };
 
-// Endianess adjust functions
+// Endianness adjust functions
 CMSAPI cmsUInt16Number   CMSEXPORT  _cmsAdjustEndianess16(cmsUInt16Number Word);
 CMSAPI cmsUInt32Number   CMSEXPORT  _cmsAdjustEndianess32(cmsUInt32Number Value);
 CMSAPI void              CMSEXPORT  _cmsAdjustEndianess64(cmsUInt64Number* Result, cmsUInt64Number* QWord);
@@ -318,7 +318,7 @@ typedef struct {
 
 // Parametric curves. A negative type means same function but analytically inverted. Max. number of params is 10
 
-// Evaluator callback for user-suplied parametric curves. May implement more than one type
+// Evaluator callback for user-supplied parametric curves. May implement more than one type
 typedef  cmsFloat64Number (* cmsParametricCurveEvaluator)(cmsInt32Number Type, const cmsFloat64Number Params[10], cmsFloat64Number R);
 
 // Plug-in may implement an arbitrary number of parametric curves
@@ -342,8 +342,8 @@ struct _cmstransform_struct;
 
 typedef cmsUInt8Number* (* cmsFormatter16)(register struct _cmstransform_struct* CMMcargo,
                                            register cmsUInt16Number Values[],
-                                           register cmsUInt8Number*  Buffer,
-                                           register cmsUInt32Number  Stride);
+                                           register cmsUInt8Number* Buffer,
+                                           register cmsUInt32Number Stride);
 
 typedef cmsUInt8Number* (* cmsFormatterFloat)(struct _cmstransform_struct* CMMcargo,
                                               cmsFloat32Number Values[],
@@ -428,7 +428,7 @@ typedef struct {
     cmsUInt32Number     nSupportedTypes;    // In how many types this tag can come (MAX_TYPES_IN_LCMS_PLUGIN maximum)
     cmsTagTypeSignature SupportedTypes[MAX_TYPES_IN_LCMS_PLUGIN];
 
-    // For writting
+    // For writing
     cmsTagTypeSignature (* DecideType)(cmsFloat64Number ICCVersion, const void *Data);
 
 } cmsTagDescriptor;
@@ -571,13 +571,38 @@ typedef struct {
 
 //----------------------------------------------------------------------------------------------------------
 // Full xform
-typedef void     (* _cmsTransformFn)(struct _cmstransform_struct *CMMcargo,
+
+typedef struct {
+       cmsUInt32Number BytesPerLineIn;
+       cmsUInt32Number BytesPerLineOut;
+       cmsUInt32Number BytesPerPlaneIn;
+       cmsUInt32Number BytesPerPlaneOut;
+
+} cmsStride;
+
+typedef void     (* _cmsTransformFn)(struct _cmstransform_struct *CMMcargo,   // Legacy function, handles just ONE scanline.
                                      const void* InputBuffer,
                                      void* OutputBuffer,
                                      cmsUInt32Number Size,
-                                     cmsUInt32Number Stride);
+                                     cmsUInt32Number Stride);                 // Stride in bytes to the next plana in planar formats
+
+
+typedef void     (*_cmsTransform2Fn)(struct _cmstransform_struct *CMMcargo,
+                                     const void* InputBuffer,
+                                     void* OutputBuffer,
+                                     cmsUInt32Number PixelsPerLine,     
+                                     cmsUInt32Number LineCount,          
+                                     const cmsStride* Stride);  
 
 typedef cmsBool  (* _cmsTransformFactory)(_cmsTransformFn* xform,
+                                         void** UserData,
+                                         _cmsFreeUserDataFn* FreePrivateDataFn,
+                                         cmsPipeline** Lut,
+                                         cmsUInt32Number* InputFormat,
+                                         cmsUInt32Number* OutputFormat,
+                                         cmsUInt32Number* dwFlags);
+
+typedef cmsBool  (* _cmsTransform2Factory)(_cmsTransform2Fn* xform,
                                          void** UserData,
                                          _cmsFreeUserDataFn* FreePrivateDataFn,
                                          cmsPipeline** Lut,
@@ -599,7 +624,10 @@ typedef struct {
       cmsPluginBase     base;
 
       // Transform entry point
-      _cmsTransformFactory  Factory;
+      union {
+             _cmsTransformFactory        legacy_xform;
+             _cmsTransform2Factory       xform;
+      } factories;
 
 }  cmsPluginTransform;
 

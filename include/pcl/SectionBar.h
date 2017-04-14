@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/SectionBar.h - Released 2016/02/21 20:22:12 UTC
+// pcl/SectionBar.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -49,34 +49,18 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#ifndef PCL_SectionBar_h
-#define PCL_SectionBar_h
+#ifndef __PCL_SectionBar_h
+#define __PCL_SectionBar_h
 
 /// \file pcl/SectionBar.h
 
-#ifndef PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef PCL_Control_h
-#include <pcl/Control.h>
-#endif
-
-#ifndef PCL_Sizer_h
-#include <pcl/Sizer.h>
-#endif
-
-#ifndef PCL_Label_h
-#include <pcl/Label.h>
-#endif
-
-#ifndef PCL_ToolButton_h
-#include <pcl/ToolButton.h>
-#endif
-
-#ifndef PCL_CheckBox_h
 #include <pcl/CheckBox.h>
-#endif
+#include <pcl/Control.h>
+#include <pcl/Label.h>
+#include <pcl/Sizer.h>
+#include <pcl/ToolButton.h>
 
 namespace pcl
 {
@@ -92,11 +76,11 @@ namespace pcl
  * and dialogs. It includes a <em>section title</em> label and an icon that
  * represents the current collapsed/extended state.
  *
- * When a %SectionBar control is clicked, it toggles the visibility of a
+ * When a %SectionBar control is clicked, it toggles visibility of a
  * <em>section control</em> and adjusts the height of the top-level parent
- * window to fit to its new contents. %SectionBar is extremely useful to
- * organize complex user interfaces and is extensively used by most standard
- * processing interfaces in PixInsight.
+ * window to fit to its new contents. %SectionBar is useful to organize complex
+ * user interfaces and is extensively used by most standard process interfaces
+ * in PixInsight.
  *
  * \sa ProcessInterface, Dialog
  */
@@ -232,7 +216,7 @@ public:
    }
 
    /*!
-    * Returns true iff this SectionBar object is enabled.
+    * Returns true iff this %SectionBar object is enabled.
     *
     * \sa Enable()
     */
@@ -242,7 +226,7 @@ public:
    }
 
    /*!
-    * Enables (or disables) this SectionBar object.
+    * Enables (or disables) this %SectionBar object.
     *
     * When a SectionBar object is disabled, its section control is also
     * disabled, and in case it has a title checkbox, it is also disabled.
@@ -252,6 +236,35 @@ public:
     * \sa IsEnabled()
     */
    virtual void Enable( bool enabled = true );
+
+   /*!
+    * Shows or hides the section control managed by this %SectionBar.
+    *
+    * In general, this function should be used instead of simply calling
+    * Control::SetVisible() (or Control::Show()/Control::Hide()). This function
+    * ensures that the parent control (typically a process interface)
+    * regenerates its layout correctly after changing visibility of the section
+    * control.
+    *
+    * \sa ShowSection(), HideSection()
+    */
+   void SetSectionVisible( bool visible = true );
+
+   /*!
+    * A convenient synonym for SetSectionVisible( true ).
+    */
+   void ShowSection()
+   {
+      SetSectionVisible( true );
+   }
+
+   /*!
+    * A convenient synonym for SetSectionVisible( false ).
+    */
+   void HideSection()
+   {
+      SetSectionVisible( false );
+   }
 
    // -------------------------------------------------------------------------
    // Event handlers
@@ -342,7 +355,7 @@ private:
    };
 
    AutoPointer<EventHandlers> m_handlers;
-   Control*                   m_section;
+   Control*                   m_section = nullptr;
 
    VerticalSizer         Global_Sizer;
       HorizontalSizer       Title_Sizer;
@@ -360,7 +373,7 @@ private:
 
 } // pcl
 
-#endif   // PCL_SectionBar_h
+#endif   // __PCL_SectionBar_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/SectionBar.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/SectionBar.h - Released 2017-04-14T23:04:40Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/GaussianFilter.h - Released 2016/02/21 20:22:12 UTC
+// pcl/GaussianFilter.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/GaussianFilter.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Math_h
-#include <pcl/Math.h>
-#endif
-
-#ifndef __PCL_KernelFilter_h
 #include <pcl/KernelFilter.h>
-#endif
+#include <pcl/Math.h>
 
 namespace pcl
 {
@@ -73,7 +66,8 @@ namespace pcl
 
 /*!
  * \class GaussianFilter
- * \brief A kernel filter implementing a discrete Gaussian distribution in two dimensions.
+ * \brief A kernel filter implementing a discrete Gaussian distribution in two
+ * dimensions.
  *
  * A %GaussianFilter object is a specialized KernelFilter whose elements are
  * calculated as a discrete representation of an elliptical Gaussian function
@@ -447,7 +441,7 @@ private:
       m_epsilon = Abs( e );
       m_rho = Range( r, 0.0F, 1.0F );
       m_theta = Range( a, 0.0F, Const<float>::pi() );
-      KernelFilter::Resize( 1 + (Max( 1, RoundI( m_sigma * Sqrt( -2*Ln( m_epsilon ) ) ) ) << 1) );
+      KernelFilter::Resize( 1 + (Max( 1, RoundInt( m_sigma * Sqrt( -2*Ln( m_epsilon ) ) ) ) << 1) );
       Rebuild();
    }
 
@@ -516,4 +510,4 @@ private:
 #endif   // __PCL_GaussianFilter_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/GaussianFilter.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/GaussianFilter.h - Released 2017-04-14T23:04:40Z

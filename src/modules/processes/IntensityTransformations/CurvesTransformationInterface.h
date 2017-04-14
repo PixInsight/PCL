@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0355
+// Standard IntensityTransformations Process Module Version 01.07.01.0364
 // ----------------------------------------------------------------------------
-// CurvesTransformationInterface.h - Released 2016/02/21 20:22:43 UTC
+// CurvesTransformationInterface.h - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -192,7 +192,6 @@ private:
    /*
     * Workbench
     */
-
    typedef Histogram::count_type       count_type;
    typedef Histogram::histogram_type   histogram_type;
    typedef Array<Histogram>            histogram_list;
@@ -246,7 +245,6 @@ private:
    /*
     * Current curve point
     */
-
    size_type CurrentPoint() const
    {
       return m_currentPoint[m_channel];
@@ -270,7 +268,6 @@ private:
    /*
     * Curve point mutators
     */
-
    size_type FindPoint( int c, double x, double y, int tolerancePx = 0 ) const;
 
    size_type FindPoint( int c, const DPoint& p, int tolerancePx = 0 ) const
@@ -347,7 +344,6 @@ private:
    /*
     * GUI Event Handlers
     */
-
    void __Curve_Paint( Control& sender, const pcl::Rect& updateRect );
    void __Curve_Resize( Control& sender, int newWidth, int newHeight, int oldWidth, int oldHeight );
    void __Curve_ScrollPosUpdated( ScrollBox& sender, int pos );
@@ -358,9 +354,7 @@ private:
    void __Curve_MouseMove( Control& sender, const pcl::Point& pos, unsigned buttons, unsigned modifiers );
    void __Curve_MouseWheel( Control& sender, const pcl::Point& pos, int delta, unsigned buttons, unsigned modifiers );
    void __Curve_KeyPress( Control& sender, int key, unsigned modifiers, bool& wantsKey );
-
    void __CurveParameter_ValueUpdated( NumericEdit& sender, double value );
-
    void __Mode_ButtonClick( Button&, bool );
    void __Channel_ButtonClick( Button&, bool );
    void __Zoom_ButtonClick( Button&, bool );
@@ -372,12 +366,9 @@ private:
    void __RestoreCurve_ButtonClick( Button&, bool );
    void __ReverseCurve_ButtonClick( Button&, bool );
    void __ResetCurve_ButtonClick( Button&, bool );
-
    void __Zoom_ValueUpdated( SpinBox& sender, int value );
-
    void __KeyPress( Control& sender, int key, unsigned modifiers, bool& wantsKey );
    void __KeyRelease( Control& sender, int key, unsigned modifiers, bool& wantsKey );
-
    void __UpdateRealTimePreview_Timer( Timer& );
 
    friend struct GUIData;
@@ -397,4 +388,4 @@ PCL_END_LOCAL
 #endif   // __CurvesTransformationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF CurvesTransformationInterface.h - Released 2016/02/21 20:22:43 UTC
+// EOF CurvesTransformationInterface.h - Released 2017-04-14T23:07:12Z

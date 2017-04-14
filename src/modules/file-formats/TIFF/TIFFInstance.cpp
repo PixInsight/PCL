@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard TIFF File Format Module Version 01.00.06.0294
+// Standard TIFF File Format Module Version 01.00.07.0307
 // ----------------------------------------------------------------------------
-// TIFFInstance.cpp - Released 2016/02/21 20:22:34 UTC
+// TIFFInstance.cpp - Released 2017-04-14T23:07:03Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard TIFF PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -71,8 +71,8 @@ public:
    double                            lowerRange;
    double                            upperRange;
    TIFFFormat::out_of_range_fix_mode outOfRangeFixMode;
-   bool                              strictMode;
-   bool                              showWarnings;
+   int                               verbosity;
+
 
    TIFFReadHints( const IsoString& hints )
    {
@@ -80,9 +80,7 @@ public:
       lowerRange = options.lowerRange;
       upperRange = options.upperRange;
       outOfRangeFixMode = options.outOfRangeFixMode;
-
-      strictMode = false;
-      showWarnings = false;
+      verbosity = 1;
 
       IsoStringList theHints;
       hints.Break( theHints, ' ', true/*trim*/ );
@@ -107,14 +105,14 @@ public:
             outOfRangeFixMode = TIFFFormat::OutOfRangeFix_Truncate;
          else if ( *i == "ignore-out-of-range" )
             outOfRangeFixMode = TIFFFormat::OutOfRangeFix_Ignore;
-         else if ( *i == "strict" )
-            strictMode = true;
-         else if ( *i == "permissive" )
-            strictMode = false;
-         else if ( *i == "show-warnings" )
-            showWarnings = true;
-         else if ( *i == "no-show-warnings" )
-            showWarnings = false;
+         else if ( *i == "verbosity" )
+         {
+            if ( ++i == theHints.End() )
+               break;
+            int n;
+            if ( i->TryToInt( n ) )
+               verbosity = Range( n, 0, 3 );
+         }
       }
    }
 };
@@ -123,14 +121,24 @@ public:
 // ----------------------------------------------------------------------------
 
 TIFFInstance::TIFFInstance( const TIFFFormat* f ) :
-FileFormatImplementation( f ), reader( 0 ), writer( 0 ), readHints( 0 ),
-queriedOptions( false ), embeddedICCProfile( 0 )
+   FileFormatImplementation( f )
 {
 }
+
+// ----------------------------------------------------------------------------
 
 TIFFInstance::~TIFFInstance()
 {
    Close();
+}
+
+// ----------------------------------------------------------------------------
+
+template <class S>
+static void CheckOpenStream( const S& stream, const String& memberFunc )
+{
+   if ( !stream || !stream->IsOpen() )
+      throw Error( "TIFFInstance::" + memberFunc + "(): Illegal request on a closed stream." );
 }
 
 // ----------------------------------------------------------------------------
@@ -141,34 +149,23 @@ ImageDescriptionArray TIFFInstance::Open( const String& filePath, const IsoStrin
 
    try
    {
-      if ( !hints.IsEmpty() )
-      {
-         readHints = new TIFFReadHints( hints );
-         TIFF::SetStrictMode( readHints->strictMode );
-         TIFF::EnableWarnings( readHints->showWarnings );
-      }
-      else
-      {
-         TIFF::SetStrictMode( false );
-         TIFF::EnableWarnings( false );
-      }
-
       Exception::EnableConsoleOutput();
 
-      reader = new TIFFReader;
-      reader->Open( filePath );
+      TIFFImageOptions tiffOptions = TIFFFormat::DefaultOptions();
+      if ( !hints.IsEmpty() )
+      {
+         m_readHints = new TIFFReadHints( hints );
+         tiffOptions.verbosity = m_readHints->verbosity;
+      }
 
-      ImageDescriptionArray a;
-      a.Add( ImageDescription( reader->Info(), reader->Options() ) );
-      return a;
+      m_reader = new TIFFReader;
+      m_reader->SetTIFFOptions( tiffOptions );
+      m_reader->Open( filePath );
+      return ImageDescriptionArray() << ImageDescription( m_reader->Info(), m_reader->Options() );
    }
-
    catch ( ... )
    {
-      if ( reader != 0 )
-         delete reader, reader = 0;
-      if ( readHints != 0 )
-         delete readHints, readHints = 0;
+      Close();
       throw;
    }
 }
@@ -177,17 +174,17 @@ ImageDescriptionArray TIFFInstance::Open( const String& filePath, const IsoStrin
 
 bool TIFFInstance::IsOpen() const
 {
-   return reader != 0 && reader->IsOpen() || writer != 0 && writer->IsOpen();
+   return m_reader && m_reader->IsOpen() || m_writer && m_writer->IsOpen();
 }
 
 // ----------------------------------------------------------------------------
 
 String TIFFInstance::FilePath() const
 {
-   if ( reader != 0 )
-      return reader->Path();
-   if ( writer != 0 )
-      return writer->Path();
+   if ( m_reader )
+      return m_reader->Path();
+   if ( m_writer )
+      return m_writer->Path();
    return String();
 }
 
@@ -195,14 +192,10 @@ String TIFFInstance::FilePath() const
 
 void TIFFInstance::Close()
 {
-   if ( reader != 0 )
-      delete reader, reader = 0;
-   if ( writer != 0 )
-      delete writer, writer = 0;
-   if ( readHints != 0 )
-      delete readHints, readHints = 0;
-   if ( embeddedICCProfile != 0 )
-      delete embeddedICCProfile, embeddedICCProfile = 0;
+   m_reader.Destroy();
+   m_writer.Destroy();
+   m_readHints.Destroy();
+   m_queriedOptions = false;
 }
 
 // ----------------------------------------------------------------------------
@@ -210,28 +203,27 @@ void TIFFInstance::Close()
 void* TIFFInstance::FormatSpecificData() const
 {
    if ( !IsOpen() )
-      return 0;
+      return nullptr;
 
    TIFFFormat::FormatOptions* data = new TIFFFormat::FormatOptions;
-   if ( reader != 0 )
-      data->options = reader->TIFFOptions();
-   else if ( writer != 0 )
-      data->options = writer->TIFFOptions();
+   if ( m_reader )
+      data->options = m_reader->TIFFOptions();
+   else if ( m_writer )
+      data->options = m_writer->TIFFOptions();
    return data;
 }
 
 // ----------------------------------------------------------------------------
 
-String TIFFInstance::ImageProperties() const
+String TIFFInstance::ImageFormatInfo() const
 {
-   if ( !IsOpen() )
-      return String();
-
    TIFFImageOptions options;
-   if ( reader != 0 )
-      options = reader->TIFFOptions();
-   else if ( writer != 0 )
-      options = writer->TIFFOptions();
+   if ( m_reader )
+      options = m_reader->TIFFOptions();
+   else if ( m_writer )
+      options = m_writer->TIFFOptions();
+   else
+      return String();
 
    const char* cmp;
    switch ( options.compression )
@@ -259,25 +251,20 @@ String TIFFInstance::ImageProperties() const
 
 // ----------------------------------------------------------------------------
 
-void TIFFInstance::Extract( ICCProfile& icc )
+ICCProfile TIFFInstance::ReadICCProfile()
 {
-   if ( !IsOpen() )
-      throw Error( "TIFF format: Attempt to extract an ICC profile without opening or creating a file" );
-
-   if ( reader != 0 )
-   {
-      reader->Extract( icc );
-      if ( icc.IsProfile() )
-         Console().WriteLn( "<end><cbr>ICC profile extracted: \'" + icc.Description() + "\', " + String( icc.ProfileSize() ) + " bytes" );
-   }
-   else if ( writer->EmbeddedICCProfile() != 0 )
-      icc = *writer->EmbeddedICCProfile();
+   CheckOpenStream( m_reader, "ReadICCProfile" );
+   ICCProfile icc = m_reader->ReadICCProfile();
+   if ( icc.IsProfile() )
+      if ( m_reader->TIFFOptions().verbosity > 0 )
+         Console().WriteLn( "<end><cbr>ICC profile extracted: \'" + icc.Description() + "\', " + String( icc.ProfileSize() ) + " bytes." );
+   return icc;
 }
 
 // ----------------------------------------------------------------------------
 
 template <class P>
-static bool __ApplyOutOfRangePolicy( GenericImage<P>& image, const TIFFReadHints* readHints )
+static bool ApplyOutOfRangePolicy( GenericImage<P>& image, const TIFFReadHints* readHints )
 {
    /*
     * Replace NaNs and infinities with zeros.
@@ -300,7 +287,7 @@ static bool __ApplyOutOfRangePolicy( GenericImage<P>& image, const TIFFReadHints
    }
 
    TIFFFormat::OutOfRangePolicyOptions options = TIFFFormat::DefaultOutOfRangePolicyOptions();
-   if ( readHints )
+   if ( readHints != nullptr )
    {
       options.lowerRange = readHints->lowerRange;
       options.upperRange = readHints->upperRange;
@@ -349,16 +336,24 @@ static bool __ApplyOutOfRangePolicy( GenericImage<P>& image, const TIFFReadHints
       }
    }
 
+   bool verbose = readHints == nullptr || readHints->verbosity > 0;
+
    if ( options.outOfRangeFixMode != TIFFFormat::OutOfRangeFix_Ignore )
    {
       double delta = options.upperRange - options.lowerRange;
 
+      StatusMonitor monitor;
+      StandardStatus status;
+      if ( verbose )
+         monitor.SetCallback( &status );
+
       if ( mn < options.lowerRange || mx > options.upperRange )
       {
-         image.Status().Initialize( String().Format( "%s sample values: [%.15g,%.15g] -> [%.15g,%.15g]",
-                        (options.outOfRangeFixMode == TIFFFormat::OutOfRangeFix_Truncate) ? "Truncating" : "Rescaling",
-                        mn, mx,
-                        options.lowerRange, options.upperRange ), image.NumberOfSamples() );
+         if ( verbose )
+            monitor.Initialize( String().Format( "%s sample values: [%.15g,%.15g] -> [%.15g,%.15g]",
+                  (options.outOfRangeFixMode == TIFFFormat::OutOfRangeFix_Truncate) ? "Truncating" : "Rescaling",
+                  mn, mx,
+                  options.lowerRange, options.upperRange ), image.NumberOfSamples() );
 
          double idelta = mx - mn;
          for ( int c = 0; c < image.NumberOfChannels(); ++c )
@@ -366,72 +361,98 @@ static bool __ApplyOutOfRangePolicy( GenericImage<P>& image, const TIFFReadHints
             {
             default: // ?!
             case TIFFFormat::OutOfRangeFix_Truncate:
-               for ( typename GenericImage<P>::sample_iterator i( image, c ); i; ++i, ++image.Status() )
+               for ( typename GenericImage<P>::sample_iterator i( image, c ); i; ++i )
+               {
                   if ( *i < options.lowerRange )
                      *i = options.lowerRange;
                   else if ( *i > options.upperRange )
                      *i = options.upperRange;
+                  if ( verbose )
+                     ++monitor;
+               }
                break;
             case TIFFFormat::OutOfRangeFix_Rescale:
                if ( delta != 1 || options.lowerRange != 0 )
-                  for ( typename GenericImage<P>::sample_iterator i( image, c ); i; ++i, ++image.Status() )
+                  for ( typename GenericImage<P>::sample_iterator i( image, c ); i; ++i )
+                  {
                      *i = ((*i - mn)/idelta)*delta + options.lowerRange;
+                     if ( verbose )
+                        ++monitor;
+                  }
                else
-                  for ( typename GenericImage<P>::sample_iterator i( image, c ); i; ++i, ++image.Status() )
+                  for ( typename GenericImage<P>::sample_iterator i( image, c ); i; ++i )
+                  {
                      *i = Range( (*i - mn)/idelta, 0.0, 1.0 );
+                     if ( verbose )
+                        ++monitor;
+                  }
                break;
             }
       }
 
       if ( options.lowerRange != 0 || options.upperRange != 1 )
       {
-         image.Status().Initialize( "Normalizing sample values", image.NumberOfSamples() );
+         if ( verbose )
+            monitor.Initialize( "Normalizing sample values", image.NumberOfSamples() );
 
          for ( int c = 0; c < image.NumberOfChannels(); ++c )
             if ( delta != 1 )
             {
                if ( options.lowerRange != 0 )
-                  for ( typename GenericImage<P>::sample_iterator i( image, c ); i; ++i, ++image.Status() )
+                  for ( typename GenericImage<P>::sample_iterator i( image, c ); i; ++i )
+                  {
                      *i = Range( (*i - options.lowerRange)/delta, 0.0, 1.0 );
+                     if ( verbose )
+                        ++monitor;
+                  }
                else
-                  for ( typename GenericImage<P>::sample_iterator i( image, c ); i; ++i, ++image.Status() )
+                  for ( typename GenericImage<P>::sample_iterator i( image, c ); i; ++i )
+                  {
                      *i = Range( *i/delta, 0.0, 1.0 );
+                     if ( verbose )
+                        ++monitor;
+                  }
             }
             else
             {
-               for ( typename GenericImage<P>::sample_iterator i( image, c ); i; ++i, ++image.Status() )
+               for ( typename GenericImage<P>::sample_iterator i( image, c ); i; ++i )
+               {
                   *i = Range( *i - options.lowerRange, 0.0, 1.0 );
+                  if ( verbose )
+                     ++monitor;
+               }
             }
       }
    }
    else
    {
       if ( mn < options.lowerRange || mx > options.upperRange )
-         Console().WarningLn( String().Format( "<end><cbr>** Warning: TIFF: Out-of-range floating point pixel sample values "
-                                               "were not fixed because of permissive policy. Data range is [%.15g,%.15g]", mn, mx ) );
+         if ( verbose )
+            Console().WarningLn( String().Format( "<end><cbr>** Warning: TIFF: Out-of-range floating point pixel sample values "
+                                                  "were not fixed because of permissive policy. Data range is [%.15g,%.15g]", mn, mx ) );
    }
 
    return true;
 }
 
-static void __ReadImage3( Image& image, TIFFReader* reader, const TIFFReadHints* readHints )
+static void ReadTIFFImage3( Image& image, TIFFReader* reader, const TIFFReadHints* readHints )
 {
    reader->ReadImage( image );
    if ( reader->Options().ieeefpSampleFormat )
-      if ( !__ApplyOutOfRangePolicy( image, readHints ) )
+      if ( !ApplyOutOfRangePolicy( image, readHints ) )
          throw ProcessAborted();
 }
 
-static void __ReadImage3( DImage& image, TIFFReader* reader, const TIFFReadHints* readHints )
+static void ReadTIFFImage3( DImage& image, TIFFReader* reader, const TIFFReadHints* readHints )
 {
    reader->ReadImage( image );
    if ( reader->Options().ieeefpSampleFormat )
-      if ( !__ApplyOutOfRangePolicy( image, readHints ) )
+      if ( !ApplyOutOfRangePolicy( image, readHints ) )
          throw ProcessAborted();
 }
 
 template <class P>
-static void __ReadImage2( GenericImage<P>& image, TIFFReader* reader, const TIFFReadHints* readHints )
+static void ReadTIFFImage2( GenericImage<P>& image, TIFFReader* reader, const TIFFReadHints* readHints )
 {
    if ( reader->Options().ieeefpSampleFormat )
    {
@@ -440,7 +461,7 @@ static void __ReadImage2( GenericImage<P>& image, TIFFReader* reader, const TIFF
       case 32:
          {
             Image tmp;
-            __ReadImage3( tmp, reader, readHints );
+            ReadTIFFImage3( tmp, reader, readHints );
             image.Assign( tmp );
          }
          break;
@@ -448,7 +469,7 @@ static void __ReadImage2( GenericImage<P>& image, TIFFReader* reader, const TIFF
       case 64:
          {
             DImage tmp;
-            __ReadImage3( tmp, reader, readHints );
+            ReadTIFFImage3( tmp, reader, readHints );
             image.Assign( tmp );
          }
          break;
@@ -458,92 +479,82 @@ static void __ReadImage2( GenericImage<P>& image, TIFFReader* reader, const TIFF
       reader->ReadImage( image );
 }
 
-static void __ReadImage2( Image& image, TIFFReader* reader, const TIFFReadHints* readHints )
+static void ReadTIFFImage2( Image& image, TIFFReader* reader, const TIFFReadHints* readHints )
 {
-   __ReadImage3( image, reader, readHints );
+   ReadTIFFImage3( image, reader, readHints );
 }
 
-static void __ReadImage2( DImage& image, TIFFReader* reader, const TIFFReadHints* readHints )
+static void ReadTIFFImage2( DImage& image, TIFFReader* reader, const TIFFReadHints* readHints )
 {
-   __ReadImage3( image, reader, readHints );
+   ReadTIFFImage3( image, reader, readHints );
 }
 
 template <class P>
-static void __ReadImage1( GenericImage<P>& image, TIFFReader* reader, const TIFFReadHints* readHints )
+static void ReadTIFFImage1( GenericImage<P>& image, TIFFReader* reader, const TIFFReadHints* readHints )
 {
-   if ( reader == 0 || !reader->IsOpen() )
-      throw Error( "TIFF format: Attempt to read an image before opening a file" );
-
-   // Disable automatic normalization of floating point TIFF images
-   reader->Options().readNormalized = !reader->Options().ieeefpSampleFormat;
-
-   StandardStatus status;
-   image.SetStatusCallback( &status );
-
-   __ReadImage2( image, reader, readHints );
+   CheckOpenStream( reader, "ReadImage" );
+   // Disable automatic normalization of floating point FITS images
+   ImageOptions options = reader->Options();
+   options.readNormalized = !options.ieeefpSampleFormat;
+   reader->SetOptions( options );
+   ReadTIFFImage2( image, reader, readHints );
 }
 
 void TIFFInstance::ReadImage( Image& image )
 {
-   __ReadImage1( image, reader, readHints );
+   ReadTIFFImage1( image, m_reader, m_readHints );
 }
 
 void TIFFInstance::ReadImage( DImage& image )
 {
-   __ReadImage1( image, reader, readHints );
+   ReadTIFFImage1( image, m_reader, m_readHints );
 }
 
 void TIFFInstance::ReadImage( UInt8Image& image )
 {
-   __ReadImage1( image, reader, readHints );
+   ReadTIFFImage1( image, m_reader, m_readHints );
 }
 
 void TIFFInstance::ReadImage( UInt16Image& image )
 {
-   __ReadImage1( image, reader, readHints );
+   ReadTIFFImage1( image, m_reader, m_readHints );
 }
 
 void TIFFInstance::ReadImage( UInt32Image& image )
 {
-   __ReadImage1( image, reader, readHints );
+   ReadTIFFImage1( image, m_reader, m_readHints );
 }
 
 // ----------------------------------------------------------------------------
 
 bool TIFFInstance::QueryOptions( Array<ImageOptions>& imageOptions, Array<void*>& formatOptions )
 {
-   queriedOptions = true;
+   m_queriedOptions = true;
 
    // Format-independent options
-
    ImageOptions options;
    if ( !imageOptions.IsEmpty() )
       options = *imageOptions;
 
    // Format-specific options
-
-   TIFFFormat::FormatOptions* tiff = 0;
-
+   TIFFFormat::FormatOptions* tiff = nullptr;
    if ( !formatOptions.IsEmpty() )
    {
       TIFFFormat::FormatOptions* o = TIFFFormat::FormatOptions::FromGenericDataBlock( *formatOptions );
-      if ( o != 0 )
+      if ( o != nullptr )
          tiff = o;
    }
 
-   bool reusedFormatOptions = tiff != 0;
+   bool reusedFormatOptions = tiff != nullptr;
    if ( !reusedFormatOptions )
       tiff = new TIFFFormat::FormatOptions;
 
    // Override embedding options, if requested.
-
    TIFFFormat::EmbeddingOverrides overrides = TIFFFormat::DefaultEmbeddingOverrides();
-
    if ( overrides.overrideICCProfileEmbedding )
       options.embedICCProfile = overrides.embedICCProfiles;
 
    TIFFOptionsDialog dlg( options, tiff->options );
-
    if ( dlg.Execute() == StdDialogCode::Ok )
    {
       tiff->options = dlg.tiffOptions;
@@ -573,15 +584,12 @@ void TIFFInstance::Create( const String& filePath, int /*numberOfImages*/, const
 {
    Close();
 
-   TIFF::SetStrictMode( true );
-   TIFF::EnableWarnings( true );
-
    Exception::EnableConsoleOutput();
 
-   writer = new TIFFWriter;
-   writer->Create( filePath );
+   m_writer = new TIFFWriter;
+   m_writer->Create( filePath );
 
-   TIFFImageOptions options = TIFFFormat::DefaultOptions();
+   TIFFImageOptions tiffOptions = TIFFFormat::DefaultOptions();
 
    IsoStringList theHints;
    hints.Break( theHints, ' ', true/*trim*/ );
@@ -589,108 +597,106 @@ void TIFFInstance::Create( const String& filePath, int /*numberOfImages*/, const
    for ( IsoStringList::const_iterator i = theHints.Begin(); i < theHints.End(); ++i )
    {
       if ( *i == "zip-compression" )
-         options.compression = TIFFCompression::ZIP;
+         tiffOptions.compression = TIFFCompression::ZIP;
       else if ( *i == "lzw-compression" )
-         options.compression = TIFFCompression::LZW;
+         tiffOptions.compression = TIFFCompression::LZW;
       else if ( *i == "uncompressed" || *i == "no-compression" )
-         options.compression = TIFFCompression::None;
+         tiffOptions.compression = TIFFCompression::None;
       else if ( *i == "planar" )
-         options.planar = true;
+         tiffOptions.planar = true;
       else if ( *i == "chunky" || *i == "no-planar" )
-         options.planar = false;
+         tiffOptions.planar = false;
       else if ( *i == "associated-alpha" )
-         options.associatedAlpha = true;
+         tiffOptions.associatedAlpha = true;
       else if ( *i == "no-associated-alpha" )
-         options.associatedAlpha = false;
+         tiffOptions.associatedAlpha = false;
       else if ( *i == "premultiplied-alpha" )
-         options.premultipliedAlpha = true;
+         tiffOptions.premultipliedAlpha = true;
       else if ( *i == "no-premultiplied-alpha" )
-         options.premultipliedAlpha = false;
+         tiffOptions.premultipliedAlpha = false;
+      else if ( *i == "verbosity" )
+      {
+         if ( ++i == theHints.End() )
+            break;
+         int n;
+         if ( i->TryToInt( n ) )
+            tiffOptions.verbosity = Range( n, 0, 3 );
+      }
    }
 
-   writer->TIFFOptions() = options;
+   m_writer->SetTIFFOptions( tiffOptions );
 }
 
 // ----------------------------------------------------------------------------
 
-void TIFFInstance::SetOptions( const ImageOptions& options )
+void TIFFInstance::SetOptions( const ImageOptions& newOptions )
 {
-   if ( writer == 0 || !writer->IsOpen() )
-      throw Error( "TIFF format: Attempt to set image options before creating a file" );
-
-   writer->Options() = options;
-
-   if ( !queriedOptions )
+   CheckOpenStream( m_writer, "SetOptions" );
+   ImageOptions options = newOptions;
+   if ( !m_queriedOptions )
    {
       TIFFFormat::EmbeddingOverrides overrides = TIFFFormat::DefaultEmbeddingOverrides();
-
       if ( overrides.overrideICCProfileEmbedding )
-         writer->Options().embedICCProfile = overrides.embedICCProfiles;
+         options.embedICCProfile = overrides.embedICCProfiles;
    }
+   m_writer->SetOptions( options );
 }
 
 // ----------------------------------------------------------------------------
 
 void TIFFInstance::SetFormatSpecificData( const void* data )
 {
-   if ( writer == 0 || !writer->IsOpen() )
-      throw Error( "TIFF format: Attempt to set format-specific options before creating a file" );
-
+   CheckOpenStream( m_writer, "SetFormatSpecificData" );
    const TIFFFormat::FormatOptions* o = TIFFFormat::FormatOptions::FromGenericDataBlock( data );
-   if ( o != 0 )
-      writer->TIFFOptions() = o->options;
+   if ( o != nullptr )
+      m_writer->SetTIFFOptions( o->options );
 }
 
 // ----------------------------------------------------------------------------
 
-void TIFFInstance::Embed( const ICCProfile& icc )
+void TIFFInstance::WriteICCProfile( const ICCProfile& icc )
 {
-   if ( writer == 0 || !writer->IsOpen() )
-      throw Error( "TIFF format: Attempt to embed an ICC profile before creating a file" );
-
+   CheckOpenStream( m_writer, "WriteICCProfile" );
    if ( icc.IsProfile() )
    {
-      writer->Embed( *(embeddedICCProfile = new ICCProfile( icc )) );
-      Console().WriteLn( "<end><cbr>ICC profile embedded: \'" + icc.Description() + "\', " + String( icc.ProfileSize() ) + " bytes" );
+      m_writer->WriteICCProfile( icc );
+      if ( m_writer->TIFFOptions().verbosity > 0 )
+         Console().WriteLn( "<end><cbr>ICC profile embedded: \'" + icc.Description() + "\', " + String( icc.ProfileSize() ) + " bytes." );
    }
 }
 
 // ----------------------------------------------------------------------------
 
 template <class P>
-static void __WriteImage( const GenericImage<P>& image, TIFFWriter* writer )
+static void WriteTIFFImage( const GenericImage<P>& image, TIFFWriter* writer )
 {
-   if ( writer == 0 || !writer->IsOpen() )
-      throw Error( "TIFF format: Attempt to write an image before creating a file" );
-
-   StandardStatus status;
-   image.SetStatusCallback( &status );
+   CheckOpenStream( writer, "WriteImage" );
    writer->WriteImage( image );
 }
 
 void TIFFInstance::WriteImage( const Image& image )
 {
-   __WriteImage( image, writer );
+   WriteTIFFImage( image, m_writer );
 }
 
 void TIFFInstance::WriteImage( const DImage& image )
 {
-   __WriteImage( image, writer );
+   WriteTIFFImage( image, m_writer );
 }
 
 void TIFFInstance::WriteImage( const UInt8Image& image )
 {
-   __WriteImage( image, writer );
+   WriteTIFFImage( image, m_writer );
 }
 
 void TIFFInstance::WriteImage( const UInt16Image& image )
 {
-   __WriteImage( image, writer );
+   WriteTIFFImage( image, m_writer );
 }
 
 void TIFFInstance::WriteImage( const UInt32Image& image )
 {
-   __WriteImage( image, writer );
+   WriteTIFFImage( image, m_writer );
 }
 
 // ----------------------------------------------------------------------------
@@ -698,4 +704,4 @@ void TIFFInstance::WriteImage( const UInt32Image& image )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF TIFFInstance.cpp - Released 2016/02/21 20:22:34 UTC
+// EOF TIFFInstance.cpp - Released 2017-04-14T23:07:03Z

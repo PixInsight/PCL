@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Flux Process Module Version 01.00.01.0135
+// Standard Flux Process Module Version 01.00.01.0144
 // ----------------------------------------------------------------------------
-// FluxCalibrationInterface.h - Released 2016/03/14 10:07:00 UTC
+// FluxCalibrationInterface.h - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Flux PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -66,8 +66,6 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-// FluxCalibrationInterface
-// ----------------------------------------------------------------------------
 
 class FluxCalibrationInterface : public ProcessInterface
 {
@@ -100,9 +98,7 @@ private:
 
    struct CalibrationParameter : public Control
    {
-      CalibrationParameter() : Control(), m_parameter( 0 )
-      {
-      }
+      CalibrationParameter() = default;
 
       void Build( FluxCalibrationInstance::CalibrationParameter& parameter,
                   const String& labelText, const String& toolTip, bool required = false )
@@ -167,7 +163,7 @@ private:
 
    private:
 
-      FluxCalibrationInstance::CalibrationParameter* m_parameter;
+      FluxCalibrationInstance::CalibrationParameter* m_parameter = nullptr;
 
       HorizontalSizer   Parameter_Sizer;
          NumericEdit       Value_NumericEdit;
@@ -232,7 +228,7 @@ private:
          CalibrationParameter QuantumEfficiency_Parameter;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
 
@@ -252,4 +248,4 @@ PCL_END_LOCAL
 #endif   // __FluxCalibrationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF FluxCalibrationInterface.h - Released 2016/03/14 10:07:00 UTC
+// EOF FluxCalibrationInterface.h - Released 2017-04-14T23:07:12Z

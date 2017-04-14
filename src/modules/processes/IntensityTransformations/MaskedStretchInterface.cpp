@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0355
+// Standard IntensityTransformations Process Module Version 01.07.01.0364
 // ----------------------------------------------------------------------------
-// MaskedStretchInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// MaskedStretchInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -65,7 +65,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-MaskedStretchInterface* TheMaskedStretchInterface = 0;
+MaskedStretchInterface* TheMaskedStretchInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -74,15 +74,15 @@ MaskedStretchInterface* TheMaskedStretchInterface = 0;
 // ----------------------------------------------------------------------------
 
 MaskedStretchInterface::MaskedStretchInterface() :
-ProcessInterface(), m_instance( TheMaskedStretchProcess ), GUI( 0 )
+   m_instance( TheMaskedStretchProcess )
 {
    TheMaskedStretchInterface = this;
 }
 
 MaskedStretchInterface::~MaskedStretchInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -115,7 +115,7 @@ void MaskedStretchInterface::ResetInstance()
 
 bool MaskedStretchInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "MaskedStretch" );
@@ -133,15 +133,10 @@ ProcessImplementation* MaskedStretchInterface::NewProcess() const
 
 bool MaskedStretchInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const MaskedStretchInstance* r = dynamic_cast<const MaskedStretchInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not an MaskedStretch instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const MaskedStretchInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a MaskedStretch instance.";
+   return false;
 }
 
 bool MaskedStretchInterface::RequiresInstanceValidation() const
@@ -173,7 +168,7 @@ void MaskedStretchInterface::UpdateControls()
    GUI->BackgroundReferenceView_Edit.SetText( BACKGROUND_REFERENCE_ID );
    GUI->BackgroundLow_NumericControl.SetValue( m_instance.p_backgroundLow );
    GUI->BackgroundHigh_NumericControl.SetValue( m_instance.p_backgroundHigh );
-   GUI->ROI_GroupBox.SetChecked( m_instance.p_useROI );
+   GUI->ROI_SectionBar.SetChecked( m_instance.p_useROI );
    GUI->ROIX0_SpinBox.SetValue( m_instance.p_roi.x0 );
    GUI->ROIY0_SpinBox.SetValue( m_instance.p_roi.y0 );
    GUI->ROIWidth_SpinBox.SetValue( m_instance.p_roi.Width() );
@@ -217,8 +212,9 @@ void MaskedStretchInterface::__ItemSelected( ComboBox& sender, int itemIndex )
 void MaskedStretchInterface::__GetFocus( Control& sender )
 {
    Edit* e = dynamic_cast<Edit*>( &sender );
-   if ( e != 0 && e->Text() == TARGET_IMAGE )
-      e->Clear();
+   if ( e != nullptr )
+      if ( e->Text() == TARGET_IMAGE )
+         e->Clear();
 }
 
 void MaskedStretchInterface::__EditCompleted( Edit& sender )
@@ -300,10 +296,37 @@ void MaskedStretchInterface::__Click( Button& sender, bool checked )
    }
 }
 
-void MaskedStretchInterface::__GroupCheck( GroupBox& sender, bool checked )
+void MaskedStretchInterface::__SectionBarCheck( SectionBar& sender, bool checked )
 {
-   if ( sender == GUI->ROI_GroupBox )
+   if ( sender == GUI->ROI_SectionBar )
       m_instance.p_useROI = checked;
+}
+
+void MaskedStretchInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->BackgroundReferenceView_Edit )
+      wantsView = true;
+   else if ( sender == GUI->ROI_SectionBar || sender == GUI->ROI_Control || sender == GUI->ROISelectPreview_Button )
+      wantsView = view.IsPreview();
+}
+
+void MaskedStretchInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->BackgroundReferenceView_Edit )
+   {
+      m_instance.p_backgroundReferenceViewId = view.FullId();
+      GUI->BackgroundReferenceView_Edit.SetText( BACKGROUND_REFERENCE_ID );
+   }
+   else if ( sender == GUI->ROI_SectionBar || sender == GUI->ROI_Control || sender == GUI->ROISelectPreview_Button )
+   {
+      if ( view.IsPreview() )
+      {
+         m_instance.p_useROI = true;
+         m_instance.p_roi = view.Window().PreviewRect( view.Id() );
+         GUI->ROI_SectionBar.ShowSection();
+         UpdateControls();
+      }
+   }
 }
 
 // ----------------------------------------------------------------------------
@@ -325,7 +348,7 @@ MaskedStretchInterface::GUIData::GUIData( MaskedStretchInterface& w )
    TargetBackground_NumericControl.label.SetText( "Target background:" );
    TargetBackground_NumericControl.label.SetMinWidth( labelWidth1 );
    TargetBackground_NumericControl.slider.SetRange( 0, 200 );
-   TargetBackground_NumericControl.slider.SetScaledMinWidth( 200 );
+   TargetBackground_NumericControl.slider.SetScaledMinWidth( 350 );
    TargetBackground_NumericControl.SetReal();
    TargetBackground_NumericControl.SetToolTip( targetBackgroundToolTip );
    TargetBackground_NumericControl.SetRange( TheMSTargetBackgroundParameter->MinimumValue(), TheMSTargetBackgroundParameter->MaximumValue() );
@@ -426,6 +449,8 @@ MaskedStretchInterface::GUIData::GUIData( MaskedStretchInterface& w )
       "sky area of the target image, and selecting it here as the background reference image.</p>" );
    BackgroundReferenceView_Edit.OnGetFocus( (Control::event_handler)&MaskedStretchInterface::__GetFocus, w );
    BackgroundReferenceView_Edit.OnEditCompleted( (Edit::edit_event_handler)&MaskedStretchInterface::__EditCompleted, w );
+   BackgroundReferenceView_Edit.OnViewDrag( (Control::view_drag_event_handler)&MaskedStretchInterface::__ViewDrag, w );
+   BackgroundReferenceView_Edit.OnViewDrop( (Control::view_drop_event_handler)&MaskedStretchInterface::__ViewDrop, w );
 
    BackgroundReferenceView_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    BackgroundReferenceView_ToolButton.SetScaledFixedSize( 20, 20 );
@@ -442,7 +467,7 @@ MaskedStretchInterface::GUIData::GUIData( MaskedStretchInterface& w )
    BackgroundLow_NumericControl.label.SetText( "Lower limit:" );
    BackgroundLow_NumericControl.label.SetFixedWidth( labelWidth1 );
    BackgroundLow_NumericControl.slider.SetRange( 0, 100 );
-   BackgroundLow_NumericControl.slider.SetScaledMinWidth( 200 );
+   BackgroundLow_NumericControl.slider.SetScaledMinWidth( 350 );
    BackgroundLow_NumericControl.SetReal();
    BackgroundLow_NumericControl.SetRange( TheMSBackgroundLowParameter->MinimumValue(), TheMSBackgroundLowParameter->MaximumValue() );
    BackgroundLow_NumericControl.SetPrecision( TheMSBackgroundLowParameter->Precision() );
@@ -455,7 +480,7 @@ MaskedStretchInterface::GUIData::GUIData( MaskedStretchInterface& w )
    BackgroundHigh_NumericControl.label.SetText( "Upper limit:" );
    BackgroundHigh_NumericControl.label.SetFixedWidth( labelWidth1 );
    BackgroundHigh_NumericControl.slider.SetRange( 0, 100 );
-   BackgroundHigh_NumericControl.slider.SetScaledMinWidth( 200 );
+   BackgroundHigh_NumericControl.slider.SetScaledMinWidth( 350 );
    BackgroundHigh_NumericControl.SetReal();
    BackgroundHigh_NumericControl.SetRange( TheMSBackgroundHighParameter->MinimumValue(), TheMSBackgroundHighParameter->MaximumValue() );
    BackgroundHigh_NumericControl.SetPrecision( TheMSBackgroundHighParameter->Precision() );
@@ -466,9 +491,16 @@ MaskedStretchInterface::GUIData::GUIData( MaskedStretchInterface& w )
 
    //
 
-   ROI_GroupBox.SetTitle( "Region of Interest" );
-   ROI_GroupBox.EnableTitleCheckBox();
-   ROI_GroupBox.OnCheck( (GroupBox::check_event_handler)&MaskedStretchInterface::__GroupCheck, w );
+   ROI_SectionBar.SetTitle( "Region of Interest" );
+   ROI_SectionBar.SetSection( ROI_Control );
+   ROI_SectionBar.EnableTitleCheckBox();
+   ROI_SectionBar.SetToolTip( "<p>By default, MaskedStretch analyzes the entire background reference image to compute an "
+      "initial mean background level. When necessary, a region of interest (ROI) can be defined to restrict the analysis to a "
+      "rectangular region of the background reference image. This may help to find an optimal transformation by excluding image "
+      "structures that are not relevant for the current stretching task.</p>" );
+   ROI_SectionBar.OnCheck( (SectionBar::check_event_handler)&MaskedStretchInterface::__SectionBarCheck, w );
+   ROI_SectionBar.OnViewDrag( (Control::view_drag_event_handler)&MaskedStretchInterface::__ViewDrag, w );
+   ROI_SectionBar.OnViewDrop( (Control::view_drop_event_handler)&MaskedStretchInterface::__ViewDrop, w );
 
    const char* roiX0ToolTip = "<p>X pixel coordinate of the upper-left corner of the ROI.</p>";
 
@@ -543,7 +575,9 @@ MaskedStretchInterface::GUIData::GUIData( MaskedStretchInterface& w )
    ROI_Sizer.Add( ROIRow1_Sizer );
    ROI_Sizer.Add( ROIRow2_Sizer );
 
-   ROI_GroupBox.SetSizer( ROI_Sizer );
+   ROI_Control.SetSizer( ROI_Sizer );
+   ROI_Control.OnViewDrag( (Control::view_drag_event_handler)&MaskedStretchInterface::__ViewDrag, w );
+   ROI_Control.OnViewDrop( (Control::view_drop_event_handler)&MaskedStretchInterface::__ViewDrop, w );
 
    //
 
@@ -556,7 +590,10 @@ MaskedStretchInterface::GUIData::GUIData( MaskedStretchInterface& w )
    Global_Sizer.Add( BackgroundReferenceView_Sizer );
    Global_Sizer.Add( BackgroundLow_NumericControl );
    Global_Sizer.Add( BackgroundHigh_NumericControl );
-   Global_Sizer.Add( ROI_GroupBox );
+   Global_Sizer.Add( ROI_SectionBar );
+   Global_Sizer.Add( ROI_Control );
+
+   ROI_Control.Hide();
 
    w.SetSizer( Global_Sizer );
 
@@ -569,4 +606,4 @@ MaskedStretchInterface::GUIData::GUIData( MaskedStretchInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF MaskedStretchInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF MaskedStretchInterface.cpp - Released 2017-04-14T23:07:12Z

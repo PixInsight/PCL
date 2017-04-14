@@ -170,7 +170,6 @@ bool INDICCDFrameInstance::CanExecuteGlobal( String& whyNot ) const
       return false;
    }
 
-   whyNot.Clear();
    return true;
 }
 
@@ -1067,101 +1066,99 @@ void AbstractINDICCDFrameExecution::Perform()
                throw Error( filePath + ": Invalid or unsupported image." );
 
             ImagePropertyList properties;
-            if ( inputFormat.CanStoreProperties() )
+            if ( inputFormat.CanStoreImageProperties() )
             {
-               ImagePropertyDescriptionArray descriptions = inputFile.Properties();
+               PropertyDescriptionArray descriptions = inputFile.ImageProperties();
                for ( auto description : descriptions )
-                  properties << ImageProperty( description.id, inputFile.ReadProperty( description.id ) );
+                  properties << ImageProperty( description.id, inputFile.ReadImageProperty( description.id ) );
             }
 
             FITSKeywordArray keywords;
             if ( inputFormat.CanStoreKeywords() )
-            {
-               inputFile.Extract( keywords );
-               if ( !keywords.IsEmpty() )
-               {
-                  ImageMetadata data = ImageMetadataFromFITSKeywords( keywords );
-
-                  if ( m_instance.p_frameType == ICFFrameType::LightFrame )
-                     if ( !m_instance.p_objectName.IsEmpty() )
-                     {
-                        // Replace or add OBJNAME/OBJECT keywords.
-                        if ( data.objectName.defined )
-                        {
-                           for ( FITSHeaderKeyword& k : keywords )
-                              if ( k.name == "OBJNAME" || k.name == "OBJECT" )
-                              {
-                                 k.value = '\'' + m_instance.p_objectName + '\'';
-                                 k.comment = "Name of observed object";
-                              }
-                        }
-                        else
-                           keywords << FITSHeaderKeyword( "OBJECT", m_instance.p_objectName, "Name of observed object" );
-
-                        data.objectName = m_instance.p_objectName;
-                     }
-
-                  if ( !telescopeName.IsEmpty() )
+               if ( inputFile.ReadFITSKeywords( keywords ) )
+                  if ( !keywords.IsEmpty() )
                   {
-                     data.telescopeName = telescopeName;
+                     ImageMetadata data = ImageMetadataFromFITSKeywords( keywords );
 
-                     // Compute mean J2000 coordinates from telescope apparent
-                     // EOD coordinates.
-                     if ( data.year.defined )
+                     if ( m_instance.p_frameType == ICFFrameType::LightFrame )
+                        if ( !m_instance.p_objectName.IsEmpty() )
+                        {
+                           // Replace or add OBJNAME/OBJECT keywords.
+                           if ( data.objectName.defined )
+                           {
+                              for ( FITSHeaderKeyword& k : keywords )
+                                 if ( k.name == "OBJNAME" || k.name == "OBJECT" )
+                                 {
+                                    k.value = '\'' + m_instance.p_objectName + '\'';
+                                    k.comment = "Name of observed object";
+                                 }
+                           }
+                           else
+                              keywords << FITSHeaderKeyword( "OBJECT", m_instance.p_objectName, "Name of observed object" );
+
+                           data.objectName = m_instance.p_objectName;
+                        }
+
+                     if ( !telescopeName.IsEmpty() )
                      {
-                        double jd = ComplexTimeToJD( data.year.value, data.month.value, data.day.value, data.dayf.value + data.tz.value/24 );
-                        ApparentPosition( jd ).ApplyInverse( telescopeRA, telescopeDec );
-                        data.ra = Deg( telescopeRA );
-                        data.dec = Deg( telescopeDec );
-                        data.equinox = 2000;
+                        data.telescopeName = telescopeName;
+
+                        // Compute mean J2000 coordinates from telescope apparent
+                        // EOD coordinates.
+                        if ( data.year.defined )
+                        {
+                           double jd = ComplexTimeToJD( data.year.value, data.month.value, data.day.value, data.dayf.value + data.tz.value/24 );
+                           ApparentPosition( jd ).ApplyInverse( telescopeRA, telescopeDec );
+                           data.ra = Deg( telescopeRA );
+                           data.dec = Deg( telescopeDec );
+                           data.equinox = 2000;
+                        }
+
+                        // If not already available, try to get the telescope
+                        // aperture from standard device properties.
+                        if ( !data.aperture.defined )
+                           if ( indi->GetPropertyItem( telescopeName, "TELESCOPE_INFO", "TELESCOPE_APERTURE", item, false/*formatted*/ ) )
+                           {
+                              double apertureMM = Round( item.PropertyValue.ToDouble(), 3 );
+                              data.aperture = apertureMM/1000;
+                              keywords << FITSHeaderKeyword( "APTDIA", apertureMM, "Aperture diameter (mm)" );
+                           }
+
+                        // If not already available, try to get the telescope
+                        // focal length from standard device properties.
+                        if ( !data.focalLength.defined )
+                           if ( indi->GetPropertyItem( telescopeName, "TELESCOPE_INFO", "TELESCOPE_FOCAL_LENGTH", item, false/*formatted*/ ) )
+                           {
+                              double focalLengthMM = Round( item.PropertyValue.ToDouble(), 3 );
+                              data.focalLength = focalLengthMM/1000;
+                              keywords << FITSHeaderKeyword( "FOCALLEN", focalLengthMM, "Focal length (mm)" );
+                           }
                      }
 
-                     // If not already available, try to get the telescope
-                     // aperture from standard device properties.
-                     if ( !data.aperture.defined )
-                        if ( indi->GetPropertyItem( telescopeName, "TELESCOPE_INFO", "TELESCOPE_APERTURE", item, false/*formatted*/ ) )
-                        {
-                           double apertureMM = Round( item.PropertyValue.ToDouble(), 3 );
-                           data.aperture = apertureMM/1000;
-                           keywords << FITSHeaderKeyword( "APTDIA", apertureMM, "Aperture diameter (mm)" );
-                        }
+                     // Replace existing coordinate keywords with accurate mean
+                     // coordinates.
+                     if ( data.ra.defined && data.dec.defined )
+                        for ( FITSHeaderKeyword& k : keywords )
+                           if ( k.name == "OBJCTRA" )
+                           {
+                              k.value = '\'' + IsoString::ToSexagesimal( data.ra.value/15,
+                                    SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, false/*sign*/, 0/*width*/, ' '/*separator*/ ) ) + '\'';
+                              k.comment = "Right Ascension of the center of the image";
+                           }
+                           else if ( k.name == "OBJCTDEC" )
+                           {
+                              k.value = '\'' + IsoString::ToSexagesimal( data.dec.value,
+                                    SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, true/*sign*/, 0/*width*/, ' '/*separator*/ ) ) + '\'';
+                              k.comment = "Declination of the center of the image";
+                           }
+                           else if ( k.name == "EQUINOX" )
+                           {
+                              k.value = "2000.0";
+                              k.comment = "Equinox of the celestial coordinate system";
+                           }
 
-                     // If not already available, try to get the telescope
-                     // focal length from standard device properties.
-                     if ( !data.focalLength.defined )
-                        if ( indi->GetPropertyItem( telescopeName, "TELESCOPE_INFO", "TELESCOPE_FOCAL_LENGTH", item, false/*formatted*/ ) )
-                        {
-                           double focalLengthMM = Round( item.PropertyValue.ToDouble(), 3 );
-                           data.focalLength = focalLengthMM/1000;
-                           keywords << FITSHeaderKeyword( "FOCALLEN", focalLengthMM, "Focal length (mm)" );
-                        }
+                     properties << ImagePropertiesFromImageMetadata( data );
                   }
-
-                  // Replace existing coordinate keywords with accurate mean
-                  // coordinates.
-                  if ( data.ra.defined && data.dec.defined )
-                     for ( FITSHeaderKeyword& k : keywords )
-                        if ( k.name == "OBJCTRA" )
-                        {
-                           k.value = '\'' + IsoString::ToSexagesimal( data.ra.value/15,
-                                 SexagesimalConversionOptions( 3/*items*/, 3/*precision*/, false/*sign*/, 0/*width*/, ' '/*separator*/ ) ) + '\'';
-                           k.comment = "Right Ascension of the center of the image";
-                        }
-                        else if ( k.name == "OBJCTDEC" )
-                        {
-                           k.value = '\'' + IsoString::ToSexagesimal( data.dec.value,
-                                 SexagesimalConversionOptions( 3/*items*/, 2/*precision*/, true/*sign*/, 0/*width*/, ' '/*separator*/ ) ) + '\'';
-                           k.comment = "Declination of the center of the image";
-                        }
-                        else if ( k.name == "EQUINOX" )
-                        {
-                           k.value = "2000.0";
-                           k.comment = "Equinox of the celestial coordinate system";
-                        }
-
-                  properties << ImagePropertiesFromImageMetadata( data );
-               }
-            }
 
             // Generate an initial XISF history record.
             {
@@ -1183,11 +1180,11 @@ void AbstractINDICCDFrameExecution::Perform()
 
             ICCProfile iccProfile;
             if ( inputFormat.CanStoreICCProfiles() )
-               inputFile.Extract( iccProfile );
+               inputFile.ReadICCProfile( iccProfile );
 
             RGBColorSystem rgbws;
             if ( inputFormat.CanStoreRGBWS() )
-               inputFile.ReadRGBWS( rgbws );
+               inputFile.ReadRGBWorkingSpace( rgbws );
 
             DisplayFunction df;
             if ( inputFormat.CanStoreDisplayFunctions() )
@@ -1239,13 +1236,13 @@ void AbstractINDICCDFrameExecution::Perform()
                for ( auto property : properties )
                   outputFile.WriteProperty( property.key, property.value );
 
-               outputFile.Embed( keywords );
+               outputFile.WriteFITSKeywords( keywords );
 
                if ( iccProfile.IsProfile() )
-                  outputFile.Embed( iccProfile );
+                  outputFile.WriteICCProfile( iccProfile );
 
                if ( rgbws != RGBColorSystem::sRGB )
-                  outputFile.WriteRGBWS( rgbws );
+                  outputFile.WriteRGBWorkingSpace( rgbws );
 
                if ( m_instance.p_autoStretch )
                {
@@ -1280,7 +1277,8 @@ void AbstractINDICCDFrameExecution::Perform()
 
                if ( m_instance.p_openClientImages )
                {
-                  Array<ImageWindow> windows = ImageWindow::Open( outputFilePath, IsoString()/*id*/, false/*asCopy*/, false/*allowMessages*/ );
+                  Array<ImageWindow> windows = ImageWindow::Open( outputFilePath/*url*/,
+                        IsoString()/*id*/, IsoString()/*formatHints*/, false/*asCopy*/, false/*allowMessages*/ );
                   if ( !windows.IsEmpty() )
                      window = windows[0];
                }

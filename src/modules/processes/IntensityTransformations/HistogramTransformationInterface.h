@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0355
+// Standard IntensityTransformations Process Module Version 01.07.01.0364
 // ----------------------------------------------------------------------------
-// HistogramTransformationInterface.h - Released 2016/02/21 20:22:43 UTC
+// HistogramTransformationInterface.h - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -159,7 +159,7 @@ private:
       HistogramTransformationInstance m_instance;
    };
 
-   mutable RealTimeThread* m_realTimeThread;
+   mutable RealTimeThread* m_realTimeThread = nullptr;
 
    struct GUIData
    {
@@ -240,12 +240,11 @@ private:
       Timer UpdateRealTimePreview_Timer;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    /*
     * Workbench
     */
-
    enum working_mode  { ReadoutMode, ZoomInMode, ZoomOutMode, PanMode, NoMode = -1 };
    enum readout_mode  { NormalReadout, BlackPointReadout, MidtonesReadout, WhitePointReadout };
    enum graph_style   { LineStyle, AreaStyle, BarStyle, DotStyle, NumberOfGraphStyles };
@@ -410,56 +409,42 @@ private:
    /*
     * GUI Event Handlers
     */
-
    void __ViewList_ViewSelected( ViewList& sender, View& view );
-
    void __Histogram_Paint( Control& sender, const pcl::Rect& updateRect );
    void __Sliders_Paint( Control& sender, const pcl::Rect& updateRect );
-
    void __Histogram_Resize( Control& sender, int newWidth, int newHeight, int oldWidth, int oldHeight );
-
    void __Histogram_ScrollPosUpdated( ScrollBox& sender, int pos );
-
    void __Histogram_Enter( Control& sender );
    void __Histogram_Leave( Control& sender );
-
    void __Histogram_MousePress( Control& sender, const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers );
    void __Histogram_MouseRelease( Control& sender, const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers );
    void __Histogram_MouseMove( Control& sender, const pcl::Point& pos, unsigned buttons, unsigned modifiers );
    void __Histogram_MouseWheel( Control& sender, const pcl::Point& pos, int delta, unsigned buttons, unsigned modifiers );
-
    void __Sliders_MousePress( Control& sender, const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers );
    void __Sliders_MouseRelease( Control& sender, const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers );
    void __Sliders_MouseMove( Control& sender, const pcl::Point& pos, unsigned buttons, unsigned modifiers );
-
    void __HistogramParameter_ValueUpdated( NumericEdit& sender, double value );
-
    void __Reset_ButtonClick( Button&, bool );
    void __AutoZero_ButtonClick( Button&, bool );
    void __AutoClip_ButtonClick( Button&, bool );
    void __AutoClipSetup_ButtonClick( Button&, bool );
-
    void __Mode_ButtonClick( Button&, bool );
    void __ReadoutMode_ButtonClick( Button&, bool );
    void __Channel_ButtonClick( Button&, bool );
    void __Zoom_ButtonClick( Button&, bool );
-
    void __Zoom_ValueUpdated( SpinBox& sender, int value );
-
    void __PlotResolution_ItemSelected( ComboBox& sender, int itemIndex );
    void __GraphStyle_ItemSelected( ComboBox& sender, int itemIndex );
-
    void __RejectSaturated_ButtonClick( Button&, bool );
    void __ShowRawRGB_ButtonClick( Button&, bool );
    void __LockOutput_ButtonClick( Button&, bool );
    void __ShowCurve_ButtonClick( Button&, bool );
    void __ShowGrid_ButtonClick( Button&, bool );
-
    void __ToggleExtension_ButtonClick( Button&, bool );
-
    void __KeyPress( Control& sender, int key, unsigned modifiers, bool& wantsKey );
    void __KeyRelease( Control& sender, int key, unsigned modifiers, bool& wantsKey );
-
+   void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
+   void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
    void __UpdateRealTimePreview_Timer( Timer& );
 
    friend struct GUIData;
@@ -479,4 +464,4 @@ PCL_END_LOCAL
 #endif   // __HistogramTransformationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF HistogramTransformationInterface.h - Released 2016/02/21 20:22:43 UTC
+// EOF HistogramTransformationInterface.h - Released 2017-04-14T23:07:12Z

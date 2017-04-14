@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/AutoLock.h - Released 2016/02/21 20:22:12 UTC
+// pcl/AutoLock.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,21 +54,11 @@
 
 /// \file pcl/AutoLock.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Atomic_h
 #include <pcl/Atomic.h>
-#endif
-
-#ifndef __PCL_Mutex_h
 #include <pcl/Mutex.h>
-#endif
 
 namespace pcl
 {
@@ -132,6 +122,24 @@ public:
    }
 
    /*!
+    * Copy constructor. This constructor is disabled because %AutoLock objects
+    * cannot be copied.
+    */
+   AutoLock( const AutoLock& ) = delete;
+
+   /*!
+    * Copy assignment. This operator is disabled because %AutoLock objects
+    * cannot be copied.
+    */
+   AutoLock& operator =( const AutoLock& ) = delete;
+
+   /*!
+    * Move assignment. This operator is disabled because %AutoLock objects
+    * cannot be move-assigned.
+    */
+   AutoLock& operator =( AutoLock&& ) = delete;
+
+   /*!
     * Locks the monitored mutex object, if it has not been previously locked by
     * this object.
     */
@@ -157,11 +165,6 @@ private:
 
    pcl::Mutex* m_mutex;
    AtomicInt   m_lock;
-
-   // Cannot copy an AutoLock object
-   AutoLock( const AutoLock& ) = delete;
-   void operator =( const AutoLock& ) = delete;
-   void operator =( AutoLock&& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -283,6 +286,24 @@ public:
    }
 
    /*!
+    * Copy constructor. This constructor is disabled because %AutoLockCounter
+    * objects cannot be copied.
+    */
+   AutoLockCounter( const AutoLockCounter& ) = delete;
+
+   /*!
+    * Copy assignment. This operator is disabled because %AutoLockCounter
+    * objects cannot be copied.
+    */
+   AutoLockCounter& operator =( const AutoLockCounter& ) = delete;
+
+   /*!
+    * Move assignment. This operator is disabled because %AutoLockCounter
+    * objects cannot be move-assigned.
+    */
+   AutoLockCounter& operator =( AutoLockCounter&& ) = delete;
+
+   /*!
     * Locks the monitored mutex object, if it has not been previously locked by
     * this object.
     */
@@ -309,11 +330,6 @@ private:
    pcl::Mutex* m_mutex;
    AtomicInt*  m_count;
    AtomicInt   m_lock;
-
-   // Cannot copy an AutoLockCounter object
-   AutoLockCounter( const AutoLockCounter& ) = delete;
-   void operator =( const AutoLockCounter& ) = delete;
-   void operator =( AutoLockCounter&& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -356,4 +372,4 @@ private:
 #endif   // __PCL_AutoLock_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AutoLock.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/AutoLock.h - Released 2017-04-14T23:04:40Z

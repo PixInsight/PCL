@@ -1,3 +1,7 @@
+// ----------------------------------------------------------------------------
+// Custom configuration file for PCL builds
+// ----------------------------------------------------------------------------
+
 /*
  * jmorecfg.h
  *
@@ -43,9 +47,9 @@
  */
 
 // ### BEGIN CUSTOM CODE ------------------------------------------------------
-#define MAX_COMPONENTS  255   /* maximum number of image components */
-//#define MAX_COMPONENTS  10  /* maximum number of image components */
-// ### END CUSTOM CODE --------------------------------------------------------
+#define MAX_COMPONENTS  255 /* maximum number of image components */
+//#define MAX_COMPONENTS  10	/* maximum number of image components */
+// ### END CUSTOM CODE ------------------------------------------------------
 
 
 /*
@@ -254,6 +258,10 @@ typedef unsigned int JDIMENSION;
 #  define GLOBAL(type)  type        /* a function referenced thru EXTERNs: */
 #  define EXTERN(type)  extern type /* a reference to a GLOBAL function: */
 #endif
+// /* a function referenced thru EXTERNs: */
+// #define GLOBAL(type)		type
+// /* a reference to a GLOBAL function: */
+// #define EXTERN(type)		extern type
 // ### END CUSTOM CODE --------------------------------------------------------
 
 

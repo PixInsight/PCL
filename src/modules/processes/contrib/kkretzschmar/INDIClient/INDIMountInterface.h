@@ -219,8 +219,8 @@ public:
 private:
 
    String                       m_device;
-   INDIMountInterfaceExecution* m_execution;
-   CoordinateSearchDialog*      m_searchDialog;
+   INDIMountInterfaceExecution* m_execution    = nullptr;
+   CoordinateSearchDialog*      m_searchDialog = nullptr;
 
    struct GUIData
    {
@@ -301,7 +301,7 @@ private:
             ComboBox          SlewSpeed_ComboBox;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
 

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/RedundantMultiscaleTransform.h - Released 2016/02/21 20:22:12 UTC
+// pcl/RedundantMultiscaleTransform.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,26 +54,20 @@
 
 /// \file pcl/RedundantMultiscaleTransform.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_ImageTransformation_h
 #include <pcl/ImageTransformation.h>
-#endif
-
-#ifndef __PCL_Vector_h
 #include <pcl/Vector.h>
-#endif
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
+
+/*!
+ * \defgroup multiscale_transforms Multiscale Transforms
+ */
 
 /*!
  * \class RedundantMultiscaleTransform
@@ -100,6 +94,7 @@ namespace pcl
  * The last layer, at index N, is the large-scale residual layer. Pixel samples
  * in the residual layer image can only be positive or zero real values.
  *
+ * \ingroup multiscale_transforms
  * \sa ATrousWaveletTransform, StarletTransform, MultiscaleMedianTransform,
  * MultiscaleLinearTransform
  */
@@ -683,4 +678,4 @@ protected:
 #endif   // __PCL_RedundantMultiscaleTransform_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/RedundantMultiscaleTransform.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/RedundantMultiscaleTransform.h - Released 2017-04-14T23:04:40Z

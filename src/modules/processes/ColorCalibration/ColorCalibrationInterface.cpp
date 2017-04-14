@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard ColorCalibration Process Module Version 01.02.00.0238
+// Standard ColorCalibration Process Module Version 01.02.00.0247
 // ----------------------------------------------------------------------------
-// ColorCalibrationInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// ColorCalibrationInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -63,7 +63,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ColorCalibrationInterface* TheColorCalibrationInterface = 0;
+ColorCalibrationInterface* TheColorCalibrationInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -72,15 +72,15 @@ ColorCalibrationInterface* TheColorCalibrationInterface = 0;
 // ----------------------------------------------------------------------------
 
 ColorCalibrationInterface::ColorCalibrationInterface() :
-ProcessInterface(), instance( TheColorCalibrationProcess ), GUI( 0 )
+   instance( TheColorCalibrationProcess )
 {
    TheColorCalibrationInterface = this;
 }
 
 ColorCalibrationInterface::~ColorCalibrationInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString ColorCalibrationInterface::Id() const
@@ -111,7 +111,7 @@ void ColorCalibrationInterface::ApplyInstance() const
 /*
 void ColorCalibrationInterface::RealTimePreviewUpdated( bool active )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( active )
       {
          newRTData = true;
@@ -130,8 +130,7 @@ void ColorCalibrationInterface::ResetInstance()
 
 bool ColorCalibrationInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "ColorCalibration" );
@@ -149,16 +148,10 @@ ProcessImplementation* ColorCalibrationInterface::NewProcess() const
 
 bool ColorCalibrationInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const ColorCalibrationInstance* r = dynamic_cast<const ColorCalibrationInstance*>( &p );
-
-   if ( r == 0 )
-   {
-      whyNot = "Not a ColorCalibration instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const ColorCalibrationInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a ColorCalibration instance.";
+   return false;
 }
 
 bool ColorCalibrationInterface::RequiresInstanceValidation() const
@@ -332,8 +325,9 @@ void ColorCalibrationInterface::UpdateRealTimePreview()
 void ColorCalibrationInterface::__GetFocus( Control& sender )
 {
    Edit* e = dynamic_cast<Edit*>( &sender );
-   if ( e != 0 && e->Text() == TARGET_IMAGE )
-      e->Clear();
+   if ( e != nullptr )
+      if ( e->Text() == TARGET_IMAGE )
+         e->Clear();
 }
 
 void ColorCalibrationInterface::__EditCompleted( Edit& sender )
@@ -368,7 +362,6 @@ void ColorCalibrationInterface::__EditCompleted( Edit& sender )
       }
       return;
    }
-
    catch ( ... )
    {
       if ( sender == GUI->WhiteReferenceView_Edit )
@@ -380,7 +373,6 @@ void ColorCalibrationInterface::__EditCompleted( Edit& sender )
       {
          throw;
       }
-
       ERROR_HANDLER
 
       sender.SelectAll();
@@ -512,6 +504,47 @@ void ColorCalibrationInterface::__GroupBoxCheck( GroupBox& sender, bool checked 
       instance.backgroundUseROI = checked;
 }
 
+void ColorCalibrationInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->WhiteReferenceView_Edit || sender == GUI->BackgroundReferenceView_Edit )
+      wantsView = true;
+   else if ( sender == GUI->WhiteROI_GroupBox || sender == GUI->WhiteROISelectPreview_Button ||
+             sender == GUI->BackgroundROI_GroupBox || sender == GUI->BackgroundROISelectPreview_Button )
+      wantsView = view.IsPreview();
+}
+
+void ColorCalibrationInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->WhiteReferenceView_Edit )
+   {
+      instance.whiteReferenceViewId = view.FullId();
+      GUI->WhiteReferenceView_Edit.SetText( WHITE_REFERENCE_ID );
+   }
+   else if ( sender == GUI->BackgroundReferenceView_Edit )
+   {
+      instance.backgroundReferenceViewId = view.FullId();
+      GUI->BackgroundReferenceView_Edit.SetText( BACKGROUND_REFERENCE_ID );
+   }
+   else if ( sender == GUI->WhiteROI_GroupBox || sender == GUI->WhiteROISelectPreview_Button )
+   {
+      if ( view.IsPreview() )
+      {
+         instance.whiteUseROI = true;
+         instance.whiteROI = view.Window().PreviewRect( view.Id() );
+         UpdateControls();
+      }
+   }
+   else if ( sender == GUI->BackgroundROI_GroupBox || sender == GUI->BackgroundROISelectPreview_Button )
+   {
+      if ( view.IsPreview() )
+      {
+         instance.backgroundUseROI = true;
+         instance.backgroundROI = view.Window().PreviewRect( view.Id() );
+         UpdateControls();
+      }
+   }
+}
+
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
@@ -541,6 +574,8 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
       "value), the target image will be also the white reference image during the calibration process.</p>" );
    WhiteReferenceView_Edit.OnGetFocus( (Control::event_handler)&ColorCalibrationInterface::__GetFocus, w );
    WhiteReferenceView_Edit.OnEditCompleted( (Edit::edit_event_handler)&ColorCalibrationInterface::__EditCompleted, w );
+   WhiteReferenceView_Edit.OnViewDrag( (Control::view_drag_event_handler)&ColorCalibrationInterface::__ViewDrag, w );
+   WhiteReferenceView_Edit.OnViewDrop( (Control::view_drop_event_handler)&ColorCalibrationInterface::__ViewDrop, w );
 
    WhiteReferenceView_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    WhiteReferenceView_ToolButton.SetScaledFixedSize( 20, 20 );
@@ -585,6 +620,8 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
    WhiteROI_GroupBox.SetTitle( "Region of Interest" );
    WhiteROI_GroupBox.EnableTitleCheckBox();
    WhiteROI_GroupBox.OnCheck( (GroupBox::check_event_handler)&ColorCalibrationInterface::__GroupBoxCheck, w );
+   WhiteROI_GroupBox.OnViewDrag( (Control::view_drag_event_handler)&ColorCalibrationInterface::__ViewDrag, w );
+   WhiteROI_GroupBox.OnViewDrop( (Control::view_drop_event_handler)&ColorCalibrationInterface::__ViewDrop, w );
 
    const char* whiteROIX0ToolTip = "<p>X pixel coordinate of the upper-left corner of the ROI, white reference.</p>";
 
@@ -640,6 +677,8 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
    WhiteROISelectPreview_Button.SetText( "From Preview" );
    WhiteROISelectPreview_Button.SetToolTip( "<p>Import ROI coordinates from an existing preview, white reference.</p>" );
    WhiteROISelectPreview_Button.OnClick( (Button::click_event_handler)&ColorCalibrationInterface::__Click, w );
+   WhiteROISelectPreview_Button.OnViewDrag( (Control::view_drag_event_handler)&ColorCalibrationInterface::__ViewDrag, w );
+   WhiteROISelectPreview_Button.OnViewDrop( (Control::view_drop_event_handler)&ColorCalibrationInterface::__ViewDrop, w );
 
    WhiteROIRow2_Sizer.SetSpacing( 4 );
    WhiteROIRow2_Sizer.Add( WhiteROIWidth_Label );
@@ -812,6 +851,8 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
       "sky area of the target image, and selecting it here as the background reference image.</p>" );
    BackgroundReferenceView_Edit.OnGetFocus( (Control::event_handler)&ColorCalibrationInterface::__GetFocus, w );
    BackgroundReferenceView_Edit.OnEditCompleted( (Edit::edit_event_handler)&ColorCalibrationInterface::__EditCompleted, w );
+   BackgroundReferenceView_Edit.OnViewDrag( (Control::view_drag_event_handler)&ColorCalibrationInterface::__ViewDrag, w );
+   BackgroundReferenceView_Edit.OnViewDrop( (Control::view_drop_event_handler)&ColorCalibrationInterface::__ViewDrop, w );
 
    BackgroundReferenceView_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    BackgroundReferenceView_ToolButton.SetScaledFixedSize( 20, 20 );
@@ -852,6 +893,8 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
    BackgroundROI_GroupBox.SetTitle( "Region of Interest" );
    BackgroundROI_GroupBox.EnableTitleCheckBox();
    BackgroundROI_GroupBox.OnCheck( (GroupBox::check_event_handler)&ColorCalibrationInterface::__GroupBoxCheck, w );
+   BackgroundROI_GroupBox.OnViewDrag( (Control::view_drag_event_handler)&ColorCalibrationInterface::__ViewDrag, w );
+   BackgroundROI_GroupBox.OnViewDrop( (Control::view_drop_event_handler)&ColorCalibrationInterface::__ViewDrop, w );
 
    const char* backgroundROIX0ToolTip = "<p>X pixel coordinate of the upper-left corner of the ROI, background reference.</p>";
 
@@ -907,6 +950,8 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
    BackgroundROISelectPreview_Button.SetText( "From Preview" );
    BackgroundROISelectPreview_Button.SetToolTip( "<p>Import ROI coordinates from an existing preview, background reference.</p>" );
    BackgroundROISelectPreview_Button.OnClick( (Button::click_event_handler)&ColorCalibrationInterface::__Click, w );
+   BackgroundROISelectPreview_Button.OnViewDrag( (Control::view_drag_event_handler)&ColorCalibrationInterface::__ViewDrag, w );
+   BackgroundROISelectPreview_Button.OnViewDrop( (Control::view_drop_event_handler)&ColorCalibrationInterface::__ViewDrop, w );
 
    BackgroundROIRow2_Sizer.SetSpacing( 4 );
    BackgroundROIRow2_Sizer.Add( BackgroundROIWidth_Label );
@@ -977,4 +1022,4 @@ ColorCalibrationInterface::GUIData::GUIData( ColorCalibrationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ColorCalibrationInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF ColorCalibrationInterface.cpp - Released 2017-04-14T23:07:12Z

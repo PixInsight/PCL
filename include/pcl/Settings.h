@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/Settings.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Settings.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,26 +54,14 @@
 
 /// \file pcl/Settings.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_String_h
-#include <pcl/String.h>
-#endif
-
-#ifndef __PCL_ByteArray_h
 #include <pcl/ByteArray.h>
-#endif
+#include <pcl/String.h>
 
 #ifndef __PCL_NO_FLAGS_SETTINGS_IO
-#ifndef __PCL_Flags_h
-#include <pcl/Flags.h>
-#endif
+#  include <pcl/Flags.h>
 #endif
 
 namespace pcl
@@ -117,6 +105,30 @@ namespace pcl
 class PCL_CLASS Settings
 {
 public:
+
+   /*!
+    * Default constructor. This constructor is disabled because %Settings is
+    * not an instantiable class.
+    */
+   Settings() = delete;
+
+   /*!
+    * Copy constructor. This constructor is disabled because %Settings is not
+    * an instantiable class.
+    */
+   Settings( const Settings& ) = delete;
+
+   /*!
+    * Copy assignment. This operator is disabled because %Settings is not an
+    * instantiable class.
+    */
+   Settings& operator =( const Settings& ) = delete;
+
+   /*!
+    * Destructor. This destructor is disabled because %Settings is not an
+    * instantiable class.
+    */
+   ~Settings() = delete;
 
    /*!
     * Reads a sequence of bytes from the <em>local settings space</em> of the
@@ -872,14 +884,6 @@ public:
     * access is possible by default from the global module settings space.
     */
    static void SetGlobalKeyAccess( const IsoString& key, bool allowRead, bool allowWrite );
-
-private:
-
-   // Not an instantiable class.
-   Settings() = delete;
-   Settings( const Settings& ) = delete;
-   void operator =( const Settings& ) = delete;
-   ~Settings() = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -889,4 +893,4 @@ private:
 #endif   // __PCL_Settings_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Settings.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Settings.h - Released 2017-04-14T23:04:40Z

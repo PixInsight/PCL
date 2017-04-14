@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.05.0272
+// Standard ImageCalibration Process Module Version 01.03.05.0281
 // ----------------------------------------------------------------------------
-// ImageCalibrationModule.cpp - Released 2016/02/21 20:22:43 UTC
+// ImageCalibrationModule.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     03
 #define MODULE_VERSION_REVISION  05
-#define MODULE_VERSION_BUILD     0272
+#define MODULE_VERSION_BUILD     0281
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2016
-#define MODULE_RELEASE_MONTH     2
-#define MODULE_RELEASE_DAY       21
+#define MODULE_RELEASE_YEAR      2017
+#define MODULE_RELEASE_MONTH     4
+#define MODULE_RELEASE_DAY       14
 
 #include "ImageCalibrationModule.h"
 #include "ImageCalibrationProcess.h"
@@ -108,7 +108,7 @@ String ImageCalibrationModule::Author() const
 
 String ImageCalibrationModule::Copyright() const
 {
-   return "Copyright (c) 2009-2015, Pleiades Astrophoto";
+   return "Copyright (c) 2009-2017, Pleiades Astrophoto";
 }
 
 String ImageCalibrationModule::TradeMarks() const
@@ -143,25 +143,9 @@ void ImageCalibrationModule::GetReleaseDate( int& year, int& month, int& day ) c
 
 } // pcl
 
-// ----------------------------------------------------------------------------
-// PCL_MODULE_EXPORT int InstallPixInsightModule( int )
-//
-// Module installation routine.
-// If defined, the PixInsight application calls this routine just after
-// loading the module shared library.
-// ----------------------------------------------------------------------------
-
-PCL_MODULE_EXPORT
-int InstallPixInsightModule( int mode )
+PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 {
-   // When the PixInsight application installs this module, we just have to
-   // instantiate the meta objects describing it.
-
    new pcl::ImageCalibrationModule;
-
-   // The mode argument tells us what kind of installation is being requested
-   // by the PixInsight application. Incomplete installation requests only need
-   // module descriptions.
 
    if ( mode == pcl::InstallMode::FullInstall )
    {
@@ -173,9 +157,8 @@ int InstallPixInsightModule( int mode )
       new pcl::SuperbiasInterface;
    }
 
-   // Return zero to signal successful installation
    return 0;
 }
 
 // ----------------------------------------------------------------------------
-// EOF ImageCalibrationModule.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF ImageCalibrationModule.cpp - Released 2017-04-14T23:07:12Z

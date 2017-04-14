@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard TIFF File Format Module Version 01.00.06.0294
+// Standard TIFF File Format Module Version 01.00.07.0307
 // ----------------------------------------------------------------------------
-// TIFF.cpp - Released 2016/02/21 20:22:34 UTC
+// TIFF.cpp - Released 2017-04-14T23:07:03Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard TIFF PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -58,34 +58,13 @@
 #include <pcl/ErrorHandler.h>
 #include <pcl/MessageBox.h>
 
-#include <tiffio.h>
+#include <libtiff/tiffio.h>
+
+#define  PCL_TIFF_STRICT_MODE    1
+#define  PCL_TIFF_SHOW_WARNINGS  1
 
 namespace pcl
 {
-
-// ----------------------------------------------------------------------------
-
-/*
- * Default TIFF strip size in bytes.
- */
-static const size_type defaultStripSize = 4096;
-
-/*
- * Maximum size of a TIFF strip in bytes.
- * The default strip size is 4 KiB. Too low or too high strip sizes may degrade
- * performance.
- */
-static size_type stripSize = defaultStripSize;
-
-/*
- * Whether to abort file open operations on libtiff errors.
- */
-static bool strictMode = false;
-
-/*
- * Whether to show libtiff's warnings.
- */
-static bool showWarnings = false;
 
 // ----------------------------------------------------------------------------
 
@@ -96,9 +75,11 @@ static bool showWarnings = false;
 static void TIFFErrorHandler( const char* module, const char* fmt, va_list args )
 {
    String msg; (void)msg.VFormat( fmt, args );
-   if ( strictMode )
-      throw Error( String( "TIFF Error: " ) + module + ": " + msg );
+#ifdef PCL_TIFF_STRICT_MODE
+   throw Error( String( "TIFF Error: " ) + module + ": " + msg );
+#else
    Console().CriticalLn( "<end><cbr>*** Error: TIFF: " + msg );
+#endif
 }
 
 /*
@@ -106,11 +87,10 @@ static void TIFFErrorHandler( const char* module, const char* fmt, va_list args 
  */
 static void TIFFWarningHandler( const char* module, const char* fmt, va_list args )
 {
-   if ( showWarnings )
-   {
-      String msg; (void)msg.VFormat( fmt, args );
-      Console().WarningLn( "<end><cbr>** Warning: TIFF: " + msg );
-   }
+#ifdef PCL_TIFF_SHOW_WARNINGS
+   String msg; (void)msg.VFormat( fmt, args );
+   Console().WarningLn( "<end><cbr>** Warning: TIFF: " + msg );
+#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -155,126 +135,140 @@ struct TIFFFileData
 
 // ----------------------------------------------------------------------------
 
-void TIFF::CloseStream() // ### derived must call base
+TIFF::TIFF()
 {
-   // Close TIFF file stream and clean up libtiff data.
-   if ( fileData != nullptr )
-      delete fileData, fileData = nullptr;
 }
 
 // ----------------------------------------------------------------------------
 
-#define info                  ((*images).info)
-#define options               ((*images).options)
+TIFF::~TIFF()
+{
+   CloseStream();
+}
 
-#define tif                   (fileData->handle)
-#define tiffWidth             (fileData->width)
-#define tiffLength            (fileData->length)
-#define tiffBitsPerSample     (fileData->bitsPerSample)
-#define tiffSampleFormat      (fileData->sampleFormat)
-#define tiffSamplesPerPixel   (fileData->samplesPerPixel)
-#define tiffPhotometric       (fileData->photometric)
-#define tiffPlanarConfig      (fileData->planarConfig)
+// ----------------------------------------------------------------------------
+
+void TIFF::CloseStream() // ### derived must call base
+{
+   // Close TIFF file stream and clean up libtiff data.
+   m_fileData.Destroy();
+}
+
+// ----------------------------------------------------------------------------
+
+TIFFReader::TIFFReader()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+TIFFReader::~TIFFReader()
+{
+}
 
 // ----------------------------------------------------------------------------
 
 bool TIFFReader::IsOpen() const
 {
-   return fileData != nullptr && fileData->handle != nullptr;
+   return m_fileData && m_fileData->handle != nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 void TIFFReader::Close()
 {
    TIFF::CloseStream();
 }
 
-void TIFFReader::Open( const String& _path )
+// ----------------------------------------------------------------------------
+
+void TIFFReader::Open( const String& path )
 {
    if ( IsOpen() )
-      throw InvalidReadOperation( path );
+      throw InvalidReadOperation( m_path );
 
-   if ( _path.IsEmpty() )
-      throw InvalidFilePath( _path );
+   if ( path.IsEmpty() )
+      throw InvalidFilePath( path );
 
-   if ( options.lowerRange >= options.upperRange )
-      throw InvalidNormalizationRange( _path );
+   if ( m_image.options.lowerRange >= m_image.options.upperRange )
+      throw InvalidNormalizationRange( path );
 
-   info.Reset();
+   m_image.info.Reset();
 
    try
    {
-      fileData = new TIFFFileData;
+      m_fileData = new TIFFFileData;
 #ifdef __PCL_WINDOWS
-      path = File::WindowsPathToUnix( _path );
+      m_path = File::WindowsPathToUnix( path );
 #else
-      path = _path;
+      m_path = path;
 #endif
 
       // Keep critical parameters secured in private data.
-      fileData->lowerRange = options.lowerRange;
-      fileData->upperRange = options.upperRange;
+      m_fileData->lowerRange = m_image.options.lowerRange;
+      m_fileData->upperRange = m_image.options.upperRange;
 
       //
       // Open the TIFF image file stream for reading.
       //
       IsoString path8 =
 #ifdef __PCL_WINDOWS
-         File::UnixPathToWindows( path ).ToMBS();
+         File::UnixPathToWindows( m_path ).ToMBS();
 #else
-         path.ToUTF8();
+         m_path.ToUTF8();
 #endif
-      if ( (tif = ::TIFFOpen( path8.c_str(), "r" )) == nullptr )
-         throw UnableToOpenFile( path );
+      if ( (m_fileData->handle = ::TIFFOpen( path8.c_str(), "r" )) == nullptr )
+         throw UnableToOpenFile( m_path );
 
       //
       // Retrieve TIFF image information --------------------------------------
       //
 
       // Mandatory fields.
-      ::TIFFGetField( tif, TIFFTAG_IMAGEWIDTH, &tiffWidth );
-      ::TIFFGetField( tif, TIFFTAG_IMAGELENGTH, &tiffLength );
-      ::TIFFGetField( tif, TIFFTAG_BITSPERSAMPLE, &tiffBitsPerSample );
-      ::TIFFGetField( tif, TIFFTAG_SAMPLESPERPIXEL, &tiffSamplesPerPixel );
-      ::TIFFGetField( tif, TIFFTAG_PLANARCONFIG, &tiffPlanarConfig );
+      ::TIFFGetField( m_fileData->handle, TIFFTAG_IMAGEWIDTH, &m_fileData->width );
+      ::TIFFGetField( m_fileData->handle, TIFFTAG_IMAGELENGTH, &m_fileData->length );
+      ::TIFFGetField( m_fileData->handle, TIFFTAG_BITSPERSAMPLE, &m_fileData->bitsPerSample );
+      ::TIFFGetField( m_fileData->handle, TIFFTAG_SAMPLESPERPIXEL, &m_fileData->samplesPerPixel );
+      ::TIFFGetField( m_fileData->handle, TIFFTAG_PLANARCONFIG, &m_fileData->planarConfig );
 
       // Update ImageInfo.
-      info.width = tiffWidth;
-      info.height = tiffLength;
-      info.numberOfChannels = tiffSamplesPerPixel;
+      m_image.info.width = m_fileData->width;
+      m_image.info.height = m_fileData->length;
+      m_image.info.numberOfChannels = m_fileData->samplesPerPixel;
 
       // Photometric mode = color space of the target Image object.
-      ::TIFFGetField( tif, TIFFTAG_PHOTOMETRIC, &tiffPhotometric );
+      ::TIFFGetField( m_fileData->handle, TIFFTAG_PHOTOMETRIC, &m_fileData->photometric );
 
       // We only support the grayscale and RGB color photometric modes.
-      switch ( tiffPhotometric )
+      switch ( m_fileData->photometric )
       {
       case PHOTOMETRIC_MINISBLACK:
       case PHOTOMETRIC_MINISWHITE:
-         info.colorSpace = ColorSpace::Gray;
+         m_image.info.colorSpace = ColorSpace::Gray;
          break;
 
       case PHOTOMETRIC_RGB:
-         info.colorSpace = ColorSpace::RGB;
+         m_image.info.colorSpace = ColorSpace::RGB;
          break;
 
       default:
-         info.colorSpace = ColorSpace::Unknown;
-         throw UnsupportedColorSpace( path );
+         m_image.info.colorSpace = ColorSpace::Unknown;
+         throw UnsupportedColorSpace( m_path );
       }
 
       // The SampleFormat field is optional. If not present, we assume the
       // sample format is unsigned 16-bit integer. This is in conformance with
       // baseline TIFF 6.0.
-      if ( !::TIFFGetField( tif, TIFFTAG_SAMPLEFORMAT, &tiffSampleFormat ) )
-         tiffSampleFormat = SAMPLEFORMAT_UINT; // assume unsigned integers
+      if ( !::TIFFGetField( m_fileData->handle, TIFFTAG_SAMPLEFORMAT, &m_fileData->sampleFormat ) )
+         m_fileData->sampleFormat = SAMPLEFORMAT_UINT; // assume unsigned integers
 
       // Supported pixel depths: 8, 16, 32 and 64 bits.
-      if ( tiffBitsPerSample != 8 &&
-           tiffBitsPerSample != 16 &&
-           tiffBitsPerSample != 32 &&
-           tiffBitsPerSample != 64 )
+      if ( m_fileData->bitsPerSample != 8 &&
+           m_fileData->bitsPerSample != 16 &&
+           m_fileData->bitsPerSample != 32 &&
+           m_fileData->bitsPerSample != 64 )
       {
-         throw UnsupportedBitsPerSample( path );
+         throw UnsupportedBitsPerSample( m_path );
       }
 
       // Supported sample formats:
@@ -282,27 +276,27 @@ void TIFFReader::Open( const String& _path )
       //    8, 16 and 32 bits signed integers -> sample format = 2
       //    32 and 64 bits IEEE floating point -> sample format = 3
       //    void (will be treated as unsigned integer) -> sample format = 4
-      if ( tiffSampleFormat != SAMPLEFORMAT_UINT &&
-           tiffSampleFormat != SAMPLEFORMAT_INT &&
-           tiffSampleFormat != SAMPLEFORMAT_IEEEFP &&
-           tiffSampleFormat != SAMPLEFORMAT_VOID )
+      if ( m_fileData->sampleFormat != SAMPLEFORMAT_UINT &&
+           m_fileData->sampleFormat != SAMPLEFORMAT_INT &&
+           m_fileData->sampleFormat != SAMPLEFORMAT_IEEEFP &&
+           m_fileData->sampleFormat != SAMPLEFORMAT_VOID )
       {
-         throw UnsupportedSampleFormat( path );
+         throw UnsupportedSampleFormat( m_path );
       }
 
       // Treat unknown sample format as unsigned integer.
-      if ( tiffSampleFormat == SAMPLEFORMAT_VOID )
-         tiffSampleFormat = SAMPLEFORMAT_UINT;
+      if ( m_fileData->sampleFormat == SAMPLEFORMAT_VOID )
+         m_fileData->sampleFormat = SAMPLEFORMAT_UINT;
 
       // Reject bizarre things, such as 64-bit integers, or impossible reals.
-      if ( tiffBitsPerSample == 64 && tiffSampleFormat != SAMPLEFORMAT_IEEEFP ||
-           tiffBitsPerSample < 32 && tiffSampleFormat == SAMPLEFORMAT_IEEEFP )
+      if ( m_fileData->bitsPerSample == 64 && m_fileData->sampleFormat != SAMPLEFORMAT_IEEEFP ||
+           m_fileData->bitsPerSample < 32 && m_fileData->sampleFormat == SAMPLEFORMAT_IEEEFP )
       {
-         throw UnsupportedSampleFormat( path );
+         throw UnsupportedSampleFormat( m_path );
       }
 
       // If reached this point, then hopefully this TIFF image is valid for us.
-      info.supported = true;
+      m_image.info.supported = true;
 
       //
       // Retrieve optional TIFF information -----------------------------------
@@ -314,121 +308,121 @@ void TIFFReader::Open( const String& _path )
       char*  tiffStr;
 
       // Sample format.
-      options.bitsPerSample = tiffBitsPerSample;
-      options.ieeefpSampleFormat = tiffSampleFormat == SAMPLEFORMAT_IEEEFP;
-      options.signedIntegers = options.complexSample = false;
+      m_image.options.bitsPerSample = m_fileData->bitsPerSample;
+      m_image.options.ieeefpSampleFormat = m_fileData->sampleFormat == SAMPLEFORMAT_IEEEFP;
+      m_image.options.signedIntegers = m_image.options.complexSample = false;
 
       // Compression.
 
-      if ( ::TIFFGetField( tif, TIFFTAG_COMPRESSION, &tiffUInt16 ) )
+      if ( ::TIFFGetField( m_fileData->handle, TIFFTAG_COMPRESSION, &tiffUInt16 ) )
       {
          switch ( tiffUInt16 )
          {
          case COMPRESSION_NONE:
-            tiffOptions.compression = TIFFCompression::None;
+            m_tiffOptions.compression = TIFFCompression::None;
             break;
          case COMPRESSION_DEFLATE:
-            tiffOptions.compression = TIFFCompression::ZIP;
+            m_tiffOptions.compression = TIFFCompression::ZIP;
             break;
          case COMPRESSION_LZW:
-            tiffOptions.compression = TIFFCompression::LZW;
+            m_tiffOptions.compression = TIFFCompression::LZW;
             break;
          default:
-            tiffOptions.compression = TIFFCompression::Unknown;
+            m_tiffOptions.compression = TIFFCompression::Unknown;
             break;
          }
       }
       else
-         tiffOptions.compression = TIFFCompression::None;
+         m_tiffOptions.compression = TIFFCompression::None;
 
       // Planar configuration.
-      tiffOptions.planar = ::TIFFGetField( tif, TIFFTAG_PLANARCONFIG, &tiffUInt16 ) &&
+      m_tiffOptions.planar = ::TIFFGetField( m_fileData->handle, TIFFTAG_PLANARCONFIG, &tiffUInt16 ) &&
                            tiffUInt16 == PLANARCONFIG_SEPARATE;
 
       // Resolution units: metric (centimeters) or English (inches).
-      options.metricResolution = ::TIFFGetField( tif, TIFFTAG_RESOLUTIONUNIT, &tiffUInt16 ) &&
+      m_image.options.metricResolution = ::TIFFGetField( m_fileData->handle, TIFFTAG_RESOLUTIONUNIT, &tiffUInt16 ) &&
                            tiffUInt16 == RESUNIT_CENTIMETER;
 
       // TIFF specifies a separate resolution for each axis.
       // Resolution values are stored as float values in the TIFF file, so we
       // need a temporary float variable.
 
-      if ( ::TIFFGetField( tif, TIFFTAG_XRESOLUTION, &tiffFloat ) )
-         options.xResolution = tiffFloat;
+      if ( ::TIFFGetField( m_fileData->handle, TIFFTAG_XRESOLUTION, &tiffFloat ) )
+         m_image.options.xResolution = tiffFloat;
       else
-         options.xResolution = 0;
+         m_image.options.xResolution = 0;
 
-      if ( ::TIFFGetField( tif, TIFFTAG_YRESOLUTION, &tiffFloat ) )
-         options.yResolution = tiffFloat;
+      if ( ::TIFFGetField( m_fileData->handle, TIFFTAG_YRESOLUTION, &tiffFloat ) )
+         m_image.options.yResolution = tiffFloat;
       else
-         options.yResolution = 0;
+         m_image.options.yResolution = 0;
 
       // Some programs out there don't write correct resolution data.
-      if ( options.xResolution <= 0 || options.yResolution <= 0 )
-         options.xResolution = options.yResolution = options.metricResolution ? 72/2.54 : 72;
+      if ( m_image.options.xResolution <= 0 || m_image.options.yResolution <= 0 )
+         m_image.options.xResolution = m_image.options.yResolution = m_image.options.metricResolution ? 72/2.54 : 72;
 
       // Extra samples information
 
-      tiffOptions.premultipliedAlpha = false;
+      m_tiffOptions.premultipliedAlpha = false;
 
-      if ( info.numberOfChannels > ((info.colorSpace == ColorSpace::RGB) ? 3 : 1) )
+      if ( m_image.info.numberOfChannels > ((m_image.info.colorSpace == ColorSpace::RGB) ? 3 : 1) )
       {
          uint16* sampleinfo;
          uint16 extrasamples;
-         if ( ::TIFFGetField( tif, TIFFTAG_EXTRASAMPLES, &extrasamples, &sampleinfo ) )
-            tiffOptions.premultipliedAlpha = *sampleinfo == EXTRASAMPLE_ASSOCALPHA;
+         if ( ::TIFFGetField( m_fileData->handle, TIFFTAG_EXTRASAMPLES, &extrasamples, &sampleinfo ) )
+            m_tiffOptions.premultipliedAlpha = *sampleinfo == EXTRASAMPLE_ASSOCALPHA;
       }
 
       // Optional information literals.
 
-      if ( ::TIFFGetField( tif, TIFFTAG_SOFTWARE, &tiffStr ) )
-         tiffOptions.software = tiffStr;
+      if ( ::TIFFGetField( m_fileData->handle, TIFFTAG_SOFTWARE, &tiffStr ) )
+         m_tiffOptions.software = tiffStr;
       else
-         tiffOptions.software.Clear();
+         m_tiffOptions.software.Clear();
 
-      if ( ::TIFFGetField( tif, TIFFTAG_IMAGEDESCRIPTION, &tiffStr ) )
-         tiffOptions.imageDescription = tiffStr;
+      if ( ::TIFFGetField( m_fileData->handle, TIFFTAG_IMAGEDESCRIPTION, &tiffStr ) )
+         m_tiffOptions.imageDescription = tiffStr;
       else
-         tiffOptions.imageDescription.Clear();
+         m_tiffOptions.imageDescription.Clear();
 
-      if ( ::TIFFGetField( tif, TIFFTAG_COPYRIGHT, &tiffStr ) )
-         tiffOptions.copyright = tiffStr;
+      if ( ::TIFFGetField( m_fileData->handle, TIFFTAG_COPYRIGHT, &tiffStr ) )
+         m_tiffOptions.copyright = tiffStr;
       else
-         tiffOptions.copyright.Clear();
+         m_tiffOptions.copyright.Clear();
 
-      // Additional options from EXIF data (libtiff >= 3.8.0)
+      // Additional m_image.options from EXIF data (libtiff >= 3.8.0)
 
-      if ( ::TIFFGetField( tif, TIFFTAG_EXIFIFD, &tiffUInt32 ) )
+      if ( ::TIFFGetField( m_fileData->handle, TIFFTAG_EXIFIFD, &tiffUInt32 ) )
       {
-         tdir_t dir = ::TIFFCurrentDirectory( tif );
+         tdir_t dir = ::TIFFCurrentDirectory( m_fileData->handle );
 
-         if ( ::TIFFReadEXIFDirectory( tif, tiffUInt32 ) )
+         if ( ::TIFFReadEXIFDirectory( m_fileData->handle, tiffUInt32 ) )
          {
-            if ( ::TIFFGetField( tif, EXIFTAG_ISOSPEEDRATINGS, &tiffUInt32, &tiffStr ) )
-               options.isoSpeed = int( *((uint16*)tiffStr) );
+            if ( ::TIFFGetField( m_fileData->handle, EXIFTAG_ISOSPEEDRATINGS, &tiffUInt32, &tiffStr ) )
+               m_image.options.isoSpeed = int( *((uint16*)tiffStr) );
 
-            if ( ::TIFFGetField( tif, EXIFTAG_EXPOSURETIME, &tiffFloat ) )
-               options.exposure = tiffFloat;
+            if ( ::TIFFGetField( m_fileData->handle, EXIFTAG_EXPOSURETIME, &tiffFloat ) )
+               m_image.options.exposure = tiffFloat;
 
-            if ( ::TIFFGetField( tif, EXIFTAG_APERTUREVALUE, &tiffFloat ) )
-               options.aperture = Pow2( tiffFloat/2 );
+            if ( ::TIFFGetField( m_fileData->handle, EXIFTAG_APERTUREVALUE, &tiffFloat ) )
+               m_image.options.aperture = Pow2( tiffFloat/2 );
 
-            if ( ::TIFFGetField( tif, EXIFTAG_FOCALLENGTH, &tiffFloat ) )
-               options.focalLength = tiffFloat; // mm
+            if ( ::TIFFGetField( m_fileData->handle, EXIFTAG_FOCALLENGTH, &tiffFloat ) )
+               m_image.options.focalLength = tiffFloat; // mm
 
-            if ( ::TIFFGetField( tif, EXIFTAG_CFAPATTERN, &tiffUInt32, &tiffStr ) )
+            if ( ::TIFFGetField( m_fileData->handle, EXIFTAG_CFAPATTERN, &tiffUInt32, &tiffStr ) )
                if ( tiffUInt32 == 8 && *((uint32*)tiffStr) == 0x00020002u ) // support RGB CFAs only
                   switch ( *((uint32*)(tiffStr + 4)) )
                   {
-                  case 0x00010102u : options.cfaType = CFAType::BGGR; break;
-                  case 0x01020001u : options.cfaType = CFAType::GRBG; break;
-                  case 0x01000201u : options.cfaType = CFAType::GBRG; break;
-                  case 0x02010100u : options.cfaType = CFAType::RGGB; break;
-                  default          : options.cfaType = CFAType::None; break;
+                  case 0x00010102u : m_image.options.cfaType = CFAType::BGGR; break;
+                  case 0x01020001u : m_image.options.cfaType = CFAType::GRBG; break;
+                  case 0x01000201u : m_image.options.cfaType = CFAType::GBRG; break;
+                  case 0x02010100u : m_image.options.cfaType = CFAType::RGGB; break;
+                  default          : m_image.options.cfaType = CFAType::None; break;
                   }
          }
 
-        ::TIFFSetDirectory( tif, dir );
+        ::TIFFSetDirectory( m_fileData->handle, dir );
       }
    }
    catch ( ... )
@@ -440,42 +434,17 @@ void TIFFReader::Open( const String& _path )
 
 // ----------------------------------------------------------------------------
 
-bool TIFFReader::Extract( ICCProfile& icc )
+ICCProfile TIFFReader::ReadICCProfile()
 {
-   icc.Clear();
-
    if ( !IsOpen() )
-      return false;
+      throw TIFF::InvalidReadOperation( String() );
 
    uint32 byteCount;
    void* iccData;
-   if ( ::TIFFGetField( tif, TIFFTAG_ICCPROFILE, &byteCount, &iccData ) )
-      icc.Set( iccData );
-
-   return true;
+   if ( ::TIFFGetField( m_fileData->handle, TIFFTAG_ICCPROFILE, &byteCount, &iccData ) )
+      return ICCProfile( iccData );
+   return ICCProfile();
 }
-
-// ----------------------------------------------------------------------------
-
-/*
-bool TIFFReader::Extract( IPTCPhotoInfo& iptc )
-{
-   iptc.Clear();
-
-   if ( !IsOpen() )
-      return false;
-
-   uint16 uint32Count;
-   void* iptcData;
-
-   // The length of an IPTC PhotoInfo data block is given as a count of
-   // 32-bit integers by the libtiff library.
-   if ( ::TIFFGetField( tif, TIFFTAG_RICHTIFFIPTC, &uint32Count, &iptcData ) )
-      iptc.GetInfo( iptcData, uint32Count*4 );
-
-   return true;
-}
-*/
 
 // ----------------------------------------------------------------------------
 
@@ -492,31 +461,31 @@ static void ReadTIFFImage( GenericImage<P>& image, TIFFReader& reader, TIFFFileD
       //
 
       // Allocate space.
-      // Don't trust info fields since they are publicly accessible.
-      image.AllocateData( tiffWidth, tiffLength, tiffSamplesPerPixel,
-         (tiffPhotometric == PHOTOMETRIC_RGB) ? ColorSpace::RGB : ColorSpace::Gray );
+      // Don't trust m_image.info fields since they are publicly accessible.
+      image.AllocateData( fileData->width, fileData->length, fileData->samplesPerPixel,
+         (fileData->photometric == PHOTOMETRIC_RGB) ? ColorSpace::RGB : ColorSpace::Gray );
 
       // Determine if we are dealing with a planar image. This is from our
       // algorithmic POV, which includes when we have a single channel to read.
-      bool isPlanar = tiffPlanarConfig == PLANARCONFIG_SEPARATE ||
+      bool isPlanar = fileData->planarConfig == PLANARCONFIG_SEPARATE ||
                       image.NumberOfChannels() == 1;
 
       // Are we dealing with signed integer samples?
-      bool isSignedIntSample = tiffSampleFormat == SAMPLEFORMAT_INT;
+      bool isSignedIntSample = fileData->sampleFormat == SAMPLEFORMAT_INT;
 
       // Are we dealing with floating-point samples?
-      bool isFloatSample = tiffSampleFormat == SAMPLEFORMAT_IEEEFP;
+      bool isFloatSample = fileData->sampleFormat == SAMPLEFORMAT_IEEEFP;
 
       // Begin reading pixels.
 
       if ( image.Status().IsInitializationEnabled() )
          image.Status().Initialize( String().Format(
                   "Reading TIFF: %d-bit %s, %d channel(s), %dx%d pixels, %s",
-                  tiffBitsPerSample,
+                  fileData->bitsPerSample,
                   isFloatSample ? "floating point" : "integers",
-                  tiffSamplesPerPixel,
-                  tiffWidth, tiffLength,
-                  (tiffPlanarConfig == PLANARCONFIG_SEPARATE) ? "planar" : "chunky" ),
+                  fileData->samplesPerPixel,
+                  fileData->width, fileData->length,
+                  (fileData->planarConfig == PLANARCONFIG_SEPARATE) ? "planar" : "chunky" ),
          image.NumberOfSamples() );
 
       // If we are reading a floating-point TIFF file into an integer image, we
@@ -528,14 +497,14 @@ static void ReadTIFFImage( GenericImage<P>& image, TIFFReader& reader, TIFFFileD
 
       if ( isPlanar ) // separate planes or grayscale
       {
-         if ( P::IsFloatSample() == isFloatSample && P::BitsPerSample() == tiffBitsPerSample )
+         if ( P::IsFloatSample() == isFloatSample && P::BitsPerSample() == fileData->bitsPerSample )
          {
             // File sample type same as image sample type.
             // Planar organization.
 
             for ( int c = 0; c < image.NumberOfChannels(); ++c )
                for ( int i = 0; i < image.Height(); ++i, image.Status() += image.Width() )
-                  if ( ::TIFFReadScanline( tif, image.ScanLine( i, c ), i, c ) < 0 )
+                  if ( ::TIFFReadScanline( fileData->handle, image.ScanLine( i, c ), i, c ) < 0 )
                      throw TIFF::FileReadError( reader.Path() );
          }
          else
@@ -543,13 +512,13 @@ static void ReadTIFFImage( GenericImage<P>& image, TIFFReader& reader, TIFFFileD
             // File sample type and image sample type are different.
             // Planar organization.
 
-            size_type tiffLineSize = image.Width() * (tiffBitsPerSample >> 3);
+            size_type tiffLineSize = image.Width() * (fileData->bitsPerSample >> 3);
             ByteArray buffer( tiffLineSize );
 
             for ( int c = 0; c < image.NumberOfChannels(); ++c )
                for ( int i = 0; i < image.Height(); ++i, image.Status() += image.Width() )
                {
-                  if ( ::TIFFReadScanline( tif, buffer.Begin(), i, c ) < 0 )
+                  if ( ::TIFFReadScanline( fileData->handle, buffer.Begin(), i, c ) < 0 )
                      throw TIFF::FileReadError( reader.Path() );
 
                   typename P::sample* v = image.ScanLine( i, c );
@@ -575,7 +544,7 @@ static void ReadTIFFImage( GenericImage<P>& image, TIFFReader& reader, TIFFFileD
                         b.u8 = buffer.Begin();
 
                         for ( int j = 0; j < image.Width(); ++j )
-                           switch ( tiffBitsPerSample )
+                           switch ( fileData->bitsPerSample )
                            {
                            case 8:
                               *v++ = typename P::sample( *b.i8++ );
@@ -600,7 +569,7 @@ static void ReadTIFFImage( GenericImage<P>& image, TIFFReader& reader, TIFFFileD
                         b.u8 = buffer.Begin();
 
                         for ( int j = 0; j < image.Width(); ++j )
-                           switch ( tiffBitsPerSample )
+                           switch ( fileData->bitsPerSample )
                            {
                            case 8:
                               *v++ = typename P::sample( *b.u8++ );
@@ -633,7 +602,7 @@ static void ReadTIFFImage( GenericImage<P>& image, TIFFReader& reader, TIFFFileD
                         b.u8 = buffer.Begin();
 
                         for ( int j = 0; j < image.Width(); ++j )
-                           switch ( tiffBitsPerSample )
+                           switch ( fileData->bitsPerSample )
                            {
                            case 8:
                               *v++ = P::ToSample( *b.i8++ );
@@ -658,7 +627,7 @@ static void ReadTIFFImage( GenericImage<P>& image, TIFFReader& reader, TIFFFileD
                         b.u8 = buffer.Begin();
 
                         for ( int j = 0; j < image.Width(); ++j )
-                           switch ( tiffBitsPerSample )
+                           switch ( fileData->bitsPerSample )
                            {
                            case 8:
                               *v++ = P::ToSample( *b.u8++ );
@@ -689,22 +658,22 @@ static void ReadTIFFImage( GenericImage<P>& image, TIFFReader& reader, TIFFFileD
          // contains a fixed number of pixel rows, except for the last strip,
          // which may contain a smaller amount.
 
-         unsigned tiffNumberOfStrips = ::TIFFNumberOfStrips( tif );
+         unsigned tiffNumberOfStrips = ::TIFFNumberOfStrips( fileData->handle );
 
          uint32 tiffRowsPerStrip;
          if ( tiffNumberOfStrips > 1 )
-            ::TIFFGetField( tif, TIFFTAG_ROWSPERSTRIP, &tiffRowsPerStrip );
+            ::TIFFGetField( fileData->handle, TIFFTAG_ROWSPERSTRIP, &tiffRowsPerStrip );
          else
             tiffRowsPerStrip = uint32( image.Height() );
 
-         ByteArray buffer( ::TIFFStripSize( tif ) );
+         ByteArray buffer( ::TIFFStripSize( fileData->handle ) );
 
          Array<typename P::sample*> v( image.NumberOfChannels() );
 
          // Main loop over strips.
          for ( unsigned s = 0, y = 0; s < tiffNumberOfStrips; ++s )
          {
-            if ( ::TIFFReadEncodedStrip( tif, s, buffer.Begin(), -1 ) < 0 )
+            if ( ::TIFFReadEncodedStrip( fileData->handle, s, buffer.Begin(), -1 ) < 0 )
                throw TIFF::FileReadError( reader.Path() );
 
             union { const uint8*  u8;
@@ -725,7 +694,7 @@ static void ReadTIFFImage( GenericImage<P>& image, TIFFReader& reader, TIFFFileD
                for ( int c = 0; c < image.NumberOfChannels(); ++c )
                   v[c] = image.ScanLine( y, c );
 
-               if ( P::IsFloatSample() == isFloatSample && P::BitsPerSample() == tiffBitsPerSample )
+               if ( P::IsFloatSample() == isFloatSample && P::BitsPerSample() == fileData->bitsPerSample )
                {
                   // File sample type same as image sample type.
                   // Chunky organization.
@@ -749,7 +718,7 @@ static void ReadTIFFImage( GenericImage<P>& image, TIFFReader& reader, TIFFFileD
 
                         for ( int x = 0; x < image.Width(); ++x )
                            for ( int c = 0; c < image.NumberOfChannels(); ++c )
-                              switch ( tiffBitsPerSample )
+                              switch ( fileData->bitsPerSample )
                               {
                               case 8:
                                  *v[c]++ = typename P::sample( *b.i8++ );
@@ -768,7 +737,7 @@ static void ReadTIFFImage( GenericImage<P>& image, TIFFReader& reader, TIFFFileD
 
                         for ( int x = 0; x < image.Width(); ++x )
                            for ( int c = 0; c < image.NumberOfChannels(); ++c )
-                              switch ( tiffBitsPerSample )
+                              switch ( fileData->bitsPerSample )
                               {
                               case 8 :
                                  *v[c]++ = typename P::sample( *b.u8++ );
@@ -796,7 +765,7 @@ static void ReadTIFFImage( GenericImage<P>& image, TIFFReader& reader, TIFFFileD
 
                         for ( int x = 0; x < image.Width(); ++x )
                            for ( int c = 0; c < image.NumberOfChannels(); ++c )
-                              switch ( tiffBitsPerSample )
+                              switch ( fileData->bitsPerSample )
                               {
                               case 8:
                                  *v[c]++ = P::ToSample( *b.i8++ );
@@ -815,7 +784,7 @@ static void ReadTIFFImage( GenericImage<P>& image, TIFFReader& reader, TIFFFileD
 
                         for ( int x = 0; x < image.Width(); ++x )
                            for ( int c = 0; c < image.NumberOfChannels(); ++c )
-                              switch ( tiffBitsPerSample )
+                              switch ( fileData->bitsPerSample )
                               {
                               case 8 :
                                  *v[c]++ = P::ToSample( *b.u8++ );
@@ -849,7 +818,7 @@ static void ReadTIFFImage( GenericImage<P>& image, TIFFReader& reader, TIFFFileD
 }
 
 #define NORMALIZE( I )                                                                                \
-   if ( options.readNormalized )                                                                      \
+   if ( m_image.options.readNormalized )                                                              \
    {                                                                                                  \
       StatusMonitor status = image.Status();                                                          \
       image.SetStatusCallback( 0 );                                                                   \
@@ -863,7 +832,7 @@ static void ReadTIFFImage( GenericImage<P>& image, TIFFReader& reader, TIFFFileD
                                                                                                       \
       double zeroOffset, scaleRange;                                                                  \
                                                                                                       \
-      if ( tiffSampleFormat == SAMPLEFORMAT_IEEEFP )                                                  \
+      if ( m_fileData->sampleFormat == SAMPLEFORMAT_IEEEFP )                                          \
       {                                                                                               \
          /* For floating-point TIFFs we have no standard way to know the actual     */                \
          /* data range in advance. If existing pixel values fit into the            */                \
@@ -873,37 +842,37 @@ static void ReadTIFFImage( GenericImage<P>& image, TIFFReader& reader, TIFFFileD
          /* Obtain extreme pixel values.                                            */                \
          I::sample mn, mx;                                                                            \
          image.GetExtremePixelValues( mn, mx );                                                       \
-         zeroOffset = Min( double( fileData->lowerRange ), double( mn ) );                            \
-         scaleRange = Max( double( fileData->upperRange ), double( mx ) );                            \
+         zeroOffset = Min( double( m_fileData->lowerRange ), double( mn ) );                          \
+         scaleRange = Max( double( m_fileData->upperRange ), double( mx ) );                          \
       }                                                                                               \
       else                                                                                            \
       {                                                                                               \
          /* For integer samples we always know scaling parameters in advance.       */                \
                                                                                                       \
-         if ( tiffSampleFormat == SAMPLEFORMAT_INT )  /* signed integers ?          */                \
+         if ( m_fileData->sampleFormat == SAMPLEFORMAT_INT )  /* signed integers ?          */        \
          {                                                                                            \
-            zeroOffset = BitMin( tiffBitsPerSample );                                                 \
-            scaleRange = BitMax( tiffBitsPerSample );                                                 \
+            zeroOffset = BitMin( m_fileData->bitsPerSample );                                         \
+            scaleRange = BitMax( m_fileData->bitsPerSample );                                         \
          }                                                                                            \
          else                                                                                         \
          {                                                                                            \
             zeroOffset = 0;                                                                           \
-            scaleRange = UBitMax( tiffBitsPerSample );                                                \
+            scaleRange = UBitMax( m_fileData->bitsPerSample );                                        \
          }                                                                                            \
       }                                                                                               \
                                                                                                       \
       /* If necessary, rescale to the normalized range.                             */                \
                                                                                                       \
-      if ( zeroOffset != fileData->lowerRange || scaleRange != fileData->upperRange )                 \
+      if ( zeroOffset != m_fileData->lowerRange || scaleRange != m_fileData->upperRange )             \
       {                                                                                               \
          double iDelta = scaleRange - zeroOffset;                                                     \
-         double oDelta = fileData->upperRange - fileData->lowerRange;                                 \
+         double oDelta = m_fileData->upperRange - m_fileData->lowerRange;                             \
          for ( int c = 0; c < image.NumberOfChannels(); ++c )                                         \
-            if ( oDelta != 1 || fileData->lowerRange != 0 )                                           \
+            if ( oDelta != 1 || m_fileData->lowerRange != 0 )                                         \
             {                                                                                         \
                double rDelta = oDelta/iDelta;                                                         \
                for ( I::sample_iterator i( image, c ); i; ++i )                                       \
-                  *i = I::sample( (*i - zeroOffset)*rDelta + fileData->lowerRange );                  \
+                  *i = I::sample( (*i - zeroOffset)*rDelta + m_fileData->lowerRange );                \
             }                                                                                         \
             else                                                                                      \
             {                                                                                         \
@@ -917,29 +886,29 @@ static void ReadTIFFImage( GenericImage<P>& image, TIFFReader& reader, TIFFFileD
 
 void TIFFReader::ReadImage( FImage& image )
 {
-   ReadTIFFImage( image, *this, fileData );
+   ReadTIFFImage( image, *this, m_fileData );
    NORMALIZE( FImage )
 }
 
 void TIFFReader::ReadImage( DImage& image )
 {
-   ReadTIFFImage( image, *this, fileData );
+   ReadTIFFImage( image, *this, m_fileData );
    NORMALIZE( DImage )
 }
 
 void TIFFReader::ReadImage( UInt8Image& image )
 {
-   ReadTIFFImage( image, *this, fileData );
+   ReadTIFFImage( image, *this, m_fileData );
 }
 
 void TIFFReader::ReadImage( UInt16Image& image )
 {
-   ReadTIFFImage( image, *this, fileData );
+   ReadTIFFImage( image, *this, m_fileData );
 }
 
 void TIFFReader::ReadImage( UInt32Image& image )
 {
-   ReadTIFFImage( image, *this, fileData );
+   ReadTIFFImage( image, *this, m_fileData );
 }
 
 #undef NORMALIZE
@@ -947,41 +916,56 @@ void TIFFReader::ReadImage( UInt32Image& image )
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-#undef info
-#undef options
+TIFFWriter::TIFFWriter()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+TIFFWriter::~TIFFWriter()
+{
+}
 
 // ----------------------------------------------------------------------------
 
 bool TIFFWriter::IsOpen() const
 {
-   return fileData != 0 && !path.IsEmpty();
+   return m_fileData && !m_path.IsEmpty();
 }
+
+// ----------------------------------------------------------------------------
 
 void TIFFWriter::Close()
 {
    TIFF::CloseStream();
 }
 
-void TIFFWriter::Create( const String& filePath, int count )
+// ----------------------------------------------------------------------------
+
+void TIFFWriter::Create( const String& filePath )
 {
    if ( IsOpen() )
-      throw InvalidWriteOperation( path );
+      throw InvalidWriteOperation( m_path );
 
    if ( filePath.IsEmpty() )
       throw InvalidFilePath( filePath );
 
-   if ( count <= 0 )
-      throw NotImplemented( *this, "Write empty TIFF files" );
-
-   if ( count > 1 )
-      throw NotImplemented( *this, "Write multiple images to a single TIFF file" );
-
    Reset();
 
-   if ( fileData == 0 )
-      fileData = new TIFFFileData;
+   if ( !m_fileData )
+      m_fileData = new TIFFFileData;
 
-   path = File::WindowsPathToUnix( filePath );
+   m_path = File::WindowsPathToUnix( filePath );
+}
+
+// ----------------------------------------------------------------------------
+
+void TIFFWriter::WriteICCProfile( const ICCProfile& icc )
+{
+   if ( !IsOpen() )
+      throw TIFF::WriterNotInitialized( String() );
+
+   m_iccProfile = icc;
 }
 
 // ----------------------------------------------------------------------------
@@ -1012,27 +996,30 @@ static void WriteTIFFImage( const GenericImage<P>& image, TIFFWriter& writer,
    // 8-bit and 16-bit samples must be unsigned integers.
    // 32-bit samples can be unsigned integers or IEEE floating-point.
    // 64-bit samples can only be IEEE floating-point samples.
-
-   switch ( writer.Options().bitsPerSample )
    {
-   default:
-      writer.Options().bitsPerSample = 16;
-   case 8:
-   case 16:
-      writer.Options().ieeefpSampleFormat = false;
-   case 32:
-      break;
-   case 64:
-      writer.Options().ieeefpSampleFormat = true;
-      break;
+      ImageOptions options = writer.Options();
+      switch ( options.bitsPerSample )
+      {
+      default:
+         options.bitsPerSample = 16;
+      case 8:
+      case 16:
+         options.ieeefpSampleFormat = false;
+      case 32:
+         break;
+      case 64:
+         options.ieeefpSampleFormat = true;
+         break;
+      }
+      writer.SetOptions( options );
    }
 
-   tiffBitsPerSample = writer.Options().bitsPerSample;
+   fileData->bitsPerSample = writer.Options().bitsPerSample;
 
    // TIFF sample format.
    // We support signed integers for input, but not for output.
 
-   tiffSampleFormat = writer.Options().ieeefpSampleFormat ?
+   fileData->sampleFormat = writer.Options().ieeefpSampleFormat ?
                                     SAMPLEFORMAT_IEEEFP : SAMPLEFORMAT_UINT;
 
    // TIFF color space.
@@ -1040,7 +1027,7 @@ static void WriteTIFFImage( const GenericImage<P>& image, TIFFWriter& writer,
    // additional alpha channels) if the three RGB nominal channels are not
    // selected.
 
-   tiffPhotometric = (image.ColorSpace() == ColorSpace::Gray ||
+   fileData->photometric = (image.ColorSpace() == ColorSpace::Gray ||
                           image.NumberOfSelectedChannels() < 3 ||
                           image.FirstSelectedChannel() != 0) ?
                                     PHOTOMETRIC_MINISBLACK : PHOTOMETRIC_RGB;
@@ -1056,13 +1043,12 @@ static void WriteTIFFImage( const GenericImage<P>& image, TIFFWriter& writer,
 
    bool tiffPlanar = image.NumberOfSelectedChannels() > 1 && writer.TIFFOptions().planar;
 
-   tiffPlanarConfig = tiffPlanar ? PLANARCONFIG_SEPARATE : PLANARCONFIG_CONTIG;
+   fileData->planarConfig = tiffPlanar ? PLANARCONFIG_SEPARATE : PLANARCONFIG_CONTIG;
 
    // Only ZIP and LZW compressions are supported for output.
    // Our current policy is to ignore unsupported compressions.
 
    int tiffCompression;
-
    switch ( writer.TIFFOptions().compression )
    {
    default:
@@ -1087,16 +1073,16 @@ static void WriteTIFFImage( const GenericImage<P>& image, TIFFWriter& writer,
       int width = r.Width();
       int height = r.Height();
 
-      tiffWidth = width;
-      tiffLength = height;
-      tiffSamplesPerPixel = image.NumberOfSelectedChannels();
+      fileData->width = width;
+      fileData->length = height;
+      fileData->samplesPerPixel = image.NumberOfSelectedChannels();
 
       if ( image.Status().IsInitializationEnabled() )
          image.Status().Initialize( String().Format(
                   "Writing TIFF: %d-bit %s, %d channel(s), %dx%d pixels, %s",
                   writer.Options().bitsPerSample,
                   writer.Options().ieeefpSampleFormat ? "floating point" : "integers",
-                  tiffSamplesPerPixel,
+                  fileData->samplesPerPixel,
                   width, height, tiffPlanar ? "planar" : "chunky" ),
             image.NumberOfSelectedSamples() );
 
@@ -1109,7 +1095,7 @@ static void WriteTIFFImage( const GenericImage<P>& image, TIFFWriter& writer,
 #else
          writer.Path().ToUTF8();
 #endif
-      if ( (tif = ::TIFFOpen( path8.c_str(), "w" )) == nullptr )
+      if ( (fileData->handle = ::TIFFOpen( path8.c_str(), "w" )) == nullptr )
          throw TIFF::UnableToCreateFile( writer.Path() );
 
       //
@@ -1118,35 +1104,35 @@ static void WriteTIFFImage( const GenericImage<P>& image, TIFFWriter& writer,
 
       // Change this when porting PCL to Mac OSX, or, better, define a global
       // macro in Defs.h :)
-      ::TIFFSetField( tif, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB );
+      ::TIFFSetField( fileData->handle, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB );
 
       // We always generate top->bottom, left->right oriented images.
-      ::TIFFSetField( tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT );
+      ::TIFFSetField( fileData->handle, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT );
 
       // We write only RGB and grayscale TIFF images.
       // N.B.: This field has already been corrected as a function of the
       // image's currently selected channels.
-      ::TIFFSetField( tif, TIFFTAG_PHOTOMETRIC, tiffPhotometric );
+      ::TIFFSetField( fileData->handle, TIFFTAG_PHOTOMETRIC, fileData->photometric );
 
       // We do support both planar and chunky organizations.
       // N.B.: This field has already been corrected to avoid marking grayscale
       // image files as planar.
-      ::TIFFSetField( tif, TIFFTAG_PLANARCONFIG, tiffPlanarConfig );
+      ::TIFFSetField( fileData->handle, TIFFTAG_PLANARCONFIG, fileData->planarConfig );
 
       // Image dimensions in pixels.
-      ::TIFFSetField( tif, TIFFTAG_IMAGEWIDTH, width );
-      ::TIFFSetField( tif, TIFFTAG_IMAGELENGTH, height );
+      ::TIFFSetField( fileData->handle, TIFFTAG_IMAGEWIDTH, width );
+      ::TIFFSetField( fileData->handle, TIFFTAG_IMAGELENGTH, height );
 
       // Number of bits per sample.
       // N.B.: This field has already been checked to ensure a correct value.
-      ::TIFFSetField( tif, TIFFTAG_BITSPERSAMPLE, writer.Options().bitsPerSample );
+      ::TIFFSetField( fileData->handle, TIFFTAG_BITSPERSAMPLE, writer.Options().bitsPerSample );
 
       // Sample format: unsigned integers or IEEE floating-point.
       // N.B.: This value has been deduced from corrected options.bitsPerSample.
-      ::TIFFSetField( tif, TIFFTAG_SAMPLEFORMAT, tiffSampleFormat );
+      ::TIFFSetField( fileData->handle, TIFFTAG_SAMPLEFORMAT, fileData->sampleFormat );
 
       // Number of samples per pixel.
-      ::TIFFSetField( tif, TIFFTAG_SAMPLESPERPIXEL, image.NumberOfSelectedChannels() );
+      ::TIFFSetField( fileData->handle, TIFFTAG_SAMPLESPERPIXEL, image.NumberOfSelectedChannels() );
 
       // Flag true if RGB components must be premultiplied by alpha.
       bool hasAlpha = image.FirstSelectedChannel() == 0 &&
@@ -1160,7 +1146,7 @@ static void WriteTIFFImage( const GenericImage<P>& image, TIFFWriter& writer,
          extra[0] = writer.TIFFOptions().associatedAlpha ? EXTRASAMPLE_ASSOCALPHA : EXTRASAMPLE_UNASSALPHA;
          for ( int i = 1; i < na; ++i )
             extra[i] = EXTRASAMPLE_UNSPECIFIED;
-         ::TIFFSetField( tif, TIFFTAG_EXTRASAMPLES, na, extra.Begin() );
+         ::TIFFSetField( fileData->handle, TIFFTAG_EXTRASAMPLES, na, extra.Begin() );
       }
       else if ( image.FirstSelectedChannel() > 0 && image.NumberOfSelectedChannels() > 1 )
       {
@@ -1169,13 +1155,13 @@ static void WriteTIFFImage( const GenericImage<P>& image, TIFFWriter& writer,
          Array<uint16> extra( (size_type)na );
          for ( int i = 0; i < na; ++i )
             extra[i] = EXTRASAMPLE_UNSPECIFIED;
-         ::TIFFSetField( tif, TIFFTAG_EXTRASAMPLES, na, extra.Begin() );
+         ::TIFFSetField( fileData->handle, TIFFTAG_EXTRASAMPLES, na, extra.Begin() );
       }
 
       // Number of pixel rows per TIFF strip. The stripSize static variable
       // controls the strip size in bytes.
-      ::TIFFSetField( tif, TIFFTAG_ROWSPERSTRIP,
-            Max( size_type( 1 ), writer.StripSize()/(width*tiffSampleSize) ) );
+      ::TIFFSetField( fileData->handle, TIFFTAG_ROWSPERSTRIP,
+            Max( 1, writer.TIFFOptions().stripSize/(width*tiffSampleSize) ) );
 
       /*
       // No, MinSampleValue and MaxSampleValue are not intended to represent
@@ -1184,8 +1170,8 @@ static void WriteTIFFImage( const GenericImage<P>& image, TIFFWriter& writer,
       {
          typename P::sample mn, mx;
          image.GetExtremePixelValues( mn, mx );
-         ::TIFFSetField( tif, TIFFTAG_SMINSAMPLEVALUE, double( mn ) );
-         ::TIFFSetField( tif, TIFFTAG_SMAXSAMPLEVALUE, double( mx ) );
+         ::TIFFSetField( fileData->handle, TIFFTAG_SMINSAMPLEVALUE, double( mn ) );
+         ::TIFFSetField( fileData->handle, TIFFTAG_SMAXSAMPLEVALUE, double( mx ) );
       }
       */
 
@@ -1201,26 +1187,26 @@ static void WriteTIFFImage( const GenericImage<P>& image, TIFFWriter& writer,
          //
          // N.B.: This field has already been corrected.
 
-         ::TIFFSetField( tif, TIFFTAG_COMPRESSION, tiffCompression );
+         ::TIFFSetField( fileData->handle, TIFFTAG_COMPRESSION, tiffCompression );
 
          // For 8 and 16 bit samples, use LZW and ZIP encoded data with
          // horizontal differencing. Unfortunately this is not supported for
          // 32-bit samples.
-         if ( tiffBitsPerSample < 32 )
-            ::TIFFSetField( tif, TIFFTAG_PREDICTOR, 2 );
+         if ( fileData->bitsPerSample < 32 )
+            ::TIFFSetField( fileData->handle, TIFFTAG_PREDICTOR, 2 );
       }
 
       // Metric or English resolution units. Default is English (inches).
-      ::TIFFSetField( tif, TIFFTAG_RESOLUTIONUNIT,
+      ::TIFFSetField( fileData->handle, TIFFTAG_RESOLUTIONUNIT,
          writer.Options().metricResolution ? RESUNIT_CENTIMETER : RESUNIT_INCH );
 
       // Horizontal resolution. <= zero means no specified resolution.
       if ( writer.Options().xResolution > 0 )
-         ::TIFFSetField( tif, TIFFTAG_XRESOLUTION, float( writer.Options().xResolution ) );
+         ::TIFFSetField( fileData->handle, TIFFTAG_XRESOLUTION, float( writer.Options().xResolution ) );
 
       // Vertical resolution. <= zero means no specified resolution.
       if ( writer.Options().yResolution > 0 )
-         ::TIFFSetField( tif, TIFFTAG_YRESOLUTION, float( writer.Options().yResolution ) );
+         ::TIFFSetField( fileData->handle, TIFFTAG_YRESOLUTION, float( writer.Options().yResolution ) );
 
       // Software description and version information.
       // We are not forcing our own signature here... this might be our good
@@ -1228,21 +1214,21 @@ static void WriteTIFFImage( const GenericImage<P>& image, TIFFWriter& writer,
       if ( !writer.TIFFOptions().software.IsEmpty() )
       {
          IsoString s = writer.TIFFOptions().software.ToUTF8();
-         ::TIFFSetField( tif, TIFFTAG_SOFTWARE, s.c_str() );
+         ::TIFFSetField( fileData->handle, TIFFTAG_SOFTWARE, s.c_str() );
       }
 
       // Place a description of this image here.
       if ( !writer.TIFFOptions().imageDescription.IsEmpty() )
       {
          IsoString s = writer.TIFFOptions().imageDescription.ToUTF8();
-         ::TIFFSetField( tif, TIFFTAG_IMAGEDESCRIPTION, s.c_str() );
+         ::TIFFSetField( fileData->handle, TIFFTAG_IMAGEDESCRIPTION, s.c_str() );
       }
 
       // Copyright info for this image comes here.
       if ( !writer.TIFFOptions().copyright.IsEmpty() )
       {
          IsoString s = writer.TIFFOptions().copyright.ToUTF8();
-         ::TIFFSetField( tif, TIFFTAG_COPYRIGHT, s.c_str() );
+         ::TIFFSetField( fileData->handle, TIFFTAG_COPYRIGHT, s.c_str() );
       }
 
       // ICC Profile.
@@ -1254,7 +1240,7 @@ static void WriteTIFFImage( const GenericImage<P>& image, TIFFWriter& writer,
 
          // Don't try to write an empty ICC profile.
          if ( byteCount != 0 )
-            ::TIFFSetField( tif, TIFFTAG_ICCPROFILE, byteCount, icc.ProfileData().Begin() );
+            ::TIFFSetField( fileData->handle, TIFFTAG_ICCPROFILE, byteCount, icc.ProfileData().Begin() );
       }
 
       //
@@ -1266,7 +1252,7 @@ static void WriteTIFFImage( const GenericImage<P>& image, TIFFWriter& writer,
       int ca = (hasAlpha && writer.TIFFOptions().premultipliedAlpha) ? image.NumberOfNominalChannels() : -1;
 
       if ( P::IsFloatSample() == writer.Options().ieeefpSampleFormat &&
-           P::BitsPerSample() == tiffBitsPerSample )
+           P::BitsPerSample() == fileData->bitsPerSample )
       {
          // File sample type same as image sample type.
 
@@ -1314,7 +1300,7 @@ static void WriteTIFFImage( const GenericImage<P>& image, TIFFWriter& writer,
                         }
                   }
 
-                  if ( ::TIFFWriteScanline( tif, buffer.Begin(), y, c ) < 0 )
+                  if ( ::TIFFWriteScanline( fileData->handle, buffer.Begin(), y, c ) < 0 )
                      throw TIFF::FileWriteError( writer.Path() );
                }
          }
@@ -1367,7 +1353,7 @@ static void WriteTIFFImage( const GenericImage<P>& image, TIFFWriter& writer,
                      }
                }
 
-               if ( ::TIFFWriteScanline( tif, buffer.Begin(), y, 0 ) < 0 )
+               if ( ::TIFFWriteScanline( fileData->handle, buffer.Begin(), y, 0 ) < 0 )
                   throw TIFF::FileWriteError( writer.Path() );
             }
          }
@@ -1447,7 +1433,7 @@ static void WriteTIFFImage( const GenericImage<P>& image, TIFFWriter& writer,
                      }
                   }
 
-                  if ( ::TIFFWriteScanline( tif, buffer.Begin(), y, c ) < 0 )
+                  if ( ::TIFFWriteScanline( fileData->handle, buffer.Begin(), y, c ) < 0 )
                      throw TIFF::FileWriteError( writer.Path() );
                }
          }
@@ -1518,80 +1504,45 @@ static void WriteTIFFImage( const GenericImage<P>& image, TIFFWriter& writer,
                      }
                   }
 
-               if ( ::TIFFWriteScanline( tif, buffer.Begin(), y, 0 ) < 0 )
+               if ( ::TIFFWriteScanline( fileData->handle, buffer.Begin(), y, 0 ) < 0 )
                   throw TIFF::FileWriteError( writer.Path() );
             }
          }
       }
 
-      ::TIFFClose( tif ), tif = nullptr;
+      ::TIFFClose( fileData->handle ), fileData->handle = nullptr;
    }
    catch ( ... )
    {
-      if ( tif != nullptr )
-         ::TIFFClose( tif ), tif = nullptr;
+      if ( fileData->handle != nullptr )
+         ::TIFFClose( fileData->handle ), fileData->handle = nullptr;
       throw;
    }
 }
 
 void TIFFWriter::WriteImage( const FImage& image )
 {
-   WriteTIFFImage( image, *this, icc, fileData );
+   WriteTIFFImage( image, *this, m_iccProfile, m_fileData );
 }
 
 void TIFFWriter::WriteImage( const DImage& image )
 {
-   WriteTIFFImage( image, *this, icc, fileData );
+   WriteTIFFImage( image, *this, m_iccProfile, m_fileData );
 }
 
 void TIFFWriter::WriteImage( const UInt8Image& image )
 {
-   WriteTIFFImage( image, *this, icc, fileData );
+   WriteTIFFImage( image, *this, m_iccProfile, m_fileData );
 }
 
 void TIFFWriter::WriteImage( const UInt16Image& image )
 {
-   WriteTIFFImage( image, *this, icc, fileData );
+   WriteTIFFImage( image, *this, m_iccProfile, m_fileData );
 }
 
 void TIFFWriter::WriteImage( const UInt32Image& image )
 {
-   WriteTIFFImage( image, *this, icc, fileData );
-}
-
-// ----------------------------------------------------------------------------
-
-size_type TIFFWriter::StripSize()
-{
-   return stripSize;
-}
-
-void TIFFWriter::SetStripSize( size_type sz )
-{
-   // Keep it within reasonable limits.
-   stripSize = Range( sz, size_type( 1024 ), size_type( 65536 ) );
-}
-
-// ----------------------------------------------------------------------------
-
-bool TIFF::IsStrictMode()
-{
-   return strictMode;
-}
-
-void TIFF::SetStrictMode( bool enable )
-{
-   strictMode = enable;
-}
-
-bool TIFF::AreWarningsEnabled()
-{
-   return showWarnings;
-}
-
-void TIFF::EnableWarnings( bool enable )
-{
-   showWarnings = enable;
+   WriteTIFFImage( image, *this, m_iccProfile, m_fileData );
 }
 
 // ----------------------------------------------------------------------------
@@ -1599,4 +1550,4 @@ void TIFF::EnableWarnings( bool enable )
 }  // pcl
 
 // ----------------------------------------------------------------------------
-// EOF TIFF.cpp - Released 2016/02/21 20:22:34 UTC
+// EOF TIFF.cpp - Released 2017-04-14T23:07:03Z

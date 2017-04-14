@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard JPEG2000 File Format Module Version 01.00.01.0279
+// Standard JPEG2000 File Format Module Version 01.00.02.0289
 // ----------------------------------------------------------------------------
-// JPEG2000Instance.cpp - Released 2016/02/21 20:22:34 UTC
+// JPEG2000Instance.cpp - Released 2017-04-14T23:07:03Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard JPEG2000 PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,7 +59,7 @@
 #include <pcl/ErrorHandler.h>
 #include <pcl/File.h>
 
-#define JP2KERROR( msg ) throw Error( String( msg ) + ": " + path );
+#define JP2KERROR( msg ) throw Error( String( msg ) + ": " + m_path );
 
 namespace pcl
 {
@@ -89,18 +89,28 @@ static void CleanupJasPer()
 
 // ----------------------------------------------------------------------------
 
+static void CheckOpenStream( bool open, const String& memberFunc )
+{
+   if ( !open )
+      throw Error( "JP2Instance::" + memberFunc + "(): Illegal request on a closed stream." );
+}
+
+// ----------------------------------------------------------------------------
+
 JPCInstance::JPCInstance( const JPCFormat* f ) :
    FileFormatImplementation( f ),
-   path(), options(), jp2Options( JPCFormat::DefaultOptions() ),
-   jp2Stream( nullptr ), jp2Image( nullptr ), jp2CMProfile( nullptr ),
-   queriedOptions( false )
+   m_jp2Options( JPCFormat::DefaultOptions() )
 {
 }
+
+// ----------------------------------------------------------------------------
 
 JPCInstance::~JPCInstance()
 {
    Close();
 }
+
+// ----------------------------------------------------------------------------
 
 ImageDescriptionArray JPCInstance::Open( const String& filePath, const IsoString&/*hints*/ )
 {
@@ -112,19 +122,19 @@ ImageDescriptionArray JPCInstance::Open( const String& filePath, const IsoString
 
    try
    {
-      path = filePath;
+      m_path = filePath;
 
       IsoString path8 =
 #ifdef __PCL_WINDOWS
-         File::UnixPathToWindows( path ).ToMBS();
+         File::UnixPathToWindows( m_path ).ToMBS();
 #else
-         path.ToUTF8();
+         m_path.ToUTF8();
 #endif
-      jp2Stream = jas_stream_fopen( path8.c_str(), "rb" );
-      if ( jp2Stream == 0 )
+      m_jp2Stream = jas_stream_fopen( path8.c_str(), "rb" );
+      if ( m_jp2Stream == nullptr )
          JP2KERROR( "Unable to open JPEG2000 file" );
 
-      int fmtid = jas_image_getfmt( jp2Stream );
+      int fmtid = jas_image_getfmt( m_jp2Stream );
       if ( fmtid < 0 )
          JP2KERROR( "JasPer: Unsupported image format" );
 
@@ -132,21 +142,21 @@ ImageDescriptionArray JPCInstance::Open( const String& filePath, const IsoString
                                                   IsCodeStream() ? "code stream" : "JP2" ) );
       Console().Flush();
 
-      jp2Image = jas_image_decode( jp2Stream, fmtid, 0 );
+      m_jp2Image = jas_image_decode( m_jp2Stream, fmtid, 0 );
 
       Console().WriteLn( " done." );
 
-      if ( jp2Image == 0 )
+      if ( m_jp2Image == nullptr )
          JP2KERROR( "JasPer: Unable to decode image" );
 
       ImageInfo info;
 
-      info.width            = jas_image_cmptwidth( jp2Image, 0 );
-      info.height           = jas_image_cmptheight( jp2Image, 0 );
-      info.numberOfChannels = jas_image_numcmpts( jp2Image );
+      info.width            = jas_image_cmptwidth( m_jp2Image, 0 );
+      info.height           = jas_image_cmptheight( m_jp2Image, 0 );
+      info.numberOfChannels = jas_image_numcmpts( m_jp2Image );
       info.colorSpace       = ColorSpace::Unknown;
 
-      switch ( jas_clrspc_fam( jas_image_clrspc( jp2Image ) ) )
+      switch ( jas_clrspc_fam( jas_image_clrspc( m_jp2Image ) ) )
       {
          case JAS_CLRSPC_FAM_RGB:
             // Fix some JasPer's problems to recognize grayscale images.
@@ -167,32 +177,32 @@ ImageDescriptionArray JPCInstance::Open( const String& filePath, const IsoString
       // Verify component geometry
 
       for ( int c = 0; c < info.numberOfChannels; ++c )
-         if ( jas_image_cmptwidth( jp2Image, c ) != info.width ||
-              jas_image_cmptheight( jp2Image, c ) != info.height ||
-              jas_image_cmpttlx( jp2Image, c ) != 0 ||
-              jas_image_cmpttly( jp2Image, c ) != 0 ||
-              jas_image_cmpthstep( jp2Image, c ) != 1 ||
-              jas_image_cmptvstep( jp2Image, c ) != 1 )
+         if ( jas_image_cmptwidth( m_jp2Image, c ) != info.width ||
+              jas_image_cmptheight( m_jp2Image, c ) != info.height ||
+              jas_image_cmpttlx( m_jp2Image, c ) != 0 ||
+              jas_image_cmpttly( m_jp2Image, c ) != 0 ||
+              jas_image_cmpthstep( m_jp2Image, c ) != 1 ||
+              jas_image_cmptvstep( m_jp2Image, c ) != 1 )
          {
             JP2KERROR( "Nonuniform JPEG2000 image geometry not supported" );
          }
 
       info.supported = true;
 
-      options.bitsPerSample = jas_image_cmptprec( jp2Image, 0 );
+      m_options.bitsPerSample = jas_image_cmptprec( m_jp2Image, 0 );
 
-      options.embedICCProfile = jas_image_cmprof( jp2Image ) != 0;
+      m_options.embedICCProfile = jas_image_cmprof( m_jp2Image ) != 0;
 
-      options.metricResolution = jp2Image->rescm_;
-      if ( jp2Image->hdispres_ != 0 )
-         options.xResolution = jp2Image->hdispres_;
-      if ( jp2Image->vdispres_ != 0 )
-         options.yResolution = jp2Image->vdispres_;
+      m_options.metricResolution = m_jp2Image->rescm_;
+      if ( m_jp2Image->hdispres_ != 0 )
+         m_options.xResolution = m_jp2Image->hdispres_;
+      if ( m_jp2Image->vdispres_ != 0 )
+         m_options.yResolution = m_jp2Image->vdispres_;
 
-      options.ieeefpSampleFormat = options.complexSample = false;
+      m_options.ieeefpSampleFormat = m_options.complexSample = false;
 
       ImageDescriptionArray a;
-      a.Add( ImageDescription( info, options ) );
+      a.Add( ImageDescription( info, m_options ) );
       return a;
    }
    catch ( ... )
@@ -202,60 +212,74 @@ ImageDescriptionArray JPCInstance::Open( const String& filePath, const IsoString
    }
 }
 
+// ----------------------------------------------------------------------------
+
 bool JPCInstance::IsOpen() const
 {
-   return jp2Stream != nullptr && jp2Image != nullptr;
+   return m_jp2Stream != nullptr && m_jp2Image != nullptr;
 }
+
+// ----------------------------------------------------------------------------
 
 String JPCInstance::FilePath() const
 {
-   return path;
+   return m_path;
 }
+
+// ----------------------------------------------------------------------------
 
 void JPCInstance::Close()
 {
-   if ( jp2Stream != nullptr )
-      jas_stream_close( jp2Stream ), jp2Stream = nullptr;
+   if ( m_jp2Stream != nullptr )
+      jas_stream_close( m_jp2Stream ), m_jp2Stream = nullptr;
 
-   if ( jp2Image != nullptr )
+   if ( m_jp2Image != nullptr )
    {
-      jas_image_setcmprof( jp2Image, nullptr ); // don't destroy embedded profile now
-      jas_image_destroy( jp2Image ), jp2Image = nullptr;
+      jas_image_setcmprof( m_jp2Image, nullptr ); // don't destroy embedded profile now
+      jas_image_destroy( m_jp2Image ), m_jp2Image = nullptr;
    }
 
-   if ( jp2CMProfile != nullptr )
-      jas_cmprof_destroy( jp2CMProfile ), jp2CMProfile = nullptr;
+   if ( m_jp2CMProfile != nullptr )
+      jas_cmprof_destroy( m_jp2CMProfile ), m_jp2CMProfile = nullptr;
 
    CleanupJasPer();
 
-   path.Clear();
+   m_path.Clear();
 
-   options.Reset();
+   m_options.Reset();
 
-   jp2Options = JPCFormat::DefaultOptions();
+   m_jp2Options = JPCFormat::DefaultOptions();
+
+   m_queriedOptions = false;
 }
+
+// ----------------------------------------------------------------------------
 
 void* JPCInstance::FormatSpecificData() const
 {
    JPEG2000FormatOptions* data = new JPEG2000FormatOptions( IsCodeStream() );
-   data->options = jp2Options;
+   data->options = m_jp2Options;
    return data;
 }
 
-String JPCInstance::ImageProperties() const
+// ----------------------------------------------------------------------------
+
+String JPCInstance::ImageFormatInfo() const
 {
    return String().Format(
       "lossy=%s compression-rate=%.2f signed-samples=%s "
       "tiled=%s tile-width=%d tile-height=%d progressive-layer-count=%d progression-order=%d",
-      jp2Options.lossyCompression ? "yes" : "no",
-      jp2Options.compressionRate,
-      jp2Options.signedSample ? "signed" : "unsigned",
-      jp2Options.tiledImage ? "yes" : "no",
-      jp2Options.tileWidth,
-      jp2Options.tileHeight,
-      jp2Options.numberOfLayers,
-      jp2Options.progressionOrder );
+      m_jp2Options.lossyCompression ? "yes" : "no",
+      m_jp2Options.compressionRate,
+      m_jp2Options.signedSample ? "signed" : "unsigned",
+      m_jp2Options.tiledImage ? "yes" : "no",
+      m_jp2Options.tileWidth,
+      m_jp2Options.tileHeight,
+      m_jp2Options.numberOfLayers,
+      m_jp2Options.progressionOrder );
 }
+
+// ----------------------------------------------------------------------------
 
 template <class P>
 static void ReadJP2KImage( GenericImage<P>& img, jas_stream_t* jp2Stream, jas_image_t* jp2Image )
@@ -321,34 +345,34 @@ static void ReadJP2KImage( GenericImage<P>& img, jas_stream_t* jp2Stream, jas_im
 
 void JPCInstance::ReadImage( Image& img )
 {
-   ReadJP2KImage( img, jp2Stream, jp2Image );
+   ReadJP2KImage( img, m_jp2Stream, m_jp2Image );
 }
 
 void JPCInstance::ReadImage( DImage& img )
 {
-   ReadJP2KImage( img, jp2Stream, jp2Image );
+   ReadJP2KImage( img, m_jp2Stream, m_jp2Image );
 }
 
 void JPCInstance::ReadImage( UInt8Image& img )
 {
-   ReadJP2KImage( img, jp2Stream, jp2Image );
+   ReadJP2KImage( img, m_jp2Stream, m_jp2Image );
 }
 
 void JPCInstance::ReadImage( UInt16Image& img )
 {
-   ReadJP2KImage( img, jp2Stream, jp2Image );
+   ReadJP2KImage( img, m_jp2Stream, m_jp2Image );
 }
 
 void JPCInstance::ReadImage( UInt32Image& img )
 {
-   ReadJP2KImage( img, jp2Stream, jp2Image );
+   ReadJP2KImage( img, m_jp2Stream, m_jp2Image );
 }
 
 // ----------------------------------------------------------------------------
 
 bool JPCInstance::QueryOptions( Array<ImageOptions>& imageOptions, Array<void*>& formatOptions )
 {
-   queriedOptions = true;
+   m_queriedOptions = true;
 
    // Format-independent options
 
@@ -363,7 +387,7 @@ bool JPCInstance::QueryOptions( Array<ImageOptions>& imageOptions, Array<void*>&
    if ( !formatOptions.IsEmpty() )
    {
       JPEG2000FormatOptions* o = JPEG2000FormatOptions::FromGenericDataBlock( *formatOptions );
-      if ( o != 0 )
+      if ( o != nullptr )
          jpc = o;
    }
 
@@ -381,7 +405,7 @@ bool JPCInstance::QueryOptions( Array<ImageOptions>& imageOptions, Array<void*>&
          options.embedICCProfile = overrides.embedICCProfiles;
    }
 
-   JPEG2000OptionsDialog dlg( options, jp2Options, IsCodeStream() );
+   JPEG2000OptionsDialog dlg( options, m_jp2Options, IsCodeStream() );
 
    if ( dlg.Execute() == StdDialogCode::Ok )
    {
@@ -406,13 +430,15 @@ bool JPCInstance::QueryOptions( Array<ImageOptions>& imageOptions, Array<void*>&
    return false;
 }
 
+// ----------------------------------------------------------------------------
+
 void JPCInstance::Create( const String& filePath, int/*numberOfImages*/, const IsoString& hints )
 {
    Close();
 
    Exception::EnableConsoleOutput();
 
-   path = filePath;
+   m_path = filePath;
 
    IsoStringList theHints;
    hints.Break( theHints, ' ', true/*trim*/ );
@@ -420,90 +446,90 @@ void JPCInstance::Create( const String& filePath, int/*numberOfImages*/, const I
    for ( IsoStringList::const_iterator i = theHints.Begin(); i < theHints.End(); ++i )
    {
       if ( *i == "lossy" )
-         jp2Options.lossyCompression = true;
+         m_jp2Options.lossyCompression = true;
       else if ( *i == "lossless" )
-         jp2Options.lossyCompression = false;
+         m_jp2Options.lossyCompression = false;
       else if ( *i == "compression-rate" )
       {
          if ( ++i == theHints.End() )
             break;
-         if ( i->TryToFloat( jp2Options.compressionRate ) )
-            jp2Options.compressionRate = Range( jp2Options.compressionRate, 0.01F, 0.99F );
+         if ( i->TryToFloat( m_jp2Options.compressionRate ) )
+            m_jp2Options.compressionRate = Range( m_jp2Options.compressionRate, 0.01F, 0.99F );
       }
       else if ( *i == "signed" )
-         jp2Options.signedSample = true;
+         m_jp2Options.signedSample = true;
       else if ( *i == "unsigned" )
-         jp2Options.signedSample = false;
+         m_jp2Options.signedSample = false;
       else if ( *i == "tiled" )
-         jp2Options.tiledImage = true;
+         m_jp2Options.tiledImage = true;
       else if ( *i == "untiled" )
-         jp2Options.tiledImage = true;
+         m_jp2Options.tiledImage = true;
       else if ( *i == "tile-width" )
       {
          if ( ++i == theHints.End() )
             break;
-         if ( i->TryToInt( jp2Options.tileWidth ) )
-            jp2Options.tileWidth = Range( jp2Options.tileWidth, 16, 8192 );
+         if ( i->TryToInt( m_jp2Options.tileWidth ) )
+            m_jp2Options.tileWidth = Range( m_jp2Options.tileWidth, 16, 8192 );
       }
       else if ( *i == "tile-height" )
       {
          if ( ++i == theHints.End() )
             break;
-         if ( i->TryToInt( jp2Options.tileHeight ) )
-            jp2Options.tileHeight = Range( jp2Options.tileHeight, 16, 8192 );
+         if ( i->TryToInt( m_jp2Options.tileHeight ) )
+            m_jp2Options.tileHeight = Range( m_jp2Options.tileHeight, 16, 8192 );
       }
       else if ( *i == "layers" )
       {
          if ( ++i == theHints.End() )
             break;
-         if ( i->TryToInt( jp2Options.numberOfLayers ) )
-            jp2Options.numberOfLayers = Range( jp2Options.numberOfLayers, 1, 10 );
+         if ( i->TryToInt( m_jp2Options.numberOfLayers ) )
+            m_jp2Options.numberOfLayers = Range( m_jp2Options.numberOfLayers, 1, 10 );
       }
       else if ( *i == "lrcp" )
-         jp2Options.progressionOrder = JPEG2000ProgressionOrder::LRCP;
+         m_jp2Options.progressionOrder = JPEG2000ProgressionOrder::LRCP;
       else if ( *i == "rlcp" )
-         jp2Options.progressionOrder = JPEG2000ProgressionOrder::RLCP;
+         m_jp2Options.progressionOrder = JPEG2000ProgressionOrder::RLCP;
       else if ( *i == "rpcl" )
-         jp2Options.progressionOrder = JPEG2000ProgressionOrder::RPCL;
+         m_jp2Options.progressionOrder = JPEG2000ProgressionOrder::RPCL;
       else if ( *i == "pcrl" )
-         jp2Options.progressionOrder = JPEG2000ProgressionOrder::PCRL;
+         m_jp2Options.progressionOrder = JPEG2000ProgressionOrder::PCRL;
       else if ( *i == "cprl" )
-         jp2Options.progressionOrder = JPEG2000ProgressionOrder::CPRL;
+         m_jp2Options.progressionOrder = JPEG2000ProgressionOrder::CPRL;
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void JPCInstance::SetOptions( const ImageOptions& imageOptions )
 {
-   if ( path.IsEmpty() )
-      throw Error( "JPEG-2000 format: Attempt to set image options before creating a file" );
+   CheckOpenStream( !m_path.IsEmpty(), "SetOptions" );
 
-   options = imageOptions;
+   m_options = imageOptions;
 
    // Override embedding options, if requested and not already asked them.
-
-   if ( !IsCodeStream() && !queriedOptions )
+   if ( !IsCodeStream() && !m_queriedOptions )
    {
       JP2Format::EmbeddingOverrides overrides = JP2Format::DefaultEmbeddingOverrides();
-
       if ( overrides.overrideICCProfileEmbedding )
-         options.embedICCProfile = overrides.embedICCProfiles;
+         m_options.embedICCProfile = overrides.embedICCProfiles;
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void JPCInstance::SetFormatSpecificData( const void* data )
 {
-   if ( path.IsEmpty() )
-      throw Error( "JPEG-2000 format: Attempt to set format-specific options before creating a file" );
-
+   CheckOpenStream( !m_path.IsEmpty(), "SetFormatSpecificData" );
    const JPEG2000FormatOptions* o = JPEG2000FormatOptions::FromGenericDataBlock( data );
    if ( o != nullptr )
-      jp2Options = o->options;
+      m_jp2Options = o->options;
 }
+
+// ----------------------------------------------------------------------------
 
 void JPCInstance::CreateImage( const ImageInfo& info )
 {
-   if ( path.IsEmpty() )
-      throw Error( "JPEG-2000 format: Attempt to write an image before creating a file" );
+   CheckOpenStream( !m_path.IsEmpty(), "CreateImage" );
 
    InitJasPer();
 
@@ -513,77 +539,79 @@ void JPCInstance::CreateImage( const ImageInfo& info )
    if ( info.colorSpace != ColorSpace::RGB && info.colorSpace != ColorSpace::Gray )
       JP2KERROR( "Unsupported color space in JPEG2000 file creation" );
 
-   if ( options.bitsPerSample != 8 )
-      if ( jp2Options.lossyCompression || options.bitsPerSample < 8 )
-         options.bitsPerSample = 8;
-      else if ( options.bitsPerSample != 16 )
-         options.bitsPerSample = 16;
+   if ( m_options.bitsPerSample != 8 )
+      if ( m_jp2Options.lossyCompression || m_options.bitsPerSample < 8 )
+         m_options.bitsPerSample = 8;
+      else if ( m_options.bitsPerSample != 16 )
+         m_options.bitsPerSample = 16;
 
-   if ( jp2CMProfile == nullptr )
-      options.embedICCProfile = false;
+   if ( m_jp2CMProfile == nullptr )
+      m_options.embedICCProfile = false;
 
-   options.ieeefpSampleFormat = options.complexSample = false;
+   m_options.ieeefpSampleFormat = m_options.complexSample = false;
 
    IsoString path8 =
 #ifdef __PCL_WINDOWS
-      File::UnixPathToWindows( path ).ToMBS();
+      File::UnixPathToWindows( m_path ).ToMBS();
 #else
-      path.ToUTF8();
+      m_path.ToUTF8();
 #endif
-   jp2Stream = jas_stream_fopen( path8.c_str(), "wb" );
-   if ( jp2Stream == nullptr )
+   m_jp2Stream = jas_stream_fopen( path8.c_str(), "wb" );
+   if ( m_jp2Stream == nullptr )
       JP2KERROR( "Unable to create JPEG2000 file" );
 
-   jp2Image = jas_image_create0();
-   if ( jp2Image == nullptr )
+   m_jp2Image = jas_image_create0();
+   if ( m_jp2Image == nullptr )
       JP2KERROR( "Unable to create JPEG2000 image" );
 
    for ( int c = 0; c < info.numberOfChannels; ++c )
    {
       jas_image_cmptparm_t p;
       ::memset( &p, 0, sizeof( jas_image_cmptparm_t ) );
-      p.tlx = p.tly = 0;                // top-left corner position
-      p.hstep = p.vstep = 1;            // coordinate grid step sizes
-      p.width = info.width;             // width in pixels
-      p.height = info.height;           // height in pixels
-      p.prec = options.bitsPerSample;   // bit depth: 8 or 16 bits
-      p.sgnd = jp2Options.signedSample; // signed or unsigned samples
+      p.tlx = p.tly = 0;                  // top-left corner position
+      p.hstep = p.vstep = 1;              // coordinate grid step sizes
+      p.width = info.width;               // width in pixels
+      p.height = info.height;             // height in pixels
+      p.prec = m_options.bitsPerSample;   // bit depth: 8 or 16 bits
+      p.sgnd = m_jp2Options.signedSample; // signed or unsigned samples
 
-      if ( jas_image_addcmpt( jp2Image, c, &p ) != 0 )
+      if ( jas_image_addcmpt( m_jp2Image, c, &p ) != 0 )
          JP2KERROR( "Unable to create JPEG2000 image component" );
    }
 
    if ( info.colorSpace == ColorSpace::Gray )
    {
-      jas_image_setclrspc( jp2Image, options.embedICCProfile ? JAS_CLRSPC_GENGRAY : JAS_CLRSPC_SGRAY );
+      jas_image_setclrspc( m_jp2Image, m_options.embedICCProfile ? JAS_CLRSPC_GENGRAY : JAS_CLRSPC_SGRAY );
 
-      jas_image_setcmpttype( jp2Image, 0, JAS_IMAGE_CT_COLOR( JAS_CLRSPC_CHANIND_GRAY_Y ) );
+      jas_image_setcmpttype( m_jp2Image, 0, JAS_IMAGE_CT_COLOR( JAS_CLRSPC_CHANIND_GRAY_Y ) );
 
       if ( info.numberOfChannels > 1 )
-         jas_image_setcmpttype( jp2Image, 1, JAS_IMAGE_CT_COLOR( JAS_IMAGE_CT_OPACITY ) );
+         jas_image_setcmpttype( m_jp2Image, 1, JAS_IMAGE_CT_COLOR( JAS_IMAGE_CT_OPACITY ) );
    }
    else
    {
-      jas_image_setclrspc( jp2Image, options.embedICCProfile ? JAS_CLRSPC_GENRGB : JAS_CLRSPC_SRGB );
+      jas_image_setclrspc( m_jp2Image, m_options.embedICCProfile ? JAS_CLRSPC_GENRGB : JAS_CLRSPC_SRGB );
 
-      jas_image_setcmpttype( jp2Image, 0, JAS_IMAGE_CT_COLOR( JAS_CLRSPC_CHANIND_RGB_R ) );
-      jas_image_setcmpttype( jp2Image, 1, JAS_IMAGE_CT_COLOR( JAS_CLRSPC_CHANIND_RGB_G ) );
-      jas_image_setcmpttype( jp2Image, 2, JAS_IMAGE_CT_COLOR( JAS_CLRSPC_CHANIND_RGB_B ) );
+      jas_image_setcmpttype( m_jp2Image, 0, JAS_IMAGE_CT_COLOR( JAS_CLRSPC_CHANIND_RGB_R ) );
+      jas_image_setcmpttype( m_jp2Image, 1, JAS_IMAGE_CT_COLOR( JAS_CLRSPC_CHANIND_RGB_G ) );
+      jas_image_setcmpttype( m_jp2Image, 2, JAS_IMAGE_CT_COLOR( JAS_CLRSPC_CHANIND_RGB_B ) );
 
       if ( info.numberOfChannels > 3 )
-         jas_image_setcmpttype( jp2Image, 3, JAS_IMAGE_CT_COLOR( JAS_IMAGE_CT_OPACITY ) );
+         jas_image_setcmpttype( m_jp2Image, 3, JAS_IMAGE_CT_COLOR( JAS_IMAGE_CT_OPACITY ) );
    }
 
-   if ( options.embedICCProfile )
-      jas_image_setcmprof( jp2Image, jp2CMProfile );
+   if ( m_options.embedICCProfile )
+      jas_image_setcmprof( m_jp2Image, m_jp2CMProfile );
 
-   if ( jp2Options.resolutionData )
+   if ( m_jp2Options.resolutionData )
    {
-      jp2Image->rescm_ = options.metricResolution;
-      jp2Image->hdispres_ = RoundI( options.xResolution );
-      jp2Image->vdispres_ = RoundI( options.yResolution );
+      m_jp2Image->rescm_ = m_options.metricResolution;
+      m_jp2Image->hdispres_ = RoundI( m_options.xResolution );
+      m_jp2Image->vdispres_ = RoundI( m_options.yResolution );
    }
 }
+
+// ----------------------------------------------------------------------------
 
 template <class P>
 static void WriteJP2KImage( const GenericImage<P>& img,
@@ -596,7 +624,7 @@ static void WriteJP2KImage( const GenericImage<P>& img,
    try
    {
       pixels = jas_matrix_create( 1, img.Width() );
-      if ( pixels == 0 )
+      if ( pixels == nullptr )
          throw Error( "Memory allocation error writing JPEG2000 image." );
 
       for ( int c = 0; c < img.NumberOfChannels(); ++c )
@@ -714,9 +742,9 @@ static void WriteJP2KImage( const GenericImage<P>& img,
                                                    IsCodeStream() ? "code stream" : "JP2" ) );  \
       ImageInfo info( img );                                                                    \
       CreateImage( info );                                                                      \
-      WriteJP2KImage( img, info, options, jp2Stream, jp2Image,                                  \
+      WriteJP2KImage( img, info, m_options, m_jp2Stream, m_jp2Image,                            \
                       jas_image_fmtfromname( (char*)(IsCodeStream() ? ".jpc" : ".jp2") ),       \
-                      jp2Options );                                                             \
+                      m_jp2Options );                                                           \
                                                                                                 \
       Console().WriteLn( " done." );                                                            \
    }                                                                                            \
@@ -753,7 +781,7 @@ void JPCInstance::WriteImage( const UInt32Image& img )
 
 bool JPCInstance::WasLossyWrite() const
 {
-   return jp2Options.lossyCompression;
+   return m_jp2Options.lossyCompression;
 }
 
 // ----------------------------------------------------------------------------
@@ -761,70 +789,72 @@ bool JPCInstance::WasLossyWrite() const
 
 JP2Instance::JP2Instance( const JP2Format* f ) : JPCInstance( f )
 {
-   jp2Options = JP2Format::DefaultOptions();
+   m_jp2Options = JP2Format::DefaultOptions();
 }
+
+// ----------------------------------------------------------------------------
 
 JP2Instance::~JP2Instance()
 {
 }
 
-void JP2Instance::Extract( ICCProfile& icc )
+// ----------------------------------------------------------------------------
+
+ICCProfile JP2Instance::ReadICCProfile()
 {
-   if ( path.IsEmpty() || !s_jasperInitialized )
-      throw Error( "JPEG-2000 format: Attempt to extract an ICC profile before opening a file" );
+   CheckOpenStream( !m_path.IsEmpty() && s_jasperInitialized, "ReadICCProfile" );
 
-   icc.Clear();
+   if ( jas_image_cmprof( m_jp2Image ) == nullptr )
+      return ICCProfile();
 
-   if ( jas_image_cmprof( jp2Image ) != nullptr )
+   jas_stream_t* iccStream = nullptr;
+   try
    {
-      jas_stream_t* iccStream = nullptr;
-      try
-      {
-         // Create a growable memory stream for output
-         iccStream = jas_stream_memopen( 0, 0 );
+      // Create a growable memory stream for output
+      iccStream = jas_stream_memopen( 0, 0 );
 
-         if ( iccStream == nullptr )
-            JP2KERROR( "Extracting ICC profile from JPEG2000 image: Unable to create JasPer stream" );
+      if ( iccStream == nullptr )
+         JP2KERROR( "Extracting ICC profile from JPEG2000 image: Unable to create JasPer stream" );
 
-         if ( jas_iccprof_save( jas_image_cmprof( jp2Image )->iccprof, iccStream ) < 0 )
-            JP2KERROR( "Extracting ICC profile from JPEG2000 image: Error saving profile to JasPer stream" );
+      if ( jas_iccprof_save( jas_image_cmprof( m_jp2Image )->iccprof, iccStream ) < 0 )
+         JP2KERROR( "Extracting ICC profile from JPEG2000 image: Error saving profile to JasPer stream" );
 
-         long iccSize = jas_stream_tell( iccStream );
+      long iccSize = jas_stream_tell( iccStream );
 
-         if ( iccSize <= 0 )
-            JP2KERROR( "Extracting ICC profile from JPEG2000 image: Invalid JasPer stream position" );
+      if ( iccSize <= 0 )
+         JP2KERROR( "Extracting ICC profile from JPEG2000 image: Invalid JasPer stream position" );
 
-         ByteArray iccData( iccSize );
+      ByteArray iccData( iccSize );
 
-         jas_stream_rewind( iccStream );
+      jas_stream_rewind( iccStream );
 
-         if ( jas_stream_read( iccStream, iccData.Begin(), iccSize ) != iccSize )
-            JP2KERROR( "Extracting ICC profile from JPEG2000 image: Error reading JasPer stream" );
+      if ( jas_stream_read( iccStream, iccData.Begin(), iccSize ) != iccSize )
+         JP2KERROR( "Extracting ICC profile from JPEG2000 image: Error reading JasPer stream" );
 
+      jas_stream_close( iccStream ), iccStream = nullptr;
+
+      ICCProfile icc( iccData );
+      if ( icc.IsProfile() )
+         Console().WriteLn( "<end><cbr>ICC profile extracted: \'" + icc.Description() + "\', " + String( icc.ProfileSize() ) + " bytes." );
+      return icc;
+   }
+   catch ( ... )
+   {
+      if ( iccStream != nullptr )
          jas_stream_close( iccStream );
-         iccStream = 0;
-
-         icc.Set( iccData );
-         if ( icc.IsProfile() )
-            Console().WriteLn( "<end><cbr>ICC profile extracted: \'" + icc.Description() + "\', " + String( icc.ProfileSize() ) + " bytes" );
-      }
-      catch ( ... )
-      {
-         if ( iccStream != nullptr )
-            jas_stream_close( iccStream );
-         Close();
-         throw;
-      }
+      Close();
+      throw;
    }
 }
 
-void JP2Instance::Embed( const ICCProfile& icc )
-{
-   if ( path.IsEmpty() )
-      throw Error( "JPEG-2000 format: Attempt to embed an ICC profile before creating a file" );
+// ----------------------------------------------------------------------------
 
-   if ( jp2CMProfile != nullptr )
-      jas_cmprof_destroy( jp2CMProfile ), jp2CMProfile = nullptr;
+void JP2Instance::WriteICCProfile( const ICCProfile& icc )
+{
+   CheckOpenStream( !m_path.IsEmpty(), "WriteICCProfile" );
+
+   if ( m_jp2CMProfile != nullptr )
+      jas_cmprof_destroy( m_jp2CMProfile ), m_jp2CMProfile = nullptr;
 
    if ( icc.IsProfile() )
    {
@@ -839,13 +869,13 @@ void JP2Instance::Embed( const ICCProfile& icc )
          if ( jp2ICCProfile == nullptr )
             JP2KERROR( "Unable to generate embedded ICC profile in JPEG2000 image" );
 
-         jp2CMProfile = jas_cmprof_createfromiccprof( jp2ICCProfile );
-         if ( jp2CMProfile == nullptr )
+         m_jp2CMProfile = jas_cmprof_createfromiccprof( jp2ICCProfile );
+         if ( m_jp2CMProfile == nullptr )
             JP2KERROR( "Unable to embed ICC profile in JPEG2000 image" );
 
          jas_iccprof_destroy( jp2ICCProfile ), jp2ICCProfile = nullptr;
 
-         Console().WriteLn( "<end><cbr>ICC profile embedded: \'" + icc.Description() + "\', " + String( icc.ProfileSize() ) + " bytes" );
+         Console().WriteLn( "<end><cbr>ICC profile embedded: \'" + icc.Description() + "\', " + String( icc.ProfileSize() ) + " bytes." );
       }
       catch ( ... )
       {
@@ -862,4 +892,4 @@ void JP2Instance::Embed( const ICCProfile& icc )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF JPEG2000Instance.cpp - Released 2016/02/21 20:22:34 UTC
+// EOF JPEG2000Instance.cpp - Released 2017-04-14T23:07:03Z

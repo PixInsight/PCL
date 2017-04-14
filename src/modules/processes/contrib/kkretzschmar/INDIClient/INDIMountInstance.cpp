@@ -147,7 +147,6 @@ bool INDIMountInstance::CanExecuteOn( const View& view, pcl::String& whyNot ) co
       }
    }
 
-   whyNot.Clear();
    return true;
 }
 
@@ -158,7 +157,6 @@ bool INDIMountInstance::IsHistoryUpdater( const View& ) const
 
 bool INDIMountInstance::CanExecuteGlobal( pcl::String& whyNot ) const
 {
-   whyNot.Clear();
    return true;
 }
 

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0355
+// Standard IntensityTransformations Process Module Version 01.07.01.0364
 // ----------------------------------------------------------------------------
-// ColorSaturationInterface.h - Released 2016/02/21 20:22:43 UTC
+// ColorSaturationInterface.h - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -174,7 +174,6 @@ private:
    /*
     * Workflow
     */
-
    enum working_mode { EditMode, SelectMode, DeleteMode, ZoomInMode, ZoomOutMode, PanMode, NoMode = -1 };
 
    working_mode   m_mode;
@@ -222,7 +221,6 @@ private:
    /*
     * Auxiliary Functions
     */
-
    template <typename T> T ViewportToCurve( T y ) const
    {
       return 2*(y - 0.5)*m_scale;
@@ -236,7 +234,6 @@ private:
    /*
     * Current curve point
     */
-
    size_type CurrentPoint() const
    {
       return m_currentPoint;
@@ -260,7 +257,6 @@ private:
    /*
     * Curve point modifiers
     */
-
    size_type FindPoint( double x, double y, int tolerancePx = 0 ) const;
 
    size_type FindPoint( const DPoint& p, int tolerancePx = 0 ) const
@@ -329,7 +325,6 @@ private:
    /*
     * GUI Event Handlers
     */
-
    void __Curve_Paint( Control& sender, const pcl::Rect& updateRect );
    void __Curve_Resize( Control& sender, int newWidth, int newHeight, int oldWidth, int oldHeight );
    void __Curve_ScrollPosUpdated( ScrollBox& sender, int pos );
@@ -340,9 +335,7 @@ private:
    void __Curve_MouseMove( Control& sender, const pcl::Point& pos, unsigned buttons, unsigned modifiers );
    void __Curve_MouseWheel( Control& sender, const pcl::Point& pos, int delta, unsigned buttons, unsigned modifiers );
    void __Curve_KeyPress( Control& sender, int key, unsigned modifiers, bool& wantsKey );
-
    void __CurveParameter_ValueUpdated( NumericEdit& sender, double value );
-
    void __Mode_ButtonClick( Button&, bool );
    void __Zoom_ButtonClick( Button&, bool );
    void __ShowGrid_ButtonClick( Button&, bool );
@@ -352,15 +345,11 @@ private:
    void __RestoreCurve_ButtonClick( Button&, bool );
    void __ReverseCurve_ButtonClick( Button&, bool );
    void __ResetCurve_ButtonClick( Button&, bool );
-
    void __Zoom_ValueUpdated( SpinBox& sender, int value );
    void __Scale_ValueUpdated( SpinBox& sender, int value );
-
    void __KeyPress( Control& sender, int key, unsigned modifiers, bool& wantsKey );
    void __KeyRelease( Control& sender, int key, unsigned modifiers, bool& wantsKey );
-
    void __HueShift_ValueUpdated( NumericEdit& sender, double value );
-
    void __UpdateRealTimePreview_Timer( Timer& );
 
    // -------------------------------------------------------------------------
@@ -381,4 +370,4 @@ PCL_END_LOCAL
 #endif   // __ColorSaturationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF ColorSaturationInterface.h - Released 2016/02/21 20:22:43 UTC
+// EOF ColorSaturationInterface.h - Released 2017-04-14T23:07:12Z

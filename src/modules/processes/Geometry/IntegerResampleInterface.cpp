@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0327
+// Standard Geometry Process Module Version 01.02.01.0336
 // ----------------------------------------------------------------------------
-// IntegerResampleInterface.cpp - Released 2016/12/20 17:43:21 UTC
+// IntegerResampleInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -76,11 +76,7 @@ IntegerResampleInterface* TheIntegerResampleInterface = nullptr;
 // ----------------------------------------------------------------------------
 
 IntegerResampleInterface::IntegerResampleInterface() :
-   ProcessInterface(),
-   instance( TheIntegerResampleProcess ),
-   sourceWidth( 1000 ),
-   sourceHeight( 1000 ),
-   GUI( nullptr )
+   instance( TheIntegerResampleProcess )
 {
    TheIntegerResampleInterface = this;
 }
@@ -122,7 +118,6 @@ void IntegerResampleInterface::TrackViewUpdated( bool active )
       if ( active )
       {
          ImageWindow w = ImageWindow::ActiveWindow();
-
          if ( !w.IsNull() )
             ImageFocused( w.MainView() );
          else
@@ -157,15 +152,10 @@ ProcessImplementation* IntegerResampleInterface::NewProcess() const
 
 bool IntegerResampleInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const IntegerResampleInstance* r = dynamic_cast<const IntegerResampleInstance*>( &p );
-   if ( r == nullptr )
-   {
-      whyNot = "Not an IntegerResample instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const IntegerResampleInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an IntegerResample instance.";
+   return false;
 }
 
 bool IntegerResampleInterface::RequiresInstanceValidation() const
@@ -269,20 +259,16 @@ void IntegerResampleInterface::UpdateControls()
    GUI->TargetHeightInches_NumericEdit.SetValue( hin );
 
    String info;
-
    size_type wasArea = size_type( sourceWidth )*size_type( sourceHeight );
    size_type area = size_type( w )*size_type( h );
-
    if ( currentView.IsNull() )
-      info.Format( "32-bit channel size: %.3lf MB, was %.3lf MB", (area*4)/1048576.0, (wasArea*4)/1048576.0 );
+      info.Format( "32-bit channel size: %.3lf MiB, was %.3lf MiB", (area*4)/1048576.0, (wasArea*4)/1048576.0 );
    else
    {
       ImageVariant image = currentView.Window().MainView().Image();
-
       size_type wasBytes = wasArea * image.NumberOfChannels() * image.BytesPerSample();
       size_type bytes = area * image.NumberOfChannels() * image.BytesPerSample();
-
-      info.Format( "%d-bit total size: %.3lf MB, was %.3lf MB", image.BitsPerSample(), bytes/1048576.0, wasBytes/1048576.0 );
+      info.Format( "%d-bit total size: %.3lf MiB, was %.3lf MiB", image.BitsPerSample(), bytes/1048576.0, wasBytes/1048576.0 );
    }
 
    GUI->SizeInfo_Label.SetText( info );
@@ -373,6 +359,23 @@ void IntegerResampleInterface::__ForceResolution_ButtonClick( Button& sender, bo
    instance.p_forceResolution = checked;
 }
 
+void IntegerResampleInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->AllImages_ViewList )
+      wantsView = view.IsMainView();
+}
+
+void IntegerResampleInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->AllImages_ViewList )
+      if ( view.IsMainView() )
+      {
+         GUI->AllImages_ViewList.SelectView( view );
+         View theView = view;
+         __ViewList_ViewSelected( GUI->AllImages_ViewList, theView );
+      }
+}
+
 // ----------------------------------------------------------------------------
 
 IntegerResampleInterface::GUIData::GUIData( IntegerResampleInterface& w )
@@ -388,6 +391,8 @@ IntegerResampleInterface::GUIData::GUIData( IntegerResampleInterface& w )
    // -------------------------------------------------------------------------
 
    AllImages_ViewList.OnViewSelected( (ViewList::view_event_handler)&IntegerResampleInterface::__ViewList_ViewSelected, w );
+   AllImages_ViewList.OnViewDrag( (Control::view_drag_event_handler)&IntegerResampleInterface::__ViewDrag, w );
+   AllImages_ViewList.OnViewDrop( (Control::view_drop_event_handler)&IntegerResampleInterface::__ViewDrop, w );
 
    // -------------------------------------------------------------------------
 
@@ -629,4 +634,4 @@ IntegerResampleInterface::GUIData::GUIData( IntegerResampleInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF IntegerResampleInterface.cpp - Released 2016/12/20 17:43:21 UTC
+// EOF IntegerResampleInterface.cpp - Released 2017-04-14T23:07:12Z

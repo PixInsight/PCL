@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Convolution Process Module Version 01.01.03.0207
+// Standard Convolution Process Module Version 01.01.03.0216
 // ----------------------------------------------------------------------------
-// LarsonSekaninaInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// LarsonSekaninaInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Convolution PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -114,8 +114,7 @@ void LarsonSekaninaInterface::ResetInstance()
 
 bool LarsonSekaninaInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "LarsonSekanina" );
@@ -133,16 +132,10 @@ ProcessImplementation* LarsonSekaninaInterface::NewProcess() const
 
 bool LarsonSekaninaInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const LarsonSekaninaInstance* r = dynamic_cast<const LarsonSekaninaInstance*>( &p );
-
-   if ( r == 0 )
-   {
-      whyNot = "Not a LarsonSekanina instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const LarsonSekaninaInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a LarsonSekanina instance.";
+   return false;
 }
 
 bool LarsonSekaninaInterface::RequiresInstanceValidation() const
@@ -577,4 +570,4 @@ LarsonSekaninaInterface::GUIData::GUIData( LarsonSekaninaInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LarsonSekaninaInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF LarsonSekaninaInterface.cpp - Released 2017-04-14T23:07:12Z

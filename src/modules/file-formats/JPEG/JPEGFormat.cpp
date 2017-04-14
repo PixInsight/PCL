@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard JPEG File Format Module Version 01.00.03.0295
+// Standard JPEG File Format Module Version 01.00.04.0306
 // ----------------------------------------------------------------------------
-// JPEGFormat.cpp - Released 2016/02/21 20:22:34 UTC
+// JPEGFormat.cpp - Released 2017-04-14T23:07:03Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard JPEG PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -102,20 +102,45 @@ String JPEGFormat::Implementation() const
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
    "<p>This implementation of the JPEG format is based on the Independent JPEG "
-   "Group's (IJG) software library (version 9a), written by "
+   "Group's (IJG) software library (version 9b), written by "
    "Thomas G. Lane and Guido Vollbeding.</p>"
 
-   "<p>IJG JPEG Software Library (version 9a / January 10 2014):<br/>"
-   "Copyright (c) 1991-1998, Thomas G. Lane.<br/>"
-   "Modified 2002-2014 by Guido Vollbeding.</p>"
+   "<p>IJG JPEG Software Library (version 9b, released January 17 2016):<br/>"
+   "Copyright (c) 2016, Thomas G. Lane, Guido Vollbeding</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2015, Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2017, Pleiades Astrophoto</p>"
+
+   "<p style=\"white-space:pre;\">"
+"\n-------------------------------------------------------------------------------"
+"\nJPEG Format Hints             Description"
+"\n============================  ================================================="
+"\nquality n               ( w)  n is a compression quality level in the range"
+"\n                              [0,100]. Lower levels compress more and generate"
+"\n                              more artifacts. Higher levels lead to larger"
+"\n                              files with less artifacts."
+"\n-------------------------------------------------------------------------------"
+"\noptimized               ( w)  Use optimized coding tables."
+"\n-------------------------------------------------------------------------------"
+"\nno-optimized            ( w)  Do not use optimized coding tables."
+"\n-------------------------------------------------------------------------------"
+"\narithmetic              ( w)  Use arithmetic coding."
+"\n-------------------------------------------------------------------------------"
+"\nhuffman                 ( w)  Use Huffman coding."
+"\n-------------------------------------------------------------------------------"
+"\nprogressive             ( w)  Generate a JPEG image that can be loaded as"
+"\n                              multiple layers of progressively higher detail."
+"\n-------------------------------------------------------------------------------"
+"\nno-progressive          ( w)  Generate a baseline JPEG image."
+"\n-------------------------------------------------------------------------------"
+"\nverbosity n             (rw)  n is a verbosity level in the range [0,3] to"
+"\n                              control the amount of generated messages"
+"\n                              (default = 1)."
+"\n-------------------------------------------------------------------------------"
+"\n"
+   "</p>"
    "</html>";
 }
-
-#define JVERSION    "9a / January 10 2014"
-#define JCOPYRIGHT  "Copyright (c) 1991-2014, Thomas G. Lane, Guido Vollbeding"
 
 String JPEGFormat::IconImageFile() const
 {
@@ -154,13 +179,12 @@ bool JPEGFormat::UsesFormatSpecificData() const
 
 bool JPEGFormat::ValidateFormatSpecificData( const void* data ) const
 {
-   return FormatOptions::FromGenericDataBlock( data ) != 0;
+   return FormatOptions::FromGenericDataBlock( data ) != nullptr;
 }
 
 void JPEGFormat::DisposeFormatSpecificData( void* data ) const
 {
-   FormatOptions* o = FormatOptions::FromGenericDataBlock( data );
-   if ( o != 0 )
+   if ( FormatOptions* o = FormatOptions::FromGenericDataBlock( data ) )
       delete o;
 }
 
@@ -270,4 +294,4 @@ JPEGFormat::FormatOptions* JPEGFormat::FormatOptions::FromGenericDataBlock( cons
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF JPEGFormat.cpp - Released 2016/02/21 20:22:34 UTC
+// EOF JPEGFormat.cpp - Released 2017-04-14T23:07:03Z

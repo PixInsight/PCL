@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0355
+// Standard IntensityTransformations Process Module Version 01.07.01.0364
 // ----------------------------------------------------------------------------
-// MaskedStretchInterface.h - Released 2016/02/21 20:22:43 UTC
+// MaskedStretchInterface.h - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,11 +54,11 @@
 #define __MaskedStretchInterface_h
 
 #include <pcl/ComboBox.h>
-#include <pcl/GroupBox.h>
 #include <pcl/Label.h>
 #include <pcl/NumericControl.h>
 #include <pcl/ProcessInterface.h>
 #include <pcl/PushButton.h>
+#include <pcl/SectionBar.h>
 #include <pcl/SpinBox.h>
 #include <pcl/Sizer.h>
 #include <pcl/ToolButton.h>
@@ -118,7 +118,9 @@ private:
             ToolButton        BackgroundReferenceView_ToolButton;
          NumericControl    BackgroundLow_NumericControl;
          NumericControl    BackgroundHigh_NumericControl;
-         GroupBox          ROI_GroupBox;
+
+         SectionBar        ROI_SectionBar;
+         Control           ROI_Control;
          VerticalSizer     ROI_Sizer;
             HorizontalSizer   ROIRow1_Sizer;
                Label             ROIX0_Label;
@@ -133,11 +135,9 @@ private:
                PushButton        ROISelectPreview_Button;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
-
-   // Event Handlers
 
    void __ValueUpdated( NumericEdit& sender, double value );
    void __SpinValueUpdated( SpinBox& sender, int value );
@@ -145,7 +145,9 @@ private:
    void __GetFocus( Control& sender );
    void __EditCompleted( Edit& sender );
    void __Click( Button& sender, bool checked );
-   void __GroupCheck( GroupBox& sender, bool checked );
+   void __SectionBarCheck( SectionBar& sender, bool checked );
+   void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
+   void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
 
    friend struct GUIData;
 };
@@ -163,4 +165,4 @@ PCL_END_LOCAL
 #endif   // __MaskedStretchInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF MaskedStretchInterface.h - Released 2016/02/21 20:22:43 UTC
+// EOF MaskedStretchInterface.h - Released 2017-04-14T23:07:12Z

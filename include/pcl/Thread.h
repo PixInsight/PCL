@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/Thread.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Thread.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/Thread.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_UIObject_h
-#include <pcl/UIObject.h>
-#endif
-
-#ifndef __PCL_String_h
 #include <pcl/String.h>
-#endif
+#include <pcl/UIObject.h>
 
 namespace pcl
 {
@@ -72,13 +65,13 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup thread_support Thread Support
+ * \defgroup thread_support Thread Support Classes and Functions
  */
 
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace ThreadPriority
+ * \namespace pcl::ThreadPriority
  * \brief     Thread scheduling priorities.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -634,10 +627,13 @@ public:
 
 private:
 
-   Thread( void* );
-   virtual void* CloneHandle() const;
+   int m_processorIndex = -1;
 
-   int m_processorIndex;
+   Thread( void* h ) : UIObject( h )
+   {
+   }
+
+   virtual void* CloneHandle() const;
 
    friend class ThreadDispatcher;
 };
@@ -660,4 +656,4 @@ void PCL_FUNC Sleep( unsigned ms );
 #endif   // __PCL_Thread_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Thread.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Thread.h - Released 2017-04-14T23:04:40Z

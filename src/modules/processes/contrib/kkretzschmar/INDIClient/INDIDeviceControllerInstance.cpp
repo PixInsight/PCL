@@ -120,7 +120,6 @@ bool INDIDeviceControllerInstance::CanExecuteOn( const View&, String& whyNot ) c
 
 bool INDIDeviceControllerInstance::CanExecuteGlobal( String& whyNot ) const
 {
-   whyNot.Clear();
    return true;
 }
 

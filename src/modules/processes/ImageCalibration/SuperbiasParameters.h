@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.05.0272
+// Standard ImageCalibration Process Module Version 01.03.05.0281
 // ----------------------------------------------------------------------------
-// SuperbiasParameters.h - Released 2016/02/21 20:22:43 UTC
+// SuperbiasParameters.h - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -183,4 +183,4 @@ extern SBSuperbiasViewId1* TheSBSuperbiasViewId1Parameter;
 #endif   // __SuperbiasParameters_h
 
 // ----------------------------------------------------------------------------
-// EOF SuperbiasParameters.h - Released 2016/02/21 20:22:43 UTC
+// EOF SuperbiasParameters.h - Released 2017-04-14T23:07:12Z

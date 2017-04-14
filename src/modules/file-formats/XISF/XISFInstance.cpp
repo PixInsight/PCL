@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.06.0107
+// Standard XISF File Format Module Version 01.00.09.0125
 // ----------------------------------------------------------------------------
-// XISFInstance.cpp - Released 2016/07/05 10:44:57 UTC
+// XISFInstance.cpp - Released 2017-04-14T23:07:03Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,9 +54,8 @@
 #include "XISFFormat.h"
 #include "XISFOptionsDialog.h"
 
-#include <pcl/AutoPointer.h>
 #include <pcl/ErrorHandler.h>
-#include <pcl/StdStatus.h>
+#include <pcl/MetaModule.h>
 
 namespace pcl
 {
@@ -105,6 +104,10 @@ class XISFStreamHints
 {
 public:
 
+   typedef XISF::block_compression  block_compression;
+
+   typedef XISF::block_checksum     block_checksum;
+
    template <typename T>
    class HintValue
    {
@@ -144,27 +147,27 @@ public:
       bool       m_changed : 1;
    };
 
-   HintValue<bool>      properties;
-   HintValue<bool>      fitsKeywords;
-   HintValue<bool>      importFITSKeywords;
-   HintValue<bool>      autoMetadata;
-   HintValue<int>       compressionMethod;
-   HintValue<int>       compressionLevel;
-   HintValue<int>       checksumMethod;
-   HintValue<unsigned>  blockAlignmentSize;
-   HintValue<unsigned>  maxInlineBlockSize;
-   HintValue<bool>      embeddedData;
-   HintValue<IsoString> cfa;
-   HintValue<bool>      normalize;
-   HintValue<double>    resolution;
-   HintValue<IsoString> resolutionUnit;
-   HintValue<int>       verbosity;
-   HintValue<bool>      noWarnings;
-   HintValue<bool>      warningsAreErrors;
-   IsoStringList        imageIds;
-   int                  imageIdIndex;
-   HintValue<double>    outputLowerBound;
-   HintValue<double>    outputUpperBound;
+   HintValue<bool>              properties;
+   HintValue<bool>              fitsKeywords;
+   HintValue<bool>              importFITSKeywords;
+   HintValue<bool>              autoMetadata;
+   HintValue<block_compression> compressionCodec;
+   HintValue<int>               compressionLevel;
+   HintValue<block_checksum>    checksumAlgorithm;
+   HintValue<unsigned>          blockAlignmentSize;
+   HintValue<unsigned>          maxInlineBlockSize;
+   HintValue<bool>              embeddedData;
+   HintValue<IsoString>         cfa;
+   HintValue<bool>              normalize;
+   HintValue<double>            resolution;
+   HintValue<IsoString>         resolutionUnit;
+   HintValue<int>               verbosity;
+   HintValue<bool>              noWarnings;
+   HintValue<bool>              warningsAreErrors;
+   IsoStringList                imageIds;
+   int                          imageIdIndex;
+   HintValue<double>            outputLowerBound;
+   HintValue<double>            outputUpperBound;
 
    XISFStreamHints( const IsoString& hints ) : imageIdIndex( 0 )
    {
@@ -193,9 +196,9 @@ public:
          {
             if ( ++i == theHints.End() )
                break;
-            int n = XISFEngineBase::CompressionMethodFromId( *i );
-            if ( n != XISF_COMPRESSION_UNKNOWN )
-               compressionMethod = n;
+            block_compression n = XISF::CompressionCodecFromId( *i );
+            if ( n != XISFCompression::Unknown )
+               compressionCodec = n;
          }
          else if ( *i == "compression-level" )
          {
@@ -204,23 +207,23 @@ public:
             int n;
             if ( i->TryToInt( n ) )
                if ( n >= 0 ) // 0=default
-                  compressionLevel = Range( n, XISF_COMPRESSION_LEVEL_DEFAULT, XISF_COMPRESSION_LEVEL_MAX );
+                  compressionLevel = Range( n, XISF::DefaultCompressionLevel, /*XISF::MaxCompressionLevel*/100 );
          }
          else if ( *i == "compress-data" ) // (deprecated) = compression-codec zlib
-            compressionMethod = XISF_COMPRESSION_ZLIB;
+            compressionCodec = XISFCompression::Zlib;
          else if ( *i == "no-compression" ||
                    *i == "no-compress-data" ) // (deprecated) = no-compression
-            compressionMethod = XISF_COMPRESSION_NONE;
+            compressionCodec = XISFCompression::None;
          else if ( *i == "checksums" )
          {
             if ( ++i == theHints.End() )
                break;
-            int n = XISFEngineBase::ChecksumMethodFromId( *i );
-            if ( n != XISF_CHECKSUM_UNKNOWN )
-               checksumMethod = n;
+            block_checksum n = XISF::ChecksumAlgorithmFromId( *i );
+            if ( n != XISFChecksum::Unknown )
+               checksumAlgorithm = n;
          }
          else if ( *i == "no-checksums" )
-            checksumMethod = XISF_CHECKSUM_NONE;
+            checksumAlgorithm = XISFChecksum::None;
          else if ( *i == "block-alignment" )
          {
             if ( ++i == theHints.End() )
@@ -259,7 +262,7 @@ public:
                break;
             int n;
             if ( i->TryToInt( n ) )
-               verbosity = Max( 0, n );
+               verbosity = Range( n, 0, 3 );
          }
          else if ( *i == "normalize" )
             normalize = true;
@@ -334,17 +337,17 @@ public:
       if ( autoMetadata.HasChanged() )
          hints << (autoMetadata.Value() ? "auto-metadata" : "no-auto-metadata");
 
-      if ( compressionMethod.HasChanged() )
-         hints << ((compressionMethod.Value() != XISF_COMPRESSION_NONE) ?
-                   "compression-codec " + IsoString( XISFEngineBase::CompressionMethodId( compressionMethod.Value() ) ) :
+      if ( compressionCodec.HasChanged() )
+         hints << ((compressionCodec.Value() != XISFCompression::None) ?
+                   "compression-codec " + IsoString( XISF::CompressionCodecId( compressionCodec.Value() ) ) :
                    "no-compression");
 
-      if ( compressionLevel.HasChanged() && compressionMethod.Value() != XISF_COMPRESSION_NONE )
+      if ( compressionLevel.HasChanged() && compressionCodec.Value() != XISFCompression::None )
          hints << "compression-level " + IsoString( compressionLevel.Value() );
 
-      if ( checksumMethod.HasChanged() )
-         hints << ((checksumMethod.Value() != XISF_CHECKSUM_NONE) ?
-                   "checksums " + IsoString( XISFEngineBase::ChecksumMethodId( checksumMethod.Value() ) ) :
+      if ( checksumAlgorithm.HasChanged() )
+         hints << ((checksumAlgorithm.Value() != XISFChecksum::None) ?
+                   "checksums " + IsoString( XISF::ChecksumAlgorithmId( checksumAlgorithm.Value() ) ) :
                    "no-checksums");
 
       if ( blockAlignmentSize.HasChanged() )
@@ -423,8 +426,8 @@ public:
    {
       if ( properties.HasChanged() )
          options.embedProperties = properties;
-      if ( cfa.HasChanged() )
-         options.cfaType = XISFEngineBase::CFATypeFromId( cfa );
+//       if ( cfa.HasChanged() )
+//          options.cfaType = XISF::CFATypeFromId( cfa );
       if ( resolution.HasChanged() )
          options.xResolution = options.yResolution = resolution;
       if ( resolutionUnit.HasChanged() )
@@ -438,12 +441,12 @@ public:
    {
       if ( fitsKeywords.HasChanged() )
          options.storeFITSKeywords = fitsKeywords;
-      if ( compressionMethod.HasChanged() )
-         options.compressionMethod = compressionMethod;
+      if ( compressionCodec.HasChanged() )
+         options.compressionCodec = compressionCodec;
       if ( compressionLevel.HasChanged() )
          options.compressionLevel = compressionLevel;
-      if ( checksumMethod.HasChanged() )
-         options.checksumMethod = checksumMethod;
+      if ( checksumAlgorithm.HasChanged() )
+         options.checksumAlgorithm = checksumAlgorithm;
       if ( blockAlignmentSize.HasChanged() )
          options.blockAlignmentSize = blockAlignmentSize;
       if ( maxInlineBlockSize.HasChanged() )
@@ -460,13 +463,57 @@ public:
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
+void XISFInstance::LogHandler::Init( const String& filePath, bool writing )
+{
+   m_console.Write( "<end><cbr>" );
+}
+
+void XISFInstance::LogHandler::Log( const String& text, XISFLogHandler::message_type type )
+{
+   m_console.Write( "<end>" );
+   switch ( type )
+   {
+   default:
+   case XISFMessageType::Informative:
+      m_console.Write( text );
+      break;
+   case XISFMessageType::Note:
+      m_console.Note( "* " + text );
+      break;
+   case XISFMessageType::Warning:
+      m_console.Warning( "** " + text );
+      break;
+   case XISFMessageType::RecoverableError:
+      m_console.Critical( "*** " + text );
+      break;
+   }
+   Module->ProcessEvents();
+}
+
+void XISFInstance::LogHandler::Close()
+{
+   m_console.Write( "<end><cbr>" );
+}
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+template <class S>
+static void CheckOpenStream( const S& stream, const String& memberFunc )
+{
+   if ( !stream || !stream->IsOpen() )
+      throw Error( "XISFInstance::" + memberFunc + "(): Illegal request on a closed stream." );
+}
+
+// ----------------------------------------------------------------------------
+
 XISFInstance::XISFInstance( const XISFFormat* F ) :
    FileFormatImplementation( F ),
-   m_reader( nullptr ), m_writer( nullptr ),
-   m_readHints( nullptr ), m_writeHints( nullptr ),
    m_queriedOptions( false )
 {
 }
+
+// ----------------------------------------------------------------------------
 
 XISFInstance::~XISFInstance()
 {
@@ -491,10 +538,15 @@ ImageDescriptionArray XISFInstance::Open( const String& filePath, const IsoStrin
       {
          m_readHints = new XISFStreamHints( hints );
          m_readHints->ApplyReadHints( xisfOptions );
+         m_reader->SetHints( m_readHints->ToHintsString() );
       }
 
       m_reader->SetOptions( xisfOptions );
+      m_reader->SetLogHandler( new LogHandler );
       m_reader->Open( filePath );
+
+      if ( m_reader->NumberOfImages() < 1 )
+         throw Error( "The XSIF file contains no readable images." );
 
       ImageDescriptionArray images;
       for ( int i = 0; i < int( m_reader->NumberOfImages() ); ++i )
@@ -503,11 +555,6 @@ ImageDescriptionArray XISFInstance::Open( const String& filePath, const IsoStrin
          images.Append( ImageDescription( m_reader->ImageInfo(), m_reader->ImageOptions(), m_reader->ImageId() ) );
       }
       m_reader->SelectImage( 0 );
-
-      Console console;
-      StringList warnings = m_reader->Warnings();
-      for ( StringList::const_iterator i = warnings.Begin(); i != warnings.End(); ++i )
-         console.WarningLn( "** Warning: " + *i );
 
       return images;
    }
@@ -522,14 +569,14 @@ ImageDescriptionArray XISFInstance::Open( const String& filePath, const IsoStrin
 
 bool XISFInstance::IsOpen() const
 {
-   return m_reader != nullptr && m_reader->IsOpen() || m_writer != nullptr && m_writer->IsOpen();
+   return m_reader && m_reader->IsOpen() || m_writer && m_writer->IsOpen();
 }
 
 // ----------------------------------------------------------------------------
 
 String XISFInstance::FilePath() const
 {
-   if ( m_reader != nullptr )
+   if ( m_reader )
       return m_reader->FilePath();
    if ( m_writer != nullptr )
       return m_writer->FilePath();
@@ -540,34 +587,27 @@ String XISFInstance::FilePath() const
 
 void XISFInstance::Close()
 {
-   if ( m_reader != nullptr )
-      delete m_reader, m_reader = nullptr;
-   if ( m_writer != nullptr )
-      delete m_writer, m_writer = nullptr;
-   if ( m_readHints != nullptr )
-      delete m_readHints, m_readHints = nullptr;
-   if ( m_writeHints != nullptr )
-      delete m_writeHints, m_writeHints = nullptr;
+   m_reader.Destroy();
+   m_writer.Destroy();
+   m_readHints.Destroy();
+   m_writeHints.Destroy();
 }
 
 // ----------------------------------------------------------------------------
 
 void XISFInstance::SelectImage( int index )
 {
-   if ( m_reader == nullptr || !m_reader->IsOpen() )
-      throw Error( "XISF: Attempt to select an image before opening a file." );
-
-   if ( int( m_reader->NumberOfImages() ) == 0 && index != 0 ||
-        int( m_reader->NumberOfImages() ) <= index )
-      throw Error( "XISF: Attempt to select a nonexistent image." );
-
+   CheckOpenStream( m_reader, "SelectImage" );
+   if ( index < 0 || index >= m_reader->NumberOfImages() )
+      throw Error( String( "XISFInstance::SelectImage(): " ) + "Attempt to select a nonexistent image." );
    m_reader->SelectImage( index );
 }
 
+// ----------------------------------------------------------------------------
+
 int XISFInstance::SelectedImageIndex() const
 {
-   if ( m_reader == nullptr || !m_reader->IsOpen() )
-      throw Error( "XISF: Attempt to query the selected image before opening a file." );
+   CheckOpenStream( m_reader, "SelectedImageIndex" );
    return m_reader->SelectedImageIndex();
 }
 
@@ -579,53 +619,106 @@ void* XISFInstance::FormatSpecificData() const
       return nullptr;
 
    XISFFormat::FormatOptions* data = new XISFFormat::FormatOptions;
-   if ( m_reader != nullptr )
+   if ( m_reader )
       data->options = m_reader->Options();
-   else if ( m_writer != nullptr )
+   else if ( m_writer )
       data->options = m_writer->Options();
    return data;
 }
 
 // ----------------------------------------------------------------------------
 
-void XISFInstance::Extract( FITSKeywordArray& keywords )
+ICCProfile XISFInstance::ReadICCProfile()
 {
-   if ( !IsOpen() )
-      throw Error( "XISF: Attempt to extract keywords without opening or creating a file." );
-   keywords.Clear();
-   if ( m_reader != nullptr )
-      m_reader->Extract( keywords );
-   else
-      keywords = m_writer->EmbeddedKeywords();
+   CheckOpenStream( m_reader, "ReadICCProfile" );
+   return m_reader->ReadICCProfile();
 }
 
-void XISFInstance::Extract( ICCProfile& icc )
+// ----------------------------------------------------------------------------
+
+RGBColorSystem XISFInstance::ReadRGBWorkingSpace()
 {
-   if ( !IsOpen() )
-      throw Error( "XISF: Attempt to extract an ICC profile without opening or creating a file." );
-   icc.Clear();
-   if ( m_reader != nullptr )
-      m_reader->Extract( icc );
-   else
-      icc = m_writer->EmbeddedICCProfile();
+   CheckOpenStream( m_reader, "ReadRGBWorkingSpace" );
+   return m_reader->ReadRGBWorkingSpace();
 }
 
-void XISFInstance::Extract( pcl::UInt8Image& thumbnail )
+// ----------------------------------------------------------------------------
+
+DisplayFunction XISFInstance::ReadDisplayFunction()
 {
-   if ( !IsOpen() )
-      throw Error( "XISF: Attempt to extract a thumbnail image without opening or creating a file." );
-   thumbnail.FreeData();
-   if ( m_reader != nullptr )
-      m_reader->Extract( thumbnail );
-   else
-      thumbnail = m_writer->EmbeddedThumbnail();
+   CheckOpenStream( m_reader, "ReadDisplayFunction" );
+   return m_reader->ReadDisplayFunction();
 }
 
-void XISFInstance::Extract( void*& data, size_type& length )
+// ----------------------------------------------------------------------------
+
+ColorFilterArray XISFInstance::ReadColorFilterArray()
 {
-   // ### TODO
-   data = nullptr;
-   length = 0;
+   CheckOpenStream( m_reader, "ReadColorFilterArray" );
+   return m_reader->ReadColorFilterArray();
+}
+
+// ----------------------------------------------------------------------------
+
+UInt8Image XISFInstance::ReadThumbnail()
+{
+   CheckOpenStream( m_reader, "ReadThumbnail" );
+   return m_reader->ReadThumbnail();
+}
+
+// ----------------------------------------------------------------------------
+
+FITSKeywordArray XISFInstance::ReadFITSKeywords()
+{
+   /*!
+    * N.B.: The PixInsight core application has an option to reload the list of
+    * keywords actually embedded after writing a new image. Hence the
+    * 'peculiar' implementation below.
+    */
+   if ( m_reader )
+   {
+      if ( m_reader->IsOpen() )
+         return m_reader->ReadFITSKeywords();
+   }
+   if ( m_writer )
+   {
+      if ( m_writer->IsOpen() )
+         return m_writer->FITSKeywords();
+   }
+   CheckOpenStream( m_reader, "ReadFITSKeywords" );
+   return FITSKeywordArray();
+}
+
+// ----------------------------------------------------------------------------
+
+PropertyDescriptionArray XISFInstance::Properties()
+{
+   CheckOpenStream( m_reader, "Properties" );
+   return m_reader->Properties();
+}
+
+// ----------------------------------------------------------------------------
+
+Variant XISFInstance::ReadProperty( const IsoString& id )
+{
+   CheckOpenStream( m_reader, "ReadProperty" );
+   return m_reader->ReadProperty( id );
+}
+
+// ----------------------------------------------------------------------------
+
+PropertyDescriptionArray XISFInstance::ImageProperties()
+{
+   CheckOpenStream( m_reader, "ImageProperties" );
+   return m_reader->ImageProperties();
+}
+
+// ----------------------------------------------------------------------------
+
+Variant XISFInstance::ReadImageProperty( const IsoString& id )
+{
+   CheckOpenStream( m_reader, "ReadImageProperty" );
+   return m_reader->ReadImageProperty( id );
 }
 
 // ----------------------------------------------------------------------------
@@ -633,18 +726,13 @@ void XISFInstance::Extract( void*& data, size_type& length )
 template <class P>
 static void ReadXISFImage( GenericImage<P>& image, XISFReader* reader, const XISFStreamHints* hints )
 {
-   if ( reader == nullptr || !reader->IsOpen() )
-      throw Error( "XISF: Attempt to read an image before opening a file." );
-
-   if ( hints )
+   CheckOpenStream( reader, "ReadImage" );
+   if ( hints != nullptr )
    {
       ImageOptions imageOptions;
       hints->ApplyReadHints( imageOptions );
       reader->SetImageOptions( imageOptions );
    }
-
-   StandardStatus status;
-   image.SetStatusCallback( &status );
    reader->ReadImage( image );
 }
 
@@ -678,8 +766,7 @@ void XISFInstance::ReadImage( UInt32Image& image )
 template <class T>
 void ReadXISFSamples( T* buffer, int startRow, int rowCount, int channel, XISFReader* reader, const XISFStreamHints* hints )
 {
-   if ( reader == nullptr || !reader->IsOpen() )
-      throw Error( "XISF: Attempt to perform an incremental read operation before opening a file." );
+   CheckOpenStream( reader, "ReadSamples" );
 
    if ( hints )
    {
@@ -691,27 +778,27 @@ void ReadXISFSamples( T* buffer, int startRow, int rowCount, int channel, XISFRe
    reader->ReadSamples( buffer, startRow, rowCount, channel );
 }
 
-void XISFInstance::Read( pcl::Image::sample* buffer, int startRow, int rowCount, int channel )
+void XISFInstance::ReadSamples( pcl::Image::sample* buffer, int startRow, int rowCount, int channel )
 {
    ReadXISFSamples( buffer, startRow, rowCount, channel, m_reader, m_readHints );
 }
 
-void XISFInstance::Read( pcl::DImage::sample* buffer, int startRow, int rowCount, int channel )
+void XISFInstance::ReadSamples( pcl::DImage::sample* buffer, int startRow, int rowCount, int channel )
 {
    ReadXISFSamples( buffer, startRow, rowCount, channel, m_reader, m_readHints );
 }
 
-void XISFInstance::Read( UInt8Image::sample* buffer, int startRow, int rowCount, int channel )
+void XISFInstance::ReadSamples( UInt8Image::sample* buffer, int startRow, int rowCount, int channel )
 {
    ReadXISFSamples( buffer, startRow, rowCount, channel, m_reader, m_readHints );
 }
 
-void XISFInstance::Read( UInt16Image::sample* buffer, int startRow, int rowCount, int channel )
+void XISFInstance::ReadSamples( UInt16Image::sample* buffer, int startRow, int rowCount, int channel )
 {
    ReadXISFSamples( buffer, startRow, rowCount, channel, m_reader, m_readHints );
 }
 
-void XISFInstance::Read( UInt32Image::sample* buffer, int startRow, int rowCount, int channel )
+void XISFInstance::ReadSamples( UInt32Image::sample* buffer, int startRow, int rowCount, int channel )
 {
    ReadXISFSamples( buffer, startRow, rowCount, channel, m_reader, m_readHints );
 }
@@ -793,6 +880,7 @@ void XISFInstance::Create( const String& filePath, int numberOfImages, const Iso
    Exception::EnableConsoleOutput();
 
    m_writer = new XISFWriter;
+   m_writer->SetLogHandler( new LogHandler );
 
    XISFOptions xisfOptions = XISFFormat::DefaultOptions();
    ImageOptions imageOptions;
@@ -818,8 +906,6 @@ void XISFInstance::Create( const String& filePath, int numberOfImages, const Iso
       m_writeHints->ApplyWriteHints( imageOptions );
       m_writer->SetHints( m_writeHints->ToHintsString() );
    }
-   else
-      m_writer->SetHints( IsoString() );
 
    m_writer->SetOptions( xisfOptions );
    m_writer->Create( filePath, numberOfImages );
@@ -830,15 +916,15 @@ void XISFInstance::Create( const String& filePath, int numberOfImages, const Iso
 
 void XISFInstance::SetId( const IsoString& id )
 {
-   if ( m_writer == nullptr || !m_writer->IsOpen() )
-      throw Error( "XISF: Attempt to set an image identifier before creating a file." );
+   CheckOpenStream( m_writer, "SetId" );
    m_writer->SetImageId( id );
 }
 
+// ----------------------------------------------------------------------------
+
 void XISFInstance::SetOptions( const ImageOptions& options )
 {
-   if ( m_writer == nullptr || !m_writer->IsOpen() )
-      throw Error( "XISF: Attempt to set image options before creating a file." );
+   CheckOpenStream( m_writer, "SetOptions" );
 
    ImageOptions imageOptions = options;
 
@@ -865,10 +951,11 @@ void XISFInstance::SetOptions( const ImageOptions& options )
    m_writer->SetImageOptions( imageOptions );
 }
 
+// ----------------------------------------------------------------------------
+
 void XISFInstance::SetFormatSpecificData( const void* data )
 {
-   if ( m_writer == nullptr || !m_writer->IsOpen() )
-      throw Error( "XISF: Attempt to set image options before creating a file." );
+   CheckOpenStream( m_writer, "SetFormatSpecificData" );
 
    const XISFFormat::FormatOptions* formatOptions = XISFFormat::FormatOptions::FromGenericDataBlock( data );
    if ( formatOptions != nullptr )
@@ -882,25 +969,66 @@ void XISFInstance::SetFormatSpecificData( const void* data )
 
 // ----------------------------------------------------------------------------
 
-void XISFInstance::Embed( const FITSKeywordArray& keywords )
+void XISFInstance::WriteICCProfile( const ICCProfile& icc )
 {
-   if ( m_writer == nullptr || !m_writer->IsOpen() )
-      throw Error( "XISF: Attempt to embed XISF header keywords before creating a file." );
-   m_writer->Embed( keywords );
+   CheckOpenStream( m_writer, "WriteICCProfile" );
+   m_writer->WriteICCProfile( icc );
 }
 
-void XISFInstance::Embed( const ICCProfile& icc )
+// ----------------------------------------------------------------------------
+
+void XISFInstance::WriteRGBWorkingSpace( const RGBColorSystem& rgbws )
 {
-   if ( m_writer == nullptr || !m_writer->IsOpen() )
-      throw Error( "XISF: Attempt to embed an ICC profile before creating a file." );
-   m_writer->Embed( icc );
+   CheckOpenStream( m_writer, "WriteRGBWorkingSpace" );
+   m_writer->WriteRGBWorkingSpace( rgbws );
 }
 
-void XISFInstance::Embed( const pcl::UInt8Image& thumbnail )
+// ----------------------------------------------------------------------------
+
+void XISFInstance::WriteDisplayFunction( const DisplayFunction& df )
 {
-   if ( m_writer == nullptr || !m_writer->IsOpen() )
-      throw Error( "XISF: Attempt to embed a thumbnail image before creating a file." );
-   m_writer->Embed( thumbnail );
+   CheckOpenStream( m_writer, "WriteDisplayFunction" );
+   m_writer->WriteDisplayFunction( df );
+}
+
+// ----------------------------------------------------------------------------
+
+void XISFInstance::WriteColorFilterArray( const ColorFilterArray& cfa )
+{
+   CheckOpenStream( m_writer, "WriteColorFilterArray" );
+   m_writer->WriteColorFilterArray( cfa );
+}
+
+// ----------------------------------------------------------------------------
+
+void XISFInstance::WriteThumbnail( const pcl::UInt8Image& thumbnail )
+{
+   CheckOpenStream( m_writer, "WriteThumbnail" );
+   m_writer->WriteThumbnail( thumbnail );
+}
+
+// ----------------------------------------------------------------------------
+
+void XISFInstance::WriteFITSKeywords( const FITSKeywordArray& keywords )
+{
+   CheckOpenStream( m_writer, "WriteFITSKeywords" );
+   m_writer->WriteFITSKeywords( keywords );
+}
+
+// ----------------------------------------------------------------------------
+
+void XISFInstance::WriteProperty( const IsoString& id, const Variant& value )
+{
+   CheckOpenStream( m_writer, "WriteProperty" );
+   m_writer->WriteProperty( id, value );
+}
+
+// ----------------------------------------------------------------------------
+
+void XISFInstance::WriteImageProperty( const IsoString& id, const Variant& value )
+{
+   CheckOpenStream( m_writer, "WriteImageProperty" );
+   m_writer->WriteImageProperty( id, value );
 }
 
 // ----------------------------------------------------------------------------
@@ -908,15 +1036,10 @@ void XISFInstance::Embed( const pcl::UInt8Image& thumbnail )
 template <class P>
 static void WriteXISFImage( const GenericImage<P>& image, XISFWriter* writer, XISFStreamHints* hints )
 {
-   if ( writer == nullptr || !writer->IsOpen() )
-      throw Error( "XISF: Attempt to write an image before creating a file." );
-
+   CheckOpenStream( writer, "WriteImage" );
    if ( hints )
       if ( hints->imageIdIndex < int( hints->imageIds.Length() ) )
          writer->SetImageId( hints->imageIds[hints->imageIdIndex++] );
-
-   StandardStatus status;
-   image.SetStatusCallback( &status );
    writer->WriteImage( image );
 }
 
@@ -945,128 +1068,57 @@ void XISFInstance::WriteImage( const UInt32Image& image )
    WriteXISFImage( image, m_writer, m_writeHints );
 }
 
+// ----------------------------------------------------------------------------
+
 void XISFInstance::CreateImage( const ImageInfo& info )
 {
-   if ( m_writer == nullptr || !m_writer->IsOpen() )
-      throw Error( "XISF: Attempt to create an image before creating a file." );
-
+   CheckOpenStream( m_writer, "CreateImage" );
    if ( m_writeHints )
       if ( m_writeHints->imageIdIndex < int( m_writeHints->imageIds.Length() ) )
          m_writer->SetImageId( m_writeHints->imageIds[m_writeHints->imageIdIndex++] );
-
   m_writer->CreateImage( info );
 }
+
+// ----------------------------------------------------------------------------
 
 template <class T>
 void WriteXISFSamples( const T* buffer, int startRow, int rowCount, int channel, XISFWriter* writer )
 {
-   if ( writer == nullptr || !writer->IsOpen() )
-      throw Error( "XISF: Attempt to perform an incremental write operation before creating a file." );
+   CheckOpenStream( writer, "WriteSamples" );
    writer->WriteSamples( buffer, startRow, rowCount, channel );
 }
 
-void XISFInstance::Write( const pcl::Image::sample* buffer, int startRow, int rowCount, int channel )
+void XISFInstance::WriteSamples( const pcl::Image::sample* buffer, int startRow, int rowCount, int channel )
 {
    WriteXISFSamples( buffer, startRow, rowCount, channel, m_writer );
 }
 
-void XISFInstance::Write( const pcl::DImage::sample* buffer, int startRow, int rowCount, int channel )
+void XISFInstance::WriteSamples( const pcl::DImage::sample* buffer, int startRow, int rowCount, int channel )
 {
    WriteXISFSamples( buffer, startRow, rowCount, channel, m_writer );
 }
 
-void XISFInstance::Write( const UInt8Image::sample* buffer, int startRow, int rowCount, int channel )
+void XISFInstance::WriteSamples( const UInt8Image::sample* buffer, int startRow, int rowCount, int channel )
 {
    WriteXISFSamples( buffer, startRow, rowCount, channel, m_writer );
 }
 
-void XISFInstance::Write( const UInt16Image::sample* buffer, int startRow, int rowCount, int channel )
+void XISFInstance::WriteSamples( const UInt16Image::sample* buffer, int startRow, int rowCount, int channel )
 {
    WriteXISFSamples( buffer, startRow, rowCount, channel, m_writer );
 }
 
-void XISFInstance::Write( const UInt32Image::sample* buffer, int startRow, int rowCount, int channel )
+void XISFInstance::WriteSamples( const UInt32Image::sample* buffer, int startRow, int rowCount, int channel )
 {
    WriteXISFSamples( buffer, startRow, rowCount, channel, m_writer );
 }
 
 // ----------------------------------------------------------------------------
 
-ImagePropertyDescriptionArray XISFInstance::Properties()
+void XISFInstance::CloseImage()
 {
-   if ( m_reader == nullptr )
-      throw Error( "XISF: Attempt to get property information without opening an existing file." );
-   return m_reader->Properties();
-}
-
-Variant XISFInstance::ReadProperty( const IsoString& id )
-{
-   if ( m_reader == nullptr )
-      throw Error( "XISF: Attempt to read a data property without opening an existing file." );
-   Variant property;
-   m_reader->Extract( property, id );
-   return property;
-}
-
-void XISFInstance::WriteProperty( const IsoString& id, const Variant& value )
-{
-   if ( m_writer == nullptr )
-      throw Error( "XISF: Attempt to write a data property without creating a new file." );
-   m_writer->Embed( value, id );
-}
-
-// ----------------------------------------------------------------------------
-
-RGBColorSystem XISFInstance::ReadRGBWS()
-{
-   if ( m_reader == nullptr )
-      throw Error( "XISF: Attempt to read RGB working space parameters without opening an existing file." );
-   RGBColorSystem rgbws;
-   m_reader->Extract( rgbws );
-   return rgbws;
-}
-
-void XISFInstance::WriteRGBWS( const RGBColorSystem& rgbws )
-{
-   if ( m_writer == nullptr )
-      throw Error( "XISF: Attempt to write RGB working space parameters without creating a new file." );
-   m_writer->Embed( rgbws );
-}
-
-// ----------------------------------------------------------------------------
-
-DisplayFunction XISFInstance::ReadDisplayFunction()
-{
-   if ( m_reader == nullptr )
-      throw Error( "XISF: Attempt to read display function parameters without opening an existing file." );
-   DisplayFunction df;
-   m_reader->Extract( df );
-   return df;
-}
-
-void XISFInstance::WriteDisplayFunction( const DisplayFunction& df )
-{
-   if ( m_writer == nullptr )
-      throw Error( "XISF: Attempt to write display function parameters without creating a new file." );
-   m_writer->Embed( df );
-}
-
-// ----------------------------------------------------------------------------
-
-ColorFilterArray XISFInstance::ReadColorFilterArray()
-{
-   if ( m_reader == nullptr )
-      throw Error( "XISF: Attempt to read color filter array parameters without opening an existing file." );
-   ColorFilterArray cfa;
-   m_reader->Extract( cfa );
-   return cfa;
-}
-
-void XISFInstance::WriteColorFilterArray( const ColorFilterArray& cfa )
-{
-   if ( m_writer == nullptr )
-      throw Error( "XISF: Attempt to write color filter array parameters without creating a new file." );
-   m_writer->Embed( cfa );
+   CheckOpenStream( m_writer, "CloseImage" );
+  m_writer->CloseImage();
 }
 
 // ----------------------------------------------------------------------------
@@ -1074,4 +1126,4 @@ void XISFInstance::WriteColorFilterArray( const ColorFilterArray& cfa )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISFInstance.cpp - Released 2016/07/05 10:44:57 UTC
+// EOF XISFInstance.cpp - Released 2017-04-14T23:07:03Z

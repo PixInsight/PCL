@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0327
+// Standard Geometry Process Module Version 01.02.01.0336
 // ----------------------------------------------------------------------------
-// CropInterface.cpp - Released 2016/12/20 17:43:21 UTC
+// CropInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -75,12 +75,7 @@ CropInterface* TheCropInterface = nullptr;
 // ----------------------------------------------------------------------------
 
 CropInterface::CropInterface() :
-   ProcessInterface(),
-   instance( TheCropProcess ),
-   sourceWidth( 1000 ),
-   sourceHeight( 1000 ),
-   anchor( 4 ), // center
-   GUI( nullptr )
+   instance( TheCropProcess )
 {
    TheCropInterface = this;
 }
@@ -156,15 +151,10 @@ ProcessImplementation* CropInterface::NewProcess() const
 
 bool CropInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const CropInstance* r = dynamic_cast<const CropInstance*>( &p );
-   if ( r == nullptr )
-   {
-      whyNot = "Not a Crop instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const CropInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a Crop instance.";
+   return false;
 }
 
 bool CropInterface::RequiresInstanceValidation() const
@@ -543,9 +533,7 @@ void CropInterface::__ViewList_ViewSelected( ViewList& sender, View& )
    if ( !currentView.IsNull() )
    {
       ImageWindow w = currentView.Window();
-
       w.MainView().GetSize( sourceWidth, sourceHeight );
-
       double xRes, yRes;
       bool metric;
       w.GetResolution( xRes, yRes, metric );
@@ -936,13 +924,30 @@ void CropInterface::__ColorSample_Paint( Control& sender, const Rect& updateRect
    g.DrawRect( sender.BoundsRect() );
 }
 
+void CropInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->AllImages_ViewList )
+      wantsView = view.IsMainView();
+}
+
+void CropInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->AllImages_ViewList )
+      if ( view.IsMainView() )
+      {
+         GUI->AllImages_ViewList.SelectView( view );
+         View theView = view;
+         __ViewList_ViewSelected( GUI->AllImages_ViewList, theView );
+      }
+}
+
 // ----------------------------------------------------------------------------
 
 CropInterface::GUIData::GUIData( CropInterface& w ) :
-   L_Bitmap( w.ScaledResource( ":/icons/move-left.png" ) ),
-   R_Bitmap( w.ScaledResource( ":/icons/move-right.png" ) ),
-   T_Bitmap( w.ScaledResource( ":/icons/move-up.png" ) ),
-   B_Bitmap( w.ScaledResource( ":/icons/move-down.png" ) ),
+   L_Bitmap(  w.ScaledResource( ":/icons/move-left.png" ) ),
+   R_Bitmap(  w.ScaledResource( ":/icons/move-right.png" ) ),
+   T_Bitmap(  w.ScaledResource( ":/icons/move-up.png" ) ),
+   B_Bitmap(  w.ScaledResource( ":/icons/move-down.png" ) ),
    TL_Bitmap( w.ScaledResource( ":/icons/move-left-up.png" ) ),
    TR_Bitmap( w.ScaledResource( ":/icons/move-right-up.png" ) ),
    BL_Bitmap( w.ScaledResource( ":/icons/move-left-down.png" ) ),
@@ -958,6 +963,8 @@ CropInterface::GUIData::GUIData( CropInterface& w ) :
    // -------------------------------------------------------------------------
 
    AllImages_ViewList.OnViewSelected( (ViewList::view_event_handler)&CropInterface::__ViewList_ViewSelected, w );
+   AllImages_ViewList.OnViewDrag( (Control::view_drag_event_handler)&CropInterface::__ViewDrag, w );
+   AllImages_ViewList.OnViewDrop( (Control::view_drop_event_handler)&CropInterface::__ViewDrop, w );
 
    // -------------------------------------------------------------------------
 
@@ -1356,4 +1363,4 @@ CropInterface::GUIData::GUIData( CropInterface& w ) :
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CropInterface.cpp - Released 2016/12/20 17:43:21 UTC
+// EOF CropInterface.cpp - Released 2017-04-14T23:07:12Z

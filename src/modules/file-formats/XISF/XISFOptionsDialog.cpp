@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.06.0107
+// Standard XISF File Format Module Version 01.00.09.0125
 // ----------------------------------------------------------------------------
-// XISFOptionsDialog.cpp - Released 2016/07/05 10:44:57 UTC
+// XISFOptionsDialog.cpp - Released 2017-04-14T23:07:03Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -50,7 +50,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#include "XISF.h"
 #include "XISFOptionsDialog.h"
 
 namespace pcl
@@ -87,7 +86,7 @@ XISFOptionsDialogBase::XISFOptionsDialogBase( const XISFOptions& xisfOptions, co
    CompressionCodec_ComboBox.AddItem( "LZ4" );
    CompressionCodec_ComboBox.AddItem( "LZ4-HC" );
    CompressionCodec_ComboBox.SetToolTip( compressionCodecToolTip );
-   CompressionCodec_ComboBox.SetCurrentItem( CompressionMethodToComboBoxItem( options.compressionMethod ) );
+   CompressionCodec_ComboBox.SetCurrentItem( CompressionCodecToComboBoxItem( options.compressionCodec ) );
 
    CompressionCodec_Sizer.SetSpacing( 4 );
    CompressionCodec_Sizer.Add( CompressionCodec_Label );
@@ -104,8 +103,8 @@ XISFOptionsDialogBase::XISFOptionsDialogBase( const XISFOptions& xisfOptions, co
    CompressionLevel_Label.SetMinWidth( m_labelWidth );
    CompressionLevel_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
-   CompressionLevel_SpinBox.SetRange( 0, XISF_COMPRESSION_LEVEL_MAX );
-   CompressionLevel_SpinBox.SetStepSize( XISF_COMPRESSION_LEVEL_MAX/5 );
+   CompressionLevel_SpinBox.SetRange( 0, /*XISF::MaxCompressionLevel*/100 );
+   CompressionLevel_SpinBox.SetStepSize( /*XISF::MaxCompressionLevel*/100/5 );
    CompressionLevel_SpinBox.SetMinimumValueText( "<Auto>" );
    CompressionLevel_SpinBox.SetToolTip( compressionLevelToolTip );
    CompressionLevel_SpinBox.SetValue( options.compressionLevel );
@@ -122,8 +121,8 @@ XISFOptionsDialogBase::XISFOptionsDialogBase( const XISFOptions& xisfOptions, co
       "compression of data structured as contiguous sequences of 16-bit, 32-bit and 64-bit numbers, such as most images "
       "processed with PixInsight. For 8-bit data, byte shuffling has obviously no effect on the compression ratio and "
       "hence is ignored.</p>" );
-   CompressionShuffle_CheckBox.SetChecked( options.compressionMethod == XISF_COMPRESSION_NONE ||
-                                           XISFEngineBase::CompressionUsesByteShuffle( options.compressionMethod ) );
+   CompressionShuffle_CheckBox.SetChecked( options.compressionCodec == XISFCompression::None ||
+                                           XISF::CompressionUsesByteShuffle( options.compressionCodec ) );
 
    CompressionShuffle_Sizer.AddUnscaledSpacing( m_labelWidth + ui4 );
    CompressionShuffle_Sizer.Add( CompressionShuffle_CheckBox );
@@ -137,7 +136,7 @@ XISFOptionsDialogBase::XISFOptionsDialogBase( const XISFOptions& xisfOptions, co
 
    DataCompression_GroupBox.SetTitle( "XISF Data Block Compression" );
    DataCompression_GroupBox.EnableTitleCheckBox();
-   DataCompression_GroupBox.SetChecked( options.compressionMethod != XISF_COMPRESSION_NONE );
+   DataCompression_GroupBox.SetChecked( options.compressionCodec != XISFCompression::None );
    DataCompression_GroupBox.SetSizer( DataCompression_Sizer );
    DataCompression_GroupBox.AdjustToContents();
 
@@ -158,7 +157,7 @@ XISFOptionsDialogBase::XISFOptionsDialogBase( const XISFOptions& xisfOptions, co
    Checksums_ComboBox.AddItem( "SHA-256" );
    Checksums_ComboBox.AddItem( "SHA-512" );
    Checksums_ComboBox.SetToolTip( checksumToolTip );
-   Checksums_ComboBox.SetCurrentItem( ChecksumMethodToComboBoxItem( options.checksumMethod ) );
+   Checksums_ComboBox.SetCurrentItem( ChecksumAlgorithmToComboBoxItem( options.checksumAlgorithm ) );
 
    Checksums_Sizer.SetSpacing( 4 );
    Checksums_Sizer.Add( Checksums_Label );
@@ -171,7 +170,7 @@ XISFOptionsDialogBase::XISFOptionsDialogBase( const XISFOptions& xisfOptions, co
 
    Security_GroupBox.SetTitle( "Security" );
    Security_GroupBox.EnableTitleCheckBox();
-   Security_GroupBox.SetChecked( options.checksumMethod != XISF_CHECKSUM_NONE );
+   Security_GroupBox.SetChecked( options.checksumAlgorithm != XISFChecksum::None );
    Security_GroupBox.SetSizer( Security_Sizer );
    Security_GroupBox.AdjustToContents();
 
@@ -192,81 +191,81 @@ XISFOptionsDialogBase::XISFOptionsDialogBase( const XISFOptions& xisfOptions, co
    BottomSection_Sizer.Add( Cancel_PushButton );
 }
 
-int XISFOptionsDialogBase::CompressionMethodToComboBoxItem( int method )
+int XISFOptionsDialogBase::CompressionCodecToComboBoxItem( XISF::block_compression codec )
 {
-   switch ( method )
+   switch ( codec )
    {
    default:
-   case XISF_COMPRESSION_ZLIB:
-   case XISF_COMPRESSION_ZLIB_SH:
+   case XISFCompression::Zlib:
+   case XISFCompression::Zlib_Sh:
       return 0;
-   case XISF_COMPRESSION_LZ4:
-   case XISF_COMPRESSION_LZ4_SH:
+   case XISFCompression::LZ4:
+   case XISFCompression::LZ4_Sh:
       return 1;
-   case XISF_COMPRESSION_LZ4HC:
-   case XISF_COMPRESSION_LZ4HC_SH:
+   case XISFCompression::LZ4HC:
+   case XISFCompression::LZ4HC_Sh:
       return 2;
    }
 }
 
-int XISFOptionsDialogBase::ComboBoxItemToCompressionMethod( int item )
+XISF::block_compression XISFOptionsDialogBase::ComboBoxItemToCompressionCodec( int item )
 {
    bool withByteShuffle = CompressionShuffle_CheckBox.IsChecked();
    switch ( item )
    {
    case 0:
-      return withByteShuffle ? XISF_COMPRESSION_ZLIB_SH : XISF_COMPRESSION_ZLIB;
+      return withByteShuffle ? XISFCompression::Zlib_Sh : XISFCompression::Zlib;
    case 1:
-      return withByteShuffle ? XISF_COMPRESSION_LZ4_SH : XISF_COMPRESSION_LZ4;
+      return withByteShuffle ? XISFCompression::LZ4_Sh : XISFCompression::LZ4;
    case 2:
-      return withByteShuffle ? XISF_COMPRESSION_LZ4HC_SH : XISF_COMPRESSION_LZ4HC;
+      return withByteShuffle ? XISFCompression::LZ4HC_Sh : XISFCompression::LZ4HC;
    default: // !?
-      return XISF_COMPRESSION_UNKNOWN;
+      return XISFCompression::Unknown;
    }
 }
 
-int XISFOptionsDialogBase::ChecksumMethodToComboBoxItem( int method )
+int XISFOptionsDialogBase::ChecksumAlgorithmToComboBoxItem( XISF::block_checksum algorithm )
 {
-   switch ( method )
+   switch ( algorithm )
    {
    default:
-   case XISF_CHECKSUM_SHA1:
+   case XISFChecksum::SHA1:
       return 0;
-   case XISF_CHECKSUM_SHA256:
+   case XISFChecksum::SHA256:
       return 1;
-   case XISF_CHECKSUM_SHA512:
+   case XISFChecksum::SHA512:
       return 2;
    }
 }
 
-int XISFOptionsDialogBase::ComboBoxItemToChecksumMethod( int item )
+XISF::block_checksum XISFOptionsDialogBase::ComboBoxItemToChecksumAlgorithm( int item )
 {
    switch ( item )
    {
    case 0:
-      return XISF_CHECKSUM_SHA1;
+      return XISFChecksum::SHA1;
    case 1:
-      return XISF_CHECKSUM_SHA256;
+      return XISFChecksum::SHA256;
    case 2:
-      return XISF_CHECKSUM_SHA512;
+      return XISFChecksum::SHA512;
    default: // !?
-      return XISF_CHECKSUM_UNKNOWN;
+      return XISFChecksum::Unknown;
    }
 }
 
 void XISFOptionsDialogBase::GetBaseParameters()
 {
    if ( DataCompression_GroupBox.IsChecked() )
-      options.compressionMethod = ComboBoxItemToCompressionMethod( CompressionCodec_ComboBox.CurrentItem() );
+      options.compressionCodec = ComboBoxItemToCompressionCodec( CompressionCodec_ComboBox.CurrentItem() );
    else
-      options.compressionMethod = XISF_COMPRESSION_NONE;
+      options.compressionCodec = XISFCompression::None;
 
    options.compressionLevel = uint8( CompressionLevel_SpinBox.Value() );
 
    if ( Security_GroupBox.IsChecked() )
-      options.checksumMethod = ComboBoxItemToChecksumMethod( Checksums_ComboBox.CurrentItem() );
+      options.checksumAlgorithm = ComboBoxItemToChecksumAlgorithm( Checksums_ComboBox.CurrentItem() );
    else
-      options.checksumMethod = XISF_CHECKSUM_NONE;
+      options.checksumAlgorithm = XISFChecksum::None;
 }
 
 void XISFOptionsDialogBase::Base_Button_Click( Button& sender, bool checked )
@@ -523,4 +522,4 @@ void XISFOptionsDialog::Dialog_Return( Dialog&/*sender*/, int retVal )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISFOptionsDialog.cpp - Released 2016/07/05 10:44:57 UTC
+// EOF XISFOptionsDialog.cpp - Released 2017-04-14T23:07:03Z

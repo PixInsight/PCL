@@ -2,16 +2,16 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard CosmeticCorrection Process Module Version 01.02.05.0149
+// Standard CosmeticCorrection Process Module Version 01.02.05.0158
 // ----------------------------------------------------------------------------
-// CosmeticCorrectionInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// CosmeticCorrectionInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CosmeticCorrection PixInsight module.
 //
-// Copyright (c) 2011-2015 Nikolay Volkov
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2017 Nikolay Volkov
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,14 +56,14 @@
 
 #include <pcl/Dialog.h>
 #include <pcl/FileDialog.h>
-#include <pcl/MessageBox.h>
-#include <pcl/MetaModule.h>
-#include <pcl/StdStatus.h>
-#include <pcl/SpinStatus.h>
 #include <pcl/FileFormat.h>
 #include <pcl/FileFormatInstance.h>
-#include <pcl/RealTimePreview.h>
+#include <pcl/MessageBox.h>
+#include <pcl/MetaModule.h>
 #include <pcl/MorphologicalTransformation.h>
+#include <pcl/RealTimePreview.h>
+#include <pcl/SpinStatus.h>
+#include <pcl/StdStatus.h>
 
 
 namespace pcl
@@ -139,7 +139,6 @@ void CosmeticCorrectionInterface::ResetInstance()
 
 bool CosmeticCorrectionInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
    if ( GUI == 0 )
    {
       GUI = new GUIData( *this );
@@ -163,15 +162,10 @@ ProcessImplementation* CosmeticCorrectionInterface::NewProcess() const
 
 bool CosmeticCorrectionInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const CosmeticCorrectionInstance* r = dynamic_cast<const CosmeticCorrectionInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not an CosmeticCorrection instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const CosmeticCorrectionInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an CosmeticCorrection instance.";
+   return false;
 }
 
 bool CosmeticCorrectionInterface::RequiresInstanceValidation() const
@@ -188,10 +182,10 @@ bool CosmeticCorrectionInterface::ImportProcess( const ProcessImplementation& p 
    m_MaxSlider = 65535;
 
    if ( m_md != 0 )
-	{
-		delete m_md, m_md = 0;
-		m_H.Clear();
-	}
+   {
+      delete m_md, m_md = 0;
+      m_H.Clear();
+   }
 
    if ( !instance.p_masterDark.IsEmpty() )
    {
@@ -1121,16 +1115,16 @@ void CosmeticCorrectionInterface::RTPUpdate()
 }
 // ----------------------------------------------------------------------------
 
-void FileShow(String& p)
+void FileShow( String& path )
 {
-   if ( ImageWindow::WindowByFilePath( p ).IsNull() )
+   if ( ImageWindow::WindowByFilePath( path ).IsNull() )
    {
-      Array<ImageWindow> w = ImageWindow::Open( p );
-      for ( Array<ImageWindow>::iterator i = w.Begin(); i != w.End(); ++i )
-         i->Show();
+      Array<ImageWindow> windows = ImageWindow::Open( path, IsoString()/*id*/, "raw cfa"/*formatHints*/ );
+      for ( ImageWindow& window : windows )
+         window.Show();
    }
    else
-      ImageWindow::WindowByFilePath( p ).BringToFront();
+      ImageWindow::WindowByFilePath( path ).BringToFront();
 }
 
 void CosmeticCorrectionInterface::LoadMasterDark( const String& filePath)
@@ -1167,7 +1161,7 @@ void CosmeticCorrectionInterface::LoadMasterDark( const String& filePath)
    m_channels = m_md->NumberOfNominalChannels();
 
    ImageWindow w( m_md->Width(), m_md->Height(), m_md->NumberOfChannels(), m_md->BitsPerSample(),
-      m_md->IsFloatSample(), m_md->IsColor(), true,   "CosmeticCorrectionDark2" );
+      m_md->IsFloatSample(), m_md->IsColor(), true, "CosmeticCorrectionDark2" );
 
    ImageVariant v = w.MainView().Image();
    v.CopyImage(*m_md);
@@ -1395,7 +1389,7 @@ void CosmeticCorrectionInterface::UpdateTargetImageItem( size_type i )
    node->SetIcon( 1, Bitmap( ScaledResource( item.enabled ? ":/browser/enabled.png" : ":/browser/disabled.png" ) ) );
    node->SetAlignment( 1, TextAlign::Left );
 
-   node->SetIcon( 2, Bitmap( ScaledResource( ":/icons/select-file.png" ) ) );
+   node->SetIcon( 2, Bitmap( ScaledResource( ":/browser/document.png" ) ) );
    if ( GUI->FullPaths_CheckBox.IsChecked() )
       node->SetText( 2, item.path );
    else
@@ -1997,8 +1991,10 @@ void CosmeticCorrectionInterface::__CheckSection( SectionBar& sender, bool check
    if ( sender == GUI->UseMasterDark_SectionBar )
    {
       instance.p_useMasterDark = checked;
-      if ( checked && !m_md )         // if master dark is not loaded
-         SelectMasterFrameDialog();   // forse to select master dark
+      // N.B.: The code below has been disabled because it prevents using
+      // FileDrop events on GUI->MasterDarkPath_Edit
+//       if ( checked && !m_md )         // if master dark is not loaded
+//          SelectMasterFrameDialog();   // forse to select master dark
    }
    else if ( sender == GUI->UseAutoDetect_SectionBar ) instance.p_useAutoDetect = checked;
    else if ( sender == GUI->UseDefectList_SectionBar ) instance.p_useDefectList = checked;
@@ -2007,6 +2003,52 @@ void CosmeticCorrectionInterface::__CheckSection( SectionBar& sender, bool check
    {
       s_requiresUpdate = true;
       RTPUpdate();
+   }
+}
+
+void CosmeticCorrectionInterface::__FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
+{
+   if ( sender == GUI->TargetImages_TreeBox.Viewport() )
+      wantsFiles = true;
+   else if ( sender == GUI->OutputDir_Edit )
+      wantsFiles = files.Length() == 1 && File::DirectoryExists( files[0] );
+   else if ( sender == GUI->UseMasterDark_SectionBar || sender == GUI->MasterDarkPath_Edit )
+      wantsFiles = files.Length() == 1 && File::Exists( files[0] );
+}
+
+void CosmeticCorrectionInterface::__FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers )
+{
+   if ( sender == GUI->TargetImages_TreeBox.Viewport() )
+   {
+      StringList inputFiles;
+      bool recursive = IsControlOrCmdPressed();
+      for ( const String& item : files )
+         if ( File::Exists( item ) )
+            inputFiles << item;
+         else if ( File::DirectoryExists( item ) )
+            inputFiles << FileFormat::SupportedImageFiles( item, true/*toRead*/, false/*toWrite*/, recursive );
+
+      inputFiles.Sort();
+      size_type i0 = TreeInsertionIndex( GUI->TargetImages_TreeBox );
+      for ( const String& file : inputFiles )
+         instance.p_targetFrames.Insert( instance.p_targetFrames.At( i0++ ), CosmeticCorrectionInstance::ImageItem( file ) );
+
+      UpdateTargetImagesList();
+      UpdateImageSelectionButtons();
+   }
+   else if ( sender == GUI->OutputDir_Edit )
+   {
+      if ( File::DirectoryExists( files[0] ) )
+         GUI->OutputDir_Edit.SetText( instance.p_outputDir = files[0] );
+   }
+   else if ( sender == GUI->UseMasterDark_SectionBar || sender == GUI->MasterDarkPath_Edit )
+   {
+      if ( File::Exists( files[0] ) )
+      {
+         if ( instance.p_masterDark != files[0] )
+            LoadMasterDark( instance.p_masterDark = files[0] );
+         GUI->UseMasterDark_Control.Show();
+      }
    }
 }
 
@@ -2034,6 +2076,8 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
    TargetImages_TreeBox.OnNodeActivated( (TreeBox::node_event_handler)&CosmeticCorrectionInterface::__NodeActivated, w );
    TargetImages_TreeBox.OnNodeSelectionUpdated( (TreeBox::tree_event_handler)&CosmeticCorrectionInterface::__NodeSelectionUpdated, w );
    TargetImages_TreeBox.SetToolTip( "<p>Double click a file name to open the file as a new image window.</p>" );
+   TargetImages_TreeBox.Viewport().OnFileDrag( (Control::file_drag_event_handler)&CosmeticCorrectionInterface::__FileDrag, w );
+   TargetImages_TreeBox.Viewport().OnFileDrop( (Control::file_drop_event_handler)&CosmeticCorrectionInterface::__FileDrop, w );
 
    AddFiles_PushButton.SetText( "Add Files" );
    AddFiles_PushButton.SetToolTip( "<p>Add existing image files to the list of target frames.</p>" );
@@ -2099,6 +2143,8 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
    OutputDir_Edit.SetToolTip( ToolTipOutputDir );
    OutputDir_Edit.OnMouseDoubleClick( (Control::mouse_event_handler)&CosmeticCorrectionInterface::__MouseDoubleClick, w );
    OutputDir_Edit.OnEditCompleted( (Edit::edit_event_handler)&CosmeticCorrectionInterface::__EditCompleted, w );
+   OutputDir_Edit.OnFileDrag( (Control::file_drag_event_handler)&CosmeticCorrectionInterface::__FileDrag, w );
+   OutputDir_Edit.OnFileDrop( (Control::file_drop_event_handler)&CosmeticCorrectionInterface::__FileDrop, w );
 
    OutputDir_SelectButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-file.png" ) ) );
    OutputDir_SelectButton.SetScaledFixedSize( 20, 20 );
@@ -2213,11 +2259,15 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
    UseMasterDark_SectionBar.SetSection( UseMasterDark_Control );
    UseMasterDark_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&CosmeticCorrectionInterface::__ToggleSection, w );
    UseMasterDark_SectionBar.OnCheck( (SectionBar::check_event_handler)&CosmeticCorrectionInterface::__CheckSection, w );
+   UseMasterDark_SectionBar.OnFileDrag( (Control::file_drag_event_handler)&CosmeticCorrectionInterface::__FileDrag, w );
+   UseMasterDark_SectionBar.OnFileDrop( (Control::file_drop_event_handler)&CosmeticCorrectionInterface::__FileDrop, w );
 
    const char* MasterDarkPathToolTip = "<p>Select a master dark frame file.</p>";
    MasterDarkPath_Edit.SetToolTip( MasterDarkPathToolTip );
    MasterDarkPath_Edit.OnEditCompleted( (Edit::edit_event_handler)&CosmeticCorrectionInterface::__EditCompleted, w );
    MasterDarkPath_Edit.OnMouseDoubleClick( (Control::mouse_event_handler)&CosmeticCorrectionInterface::__MouseDoubleClick, w );
+   MasterDarkPath_Edit.OnFileDrag( (Control::file_drag_event_handler)&CosmeticCorrectionInterface::__FileDrag, w );
+   MasterDarkPath_Edit.OnFileDrop( (Control::file_drop_event_handler)&CosmeticCorrectionInterface::__FileDrop, w );
 
    MasterDarkPath_SelectButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-file.png" ) ) );
    MasterDarkPath_SelectButton.SetScaledFixedSize( 20, 20 );
@@ -2650,4 +2700,4 @@ CosmeticCorrectionInterface::GUIData::GUIData( CosmeticCorrectionInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CosmeticCorrectionInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF CosmeticCorrectionInterface.cpp - Released 2017-04-14T23:07:12Z

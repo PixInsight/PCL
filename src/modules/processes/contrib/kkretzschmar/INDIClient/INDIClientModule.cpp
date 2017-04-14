@@ -108,7 +108,7 @@ String INDIClientModule::Author() const
 
 String INDIClientModule::Copyright() const
 {
-   return "Copyright (c) 2014-2016 Klaus Kretzschmar";
+   return "Copyright (c) 2014-2017 Klaus Kretzschmar";
 }
 
 String INDIClientModule::TradeMarks() const
@@ -143,32 +143,10 @@ void INDIClientModule::GetReleaseDate( int& year, int& month, int& day ) const
 
 } // pcl
 
-// ----------------------------------------------------------------------------
-// PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
-//
-// Module installation routine.
-//
-// If this routine is defined as a public symbol in a module, the PixInsight
-// core application will call it just after loading and initializing the module
-// shared object or dynamic-link library.
-//
-// The mode argument specifies the kind of installation being performed by the
-// core application. See the pcl::InstallMode namespace for more information.
-// ----------------------------------------------------------------------------
-
 PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 {
-   /*
-    * When the PixInsight application installs this module, we just have to
-    * instantiate the meta objects describing it.
-    */
    new pcl::INDIClientModule;
 
-   /*
-    * The mode argument tells us what kind of installation is being requested
-    * by the PixInsight application. Incomplete installation requests only need
-    * module descriptions.
-    */
    if ( mode == pcl::InstallMode::FullInstall )
    {
       new pcl::INDIDeviceControllerProcess;
@@ -179,9 +157,6 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
       new pcl::INDIMountInterface;
    }
 
-   /*
-    * Return zero to signal successful installation
-    */
    return 0;
 }
 

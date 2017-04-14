@@ -2,16 +2,16 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard AssistedColorCalibration Process Module Version 01.00.00.0165
+// Standard AssistedColorCalibration Process Module Version 01.00.00.0174
 // ----------------------------------------------------------------------------
-// AssistedColorCalibrationInstance.h - Released 2016/02/21 20:22:43 UTC
+// AssistedColorCalibrationInstance.h - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard AssistedColorCalibration PixInsight module.
 //
-// Copyright (c) 2010-2015 Zbynek Vrastil
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
+// Copyright (c) 2010-2017 Zbynek Vrastil
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -114,4 +114,4 @@ private:
 #endif   // __AssistedColorCalibrationInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF AssistedColorCalibrationInstance.h - Released 2016/02/21 20:22:43 UTC
+// EOF AssistedColorCalibrationInstance.h - Released 2017-04-14T23:07:12Z

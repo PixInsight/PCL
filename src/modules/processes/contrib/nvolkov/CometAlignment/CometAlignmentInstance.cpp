@@ -2,16 +2,16 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard CometAlignment Process Module Version 01.02.06.0137
+// Standard CometAlignment Process Module Version 01.02.06.0146
 // ----------------------------------------------------------------------------
-// CometAlignmentInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// CometAlignmentInstance.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CometAlignment PixInsight module.
 //
-// Copyright (c) 2012-2015 Nikolay Volkov
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
+// Copyright (c) 2012-2017 Nikolay Volkov
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -159,7 +159,6 @@ bool CometAlignmentInstance::CanExecuteGlobal (String& whyNot) const
             whyNot = "File not found: " + i->path;
             return false;
          }
-      whyNot.Clear ();
       return true;
    }
    return false;
@@ -475,14 +474,14 @@ struct FileData
    {
       format = new FileFormat (file.Format ());
 
-      if (format->UsesFormatSpecificData ())
-         fsData = file.FormatSpecificData ();
+      if ( format->UsesFormatSpecificData() )
+         fsData = file.FormatSpecificData();
 
-      if (format->CanStoreKeywords ())
-         file.Extract (keywords);
+      if ( format->CanStoreKeywords() )
+         file.ReadFITSKeywords( keywords );
 
-      if (format->CanStoreICCProfiles ())
-         file.Extract (profile);
+      if ( format->CanStoreICCProfiles() )
+         file.ReadICCProfile( profile );
    }
 
    ~FileData ()
@@ -1205,13 +1204,13 @@ void CometAlignmentInstance::Save(const ImageVariant* img, CAThread* t, const in
 	  keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.X: " + IsoString(delta.x)));
       keywords.Add (FITSHeaderKeyword ("HISTORY", IsoString (), "CometAlignment.Y:" +IsoString(delta.y)));
 
-      outputFile.Embed (keywords);
+      outputFile.WriteFITSKeywords( keywords );
    }
    else if (!data.keywords.IsEmpty ())
       console.WarningLn ("** Warning: The output format cannot store FITS keywords - original keywords not embedded.");
 
    if (data.profile.IsProfile ())
-      if (outputFormat.CanStoreICCProfiles ()) outputFile.Embed (data.profile);
+      if (outputFormat.CanStoreICCProfiles ()) outputFile.WriteICCProfile( data.profile );
       else console.WarningLn ("** Warning: The output format cannot store ICC profiles - original profile not embedded.");
 
    SaveImageFile (*img, outputFile);
@@ -1752,4 +1751,4 @@ size_type CometAlignmentInstance::ParameterLength (const MetaParameter* p, size_
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF CometAlignmentInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF CometAlignmentInstance.cpp - Released 2017-04-14T23:07:12Z

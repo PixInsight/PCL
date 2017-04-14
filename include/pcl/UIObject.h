@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/UIObject.h - Released 2016/02/21 20:22:12 UTC
+// pcl/UIObject.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/UIObject.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_String_h
-#include <pcl/String.h>
-#endif
-
-#ifndef __PCL_Relational_h
 #include <pcl/Relational.h>
-#endif
+#include <pcl/String.h>
 
 namespace pcl
 {
@@ -109,7 +102,7 @@ public:
     * destroyed or recycled if it is no longer referenced by other high-level
     * interfaces (e.g., other instances of %UIObject in this or other modules).
     */
-   virtual ~UIObject();
+   virtual ~UIObject() noexcept( false );
 
    /*!
     * Returns true iff this is a \e null %UIObject instance.
@@ -284,8 +277,8 @@ public:
 
 protected:
 
-   void* handle;
-   bool  alias : 1;
+   void* handle = nullptr;
+   bool  alias  = false;
 
    /*!
     * Constructs a null %UIObject instance.
@@ -293,9 +286,7 @@ protected:
     * A null %UIObject does not correspond to an existing object in the
     * PixInsight core application.
     */
-   UIObject() : handle( nullptr ), alias( false )
-   {
-   }
+   UIObject() = default;
 
    /*!
     * Copy constructor.
@@ -347,7 +338,7 @@ protected:
    /*!
     * \internal
     */
-   UIObject( std::nullptr_t ) : handle( nullptr ), alias( false )
+   UIObject( std::nullptr_t )
    {
    }
 
@@ -413,4 +404,4 @@ protected:
 #endif   // __PCL_UIObject_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/UIObject.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/UIObject.h - Released 2017-04-14T23:04:40Z

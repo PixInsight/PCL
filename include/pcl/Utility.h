@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/Utility.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Utility.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/Utility.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Association_h
 #include <pcl/Association.h>
-#endif
 
 namespace pcl
 {
@@ -103,7 +96,7 @@ const T& Min( const T& a, const T& b )
 
 /*!
  * Returns a reference to the smallest of two objects \a a and \a b, as
- * specified by the binary predicate \a p. Returns \a b if p( b, a ) is true;
+ * specified by the binary predicate \a p. Returns \a b if p(b,a) is true;
  * returns \a a otherwise.
  *
  * \ingroup utility_algorithms
@@ -132,7 +125,7 @@ const T& Max( const T& a, const T& b )
 
 /*!
  * Returns a reference to the largest of two objects \a a and \a b, as
- * specified by the binary predicate \a p. Returns \a b if p( a, b ) is true;
+ * specified by the binary predicate \a p. Returns \a b if p(a,b) is true;
  * returns \a a otherwise.
  *
  * \ingroup utility_algorithms
@@ -563,7 +556,7 @@ void FindExtremeItems( FI& kmin, FI& kmax, FI i, FI j, BP p )
 
 /*!
  * Returns a tuple {i,j} such that *i != *j, where i >= i1 and j is in the
- * range [i2,j2[, or a tuple {i>=i1,j2} if no such j exists.
+ * range [i2,j2), or a tuple {i>=i1,j2} if no such j exists.
  *
  * \ingroup utility_algorithms
  */
@@ -578,7 +571,7 @@ Association<FI1, FI2> FindNotEqual( FI1 i1, FI2 i2, FI2 j2 )
 
 /*!
  * Returns a tuple {i,j} such that p(*i,*j) is false, where i >= i1 and j is in
- * the range [i2,j2[, or a tuple {i>=i1,j2} if no such j exists.
+ * the range [i2,j2), or a tuple {i>=i1,j2} if no such j exists.
  *
  * \ingroup utility_algorithms
  */
@@ -592,8 +585,9 @@ Association<FI1, FI2> FindNotEqual( FI1 i1, FI2 i2, FI2 j2, BP p )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns true iff the objects in the range [i1,Advance(i1,Distance(i2,j2))[
- * are equal to the corresponding objects in the range [i2,j2[.
+ * Returns true iff the objects in the range [i1,j1) are equal to the
+ * corresponding objects in the range [i2,j2), with
+ * j1 = Advance(i1,Distance(i2,j2)).
  *
  * \ingroup utility_algorithms
  */
@@ -606,9 +600,9 @@ bool Equal( FI1 i1, FI2 i2, FI2 j2 )
 // ----------------------------------------------------------------------------
 
 /*!
- * Returns true iff the objects in the range [i1,Advance(i1,Distance(i2,j2))[
- * satisfy the condition specified by the binary predicate \a p for the
- * corresponding objects in the range [i2,j2[.
+ * Returns true iff the objects in the range [i1,j1) satisfy the condition
+ * specified by the binary predicate \a p for the corresponding objects in the
+ * range [i2,j2), with j1 = Advance(i1,Distance(i2,j2)).
  *
  * \ingroup utility_algorithms
  */
@@ -621,26 +615,26 @@ bool Equal( FI1 i1, FI2 i2, FI2 j2, BP p )
 // ----------------------------------------------------------------------------
 
 /*!
- * Performs a comparison of the objects in the ranges [i1,j1[ and [i2,j2[.
+ * Performs a comparison of the objects in the ranges [i1,j1) and [i2,j2).
  * Returns the result of the comparison encoded as an integer:
  *
  * Returns 0 if:
  *
  * \li (1) Distance(i1,j1) == Distance(i2,j2).
- * \li (2) For each pair {u,v} of iterators such that u in [i1,j1[ and v in
- * [i2,j2[ and Distance(i1,u) == Distance(i2,v), *u == *v.
+ * \li (2) For each pair {u,v} of iterators such that u in [i1,j1) and v in
+ * [i2,j2) and Distance(i1,u) == Distance(i2,v), *u == *v.
  *
  * Returns -1 if:
  *
- * \li (3) A pair {u,v} of iterators exists such that u in [i1,j1[ and v in
- * [i2,j2[ and Distance(i1,u) == Distance(i2,v) and *u < *v.
- * \li Condition (2) is true and Distance(i1,j1) < Distance(i2,j2).
+ * \li (3) A pair {u,v} of iterators exists such that u in [i1,j1) and v in
+ * [i2,j2) and Distance(i1,u) == Distance(i2,v) and *u < *v.
+ * \li (4) Condition (2) is true and Distance(i1,j1) < Distance(i2,j2).
  *
  * Returns +1 if:
  *
- * \li (4) A pair {u,v} of iterators exists such that u in [i1,j1[ and v in
- * [i2,j2[ and Distance(i1,u) == Distance(i2,v) and *v < *u.
- * \li Condition (2) is true and Distance(i1,j1) > Distance(i2,j2).
+ * \li (5) A pair {u,v} of iterators exists such that u in [i1,j1) and v in
+ * [i2,j2) and Distance(i1,u) == Distance(i2,v) and *v < *u.
+ * \li (6) Condition (2) is true and Distance(i1,j1) > Distance(i2,j2).
  *
  * \ingroup utility_algorithms
  */
@@ -663,28 +657,28 @@ int Compare( FI1 i1, FI1 j1, FI2 i2, FI2 j2 )
 // ----------------------------------------------------------------------------
 
 /*!
- * Performs a comparison of the objects in the ranges [i1,j1[ and [i2,j2[ as
+ * Performs a comparison of the objects in the ranges [i1,j1) and [i2,j2) as
  * specified by a binary predicate \a p. Returns the result of the comparison
  * encoded as an integer:
  *
  * Returns 0 if:
  *
  * \li (1) Distance(i1,j1) == Distance(i2,j2).
- * \li (2) For each pair {u,v} of iterators such that u in [i1,j1[ and v in
- * [i2,j2[ and Distance(i1,u) == Distance(i2,v), both p(*u,*v ) and p(*v,*u)
- * are false.
+ * \li (2) For each pair {u,v} of iterators such that u in [i1,j1) and v in
+ * [i2,j2) and Distance(i1,u) == Distance(i2,v), both p(*u,*v) and p(*v,*u) are
+ * false.
  *
  * Returns -1 if:
  *
- * \li (3) A pair {u,v} of iterators exists such that u in [i1,j1[ and v in
- * [i2,j2[ and Distance(i1,u) == Distance(i2,v) and p(*u,*v) is true.
- * \li Condition (2) is true and Distance(i1,j1) < Distance(i2,j2).
+ * \li (3) A pair {u,v} of iterators exists such that u in [i1,j1) and v in
+ * [i2,j2) and Distance(i1,u) == Distance(i2,v) and p(*u,*v) is true.
+ * \li (4) Condition (2) is true and Distance(i1,j1) < Distance(i2,j2).
  *
  * Returns +1 if:
  *
- * \li (4) A pair {u,v} of iterators exists such that u in [i1,j1[ and v in
- * [i2,j2[ and Distance(i1,u) == Distance(i2,v) and p(*v,*u) is true.
- * \li Condition (2) is true and Distance(i1,j1) > Distance(i2,j2).
+ * \li (5) A pair {u,v} of iterators exists such that u in [i1,j1) and v in
+ * [i2,j2) and Distance(i1,u) == Distance(i2,v) and p(*v,*u) is true.
+ * \li (6) Condition (2) is true and Distance(i1,j1) > Distance(i2,j2).
  *
  * \ingroup utility_algorithms
  */
@@ -711,4 +705,4 @@ int Compare( FI1 i1, FI1 j1, FI2 i2, FI2 j2, BP p )
 #endif  // __PCL_Utility_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Utility.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Utility.h - Released 2017-04-14T23:04:40Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0355
+// Standard IntensityTransformations Process Module Version 01.07.01.0364
 // ----------------------------------------------------------------------------
-// AdaptiveStretchInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// AdaptiveStretchInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -164,15 +164,10 @@ ProcessImplementation* AdaptiveStretchInterface::NewProcess() const
 
 bool AdaptiveStretchInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const AdaptiveStretchInstance* r = dynamic_cast<const AdaptiveStretchInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not an AdaptiveStretch instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const AdaptiveStretchInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an AdaptiveStretch instance.";
+   return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -380,6 +375,25 @@ void AdaptiveStretchInterface::__UpdateRealTimePreview_Timer( Timer& sender )
       RealTimePreview::Update();
 }
 
+void AdaptiveStretchInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->ROI_SectionBar || sender == GUI->ROI_Control || sender == GUI->ROISelectPreview_Button )
+      wantsView = view.IsPreview();
+}
+
+void AdaptiveStretchInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->ROI_SectionBar || sender == GUI->ROI_Control || sender == GUI->ROISelectPreview_Button )
+      if ( view.IsPreview() )
+      {
+         m_instance.p_useROI = true;
+         m_instance.p_roi = view.Window().PreviewRect( view.Id() );
+         GUI->ROI_SectionBar.ShowSection();
+         UpdateControls();
+         UpdateRealTimePreview();
+      }
+}
+
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
@@ -452,6 +466,8 @@ AdaptiveStretchInterface::GUIData::GUIData( AdaptiveStretchInterface& w )
       "rectangular region of the image. This may help find an optimal transformation for image structures that are not "
       "dominant on the entire image.</p>" );
    ROI_SectionBar.OnCheck( (SectionBar::check_event_handler)&AdaptiveStretchInterface::__SectionBarCheck, w );
+   ROI_SectionBar.OnViewDrag( (Control::view_drag_event_handler)&AdaptiveStretchInterface::__ViewDrag, w );
+   ROI_SectionBar.OnViewDrop( (Control::view_drop_event_handler)&AdaptiveStretchInterface::__ViewDrop, w );
 
    ROIX0_NumericEdit.SetInteger();
    ROIX0_NumericEdit.SetRange( 0, int_max );
@@ -493,6 +509,8 @@ AdaptiveStretchInterface::GUIData::GUIData( AdaptiveStretchInterface& w )
    ROISelectPreview_Button.SetText( "From Preview" );
    ROISelectPreview_Button.SetToolTip( "<p>Import ROI coordinates from an existing preview.</p>" );
    ROISelectPreview_Button.OnClick( (Button::click_event_handler)&AdaptiveStretchInterface::__Click, w );
+   ROISelectPreview_Button.OnViewDrag( (Control::view_drag_event_handler)&AdaptiveStretchInterface::__ViewDrag, w );
+   ROISelectPreview_Button.OnViewDrop( (Control::view_drop_event_handler)&AdaptiveStretchInterface::__ViewDrop, w );
 
    ROIRow2_Sizer.SetSpacing( 4 );
    ROIRow2_Sizer.Add( ROIWidth_NumericEdit );
@@ -507,6 +525,8 @@ AdaptiveStretchInterface::GUIData::GUIData( AdaptiveStretchInterface& w )
    ROI_Sizer.Add( ROIRow2_Sizer );
 
    ROI_Control.SetSizer( ROI_Sizer );
+   ROI_Control.OnViewDrag( (Control::view_drag_event_handler)&AdaptiveStretchInterface::__ViewDrag, w );
+   ROI_Control.OnViewDrop( (Control::view_drop_event_handler)&AdaptiveStretchInterface::__ViewDrop, w );
 
    Global_Sizer.SetMargin( 8 );
    Global_Sizer.SetSpacing( 6 );
@@ -535,4 +555,4 @@ AdaptiveStretchInterface::GUIData::GUIData( AdaptiveStretchInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AdaptiveStretchInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF AdaptiveStretchInterface.cpp - Released 2017-04-14T23:07:12Z

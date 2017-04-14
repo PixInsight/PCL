@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Convolution Process Module Version 01.01.03.0207
+// Standard Convolution Process Module Version 01.01.03.0216
 // ----------------------------------------------------------------------------
-// UnsharpMaskInterface.h - Released 2016/02/21 20:22:42 UTC
+// UnsharpMaskInterface.h - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Convolution PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -100,8 +100,6 @@ public:
    virtual bool RequiresRealTimePreviewUpdate( const UInt16Image&, const View&, int zoomLevel ) const;
    virtual bool GenerateRealTimePreview( UInt16Image&, const View&, int zoomLevel, String& info ) const;
 
-   // -------------------------------------------------------------------------
-
 private:
 
    UnsharpMaskInstance instance;
@@ -123,7 +121,7 @@ private:
       UnsharpMaskInstance m_instance;
    };
 
-   mutable RealTimeThread* m_realTimeThread;
+   mutable RealTimeThread* m_realTimeThread = nullptr;
 
    struct GUIData
    {
@@ -161,7 +159,7 @@ private:
       Timer UpdateRealTimePreview_Timer;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
    void UpdateFilterControls();
@@ -169,19 +167,13 @@ private:
    void UpdateRangeControls();
    void UpdateRealTimePreview();
 
-   // Event Handlers
-
    void __Filter_ValueUpdated( NumericEdit& sender, double value );
    void __Filter_SliderUpdated( Slider& sender, int value );
-
    void __Target_ItemSelected( ComboBox& sender, int itemIndex );
-
    void __Deringing_Check( SectionBar& sender, bool checked );
    void __Deringing_ValueUpdated( NumericEdit& sender, double value );
    void __Deringing_Click( Button& sender, bool checked );
-
    void __Range_ValueUpdated( NumericEdit& sender, double value );
-
    void __UpdateRealTimePreview_Timer( Timer& );
 
    friend struct GUIData;
@@ -200,4 +192,4 @@ PCL_END_LOCAL
 #endif   // __UnsharpMaskInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF UnsharpMaskInterface.h - Released 2016/02/21 20:22:42 UTC
+// EOF UnsharpMaskInterface.h - Released 2017-04-14T23:07:12Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/ICCProfile.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ICCProfile.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,21 +54,11 @@
 
 /// \file pcl/ICCProfile.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Flags_h
-#include <pcl/Flags.h>
-#endif
-
-#ifndef __PCL_ByteArray_h
 #include <pcl/ByteArray.h>
-#endif
-
-#ifndef __PCL_StringList_h
+#include <pcl/Flags.h>
 #include <pcl/StringList.h>
-#endif
 
 namespace pcl
 {
@@ -76,8 +66,13 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace ICCProfileClass
+ * \defgroup color_management Color Management Classes
+ */
+
+/*!
+ * \namespace pcl::ICCProfileClass
  * \brief Representation of ICC color profile classes
+ * \ingroup color_management
  *
  * <table border="1" cellpadding="4" cellspacing="0">
  * <tr><td>ICCProfileClass::Unknown</td>              <td>Unknown or unsupported ICC profile class</td></tr>
@@ -108,15 +103,18 @@ namespace ICCProfileClass
 }
 
 /*!
- * A combination of ICCProfileClass values.
+ * \class pcl::ICCProfileClasses
+ * \brief A combination of ICCProfileClass values.
+ * \ingroup color_management
  */
 typedef Flags<ICCProfileClass::mask_type>   ICCProfileClasses;
 
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace ICCColorSpace
- * \brief Representation of data and connection color spaces in ICC color profiles
+ * \namespace pcl::ICCColorSpace
+ * \brief Representation of data and connection color spaces in ICC color profiles.
+ * \ingroup color_management
  *
  * <table border="1" cellpadding="4" cellspacing="0">
  * <tr><td>ICCColorSpace::Unknown</td> <td>Unknown or unsupported color space</td></tr>
@@ -132,8 +130,11 @@ typedef Flags<ICCProfileClass::mask_type>   ICCProfileClasses;
  * <tr><td>ICCColorSpace::HLS</td>     <td>HLS color ordering system</td></tr>
  * <tr><td>ICCColorSpace::CMYK</td>    <td>CMYK color space</td></tr>
  * <tr><td>ICCColorSpace::CMY</td>     <td>CMY color space</td></tr>
- * <tr><td>ICCColorSpace::LuvK</td>     <td>LuvK color space</td></tr>
+ * <tr><td>ICCColorSpace::LuvK</td>    <td>LuvK color space</td></tr>
  * </table>
+ *
+ * Other color spaces supported by the ICC profile specification, as for
+ * example 2-color and 15-color spaces, are unknown to this implementation.
  */
 namespace ICCColorSpace
 {
@@ -157,9 +158,59 @@ namespace ICCColorSpace
 }
 
 /*!
- * A combination of ICCColorSpace values.
+ * \class pcl::ICCColorSpaces
+ * \brief A combination of ICCColorSpace values.
+ * \ingroup color_management
  */
 typedef Flags<ICCColorSpace::mask_type>  ICCColorSpaces;
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \namespace pcl::ICCRenderingIntent
+ * \brief ICC rendering intents
+ * \ingroup color_management
+ *
+ * <table border="1" cellpadding="4" cellspacing="0">
+ * <tr><td>ICCRenderingIntent::Perceptual</td>           <td>Perceptual rendering intent (photographic images)</td></tr>
+ * <tr><td>ICCRenderingIntent::Saturation</td>           <td>Saturation rendering intent (graphics)</td></tr>
+ * <tr><td>ICCRenderingIntent::RelativeColorimetric</td> <td>Relative colorimetric rendering intent (match white points)</td></tr>
+ * <tr><td>ICCRenderingIntent::AbsoluteColorimetric</td> <td>Absolute colorimetric rendering intent (proofing)</td></tr>
+ * </table>
+ */
+namespace ICCRenderingIntent
+{
+   enum value_type
+   {
+      Perceptual,
+      Saturation,
+      RelativeColorimetric,
+      AbsoluteColorimetric
+   };
+}
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \namespace pcl::ICCRenderingDirection
+ * \brief ICC transform rendering direction
+ * \ingroup color_management
+ *
+ * <table border="1" cellpadding="4" cellspacing="0">
+ * <tr><td>ICCRenderingDirection::Input</td>    <td>Denotes a rendering intent applied to input pixel values.</td></tr>
+ * <tr><td>ICCRenderingDirection::Output</td>   <td>Denotes a rendering intent applied to output pixel values.</td></tr>
+ * <tr><td>ICCRenderingDirection::Proofing</td> <td>Denotes a rendering intent applied by a proofing transform.</td></tr>
+ * </table>
+ */
+namespace ICCRenderingDirection
+{
+   enum value_type
+   {
+      Input,
+      Output,
+      Proofing
+   };
+}
 
 // ----------------------------------------------------------------------------
 
@@ -177,6 +228,7 @@ typedef Flags<ICCColorSpace::mask_type>  ICCColorSpaces;
  * profile information retrieval, profile disk I/O and profile directory
  * search, among other tasks.
  *
+ * \ingroup color_management
  * \sa ICCProfileTransformation
  */
 class PCL_CLASS ICCProfile
@@ -184,19 +236,29 @@ class PCL_CLASS ICCProfile
 public:
 
    /*!
-    * Represents an opaque handle to a server-side ICC profile.
+    * Represents an opaque handle to an internal ICC profile.
     */
-   typedef void*                       handle;
+   typedef void*                                handle;
 
    /*!
     * Represents an ICC profile device class.
     */
-   typedef ICCProfileClass::mask_type  profile_class;
+   typedef ICCProfileClass::mask_type           profile_class;
 
    /*!
     * Represents an ICC profile color space.
     */
-   typedef ICCColorSpace::mask_type    color_space;
+   typedef ICCColorSpace::mask_type             color_space;
+
+   /*!
+    * Represents an ICC rendering intent.
+    */
+   typedef ICCRenderingIntent::value_type       rendering_intent;
+
+   /*!
+    * Represents an ICC transform rendering direction.
+    */
+   typedef ICCRenderingDirection::value_type    rendering_direction;
 
    /*!
     * Constructs an empty %ICCProfile object. An empty %ICCProfile doesn't
@@ -224,7 +286,7 @@ public:
     * contain a valid ICC profile structure, this constructor throws an Error
     * exception.
     */
-   ICCProfile( const String& profilePath ) : data(), path()
+   ICCProfile( const String& profilePath )
    {
       Load( profilePath );
    }
@@ -234,7 +296,7 @@ public:
     * structure available in the specified container. This constructor simply
     * calls Set( rawData ).
     */
-   ICCProfile( const ByteArray& rawData ) : data(), path()
+   ICCProfile( const ByteArray& rawData )
    {
       Set( rawData );
    }
@@ -244,16 +306,16 @@ public:
     * structure at the specified location. This constructor simply calls
     * Set( rawData ).
     */
-   ICCProfile( const void* rawData ) : data(), path()
+   ICCProfile( const void* rawData )
    {
       Set( rawData );
    }
 
    /*!
-    * Destroys an %ICCProfile object. If this object stores an ICC profile, it
-    * is deallocated upon destruction.
+    * Destroys an %ICCProfile object. If this object stores an ICC profile
+    * structure, it is deallocated upon destruction.
     */
-   ~ICCProfile()
+   virtual ~ICCProfile()
    {
    }
 
@@ -274,7 +336,7 @@ public:
     */
    bool IsProfile() const
    {
-      return !data.IsEmpty();
+      return !m_data.IsEmpty();
    }
 
    /*!
@@ -288,21 +350,21 @@ public:
    /*!
     * Returns true if this profile has been read from a disk file. Otherwise
     * this object either does not transport an ICC profile, or the profile has
-    * been generated or assigned directly as a memory buffer.
+    * been generated or assigned directly from a memory buffer.
     */
    bool IsDiskProfile() const
    {
-      return !path.IsEmpty();
+      return !m_path.IsEmpty();
    }
 
    /*!
     * Returns true iff the ICC profile stored in this object is identical to the
-    * profile stored in other %ICCProfile object \a icc.
+    * profile stored in \a other %ICCProfile object.
     *
     * If necessary, this function performs a byte-to-byte comparison between
     * both ICC profile structures (when both have the same size in bytes).
     */
-   bool IsSameProfile( const ICCProfile& icc ) const;
+   bool IsSameProfile( const ICCProfile& other ) const;
 
    /*!
     * Returns a reference to the immutable container that stores an ICC profile
@@ -311,7 +373,7 @@ public:
     */
    const ByteArray& ProfileData() const
    {
-      return data;
+      return m_data;
    }
 
    /*!
@@ -327,12 +389,11 @@ public:
     */
    String FilePath() const
    {
-      return path;
+      return m_path;
    }
 
    /*!
-    * Returns the localized profile description of the stored ICC profile, or
-    * an empty string if this object doesn't store an ICC profile.
+    * Returns the localized profile description of the stored ICC profile.
     *
     * \param language   Optional language code (ISO 639/2) of the requested
     *                   profile description. The default value is "en" for
@@ -351,14 +412,63 @@ public:
    String Description( const char* language = "en", const char* country = "US" ) const;
 
    /*!
-    * Returns the data color space of the stored ICC profile. If this object
-    * doesn't store an ICC profile, this function returns
+    * Returns the localized manufacturer information of the stored ICC profile.
+    *
+    * See Description( const char*, const char* ) const for detailed
+    * information on function parameters and behavior.
+    */
+   String Manufacturer( const char* language = "en", const char* country = "US" ) const;
+
+   /*!
+    * Returns the localized device model information of the stored ICC profile.
+    *
+    * See Description( const char*, const char* ) const for detailed
+    * information on function parameters and behavior.
+    */
+   String Model( const char* language = "en", const char* country = "US" ) const;
+
+   /*!
+    * Returns the localized copyright information of the stored ICC profile.
+    *
+    * See Description( const char*, const char* ) const for detailed
+    * information on function parameters and behavior.
+    */
+   String Copyright( const char* language = "en", const char* country = "US" ) const;
+
+   /*!
+    * Retrieves localized description, manufacturer, device model and copyright
+    * information from the stored ICC profile.
+    *
+    * If this object does not transport an ICC profile, this routine clears the
+    * \a description, \a manufacturer, \a model and \a copyright strings. If a
+    * valid ICC profile is stored in this object, the passed strings will be
+    * assigned with the corresponding information, as close as possible to the
+    * requested localization. See Description( const char*, const char* ) const
+    * for detailed information on localization parameters.
+    */
+   void GetInformation( String& description, String& manufacturer, String& model, String& copyright,
+                        const char* language = "en", const char* country = "US" ) const;
+
+   /*!
+    * Returns the ICC profile class of the stored profile. See the
+    * ICCProfileClass namespace for supported profile classes.
+    *
+    * If this object doesn't transport an ICC profile, this function returns
+    * ICCProfileClass::Unknown.
+    */
+   profile_class Class() const;
+
+   /*!
+    * Returns the ICC color space of the stored profile. See the ICCColorSpace
+    * namespace for supported color spaces.
+    *
+    * If this object doesn't transport an ICC profile, this function returns
     * ICCColorSpace::Unknown.
     */
    color_space ColorSpace() const;
 
    /*!
-    * Returns true iff this object stores a RGB ICC profile.
+    * Returns true iff this object stores an RGB ICC profile.
     */
    bool IsRGB() const
    {
@@ -374,16 +484,24 @@ public:
    }
 
    /*!
+    * Returns true iff this object stores an ICC profile that supports the
+    * specified \a intent in the specified transform \a direction. See the
+    * ICCRenderingIntent and ICCRenderingDirection namespaces, respectively,
+    * for supported rendering intents and directions.
+    */
+   bool SupportsRenderingIntent( rendering_intent intent, rendering_direction direction ) const;
+
+   /*!
     * Returns true iff this object stores an embedded ICC profile.
     *
-    * An embedded ICC profile has the <em>Embedded Profile</em> bit field
-    * (header byte #44) set.
+    * An embedded ICC profile must have the <em>Embedded Profile</em> bit field
+    * (bit #0 of header byte #44) set.
     */
    bool IsEmbedded() const;
 
    /*!
-    * Sets or clears the <em>Embedded Profile</em> header bit field of the
-    * stored ICC profile.
+    * Sets or clears the <em>Embedded Profile</em> header bit field (bit #0 of
+    * header byte #44) of the stored ICC profile.
     *
     * \note If this %ICCProfile object is being used to embed an ICC profile in
     * an image file, the <em>Embedded Profile</em> flag must be set before
@@ -392,8 +510,8 @@ public:
    void SetEmbeddedFlag( bool on = true );
 
    /*!
-    * Clears or sets the <em>Embedded Profile</em> header bit field of the
-    * stored ICC profile.
+    * Clears or sets the <em>Embedded Profile</em> header bit field (bit #0 of
+    * header byte #44) of the stored ICC profile.
     *
     * This is a convenience member function, equivalent to
     * SetEmbeddedFlag( false )
@@ -445,8 +563,8 @@ public:
     */
    void Clear()
    {
-      data.Clear();
-      path.Clear();
+      m_data.Clear();
+      m_path.Clear();
    }
 
    /*!
@@ -462,7 +580,7 @@ public:
     */
    handle Open() const
    {
-      return Open( data );
+      return Open( m_data );
    }
 
    /*!
@@ -470,8 +588,8 @@ public:
     */
    friend void Swap( ICCProfile& x1, ICCProfile& x2 )
    {
-      pcl::Swap( x1.data, x2.data );
-      pcl::Swap( x1.path, x2.path );
+      pcl::Swap( x1.m_data, x2.m_data );
+      pcl::Swap( x1.m_path, x2.m_path );
    }
 
    /*!
@@ -562,16 +680,59 @@ public:
    static String Description( handle h, const char* language = "en", const char* country = "US" );
 
    /*!
+    * Returns the localized manufacturer information of an open ICC profile.
+    *
+    * See Description( handle, const char*, const char* ) for detailed
+    * information on function parameters and behavior.
+    */
+   static String Manufacturer( handle h, const char* language = "en", const char* country = "US" );
+
+   /*!
+    * Returns the localized device model information of an open ICC profile.
+    *
+    * See Description( handle, const char*, const char* ) for detailed
+    * information on function parameters and behavior.
+    */
+   static String Model( handle h, const char* language = "en", const char* country = "US" );
+
+   /*!
+    * Returns the localized copyright information of an open ICC profile.
+    *
+    * See Description( handle, const char*, const char* ) for detailed
+    * information on function parameters and behavior.
+    */
+   static String Copyright( handle h, const char* language = "en", const char* country = "US" );
+
+   /*!
+    * Returns the ICC profile class of an open profile. See the ICCProfileClass
+    * namespace for supported profile classes.
+    */
+   static profile_class Class( handle h );
+
+   /*!
+    * Returns the ICC color space of an open profile. See the ICCColorSpace
+    * namespace for supported color spaces.
+    */
+   static color_space ColorSpace( handle h );
+
+   /*!
+    * Returns true iff an open profile supports the specified \a intent in the
+    * specified transform \a direction. See the ICCRenderingIntent and
+    * ICCRenderingDirection namespaces, respectively, for supported rendering
+    * intents and directions.
+    */
+   static bool SupportsRenderingIntent( handle h, rendering_intent intent, rendering_direction direction );
+
+   /*!
     * Returns the list of profile directories.
     *
     * The profile directories contain the ICC profiles currently installed in
     * the system. The specific directories provided by this function are
     * platform-dependent.
     *
-    * On X11 Linux and FreeBSD, there is no standardized color management
-    * system. For this reason the profiles directory is user-selectable. By
-    * default, the returned list will include a single directory that can be
-    * one of the following:
+    * On X11 Linux and FreeBSD, there is no universally standardized color
+    * management system. By default, the returned list will include a single
+    * directory that can be one of the following:
     *
     *    /usr/share/color/icc
     *    ~/.color/icc
@@ -665,6 +826,7 @@ public:
    /*!
     * \class pcl::ICCProfile::Info
     * \brief A structure to hold descriptive data about ICC profiles.
+    * \ingroup color_management
     *
     * The %ICCProfile::Info structure is designed to be used with the
     * ICCProfile::FindProfilesByColorSpace() utility function.
@@ -725,10 +887,15 @@ public:
     */
    static profile_list FindProfilesByColorSpace( ICCColorSpaces spaces );
 
+   /*!
+    * \internal
+    */
+   static void ThrowErrorWithCMSInfo( const String& message );
+
 private:
 
-   ByteArray data; // ICC profile data
-   String    path; // empty if this is an embedded or newly created profile
+   ByteArray m_data; // ICC profile data
+   String    m_path; // empty if this is an embedded or newly created profile
 };
 
 // ----------------------------------------------------------------------------
@@ -738,4 +905,4 @@ private:
 #endif   // __PCL_ICCProfile_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ICCProfile.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ICCProfile.h - Released 2017-04-14T23:04:40Z

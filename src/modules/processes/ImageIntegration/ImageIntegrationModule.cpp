@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.12.01.0359
+// Standard ImageIntegration Process Module Version 01.12.01.0368
 // ----------------------------------------------------------------------------
-// ImageIntegrationModule.cpp - Released 2016/12/30 01:41:29 UTC
+// ImageIntegrationModule.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,12 +53,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     12
 #define MODULE_VERSION_REVISION  01
-#define MODULE_VERSION_BUILD     0359
+#define MODULE_VERSION_BUILD     0368
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2016
-#define MODULE_RELEASE_MONTH     12
-#define MODULE_RELEASE_DAY       30
+#define MODULE_RELEASE_YEAR      2017
+#define MODULE_RELEASE_MONTH     4
+#define MODULE_RELEASE_DAY       14
 
 #include "DrizzleIntegrationInstance.h"
 #include "DrizzleIntegrationInterface.h"
@@ -112,7 +112,7 @@ String ImageIntegrationModule::Author() const
 
 String ImageIntegrationModule::Copyright() const
 {
-   return "Copyright (c) 2009-2016, Pleiades Astrophoto";
+   return "Copyright (c) 2009-2017, Pleiades Astrophoto";
 }
 
 String ImageIntegrationModule::TradeMarks() const
@@ -164,29 +164,9 @@ void ImageIntegrationModule::OnUnload()
 
 } // pcl
 
-// ----------------------------------------------------------------------------
-// PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
-//
-// Module installation routine.
-//
-// If this routine is defined as a public symbol in a module, the PixInsight
-// core application calls it just after loading and initialization of the
-// module shared object.
-//
-// The mode argument specifies the kind of installation being performed by the
-// core application. See the pcl::InstallMode namespace for more information.
-// ----------------------------------------------------------------------------
-
 PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 {
-   // When the PixInsight application installs this module, we just have to
-   // instantiate the meta objects describing it.
-
    new pcl::ImageIntegrationModule;
-
-   // The mode argument tells us what kind of installation is being requested
-   // by the PixInsight application. Incomplete installation requests only need
-   // module descriptions.
 
    if ( mode == pcl::InstallMode::FullInstall )
    {
@@ -198,9 +178,8 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
       new pcl::ImageIntegrationInterface;
    }
 
-   // Return zero to signal successful installation
    return 0;
 }
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationModule.cpp - Released 2016/12/30 01:41:29 UTC
+// EOF ImageIntegrationModule.cpp - Released 2017-04-14T23:07:12Z

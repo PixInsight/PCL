@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/ImageWindow.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ImageWindow.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,43 +54,19 @@
 
 /// \file pcl/ImageWindow.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Flags_h
 #include <pcl/Flags.h>
-#endif
-
-#ifndef __PCL_ImageRenderingModes_h
 #include <pcl/ImageRenderingModes.h>
-#endif
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_UIObject_h
-#include <pcl/UIObject.h>
-#endif
-
-#ifndef __PCL_View_h
-#include <pcl/View.h>
-#endif
-
-#ifndef __PCL_ImageOptions_h
-#include <pcl/ImageOptions.h>
-#endif
-
-#ifndef __PCL_FITSHeaderKeyword_h
-#include <pcl/FITSHeaderKeyword.h>
-#endif
-
-#ifndef __PCL_Bitmap_h
 #include <pcl/Bitmap.h>
-#endif
-
-#ifndef __PCL_ByteArray_h
 #include <pcl/ByteArray.h>
-#endif
+#include <pcl/FITSHeaderKeyword.h>
+#include <pcl/ImageOptions.h>
+#include <pcl/UIObject.h>
+#include <pcl/View.h>
 
 #endif   // !__PCL_BUILDING_PIXINSIGHT_APPLICATION
 
@@ -108,7 +84,7 @@ class ProcessInterface;
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace ImageMode
+ * \namespace pcl::ImageMode
  * \brief     GUI operation modes.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -165,7 +141,7 @@ namespace ImageMode
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace BackgroundBrush
+ * \namespace pcl::BackgroundBrush
  * \brief     Transparency background brushes.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -206,7 +182,7 @@ namespace BackgroundBrush
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace TransparencyMode
+ * \namespace pcl::TransparencyMode
  * \brief     Transparency rendering modes
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -233,7 +209,7 @@ namespace TransparencyMode
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace UndoFlag
+ * \namespace pcl::UndoFlag
  * \brief     History data item specifiers for ProcessImplementation::UndoMode().
  *
  * Use %UndoFlag constants to make up return values for
@@ -279,7 +255,7 @@ namespace UndoFlag
 }
 
 /*!
- * \class UndoFlags
+ * \class pcl::UndoFlags
  * \brief A collection of history data item specifiers.
  */
 typedef Flags<UndoFlag::mask_type>  UndoFlags;
@@ -341,9 +317,7 @@ public:
     * Constructs a null image window. A null %ImageWindow does not correspond
     * to an existing image window in the PixInsight core application.
     */
-   ImageWindow() : UIObject( nullptr )
-   {
-   }
+   ImageWindow() = default;
 
    /*!
     * Creates a new image window with the specified image parameters.
@@ -409,11 +383,11 @@ public:
     * existing %ImageWindow object.
     *
     * It cannot be overemphasized that this constructor <em>does not create a
-    * new image window</em> in the core application. It only creates an
-    * \e alias object for an existing image window <em>in your module</em>.
-    * In all respects, the alias and aliased objects are completely
-    * interchangeable; their behaviors are exactly identical since they refer
-    * to a unique object living in the PixInsight core application.
+    * new image window</em> in the PixInsight core application. It only creates
+    * an \e alias object for an existing image window <em>in the calling
+    * module</em>. In all respects, the alias and aliased objects are
+    * completely interchangeable; their behaviors are exactly identical since
+    * they refer to the same server-side object.
     */
    ImageWindow( const ImageWindow& w ) : UIObject( w )
    {
@@ -431,7 +405,7 @@ public:
     *
     * This destructor does \e not destroy the actual image window object, which
     * is part of the PixInsight core application. Only the managed alias object
-    * living in the user-defined module is destroyed.
+    * living in the calling module is destroyed.
     */
    virtual ~ImageWindow()
    {
@@ -485,6 +459,15 @@ public:
     *             automatically generated suffix. This parameter is an empty
     *             string by default.
     *
+    * \param formatHints   A string of format hints that will be sent to the
+    *             file format instance created to load the image. Format hints
+    *             are useful to modify the behavior of a file format suuport
+    *             module lo load a specific image, overriding global
+    *             preferences and format settings. See the
+    *             FileFormatInstance::Open() member function for more
+    *             information on format hints. This parameter is an empty
+    *             string by default.
+    *
     * \param asCopy  True to open the images as \e copies. The %File > Save
     *             command (and all related menu items) is always disabled for
     *             images loaded as copies in the PixInsight core application.
@@ -519,9 +502,10 @@ public:
     * separators (backslash, '\'), but their use is discouraged since its
     * support might be discontinued in future PCL versions.
     *
-    * URLs must be valid and conform to the URI specification from
-    * RFC 3986 (Uniform Resource Identifier: Generic Syntax). The HTTP and
-    * FTP protocols are fully supported.
+    * URLs must be valid and conform to the URI specification from RFC 3986
+    * (Uniform Resource Identifier: Generic Syntax). At least the file, HTTP,
+    * HTTPS, FTP and FTPS protocols are supported. More protocols may be
+    * available, depending on PixInsight core versions.
     *
     * Returns an array of %ImageWindow objects. Each object in the array
     * corresponds to an image loaded into a new image window from the specified
@@ -534,14 +518,20 @@ public:
     * core application's workspace, you must call their ImageWindow::Show()
     * member function explicitly.
     */
-   static Array<ImageWindow> Open( const String& url, const IsoString& id = IsoString(),
-                                   bool asCopy = false, bool allowMessages = true );
+   static Array<ImageWindow> Open( const String& url,
+                                   const IsoString& id = IsoString(),
+                                   const IsoString& formatHints = IsoString(),
+                                   bool asCopy = false,
+                                   bool allowMessages = true );
 
-   template <class S>
-   static Array<ImageWindow> Open( const String& url, const S& id,
-                                   bool asCopy = false, bool allowMessages = true )
+   template <class S1, class S2>
+   static Array<ImageWindow> Open( const String& url,
+                                   const S1& id,
+                                   const S2& formatHints,
+                                   bool asCopy = false,
+                                   bool allowMessages = true )
    {
-      return Open( url, IsoString( id ), asCopy, allowMessages );
+      return Open( url, IsoString( id ), IsoString( formatHints ), asCopy, allowMessages );
    }
 
    /*!
@@ -552,7 +542,7 @@ public:
    bool IsNew() const;
 
    /*!
-    * Returns true iff the image in this window has been loaded from a disk file
+    * Returns true iff the image in this window has been loaded from a file
     * <em>as a copy</em>.
     *
     * The %File > Save command (and all related menu items) is always disabled
@@ -570,9 +560,9 @@ public:
     * window, or an empty string if this window holds is a \e new image.
     *
     * \note When an image has been loaded from a remote location (by specifying
-    * a valid URL for %ImageWindow's constructor, for example), the returned
+    * a valid URL in a call to ImageWindow::Open(), for example), the returned
     * path corresponds to the file that has been downloaded to the local
-    * filesystem upon window creation.
+    * filesystem upon window creation, not to the original URL.
     */
    String FilePath() const;
 
@@ -1978,7 +1968,7 @@ public:
     * <em>foreign object</em> in the PixInsight/PCL framework. If a pointer to
     * a foreign interface is returned by this function, the calling module
     * cannot use that pointer to access the foreign object <em>in any way</em>,
-    * since intermodule communication is not supported in the current
+    * since direct intermodule communication is not supported in the current
     * PixInsight/PCL framework.
     */
    static ProcessInterface* ActiveDynamicInterface();
@@ -2731,12 +2721,12 @@ public:
     * Returns the current rectangular selection in image coordinates.
     *
     * \param flags   Currently not used; reserved for future extensions of PCL.
-    *                Must be set to zero.
+    *                Must be set to nullptr.
     *
     * Before calling this function, a rectangular selection procedure should
     * have been started with BeginSelection().
     */
-   Rect SelectionRect( uint32* flags = 0 ) const;
+   Rect SelectionRect( uint32* flags = nullptr ) const;
 
    /*!
     * Returns true iff an interactive selection procedure is currently active on
@@ -2806,4 +2796,4 @@ private:
 #endif   // __PCL_ImageWindow_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageWindow.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ImageWindow.h - Released 2017-04-14T23:04:40Z

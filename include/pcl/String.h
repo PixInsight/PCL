@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/String.h - Released 2016/02/21 20:22:12 UTC
+// pcl/String.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,68 +54,23 @@
 
 /// \file pcl/String.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Container_h
-#include <pcl/Container.h>
-#endif
-
-#ifndef __PCL_Allocator_h
 #include <pcl/Allocator.h>
-#endif
-
-#ifndef __PCL_StdAlloc_h
-#include <pcl/StdAlloc.h>
-#endif
-
-#ifndef __PCL_Iterator_h
-#include <pcl/Iterator.h>
-#endif
-
-#ifndef __PCL_ReferenceCounter_h
-#include <pcl/ReferenceCounter.h>
-#endif
-
-#ifndef __PCL_CharTraits_h
-#include <pcl/CharTraits.h>
-#endif
-
-#ifndef __PCL_Utility_h
-#include <pcl/Utility.h>
-#endif
-
-#ifndef __PCL_Sort_h
-#include <pcl/Sort.h>
-#endif
-
-#ifndef __PCL_Math_h
-#include <pcl/Math.h>
-#endif
-
-#ifndef __PCL_Flags_h
-#include <pcl/Flags.h>
-#endif
-
-#ifndef __PCL_Atomic_h
 #include <pcl/Atomic.h>
-#endif
-
-#ifndef __PCL_ByteArray_h
 #include <pcl/ByteArray.h>
-#endif
+#include <pcl/CharTraits.h>
+#include <pcl/Container.h>
+#include <pcl/Flags.h>
+#include <pcl/Iterator.h>
+#include <pcl/Math.h>
+#include <pcl/ReferenceCounter.h>
+#include <pcl/Sort.h>
+#include <pcl/StdAlloc.h>
+#include <pcl/Utility.h>
 
-#ifndef __stdarg_h
 #include <stdarg.h>
-#ifndef __stdarg_h
-#define __stdarg_h
-#endif
-#endif
 
 #ifndef __PCL_NO_STRING_COMPLEX
 #  include <pcl/Complex.h>
@@ -125,12 +80,7 @@
 #  ifndef _MSC_VER
 #    define _GLIBCXX_USE_WCHAR_T  1
 #  endif
-#  ifndef __ostream_h
-#    include <ostream>
-#    ifndef __ostream_h
-#      define __ostream_h
-#    endif
-#  endif
+#  include <ostream>
 #endif
 
 #ifdef __PCL_QT_INTERFACE
@@ -145,16 +95,13 @@
 #  define PCL_QDATETIME_FMT_STR                 "yyyy/MM/dd hh:mm:ss"
 #endif
 
-#define PCL_STRING8_TEMPLATE_IMP    GenericString<char, IsoCharTraits, StandardAllocator>
-#define PCL_STRING16_TEMPLATE_IMP   GenericString<char16_type, CharTraits, StandardAllocator>
-
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace RandomizationOption
+ * \namespace pcl::RandomizationOption
  * \brief     String randomization options
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -186,7 +133,7 @@ namespace RandomizationOption
 };
 
 /*!
- * \class RandomizationOptions
+ * \class pcl::RandomizationOptions
  * \brief A collection of string randomization options.
  */
 typedef Flags<RandomizationOption::mask_type>  RandomizationOptions;
@@ -246,18 +193,18 @@ struct PCL_CLASS SexagesimalConversionOptions
    /*!
     * Default constructor.
     */
-   SexagesimalConversionOptions( unsigned _items = 3,
-                                 unsigned _precision = 2,
-                                 bool _sign = false,
-                                 unsigned _width = 0,
-                                 char _separator = ':',
-                                 char _padding = ' ' ) :
-      items( _items ),
-      precision( _precision ),
-      sign( _sign ),
-      width( _width ),
-      separator( _separator ),
-      padding( _padding )
+   SexagesimalConversionOptions( unsigned items_     = 3,
+                                 unsigned precision_ = 2,
+                                 bool     sign_      = false,
+                                 unsigned width_     = 0,
+                                 char     separator_ = ':',
+                                 char     padding_   = ' ' ) :
+      items( items_ ),
+      precision( precision_ ),
+      sign( sign_ ),
+      width( width_ ),
+      separator( separator_ ),
+      padding( padding_ )
    {
    }
 
@@ -293,13 +240,13 @@ struct ISO8601ConversionOptions
 
    /*!
     * Number of decimal digits for the last represented time item. The default
-    * value is two decimal digits.
+    * value is three decimal digits.
     */
    unsigned precision : 4;
 
    /*!
     * Whether to append a time zone specifier to the ISO 8601 representation.
-    * The default value is false.
+    * The default value is true.
     */
    bool     timeZone  : 1;
 
@@ -312,14 +259,14 @@ struct ISO8601ConversionOptions
    /*!
     * Default constructor.
     */
-   ISO8601ConversionOptions( unsigned _timeItems = 3,
-                             unsigned _precision = 2,
-                             bool     _timeZone = false,
-                             bool     _zuluTime = true ) :
-      timeItems( _timeItems ),
-      precision( _precision ),
-      timeZone( _timeZone ),
-      zuluTime( _zuluTime )
+   ISO8601ConversionOptions( unsigned timeItems_ = 3,
+                             unsigned precision_ = 3,
+                             bool     timeZone_  = true,
+                             bool     zuluTime_  = true ) :
+      timeItems( timeItems_ ),
+      precision( precision_ ),
+      timeZone( timeZone_ ),
+      zuluTime( zuluTime_ )
    {
    }
 
@@ -340,15 +287,17 @@ struct ISO8601ConversionOptions
  * \class GenericString
  * \brief Generic string.
  *
- * %GenericString represents a string of characters of type T, whose
- * fundamental behavior is specified by an instantiation R of GenericCharTraits
- * for a character type T (typically GenericCharTraits, or a derived class such
- * as CharTraits or IsoCharTraits), and where A provides dynamic allocation for
- * contiguous sequences of elements of type T (StandardAllocator is used by
- * default).
+ * %GenericString is a finite ordered sequence of characters implemented as a
+ * reference-counted, dynamic array of T objects, whose fundamental behavior is
+ * specified by an instantiation R of GenericCharTraits for the character type
+ * T (typically GenericCharTraits, or a derived class such as CharTraits or
+ * IsoCharTraits), and where A provides dynamic allocation for contiguous
+ * sequences of elements of type T (StandardAllocator is used by default).
  *
- * In the PixInsight platform, all dynamically allocated strings have been
- * implemented as instantiations of the %GenericString template class.
+ * On the PixInsight platform, all dynamically allocated strings have been
+ * implemented as two instantiations of the %GenericString template class,
+ * namely the String (UTF-16 string) and IsoString (UTF-8 or ISO/IEC-8859-1
+ * string) classes.
  *
  * \sa String, IsoString, CharTraits, IsoCharTraits
  */
@@ -426,7 +375,7 @@ public:
    /*!
     * Constructs an empty string.
     */
-   GenericString() : m_data( nullptr )
+   GenericString()
    {
       m_data = Data::New();
    }
@@ -451,7 +400,7 @@ public:
     * Constructs a string with a copy of the null-terminated character sequence
     * stored in the specified array \a t.
     */
-   GenericString( const_c_string t ) : m_data( nullptr )
+   GenericString( const_c_string t )
    {
       size_type len = R::Length( t );
       if ( len > 0 )
@@ -480,7 +429,7 @@ public:
     * contains null characters. Since this constructor does not have to scan
     * for a terminating character, it is potentially more efficient.
     */
-   GenericString( const_iterator i, const_iterator j ) : m_data( nullptr )
+   GenericString( const_iterator i, const_iterator j )
    {
       if ( i < j )
       {
@@ -496,7 +445,7 @@ public:
     * Constructs a string with a copy of at most \a n characters stored in the
     * null-terminated sequence \a t, starting from its \a i-th character.
     */
-   GenericString( const_c_string t, size_type i, size_type n ) : m_data( nullptr )
+   GenericString( const_c_string t, size_type i, size_type n )
    {
       size_type len = R::Length( t );
       if ( i < len && (n = pcl::Min( n, len-i )) > 0 )
@@ -511,7 +460,7 @@ public:
    /*!
     * Constructs a string with \a n copies of a character \a c.
     */
-   GenericString( char_type c, size_type n = 1 ) : m_data( nullptr )
+   GenericString( char_type c, size_type n = 1 )
    {
       if ( n > 0 )
       {
@@ -4352,14 +4301,14 @@ protected:
                      Data* newData = Data::New( newLen );
                      size_type targetIndex = 0;
                      size_type sourceIndex = 0;
-                     for ( Array<size_type>::const_iterator p = P.Begin(); p != P.End(); ++p )
+                     for ( size_type p : P )
                      {
-                        size_type n = *p - sourceIndex;
+                        size_type n = p - sourceIndex;
                         if ( n > 0 )
                            R::Copy( newData->string+targetIndex, m_data->string+sourceIndex, n );
                         R::Copy( newData->string+targetIndex+n, t2, n2 );
                         targetIndex += n + n2;
-                        sourceIndex = *p + n1;
+                        sourceIndex = p + n1;
                      }
                      if ( sourceIndex < len )
                         R::Copy( newData->string+targetIndex, m_data->string+sourceIndex, len-sourceIndex );
@@ -4376,7 +4325,8 @@ protected:
 
    /*!
     * \internal
-    * Substring search primitive algorithm.
+    * \class pcl::GenericString::SearchEngine
+    * \brief Substring search primitive algorithm
     *
     * Implements the Boyer-Moore substring search algorithm (mismatched
     * character heuristic).
@@ -4390,7 +4340,7 @@ protected:
     * searching algorithm,</em> Communcations of the ACM Vol. 20 No. 10,
     * pp 762-772.
     */
-   class SearchEngine
+   class PCL_CLASS SearchEngine
    {
    public:
 
@@ -4660,11 +4610,11 @@ protected:
    // -------------------------------------------------------------------------
 
    /*!
-    * \class Data
     * \internal
-    * Reference-counted string data structure.
+    * \class pcl::GenericString::Data
+    * \brief Reference-counted string data structure
     */
-   class Data : public ReferenceCounter
+   class PCL_CLASS Data : public ReferenceCounter
    {
    private:
 
@@ -4675,25 +4625,21 @@ protected:
 
    public:
 
-      iterator  string;   //!< Beginning of the null-terminated string
-      iterator  end;      //!< End of the string
-      iterator  capacity; //!< End of the allocated block or link in free list
-      allocator alloc;    //!< The allocator object
+      iterator  string   = nullptr; //!< Beginning of the null-terminated string
+      iterator  end      = nullptr; //!< End of the string
+      iterator  capacity = nullptr; //!< End of the allocated block or link in free list
+      allocator alloc;              //!< The allocator object
 
       /*!
        * Constructs an empty string data structure.
        */
-      Data() : ReferenceCounter(), alloc( A() )
-      {
-         Reset();
-      }
+      Data() = default;
 
       /*!
        * Constructs a string of \a len characters.
        */
-      Data( size_type len ) : ReferenceCounter(), alloc( A() )
+      Data( size_type len )
       {
-         Reset();
          Allocate( len );
       }
 
@@ -4701,9 +4647,8 @@ protected:
        * Constructs a string of \a len characters and space allocated for a
        * maximum of \a total characters (plus terminating null).
        */
-      Data( size_type len, size_type total ) : ReferenceCounter(), alloc( A() )
+      Data( size_type len, size_type total )
       {
-         Reset();
          Allocate( len, total );
       }
 
@@ -4931,7 +4876,7 @@ protected:
    /*
     * The reference-counted string data.
     */
-   Data* m_data;
+   Data* m_data = nullptr;
 };
 
 #ifndef __PCL_NO_STRING_FREE_LIST
@@ -4956,14 +4901,14 @@ void Swap( GenericString<T,R,A>& s1, GenericString<T,R,A>& s2 )
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup generic_string_relational_ops Generic String Relational Operators
+ * \defgroup genericstring_relational_ops GenericString Relational Operators
  */
 
 // ----------------------------------------------------------------------------
 
 /*!
  * Returns true iff two strings \a s1 and \a s2 are equal.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R1, class A1, class R2, class A2> inline
 bool operator ==( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>& s2 )
@@ -4976,7 +4921,7 @@ bool operator ==( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>
  * performs a character-to-character, locale-unaware comparison of numeric
  * character values. See GenericString<>::CompareCodePoints() for more
  * information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R1, class A1, class R2, class A2> inline
 bool operator  <( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>& s2 )
@@ -4989,7 +4934,7 @@ bool operator  <( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>
  * This function performs a character-to-character, locale-unaware comparison
  * of numeric character values. See GenericString<>::CompareCodePoints() for
  * more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R1, class A1, class R2, class A2> inline
 bool operator <=( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>& s2 )
@@ -5002,7 +4947,7 @@ bool operator <=( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>
  * function performs a character-to-character, locale-unaware comparison of
  * numeric character values. See GenericString<>::CompareCodePoints() for more
  * information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R1, class A1, class R2, class A2> inline
 bool operator  >( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>& s2 )
@@ -5015,7 +4960,7 @@ bool operator  >( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>
  * This function performs a character-to-character, locale-unaware comparison
  * of numeric character values. See GenericString<>::CompareCodePoints() for
  * more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R1, class A1, class R2, class A2> inline
 bool operator >=( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>& s2 )
@@ -5027,7 +4972,7 @@ bool operator >=( const GenericString<T,R1,A1>& s1, const GenericString<T,R2,A2>
 
 /*!
  * Returns true iff a string \a s1 is equal to a null-terminated string \a t2.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator ==( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::const_c_string t2 )
@@ -5040,7 +4985,7 @@ bool operator ==( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
  * This function performs a character-to-character, locale-unaware comparison
  * of numeric character values. See GenericString<>::CompareCodePoints() for
  * more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  <( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::const_c_string t2 )
@@ -5053,7 +4998,7 @@ bool operator  <( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
  * string \a t2. This function performs a character-to-character,
  * locale-unaware comparison of numeric character values. See
  * GenericString<>::CompareCodePoints() for more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator <=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::const_c_string t2 )
@@ -5066,7 +5011,7 @@ bool operator <=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
  * \a t2. This function performs a character-to-character, locale-unaware
  * comparison of numeric character values. See
  * GenericString<>::CompareCodePoints() for more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  >( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::const_c_string t2 )
@@ -5079,7 +5024,7 @@ bool operator  >( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
  * null-terminated string \a t2. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator >=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::const_c_string t2 )
@@ -5091,7 +5036,7 @@ bool operator >=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
 
 /*!
  * Returns true iff a null-terminated string \a t1 is equal to a string \a s2.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator ==( typename GenericString<T,R,A>::const_c_string t1, const GenericString<T,R,A>& s2 )
@@ -5104,7 +5049,7 @@ bool operator ==( typename GenericString<T,R,A>::const_c_string t1, const Generi
  * This function performs a character-to-character, locale-unaware comparison
  * of numeric character values. See GenericString<>::CompareCodePoints() for
  * more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  <( typename GenericString<T,R,A>::const_c_string t1, const GenericString<T,R,A>& s2 )
@@ -5117,7 +5062,7 @@ bool operator  <( typename GenericString<T,R,A>::const_c_string t1, const Generi
  * string \a s2. This function performs a character-to-character,
  * locale-unaware comparison of numeric character values. See
  * GenericString<>::CompareCodePoints() for more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator <=( typename GenericString<T,R,A>::const_c_string t1, const GenericString<T,R,A>& s2 )
@@ -5130,7 +5075,7 @@ bool operator <=( typename GenericString<T,R,A>::const_c_string t1, const Generi
  * \a s2. This function performs a character-to-character, locale-unaware
  * comparison of numeric character values. See
  * GenericString<>::CompareCodePoints() for more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  >( typename GenericString<T,R,A>::const_c_string t1, const GenericString<T,R,A>& s2 )
@@ -5143,7 +5088,7 @@ bool operator  >( typename GenericString<T,R,A>::const_c_string t1, const Generi
  * a string \a s2. This function performs a character-to-character,
  * locale-unaware comparison of numeric character values. See
  * GenericString<>::CompareCodePoints() for more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator >=( typename GenericString<T,R,A>::const_c_string t1, const GenericString<T,R,A>& s2 )
@@ -5155,7 +5100,7 @@ bool operator >=( typename GenericString<T,R,A>::const_c_string t1, const Generi
 
 /*!
  * Returns true iff a string \a s1 is equal to a character \a c2.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator ==( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::char_type c2 )
@@ -5168,7 +5113,7 @@ bool operator ==( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
  * function performs a character-to-character, locale-unaware comparison of
  * numeric character values. See GenericString<>::CompareCodePoints() for more
  * information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  <( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::char_type c2 )
@@ -5181,7 +5126,7 @@ bool operator  <( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
  * This function performs a character-to-character, locale-unaware comparison
  * of numeric character values. See GenericString<>::CompareCodePoints() for
  * more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator <=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::char_type c2 )
@@ -5194,7 +5139,7 @@ bool operator <=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
  * function performs a character-to-character, locale-unaware comparison of
  * numeric character values. See GenericString<>::CompareCodePoints() for more
  * information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  >( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::char_type c2 )
@@ -5207,7 +5152,7 @@ bool operator  >( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
  * \a c2. This function performs a character-to-character, locale-unaware
  * comparison of numeric character values. See
  * GenericString<>::CompareCodePoints() for more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator >=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>::char_type c2 )
@@ -5219,7 +5164,7 @@ bool operator >=( const GenericString<T,R,A>& s1, typename GenericString<T,R,A>:
 
 /*!
  * Returns true iff a character \a c1 is equal to a string \a s2.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator ==( typename GenericString<T,R,A>::char_type c1, const GenericString<T,R,A>& s2 )
@@ -5232,7 +5177,7 @@ bool operator ==( typename GenericString<T,R,A>::char_type c1, const GenericStri
  * function performs a character-to-character, locale-unaware comparison of
  * numeric character values. See GenericString<>::CompareCodePoints() for more
  * information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  <( typename GenericString<T,R,A>::char_type c1, const GenericString<T,R,A>& s2 )
@@ -5245,7 +5190,7 @@ bool operator  <( typename GenericString<T,R,A>::char_type c1, const GenericStri
  * This function performs a character-to-character, locale-unaware comparison
  * of numeric character values. See GenericString<>::CompareCodePoints() for
  * more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator <=( typename GenericString<T,R,A>::char_type c1, const GenericString<T,R,A>& s2 )
@@ -5258,7 +5203,7 @@ bool operator <=( typename GenericString<T,R,A>::char_type c1, const GenericStri
  * function performs a character-to-character, locale-unaware comparison of
  * numeric character values. See GenericString<>::CompareCodePoints() for more
  * information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator  >( typename GenericString<T,R,A>::char_type c1, const GenericString<T,R,A>& s2 )
@@ -5271,7 +5216,7 @@ bool operator  >( typename GenericString<T,R,A>::char_type c1, const GenericStri
  * \a s2. This function performs a character-to-character, locale-unaware
  * comparison of numeric character values. See
  * GenericString<>::CompareCodePoints() for more information.
- * \ingroup generic_string_relational_ops
+ * \ingroup genericstring_relational_ops
  */
 template <class T, class R, class A> inline
 bool operator >=( typename GenericString<T,R,A>::char_type c1, const GenericString<T,R,A>& s2 )
@@ -5293,14 +5238,15 @@ bool operator >=( typename GenericString<T,R,A>::char_type c1, const GenericStri
  *
  * \sa String
  */
-class PCL_CLASS IsoString : public PCL_STRING8_TEMPLATE_IMP
+class PCL_CLASS IsoString : public GenericString<char, IsoCharTraits, StandardAllocator>
 {
 public:
 
    /*!
     * Base class of %IsoString.
     */
-   typedef PCL_STRING8_TEMPLATE_IMP             string_base;
+   typedef GenericString<char, IsoCharTraits, StandardAllocator>
+                                                string_base;
 
    /*!
     * Represents a character pertaining to an %IsoString object.
@@ -5357,7 +5303,8 @@ public:
     * \note This type must be defined as the same template instantiation used
     * for the String class.
     */
-   typedef PCL_STRING16_TEMPLATE_IMP            ustring_base;
+   typedef GenericString<char16_type, CharTraits, StandardAllocator>
+                                                ustring_base;
 
    /*!
     * Represents a Unicode (UTF-16) character.
@@ -6864,7 +6811,7 @@ public:
     * from integer parts exclusively by the full stop or dot character ('.',
     * ASCII code point 46(10) = 2E(16)).
     *
-    * \sa TryParseISO8601DateTime()
+    * \sa TryParseISO8601DateTime(), TimePoint::FromString()
     */
    void ParseISO8601DateTime( int& year, int& month, int& day, double& dayf, double& tz ) const;
 
@@ -6879,7 +6826,7 @@ public:
     * format, this function returns \c false and does not change any of the
     * passed variables. This function does not throw any exception.
     *
-    * \sa ParseISO8601DateTime()
+    * \sa ParseISO8601DateTime(), TimePoint::TryFromString()
     */
    bool TryParseISO8601DateTime( int& year, int& month, int& day, double& dayf, double& tz ) const;
 
@@ -6902,10 +6849,36 @@ public:
     * \param options Optional settings to control the representation of date
     *                and time in ISO 8601 format.
     *
-    * \sa ParseISO8601DateTime(), ISO8601ConversionOptions
+    * \sa CurrentUTCISO8601DateTime(), CurrentLocalISO8601DateTime(),
+    *     ParseISO8601DateTime(), ISO8601ConversionOptions,
+    *     TimePoint::ToIsoString()
     */
    static IsoString ToISO8601DateTime( int year, int month, int day, double dayf, double tz = 0,
                                        const ISO8601ConversionOptions& options = ISO8601ConversionOptions() );
+
+   /*!
+    * Returns an ASCII representation of the current UTC date and time in ISO
+    * 8601 extended format.
+    *
+    * \param options Optional settings to control the representation of date
+    *                and time in ISO 8601 format.
+    *
+    * \sa CurrentLocalISO8601DateTime(), ToISO8601DateTime(),
+    *     ISO8601ConversionOptions, TimePoint::Now()
+    */
+   static IsoString CurrentUTCISO8601DateTime( const ISO8601ConversionOptions& options = ISO8601ConversionOptions() );
+
+   /*!
+    * Returns an ASCII representation of the current local date and time in ISO
+    * 8601 extended format.
+    *
+    * \param options Optional settings to control the representation of date
+    *                and time in ISO 8601 format.
+    *
+    * \sa CurrentUTCISO8601DateTime(), ToISO8601DateTime(),
+    *     ISO8601ConversionOptions
+    */
+   static IsoString CurrentLocalISO8601DateTime( const ISO8601ConversionOptions& options = ISO8601ConversionOptions() );
 
    /*!
     * Returns an hex-encoded string for a binary \a data block of the specified
@@ -7350,14 +7323,15 @@ inline std::ostream& operator <<( std::ostream& o, const IsoString& s )
  *
  * \sa IsoString
  */
-class PCL_CLASS String : public PCL_STRING16_TEMPLATE_IMP
+class PCL_CLASS String : public GenericString<char16_type, CharTraits, StandardAllocator>
 {
 public:
 
    /*!
     * Base class of %String.
     */
-   typedef PCL_STRING16_TEMPLATE_IMP            string_base;
+   typedef GenericString<char16_type, CharTraits, StandardAllocator>
+                                                string_base;
 
    /*!
     * Represents a character pertaining to a %String object.
@@ -7416,7 +7390,8 @@ public:
     * \note This type must be defined as the same template instantiation used
     * for the IsoString class.
     */
-   typedef PCL_STRING8_TEMPLATE_IMP             string8_base;
+   typedef GenericString<char, IsoCharTraits, StandardAllocator>
+                                                string8_base;
 
    /*!
     * Represents an 8-bit character (ISO/IEC-8859-1, ASCII or UTF-8).
@@ -10667,7 +10642,7 @@ public:
     * from integer parts exclusively by the full stop or dot character ('.',
     * ASCII code point 46(10) = 2E(16)).
     *
-    * \sa TryParseISO8601DateTime()
+    * \sa TryParseISO8601DateTime(), TimePoint::FromString()
     */
    void ParseISO8601DateTime( int& year, int& month, int& day, double& dayf, double& tz ) const;
 
@@ -10682,7 +10657,7 @@ public:
     * format, this function returns \c false and does not change any of the
     * passed variables. This function does not throw any exception.
     *
-    * \sa ParseISO8601DateTime()
+    * \sa ParseISO8601DateTime(), TimePoint::TryFromString()
     */
    bool TryParseISO8601DateTime( int& year, int& month, int& day, double& dayf, double& tz ) const;
 
@@ -10705,10 +10680,36 @@ public:
     * \param options Optional settings to control the representation of date
     *                and time in ISO 8601 format.
     *
-    * \sa ParseISO8601DateTime(), ISO8601ConversionOptions
+    * \sa CurrentUTCISO8601DateTime(), CurrentLocalISO8601DateTime(),
+    *     ParseISO8601DateTime(), ISO8601ConversionOptions,
+    *     TimePoint::ToString()
     */
    static String ToISO8601DateTime( int year, int month, int day, double dayf, double tz = 0,
                                     const ISO8601ConversionOptions& options = ISO8601ConversionOptions() );
+
+   /*!
+    * Returns an ASCII representation of the current UTC date and time in ISO
+    * 8601 extended format.
+    *
+    * \param options Optional settings to control the representation of date
+    *                and time in ISO 8601 format.
+    *
+    * \sa CurrentLocalISO8601DateTime(), ToISO8601DateTime(),
+    *     ISO8601ConversionOptions, TimePoint::Now()
+    */
+   static String CurrentUTCISO8601DateTime( const ISO8601ConversionOptions& options = ISO8601ConversionOptions() );
+
+   /*!
+    * Returns an ASCII representation of the current local date and time in ISO
+    * 8601 extended format.
+    *
+    * \param options Optional settings to control the representation of date
+    *                and time in ISO 8601 format.
+    *
+    * \sa CurrentUTCISO8601DateTime(), ToISO8601DateTime(),
+    *     ISO8601ConversionOptions
+    */
+   static String CurrentLocalISO8601DateTime( const ISO8601ConversionOptions& options = ISO8601ConversionOptions() );
 
    /*!
     * Generates a string of \a n random 16-bit code points, with character
@@ -11552,12 +11553,12 @@ inline String& operator <<( String&& s1, String::char8_type c2 )
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup string_relational_operators String Relational Operators
+ * \defgroup string_relational_ops String Relational Operators
  */
 
 /*!
  * Equality operator.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator ==( const String& s1, const wchar_t* t2 )
 {
@@ -11568,7 +11569,7 @@ inline bool operator ==( const String& s1, const wchar_t* t2 )
  * <em>Less than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  <( const String& s1, const wchar_t* t2 )
 {
@@ -11579,7 +11580,7 @@ inline bool operator  <( const String& s1, const wchar_t* t2 )
  * <em>Less than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator <=( const String& s1, const wchar_t* t2 )
 {
@@ -11590,7 +11591,7 @@ inline bool operator <=( const String& s1, const wchar_t* t2 )
  * <em>Greater than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  >( const String& s1, const wchar_t* t2 )
 {
@@ -11601,7 +11602,7 @@ inline bool operator  >( const String& s1, const wchar_t* t2 )
  * <em>Greater than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator >=( const String& s1, const wchar_t* t2 )
 {
@@ -11612,7 +11613,7 @@ inline bool operator >=( const String& s1, const wchar_t* t2 )
 
 /*!
  * Equality operator.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator ==( const wchar_t* t1, const String& s2 )
 {
@@ -11623,7 +11624,7 @@ inline bool operator ==( const wchar_t* t1, const String& s2 )
  * <em>Less than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  <( const wchar_t* t1, const String& s2 )
 {
@@ -11634,7 +11635,7 @@ inline bool operator  <( const wchar_t* t1, const String& s2 )
  * <em>Less than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator <=( const wchar_t* t1, const String& s2 )
 {
@@ -11645,7 +11646,7 @@ inline bool operator <=( const wchar_t* t1, const String& s2 )
  * <em>Greater than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  >( const wchar_t* t1, const String& s2 )
 {
@@ -11656,7 +11657,7 @@ inline bool operator  >( const wchar_t* t1, const String& s2 )
  * <em>Greater than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator >=( const wchar_t* t1, const String& s2 )
 {
@@ -11667,7 +11668,7 @@ inline bool operator >=( const wchar_t* t1, const String& s2 )
 
 /*!
  * Equality operator.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator ==( const String& s1, wchar_t c2 )
 {
@@ -11678,7 +11679,7 @@ inline bool operator ==( const String& s1, wchar_t c2 )
  * <em>Less than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  <( const String& s1, wchar_t c2 )
 {
@@ -11689,7 +11690,7 @@ inline bool operator  <( const String& s1, wchar_t c2 )
  * <em>Less than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator <=( const String& s1, wchar_t c2 )
 {
@@ -11700,7 +11701,7 @@ inline bool operator <=( const String& s1, wchar_t c2 )
  * <em>Greater than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  >( const String& s1, wchar_t c2 )
 {
@@ -11711,7 +11712,7 @@ inline bool operator  >( const String& s1, wchar_t c2 )
  * <em>Greater than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator >=( const String& s1, wchar_t c2 )
 {
@@ -11722,7 +11723,7 @@ inline bool operator >=( const String& s1, wchar_t c2 )
 
 /*!
  * Equality operator.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator ==( wchar_t c1, const String& s2 )
 {
@@ -11733,7 +11734,7 @@ inline bool operator ==( wchar_t c1, const String& s2 )
  * <em>Less than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  <( wchar_t c1, const String& s2 )
 {
@@ -11744,7 +11745,7 @@ inline bool operator  <( wchar_t c1, const String& s2 )
  * <em>Less than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator <=( wchar_t c1, const String& s2 )
 {
@@ -11755,7 +11756,7 @@ inline bool operator <=( wchar_t c1, const String& s2 )
  * <em>Greater than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  >( wchar_t c1, const String& s2 )
 {
@@ -11766,7 +11767,7 @@ inline bool operator  >( wchar_t c1, const String& s2 )
  * <em>Greater than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator >=( wchar_t c1, const String& s2 )
 {
@@ -11777,7 +11778,7 @@ inline bool operator >=( wchar_t c1, const String& s2 )
 
 /*!
  * Equality operator.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator ==( const String& s1, String::const_c_string8 t2 )
 {
@@ -11788,7 +11789,7 @@ inline bool operator ==( const String& s1, String::const_c_string8 t2 )
  * <em>Less than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  <( const String& s1, String::const_c_string8 t2 )
 {
@@ -11799,7 +11800,7 @@ inline bool operator  <( const String& s1, String::const_c_string8 t2 )
  * <em>Less than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator <=( const String& s1, String::const_c_string8 t2 )
 {
@@ -11810,7 +11811,7 @@ inline bool operator <=( const String& s1, String::const_c_string8 t2 )
  * <em>Greater than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  >( const String& s1, String::const_c_string8 t2 )
 {
@@ -11821,7 +11822,7 @@ inline bool operator  >( const String& s1, String::const_c_string8 t2 )
  * <em>Greater than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator >=( const String& s1, String::const_c_string8 t2 )
 {
@@ -11832,7 +11833,7 @@ inline bool operator >=( const String& s1, String::const_c_string8 t2 )
 
 /*!
  * Equality operator.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator ==( String::const_c_string8 t1, const String& s2 )
 {
@@ -11843,7 +11844,7 @@ inline bool operator ==( String::const_c_string8 t1, const String& s2 )
  * <em>Less than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  <( String::const_c_string8 t1, const String& s2 )
 {
@@ -11854,7 +11855,7 @@ inline bool operator  <( String::const_c_string8 t1, const String& s2 )
  * <em>Less than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator <=( String::const_c_string8 t1, const String& s2 )
 {
@@ -11865,7 +11866,7 @@ inline bool operator <=( String::const_c_string8 t1, const String& s2 )
  * <em>Greater than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  >( String::const_c_string8 t1, const String& s2 )
 {
@@ -11876,7 +11877,7 @@ inline bool operator  >( String::const_c_string8 t1, const String& s2 )
  * <em>Greater than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator >=( String::const_c_string8 t1, const String& s2 )
 {
@@ -11887,7 +11888,7 @@ inline bool operator >=( String::const_c_string8 t1, const String& s2 )
 
 /*!
  * Equality operator.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator ==( const String& s1, String::char8_type c2 )
 {
@@ -11898,7 +11899,7 @@ inline bool operator ==( const String& s1, String::char8_type c2 )
  * <em>Less than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  <( const String& s1, String::char8_type c2 )
 {
@@ -11909,7 +11910,7 @@ inline bool operator  <( const String& s1, String::char8_type c2 )
  * <em>Less than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator <=( const String& s1, String::char8_type c2 )
 {
@@ -11920,7 +11921,7 @@ inline bool operator <=( const String& s1, String::char8_type c2 )
  * <em>Greater than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  >( const String& s1, String::char8_type c2 )
 {
@@ -11931,7 +11932,7 @@ inline bool operator  >( const String& s1, String::char8_type c2 )
  * <em>Greater than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator >=( const String& s1, String::char8_type c2 )
 {
@@ -11942,7 +11943,7 @@ inline bool operator >=( const String& s1, String::char8_type c2 )
 
 /*!
  * Equality operator.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator ==( String::char8_type c1, const String& s2 )
 {
@@ -11953,7 +11954,7 @@ inline bool operator ==( String::char8_type c1, const String& s2 )
  * <em>Less than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  <( String::char8_type c1, const String& s2 )
 {
@@ -11964,7 +11965,7 @@ inline bool operator  <( String::char8_type c1, const String& s2 )
  * <em>Less than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator <=( String::char8_type c1, const String& s2 )
 {
@@ -11975,7 +11976,7 @@ inline bool operator <=( String::char8_type c1, const String& s2 )
  * <em>Greater than</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator  >( String::char8_type c1, const String& s2 )
 {
@@ -11986,7 +11987,7 @@ inline bool operator  >( String::char8_type c1, const String& s2 )
  * <em>Greater than or equal</em> operator. This function performs a
  * character-to-character, locale-unaware comparison of numeric character
  * values. See GenericString<>::CompareCodePoints() for more information.
- * \ingroup string_relational_operators
+ * \ingroup string_relational_ops
  */
 inline bool operator >=( String::char8_type c1, const String& s2 )
 {
@@ -12021,4 +12022,4 @@ inline std::ostream& operator <<( std::ostream& o, const String& s )
 #endif   // __PCL_String_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/String.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/String.h - Released 2017-04-14T23:04:40Z

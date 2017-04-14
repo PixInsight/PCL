@@ -20,11 +20,9 @@
 #include <string.h>
 #include <errno.h>
 
-#if defined(WIN32)
-#define snprintf _snprintf
-#else
-#define HAVE_ZLIB
-#include <zlib.h>
+#ifndef WIN32
+# define HAVE_ZLIB
+# include <zlib.h>
 #endif
 
 #include "basedevice.h"

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/ReferenceArray.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ReferenceArray.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,29 +54,13 @@
 
 /// \file pcl/ReferenceArray.h
 
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Container_h
-#include <pcl/Container.h>
-#endif
-
-#ifndef __PCL_Allocator_h
 #include <pcl/Allocator.h>
-#endif
-
-#ifndef __PCL_StdAlloc_h
-#include <pcl/StdAlloc.h>
-#endif
-
-#ifndef __PCL_Iterator_h
-#include <pcl/Iterator.h>
-#endif
-
-#ifndef __PCL_IndirectArray_h
+#include <pcl/Container.h>
 #include <pcl/IndirectArray.h>
-#endif
+#include <pcl/Iterator.h>
+#include <pcl/StdAlloc.h>
 
 namespace pcl
 {
@@ -88,8 +72,21 @@ namespace pcl
  * \brief Dynamic array of pointers to objects providing direct iteration and
  * element access by reference.
  *
- * ### TODO: Write a detailed description for %ReferenceArray.
+ * %ReferenceArray is a generic, finite ordered sequence of pointers to
+ * objects, implemented as a reference-counted, dynamic array of pointers to T
+ * instances. The type A provides dynamic allocation for contiguous sequences
+ * of void* (StandardAllocator is used by default).
  *
+ * Unlike IndirectArray, %ReferenceArray provides direct access to the objects
+ * pointed to by its contained pointers, including direct iteration through
+ * references instead of pointers. This makes %ReferenceArray a perfect
+ * replacement for Array in cases where storing copies of objects is
+ * impractical or inviable; for example, when the objects to be stored are
+ * unique by nature. As a prerequisite for this functionality, %ReferenceArray,
+ * unlike IndirectArray, cannot contain null pointers.
+ *
+ * \sa ReferenceSortedArray, IndirectArray, IndirectSortedArray, Array,
+ * SortedArray, ReferenceCounter
  * \ingroup dynamic_arrays
  */
 template <typename T, class A = StandardAllocator>
@@ -123,7 +120,7 @@ public:
 
    /*!
     * \class pcl::ReferenceArray::iterator
-    * \brief Mutable %ReferenceArray iterator.
+    * \brief Mutable %ReferenceArray iterator
     */
    class iterator : public Iterator<RandomAccessIterator, T>
    {
@@ -1384,6 +1381,41 @@ public:
    }
 
    /*!
+    * Removes a trailing sequence of contiguous pointers from the specified
+    * iterator of this reference array. This operation is equivalent to:
+    *
+    * \code Remove( i, End() ) \endcode
+    *
+    * If the specified iterator is located at or after the end of this array,
+    * this function does nothing. Otherwise the iterator is constrained to stay
+    * in the range [Begin(),End()) of existing array elements.
+    *
+    * Only pointers are removed by this function; the pointed objects are not
+    * affected in any way.
+    */
+   void Truncate( const_iterator i )
+   {
+      m_array.Truncate( i.it );
+   }
+
+   /*!
+    * Removes a contiguous trailing sequence of \a n existing pointers from
+    * this reference array. This operation is equivalent to:
+    *
+    * \code Truncate( End() - n ) \endcode
+    *
+    * If the specified count \a n is greater than or equal to the length of
+    * this array, this function calls Clear() to yield an empty array.
+    *
+    * Only pointers are removed by this function; the pointed objects are not
+    * affected in any way.
+    */
+   void Shrink( size_type n = 1 )
+   {
+      m_array.Shrink( n );
+   }
+
+   /*!
     * Removes all existing pointers whose pointed objects are equal to the
     * specified value \a v in this reference array.
     *
@@ -2187,4 +2219,4 @@ ReferenceArray<T,A>& operator <<( ReferenceArray<T,A>&& x, Y y )
 #endif   // __PCL_ReferenceArray_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ReferenceArray.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ReferenceArray.h - Released 2017-04-14T23:04:40Z

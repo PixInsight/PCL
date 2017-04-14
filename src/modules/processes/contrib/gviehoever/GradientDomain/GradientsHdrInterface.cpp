@@ -2,11 +2,11 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard GradientDomain Process Module Version 00.06.04.0165
+// Standard GradientDomain Process Module Version 00.06.04.0174
 // ----------------------------------------------------------------------------
-// GradientsHdrInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// GradientsHdrInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard GradientDomain PixInsight module.
 //
@@ -168,15 +168,10 @@ ProcessImplementation* GradientsHdrInterface::NewProcess() const
 
 bool GradientsHdrInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const GradientsHdrInstance* r = dynamic_cast<const GradientsHdrInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not a GradientHDRCompression instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const GradientsHdrInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a GradientHDRCompression instance.";
+   return false;
 }
 
 bool GradientsHdrInterface::RequiresInstanceValidation() const
@@ -379,4 +374,4 @@ GradientsHdrInterface::GUIData::GUIData( GradientsHdrInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF GradientsHdrInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF GradientsHdrInterface.cpp - Released 2017-04-14T23:07:12Z

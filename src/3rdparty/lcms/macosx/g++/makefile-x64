@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.101
-# Copyright (C) 2009-2015 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.104
+# Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Fri, 18 Mar 2016 13:16:29 GMT
+# Generated on .... 2017-04-14T21:29:05.080Z
 # Project id ...... lcms
 # Project type .... StaticLibrary
 # Platform ........ MacOSX/g++
@@ -19,6 +19,7 @@ all: $(OBJ_DIR)/liblcms-pxi.a
 #
 
 SRC_FILES= \
+../../cmsalpha.c \
 ../../cmscam02.c \
 ../../cmscgats.c \
 ../../cmscnvrt.c \
@@ -50,6 +51,7 @@ SRC_FILES= \
 #
 
 OBJ_FILES= \
+./x64/Release/cmsalpha.o \
 ./x64/Release/cmscam02.o \
 ./x64/Release/cmscgats.o \
 ./x64/Release/cmscnvrt.o \
@@ -81,6 +83,7 @@ OBJ_FILES= \
 #
 
 DEP_FILES= \
+./x64/Release/cmsalpha.d \
 ./x64/Release/cmscam02.d \
 ./x64/Release/cmscgats.d \
 ./x64/Release/cmscnvrt.d \
@@ -126,6 +129,6 @@ post-build:
 	cp $(OBJ_DIR)/liblcms-pxi.a $(PCLLIBDIR64)
 
 ./x64/Release/%.o: ../../%.c
-	clang -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -mmacosx-version-min=10.7 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	clang -c -pipe -pthread -arch x86_64 -fPIC -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk -mmacosx-version-min=10.9 -D_REENTRANT -D__PCL_MACOSX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mssse3 -minline-all-stringops -O3 -ffunction-sections -fdata-sections -ffast-math -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.04.03.0213
+// Standard Debayer Process Module Version 01.04.03.0222
 // ----------------------------------------------------------------------------
-// DebayerInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// DebayerInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -67,7 +67,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-DebayerInterface* TheDebayerInterface = 0;
+DebayerInterface* TheDebayerInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -76,15 +76,15 @@ DebayerInterface* TheDebayerInterface = 0;
 // ----------------------------------------------------------------------------
 
 DebayerInterface::DebayerInterface() :
-ProcessInterface(), instance( TheDebayerProcess ), GUI( 0 )
+   instance( TheDebayerProcess )
 {
    TheDebayerInterface = this;
 }
 
 DebayerInterface::~DebayerInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString DebayerInterface::Id() const
@@ -115,7 +115,7 @@ void DebayerInterface::ResetInstance()
 
 bool DebayerInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "Debayer" );
@@ -134,15 +134,10 @@ ProcessImplementation* DebayerInterface::NewProcess() const
 
 bool DebayerInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const DebayerInstance* r = dynamic_cast<const DebayerInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not a Debayer instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const DebayerInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a Debayer instance.";
+   return false;
 }
 
 bool DebayerInterface::RequiresInstanceValidation() const
@@ -163,13 +158,9 @@ bool DebayerInterface::ImportProcess( const ProcessImplementation& p )
 void DebayerInterface::UpdateControls()
 {
    GUI->BayerPatternCombo.SetCurrentItem( instance.p_bayerPattern );
-
    GUI->DebayerMethodCombo.SetCurrentItem( instance.p_debayerMethod );
-
    GUI->EvaluateNoiseCheckBox.SetChecked( instance.p_evaluateNoise );
-
    GUI->NoiseEvaluation_Label.Enable( instance.p_evaluateNoise );
-
    GUI->NoiseEvaluation_ComboBox.SetCurrentItem( instance.p_noiseEvaluationAlgorithm );
    GUI->NoiseEvaluation_ComboBox.Enable( instance.p_evaluateNoise );
 }
@@ -338,4 +329,4 @@ void DebayerInterface::LoadSettings()
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DebayerInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF DebayerInterface.cpp - Released 2017-04-14T23:07:12Z

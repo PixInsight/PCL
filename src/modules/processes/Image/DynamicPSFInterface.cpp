@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0352
+// Standard Image Process Module Version 01.02.09.0361
 // ----------------------------------------------------------------------------
-// DynamicPSFInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// DynamicPSFInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -522,11 +522,7 @@ public:
 // ----------------------------------------------------------------------------
 
 DynamicPSFInterface::DynamicPSFInterface() :
-   ProcessInterface(),
-   instance( TheDynamicPSFProcess ),
-   GUI( nullptr ),
-   data(),
-   selectedStars()
+   instance( TheDynamicPSFProcess )
 {
    TheDynamicPSFInterface = this;
    signedAngles = &instance.signedAngles;
@@ -571,7 +567,6 @@ void DynamicPSFInterface::ResetInstance()
 
 bool DynamicPSFInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& flags )
 {
-   // ### Deferred initialization
    if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
@@ -587,17 +582,13 @@ bool DynamicPSFInterface::Launch( const MetaProcess& P, const ProcessImplementat
 ProcessImplementation* DynamicPSFInterface::NewProcess() const
 {
    DynamicPSFInstance* exportInstance = new DynamicPSFInstance( TheDynamicPSFProcess );
-
    exportInstance->AssignOptions( instance );
-
    for ( psf_data_set::const_iterator c = data.Begin(); c != data.End(); ++c )
    {
       exportInstance->views.Add( c->ViewId() );
-
       for ( star_list::const_iterator s = c->stars.Begin(); s != c->stars.End(); ++s )
       {
          exportInstance->stars.Add( DynamicPSFInstance::Star( *s, exportInstance->views.Length()-1 ) );
-
          for ( psf_list::const_iterator p = s->psfs.Begin(); p != s->psfs.End(); ++p )
             exportInstance->psfs.Add( DynamicPSFInstance::PSF( *p, exportInstance->stars.Length()-1 ) );
       }
@@ -608,14 +599,10 @@ ProcessImplementation* DynamicPSFInterface::NewProcess() const
 
 bool DynamicPSFInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const DynamicPSFInstance* r = dynamic_cast<const DynamicPSFInstance*>( &p );
-   if ( r == nullptr )
-   {
-      whyNot = "Not a DynamicPSF instance.";
-      return false;
-   }
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const DynamicPSFInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a DynamicPSF instance.";
+   return false;
 }
 
 bool DynamicPSFInterface::RequiresInstanceValidation() const
@@ -687,10 +674,12 @@ void DynamicPSFInterface::ExitDynamicMode()
 
 void DynamicPSFInterface::DynamicMouseEnter( View& view )
 {
+   // Placeholder
 }
 
 void DynamicPSFInterface::DynamicMouseLeave( View& view )
 {
+   // Placeholder
 }
 
 void DynamicPSFInterface::DynamicMousePress( View& view, const DPoint& pos, int button, unsigned buttons, unsigned modifiers )
@@ -1560,8 +1549,8 @@ DynamicPSFInterface::PSFCollection* DynamicPSFInterface::AcquirePSFCollection( V
    return c;
 }
 
-DynamicPSFInterface::star_list DynamicPSFInterface::FindStars(
-               const View& view, const DRect& rect, ImageWindow::display_channel channel )
+DynamicPSFInterface::star_list DynamicPSFInterface::FindStars( const View& view,
+                                             const DRect& rect, ImageWindow::display_channel channel )
 {
    star_list stars;
    PSFCollection* c = FindPSFCollection( view );
@@ -2742,4 +2731,4 @@ DynamicPSFInterface::GUIData::GUIData( DynamicPSFInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DynamicPSFInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF DynamicPSFInterface.cpp - Released 2017-04-14T23:07:12Z

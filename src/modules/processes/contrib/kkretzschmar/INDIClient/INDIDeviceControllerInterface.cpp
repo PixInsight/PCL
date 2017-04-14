@@ -92,7 +92,7 @@ class DeviceNode : public TreeBox::Node
 {
 public:
 
-   DeviceNode( TreeBox& parent, const INDIDeviceListItem& item ) : TreeBox::Node()
+   DeviceNode( TreeBox& parent, const INDIDeviceListItem& item )
    {
       parent.Add( this );
       Update( item );
@@ -141,7 +141,7 @@ class PropertyNode : public TreeBox::Node
 {
 public:
 
-   PropertyNode( DeviceNode* parent, const INDIPropertyListItem& item ) : TreeBox::Node()
+   PropertyNode( DeviceNode* parent, const INDIPropertyListItem& item )
    {
       parent->Add( this );
       Update( item );
@@ -202,7 +202,7 @@ class PropertyElementNode : public TreeBox::Node
 {
 public:
 
-   PropertyElementNode( PropertyNode* parent, const INDIPropertyListItem& item ) : TreeBox::Node()
+   PropertyElementNode( PropertyNode* parent, const INDIPropertyListItem& item )
    {
       parent->Add( this );
       Update( item );
@@ -245,7 +245,6 @@ class PropertyEditDialog : public Dialog
 public:
 
    PropertyEditDialog( const INDIPropertyListItem& item ) :
-      Dialog(),
       m_item( item )
    {
       Key_Label.SetText( item.PropertyKey );
@@ -498,9 +497,7 @@ bool PropertyEditDialog::EditProperty( INDINewPropertyItem& result, const INDIPr
 
 // ----------------------------------------------------------------------------
 
-INDIDeviceControllerInterface::INDIDeviceControllerInterface() :
-   ProcessInterface(),
-   GUI( nullptr )
+INDIDeviceControllerInterface::INDIDeviceControllerInterface()
 {
    TheINDIDeviceControllerInterface = this;
 }
@@ -558,15 +555,10 @@ ProcessImplementation* INDIDeviceControllerInterface::NewProcess() const
 
 bool INDIDeviceControllerInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const INDIDeviceControllerInstance* r = dynamic_cast<const INDIDeviceControllerInstance*>( &p );
-   if ( r == nullptr )
-   {
-      whyNot = "Not an INDIDeviceController instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const INDIDeviceControllerInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an INDIDeviceController instance.";
+   return false;
 }
 
 bool INDIDeviceControllerInterface::RequiresInstanceValidation() const

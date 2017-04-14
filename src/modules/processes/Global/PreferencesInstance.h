@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0328
+// Standard Global Process Module Version 01.02.07.0337
 // ----------------------------------------------------------------------------
-// PreferencesInstance.h - Released 2016/02/21 20:22:42 UTC
+// PreferencesInstance.h - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -74,7 +74,6 @@ struct ApplicationPreferences
    String      resourceFile08;
    String      resourceFile09;
    String      resourceFile10;
-
    pcl_bool    autoUIScaling;
    double      uiScalingFactor; // in [1,4]
    int32       fontResolution;  // in dpi
@@ -114,6 +113,11 @@ struct MainWindowPreferences
    pcl_bool    animateToolTip;
    pcl_bool    animateToolBox;
    int32       maxRecentFiles;
+   pcl_bool    showRecentlyUsed;
+   pcl_bool    showMostUsed;
+   int32       maxUsageListLength;
+   pcl_bool    expandUsageItemsAtStartup;
+   pcl_bool    openURLsWithInternalBrowser;
 };
 
 struct ImageWindowPreferences
@@ -189,6 +193,8 @@ struct ProcessPreferences
    int32       consoleDelay;  // in ms
    int32       autoSavePSMPeriod; // seconds, <= 0 : disabled, >= 30 otherwise
    pcl_bool    alertOnProcessCompleted;
+   pcl_bool    enableExecutionStatistics;
+   pcl_bool    enableLaunchStatistics;
 };
 
 // ----------------------------------------------------------------------------
@@ -253,4 +259,4 @@ private:
 #endif   // __PreferencesInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesInstance.h - Released 2016/02/21 20:22:42 UTC
+// EOF PreferencesInstance.h - Released 2017-04-14T23:07:12Z

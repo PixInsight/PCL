@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.12.01.0359
+// Standard ImageIntegration Process Module Version 01.12.01.0368
 // ----------------------------------------------------------------------------
-// ImageIntegrationInterface.cpp - Released 2016/12/30 01:41:29 UTC
+// ImageIntegrationInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -57,7 +57,7 @@
 
 #include <pcl/DrizzleDataDecoder.h>
 #include <pcl/FileDialog.h>
-//#include <pcl/FileFormat.h>
+#include <pcl/FileFormat.h>
 #include <pcl/MessageBox.h>
 #include <pcl/PreviewSelectionDialog.h>
 
@@ -68,7 +68,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ImageIntegrationInterface* TheImageIntegrationInterface = 0;
+ImageIntegrationInterface* TheImageIntegrationInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -77,20 +77,22 @@ ImageIntegrationInterface* TheImageIntegrationInterface = 0;
 // ----------------------------------------------------------------------------
 
 ImageIntegrationInterface::ImageIntegrationInterface() :
-ProcessInterface(), instance( TheImageIntegrationProcess ), GUI( 0 )
+   instance( TheImageIntegrationProcess )
 {
    TheImageIntegrationInterface = this;
 
-   // The auto save geometry feature is of no good to interfaces that include
-   // both auto-expanding controls (e.g. TreeBox) and collapsible sections
-   // (e.g. SectionBar).
+   /*
+    * The auto save geometry feature is of no good to interfaces that include
+    * both auto-expanding controls (e.g. TreeBox) and collapsible sections
+    * (e.g. SectionBar).
+    */
    DisableAutoSaveGeometry();
 }
 
 ImageIntegrationInterface::~ImageIntegrationInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString ImageIntegrationInterface::Id() const
@@ -115,7 +117,7 @@ InterfaceFeatures ImageIntegrationInterface::Features() const
 
 void ImageIntegrationInterface::EditPreferences()
 {
-   if ( TheIntegrationCache == 0 )
+   if ( TheIntegrationCache == nullptr )
       new IntegrationCache; // loads upon construction
    FileDataCachePreferencesDialog dlg( TheIntegrationCache );
    dlg.Execute();
@@ -129,8 +131,7 @@ void ImageIntegrationInterface::ResetInstance()
 
 bool ImageIntegrationInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "ImageIntegration" );
@@ -153,15 +154,10 @@ ProcessImplementation* ImageIntegrationInterface::NewProcess() const
 
 bool ImageIntegrationInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const ImageIntegrationInstance* r = dynamic_cast<const ImageIntegrationInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not an ImageIntegration instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const ImageIntegrationInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an ImageIntegration instance.";
+   return false;
 }
 
 bool ImageIntegrationInterface::RequiresInstanceValidation() const
@@ -197,7 +193,7 @@ void ImageIntegrationInterface::UpdateControls()
 void ImageIntegrationInterface::UpdateInputImagesItem( size_type i )
 {
    TreeBox::Node* node = GUI->InputImages_TreeBox[i];
-   if ( node == 0 )
+   if ( node == nullptr )
       return;
 
    const ImageIntegrationInstance::ImageItem& item = instance.p_images[i];
@@ -441,9 +437,9 @@ void ImageIntegrationInterface::__InputImages_NodeActivated( TreeBox& sender, Tr
       break;
    case 2:
       {
-         Array<ImageWindow> w = ImageWindow::Open( item.path );
-         for ( Array<ImageWindow>::iterator i = w.Begin(); i != w.End(); ++i )
-            i->Show();
+         Array<ImageWindow> windows = ImageWindow::Open( item.path, IsoString()/*id*/, instance.p_inputHints );
+         for ( ImageWindow& window : windows )
+            window.Show();
       }
       break;
    }
@@ -457,7 +453,7 @@ void ImageIntegrationInterface::__InputImages_NodeSelectionUpdated( TreeBox& sen
 static size_type TreeInsertionIndex( const TreeBox& tree )
 {
    const TreeBox::Node* n = tree.CurrentNode();
-   return (n != 0) ? tree.ChildIndex( n ) + 1 : tree.NumberOfChildren();
+   return (n != nullptr) ? tree.ChildIndex( n ) + 1 : tree.NumberOfChildren();
 }
 
 String ImageIntegrationInterface::DrizzleTargetName( const String& filePath )
@@ -468,7 +464,7 @@ String ImageIntegrationInterface::DrizzleTargetName( const String& filePath )
    IsoString text = File::ReadTextFile( filePath );
 
    /*
-    * If the .drz file includes a target path, return it.
+    * If the drizzle file includes a target path, return it.
     */
    DrizzleTargetDecoder decoder;
    decoder.Decode( text );
@@ -480,7 +476,7 @@ String ImageIntegrationInterface::DrizzleTargetName( const String& filePath )
    }
 
    /*
-    * Otherwise the target should have the same name as the .drz file.
+    * Otherwise the target should have the same name as the drizzle file.
     */
    if ( GUI->StaticDrizzleTargets_CheckBox.IsChecked() )
       return File::ChangeExtension( filePath, String() );
@@ -532,6 +528,7 @@ void ImageIntegrationInterface::__InputImages_Click( Button& sender, bool checke
    {
       FileFilter drzFiles;
       drzFiles.SetDescription( "Drizzle Data Files" );
+      drzFiles.AddExtension( ".xdrz" );
       drzFiles.AddExtension( ".drz" );
 
       OpenFileDialog d;
@@ -615,7 +612,7 @@ void ImageIntegrationInterface::__InputImages_Click( Button& sender, bool checke
    else if ( sender == GUI->SetReference_PushButton )
    {
       TreeBox::Node* node = GUI->InputImages_TreeBox.CurrentNode();
-      if ( node != 0 )
+      if ( node != nullptr )
       {
          int idx = GUI->InputImages_TreeBox.ChildIndex( node );
          if ( idx > 0 )
@@ -874,6 +871,92 @@ void ImageIntegrationInterface::__ToggleSection( SectionBar& sender, Control& se
    }
 }
 
+void ImageIntegrationInterface::__FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
+{
+   if ( sender == GUI->InputImages_TreeBox.Viewport() )
+      wantsFiles = true;
+}
+
+void ImageIntegrationInterface::__FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers )
+{
+   if ( sender == GUI->InputImages_TreeBox.Viewport() )
+   {
+      StringList drizzleFiles;
+      bool recursive = IsControlOrCmdPressed();
+      size_type i0 = TreeInsertionIndex( GUI->InputImages_TreeBox );
+      for ( const String& item : files )
+      {
+         StringList inputFiles;
+         if ( File::Exists( item ) )
+         {
+            String ext = File::ExtractSuffix( item ).CaseFolded();
+            if ( ext == ".xdrz" || ext == ".drz" )
+               drizzleFiles << item;
+            else
+               inputFiles << item;
+         }
+         else if ( File::DirectoryExists( item ) )
+         {
+            inputFiles << FileFormat::SupportedImageFiles( item, true/*toRead*/, false/*toWrite*/, recursive );
+            drizzleFiles << FileFormat::DrizzleFiles( item, recursive );
+         }
+
+         inputFiles.Sort();
+         for ( const String& file : inputFiles )
+         {
+            String ext = File::ExtractSuffix( file ).CaseFolded();
+            if ( ext == ".drz" || ext == ".xdrz" )
+               drizzleFiles << file;
+            else
+               instance.p_images.Insert( instance.p_images.At( i0++ ), ImageIntegrationInstance::ImageItem( file ) );
+         }
+      }
+
+      for ( const String& file : drizzleFiles )
+      {
+         String targetName = DrizzleTargetName( file );
+         for ( ImageIntegrationInstance::ImageItem& item : instance.p_images )
+         {
+            String name = GUI->StaticDrizzleTargets_CheckBox.IsChecked() ?
+                              File::ChangeExtension( item.path, String() ) : File::ExtractName( item.path );
+            if ( name == targetName )
+            {
+               item.drzPath = file;
+               break;
+            }
+         }
+      }
+
+      UpdateInputImagesList();
+      UpdateImageSelectionButtons();
+
+      if ( !drizzleFiles.IsEmpty() )
+         if ( !instance.p_generateDrizzleData )
+         {
+            instance.p_generateDrizzleData = true;
+            UpdateIntegrationControls();
+         }
+   }
+}
+
+void ImageIntegrationInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->ROI_SectionBar || sender == GUI->ROI_Control || sender == GUI->SelectPreview_Button )
+      wantsView = view.IsPreview();
+}
+
+void ImageIntegrationInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->ROI_SectionBar || sender == GUI->ROI_Control || sender == GUI->SelectPreview_Button )
+      if ( view.IsPreview() )
+      {
+         instance.p_useROI = true;
+         instance.p_roi = view.Window().PreviewRect( view.Id() );
+         GUI->ROI_SectionBar.ShowSection();
+         UpdateROIControls();
+      }
+}
+
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
@@ -901,6 +984,8 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    InputImages_TreeBox.OnCurrentNodeUpdated( (TreeBox::node_navigation_event_handler)&ImageIntegrationInterface::__InputImages_CurrentNodeUpdated, w );
    InputImages_TreeBox.OnNodeActivated( (TreeBox::node_event_handler)&ImageIntegrationInterface::__InputImages_NodeActivated, w );
    InputImages_TreeBox.OnNodeSelectionUpdated( (TreeBox::tree_event_handler)&ImageIntegrationInterface::__InputImages_NodeSelectionUpdated, w );
+   InputImages_TreeBox.Viewport().OnFileDrag( (Control::file_drag_event_handler)&ImageIntegrationInterface::__FileDrag, w );
+   InputImages_TreeBox.Viewport().OnFileDrop( (Control::file_drop_event_handler)&ImageIntegrationInterface::__FileDrop, w );
 
    AddFiles_PushButton.SetText( "Add Files" );
    AddFiles_PushButton.SetToolTip( "<p>Add existing image files to the list of input images.</p>" );
@@ -1716,9 +1801,11 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
 
    ROI_SectionBar.SetTitle( "Region of Interest" );
    ROI_SectionBar.EnableTitleCheckBox();
-   ROI_SectionBar.OnCheck( (SectionBar::check_event_handler)&ImageIntegrationInterface::__ROI_Check, w );
    ROI_SectionBar.SetSection( ROI_Control );
+   ROI_SectionBar.OnCheck( (SectionBar::check_event_handler)&ImageIntegrationInterface::__ROI_Check, w );
    ROI_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&ImageIntegrationInterface::__ToggleSection, w );
+   ROI_SectionBar.OnViewDrag( (Control::view_drag_event_handler)&ImageIntegrationInterface::__ViewDrag, w );
+   ROI_SectionBar.OnViewDrop( (Control::view_drop_event_handler)&ImageIntegrationInterface::__ViewDrop, w );
 
    const char* roiX0ToolTip = "<p>X pixel coordinate of the upper-left corner of the ROI.</p>";
 
@@ -1786,6 +1873,8 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
    SelectPreview_Button.SetText( "From Preview" );
    SelectPreview_Button.SetToolTip( "<p>Import ROI coordinates from an existing preview.</p>" );
    SelectPreview_Button.OnClick( (Button::click_event_handler)&ImageIntegrationInterface::__ROI_Click, w );
+   SelectPreview_Button.OnViewDrag( (Control::view_drag_event_handler)&ImageIntegrationInterface::__ViewDrag, w );
+   SelectPreview_Button.OnViewDrop( (Control::view_drop_event_handler)&ImageIntegrationInterface::__ViewDrop, w );
 
    ROIHeight_Sizer.SetSpacing( 4 );
    ROIHeight_Sizer.Add( ROIHeight_Label );
@@ -1801,6 +1890,8 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
 
    ROI_Control.SetSizer( ROI_Sizer );
    ROI_Control.AdjustToContents();
+   ROI_Control.OnViewDrag( (Control::view_drag_event_handler)&ImageIntegrationInterface::__ViewDrag, w );
+   ROI_Control.OnViewDrop( (Control::view_drop_event_handler)&ImageIntegrationInterface::__ViewDrop, w );
 
    //
 
@@ -1838,4 +1929,4 @@ ImageIntegrationInterface::GUIData::GUIData( ImageIntegrationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationInterface.cpp - Released 2016/12/30 01:41:29 UTC
+// EOF ImageIntegrationInterface.cpp - Released 2017-04-14T23:07:12Z

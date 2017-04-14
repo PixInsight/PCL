@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard ColorManagement Process Module Version 01.00.00.0284
+// Standard ColorManagement Process Module Version 01.00.00.0293
 // ----------------------------------------------------------------------------
-// AssignICCProfileInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// AssignICCProfileInstance.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorManagement PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,11 +53,12 @@
 #include "AssignICCProfileInstance.h"
 #include "AssignICCProfileParameters.h"
 
-#include <pcl/ImageWindow.h>
-#include <pcl/ICCProfile.h>
-#include <pcl/GlobalSettings.h>
+#include <pcl/AutoViewLock.h>
 #include <pcl/Console.h>
 #include <pcl/ErrorHandler.h>
+#include <pcl/GlobalSettings.h>
+#include <pcl/ICCProfile.h>
+#include <pcl/ImageWindow.h>
 
 namespace pcl
 {
@@ -65,14 +66,17 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 AssignICCProfileInstance::AssignICCProfileInstance( const MetaProcess* m ) :
-ProcessImplementation( m ), targetProfile(), mode( AssignMode::Default )
+   ProcessImplementation( m ),
+   mode( AssignMode::Default )
 {
 }
 
 // ----------------------------------------------------------------------------
 
 AssignICCProfileInstance::AssignICCProfileInstance( const AssignICCProfileInstance& x ) :
-ProcessImplementation( x ), targetProfile( x.targetProfile ), mode( x.mode )
+   ProcessImplementation( x ),
+   targetProfile( x.targetProfile ),
+   mode( x.mode )
 {
 }
 
@@ -81,7 +85,7 @@ ProcessImplementation( x ), targetProfile( x.targetProfile ), mode( x.mode )
 void AssignICCProfileInstance::Assign( const ProcessImplementation& p )
 {
    const AssignICCProfileInstance* x = dynamic_cast<const AssignICCProfileInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       targetProfile = x->targetProfile;
       mode = x->mode;
@@ -118,7 +122,6 @@ bool AssignICCProfileInstance::CanExecuteOn( const View& v, pcl::String& whyNot 
       return false;
    }
 
-   whyNot.Clear();
    return true;
 }
 
@@ -128,102 +131,89 @@ bool AssignICCProfileInstance::ExecuteOn( View& view )
 {
    static ICCProfile::profile_list profiles; // ### Warning: Not reentrant - thread-unsafe.
 
-   try
+   if ( !view.IsMainView() )
+      return false;
+
+   AutoViewLock lock( view );
+
+   ImageWindow w = view.Window();
+
+   if ( mode == AssignMode::LeaveUntagged || mode == AssignMode::AssignDefaultProfile )
    {
-      if ( !view.IsMainView() )
-         return false;
+      ICCProfile icc;
+      w.GetICCProfile( icc );
 
-      view.Lock();
+      Console().Write( "<end><cbr>Previous ICC profile: " );
 
-      ImageWindow w = view.Window();
-
-      if ( mode == AssignMode::LeaveUntagged || mode == AssignMode::AssignDefaultProfile )
+      if ( icc.IsProfile() )
       {
-         ICCProfile icc;
-         w.GetICCProfile( icc );
-
-         Console().Write( "<end><cbr>Previous ICC profile: " );
-
-         if ( icc.IsProfile() )
-         {
-            w.DeleteICCProfile();
-            Console().WriteLn( icc.Description() );
-         }
-         else
-            Console().WriteLn( "&lt;* none *&gt;" );
+         w.DeleteICCProfile();
+         Console().WriteLn( "<raw>" + icc.Description() + "</raw>" );
       }
+      else
+         Console().WriteLn( "&lt;* none *&gt;" );
+   }
 
-      if ( mode != AssignMode::LeaveUntagged )
+   if ( mode != AssignMode::LeaveUntagged )
+   {
+      String profilePath;
+
+      if ( mode == AssignMode::AssignDefaultProfile )
+         profilePath = PixInsightSettings::GlobalString( view.IsColor() ?
+               "ColorManagement/DefaultRGBProfilePath" : "ColorManagement/DefaultGrayscaleProfilePath" );
+      else // AssignMode::AssignNewProfile
       {
-         String profilePath;
+         if ( targetProfile.IsEmpty() )
+            throw Error( "No profile specified!" );
 
-         if ( mode == AssignMode::AssignDefaultProfile )
-            profilePath = PixInsightSettings::GlobalString( view.IsColor() ?
-                  "ColorManagement/DefaultRGBProfilePath" : "ColorManagement/DefaultGrayscaleProfilePath" );
-         else // AssignMode::AssignNewProfile
+         bool hadProfiles = !profiles.IsEmpty();
+
+         if ( !hadProfiles )
+            profiles = ICCProfile::FindProfilesByColorSpace( ICCColorSpace::RGB|ICCColorSpace::Gray );
+
+         ICCProfile::profile_list::const_iterator i = profiles.Search( ICCProfile::Info( targetProfile ) );
+
+         if ( i == profiles.End() || !File::Exists( i->path ) )
          {
-            if ( targetProfile.IsEmpty() )
-               throw Error( "No profile specified!" );
-
-            bool hadProfiles = !profiles.IsEmpty();
-
-            if ( !hadProfiles )
-               profiles = ICCProfile::FindProfilesByColorSpace( ICCColorSpace::RGB|ICCColorSpace::Gray );
-
-            ICCProfile::profile_list::const_iterator i = profiles.Search( ICCProfile::Info( targetProfile ) );
-
-            if ( i == profiles.End() || !File::Exists( i->path ) )
+            if ( hadProfiles )
             {
-               if ( hadProfiles )
-               {
-                  profiles = ICCProfile::FindProfilesByColorSpace( ICCColorSpace::RGB|ICCColorSpace::Gray );
-                  i = profiles.Search( ICCProfile::Info( targetProfile ) );
-               }
-               else
-                  i = profiles.End();
-
-               if ( i == profiles.End() )
-                  throw Error( "Couldn't find the '" + targetProfile + "' profile.\n"
-                               "Either it has not been installed, or the corresponding disk file has been deleted." );
+               profiles = ICCProfile::FindProfilesByColorSpace( ICCColorSpace::RGB|ICCColorSpace::Gray );
+               i = profiles.Search( ICCProfile::Info( targetProfile ) );
             }
+            else
+               i = profiles.End();
 
-            profilePath = i->path;
+            if ( i == profiles.End() )
+               throw Error( "Couldn't find the '" + targetProfile + "' profile. "
+                            "Either it has not been installed, or the corresponding disk file has been deleted." );
          }
 
-         ICCProfile targetICC;
-
-         try
-         {
-            targetICC.Load( profilePath );
-         }
-
-         ERROR_HANDLER
-
-         if ( !targetICC.IsProfile() )
-            throw Error( "Unable to load ICC profile:\n" +
-                         profilePath +
-                         "\nThe disk file could be corrupted, or it is not a valid ICC profile." );
-
-         if ( w.MainView().IsColor() && !targetICC.IsRGB() )
-            throw Error( '\'' + targetProfile + "' is a grayscale profile.\n"
-                         "This profile cannot be assigned to a RGB color image." );
-
-         w.SetICCProfile( targetICC );
-
-         Console().WriteLn( "<end><cbr>Profile assigned: " + targetICC.Description() );
-         Console().WriteLn( "Profile path: " + targetICC.FilePath() );
+         profilePath = i->path;
       }
 
-      view.Unlock();
+      ICCProfile targetICC;
 
-      return true;
+      try
+      {
+         targetICC.Load( profilePath );
+      }
+      ERROR_HANDLER
+
+      if ( !targetICC.IsProfile() )
+         throw Error( "Unable to load ICC profile: " + profilePath +
+                      "The disk file could be corrupted, or it is not a valid ICC profile." );
+
+      if ( w.MainView().IsColor() && !targetICC.IsRGB() )
+         throw Error( '\'' + targetProfile + "' is a grayscale profile. "
+                      "This profile cannot be assigned to a RGB color image." );
+
+      w.SetICCProfile( targetICC );
+
+      Console().WriteLn( "<end><cbr>Profile assigned: <raw>" + targetICC.Description() + "</raw>" );
+      Console().WriteLn( "Profile path: <raw>" + targetICC.FilePath() + "</raw>" );
    }
 
-   catch ( ... )
-   {
-      view.Unlock();
-      throw;
-   }
+   return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -234,7 +224,8 @@ void* AssignICCProfileInstance::LockParameter( const MetaParameter* p, size_type
       return targetProfile.Begin();
    if ( p == TheAssignModeParameter )
       return &mode;
-   return 0;
+
+   return nullptr;
 }
 
 bool AssignICCProfileInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type /*tableRow*/ )
@@ -247,6 +238,7 @@ bool AssignICCProfileInstance::AllocateParameter( size_type sizeOrLength, const 
    }
    else
       return false;
+
    return true;
 }
 
@@ -254,6 +246,7 @@ size_type AssignICCProfileInstance::ParameterLength( const MetaParameter* p, siz
 {
    if ( p == TheTargetProfileParameter )
       return targetProfile.Length();
+
    return 0;
 }
 
@@ -262,4 +255,4 @@ size_type AssignICCProfileInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AssignICCProfileInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF AssignICCProfileInstance.cpp - Released 2017-04-14T23:07:12Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0355
+// Standard IntensityTransformations Process Module Version 01.07.01.0364
 // ----------------------------------------------------------------------------
-// STFSliders.cpp - Released 2016/02/21 20:22:43 UTC
+// STFSliders.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -66,12 +66,14 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 STFSliders::STFSliders() :
-   Control(),
-   channel( 0 ), rgb( true ), m( 0.5F ), c0( 0 ), c1( 1 ), v0( 0 ), v1( 1 ),
+   channel( 0 ),
+   rgb( true ),
+   m( 0.5F ), c0( 0 ), c1( 1 ), v0( 0 ), v1( 1 ),
    gradient( Bitmap::Null() ),
-   beingDragged( -1 ), scrolling( false ), scrollOrigin( 0 ), m_wheelSteps( 0 ),
-   onValueUpdated( 0 ), onValueUpdatedReceiver( 0 ),
-   onRangeUpdated( 0 ), onRangeUpdatedReceiver( 0 )
+   beingDragged( -1 ),
+   scrolling( false ),
+   scrollOrigin( 0 ),
+   m_wheelSteps( 0 )
 {
    OnPaint( (Control::paint_event_handler)&STFSliders::__Paint, *this );
    OnResize( (Control::resize_event_handler)&STFSliders::__Resize, *this );
@@ -120,10 +122,10 @@ void STFSliders::SetVisibleRange( double a, double b )
 
 void STFSliders::OnValueUpdated( value_event_handler f, Control& c )
 {
-   if ( f == 0 || c.IsNull() )
+   if ( f == nullptr || c.IsNull() )
    {
-      onValueUpdated = 0;
-      onValueUpdatedReceiver = 0;
+      onValueUpdated = nullptr;
+      onValueUpdatedReceiver = nullptr;
    }
    else
    {
@@ -134,10 +136,10 @@ void STFSliders::OnValueUpdated( value_event_handler f, Control& c )
 
 void STFSliders::OnRangeUpdated( range_event_handler f, Control& c )
 {
-   if ( f == 0 || c.IsNull() )
+   if ( f == nullptr || c.IsNull() )
    {
-      onRangeUpdated = 0;
-      onRangeUpdatedReceiver = 0;
+      onRangeUpdated = nullptr;
+      onRangeUpdatedReceiver = nullptr;
    }
    else
    {
@@ -344,7 +346,7 @@ void STFSliders::__MousePress( Control& sender, const pcl::Point& pos, int butto
             if ( vz.x != v0 || vz.y != v1 )
             {
                SetVisibleRange( vz.x, vz.y );
-               if ( onRangeUpdated != 0 )
+               if ( onRangeUpdated != nullptr )
                   (onRangeUpdatedReceiver->*onRangeUpdated)( *this, channel, v0, v1, modifiers );
             }
          }
@@ -372,14 +374,14 @@ void STFSliders::__MouseMove( Control& sender, const pcl::Point& pos, unsigned b
    if ( scrolling )
    {
       if ( UpdateScrolling( pos.x ) )
-         if ( onRangeUpdated != 0 )
+         if ( onRangeUpdated != nullptr )
             (onRangeUpdatedReceiver->*onRangeUpdated)( *this, channel, v0, v1, modifiers );
    }
    else if ( beingDragged >= 0 )
    {
       double v = UpdateDragging( pos.x );
       Control::ShowToolTip( Cursor::Position(), String().Format( "%.6g", v ) );
-      if ( onValueUpdated != 0 )
+      if ( onValueUpdated != nullptr )
          (onValueUpdatedReceiver->*onValueUpdated)( *this, channel, beingDragged, v, modifiers, false );
    }
 }
@@ -394,7 +396,7 @@ void STFSliders::__MouseRelease( Control& sender, const pcl::Point& pos, int but
          SetCursor( StdCursor::OpenHand );
 
       if ( UpdateScrolling( pos.x ) )
-         if ( onRangeUpdated != 0 )
+         if ( onRangeUpdated != nullptr )
             (onRangeUpdatedReceiver->*onRangeUpdated)( *this, channel, v0, v1, modifiers );
 
       scrolling = false;
@@ -403,7 +405,7 @@ void STFSliders::__MouseRelease( Control& sender, const pcl::Point& pos, int but
    {
       Control::HideToolTip();
       double v = UpdateDragging( pos.x );
-      if ( onValueUpdated != 0 )
+      if ( onValueUpdated != nullptr )
          (onValueUpdatedReceiver->*onValueUpdated)( *this, channel, beingDragged, v, modifiers, true );
 
       beingDragged = -1;
@@ -419,7 +421,7 @@ void STFSliders::__MouseWheel( Control& sender, const pcl::Point& pos, int delta
       if ( vz.x != v0 || vz.y != v1 )
       {
          SetVisibleRange( vz.x, vz.y );
-         if ( onRangeUpdated != 0 )
+         if ( onRangeUpdated != nullptr )
             (onRangeUpdatedReceiver->*onRangeUpdated)( *this, channel, v0, v1, modifiers );
       }
       m_wheelSteps = 0;
@@ -431,4 +433,4 @@ void STFSliders::__MouseWheel( Control& sender, const pcl::Point& pos, int delta
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF STFSliders.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF STFSliders.cpp - Released 2017-04-14T23:07:12Z

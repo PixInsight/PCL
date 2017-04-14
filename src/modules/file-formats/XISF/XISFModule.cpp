@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.06.0107
+// Standard XISF File Format Module Version 01.00.09.0125
 // ----------------------------------------------------------------------------
-// XISFModule.cpp - Released 2016/07/05 10:44:57 UTC
+// XISFModule.cpp - Released 2017-04-14T23:07:03Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -52,13 +52,13 @@
 
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
-#define MODULE_VERSION_REVISION  06
-#define MODULE_VERSION_BUILD     0107
+#define MODULE_VERSION_REVISION  09
+#define MODULE_VERSION_BUILD     0125
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2016
-#define MODULE_RELEASE_MONTH     7
-#define MODULE_RELEASE_DAY       5
+#define MODULE_RELEASE_YEAR      2017
+#define MODULE_RELEASE_MONTH     4
+#define MODULE_RELEASE_DAY       14
 
 #include "XISFModule.h"
 #include "XISFFormat.h"
@@ -103,7 +103,7 @@ String XISFModule::Author() const
 
 String XISFModule::Copyright() const
 {
-   return "Copyright (c) 2014-2015, Pleiades Astrophoto";
+   return "Copyright (c) 2014-2017, Pleiades Astrophoto";
 }
 
 String XISFModule::TradeMarks() const
@@ -138,40 +138,15 @@ void XISFModule::GetReleaseDate( int& year, int& month, int& day ) const
 
 } // pcl
 
-// ----------------------------------------------------------------------------
-// PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
-//
-// Module installation routine.
-//
-// If this routine is defined as a public symbol in a module, the PixInsight
-// core application calls it just after loading and initialization of the
-// module shared object.
-//
-// The mode argument specifies the kind of installation being performed by the
-// core application. See the pcl::InstallMode namespace for more information.
-// ----------------------------------------------------------------------------
-
 PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 {
-   /*
-    * When the PixInsight application installs this module, we just have to
-    * instantiate the meta objects describing it.
-    */
    new pcl::XISFModule;
 
-   /*
-    * The mode argument tells us what kind of installation is being requested
-    * by the PixInsight application. Incomplete installation requests only need
-    * module descriptions.
-    */
    if ( mode == pcl::InstallMode::FullInstall )
       new pcl::XISFFormat;
 
-   /*
-    * Return zero to signal successful installation
-    */
    return 0;
 }
 
 // ----------------------------------------------------------------------------
-// EOF XISFModule.cpp - Released 2016/07/05 10:44:57 UTC
+// EOF XISFModule.cpp - Released 2017-04-14T23:07:03Z

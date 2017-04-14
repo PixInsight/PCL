@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Geometry Process Module Version 01.02.01.0327
+// Standard Geometry Process Module Version 01.02.01.0336
 // ----------------------------------------------------------------------------
-// ResampleInterface.cpp - Released 2016/12/20 17:43:21 UTC
+// ResampleInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Geometry PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -75,11 +75,7 @@ ResampleInterface* TheResampleInterface = nullptr;
 // ----------------------------------------------------------------------------
 
 ResampleInterface::ResampleInterface() :
-   ProcessInterface(),
-   instance( TheResampleProcess ),
-   sourceWidth( 1000 ),
-   sourceHeight( 1000 ),
-   GUI( nullptr )
+   instance( TheResampleProcess )
 {
    TheResampleInterface = this;
 }
@@ -121,7 +117,6 @@ void ResampleInterface::TrackViewUpdated( bool active )
       if ( active )
       {
          ImageWindow w = ImageWindow::ActiveWindow();
-
          if ( !w.IsNull() )
             ImageFocused( w.MainView() );
          else
@@ -156,15 +151,10 @@ ProcessImplementation* ResampleInterface::NewProcess() const
 
 bool ResampleInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const ResampleInstance* r = dynamic_cast<const ResampleInstance*>( &p );
-   if ( r == nullptr )
-   {
-      whyNot = "Not a Resample instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const ResampleInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a Resample instance.";
+   return false;
 }
 
 bool ResampleInterface::RequiresInstanceValidation() const
@@ -271,20 +261,16 @@ void ResampleInterface::UpdateControls()
             instance.p_absMode != int( RSAbsoluteMode::ForceWidthAndHeight ) );
 
    String info;
-
    size_type wasArea = size_type( sourceWidth )*size_type( sourceHeight );
    size_type area = size_type( w )*size_type( h );
-
    if ( currentView.IsNull() )
-      info.Format( "32-bit channel size: %.3lf MB, was %.3lf MB", (area*4)/1048576.0, (wasArea*4)/1048576.0 );
+      info.Format( "32-bit channel size: %.3lf MiB, was %.3lf MiB", (area*4)/1048576.0, (wasArea*4)/1048576.0 );
    else
    {
       ImageVariant image = currentView.Window().MainView().Image();
-
       size_type wasBytes = wasArea * image.NumberOfChannels() * image.BytesPerSample();
       size_type bytes = area * image.NumberOfChannels() * image.BytesPerSample();
-
-      info.Format( "%d-bit total size: %.3lf MB, was %.3lf MB", image.BitsPerSample(), bytes/1048576.0, wasBytes/1048576.0 );
+      info.Format( "%d-bit total size: %.3lf MiB, was %.3lf MiB", image.BitsPerSample(), bytes/1048576.0, wasBytes/1048576.0 );
    }
 
    GUI->SizeInfo_Label.SetText( info );
@@ -314,7 +300,7 @@ void ResampleInterface::UpdateControls()
 
 // ----------------------------------------------------------------------------
 
-void ResampleInterface::__ViewList_ViewSelected( ViewList& /*sender*/, View& )
+void ResampleInterface::__ViewList_ViewSelected( ViewList&, View& )
 {
    DeactivateTrackView();
 
@@ -589,6 +575,23 @@ void ResampleInterface::__Mode_ItemSelected( ComboBox& sender, int itemIndex )
    UpdateControls();
 }
 
+void ResampleInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->AllImages_ViewList )
+      wantsView = view.IsMainView();
+}
+
+void ResampleInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->AllImages_ViewList )
+      if ( view.IsMainView() )
+      {
+         GUI->AllImages_ViewList.SelectView( view );
+         View theView = view;
+         __ViewList_ViewSelected( GUI->AllImages_ViewList, theView );
+      }
+}
+
 // ----------------------------------------------------------------------------
 
 ResampleInterface::GUIData::GUIData( ResampleInterface& w )
@@ -604,6 +607,8 @@ ResampleInterface::GUIData::GUIData( ResampleInterface& w )
    // -------------------------------------------------------------------------
 
    AllImages_ViewList.OnViewSelected( (ViewList::view_event_handler)&ResampleInterface::__ViewList_ViewSelected, w );
+   AllImages_ViewList.OnViewDrag( (Control::view_drag_event_handler)&ResampleInterface::__ViewDrag, w );
+   AllImages_ViewList.OnViewDrop( (Control::view_drop_event_handler)&ResampleInterface::__ViewDrop, w );
 
    // -------------------------------------------------------------------------
 
@@ -928,4 +933,4 @@ ResampleInterface::GUIData::GUIData( ResampleInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ResampleInterface.cpp - Released 2016/12/20 17:43:21 UTC
+// EOF ResampleInterface.cpp - Released 2017-04-14T23:07:12Z

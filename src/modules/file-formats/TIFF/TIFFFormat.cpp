@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard TIFF File Format Module Version 01.00.06.0294
+// Standard TIFF File Format Module Version 01.00.07.0307
 // ----------------------------------------------------------------------------
-// TIFFFormat.cpp - Released 2016/02/21 20:22:34 UTC
+// TIFFFormat.cpp - Released 2017-04-14T23:07:03Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard TIFF PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -102,12 +102,63 @@ String TIFFFormat::Implementation() const
    "<p>This implementation of the TIFF format is based on LibTIFF Software, "
    "written by Sam Leffler at Silicon Graphics Inc.</p>"
 
-   "<p>LibTIFF Software (Version 4.0.6, released 2015 September 12):<br/>"
+   "<p>LibTIFF Software (Version 4.0.7, released 2016 November 19):<br/>"
    "Copyright (c) 1988-1997 Sam Leffler<br/>"
    "Copyright (c) 1991-1997 Silicon Graphics, Inc.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2015, Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2017, Pleiades Astrophoto</p>"
+
+   "<p style=\"white-space:pre;\">"
+"\n-------------------------------------------------------------------------------"
+"\nTIFF Format Hints             Description"
+"\n============================  ================================================="
+"\nlower-range n           (r )  n is the lower bound of the input range for"
+"\n                              floating point pixel data (default = 0)."
+"\n-------------------------------------------------------------------------------"
+"\nupper-range n           (r )  n is the upper bound of the input range for"
+"\n                              floating point pixel data (default = 1)."
+"\n-------------------------------------------------------------------------------"
+"\nrescale-out-of-range    (r )  Normalize out-of-range floating point pixel data."
+"\n-------------------------------------------------------------------------------"
+"\ntruncate-out-of-range   (r )  Truncate out-of-range floating point pixel data."
+"\n                              Warning &emdash; out-of-range pixel values will"
+"\n                              be set to fixed values, so data will be lost."
+"\n-------------------------------------------------------------------------------"
+"\nignore-out-of-range     (r )  Ignore out-of-range floating point pixel data."
+"\n                              Warning &emdash; out-of-range pixel values will"
+"\n                              not be fixed. Use at your own risk."
+"\n-------------------------------------------------------------------------------"
+"\nverbosity n             (rw)  n is a verbosity level in the range [0,3] to"
+"\n                              control the amount of generated messages"
+"\n                              (default = 1)."
+"\n-------------------------------------------------------------------------------"
+"\nzip-compression         ( w)  Use ZIP compression."
+"\n-------------------------------------------------------------------------------"
+"\nlzw-compression         ( w)  use LZW compression."
+"\n-------------------------------------------------------------------------------"
+"\nno-compression          ( w)  Do not compress images."
+"\n-------------------------------------------------------------------------------"
+"\nplanar                  ( w)  Write planar TIFF images (separate RGBA color"
+"\n                              planes)."
+"\n-------------------------------------------------------------------------------"
+"\nchunky                  ( w)  Write chunky TIFF images (mixed RGBA color"
+"\n                              components)."
+"\n-------------------------------------------------------------------------------"
+"\nno-planar               ( w)  Same as chunky."
+"\n-------------------------------------------------------------------------------"
+"\nassociated-alpha        ( w)  Associate alpha channels with images. The alpha"
+"\n                              channel should be interpreted as image opacity."
+"\n-------------------------------------------------------------------------------"
+"\nno-associated-alpha     ( w)  Do not associate alpha channels with images."
+"\n-------------------------------------------------------------------------------"
+"\npremultiplied-alpha     ( w)  Write RGB/K components premultiplied by the"
+"\n                              active alpha channel."
+"\n-------------------------------------------------------------------------------"
+"\nno-premultiplied-alpha  ( w)  Do not premultiply RGB/K components by alpha."
+"\n-------------------------------------------------------------------------------"
+"\n"
+   "</p>"
    "</html>";
 }
 
@@ -158,13 +209,12 @@ bool TIFFFormat::UsesFormatSpecificData() const
 
 bool TIFFFormat::ValidateFormatSpecificData( const void* data ) const
 {
-   return FormatOptions::FromGenericDataBlock( data ) != 0;
+   return FormatOptions::FromGenericDataBlock( data ) != nullptr;
 }
 
 void TIFFFormat::DisposeFormatSpecificData( void* data ) const
 {
-   FormatOptions* o = FormatOptions::FromGenericDataBlock( data );
-   if ( o != 0 )
+   if ( FormatOptions* o = FormatOptions::FromGenericDataBlock( data ) )
       delete o;
 }
 
@@ -195,7 +245,6 @@ bool TIFFFormat::EditPreferences() const
          {
             throw Error( "Empty input range!" );
          }
-
          ERROR_HANDLER
          continue;
       }
@@ -232,7 +281,7 @@ TIFFImageOptions TIFFFormat::DefaultOptions()
 
    u = options.compression;
    Settings::Read( "TIFFCompression", u );
-   options.compression = TIFFImageOptions::compression_algorithm( u );
+   options.compression = TIFFImageOptions::compression_codec( u );
 
    b = options.planar;
    Settings::Read( "TIFFPlanar", b );
@@ -280,22 +329,22 @@ TIFFFormat::EmbeddingOverrides TIFFFormat::DefaultEmbeddingOverrides()
 #define TIFF_SIGNATURE  0x54494646u
 
 TIFFFormat::FormatOptions::FormatOptions() :
-signature( TIFF_SIGNATURE ), options( TIFFFormat::DefaultOptions() )
+   signature( TIFF_SIGNATURE ), options( TIFFFormat::DefaultOptions() )
 {
 }
 
 TIFFFormat::FormatOptions::FormatOptions( const TIFFFormat::FormatOptions& x ) :
-signature( TIFF_SIGNATURE ), options( x.options )
+   signature( TIFF_SIGNATURE ), options( x.options )
 {
 }
 
 TIFFFormat::FormatOptions* TIFFFormat::FormatOptions::FromGenericDataBlock( const void* data )
 {
-   if ( data == 0 )
-      return 0;
+   if ( data == nullptr )
+      return nullptr;
    const TIFFFormat::FormatOptions* o = reinterpret_cast<const TIFFFormat::FormatOptions*>( data );
    if ( o->signature != TIFF_SIGNATURE )
-      return 0;
+      return nullptr;
    return const_cast<TIFFFormat::FormatOptions*>( o );
 }
 
@@ -304,4 +353,4 @@ TIFFFormat::FormatOptions* TIFFFormat::FormatOptions::FromGenericDataBlock( cons
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF TIFFFormat.cpp - Released 2016/02/21 20:22:34 UTC
+// EOF TIFFFormat.cpp - Released 2017-04-14T23:07:03Z

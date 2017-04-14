@@ -2,16 +2,16 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard CosmeticCorrection Process Module Version 01.02.05.0149
+// Standard CosmeticCorrection Process Module Version 01.02.05.0158
 // ----------------------------------------------------------------------------
-// CosmeticCorrectionModule.cpp - Released 2016/02/21 20:22:43 UTC
+// CosmeticCorrectionModule.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard CosmeticCorrection PixInsight module.
 //
-// Copyright (c) 2011-2015 Nikolay Volkov
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
+// Copyright (c) 2011-2017 Nikolay Volkov
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,12 +54,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     02
 #define MODULE_VERSION_REVISION  05
-#define MODULE_VERSION_BUILD     0149
+#define MODULE_VERSION_BUILD     0158
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2016
-#define MODULE_RELEASE_MONTH     2
-#define MODULE_RELEASE_DAY       21
+#define MODULE_RELEASE_YEAR      2017
+#define MODULE_RELEASE_MONTH     4
+#define MODULE_RELEASE_DAY       14
 
 #include "CosmeticCorrectionModule.h"
 #include "CosmeticCorrectionProcess.h"
@@ -105,7 +105,7 @@ String CosmeticCorrectionModule::Author() const
 
 String CosmeticCorrectionModule::Copyright() const
 {
-   return "Copyright (c) 2011-2015 Nikolay Volkov";
+   return "Copyright (c) 2011-2017 Nikolay Volkov";
 }
 
 String CosmeticCorrectionModule::TradeMarks() const
@@ -152,9 +152,7 @@ String CosmeticCorrectionModule::ReadableVersion()
 
 } // pcl
 
-
-PCL_MODULE_EXPORT
-int InstallPixInsightModule( int mode )
+PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 {
    new pcl::CosmeticCorrectionModule;
 
@@ -164,9 +162,8 @@ int InstallPixInsightModule( int mode )
       new pcl::CosmeticCorrectionInterface;
    }
 
-   // Return zero to signal successful installation
    return 0;
 }
 
 // ----------------------------------------------------------------------------
-// EOF CosmeticCorrectionModule.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF CosmeticCorrectionModule.cpp - Released 2017-04-14T23:07:12Z

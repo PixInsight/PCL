@@ -1,7 +1,7 @@
 
 //
 //  Little Color Management System
-//  Copyright (c) 1998-2014 Marti Maria Saguer
+//  Copyright (c) 1998-2016 Marti Maria Saguer
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -57,7 +57,15 @@
 #define _cmsALIGNLONG(x) (((x)+(sizeof(cmsUInt32Number)-1)) & ~(sizeof(cmsUInt32Number)-1))
 
 // Alignment to memory pointer
-#define _cmsALIGNMEM(x)  (((x)+(sizeof(void *) - 1)) & ~(sizeof(void *) - 1))
+
+// (Ultra)SPARC with gcc requires ptr alignment of 8 bytes
+// even though sizeof(void *) is only four: for greatest flexibility
+// allow the build to specify ptr alignment.
+#ifndef CMS_PTR_ALIGNMENT
+# define CMS_PTR_ALIGNMENT sizeof(void *)
+#endif
+
+#define _cmsALIGNMEM(x)  (((x)+(CMS_PTR_ALIGNMENT - 1)) & ~(CMS_PTR_ALIGNMENT - 1))
 
 // Maximum encodeable values in floating point
 #define MAX_ENCODEABLE_XYZ  (1.0 + 32767.0/32768.0)
@@ -69,7 +77,7 @@
 // Maximum of channels for internal pipeline evaluation
 #define MAX_STAGE_CHANNELS  128
 
-// Unused parameter warning supression
+// Unused parameter warning suppression
 #define cmsUNUSED_PARAMETER(x) ((void)x)
 
 // The specification for "inline" is section 6.7.4 of the C99 standard (ISO/IEC 9899:1999).
@@ -93,7 +101,7 @@
 
 // A fast way to convert from/to 16 <-> 8 bits
 #define FROM_8_TO_16(rgb) (cmsUInt16Number) ((((cmsUInt16Number) (rgb)) << 8)|(rgb))
-#define FROM_16_TO_8(rgb) (cmsUInt8Number) ((((rgb) * 65281 + 8388608) >> 24) & 0xFF)
+#define FROM_16_TO_8(rgb) (cmsUInt8Number) ((((cmsUInt32Number)(rgb) * 65281U + 8388608U) >> 24) & 0xFFU)
 
 // Code analysis is broken on asserts
 #ifdef _MSC_VER
@@ -177,6 +185,34 @@ cmsINLINE cmsUInt16Number _cmsQuickSaturateWord(cmsFloat64Number d)
 #include <windows.h>
 
 
+// The locking scheme in LCMS requires a single 'top level' mutex
+// to work. This is actually implemented on Windows as a
+// CriticalSection, because they are lighter weight. With
+// pthreads, this is statically inited. Unfortunately, windows
+// can't officially statically init critical sections.
+//
+// We can work around this in 2 ways.
+//
+// 1) We can use a proper mutex purely to protect the init
+// of the CriticalSection. This in turns requires us to protect
+// the Mutex creation, which we can do using the snappily
+// named InterlockedCompareExchangePointer API (present on
+// windows XP and above).
+//
+// 2) In cases where we want to work on pre-Windows XP, we
+// can use an even more horrible hack described below.
+//
+// So why wouldn't we always use 2)? Because not calling
+// the init function for a critical section means it fails
+// testing with ApplicationVerifier (and presumably similar
+// tools).
+//
+// We therefore default to 1, and people who want to be able
+// to run on pre-Windows XP boxes can build with:
+//     CMS_RELY_ON_WINDOWS_STATIC_MUTEX_INIT
+// defined. This is automatically set for builds using
+// versions of MSVC that don't have this API available.
+//
 // From: http://locklessinc.com/articles/pthreads_on_windows/
 // The pthreads API has an initialization macro that has no correspondence to anything in 
 // the windows API. By investigating the internal definition of the critical section type, 
@@ -198,12 +234,28 @@ cmsINLINE cmsUInt16Number _cmsQuickSaturateWord(cmsFloat64Number d)
 
 typedef CRITICAL_SECTION _cmsMutex;
 
-#define CMS_MUTEX_INITIALIZER {(PRTL_CRITICAL_SECTION_DEBUG) -1,-1,0,0,0,0}
-
 #ifdef _MSC_VER
 #    if (_MSC_VER >= 1800)
 #          pragma warning(disable : 26135)
 #    endif
+#endif
+
+#ifndef CMS_RELY_ON_WINDOWS_STATIC_MUTEX_INIT
+// If we are building with a version of MSVC smaller
+// than 1400 (i.e. before VS2005) then we don't have
+// the InterlockedCompareExchangePointer API, so use
+// the old version.
+#    ifdef _MSC_VER
+#       if _MSC_VER < 1400
+#          define CMS_RELY_ON_WINDOWS_STATIC_MUTEX_INIT
+#       endif
+#    endif
+#endif
+
+#ifdef CMS_RELY_ON_WINDOWS_STATIC_MUTEX_INIT
+#      define CMS_MUTEX_INITIALIZER {(PRTL_CRITICAL_SECTION_DEBUG) -1,-1,0,0,0,0}
+#else
+#      define CMS_MUTEX_INITIALIZER {(PRTL_CRITICAL_SECTION_DEBUG)NULL,-1,0,0,0,0}
 #endif
 
 cmsINLINE int _cmsLockPrimitive(_cmsMutex *m)
@@ -441,7 +493,7 @@ struct _cmsContext_struct {
     void* chunks[MemoryClientMax];    // array of pointers to client chunks. Memory itself is hold in the suballocator. 
                                       // If NULL, then it reverts to global Context0
 
-    _cmsMemPluginChunkType DefaultMemoryManager;  // The allocators used for creating the context itself. Cannot be overriden
+    _cmsMemPluginChunkType DefaultMemoryManager;  // The allocators used for creating the context itself. Cannot be overridden
 };
 
 // Returns a pointer to a valid context structure, including the global one if id is zero. 
@@ -662,8 +714,8 @@ struct _cms_MLU_struct {
     cmsContext ContextID;
 
     // The directory
-    int AllocatedEntries;
-    int UsedEntries;
+    cmsUInt32Number  AllocatedEntries;
+    cmsUInt32Number  UsedEntries;
     _cmsMLUentry* Entries;     // Array of pointers to strings allocated in MemPool
 
     // The Pool
@@ -731,7 +783,7 @@ typedef struct _cms_iccprofile_struct {
     // Dictionary
     cmsUInt32Number          TagCount;
     cmsTagSignature          TagNames[MAX_TABLE_TAG];
-    cmsTagSignature          TagLinked[MAX_TABLE_TAG];           // The tag to wich is linked (0=none)
+    cmsTagSignature          TagLinked[MAX_TABLE_TAG];           // The tag to which is linked (0=none)
     cmsUInt32Number          TagSizes[MAX_TABLE_TAG];            // Size on disk
     cmsUInt32Number          TagOffsets[MAX_TABLE_TAG];
     cmsBool                  TagSaveAsRaw[MAX_TABLE_TAG];        // True to write uncooked
@@ -959,7 +1011,7 @@ typedef struct _cmstransform_struct {
     cmsUInt32Number InputFormat, OutputFormat; // Keep formats for further reference
 
     // Points to transform code
-    _cmsTransformFn xform;
+    _cmsTransform2Fn xform;
 
     // Formatters, cannot be embedded into LUT because cache
     cmsFormatter16 FromInput;
@@ -1005,9 +1057,20 @@ typedef struct _cmstransform_struct {
     void* UserData;
     _cmsFreeUserDataFn FreeUserData;
 
+    // A way to provide backwards compatibility with full xform plugins
+    _cmsTransformFn OldXform;
+
 } _cmsTRANSFORM;
 
-// --------------------------------------------------------------------------------------------------
+// Copies extra channels from input to output if the original flags in the transform structure
+// instructs to do so. This function is called on all standard transform functions.
+void _cmsHandleExtraChannels(_cmsTRANSFORM* p, const void* in,
+                             void* out, 
+                             cmsUInt32Number PixelsPerLine,
+                             cmsUInt32Number LineCount,
+                             const cmsStride* Stride);
+
+// -----------------------------------------------------------------------------------------------------------------------
 
 cmsHTRANSFORM _cmsChain2Lab(cmsContext             ContextID,
                             cmsUInt32Number        nProfiles,

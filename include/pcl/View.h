@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/View.h - Released 2016/02/21 20:22:12 UTC
+// pcl/View.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,37 +56,15 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_UIObject_h
-#include <pcl/UIObject.h>
-#endif
-
-#ifndef __PCL_ImageVariant_h
-#include <pcl/ImageVariant.h>
-#endif
-
-#ifndef __PCL_Histogram_h
-#include <pcl/Histogram.h>
-#endif
-
-#ifndef __PCL_ImageStatistics_h
-#include <pcl/ImageStatistics.h>
-#endif
-
-#ifndef __PCL_HistogramTransformation_h
-#include <pcl/HistogramTransformation.h>
-#endif
-
-#ifndef __PCL_Array_h
 #include <pcl/Array.h>
-#endif
-
-#ifndef __PCL_Variant_h
+#include <pcl/Histogram.h>
+#include <pcl/HistogramTransformation.h>
+#include <pcl/ImageStatistics.h>
+#include <pcl/ImageVariant.h>
+#include <pcl/UIObject.h>
 #include <pcl/Variant.h>
-#endif
 
 namespace pcl
 {
@@ -98,13 +76,13 @@ class PCL_CLASS ImageWindow;
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup view_properties Module-defined view properties.
+ * \defgroup view_properties Module-Defined View Properties
  */
 
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace ViewPropertyAttribute
+ * \namespace pcl::ViewPropertyAttribute
  * \brief     Attributes of view properties.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -200,19 +178,16 @@ public:
     * Constructs a null view. A null view does not correspond to an existing
     * view in the PixInsight core application.
     */
-   View() : UIObject( nullptr )
-   {
-   }
+   View() = default;
 
    /*!
     * Constructs a %View instance as an alias of an existing %View object.
     *
     * \note It cannot be overemphasized that this constructor <em>does not
     * create a new view</em>. It only creates an \e alias object for an
-    * existing view <em>in your module</em>. In all respects, the alias and
-    * aliased objects are completely interchangeable; they behave exactly in
-    * the same way because both refer to the same server-side object living in
-    * the PixInsight core application.
+    * existing view <em>in the calling module</em>. In all respects, the alias
+    * and aliased objects are completely interchangeable; they behave exactly
+    * in the same way because both refer to the same server-side object.
     */
    View( const View& v ) : UIObject( v )
    {
@@ -832,7 +807,7 @@ protected:
    {
    }
 
-   View( std::nullptr_t h ) : UIObject( h )
+   View( std::nullptr_t ) : UIObject( nullptr )
    {
    }
 
@@ -842,6 +817,7 @@ protected:
    friend class ProcessInstance;       // for ExecuteOn() and related functions
    friend class ViewList;
    friend class ViewListEventDispatcher;
+   friend class ControlEventDispatcher;
    friend class ProcessContextDispatcher;
    friend class InterfaceDispatcher;
    friend class InternalViewEnumerator;
@@ -857,4 +833,4 @@ protected:
 #endif   // __PCL_View_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/View.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/View.h - Released 2017-04-14T23:04:40Z

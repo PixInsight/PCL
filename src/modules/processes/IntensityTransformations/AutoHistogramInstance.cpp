@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0355
+// Standard IntensityTransformations Process Module Version 01.07.01.0364
 // ----------------------------------------------------------------------------
-// AutoHistogramInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// AutoHistogramInstance.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -125,7 +125,6 @@ bool AutoHistogramInstance::CanExecuteOn( const View& view, pcl::String& whyNot 
       return false;
    }
 
-   whyNot.Clear();
    return true;
 }
 
@@ -346,4 +345,4 @@ void* AutoHistogramInstance::LockParameter( const MetaParameter* p, size_type /*
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AutoHistogramInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF AutoHistogramInstance.cpp - Released 2017-04-14T23:07:12Z

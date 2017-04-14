@@ -2,16 +2,16 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard AssistedColorCalibration Process Module Version 01.00.00.0165
+// Standard AssistedColorCalibration Process Module Version 01.00.00.0174
 // ----------------------------------------------------------------------------
-// AssistedColorCalibrationModule.cpp - Released 2016/02/21 20:22:43 UTC
+// AssistedColorCalibrationModule.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard AssistedColorCalibration PixInsight module.
 //
-// Copyright (c) 2010-2015 Zbynek Vrastil
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
+// Copyright (c) 2010-2017 Zbynek Vrastil
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,12 +54,12 @@
 #define MODULE_VERSION_MAJOR     01
 #define MODULE_VERSION_MINOR     00
 #define MODULE_VERSION_REVISION  00
-#define MODULE_VERSION_BUILD     0165
+#define MODULE_VERSION_BUILD     0174
 #define MODULE_VERSION_LANGUAGE  eng
 
-#define MODULE_RELEASE_YEAR      2016
-#define MODULE_RELEASE_MONTH     2
-#define MODULE_RELEASE_DAY       21
+#define MODULE_RELEASE_YEAR      2017
+#define MODULE_RELEASE_MONTH     4
+#define MODULE_RELEASE_DAY       14
 
 #include "AssistedColorCalibrationModule.h"
 #include "AssistedColorCalibrationProcess.h"
@@ -105,7 +105,7 @@ String AssistedColorCalibrationModule::Author() const
 
 String AssistedColorCalibrationModule::Copyright() const
 {
-   return "Copyright (c) 2010-2015 Zbynek Vrastil";
+   return "Copyright (c) 2010-2017 Zbynek Vrastil";
 }
 
 String AssistedColorCalibrationModule::TradeMarks() const
@@ -140,30 +140,9 @@ void AssistedColorCalibrationModule::GetReleaseDate( int& year, int& month, int&
 
 } // pcl
 
-// ----------------------------------------------------------------------------
-// PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
-//
-// Module installation routine.
-//
-// If this routine is defined as a public symbol in a module, the PixInsight
-// core application calls it just after loading and initialization of the
-// module shared object.
-//
-// The mode argument specifies the kind of installation being performed by the
-// core application. See the pcl::InstallMode namespace for more information.
-// ----------------------------------------------------------------------------
-
 PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
 {
-	//pcl::Console().WriteLn( "int InstallPixInsightModule( int mode )" );
-   // When the PixInsight application installs this module, we just have to
-   // instantiate the meta objects describing it.
-
    new pcl::AssistedColorCalibrationModule;
-
-   // The mode argument tells us what kind of installation is being requested
-   // by the PixInsight application. Incomplete installation requests only need
-   // module descriptions.
 
    if ( mode == pcl::InstallMode::FullInstall )
    {
@@ -171,9 +150,8 @@ PCL_MODULE_EXPORT int InstallPixInsightModule( int mode )
       new pcl::AssistedColorCalibrationInterface;
    }
 
-   // Return zero to signal successful installation
    return 0;
 }
 
 // ----------------------------------------------------------------------------
-// EOF AssistedColorCalibrationModule.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF AssistedColorCalibrationModule.cpp - Released 2017-04-14T23:07:12Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard TIFF File Format Module Version 01.00.06.0294
+// Standard TIFF File Format Module Version 01.00.07.0307
 // ----------------------------------------------------------------------------
-// TIFF.h - Released 2016/02/21 20:22:34 UTC
+// TIFF.h - Released 2017-04-14T23:07:03Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard TIFF PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -57,20 +57,24 @@
 #include <pcl/Defs.h>
 #endif
 
-#ifndef __PCL_Diagnostics_h
-#include <pcl/Diagnostics.h>
+#ifndef __PCL_AutoPointer_h
+#include <pcl/AutoPointer.h>
 #endif
 
-#ifndef __PCL_String_h
-#include <pcl/String.h>
-#endif
-
-#ifndef __PCL_ImageStream_h
-#include <pcl/ImageStream.h>
+#ifndef __PCL_File_h
+#include <pcl/File.h>
 #endif
 
 #ifndef __PCL_ICCProfile_h
 #include <pcl/ICCProfile.h>
+#endif
+
+#ifndef __PCL_Image_h
+#include <pcl/Image.h>
+#endif
+
+#ifndef __PCL_ImageDescription_h
+#include <pcl/ImageDescription.h>
 #endif
 
 #ifndef __PCL_Version_h
@@ -109,13 +113,15 @@ class TIFFImageOptions
 {
 public:
 
-   typedef TIFFCompression::value_type compression_algorithm;
+   typedef TIFFCompression::value_type compression_codec;
 
-   compression_algorithm compression         :  8; // Compression algorithm
-   bool                  planar              :  1; // Planar organization; chunky otherwise
-   bool                  associatedAlpha     :  1; // Associated alpha channel
-   bool                  premultipliedAlpha  :  1; // RGB/K premultiplied by alpha
-   int                   __rsv__             : 21; // Reserved for future extension --must be zero
+   compression_codec compression         :  8; // Compression algorithm
+   bool              planar              :  1; // Planar organization; chunky otherwise
+   bool              associatedAlpha     :  1; // Associated alpha channel
+   bool              premultipliedAlpha  :  1; // RGB/K premultiplied by alpha
+   uint8             verbosity           :  3; // Verbosity level: 0 = quiet, > 0 = write console state messages.
+   int               __rsv__             : 18; // Reserved for future extension --must be zero
+   uint16            stripSize;                // The strip size in bytes for TIFF image file I/O
 
    String software;         // Software description
    String imageDescription; // Image description
@@ -136,7 +142,9 @@ public:
       planar             = false;
       associatedAlpha    = true;
       premultipliedAlpha = false;
+      verbosity          = 1;
       __rsv__            = 0;
+      stripSize          = 4096;
       software = PixInsightVersion::AsString() + " / " + Version::AsString();
       imageDescription.Clear();
       copyright.Clear();
@@ -208,40 +216,35 @@ public:
    PCL_DECLARE_TIFF_ERROR( InvalidWriteOperation,
                            "Internal error: Invalid TIFF write operation" )
 
-   TIFF() = default;
-
-   virtual ~TIFF()
-   {
-      CloseStream();
-   }
-
-   const TIFFImageOptions& TIFFOptions() const
-   {
-      return tiffOptions;
-   }
-
-   TIFFImageOptions& TIFFOptions()
-   {
-      return tiffOptions;
-   }
-
-   static bool IsStrictMode();
-   static void SetStrictMode( bool enable = true );
-
-   static bool AreWarningsEnabled();
-   static void EnableWarnings( bool enable = true );
-
-protected:
-
-   TIFFImageOptions tiffOptions = TIFFImageOptions();
-   TIFFFileData*    fileData = nullptr;
-
-   void CloseStream(); // ### derived must call base
-
-private:
+   TIFF();
 
    TIFF( const TIFF& ) = delete;
    TIFF& operator =( const TIFF& ) = delete;
+
+   virtual ~TIFF();
+
+   const TIFFImageOptions& TIFFOptions() const
+   {
+      return m_tiffOptions;
+   }
+
+   void SetTIFFOptions( const TIFFImageOptions& options )
+   {
+      m_tiffOptions = options;
+   }
+
+   String Path() const
+   {
+      return m_path;
+   }
+
+protected:
+
+   String                    m_path;
+   TIFFImageOptions          m_tiffOptions;
+   AutoPointer<TIFFFileData> m_fileData;
+
+   void CloseStream(); // ### derived must call base
 };
 
 // ----------------------------------------------------------------------------
@@ -249,49 +252,47 @@ private:
 /*
  * TIFF image file reader
  */
-class TIFFReader : public ImageReader, public TIFF
+class TIFFReader : public TIFF
 {
 public:
 
-   TIFFReader() : ImageReader(), TIFF()
+   TIFFReader();
+
+   TIFFReader( const TIFFReader& ) = delete;
+   TIFFReader& operator =( const TIFFReader& ) = delete;
+
+   virtual ~TIFFReader();
+
+   bool IsOpen() const;
+   void Close();
+   void Open( const String& filePath );
+
+   const ImageInfo& Info() const
    {
-      images.Add( ImageDescription() ); // make room for an image description
+      return m_image.info;
    }
 
-   virtual ~TIFFReader()
+   const ImageOptions& Options() const
    {
+      return m_image.options;
    }
 
-   virtual bool IsOpen() const;
-
-   virtual void Close();
-
-   virtual void Open( const String& filePath );
-
-   virtual void SetIndex( int i )
+   void SetOptions( const ImageOptions& options )
    {
-      if ( i != 0 )
-         throw NotImplemented( *this, "Read multiple images from a TIFF file" );
+      m_image.options = options;
    }
 
-   virtual bool Extract( ICCProfile& icc );
+   ICCProfile ReadICCProfile();
 
-   virtual void ReadImage( FImage& );
-   virtual void ReadImage( DImage& );
-   virtual void ReadImage( UInt8Image& );
-   virtual void ReadImage( UInt16Image& );
-   virtual void ReadImage( UInt32Image& );
-
-   virtual void ReadImage( ImageVariant& v )
-   {
-      ImageReader::ReadImage( v );
-   }
+   void ReadImage( FImage& );
+   void ReadImage( DImage& );
+   void ReadImage( UInt8Image& );
+   void ReadImage( UInt16Image& );
+   void ReadImage( UInt32Image& );
 
 private:
 
-   // Image streams are unique
-   TIFFReader( const TIFFReader& ) = delete;
-   TIFFReader& operator =( const TIFFReader& ) = delete;
+   ImageDescription m_image;
 };
 
 // ----------------------------------------------------------------------------
@@ -299,77 +300,49 @@ private:
 /*
  * TIFF image file writer.
  */
-class TIFFWriter : public ImageWriter, public TIFF
+class TIFFWriter : public TIFF
 {
 public:
 
-   TIFFWriter() = default;
+   TIFFWriter();
 
-   virtual ~TIFFWriter()
+   TIFFWriter( const TIFFWriter& ) = delete;
+   TIFFWriter& operator =( const TIFFWriter& ) = delete;
+
+   virtual ~TIFFWriter();
+
+   bool IsOpen() const;
+   void Close();
+   void Create( const String& filePath );
+
+   const ImageOptions& Options() const
    {
+      return m_options;
    }
 
-   virtual bool IsOpen() const;
-
-   virtual void Close();
-
-   virtual void Create( const String& filePath, int count );
-
-   virtual void Create( const String& filePath )
+   void SetOptions( const ImageOptions& options )
    {
-      Create( filePath, 1 );
+      m_options = options;
    }
 
-   virtual void Embed( const ICCProfile& _icc )
-   {
-      icc = _icc;
-   }
+   void WriteICCProfile( const ICCProfile& icc );
 
-   const ICCProfile* EmbeddedICCProfile() const
-   {
-      return &icc;
-   }
-
-   virtual void WriteImage( const FImage& );
-   virtual void WriteImage( const DImage& );
-   virtual void WriteImage( const UInt8Image& );
-   virtual void WriteImage( const UInt16Image& );
-   virtual void WriteImage( const UInt32Image& );
-
-   virtual void WriteImage( const ImageVariant& v )
-   {
-      ImageWriter::WriteImage( v );
-   }
+   void WriteImage( const FImage& );
+   void WriteImage( const DImage& );
+   void WriteImage( const UInt8Image& );
+   void WriteImage( const UInt16Image& );
+   void WriteImage( const UInt32Image& );
 
    void Reset()
    {
       Close();
-      icc.Clear();
+      m_iccProfile.Clear();
    }
-
-   /*
-    * Returns the strip size for TIFF image file I/O in bytes.
-    */
-   static size_type StripSize();
-
-   /*
-    * Sets the strip size in bytes for TIFF image file I/O.
-    *
-    * The default strip size is 4 kilobytes. Too low or high sizes can affect
-    * performance adversely.
-    */
-   static void SetStripSize( size_type sz );
-
-protected:
-
-   // Embedded data
-   ICCProfile icc;
 
 private:
 
-   // Image streams are unique
-   TIFFWriter( const TIFFWriter& ) = delete;
-   TIFFWriter& operator =( const TIFFWriter& ) = delete;
+   ImageOptions m_options;
+   ICCProfile   m_iccProfile;
 };
 
 // ----------------------------------------------------------------------------
@@ -379,4 +352,4 @@ private:
 #endif   // __PCL_TIFF_h
 
 // ----------------------------------------------------------------------------
-// EOF TIFF.h - Released 2016/02/21 20:22:34 UTC
+// EOF TIFF.h - Released 2017-04-14T23:07:03Z

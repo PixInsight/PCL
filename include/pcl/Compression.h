@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/Compression.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Compression.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,21 +54,11 @@
 
 /// \file pcl/Compression.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_ByteArray_h
 #include <pcl/ByteArray.h>
-#endif
-
-#ifndef __PCL_String_h
 #include <pcl/String.h>
-#endif
 
 namespace pcl
 {
@@ -455,8 +445,8 @@ public:
    ByteArray Uncompress( const subblock_list& subblocks, Performance* perf = nullptr ) const
    {
       size_type uncompressedSize = 0;
-      for ( subblock_list::const_iterator i = subblocks.Begin(); i != subblocks.End(); ++i )
-         uncompressedSize += i->uncompressedSize;
+      for ( const Subblock& subblock : subblocks )
+         uncompressedSize += subblock.uncompressedSize;
       ByteArray data( uncompressedSize );
       (void)Uncompress( data.Begin(), uncompressedSize, subblocks, perf );
       return data;
@@ -479,8 +469,8 @@ public:
    }
 
    /*!
-    * Returns true iff this object is allowed to use multiple parallel execution
-    * threads (when multiple threads are permitted and available).
+    * Returns true iff this object is allowed to use multiple parallel
+    * execution threads (when multiple threads are permitted and available).
     */
    bool IsParallelProcessingEnabled() const
    {
@@ -889,81 +879,9 @@ private:
 
 // ----------------------------------------------------------------------------
 
-/*!
- * \class BloscLZCompression
- * \brief Implementation of the BloscLZ compression algorithm.
- *
- * This class implements the BloscLZ compression algorithm by Francesc Alted.
- *
- * BloscLZ is an extremely fast lossless compression method heavily based on
- * the FastLZ algorithm by Ariya Hidayat (see references).
- *
- * The underlying implementation in the PixInsight Core application is the
- * reference implementation by Francesc Alted, which has been released under
- * the MIT license.
- *
- * \b References
- *
- * \li Blosc website: http://www.blosc.org/
- *
- * \li Blosc source code repository: https://github.com/Blosc/c-blosc/tree/master/blosc
- *
- * \li FastLZ website: http://fastlz.org/
- *
- * \ingroup compression_classes
- * \sa Compression, ZLibCompression, LZ4Compression, LZ4HCCompression
- */
-class PCL_CLASS BloscLZCompression : public Compression
-{
-public:
-
-   /*!
-    * Returns the name of this data compression algorithm (BloscLZ).
-    */
-   virtual String AlgorithmName() const
-   {
-      return "BloscLZ";
-   }
-
-   /*!
-    */
-   virtual int MaxCompressionLevel() const;
-
-   /*!
-    */
-   virtual int DefaultCompressionLevel() const;
-
-
-private:
-
-   /*!
-    */
-   virtual size_type MinBlockSize() const;
-
-   /*!
-    */
-   virtual size_type MaxBlockSize() const;
-
-   /*!
-    */
-   virtual size_type MaxCompressedBlockSize( size_type size ) const;
-
-   /*!
-    */
-   virtual size_type CompressBlock( void* outputData, size_type outputSize,
-                                    const void* inputData, size_type inputSize, int level ) const;
-
-   /*!
-    */
-   virtual size_type UncompressBlock( void* outputData, size_type outputSize,
-                                      const void* inputData, size_type inputSize ) const;
-};
-
-// ----------------------------------------------------------------------------
-
 } // pcl
 
 #endif   // __PCL_Compression_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Compression.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Compression.h - Released 2017-04-14T23:04:40Z

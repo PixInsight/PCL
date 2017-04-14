@@ -1,23 +1,12 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.101
-# Copyright (C) 2009-2015 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.104
+# Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Fri, 18 Mar 2016 13:16:44 GMT
+# Generated on .... 2017-04-14T21:29:21.417Z
 # Project id ...... JPEG2000
 # Project type .... Module
 # Platform ........ Linux/g++
 # Configuration ... Release/x64
-# --------------------------------------------------------------------
-# Additional preprocessor definitions:
-# EXCLUDE_JPG_SUPPORT
-# EXCLUDE_MIF_SUPPORT
-# EXCLUDE_PNM_SUPPORT
-# EXCLUDE_RAS_SUPPORT
-# EXCLUDE_BMP_SUPPORT
-# EXCLUDE_PGX_SUPPORT
-# --------------------------------------------------------------------
-# Additional include search directories:
-# $(PCLSRCDIR)/3rdparty/jasper/include
 # --------------------------------------------------------------------
 # Additional libraries:
 # jasper-pxi
@@ -68,7 +57,7 @@ DEP_FILES= \
 -include $(DEP_FILES)
 
 $(OBJ_DIR)/JPEG2000-pxm.so: $(OBJ_FILES)
-	g++ -m64 -fPIC -pthread -Wl,-fuse-ld=gold -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -s -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/JPEG2000-pxm.so $(OBJ_FILES) -ljasper-pxi -lpthread -lPCL-pxi
+	g++ -m64 -fPIC -pthread -Wl,-fuse-ld=gold -Wl,-z,noexecstack -Wl,-O1 -Wl,--gc-sections -s -shared -L"$(PCLLIBDIR64)" -L"$(PCLBINDIR64)" -o $(OBJ_DIR)/JPEG2000-pxm.so $(OBJ_FILES) -lpthread -lPCL-pxi -llz4-pxi -lzlib-pxi -lRFC6234-pxi -llcms-pxi -lcminpack-pxi -ljasper-pxi
 	$(MAKE) -f ./makefile-x64 --no-print-directory post-build
 
 .PHONY: clean
@@ -80,6 +69,6 @@ post-build:
 	cp $(OBJ_DIR)/JPEG2000-pxm.so $(PCLBINDIR64)
 
 ./x64/Release/%.o: ../../%.cpp
-	g++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -D"EXCLUDE_JPG_SUPPORT" -D"EXCLUDE_MIF_SUPPORT" -D"EXCLUDE_PNM_SUPPORT" -D"EXCLUDE_RAS_SUPPORT" -D"EXCLUDE_BMP_SUPPORT" -D"EXCLUDE_PGX_SUPPORT" -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty/jasper/include" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	g++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

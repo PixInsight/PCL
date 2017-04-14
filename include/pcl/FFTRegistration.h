@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/FFTRegistration.h - Released 2016/02/21 20:22:12 UTC
+// pcl/FFTRegistration.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,13 +54,9 @@
 
 /// \file pcl/FFTRegistration.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_ImageVariant_h
 #include <pcl/ImageVariant.h>
-#endif
 
 namespace pcl
 {
@@ -108,7 +104,7 @@ public:
    /*!
     * Move constructor.
     */
-   FFTRegistrationEngine( FFTRegistrationEngine&& x ) : m_fftReference( std::move( m_fftReference ) )
+   FFTRegistrationEngine( FFTRegistrationEngine&& x ) : m_fftReference( std::move( x.m_fftReference ) )
    {
    }
 
@@ -271,7 +267,7 @@ protected:
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup fft_registration_functions FFT-Based Registration Operator Functions
+ * \defgroup fft_registration_functions FFT-Based Registration Operators
  */
 
 /*!
@@ -619,4 +615,4 @@ protected:
 #endif   // __PCL_FFTRegistration_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FFTRegistration.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/FFTRegistration.h - Released 2017-04-14T23:04:40Z

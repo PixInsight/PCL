@@ -122,13 +122,12 @@ public:
 
 private:
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateDeviceLists();
    void UpdateNodeActionButtons( TreeBox::Node* );
    void AdjustTreeColumns();
 
-   // Event Handlers
    void e_Show( Control& );
    void e_Hide( Control& );
    void e_ToggleSection( SectionBar& sender, Control& section, bool start );

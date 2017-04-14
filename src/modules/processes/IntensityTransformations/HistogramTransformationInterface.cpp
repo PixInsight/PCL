@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0355
+// Standard IntensityTransformations Process Module Version 01.07.01.0364
 // ----------------------------------------------------------------------------
-// HistogramTransformationInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// HistogramTransformationInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -74,7 +74,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-HistogramTransformationInterface* TheHistogramTransformationInterface = 0;
+HistogramTransformationInterface* TheHistogramTransformationInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -113,10 +113,7 @@ static const int s_maxZoom = 999;
 // ----------------------------------------------------------------------------
 
 HistogramTransformationInterface::HistogramTransformationInterface() :
-   ProcessInterface(),
    m_instance( TheHistogramTransformationProcess ),
-   m_realTimeThread( 0 ),
-   GUI( 0 ),
    m_plotResolution( 256 ),
    m_mode( ReadoutMode ),
    m_savedMode( NoMode ),
@@ -174,8 +171,8 @@ HistogramTransformationInterface::HistogramTransformationInterface() :
 
 HistogramTransformationInterface::~HistogramTransformationInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -217,7 +214,7 @@ void HistogramTransformationInterface::ApplyInstance() const
 
 void HistogramTransformationInterface::RealTimePreviewUpdated( bool active )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( active )
       {
          GUI->AllViews_ViewList.Regenerate( true, true, false );
@@ -234,12 +231,13 @@ void HistogramTransformationInterface::RealTimePreviewUpdated( bool active )
 
 void HistogramTransformationInterface::TrackViewUpdated( bool active )
 {
-   if ( GUI != 0 && active )
-   {
-      ImageWindow w = ImageWindow::ActiveWindow();
-      if ( !w.IsNull() )
-         ImageFocused( w.CurrentView() );
-   }
+   if ( GUI != nullptr )
+      if ( active )
+      {
+         ImageWindow w = ImageWindow::ActiveWindow();
+         if ( !w.IsNull() )
+            ImageFocused( w.CurrentView() );
+      }
 }
 
 // ----------------------------------------------------------------------------
@@ -254,17 +252,13 @@ void HistogramTransformationInterface::ResetInstance()
 
 bool HistogramTransformationInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
-
       SetWindowTitle( "HistogramTransformation" );
-
-      GUI->AllViews_ViewList.Regenerate( true, true, true );
-
+      GUI->AllViews_ViewList.Regenerate( true/*mainViews*/, true/*previews*/, true/*virtualViews*/ );
       OnKeyPress( (Control::keyboard_event_handler)&HistogramTransformationInterface::__KeyPress, *this );
       OnKeyRelease( (Control::keyboard_event_handler)&HistogramTransformationInterface::__KeyRelease, *this );
-
       UpdateControls();
    }
 
@@ -283,15 +277,12 @@ ProcessImplementation* HistogramTransformationInterface::NewProcess() const
 
 bool HistogramTransformationInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   if ( dynamic_cast<const HistogramTransformationInstance*>( &p ) == 0 &&
-        dynamic_cast<const ScreenTransferFunctionInstance*>( &p ) == 0 )
-   {
-      whyNot = "Must be an instance of either HistogramTransformation or ScreenTransferFunction.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const HistogramTransformationInstance*>( &p ) != nullptr )
+      return true;
+   if ( dynamic_cast<const ScreenTransferFunctionInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Must be an instance of either HistogramTransformation or ScreenTransferFunction.";
+   return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -306,7 +297,7 @@ bool HistogramTransformationInterface::RequiresInstanceValidation() const
 bool HistogramTransformationInterface::ImportProcess( const ProcessImplementation& p )
 {
    const ScreenTransferFunctionInstance* stf = dynamic_cast<const ScreenTransferFunctionInstance*>( &p );
-   if ( stf != 0 )
+   if ( stf != nullptr )
    {
       m_instance.Reset();
 
@@ -374,7 +365,6 @@ bool HistogramTransformationInterface::RequiresRealTimePreviewUpdate( const UInt
 // ----------------------------------------------------------------------------
 
 HistogramTransformationInterface::RealTimeThread::RealTimeThread() :
-   Thread(),
    m_instance( TheHistogramTransformationProcess )
 {
 }
@@ -411,7 +401,7 @@ bool HistogramTransformationInterface::GenerateRealTimePreview( UInt16Image& ima
             m_realTimeThread->Wait();
 
             delete m_realTimeThread;
-            m_realTimeThread = 0;
+            m_realTimeThread = nullptr;
             return false;
          }
       }
@@ -421,7 +411,7 @@ bool HistogramTransformationInterface::GenerateRealTimePreview( UInt16Image& ima
          image.Assign( m_realTimeThread->m_image );
 
          delete m_realTimeThread;
-         m_realTimeThread = 0;
+         m_realTimeThread = nullptr;
          return true;
       }
    }
@@ -438,26 +428,27 @@ bool HistogramTransformationInterface::WantsImageNotifications() const
 
 void HistogramTransformationInterface::ImageUpdated( const View& v )
 {
-   if ( GUI != 0 && v == m_currentView )
-      if ( !m_currentView.HasProperty( "Histogram16" ) )
-         m_currentView.ComputeProperty( "Histogram16" );
-      else
-         SynchronizeWithCurrentView();
+   if ( GUI != nullptr )
+      if ( v == m_currentView )
+         if ( !m_currentView.HasProperty( "Histogram16" ) )
+            m_currentView.ComputeProperty( "Histogram16" );
+         else
+            SynchronizeWithCurrentView();
 }
 
 // ----------------------------------------------------------------------------
 
 void HistogramTransformationInterface::ImageFocused( const View& v )
 {
-   if ( GUI != 0 && IsTrackViewActive() )
-   {
-      GUI->AllViews_ViewList.SelectView( v ); // normally not necessary, but we can invoke this f() directly
-
-      if ( !m_currentView.IsNull() && !m_currentView.HasProperty( "Histogram16" ) )
-         m_currentView.ComputeProperty( "Histogram16" );
-      else
-         SynchronizeWithCurrentView();
-   }
+   if ( GUI != nullptr )
+      if ( IsTrackViewActive() )
+      {
+         GUI->AllViews_ViewList.SelectView( v ); // normally not necessary, but we can invoke this f() directly
+         if ( !m_currentView.IsNull() && !m_currentView.HasProperty( "Histogram16" ) )
+            m_currentView.ComputeProperty( "Histogram16" );
+         else
+            SynchronizeWithCurrentView();
+      }
 }
 
 // ----------------------------------------------------------------------------
@@ -471,7 +462,7 @@ bool HistogramTransformationInterface::WantsViewPropertyNotifications() const
 
 void HistogramTransformationInterface::ViewPropertyUpdated( const View& v, const IsoString& property )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( v == m_currentView )
          if ( property == "Histogram16" || property == "*" )
             SynchronizeWithCurrentView();
@@ -481,7 +472,7 @@ void HistogramTransformationInterface::ViewPropertyUpdated( const View& v, const
 
 void HistogramTransformationInterface::ViewPropertyDeleted( const View& v, const IsoString& property )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       if ( v == m_currentView )
          if ( property == "Histogram16" || property == "*" )
          {
@@ -503,8 +494,9 @@ bool HistogramTransformationInterface::WantsReadoutNotifications() const
 
 void HistogramTransformationInterface::BeginReadout( const View& v )
 {
-   if ( GUI != 0 && IsVisible() )
-      m_readoutActive = true;
+   if ( GUI != nullptr )
+      if ( IsVisible() )
+         m_readoutActive = true;
 }
 
 // ----------------------------------------------------------------------------
@@ -610,7 +602,7 @@ bool HistogramTransformationInterface::WantsRealTimePreviewNotifications() const
 
 void HistogramTransformationInterface::RealTimePreviewOwnerChanged( ProcessInterface& iface )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       GUI->AllViews_ViewList.Regenerate( true, true, iface != *this );
 }
 
@@ -999,7 +991,7 @@ void HistogramTransformationInterface::SetInputZoom( int hz, int vz, const Point
       int m = contentsWidth - visibleWidth;
       GUI->InputHistogram_ScrollBox.SetHorizontalScrollRange( 0, m );
 
-      if ( p != 0 )
+      if ( p != nullptr )
          GUI->InputHistogram_ScrollBox.SetHorizontalScrollPosition(
                   Range( p->x*m_inputZoomX - (visibleWidth >> 1), 0, m ) );
    }
@@ -1013,7 +1005,7 @@ void HistogramTransformationInterface::SetInputZoom( int hz, int vz, const Point
       int m = contentsHeight - visibleHeight;
       GUI->InputHistogram_ScrollBox.SetVerticalScrollRange( 0, m );
 
-      if ( p != 0 )
+      if ( p != nullptr )
          GUI->InputHistogram_ScrollBox.SetVerticalScrollPosition(
                   Range( p->y*m_inputZoomY - (visibleHeight >> 1), 0, m ) );
    }
@@ -1051,7 +1043,7 @@ void HistogramTransformationInterface::SetOutputZoom( int hz, int vz, const Poin
       int m = contentsWidth - visibleWidth;
       GUI->OutputHistogram_ScrollBox.SetHorizontalScrollRange( 0, m );
 
-      if ( p != 0 )
+      if ( p != nullptr )
          GUI->OutputHistogram_ScrollBox.SetHorizontalScrollPosition(
                   Range( p->x*m_outputZoomX - (visibleWidth >> 1), 0, m ) );
    }
@@ -1065,7 +1057,7 @@ void HistogramTransformationInterface::SetOutputZoom( int hz, int vz, const Poin
       int m = contentsHeight - visibleHeight;
       GUI->OutputHistogram_ScrollBox.SetVerticalScrollRange( 0, m );
 
-      if ( p != 0 )
+      if ( p != nullptr )
          GUI->OutputHistogram_ScrollBox.SetVerticalScrollPosition(
                   Range( p->y*m_outputZoomY - (visibleHeight >> 1), 0, m ) );
    }
@@ -1319,7 +1311,7 @@ void HistogramTransformationInterface::UpdateRealTimePreview()
 {
    if ( IsRealTimePreviewActive() )
    {
-      if ( m_realTimeThread != 0 )
+      if ( m_realTimeThread != nullptr )
          m_realTimeThread->Abort();
       GUI->UpdateRealTimePreview_Timer.Start();
    }
@@ -1941,7 +1933,7 @@ void HistogramTransformationInterface::__Sliders_Paint( Control& sender, const p
 }
 
 void HistogramTransformationInterface::__Histogram_Resize( Control& sender,
-   int /*newWidth*/, int /*newHeight*/, int /*oldWidth*/, int /*oldHeight*/ )
+                                             int/*newWidth*/, int/*newHeight*/, int/*oldWidth*/, int/*oldHeight*/ )
 {
    if ( sender == GUI->InputHistogramPlot_Control )
    {
@@ -1990,8 +1982,8 @@ void HistogramTransformationInterface::__Histogram_Leave( Control& sender )
    sender.Update();
 }
 
-void HistogramTransformationInterface::__Histogram_MousePress(
-   Control& sender, const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers )
+void HistogramTransformationInterface::__Histogram_MousePress( Control& sender,
+                                             const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers )
 {
    if ( button == MouseButton::Left )
    {
@@ -2042,8 +2034,8 @@ void HistogramTransformationInterface::__Histogram_MousePress(
    }
 }
 
-void HistogramTransformationInterface::__Histogram_MouseRelease(
-   Control& sender, const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers )
+void HistogramTransformationInterface::__Histogram_MouseRelease( Control& sender,
+                                             const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers )
 {
    if ( button == MouseButton::Middle && m_savedMode != NoMode )
    {
@@ -2054,8 +2046,8 @@ void HistogramTransformationInterface::__Histogram_MouseRelease(
    m_panning = 0;
 }
 
-void HistogramTransformationInterface::__Histogram_MouseMove(
-   Control& sender, const pcl::Point& pos, unsigned buttons, unsigned modifiers )
+void HistogramTransformationInterface::__Histogram_MouseMove( Control& sender,
+                                             const pcl::Point& pos, unsigned buttons, unsigned modifiers )
 {
    if ( m_cursorStatus != NoCursor )
    {
@@ -2114,8 +2106,8 @@ void HistogramTransformationInterface::__Histogram_MouseMove(
    }
 }
 
-void HistogramTransformationInterface::__Histogram_MouseWheel(
-   Control& sender, const pcl::Point& pos, int delta, unsigned buttons, unsigned modifiers )
+void HistogramTransformationInterface::__Histogram_MouseWheel( Control& sender,
+                                             const pcl::Point& pos, int delta, unsigned buttons, unsigned modifiers )
 {
    m_wheelSteps += delta; // delta is rotation angle in 1/8 degree steps
    if ( Abs( m_wheelSteps ) >= WHEEL_STEP_ANGLE*8 )
@@ -2174,8 +2166,8 @@ double HistogramTransformationInterface::SliderToHistogram( int x ) const
                (GUI->HistogramSliders_Control.Width()*m_inputZoomX - 1);
 }
 
-void HistogramTransformationInterface::__Sliders_MousePress(
-   Control& sender, const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers )
+void HistogramTransformationInterface::__Sliders_MousePress( Control& sender,
+                                             const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers )
 {
    if ( button != MouseButton::Left )
       return;
@@ -2192,8 +2184,8 @@ void HistogramTransformationInterface::__Sliders_MouseRelease(
    m_sliderBeingDragged = NoSlider;
 }
 
-void HistogramTransformationInterface::__Sliders_MouseMove(
-   Control& sender, const pcl::Point& pos, unsigned buttons, unsigned modifiers )
+void HistogramTransformationInterface::__Sliders_MouseMove( Control& sender,
+                                             const pcl::Point& pos, unsigned buttons, unsigned modifiers )
 {
    if ( m_sliderBeingDragged != NoSlider )
    {
@@ -2586,9 +2578,29 @@ void HistogramTransformationInterface::__KeyRelease( Control& sender, int key, u
    }
 }
 
+void HistogramTransformationInterface::__ViewDrag( Control& sender,
+                                             const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->AllViews_ViewList )
+      wantsView = true;
+}
+
+void HistogramTransformationInterface::__ViewDrop( Control& sender,
+                                             const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->AllViews_ViewList )
+   {
+      DeactivateTrackView();
+      GUI->AllViews_ViewList.SelectView( view );
+      if ( !m_currentView.HasProperty( "Histogram16" ) )
+         m_currentView.ComputeProperty( "Histogram16" );
+      SynchronizeWithCurrentView();
+   }
+}
+
 void HistogramTransformationInterface::__UpdateRealTimePreview_Timer( Timer& sender )
 {
-   if ( m_realTimeThread != 0 )
+   if ( m_realTimeThread != nullptr )
       if ( m_realTimeThread->IsActive() )
          return;
 
@@ -2809,6 +2821,8 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
    //
 
    AllViews_ViewList.OnViewSelected( (ViewList::view_event_handler)&HistogramTransformationInterface::__ViewList_ViewSelected, w );
+   AllViews_ViewList.OnViewDrag( (Control::view_drag_event_handler)&HistogramTransformationInterface::__ViewDrag, w );
+   AllViews_ViewList.OnViewDrop( (Control::view_drop_event_handler)&HistogramTransformationInterface::__ViewDrop, w );
 
    //
 
@@ -3092,4 +3106,4 @@ HistogramTransformationInterface::GUIData::GUIData( HistogramTransformationInter
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF HistogramTransformationInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF HistogramTransformationInterface.cpp - Released 2017-04-14T23:07:12Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/DrizzleDataDecoder.h - Released 2016/02/21 20:22:12 UTC
+// pcl/DrizzleDataDecoder.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -634,19 +634,19 @@ protected:
          if ( !m_rejectHighData.IsEmpty() )
             for ( int c = 0; c < n; ++c )
             {
-               const rejection_coordinates& p = m_rejectHighData[c];
-               m_rejectionHighCount[c] = p.Length();
-               for ( rejection_coordinates::const_iterator i = p.Begin(); i != p.End(); ++i )
-                  m_rejectionMap( *i, c ) = uint8( 1 );
+               const rejection_coordinates& P = m_rejectHighData[c];
+               m_rejectionHighCount[c] = P.Length();
+               for ( const Point& p : P )
+                  m_rejectionMap( p, c ) = uint8( 1 );
             }
 
          if ( !m_rejectLowData.IsEmpty() )
             for ( int c = 0; c < n; ++c )
             {
-               const rejection_coordinates& p = m_rejectLowData[c];
-               m_rejectionLowCount[c] = p.Length();
-               for ( rejection_coordinates::const_iterator i = p.Begin(); i != p.End(); ++i )
-                  m_rejectionMap( *i, c ) |= uint8( 2 );
+               const rejection_coordinates& P = m_rejectLowData[c];
+               m_rejectionLowCount[c] = P.Length();
+               for ( const Point& p : P )
+                  m_rejectionMap( p, c ) |= uint8( 2 );
             }
       }
    }
@@ -656,10 +656,10 @@ protected:
       IVector v = ParseListOfIntegerValues( s, start, end );
       if ( v.Length() & 1 )
          throw Error( "Parsing list from offset=" + IsoString( start ) + ": Missing point coordinate(s)." );
-      rejection_coordinates p;
+      rejection_coordinates P;
       for ( int i = 0; i < v.Length(); i += 2 )
-         p.Append( Point( v[i], v[i+1] ) );
-      return p;
+         P.Append( Point( v[i], v[i+1] ) );
+      return P;
    }
 
    static rejection_data ParseRejectionData( const IsoString& s, int start, int end )
@@ -694,4 +694,4 @@ protected:
 #endif   // __PCL_DrizzleDataDecoder_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/DrizzleDataDecoder.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/DrizzleDataDecoder.h - Released 2017-04-14T23:04:40Z

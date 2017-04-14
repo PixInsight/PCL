@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/File.h - Released 2016/02/21 20:22:12 UTC
+// pcl/File.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,37 +54,19 @@
 
 /// \file pcl/File.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Flags_h
-#include <pcl/Flags.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_String_h
-#include <pcl/String.h>
-#endif
-
-#ifndef __PCL_StringList_h
-#include <pcl/StringList.h>
-#endif
-
-#ifndef __PCL_ByteArray_h
 #include <pcl/ByteArray.h>
-#endif
-
-#ifndef __PCL_Exception_h
 #include <pcl/Exception.h>
-#endif
+#include <pcl/Flags.h>
+#include <pcl/StringList.h>
 
 #ifndef __PCL_FILE_DONT_REMOVE_PREVIOUS_DECLARATION
 
-// Removing conflicting identifiers from Win32 SDK headers.
+/*
+ * Remove conflicting identifiers from Win32 SDK headers.
+ */
 
 #ifdef CreateFile
 #undef CreateFile
@@ -114,7 +96,13 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace FileMode
+ * \defgroup file_utilities File Support Classes and Functions
+ */
+
+// ----------------------------------------------------------------------------
+
+/*!
+ * \namespace pcl::FileMode
  * \brief File access, share and opening/creation modes.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -128,6 +116,8 @@ namespace pcl
  * <tr><td>FileMode::Create</td>       <td>Create a new file or truncate an existing file</td></tr>
  * <tr><td>FileMode::OpenMode</td>     <td>Mask to isolate open/creation flags</td></tr>
  * </table>
+ *
+ * \ingroup file_utilities
  */
 namespace FileMode
 {
@@ -159,21 +149,25 @@ namespace FileMode
 }
 
 /*!
- * A combination of file access, share and opening/creation mode flags.
+ * \class pcl::FileModes
+ * \brief A combination of file access, share and opening/creation mode flags
+ * \ingroup file_utilities
  */
 typedef Flags<FileMode::mask_type>  FileModes;
 
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace SeekMode
+ * \namespace pcl::SeekMode
  * \brief File seek modes.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
- * <tr><td>SeekMode::FromBegin</td>     <td>Move file pointer relative to the beginning of the file</td></tr>
- * <tr><td>SeekMode::FromCurrent</td>   <td>Move file pointer from the current position</td></tr>
- * <tr><td>SeekMode::FromEnd</td>       <td>Move file pointer relative to the end of the file</td></tr>
+ * <tr><td>SeekMode::FromBegin</td>   <td>Move file pointer relative to the beginning of the file</td></tr>
+ * <tr><td>SeekMode::FromCurrent</td> <td>Move file pointer from the current position</td></tr>
+ * <tr><td>SeekMode::FromEnd</td>     <td>Move file pointer relative to the end of the file</td></tr>
  * </table>
+ *
+ * \ingroup file_utilities
  */
 namespace SeekMode
 {
@@ -189,48 +183,50 @@ namespace SeekMode
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace FileAttribute
- * \brief File attributes.
+ * \namespace pcl::FileAttribute
+ * \brief File attributes
  *
  * <table border="1" cellpadding="4" cellspacing="0">
  * <tr><td colspan="2"><b>File type</b></td></tr>
- * <tr><td>FileAttribute::Block</td>         <td>Block special</td></tr>
- * <tr><td>FileAttribute::Character</td>     <td>Character special</td></tr>
- * <tr><td>FileAttribute::FIFO</td>          <td>FIFO special</td></tr>
- * <tr><td>FileAttribute::Regular</td>       <td>Regular file</td></tr>
- * <tr><td>FileAttribute::Directory</td>     <td>Directory</td></tr>
- * <tr><td>FileAttribute::SymbolicLink</td>  <td>Symbolic link</td></tr>
- * <tr><td>FileAttribute::Socket</td>        <td>Socket</td></tr>
- * <tr><td>FileAttribute::FileType</td>      <td>Mask to isolate file type flags</td></tr>
+ * <tr><td>FileAttribute::Block</td>           <td>Block special</td></tr>
+ * <tr><td>FileAttribute::Character</td>       <td>Character special</td></tr>
+ * <tr><td>FileAttribute::FIFO</td>            <td>FIFO special</td></tr>
+ * <tr><td>FileAttribute::Regular</td>         <td>Regular file</td></tr>
+ * <tr><td>FileAttribute::Directory</td>       <td>Directory</td></tr>
+ * <tr><td>FileAttribute::SymbolicLink</td>    <td>Symbolic link</td></tr>
+ * <tr><td>FileAttribute::Socket</td>          <td>Socket</td></tr>
+ * <tr><td>FileAttribute::FileType</td>        <td>Mask to isolate file type flags</td></tr>
  * <tr><td colspan="2"><b>File attributes</b>\n
- *                    <em>Windows-exclusive, except ReadOnly and Hidden, which we emulate on POSIX platforms.</em></td></tr>
- * <tr><td>FileAttribute::Archive</td>       <td>File is archived</td></tr>
- * <tr><td>FileAttribute::Compressed</td>    <td>File is compressed</td></tr>
- * <tr><td>FileAttribute::Encrypted</td>     <td>File is encrypted</td></tr>
- * <tr><td>FileAttribute::Hidden</td>        <td>File is hidden</td></tr>
- * <tr><td>FileAttribute::ReadOnly</td>      <td>File is read-only</td></tr>
- * <tr><td>FileAttribute::System</td>        <td>File is a system file</td></tr>
- * <tr><td>FileAttribute::Temporary</td>     <td>File is a temporary file</td></tr>
- * <tr><td>FileAttribute::FileAttributes</td><td>Mask to isolate file attributes flags</td></tr>
+ *                    <em>These are Windows-exclusive, except ReadOnly and Hidden, which we emulate on UNIX and Linux platforms.</em></td></tr>
+ * <tr><td>FileAttribute::Archive</td>         <td>File is archived</td></tr>
+ * <tr><td>FileAttribute::Compressed</td>      <td>File is compressed</td></tr>
+ * <tr><td>FileAttribute::Encrypted</td>       <td>File is encrypted</td></tr>
+ * <tr><td>FileAttribute::Hidden</td>          <td>File is hidden</td></tr>
+ * <tr><td>FileAttribute::ReadOnly</td>        <td>File is read-only</td></tr>
+ * <tr><td>FileAttribute::System</td>          <td>File is a system file</td></tr>
+ * <tr><td>FileAttribute::Temporary</td>       <td>File is a temporary file</td></tr>
+ * <tr><td>FileAttribute::FileAttributes</td>  <td>Mask to isolate file attributes flags</td></tr>
  * <tr><td colspan="2"><b>File permissions</b></td></tr>
- * <tr><td>FileAttribute::Read</td>          <td>Owner can read</td></tr>
- * <tr><td>FileAttribute::Write</td>         <td>Owner can write</td></tr>
- * <tr><td>FileAttribute::Execute</td>       <td>Owner can execute/search</td></tr>
- * <tr><td>FileAttribute::ReadGroup</td>     <td>Group can read</td></tr>
- * <tr><td>FileAttribute::WriteGroup</td>    <td>Group can write</td></tr>
- * <tr><td>FileAttribute::ExecuteGroup</td>  <td>Group can execute/search</td></tr>
- * <tr><td>FileAttribute::ReadOthers</td>    <td>Others can read</td></tr>
- * <tr><td>FileAttribute::WriteOthers</td>   <td>Others can write</td></tr>
- * <tr><td>FileAttribute::ExecuteOthers</td> <td>Others can execute/search</td></tr>
- * <tr><td>FileAttribute::FilePermissions</td><td>Mask to isolate file permission flags</td></tr>
+ * <tr><td>FileAttribute::Read</td>            <td>Owner can read</td></tr>
+ * <tr><td>FileAttribute::Write</td>           <td>Owner can write</td></tr>
+ * <tr><td>FileAttribute::Execute</td>         <td>Owner can execute/search</td></tr>
+ * <tr><td>FileAttribute::ReadGroup</td>       <td>Group can read</td></tr>
+ * <tr><td>FileAttribute::WriteGroup</td>      <td>Group can write</td></tr>
+ * <tr><td>FileAttribute::ExecuteGroup</td>    <td>Group can execute/search</td></tr>
+ * <tr><td>FileAttribute::ReadOthers</td>      <td>Others can read</td></tr>
+ * <tr><td>FileAttribute::WriteOthers</td>     <td>Others can write</td></tr>
+ * <tr><td>FileAttribute::ExecuteOthers</td>   <td>Others can execute/search</td></tr>
+ * <tr><td>FileAttribute::FilePermissions</td> <td>Mask to isolate file permission flags</td></tr>
  * </table>
+ *
+ * \ingroup file_utilities
  */
 namespace FileAttribute
 {
    enum mask_type
    {
       /*
-       * File type
+       * File type.
        */
       Block          = 0x00000001,  // Block special
       Character      = 0x00000002,  // Character special
@@ -242,8 +238,9 @@ namespace FileAttribute
       FileType       = 0x000000FF,
 
       /*
-       * File attributes
-       * Windows-exclusive, except ReadOnly and Hidden, which we emulate on X.
+       * File attributes.
+       * These are Windows-exclusive, except ReadOnly and Hidden, which we
+       * emulate on UNIX and Linux.
        */
       Archive        = 0x00001000,  // File is archived
       Compressed     = 0x00002000,  // File is compressed
@@ -255,7 +252,7 @@ namespace FileAttribute
       FileAttributes = 0x000FF000,
 
       /*
-       * File permissions
+       * File permissions.
        */
       Read           = 0x00100000,  // Owner can read
       Write          = 0x00200000,  // Owner can write
@@ -271,7 +268,9 @@ namespace FileAttribute
 }
 
 /*!
- * A combination of file type, attribute and access mode flags.
+ * \class pcl::FileAttributes
+ * \brief A combination of file type, attribute and access mode flags
+ * \ingroup file_utilities
  */
 typedef Flags<FileAttribute::mask_type>   FileAttributes;
 
@@ -279,7 +278,8 @@ typedef Flags<FileAttribute::mask_type>   FileAttributes;
 
 /*!
  * \struct FileTime
- * \brief File date and time.
+ * \brief File date and time
+ * \ingroup file_utilities
  */
 struct FileTime
 {
@@ -360,7 +360,9 @@ struct FileTime
 
 /*!
  * \struct FindFileInfo
- * \brief %File information structure used by File::Find()
+ * \brief %File information structure used by File::Find
+ * \ingroup file_utilities
+ * \sa pcl::File::Find
  */
 struct FindFileInfo
 {
@@ -457,7 +459,7 @@ struct FindFileInfo
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace ReadTextOption
+ * \namespace pcl::ReadTextOption
  * \brief File text reading options.
  *
  * <table border="1" cellpadding="4" cellspacing="0">
@@ -467,6 +469,7 @@ struct FindFileInfo
  * <tr><td>TrimSpaces</td>         <td>Delete both leading and trailing whitespace characters from input text lines.</td></tr>
  * </table>
  *
+ * \ingroup file_utilities
  * \sa File::ReadLines(), File::ScanLines()
  */
 namespace ReadTextOption
@@ -481,8 +484,9 @@ namespace ReadTextOption
 }
 
 /*!
- * A combination of file text reading mode flags.
- *
+ * \class pcl::ReadTextOptions
+ * \brief A combination of file text reading mode flags
+ * \ingroup file_utilities
  * \sa File::ReadLines(), File::ScanLines()
  */
 typedef Flags<ReadTextOption::mask_type>  ReadTextOptions;
@@ -491,9 +495,11 @@ typedef Flags<ReadTextOption::mask_type>  ReadTextOptions;
 
 /*!
  * \class File
- * \brief A portable interface to disk files
+ * \brief A platform-independent interface to the local file system
  *
  * ### TODO: Write a detailed description for %File.
+ *
+ * \ingroup file_utilities
  */
 class PCL_CLASS File
 {
@@ -509,13 +515,12 @@ public:
     */
    typedef SeekMode::value_type  seek_mode;
 
-   // -------------------------------------------------------------------------
-
    /*!
-    * \class Error
-    * File I/O exception.
+    * \class pcl::File::Error
+    * \brief File I/O exception
+    * \ingroup file_utilities
     */
-   class Error : public pcl::Error
+   class PCL_CLASS Error : public pcl::Error
    {
    public:
 
@@ -575,11 +580,41 @@ public:
       String m_filePath;
    };
 
-   // -------------------------------------------------------------------------
-
    /*!
-    * \class Find
-    * \brief Directory search operation.
+    * \class pcl::File::Find
+    * \brief Directory search operation
+    *
+    * This class can be used as an iterator to find all files and
+    * subdirectories within a directory tree.
+    *
+    * In the following example, the ProcessFiles function calls a functor
+    * object, specified as the \a processFile function argument, for each file
+    * found recursively in the specified \a dirPath directory. The functor's
+    * unique argument is the absolute file path of an existing file.
+    *
+    * \code
+    * template <class F>
+    * void ProcessFiles( const String& dirPath, F processFile )
+    * {
+    *    StringList directories;
+    *    pcl::FindFileInfo info;
+    *    for ( File::Find f( dirPath + '/' + '*' ); f.NextItem( info ); )
+    *       if ( info.IsDirectory() )
+    *       {
+    *          if ( info.name != "." && info.name != ".." )
+    *             directories << info.name;
+    *       }
+    *       else if ( !info.attributes.IsFlagSet( FileAttribute::SymbolicLink ) )
+    *       {
+    *          processFile( File::FullPath( dirPath + '/' + info.name ) );
+    *       }
+    *    for ( const String& dir : directories )
+    *       ProcessFiles( dirPath + '/' + dir );
+    * }
+    * \endcode
+    *
+    * \ingroup file_utilities
+    * \sa FindFileInfo
     */
    class PCL_CLASS Find
    {
@@ -614,6 +649,18 @@ public:
       }
 
       /*!
+       * Copy constructor. This constructor is disabled because %File::Find
+       * instances are unique.
+       */
+      Find( const Find& ) = delete;
+
+      /*!
+       * Copy assignment. This operator is disabled because %File::Find
+       * instances are unique.
+       */
+      Find& operator =( const Find& ) = delete;
+
+      /*!
        * Starts a new directory search operation for the specified \a path.
        *
        * The specified \a path can include wildcards to define a pattern to
@@ -622,22 +669,26 @@ public:
       void Begin( const String& path );
 
       /*!
-       * Retrieves the next item in the current file search operation. Returns
-       * true if there are more items in the current file search; false if
-       * there are no more items.
+       * Attempts to retrieve the next item in the current directory search
+       * operation.
        *
-       * The \a info structure receives the data corresponding to the next
-       * search item.
+       * Returns true if a new item has been retrieved. In such case the
+       * \a info structure receives the data corresponding to the retrieved
+       * item. Returns false if there are no more items available, signaling
+       * the end of the current directory search operation, or if a search
+       * operation has not been initiated by a previous call to Begin(). In
+       * such case the \a info structure is not modified.
        */
       bool NextItem( FindFileInfo& info );
 
       /*!
-       * Finalizes the current file search operation, if there is one active.
+       * Finalizes the current directory search operation, if there is one
+       * active.
        */
       void End();
 
       /*!
-       * Returns the search path of the current file search operation.
+       * Returns the search path of the current directory search operation.
        */
       String SearchPath() const
       {
@@ -653,15 +704,10 @@ public:
       String       m_searchName;
 #endif
       void*        m_handle;
-
-      Find( const Find& ) = delete;
-      Find& operator =( const Find& ) = delete;
    };
 
-   // -------------------------------------------------------------------------
-
    /*!
-    * \class Progress
+    * \class pcl::File::Progress
     * \brief Abstract base class of file progress objects
     *
     * The purpose of a file progress object is to provide feedback to the user
@@ -669,6 +715,9 @@ public:
     * large files or file sets. The %File::Progress class provides a simple
     * template with a text line, an increasing counter, and the possibility to
     * abort a long operation.
+    *
+    * \ingroup file_utilities
+    * \sa File::CopyFile(), File::MoveFile()
     */
    class PCL_CLASS Progress
    {
@@ -823,7 +872,7 @@ public:
    // -------------------------------------------------------------------------
 
    /*!
-    * Constructs a %File object that does not represent an existing disk file.
+    * Constructs a %File object that does not represent an existing file.
     */
    File()
    {
@@ -882,7 +931,19 @@ public:
    }
 
    /*!
-    * Returns true iff this %File object represents an open disk file.
+    * Copy constructor. This constructor is disabled because files are unique
+    * objects.
+    */
+   File( const File& ) = delete;
+
+   /*!
+    * Copy assignment. This operator is disabled because files are unique
+    * objects.
+    */
+   File& operator =( const File& ) = delete;
+
+   /*!
+    * Returns true iff this %File object represents an open file.
     */
    bool IsOpen() const
    {
@@ -1371,22 +1432,26 @@ public:
    /*!
     * Opens or creates a file.
     *
-    * \param path    %File path.
-    * \param mode    %File access, share and opening/creation mode.
+    * \param path    The path to the file to be opened or created.
+    *
+    * \param mode    Desired file access, share and opening/creation mode. By
+    *                default, an existing file will be opened for exclusive
+    *                read-only access.
     */
    virtual void Open( const String& path, FileModes mode = FileMode::Read|FileMode::Open );
 
    /*!
-    * Opens a file at the specified \a path for read-only access.
+    * Opens an existing file at the specified \a path for shared read-only
+    * access.
     */
    virtual void OpenForReading( const String& path )
    {
-      Open( path, FileMode::Read|FileMode::Open );
+      Open( path, FileMode::Read|FileMode::Open|FileMode::ShareRead );
    }
 
    /*!
-    * Returns an open file at the specified \a path, ready for read-only
-    * access.
+    * Returns an open existing file at the specified \a path, ready for shared
+    * read-only access.
     */
    static File OpenFileForReading( const String& path )
    {
@@ -1396,7 +1461,7 @@ public:
    }
 
    /*!
-    * Opens a file at \a path for read/write access.
+    * Opens an existing file at \a path for exclusive read/write access.
     */
    virtual void OpenForReadWrite( const String& path )
    {
@@ -1404,8 +1469,8 @@ public:
    }
 
    /*!
-    * Returns an open file at the specified \a path, ready for read/write
-    * access.
+    * Returns an open existing file at the specified \a path, ready for
+    * exclusive read/write access.
     */
    static File OpenFileForReadWrite( const String& path )
    {
@@ -1415,9 +1480,9 @@ public:
    }
 
    /*!
-    * Creates a file at the specified \a path for read/write access. If a file
-    * already exists with the same \a path, its contents will be truncated to
-    * zero length.
+    * Creates a file at the specified \a path for exclusive read/write access.
+    * If a file already exists at the same \a path, its contents will be
+    * truncated to zero length.
     */
    virtual void Create( const String& path )
    {
@@ -1426,8 +1491,8 @@ public:
 
    /*!
     * Returns a newly created file at the specified \a path, ready for
-    * read/write access. If a file already exists with the same \a path, its
-    * contents will be truncated to zero length.
+    * exclusive read/write access. If a file already exists at the same
+    * \a path, its contents will be truncated to zero length.
     */
    static File CreateFile( const String& path )
    {
@@ -1437,9 +1502,9 @@ public:
    }
 
    /*!
-    * Creates a file at the specified \a path for write-only access. If a file
-    * already exists with the same \a path, its contents will be truncated to
-    * zero length.
+    * Creates a file at the specified \a path for exclusive write-only access.
+    * If a file already exists at the same \a path, its contents will be
+    * truncated to zero length.
     */
    virtual void CreateForWriting( const String& path )
    {
@@ -1448,8 +1513,8 @@ public:
 
    /*!
     * Returns a newly created file at the specified \a path, ready for
-    * write-only access. If a file already exists with the same \a path, its
-    * contents will be truncated to zero length.
+    * exclusive write-only access. If a file already exists at the same
+    * \a path, its contents will be truncated to zero length.
     */
    static File CreateFileForWriting( const String& path )
    {
@@ -1460,7 +1525,7 @@ public:
 
    /*!
     * Opens a file at the specified \a path if it exists, or creates it
-    * otherwise. The file will be opened in read/write mode.
+    * otherwise. The file will be opened in exclusive read/write mode.
     */
    void OpenOrCreate( const String& path )
    {
@@ -1469,7 +1534,7 @@ public:
 
    /*!
     * Returns an open file at the specified \a path if it already exists, or a
-    * newly created file otherwise, ready for read/write access.
+    * newly created file otherwise, ready for exclusive read/write access.
     */
    static File OpenOrCreateFile( const String& path )
    {
@@ -1479,17 +1544,13 @@ public:
    }
 
    /*!
-    * Closes an open file.
+    * Closes an open file. If this file has not been opened, calling this
+    * member function has no effect.
     */
    virtual void Close();
 
    /*!
-    * \defgroup file_utilities File Utility Routines
-    */
-
-   /*!
     * Removes an existing file at the specified \a filePath.
-    * \ingroup file_utilities
     */
    static void Remove( const String& filePath );
 
@@ -1499,8 +1560,6 @@ public:
     * If \a createIntermediateDirectories is true (the default value) and
     * \a dirPath specifies one or more parent directories that don't exist,
     * they are created automatically.
-    *
-    * \ingroup file_utilities
     */
    static void CreateDirectory( const String& dirPath, bool createIntermediateDirectories = true );
 
@@ -1508,8 +1567,6 @@ public:
     * Removes an existing \e empty directory at the specified \a dirPath.
     *
     * The specified directory must be empty, or this function will fail.
-    *
-    * \ingroup file_utilities
     */
    static void RemoveDirectory( const String& dirPath );
 
@@ -1526,34 +1583,28 @@ public:
     * \warning This function can only move or rename a file to stay in the same
     * physical device. To move a file across devices, use the File::MoveFile()
     * static member function.
-    *
-    * \ingroup file_utilities
     */
    static void Move( const String& filePath, const String& newFilePath );
 
    /*!
     * Returns true iff a file at the specified \a filePath exists.
-    * \ingroup file_utilities
     */
    static bool Exists( const String& filePath );
 
    /*!
     * Returns true iff a directory at the specified \a dirPath exists.
-    * \ingroup file_utilities
     */
    static bool DirectoryExists( const String& dirPath );
 
    /*!
     * Returns true iff the file at \a filePath exists and the current user has
     * read-only access to it.
-    * \ingroup file_utilities
     */
    static bool IsReadOnly( const String& filePath );
 
    /*!
     * Enables or disables read-only access to a file at the specified
     * \a filePath.
-    * \ingroup file_utilities
     */
    static void SetReadOnly( const String& filePath, bool rdOnly = true );
 
@@ -1563,8 +1614,6 @@ public:
     *
     * This is a convenience member function, equivalent to
     * SetReadOnly( filePath, false )
-    *
-    * \ingroup file_utilities
     */
    static void SetReadWrite( const String& filePath )
    {
@@ -1574,8 +1623,6 @@ public:
    /*!
     * Reads the contents of a file at the specified \a filePath and returns
     * them as a ByteArray object.
-    *
-    * \ingroup file_utilities
     */
    static ByteArray ReadFile( const String& filePath );
 
@@ -1599,8 +1646,6 @@ public:
     *
     * \warning If a file already exists at the specified path, its previous
     * contents will be lost after calling this function.
-    *
-    * \ingroup file_utilities
     */
    static void WriteFile( const String& filePath, const ByteArray& contents );
 
@@ -1622,13 +1667,27 @@ public:
    static void WriteFile( const String& filePath, const ByteArray& contents, size_type start, size_type size );
 
    /*!
+    * Creates a file with the specified contents.
+    *
+    * \param filePath   Path to the file that will be created.
+    *
+    * \param data       Pointer to the first byte to be written to the newly
+    *                   created file.
+    *
+    * \param size       Number of contiguous bytes, starting from \a data, to
+    *                   be written.
+    *
+    * \warning If a file already exists at the specified path, its previous
+    * contents will be lost after calling this function.
+    */
+   static void WriteFile( const String& filePath, const void* data, size_type size );
+
+   /*!
     * Reads the contents of a file at the specified \a filePath and returns
     * them as plain text stored in a dynamic 8-bit string.
     *
     * This function is useful to load document files encoded in UTF-8,
     * ISO/IEC-8859-1 (or Latin-1), and other 8-bit encodings.
-    *
-    * \ingroup file_utilities
     */
    static IsoString ReadTextFile( const String& filePath );
 
@@ -1645,8 +1704,6 @@ public:
     *
     * \warning If a file already exists at the specified path, its previous
     * contents will be lost after calling this function.
-    *
-    * \ingroup file_utilities
     */
    static void WriteTextFile( const String& filePath, const IsoString& text );
 
@@ -1676,8 +1733,6 @@ public:
     *
     * \param sourcePath    Path to the source item whose times and permissions
     *                      will be copied to the target item.
-    *
-    * \ingroup file_utilities
     */
    static void CopyTimesAndPermissions( const String& targetPath, const String& sourcePath );
 
@@ -1698,8 +1753,6 @@ public:
     * \note This static member function is only defined on UNIX and Linux
     * platforms. It does not make sense on Windows, where POSIX symbolic links
     * don't exist.
-    *
-    * \ingroup file_utilities
     */
    static void CopyLink( const String& targetLinkPath, const String& sourceLinkPath );
 #endif // !__PCL_WINDOWS
@@ -1736,8 +1789,6 @@ public:
     * File::Progress::Add() with increments in bytes. If the progress object
     * aborts the file copy operation, this member function throws a
     * ProcessAborted exception.
-    *
-    * \ingroup file_utilities
     */
    static void CopyFile( const String& targetFilePath, const String& sourceFilePath, File::Progress* progress = nullptr );
 
@@ -1778,8 +1829,6 @@ public:
     * If a \a progress object is specified and it aborts the file move
     * operation, this member function throws a ProcessAborted exception. In
     * such case the source file is guaranteed to remain intact.
-    *
-    * \ingroup file_utilities
     */
    static void MoveFile( const String& targetFilePath, const String& sourceFilePath, File::Progress* progress = nullptr );
 
@@ -1795,8 +1844,6 @@ public:
     * mounted devices for files pointed to by symbolic links, but for the links
     * themselves. This is only relevant to platforms that support symbolic
     * links (all of them but Windows).
-    *
-    * \ingroup file_utilities
     */
    static bool SameDevice( const String& path1, const String& path2 );
 
@@ -1817,8 +1864,6 @@ public:
     * mounted devices for files pointed to by symbolic links, but for the links
     * themselves. This is only relevant to platforms that support symbolic
     * links (all of them but Windows).
-    *
-    * \ingroup file_utilities
     */
    static bool SameFile( const String& path1, const String& path2 );
 
@@ -1840,8 +1885,6 @@ public:
     * This routine automatically detects and processes line ending sequences
     * characteristic of all supported platforms: UNIX (LF = 0x0A), Windows
     * (CR+LF = 0x0D+0x0A) and legacy Mac (CR = 0x0D).
-    *
-    * \ingroup file_utilities
     */
    static IsoStringList ReadLines( const String& filePath,
                                    ReadTextOptions options = ReadTextOptions() );
@@ -1882,36 +1925,61 @@ public:
     * This routine automatically detects and processes line ending sequences
     * characteristic of all supported platforms: UNIX (LF = 0x0A), Windows
     * (CR+LF = 0x0D+0x0A) and legacy Mac (CR = 0x0D).
-    *
-    * \ingroup file_utilities
     */
    static size_type ScanLines( const String& filePath,
                                bool (*callback)( char*, void* ), void* data = nullptr,
                                ReadTextOptions options = ReadTextOptions() );
 
    /*!
-    * Returns the full, absolute path to the specified \a path.
-    * \ingroup file_utilities
+    * Returns the full, absolute local path to the specified \a path.
     */
    static String FullPath( const String& path );
 
    /*!
+    * Returns a valid URI with the "file" scheme corresponding to the specified
+    * local \a path.
+    *
+    * The returned URI is valid as specified by RFC 1738 and RFC 8089. The
+    * following characters will always be percent-encoded when present in the
+    * specified \a path:
+    *
+    * - Non-printable US-ASCII characters in the ranges [00-1F] and [7F-FF].
+    *
+    * - Unsafe characters: ' ', '<', '>', '#', '"', '%', '{', '}', '|', '\\',
+    * '^', '~', '[', ']', '`'
+    *
+    * - Reserved characters: ';', '?', ':', '@', '=', '&'.
+    *
+    * The returned URI will include the specified path transformed to a full
+    * absolute local path with UNIX directory separators, encoded in UTF-8,
+    * percent-encoded as necessary, and prefixed with the "file://" scheme.
+    *
+    * On Windows, a drive letter will always be present, prefixed with a root
+    * directory specifier, and the colon separator will be used; for example:
+    *
+    * file:///c:/path/to/local%20file.txt
+    *
+    * \b References:
+    *
+    * https://tools.ietf.org/html/rfc1738 \n
+    * https://tools.ietf.org/html/rfc8089 \n
+    */
+   static IsoString FileURI( const String& path );
+
+   /*!
     * Returns the system temporary storage directory.
-    * \ingroup file_utilities
     */
    static String SystemTempDirectory();
 
    /*!
     * Converts a path from Windows to UNIX syntax. Replaces all occurrences of
     * the '\\' Windows separator with the '/' UNIX separator.
-    * \ingroup file_utilities
     */
    static String WindowsPathToUnix( const String& path );
 
    /*!
     * Converts a path from UNIX to Windows. Replaces all occurrences of
     * the '/' UNIX separator with the '\\' Windows separator.
-    * \ingroup file_utilities
     */
    static String UnixPathToWindows( const String& path );
 
@@ -1944,8 +2012,6 @@ public:
     * a high-quality random number generator is used to select file name
     * characters, there is no practical chance for a race condition by calling
     * this function from several threads concurrently.
-    *
-    * \ingroup file_utilities
     */
    static String UniqueFileName( const String& directory = String(), int n = 12,
                                  const String& prefix = String(), const String& postfix = String() );
@@ -1971,8 +2037,6 @@ public:
     * Returns the total number of bytes available on the device that supports
     * the specified directory. The returned values take into account any disk
     * quotas that might apply to the user associated with the calling process.
-    *
-    * \ingroup file_utilities
     */
    static uint64 GetAvailableSpace( const String& dirPath, uint64* totalBytes = nullptr, uint64* freeBytes = nullptr );
 
@@ -1984,8 +2048,6 @@ public:
     *
     * This function only makes sense on Windows. On UNIX and Linux operating
     * systems, this function always returns String::notFound.
-    *
-    * \ingroup file_utilities
     */
    static size_type FindDrive( const String& path );
 
@@ -1996,8 +2058,6 @@ public:
     * String::notFound.
     *
     * For example, in '/foo/bar.tar.gz' the file name is 'bar'.
-    *
-    * \ingroup file_utilities
     */
    static size_type FindName( const String& path );
 
@@ -2012,13 +2072,11 @@ public:
     * 'foo.tar.gz' the file extension is '.gz'.
     *
     * \sa FindCompleteSuffix()
-    * \ingroup file_utilities
     */
    static size_type FindExtension( const String& path );
 
    /*!
     * A synonym for FindExtension().
-    * \ingroup file_utilities
     */
    static size_type FindSuffix( const String& path )
    {
@@ -2036,7 +2094,6 @@ public:
     * 'foo.tar.gz' the complete suffix is '.tar.gz'.
     *
     * \sa FindSuffix()
-    * \ingroup file_utilities
     */
    static size_type FindCompleteSuffix( const String& path );
 
@@ -2048,8 +2105,6 @@ public:
     *
     * This function only makes sense on Windows. On UNIX and Linux operating
     * systems, this function always returns an empty string.
-    *
-    * \ingroup file_utilities
     */
    static String ExtractDrive( const String& path ); // always empty string on X
 
@@ -2066,8 +2121,6 @@ public:
     * In '/foo/bar.tar.gz' the directory is '/foo'.
     * In 'foo/bar.tar.gz' the directory is 'foo'.
     * In 'C:/Foo/Bar.txt' the directory is '/Foo'.
-    *
-    * \ingroup file_utilities
     */
    static String ExtractDirectory( const String& path );
 
@@ -2081,8 +2134,6 @@ public:
     *
     * In '/foo/bar.tar.gz' the name is 'bar.tar'.
     * In 'C:/Foo/Bar.txt' the name is 'Bar'.
-    *
-    * \ingroup file_utilities
     */
    static String ExtractName( const String& path );
 
@@ -2098,13 +2149,11 @@ public:
     * In 'C:/Foo/Bar.txt' the extension is '.txt'.
     *
     * \sa ExtractCompleteSuffix()
-    * \ingroup file_utilities
     */
    static String ExtractExtension( const String& path );
 
    /*!
     * A synonym for ExtractExtension().
-    * \ingroup file_utilities
     */
    static String ExtractSuffix( const String& path )
    {
@@ -2123,7 +2172,6 @@ public:
     * For example, in 'foo.tar.gz' the complete suffix is '.tar.gz'.
     *
     * \sa ExtractSuffix()
-    * \ingroup file_utilities
     */
    static String ExtractCompleteSuffix( const String& path );
 
@@ -2132,14 +2180,11 @@ public:
     * this member function is functionally equivalent to:
     *
     *    File::ExtractName( path ) + File::ExtractExtension( path )
-    *
-    * \ingroup file_utilities
     */
    static String ExtractNameAndExtension( const String& path );
 
    /*!
     * A synonym for ExtractNameAndExtension().
-    * \ingroup file_utilities
     */
    static String ExtractNameAndSuffix( const String& path )
    {
@@ -2156,24 +2201,18 @@ public:
     *
     * Returns the resulting path after changing the file extension to the
     * specified value.
-    *
-    * \ingroup file_utilities
     */
    static String ChangeExtension( const String& filePath, const String& ext );
 
    /*!
     * Appends a \a postfix string to the current file name in the specified
     * \a filePath. Returns the resulting path.
-    *
-    * \ingroup file_utilities
     */
    static String AppendToName( const String& filePath, const String& postfix );
 
    /*!
     * Prepends a \a prefix string to the current file name in the specified
     * \a filePath. Returns the resulting path.
-    *
-    * \ingroup file_utilities
     */
    static String PrependToName( const String& filePath, const String& prefix );
 
@@ -2203,8 +2242,6 @@ public:
     */
    static String SizeAsString( fsize_type sizeInBytes, int precision = 3, bool alsoShowBytes = false );
 
-   // -------------------------------------------------------------------------
-
 protected:
 
    handle    m_fileHandle;
@@ -2215,10 +2252,6 @@ protected:
 
    void Initialize();
    virtual bool IsValidHandle( handle h ) const;
-
-   // Cannot copy a File object.
-   File( const File& ) = delete;
-   File& operator =( const File& ) = delete;
 };
 
 // ----------------------------------------------------------------------------
@@ -2228,4 +2261,4 @@ protected:
 #endif   // __PCL_File_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/File.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/File.h - Released 2017-04-14T23:04:40Z

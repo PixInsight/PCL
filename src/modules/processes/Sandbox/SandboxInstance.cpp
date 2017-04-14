@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Sandbox Process Module Version 01.00.02.0211
+// Standard Sandbox Process Module Version 01.00.02.0220
 // ----------------------------------------------------------------------------
-// SandboxInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// SandboxInstance.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Sandbox PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -99,8 +99,6 @@ bool SandboxInstance::CanExecuteOn( const View& view, String& whyNot ) const
       whyNot = "Sandbox cannot be executed on complex images.";
       return false;
    }
-
-   whyNot.Clear();
    return true;
 }
 
@@ -114,7 +112,7 @@ public:
       /*
        * Your magic comes here...
        */
-      Console().WriteLn( "<end><cbr>Ah, did I mention that I do just _nothing_ at all? :D" );
+      Console().WriteLn( "<end><cbr>Ah, did I mention that I do just <em>nothing</em> at all? ;D" );
    }
 };
 
@@ -160,6 +158,7 @@ void* SandboxInstance::LockParameter( const MetaParameter* p, size_type /*tableR
       return &p_four;
    if ( p == TheSandboxParameterFiveParameter )
       return p_five.Begin();
+
    return nullptr;
 }
 
@@ -181,6 +180,7 @@ size_type SandboxInstance::ParameterLength( const MetaParameter* p, size_type ta
 {
    if ( p == TheSandboxParameterFiveParameter )
       return p_five.Length();
+
    return 0;
 }
 
@@ -189,4 +189,4 @@ size_type SandboxInstance::ParameterLength( const MetaParameter* p, size_type ta
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SandboxInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF SandboxInstance.cpp - Released 2017-04-14T23:07:12Z

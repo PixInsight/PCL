@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard ColorManagement Process Module Version 01.00.00.0284
+// Standard ColorManagement Process Module Version 01.00.00.0293
 // ----------------------------------------------------------------------------
-// ICCProfileTransformationInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// ICCProfileTransformationInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorManagement PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -64,7 +64,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ICCProfileTransformationInterface* TheICCProfileTransformationInterface = 0;
+ICCProfileTransformationInterface* TheICCProfileTransformationInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -77,20 +77,15 @@ ICCProfileTransformationInterface* TheICCProfileTransformationInterface = 0;
 // ----------------------------------------------------------------------------
 
 ICCProfileTransformationInterface::ICCProfileTransformationInterface() :
-ProcessInterface(),
-instance( TheICCProfileTransformationProcess ),
-profiles(),
-defaultRGBProfile(),
-defaultGrayscaleProfile(),
-GUI( 0 )
+   instance( TheICCProfileTransformationProcess )
 {
    TheICCProfileTransformationInterface = this;
 }
 
 ICCProfileTransformationInterface::~ICCProfileTransformationInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString ICCProfileTransformationInterface::Id() const
@@ -120,14 +115,15 @@ void ICCProfileTransformationInterface::ApplyInstance() const
 
 void ICCProfileTransformationInterface::TrackViewUpdated( bool active )
 {
-   if ( GUI != 0 && active )
-   {
-      ImageWindow w = ImageWindow::ActiveWindow();
-      if ( !w.IsNull() )
-         ImageFocused( w.MainView() );
-      else
-         UpdateControls();
-   }
+   if ( GUI != nullptr )
+      if ( active )
+      {
+         ImageWindow w = ImageWindow::ActiveWindow();
+         if ( !w.IsNull() )
+            ImageFocused( w.MainView() );
+         else
+            UpdateControls();
+      }
 }
 
 void ICCProfileTransformationInterface::ResetInstance()
@@ -138,11 +134,11 @@ void ICCProfileTransformationInterface::ResetInstance()
 
 bool ICCProfileTransformationInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "ICCProfileTransformation" );
-      GUI->AllImages_ViewList.Regenerate( true, false ); // exclude previews
+      GUI->AllImages_ViewList.Regenerate( true/*mainViews*/, false/*previews*/ );
       UpdateControls();
    }
 
@@ -157,16 +153,10 @@ ProcessImplementation* ICCProfileTransformationInterface::NewProcess() const
 
 bool ICCProfileTransformationInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const ICCProfileTransformationInstance* r = dynamic_cast<const ICCProfileTransformationInstance*>( &p );
-
-   if ( r == 0 )
-   {
-      whyNot = "Not an ICCProfileTransformation instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const ICCProfileTransformationInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an ICCProfileTransformation instance.";
+   return false;
 }
 
 bool ICCProfileTransformationInterface::RequiresInstanceValidation() const
@@ -188,24 +178,27 @@ bool ICCProfileTransformationInterface::WantsImageNotifications() const
 
 void ICCProfileTransformationInterface::ImageUpdated( const View& v )
 {
-   if ( GUI != 0 && v == currentView )
-      UpdateControls();
+   if ( GUI != nullptr )
+      if ( v == currentView )
+         UpdateControls();
 }
 
 void ICCProfileTransformationInterface::ImageFocused( const View& v )
 {
-   if ( GUI != 0 && IsTrackViewActive() )
-      if ( !v.IsNull() )
-      {
-         GUI->AllImages_ViewList.SelectView( v.Window().MainView() ); // normally not necessary, but we can invoke this f() directly
-         UpdateControls();
-      }
+   if ( GUI != nullptr )
+      if ( IsTrackViewActive() )
+         if ( !v.IsNull() )
+         {
+            GUI->AllImages_ViewList.SelectView( v.Window().MainView() ); // normally not necessary, but we can invoke this f() directly
+            UpdateControls();
+         }
 }
 
 void ICCProfileTransformationInterface::ImageCMUpdated( const View& v )
 {
-   if ( GUI != 0 && v == currentView )
-      UpdateControls();
+   if ( GUI != nullptr )
+      if ( v == currentView )
+         UpdateControls();
 }
 
 bool ICCProfileTransformationInterface::WantsGlobalNotifications() const
@@ -215,7 +208,7 @@ bool ICCProfileTransformationInterface::WantsGlobalNotifications() const
 
 void ICCProfileTransformationInterface::GlobalCMUpdated()
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
    {
       RefreshDefaultProfiles();
       UpdateControls();
@@ -292,7 +285,7 @@ void ICCProfileTransformationInterface::RefreshProfiles()
    GUI->AllProfiles_ComboBox.Clear();
    GUI->AllProfiles_ComboBox.AddItem( " --> Available ICC Profiles <-- " );
    for ( ICCProfile::profile_list::const_iterator i = profiles.Begin(); i != profiles.End(); ++i )
-      GUI->AllProfiles_ComboBox.AddItem( ' ' + i->description + ' ' );
+      GUI->AllProfiles_ComboBox.AddItem( i->description );
 }
 
 void ICCProfileTransformationInterface::RefreshDefaultProfiles()
@@ -304,7 +297,6 @@ void ICCProfileTransformationInterface::RefreshDefaultProfiles()
       defaultGrayscaleProfile = ICCProfile( PixInsightSettings::GlobalString(
                                        "ColorManagement/DefaultGrayscaleProfilePath" ) ).Description();
    }
-
    ERROR_HANDLER
 }
 
@@ -318,8 +310,7 @@ void ICCProfileTransformationInterface::__ViewList_ViewSelected( ViewList& /*sen
 
 void ICCProfileTransformationInterface::__TargetProfile_EditCompleted( Edit& sender )
 {
-   String txt = sender.Text();
-   txt.Trim();
+   String txt = sender.Text().Trimmed();
    instance.targetProfile = txt;
    instance.toDefaultProfile = false;
    UpdateControls();
@@ -327,12 +318,13 @@ void ICCProfileTransformationInterface::__TargetProfile_EditCompleted( Edit& sen
 
 void ICCProfileTransformationInterface::__Profile_ItemSelected( ComboBox& /*sender*/, int itemIndex )
 {
-   if ( itemIndex > 0 && itemIndex <= int( profiles.Length() ) ) // first item is title
-   {
-      instance.targetProfile = profiles[itemIndex-1].description; // skip the first title item
-      instance.toDefaultProfile = false;
-      UpdateControls();
-   }
+   if ( itemIndex > 0 )
+      if ( itemIndex <= int( profiles.Length() ) ) // first item is title
+      {
+         instance.targetProfile = profiles[itemIndex-1].description; // skip the first title item
+         instance.toDefaultProfile = false;
+         UpdateControls();
+      }
 }
 
 void ICCProfileTransformationInterface::__RefreshProfiles_ButtonClick( Button& /*sender*/, bool /*checked*/ )
@@ -364,6 +356,23 @@ void ICCProfileTransformationInterface::__Option_ButtonClick( Button& sender, bo
       instance.useFloatingPointTransformation = checked;
 }
 
+void ICCProfileTransformationInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->AllImages_ViewList )
+      wantsView = view.IsMainView();
+}
+
+void ICCProfileTransformationInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->AllImages_ViewList )
+      if ( view.IsMainView() )
+      {
+         DeactivateTrackView();
+         GUI->AllImages_ViewList.SelectView( view );
+         UpdateControls();
+      }
+}
+
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
@@ -376,6 +385,8 @@ ICCProfileTransformationInterface::GUIData::GUIData( ICCProfileTransformationInt
    //
 
    AllImages_ViewList.OnViewSelected( (ViewList::view_event_handler)&ICCProfileTransformationInterface::__ViewList_ViewSelected, w );
+   AllImages_ViewList.OnViewDrag( (Control::view_drag_event_handler)&ICCProfileTransformationInterface::__ViewDrag, w );
+   AllImages_ViewList.OnViewDrop( (Control::view_drop_event_handler)&ICCProfileTransformationInterface::__ViewDrop, w );
 
    SourceProfile_Edit.SetMinWidth( editWidth1 );
    SourceProfile_Edit.SetReadOnly();
@@ -529,4 +540,4 @@ ICCProfileTransformationInterface::GUIData::GUIData( ICCProfileTransformationInt
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ICCProfileTransformationInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF ICCProfileTransformationInterface.cpp - Released 2017-04-14T23:07:12Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard ColorCalibration Process Module Version 01.02.00.0238
+// Standard ColorCalibration Process Module Version 01.02.00.0247
 // ----------------------------------------------------------------------------
-// LinearFitInterface.h - Released 2016/02/21 20:22:42 UTC
+// LinearFitInterface.h - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -111,15 +111,15 @@ private:
          NumericControl    RejectHigh_NumericControl;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
-
-   // Event Handlers
 
    void __EditCompleted( Edit& sender );
    void __EditValueUpdated( NumericEdit& sender, double value );
    void __Click( Button& sender, bool checked );
+   void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
+   void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
 
    friend struct GUIData;
 };
@@ -137,4 +137,4 @@ PCL_END_LOCAL
 #endif   // __LinearFitInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF LinearFitInterface.h - Released 2016/02/21 20:22:42 UTC
+// EOF LinearFitInterface.h - Released 2017-04-14T23:07:12Z

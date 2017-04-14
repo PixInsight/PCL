@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/AbstractImage.h - Released 2016/02/21 20:22:12 UTC
+// pcl/AbstractImage.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,41 +54,16 @@
 
 /// \file pcl/AbstractImage.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_ImageGeometry_h
-#include <pcl/ImageGeometry.h>
-#endif
-
-#ifndef __PCL_ImageColor_h
-#include <pcl/ImageColor.h>
-#endif
-
-#ifndef __PCL_ImageSelections_h
-#include <pcl/ImageSelections.h>
-#endif
-
-#ifndef __PCL_Array_h
 #include <pcl/Array.h>
-#endif
-
-#ifndef __PCL_ReferenceArray_h
-#include <pcl/ReferenceArray.h>
-#endif
-
-#ifndef __PCL_StatusMonitor_h
-#include <pcl/StatusMonitor.h>
-#endif
-
-#ifndef __PCL_Thread_h
-#include <pcl/Thread.h>
-#endif
-
-#ifndef __PCL_Mutex_h
+#include <pcl/ImageColor.h>
+#include <pcl/ImageGeometry.h>
+#include <pcl/ImageSelections.h>
 #include <pcl/Mutex.h>
-#endif
+#include <pcl/ReferenceArray.h>
+#include <pcl/StatusMonitor.h>
+#include <pcl/Thread.h>
 
 #ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 namespace pi
@@ -126,8 +101,9 @@ namespace pcl
  * rectangular selection (also known as <em>region of interest</em>, or ROI), a
  * channel range, and an anchor point. Image selections can be stored in a
  * local stack for quick retrieval (see PushSelections() and PopSelections()).
- * Note that image selections are implemented as \c mutable data members, so
- * modifying selections is possible for unmodifiable %AbstractImage instances.
+ * Note that for practical reasons, image selections have been implemented as
+ * \c mutable data members internally, so modifying selections is possible for
+ * immutable %AbstractImage instances.
  *
  * Finally, %AbstractImage provides function and data members to manage status
  * monitoring of images. The status monitoring mechanism can be used to provide
@@ -1110,8 +1086,11 @@ public:
          if ( !Thread::IsRootThread() )
             useAffinity = false;
 
-      for ( typename ReferenceArray<thread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-         i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
+      {
+         int n = 0;
+         for ( thread& t : threads )
+            t.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+      }
 
       uint32 waitTime = StatusMonitor::RefreshRate() >> 1;
       waitTime += waitTime >> 2; // waitTime = 0.625 * StatusMonitor::RefreshRate()
@@ -1148,10 +1127,10 @@ public:
             catch ( ... )
             {
                data.mutex.Unlock();
-               for ( typename ReferenceArray<thread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-                  i->Abort();
-               for ( typename ReferenceArray<thread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-                  i->Wait();
+               for ( thread& t : threads )
+                  t.Abort();
+               for ( thread& t : threads )
+                  t.Wait();
                threads.Destroy();
                throw ProcessAborted();
             }
@@ -1228,7 +1207,7 @@ protected:
 // ----------------------------------------------------------------------------
 
 /*!
- * \defgroup thread_monitoring_macros Helper Macros for Synchronized Status
+ * \defgroup thread_monitoring_macros Helper Macros for Synchronized Status&nbsp;\
  * Monitoring of Image Processing Threads
  */
 
@@ -1447,4 +1426,4 @@ protected:
 #endif   // __PCL_AbstractImage_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/AbstractImage.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/AbstractImage.h - Released 2017-04-14T23:04:40Z

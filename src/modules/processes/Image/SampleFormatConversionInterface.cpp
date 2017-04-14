@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0352
+// Standard Image Process Module Version 01.02.09.0361
 // ----------------------------------------------------------------------------
-// SampleFormatConversionInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// SampleFormatConversionInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -60,7 +60,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-SampleFormatConversionInterface* TheSampleFormatConversionInterface = 0;
+SampleFormatConversionInterface* TheSampleFormatConversionInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@ SampleFormatConversionInterface* TheSampleFormatConversionInterface = 0;
 // ----------------------------------------------------------------------------
 
 SampleFormatConversionInterface::SampleFormatConversionInterface() :
-ProcessInterface(), instance( TheSampleFormatConversionProcess ), GUI( 0 )
+   instance( TheSampleFormatConversionProcess )
 {
    TheSampleFormatConversionInterface = this;
 }
@@ -78,8 +78,8 @@ ProcessInterface(), instance( TheSampleFormatConversionProcess ), GUI( 0 )
 
 SampleFormatConversionInterface::~SampleFormatConversionInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -121,7 +121,7 @@ InterfaceFeatures SampleFormatConversionInterface::Features() const
 
 void SampleFormatConversionInterface::TrackViewUpdated( bool active )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
    {
       GUI->SetupTrackViewControls( *this, active );
       if ( active )
@@ -141,15 +141,11 @@ void SampleFormatConversionInterface::ResetInstance()
 
 bool SampleFormatConversionInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
-
       SetWindowTitle( "SampleFormatConversion" );
-
       UpdateConversionControls();
-
       if ( IsTrackViewActive() )
          UpdateCurrentViewInfoControls();
    }
@@ -169,16 +165,10 @@ ProcessImplementation* SampleFormatConversionInterface::NewProcess() const
 
 bool SampleFormatConversionInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const SampleFormatConversionInstance* r = dynamic_cast<const SampleFormatConversionInstance*>( &p );
-
-   if ( r == 0 )
-   {
-      whyNot = "Not a SampleFormatConversion instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const SampleFormatConversionInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a SampleFormatConversion instance.";
+   return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -193,12 +183,9 @@ bool SampleFormatConversionInterface::RequiresInstanceValidation() const
 bool SampleFormatConversionInterface::ImportProcess( const ProcessImplementation& p )
 {
    instance.Assign( p );
-
    UpdateConversionControls();
-
    if ( IsTrackViewActive() )
       UpdateCurrentViewInfoControls();
-
    return true;
 }
 
@@ -213,56 +200,68 @@ bool SampleFormatConversionInterface::WantsImageNotifications() const
 
 void SampleFormatConversionInterface::ImageCreated( const View& v )
 {
-   if ( GUI != 0 && IsTrackViewActive() && v == ImageWindow::ActiveWindow().MainView() )
-      UpdateCurrentViewInfoControls();
+   if ( GUI != nullptr )
+      if ( IsTrackViewActive() )
+         if ( v == ImageWindow::ActiveWindow().MainView() )
+            UpdateCurrentViewInfoControls();
 }
 
 // ----------------------------------------------------------------------------
 
 void SampleFormatConversionInterface::ImageUpdated( const View& v )
 {
-   if ( GUI != 0 && IsTrackViewActive() && v == ImageWindow::ActiveWindow().MainView() )
-      UpdateCurrentViewInfoControls();
+   if ( GUI != nullptr )
+      if ( IsTrackViewActive() )
+         if ( v == ImageWindow::ActiveWindow().MainView() )
+            UpdateCurrentViewInfoControls();
 }
 
 // ----------------------------------------------------------------------------
 
 void SampleFormatConversionInterface::ImageRenamed( const View& v )
 {
-   if ( GUI != 0 && IsTrackViewActive() && v == ImageWindow::ActiveWindow().MainView() )
-      UpdateCurrentViewInfoControls();
+   if ( GUI != nullptr )
+      if ( IsTrackViewActive() )
+         if ( v == ImageWindow::ActiveWindow().MainView() )
+            UpdateCurrentViewInfoControls();
 }
 
 // ----------------------------------------------------------------------------
 
 void SampleFormatConversionInterface::ImageDeleted( const View& v )
 {
-   if ( GUI != 0 && IsTrackViewActive() )
-      UpdateCurrentViewInfoControls();
+   if ( GUI != nullptr )
+      if ( IsTrackViewActive() )
+         UpdateCurrentViewInfoControls();
 }
 
 // ----------------------------------------------------------------------------
 
 void SampleFormatConversionInterface::ImageFocused( const View& v )
 {
-   if ( GUI != 0 && IsTrackViewActive() )
-      UpdateCurrentViewInfoControls();
+   if ( GUI != nullptr )
+      if ( IsTrackViewActive() )
+         UpdateCurrentViewInfoControls();
 }
 
 // ----------------------------------------------------------------------------
 
 void SampleFormatConversionInterface::ImageLocked( const View& v )
 {
-   if ( GUI != 0 && IsTrackViewActive() && v == ImageWindow::ActiveWindow().MainView() )
-      UpdateCurrentViewInfoControls();
+   if ( GUI != nullptr )
+      if ( IsTrackViewActive() )
+         if ( v == ImageWindow::ActiveWindow().MainView() )
+            UpdateCurrentViewInfoControls();
 }
 
 // ----------------------------------------------------------------------------
 
 void SampleFormatConversionInterface::ImageUnlocked( const View& v )
 {
-   if ( GUI != 0 && IsTrackViewActive() && v == ImageWindow::ActiveWindow().MainView() )
-      UpdateCurrentViewInfoControls();
+   if ( GUI != nullptr )
+      if ( IsTrackViewActive() )
+         if ( v == ImageWindow::ActiveWindow().MainView() )
+            UpdateCurrentViewInfoControls();
 }
 
 // ----------------------------------------------------------------------------
@@ -330,7 +329,7 @@ void SampleFormatConversionInterface::UpdateCurrentViewInfoControls()
 
 // ----------------------------------------------------------------------------
 
-void SampleFormatConversionInterface::SampleFormatButtonClick( Button& sender, bool /*checked*/ )
+void SampleFormatConversionInterface::__ButtonClick( Button& sender, bool /*checked*/ )
 {
    if ( sender == GUI->Integer8Bit_RadioButton )
       instance.sampleFormat = SampleFormatConversion::To8Bit;
@@ -347,28 +346,62 @@ void SampleFormatConversionInterface::SampleFormatButtonClick( Button& sender, b
       UpdateCurrentViewInfoControls();
 }
 
+void SampleFormatConversionInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->Conversion_GroupBox )
+      wantsView = true;
+}
+
+void SampleFormatConversionInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->Conversion_GroupBox )
+   {
+      DeactivateTrackView();
+      GUI->CurrentViewInfo_GroupBox.Hide();
+
+      int bitsPerSample;
+      bool floatSample;
+      view.Window().GetSampleFormat( bitsPerSample, floatSample );
+      if ( floatSample )
+         switch ( bitsPerSample )
+         {
+         case 32: instance.sampleFormat = SampleFormatConversion::ToFloat; break;
+         case 64: instance.sampleFormat = SampleFormatConversion::ToDouble; break;
+         }
+      else
+         switch ( bitsPerSample )
+         {
+         case  8: instance.sampleFormat = SampleFormatConversion::To8Bit; break;
+         case 16: instance.sampleFormat = SampleFormatConversion::To16Bit; break;
+         case 32: instance.sampleFormat = SampleFormatConversion::To32Bit; break;
+         }
+
+      UpdateConversionControls();
+   }
+}
+
 // ----------------------------------------------------------------------------
 
 SampleFormatConversionInterface::GUIData::GUIData( SampleFormatConversionInterface& w )
 {
    Integer8Bit_RadioButton.SetText( "8-bit unsigned integer [0,255]" );
-   Integer8Bit_RadioButton.OnClick( (pcl::Button::click_event_handler)&SampleFormatConversionInterface::SampleFormatButtonClick, w );
+   Integer8Bit_RadioButton.OnClick( (pcl::Button::click_event_handler)&SampleFormatConversionInterface::__ButtonClick, w );
 
    Integer16Bit_RadioButton.SetText( "16-bit unsigned integer [0,65535]" );
-   Integer16Bit_RadioButton.OnClick( (pcl::Button::click_event_handler)&SampleFormatConversionInterface::SampleFormatButtonClick, w );
+   Integer16Bit_RadioButton.OnClick( (pcl::Button::click_event_handler)&SampleFormatConversionInterface::__ButtonClick, w );
 
    Integer32Bit_RadioButton.SetText( "32-bit unsigned integer [0,4294967295]" );
-   Integer32Bit_RadioButton.OnClick( (pcl::Button::click_event_handler)&SampleFormatConversionInterface::SampleFormatButtonClick, w );
+   Integer32Bit_RadioButton.OnClick( (pcl::Button::click_event_handler)&SampleFormatConversionInterface::__ButtonClick, w );
 
    FloatingPoint32Bit_RadioButton.SetText( "IEEE 754 32-bit floating point (single precision)" );
    FloatingPoint32Bit_RadioButton.SetToolTip( "<p>Normalized real range: [0,1]<br>"
                                               "<i>6 - 7 decimal digits accuracy</i></p>" );
-   FloatingPoint32Bit_RadioButton.OnClick( (pcl::Button::click_event_handler)&SampleFormatConversionInterface::SampleFormatButtonClick, w );
+   FloatingPoint32Bit_RadioButton.OnClick( (pcl::Button::click_event_handler)&SampleFormatConversionInterface::__ButtonClick, w );
 
    FloatingPoint64Bit_RadioButton.SetText( "IEEE 754 64-bit floating point (double precision)" );
    FloatingPoint64Bit_RadioButton.SetToolTip( "<p>Normalized real range: [0,1]<br>"
                                               "<i>14 - 15 decimal digits accuracy</i></p>" );
-   FloatingPoint64Bit_RadioButton.OnClick( (pcl::Button::click_event_handler)&SampleFormatConversionInterface::SampleFormatButtonClick, w );
+   FloatingPoint64Bit_RadioButton.OnClick( (pcl::Button::click_event_handler)&SampleFormatConversionInterface::__ButtonClick, w );
 
    Conversion_Sizer.SetMargin( 6 );
    Conversion_Sizer.SetSpacing( 0 );
@@ -382,6 +415,8 @@ SampleFormatConversionInterface::GUIData::GUIData( SampleFormatConversionInterfa
    Conversion_GroupBox.SetSizer( Conversion_Sizer );
    Conversion_GroupBox.AdjustToContents();
    Conversion_GroupBox.SetMinSize();
+   Conversion_GroupBox.OnViewDrag( (Control::view_drag_event_handler)&SampleFormatConversionInterface::__ViewDrag, w );
+   Conversion_GroupBox.OnViewDrop( (Control::view_drop_event_handler)&SampleFormatConversionInterface::__ViewDrop, w );
 
    CurrentViewInfo_Label.SetText( "T\nT" ); // ensure enough space to show two lines of text
    CurrentViewInfo_Label.AdjustToContents();
@@ -430,4 +465,4 @@ void SampleFormatConversionInterface::GUIData::SetupTrackViewControls( SampleFor
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF SampleFormatConversionInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF SampleFormatConversionInterface.cpp - Released 2017-04-14T23:07:12Z

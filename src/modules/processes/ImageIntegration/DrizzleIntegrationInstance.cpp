@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.12.01.0359
+// Standard ImageIntegration Process Module Version 01.12.01.0368
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInstance.cpp - Released 2016/12/30 01:41:29 UTC
+// DrizzleIntegrationInstance.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -441,7 +441,6 @@ bool DrizzleIntegrationInstance::CanExecuteGlobal( String& whyNot ) const
       return false;
    }
 
-   whyNot.Clear();
    return true;
 }
 
@@ -1213,7 +1212,7 @@ private:
       if ( file.Format().CanStoreKeywords() )
       {
          FITSKeywordArray keywords;
-         if ( !file.Extract( keywords ) )
+         if ( !file.ReadFITSKeywords( keywords ) )
             throw CatchedException();
          for ( auto k : keywords )
             if ( !k.name.CompareIC( keyName ) )
@@ -1900,4 +1899,4 @@ size_type DrizzleIntegrationInstance::ParameterLength( const MetaParameter* p, s
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInstance.cpp - Released 2016/12/30 01:41:29 UTC
+// EOF DrizzleIntegrationInstance.cpp - Released 2017-04-14T23:07:12Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard JPEG File Format Module Version 01.00.03.0295
+// Standard JPEG File Format Module Version 01.00.04.0306
 // ----------------------------------------------------------------------------
-// JPEG.cpp - Released 2016/02/21 20:22:34 UTC
+// JPEG.cpp - Released 2017-04-14T23:07:03Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard JPEG PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,11 +54,9 @@
 
 #include <pcl/EndianConversions.h>
 #include <pcl/ErrorHandler.h>
+#include <pcl/StdStatus.h>
 
-// stdio.h must be included before jpeglib.h for things to work properly.
-#include <stdio.h>
-
-// Including jpeglib.h requires some hacking, especially on Windows.
+// N.B.: Using jpeglib.h on Windows requires some extra hacking.
 
 #ifdef FAR
 #  undef FAR
@@ -69,12 +67,14 @@ extern "C" {
 // Ensure that boolean is properly defined on Windows
 #if defined( __PCL_WINDOWS ) && defined( __RPCNDR_H__ ) && !defined( boolean )
 typedef unsigned char boolean;
-#define HAVE_BOOLEAN
+#define HAVE_BOOLEAN 1
 #endif
 
-// Simulate that we are on X11 to leave INT16 and INT32 as defined by Windows headers
+// Pretend that we are on X11 to leave INT16 and INT32 as they are defined by
+// standard Windows headers.
 #define XMD_H
-#include <jpeglib.h>
+
+#include <jpeg/jpeglib.h>
 
 } // extern "C"
 
@@ -91,18 +91,26 @@ namespace pcl
 
 /*
  * Custom JPEG error manager.
+ *
  * We want to throw a C++ exception when an error occurs within the IJG
  * library. This is done in routine JPEGErrorExit() below.
  */
 struct JPEGErrorManager
 {
-   // ### Do not change the order of members in this structure.
-   //     A pointer to this structure must be castable to ::jpeg_error_mgr*.
+   /*
+    * ### N.B.: Do not change the order of members in this structure. A pointer
+    * to this structure must be castable to ::jpeg_error_mgr*.
+    */
    ::jpeg_error_mgr error;
    String           path;
 
-   JPEGErrorManager( const String& _path ) : path( _path )
+   JPEGErrorManager( const String& filePath ) : path( filePath )
    {
+   }
+
+   ::jpeg_error_mgr* ToJPEGLibStdError()
+   {
+      return ::jpeg_std_error( (::jpeg_error_mgr*)this );
    }
 };
 
@@ -119,10 +127,10 @@ static void JPEGErrorExit( j_common_ptr cinfo )
 
 struct JPEGFileData
 {
-   FILE*  handle       = nullptr; // file stream
-   void*  compressor   = nullptr; // IJG's compression struct
-   void*  decompressor = nullptr; // IJG's decompression strct
-   void*  errorManager = nullptr; // custom IJG error mgr
+   ByteArray                           data;
+   AutoPointer<jpeg_compress_struct>   compressor;   // IJG's compression struct
+   AutoPointer<jpeg_decompress_struct> decompressor; // IJG's decompression strct
+   AutoPointer<JPEGErrorManager>       errorManager; // custom IJG error mgr
 
    double lowerRange;   // safe copies of critical parameters
    double upperRange;
@@ -131,200 +139,207 @@ struct JPEGFileData
 
    ~JPEGFileData()
    {
-      if ( decompressor != nullptr )
+      if ( decompressor )
       {
-         ::jpeg_destroy_decompress( j_decompress_ptr( decompressor ) );
-         delete j_decompress_ptr( decompressor ), decompressor = nullptr;
+         ::jpeg_destroy_decompress( decompressor );
+         decompressor.Destroy();
       }
-
-      if ( handle != nullptr )
-         ::fclose( handle ), handle = nullptr;
-
-      if ( compressor != nullptr )
+      if ( compressor )
       {
-         ::jpeg_destroy_compress( j_compress_ptr( compressor ) );
-         delete j_compress_ptr( compressor ), compressor = nullptr;
+         ::jpeg_destroy_compress( compressor );
+         compressor.Destroy();
       }
-
-      if ( errorManager != nullptr )
-         delete (JPEGErrorManager*)errorManager, errorManager = nullptr;
+      errorManager.Destroy();
    }
 };
+
+// ----------------------------------------------------------------------------
+
+JPEG::JPEG()
+{
+}
+
+// ----------------------------------------------------------------------------
+
+JPEG::~JPEG()
+{
+   CloseStream();
+}
 
 // ----------------------------------------------------------------------------
 
 void JPEG::CloseStream()
 {
    // Close the JPEG file stream and clean up IJG software data.
-   if ( fileData != nullptr )
-      delete fileData, fileData = nullptr;
+   m_fileData.Destroy();
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
-#define jpeg_decompressor  ((j_decompress_ptr)fileData->decompressor)
-#define jpeg_compressor    ((j_compress_ptr)fileData->compressor)
+JPEGReader::~JPEGReader()
+{
+}
 
 // ----------------------------------------------------------------------------
 
 bool JPEGReader::IsOpen() const
 {
-   return fileData != nullptr && fileData->handle != nullptr;
+   return m_fileData && !m_fileData->data.IsEmpty();
 }
+
+// ----------------------------------------------------------------------------
 
 void JPEGReader::Close()
 {
    JPEG::CloseStream();
 }
 
-#define info      ((*images).info)
-#define options   ((*images).options)
+// ----------------------------------------------------------------------------
 
 void JPEGReader::Open( const String& _path )
 {
    if ( IsOpen() )
-      throw InvalidReadOperation( path );
+      throw JPEG::InvalidReadOperation( m_path );
 
    if ( _path.IsEmpty() )
-      throw InvalidFilePath( _path );
+      throw JPEG::InvalidFilePath( _path );
 
-   if ( options.lowerRange >= options.upperRange )
-      throw InvalidNormalizationRange( _path );
+   if ( m_image.options.lowerRange >= m_image.options.upperRange )
+      throw JPEG::InvalidNormalizationRange( _path );
 
-   info.Reset();
+   m_image.info.Reset();
 
    try
    {
-      fileData = new JPEGFileData;
-#ifdef __PCL_WINDOWS
-      path = File::WindowsPathToUnix( _path );
-#else
-      path = _path;
-#endif
+      m_fileData = new JPEGFileData;
 
       // Keep critical parameters secured in private data.
-      fileData->lowerRange = options.lowerRange;
-      fileData->upperRange = options.upperRange;
+      m_fileData->lowerRange = m_image.options.lowerRange;
+      m_fileData->upperRange = m_image.options.upperRange;
 
-      IsoString path8 =
 #ifdef __PCL_WINDOWS
-         File::UnixPathToWindows( path ).ToMBS();
+      m_path = File::WindowsPathToUnix( _path );
 #else
-         path.ToUTF8();
+      m_path = _path;
 #endif
-      fileData->handle = ::fopen( path8.c_str(), "rb" );
 
-      if ( fileData->handle == 0 )
-         throw UnableToOpenFile( path );
+      m_fileData->data = File::ReadFile( m_path );
 
-      // Allocate and initialize a JPEG decompression object.
+      /*
+       * Allocate and initialize a JPEG decompression object.
+       */
 
       // This struct contains the JPEG decompression parameters and pointers to
       // working space, which is allocated as needed by the IJG library.
-      fileData->decompressor = new ::jpeg_decompress_struct;
+      m_fileData->decompressor = new ::jpeg_decompress_struct;
 
       // Set up normal JPEG error routines, passing a pointer to our custom
       // error handler structure.
-      jpeg_decompressor->err = ::jpeg_std_error( (::jpeg_error_mgr*)
-                  (fileData->errorManager = new JPEGErrorManager( path )) );
+      m_fileData->errorManager = new JPEGErrorManager( m_path );
+      m_fileData->decompressor->err = m_fileData->errorManager->ToJPEGLibStdError();
 
       // Override error_exit. JPEG library errors will be handled by throwing
       // exceptions from the JPEGErrorExit() routine.
-      ((JPEGErrorManager*)fileData->errorManager)->error.error_exit = JPEGErrorExit;
+      m_fileData->errorManager->error.error_exit = JPEGErrorExit;
 
       // Initialize the JPEG decompression object.
-      ::jpeg_create_decompress( jpeg_decompressor );
+      ::jpeg_create_decompress( m_fileData->decompressor );
 
-      // Specify data source (e.g., a file).
-      ::jpeg_stdio_src( jpeg_decompressor, fileData->handle );
+      // Specify memory data source.
+      ::jpeg_mem_src( m_fileData->decompressor, m_fileData->data.Begin(), m_fileData->data.Length() );
 
-      // Read file parameters with ::jpeg_read_header().
+      /*
+       * Read file parameters.
+       */
+      ::jpeg_save_markers( m_fileData->decompressor, JPEG_COM,     0xFFFF );
+      ::jpeg_save_markers( m_fileData->decompressor, JPEG_APP0+ 0, 0xFFFF );
+      ::jpeg_save_markers( m_fileData->decompressor, JPEG_APP0+ 1, 0xFFFF );
+      ::jpeg_save_markers( m_fileData->decompressor, JPEG_APP0+ 2, 0xFFFF );
+      ::jpeg_save_markers( m_fileData->decompressor, JPEG_APP0+ 3, 0xFFFF );
+      ::jpeg_save_markers( m_fileData->decompressor, JPEG_APP0+ 4, 0xFFFF );
+      ::jpeg_save_markers( m_fileData->decompressor, JPEG_APP0+ 5, 0xFFFF );
+      ::jpeg_save_markers( m_fileData->decompressor, JPEG_APP0+ 6, 0xFFFF );
+      ::jpeg_save_markers( m_fileData->decompressor, JPEG_APP0+ 7, 0xFFFF );
+      ::jpeg_save_markers( m_fileData->decompressor, JPEG_APP0+ 8, 0xFFFF );
+      ::jpeg_save_markers( m_fileData->decompressor, JPEG_APP0+ 9, 0xFFFF );
+      ::jpeg_save_markers( m_fileData->decompressor, JPEG_APP0+10, 0xFFFF );
+      ::jpeg_save_markers( m_fileData->decompressor, JPEG_APP0+11, 0xFFFF );
+      ::jpeg_save_markers( m_fileData->decompressor, JPEG_APP0+12, 0xFFFF );
+      ::jpeg_save_markers( m_fileData->decompressor, JPEG_APP0+13, 0xFFFF );
+      ::jpeg_save_markers( m_fileData->decompressor, JPEG_APP0+14, 0xFFFF );
+      ::jpeg_save_markers( m_fileData->decompressor, JPEG_APP0+15, 0xFFFF );
 
-      ::jpeg_save_markers( jpeg_decompressor, JPEG_COM,     0xFFFF );
-      ::jpeg_save_markers( jpeg_decompressor, JPEG_APP0+ 0, 0xFFFF );
-      ::jpeg_save_markers( jpeg_decompressor, JPEG_APP0+ 1, 0xFFFF );
-      ::jpeg_save_markers( jpeg_decompressor, JPEG_APP0+ 2, 0xFFFF );
-      ::jpeg_save_markers( jpeg_decompressor, JPEG_APP0+ 3, 0xFFFF );
-      ::jpeg_save_markers( jpeg_decompressor, JPEG_APP0+ 4, 0xFFFF );
-      ::jpeg_save_markers( jpeg_decompressor, JPEG_APP0+ 5, 0xFFFF );
-      ::jpeg_save_markers( jpeg_decompressor, JPEG_APP0+ 6, 0xFFFF );
-      ::jpeg_save_markers( jpeg_decompressor, JPEG_APP0+ 7, 0xFFFF );
-      ::jpeg_save_markers( jpeg_decompressor, JPEG_APP0+ 8, 0xFFFF );
-      ::jpeg_save_markers( jpeg_decompressor, JPEG_APP0+ 9, 0xFFFF );
-      ::jpeg_save_markers( jpeg_decompressor, JPEG_APP0+10, 0xFFFF );
-      ::jpeg_save_markers( jpeg_decompressor, JPEG_APP0+11, 0xFFFF );
-      ::jpeg_save_markers( jpeg_decompressor, JPEG_APP0+12, 0xFFFF );
-      ::jpeg_save_markers( jpeg_decompressor, JPEG_APP0+13, 0xFFFF );
-      ::jpeg_save_markers( jpeg_decompressor, JPEG_APP0+14, 0xFFFF );
-      ::jpeg_save_markers( jpeg_decompressor, JPEG_APP0+15, 0xFFFF );
+      ::jpeg_read_header( m_fileData->decompressor, TRUE/*require_image*/ );
 
-      ::jpeg_read_header( jpeg_decompressor, boolean( true ) );
-
-      // Deal with the JFIF marker and associated resolution data.
-
-      if ( (jpegOptions.JFIFMarker = jpeg_decompressor->saw_JFIF_marker) != false )
+      /*
+       * Deal with the JFIF marker and associated image resolution data.
+       */
+      if ( (m_jpegOptions.JFIFMarker = m_fileData->decompressor->saw_JFIF_marker) != false )
       {
-         jpegOptions.JFIFMajorVersion = jpeg_decompressor->JFIF_major_version;
-         jpegOptions.JFIFMinorVersion = jpeg_decompressor->JFIF_minor_version;
-         options.metricResolution = jpeg_decompressor->density_unit == 2;
-         options.xResolution = jpeg_decompressor->X_density;
-         options.yResolution = jpeg_decompressor->Y_density;
+         m_jpegOptions.JFIFMajorVersion = m_fileData->decompressor->JFIF_major_version;
+         m_jpegOptions.JFIFMinorVersion = m_fileData->decompressor->JFIF_minor_version;
+         m_image.options.metricResolution = m_fileData->decompressor->density_unit == 2;
+         m_image.options.xResolution = m_fileData->decompressor->X_density;
+         m_image.options.yResolution = m_fileData->decompressor->Y_density;
       }
       else
       {
          // Set default JFIF version and resolution data if a JFIF marker is
          // not present in this JPEG file.
-         jpegOptions.JFIFMajorVersion = 1;
-         jpegOptions.JFIFMinorVersion = 2;
-         options.metricResolution = false;
-         options.xResolution = options.yResolution = 72;
+         m_jpegOptions.JFIFMajorVersion = 1;
+         m_jpegOptions.JFIFMinorVersion = 2;
+         m_image.options.metricResolution = false;
+         m_image.options.xResolution = m_image.options.yResolution = 72;
       }
 
-      // Set sample format options.
+      /*
+       * Set sample format parameters.
+       */
+      m_image.options.bitsPerSample = 8;
+      m_image.options.signedIntegers = m_image.options.complexSample = m_image.options.ieeefpSampleFormat = false;
 
-      options.bitsPerSample = 8;
-      options.signedIntegers = options.complexSample = options.ieeefpSampleFormat = false;
-
-      // Extract JPEG quality from dedicated JPEG marker
-
-      jpegOptions.quality = JPEGQuality::Unknown;
-
-      if ( jpeg_decompressor->marker_list != nullptr )
+      /*
+       * Extract JPEG quality and other format-specific parameters.
+       */
+      m_jpegOptions.quality = JPEGQuality::Unknown;
+      if ( m_fileData->decompressor->marker_list != nullptr )
       {
-         const jpeg_marker_struct* m = jpeg_decompressor->marker_list;
+         const jpeg_marker_struct* m = m_fileData->decompressor->marker_list;
 
          do
          {
             if ( !STRNCASECMP( (const char*)m->data, "JPEGQuality", 11 ) )
             {
                // Skip marker header + null char
-               jpegOptions.quality = Range( int( *(m->data + 12) ), 1, 100 );
+               m_jpegOptions.quality = Range( int( *(m->data + 12) ), 1, 100 );
                break;
             }
             else if ( !STRNCASECMP( (const char*)m->data, "JPEG Quality", 12 ) ||
                       !STRNCASECMP( (const char*)m->data, "JPEG_Quality", 12 ) )
             {
                // Skip marker header + null char
-               jpegOptions.quality = Range( int( *(m->data + 13) ), 1, 100 );
+               m_jpegOptions.quality = Range( int( *(m->data + 13) ), 1, 100 );
                break;
             }
          }
          while ( (m = m->next) != nullptr );
       }
 
-      jpegOptions.progressive = jpeg_decompressor->progressive_mode;
-      jpegOptions.arithmeticCoding = jpeg_decompressor->arith_code;
+      m_jpegOptions.progressive = m_fileData->decompressor->progressive_mode;
+      m_jpegOptions.arithmeticCoding = m_fileData->decompressor->arith_code;
 
-      // Fill in ImageInfo and JPEGFileData fields.
+      /*
+       * Fill in ImageInfo and JPEGFileData fields.
+       */
+      ::jpeg_calc_output_dimensions( m_fileData->decompressor );
 
-      ::jpeg_calc_output_dimensions( jpeg_decompressor );
-
-      info.width = jpeg_decompressor->output_width;
-      info.height = jpeg_decompressor->output_height;
-      info.numberOfChannels = jpeg_decompressor->out_color_components;
-      info.colorSpace = (jpeg_decompressor->out_color_space == JCS_GRAYSCALE) ?
+      m_image.info.width = m_fileData->decompressor->output_width;
+      m_image.info.height = m_fileData->decompressor->output_height;
+      m_image.info.numberOfChannels = m_fileData->decompressor->out_color_components;
+      m_image.info.colorSpace = (m_fileData->decompressor->out_color_space == JCS_GRAYSCALE) ?
                                              ColorSpace::Gray : ColorSpace::RGB;
-      info.supported = true;
+      m_image.info.supported = true;
    }
    catch ( ... )
    {
@@ -335,36 +350,34 @@ void JPEGReader::Open( const String& _path )
 
 // ----------------------------------------------------------------------------
 
-bool JPEGReader::Extract( ICCProfile& icc )
+ICCProfile JPEGReader::ReadICCProfile()
 {
-   icc.Clear();
-
    if ( !IsOpen() )
-      return false;
+      throw JPEG::InvalidReadOperation( String() );
 
-   if ( jpeg_decompressor->marker_list == nullptr )
-      return true;
+   if ( m_fileData->decompressor->marker_list == nullptr )
+      return ICCProfile();
 
    ByteArray iccData;
    uint32 iccSize = 0;
    uint32 iccChunkOffset = 0;
 
-   const ::jpeg_marker_struct* m = jpeg_decompressor->marker_list;
+   const ::jpeg_marker_struct* m = m_fileData->decompressor->marker_list;
 
    do
    {
       if ( !STRNCASECMP( (const char*)m->data, "ICC_PROFILE", 11 ) )
       {
-         //
-         // ICC_PROFILE 0 i N ddddddddddddd...ddd
-         // -----------
-         //   iCC id
-         //
-         // 0 = nul character
-         // i = index number of this chunk
-         // N = total number of chunks
-         // d = data bytes in this chunk
-         //
+         /*
+          * ICC_PROFILE 0 i N ddddddddddddd...ddd
+          * -----------
+          *   iCC id
+          *
+          * 0 = nul character
+          * i = index number of this chunk
+          * N = total number of chunks
+          * d = data bytes in this chunk
+          */
          void* iccChunkData = m->data + 14;
 
          // Allocate ICC data block when we see the first chunk.
@@ -376,7 +389,7 @@ bool JPEGReader::Extract( ICCProfile& icc )
             // big endian byte order.
             iccSize = BigToLittleEndian( *(const uint32*)iccChunkData );
             if ( iccSize == 0 )
-               return true;
+               return ICCProfile();
 
             iccData = ByteArray( size_type( iccSize ) );
          }
@@ -385,7 +398,7 @@ bool JPEGReader::Extract( ICCProfile& icc )
 
          // Guard us against insane ICC profile data.
          if ( iccChunkOffset+iccChunkSize > iccSize )
-            return true;
+            return ICCProfile();
 
          ::memcpy( iccData.At( iccChunkOffset ), iccChunkData, iccChunkSize );
 
@@ -398,114 +411,88 @@ bool JPEGReader::Extract( ICCProfile& icc )
    }
    while ( (m = m->next) != nullptr );
 
-   icc.Set( iccData );
-   return true;
+   return ICCProfile( iccData );
 }
 
-// ----------------------------------------------------------------------------
-
-/*
-bool JPEGReader::Extract( IPTCPhotoInfo& iptc )
-{
-   iptc.Clear();
-
-   if ( !IsOpen() )
-      return false;
-
-   if ( jpeg_decompressor->marker_list == nullptr )
-      return true;
-
-   const ::jpeg_marker_struct* m = jpeg_decompressor->marker_list;
-   do
-   {
-      if ( (!STRNCASECMP( (const char*)m->data, "IPTCPhotoInfo", 13 ) ||
-            !STRNCASECMP( (const char*)m->data, "IPTC PhotoInfo", 14 ) ||
-            !STRNCASECMP( (const char*)m->data, "IPTC_PhotoInfo", 14 ) ||
-            !STRNCASECMP( (const char*)m->data, "IPTC Photo Info", 15 ) ||
-            !STRNCASECMP( (const char*)m->data, "IPTC_Photo_Info", 15 )) )
-      {
-         // Find beginning of IPTC data block
-         const char* iptcData = (const char*)::memchr( (const char*)m->data, 0x1c, m->data_length );
-         if ( iptcData != nullptr )
-            iptc.GetInfo( iptcData, m->data_length - (iptcData - (const char*)m->data) );
-         break;
-      }
-   }
-   while ( (m = m->next) != nullptr );
-
-   return true;
-}
-*/
 // ----------------------------------------------------------------------------
 
 template <class P>
-static void ReadJPEGImage( GenericImage<P>& img, JPEGReader& reader, JPEGFileData* fileData )
+static void ReadJPEGImage( GenericImage<P>& image, JPEGReader& reader, JPEGFileData* fileData )
 {
    if ( !reader.IsOpen() )
       throw JPEG::InvalidReadOperation( String() );
 
-   JSAMPLE* buffer = nullptr;        // one-row sample array for scanline reading
-   typename P::sample** v = nullptr; // pointers to destination scan lines
-
    try
    {
-      // Set parameters for decompression.
-      // Most parameters have already been established by Open().
-      // We just ensure that we'll get either a grayscale or a RGB color image.
-      if ( jpeg_decompressor->out_color_space != JCS_GRAYSCALE )
-         jpeg_decompressor->out_color_space = JCS_RGB;
+      /*
+       * Set parameters for decompression.
+       * Most parameters have already been established by Open().
+       * We just ensure that we'll get either a grayscale or a RGB color image.
+       */
+      if ( fileData->decompressor->out_color_space != JCS_GRAYSCALE )
+         fileData->decompressor->out_color_space = JCS_RGB;
 
-      // Start decompressor.
-      ::jpeg_start_decompress( jpeg_decompressor );
+      /*
+       * Start decompression.
+       */
+      ::jpeg_start_decompress( fileData->decompressor );
 
-      // Allocate pixel data.
-      img.AllocateData( jpeg_decompressor->output_width,
-                        jpeg_decompressor->output_height,
-                        jpeg_decompressor->output_components,
-                  (jpeg_decompressor->out_color_space == JCS_GRAYSCALE) ?
-                        ColorSpace::Gray : ColorSpace::RGB );
+      /*
+       * Allocate pixel data.
+       */
+      image.AllocateData( fileData->decompressor->output_width,
+                          fileData->decompressor->output_height,
+                          fileData->decompressor->output_components,
+                          (fileData->decompressor->out_color_space == JCS_GRAYSCALE) ?
+                                                      ColorSpace::Gray : ColorSpace::RGB );
 
-      // Initialize status callback.
-      if ( img.Status().IsInitializationEnabled() )
-         img.Status().Initialize( String().Format(
-                  "Decompressing JPEG: %d channel(s), %dx%d pixels",
-                  img.NumberOfChannels(), img.Width(), img.Height() ), img.NumberOfSamples() );
+      /*
+       * Read pixels row by row.
+       */
 
-      //
-      // Read pixels row by row.
-      //
-
-      // JSAMPLEs per row in output buffer.
-      int row_stride = img.Width() * img.NumberOfChannels();
-
-      // Make a one-row-high sample array.
-      buffer = new JSAMPLE[ row_stride ];
-
-      // JPEG organization is chunky; PCL images are planar.
-      v = new typename P::sample*[ img.NumberOfChannels() ];
-
-      while ( jpeg_decompressor->output_scanline < jpeg_decompressor->output_height )
+      StatusMonitor monitor;
+      StandardStatus status;
+      if ( reader.JPEGOptions().verbosity > 0 )
       {
-         ::jpeg_read_scanlines( jpeg_decompressor, &buffer, 1 );
-
-         const JSAMPLE* b = buffer;
-
-         for ( int c = 0; c < img.NumberOfChannels(); ++c )
-            v[c] = img.ScanLine( jpeg_decompressor->output_scanline-1, c );
-
-         for ( int i = 0; i < img.Width(); ++i )
-            for ( int c = 0; c < img.NumberOfChannels(); ++c, ++b )
-               *v[c]++ = P::IsFloatSample() ? typename P::sample( *b ) : P::ToSample( *b );
-
-         img.Status() += img.Width()*img.NumberOfChannels();
+         monitor.SetCallback( &status );
+         monitor.Initialize( String().Format(
+               "Decompressing JPEG: %d channel(s), %dx%d pixels",
+               image.NumberOfChannels(), image.Width(), image.Height() ), image.NumberOfSamples() );
       }
 
-      // Clean up temporary structures.
-      delete [] v, v = nullptr;
-      delete [] buffer, buffer = nullptr;
+      // JSAMPLEs per row in output buffer.
+      int rowStride = image.Width() * image.NumberOfChannels();
 
-      // Finish decompression.
-      ::jpeg_finish_decompress( jpeg_decompressor );
+      // Make a one-row-high sample array.
+      Array<JSAMPLE> buffer( rowStride );
+
+      // JPEG organization is chunky; PCL images are planar.
+      Array<typename P::sample*> samples( image.NumberOfChannels() );
+
+      while ( fileData->decompressor->output_scanline < fileData->decompressor->output_height )
+      {
+         {
+            JSAMPLE* p = buffer.Begin();
+            ::jpeg_read_scanlines( fileData->decompressor, &p, 1 );
+         }
+
+         const JSAMPLE* b = buffer.Begin();
+
+         for ( int c = 0; c < image.NumberOfChannels(); ++c )
+            samples[c] = image.ScanLine( fileData->decompressor->output_scanline-1, c );
+
+         for ( int i = 0; i < image.Width(); ++i )
+            for ( int c = 0; c < image.NumberOfChannels(); ++c, ++b )
+               *samples[c]++ = P::IsFloatSample() ? typename P::sample( *b ) : P::ToSample( *b );
+
+         if ( reader.JPEGOptions().verbosity > 0 )
+            monitor += rowStride;
+      }
+
+      /*
+       * Finish decompression.
+       */
+      ::jpeg_finish_decompress( fileData->decompressor );
 
       // ### TODO --> At this point we might check whether any corrupt-data
       // warnings occurred (test whether jerr.pub.num_warnings is nonzero).
@@ -513,114 +500,115 @@ static void ReadJPEGImage( GenericImage<P>& img, JPEGReader& reader, JPEGFileDat
    catch ( ... )
    {
       reader.Close();
-
-      if ( buffer != nullptr )
-         delete [] buffer;
-      if ( v != nullptr )
-         delete [] v;
-
-      img.FreeData();
-
+      image.FreeData();
       throw;
    }
 }
 
-#define NORMALIZE( I )                                                        \
-   if ( options.readNormalized )                                              \
-   {                                                                          \
-      if ( fileData->lowerRange != 0 || fileData->upperRange != 255 )         \
-      {                                                                       \
-         double oDelta = fileData->upperRange - fileData->lowerRange;         \
-                                                                              \
-         for ( int c = 0; c < img.NumberOfChannels(); ++c )                   \
-         {                                                                    \
-            I::sample* f = img.PixelData( c );                                \
-            const I::sample* f1 = f + img.NumberOfPixels();                   \
-                                                                              \
-            if ( oDelta != 1 || fileData->lowerRange != 0 )                   \
-               for ( ; f < f1; ++f )                                          \
-                  *f = Range( (*f/255)*oDelta + fileData->lowerRange,         \
-                              fileData->lowerRange, fileData->upperRange );   \
-            else                                                              \
-               for ( ; f < f1; ++f )                                          \
-                  *f /= 255;                                                  \
-         }                                                                    \
-      }                                                                       \
+#define NORMALIZE( I )                                                           \
+   if ( m_image.options.readNormalized )                                         \
+   {                                                                             \
+      if ( m_fileData->lowerRange != 0 || m_fileData->upperRange != 255 )        \
+      {                                                                          \
+         double oDelta = m_fileData->upperRange - m_fileData->lowerRange;        \
+                                                                                 \
+         for ( int c = 0; c < image.NumberOfChannels(); ++c )                    \
+         {                                                                       \
+            I::sample* f = image.PixelData( c );                                 \
+            const I::sample* f1 = f + image.NumberOfPixels();                    \
+                                                                                 \
+            if ( oDelta != 1 || m_fileData->lowerRange != 0 )                    \
+               for ( ; f < f1; ++f )                                             \
+                  *f = Range( (*f/255)*oDelta + m_fileData->lowerRange,          \
+                              m_fileData->lowerRange, m_fileData->upperRange );  \
+            else                                                                 \
+               for ( ; f < f1; ++f )                                             \
+                  *f /= 255;                                                     \
+         }                                                                       \
+      }                                                                          \
    }
 
-void JPEGReader::ReadImage( FImage& img )
+void JPEGReader::ReadImage( FImage& image )
 {
-   ReadJPEGImage( img, *this, fileData );
+   ReadJPEGImage( image, *this, m_fileData );
    NORMALIZE( FImage )
 }
 
-void JPEGReader::ReadImage( DImage& img )
+void JPEGReader::ReadImage( DImage& image )
 {
-   ReadJPEGImage( img, *this, fileData );
+   ReadJPEGImage( image, *this, m_fileData );
    NORMALIZE( DImage )
 }
 
-void JPEGReader::ReadImage( UInt8Image& img )
+void JPEGReader::ReadImage( UInt8Image& image )
 {
-   ReadJPEGImage( img, *this, fileData );
+   ReadJPEGImage( image, *this, m_fileData );
 }
 
-void JPEGReader::ReadImage( UInt16Image& img )
+void JPEGReader::ReadImage( UInt16Image& image )
 {
-   ReadJPEGImage( img, *this, fileData );
+   ReadJPEGImage( image, *this, m_fileData );
 }
 
-void JPEGReader::ReadImage( UInt32Image& img )
+void JPEGReader::ReadImage( UInt32Image& image )
 {
-   ReadJPEGImage( img, *this, fileData );
+   ReadJPEGImage( image, *this, m_fileData );
 }
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-#undef info
-#undef options
+JPEGWriter::~JPEGWriter()
+{
+}
+
+// ----------------------------------------------------------------------------
 
 bool JPEGWriter::IsOpen() const
 {
-   return fileData != nullptr && !path.IsEmpty();
+   return m_fileData && !m_path.IsEmpty();
 }
+
+// ----------------------------------------------------------------------------
 
 void JPEGWriter::Close()
 {
    JPEG::CloseStream();
 }
 
-void JPEGWriter::Create( const String& filePath, int count )
+// ----------------------------------------------------------------------------
+
+void JPEGWriter::Create( const String& filePath )
 {
    if ( IsOpen() )
-      throw InvalidWriteOperation( path );
+      throw JPEG::InvalidWriteOperation( m_path );
 
    if ( filePath.IsEmpty() )
-      throw InvalidFilePath( filePath );
-
-   if ( count <= 0 )
-      throw NotImplemented( *this, "Write empty JPEG files" );
-
-   if ( count > 1 )
-      throw NotImplemented( *this, "Write multiple images to a single JPEG file" );
+      throw JPEG::InvalidFilePath( filePath );
 
    Reset();
 
-   if ( fileData == nullptr )
-      fileData = new JPEGFileData;
+   if ( !m_fileData )
+      m_fileData = new JPEGFileData;
 
 #ifdef __PCL_WINDOWS
-      path = File::WindowsPathToUnix( filePath );
+      m_path = File::WindowsPathToUnix( filePath );
 #else
-      path = filePath;
+      m_path = filePath;
 #endif
 }
 
 // ----------------------------------------------------------------------------
 
+void JPEGWriter::WriteICCProfile( const ICCProfile& icc )
+{
+   m_iccProfile = icc;
+}
+
+// ----------------------------------------------------------------------------
+
 template <class P> inline
-static void WriteJPEGImage( const GenericImage<P>& img, JPEGWriter& writer,
+static void WriteJPEGImage( const GenericImage<P>& image, JPEGWriter& writer,
                             const ICCProfile& icc, JPEGFileData* fileData )
 {
    if ( !writer.IsOpen() )
@@ -629,14 +617,14 @@ static void WriteJPEGImage( const GenericImage<P>& img, JPEGWriter& writer,
    if ( writer.Options().lowerRange >= writer.Options().upperRange )
       throw JPEG::InvalidNormalizationRange( writer.Path() );
 
-   if ( img.IsEmptySelection() )
+   if ( image.IsEmptySelection() )
       throw JPEG::InvalidPixelSelection( writer.Path() );
 
    // Retrieve information on selected subimage.
-   Rect r = img.SelectedRectangle();
+   Rect r = image.SelectedRectangle();
    int width = r.Width();
    int height = r.Height();
-   int channels = img.NumberOfSelectedChannels();
+   int channels = image.NumberOfSelectedChannels();
 
    // JPEG doesn't support alpha channels, just plain grayscale and RGB images.
    if ( channels != 1 && channels != 3 )
@@ -645,21 +633,28 @@ static void WriteJPEGImage( const GenericImage<P>& img, JPEGWriter& writer,
    unsigned char qualityMarker[] =
    { 'J', 'P', 'E', 'G', 'Q', 'u', 'a', 'l', 'i', 't', 'y', 0, 0 };
 
+   unsigned char* outputBuffer = nullptr;
+   unsigned long outputSize = 0;
+
    try
    {
       // Make safe copies of critical parameters.
       fileData->lowerRange = writer.Options().lowerRange;
       fileData->upperRange = writer.Options().upperRange;
 
-      // Initialize status callback.
-      if ( img.Status().IsInitializationEnabled() )
-         img.Status().Initialize( String().Format(
-                  "Compressing JPEG: %d channel(s), %dx%d pixels",
-                  channels, width, height ), img.NumberOfSelectedSamples() );
+      StatusMonitor monitor;
+      StandardStatus status;
+      if ( writer.JPEGOptions().verbosity > 0 )
+      {
+         monitor.SetCallback( &status );
+         monitor.Initialize( String().Format(
+               "Compressing JPEG: %d channel(s), %dx%d pixels",
+               channels, width, height ), image.NumberOfSelectedSamples() );
+      }
 
-      //
-      // Allocate and initialize a JPEG compressor instance.
-      //
+      /*
+       * Allocate and initialize a JPEG compressor instance.
+       */
 
       // This struct contains the JPEG compression parameters and pointers to
       // working space, which is allocated as needed by the IJG library.
@@ -667,27 +662,27 @@ static void WriteJPEGImage( const GenericImage<P>& img, JPEGWriter& writer,
 
       // Set up normal JPEG error routines, passing a pointer to our custom
       // error handler structure.
-      jpeg_compressor->err = ::jpeg_std_error(
-         (::jpeg_error_mgr*)(fileData->errorManager = new JPEGErrorManager( writer.Path() )) );
+      fileData->errorManager = new JPEGErrorManager( writer.Path() );
+      fileData->compressor->err = fileData->errorManager->ToJPEGLibStdError();
 
       // Override error_exit. JPEG library errors will be handled by throwing
       // exceptions from the JPEGErrorExit() routine.
-      ((JPEGErrorManager*)fileData->errorManager)->error.error_exit = JPEGErrorExit;
+      fileData->errorManager->error.error_exit = JPEGErrorExit;
 
       // Initialize the JPEG compression object.
-      ::jpeg_create_compress( jpeg_compressor );
+      ::jpeg_create_compress( fileData->compressor );
 
-      //
-      // Set parameters for compression.
-      //
+      /*
+       * Set parameters for compression.
+       */
 
-      jpeg_compressor->image_width = width;
-      jpeg_compressor->image_height = height;
-      jpeg_compressor->input_components = channels;
-      jpeg_compressor->in_color_space = (channels == 1) ? JCS_GRAYSCALE : JCS_RGB;
+      fileData->compressor->image_width = width;
+      fileData->compressor->image_height = height;
+      fileData->compressor->input_components = channels;
+      fileData->compressor->in_color_space = (channels == 1) ? JCS_GRAYSCALE : JCS_RGB;
 
       // Set default compression parameters.
-      ::jpeg_set_defaults( jpeg_compressor );
+      ::jpeg_set_defaults( fileData->compressor );
 
       // Set any non-default parameters.
 
@@ -696,41 +691,36 @@ static void WriteJPEGImage( const GenericImage<P>& img, JPEGWriter& writer,
 
       // Set up compression according to specified JPEG quality.
       // We limit to baseline-JPEG values (TRUE arg in jpeg_set_quality).
-      ::jpeg_set_quality( jpeg_compressor, writer.JPEGOptions().quality, TRUE );
+      ::jpeg_set_quality( fileData->compressor, writer.JPEGOptions().quality, TRUE );
 
-      jpeg_compressor->optimize_coding = boolean( writer.JPEGOptions().optimizedCoding );
-      jpeg_compressor->arith_code = boolean( writer.JPEGOptions().arithmeticCoding );
-      jpeg_compressor->dct_method = JDCT_FLOAT;
-      jpeg_compressor->write_JFIF_header = boolean( writer.JPEGOptions().JFIFMarker );
-      jpeg_compressor->JFIF_major_version = writer.JPEGOptions().JFIFMajorVersion;
-      jpeg_compressor->JFIF_minor_version = writer.JPEGOptions().JFIFMinorVersion;
-      jpeg_compressor->density_unit = writer.Options().metricResolution ? 2 : 1;
-      jpeg_compressor->X_density = RoundI( writer.Options().xResolution );
-      jpeg_compressor->Y_density = RoundI( writer.Options().yResolution );
+      fileData->compressor->optimize_coding = boolean( writer.JPEGOptions().optimizedCoding );
+      fileData->compressor->arith_code = boolean( writer.JPEGOptions().arithmeticCoding );
+      fileData->compressor->dct_method = JDCT_FLOAT;
+      fileData->compressor->write_JFIF_header = boolean( writer.JPEGOptions().JFIFMarker );
+      fileData->compressor->JFIF_major_version = writer.JPEGOptions().JFIFMajorVersion;
+      fileData->compressor->JFIF_minor_version = writer.JPEGOptions().JFIFMinorVersion;
+      fileData->compressor->density_unit = writer.Options().metricResolution ? 2 : 1;
+      fileData->compressor->X_density = RoundI( writer.Options().xResolution );
+      fileData->compressor->Y_density = RoundI( writer.Options().yResolution );
 
       if ( writer.JPEGOptions().progressive )
-         ::jpeg_simple_progression( jpeg_compressor );
+         ::jpeg_simple_progression( fileData->compressor );
 
-      IsoString path8 =
-#ifdef __PCL_WINDOWS
-         File::UnixPathToWindows( writer.Path() ).ToMBS();
-#else
-         writer.Path().ToUTF8();
-#endif
-      fileData->handle = ::fopen( path8.c_str(), "wb" );
+      // Specify memory data destination.
 
-      if ( fileData->handle == 0 )
-         throw JPEG::UnableToCreateFile( writer.Path() );
+//       fileData->compressor->dest->init_destination = JPEGCompressionData::InitDestination;
+//       fileData->compressor->dest->empty_output_buffer = JPEGCompressionData::EmptyOutputBuffer;
+//       fileData->compressor->dest->term_destination = JPEGCompressionData::TermDestination;
 
-      // Specify data destination (e.g., a file).
-      ::jpeg_stdio_dest( jpeg_compressor, fileData->handle );
+      ::jpeg_mem_dest( fileData->compressor, &outputBuffer, &outputSize );
 
       // Start compressor.
-      ::jpeg_start_compress( jpeg_compressor, TRUE );
+      ::jpeg_start_compress( fileData->compressor, TRUE );
 
-      // Output ICC Profile data.
-      // We use APP2 markers, as stated on ICC.1:2001-12.
-
+      /*
+       * Output ICC Profile data.
+       * We use APP2 markers, as stated on ICC.1:2001-12.
+       */
       if ( writer.Options().embedICCProfile && icc.IsProfile() )
       {
          // Get ICC profile size in bytes from the ICC profile header
@@ -778,7 +768,7 @@ static void WriteJPEGImage( const GenericImage<P>& img, JPEGWriter& writer,
                iccData[12] = uint8( i );
 
                // Output an APP2 marker for this chunk.
-               ::jpeg_write_marker( jpeg_compressor, JPEG_APP0+2, (const JOCTET *)iccData.Begin(), size+14 );
+               ::jpeg_write_marker( fileData->compressor, JPEG_APP0+2, (const JOCTET *)iccData.Begin(), size+14 );
 
                // Prepare for next chunk.
                offset += size;
@@ -787,46 +777,24 @@ static void WriteJPEGImage( const GenericImage<P>& img, JPEGWriter& writer,
       }
 
       /*
-      // Output IPTC PhotoInfo data.
-      // We use an APP13 marker, as recommended by IPTC.
-
-      if ( iptc != nullptr )
-      {
-         size_type byteCount = iptc->MakeInfo( iptcPureData );
-
-         if ( byteCount != 0 )
-         {
-            iptcData = new char[ byteCount+14 ];
-            ::strcpy( (char*)iptcData, "IPTCPhotoInfo" );
-            ::memcpy( ((char*)iptcData)+14, iptcPureData, byteCount );
-            delete (uint8*)iptcPureData, iptcPureData = nullptr;
-
-            ::jpeg_write_marker( jpeg_compressor, JPEG_APP0+13,
-                  (const JOCTET *)iptcData, unsigned( byteCount+14 ) );
-
-            delete (uint8*)iptcData, iptcData = nullptr;
-         }
-      }
-      */
-
-      // Output JPEGQuality marker.
-      // We use an APP15 marker for quality.
-
+       * Output a JPEGQuality marker.
+       * We use an APP15 marker for quality.
+       */
       qualityMarker[12] = writer.JPEGOptions().quality;
-      ::jpeg_write_marker( jpeg_compressor, JPEG_APP0+15, qualityMarker, 13 );
+      ::jpeg_write_marker( fileData->compressor, JPEG_APP0+15, qualityMarker, 13 );
 
-      //
-      // Write pixels row by row.
-      //
+      /*
+       * Write pixels row by row.
+       */
 
       // JSAMPLEs per row in image_buffer.
-      int row_stride = width * channels;
+      int rowStride = width * channels;
 
       // Make a one-row-high sample array.
-      Array<JSAMPLE> buffer( row_stride );
+      Array<JSAMPLE> buffer( rowStride );
 
       // JPEG organization is chunky; PCL images are planar.
-      Array<const typename P::sample*> v( channels );
+      Array<const typename P::sample*> samples( channels );
 
       // Either rescaling or truncating to the [0,1] range is mandatory when
       // writing floating-point images to JPEG files.
@@ -835,78 +803,90 @@ static void WriteJPEGImage( const GenericImage<P>& img, JPEGWriter& writer,
       if ( rescale )
          k /= fileData->upperRange - fileData->lowerRange;
 
-      while ( jpeg_compressor->next_scanline < jpeg_compressor->image_height )
+      while ( fileData->compressor->next_scanline < fileData->compressor->image_height )
       {
          JSAMPLE* b = buffer.Begin();
 
          for ( int c = 0; c < channels; ++c )
-            v[c] = img.PixelAddress( r.x0,
-                                     r.y0+jpeg_compressor->next_scanline,
-                                     img.FirstSelectedChannel()+c );
+            samples[c] = image.PixelAddress( r.x0,
+                                           r.y0 + fileData->compressor->next_scanline,
+                                           image.FirstSelectedChannel() + c );
 
          for ( int i = 0; i < width; ++i )
             for ( int c = 0; c < channels; ++c, ++b )
             {
-               typename P::sample f = *v[c]++;
-
+               typename P::sample f = *samples[c]++;
                if ( P::IsFloatSample() )
                {
                   f = typename P::sample( Range( double( f ), fileData->lowerRange, fileData->upperRange ) );
                   if ( rescale )
                      f = typename P::sample( k*(f - fileData->lowerRange) );
                }
-
                P::FromSample( *b, f );
             }
 
          b = buffer.Begin();
-         ::jpeg_write_scanlines( jpeg_compressor, &b, 1 );
+         ::jpeg_write_scanlines( fileData->compressor, &b, 1 );
 
-         img.Status() += width * channels;
-         ++img.Status();
+         if ( writer.JPEGOptions().verbosity > 0 )
+            monitor += rowStride;
       }
 
-      // Finish JPEG compression.
-      ::jpeg_finish_compress( jpeg_compressor );
+      /*
+       * Finish JPEG compression.
+       */
+      ::jpeg_finish_compress( fileData->compressor );
 
-      // Close the output file.
-      ::fclose( fileData->handle ), fileData->handle = nullptr;
+      /*
+       * Write the output file.
+       */
+      if ( outputBuffer != nullptr )
+         if ( outputSize > 0 )
+            File::WriteFile( writer.Path(), outputBuffer, outputSize );
 
-      // Release the JPEG compression object.
-      ::jpeg_destroy_compress( jpeg_compressor );
-      delete jpeg_compressor, fileData->compressor = nullptr;
+      /*
+       * Release the JPEG compression object.
+       */
+      ::jpeg_destroy_compress( fileData->compressor );
+      fileData->compressor.Destroy();
+
+      /*
+       * Release the memory buffer.
+       */
+      if ( outputBuffer != nullptr )
+         ::free( outputBuffer );
    }
    catch ( ... )
    {
-      if ( fileData->handle != nullptr )
-         ::fclose( fileData->handle ), fileData->handle = nullptr;
+      if ( outputBuffer != nullptr )
+         ::free( outputBuffer );
       throw;
    }
 }
 
-void JPEGWriter::WriteImage( const FImage& img )
+void JPEGWriter::WriteImage( const FImage& image )
 {
-   WriteJPEGImage( img, *this, icc, fileData );
+   WriteJPEGImage( image, *this, m_iccProfile, m_fileData );
 }
 
-void JPEGWriter::WriteImage( const DImage& img )
+void JPEGWriter::WriteImage( const DImage& image )
 {
-   WriteJPEGImage( img, *this, icc, fileData );
+   WriteJPEGImage( image, *this, m_iccProfile, m_fileData );
 }
 
-void JPEGWriter::WriteImage( const UInt8Image& img )
+void JPEGWriter::WriteImage( const UInt8Image& image )
 {
-   WriteJPEGImage( img, *this, icc, fileData );
+   WriteJPEGImage( image, *this, m_iccProfile, m_fileData );
 }
 
-void JPEGWriter::WriteImage( const UInt16Image& img )
+void JPEGWriter::WriteImage( const UInt16Image& image )
 {
-   WriteJPEGImage( img, *this, icc, fileData );
+   WriteJPEGImage( image, *this, m_iccProfile, m_fileData );
 }
 
-void JPEGWriter::WriteImage( const UInt32Image& img )
+void JPEGWriter::WriteImage( const UInt32Image& image )
 {
-   WriteJPEGImage( img, *this, icc, fileData );
+   WriteJPEGImage( image, *this, m_iccProfile, m_fileData );
 }
 
 // ----------------------------------------------------------------------------
@@ -914,4 +894,4 @@ void JPEGWriter::WriteImage( const UInt32Image& img )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF JPEG.cpp - Released 2016/02/21 20:22:34 UTC
+// EOF JPEG.cpp - Released 2017-04-14T23:07:03Z

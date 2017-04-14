@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.12.01.0359
+// Standard ImageIntegration Process Module Version 01.12.01.0368
 // ----------------------------------------------------------------------------
-// ImageIntegrationInstance.cpp - Released 2016/12/30 01:41:29 UTC
+// ImageIntegrationInstance.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -224,7 +224,6 @@ bool ImageIntegrationInstance::CanExecuteGlobal( String& whyNot ) const
       return false;
    }
 
-   whyNot.Clear();
    return true;
 }
 
@@ -817,7 +816,7 @@ private:
       if ( s_incremental )
       {
          startRow += s_roi.y0;
-         if ( !m_file->Read( *m_buffer, startRow, Min( s_bufferRows, s_roi.y1 - startRow ), channel ) )
+         if ( !m_file->ReadSamples( *m_buffer, startRow, Min( s_bufferRows, s_roi.y1 - startRow ), channel ) )
             throw CatchedException();
       }
       else
@@ -1530,7 +1529,7 @@ void IntegrationFile::ToDrizzleData( File& f ) const
 double IntegrationFile::KeywordValue( const IsoString& keyName )
 {
    FITSKeywordArray keywords;
-   if ( !m_file->Extract( keywords ) )
+   if ( !m_file->ReadFITSKeywords( keywords ) )
       throw CatchedException();
 
    for ( FITSKeywordArray::const_iterator i = keywords.Begin(); i != keywords.End(); ++i )
@@ -2002,16 +2001,7 @@ private:
       {
       }
 
-#ifdef _MSC_VER
-      /*
-       * VC++ 2010 and 2012 can't deal with this virtual function redeclared as pure...
-       */
-      virtual void Run()
-      {
-      }
-#else
       virtual void Run() = 0;
-#endif
 
       virtual void PostRun()
       {
@@ -4349,4 +4339,4 @@ size_type ImageIntegrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageIntegrationInstance.cpp - Released 2016/12/30 01:41:29 UTC
+// EOF ImageIntegrationInstance.cpp - Released 2017-04-14T23:07:12Z

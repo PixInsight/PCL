@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard ImageCalibration Process Module Version 01.03.05.0272
+// Standard ImageCalibration Process Module Version 01.03.05.0281
 // ----------------------------------------------------------------------------
-// ImageCalibrationInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// ImageCalibrationInstance.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageCalibration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -247,7 +247,6 @@ bool ImageCalibrationInstance::CanExecuteGlobal( String& whyNot ) const
       return false;
    }
 
-   whyNot.Clear();
    return true;
 }
 
@@ -861,10 +860,10 @@ struct OutputFileData
          fsData = file.FormatSpecificData();
 
       if ( format->CanStoreKeywords() )
-         file.Extract( keywords );
+         file.ReadFITSKeywords( keywords );
 
       if ( format->CanStoreICCProfiles() )
-         file.Extract( profile );
+         file.ReadICCProfile( profile );
    }
 
    ~OutputFileData()
@@ -1185,7 +1184,7 @@ void ImageCalibrationInstance::SubtractPedestal( Image* image, FileFormatInstanc
       {
          IsoString keyName( (pedestalMode == ICPedestalMode::Keyword) ? "PEDESTAL" : pedestalKeyword );
          FITSKeywordArray keywords;
-         if ( !file.Extract( keywords ) )
+         if ( !file.ReadFITSKeywords( keywords ) )
             break;
          double d = 0;
          for ( FITSKeywordArray::const_iterator i = keywords.Begin(); i != keywords.End(); ++i )
@@ -1699,7 +1698,7 @@ void ImageCalibrationInstance::WriteCalibratedImage( const CalibrationThread* t 
                                        "Value in DN added to enforce positivity" ) );
       }
 
-      outputFile.Embed( keywords );
+      outputFile.WriteFITSKeywords( keywords );
    }
    else
    {
@@ -1711,7 +1710,7 @@ void ImageCalibrationInstance::WriteCalibratedImage( const CalibrationThread* t 
     */
    if ( data.profile.IsProfile() )
       if ( outputFormat.CanStoreICCProfiles() )
-         outputFile.Embed( data.profile );
+         outputFile.WriteICCProfile( data.profile );
       else
          console.WarningLn( "** Warning: The output format cannot store color profiles - original ICC profile not embedded." );
 
@@ -2811,4 +2810,4 @@ size_type ImageCalibrationInstance::ParameterLength( const MetaParameter* p, siz
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ImageCalibrationInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF ImageCalibrationInstance.cpp - Released 2017-04-14T23:07:12Z

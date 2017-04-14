@@ -116,15 +116,10 @@ ProcessImplementation* CFA2RGBInterface::NewProcess() const
 
 bool CFA2RGBInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const CFA2RGBInstance* r = dynamic_cast<const CFA2RGBInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not a CFA2RGB instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const CFA2RGBInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a CFA2RGB instance.";
+   return false;
 }
 
 bool CFA2RGBInterface::RequiresInstanceValidation() const

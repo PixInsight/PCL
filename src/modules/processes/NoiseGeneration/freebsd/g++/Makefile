@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.101
-# Copyright (C) 2009-2015 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.104
+# Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Fri, 18 Mar 2016 13:16:55 GMT
+# Generated on .... 2017-04-14T21:29:30.871Z
 # Project id ...... NoiseGeneration
 # Project type .... Module
 # Platform ........ FreeBSD/g++

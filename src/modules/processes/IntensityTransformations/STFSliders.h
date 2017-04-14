@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0355
+// Standard IntensityTransformations Process Module Version 01.07.01.0364
 // ----------------------------------------------------------------------------
-// STFSliders.h - Released 2016/02/21 20:22:43 UTC
+// STFSliders.h - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -114,11 +114,11 @@ private:
    int      m_wheelSteps;  // accumulated 1/8-degree wheel steps
 
 
-   value_event_handler onValueUpdated;
-   Control*            onValueUpdatedReceiver;
+   value_event_handler onValueUpdated         = nullptr;
+   Control*            onValueUpdatedReceiver = nullptr;
 
-   range_event_handler onRangeUpdated;
-   Control*            onRangeUpdatedReceiver;
+   range_event_handler onRangeUpdated         = nullptr;
+   Control*            onRangeUpdatedReceiver = nullptr;
 
    double SliderToSTF( int x ) const
    {
@@ -169,4 +169,4 @@ private:
 #endif   // __STFSliders_h
 
 // ----------------------------------------------------------------------------
-// EOF STFSliders.h - Released 2016/02/21 20:22:43 UTC
+// EOF STFSliders.h - Released 2017-04-14T23:07:12Z

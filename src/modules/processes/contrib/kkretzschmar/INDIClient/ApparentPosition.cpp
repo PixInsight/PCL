@@ -2808,8 +2808,8 @@ void ApparentPosition::Aberration( Vector& p, bool inverse ) const
        */
       double pdv = p * v; // dot product
       double w1 = 1 + pdv/(1 + bm1);
-      // Ratio of the Sun's Schwarzschild radius to the distance between the Sun
-      // and the observer.
+      // Ratio of the Sun's Schwarzschild radius to the distance between the
+      // Sun and the observer.
       double w2 = SRS/ph.L2Norm();
       for ( int i = 0; i < 3; ++i )
          p[i] = p[i]*bm1 + w1*v[i] + w2*(v[i] - pdv*p[i]);

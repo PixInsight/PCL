@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Image Process Module Version 01.02.09.0352
+// Standard Image Process Module Version 01.02.09.0361
 // ----------------------------------------------------------------------------
-// CreateAlphaChannelsInterface.h - Released 2016/02/21 20:22:43 UTC
+// CreateAlphaChannelsInterface.h - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Image PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,14 +53,13 @@
 #ifndef __CreateAlphaChannelsInterface_h
 #define __CreateAlphaChannelsInterface_h
 
-#include <pcl/ProcessInterface.h>
-
-#include <pcl/Sizer.h>
-#include <pcl/GroupBox.h>
 #include <pcl/CheckBox.h>
 #include <pcl/Edit.h>
-#include <pcl/ToolButton.h>
+#include <pcl/GroupBox.h>
 #include <pcl/NumericControl.h>
+#include <pcl/ProcessInterface.h>
+#include <pcl/Sizer.h>
+#include <pcl/ToolButton.h>
 
 #include "CreateAlphaChannelsInstance.h"
 
@@ -114,7 +113,7 @@ private:
          CheckBox          Replace_CheckBox;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
 
@@ -126,6 +125,8 @@ private:
    void __Transparency_ValueUpdated( NumericEdit& sender, double value );
    void __ColorSample_Paint( Control& sender, const Rect& updateRect );
    void __Replace_Click( Button& sender, bool checked );
+   void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
+   void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
 
    friend struct GUIData;
 };
@@ -143,4 +144,4 @@ PCL_END_LOCAL
 #endif   // __CreateAlphaChannelsInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF CreateAlphaChannelsInterface.h - Released 2016/02/21 20:22:43 UTC
+// EOF CreateAlphaChannelsInterface.h - Released 2017-04-14T23:07:12Z

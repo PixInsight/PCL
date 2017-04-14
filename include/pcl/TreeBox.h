@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/TreeBox.h - Released 2016/02/21 20:22:12 UTC
+// pcl/TreeBox.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,37 +56,15 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_AutoPointer_h
 #include <pcl/AutoPointer.h>
-#endif
-
-#ifndef __PCL_ScrollBox_h
-#include <pcl/ScrollBox.h>
-#endif
-
-#ifndef __PCL_TextAlign_h
-#include <pcl/TextAlign.h>
-#endif
-
-#ifndef __PCL_Bitmap_h
 #include <pcl/Bitmap.h>
-#endif
-
-#ifndef __PCL_Font_h
 #include <pcl/Font.h>
-#endif
-
-#ifndef __PCL_IndirectArray_h
 #include <pcl/IndirectArray.h>
-#endif
-
-#ifndef __PCL_SortedArray_h
+#include <pcl/ScrollBox.h>
 #include <pcl/SortedArray.h>
-#endif
+#include <pcl/TextAlign.h>
 
 namespace pcl
 {
@@ -104,8 +82,8 @@ class PCL_CLASS TreeBox : public ScrollBox
 public:
 
    /*!
-    * \class Node
-    * \brief Client-side interface to a PixInsight %TreeBox node.
+    * \class pcl::TreeBox::Node
+    * \brief Client-side interface to a PixInsight %TreeBox node
     *
     * ### TODO: Write a detailed description for %TreeBox::Node.
     */
@@ -947,9 +925,7 @@ protected:
    /*!
     * \internal
     */
-   TreeBox( void* h ) : ScrollBox( h, nullptr )
-   {
-   }
+   TreeBox( void* );
 
    friend class Node;
    friend class TreeBoxEventDispatcher;
@@ -964,4 +940,4 @@ protected:
 #endif   // __PCL_TreeBox_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/TreeBox.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/TreeBox.h - Released 2017-04-14T23:04:40Z

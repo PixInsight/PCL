@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/WordArray.h - Released 2016/02/21 20:22:12 UTC
+// pcl/WordArray.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,13 +54,9 @@
 
 /// \file pcl/WordArray.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Array_h
 #include <pcl/Array.h>
-#endif
 
 namespace pcl
 {
@@ -73,37 +69,45 @@ namespace pcl
 
 /*!
  * \class pcl::WordArray
- * \ingroup word_arrays
  * \brief Dynamic array of 16-bit unsigned integers.
  *
  * %WordArray is a template instantiation of Array for \c uint16.
+ *
+ * \ingroup word_arrays
+ * \ingroup dynamic_arrays
  */
 typedef Array<uint16>         WordArray;
 
 /*!
  * \class pcl::SortedWordArray
- * \ingroup word_arrays
  * \brief Dynamic sorted array of 16-bit unsigned integers.
  *
  * %SortedWordArray is a template instantiation of SortedArray for \c uint16.
+ *
+ * \ingroup word_arrays
+ * \ingroup dynamic_arrays
  */
 typedef SortedArray<uint16>   SortedWordArray;
 
 /*!
  * \class pcl::ShortArray
- * \ingroup word_arrays
  * \brief Dynamic array of 16-bit signed integers.
  *
  * %ShortArray is a template instantiation of Array for \c int16.
- */
+ *
+ * \ingroup word_arrays
+  * \ingroup dynamic_arrays
+*/
 typedef Array<int16>          ShortArray;
 
 /*!
  * \class pcl::SortedShortArray
- * \ingroup word_arrays
  * \brief Dynamic sorted array of 16-bit signed integers.
  *
  * %SortedShortArray is a template instantiation of SortedArray for \c int16.
+ *
+ * \ingroup word_arrays
+ * \ingroup dynamic_arrays
  */
 typedef SortedArray<int16>    SortedShortArray;
 
@@ -114,4 +118,4 @@ typedef SortedArray<int16>    SortedShortArray;
 #endif   // __PCL_WordArray_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/WordArray.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/WordArray.h - Released 2017-04-14T23:04:40Z

@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0328
+// Standard Global Process Module Version 01.02.07.0337
 // ----------------------------------------------------------------------------
-// PreferencesProcess.cpp - Released 2016/02/21 20:22:42 UTC
+// PreferencesProcess.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -126,6 +126,11 @@ PreferencesProcess::PreferencesProcess() : MetaProcess()
    new METAPARAMETER_ID( MainWindow,  animateToolTip )( this );
    new METAPARAMETER_ID( MainWindow,  animateToolBox )( this );
    new METAPARAMETER_ID( MainWindow,  maxRecentFiles )( this );
+   new METAPARAMETER_ID( MainWindow,  showRecentlyUsed )( this );
+   new METAPARAMETER_ID( MainWindow,  showMostUsed )( this );
+   new METAPARAMETER_ID( MainWindow,  maxUsageListLength )( this );
+   new METAPARAMETER_ID( MainWindow,  expandUsageItemsAtStartup )( this );
+   new METAPARAMETER_ID( MainWindow,  openURLsWithInternalBrowser )( this );
 
    // -------------------------------------------------------------------------
 
@@ -199,6 +204,8 @@ PreferencesProcess::PreferencesProcess() : MetaProcess()
    new METAPARAMETER_ID( Process, consoleDelay )( this );
    new METAPARAMETER_ID( Process, autoSavePSMPeriod )( this );
    new METAPARAMETER_ID( Process, alertOnProcessCompleted )( this );
+   new METAPARAMETER_ID( Process, enableExecutionStatistics )( this );
+   new METAPARAMETER_ID( Process, enableLaunchStatistics )( this );
 }
 
 // ----------------------------------------------------------------------------
@@ -342,4 +349,4 @@ int PreferencesProcess::ProcessCommandLine( const StringList& argv ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF PreferencesProcess.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF PreferencesProcess.cpp - Released 2017-04-14T23:07:12Z

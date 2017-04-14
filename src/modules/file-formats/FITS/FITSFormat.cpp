@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard FITS File Format Module Version 01.01.04.0359
+// Standard FITS File Format Module Version 01.01.05.0371
 // ----------------------------------------------------------------------------
-// FITSFormat.cpp - Released 2016/12/27 17:12:52 UTC
+// FITSFormat.cpp - Released 2017-04-14T23:07:03Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard FITS PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -117,7 +117,67 @@ String FITSFormat::Implementation() const
    "National Aeronautics and Space Administration.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2016, Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2017, Pleiades Astrophoto</p>"
+
+   "<p style=\"white-space:pre;\">"
+"\n-------------------------------------------------------------------------------"
+"\nFITS Format Hints             Description"
+"\n============================  ================================================="
+"\nlower-range n           (r )  n is the lower bound of the input range for"
+"\n                              floating point pixel data (default = 0)."
+"\n-------------------------------------------------------------------------------"
+"\nupper-range n           (r )  n is the upper bound of the input range for"
+"\n                              floating point pixel data (default = 1)."
+"\n-------------------------------------------------------------------------------"
+"\nrescale-out-of-range    (r )  Normalize out-of-range floating point pixel data."
+"\n-------------------------------------------------------------------------------"
+"\ntruncate-out-of-range   (r )  Truncate out-of-range floating point pixel data."
+"\n                              Warning &emdash; out-of-range pixel values will"
+"\n                              be set to fixed values, so data will be lost."
+"\n-------------------------------------------------------------------------------"
+"\nignore-out-of-range     (r )  Ignore out-of-range floating point pixel data."
+"\n                              Warning &emdash; out-of-range pixel values will"
+"\n                              not be fixed. Use at your own risk."
+"\n-------------------------------------------------------------------------------"
+"\nsigned-is-physical      (r )  Signed integer images store physical pixel data"
+"\n                              in the range [0,+2^(n-1)-1], where n is bit"
+"\n                              depth."
+"\n-------------------------------------------------------------------------------"
+"\nsigned-is-logical       (r )  Signed integer images store pixel data with the"
+"\n                              full range [-2^(n-1),+2^(n-1)-1], where n is bit"
+"\n                              depth."
+"\n-------------------------------------------------------------------------------"
+"\nbottom-up               (rw)  Follow the lower left origin, bottom to top"
+"\n                              convention of image coordinates."
+"\n-------------------------------------------------------------------------------"
+"\nup-bottom               (rw)  Follow the upper left origin, top to bottom"
+"\n                              convention of image coordinates."
+"\n-------------------------------------------------------------------------------"
+"\nproperties              (rw)  Read/write image properties stored as BLOBs in"
+"\n                              FITS image extensions."
+"\n-------------------------------------------------------------------------------"
+"\nno-properties           (rw)  Do not read/write image properties stored as"
+"\n                              BLOBs in FITS image extensions."
+"\n-------------------------------------------------------------------------------"
+"\nverbosity n             (rw)  n is a verbosity level in the range [0,3] to"
+"\n                              control the amount of generated messages"
+"\n                              (default = 1)."
+"\n-------------------------------------------------------------------------------"
+"\nunsigned                ( w)  Write unsigned integer pixel data in the range"
+"\n                              [0,2^n-1], where n is bit depth."
+"\n-------------------------------------------------------------------------------"
+"\nsigned                  ( w)  Write signed integer pixel data in the range"
+"\n                              [-2^(n-1),+2^(n-1)-1], where n is bit depth."
+"\n-------------------------------------------------------------------------------"
+"\ncleanup-headers         ( w)  Automatically fix characters outside the"
+"\n                              printable range of ASCII (from 0x20 to 0x7E) in"
+"\n                              generated FITS header keywords."
+"\n-------------------------------------------------------------------------------"
+"\nno-cleanup-headers      ( w)  Do not fix non-printable ASCII characters in FITS"
+"\n                              header keywords."
+"\n-------------------------------------------------------------------------------"
+"\n"
+   "</p>"
    "</html>";
 }
 
@@ -195,9 +255,9 @@ bool FITSFormat::CanStoreThumbnails() const
    return true;
 }
 
-bool FITSFormat::CanStoreProperties() const
+bool FITSFormat::CanStoreImageProperties() const
 {
-   return true;
+   return true; // BLOBs only
 }
 
 bool FITSFormat::SupportsMultipleImages() const
@@ -379,4 +439,4 @@ FITSFormat::FormatOptions* FITSFormat::FormatOptions::FromGenericDataBlock( cons
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF FITSFormat.cpp - Released 2016/12/27 17:12:52 UTC
+// EOF FITSFormat.cpp - Released 2017-04-14T23:07:03Z

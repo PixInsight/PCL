@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/UnidimensionalInterpolation.h - Released 2016/02/21 20:22:12 UTC
+// pcl/UnidimensionalInterpolation.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/UnidimensionalInterpolation.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Vector_h
 #include <pcl/Vector.h>
-#endif
 
 namespace pcl
 {
@@ -103,15 +96,14 @@ public:
    /*!
     * Initializes a new interpolation.
     *
-    * \param x    %Vector of x-values:
-    *
-    *       \li If this vector is not empty: Must be a set of monotonically
-    *       increasing, distinct values: x[0] < x[1] < ... < x[n-1].
-    *
+    * \param x    %Vector of x-values:\n
+    *             \n
+    *       \li If this vector is not empty: Must be a set of monotonically\n
+    *       increasing, distinct values: x[0] < x[1] < ... < x[n-1].\n
     *       \li If this vector is empty: The interpolation will use implicit
     *       x[i] = i for i = {0,1,...,n-1}.
     *
-    * \param y    %Vector of function values for i = {0,...,n-1}.
+    * \param y    %Vector of function values for i = {0,1,...,n-1}.
     */
    virtual void Initialize( const vector_type& x, const vector_type& y )
    {
@@ -124,15 +116,14 @@ public:
    /*!
     * Initializes a new interpolation.
     *
-    * \param x    %Array of x-values:
-    *
+    * \param x    %Array of x-values:\n
+    *             \n
     *       \li If \a x != 0: Must be a list of monotonically increasing,
-    *       distinct values: x[0] < x[1] < ... < x[n-1].
-    *
+    *       distinct values: x[0] < x[1] < ... < x[n-1].\n
     *       \li If \a x == 0: The interpolation will use implicit
     *       x[i] = i for i = {0,1,...,n-1}.
     *
-    * \param y    %Array of function values for i = {0,...,n-1}.
+    * \param y    %Array of function values for i = {0,1,...,n-1}.
     *
     * \param n    Number of data points. The minimum number of required data
     *             points depends on the interpolation algorithm. In general,
@@ -209,4 +200,4 @@ protected:
 #endif  // __PCL_UnidimensionalInterpolation_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/UnidimensionalInterpolation.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/UnidimensionalInterpolation.h - Released 2017-04-14T23:04:40Z

@@ -2,16 +2,16 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Annotation Process Module Version 01.00.00.0164
+// Standard Annotation Process Module Version 01.00.00.0173
 // ----------------------------------------------------------------------------
-// AnnotationInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// AnnotationInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Annotation PixInsight module.
 //
-// Copyright (c) 2010-2015 Zbynek Vrastil
-// Copyright (c) 2003-2015 Pleiades Astrophoto S.L.
+// Copyright (c) 2010-2017 Zbynek Vrastil
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -208,8 +208,7 @@ void AnnotationInterface::ResetInstance()
 
 bool AnnotationInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "Annotation" );
@@ -227,15 +226,10 @@ ProcessImplementation* AnnotationInterface::NewProcess() const
 
 bool AnnotationInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const AnnotationInstance* r = dynamic_cast<const AnnotationInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not a Annotation instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const AnnotationInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an Annotation instance.";
+   return false;
 }
 
 bool AnnotationInterface::RequiresInstanceValidation() const
@@ -246,22 +240,18 @@ bool AnnotationInterface::RequiresInstanceValidation() const
 bool AnnotationInterface::ImportProcess( const ProcessImplementation& p )
 {
    const AnnotationInstance* i = dynamic_cast<const AnnotationInstance*>( &p );
-
-   if ( i == 0 )
+   if ( i == nullptr )
       throw Error( "Not an Annotation instance." );
 
-   if ( view == 0 )
+   if ( view == nullptr )
    {
       ImageWindow w = ImageWindow::ActiveWindow();
-
       if ( w.IsNull() )
       {
          throw Error( "The Annotation interface requires an active image window to import a process instance." );
          return false;
       }
-
       view = new View( w.MainView() );
-
       view->AddToDynamicTargets();
    }
 
@@ -949,4 +939,4 @@ AnnotationInterface::GUIData::GUIData( AnnotationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF AnnotationInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF AnnotationInterface.cpp - Released 2017-04-14T23:07:12Z

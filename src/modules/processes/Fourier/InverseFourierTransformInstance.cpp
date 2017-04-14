@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Fourier Process Module Version 01.00.04.0191
+// Standard Fourier Process Module Version 01.00.04.0200
 // ----------------------------------------------------------------------------
-// InverseFourierTransformInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// InverseFourierTransformInstance.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Fourier PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -62,17 +62,15 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 InverseFourierTransformInstance::InverseFourierTransformInstance( const MetaProcess* m ) :
-ProcessImplementation( m ),
-idOfFirstComponent(),
-idOfSecondComponent(),
-onOutOfRangeResult( IFTOnOutOfRangeResult::Default )
+   ProcessImplementation( m ),
+   onOutOfRangeResult( IFTOnOutOfRangeResult::Default )
 {
 }
 
 // ----------------------------------------------------------------------------
 
 InverseFourierTransformInstance::InverseFourierTransformInstance( const InverseFourierTransformInstance& x ) :
-ProcessImplementation( x )
+   ProcessImplementation( x )
 {
    Assign( x );
 }
@@ -82,7 +80,7 @@ ProcessImplementation( x )
 void InverseFourierTransformInstance::Assign( const ProcessImplementation& p )
 {
    const InverseFourierTransformInstance* x = dynamic_cast<const InverseFourierTransformInstance*>( &p );
-   if ( x != 0 )
+   if ( x != nullptr )
    {
       idOfFirstComponent = x->idOfFirstComponent;
       idOfSecondComponent = x->idOfSecondComponent;
@@ -102,7 +100,6 @@ bool InverseFourierTransformInstance::CanExecuteOn( const View&, pcl::String& wh
 
 bool InverseFourierTransformInstance::CanExecuteGlobal( pcl::String& whyNot ) const
 {
-   whyNot.Clear();
    return true;
 }
 
@@ -271,7 +268,13 @@ private:
                                   const GenericImage<P1>& _cmp2,
                                   GenericImage<P2>& _C,
                                   size_type _start, size_type _end ) :
-      Thread(), engine( _engine ), image( _img ), cmp1( _cmp1 ), cmp2( _cmp2 ), C( _C ), start( _start ), end( _end )
+         engine( _engine ),
+         image( _img ),
+         cmp1( _cmp1 ),
+         cmp2( _cmp2 ),
+         C( _C ),
+         start( _start ),
+         end( _end )
       {
          min1 = engine.min1; max1 = engine.max1;
          min2 = engine.min2; max2 = engine.max2;
@@ -280,12 +283,12 @@ private:
    protected:
 
       const InverseFourierTransformEngine& engine;
-      GenericImage<P1>& image;
-      const GenericImage<P1>& cmp1;
-      const GenericImage<P1>& cmp2;
-      GenericImage<P2>& C;
-      double min1, max1, min2, max2;
-      size_type start, end;
+      GenericImage<P1>&                    image;
+      const GenericImage<P1>&              cmp1;
+      const GenericImage<P1>&              cmp2;
+      GenericImage<P2>&                    C;
+      double                               min1, max1, min2, max2;
+      size_type                            start, end;
    };
 
    template <class P1, class P2>
@@ -299,7 +302,7 @@ private:
                                               const GenericImage<P1>& cmp2,
                                               GenericImage<P2>& C,
                                               size_type start, size_type end ) :
-      DoFromComponentsThreadBase<P1, P2>( engine, image, cmp1, cmp2, C, start, end )
+         DoFromComponentsThreadBase<P1, P2>( engine, image, cmp1, cmp2, C, start, end )
       {
       }
 
@@ -343,7 +346,7 @@ private:
                                                const GenericImage<P1>& cmp2,
                                                GenericImage<P2>& C,
                                                size_type start, size_type end ) :
-      DoFromComponentsThreadBase<P1, P2>( engine, image, cmp1, cmp2, C, start, end )
+         DoFromComponentsThreadBase<P1, P2>( engine, image, cmp1, cmp2, C, start, end )
       {
       }
 
@@ -410,7 +413,7 @@ private:
 
       InPlaceInverseFourierTransform() >> C;
 
-      C.SetStatusCallback( 0 );
+      C.SetStatusCallback( nullptr );
 
       if ( centered )
          ShiftToCenter( C );
@@ -484,7 +487,8 @@ void* InverseFourierTransformInstance::LockParameter( const MetaParameter* p, si
       return idOfSecondComponent.Begin();
    if ( p == TheIFTOnOutOfRangeResultParameter )
       return &onOutOfRangeResult;
-   return 0;
+
+   return nullptr;
 }
 
 bool InverseFourierTransformInstance::AllocateParameter( size_type sizeOrLength, const MetaParameter* p, size_type /*tableRow*/ )
@@ -513,6 +517,7 @@ size_type InverseFourierTransformInstance::ParameterLength( const MetaParameter*
       return idOfFirstComponent.Length();
    if ( p == TheIFTIdOfSecondComponentParameter )
       return idOfSecondComponent.Length();
+
    return 0;
 }
 
@@ -521,4 +526,4 @@ size_type InverseFourierTransformInstance::ParameterLength( const MetaParameter*
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF InverseFourierTransformInstance.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF InverseFourierTransformInstance.cpp - Released 2017-04-14T23:07:12Z

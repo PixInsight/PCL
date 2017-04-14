@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard ImageIntegration Process Module Version 01.12.01.0359
+// Standard ImageIntegration Process Module Version 01.12.01.0368
 // ----------------------------------------------------------------------------
-// DrizzleIntegrationInterface.cpp - Released 2016/12/30 01:41:29 UTC
+// DrizzleIntegrationInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ImageIntegration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,6 +54,7 @@
 #include "DrizzleIntegrationProcess.h"
 
 #include <pcl/FileDialog.h>
+#include <pcl/FileFormat.h>
 #include <pcl/MessageBox.h>
 #include <pcl/PreviewSelectionDialog.h>
 
@@ -73,13 +74,15 @@ DrizzleIntegrationInterface* TheDrizzleIntegrationInterface = nullptr;
 // ----------------------------------------------------------------------------
 
 DrizzleIntegrationInterface::DrizzleIntegrationInterface() :
-ProcessInterface(), m_instance( TheDrizzleIntegrationProcess ), GUI( nullptr )
+   m_instance( TheDrizzleIntegrationProcess )
 {
    TheDrizzleIntegrationInterface = this;
 
-   // The auto save geometry feature is of no good to interfaces that include
-   // both auto-expanding controls (e.g. TreeBox) and collapsible sections
-   // (e.g. SectionBar).
+   /*
+    * The auto save geometry feature is of no good to interfaces that include
+    * both auto-expanding controls (e.g. TreeBox) and collapsible sections
+    * (e.g. SectionBar).
+    */
    DisableAutoSaveGeometry();
 }
 
@@ -140,15 +143,10 @@ ProcessImplementation* DrizzleIntegrationInterface::NewProcess() const
 
 bool DrizzleIntegrationInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const DrizzleIntegrationInstance* r = dynamic_cast<const DrizzleIntegrationInstance*>( &p );
-   if ( r == nullptr )
-   {
-      whyNot = "Not an DrizzleIntegration m_instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const DrizzleIntegrationInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an DrizzleIntegration m_instance.";
+   return false;
 }
 
 bool DrizzleIntegrationInterface::RequiresInstanceValidation() const
@@ -325,7 +323,7 @@ void DrizzleIntegrationInterface::__NodeSelectionUpdated( TreeBox& sender )
 static size_type TreeInsertionIndex( const TreeBox& tree )
 {
    const TreeBox::Node* n = tree.CurrentNode();
-   return (n != 0) ? tree.ChildIndex( n ) + 1 : tree.NumberOfChildren();
+   return (n != nullptr) ? tree.ChildIndex( n ) + 1 : tree.NumberOfChildren();
 }
 
 void DrizzleIntegrationInterface::__Click( Button& sender, bool checked )
@@ -334,6 +332,7 @@ void DrizzleIntegrationInterface::__Click( Button& sender, bool checked )
    {
       FileFilter drzFiles;
       drzFiles.SetDescription( "Drizzle Data Files" );
+      drzFiles.AddExtension( ".xdrz" );
       drzFiles.AddExtension( ".drz" );
 
       OpenFileDialog d;
@@ -485,6 +484,63 @@ void DrizzleIntegrationInterface::__CheckSection( SectionBar& sender, bool check
       m_instance.p_useROI = checked;
 }
 
+void DrizzleIntegrationInterface::__FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles )
+{
+   if ( sender == GUI->InputData_TreeBox.Viewport() )
+      wantsFiles = true;
+   else if ( sender == GUI->InputDirectory_Edit )
+      wantsFiles = files.Length() == 1 && File::DirectoryExists( files[0] );
+}
+
+void DrizzleIntegrationInterface::__FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers )
+{
+   if ( sender == GUI->InputData_TreeBox.Viewport() )
+   {
+      StringList inputFiles;
+      bool recursive = IsControlOrCmdPressed();
+      for ( const String& item : files )
+         if ( File::Exists( item ) )
+         {
+            String ext = File::ExtractSuffix( item ).CaseFolded();
+            if ( ext == ".xdrz" || ext == ".drz" )
+               inputFiles << item;
+         }
+         else if ( File::DirectoryExists( item ) )
+            inputFiles << FileFormat::DrizzleFiles( item, recursive );
+
+      inputFiles.Sort();
+      size_type i0 = TreeInsertionIndex( GUI->InputData_TreeBox );
+      for ( const String& file : inputFiles )
+         m_instance.p_inputData.Insert( m_instance.p_inputData.At( i0++ ), DrizzleIntegrationInstance::DataItem( file ) );
+
+      UpdateInputDataList();
+      UpdateDataSelectionButtons();
+   }
+   else if ( sender == GUI->InputDirectory_Edit )
+   {
+      if ( File::DirectoryExists( files[0] ) )
+         GUI->InputDirectory_Edit.SetText( m_instance.p_inputDirectory = files[0] );
+   }
+}
+
+void DrizzleIntegrationInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->ROI_SectionBar || sender == GUI->ROI_Control || sender == GUI->SelectPreview_Button )
+      wantsView = view.IsPreview();
+}
+
+void DrizzleIntegrationInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->ROI_SectionBar || sender == GUI->ROI_Control || sender == GUI->SelectPreview_Button )
+      if ( view.IsPreview() )
+      {
+         m_instance.p_useROI = true;
+         m_instance.p_roi = view.Window().PreviewRect( view.Id() );
+         GUI->ROI_SectionBar.ShowSection();
+         UpdateROIControls();
+      }
+}
+
 // ----------------------------------------------------------------------------
 
 DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
@@ -510,6 +566,8 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
    InputData_TreeBox.OnCurrentNodeUpdated( (TreeBox::node_navigation_event_handler)&DrizzleIntegrationInterface::__CurrentNodeUpdated, w );
    InputData_TreeBox.OnNodeActivated( (TreeBox::node_event_handler)&DrizzleIntegrationInterface::__NodeActivated, w );
    InputData_TreeBox.OnNodeSelectionUpdated( (TreeBox::tree_event_handler)&DrizzleIntegrationInterface::__NodeSelectionUpdated, w );
+   InputData_TreeBox.Viewport().OnFileDrag( (Control::file_drag_event_handler)&DrizzleIntegrationInterface::__FileDrag, w );
+   InputData_TreeBox.Viewport().OnFileDrop( (Control::file_drop_event_handler)&DrizzleIntegrationInterface::__FileDrop, w );
 
    AddFiles_PushButton.SetText( "Add Files" );
    AddFiles_PushButton.SetToolTip( "<p>Add existing drizzle data files to the list of input data files.</p>"
@@ -603,6 +661,8 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
 
    InputDirectory_Edit.SetToolTip( outputDirectoryToolTip );
    InputDirectory_Edit.OnEditCompleted( (Edit::edit_event_handler)&DrizzleIntegrationInterface::__EditCompleted, w );
+   InputDirectory_Edit.OnFileDrag( (Control::file_drag_event_handler)&DrizzleIntegrationInterface::__FileDrag, w );
+   InputDirectory_Edit.OnFileDrop( (Control::file_drop_event_handler)&DrizzleIntegrationInterface::__FileDrop, w );
 
    InputDirectory_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-file.png" ) ) );
    InputDirectory_ToolButton.SetScaledFixedSize( 20, 20 );
@@ -777,9 +837,7 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
 
    ROI_SectionBar.SetTitle( "Region of Interest" );
    ROI_SectionBar.EnableTitleCheckBox();
-   ROI_SectionBar.OnCheck( (SectionBar::check_event_handler)&DrizzleIntegrationInterface::__CheckSection, w );
    ROI_SectionBar.SetSection( ROI_Control );
-   ROI_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&DrizzleIntegrationInterface::__ToggleSection, w );
    ROI_SectionBar.SetToolTip( "<p>A region of interest (ROI) defines a rectangular subset of the image to perform "
       "the drizzle integration task. This is useful because the task's execution time (and also its memory space "
       "consumption) grows quadratically with the dimensions of the output integrated image. By defining a small ROI "
@@ -788,6 +846,10 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
       "output pixels. You can define ROI coordinates on an integrated image generated by the ImageIntegration tool, or "
       "on a registered image created by StarAlignment, for example by defining a preview and clicking the "
       "<i>from preview</i> button below.</p>" );
+   ROI_SectionBar.OnCheck( (SectionBar::check_event_handler)&DrizzleIntegrationInterface::__CheckSection, w );
+   ROI_SectionBar.OnToggleSection( (SectionBar::section_event_handler)&DrizzleIntegrationInterface::__ToggleSection, w );
+   ROI_SectionBar.OnViewDrag( (Control::view_drag_event_handler)&DrizzleIntegrationInterface::__ViewDrag, w );
+   ROI_SectionBar.OnViewDrop( (Control::view_drop_event_handler)&DrizzleIntegrationInterface::__ViewDrop, w );
 
    const char* roiX0ToolTip = "<p>X pixel coordinate of the upper-left corner of the ROI.</p>";
 
@@ -855,6 +917,8 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
    SelectPreview_Button.SetText( "From Preview" );
    SelectPreview_Button.SetToolTip( "<p>Import ROI coordinates from an existing preview in input reference image coordinates.</p>" );
    SelectPreview_Button.OnClick( (Button::click_event_handler)&DrizzleIntegrationInterface::__Click, w );
+   SelectPreview_Button.OnViewDrag( (Control::view_drag_event_handler)&DrizzleIntegrationInterface::__ViewDrag, w );
+   SelectPreview_Button.OnViewDrop( (Control::view_drop_event_handler)&DrizzleIntegrationInterface::__ViewDrop, w );
 
    ROIHeight_Sizer.SetSpacing( 4 );
    ROIHeight_Sizer.Add( ROIHeight_Label );
@@ -870,6 +934,8 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
 
    ROI_Control.SetSizer( ROI_Sizer );
    ROI_Control.AdjustToContents();
+   ROI_Control.OnViewDrag( (Control::view_drag_event_handler)&DrizzleIntegrationInterface::__ViewDrag, w );
+   ROI_Control.OnViewDrop( (Control::view_drop_event_handler)&DrizzleIntegrationInterface::__ViewDrop, w );
 
    //
 
@@ -898,4 +964,4 @@ DrizzleIntegrationInterface::GUIData::GUIData( DrizzleIntegrationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DrizzleIntegrationInterface.cpp - Released 2016/12/30 01:41:29 UTC
+// EOF DrizzleIntegrationInterface.cpp - Released 2017-04-14T23:07:12Z

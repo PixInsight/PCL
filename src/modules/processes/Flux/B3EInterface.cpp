@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Flux Process Module Version 01.00.01.0135
+// Standard Flux Process Module Version 01.00.01.0144
 // ----------------------------------------------------------------------------
-// B3EInterface.cpp - Released 2016/03/14 10:07:00 UTC
+// B3EInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Flux PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -67,15 +67,15 @@
 
 #define TARGET_IMAGE             String( "<target image>" )
 #define REFERENCE_ID( x )        (x.IsEmpty() ? TARGET_IMAGE : x)
-#define BACKGROUND_REFERENCE_ID1  REFERENCE_ID( instance.p_inputView[0].id )
-#define BACKGROUND_REFERENCE_ID2  REFERENCE_ID( instance.p_inputView[1].id )
+#define BACKGROUND_REFERENCE_ID1  REFERENCE_ID( instance.p_inputView[0].backgroundReferenceViewId )
+#define BACKGROUND_REFERENCE_ID2  REFERENCE_ID( instance.p_inputView[1].backgroundReferenceViewId )
 
 namespace pcl
 {
 
 // ----------------------------------------------------------------------------
 
-B3EInterface* TheB3EInterface = 0;
+B3EInterface* TheB3EInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -84,15 +84,15 @@ B3EInterface* TheB3EInterface = 0;
 // ----------------------------------------------------------------------------
 
 B3EInterface::B3EInterface() :
-ProcessInterface(), instance( TheB3EProcess ), GUI( 0 )
+   instance( TheB3EProcess )
 {
    TheB3EInterface = this;
 }
 
 B3EInterface::~B3EInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString B3EInterface::Id() const
@@ -110,8 +110,6 @@ const char** B3EInterface::IconImageXPM() const
    return B3EIcon_XPM;
 }
 
-// Since this is a global process we have to reimplement this function to
-// return the necessary flags for the "Apply global" button, etc.
 InterfaceFeatures B3EInterface::Features() const
 {
    return InterfaceFeature::DefaultGlobal;
@@ -130,7 +128,7 @@ void B3EInterface::ResetInstance()
 
 bool B3EInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
 #ifdef __PCL_WINDOWS
@@ -154,15 +152,10 @@ ProcessImplementation* B3EInterface::NewProcess() const
 
 bool B3EInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const B3EInstance* r = dynamic_cast<const B3EInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not a B3E instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const B3EInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a B3E instance.";
+   return false;
 }
 
 bool B3EInterface::RequiresInstanceValidation() const
@@ -235,12 +228,12 @@ void B3EInterface::UpdateControls()
 
 // ----------------------------------------------------------------------------
 
-
 void B3EInterface::__GetFocus( Control& sender )
 {
    Edit* e = dynamic_cast<Edit*>( &sender );
-   if ( e != 0 && e->Text() == TARGET_IMAGE )
-      e->Clear();
+   if ( e != nullptr )
+      if ( e->Text() == TARGET_IMAGE )
+         e->Clear();
 }
 
 void B3EInterface::__EditCompleted( Edit& sender )
@@ -248,8 +241,9 @@ void B3EInterface::__EditCompleted( Edit& sender )
    try
    {
       String id = sender.Text().Trimmed();
-      if ( !id.IsEmpty() && !View::IsValidViewId( id ) )
-         throw Error( "Invalid view identifier: " + id );
+      if ( !id.IsEmpty() )
+         if ( !View::IsValidViewId( id ) )
+            throw Error( "Invalid view identifier: " + id );
 
       if ( sender == GUI->InputImage1_Edit )
          instance.p_inputView[0].id = id;
@@ -294,9 +288,7 @@ void B3EInterface::__EditCompleted_bkg( Edit& sender )
          instance.p_inputView[1].backgroundReferenceViewId = id;
          sender.SetText( BACKGROUND_REFERENCE_ID2 );
       }
-      return;
    }
-
    catch ( ... )
    {
       if ( sender == GUI->BackgroundReferenceView1_Edit )
@@ -385,6 +377,7 @@ void B3EInterface::__Clicked( Button& sender, bool checked )
                instance.p_inputView[1].backgroundROI = view.Window().PreviewRect( view.Id() );
          }
    }
+
    UpdateControls();
 }
 
@@ -429,6 +422,7 @@ void B3EInterface::__ItemSelected( ComboBox& sender, int itemIndex )
          break;
       }
    }
+
    UpdateControls();
 }
 
@@ -484,10 +478,74 @@ void B3EInterface::__GroupBoxCheck( GroupBox& sender, bool checked )
 void B3EInterface::__BackgroundReference_Check( SectionBar& sender, bool checked )
 {
    if ( sender == GUI->BackgroundReference1_SectionBar )
-         instance.p_inputView[0].subtractBackground = checked;
+      instance.p_inputView[0].subtractBackground = checked;
    else if ( sender == GUI->BackgroundReference2_SectionBar )
-         instance.p_inputView[1].subtractBackground = checked;
+      instance.p_inputView[1].subtractBackground = checked;
+}
 
+void B3EInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->InputImage1_Edit || sender == GUI->InputImage2_Edit ||
+        sender == GUI->BackgroundReferenceView1_Edit || sender == GUI->BackgroundReferenceView2_Edit ||
+        sender == GUI->BackgroundReference1_SectionBar || sender == GUI->BackgroundReference2_SectionBar )
+   {
+      wantsView = true;
+   }
+   else if ( sender == GUI->BackgroundROI1_GroupBox || sender == GUI->BackgroundROI2_GroupBox ||
+             sender == GUI->BackgroundROISelectPreview1_Button || sender == GUI->BackgroundROISelectPreview2_Button )
+   {
+      wantsView = view.IsPreview();
+   }
+}
+
+void B3EInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->InputImage1_Edit )
+   {
+      GUI->InputImage1_Edit.SetText( instance.p_inputView[0].id = view.FullId() );
+   }
+   else if ( sender == GUI->InputImage2_Edit )
+   {
+      GUI->InputImage2_Edit.SetText( instance.p_inputView[1].id = view.FullId() );
+   }
+   else if ( sender == GUI->BackgroundReference1_SectionBar )
+   {
+      GUI->BackgroundReferenceView1_Edit.SetText( instance.p_inputView[0].backgroundReferenceViewId = view.FullId() );
+      GUI->BackgroundReference1_SectionBar.SetChecked( instance.p_inputView[0].subtractBackground = true );
+      GUI->BackgroundReference1_SectionBar.ShowSection();
+   }
+   else if ( sender == GUI->BackgroundReferenceView1_Edit )
+   {
+      GUI->BackgroundReferenceView1_Edit.SetText( instance.p_inputView[0].backgroundReferenceViewId = view.FullId() );
+   }
+   else if ( sender == GUI->BackgroundReference2_SectionBar )
+   {
+      GUI->BackgroundReferenceView2_Edit.SetText( instance.p_inputView[1].backgroundReferenceViewId = view.FullId() );
+      GUI->BackgroundReference2_SectionBar.SetChecked( instance.p_inputView[1].subtractBackground = true );
+      GUI->BackgroundReference2_SectionBar.ShowSection();
+   }
+   else if ( sender == GUI->BackgroundReferenceView2_Edit )
+   {
+      GUI->BackgroundReferenceView2_Edit.SetText( instance.p_inputView[1].backgroundReferenceViewId = view.FullId() );
+   }
+   else if ( sender == GUI->BackgroundROI1_GroupBox || sender == GUI->BackgroundROISelectPreview1_Button )
+   {
+      if ( view.IsPreview() )
+      {
+         instance.p_inputView[0].backgroundUseROI = true;
+         instance.p_inputView[0].backgroundROI = view.Window().PreviewRect( view.Id() );
+         UpdateControls();
+      }
+   }
+   else if ( sender == GUI->BackgroundROI2_GroupBox || sender == GUI->BackgroundROISelectPreview2_Button )
+   {
+      if ( view.IsPreview() )
+      {
+         instance.p_inputView[1].backgroundUseROI = true;
+         instance.p_inputView[1].backgroundROI = view.Window().PreviewRect( view.Id() );
+         UpdateControls();
+      }
+   }
 }
 
 // ----------------------------------------------------------------------------
@@ -503,8 +561,6 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    int editWidth2 = fnt.Width( String( 'M', 30 ) );
    int ui4 = w.LogicalPixelsToPhysical( 4 );
 
-/////////////////////// InputImage1_Sizer///////////////////////////////////////
-
    const char* inputImage1ToolTip = "<p>Identifier of the first input view. Must be a flux-calibrated, grayscale image.</p>";
 
    InputImage1_Label.SetText( "Input image 1:" );
@@ -515,6 +571,8 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    InputImage1_Edit.SetMinWidth( editWidth2 );
    InputImage1_Edit.SetToolTip( inputImage1ToolTip );
    InputImage1_Edit.OnEditCompleted( (Edit::edit_event_handler)&B3EInterface::__EditCompleted, w );
+   InputImage1_Edit.OnViewDrag( (Control::view_drag_event_handler)&B3EInterface::__ViewDrag, w );
+   InputImage1_Edit.OnViewDrop( (Control::view_drop_event_handler)&B3EInterface::__ViewDrop, w );
 
    InputImage1_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    InputImage1_ToolButton.SetToolTip( "<p>Select the first input view.</p>" );
@@ -526,8 +584,6 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    InputImage1_Sizer.Add( InputImage1_Edit, 100 );
    InputImage1_Sizer.Add( InputImage1_ToolButton );
 
-/////////////////////// InputImage2_Sizer///////////////////////////////////////
-
    const char* inputImage2ToolTip = "<p>Identifier of the second input view. Must be a flux-calibrated, grayscale image.</p>";
 
    InputImage2_Label.SetText( "Input image 2:" );
@@ -538,6 +594,8 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    InputImage2_Edit.SetMinWidth( editWidth2 );
    InputImage2_Edit.SetToolTip( inputImage2ToolTip );
    InputImage2_Edit.OnEditCompleted( (Edit::edit_event_handler)&B3EInterface::__EditCompleted, w );
+   InputImage2_Edit.OnViewDrag( (Control::view_drag_event_handler)&B3EInterface::__ViewDrag, w );
+   InputImage2_Edit.OnViewDrop( (Control::view_drop_event_handler)&B3EInterface::__ViewDrop, w );
 
    InputImage2_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    InputImage2_ToolButton.SetToolTip( "<p>Select the second input view.</p>" );
@@ -549,13 +607,9 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    InputImage2_Sizer.Add( InputImage2_Edit, 100 );
    InputImage2_Sizer.Add( InputImage2_ToolButton );
 
-//////////////////////////// Input_Sizer ///////////////////////////////////////
-
    Input_Sizer.SetSpacing( 6 );
    Input_Sizer.Add( InputImage1_Sizer );
    Input_Sizer.Add( InputImage2_Sizer );
-
-//////////////////////// ProcessParameters_Sizer ///////////////////////////////
 
    //CenterInput1_NumericEdit.label.SetText( "" );     // Text updated in UpdateControls().
    CenterInput1_NumericEdit.label.SetMinWidth( labelWidth1 );
@@ -617,8 +671,6 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    ProcessParameters_Sizer.Add( IntensityUnits_Sizer );
    ProcessParameters_Sizer.AddStretch();
 
-/////////////////////////// OutputData_Sizer ///////////////////////////////////
-
    const char* outputImagesToolTip = "<p>B3E uses the laws of blackbody radiation to generate a synthetic image, "
       "which is an estimate of flux at the specified effective output wavelength or frequency, and a thermal map "
       "as an estimate of temperature. Flux estimates are in the same units as input images, and thermal maps are "
@@ -655,21 +707,19 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    OutputData_Sizer.Add( OutOfRangeMask_Sizer );
    OutputData_Sizer.AddStretch();
 
-/*
- * ////////////////////// Background Reference 1 ///////////////////////////////
- */
-
    BackgroundReference1_SectionBar.SetTitle( "Background Reference 1" );
    BackgroundReference1_SectionBar.SetSection( BackgroundReference1_Control );
    BackgroundReference1_SectionBar.EnableTitleCheckBox();
    BackgroundReference1_SectionBar.OnCheck( (SectionBar::check_event_handler)&B3EInterface::__BackgroundReference_Check, w );
+   BackgroundReference1_SectionBar.OnViewDrag( (Control::view_drag_event_handler)&B3EInterface::__ViewDrag, w );
+   BackgroundReference1_SectionBar.OnViewDrop( (Control::view_drop_event_handler)&B3EInterface::__ViewDrop, w );
 
    BackgroundReferenceView1_Label.SetText( "Reference image 1:" );
    BackgroundReferenceView1_Label.SetFixedWidth( labelWidth1 );
    BackgroundReferenceView1_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
    BackgroundReferenceView1_Edit.SetToolTip( "<p>Background reference image.</p>"
-      "<p>ColorCalibration will use pixels read from this image to compute an initial mean background level for "
+      "<p>B3Estimator will use pixels read from this image to compute an initial mean background level for "
       "each color channel. If you leave this field blank (or with its default &lt;target image&gt; value), the "
       "target image will be also the background reference image during the color calibration process.</p>"
       "<p>You should specify a view that represents the <i>true background</i> of the image. In most cases this "
@@ -678,6 +728,8 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
       "sky area of the target image, and selecting it here as the background reference image.</p>" );
    BackgroundReferenceView1_Edit.OnGetFocus( (Control::event_handler)&B3EInterface::__GetFocus, w );
    BackgroundReferenceView1_Edit.OnEditCompleted( (Edit::edit_event_handler)&B3EInterface::__EditCompleted_bkg, w );
+   BackgroundReferenceView1_Edit.OnViewDrag( (Control::view_drag_event_handler)&B3EInterface::__ViewDrag, w );
+   BackgroundReferenceView1_Edit.OnViewDrop( (Control::view_drop_event_handler)&B3EInterface::__ViewDrop, w );
 
    BackgroundReferenceView1_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    BackgroundReferenceView1_ToolButton.SetScaledFixedSize( 20, 20 );
@@ -711,10 +763,11 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
       "pixels above this value will be rejected for calculation of mean background levels.</p>" );
    BackgroundHigh1_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&B3EInterface::__ValueUpdated, w );
 
-   //
    BackgroundROI1_GroupBox.SetTitle( "Region of Interest" );
    BackgroundROI1_GroupBox.EnableTitleCheckBox();
    BackgroundROI1_GroupBox.OnCheck( (GroupBox::check_event_handler)&B3EInterface::__GroupBoxCheck, w );
+   BackgroundROI1_GroupBox.OnViewDrag( (Control::view_drag_event_handler)&B3EInterface::__ViewDrag, w );
+   BackgroundROI1_GroupBox.OnViewDrop( (Control::view_drop_event_handler)&B3EInterface::__ViewDrop, w );
 
    const char* backgroundROIX01ToolTip = "<p>X pixel coordinate of the upper-left corner of the ROI, background reference.</p>";
 
@@ -770,6 +823,8 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    BackgroundROISelectPreview1_Button.SetText( "From Preview" );
    BackgroundROISelectPreview1_Button.SetToolTip( "<p>Import ROI coordinates from an existing preview, background reference.</p>" );
    BackgroundROISelectPreview1_Button.OnClick( (Button::click_event_handler)&B3EInterface::__Clicked, w );
+   BackgroundROISelectPreview1_Button.OnViewDrag( (Control::view_drag_event_handler)&B3EInterface::__ViewDrag, w );
+   BackgroundROISelectPreview1_Button.OnViewDrop( (Control::view_drop_event_handler)&B3EInterface::__ViewDrop, w );
 
    BackgroundROIRow21_Sizer.SetSpacing( 4 );
    BackgroundROIRow21_Sizer.Add( BackgroundROIWidth1_Label );
@@ -787,9 +842,8 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
 
    BackgroundROI1_GroupBox.SetSizer( BackgroundROI1_Sizer );
 
-   //
    OutputBackgroundReferenceMask1_CheckBox.SetText( "Output background reference mask" );
-   OutputBackgroundReferenceMask1_CheckBox.SetToolTip( "<p>If this option is selected, ColorCalibration will "
+   OutputBackgroundReferenceMask1_CheckBox.SetToolTip( "<p>If this option is selected, B3Estimator will "
       "create a new image window with a <i>background reference mask</i>.</p>"
       "<p>A background reference mask is white for pixels in the background reference image that have been "
       "used to calculate mean background levels, black anywhere else. You can use this mask to check whether the "
@@ -801,7 +855,6 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    OutputBackgroundReferenceMask1_Sizer.Add( OutputBackgroundReferenceMask1_CheckBox );
    OutputBackgroundReferenceMask1_Sizer.AddStretch();
 
-   //
    BackgroundReference1_Sizer.SetSpacing( 4 );
    BackgroundReference1_Sizer.Add( BackgroundReferenceView1_Sizer );
    BackgroundReference1_Sizer.Add( BackgroundLow1_NumericControl );
@@ -811,21 +864,19 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
 
    BackgroundReference1_Control.SetSizer( BackgroundReference1_Sizer );
 
-/*
- * ////////////////////// Background Reference 2////////////////////////////////
- */
-
    BackgroundReference2_SectionBar.SetTitle( "Background Reference 2" );
    BackgroundReference2_SectionBar.SetSection( BackgroundReference2_Control );
    BackgroundReference2_SectionBar.EnableTitleCheckBox();
    BackgroundReference2_SectionBar.OnCheck( (SectionBar::check_event_handler)&B3EInterface::__BackgroundReference_Check, w );
+   BackgroundReference2_SectionBar.OnViewDrag( (Control::view_drag_event_handler)&B3EInterface::__ViewDrag, w );
+   BackgroundReference2_SectionBar.OnViewDrop( (Control::view_drop_event_handler)&B3EInterface::__ViewDrop, w );
 
    BackgroundReferenceView2_Label.SetText( "Reference image 2:" );
    BackgroundReferenceView2_Label.SetFixedWidth( labelWidth1 );
    BackgroundReferenceView2_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
    BackgroundReferenceView2_Edit.SetToolTip( "<p>Background reference image.</p>"
-      "<p>ColorCalibration will use pixels read from this image to compute an initial mean background level for "
+      "<p>B3Estimator will use pixels read from this image to compute an initial mean background level for "
       "each color channel. If you leave this field blank (or with its default &lt;target image&gt; value), the "
       "target image will be also the background reference image during the color calibration process.</p>"
       "<p>You should specify a view that represents the <i>true background</i> of the image. In most cases this "
@@ -834,6 +885,8 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
       "sky area of the target image, and selecting it here as the background reference image.</p>" );
    BackgroundReferenceView2_Edit.OnGetFocus( (Control::event_handler)&B3EInterface::__GetFocus, w );
    BackgroundReferenceView2_Edit.OnEditCompleted( (Edit::edit_event_handler)&B3EInterface::__EditCompleted_bkg, w );
+   BackgroundReferenceView2_Edit.OnViewDrag( (Control::view_drag_event_handler)&B3EInterface::__ViewDrag, w );
+   BackgroundReferenceView2_Edit.OnViewDrop( (Control::view_drop_event_handler)&B3EInterface::__ViewDrop, w );
 
    BackgroundReferenceView2_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    BackgroundReferenceView2_ToolButton.SetScaledFixedSize( 20, 20 );
@@ -867,10 +920,11 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
       "pixels above this value will be rejected for calculation of mean background levels.</p>" );
    BackgroundHigh2_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&B3EInterface::__ValueUpdated, w );
 
-   //
    BackgroundROI2_GroupBox.SetTitle( "Region of Interest" );
    BackgroundROI2_GroupBox.EnableTitleCheckBox();
    BackgroundROI2_GroupBox.OnCheck( (GroupBox::check_event_handler)&B3EInterface::__GroupBoxCheck, w );
+   BackgroundROI2_GroupBox.OnViewDrag( (Control::view_drag_event_handler)&B3EInterface::__ViewDrag, w );
+   BackgroundROI2_GroupBox.OnViewDrop( (Control::view_drop_event_handler)&B3EInterface::__ViewDrop, w );
 
    const char* backgroundROIX02ToolTip = "<p>X pixel coordinate of the upper-left corner of the ROI, background reference.</p>";
 
@@ -926,6 +980,8 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    BackgroundROISelectPreview2_Button.SetText( "From Preview" );
    BackgroundROISelectPreview2_Button.SetToolTip( "<p>Import ROI coordinates from an existing preview, background reference.</p>" );
    BackgroundROISelectPreview2_Button.OnClick( (Button::click_event_handler)&B3EInterface::__Clicked, w );
+   BackgroundROISelectPreview2_Button.OnViewDrag( (Control::view_drag_event_handler)&B3EInterface::__ViewDrag, w );
+   BackgroundROISelectPreview2_Button.OnViewDrop( (Control::view_drop_event_handler)&B3EInterface::__ViewDrop, w );
 
    BackgroundROIRow22_Sizer.SetSpacing( 4 );
    BackgroundROIRow22_Sizer.Add( BackgroundROIWidth2_Label );
@@ -943,9 +999,8 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
 
    BackgroundROI2_GroupBox.SetSizer( BackgroundROI2_Sizer );
 
-   //
    OutputBackgroundReferenceMask2_CheckBox.SetText( "Output background reference mask" );
-   OutputBackgroundReferenceMask2_CheckBox.SetToolTip( "<p>If this option is selected, ColorCalibration will "
+   OutputBackgroundReferenceMask2_CheckBox.SetToolTip( "<p>If this option is selected, B3Estimator will "
       "create a new image window with a <i>background reference mask</i>.</p>"
       "<p>A background reference mask is white for pixels in the background reference image that have been "
       "used to calculate mean background levels, black anywhere else. You can use this mask to check whether the "
@@ -957,8 +1012,6 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    OutputBackgroundReferenceMask2_Sizer.Add( OutputBackgroundReferenceMask2_CheckBox );
    OutputBackgroundReferenceMask2_Sizer.AddStretch();
 
-   //
-
    BackgroundReference2_Sizer.SetSpacing( 4 );
    BackgroundReference2_Sizer.Add( BackgroundReferenceView2_Sizer );
    BackgroundReference2_Sizer.Add( BackgroundLow2_NumericControl );
@@ -967,8 +1020,6 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    BackgroundReference2_Sizer.Add( OutputBackgroundReferenceMask2_Sizer );
 
    BackgroundReference2_Control.SetSizer( BackgroundReference2_Sizer );
-
-/////////////////////////// Global_Sizer //////////////////////////////////
 
    Global_Sizer.SetMargin( 8 );
    Global_Sizer.SetSpacing( 6 );
@@ -980,10 +1031,12 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
    Global_Sizer.Add( BackgroundReference2_SectionBar );
    Global_Sizer.Add( BackgroundReference2_Control );
 
+   w.SetSizer( Global_Sizer );
+   w.SetFixedWidth();
+
    BackgroundReference1_Control.Hide();
    BackgroundReference2_Control.Hide();
 
-   w.SetSizer( Global_Sizer );
    w.AdjustToContents();
    w.SetFixedSize();
 }
@@ -993,4 +1046,4 @@ B3EInterface::GUIData::GUIData( B3EInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF B3EInterface.cpp - Released 2016/03/14 10:07:00 UTC
+// EOF B3EInterface.cpp - Released 2017-04-14T23:07:12Z

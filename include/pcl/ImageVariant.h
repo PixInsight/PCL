@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/ImageVariant.h - Released 2016/02/21 20:22:12 UTC
+// pcl/ImageVariant.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,17 +54,10 @@
 
 /// \file pcl/ImageVariant.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_Image_h
 #include <pcl/Image.h>
-#endif
-
-#ifndef __PCL_ReferenceCounter_h
 #include <pcl/ReferenceCounter.h>
-#endif
 
 #ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 namespace pi
@@ -151,7 +144,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace SwapCompression
+ * \namespace pcl::SwapCompression
  * \brief     Compression algorithms for raw image file generation.
  *
  * This namespace enumerates the compression algorithms supported by the
@@ -164,9 +157,9 @@ namespace pcl
  * <tr><td>SwapCompression::ZLib</td>     <td>ZLib (deflate) compression.</td></tr>
  * <tr><td>SwapCompression::ZLib_SH</td>  <td>ZLib (deflate) compression with byte shuffling.</td></tr>
  * <tr><td>SwapCompression::LZ4</td>      <td>LZ4 fast compression.</td></tr>
- * <tr><td>SwapCompression::LZ4_SH</td>   <td>LZ4 fast compression with byte shuffling.</td></tr>
+ * <tr><td>SwapCompression::LZ4_Sh</td>   <td>LZ4 fast compression with byte shuffling.</td></tr>
  * <tr><td>SwapCompression::LZ4HC</td>    <td>LZ4-HC compression.</td></tr>
- * <tr><td>SwapCompression::LZ4HC_SH</td> <td>LZ4-HC compression with byte shuffling.</td></tr>
+ * <tr><td>SwapCompression::LZ4HC_Sh</td> <td>LZ4-HC compression with byte shuffling.</td></tr>
  * </table>
  */
 namespace SwapCompression
@@ -177,9 +170,9 @@ namespace SwapCompression
       ZLib,     // ZLib (deflate) compression.
       ZLib_SH,  // ZLib (deflate) compression with byte shuffling.
       LZ4,      // LZ4 fast compression.
-      LZ4_SH,   // LZ4 fast compression with byte shuffling.
+      LZ4_Sh,   // LZ4 fast compression with byte shuffling.
       LZ4HC,    // LZ4-HC compression.
-      LZ4HC_SH, // LZ4-HC compression with byte shuffling.
+      LZ4HC_Sh, // LZ4-HC compression with byte shuffling.
 
       NumberOfAlgorithms
    };
@@ -350,8 +343,7 @@ public:
     * Constructs an empty %ImageVariant. An empty %ImageVariant instance does
     * not transport an image.
     */
-   ImageVariant() :
-      m_data( nullptr ), m_shared( nullptr )
+   ImageVariant()
    {
       m_data = new Data;
    }
@@ -364,8 +356,7 @@ public:
     * member function must be called explicitly.
     */
    template <class P>
-   ImageVariant( GenericImage<P>* image ) :
-      m_data( nullptr ), m_shared( nullptr )
+   ImageVariant( GenericImage<P>* image )
    {
       m_data = new Data;
       m_data->Update( image );
@@ -380,8 +371,7 @@ public:
     * removed, and the transported image is owned by %ImageVariant, it is
     * destroyed and deallocated.
     */
-   ImageVariant( const ImageVariant& image ) :
-      m_data( image.m_data ), m_shared( nullptr )
+   ImageVariant( const ImageVariant& image ) : m_data( image.m_data )
    {
       m_data->Attach();
    }
@@ -389,8 +379,7 @@ public:
    /*!
     * Move constructor.
     */
-   ImageVariant( ImageVariant&& image ) :
-      m_data( image.m_data ), m_shared( nullptr )
+   ImageVariant( ImageVariant&& image ) : m_data( image.m_data )
    {
       image.m_data = nullptr;
    }
@@ -5989,9 +5978,11 @@ public:
     * \param isComplex  If true, complex pixel samples (implicitly
     *                   floating-point) will be used.
     *
-    * \param bitSize    Number of bits per sample. Supported combinations are:
-    *             \li For floating-point samples (real or complex): 32 or 64.
-    *             \li For integer samples: 8, 16 or 32.
+    * \param bitSize    Number of bits per sample. The supported combinations
+    *                   are:\n
+    *                   \n
+    *       \li For floating-point samples (real or complex): 32 or 64.\n
+    *       \li For integer samples: 8, 16 or 32.
     *
     * If the previously transported image (if any) was owned by %ImageVariant,
     * and there are no more %ImageVariant references to it, then it is
@@ -6167,9 +6158,11 @@ public:
     * \param isComplex  If true, complex pixels ( implicitly floating point )
     *                   will be used.
     *
-    * \param bitSize    Number of bits per sample. Supported combinations are:
-    *             \li For floating-point samples ( real or complex ): 32 or 64.
-    *             \li For integer samples: 8, 16 or 32.
+    * \param bitSize    Number of bits per sample. The supported combinations
+    *                   are:\n
+    *                   \n
+    *       \li For floating-point samples ( real or complex ): 32 or 64.\n
+    *       \li For integer samples: 8, 16 or 32.
     *
     * This member function works in an equivalent way to:
     *
@@ -6934,18 +6927,13 @@ private:
 
    struct Data : public ReferenceCounter
    {
-      AbstractImage* image;
-      bool           isFloatSample;
-      bool           isComplexSample;
-      uint8          bitsPerSample;
-      bool           ownsImage;
+      AbstractImage* image           = nullptr;
+      bool           isFloatSample   = false;
+      bool           isComplexSample = false;
+      uint8          bitsPerSample   = 0;
+      bool           ownsImage       = false;
 
-      Data() :
-         ReferenceCounter(),
-         image( nullptr ),
-         isFloatSample( false ), isComplexSample( false ), bitsPerSample( 0 ), ownsImage( false )
-      {
-      }
+      Data() = default;
 
       ~Data()
       {
@@ -6972,13 +6960,13 @@ private:
       }
    };
 
-   Data* m_data;
+   Data* m_data = nullptr;
 
 #ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
    // This is the server-side part of the image sharing mechanism
-   pi::SharedImage* m_shared;
+   pi::SharedImage* m_shared = nullptr;
 #else
-   const void*      m_shared;
+   const void*      m_shared = nullptr;
 #endif
 
    void DetachFromData()
@@ -6990,8 +6978,7 @@ private:
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
    // Server-side private ctor. used by View
    template <class P>
-   ImageVariant( GenericImage<P>* image, int ) :
-      m_data( nullptr )
+   ImageVariant( GenericImage<P>* image, int )
    {
       m_data = new Data;
       m_data->Update( image );
@@ -7053,4 +7040,4 @@ GenericImage<P>& GenericImage<P>::SetLightness( const ImageVariant& L, const Poi
 #endif   // __PCL_ImageVariant_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageVariant.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/ImageVariant.h - Released 2017-04-14T23:04:40Z

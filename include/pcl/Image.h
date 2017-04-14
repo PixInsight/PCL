@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/Image.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Image.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,53 +54,19 @@
 
 /// \file pcl/Image.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_AbstractImage_h
 #include <pcl/AbstractImage.h>
-#endif
-
-#ifndef __PCL_PixelTraits_h
-#include <pcl/PixelTraits.h>
-#endif
-
-#ifndef __PCL_PixelAllocator_h
-#include <pcl/PixelAllocator.h>
-#endif
-
-#ifndef __PCL_Complex_h
-#include <pcl/Complex.h>
-#endif
-
-#ifndef __PCL_Vector_h
-#include <pcl/Vector.h>
-#endif
-
-#ifndef __PCL_ReferenceArray_h
-#include <pcl/ReferenceArray.h>
-#endif
-
-#ifndef __PCL_File_h
-#include <pcl/File.h>
-#endif
-
-#ifndef __PCL_Compression_h
-#include <pcl/Compression.h>
-#endif
-
-#ifndef __PCL_Mutex_h
-#include <pcl/Mutex.h>
-#endif
-
-#ifndef __PCL_AutoLock_h
 #include <pcl/AutoLock.h>
-#endif
+#include <pcl/Complex.h>
+#include <pcl/Compression.h>
+#include <pcl/File.h>
+#include <pcl/Mutex.h>
+#include <pcl/PixelAllocator.h>
+#include <pcl/PixelTraits.h>
+#include <pcl/ReferenceArray.h>
+#include <pcl/Vector.h>
 
 #ifndef __PCL_IMAGE_NO_BITMAP
 #  ifdef __PCL_BUILDING_PIXINSIGHT_APPLICATION
@@ -131,7 +97,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 /*!
- * \namespace ImageOp
+ * \namespace pcl::ImageOp
  * \brief     Arithmetic, bitwise logical and pixel composition operations.
  *
  * Supported operations:
@@ -301,7 +267,8 @@ class PCL_CLASS BidirectionalImageTransformation;
  * %GenericImage. This system allows for the implementation of new image types
  * tightly adapted to particular requirements.
  *
- * \sa \ref image_types_2d "2-D Image Types", ImageGeometry, ImageColor,
+ * \sa \ref image_types_2d "2-D Image Types",
+ * \ref image_iterators "Image Iterators", ImageGeometry, ImageColor,
  * AbstractImage, ImageVariant, GenericPixelTraits
  */
 template <class P>
@@ -368,11 +335,19 @@ public:
    // -------------------------------------------------------------------------
 
    /*!
+    * \defgroup image_iterators Image Iterator Classes
+    */
+
+   // -------------------------------------------------------------------------
+
+   /*!
     * \class pcl::GenericImage::sample_iterator
     * \brief Mutable pixel sample iterator.
     *
     * A mutable pixel sample iterator provides read/write, random access to
     * pixel samples in a single channel of an image.
+    *
+    * \ingroup image_iterators
     */
    class sample_iterator
    {
@@ -706,6 +681,8 @@ public:
     *
     * An immutable pixel sample iterator provides read-only, random access to
     * pixel samples in a single channel of an image.
+    *
+    * \ingroup image_iterators
     */
    class const_sample_iterator
    {
@@ -1150,6 +1127,8 @@ public:
     * A mutable, region-of-interest (ROI) pixel sample iterator provides
     * read/write, random access to pixel samples within a rectangular subset of
     * a single channel of an image.
+    *
+    * \ingroup image_iterators
     */
    class roi_sample_iterator : private roi_sample_iterator_base<GenericImage<P>, sample*>
    {
@@ -1473,6 +1452,8 @@ public:
     * An immutable, region-of-interest pixel sample iterator provides
     * read-only, random access to pixel samples within a rectangular subset of
     * a single channel of an image.
+    *
+    * \ingroup image_iterators
     */
    class const_roi_sample_iterator : private roi_sample_iterator_base<const GenericImage<P>, const sample*>
    {
@@ -1903,9 +1884,12 @@ public:
     * reaches the end of the iteration range, whichever happens first. In this
     * way a filter iterator gives access only to valid items in a completely
     * automatic and transparent fashion.
+    *
+    * \ingroup image_iterators
     */
    template <class F>
-   class filter_sample_iterator : public filter_sample_iterator_base<GenericImage<P>, sample_iterator, sample*, F>
+   class filter_sample_iterator :
+      public filter_sample_iterator_base<GenericImage<P>, sample_iterator, sample*, F>
    {
    public:
 
@@ -2293,6 +2277,8 @@ public:
     * reaches the end of the iteration range, whichever happens first. In this
     * way a filter iterator gives access only to valid items in a completely
     * automatic and transparent fashion.
+    *
+    * \ingroup image_iterators
     */
    template <class F>
    class const_filter_sample_iterator :
@@ -2752,6 +2738,8 @@ public:
     * A mutable, region-of-interest (ROI), filter pixel sample iterator
     * combines the capabilities of roi_sample_iterator and
     * filter_sample_iterator in a single iterator class.
+    *
+    * \ingroup image_iterators
     */
    template <class F>
    class roi_filter_sample_iterator : public roi_filter_sample_iterator_base<GenericImage<P>, sample*, F>
@@ -3129,6 +3117,8 @@ public:
     * An immutable, region-of-interest (ROI), filter pixel sample iterator
     * combines the capabilities of const_roi_sample_iterator and
     * const_filter_sample_iterator in a single iterator class.
+    *
+    * \ingroup image_iterators
     */
    template <class F>
    class const_roi_filter_sample_iterator : public roi_filter_sample_iterator_base<const GenericImage<P>, const sample*, F>
@@ -3507,6 +3497,8 @@ public:
     *
     * A mutable pixel iterator provides read/write, random access to all pixels
     * of an image.
+    *
+    * \ingroup image_iterators
     */
    class pixel_iterator
    {
@@ -3771,6 +3763,8 @@ public:
     *
     * An immutable pixel iterator provides read-only, random access to all
     * pixels of an image.
+    *
+    * \ingroup image_iterators
     */
    class const_pixel_iterator
    {
@@ -4125,6 +4119,8 @@ public:
     *
     * A mutable, region-of-interest (ROI) pixel iterator provides read/write,
     * random access to pixels within a rectangular subset of an image.
+    *
+    * \ingroup image_iterators
     */
    class roi_pixel_iterator : private roi_pixel_iterator_base<GenericImage<P>, sample*>
    {
@@ -4383,6 +4379,8 @@ public:
     *
     * An immutable, region-of-interest (ROI) pixel iterator provides read-only,
     * random access to pixels within a rectangular subset of an image.
+    *
+    * \ingroup image_iterators
     */
    class const_roi_pixel_iterator : private roi_pixel_iterator_base<const GenericImage<P>, const sample*>
    {
@@ -4720,9 +4718,12 @@ public:
     * reaches the end of the iteration range, whichever happens first. In this
     * way a filter iterator gives access only to valid items in a completely
     * automatic and transparent fashion.
+    *
+    * \ingroup image_iterators
     */
    template <class F>
-   class filter_pixel_iterator : public filter_pixel_iterator_base<GenericImage<P>, pixel_iterator, sample*, F>
+   class filter_pixel_iterator :
+      public filter_pixel_iterator_base<GenericImage<P>, pixel_iterator, sample*, F>
    {
    public:
 
@@ -5052,6 +5053,8 @@ public:
     * reaches the end of the iteration range, whichever happens first. In this
     * way a filter iterator gives access only to valid items in a completely
     * automatic and transparent fashion.
+    *
+    * \ingroup image_iterators
     */
    template <class F>
    class const_filter_pixel_iterator :
@@ -5415,6 +5418,8 @@ public:
     * A mutable, region-of-interest (ROI), filter pixel iterator combines the
     * capabilities of roi_pixel_iterator and filter_pixel_iterator in a single
     * iterator class.
+    *
+    * \ingroup image_iterators
     */
    template <class F>
    class roi_filter_pixel_iterator : public roi_filter_pixel_iterator_base<GenericImage<P>, sample*, F>
@@ -5727,6 +5732,8 @@ public:
     * An immutable, region-of-interest (ROI), filter pixel iterator combines
     * the capabilities of const_roi_pixel_iterator and
     * const_filter_pixel_iterator in a single iterator class.
+    *
+    * \ingroup image_iterators
     */
    template <class F>
    class const_roi_filter_pixel_iterator : public roi_filter_pixel_iterator_base<const GenericImage<P>, const sample*, F>
@@ -6102,8 +6109,7 @@ public:
     * Constructs a default local image. This object will be initialized as an
     * empty grayscale image with local storage.
     */
-   GenericImage() :
-      AbstractImage(), m_data( nullptr )
+   GenericImage()
    {
       m_data = new Data( this );
    }
@@ -6137,8 +6143,7 @@ public:
     * selection is also enabled after calling the inherited
     * ImageGeometry::ResetSelections() member function.
     */
-   GenericImage( const GenericImage& image ) :
-      AbstractImage(), m_data( nullptr )
+   GenericImage( const GenericImage& image )
    {
       if ( !image.IsShared() )
          if ( image.IsCompletelySelected() )
@@ -6157,8 +6162,7 @@ public:
    /*!
     * Move constructor.
     */
-   GenericImage( GenericImage&& image ) :
-      AbstractImage( image ), m_data( image.m_data )
+   GenericImage( GenericImage&& image ) : AbstractImage( image ), m_data( image.m_data )
    {
       image.m_data = nullptr;
    }
@@ -6176,8 +6180,7 @@ public:
     * different template instantiation of %GenericImage.
     */
    template <class P1>
-   GenericImage( const GenericImage<P1>& image ) :
-      AbstractImage(), m_data( nullptr )
+   GenericImage( const GenericImage<P1>& image )
    {
       m_data = new Data( this );
       (void)Assign( image );
@@ -6224,9 +6227,7 @@ public:
     * the source \a image is completely selected.
     */
    template <class P1>
-   GenericImage( const GenericImage<P1>& image,
-                 const Rect& rect, int firstChannel = -1, int lastChannel = -1 ) :
-      AbstractImage(), m_data( nullptr )
+   GenericImage( const GenericImage<P1>& image, const Rect& rect, int firstChannel = -1, int lastChannel = -1 )
    {
       m_data = new Data( this );
       (void)Assign( image, rect, firstChannel, lastChannel );
@@ -6250,12 +6251,10 @@ public:
     * \note Pixel samples in the newly constructed image are not initialized by
     * this constructor, so the image will contain unpredictable values.
     */
-   GenericImage( int width, int height, color_space colorSpace = ColorSpace::Gray ) :
-      AbstractImage(), m_data( nullptr )
+   GenericImage( int width, int height, color_space colorSpace = ColorSpace::Gray )
    {
       m_data = new Data( this );
-      m_data->Allocate( width, height,
-                        ColorSpace::NumberOfNominalChannels( colorSpace ), colorSpace );
+      m_data->Allocate( width, height, ColorSpace::NumberOfNominalChannels( colorSpace ), colorSpace );
       ResetSelections();
    }
 
@@ -6273,9 +6272,7 @@ public:
     * different pixel sample data types, this function will throw an Error
     * exception with the appropriate error message.
     */
-   explicit
-   GenericImage( File& stream ) :
-      AbstractImage(), m_data( nullptr )
+   explicit GenericImage( File& stream )
    {
       m_data = new Data( this );
       Read( stream );
@@ -6300,9 +6297,7 @@ public:
     * you don't have to know whether you're working with a shared or a local
     * image; your code will be exactly the same under both situations.
     */
-   explicit
-   GenericImage( void* handle ) :
-      AbstractImage(), m_data( nullptr )
+   explicit GenericImage( void* handle )
    {
       m_data = new Data( this, handle );
       ResetSelections();
@@ -6335,11 +6330,9 @@ public:
     * \note Pixel samples in the newly constructed image are not initialized by
     * this constructor, so the image will contain unpredictable values.
     */
-   GenericImage( void*, int width, int height, color_space colorSpace = ColorSpace::Gray ) :
-      AbstractImage(), m_data( nullptr )
+   GenericImage( void*, int width, int height, color_space colorSpace = ColorSpace::Gray )
    {
-      m_data = new Data( this, width, height,
-                         ColorSpace::NumberOfNominalChannels( colorSpace ), colorSpace );
+      m_data = new Data( this, width, height, ColorSpace::NumberOfNominalChannels( colorSpace ), colorSpace );
       ResetSelections();
    }
 
@@ -10789,26 +10782,27 @@ public:
                                      (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<MinThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<MinThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( MinThread& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+         for ( MinThread& thread : threads )
+            thread.Wait();
       }
       else
          threads[0].Run();
 
       sample min = P::MinSampleValue();
       bool initialized = false;
-      for ( typename ReferenceArray<MinThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-         if ( i->initialized )
+      for ( const MinThread& thread : threads )
+         if ( thread.initialized )
             if ( initialized )
             {
-               if ( i->min < min )
-                  min = i->min;
+               if ( thread.min < min )
+                  min = thread.min;
             }
             else
             {
-               min = i->min;
+               min = thread.min;
                initialized = true;
             }
 
@@ -10869,26 +10863,27 @@ public:
                                      (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<MaxThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<MaxThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( MaxThread& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+         for ( MaxThread& thread : threads )
+            thread.Wait();
       }
       else
          threads[0].Run();
 
       sample max = P::MinSampleValue();
       bool initialized = false;
-      for ( typename ReferenceArray<MaxThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-         if ( i->initialized )
+      for ( const MaxThread& thread : threads )
+         if ( thread.initialized )
             if ( initialized )
             {
-               if ( max < i->max )
-                  max = i->max;
+               if ( max < thread.max )
+                  max = thread.max;
             }
             else
             {
-               max = i->max;
+               max = thread.max;
                initialized = true;
             }
 
@@ -10963,10 +10958,11 @@ public:
                                      (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<MinMaxThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<MinMaxThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( MinMaxThread& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+         for ( MinMaxThread& thread : threads )
+            thread.Wait();
       }
       else
          threads[0].Run();
@@ -10974,19 +10970,19 @@ public:
       sample vmin = P::MinSampleValue();
       sample vmax = P::MinSampleValue();
       bool initialized = false;
-      for ( typename ReferenceArray<MinMaxThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-         if ( i->initialized )
+      for ( const MinMaxThread& thread : threads )
+         if ( thread.initialized )
             if ( initialized )
             {
-               if ( i->min < vmin )
-                  vmin = i->min;
-               if ( vmax < i->max )
-                  vmax = i->max;
+               if ( thread.min < vmin )
+                  vmin = thread.min;
+               if ( vmax < thread.max )
+                  vmax = thread.max;
             }
             else
             {
-               vmin = i->min;
-               vmax = i->max;
+               vmin = thread.min;
+               vmax = thread.max;
                initialized = true;
             }
 
@@ -11061,32 +11057,33 @@ public:
                                      (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<MinPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<MinPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( MinPosThread& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+         for ( MinPosThread& thread : threads )
+            thread.Wait();
       }
       else
          threads[0].Run();
 
       sample min = P::MinSampleValue();
       bool initialized = false;
-      for ( typename ReferenceArray<MinPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-         if ( i->initialized )
+      for ( const MinPosThread& thread : threads )
+         if ( thread.initialized )
             if ( initialized )
             {
-               if ( i->min < min )
+               if ( thread.min < min )
                {
-                  min = i->min;
-                  xmin = i->pmin.x;
-                  ymin = i->pmin.y;
+                  min = thread.min;
+                  xmin = thread.pmin.x;
+                  ymin = thread.pmin.y;
                }
             }
             else
             {
-               min = i->min;
-               xmin = i->pmin.x;
-               ymin = i->pmin.y;
+               min = thread.min;
+               xmin = thread.pmin.x;
+               ymin = thread.pmin.y;
                initialized = true;
             }
 
@@ -11206,32 +11203,33 @@ public:
                                      (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<MaxPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<MaxPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( MaxPosThread& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+         for ( MaxPosThread& thread : threads )
+            thread.Wait();
       }
       else
          threads[0].Run();
 
       sample max = P::MinSampleValue();
       bool initialized = false;
-      for ( typename ReferenceArray<MaxPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-         if ( i->initialized )
+      for ( const MaxPosThread& thread : threads )
+         if ( thread.initialized )
             if ( initialized )
             {
-               if ( max < i->max )
+               if ( max < thread.max )
                {
-                  max = i->max;
-                  xmax = i->pmax.x;
-                  ymax = i->pmax.y;
+                  max = thread.max;
+                  xmax = thread.pmax.x;
+                  ymax = thread.pmax.y;
                }
             }
             else
             {
-               max = i->max;
-               xmax = i->pmax.x;
-               ymax = i->pmax.y;
+               max = thread.max;
+               xmax = thread.pmax.x;
+               ymax = thread.pmax.y;
                initialized = true;
             }
 
@@ -11365,10 +11363,11 @@ public:
                                            (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<MinMaxPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<MinMaxPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( MinMaxPosThread& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+         for ( MinMaxPosThread& thread : threads )
+            thread.Wait();
       }
       else
          threads[0].Run();
@@ -11376,32 +11375,32 @@ public:
       sample vmin = P::MinSampleValue();
       sample vmax = P::MinSampleValue();
       bool initialized = false;
-      for ( typename ReferenceArray<MinMaxPosThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-         if ( i->initialized )
+      for ( const MinMaxPosThread& thread : threads )
+         if ( thread.initialized )
             if ( initialized )
             {
-               if ( i->min < vmin )
+               if ( thread.min < vmin )
                {
-                  vmin = i->min;
-                  xmin = i->pmin.x;
-                  ymin = i->pmin.y;
+                  vmin = thread.min;
+                  xmin = thread.pmin.x;
+                  ymin = thread.pmin.y;
                }
 
-               if ( vmax < i->max )
+               if ( vmax < thread.max )
                {
-                  vmax = i->max;
-                  xmax = i->pmax.x;
-                  ymax = i->pmax.y;
+                  vmax = thread.max;
+                  xmax = thread.pmax.x;
+                  ymax = thread.pmax.y;
                }
             }
             else
             {
-               vmin = i->min;
-               xmin = i->pmin.x;
-               ymin = i->pmin.y;
-               vmax = i->max;
-               xmax = i->pmax.x;
-               ymax = i->pmax.y;
+               vmin = thread.min;
+               xmin = thread.pmin.x;
+               ymin = thread.pmin.y;
+               vmax = thread.max;
+               xmax = thread.pmax.x;
+               ymax = thread.pmax.y;
                initialized = true;
             }
 
@@ -11507,17 +11506,18 @@ public:
                                        (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<CountThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<CountThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( CountThread& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+         for ( CountThread& thread : threads )
+            thread.Wait();
       }
       else
          threads[0].Run();
 
       uint64 count = 0;
-      for ( typename ReferenceArray<CountThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-         count += i->count;
+      for ( const CountThread& thread : threads )
+         count += thread.count;
 
       threads.Destroy();
       m_status += N;
@@ -11574,10 +11574,11 @@ public:
                                      (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<SumThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<SumThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( SumThread& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+         for ( SumThread& thread : threads )
+            thread.Wait();
       }
       else
          threads[0].Run();
@@ -11585,13 +11586,13 @@ public:
       double s = 0;
       double e = 0;
       size_type n = 0;
-      for ( typename ReferenceArray<SumThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( const SumThread& thread : threads )
       {
-         double y = i->s - e;
+         double y = thread.s - e;
          double t = s + y;
          e = (t - s) - y;
          s = t;
-         n += i->n;
+         n += thread.n;
       }
 
       threads.Destroy();
@@ -11658,20 +11659,21 @@ public:
                                      (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<SmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<SmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( SmpThread& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+         for ( SmpThread& thread : threads )
+            thread.Wait();
       }
       else
          threads[0].Run();
 
       Array<sample> samples;
-      for ( typename ReferenceArray<SmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-         if ( !i->samples.IsEmpty() )
+      for ( SmpThread& thread : threads )
+         if ( !thread.samples.IsEmpty() )
          {
-            samples.Add( i->samples.Begin(), i->samples.At( i->n ) );
-            i->samples.Clear();
+            samples.Add( thread.samples.Begin(), thread.samples.At( thread.n ) );
+            thread.samples.Clear();
          }
 
       threads.Destroy();
@@ -11752,10 +11754,11 @@ public:
                                         (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<SumThread>::iterator i = sumThreads.Begin(); i != sumThreads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( sumThreads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<SumThread>::iterator i = sumThreads.Begin(); i != sumThreads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( SumThread& thread : sumThreads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+         for ( SumThread& thread : sumThreads )
+            thread.Wait();
       }
       else
          sumThreads[0].Run();
@@ -11763,13 +11766,13 @@ public:
       double s = 0;
       double e = 0;
       size_type n = 0;
-      for ( typename ReferenceArray<SumThread>::iterator i = sumThreads.Begin(); i != sumThreads.End(); ++i )
+      for ( const SumThread& thread : sumThreads )
       {
-         double y = i->s - e;
+         double y = thread.s - e;
          double t = s + y;
          e = (t - s) - y;
          s = t;
-         n += i->n;
+         n += thread.n;
       }
 
       sumThreads.Destroy();
@@ -11785,17 +11788,18 @@ public:
                                         (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<VarThread>::iterator i = varThreads.Begin(); i != varThreads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( varThreads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<VarThread>::iterator i = varThreads.Begin(); i != varThreads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( VarThread& thread : varThreads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+         for ( VarThread& thread : varThreads )
+            thread.Wait();
       }
       else
          varThreads[0].Run();
 
       double var = 0, eps = 0;
-      for ( typename ReferenceArray<VarThread>::iterator i = varThreads.Begin(); i != varThreads.End(); ++i )
-         var += i->var, eps += i->eps;
+      for ( const VarThread& thread : varThreads )
+         var += thread.var, eps += thread.eps;
 
       varThreads.Destroy();
       m_status += N;
@@ -11901,10 +11905,11 @@ public:
                                            (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<SumAbsDevThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<SumAbsDevThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( SumAbsDevThread& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+         for ( SumAbsDevThread& thread : threads )
+            thread.Wait();
       }
       else
          threads[0].Run();
@@ -11912,13 +11917,13 @@ public:
       double s = 0;
       double e = 0;
       size_type n = 0;
-      for ( typename ReferenceArray<SumAbsDevThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( const SumAbsDevThread& thread : threads )
       {
-         double y = i->s - e;
+         double y = thread.s - e;
          double t = s + y;
          e = (t - s) - y;
          s = t;
-         n += i->n;
+         n += thread.n;
       }
 
       threads.Destroy();
@@ -11993,20 +11998,21 @@ public:
                                            (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<SmpAbsDevThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<SmpAbsDevThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( SmpAbsDevThread& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? ++n : -1 );
+         for ( SmpAbsDevThread& thread : threads )
+            thread.Wait();
       }
       else
          threads[0].Run();
 
       Array<double> devs;
-      for ( typename ReferenceArray<SmpAbsDevThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-         if ( !i->devs.IsEmpty() )
+      for ( SmpAbsDevThread& thread : threads )
+         if ( !thread.devs.IsEmpty() )
          {
-            devs.Add( i->devs.Begin(), i->devs.At( i->n ) );
-            i->devs.Clear();
+            devs.Add( thread.devs.Begin(), thread.devs.At( thread.n ) );
+            thread.devs.Clear();
          }
 
       threads.Destroy();
@@ -12095,21 +12101,22 @@ public:
                                       (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<BWMVThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<BWMVThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( BWMVThread& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+         for ( BWMVThread& thread : threads )
+            thread.Wait();
       }
       else
          threads[0].Run();
 
       double num = 0, den = 0;
       size_type n = 0;
-      for ( typename ReferenceArray<BWMVThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( const BWMVThread& thread : threads )
       {
-         num += i->num;
-         den += i->den;
-         n += i->n;
+         num += thread.num;
+         den += thread.den;
+         n += thread.n;
       }
 
       threads.Destroy();
@@ -12192,20 +12199,21 @@ public:
                                       (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( DSmpThread& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+         for ( DSmpThread& thread : threads )
+            thread.Wait();
       }
       else
          threads[0].Run();
 
       Array<double> values;
-      for ( typename ReferenceArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-         if ( !i->values.IsEmpty() )
+      for ( DSmpThread& thread : threads )
+         if ( !thread.values.IsEmpty() )
          {
-            values.Add( i->values.Begin(), i->values.At( i->n ) );
-            i->values.Clear();
+            values.Add( thread.values.Begin(), thread.values.At( thread.n ) );
+            thread.values.Clear();
          }
 
       threads.Destroy();
@@ -12279,20 +12287,21 @@ public:
                                       (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( DSmpThread& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+         for ( DSmpThread& thread : threads )
+            thread.Wait();
       }
       else
          threads[0].Run();
 
       Array<double> values;
-      for ( typename ReferenceArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-         if ( !i->values.IsEmpty() )
+      for ( DSmpThread& thread : threads )
+         if ( !thread.values.IsEmpty() )
          {
-            values.Add( i->values.Begin(), i->values.At( i->n ) );
-            i->values.Clear();
+            values.Add( thread.values.Begin(), thread.values.At( thread.n ) );
+            thread.values.Clear();
          }
 
       threads.Destroy();
@@ -12365,20 +12374,21 @@ public:
                                       (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( DSmpThread& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+         for ( DSmpThread& thread : threads )
+            thread.Wait();
       }
       else
          threads[0].Run();
 
       Array<double> values;
-      for ( typename ReferenceArray<DSmpThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-         if ( !i->values.IsEmpty() )
+      for ( DSmpThread& thread : threads )
+         if ( !thread.values.IsEmpty() )
          {
-            values.Add( i->values.Begin(), i->values.At( i->n ) );
-            i->values.Clear();
+            values.Add( thread.values.Begin(), thread.values.At( thread.n ) );
+            thread.values.Clear();
          }
 
       threads.Destroy();
@@ -12447,19 +12457,20 @@ public:
                                      (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<SumThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<SumThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( SumThread& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+         for ( SumThread& thread : threads )
+            thread.Wait();
       }
       else
          threads[0].Run();
 
       double s = 0;
       double e = 0;
-      for ( typename ReferenceArray<SumThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( const SumThread& thread : threads )
       {
-         double y = i->s - e;
+         double y = thread.s - e;
          double t = s + y;
          e = (t - s) - y;
          s = t;
@@ -12522,19 +12533,20 @@ public:
                                      (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<SumAbsThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<SumAbsThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( SumAbsThread& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+         for ( SumAbsThread& thread : threads )
+            thread.Wait();
       }
       else
          threads[0].Run();
 
       double s = 0;
       double e = 0;
-      for ( typename ReferenceArray<SumAbsThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( const SumAbsThread& thread : threads )
       {
-         double y = i->s - e;
+         double y = thread.s - e;
          double t = s + y;
          e = (t - s) - y;
          s = t;
@@ -12595,19 +12607,20 @@ public:
                                         (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<SumSqrThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<SumSqrThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( SumSqrThread& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+         for ( SumSqrThread& thread : threads )
+            thread.Wait();
       }
       else
          threads[0].Run();
 
       double s = 0;
       double e = 0;
-      for ( typename ReferenceArray<SumSqrThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( const SumSqrThread& thread : threads )
       {
-         double y = i->s - e;
+         double y = thread.s - e;
          double t = s + y;
          e = (t - s) - y;
          s = t;
@@ -12668,10 +12681,11 @@ public:
                                         (j < numberOfThreads) ? j*rowsPerThread : r.Height() ) );
       if ( numberOfThreads > 1 )
       {
-         for ( typename ReferenceArray<SumSqrThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Start( ThreadPriority::DefaultMax, useAffinity ? Distance( threads.Begin(), i ) : -1 );
-         for ( typename ReferenceArray<SumSqrThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
-            i->Wait();
+         int n = 0;
+         for ( SumSqrThread& thread : threads )
+            thread.Start( ThreadPriority::DefaultMax, useAffinity ? n++ : -1 );
+         for ( SumSqrThread& thread : threads )
+            thread.Wait();
       }
       else
          threads[0].Run();
@@ -12679,13 +12693,13 @@ public:
       double s = 0;
       double e = 0;
       size_type n = 0;
-      for ( typename ReferenceArray<SumSqrThread>::iterator i = threads.Begin(); i != threads.End(); ++i )
+      for ( const SumSqrThread& thread : threads )
       {
-         double y = i->s - e;
+         double y = thread.s - e;
          double t = s + y;
          e = (t - s) - y;
          s = t;
-         n += i->n;
+         n += thread.n;
       }
 
       threads.Destroy();
@@ -13650,9 +13664,10 @@ public:
     * \note In general, computing luminance components as integer values is an
     * error. The GenericPixelTraits instantiation P1 should correspond to a
     * floating point real pixel sample type, either \c float or \c double,
-    * depending on the source data type. The recommended types are: \n \n
+    * depending on the source data type. The recommended types are:\n
+    * \n
     * \li FloatPixelTraits for 8-bit and 16-bit integer images, as well as for
-    * 32-bit floating point real and complex images.
+    * 32-bit floating point real and complex images.\n
     * \li DoublePixelTraits for 32-bit integer images, as well as for 64-bit
     * floating point real and complex images.
     *
@@ -13783,9 +13798,10 @@ public:
     * \note In general, computing lightness components as integer values is an
     * error. The GenericPixelTraits instantiation P1 should correspond to a
     * floating point real pixel sample type, either \c float or \c double,
-    * depending on the source data type. The recommended types are: \n \n
+    * depending on the source data type. The recommended types are:\n
+    * \n
     * \li FloatPixelTraits for 8-bit and 16-bit integer images, as well as for
-    * 32-bit floating point real and complex images.
+    * 32-bit floating point real and complex images.\n
     * \li DoublePixelTraits for 32-bit integer images, as well as for 64-bit
     * floating point real and complex images.
     *
@@ -14349,7 +14365,7 @@ private:
        * samples that stores one channel of the image. This includes all
        * nominal and alpha channels.
        */
-      sample**        data;
+      sample**        data = nullptr;
 
       /*!
        * Pixel allocator
@@ -14376,9 +14392,7 @@ private:
       /*!
        * Constructs an empty local image.
        */
-      Data( GenericImage* image ) :
-         ReferenceCounter(),
-         data( nullptr ), allocator(), geometry(), color()
+      Data( GenericImage* image )
       {
          LinkWithClientImage( image );
       }
@@ -14386,9 +14400,7 @@ private:
       /*!
        * Constructs an aliased shared image.
        */
-      Data( GenericImage* image, void* handle ) :
-         ReferenceCounter(),
-         data( nullptr ), allocator( handle ), geometry(), color()
+      Data( GenericImage* image, void* handle ) : allocator( handle )
       {
          SynchronizeWithSharedImage();
          LinkWithClientImage( image );
@@ -14398,8 +14410,7 @@ private:
        * Constructs a newly created shared image.
        */
       Data( GenericImage* image, int width, int height, int numberOfChannels, int colorSpace ) :
-         ReferenceCounter(),
-         data( nullptr ), allocator( width, height, numberOfChannels, colorSpace ), geometry(), color()
+         allocator( width, height, numberOfChannels, colorSpace )
       {
          SynchronizeWithSharedImage();
          LinkWithClientImage( image );
@@ -14676,7 +14687,7 @@ private:
     * \internal
     * The reference-counted image data.
     */
-   Data* m_data;
+   Data* m_data = nullptr;
 
    /*!
     * \internal
@@ -16420,7 +16431,7 @@ GenericImage<P1> operator ^( const GenericImage<P1>& image1, const GenericImage<
 #ifndef __PCL_NO_IMAGE_INSTANTIATE
 
 /*!
- * \defgroup image_types_2d Two-Dimensional Image Types
+ * \defgroup image_types_2d Image Types
  */
 
 /*!
@@ -16532,4 +16543,4 @@ typedef FComplexImage                     ComplexImage;
 #endif   // __PCL_Image_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Image.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Image.h - Released 2017-04-14T23:04:40Z

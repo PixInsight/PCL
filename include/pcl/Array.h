@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/Array.h - Released 2016/02/21 20:22:12 UTC
+// pcl/Array.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,65 +54,22 @@
 
 /// \file pcl/Array.h
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
-
-#ifndef __PCL_Diagnostics_h
 #include <pcl/Diagnostics.h>
-#endif
 
-#ifndef __PCL_Container_h
-#include <pcl/Container.h>
-#endif
-
-#ifndef __PCL_Allocator_h
 #include <pcl/Allocator.h>
-#endif
-
-#ifndef __PCL_StdAlloc_h
-#include <pcl/StdAlloc.h>
-#endif
-
-#ifndef __PCL_Iterator_h
-#include <pcl/Iterator.h>
-#endif
-
-#ifndef __PCL_ReferenceCounter_h
-#include <pcl/ReferenceCounter.h>
-#endif
-
-#ifndef __PCL_Memory_h
-#include <pcl/Memory.h>
-#endif
-
-#ifndef __PCL_Rotate_h
-#include <pcl/Rotate.h>
-#endif
-
-#ifndef __PCL_Search_h
-#include <pcl/Search.h>
-#endif
-
-#ifndef __PCL_Sort_h
-#include <pcl/Sort.h>
-#endif
-
-#ifndef __PCL_Math_h
-#include <pcl/Math.h>
-#endif
-
-#ifndef __PCL_Indirect_h
+#include <pcl/Container.h>
 #include <pcl/Indirect.h>
-#endif
-
-#ifndef __PCL_Utility_h
-#include <pcl/Utility.h>
-#endif
-
-#ifndef __PCL_Relational_h
+#include <pcl/Iterator.h>
+#include <pcl/Math.h>
+#include <pcl/Memory.h>
+#include <pcl/ReferenceCounter.h>
 #include <pcl/Relational.h>
-#endif
+#include <pcl/Rotate.h>
+#include <pcl/Search.h>
+#include <pcl/Sort.h>
+#include <pcl/StdAlloc.h>
+#include <pcl/Utility.h>
 
 namespace pcl
 {
@@ -129,8 +86,13 @@ namespace pcl
  * \class Array
  * \brief Generic dynamic array.
  *
- * ### TODO: Write a detailed description for %Array.
+ * %Array is a generic, finite ordered sequence of objects, implemented as a
+ * reference-counted, dynamic array of T instances. The type A provides dynamic
+ * allocation for contiguous sequences of elements of type T (StandardAllocator
+ * is used by default).
  *
+ * \sa SortedArray, ReferenceArray, ReferenceSortedArray, IndirectArray,
+ * IndirectSortedArray
  * \ingroup dynamic_arrays
  */
 template <class T, class A = StandardAllocator>
@@ -169,7 +131,7 @@ public:
    /*!
     * Constructs an empty array.
     */
-   Array() : m_data( nullptr )
+   Array()
    {
       m_data = new Data;
    }
@@ -178,7 +140,7 @@ public:
     * Constructs an array of \a n default-constructed objects.
     */
    explicit
-   Array( size_type n ) : m_data( nullptr )
+   Array( size_type n )
    {
       m_data = new Data;
       m_data->Allocate( n );
@@ -188,7 +150,7 @@ public:
    /*!
     * Constructs an array with \a n copies of an object \a v.
     */
-   Array( size_type n, const T& v ) : m_data( nullptr )
+   Array( size_type n, const T& v )
    {
       m_data = new Data;
       m_data->Allocate( n );
@@ -200,7 +162,7 @@ public:
     * of forward iterators.
     */
    template <class FI>
-   Array( FI i, FI j ) : m_data( nullptr )
+   Array( FI i, FI j )
    {
       m_data = new Data;
       m_data->Allocate( size_type( pcl::Distance( i, j ) ) );
@@ -849,6 +811,58 @@ public:
    }
 
    /*!
+    * Appends a contiguous sequence of \a n default-constructed objects to this
+    * array. This operation is equivalent to:
+    *
+    * \code Grow( End(), n ) \endcode
+    *
+    * Returns an iterator pointing to the first newly created array element, or
+    * End() if \a n is zero.
+    */
+   iterator Expand( size_type n = 1 )
+   {
+      return Grow( m_data->end, n );
+   }
+
+   /*!
+    * Removes a contiguous trailing sequence of \a n existing objects from this
+    * array. This operation is equivalent to:
+    *
+    * \code Truncate( End() - n ) \endcode
+    *
+    * If the specified count \a n is greater than or equal to the length of
+    * this array, this function calls Clear() to yield an empty array.
+    */
+   void Shrink( size_type n = 1 )
+   {
+      if ( n < m_data->Length() )
+         Truncate( m_data->end - n );
+      else
+         Clear();
+   }
+
+   /*!
+    * Resizes this array to the specified length \a n, either by appending new
+    * default-constructed objects, or by removing existing trailing objects.
+    * This operation is equivalent to:
+    *
+    * \code
+    * if ( n > Length() )
+    *    Expand( n - Length() );
+    * else
+    *    Shrink( Length() - n );
+    * \endcode
+    */
+   void Resize( size_type n )
+   {
+      size_type l = m_data->Length();
+      if ( n > l )
+         Expand( n - l );
+      else
+         Shrink( l - n );
+   }
+
+   /*!
     * Inserts a copy of the objects in a direct container \a x at the specified
     * location \a i in this array.
     *
@@ -1037,6 +1051,21 @@ public:
             else
                Clear();
          }
+   }
+
+   /*!
+    * Destroys and removes a trailing sequence of contiguous objects from the
+    * specified iterator of this array. This operation is equivalent to:
+    *
+    * \code Remove( i, End() ) \endcode
+    *
+    * If the specified iterator is located at or after the end of this array,
+    * this function does nothing. Otherwise the iterator is constrained to stay
+    * in the range [Begin(),End()) of existing array elements.
+    */
+   void Truncate( iterator i )
+   {
+      Remove( i, m_data->end );
    }
 
    /*!
@@ -1785,17 +1814,15 @@ private:
     */
    struct Data : public ReferenceCounter
    {
-      iterator  begin;     //!< Beginning of the dynamic array
-      iterator  end;       //!< End of the array
-      iterator  available; //!< End of the allocated block
-      allocator alloc;     //!< The allocator object
+      iterator  begin     = nullptr; //!< Beginning of the dynamic array
+      iterator  end       = nullptr; //!< End of the array
+      iterator  available = nullptr; //!< End of the allocated block
+      allocator alloc;               //!< The allocator object
 
       /*!
        * Constructs an empty array data structure.
        */
-      Data() : ReferenceCounter(), begin( nullptr ), end( nullptr ), available( nullptr ), alloc( A() )
-      {
-      }
+      Data() = default;
 
       /*!
        * Destroys an array data structure.
@@ -1993,7 +2020,7 @@ private:
     * \internal
     * The reference-counted array data.
     */
-   Data* m_data;
+   Data* m_data = nullptr;
 
    /*!
     * \internal
@@ -2097,4 +2124,4 @@ Array<T,A>& operator <<( Array<T,A>&& x1, const Array<T,A>& x2 )
 #endif  // __PCL_Array_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Array.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/Array.h - Released 2017-04-14T23:04:40Z

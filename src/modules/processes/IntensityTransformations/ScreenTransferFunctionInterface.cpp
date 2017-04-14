@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard IntensityTransformations Process Module Version 01.07.01.0355
+// Standard IntensityTransformations Process Module Version 01.07.01.0364
 // ----------------------------------------------------------------------------
-// ScreenTransferFunctionInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// ScreenTransferFunctionInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard IntensityTransformations PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -538,13 +538,10 @@ void STFAutoStretchDialog::__Button_Click( Button& sender, bool checked )
 // ----------------------------------------------------------------------------
 
 ScreenTransferFunctionInterface::ScreenTransferFunctionInterface() :
-ProcessInterface(),
-m_instance( TheScreenTransferFunctionProcess ),
-m_mode( EditMode ),
-m_readoutMode( NoReadout ),
-m_rgbLinked( true ),
-m_autoAdjustDialog( 0 ),
-GUI( 0 )
+   m_instance( TheScreenTransferFunctionProcess ),
+   m_mode( EditMode ),
+   m_readoutMode( NoReadout ),
+   m_rgbLinked( true )
 {
    TheScreenTransferFunctionInterface = this;
 }
@@ -553,10 +550,10 @@ GUI( 0 )
 
 ScreenTransferFunctionInterface::~ScreenTransferFunctionInterface()
 {
-   if ( m_autoAdjustDialog != 0 )
-      delete m_autoAdjustDialog, m_autoAdjustDialog = 0;
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( m_autoAdjustDialog != nullptr )
+      delete m_autoAdjustDialog, m_autoAdjustDialog = nullptr;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -592,8 +589,8 @@ InterfaceFeatures ScreenTransferFunctionInterface::Features() const
 void ScreenTransferFunctionInterface::ApplyInstance() const
 {
    /*
-    * ### NB: We cannot use LaunchOnCurrentView() here because ApplyInstance()
-    *     is invoked to modify the current view's STF in real time.
+    * ### N.B.: We cannot use LaunchOnCurrentView() here because
+    * ApplyInstance() is invoked to modify the current view's STF in real time.
     */
    //m_instance.LaunchOnCurrentView();
 
@@ -606,7 +603,7 @@ void ScreenTransferFunctionInterface::ApplyInstance() const
 
 void ScreenTransferFunctionInterface::TrackViewUpdated( bool active )
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
    {
       bool rgb = true;
 
@@ -654,16 +651,13 @@ void ScreenTransferFunctionInterface::ResetInstance()
 
 bool ScreenTransferFunctionInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
-
       UpdateTitle( View::Null() );
       UpdateControls();
       UpdateSTFEnabledButton( View::Null() );
-
       SetWorkingMode( EditMode );
-
       GUI->LinkRGB_ToolButton.SetChecked( m_rgbLinked );
    }
 
@@ -682,15 +676,12 @@ ProcessImplementation* ScreenTransferFunctionInterface::NewProcess() const
 
 bool ScreenTransferFunctionInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   if ( dynamic_cast<const ScreenTransferFunctionInstance*>( &p ) == 0 &&
-        dynamic_cast<const HistogramTransformationInstance*>( &p ) == 0 )
-   {
-      whyNot = "Must be an instance of either ScreenTransferFunction or HistogramTransformation.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const ScreenTransferFunctionInstance*>( &p ) != nullptr )
+      return true;
+   if ( dynamic_cast<const HistogramTransformationInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Must be an instance of either ScreenTransferFunction or HistogramTransformation.";
+   return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -705,7 +696,7 @@ bool ScreenTransferFunctionInterface::RequiresInstanceValidation() const
 bool ScreenTransferFunctionInterface::ImportProcess( const ProcessImplementation& p )
 {
    const HistogramTransformationInstance* h = dynamic_cast<const HistogramTransformationInstance*>( &p );
-   if ( h != 0 )
+   if ( h != nullptr )
    {
       for ( int c = 0; c < 4; ++c )
          m_instance[c].Reset();
@@ -783,50 +774,57 @@ bool ScreenTransferFunctionInterface::WantsImageNotifications() const
 
 void ScreenTransferFunctionInterface::ImageFocused( const View& v )
 {
-   if ( GUI != 0 && IsTrackViewActive() )
-   {
-      m_instance.GetViewSTF( v );
+   if ( GUI != nullptr )
+      if ( IsTrackViewActive() )
+      {
+         m_instance.GetViewSTF( v );
 
-      UpdateTitle( v );
-      UpdateControls();
+         UpdateTitle( v );
+         UpdateControls();
 
-      bool rgb = v.IsNull() || v.IsColor();
-      for ( int c = 0; c < 4; ++c )
-         GUI->Sliders_Control[c].SetChannel( c, rgb );
+         bool rgb = v.IsNull() || v.IsColor();
+         for ( int c = 0; c < 4; ++c )
+            GUI->Sliders_Control[c].SetChannel( c, rgb );
 
-      UpdateSTFEnabledButton( v );
-      UpdateFirstChannelLabelText();
-   }
+         UpdateSTFEnabledButton( v );
+         UpdateFirstChannelLabelText();
+      }
 }
 
 // ----------------------------------------------------------------------------
 
 void ScreenTransferFunctionInterface::ImageUpdated( const View& v )
 {
-   if ( GUI != 0 && IsTrackViewActive() && v == ImageWindow::ActiveWindow().CurrentView() )
-   {
-      bool rgb = v.IsColor();
-      for ( int c = 0; c < 4; ++c )
-         GUI->Sliders_Control[c].SetChannel( c, rgb );
+   if ( GUI != nullptr )
+      if ( IsTrackViewActive() )
+         if ( v == ImageWindow::ActiveWindow().CurrentView() )
+         {
+            bool rgb = v.IsColor();
+            for ( int c = 0; c < 4; ++c )
+               GUI->Sliders_Control[c].SetChannel( c, rgb );
 
-      UpdateFirstChannelLabelText();
-   }
+            UpdateFirstChannelLabelText();
+         }
 }
 
 // ----------------------------------------------------------------------------
 
 void ScreenTransferFunctionInterface::ImageSTFEnabled( const View& v )
 {
-   if ( GUI != 0 && IsTrackViewActive() && v == ImageWindow::ActiveWindow().CurrentView() )
-      UpdateSTFEnabledButton( v );
+   if ( GUI != nullptr )
+      if ( IsTrackViewActive() )
+         if ( v == ImageWindow::ActiveWindow().CurrentView() )
+            UpdateSTFEnabledButton( v );
 }
 
 // ----------------------------------------------------------------------------
 
 void ScreenTransferFunctionInterface::ImageSTFDisabled( const View& v )
 {
-   if ( GUI != 0 && IsTrackViewActive() && v == ImageWindow::ActiveWindow().CurrentView() )
-      UpdateSTFEnabledButton( v );
+   if ( GUI != nullptr )
+      if ( IsTrackViewActive() )
+         if ( v == ImageWindow::ActiveWindow().CurrentView() )
+            UpdateSTFEnabledButton( v );
 }
 
 // ----------------------------------------------------------------------------
@@ -835,11 +833,13 @@ void ScreenTransferFunctionInterface::ImageSTFUpdated( const View& v )
 {
    PCL_CLASS_REENTRANCY_GUARDED_BEGIN
 
-   if ( GUI != 0 && IsTrackViewActive() && v == ImageWindow::ActiveWindow().CurrentView() )
-   {
-      m_instance.GetViewSTF( v );
-      UpdateControls();
-   }
+   if ( GUI != nullptr )
+      if ( IsTrackViewActive() )
+         if ( v == ImageWindow::ActiveWindow().CurrentView() )
+         {
+            m_instance.GetViewSTF( v );
+            UpdateControls();
+         }
 
    PCL_REENTRANCY_GUARDED_END
 }
@@ -848,19 +848,23 @@ void ScreenTransferFunctionInterface::ImageSTFUpdated( const View& v )
 
 void ScreenTransferFunctionInterface::ImageRenamed( const View& v )
 {
-   if ( GUI != 0 && IsTrackViewActive() && v == ImageWindow::ActiveWindow().CurrentView() )
-      UpdateTitle( v );
+   if ( GUI != nullptr )
+      if ( IsTrackViewActive() )
+         if ( v == ImageWindow::ActiveWindow().CurrentView() )
+            UpdateTitle( v );
 }
 
 // ----------------------------------------------------------------------------
 
 void ScreenTransferFunctionInterface::ImageDeleted( const View& v )
 {
-   if ( GUI != 0 && IsTrackViewActive() && v == ImageWindow::ActiveWindow().CurrentView() )
-   {
-      UpdateTitle( View::Null() );
-      UpdateSTFEnabledButton( View::Null() );
-   }
+   if ( GUI != nullptr )
+      if ( IsTrackViewActive() )
+         if ( v == ImageWindow::ActiveWindow().CurrentView() )
+         {
+            UpdateTitle( View::Null() );
+            UpdateSTFEnabledButton( View::Null() );
+         }
 }
 
 // ----------------------------------------------------------------------------
@@ -876,67 +880,69 @@ void ScreenTransferFunctionInterface::UpdateReadout( const View& v, const DPoint
 {
    PCL_CLASS_REENTRANCY_GUARDED_BEGIN
 
-   if ( m_readoutMode != NoReadout && GUI != 0 && IsVisible() )
-   {
-      ImageWindow w = v.Window();
+   if ( GUI != nullptr )
+      if ( m_readoutMode != NoReadout )
+         if ( IsVisible() )
+         {
+            ImageWindow w = v.Window();
 
-      int dispCh = w.CurrentChannel();
-      bool chR = dispCh == DisplayChannel::Red || dispCh == DisplayChannel::RGBK && !v.IsColor();
-      bool chG = dispCh == DisplayChannel::Green;
-      bool chB = dispCh == DisplayChannel::Blue;
-      bool chL = dispCh == DisplayChannel::CIE_L;
-      bool chY = dispCh == DisplayChannel::CIE_Y;
-      bool chRGB = !(chR || chG || chB || chL || chY);
+            int dispCh = w.CurrentChannel();
+            bool chR = dispCh == DisplayChannel::Red || dispCh == DisplayChannel::RGBK && !v.IsColor();
+            bool chG = dispCh == DisplayChannel::Green;
+            bool chB = dispCh == DisplayChannel::Blue;
+            bool chL = dispCh == DisplayChannel::CIE_L;
+            bool chY = dispCh == DisplayChannel::CIE_Y;
+            bool chRGB = !(chR || chG || chB || chL || chY);
 
-      double L = 0; // calm compilers
-      if ( chL || chY )
-      {
-         RGBColorSystem rgb;
-         w.GetRGBWS( rgb );
-         L = chL ? rgb.CIEL( R, G, B ) : rgb.CIEY( R, G, B );
-      }
+            double L = 0; // calm compilers
+            if ( chL || chY )
+            {
+               RGBColorSystem rgb;
+               w.GetRGBWS( rgb );
+               L = chL ? rgb.CIEL( R, G, B ) : rgb.CIEY( R, G, B );
+            }
 
-      switch ( m_readoutMode )
-      {
-      case BlackPointReadout:
-         if ( chR || chRGB )
-            m_instance[0].c0 = R;
-         if ( chG || chRGB )
-            m_instance[1].c0 = G;
-         if ( chB || chRGB )
-            m_instance[2].c0 = B;
-         if ( chL )
-            m_instance[3].c0 = L;
-         break;
-      case MidtonesReadout:
-         if ( chR || chRGB )
-            m_instance[0].m = R;
-         if ( chG || chRGB )
-            m_instance[1].m = G;
-         if ( chB || chRGB )
-            m_instance[2].m = B;
-         if ( chL )
-            m_instance[3].m = L;
-         break;
-      case WhitePointReadout:
-         if ( chR || chRGB )
-            m_instance[0].c1 = R;
-         if ( chG || chRGB )
-            m_instance[1].c1 = G;
-         if ( chB || chRGB )
-            m_instance[2].c1 = B;
-         if ( chL )
-            m_instance[3].c1 = L;
-         break;
-      default:
-         break;
-      }
+            switch ( m_readoutMode )
+            {
+            case BlackPointReadout:
+               if ( chR || chRGB )
+                  m_instance[0].c0 = R;
+               if ( chG || chRGB )
+                  m_instance[1].c0 = G;
+               if ( chB || chRGB )
+                  m_instance[2].c0 = B;
+               if ( chL )
+                  m_instance[3].c0 = L;
+               break;
+            case MidtonesReadout:
+               if ( chR || chRGB )
+                  m_instance[0].m = R;
+               if ( chG || chRGB )
+                  m_instance[1].m = G;
+               if ( chB || chRGB )
+                  m_instance[2].m = B;
+               if ( chL )
+                  m_instance[3].m = L;
+               break;
+            case WhitePointReadout:
+               if ( chR || chRGB )
+                  m_instance[0].c1 = R;
+               if ( chG || chRGB )
+                  m_instance[1].c1 = G;
+               if ( chB || chRGB )
+                  m_instance[2].c1 = B;
+               if ( chL )
+                  m_instance[3].c1 = L;
+               break;
+            default:
+               break;
+            }
 
-      UpdateControls();
+            UpdateControls();
 
-      if ( IsTrackViewActive() )
-         ApplyToCurrentView();
-   }
+            if ( IsTrackViewActive() )
+               ApplyToCurrentView();
+         }
 
    PCL_REENTRANCY_GUARDED_END
 }
@@ -963,7 +969,7 @@ void ScreenTransferFunctionInterface::UpdateControls()
 
 void ScreenTransferFunctionInterface::UpdateFirstChannelLabelText()
 {
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       GUI->ChannelId_Label[0].SetText( GUI->Sliders_Control[0].IsRGB() ? "R:" : "K:" );
 }
 
@@ -1035,7 +1041,7 @@ void ScreenTransferFunctionInterface::SetWorkingMode( working_mode newMode )
 void ScreenTransferFunctionInterface::LinkRGBChannels( bool linked )
 {
    m_rgbLinked = linked;
-   if ( GUI != 0 )
+   if ( GUI != nullptr )
       GUI->LinkRGB_ToolButton.SetChecked( m_rgbLinked );
 }
 
@@ -1157,7 +1163,7 @@ void ScreenTransferFunctionInterface::ComputeAutoStretch( View& view, bool boost
       }
    }
 
-   if ( GUI != 0 ) // can be called before initialization
+   if ( GUI != nullptr ) // can be called before initialization
       UpdateControls();
 }
 
@@ -1270,7 +1276,7 @@ void ScreenTransferFunctionInterface::__STFAutoStretch_MouseRelease(
    if ( button != MouseButton::Left )
       return;
 
-   if ( m_autoAdjustDialog == 0 )
+   if ( m_autoAdjustDialog == nullptr )
       m_autoAdjustDialog = new STFAutoStretchDialog;
 
    View v;
@@ -1389,6 +1395,26 @@ void ScreenTransferFunctionInterface::__STFEnabledButtonClick( Button& /*sender*
    }
 }
 
+void ScreenTransferFunctionInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( dynamic_cast<STFSliders*>( &sender ) != nullptr )
+      wantsView = true;
+}
+
+void ScreenTransferFunctionInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( dynamic_cast<STFSliders*>( &sender ) != nullptr )
+   {
+      m_instance.GetViewSTF( view );
+      UpdateControls();
+      bool rgb = view.IsColor();
+      for ( int c = 0; c < 4; ++c )
+         GUI->Sliders_Control[c].SetChannel( c, rgb );
+      if ( IsTrackViewActive() )
+         ApplyToCurrentView();
+   }
+}
+
 // ----------------------------------------------------------------------------
 
 ScreenTransferFunctionInterface::GUIData::GUIData( ScreenTransferFunctionInterface& w )
@@ -1501,6 +1527,8 @@ ScreenTransferFunctionInterface::GUIData::GUIData( ScreenTransferFunctionInterfa
       Sliders_Control[c].SetFocusStyle( FocusStyle::NoFocus );
       Sliders_Control[c].OnValueUpdated( (STFSliders::value_event_handler)&ScreenTransferFunctionInterface::__SliderValueUpdated, w );
       Sliders_Control[c].OnRangeUpdated( (STFSliders::range_event_handler)&ScreenTransferFunctionInterface::__SliderRangeUpdated, w );
+      Sliders_Control[c].OnViewDrag( (Control::view_drag_event_handler)&ScreenTransferFunctionInterface::__ViewDrag, w );
+      Sliders_Control[c].OnViewDrop( (Control::view_drop_event_handler)&ScreenTransferFunctionInterface::__ViewDrop, w );
 
       Reset_ToolButton[c].SetIcon( Bitmap( w.ScaledResource( ":/icons/clear.png" ) ) );
       Reset_ToolButton[c].SetScaledFixedSize( 20, 20 );
@@ -1556,4 +1584,4 @@ ScreenTransferFunctionInterface::GUIData::GUIData( ScreenTransferFunctionInterfa
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ScreenTransferFunctionInterface.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF ScreenTransferFunctionInterface.cpp - Released 2017-04-14T23:07:12Z

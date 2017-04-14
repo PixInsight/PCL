@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.06.0107
+// Standard XISF File Format Module Version 01.00.09.0125
 // ----------------------------------------------------------------------------
-// XISFFormat.cpp - Released 2016/07/05 10:44:57 UTC
+// XISFFormat.cpp - Released 2017-04-14T23:07:03Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -54,8 +54,8 @@
 #include "XISFInstance.h"
 #include "XISFPreferencesDialog.h"
 
-#include <pcl/Settings.h>
 #include <pcl/ErrorHandler.h>
+#include <pcl/Settings.h>
 
 namespace pcl
 {
@@ -94,7 +94,7 @@ String XISFFormat::Description() const
    "<p>XISF - Extensible Image Serialization Format Version 1.0</p>"
 
    "<p>This implementation supports a large subset of the XISF Version 1.0 "
-   "Specification DRAFT 7 for monolithic XISF units.</p>"
+   "Specification DRAFT 9.4 for monolithic XISF units.</p>"
 
    "<p>For the latest XISF specification document, please visit:</p>"
 
@@ -110,7 +110,102 @@ String XISFFormat::Implementation() const
    "<p>PixInsight Standard File Format Support Modules.</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2015, Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2017, Pleiades Astrophoto</p>"
+
+   "<p style=\"white-space:pre;\">"
+"\n-------------------------------------------------------------------------------"
+"\nXISF Format Hints             Description"
+"\n============================  ================================================="
+"\nnormalize               (r )  Normalize floating point real pixel data to the"
+"\n                              [0,1] range. Normalize integer data to [0,2^n-1]."
+"\n-------------------------------------------------------------------------------"
+"\nno-normalize            (r )  Do not normalize pixel data; load it exactly as"
+"\n                              has been stored in the XISF unit, including wrong"
+"\n                              out-of-range values and non-numeric entities."
+"\n-------------------------------------------------------------------------------"
+"\nimport-fits-keywords    (r )  Import FITS header keywords as image properties."
+"\n-------------------------------------------------------------------------------"
+"\nno-import-fits-keywords (r )  Do not import FITS header keywords as image"
+"\n                              properties."
+"\n-------------------------------------------------------------------------------"
+"\nauto-metadata           (r )  Automatically generate a number of metadata"
+"\n                              properties to describe the XISF unit."
+"\n-------------------------------------------------------------------------------"
+"\nno-auto-metadata        (r )  Do not generate metadata automatically."
+"\n-------------------------------------------------------------------------------"
+"\nembedded-data           (rw)  Read/write embedded image data."
+"\n-------------------------------------------------------------------------------"
+"\nno-embedded-data        (rw)  Do not read/write embedded image data."
+"\n-------------------------------------------------------------------------------"
+"\nproperties              (rw)  Read/write image and unit properties."
+"\n-------------------------------------------------------------------------------"
+"\nno-properties           (rw)  Do not read/write image and unit properties."
+"\n-------------------------------------------------------------------------------"
+"\nfits-keywords           (rw)  Read/write FITS header keywords, for legacy"
+"\n                              format compatibility."
+"\n-------------------------------------------------------------------------------"
+"\nno-fits-keywords        (rw)  Do not read/write FITS header keywords."
+"\n-------------------------------------------------------------------------------"
+"\nwarnings                (rw)  Generate warning messages."
+"\n-------------------------------------------------------------------------------"
+"\nno-warnings             (rw)  Do not generate warning messages."
+"\n-------------------------------------------------------------------------------"
+"\nwarnings-are-errors     (rw)  Treat warning messages as errors."
+"\n-------------------------------------------------------------------------------"
+"\nno-warnings-are-errors  (rw)  Do not treat warning messages as errors"
+"\n-------------------------------------------------------------------------------"
+"\nverbosity n             (rw)  n is a verbosity level in the range [0,3] to"
+"\n                              control the amount of generated messages"
+"\n                              (default = 1)."
+"\n-------------------------------------------------------------------------------"
+"\ncompression-codec id    ( w)  id is the identifier of a compression codec, one"
+"\n                              of: zlib, zlib+sh, lz4, lz4+sh, lz4hc, lz4hc+sh."
+"\n-------------------------------------------------------------------------------"
+"\ncompression-level n     ( w)  n is an abstract compression level in the range"
+"\n                              [0,100]. Higher levels compress more, lower"
+"\n                              levels compress faster."
+"\n-------------------------------------------------------------------------------"
+"\nno-compression          ( w)  Do not generate compressed data blocks."
+"\n-------------------------------------------------------------------------------"
+"\nchecksums id            ( w)  id is a block checksum algorithm, one of: sha1,"
+"\n                              sha256, sha512."
+"\n-------------------------------------------------------------------------------"
+"\nno-checksums            ( w)  Do not generate block checksums."
+"\n-------------------------------------------------------------------------------"
+"\nblock-alignment n       ( w)  Align data blocks to multiples of n bytes, n in"
+"\n                              the range [0,65536]."
+"\n-------------------------------------------------------------------------------"
+"\nno-block-alignment      ( w)  Write unaligned data blocks."
+"\n-------------------------------------------------------------------------------"
+"\nmax-inline-block-size n ( w)  n is the maximum length of a block in bytes to be"
+"\n                              generated as an inline or embedded block."
+"\n-------------------------------------------------------------------------------"
+"\ncfa-type id             ( w)  id is the identifier of a color filter array"
+"\n                              (CFA) that will be associated with the generated"
+"\n                              images (* obsolete *)"
+"\n-------------------------------------------------------------------------------"
+"\nno-cfa                  ( w)  Do not generate color filter array (CFA) image"
+"\n                              properties (* obsolete *)"
+"\n-------------------------------------------------------------------------------"
+"\nresolution n            ( w)  n is an image resolution in pixels per resolution"
+"\n                              unit (inches or centimeters)"
+"\n-------------------------------------------------------------------------------"
+"\nno-resolution           ( w)  Do not generate image resolution metadata."
+"\n-------------------------------------------------------------------------------"
+"\nresolution-unit id      ( w)  id is a resolution unit, one of: inch, cm."
+"\n-------------------------------------------------------------------------------"
+"\nimage-ids ids           ( w)  ids is a comma-separated list of image"
+"\n                              identifiers, which will be associated with the"
+"\n                              corresponding images serialized in the XISF unit."
+"\n-------------------------------------------------------------------------------"
+"\nlower-bound n           ( w)  n is the lower bound of the output range for"
+"\n                              generated pixel sample data."
+"\n-------------------------------------------------------------------------------"
+"\nupper-bound n           ( w)  n is the upper bound of the output range for"
+"\n                              generated pixel sample data."
+"\n-------------------------------------------------------------------------------"
+"\n"
+   "</p>"
    "</html>";
 }
 
@@ -180,6 +275,11 @@ bool XISFFormat::CanStoreThumbnails() const
 }
 
 bool XISFFormat::CanStoreProperties() const
+{
+   return true;
+}
+
+bool XISFFormat::CanStoreImageProperties() const
 {
    return true;
 }
@@ -270,9 +370,9 @@ bool XISFFormat::EditPreferences() const
       Settings::Write( "XISFIgnoreEmbeddedData", options.ignoreEmbeddedData );
       Settings::Write( "XISFIgnoreProperties",   options.ignoreProperties );
       Settings::Write( "XISFAutoMetadata",       options.autoMetadata );
-      Settings::Write( "XISFCompressionCodec",   options.compressionMethod );
+      Settings::Write( "XISFCompressionCodec",   options.compressionCodec );
       Settings::Write( "XISFCompressionLevel",   options.compressionLevel );
-      Settings::Write( "XISFChecksums",          options.checksumMethod );
+      Settings::Write( "XISFChecksums",          options.checksumAlgorithm );
       Settings::Write( "XISFBlockAlignmentSize", options.blockAlignmentSize );
       Settings::Write( "XISFMaxInlineBlockSize", options.maxInlineBlockSize );
 
@@ -313,17 +413,17 @@ XISFOptions XISFFormat::DefaultOptions()
    Settings::Read( "XISFAutoMetadata", b );
    options.autoMetadata = b;
 
-   u8 = options.compressionMethod;
+   u8 = options.compressionCodec;
    Settings::ReadU( "XISFCompressionCodec", u8 );
-   options.compressionMethod = u8;
+   options.compressionCodec = XISF::block_compression( u8 );
 
    u8 = options.compressionLevel;
    Settings::ReadU( "XISFCompressionLevel", u8 );
    options.compressionLevel = u8;
 
-   u8 = options.checksumMethod;
+   u8 = options.checksumAlgorithm;
    Settings::ReadU( "XISFChecksums", u8 );
-   options.checksumMethod = u8;
+   options.checksumAlgorithm = XISF::block_checksum( u8 );
 
    u16 = options.blockAlignmentSize;
    Settings::ReadU( "XISFBlockAlignmentSize", u16 );
@@ -361,8 +461,7 @@ XISFFormat::EmbeddingOverrides XISFFormat::DefaultEmbeddingOverrides()
 #define XISF_SIGNATURE  0x58495346u // 'XISF'
 
 XISFFormat::FormatOptions::FormatOptions() :
-   options( XISFFormat::DefaultOptions() ),
-   signature( XISF_SIGNATURE )
+   options( XISFFormat::DefaultOptions() ), signature( XISF_SIGNATURE )
 {
 }
 
@@ -381,4 +480,4 @@ XISFFormat::FormatOptions* XISFFormat::FormatOptions::FromGenericDataBlock( cons
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF XISFFormat.cpp - Released 2016/07/05 10:44:57 UTC
+// EOF XISFFormat.cpp - Released 2017-04-14T23:07:03Z

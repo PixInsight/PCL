@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard ColorCalibration Process Module Version 01.02.00.0238
+// Standard ColorCalibration Process Module Version 01.02.00.0247
 // ----------------------------------------------------------------------------
-// LinearFitInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// LinearFitInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -62,7 +62,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-LinearFitInterface* TheLinearFitInterface = 0;
+LinearFitInterface* TheLinearFitInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -71,15 +71,15 @@ LinearFitInterface* TheLinearFitInterface = 0;
 // ----------------------------------------------------------------------------
 
 LinearFitInterface::LinearFitInterface() :
-ProcessInterface(), instance( TheLinearFitProcess ), GUI( 0 )
+   instance( TheLinearFitProcess )
 {
    TheLinearFitInterface = this;
 }
 
 LinearFitInterface::~LinearFitInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString LinearFitInterface::Id() const
@@ -115,8 +115,7 @@ void LinearFitInterface::ResetInstance()
 
 bool LinearFitInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "LinearFit" );
@@ -134,15 +133,10 @@ ProcessImplementation* LinearFitInterface::NewProcess() const
 
 bool LinearFitInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const LinearFitInstance* r = dynamic_cast<const LinearFitInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not a LinearFit instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const LinearFitInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a LinearFit instance.";
+   return false;
 }
 
 bool LinearFitInterface::RequiresInstanceValidation() const
@@ -190,7 +184,6 @@ void LinearFitInterface::__EditCompleted( Edit& sender )
 
       return;
    }
-
    catch ( ... )
    {
       if ( sender == GUI->ReferenceView_Edit )
@@ -200,7 +193,6 @@ void LinearFitInterface::__EditCompleted( Edit& sender )
       {
          throw;
       }
-
       ERROR_HANDLER
 
       sender.SelectAll();
@@ -250,7 +242,18 @@ void LinearFitInterface::__Click( Button& sender, bool checked )
    }
 }
 
-// ----------------------------------------------------------------------------
+void LinearFitInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->ReferenceView_Edit )
+      wantsView = true;
+}
+
+void LinearFitInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->ReferenceView_Edit )
+      GUI->ReferenceView_Edit.SetText( instance.referenceViewId = view.FullId() );
+}
+
 // ----------------------------------------------------------------------------
 
 LinearFitInterface::GUIData::GUIData( LinearFitInterface& w )
@@ -274,6 +277,8 @@ LinearFitInterface::GUIData::GUIData( LinearFitInterface& w )
    ReferenceView_Edit.SetMinWidth( editWidth1 );
    ReferenceView_Edit.SetToolTip( referenceViewToolTip );
    ReferenceView_Edit.OnEditCompleted( (Edit::edit_event_handler)&LinearFitInterface::__EditCompleted, w );
+   ReferenceView_Edit.OnViewDrag( (Control::view_drag_event_handler)&LinearFitInterface::__ViewDrag, w );
+   ReferenceView_Edit.OnViewDrop( (Control::view_drop_event_handler)&LinearFitInterface::__ViewDrop, w );
 
    ReferenceView_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    ReferenceView_ToolButton.SetScaledFixedSize( 20, 20 );
@@ -334,4 +339,4 @@ LinearFitInterface::GUIData::GUIData( LinearFitInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LinearFitInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF LinearFitInterface.cpp - Released 2017-04-14T23:07:12Z

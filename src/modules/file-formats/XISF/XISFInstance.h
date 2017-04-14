@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard XISF File Format Module Version 01.00.06.0107
+// Standard XISF File Format Module Version 01.00.09.0125
 // ----------------------------------------------------------------------------
-// XISFInstance.h - Released 2016/07/05 10:44:57 UTC
+// XISFInstance.h - Released 2017-04-14T23:07:03Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard XISF PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,7 +53,10 @@
 #ifndef __XISFInstance_h
 #define __XISFInstance_h
 
-#include "XISF.h"
+#include <pcl/AutoPointer.h>
+#include <pcl/Console.h>
+#include <pcl/FileFormatImplementation.h>
+#include <pcl/XISF.h>
 
 namespace pcl
 {
@@ -81,10 +84,16 @@ public:
 
    virtual void* FormatSpecificData() const;
 
-   virtual void Extract( FITSKeywordArray& );
-   virtual void Extract( ICCProfile& );
-   virtual void Extract( UInt8Image& );
-   virtual void Extract( void*& data, size_type& length );
+   virtual ICCProfile ReadICCProfile();
+   virtual RGBColorSystem ReadRGBWorkingSpace();
+   virtual DisplayFunction ReadDisplayFunction();
+   virtual ColorFilterArray ReadColorFilterArray();
+   virtual UInt8Image ReadThumbnail();
+   virtual FITSKeywordArray ReadFITSKeywords();
+   virtual PropertyDescriptionArray Properties();
+   virtual Variant ReadProperty( const IsoString& property );
+   virtual PropertyDescriptionArray ImageProperties();
+   virtual Variant ReadImageProperty( const IsoString& property );
 
    virtual void ReadImage( Image& );
    virtual void ReadImage( DImage& );
@@ -92,11 +101,11 @@ public:
    virtual void ReadImage( UInt16Image& );
    virtual void ReadImage( UInt32Image& );
 
-   virtual void Read( Image::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Read( DImage::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Read( UInt8Image::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Read( UInt16Image::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Read( UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void ReadSamples( Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void ReadSamples( DImage::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void ReadSamples( UInt8Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void ReadSamples( UInt16Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void ReadSamples( UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
 
    virtual bool QueryOptions( Array<ImageOptions>& options, Array<void*>& formatOptions );
    virtual void Create( const String& filePath, int numberOfImages, const IsoString& hints );
@@ -104,9 +113,14 @@ public:
    virtual void SetOptions( const ImageOptions& );
    virtual void SetFormatSpecificData( const void* );
 
-   virtual void Embed( const FITSKeywordArray& );
-   virtual void Embed( const ICCProfile& );
-   virtual void Embed( const UInt8Image& );
+   virtual void WriteICCProfile( const ICCProfile& );
+   virtual void WriteRGBWorkingSpace( const RGBColorSystem& rgbws );
+   virtual void WriteDisplayFunction( const DisplayFunction& df );
+   virtual void WriteColorFilterArray( const ColorFilterArray& cfa );
+   virtual void WriteThumbnail( const UInt8Image& );
+   virtual void WriteFITSKeywords( const FITSKeywordArray& );
+   virtual void WriteProperty( const IsoString& property, const Variant& value );
+   virtual void WriteImageProperty( const IsoString& property, const Variant& value );
 
    virtual void WriteImage( const Image& );
    virtual void WriteImage( const DImage& );
@@ -115,33 +129,36 @@ public:
    virtual void WriteImage( const UInt32Image& );
 
    virtual void CreateImage( const ImageInfo& );
+   virtual void CloseImage();
 
-   virtual void Write( const Image::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Write( const DImage::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Write( const UInt8Image::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Write( const UInt16Image::sample* buffer, int startRow, int rowCount, int channel );
-   virtual void Write( const UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
-
-   virtual ImagePropertyDescriptionArray Properties();
-   virtual Variant ReadProperty( const IsoString& property );
-   virtual void WriteProperty( const IsoString& property, const Variant& value );
-
-   virtual RGBColorSystem ReadRGBWS();
-   virtual void WriteRGBWS( const RGBColorSystem& rgbws );
-
-   virtual DisplayFunction ReadDisplayFunction();
-   virtual void WriteDisplayFunction( const DisplayFunction& df );
-
-   virtual ColorFilterArray ReadColorFilterArray();
-   virtual void WriteColorFilterArray( const ColorFilterArray& cfa );
+   virtual void WriteSamples( const Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void WriteSamples( const DImage::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void WriteSamples( const UInt8Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void WriteSamples( const UInt16Image::sample* buffer, int startRow, int rowCount, int channel );
+   virtual void WriteSamples( const UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
 
 private:
 
-   XISFReader*      m_reader;
-   XISFWriter*      m_writer;
-   XISFStreamHints* m_readHints;
-   XISFStreamHints* m_writeHints;
-   bool             m_queriedOptions : 1; // did us query options to the user?
+   AutoPointer<XISFReader>      m_reader;
+   AutoPointer<XISFWriter>      m_writer;
+   AutoPointer<XISFStreamHints> m_readHints;
+   AutoPointer<XISFStreamHints> m_writeHints;
+   bool                         m_queriedOptions : 1; // did us query options to the user?
+
+   class LogHandler : public XISFLogHandler
+   {
+   public:
+
+      LogHandler() = default;
+
+      virtual void Init( const String& filePath, bool writing );
+      virtual void Log( const String& text, message_type type );
+      virtual void Close();
+
+   private:
+
+      Console m_console;
+   };
 };
 
 // ----------------------------------------------------------------------------
@@ -151,4 +168,4 @@ private:
 #endif   // __XISFInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF XISFInstance.h - Released 2016/07/05 10:44:57 UTC
+// EOF XISFInstance.h - Released 2017-04-14T23:07:03Z

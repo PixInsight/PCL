@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/NumericControl.h - Released 2016/02/21 20:22:12 UTC
+// pcl/NumericControl.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -49,42 +49,20 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
-#ifndef PCL_NumericControl_h
-#define PCL_NumericControl_h
+#ifndef __PCL_NumericControl_h
+#define __PCL_NumericControl_h
 
 /// \file pcl/NumericControl.h
 
-#ifndef PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_AutoPointer_h
-#include <pcl/AutoPointer.h>
-#endif
-
-#ifndef PCL_Control_h
-#include <pcl/Control.h>
-#endif
-
-#ifndef PCL_Sizer_h
-#include <pcl/Sizer.h>
-#endif
-
-#ifndef PCL_Label_h
-#include <pcl/Label.h>
-#endif
-
-#ifndef PCL_Edit_h
-#include <pcl/Edit.h>
-#endif
-
-#ifndef PCL_Slider_h
-#include <pcl/Slider.h>
-#endif
-
-#ifndef PCL_Atomic_h
 #include <pcl/Atomic.h>
-#endif
+#include <pcl/AutoPointer.h>
+#include <pcl/Control.h>
+#include <pcl/Edit.h>
+#include <pcl/Label.h>
+#include <pcl/Sizer.h>
+#include <pcl/Slider.h>
 
 namespace pcl
 {
@@ -372,7 +350,7 @@ protected:
 
 } // pcl
 
-#endif   // PCL_NumericControl_h
+#endif   // __PCL_NumericControl_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/NumericControl.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/NumericControl.h - Released 2017-04-14T23:04:40Z

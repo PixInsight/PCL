@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0298
+// Standard ColorSpaces Process Module Version 01.01.00.0307
 // ----------------------------------------------------------------------------
-// LRGBCombinationInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// LRGBCombinationInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -66,9 +66,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-LRGBCombinationInterface* TheLRGBCombinationInterface = 0;
-
-static const char* channelSuffixes[] = { "_R", "_G", "_B", "_L" };
+LRGBCombinationInterface* TheLRGBCombinationInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -76,20 +74,16 @@ static const char* channelSuffixes[] = { "_R", "_G", "_B", "_L" };
 
 // ----------------------------------------------------------------------------
 
-#define currentView  GUI->TargetImage_ViewList.CurrentView()
-
-// ----------------------------------------------------------------------------
-
 LRGBCombinationInterface::LRGBCombinationInterface() :
-ProcessInterface(), instance( TheLRGBCombinationProcess ), GUI( 0 )
+   instance( TheLRGBCombinationProcess )
 {
    TheLRGBCombinationInterface = this;
 }
 
 LRGBCombinationInterface::~LRGBCombinationInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString LRGBCombinationInterface::Id() const
@@ -125,11 +119,9 @@ void LRGBCombinationInterface::ResetInstance()
 
 bool LRGBCombinationInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
-      GUI->TargetImage_ViewList.Regenerate( true, false ); // exclude previews
       SetWindowTitle( "LRGBCombination" );
       UpdateControls();
    }
@@ -145,16 +137,10 @@ ProcessImplementation* LRGBCombinationInterface::NewProcess() const
 
 bool LRGBCombinationInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const LRGBCombinationInstance* r = dynamic_cast<const LRGBCombinationInstance*>( &p );
-
-   if ( r == 0 )
-   {
-      whyNot = "Not a LRGBCombination instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const LRGBCombinationInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an LRGBCombination instance.";
+   return false;
 }
 
 bool LRGBCombinationInterface::RequiresInstanceValidation() const
@@ -165,7 +151,6 @@ bool LRGBCombinationInterface::RequiresInstanceValidation() const
 bool LRGBCombinationInterface::ImportProcess( const ProcessImplementation& p )
 {
    instance.Assign( p );
-   GUI->TargetImage_ViewList.SelectView( View::Null() );
    UpdateControls();
    return true;
 }
@@ -248,7 +233,7 @@ void LRGBCombinationInterface::UpdateControls()
 
 void LRGBCombinationInterface::__Channel_Click( Button& sender, bool checked )
 {
-   int i = -1;
+   int i;
    if ( sender == GUI->L_CheckBox )
       i = 3;
    else if ( sender == GUI->R_CheckBox )
@@ -257,36 +242,35 @@ void LRGBCombinationInterface::__Channel_Click( Button& sender, bool checked )
       i = 1;
    else if ( sender == GUI->B_CheckBox )
       i = 2;
+   else
+      return;
 
-   if ( i >= 0 )
+   int n = 0;
+   for ( int j = 0; j < 4; ++j )
    {
-      int n = 0;
-      for ( int j = 0; j < 4; ++j )
-      {
-         if ( j == i )
-            instance.channelEnabled[i] = checked;
-         if ( instance.channelEnabled[j] )
-            ++n;
-      }
-
-      if ( n == 0 )
-         for ( int j = 0; j < 4; ++j )
-            instance.channelEnabled[j] = true;
-
-      UpdateControls();
+      if ( j == i )
+         instance.channelEnabled[i] = checked;
+      if ( instance.channelEnabled[j] )
+         ++n;
    }
+   if ( n == 0 )
+      for ( int j = 0; j < 4; ++j )
+         instance.channelEnabled[j] = true;
+
+   UpdateControls();
 }
 
 void LRGBCombinationInterface::__ChannelId_GetFocus( Control& sender )
 {
    Edit* e = dynamic_cast<Edit*>( &sender );
-   if ( e != 0 && e->Text() == AUTO_ID )
-      e->Clear();
+   if ( e != nullptr )
+      if ( e->Text() == AUTO_ID )
+         e->Clear();
 }
 
 void LRGBCombinationInterface::__ChannelId_EditCompleted( Edit& sender )
 {
-   int i = -1;
+   int i;
    if ( sender == GUI->L_Edit )
       i = 3;
    else if ( sender == GUI->R_Edit )
@@ -295,28 +279,26 @@ void LRGBCombinationInterface::__ChannelId_EditCompleted( Edit& sender )
       i = 1;
    else if ( sender == GUI->B_Edit )
       i = 2;
+   else
+      return;
 
-   if ( i >= 0 )
+   try
    {
-      try
-      {
-         pcl::String id = sender.Text();
-         id.Trim();
+      pcl::String id = sender.Text();
+      id.Trim();
 
-         if ( !id.IsEmpty() && id != AUTO_ID && !id.IsValidIdentifier() )
-            throw Error( "Invalid identifier: " + id );
+      if ( !id.IsEmpty() && id != AUTO_ID && !id.IsValidIdentifier() )
+         throw Error( "Invalid identifier: " + id );
 
-         instance.channelId[i] = (id != AUTO_ID) ? id : String();
-         sender.SetText( instance.channelId[i].IsEmpty() ? AUTO_ID : instance.channelId[i] );
-         return;
-      }
-
-      ERROR_CLEANUP(
-         sender.SetText( instance.channelId[i] );
-         sender.SelectAll();
-         sender.Focus()
-      )
+      instance.channelId[i] = (id != AUTO_ID) ? id : String();
+      sender.SetText( instance.channelId[i].IsEmpty() ? AUTO_ID : instance.channelId[i] );
+      return;
    }
+   ERROR_CLEANUP(
+      sender.SetText( instance.channelId[i] );
+      sender.SelectAll();
+      sender.Focus()
+   )
 }
 
 void LRGBCombinationInterface::__Channel_SelectSource_Click( Button& sender, bool /*checked*/ )
@@ -324,7 +306,7 @@ void LRGBCombinationInterface::__Channel_SelectSource_Click( Button& sender, boo
    String suffix;
    String description;
 
-   int i = -1;
+   int i;
    if ( sender == GUI->L_ToolButton )
    {
       i = 3;
@@ -349,33 +331,15 @@ void LRGBCombinationInterface::__Channel_SelectSource_Click( Button& sender, boo
       suffix = "_B";
       description = "Blue Channel";
    }
+   else
+      return;
 
-   if ( i >= 0 )
+   ChannelSourceSelectionDialog dlg( suffix, description );
+   if ( dlg.Execute() == StdDialogCode::Ok )
    {
-      ChannelSourceSelectionDialog dlg( currentView, suffix, description );
-
-      if ( dlg.Execute() == StdDialogCode::Ok )
-      {
-         instance.channelId[i] = dlg.SourceId();
-         UpdateControls();
-      }
+      instance.channelId[i] = dlg.SourceId();
+      UpdateControls();
    }
-}
-
-void LRGBCombinationInterface::__TargetImage_ViewSelected( ViewList& /*sender*/, View& view )
-{
-   for ( int i = 0; i < 4; ++i )
-      instance.channelId[i].Clear();
-
-   if ( !view.IsNull() )
-   {
-      IsoString baseId = view.Id();
-      for ( int i = 0; i < 4; ++i )
-         if ( !View::ViewById( baseId + channelSuffixes[i] ).IsNull() )
-            instance.channelId[i] = baseId + channelSuffixes[i];
-   }
-
-   UpdateControls();
 }
 
 void LRGBCombinationInterface::__Channel_Weight_ValueUpdated( NumericEdit& sender, double value )
@@ -426,15 +390,42 @@ void LRGBCombinationInterface::__NoiseReduction_ValueUpdated( SpinBox& sender, i
    }
 }
 
+void LRGBCombinationInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->L_Edit || sender == GUI->R_Edit || sender == GUI->G_Edit || sender == GUI->B_Edit )
+      wantsView = view.IsMainView() && !view.IsColor();
+}
+
+void LRGBCombinationInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( view.IsMainView() )
+      if ( !view.IsColor() )
+      {
+         int i;
+         if ( sender == GUI->L_Edit )
+            i = 3;
+         else if ( sender == GUI->R_Edit )
+            i = 0;
+         else if ( sender == GUI->G_Edit )
+            i = 1;
+         else if ( sender == GUI->B_Edit )
+            i = 2;
+         else
+            return;
+
+         instance.channelId[i] = view.Id();
+         UpdateControls();
+      }
+}
+
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 LRGBCombinationInterface::GUIData::GUIData( LRGBCombinationInterface& w )
 {
    pcl::Font fnt = w.Font();
-   int tgtLabelWidth = fnt.Width( "Target:" );
    int chEditWidth = fnt.Width( String( 'M', 35 ) );
-   int chLabelWidth = fnt.Width( "M:" );
+   int chLabelWidth = fnt.Width( "M" ) + 4;
    int mtfLabelWidth = fnt.Width( String( "Lightness:" ) + 'M' );
    int nrLabelWidth = fnt.Width( String( "Smoothed wavelet layers:" ) + 'M' );
 
@@ -445,99 +436,107 @@ LRGBCombinationInterface::GUIData::GUIData( LRGBCombinationInterface& w )
 
    //
 
-   L_CheckBox.SetText( "L" );
    L_CheckBox.OnClick( (pcl::Button::click_event_handler)&LRGBCombinationInterface::__Channel_Click, w );
-   L_CheckBox.SetFixedWidth( tgtLabelWidth );
+
+   L_Label.SetText( "L" );
+   L_Label.SetFixedWidth( chLabelWidth );
+   L_Label.SetTextAlignment( TextAlign::Center|TextAlign::VertCenter );
 
    L_Edit.SetMinWidth( chEditWidth );
    L_Edit.OnGetFocus( (Control::event_handler)&LRGBCombinationInterface::__ChannelId_GetFocus, w );
    L_Edit.OnEditCompleted( (Edit::edit_event_handler)&LRGBCombinationInterface::__ChannelId_EditCompleted, w );
+   L_Edit.OnViewDrag( (Control::view_drag_event_handler)&LRGBCombinationInterface::__ViewDrag, w );
+   L_Edit.OnViewDrop( (Control::view_drop_event_handler)&LRGBCombinationInterface::__ViewDrop, w );
 
    L_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    L_ToolButton.SetScaledFixedSize( 20, 20 );
    L_ToolButton.SetToolTip( "Select the lightness (CIE L*) source image" );
    L_ToolButton.OnClick( (ToolButton::click_event_handler)&LRGBCombinationInterface::__Channel_SelectSource_Click, w );
 
-   L_Sizer.SetSpacing( 4 );
    L_Sizer.Add( L_CheckBox );
+   L_Sizer.Add( L_Label );
+   L_Sizer.AddSpacing( 4 );
    L_Sizer.Add( L_Edit, 100 );
+   L_Sizer.AddSpacing( 4 );
    L_Sizer.Add( L_ToolButton );
 
    //
 
-   R_CheckBox.SetText( "R" );
    R_CheckBox.OnClick( (pcl::Button::click_event_handler)&LRGBCombinationInterface::__Channel_Click, w );
-   R_CheckBox.SetFixedWidth( tgtLabelWidth );
+
+   R_Label.SetText( "R" );
+   R_Label.SetFixedWidth( chLabelWidth );
+   R_Label.SetTextAlignment( TextAlign::Center|TextAlign::VertCenter );
 
    R_Edit.SetMinWidth( chEditWidth );
    R_Edit.OnGetFocus( (Control::event_handler)&LRGBCombinationInterface::__ChannelId_GetFocus, w );
    R_Edit.OnEditCompleted( (Edit::edit_event_handler)&LRGBCombinationInterface::__ChannelId_EditCompleted, w );
+   R_Edit.OnViewDrag( (Control::view_drag_event_handler)&LRGBCombinationInterface::__ViewDrag, w );
+   R_Edit.OnViewDrop( (Control::view_drop_event_handler)&LRGBCombinationInterface::__ViewDrop, w );
 
    R_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    R_ToolButton.SetScaledFixedSize( 20, 20 );
    R_ToolButton.SetToolTip( "Select the red channel source image" );
    R_ToolButton.OnClick( (ToolButton::click_event_handler)&LRGBCombinationInterface::__Channel_SelectSource_Click, w );
 
-   R_Sizer.SetSpacing( 4 );
    R_Sizer.Add( R_CheckBox );
+   R_Sizer.Add( R_Label );
+   R_Sizer.AddSpacing( 4 );
    R_Sizer.Add( R_Edit, 100 );
+   R_Sizer.AddSpacing( 4 );
    R_Sizer.Add( R_ToolButton );
 
    //
 
-   G_CheckBox.SetText( "G" );
    G_CheckBox.OnClick( (pcl::Button::click_event_handler)&LRGBCombinationInterface::__Channel_Click, w );
-   G_CheckBox.AdjustToContents();
-   G_CheckBox.SetFixedWidth( tgtLabelWidth );
+
+   G_Label.SetText( "G" );
+   G_Label.SetFixedWidth( chLabelWidth );
+   G_Label.SetTextAlignment( TextAlign::Center|TextAlign::VertCenter );
 
    G_Edit.SetMinWidth( chEditWidth );
    G_Edit.OnGetFocus( (Control::event_handler)&LRGBCombinationInterface::__ChannelId_GetFocus, w );
    G_Edit.OnEditCompleted( (Edit::edit_event_handler)&LRGBCombinationInterface::__ChannelId_EditCompleted, w );
+   G_Edit.OnViewDrag( (Control::view_drag_event_handler)&LRGBCombinationInterface::__ViewDrag, w );
+   G_Edit.OnViewDrop( (Control::view_drop_event_handler)&LRGBCombinationInterface::__ViewDrop, w );
 
    G_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    G_ToolButton.SetScaledFixedSize( 20, 20 );
    G_ToolButton.SetToolTip( "Select the green channel source image" );
    G_ToolButton.OnClick( (ToolButton::click_event_handler)&LRGBCombinationInterface::__Channel_SelectSource_Click, w );
 
-   G_Sizer.SetSpacing( 4 );
    G_Sizer.Add( G_CheckBox );
+   G_Sizer.Add( G_Label );
+   G_Sizer.AddSpacing( 4 );
    G_Sizer.Add( G_Edit, 100 );
+   G_Sizer.AddSpacing( 4 );
    G_Sizer.Add( G_ToolButton );
 
    //
 
-   B_CheckBox.SetText( "B" );
    B_CheckBox.OnClick( (pcl::Button::click_event_handler)&LRGBCombinationInterface::__Channel_Click, w );
-   B_CheckBox.AdjustToContents();
-   B_CheckBox.SetFixedWidth( tgtLabelWidth );
+
+   B_Label.SetText( "B" );
+   B_Label.SetFixedWidth( chLabelWidth );
+   B_Label.SetTextAlignment( TextAlign::Center|TextAlign::VertCenter );
 
    B_Edit.SetMinWidth( chEditWidth );
    B_Edit.OnGetFocus( (Control::event_handler)&LRGBCombinationInterface::__ChannelId_GetFocus, w );
    B_Edit.OnEditCompleted( (Edit::edit_event_handler)&LRGBCombinationInterface::__ChannelId_EditCompleted, w );
+   B_Edit.OnViewDrag( (Control::view_drag_event_handler)&LRGBCombinationInterface::__ViewDrag, w );
+   B_Edit.OnViewDrop( (Control::view_drop_event_handler)&LRGBCombinationInterface::__ViewDrop, w );
 
    B_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    B_ToolButton.SetScaledFixedSize( 20, 20 );
    B_ToolButton.SetToolTip( "Select the blue channel source image" );
    B_ToolButton.OnClick( (ToolButton::click_event_handler)&LRGBCombinationInterface::__Channel_SelectSource_Click, w );
 
-   B_Sizer.SetSpacing( 4 );
    B_Sizer.Add( B_CheckBox );
+   B_Sizer.Add( B_Label );
+   B_Sizer.AddSpacing( 4 );
    B_Sizer.Add( B_Edit, 100 );
+   B_Sizer.AddSpacing( 4 );
    B_Sizer.Add( B_ToolButton );
-
-   //
-
-   TargetImage_Label.SetText( "Target:" );
-   TargetImage_Label.SetTextAlignment( TextAlign::Left|TextAlign::VertCenter );
-   TargetImage_Label.SetFixedWidth( tgtLabelWidth );
-   TargetImage_Label.SetToolTip( "<p>Peek an existing view to automatically select source channel images with "
-                                 "_L, _R, _G and _B suffixes, respectively.</p>" );
-
-   TargetImage_ViewList.OnViewSelected( (ViewList::view_event_handler)&LRGBCombinationInterface::__TargetImage_ViewSelected, w );
-
-   TargetImage_Sizer.SetSpacing( 4 );
-   TargetImage_Sizer.Add( TargetImage_Label );
-   TargetImage_Sizer.Add( TargetImage_ViewList, 100 );
 
    //
 
@@ -547,7 +546,6 @@ LRGBCombinationInterface::GUIData::GUIData( LRGBCombinationInterface& w )
    Channels_Sizer.Add( R_Sizer );
    Channels_Sizer.Add( G_Sizer );
    Channels_Sizer.Add( B_Sizer );
-   Channels_Sizer.Add( TargetImage_Sizer );
 
    Channels_Control.SetSizer( Channels_Sizer );
    Channels_Control.AdjustToContents();
@@ -559,7 +557,7 @@ LRGBCombinationInterface::GUIData::GUIData( LRGBCombinationInterface& w )
 
    //
 
-   L_Weight_NumericControl.label.SetText( "L:" );
+   L_Weight_NumericControl.label.SetText( "L" );
    L_Weight_NumericControl.label.SetFixedWidth( chLabelWidth );
    L_Weight_NumericControl.slider.SetRange( 0, 100 );
    L_Weight_NumericControl.slider.SetScaledMinWidth( 150 );
@@ -569,7 +567,7 @@ LRGBCombinationInterface::GUIData::GUIData( LRGBCombinationInterface& w )
    L_Weight_NumericControl.SetToolTip( "Lightness ratio (source:target)" );
    L_Weight_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&LRGBCombinationInterface::__Channel_Weight_ValueUpdated, w );
 
-   R_Weight_NumericControl.label.SetText( "R:" );
+   R_Weight_NumericControl.label.SetText( "R" );
    R_Weight_NumericControl.label.SetFixedWidth( chLabelWidth );
    R_Weight_NumericControl.slider.SetRange( 0, 100 );
    R_Weight_NumericControl.slider.SetScaledMinWidth( 150 );
@@ -579,7 +577,7 @@ LRGBCombinationInterface::GUIData::GUIData( LRGBCombinationInterface& w )
    R_Weight_NumericControl.SetToolTip( "Red channel weight" );
    R_Weight_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&LRGBCombinationInterface::__Channel_Weight_ValueUpdated, w );
 
-   G_Weight_NumericControl.label.SetText( "G:" );
+   G_Weight_NumericControl.label.SetText( "G" );
    G_Weight_NumericControl.label.SetFixedWidth( chLabelWidth );
    G_Weight_NumericControl.slider.SetRange( 0, 100 );
    G_Weight_NumericControl.slider.SetScaledMinWidth( 150 );
@@ -589,7 +587,7 @@ LRGBCombinationInterface::GUIData::GUIData( LRGBCombinationInterface& w )
    G_Weight_NumericControl.SetToolTip( "Green channel weight" );
    G_Weight_NumericControl.OnValueUpdated( (NumericEdit::value_event_handler)&LRGBCombinationInterface::__Channel_Weight_ValueUpdated, w );
 
-   B_Weight_NumericControl.label.SetText( "B:" );
+   B_Weight_NumericControl.label.SetText( "B" );
    B_Weight_NumericControl.label.SetFixedWidth( chLabelWidth );
    B_Weight_NumericControl.slider.SetRange( 0, 100 );
    B_Weight_NumericControl.slider.SetScaledMinWidth( 150 );
@@ -719,4 +717,4 @@ LRGBCombinationInterface::GUIData::GUIData( LRGBCombinationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF LRGBCombinationInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF LRGBCombinationInterface.cpp - Released 2017-04-14T23:07:12Z

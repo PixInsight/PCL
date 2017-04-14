@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/FileFormat.h - Released 2016/02/21 20:22:12 UTC
+// pcl/FileFormat.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,17 +56,10 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_AutoPointer_h
 #include <pcl/AutoPointer.h>
-#endif
-
-#ifndef __PCL_FileFormatBase_h
 #include <pcl/FileFormatBase.h>
-#endif
 
 namespace pcl
 {
@@ -108,31 +101,31 @@ public:
    /*!
     * Constructs a %FileFormat object.
     *
-    * \param nameExtOrMime  A format name, file extension, or MIME type. This
+    * \param nameExtOrMime  A format name, file suffix, or MIME type. This
     *                   parameter determines how the PixInsight core
     *                   application looks for an installed file format to which
     *                   this %FileFormat instance will be an interface.
     *
-    * \param toRead     When a file extension or MIME type is specified and
-    *                   this parameter is true, a %FileFormat instance will be
+    * \param toRead     When a file suffix or MIME type is specified and this
+    *                   parameter is true, a %FileFormat instance will be
     *                   created for an installed file format able to read files
-    *                   with the specified file extension or corresponding to
-    *                   the specified MIME type.
+    *                   with the specified file suffix or corresponding to the
+    *                   specified MIME type.
     *
-    * \param toWrite    When a file extension or MIME type is specified and
-    *                   this parameter is true, a %FileFormat instance will be
+    * \param toWrite    When a file suffix or MIME type is specified and this
+    *                   parameter is true, a %FileFormat instance will be
     *                   created for an installed file format able to write
-    *                   files with the specified file extension or
-    *                   corresponding to the specified MIME type.
+    *                   files with the specified file suffix or corresponding
+    *                   to the specified MIME type.
     *
     * When a format name is used as the argument of this constructor,
     * %FileFormat will provide access to an installed file format with the
     * specified identifier, if there exists one. If the argument is a string
-    * starting with a dot character, then it is interpreted as a file
-    * extension. If the argument has a slash character ('/'), it is interpreted
-    * as a MIME type specifier. In the latter two cases, the PixInsight core
-    * application will search for an installed file format able to handle image
-    * files with the specified file extension or for the specified MIME type.
+    * starting with a dot character, then it is interpreted as a file suffix.
+    * If the argument has a slash character ('/'), it is interpreted as a MIME
+    * type specifier. In the latter two cases, the PixInsight core application
+    * will search for an installed file format able to handle image files with
+    * the specified file suffix or for the specified MIME type.
     *
     * In all cases, if no installed file format fits to the specified
     * argument(s), this constructor throws an Error exception with the
@@ -147,21 +140,20 @@ public:
     * \code
     * try
     * {
-    *    // Find a format able to read FITS files
-    *    FileFormat fitsFormat( ".fits", true );
+    *    // Find a format able to read XISF files
+    *    FileFormat fitsFormat( ".xisf", true );
     *
     *    // Create a format instance
-    *    FileFormatInstance myFITSFile( fitsFormat );
+    *    FileFormatInstance myXISFFile( fitsFormat );
     *
     *    // Use the instance to open an existing file
-    *    myFITSFile.Open( "/home/images/test.fit" );
+    *    myXISFFile.Open( "/path/to/test.xisf" );
     *
     *    // Read an image in 32-bit floating point format
     *    Image img;
-    *    myFITSFile.Read( img );
+    *    myXISFFile.ReadImage( img );
     *    // ...
     * }
-    *
     * catch ( Exception& x )
     * {
     *    // Handle errors ...
@@ -307,6 +299,10 @@ public:
 
    /*!
     */
+   virtual bool CanStoreImageProperties() const;
+
+   /*!
+    */
    virtual bool CanStoreRGBWS() const;
 
    /*!
@@ -359,6 +355,73 @@ public:
     */
    static Array<FileFormat> AllFormats();
 
+   /*!
+    * Returns true iff the specified file suffix corresponds to an installed
+    * file format.
+    *
+    * \param path       A file path including a file suffix identifying an
+    *                   image format, such as ".xisf", ".jpg", etc. This
+    *                   parameter is case-insensitive. Existence of an actual
+    *                   file at the specified path is not verified.
+    *
+    * \param toRead     True to identify an installed file format module able
+    *                   to read files.
+    *
+    * \param toWrite    True to identify an installed file format module able
+    *                   to write files.
+    *
+    * \note The \a toRead and \a toWrite parameters are false by default, which
+    * means that no access restrictions are applied by default.
+    */
+   static bool IsSupportedFileFormatBySuffix( const String& path, bool toRead = false, bool toWrite = false );
+
+   /*!
+    * Returns a list with the full file paths of all supported image files in
+    * a given directory of the local filesystem.
+    *
+    * \param dirPath    Path to an existing directory in the local filesystem,
+    *                   where supported image files will be looked for.
+    *
+    * \param toRead     True to select files supported for read operations.
+    *
+    * \param toWrite    True to select files supported for write operations.
+    *
+    * \param recursive  True to search for files recursively throughout the
+    *                   entire subtree rooted at \a dirPath. False to restrict
+    *                   the file search operation to existing files on
+    *                   \a dirPath. This parameter is false by default.
+    *
+    * \param followLinks   True to follow symbolic links to directories and
+    *                   files, on platforms supporting symbolic links. This is
+    *                   true by default. This parameter is ignored on Windows.
+    *
+    * \note The \a toRead and \a toWrite parameters are false by default, which
+    * means that no access restrictions are applied by default.
+    */
+   static StringList SupportedImageFiles( const String& dirPath, bool toRead = false, bool toWrite = false,
+                                          bool recursive = false, bool followLinks = true );
+
+   /*!
+    * Returns a list with the full file paths of all drizzle data files in a
+    * given directory of the local filesystem.
+    *
+    * \param dirPath    Path to an existing directory in the local filesystem,
+    *                   where drizzle data files will be looked for.
+    *
+    * \param recursive  True to search for files recursively throughout the
+    *                   entire subtree rooted at \a dirPath. False to restrict
+    *                   the file search operation to existing files on
+    *                   \a dirPath. This parameter is false by default.
+    *
+    * \param followLinks   True to follow symbolic links to directories and
+    *                   files, on platforms supporting symbolic links. This is
+    *                   true by default. This parameter is ignored on Windows.
+    *
+    * Currently this function looks for files with the .drz (compatibility text
+    * drizzle format) and .xdrz (XML drizzle format) suffixes.
+    */
+   static StringList DrizzleFiles( const String& dirPath, bool recursive = false, bool followLinks = true );
+
 private:
 
    AutoPointer<FileFormatPrivate> m_data;
@@ -380,4 +443,4 @@ private:
 #endif   // __PCL_FileFormat_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormat.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/FileFormat.h - Released 2017-04-14T23:04:40Z

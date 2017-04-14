@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard StarGenerator Process Module Version 01.01.00.0247
+// Standard StarGenerator Process Module Version 01.01.00.0256
 // ----------------------------------------------------------------------------
-// StarGeneratorInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// StarGeneratorInstance.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard StarGenerator PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -131,7 +131,6 @@ bool StarGeneratorInstance::IsHistoryUpdater( const View& v ) const
 
 bool StarGeneratorInstance::CanExecuteGlobal( String& whyNot ) const
 {
-   whyNot.Clear();
    return true;
 }
 
@@ -276,7 +275,7 @@ private:
    {
       // ### TODO: Compute apparent star positions
 
-      if ( instance.epoch != J2000 )
+      if ( instance.epoch != TimePoint::J2000() )
       {
          StandardStatus status;
          StatusMonitor monitor;
@@ -574,4 +573,4 @@ size_type StarGeneratorInstance::ParameterLength( const MetaParameter* p, size_t
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF StarGeneratorInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF StarGeneratorInstance.cpp - Released 2017-04-14T23:07:12Z

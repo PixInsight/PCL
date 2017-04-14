@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard ColorSpaces Process Module Version 01.01.00.0298
+// Standard ColorSpaces Process Module Version 01.01.00.0307
 // ----------------------------------------------------------------------------
-// ChannelCombinationInterface.h - Released 2016/02/21 20:22:42 UTC
+// ChannelCombinationInterface.h - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorSpaces PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -53,16 +53,14 @@
 #ifndef __ChannelCombinationInterface_h
 #define __ChannelCombinationInterface_h
 
-#include <pcl/ProcessInterface.h>
-
-#include <pcl/Sizer.h>
-#include <pcl/GroupBox.h>
-#include <pcl/RadioButton.h>
 #include <pcl/CheckBox.h>
 #include <pcl/Edit.h>
-#include <pcl/ToolButton.h>
+#include <pcl/GroupBox.h>
 #include <pcl/NumericControl.h>
-#include <pcl/ViewList.h>
+#include <pcl/ProcessInterface.h>
+#include <pcl/RadioButton.h>
+#include <pcl/Sizer.h>
+#include <pcl/ToolButton.h>
 
 #include "ChannelCombinationInstance.h"
 
@@ -83,8 +81,6 @@ public:
    virtual const char** IconImageXPM() const;
 
    InterfaceFeatures Features() const;
-
-   virtual void Initialize();
 
    virtual void ApplyInstance() const;
    virtual void ResetInstance();
@@ -120,22 +116,22 @@ private:
          VerticalSizer     Channels_Sizer;
             HorizontalSizer   C0_Sizer;
                CheckBox          C0_CheckBox;
+               Label             C0_Label;
                Edit              C0_Edit;
                ToolButton        C0_ToolButton;
             HorizontalSizer   C1_Sizer;
                CheckBox          C1_CheckBox;
+               Label             C1_Label;
                Edit              C1_Edit;
                ToolButton        C1_ToolButton;
             HorizontalSizer   C2_Sizer;
                CheckBox          C2_CheckBox;
+               Label             C2_Label;
                Edit              C2_Edit;
                ToolButton        C2_ToolButton;
-            HorizontalSizer   TargetImage_Sizer;
-               Label             TargetImage_Label;
-               ViewList          TargetImage_ViewList;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
 
@@ -144,7 +140,8 @@ private:
    void __ChannelId_GetFocus( Control& sender );
    void __ChannelId_EditCompleted( Edit& sender );
    void __Channel_SelectSource_Click( Button& sender, bool checked );
-   void __TargetImage_ViewSelected( ViewList& sender, View& view );
+   void __ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView );
+   void __ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers );
 
    friend struct GUIData;
    friend class  ChannelSourceSelectionDialog;
@@ -163,4 +160,4 @@ PCL_END_LOCAL
 #endif   // __ChannelCombinationInterface_h
 
 // ----------------------------------------------------------------------------
-// EOF ChannelCombinationInterface.h - Released 2016/02/21 20:22:42 UTC
+// EOF ChannelCombinationInterface.h - Released 2017-04-14T23:07:12Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/NetworkTransfer.h - Released 2016/02/21 20:22:12 UTC
+// pcl/NetworkTransfer.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,17 +56,10 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_UIObject_h
-#include <pcl/UIObject.h>
-#endif
-
-#ifndef __PCL_Control_h
 #include <pcl/Control.h>
-#endif
+#include <pcl/UIObject.h>
 
 namespace pcl
 {
@@ -114,6 +107,18 @@ public:
    virtual ~NetworkTransfer()
    {
    }
+
+   /*!
+    * Copy constructor. This constructor is disabled because %NetworkTransfer
+    * represents unique server-side objects.
+    */
+   NetworkTransfer( const NetworkTransfer& ) = delete;
+
+   /*!
+    * Copy assignment. This operator is disabled because %NetworkTransfer
+    * represents unique server-side objects.
+    */
+   NetworkTransfer& operator =( const NetworkTransfer& ) = delete;
 
    /*!
     * Ensures that the server-side object managed by this instance is uniquely
@@ -539,15 +544,15 @@ public:
 
 private:
 
-   download_event_handler onDownloadDataAvailable;
-   upload_event_handler   onUploadDataRequested;
-   progress_event_handler onTransferProgress;
+   download_event_handler onDownloadDataAvailable = nullptr;
+   upload_event_handler   onUploadDataRequested   = nullptr;
+   progress_event_handler onTransferProgress      = nullptr;
 
-   NetworkTransfer( void* );
+   NetworkTransfer( void* h ) : UIObject( h )
+   {
+   }
+
    virtual void* CloneHandle() const;
-
-   NetworkTransfer( const NetworkTransfer& ) = delete;
-   void operator =( const NetworkTransfer& ) = delete;
 
    friend class NetworkTransferEventDispatcher;
 };
@@ -561,4 +566,4 @@ private:
 #endif   // __PCL_NetworkTransfer_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/NetworkTransfer.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/NetworkTransfer.h - Released 2017-04-14T23:04:40Z

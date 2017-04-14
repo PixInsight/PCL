@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard ColorCalibration Process Module Version 01.02.00.0238
+// Standard ColorCalibration Process Module Version 01.02.00.0247
 // ----------------------------------------------------------------------------
-// BackgroundNeutralizationInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// BackgroundNeutralizationInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard ColorCalibration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -63,7 +63,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-BackgroundNeutralizationInterface* TheBackgroundNeutralizationInterface = 0;
+BackgroundNeutralizationInterface* TheBackgroundNeutralizationInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -72,15 +72,15 @@ BackgroundNeutralizationInterface* TheBackgroundNeutralizationInterface = 0;
 // ----------------------------------------------------------------------------
 
 BackgroundNeutralizationInterface::BackgroundNeutralizationInterface() :
-ProcessInterface(), instance( TheBackgroundNeutralizationProcess ), GUI( 0 )
+   instance( TheBackgroundNeutralizationProcess )
 {
    TheBackgroundNeutralizationInterface = this;
 }
 
 BackgroundNeutralizationInterface::~BackgroundNeutralizationInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString BackgroundNeutralizationInterface::Id() const
@@ -116,7 +116,7 @@ void BackgroundNeutralizationInterface::ResetInstance()
 
 bool BackgroundNeutralizationInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "BackgroundNeutralization" );
@@ -134,16 +134,10 @@ ProcessImplementation* BackgroundNeutralizationInterface::NewProcess() const
 
 bool BackgroundNeutralizationInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const BackgroundNeutralizationInstance* r = dynamic_cast<const BackgroundNeutralizationInstance*>( &p );
-
-   if ( r == 0 )
-   {
-      whyNot = "Not a BackgroundNeutralization instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const BackgroundNeutralizationInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a BackgroundNeutralization instance.";
+   return false;
 }
 
 bool BackgroundNeutralizationInterface::RequiresInstanceValidation() const
@@ -191,8 +185,9 @@ void BackgroundNeutralizationInterface::UpdateControls()
 void BackgroundNeutralizationInterface::__GetFocus( Control& sender )
 {
    Edit* e = dynamic_cast<Edit*>( &sender );
-   if ( e != 0 && e->Text() == TARGET_IMAGE )
-      e->Clear();
+   if ( e != nullptr )
+      if ( e->Text() == TARGET_IMAGE )
+         e->Clear();
 }
 
 void BackgroundNeutralizationInterface::__EditCompleted( Edit& sender )
@@ -306,6 +301,32 @@ void BackgroundNeutralizationInterface::__ROI_Click( Button& sender, bool checke
    }
 }
 
+void BackgroundNeutralizationInterface::__ViewDrag( Control& sender, const Point& pos, const View& view, unsigned modifiers, bool& wantsView )
+{
+   if ( sender == GUI->BackgroundReferenceView_Edit )
+      wantsView = true;
+   else if ( sender == GUI->ROI_GroupBox || sender == GUI->ROISelectPreview_Button )
+      wantsView = view.IsPreview();
+}
+
+void BackgroundNeutralizationInterface::__ViewDrop( Control& sender, const Point& pos, const View& view, unsigned modifiers )
+{
+   if ( sender == GUI->BackgroundReferenceView_Edit )
+   {
+      instance.backgroundReferenceViewId = view.FullId();
+      GUI->BackgroundReferenceView_Edit.SetText( BACKGROUND_REFERENCE_ID );
+   }
+   else if ( sender == GUI->ROI_GroupBox || sender == GUI->ROISelectPreview_Button )
+   {
+      if ( view.IsPreview() )
+      {
+         instance.useROI = true;
+         instance.roi = view.Window().PreviewRect( view.Id() );
+         UpdateControls();
+      }
+   }
+}
+
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
@@ -334,6 +355,8 @@ BackgroundNeutralizationInterface::GUIData::GUIData( BackgroundNeutralizationInt
       "sky area of the target image, and selecting it here as the background reference image.</p>" );
    BackgroundReferenceView_Edit.OnGetFocus( (Control::event_handler)&BackgroundNeutralizationInterface::__GetFocus, w );
    BackgroundReferenceView_Edit.OnEditCompleted( (Edit::edit_event_handler)&BackgroundNeutralizationInterface::__EditCompleted, w );
+   BackgroundReferenceView_Edit.OnViewDrag( (Control::view_drag_event_handler)&BackgroundNeutralizationInterface::__ViewDrag, w );
+   BackgroundReferenceView_Edit.OnViewDrop( (Control::view_drop_event_handler)&BackgroundNeutralizationInterface::__ViewDrop, w );
 
    BackgroundReferenceView_ToolButton.SetIcon( Bitmap( w.ScaledResource( ":/icons/select-view.png" ) ) );
    BackgroundReferenceView_ToolButton.SetScaledFixedSize( 20, 20 );
@@ -424,6 +447,8 @@ BackgroundNeutralizationInterface::GUIData::GUIData( BackgroundNeutralizationInt
    ROI_GroupBox.SetTitle( "Region of Interest" );
    ROI_GroupBox.EnableTitleCheckBox();
    ROI_GroupBox.OnCheck( (GroupBox::check_event_handler)&BackgroundNeutralizationInterface::__ROI_Check, w );
+   ROI_GroupBox.OnViewDrag( (Control::view_drag_event_handler)&BackgroundNeutralizationInterface::__ViewDrag, w );
+   ROI_GroupBox.OnViewDrop( (Control::view_drop_event_handler)&BackgroundNeutralizationInterface::__ViewDrop, w );
 
    const char* roiX0ToolTip = "<p>X pixel coordinate of the upper-left corner of the ROI.</p>";
 
@@ -479,6 +504,8 @@ BackgroundNeutralizationInterface::GUIData::GUIData( BackgroundNeutralizationInt
    ROISelectPreview_Button.SetText( "From Preview" );
    ROISelectPreview_Button.SetToolTip( "<p>Import ROI coordinates from an existing preview.</p>" );
    ROISelectPreview_Button.OnClick( (Button::click_event_handler)&BackgroundNeutralizationInterface::__ROI_Click, w );
+   ROISelectPreview_Button.OnViewDrag( (Control::view_drag_event_handler)&BackgroundNeutralizationInterface::__ViewDrag, w );
+   ROISelectPreview_Button.OnViewDrop( (Control::view_drop_event_handler)&BackgroundNeutralizationInterface::__ViewDrop, w );
 
    ROIRow2_Sizer.SetSpacing( 4 );
    ROIRow2_Sizer.Add( ROIWidth_Label );
@@ -520,4 +547,4 @@ BackgroundNeutralizationInterface::GUIData::GUIData( BackgroundNeutralizationInt
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF BackgroundNeutralizationInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF BackgroundNeutralizationInterface.cpp - Released 2017-04-14T23:07:12Z

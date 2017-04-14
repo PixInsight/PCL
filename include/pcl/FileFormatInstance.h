@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/FileFormatInstance.h - Released 2016/02/21 20:22:12 UTC
+// pcl/FileFormatInstance.h - Released 2017-04-14T23:04:40Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -56,25 +56,13 @@
 
 #ifndef __PCL_BUILDING_PIXINSIGHT_APPLICATION
 
-#ifndef __PCL_Defs_h
 #include <pcl/Defs.h>
-#endif
 
-#ifndef __PCL_UIObject_h
-#include <pcl/UIObject.h>
-#endif
-
-#ifndef __PCL_ImageVariant_h
-#include <pcl/ImageVariant.h>
-#endif
-
-#ifndef __PCL_ImageDescription_h
-#include <pcl/ImageDescription.h>
-#endif
-
-#ifndef __PCL_FITSHeaderKeyword_h
 #include <pcl/FITSHeaderKeyword.h>
-#endif
+#include <pcl/ImageDescription.h>
+#include <pcl/ImageVariant.h>
+#include <pcl/PropertyDescription.h>
+#include <pcl/UIObject.h>
 
 namespace pcl
 {
@@ -272,23 +260,11 @@ public:
     * dimensions, color space, and other things that can be retrieved with the
     * Open() member function.
     */
-   String ImageProperties() const;
+   String ImageFormatInfo() const;
 
    /*!
-    * Extraction of embedded keywords for the current image in this file.
-    *
-    * If the current image embeds FITS header keywords, they will be added
-    * to the specified \a keywords list. Otherwise the \a keywords list will be
-    * left empty. In any case, previous contents of the \a kwywords list will
-    * be destroyed.
-    *
-    * Returns true iff the file access operation was successful, even if no
-    * keyword was extracted. Returns false in the event of error.
-    */
-   bool Extract( FITSKeywordArray& keywords );
-
-   /*!
-    * Extraction of an embedded ICC profile for the current image in this file.
+    * Extraction of the ICC color profile associated with the current image in
+    * this file.
     *
     * If the current image embeds an ICC profile, it will be assigned to the
     * specified \a icc object. Otherwise, \a icc will be set to a null profile.
@@ -296,121 +272,7 @@ public:
     * Returns true iff the file access operation was successful, even if no
     * ICC profile was extracted. Returns false in the event of error.
     */
-   bool Extract( ICCProfile& icc );
-
-   /*!
-    * Extraction of an embedded thumbnail for the current image in this file.
-    *
-    * If the current image embeds a thumbnail image, it will be assigned to the
-    * specified \a thumbnail 8-bit integer image. Otherwise, a null image will
-    * be assigned to \a thumbnail.
-    *
-    * Returns true iff the file access operation was successful, even if no
-    * thumbnail image was extracted. Returns false in the event of error.
-    */
-   bool Extract( UInt8Image& thumbnail );
-
-   /*!
-    * Returns a description of all data properties associated with the current
-    * image in this file. For each data property, the returned array provides
-    * information on the unique identifier of a property and its data type.
-    *
-    * Returns an empty array if there are no properties stored for the current
-    * image in this file.
-    *
-    * To prevent runtime errors, you should only call this member function for
-    * instances of file formats supporting data properties. See
-    * FileFormat::CanStoreProperties().
-    */
-   ImagePropertyDescriptionArray Properties();
-
-   /*!
-    * Returns true iff the specified property exists associated with the current
-    * image in  this file. Returns false if no such property exists.
-    *
-    * This is a convenience member function, equivalent to the following code:
-    *
-    * \code Properties().Contains( property ); \endcode
-    *
-    * To prevent runtime errors, you should only call this member function for
-    * instances of file formats supporting data properties. See
-    * FileFormat::CanStoreProperties().
-    */
-   bool HasProperty( const IsoString& property )
-   {
-      return Properties().Contains( property );
-   }
-
-   template <class S>
-   bool HasProperty( const S& property )
-   {
-      return HasProperty( IsoString( property ) );
-   }
-
-   /*!
-    * Returns a description (unique identifier and data type) of the specified
-    * data property associated with the current image. If no such property
-    * exists, the returned ImagePropertyDescription object specifies an
-    * invalid data type and empty identifier.
-    *
-    * To prevent runtime errors, you should only call this member function for
-    * instances of file formats supporting data properties. See
-    * FileFormat::CanStoreProperties().
-    */
-   ImagePropertyDescription PropertyDescription( const IsoString& property )
-   {
-      ImagePropertyDescriptionArray properties = Properties();
-      ImagePropertyDescriptionArray::const_iterator i = properties.Search( property );
-      if ( i == properties.End() )
-         return ImagePropertyDescription();
-      return *i;
-   }
-
-   template <class S>
-   ImagePropertyDescription PropertyDescription( const S& property )
-   {
-      return PropertyDescription( IsoString( property ) );
-   }
-
-   /*!
-    * Extraction of a data property with the specified unique identifier.
-    *
-    * If no property with the specified identifier exists associated with the
-    * current image in this file, an invalid Variant object will be returned.
-    *
-    * To prevent runtime errors, you should only call this member function for
-    * instances of file formats supporting data properties. See
-    * FileFormat::CanStoreProperties().
-    */
-   Variant ReadProperty( const IsoString& property );
-
-   template <class S>
-   Variant ReadProperty( const S& property )
-   {
-      return ReadProperty( IsoString( property ) );
-   }
-
-   /*!
-    * Specifies a data property to be embedded in the next image written or
-    * created in this file.
-    *
-    * \param property   Unique identifier of the data property.
-    *
-    * \param value      Property value.
-    *
-    * Returns true only if the embedding operation was successful.
-    *
-    * To prevent runtime errors, you should only call this member function for
-    * instances of file formats supporting data properties. See
-    * FileFormat::CanStoreProperties().
-    */
-   bool WriteProperty( const IsoString& property, const Variant& value );
-
-   template <class S>
-   bool WriteProperty( const S& property, const Variant& value )
-   {
-      return WriteProperty( IsoString( property ), value );
-   }
+   bool ReadICCProfile( ICCProfile& icc );
 
    /*!
     * Extraction of the RGB working space associated with the current image in
@@ -427,19 +289,7 @@ public:
     * instances of file formats supporting RGB working spaces. See
     * FileFormat::CanStoreRGBWS().
     */
-   bool ReadRGBWS( RGBColorSystem& rgbws );
-
-   /*!
-    * Specifies the parameters of an RGB working space that will be embedded in
-    * the next image written or created in this file.
-    *
-    * Returns true only if the embedding operation was successful.
-    *
-    * To prevent runtime errors, you should only call this member function for
-    * instances of file formats supporting RGB working spaces. See
-    * FileFormat::CanStoreRGBWS().
-    */
-   bool WriteRGBWS( const RGBColorSystem& rgbws );
+   bool ReadRGBWorkingSpace( RGBColorSystem& rgbws );
 
    /*!
     * Extraction of the display function associated with the current image in
@@ -459,18 +309,6 @@ public:
    bool ReadDisplayFunction( DisplayFunction& df );
 
    /*!
-    * Specifies a display function that will be embedded in the next image
-    * written or created in this file.
-    *
-    * Returns true only if the embedding operation was successful.
-    *
-    * To prevent runtime errors, you should only call this member function for
-    * instances of file formats supporting display functions. See
-    * FileFormat::CanStoreDisplayFunctions().
-    */
-   bool WriteDisplayFunction( const DisplayFunction& df );
-
-   /*!
     * Extraction of the color filter array (CFA) for the current image in this
     * file.
     *
@@ -487,16 +325,211 @@ public:
    bool ReadColorFilterArray( ColorFilterArray& cfa );
 
    /*!
-    * Specifies a color filter array (CFA) that will be embedded in the next
-    * image written or created in this file.
+    * Extraction of an embedded thumbnail for the current image in this file.
     *
-    * Returns true only if the embedding operation was successful.
+    * If the current image embeds a thumbnail image, it will be assigned to the
+    * specified \a thumbnail 8-bit integer image. Otherwise, a null image will
+    * be assigned to \a thumbnail.
+    *
+    * Returns true iff the file access operation was successful, even if no
+    * thumbnail image was extracted. Returns false in the event of error.
+    */
+   bool ReadThumbnail( UInt8Image& thumbnail );
+
+   /*!
+    * Extraction of embedded keywords for the current image in this file.
+    *
+    * If the current image embeds FITS header keywords, they will be added
+    * to the specified \a keywords list. Otherwise the \a keywords list will be
+    * left empty. In any case, previous contents of the \a kwywords list will
+    * be destroyed.
+    *
+    * Returns true iff the file access operation was successful, even if no
+    * keyword was extracted. Returns false in the event of error.
+    */
+   bool ReadFITSKeywords( FITSKeywordArray& keywords );
+
+   /*!
+    * Returns a description of all data properties associated with this file.
+    * For each data property, the returned array provides information on the
+    * unique identifier of a property and its data type.
+    *
+    * Returns an empty array if there are no properties associated with this
+    * file.
     *
     * To prevent runtime errors, you should only call this member function for
-    * instances of file formats supporting color filter arrays. See
-    * FileFormat::CanStoreColorFilterArrays().
+    * instances of file formats supporting data properties. See
+    * FileFormat::CanStoreProperties().
+    *
+    * \note Don't confuse this member function with ImageProperties(). This
+    * function returns information on the properties of the \e whole file,
+    * while %ImageProperties() returns information on the properties of the
+    * currently selected image.
     */
-   bool WriteColorFilterArray( const ColorFilterArray& cfa );
+   PropertyDescriptionArray Properties();
+
+   /*!
+    * Returns true iff the specified property exists associated with this file.
+    * Returns false if no such property exists for this file.
+    *
+    * This is a convenience member function, equivalent to the following code:
+    *
+    * \code Properties().Contains( property ); \endcode
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting data properties. See
+    * FileFormat::CanStoreProperties().
+    *
+    * \note Don't confuse this member function with HasImageProperty(). This
+    * function returns true if a given property of the \e whole file exists,
+    * while %HasImageProperty() returns true if a property of the currently
+    * selected image exists.
+    */
+   bool HasProperty( const IsoString& property )
+   {
+      return Properties().Contains( property );
+   }
+
+   template <class S>
+   bool HasProperty( const S& property )
+   {
+      return HasProperty( IsoString( property ) );
+   }
+
+   /*!
+    * Returns a description (unique identifier and data type) of the specified
+    * data property associated with this file. If no such property exists, the
+    * returned PropertyDescription object specifies an invalid data type and
+    * an empty identifier.
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting data properties. See
+    * FileFormat::CanStoreProperties().
+    *
+    * \note Don't confuse this member function with ImagePropertyDescription().
+    * This function describes a property of the \e whole file, while
+    * %ImagePropertyDescription() describes a property of the currently
+    * selected image.
+    */
+   pcl::PropertyDescription PropertyDescription( const IsoString& property )
+   {
+      PropertyDescriptionArray properties = Properties();
+      PropertyDescriptionArray::const_iterator i = properties.Search( property );
+      if ( i == properties.End() )
+         return pcl::PropertyDescription();
+      return *i;
+   }
+
+   template <class S>
+   pcl::PropertyDescription PropertyDescription( const S& property )
+   {
+      return PropertyDescription( IsoString( property ) );
+   }
+
+   /*!
+    * Extraction of a data property associated with this file with the
+    * specified unique identifier.
+    *
+    * If no property with the specified identifier exists associated with this
+    * file, an invalid Variant object will be returned.
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting data properties. See
+    * FileFormat::CanStoreProperties().
+    *
+    * \note Don't confuse this member function with ReadImageProperty(). This
+    * function returns the value of a property of the \e whole file, while
+    * %ReadImageProperty() returns the value of a property of the currently
+    * selected image.
+    */
+   Variant ReadProperty( const IsoString& property );
+
+   template <class S>
+   Variant ReadProperty( const S& property )
+   {
+      return ReadProperty( IsoString( property ) );
+   }
+
+   /*!
+    * Returns a description of all data properties associated with the current
+    * image in this file. For each data property, the returned array provides
+    * information on the unique identifier of a property and its data type.
+    *
+    * Returns an empty array if there are no properties stored for the current
+    * image in this file.
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting data properties for individual
+    * images. See FileFormat::CanStoreImageProperties().
+    */
+   PropertyDescriptionArray ImageProperties();
+
+   /*!
+    * Returns true iff the specified property exists associated with the current
+    * image in  this file. Returns false if no such property exists.
+    *
+    * This is a convenience member function, equivalent to the following code:
+    *
+    * \code ImageProperties().Contains( property ); \endcode
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting data properties for individual
+    * images. See FileFormat::CanStoreImageProperties().
+    */
+   bool HasImageProperty( const IsoString& property )
+   {
+      return ImageProperties().Contains( property );
+   }
+
+   template <class S>
+   bool HasImageProperty( const S& property )
+   {
+      return HasImageProperty( IsoString( property ) );
+   }
+
+   /*!
+    * Returns a description (unique identifier and data type) of the specified
+    * data property associated with the current image. If no such property
+    * exists, the returned PropertyDescription object specifies an
+    * invalid data type and empty identifier.
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting data properties for individual
+    * images. See FileFormat::CanStoreImageProperties().
+    */
+   pcl::PropertyDescription ImagePropertyDescription( const IsoString& property )
+   {
+      PropertyDescriptionArray properties = ImageProperties();
+      PropertyDescriptionArray::const_iterator i = properties.Search( property );
+      if ( i == properties.End() )
+         return pcl::PropertyDescription();
+      return *i;
+   }
+
+   template <class S>
+   pcl::PropertyDescription ImagePropertyDescription( const S& property )
+   {
+      return ImagePropertyDescription( IsoString( property ) );
+   }
+
+   /*!
+    * Extraction of a data property of the current image with the specified
+    * unique identifier.
+    *
+    * If no property with the specified identifier exists associated with the
+    * current image in this file, an invalid Variant object will be returned.
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting data properties for individual
+    * images. See FileFormat::CanStoreImageProperties().
+    */
+   Variant ReadImageProperty( const IsoString& property );
+
+   template <class S>
+   Variant ReadImageProperty( const S& property )
+   {
+      return ReadImageProperty( IsoString( property ) );
+   }
 
    /*!
     * Reads the current image in 32-bit floating point format. Returns true iff
@@ -577,39 +610,43 @@ public:
     * should not be invoked - it will throw an exception if called for a file
     * format that doesn't support incremental reading.
     */
-   bool Read( FImage::sample* buffer, int startRow, int rowCount, int channel );
+   bool ReadSamples( FImage::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
     * Incremental read in 64-bit floating point sample format.
     *
     * This is an overloaded member function for the DImage type; see
-    * Read( FImage::sample*, int, int, int, int ) for a full description.
+    * ReadSamples( FImage::sample*, int, int, int, int ) for a full
+    * description.
     */
-   bool Read( DImage::sample* buffer, int startRow, int rowCount, int channel );
+   bool ReadSamples( DImage::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
     * Incremental read in 8-bit unsigned integer sample format.
     *
     * This is an overloaded member function for the UInt8Image type; see
-    * Read( FImage::sample*, int, int, int, int ) for a full description.
+    * ReadSamples( FImage::sample*, int, int, int, int ) for a full
+    * description.
     */
-   bool Read( UInt8Image::sample* buffer, int startRow, int rowCount, int channel );
+   bool ReadSamples( UInt8Image::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
     * Incremental read in 16-bit unsigned integer sample format.
     *
     * This is an overloaded member function for the UInt16Image type; see
-    * Read( FImage::sample*, int, int, int, int ) for a full description.
+    * ReadSamples( FImage::sample*, int, int, int, int ) for a full
+    * description.
     */
-   bool Read( UInt16Image::sample* buffer, int startRow, int rowCount, int channel );
+   bool ReadSamples( UInt16Image::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
     * Incremental read in 32-bit unsigned integer sample format.
     *
     * This is an overloaded member function for the UInt32Image type; see
-    * Read( FImage::sample*, int, int, int, int ) for a full description.
+    * ReadSamples( FImage::sample*, int, int, int, int ) for a full
+    * description.
     */
-   bool Read( UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
+   bool ReadSamples( UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
     * Returns true iff the last file read operation was \e inexact.
@@ -753,22 +790,49 @@ public:
    bool SetFormatSpecificData( const void* data );
 
    /*!
-    * Specifies a set of %FITS \a keywords to be embedded in the next image
-    * written or created in this file.
-    *
-    * Returns true if the specified \a keywords list was successfully embedded
-    * in the image; false in the event of error.
-    */
-   bool Embed( const FITSKeywordArray& keywords );
-
-   /*!
     * Specifies an ICC profile to be embedded in the next image written or
     * created in this file.
     *
     * Returns true if the specified ICC profile was successfully embedded in
     * the image; false in the event of error.
     */
-   bool Embed( const ICCProfile& icc );
+   bool WriteICCProfile( const ICCProfile& icc );
+
+   /*!
+    * Specifies the parameters of an RGB working space that will be embedded in
+    * the next image written or created in this file.
+    *
+    * Returns true only if the embedding operation was successful.
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting RGB working spaces. See
+    * FileFormat::CanStoreRGBWS().
+    */
+   bool WriteRGBWorkingSpace( const RGBColorSystem& rgbws );
+
+   /*!
+    * Specifies a display function that will be embedded in the next image
+    * written or created in this file.
+    *
+    * Returns true only if the embedding operation was successful.
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting display functions. See
+    * FileFormat::CanStoreDisplayFunctions().
+    */
+   bool WriteDisplayFunction( const DisplayFunction& df );
+
+   /*!
+    * Specifies a color filter array (CFA) that will be embedded in the next
+    * image written or created in this file.
+    *
+    * Returns true only if the embedding operation was successful.
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting color filter arrays. See
+    * FileFormat::CanStoreColorFilterArrays().
+    */
+   bool WriteColorFilterArray( const ColorFilterArray& cfa );
 
    /*!
     * Specifies a thumbnail \a image to be embedded in the next image written
@@ -777,7 +841,63 @@ public:
     * Returns true if the specified thumbnail \a image was successfully
     * embedded in the image; false in the event of error.
     */
-   bool Embed( const UInt8Image& image );
+   bool WriteThumbnail( const UInt8Image& image );
+
+   /*!
+    * Specifies a data property to be embedded in this file.
+    *
+    * \param property   Unique identifier of the data property.
+    *
+    * \param value      Property value.
+    *
+    * Returns true only if the embedding operation was successful.
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting data properties. See
+    * FileFormat::CanStoreProperties().
+    *
+    * \note Don't confuse this member function with WriteImageProperty(). This
+    * function defines a property of the \e whole file, while
+    * %WriteImageProperty() defines a property of the currently selected image.
+    */
+   bool WriteProperty( const IsoString& property, const Variant& value );
+
+   template <class S>
+   bool WriteProperty( const S& property, const Variant& value )
+   {
+      return WriteProperty( IsoString( property ), value );
+   }
+
+   /*!
+    * Specifies a data property to be embedded in the next image written or
+    * created in this file.
+    *
+    * \param property   Unique identifier of the data property.
+    *
+    * \param value      Property value.
+    *
+    * Returns true only if the embedding operation was successful.
+    *
+    * To prevent runtime errors, you should only call this member function for
+    * instances of file formats supporting data properties for individual
+    * images. See FileFormat::CanStoreImageProperties().
+    */
+   bool WriteImageProperty( const IsoString& property, const Variant& value );
+
+   template <class S>
+   bool WriteImageProperty( const S& property, const Variant& value )
+   {
+      return WriteImageProperty( IsoString( property ), value );
+   }
+
+   /*!
+    * Specifies a set of %FITS \a keywords to be embedded in the next image
+    * written or created in this file.
+    *
+    * Returns true if the specified \a keywords list was successfully embedded
+    * in the image; false in the event of error.
+    */
+   bool WriteFITSKeywords( const FITSKeywordArray& keywords );
 
    /*!
     * Writes a 32-bit floating point image to this file. Returns true iff the
@@ -852,6 +972,17 @@ public:
    bool CreateImage( const ImageInfo& info );
 
    /*!
+    * Closes the image that has been created by a previous call to
+    * CreateImage().
+    *
+    * Returns true iff the image was successfully closed.
+    *
+    * \note This member function must be reimplemented by all derived classes
+    * supporting incremental write operations.
+    */
+   bool CloseImage();
+
+   /*!
     * Incremental write of 32-bit floating point pixel samples.
     *
     * \param buffer     Address of the source sample buffer.
@@ -875,39 +1006,43 @@ public:
     * should not be invoked - it will throw an exception if called for a file
     * format that doesn't support incremental writing.
     */
-   bool Write( const FImage::sample* buffer, int startRow, int rowCount, int channel );
+   bool WriteSamples( const FImage::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
     * Incremental write of a 64-bit floating point image.
     *
     * This is an overloaded member function for the DImage type; see
-    * Write( const FImage::sample*, int, int, int ) for a full description.
+    * WriteSamples( const FImage::sample*, int, int, int ) for a full
+    * description.
     */
-   bool Write( const DImage::sample* buffer, int startRow, int rowCount, int channel );
+   bool WriteSamples( const DImage::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
     * Incremental write of an 8-bit unsigned integer image.
     *
     * This is an overloaded member function for the UInt8Image type; see
-    * Write( const FImage::sample*, int, int, int ) for a full description.
+    * WriteSamples( const FImage::sample*, int, int, int ) for a full
+    * description.
     */
-   bool Write( const UInt8Image::sample* buffer, int startRow, int rowCount, int channel );
+   bool WriteSamples( const UInt8Image::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
     * Incremental write of a 16-bit unsigned integer image.
     *
     * This is an overloaded member function for the UInt16Image type; see
-    * Write( const FImage::sample*, int, int, int ) for a full description.
+    * WriteSamples( const FImage::sample*, int, int, int ) for a full
+    * description.
     */
-   bool Write( const UInt16Image::sample* buffer, int startRow, int rowCount, int channel );
+   bool WriteSamples( const UInt16Image::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
     * Incremental write of a 32-bit unsigned integer image.
     *
     * This is an overloaded member function for the UInt32Image type; see
-    * Write( const FImage::sample*, int, int, int ) for a full description.
+    * WriteSamples( const FImage::sample*, int, int, int ) for a full
+    * description.
     */
-   bool Write( const UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
+   bool WriteSamples( const UInt32Image::sample* buffer, int startRow, int rowCount, int channel );
 
    /*!
     * Returns true iff the last file write operation in this file was \e lossy.
@@ -939,4 +1074,4 @@ private:
 #endif   // __PCL_FileFormatInstance_h
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormatInstance.h - Released 2016/02/21 20:22:12 UTC
+// EOF pcl/FileFormatInstance.h - Released 2017-04-14T23:04:40Z

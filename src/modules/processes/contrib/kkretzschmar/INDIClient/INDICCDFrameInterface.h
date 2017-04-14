@@ -95,7 +95,7 @@ public:
 private:
 
    String                          m_device;
-   INDICCDFrameInterfaceExecution* m_execution;
+   INDICCDFrameInterfaceExecution* m_execution = nullptr;
 
    struct GUIData
    {
@@ -192,7 +192,7 @@ private:
             ComboBox          TelescopeDevice_Combo;
    };
 
-   GUIData* GUI;
+   GUIData* GUI = nullptr;
 
    void UpdateControls();
 
@@ -201,6 +201,8 @@ private:
    void e_Timer( Timer& sender );
    void e_Click( Button& sender, bool checked );
    void e_ItemSelected( ComboBox& sender, int itemIndex );
+   void e_FileDrag( Control& sender, const Point& pos, const StringList& files, unsigned modifiers, bool& wantsFiles );
+   void e_FileDrop( Control& sender, const Point& pos, const StringList& files, unsigned modifiers );
 
    friend class INDICCDFrameInterfaceExecution;
 };

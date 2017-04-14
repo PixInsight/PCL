@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard JPEG2000 File Format Module Version 01.00.01.0279
+// Standard JPEG2000 File Format Module Version 01.00.02.0289
 // ----------------------------------------------------------------------------
-// JPEG2000Format.cpp - Released 2016/02/21 20:22:34 UTC
+// JPEG2000Format.cpp - Released 2017-04-14T23:07:03Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard JPEG2000 PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -105,7 +105,51 @@ String JPCFormat::Implementation() const
    "Copyright (c) 2001-2007 Michael David Adams</p>"
 
    "<p>PixInsight Class Library (PCL):<br/>"
-   "Copyright (c) 2003-2015, Pleiades Astrophoto</p>"
+   "Copyright (c) 2003-2017, Pleiades Astrophoto</p>"
+
+   "<p style=\"white-space:pre;\">"
+"\n-------------------------------------------------------------------------------"
+"\nJPEG2000 Format Hints         Description"
+"\n============================  ================================================="
+"\nlossy                   ( w)  Write a lossy JPEG-2000 image."
+"\n-------------------------------------------------------------------------------"
+"\nlossless                ( w)  Write a lossless JPEG-2000 image."
+"\n-------------------------------------------------------------------------------"
+"\ncompression-rate n      ( w)  n is a compression ratio in the range [0.01,0.99]"
+"\n                              expressed as compressed_size/original_size."
+"\n-------------------------------------------------------------------------------"
+"\nsigned                  ( w)  Write signed integers."
+"\n-------------------------------------------------------------------------------"
+"\nunsigned                ( w)  Write unsigned integers."
+"\n-------------------------------------------------------------------------------"
+"\ntiled                   ( w)  Generate a tiled JPEG-2000 image."
+"\n-------------------------------------------------------------------------------"
+"\nuntiled                 ( w)  Do not generate a tiled JPEG-2000 image."
+"\n-------------------------------------------------------------------------------"
+"\ntile-width n            ( w)  n is the tile width in pixels, in [16,8192]."
+"\n-------------------------------------------------------------------------------"
+"\ntile-height n           ( w)  n is the tile height in pixels, in [16,8192]."
+"\n-------------------------------------------------------------------------------"
+"\nlayers n                ( w)  n is the number of decompression layers, in the"
+"\n                              range [1,10]. n > 1 means progressive JPEG-2000."
+"\n-------------------------------------------------------------------------------"
+"\nlrcp                    ( w)  Use the Layer-Resolution-Component-Position"
+"\n                              progression order."
+"\n-------------------------------------------------------------------------------"
+"\nrlcp                    ( w)  Use the Resolution-Layer-Component-Position"
+"\n                              progression order."
+"\n-------------------------------------------------------------------------------"
+"\nrpcl                    ( w)  Use the Resolution-Position-Component-Layer"
+"\n                              progression order."
+"\n-------------------------------------------------------------------------------"
+"\npcrl                    ( w)  Use the Position-Component-Resolution-Layer"
+"\n                              progression order."
+"\n-------------------------------------------------------------------------------"
+"\ncprl                    ( w)  Use the Component-Position-Resolution-Layer"
+"\n                              progression order."
+"\n-------------------------------------------------------------------------------"
+"\n"
+   "</p>"
    "</html>";
 }
 
@@ -321,4 +365,4 @@ JPEG2000FormatOptions* JPEG2000FormatOptions::FromGenericDataBlock( const void* 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF JPEG2000Format.cpp - Released 2016/02/21 20:22:34 UTC
+// EOF JPEG2000Format.cpp - Released 2017-04-14T23:07:03Z

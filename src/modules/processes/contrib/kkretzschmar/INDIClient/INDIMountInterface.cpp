@@ -86,8 +86,6 @@ INDIMountInterface* TheINDIMountInterface = nullptr;
 // ----------------------------------------------------------------------------
 
 CoordinateSearchDialog::CoordinateSearchDialog() :
-   Dialog(),
-   m_objectName(),
    m_RA( 0 ),
    m_Dec( 0 ),
    m_muRA( 0 ),
@@ -373,12 +371,7 @@ void CoordinateSearchDialog::e_Click( Button& sender, bool checked )
 
 // ----------------------------------------------------------------------------
 
-INDIMountInterface::INDIMountInterface() :
-   ProcessInterface(),
-   m_device(),
-   m_execution( nullptr ),
-   m_searchDialog( nullptr ),
-   GUI( nullptr )
+INDIMountInterface::INDIMountInterface()
 {
    TheINDIMountInterface = this;
 }
@@ -450,15 +443,10 @@ ProcessImplementation* INDIMountInterface::NewProcess() const
 
 bool INDIMountInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const INDIMountInstance* r = dynamic_cast<const INDIMountInstance*>( &p );
-   if ( r == nullptr )
-   {
-      whyNot = "Not an INDIMount instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const INDIMountInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not an INDIMount instance.";
+   return false;
 }
 
 bool INDIMountInterface::RequiresInstanceValidation() const

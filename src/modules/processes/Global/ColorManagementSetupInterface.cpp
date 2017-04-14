@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Global Process Module Version 01.02.07.0328
+// Standard Global Process Module Version 01.02.07.0337
 // ----------------------------------------------------------------------------
-// ColorManagementSetupInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// ColorManagementSetupInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Global PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -64,7 +64,7 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-ColorManagementSetupInterface* TheColorManagementSetupInterface = 0;
+ColorManagementSetupInterface* TheColorManagementSetupInterface = nullptr;
 
 // ----------------------------------------------------------------------------
 
@@ -73,15 +73,15 @@ ColorManagementSetupInterface* TheColorManagementSetupInterface = 0;
 // ----------------------------------------------------------------------------
 
 ColorManagementSetupInterface::ColorManagementSetupInterface() :
-ProcessInterface(), instance( TheColorManagementSetupProcess ), GUI( 0 )
+   instance( TheColorManagementSetupProcess )
 {
    TheColorManagementSetupInterface = this;
 }
 
 ColorManagementSetupInterface::~ColorManagementSetupInterface()
 {
-   if ( GUI != 0 )
-      delete GUI, GUI = 0;
+   if ( GUI != nullptr )
+      delete GUI, GUI = nullptr;
 }
 
 IsoString ColorManagementSetupInterface::Id() const
@@ -130,7 +130,7 @@ void ColorManagementSetupInterface::ResetInstance()
 
 bool ColorManagementSetupInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   if ( GUI == 0 )
+   if ( GUI == nullptr )
    {
       GUI = new GUIData( *this );
       SetWindowTitle( "ColorManagementSetup" );
@@ -148,15 +148,10 @@ ProcessImplementation* ColorManagementSetupInterface::NewProcess() const
 
 bool ColorManagementSetupInterface::ValidateProcess( const ProcessImplementation& p, pcl::String& whyNot ) const
 {
-   const ColorManagementSetupInstance* r = dynamic_cast<const ColorManagementSetupInstance*>( &p );
-   if ( r == 0 )
-   {
-      whyNot = "Not a ColorManagementSetup instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const ColorManagementSetupInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a ColorManagementSetup instance.";
+   return false;
 }
 
 bool ColorManagementSetupInterface::RequiresInstanceValidation() const
@@ -271,46 +266,48 @@ void ColorManagementSetupInterface::__Profile_ItemSelected( ComboBox& sender, in
 {
    if ( sender == GUI->RGBProfile_ComboBox )
    {
-      if ( itemIndex > 0 && itemIndex <= int( rgbProfiles.Length() ) ) // first item is title
-      {
-         instance.defaultRGBProfile = rgbProfiles[itemIndex-1].description; // skip the first title item
-         UpdateControls();
-      }
+      if ( itemIndex > 0 )
+         if ( itemIndex <= int( rgbProfiles.Length() ) ) // first item is title
+         {
+            instance.defaultRGBProfile = rgbProfiles[itemIndex-1].description; // skip the first title item
+            UpdateControls();
+         }
    }
    else if ( sender == GUI->GrayscaleProfile_ComboBox )
    {
-      if ( itemIndex > 0 && itemIndex <= int( grayProfiles.Length() ) ) // first item is title
-      {
-         instance.defaultGrayProfile = grayProfiles[itemIndex-1].description; // skip the first title item
-         UpdateControls();
-      }
+      if ( itemIndex > 0 )
+         if ( itemIndex <= int( grayProfiles.Length() ) ) // first item is title
+         {
+            instance.defaultGrayProfile = grayProfiles[itemIndex-1].description; // skip the first title item
+            UpdateControls();
+         }
    }
    else if ( sender == GUI->ProofingProfile_ComboBox )
    {
-      if ( itemIndex > 0 && itemIndex <= int( proofingProfiles.Length() ) ) // first item is title
-      {
-         instance.proofingProfile = proofingProfiles[itemIndex-1].description; // skip the first title item
-         UpdateControls();
-      }
+      if ( itemIndex > 0 )
+         if ( itemIndex <= int( proofingProfiles.Length() ) ) // first item is title
+         {
+            instance.proofingProfile = proofingProfiles[itemIndex-1].description; // skip the first title item
+            UpdateControls();
+         }
    }
    else if ( sender == GUI->NewMonitorProfile_ComboBox )
    {
-      if ( itemIndex > 0 && itemIndex <= int( rgbProfiles.Length()+1 ) ) // first item is title, 2nd item is <reset-profiles>
-      {
-         if ( itemIndex > 1 )
-            instance.updateMonitorProfile = rgbProfiles[itemIndex-2].description; // skip the first two items
-         else
-            instance.updateMonitorProfile = sender.ItemText( itemIndex ).Trimmed(); // <reset-profiles>
-         UpdateControls();
-      }
+      if ( itemIndex > 0 )
+         if ( itemIndex <= int( rgbProfiles.Length()+1 ) ) // first item is title, 2nd item is <reset-profiles>
+         {
+            if ( itemIndex > 1 )
+               instance.updateMonitorProfile = rgbProfiles[itemIndex-2].description; // skip the first two items
+            else
+               instance.updateMonitorProfile = sender.ItemText( itemIndex ).Trimmed(); // <reset-profiles>
+            UpdateControls();
+         }
    }
 }
 
 void ColorManagementSetupInterface::__Profile_EditCompleted( Edit& sender )
 {
-   String txt = sender.Text();
-   txt.Trim();
-
+   String txt = sender.Text().Trimmed();
    if ( sender == GUI->RGBProfileId_Edit )
       instance.defaultRGBProfile = txt;
    else if ( sender == GUI->GrayscaleProfileId_Edit )
@@ -374,8 +371,8 @@ void ColorManagementSetupInterface::__ColorSample_Paint( Control& sender, const 
    g.DrawRect( sender.BoundsRect() );
 }
 
-void ColorManagementSetupInterface::__ColorSample_MouseRelease(
-   Control& sender, const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers )
+void ColorManagementSetupInterface::__ColorSample_MouseRelease( Control& sender,
+                                             const pcl::Point& pos, int button, unsigned buttons, unsigned modifiers )
 {
    if ( sender.IsUnderMouse() )
    {
@@ -881,4 +878,4 @@ ColorManagementSetupInterface::GUIData::GUIData( ColorManagementSetupInterface& 
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF ColorManagementSetupInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF ColorManagementSetupInterface.cpp - Released 2017-04-14T23:07:12Z

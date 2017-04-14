@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard Debayer Process Module Version 01.04.03.0213
+// Standard Debayer Process Module Version 01.04.03.0222
 // ----------------------------------------------------------------------------
-// DebayerInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// DebayerInstance.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard Debayer PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -147,10 +147,8 @@ bool DebayerInstance::CanExecuteOn( const View& view, String& whyNot ) const
    else if ( view.Image().Width() < 6 || view.Image().Height() < 6 )
       whyNot = "Debayer needs an image of at least 6 by 6 pixels";
    else
-   {
-      whyNot.Clear();
       return true;
-   }
+
    return false;
 }
 
@@ -1196,4 +1194,4 @@ size_type DebayerInstance::ParameterLength( const MetaParameter* p, size_type ta
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF DebayerInstance.cpp - Released 2016/02/21 20:22:43 UTC
+// EOF DebayerInstance.cpp - Released 2017-04-14T23:07:12Z

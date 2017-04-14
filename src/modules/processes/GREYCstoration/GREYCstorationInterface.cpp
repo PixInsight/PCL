@@ -2,15 +2,15 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// Standard GREYCstoration Process Module Version 01.00.02.0272
+// Standard GREYCstoration Process Module Version 01.00.02.0281
 // ----------------------------------------------------------------------------
-// GREYCstorationInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// GREYCstorationInterface.cpp - Released 2017-04-14T23:07:12Z
 // ----------------------------------------------------------------------------
 // This file is part of the standard GREYCstoration PixInsight module.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -122,7 +122,6 @@ void GREYCstorationInterface::ResetInstance()
 
 bool GREYCstorationInterface::Launch( const MetaProcess& P, const ProcessImplementation*, bool& dynamic, unsigned& /*flags*/ )
 {
-   // ### Deferred initialization
    if ( GUI == 0 )
    {
       GUI = new GUIData( *this );
@@ -141,16 +140,10 @@ ProcessImplementation* GREYCstorationInterface::NewProcess() const
 
 bool GREYCstorationInterface::ValidateProcess( const ProcessImplementation& p, String& whyNot ) const
 {
-   const GREYCstorationInstance* r = dynamic_cast<const GREYCstorationInstance*>( &p );
-
-   if ( r == 0 )
-   {
-      whyNot = "Not a GREYCstoration instance.";
-      return false;
-   }
-
-   whyNot.Clear();
-   return true;
+   if ( dynamic_cast<const GREYCstorationInstance*>( &p ) != nullptr )
+      return true;
+   whyNot = "Not a GREYCstoration instance.";
+   return false;
 }
 
 bool GREYCstorationInterface::RequiresInstanceValidation() const
@@ -394,4 +387,4 @@ GREYCstorationInterface::GUIData::GUIData( GREYCstorationInterface& w )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF GREYCstorationInterface.cpp - Released 2016/02/21 20:22:42 UTC
+// EOF GREYCstorationInterface.cpp - Released 2017-04-14T23:07:12Z

@@ -5,9 +5,9 @@ PCL - PixInsight Class Library
 
 The PixInsight core application provides the infrastructure on top of which external modules can implement processes, image file formats, and their associated user interfaces. The [PixInsight Class Library](http://pixinsight.com/developer/pcl/) (PCL) is a C++ development framework to build PixInsight modules.
 
-PixInsight modules are special shared libraries (.so files on FreeBSD and Linux; .dylib under Mac OS X; .dll files on Windows) that communicate with the PixInsight core application through a high-level API provided by PCL. Along with a core communication API, PCL includes a comprehensive set of image processing algorithms, ranging from geometrical transformations to multiscale analysis algorithms, most of them available as multithreaded parallel implementations.
+PixInsight modules are special shared libraries (.so files on FreeBSD and Linux; .dylib under macOS; .dll files on Windows) that communicate with the PixInsight core application through a high-level API provided by PCL. Along with a core communication API, PCL includes a comprehensive set of image processing algorithms, ranging from geometrical transformations to multiscale analysis algorithms, most of them available as multithreaded parallel implementations.
 
-PCL is highly portable code. As of writing this document, it is available on the same platforms supported by the PixInsight core application: 64-bit FreeBSD, Linux, Mac OS X, and Windows. PixInsight modules written around PCL are directly portable to all supported platforms *without changing a single line of source code*. This is possible because PCL is a high-level framework. PCL isolates your module from platform-specific implementation details: all platform-dependent complexities are handled behind the scenes by the PixInsight core application and internal PCL routines.
+PCL is highly portable code. As of writing this document, it is available on the same platforms supported by the PixInsight core application: 64-bit FreeBSD, Linux, macOS, and Windows. PixInsight modules written around PCL are directly portable to all supported platforms *without changing a single line of source code*. This is possible because PCL is a high-level framework. PCL isolates your module from platform-specific implementation details: all platform-dependent complexities are handled behind the scenes by the PixInsight core application and internal PCL routines.
 
 Starting from version 2.0, which was published in December of 2012, PCL is an open-source library released under the [PixInsight Class Library License](http://pixinsight.com/license/PCL_PJSR_1.0.html) (PCLL). In essence, PCLL is a liberal BSD-like license that allows you to develop open-source and closed-source, free and commercial PixInsight modules without restrictions. As long as you observe all PCLL terms, you can modify PCL and use your modified version with or without releasing your source code.
 
@@ -79,7 +79,7 @@ Here is a list of subdirectories, along with descriptions of the files therein. 
 **[PCL]/src/modules/processes/[module_name]/macosx/g++**
 
 <dl><dd>
-   Makefiles for Mac OS X >= 10.9 with clang C++ compiler/Xcode version >= 5.0
+   Makefiles for macOS >= 10.9 with clang C++ compiler/Xcode version >= 5.0
 </dd></dl>
 
 **[PCL]/src/modules/file-formats/[module_name]/windows/vc12**<br/>
@@ -112,7 +112,7 @@ The current version 2.1.3 of PCL has been built and tested with:
    * macOS 10.11: Clang C++ compiler with Xcode 8.2.1
    * Windows 10: Microsoft Visual C++ 2015 Community Edition
 
-The GCC and clang C++ compilers provide higher conformance to ISO C++ standards and are high quality development tools. On FreeBSD and Mac OS X we rely on the Clang/LLVM compiler included with the latest versions of Xcode and FreeBSD.
+The GCC and clang C++ compilers provide higher conformance to ISO C++ standards and are high quality development tools. On FreeBSD and macOS we rely on the Clang/LLVM compiler included with the latest versions of Xcode and FreeBSD.
 
 On Windows, we provide project files for the Microsoft Visual Studio integrated development environment (.vcxproj files). As of PCL version 2.1.3, we support Visual C++ 2015 exclusively.
 
@@ -126,7 +126,7 @@ With the following environment variables correctly defined, you can generate mak
 **PCLDIR**
 
 <dl><dd>
-   PCL root directory. The value of this variable must be the full directory path where the PCL distribution has been installed on your computer. On FreeBSD, Linux and Mac OS X, this variable should normally be (assuming that you have installed PCL on a 'PCL' subdirectory of your home directory):
+   PCL root directory. The value of this variable must be the full directory path where the PCL distribution has been installed on your computer. On FreeBSD, Linux and macOS, this variable should normally be (assuming that you have installed PCL on a 'PCL' subdirectory of your home directory):
 </dd></dl>
 
 <dl><dd><dl><dd>
@@ -200,4 +200,4 @@ With the following environment variables correctly defined, you can generate mak
 
 
 ******
-###### Copyright (C) 2003-2015 Pleiades Astrophoto
+###### Copyright (C) 2003-2017 Pleiades Astrophoto

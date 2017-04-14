@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/NetworkTransfer.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/NetworkTransfer.cpp - Released 2017-04-14T23:04:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -57,10 +57,6 @@
 #include <pcl/api/APIException.h>
 #include <pcl/api/APIInterface.h>
 
-#ifdef _MSC_VER
-#  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
-#endif
-
 namespace pcl
 {
 
@@ -75,14 +71,14 @@ public:
 
    static api_bool DownloadDataAvailable( network_transfer_handle hSender, control_handle hReceiver, const void* buffer, fsize_type size )
    {
-      if ( sender->onDownloadDataAvailable != 0 )
+      if ( sender->onDownloadDataAvailable != nullptr )
          return (receiver->*sender->onDownloadDataAvailable)( *sender, buffer, size );
       return api_false; // should never happen
    }
 
    static fsize_type UploadDataRequested( network_transfer_handle hSender, control_handle hReceiver, void* buffer, fsize_type maxSize )
    {
-      if ( sender->onUploadDataRequested != 0 )
+      if ( sender->onUploadDataRequested != nullptr )
          return (receiver->*sender->onUploadDataRequested)( *sender, buffer, maxSize );
       return 0; // should never happen
    }
@@ -90,7 +86,7 @@ public:
    static api_bool TransferProgress( network_transfer_handle hSender, control_handle hReceiver,
                                      fsize_type dlTotal, fsize_type dlCurrent, fsize_type ulTotal, fsize_type ulCurrent )
    {
-      if ( sender->onTransferProgress != 0 )
+      if ( sender->onTransferProgress != nullptr )
          return (receiver->*sender->onTransferProgress)( *sender, dlTotal, dlCurrent, ulTotal, ulCurrent );
       return api_false; // should never happen
    }
@@ -103,22 +99,10 @@ public:
 // ----------------------------------------------------------------------------
 
 NetworkTransfer::NetworkTransfer() :
-UIObject( (*API->NetworkTransfer->CreateNetworkTransfer)( ModuleHandle(), this ) ),
-onDownloadDataAvailable( 0 ),
-onUploadDataRequested( 0 ),
-onTransferProgress( 0 )
+   UIObject( (*API->NetworkTransfer->CreateNetworkTransfer)( ModuleHandle(), this ) )
 {
    if ( IsNull() )
       throw APIFunctionError( "CreateNetworkTransfer" );
-}
-
-// ----------------------------------------------------------------------------
-
-NetworkTransfer::NetworkTransfer( void* h ) : UIObject( h ),
-onDownloadDataAvailable( 0 ),
-onUploadDataRequested( 0 ),
-onTransferProgress( 0 )
-{
 }
 
 // ----------------------------------------------------------------------------
@@ -325,9 +309,9 @@ String NetworkTransfer::ErrorInformation() const
 void NetworkTransfer::OnDownloadDataAvailable( download_event_handler handler, Control& receiver )
 {
    __PCL_NO_ALIAS_HANDLERS;
-   onDownloadDataAvailable = 0;
+   onDownloadDataAvailable = nullptr;
    if ( (*API->NetworkTransfer->SetNetworkTransferDownloadEventRoutine)( handle, &receiver,
-                     (handler != 0) ? NetworkTransferEventDispatcher::DownloadDataAvailable : 0 ) == api_false )
+                     (handler != nullptr) ? NetworkTransferEventDispatcher::DownloadDataAvailable : nullptr ) == api_false )
       throw APIFunctionError( "SetNetworkTransferDownloadEventRoutine" );
    onDownloadDataAvailable = handler;
 }
@@ -337,9 +321,9 @@ void NetworkTransfer::OnDownloadDataAvailable( download_event_handler handler, C
 void NetworkTransfer::OnUploadDataRequested( upload_event_handler handler, Control& receiver )
 {
    __PCL_NO_ALIAS_HANDLERS;
-   onUploadDataRequested = 0;
+   onUploadDataRequested = nullptr;
    if ( (*API->NetworkTransfer->SetNetworkTransferUploadEventRoutine)( handle, &receiver,
-                     (handler != 0) ? NetworkTransferEventDispatcher::UploadDataRequested : 0 ) == api_false )
+                     (handler != nullptr) ? NetworkTransferEventDispatcher::UploadDataRequested : nullptr ) == api_false )
       throw APIFunctionError( "SetNetworkTransferUploadEventRoutine" );
    onUploadDataRequested = handler;
 }
@@ -349,9 +333,9 @@ void NetworkTransfer::OnUploadDataRequested( upload_event_handler handler, Contr
 void NetworkTransfer::OnTransferProgress( progress_event_handler handler, Control& receiver )
 {
    __PCL_NO_ALIAS_HANDLERS;
-   onTransferProgress = 0;
+   onTransferProgress = nullptr;
    if ( (*API->NetworkTransfer->SetNetworkTransferProgressEventRoutine)( handle, &receiver,
-                     (handler != 0) ? NetworkTransferEventDispatcher::TransferProgress : 0 ) == api_false )
+                     (handler != nullptr) ? NetworkTransferEventDispatcher::TransferProgress : nullptr ) == api_false )
       throw APIFunctionError( "SetNetworkTransferProgressEventRoutine" );
    onTransferProgress = handler;
 }
@@ -368,4 +352,4 @@ void* NetworkTransfer::CloneHandle() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/NetworkTransfer.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/NetworkTransfer.cpp - Released 2017-04-14T23:04:51Z

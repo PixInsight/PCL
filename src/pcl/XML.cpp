@@ -1,3 +1,53 @@
+//     ____   ______ __
+//    / __ \ / ____// /
+//   / /_/ // /    / /
+//  / ____// /___ / /___   PixInsight Class Library
+// /_/     \____//_____/   PCL 02.01.03.0819
+// ----------------------------------------------------------------------------
+// pcl/XML.cpp - Released 2017-04-14T23:04:51Z
+// ----------------------------------------------------------------------------
+// This file is part of the PixInsight Class Library (PCL).
+// PCL is a multiplatform C++ framework for development of PixInsight modules.
+//
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
+//
+// Redistribution and use in both source and binary forms, with or without
+// modification, is permitted provided that the following conditions are met:
+//
+// 1. All redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. All redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the names "PixInsight" and "Pleiades Astrophoto", nor the names
+//    of their contributors, may be used to endorse or promote products derived
+//    from this software without specific prior written permission. For written
+//    permission, please contact info@pixinsight.com.
+//
+// 4. All products derived from this software, in any form whatsoever, must
+//    reproduce the following acknowledgment in the end-user documentation
+//    and/or other materials provided with the product:
+//
+//    "This product is based on software from the PixInsight project, developed
+//    by Pleiades Astrophoto and its contributors (http://pixinsight.com/)."
+//
+//    Alternatively, if that is where third-party acknowledgments normally
+//    appear, this acknowledgment must be reproduced in the product itself.
+//
+// THIS SOFTWARE IS PROVIDED BY PLEIADES ASTROPHOTO AND ITS CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL PLEIADES ASTROPHOTO OR ITS
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, BUSINESS
+// INTERRUPTION; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; AND LOSS OF USE,
+// DATA OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// ----------------------------------------------------------------------------
 
 #include <pcl/Exception.h>
 #include <pcl/File.h>
@@ -17,11 +67,18 @@ inline static Itr SkipWhitespace( Itr i, Itr j )
    return i;
 }
 
+// ----------------------------------------------------------------------------
+
 template <typename Itr>
 inline static Itr SkipWhitespace( const String& s, Itr i )
 {
-   return SkipWhitespace( i, s.End() );
+   for ( ; i < s.End(); ++i )
+      if ( !XML::IsSpaceChar( *i ) )
+         break;
+   return i;
 }
+
+// ----------------------------------------------------------------------------
 
 template <typename Itr>
 inline static Itr SkipTrailingWhitespace( Itr i, Itr j )
@@ -32,6 +89,8 @@ inline static Itr SkipTrailingWhitespace( Itr i, Itr j )
    return j;
 }
 
+// ----------------------------------------------------------------------------
+
 template <typename Itr>
 inline static Itr FindNextChar( Itr i, Itr j, char16_type c )
 {
@@ -40,6 +99,8 @@ inline static Itr FindNextChar( Itr i, Itr j, char16_type c )
          break;
    return i;
 }
+
+// ----------------------------------------------------------------------------
 
 template <typename Itr>
 inline static Itr FindNextChar( const String& s, Itr i, char16_type c )
@@ -50,6 +111,8 @@ inline static Itr FindNextChar( const String& s, Itr i, char16_type c )
    return i;
 }
 
+// ----------------------------------------------------------------------------
+
 template <typename Itr>
 inline static Itr FindNextSpace( const String& s, Itr i, Itr j )
 {
@@ -59,6 +122,8 @@ inline static Itr FindNextSpace( const String& s, Itr i, Itr j )
    return i;
 }
 
+// ----------------------------------------------------------------------------
+
 inline static String::const_iterator FindFirstSpace( const String& s )
 {
    String::const_iterator i = s.Begin();
@@ -67,6 +132,8 @@ inline static String::const_iterator FindFirstSpace( const String& s )
          break;
    return i;
 }
+
+// ----------------------------------------------------------------------------
 
 template <typename Itr>
 inline static Itr FindClosingChar( const String& s, Itr i, char16_type l, char16_type r )
@@ -82,6 +149,8 @@ inline static Itr FindClosingChar( const String& s, Itr i, char16_type l, char16
    return i;
 }
 
+// ----------------------------------------------------------------------------
+
 template <typename Itr>
 inline static bool IsToken( const String& s, Itr i, const char* t )
 {
@@ -95,20 +164,16 @@ inline static bool IsToken( const String& s, Itr i, const char* t )
    return false;
 }
 
-template <typename Itr>
-inline static Itr FindToken( const String& s, Itr i, const char* t )
+// ----------------------------------------------------------------------------
+
+template <typename Itr, typename Tkn>
+inline static Itr FindToken( const String& s, Itr i, Tkn t )
 {
    size_type p = s.Find( t, s.IndexAt( i ) );
    return (p != String::notFound) ? s.At( p ) : s.End();
 }
 
-template <typename Itr>
-inline static Itr FindToken( const String& s, Itr i, const String& t )
-{
-   size_type p = s.Find( t, s.IndexAt( i ) );
-   return (p != String::notFound) ? s.At( p ) : s.End();
-}
-
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 String XML::TrimmedSpaces( String::const_iterator i, String::const_iterator j )
@@ -116,6 +181,8 @@ String XML::TrimmedSpaces( String::const_iterator i, String::const_iterator j )
    i = SkipWhitespace( i, j );
    return String( i, SkipTrailingWhitespace( i, j ) );
 }
+
+// ----------------------------------------------------------------------------
 
 String XML::TrimmedSpaces( const String& text )
 {
@@ -126,6 +193,8 @@ String XML::TrimmedSpaces( const String& text )
          return text;
    return String( i, j );
 }
+
+// ----------------------------------------------------------------------------
 
 String XML::CollapsedSpaces( String::const_iterator i, String::const_iterator j )
 {
@@ -149,6 +218,8 @@ String XML::CollapsedSpaces( String::const_iterator i, String::const_iterator j 
    }
    return transform;
 }
+
+// ----------------------------------------------------------------------------
 
 String XML::CollapsedSpaces( const String& text )
 {
@@ -175,6 +246,8 @@ String XML::CollapsedSpaces( const String& text )
    }
    return transform;
 }
+
+// ----------------------------------------------------------------------------
 
 String XML::DecodedText( String::const_iterator i, String::const_iterator j )
 {
@@ -207,6 +280,8 @@ String XML::DecodedText( String::const_iterator i, String::const_iterator j )
 
    return text;
 }
+
+// ----------------------------------------------------------------------------
 
 String XML::DecodedText( const String& s )
 {
@@ -243,6 +318,8 @@ String XML::DecodedText( const String& s )
    return text;
 }
 
+// ----------------------------------------------------------------------------
+
 String XML::EncodedText( const String& text, bool apos )
 {
    String s = text;
@@ -253,6 +330,25 @@ String XML::EncodedText( const String& text, bool apos )
    if ( apos )
       s.ReplaceString( "\'", "&apos;" );
    return s;
+}
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+
+namespace XMLNodeType
+{
+   String AsString( mask_type type )
+   {
+      switch ( type )
+      {
+      case Element:                return "element";
+      case Text:                   return "text";
+      case CDATA:                  return "CDATA";
+      case ProcessingInstructions: return "processing instructions";
+      case Comment:                return "comment";
+      default:                     return "unknown";
+      }
+   }
 }
 
 // ----------------------------------------------------------------------------
@@ -307,6 +403,8 @@ void XMLAttributeList::Parse( const String& text )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void XMLAttributeList::Serialize( IsoString& text ) const
 {
    for ( const_iterator i = m_list.Begin(); ; )
@@ -319,6 +417,7 @@ void XMLAttributeList::Serialize( IsoString& text ) const
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 bool XMLNode::NLAfter( const XMLNode& node ) const
 {
@@ -326,12 +425,26 @@ bool XMLNode::NLAfter( const XMLNode& node ) const
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
-void XMLElement::Serialize( IsoString& text, int indentSize, int level ) const
+String XMLElement::Text() const
 {
-   if ( indentSize > 0 )
-      if ( level > 0 )
-         text.Append( ' ', indentSize*level );
+   String text;
+   if ( HasText() )
+      for ( const XMLNode& node : m_childNodes )
+         if ( node.NodeType() == XMLNodeType::Text )
+            text << static_cast<const XMLText&>( node ).Text();
+   return text;
+}
+
+// ----------------------------------------------------------------------------
+
+void XMLElement::Serialize( IsoString& text, bool autoFormat, char indentChar, unsigned indentSize, unsigned level ) const
+{
+   if ( autoFormat )
+      if ( indentSize > 0 )
+         if ( level > 0 )
+            text.Append( indentChar, indentSize*level );
    text << '<' << m_name.ToUTF8();
 
    if ( HasAttributes() )
@@ -346,84 +459,95 @@ void XMLElement::Serialize( IsoString& text, int indentSize, int level ) const
    {
       text << ">" /*<< IsoString().Format( "(%d)", ChildCount() )*/;
 
-      if ( indentSize >= 0 && First().NLAfter( *this ) )
+      if ( autoFormat && First().NLAfter( *this ) )
       {
          text << '\n';
-         First().Serialize( text, indentSize, level+1 );
+         First().Serialize( text, true, indentChar, indentSize, level+1 );
       }
       else
-         First().Serialize( text, indentSize, 0 );
+         First().Serialize( text, false, 0, 0, level+1 );
 
       for ( const_iterator j = Begin(), i = j; ++j != End(); ++i )
-         if ( indentSize >= 0 && j->NLAfter( *i ) )
+         if ( autoFormat && j->NLAfter( *i ) )
          {
             text << '\n';
-            j->Serialize( text, indentSize, level+1 );
+            j->Serialize( text, true, indentChar, indentSize, level+1 );
          }
          else
-            j->Serialize( text, indentSize, 0 );
+            j->Serialize( text, false, 0, 0, level+1 );
 
-      if ( indentSize >= 0 && NLAfter( Last() ) )
+      if ( autoFormat && NLAfter( Last() ) )
       {
          text << '\n';
-         text.Append( ' ', indentSize*level );
+         text.Append( indentChar, indentSize*level );
       }
       text << "</" << m_name.ToUTF8() << '>';
    }
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
-void XMLText::Serialize( IsoString& text, int indentSize, int level ) const
+void XMLText::Serialize( IsoString& text, bool autoFormat, char indentChar, unsigned indentSize, unsigned level ) const
 {
-   if ( indentSize > 0 )
+   if ( autoFormat )
       if ( !m_preserveSpaces )
-         text.Append( ' ', indentSize*level );
+         if ( indentSize > 0 )
+            text.Append( indentChar, indentSize*level );
    text << XML::EncodedText( m_text ).ToUTF8();
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
-void XMLCDATA::Serialize( IsoString& text, int indentSize, int level ) const
+void XMLCDATA::Serialize( IsoString& text, bool autoFormat, char indentChar, unsigned indentSize, unsigned level ) const
 {
-   if ( indentSize > 0 )
-      text.Append( ' ', indentSize*level );
+   if ( autoFormat )
+      if ( indentSize > 0 )
+         text.Append( indentChar, indentSize*level );
    IsoString cdata = m_cdata.ToUTF8();
    cdata.DeleteString( "]]>" ); // forbidden sequence
    text << "<![CDATA[" << cdata << "]]>";
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
-void XMLProcessingInstructions::Serialize( IsoString& text, int indentSize, int level ) const
+void XMLProcessingInstructions::Serialize( IsoString& text, bool autoFormat, char indentChar, unsigned indentSize, unsigned level ) const
 {
-   if ( indentSize > 0 )
-      text.Append( ' ', indentSize*level );
+   if ( autoFormat )
+      if ( indentSize > 0 )
+         text.Append( indentChar, indentSize*level );
    IsoString instructions = m_instructions.ToUTF8();
    instructions.DeleteString( "?>" ); // forbidden sequence
    text << "<?" << m_target.ToUTF8() << ' ' << instructions << "?>";
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
-void XMLComment::Serialize( IsoString& text, int indentSize, int level ) const
+void XMLComment::Serialize( IsoString& text, bool autoFormat, char indentChar, unsigned indentSize, unsigned level ) const
 {
-   if ( indentSize > 0 )
-      text.Append( ' ', indentSize*level );
+   if ( autoFormat )
+      if ( indentSize > 0 )
+         text.Append( indentChar, indentSize*level );
    IsoString comment = m_comment.ToUTF8();
    comment.DeleteString( "--" ); // forbidden sequence
    text << "<!--" << comment << (comment.EndsWith( '-' ) ? "->" : "-->");
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
-void XMLUnknownElement::Serialize( IsoString& text, int indentSize, int level ) const
+void XMLUnknownElement::Serialize( IsoString& text, bool autoFormat, char indentChar, unsigned indentSize, unsigned level ) const
 {
-   if ( indentSize > 0 )
-      text.Append( ' ', indentSize*level );
+   if ( autoFormat )
+      if ( indentSize > 0 )
+         text.Append( indentChar, indentSize*level );
    text << "<!" << m_name.ToUTF8() << ' ' << m_parameters.ToUTF8() << '>';
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 void XMLDeclaration::Serialize( IsoString& text ) const
@@ -435,6 +559,7 @@ void XMLDeclaration::Serialize( IsoString& text ) const
    text << "?>";
 }
 
+// ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
 void XMLDocTypeDeclaration::Serialize( IsoString& text ) const
@@ -449,40 +574,43 @@ void XMLDocTypeDeclaration::Serialize( IsoString& text ) const
 }
 
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
-IsoString XMLDocument::Serialize( int indentSize ) const
+IsoString XMLDocument::Serialize() const
 {
-   indentSize = Range( indentSize, -1, 8 );
-
    IsoString text;
 
    if ( m_xml.IsDefined() )
    {
       m_xml.Serialize( text );
-      if ( indentSize >= 0 )
+      if ( m_autoFormatting )
          text << '\n';
    }
 
    if ( m_docType.IsDefined() )
    {
       m_docType.Serialize( text );
-      if ( indentSize >= 0 )
+      if ( m_autoFormatting )
          text << '\n';
    }
 
+   char indentChar = m_indentTabs ? '\t' : ' ';
+   int indentSize = m_indentTabs ? 1 : m_indentSize;
    for ( const XMLNode& node : m_nodes )
    {
-      node.Serialize( text, indentSize, 0 );
-      if ( indentSize >= 0 )
+      node.Serialize( text, m_autoFormatting, indentChar, indentSize, 0/*level*/ );
+      if ( m_autoFormatting )
          text << '\n';
    }
 
    return text;
 }
 
-void XMLDocument::SerializeToFile( const String& path, int indentSize ) const
+// ----------------------------------------------------------------------------
+
+void XMLDocument::SerializeToFile( const String& path ) const
 {
-   File::WriteTextFile( path, Serialize( indentSize ) );
+   File::WriteTextFile( path, Serialize() );
 }
 
 // ----------------------------------------------------------------------------
@@ -504,6 +632,8 @@ void XMLDocument::AddNode( XMLNode* node )
       throw Error( "XMLDocument::AddNode(): " + x.Message() );
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void XMLDocument::SetRootElement( XMLElement* element )
 {
@@ -527,6 +657,8 @@ void XMLDocument::SetRootElement( XMLElement* element )
       throw Error( "XMLDocument::SetRootElement(): " + x.Message() );
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void XMLDocument::Clear()
 {
@@ -882,3 +1014,6 @@ void XMLDocument::Parse( const String& text )
 // ----------------------------------------------------------------------------
 
 } // pcl
+
+// ----------------------------------------------------------------------------
+// EOF pcl/XML.cpp - Released 2017-04-14T23:04:51Z

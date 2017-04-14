@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/ColorComboBox.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/ColorComboBox.cpp - Released 2017-04-14T23:04:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -166,7 +166,9 @@ static void InitializeComboColors()
 {
    s_comboColors.Clear();
 
-   /* === This is an alternative short color list ===
+   /*
+    * This is an alternative short color list
+    *
    s_comboColors << new ComboColor( 0x00000000, "Default"   )
                  << new ComboColor( 0xFF00FFFF, "Aqua"      )
                  << new ComboColor( 0xFF000000, "Black"     )
@@ -188,7 +190,7 @@ static void InitializeComboColors()
                  << new ComboColor( 0xFFEE82EE, "Violet"    )
                  << new ComboColor( 0xFFFFFFFF, "White"     )
                  << new ComboColor( 0xFFFFFF00, "Yellow"    );
-   */
+    */
 
    s_comboColors << new ComboColor( 0xFFF0F8FF, "AliceBlue"            )
                  << new ComboColor( 0xFFFAEBD7, "AntiqueWhite"         )
@@ -348,12 +350,14 @@ ColorComboBox::ColorComboBox( Control& parent ) :
    int size = RoundInt( f*ICONSIZE );
    int margin = RoundInt( f*ICONMARGIN );
    SetIconSize( size );
-   for ( combo_color_collection::const_iterator i = s_comboColors.Begin(); i != s_comboColors.End(); ++i )
-      AddItem( i->Title(), i->Icon( size, margin ) );
+   for ( const ComboColor& color : s_comboColors )
+      AddItem( color.Title(), color.Icon( size, margin ) );
 
    OnItemSelected( (ComboBox::item_event_handler)&ColorComboBox::ItemSelected, *this );
    OnItemHighlighted( (ComboBox::item_event_handler)&ColorComboBox::ItemHighlighted, *this );
 }
+
+// ----------------------------------------------------------------------------
 
 RGBA ColorComboBox::CurrentColor() const
 {
@@ -362,6 +366,8 @@ RGBA ColorComboBox::CurrentColor() const
       return m_customColor;
    return s_comboColors[i].value;
 }
+
+// ----------------------------------------------------------------------------
 
 void ColorComboBox::SetCurrentColor( RGBA color )
 {
@@ -393,10 +399,14 @@ void ColorComboBox::SetCurrentColor( RGBA color )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 #define INIT_EVENT_HANDLERS()    \
    __PCL_NO_ALIAS_HANDLERS;      \
    if ( m_handlers.IsNull() )    \
       m_handlers = new EventHandlers
+
+// ----------------------------------------------------------------------------
 
 void ColorComboBox::OnColorSelected( color_event_handler f, Control& c )
 {
@@ -416,6 +426,8 @@ void ColorComboBox::OnColorSelected( color_event_handler f, Control& c )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 void ColorComboBox::OnColorHighlighted( color_event_handler f, Control& c )
 {
    if ( f == nullptr || c.IsNull() )
@@ -433,6 +445,8 @@ void ColorComboBox::OnColorHighlighted( color_event_handler f, Control& c )
       m_handlers->onColorHighlightedReceiver = &c;
    }
 }
+
+// ----------------------------------------------------------------------------
 
 void ColorComboBox::OnCustomColorDefined( color_event_handler f, Control& c )
 {
@@ -452,7 +466,11 @@ void ColorComboBox::OnCustomColorDefined( color_event_handler f, Control& c )
    }
 }
 
+// ----------------------------------------------------------------------------
+
 #undef INIT_EVENT_HANDLERS
+
+// ----------------------------------------------------------------------------
 
 void ColorComboBox::ItemSelected( ComboBox& sender, int index )
 {
@@ -461,6 +479,8 @@ void ColorComboBox::ItemSelected( ComboBox& sender, int index )
          (m_handlers->onColorSelectedReceiver->*m_handlers->onColorSelected)( *this,
                (index < int( s_comboColors.Length() )) ? s_comboColors[index].value : m_customColor );
 }
+
+// ----------------------------------------------------------------------------
 
 void ColorComboBox::ItemHighlighted( ComboBox& sender, int index )
 {
@@ -475,4 +495,4 @@ void ColorComboBox::ItemHighlighted( ComboBox& sender, int index )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ColorComboBox.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/ColorComboBox.cpp - Released 2017-04-14T23:04:51Z

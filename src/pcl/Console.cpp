@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/Console.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/Console.cpp - Released 2017-04-14T23:04:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -68,10 +68,14 @@ Console::Console() : m_handle( 0 ), m_thread( 0 )
    m_thread = (*API->Thread->GetCurrentThread)();
 }
 
+// ----------------------------------------------------------------------------
+
 Console::~Console()
 {
    m_thread = 0;
 }
+
+// ----------------------------------------------------------------------------
 
 void Console::Write( const String& s )
 {
@@ -84,6 +88,8 @@ void Console::Write( const String& s )
       (*API->Thread->AppendThreadConsoleOutputText)( m_thread, s.c_str(), api_false );
 }
 
+// ----------------------------------------------------------------------------
+
 void Console::WriteLn( const String& s )
 {
    if ( m_thread == 0 )
@@ -94,6 +100,8 @@ void Console::WriteLn( const String& s )
    else
       (*API->Thread->AppendThreadConsoleOutputText)( m_thread, s.c_str(), api_true );
 }
+
+// ----------------------------------------------------------------------------
 
 void Console::WriteLn()
 {
@@ -136,7 +144,8 @@ String Console::ReadString()
 
 /*
  *
- * ### DISABLED FUNCTION - DO NOT ENABLE FOR PRODUCTION MODULES ###
+ * ### DISABLED FUNCTION - FOR SECURITY REASONS                            ###
+ * ### DO NOT ENABLE THIS FUNCTION FOR PRODUCTION MODULES                  ###
  *
  *
 String Console::Text() const
@@ -263,7 +272,8 @@ void Console::Clear()
 
 /*
  *
- * ### DISABLED FUNCTION - DO NOT ENABLE FOR PRODUCTION MODULES ###
+ * ### DISABLED FUNCTION - FOR SECURITY REASONS                            ###
+ * ### DO NOT ENABLE THIS FUNCTION FOR PRODUCTION MODULES                  ###
  *
  *
 void Console::Execute( const String& command )
@@ -279,4 +289,4 @@ void Console::Execute( const String& command )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Console.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/Console.cpp - Released 2017-04-14T23:04:51Z

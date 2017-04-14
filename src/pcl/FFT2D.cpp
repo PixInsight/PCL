@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/FFT2D.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/FFT2D.cpp - Released 2017-04-14T23:04:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -67,10 +67,10 @@ public:
    typedef ReferenceArray<Thread> thread_list;
 
    PCL_FFT2DEngineBase( int rows, int cols, To* output, const Ti* input, int dir, StatusMonitor* monitor, bool parallel, int maxProcessors ) :
-   m_rows( rows ), m_cols( cols ), m_output( output ), m_input( input ), m_dir( dir ),
-   m_monitor( monitor ), m_parallel( parallel ), m_maxProcessors( maxProcessors )
+      m_rows( rows ), m_cols( cols ), m_output( output ), m_input( input ), m_dir( dir ),
+      m_monitor( monitor ), m_parallel( parallel ), m_maxProcessors( maxProcessors )
    {
-      if ( m_monitor != 0 )
+      if ( m_monitor != nullptr )
          if ( m_monitor->IsInitializationEnabled() )
             m_monitor->Initialize( (m_dir == PCL_FFT_FORWARD) ? "FFT" : "Inverse FFT", m_rows + m_cols );
    }
@@ -92,14 +92,15 @@ protected:
 
    void RunThreads( thread_list& threads, int count )
    {
-      for ( typename thread_list::iterator i = threads.Begin(); i != threads.End(); ++i )
-         i->Start( ThreadPriority::DefaultMax, Distance( threads.Begin(), i ) );
-      for ( typename thread_list::iterator i = threads.Begin(); i != threads.End(); ++i )
-         i->Wait();
+      int n = 0;
+      for ( Thread& thread : threads )
+         thread.Start( ThreadPriority::DefaultMax, n++ );
+      for ( Thread& thread : threads )
+         thread.Wait();
 
       threads.Destroy();
 
-      if ( m_monitor != 0 )
+      if ( m_monitor != nullptr )
          *m_monitor += count;
    }
 };
@@ -119,7 +120,7 @@ public:
    typedef typename base::thread_list           thread_list;
 
    PCL_FFT2DEngine( int rows, int cols, complex* output, const complex* input, int dir, StatusMonitor* monitor, bool parallel, int maxProcessors ) :
-   base( rows, cols, output, input, dir, monitor, parallel, maxProcessors )
+      base( rows, cols, output, input, dir, monitor, parallel, maxProcessors )
    {
       size_type N = size_type( this->m_rows )*size_type( this->m_cols );
       const void* i0 = this->m_input;
@@ -251,8 +252,8 @@ public:
    typedef typename base::thread_list thread_list;
 
    PCL_FFT2DRealEngineBase( int _rows, int _cols, To* _output, const Ti* _input, int dir, StatusMonitor* _monitor, bool parallel, int maxProcessors ) :
-   base( _rows, _cols, _output, _input, dir, _monitor, parallel, maxProcessors ),
-   m_transformCols( _cols/2 + 1 )
+      base( _rows, _cols, _output, _input, dir, _monitor, parallel, maxProcessors ),
+      m_transformCols( _cols/2 + 1 )
    {
    }
 
@@ -281,7 +282,7 @@ public:
    typedef typename base::thread_list              thread_list;
 
    PCL_FFT2DRealEngine( int rows, int cols, complex* output, const scalar* input, StatusMonitor* monitor, bool parallel, int maxProcessors ) :
-   base( rows, cols, output, input, PCL_FFT_FORWARD, monitor, parallel, maxProcessors )
+      base( rows, cols, output, input, PCL_FFT_FORWARD, monitor, parallel, maxProcessors )
    {
       for ( int direction = 0; direction < 2; ++direction ) // FFT of m_rows, m_cols
       {
@@ -389,8 +390,8 @@ public:
    typedef typename base::thread_list              thread_list;
 
    PCL_FFT2DRealInverseEngine( int rows, int cols, scalar* output, const complex* input, StatusMonitor* monitor, bool parallel, int maxProcessors ) :
-   base( rows, cols, output, input, PCL_FFT_BACKWARD, monitor, parallel, maxProcessors ),
-   m_colTransform( this->m_rows, this->m_transformCols )
+      base( rows, cols, output, input, PCL_FFT_BACKWARD, monitor, parallel, maxProcessors ),
+      m_colTransform( this->m_rows, this->m_transformCols )
    {
       for ( int direction = 0; direction < 2; ++direction ) // FFT of m_cols, m_rows
       {
@@ -520,4 +521,4 @@ void FFT2DBase::Transform( int rows, int cols, double* y, const dcomplex* x, Sta
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FFT2D.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/FFT2D.cpp - Released 2017-04-14T23:04:51Z

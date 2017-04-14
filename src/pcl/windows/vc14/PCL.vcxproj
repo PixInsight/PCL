@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 ######################################################################
-# PixInsight Makefile Generator Script v1.103
-# Copyright (C) 2009-2015 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.104
+# Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Mon, 23 Jan 2017 15:29:50 GMT
+# Generated on .... 2017-04-14T21:29:03.131Z
 # Project id ...... PCL
 # Project type .... StaticLibrary
-# Platform ........ Windows/vc12
+# Platform ........ Windows/vc14
 ######################################################################
 -->
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
@@ -30,7 +30,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9A65FDD9-FFE1-48A6-B8F0-DD61A64D9799}</ProjectGuid>
+    <ProjectGuid>{FALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSE-FALSEFALSEFALSEFALSE-4FALSEFALSEFALSE-FALSEFALSEFALSEFALSE-FALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSEFALSE}</ProjectGuid>
     <RootNamespace>PixInsight</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -39,23 +39,23 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -99,7 +99,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>$(PCLINCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -125,7 +125,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>$(PCLINCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -150,7 +150,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(PCLINCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <MinimalRebuild>true</MinimalRebuild>
@@ -169,7 +169,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(PCLINCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PCLINCDIR);$(PCLSRCDIR)\3rdparty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;WIN64;_WINDOWS;UNICODE;__PCL_WINDOWS;__PCL_NO_WIN32_MINIMUM_VERSIONS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <MinimalRebuild>true</MinimalRebuild>
@@ -186,6 +186,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\AES256.cpp"/>
     <ClCompile Include="..\..\API.cpp"/>
     <ClCompile Include="..\..\APIInterface.cpp"/>
     <ClCompile Include="..\..\ATrousWaveletTransform.cpp"/>
@@ -213,7 +214,6 @@
     <ClCompile Include="..\..\Control.cpp"/>
     <ClCompile Include="..\..\Convolution.cpp"/>
     <ClCompile Include="..\..\Crop.cpp"/>
-    <ClCompile Include="..\..\Cryptography.cpp"/>
     <ClCompile Include="..\..\CubicSplineInterpolation.cpp"/>
     <ClCompile Include="..\..\Cursor.cpp"/>
     <ClCompile Include="..\..\Diagnostics.cpp"/>
@@ -261,6 +261,7 @@
     <ClCompile Include="..\..\Label.cpp"/>
     <ClCompile Include="..\..\LanczosInterpolation.cpp"/>
     <ClCompile Include="..\..\LinearFit.cpp"/>
+    <ClCompile Include="..\..\MD5.cpp"/>
     <ClCompile Include="..\..\Median.cpp"/>
     <ClCompile Include="..\..\MessageBox.cpp"/>
     <ClCompile Include="..\..\MetaFileFormat.cpp"/>
@@ -294,6 +295,11 @@
     <ClCompile Include="..\..\Render.cpp"/>
     <ClCompile Include="..\..\Resample.cpp"/>
     <ClCompile Include="..\..\Rotation.cpp"/>
+    <ClCompile Include="..\..\SHA1.cpp"/>
+    <ClCompile Include="..\..\SHA224.cpp"/>
+    <ClCompile Include="..\..\SHA256.cpp"/>
+    <ClCompile Include="..\..\SHA384.cpp"/>
+    <ClCompile Include="..\..\SHA512.cpp"/>
     <ClCompile Include="..\..\SVG.cpp"/>
     <ClCompile Include="..\..\ScrollBox.cpp"/>
     <ClCompile Include="..\..\SectionBar.cpp"/>
@@ -312,6 +318,7 @@
     <ClCompile Include="..\..\TabBox.cpp"/>
     <ClCompile Include="..\..\TextBox.cpp"/>
     <ClCompile Include="..\..\Thread.cpp"/>
+    <ClCompile Include="..\..\TimePoint.cpp"/>
     <ClCompile Include="..\..\Timer.cpp"/>
     <ClCompile Include="..\..\ToolButton.cpp"/>
     <ClCompile Include="..\..\Translation.cpp"/>
@@ -328,6 +335,9 @@
     <ClCompile Include="..\..\ViewList.cpp"/>
     <ClCompile Include="..\..\ViewSelectionDialog.cpp"/>
     <ClCompile Include="..\..\Win32Exception.cpp"/>
+    <ClCompile Include="..\..\XISF.cpp"/>
+    <ClCompile Include="..\..\XISFReader.cpp"/>
+    <ClCompile Include="..\..\XISFWriter.cpp"/>
     <ClCompile Include="..\..\XML.cpp"/>
     <ClCompile Include="..\..\XMLReference.cpp"/>
   </ItemGroup>

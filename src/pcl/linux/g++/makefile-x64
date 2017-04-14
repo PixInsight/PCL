@@ -1,8 +1,8 @@
 ######################################################################
-# PixInsight Makefile Generator Script v1.103
-# Copyright (C) 2009-2015 Pleiades Astrophoto
+# PixInsight Makefile Generator Script v1.104
+# Copyright (C) 2009-2017 Pleiades Astrophoto
 ######################################################################
-# Automatically generated on Mon, 23 Jan 2017 15:29:50 GMT
+# Generated on .... 2017-04-14T21:29:03.004Z
 # Project id ...... PCL
 # Project type .... StaticLibrary
 # Platform ........ Linux/g++
@@ -19,6 +19,7 @@ all: $(OBJ_DIR)/libPCL-pxi.a
 #
 
 SRC_FILES= \
+../../AES256.cpp \
 ../../API.cpp \
 ../../APIInterface.cpp \
 ../../ATrousWaveletTransform.cpp \
@@ -46,7 +47,6 @@ SRC_FILES= \
 ../../Control.cpp \
 ../../Convolution.cpp \
 ../../Crop.cpp \
-../../Cryptography.cpp \
 ../../CubicSplineInterpolation.cpp \
 ../../Cursor.cpp \
 ../../Diagnostics.cpp \
@@ -94,6 +94,7 @@ SRC_FILES= \
 ../../Label.cpp \
 ../../LanczosInterpolation.cpp \
 ../../LinearFit.cpp \
+../../MD5.cpp \
 ../../Median.cpp \
 ../../MessageBox.cpp \
 ../../MetaFileFormat.cpp \
@@ -127,6 +128,11 @@ SRC_FILES= \
 ../../Render.cpp \
 ../../Resample.cpp \
 ../../Rotation.cpp \
+../../SHA1.cpp \
+../../SHA224.cpp \
+../../SHA256.cpp \
+../../SHA384.cpp \
+../../SHA512.cpp \
 ../../SVG.cpp \
 ../../ScrollBox.cpp \
 ../../SectionBar.cpp \
@@ -145,6 +151,7 @@ SRC_FILES= \
 ../../TabBox.cpp \
 ../../TextBox.cpp \
 ../../Thread.cpp \
+../../TimePoint.cpp \
 ../../Timer.cpp \
 ../../ToolButton.cpp \
 ../../Translation.cpp \
@@ -161,6 +168,9 @@ SRC_FILES= \
 ../../ViewList.cpp \
 ../../ViewSelectionDialog.cpp \
 ../../Win32Exception.cpp \
+../../XISF.cpp \
+../../XISFReader.cpp \
+../../XISFWriter.cpp \
 ../../XML.cpp \
 ../../XMLReference.cpp
 
@@ -169,6 +179,7 @@ SRC_FILES= \
 #
 
 OBJ_FILES= \
+./x64/Release/AES256.o \
 ./x64/Release/API.o \
 ./x64/Release/APIInterface.o \
 ./x64/Release/ATrousWaveletTransform.o \
@@ -196,7 +207,6 @@ OBJ_FILES= \
 ./x64/Release/Control.o \
 ./x64/Release/Convolution.o \
 ./x64/Release/Crop.o \
-./x64/Release/Cryptography.o \
 ./x64/Release/CubicSplineInterpolation.o \
 ./x64/Release/Cursor.o \
 ./x64/Release/Diagnostics.o \
@@ -244,6 +254,7 @@ OBJ_FILES= \
 ./x64/Release/Label.o \
 ./x64/Release/LanczosInterpolation.o \
 ./x64/Release/LinearFit.o \
+./x64/Release/MD5.o \
 ./x64/Release/Median.o \
 ./x64/Release/MessageBox.o \
 ./x64/Release/MetaFileFormat.o \
@@ -277,6 +288,11 @@ OBJ_FILES= \
 ./x64/Release/Render.o \
 ./x64/Release/Resample.o \
 ./x64/Release/Rotation.o \
+./x64/Release/SHA1.o \
+./x64/Release/SHA224.o \
+./x64/Release/SHA256.o \
+./x64/Release/SHA384.o \
+./x64/Release/SHA512.o \
 ./x64/Release/SVG.o \
 ./x64/Release/ScrollBox.o \
 ./x64/Release/SectionBar.o \
@@ -295,6 +311,7 @@ OBJ_FILES= \
 ./x64/Release/TabBox.o \
 ./x64/Release/TextBox.o \
 ./x64/Release/Thread.o \
+./x64/Release/TimePoint.o \
 ./x64/Release/Timer.o \
 ./x64/Release/ToolButton.o \
 ./x64/Release/Translation.o \
@@ -311,6 +328,9 @@ OBJ_FILES= \
 ./x64/Release/ViewList.o \
 ./x64/Release/ViewSelectionDialog.o \
 ./x64/Release/Win32Exception.o \
+./x64/Release/XISF.o \
+./x64/Release/XISFReader.o \
+./x64/Release/XISFWriter.o \
 ./x64/Release/XML.o \
 ./x64/Release/XMLReference.o
 
@@ -319,6 +339,7 @@ OBJ_FILES= \
 #
 
 DEP_FILES= \
+./x64/Release/AES256.d \
 ./x64/Release/API.d \
 ./x64/Release/APIInterface.d \
 ./x64/Release/ATrousWaveletTransform.d \
@@ -346,7 +367,6 @@ DEP_FILES= \
 ./x64/Release/Control.d \
 ./x64/Release/Convolution.d \
 ./x64/Release/Crop.d \
-./x64/Release/Cryptography.d \
 ./x64/Release/CubicSplineInterpolation.d \
 ./x64/Release/Cursor.d \
 ./x64/Release/Diagnostics.d \
@@ -394,6 +414,7 @@ DEP_FILES= \
 ./x64/Release/Label.d \
 ./x64/Release/LanczosInterpolation.d \
 ./x64/Release/LinearFit.d \
+./x64/Release/MD5.d \
 ./x64/Release/Median.d \
 ./x64/Release/MessageBox.d \
 ./x64/Release/MetaFileFormat.d \
@@ -427,6 +448,11 @@ DEP_FILES= \
 ./x64/Release/Render.d \
 ./x64/Release/Resample.d \
 ./x64/Release/Rotation.d \
+./x64/Release/SHA1.d \
+./x64/Release/SHA224.d \
+./x64/Release/SHA256.d \
+./x64/Release/SHA384.d \
+./x64/Release/SHA512.d \
 ./x64/Release/SVG.d \
 ./x64/Release/ScrollBox.d \
 ./x64/Release/SectionBar.d \
@@ -445,6 +471,7 @@ DEP_FILES= \
 ./x64/Release/TabBox.d \
 ./x64/Release/TextBox.d \
 ./x64/Release/Thread.d \
+./x64/Release/TimePoint.d \
 ./x64/Release/Timer.d \
 ./x64/Release/ToolButton.d \
 ./x64/Release/Translation.d \
@@ -461,6 +488,9 @@ DEP_FILES= \
 ./x64/Release/ViewList.d \
 ./x64/Release/ViewSelectionDialog.d \
 ./x64/Release/Win32Exception.d \
+./x64/Release/XISF.d \
+./x64/Release/XISFReader.d \
+./x64/Release/XISFWriter.d \
 ./x64/Release/XML.d \
 ./x64/Release/XMLReference.d
 
@@ -483,6 +513,6 @@ post-build:
 	cp $(OBJ_DIR)/libPCL-pxi.a $(PCLLIBDIR64)
 
 ./x64/Release/%.o: ../../%.cpp
-	g++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
+	g++ -c -pipe -pthread -m64 -fPIC -D_REENTRANT -D__PCL_LINUX -I"$(PCLINCDIR)" -I"$(PCLSRCDIR)/3rdparty" -mtune=corei7 -mfpmath=sse -msse3 -minline-all-stringops -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -fnon-call-exceptions -std=c++11 -Wall -Wno-parentheses -MMD -MP -MF"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo ' '
 

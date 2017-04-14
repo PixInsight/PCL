@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/API.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/API.cpp - Released 2017-04-14T23:04:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -166,7 +166,6 @@ public:
           */
          (void)_setmaxstdio( 2048 );
 #endif
-
          return 0; // ok
       }
 
@@ -284,53 +283,120 @@ api_module_description* APIInitializer::description = nullptr;
 
 // global namespace
 
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
-// uint32 IdentifyPixInsightModule( const void**, int32 )
-//
-// PixInsight Module Identification Callback.
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
-
+/*!
+ * PixInsight Module Identification (PMIDN) function.
+ *
+ * This function will be called by the PixInsight core application when it
+ * needs to retrieve identification and descriptive data from a module. This
+ * happens when a module is about to be installed, but also when a module is
+ * being inspected, either for security reasons or after a direct user request.
+ *
+ * \param description   Pointer to a pointer to an API module description
+ *          structure. See the declaration of api_module_description in
+ *          API/APIDefs.h for details. This structure must be provided by the
+ *          called module as POD, and its starting address must be written to
+ *          the pointer pointed to by this argument in a call to this function
+ *          with \a phase = 1 (see below).
+ *
+ * \param phase         Module identification request:\n
+ *          \n
+ *          <table border="1" cellpadding="4" cellspacing="0">
+ *          <tr>
+ *          <td>\a phase = 0x00 - Prepare for module identification.</td>
+ *          </tr>
+ *          <tr>
+ *          <td>\a phase = 0x01 - Report module descriptive data in a structure
+ *          of type 'api_module_description', whose address must be stored in
+ *          the pointer pointed to by the \a description argument.</td>
+ *          </tr>
+ *          <tr>
+ *          <td>\a phase = 0xff - Module identification process completed. The
+ *          module description structure provided when \a phase = 1 can be
+ *          deallocated and disposed as necessary.</td>
+ *          </tr>
+ *          </table>
+ *
+ * Other values of \a phase may be passed in additional calls to a PMIDN. Those
+ * values and calls are reserved for special modules pertaining to the core of
+ * the PixInsight platform, and hence not in the user land. In current versions
+ * of PixInsight, such special calls must be ignored by the invoked module.
+ *
+ * A PMIDN must return zero upon success. Any other return value will be
+ * interpreted as a module-specific error code.
+ *
+ * Module developers using the standard PixInsight Class Library (PCL)
+ * distribution don't have to care about PMIDN, since it is already implemented
+ * internally by PCL.
+ *
+ * \note A PMIDN is mandatory for all PixInsight modules, and must be
+ * implemented as a publicly visible symbol following the standard 'C' naming
+ * and calling conventions.
+ */
 PCL_MODULE_EXPORT uint32
-IdentifyPixInsightModule( void** apiModuleDescription, int32  phase )
+IdentifyPixInsightModule( api_module_description** description,
+                          int32                    phase )
 {
    switch ( phase )
    {
    case 0:
-      // Begin module identification
+      // Prepare for module identification.
       return APIInitializer::BeginIdentification();
    case 1:
-      // Report module identification
-      return APIInitializer::Identify( reinterpret_cast<api_module_description**>( apiModuleDescription ) );
+      // Report module description data.
+      return APIInitializer::Identify( description );
    case 255:
-      // End module identification
+      // Done with module identification.
       return APIInitializer::EndIdentification();
    default:
-      // Unknown identification request --should not happen!
+      // Reserved identification request - ignore it.
       break;
    }
 
    return 0;
 }
 
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
-// uint32 InitializePixInsightModule( api_handle, function_resolver, uint32, void* )
-//
-// PixInsight Module Entry Point.
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
-
+/*!
+ * PixInsight Module Initialization (PMINI) function.
+ *
+ * This function will be called by the PixInsight core application when a
+ * module is being installed. It provides a module with the necessary elements
+ * to perform a bidirectional communication with the core application via the
+ * standard PCL API callback system.
+ *
+ * \param hModule       Handle to the module being installed. This handle
+ *                      uniquely identifies the module, and must be used in all
+ *                      subsequent API calls requiring a module handle.
+ *
+ * \param R             Pointer to an API function resolver callback. See the
+ *                      declaration of function_resolver in API/APIDefs.h and
+ *                      the automatically generated file pcl/APIInterface.cpp
+ *                      for details.
+ *
+ * \param apiVersion    API version number.
+ *
+ * \param reserved      Reserved for special invocations to core platform
+ *                      modules. Must not be used or altered in any way.
+ *
+ * A PMINI must return zero upon success. Any other return value will be
+ * interpreted as a module-specific error code.
+ *
+ * Module developers using the standard PixInsight Class Library (PCL)
+ * distribution don't have to care about PMINI, since it is already implemented
+ * internally by PCL.
+ *
+ * \note A PMINI is mandatory for all PixInsight modules, and must be
+ * implemented as a publicly visible symbol following the standard 'C' naming
+ * and calling conventions.
+ */
 PCL_MODULE_EXPORT uint32
 InitializePixInsightModule( api_handle        hModule,
                             function_resolver R,
                             uint32            apiVersion,
-                            void*             /*reserved*/ )
+                            void*             reserved )
 {
    s_moduleHandle = hModule;
    return APIInitializer::InitAPI( R, apiVersion );
 }
 
 // ----------------------------------------------------------------------------
-// EOF pcl/API.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/API.cpp - Released 2017-04-14T23:04:51Z

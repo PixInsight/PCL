@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/Edit.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/Edit.cpp - Released 2017-04-14T23:04:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,10 +59,6 @@ namespace pcl
 {
 
 // ----------------------------------------------------------------------------
-
-#ifdef _MSC_VER
-#  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
-#endif
 
 Edit::Edit( const String& text, Control& parent ) :
    Frame( (*API->Edit->CreateEdit)( ModuleHandle(), this, text.c_str(), parent.handle, 0/*flags*/ ) )
@@ -311,7 +307,7 @@ void Edit::OnEditCompleted( edit_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->Edit->SetEditCompletedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? EditEventDispatcher::EditCompleted : 0 ) == api_false )
+                  (f != nullptr) ? EditEventDispatcher::EditCompleted : nullptr ) == api_false )
       throw APIFunctionError( "SetEditCompletedEventRoutine" );
    m_handlers->onEditCompleted = f;
 }
@@ -320,7 +316,7 @@ void Edit::OnReturnPressed( edit_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->Edit->SetReturnPressedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? EditEventDispatcher::ReturnPressed : 0 ) == api_false )
+                  (f != nullptr) ? EditEventDispatcher::ReturnPressed : nullptr ) == api_false )
       throw APIFunctionError( "SetReturnPressedEventRoutine" );
    m_handlers->onReturnPressed = f;
 }
@@ -329,7 +325,7 @@ void Edit::OnTextUpdated( text_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->Edit->SetTextUpdatedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? EditEventDispatcher::TextUpdated : 0 ) == api_false )
+                  (f != nullptr) ? EditEventDispatcher::TextUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetTextUpdatedEventRoutine" );
    m_handlers->onTextUpdated = f;
 }
@@ -338,7 +334,7 @@ void Edit::OnCaretPositionUpdated( caret_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->Edit->SetCaretPositionUpdatedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? EditEventDispatcher::CaretPositionUpdated : 0 ) == api_false )
+                  (f != nullptr) ? EditEventDispatcher::CaretPositionUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetCaretPositionUpdatedEventRoutine" );
    m_handlers->onCaretPositionUpdated = f;
 }
@@ -347,7 +343,7 @@ void Edit::OnSelectionUpdated( selection_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->Edit->SetSelectionUpdatedEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? EditEventDispatcher::SelectionUpdated : 0 ) == api_false )
+                  (f != nullptr) ? EditEventDispatcher::SelectionUpdated : nullptr ) == api_false )
       throw APIFunctionError( "SetSelectionUpdatedEventRoutine" );
    m_handlers->onSelectionUpdated = f;
 }
@@ -359,4 +355,4 @@ void Edit::OnSelectionUpdated( selection_event_handler f, Control& receiver )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Edit.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/Edit.cpp - Released 2017-04-14T23:04:51Z

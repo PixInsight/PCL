@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/CRC32.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/CRC32.cpp - Released 2017-04-14T23:04:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -57,119 +57,17 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-/*
- * CRC-32 calculation routine based on original code by Michael Barr.
- *
- * Copyright (c) 2000 by Michael Barr.  This software is placed into
- * the public domain and may be used for any purpose.  However, this
- * notice must not be changed or removed and no warranty is either
- * expressed or implied by its publication or distribution.
- */
-
-#define POLYNOMIAL         0x04C11DB7
-#define INITIAL_REMAINDER  0xFFFFFFFF
-#define FINAL_XOR_VALUE    0xFFFFFFFF
-#define CHECK_VALUE        0xCBF43926
-
-#define TOPBIT    (1 << 31)
-
-#define REFLECT_DATA( X )        Reflect8( (X) )
-#define REFLECT_REMAINDER( X )   Reflect32( (X) )
-
-/*
- * Reorder the bits of a binary sequence, by reflecting them about the
- * middle position.
- */
-static uint32 Reflect32( uint32 data )
-{
-   uint32 reflection = 0x00000000;
-
-   // Reflect the data around the center bit.
-   for ( int bit = 0; ; )
-   {
-      // If the LSB bit is set, set the reflection of it.
-      if ( data & 0x01 )
-         reflection |= (1 << (31 - bit));
-
-      data >>= 1;
-
-      if ( ++bit == 32 )
-         break;
-   }
-
-   return reflection;
-
-}
-
-static uint32 Reflect8( uint8 data )
-{
-   uint32 reflection = 0x00;
-
-   for ( int bit = 0; ; )
-   {
-      if ( data & 0x01 )
-         reflection |= (1 << (7 - bit));
-
-      data >>= 1;
-
-      if ( ++bit == 8 )
-         break;
-   }
-
-   return reflection;
-}
-
 uint32 CRC32( const void* data, size_type length )
 {
-   PCL_PRECONDITION( data != 0 )
-
-   static uint32 crcTable[ 256 ];
-   {
-      static Mutex mutex;
-      static bool initialized = false;
-
-      volatile AutoLock lock( mutex );
-
-      if ( !initialized )
+   uint32 crc = 0xFFFFFFFF;
+   if ( data != nullptr )
+      for ( const uint8* p = reinterpret_cast<const uint8*>( data ); length > 0; --length, ++p )
       {
-         /*
-          * Populate the partial CRC lookup table.
-          */
-
-         // Compute the remainder of each possible dividend.
-         for ( uint32 dividend = 0; dividend < 256; ++dividend )
-         {
-            // Start with the dividend followed by zeros.
-            uint32 remainder = dividend << (32 - 8);
-
-            // Perform modulo-2 division, a bit at a time.
-            for ( int bit = 8; ; )
-            {
-               // Try to divide the current data bit.
-               remainder <<= 1;
-               if ( remainder & TOPBIT )
-                  remainder ^= POLYNOMIAL;
-
-               if ( --bit == 0 )
-                  break;
-            }
-
-            // Store the result into the table.
-            crcTable[dividend] = remainder;
-         }
-
-         initialized = true;
+         crc ^= uint32( *p );
+         for ( int j = 8; j > 0; --j )
+            crc = (crc >> 1) ^ (0xEDB88320u & (-(crc & 1)));
       }
-   }
-
-   uint32 remainder = INITIAL_REMAINDER;
-
-   // Divide the message by the polynomial, a byte at a time.
-   for ( const uint8* p = reinterpret_cast<const uint8*>( data ), * p1 = p+length; p < p1; ++p )
-      remainder = crcTable[REFLECT_DATA( *p ) ^ (remainder >> (32 - 8))] ^ (remainder << 8);
-
-   //The final remainder is the CRC.
-   return REFLECT_REMAINDER( remainder ) ^ FINAL_XOR_VALUE;
+   return ~crc;
 }
 
 // ----------------------------------------------------------------------------
@@ -177,4 +75,4 @@ uint32 CRC32( const void* data, size_type length )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/CRC32.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/CRC32.cpp - Released 2017-04-14T23:04:51Z

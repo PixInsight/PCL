@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/Variant.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/Variant.cpp - Released 2017-04-14T23:04:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -78,6 +78,7 @@ const char* Variant::TypeAsString( int type )
    case VariantType::Float64:               return "Double";
    case VariantType::Complex32:             return "FComplex";
    case VariantType::Complex64:             return "DComplex";
+   case VariantType::TimePoint:             return "TimePoint";
    case VariantType::I32Point:              return "Point";
    case VariantType::F32Point:              return "FPoint";
    case VariantType::F64Point:              return "DPoint";
@@ -200,6 +201,7 @@ int Variant::ToInt() const
    case VariantType::Float64:   return int32( m_data.float64Value );
    case VariantType::Complex32: return int32( m_data.complex32Value->Mag() );
    case VariantType::Complex64: return int32( m_data.complex64Value->Mag() );
+   case VariantType::TimePoint: return int32( m_data.timePointValue->JDI() );
    case VariantType::String:    return m_data.stringValue->ToInt();
    case VariantType::IsoString: return m_data.isoStringValue->ToInt();
    default:
@@ -224,6 +226,7 @@ int64 Variant::ToInt64() const
    case VariantType::Float64:   return int64( m_data.float64Value );
    case VariantType::Complex32: return int64( m_data.complex32Value->Mag() );
    case VariantType::Complex64: return int64( m_data.complex64Value->Mag() );
+   case VariantType::TimePoint: return int64( m_data.timePointValue->JDI() );
    case VariantType::String:    return m_data.stringValue->ToInt64();
    case VariantType::IsoString: return m_data.isoStringValue->ToInt64();
    default:
@@ -248,6 +251,7 @@ unsigned int Variant::ToUInt() const
    case VariantType::Float64:   return uint32( m_data.float64Value );
    case VariantType::Complex32: return uint32( m_data.complex32Value->Mag() );
    case VariantType::Complex64: return uint32( m_data.complex64Value->Mag() );
+   case VariantType::TimePoint: return uint32( m_data.timePointValue->JDI() );
    case VariantType::String:    return m_data.stringValue->ToUInt();
    case VariantType::IsoString: return m_data.isoStringValue->ToUInt();
    default:
@@ -272,6 +276,7 @@ uint64 Variant::ToUInt64() const
    case VariantType::Float64:   return uint64( m_data.float64Value );
    case VariantType::Complex32: return uint64( m_data.complex32Value->Mag() );
    case VariantType::Complex64: return uint64( m_data.complex64Value->Mag() );
+   case VariantType::TimePoint: return uint64( m_data.timePointValue->JDI() );
    case VariantType::String:    return m_data.stringValue->ToUInt64();
    case VariantType::IsoString: return m_data.isoStringValue->ToUInt64();
    default:
@@ -296,6 +301,7 @@ float Variant::ToFloat() const
    case VariantType::Float64:   return float( m_data.float64Value );
    case VariantType::Complex32: return float( m_data.complex32Value->Mag() );
    case VariantType::Complex64: return float( m_data.complex64Value->Mag() );
+   case VariantType::TimePoint: return float( m_data.timePointValue->JD() );
    case VariantType::String:    return m_data.stringValue->ToFloat();
    case VariantType::IsoString: return m_data.isoStringValue->ToFloat();
    default:
@@ -320,6 +326,7 @@ double Variant::ToDouble() const
    case VariantType::Float64:   return m_data.float64Value;
    case VariantType::Complex32: return double( m_data.complex32Value->Mag() );
    case VariantType::Complex64: return double( m_data.complex64Value->Mag() );
+   case VariantType::TimePoint: return double( m_data.timePointValue->JD() );
    case VariantType::String:    return m_data.stringValue->ToDouble();
    case VariantType::IsoString: return m_data.isoStringValue->ToDouble();
    default:
@@ -344,6 +351,7 @@ fcomplex Variant::ToFComplex() const
    case VariantType::Float64:   return fcomplex( float( m_data.float64Value ) );
    case VariantType::Complex32: return *m_data.complex32Value;
    case VariantType::Complex64: return fcomplex( *m_data.complex64Value );
+   case VariantType::TimePoint: return fcomplex( float( m_data.timePointValue->JD() ) );
    case VariantType::I32Point:  return fcomplex( float( m_data.i32PointValue->x ), float( m_data.i32PointValue->y ) );
    case VariantType::F32Point:  return fcomplex( m_data.f32PointValue->x, m_data.f32PointValue->y );
    case VariantType::F64Point:  return fcomplex( float( m_data.f64PointValue->x ), float( m_data.f64PointValue->y ) );
@@ -372,14 +380,37 @@ dcomplex Variant::ToDComplex() const
    case VariantType::Float64:   return dcomplex( m_data.float64Value );
    case VariantType::Complex32: return dcomplex( *m_data.complex32Value );
    case VariantType::Complex64: return *m_data.complex64Value;
-   case VariantType::I32Point:  return fcomplex( double( m_data.i32PointValue->x ), double( m_data.i32PointValue->y ) );
-   case VariantType::F32Point:  return fcomplex( double( m_data.f32PointValue->x ), double( m_data.f32PointValue->y ) );
-   case VariantType::F64Point:  return fcomplex( m_data.f64PointValue->x, m_data.f64PointValue->y );
-   case VariantType::I32Rect:   return fcomplex( double( m_data.i32RectValue->x0 ), double( m_data.i32RectValue->y0 ) );
-   case VariantType::F32Rect:   return fcomplex( double( m_data.f32RectValue->x0 ), double( m_data.f32RectValue->y0 ) );
-   case VariantType::F64Rect:   return fcomplex( m_data.f64RectValue->x0, m_data.f64RectValue->y0 );
+   case VariantType::TimePoint: return dcomplex( double( m_data.timePointValue->JD() ) );
+   case VariantType::I32Point:  return dcomplex( double( m_data.i32PointValue->x ), double( m_data.i32PointValue->y ) );
+   case VariantType::F32Point:  return dcomplex( double( m_data.f32PointValue->x ), double( m_data.f32PointValue->y ) );
+   case VariantType::F64Point:  return dcomplex( m_data.f64PointValue->x, m_data.f64PointValue->y );
+   case VariantType::I32Rect:   return dcomplex( double( m_data.i32RectValue->x0 ), double( m_data.i32RectValue->y0 ) );
+   case VariantType::F32Rect:   return dcomplex( double( m_data.f32RectValue->x0 ), double( m_data.f32RectValue->y0 ) );
+   case VariantType::F64Rect:   return dcomplex( m_data.f64RectValue->x0, m_data.f64RectValue->y0 );
    default:
       throw Error( "Variant::ToDComplex(): Invalid conversion from " + String( TypeAsString( m_type ) ) + " type" );
+   }
+}
+
+TimePoint Variant::ToTimePoint() const
+{
+   switch ( m_type )
+   {
+   case VariantType::Int8:      return TimePoint( double( m_data.int8Value ) );
+   case VariantType::Int16:     return TimePoint( double( m_data.int16Value ) );
+   case VariantType::Int32:     return TimePoint( double( m_data.int32Value ) );
+   case VariantType::Int64:     return TimePoint( double( m_data.int64Value ) );
+   case VariantType::UInt8:     return TimePoint( double( m_data.uint8Value ) );
+   case VariantType::UInt16:    return TimePoint( double( m_data.uint16Value ) );
+   case VariantType::UInt32:    return TimePoint( double( m_data.uint32Value ) );
+   case VariantType::UInt64:    return TimePoint( double( m_data.uint64Value ) );
+   case VariantType::Float32:   return TimePoint( double( m_data.float32Value ) );
+   case VariantType::Float64:   return TimePoint( m_data.float64Value );
+   case VariantType::TimePoint: return *m_data.timePointValue;
+   case VariantType::String:    return TimePoint( *m_data.stringValue );
+   case VariantType::IsoString: return TimePoint( *m_data.isoStringValue );
+   default:
+      throw Error( "Variant::ToTimePoint(): Invalid conversion from " + String( TypeAsString( m_type ) ) + " type" );
    }
 }
 
@@ -2022,6 +2053,14 @@ FVector Variant::ToFVector() const
          return v;
       }
 
+   case VariantType::TimePoint:
+      {
+         FVector v( 2 );
+         v[0] = float( m_data.timePointValue->JDI() );
+         v[1] = float( m_data.timePointValue->JDF() );
+         return v;
+      }
+
    case VariantType::I32Point:
       {
          FVector v( 2 );
@@ -2201,6 +2240,14 @@ DVector Variant::ToDVector() const
          return v;
       }
 
+   case VariantType::TimePoint:
+      {
+         DVector v( 2 );
+         v[0] = double( m_data.timePointValue->JDI() );
+         v[1] = double( m_data.timePointValue->JDF() );
+         return v;
+      }
+
    case VariantType::I32Point:
       {
          DVector v( 2 );
@@ -2369,6 +2416,9 @@ C32Vector Variant::ToC32Vector() const
       return C32Vector( *m_data.complex32Value, 1 );
    case VariantType::Complex64:
       return C32Vector( Complex32( *m_data.complex64Value ), 1 );
+
+   case VariantType::TimePoint:
+      return C32Vector( Complex32( float( m_data.timePointValue->JDI() ), float( m_data.timePointValue->JDF() ) ), 1 );
 
    case VariantType::I32Point:
       return C32Vector( Complex32( float( m_data.i32PointValue->x ), float( m_data.i32PointValue->y ) ), 1 );
@@ -2673,39 +2723,42 @@ C64Vector Variant::ToC64Vector() const
    switch ( m_type )
    {
    case VariantType::Bool:
-      return C64Vector( Complex32( double( m_data.boolValue ) ), 1 );
+      return C64Vector( Complex64( double( m_data.boolValue ) ), 1 );
    case VariantType::Int8:
-      return C64Vector( Complex32( double( m_data.int8Value ) ), 1 );
+      return C64Vector( Complex64( double( m_data.int8Value ) ), 1 );
    case VariantType::Int16:
-      return C64Vector( Complex32( double( m_data.int16Value ) ), 1 );
+      return C64Vector( Complex64( double( m_data.int16Value ) ), 1 );
    case VariantType::Int32:
-      return C64Vector( Complex32( double( m_data.int32Value ) ), 1 );
+      return C64Vector( Complex64( double( m_data.int32Value ) ), 1 );
    case VariantType::Int64:
-      return C64Vector( Complex32( double( m_data.int64Value ) ), 1 );
+      return C64Vector( Complex64( double( m_data.int64Value ) ), 1 );
    case VariantType::UInt8:
-      return C64Vector( Complex32( double( m_data.uint8Value ) ), 1 );
+      return C64Vector( Complex64( double( m_data.uint8Value ) ), 1 );
    case VariantType::UInt16:
-      return C64Vector( Complex32( double( m_data.uint16Value ) ), 1 );
+      return C64Vector( Complex64( double( m_data.uint16Value ) ), 1 );
    case VariantType::UInt32:
-      return C64Vector( Complex32( double( m_data.uint32Value ) ), 1 );
+      return C64Vector( Complex64( double( m_data.uint32Value ) ), 1 );
    case VariantType::UInt64:
-      return C64Vector( Complex32( double( m_data.uint64Value ) ), 1 );
+      return C64Vector( Complex64( double( m_data.uint64Value ) ), 1 );
    case VariantType::Float32:
-      return C64Vector( Complex32( double( m_data.float32Value ) ), 1 );
+      return C64Vector( Complex64( double( m_data.float32Value ) ), 1 );
    case VariantType::Float64:
-      return C64Vector( Complex32( m_data.float64Value ), 1 );
+      return C64Vector( Complex64( m_data.float64Value ), 1 );
 
    case VariantType::Complex32:
       return C64Vector( Complex64( *m_data.complex32Value ), 1 );
    case VariantType::Complex64:
       return C64Vector( *m_data.complex64Value, 1 );
 
+   case VariantType::TimePoint:
+      return C64Vector( Complex64( double( m_data.timePointValue->JDI() ), double( m_data.timePointValue->JDF() ) ), 1 );
+
    case VariantType::I32Point:
-      return C64Vector( Complex32( double( m_data.i32PointValue->x ), double( m_data.i32PointValue->y ) ), 1 );
+      return C64Vector( Complex64( double( m_data.i32PointValue->x ), double( m_data.i32PointValue->y ) ), 1 );
    case VariantType::F32Point:
-      return C64Vector( Complex32( double( m_data.f32PointValue->x ), double( m_data.f32PointValue->y ) ), 1 );
+      return C64Vector( Complex64( double( m_data.f32PointValue->x ), double( m_data.f32PointValue->y ) ), 1 );
    case VariantType::F64Point:
-      return C64Vector( Complex32( m_data.f64PointValue->x, m_data.f64PointValue->y ), 1 );
+      return C64Vector( Complex64( m_data.f64PointValue->x, m_data.f64PointValue->y ), 1 );
 
    case VariantType::I32Rect:
       {
@@ -4520,6 +4573,14 @@ FMatrix Variant::ToFMatrix() const
          return m;
       }
 
+   case VariantType::TimePoint:
+      {
+         FMatrix m( 1, 2 );
+         m[0][0] = float( m_data.timePointValue->JDI() );
+         m[0][1] = float( m_data.timePointValue->JDF() );
+         return m;
+      }
+
    case VariantType::I32Point:
       {
          FMatrix m( 1, 2 );
@@ -4705,6 +4766,14 @@ DMatrix Variant::ToDMatrix() const
          return m;
       }
 
+   case VariantType::TimePoint:
+      {
+         DMatrix m( 1, 2 );
+         m[0][0] = double( m_data.timePointValue->JDI() );
+         m[0][1] = double( m_data.timePointValue->JDF() );
+         return m;
+      }
+
    case VariantType::I32Point:
       {
          DMatrix m( 1, 2 );
@@ -4880,6 +4949,9 @@ C32Matrix Variant::ToC32Matrix() const
    case VariantType::Complex64:
       return C32Matrix( Complex32( *m_data.complex64Value ), 1, 1 );
 
+   case VariantType::TimePoint:
+      return C32Matrix( Complex32( float( m_data.timePointValue->JDI() ), float( m_data.timePointValue->JDF() ) ), 1, 1 );
+
    case VariantType::I32Point:
       return C32Matrix( Complex32( float( m_data.i32PointValue->x ), float( m_data.i32PointValue->y ) ), 1, 1 );
    case VariantType::F32Point:
@@ -4919,10 +4991,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( 1, m_data.i8VectorValue->Length() );
          const int8* r = m_data.i8VectorValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = float( *r );
-            c->Imag() = 0;
+            c.Real() = float( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -4930,10 +5002,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( 1, m_data.ui8VectorValue->Length() );
          const uint8* r = m_data.ui8VectorValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = float( *r );
-            c->Imag() = 0;
+            c.Real() = float( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -4941,10 +5013,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( 1, m_data.i16VectorValue->Length() );
          const int16* r = m_data.i16VectorValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = float( *r );
-            c->Imag() = 0;
+            c.Real() = float( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -4952,10 +5024,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( 1, m_data.ui16VectorValue->Length() );
          const uint16* r = m_data.ui16VectorValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = float( *r );
-            c->Imag() = 0;
+            c.Real() = float( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -4963,10 +5035,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( 1, m_data.i32VectorValue->Length() );
          const int32* r = m_data.i32VectorValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = float( *r );
-            c->Imag() = 0;
+            c.Real() = float( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -4974,10 +5046,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( 1, m_data.ui32VectorValue->Length() );
          const uint32* r = m_data.ui32VectorValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = float( *r );
-            c->Imag() = 0;
+            c.Real() = float( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -4985,10 +5057,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( 1, m_data.i64VectorValue->Length() );
          const int64* r = m_data.i64VectorValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = float( *r );
-            c->Imag() = 0;
+            c.Real() = float( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -4996,10 +5068,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( 1, m_data.ui64VectorValue->Length() );
          const uint64* r = m_data.ui64VectorValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = float( *r );
-            c->Imag() = 0;
+            c.Real() = float( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5007,10 +5079,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( 1, m_data.f32VectorValue->Length() );
          const float* r = m_data.f32VectorValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = *r;
-            c->Imag() = 0;
+            c.Real() = *r++;
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5018,10 +5090,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( 1, m_data.f64VectorValue->Length() );
          const double* r = m_data.f64VectorValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = float( *r );
-            c->Imag() = 0;
+            c.Real() = float( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5038,10 +5110,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( m_data.i8MatrixValue->Rows(), m_data.i8MatrixValue->Cols() );
          const int8* r = m_data.i8MatrixValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = float( *r );
-            c->Imag() = 0;
+            c.Real() = float( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5049,10 +5121,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( m_data.ui8MatrixValue->Rows(), m_data.ui8MatrixValue->Cols() );
          const uint8* r = m_data.ui8MatrixValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = float( *r );
-            c->Imag() = 0;
+            c.Real() = float( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5060,10 +5132,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( m_data.i16MatrixValue->Rows(), m_data.i16MatrixValue->Cols() );
          const int16* r = m_data.i16MatrixValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = float( *r );
-            c->Imag() = 0;
+            c.Real() = float( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5071,10 +5143,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( m_data.ui16MatrixValue->Rows(), m_data.ui16MatrixValue->Cols() );
          const uint16* r = m_data.ui16MatrixValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = float( *r );
-            c->Imag() = 0;
+            c.Real() = float( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5082,10 +5154,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( m_data.i32MatrixValue->Rows(), m_data.i32MatrixValue->Cols() );
          const int32* r = m_data.i32MatrixValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = float( *r );
-            c->Imag() = 0;
+            c.Real() = float( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5093,10 +5165,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( m_data.ui32MatrixValue->Rows(), m_data.ui32MatrixValue->Cols() );
          const uint32* r = m_data.ui32MatrixValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = float( *r );
-            c->Imag() = 0;
+            c.Real() = float( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5104,10 +5176,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( m_data.i64MatrixValue->Rows(), m_data.i64MatrixValue->Cols() );
          const int64* r = m_data.i64MatrixValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = float( *r );
-            c->Imag() = 0;
+            c.Real() = float( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5115,10 +5187,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( m_data.ui64MatrixValue->Rows(), m_data.ui64MatrixValue->Cols() );
          const uint64* r = m_data.ui64MatrixValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = float( *r );
-            c->Imag() = 0;
+            c.Real() = float( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5126,10 +5198,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( m_data.f32MatrixValue->Rows(), m_data.f32MatrixValue->Cols() );
          const float* r = m_data.f32MatrixValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = *r;
-            c->Imag() = 0;
+            c.Real() = *r++;
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5137,10 +5209,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( m_data.f64MatrixValue->Rows(), m_data.f64MatrixValue->Cols() );
          const double* r = m_data.f64MatrixValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = float( *r );
-            c->Imag() = 0;
+            c.Real() = float( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5157,10 +5229,10 @@ C32Matrix Variant::ToC32Matrix() const
       {
          C32Matrix m( 1, int( m_data.byteArrayValue->Length() ) );
          const uint8* r = m_data.byteArrayValue->Begin();
-         for ( fcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( fcomplex& c : m )
          {
-            c->Real() = float( *r );
-            c->Imag() = 0;
+            c.Real() = float( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5202,6 +5274,9 @@ C64Matrix Variant::ToC64Matrix() const
    case VariantType::Complex64:
       return C64Matrix( *m_data.complex64Value, 1, 1 );
 
+   case VariantType::TimePoint:
+      return C64Matrix( Complex64( double( m_data.timePointValue->JDI() ), double( m_data.timePointValue->JDF() ) ), 1, 1 );
+
    case VariantType::I32Point:
       return C64Matrix( Complex64( double( m_data.i32PointValue->x ), double( m_data.i32PointValue->y ) ), 1, 1 );
    case VariantType::F32Point:
@@ -5241,10 +5316,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( 1, m_data.i8VectorValue->Length() );
          const int8* r = m_data.i8VectorValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = double( *r );
-            c->Imag() = 0;
+            c.Real() = double( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5252,10 +5327,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( 1, m_data.ui8VectorValue->Length() );
          const uint8* r = m_data.ui8VectorValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = double( *r );
-            c->Imag() = 0;
+            c.Real() = double( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5263,10 +5338,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( 1, m_data.i16VectorValue->Length() );
          const int16* r = m_data.i16VectorValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = double( *r );
-            c->Imag() = 0;
+            c.Real() = double( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5274,10 +5349,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( 1, m_data.ui16VectorValue->Length() );
          const uint16* r = m_data.ui16VectorValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = double( *r );
-            c->Imag() = 0;
+            c.Real() = double( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5285,10 +5360,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( 1, m_data.i32VectorValue->Length() );
          const int32* r = m_data.i32VectorValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = double( *r );
-            c->Imag() = 0;
+            c.Real() = double( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5296,10 +5371,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( 1, m_data.ui32VectorValue->Length() );
          const uint32* r = m_data.ui32VectorValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = double( *r );
-            c->Imag() = 0;
+            c.Real() = double( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5307,10 +5382,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( 1, m_data.i64VectorValue->Length() );
          const int64* r = m_data.i64VectorValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = double( *r );
-            c->Imag() = 0;
+            c.Real() = double( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5318,10 +5393,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( 1, m_data.ui64VectorValue->Length() );
          const uint64* r = m_data.ui64VectorValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = double( *r );
-            c->Imag() = 0;
+            c.Real() = double( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5329,10 +5404,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( 1, m_data.f32VectorValue->Length() );
          const float* r = m_data.f32VectorValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = double( *r );
-            c->Imag() = 0;
+            c.Real() = double( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5340,10 +5415,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( 1, m_data.f64VectorValue->Length() );
          const double* r = m_data.f64VectorValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = *r;
-            c->Imag() = 0;
+            c.Real() = *r++;
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5360,10 +5435,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( m_data.i8MatrixValue->Rows(), m_data.i8MatrixValue->Cols() );
          const int8* r = m_data.i8MatrixValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = double( *r );
-            c->Imag() = 0;
+            c.Real() = double( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5371,10 +5446,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( m_data.ui8MatrixValue->Rows(), m_data.ui8MatrixValue->Cols() );
          const uint8* r = m_data.ui8MatrixValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = double( *r );
-            c->Imag() = 0;
+            c.Real() = double( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5382,10 +5457,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( m_data.i16MatrixValue->Rows(), m_data.i16MatrixValue->Cols() );
          const int16* r = m_data.i16MatrixValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = double( *r );
-            c->Imag() = 0;
+            c.Real() = double( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5393,10 +5468,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( m_data.ui16MatrixValue->Rows(), m_data.ui16MatrixValue->Cols() );
          const uint16* r = m_data.ui16MatrixValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = double( *r );
-            c->Imag() = 0;
+            c.Real() = double( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5404,10 +5479,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( m_data.i32MatrixValue->Rows(), m_data.i32MatrixValue->Cols() );
          const int32* r = m_data.i32MatrixValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = double( *r );
-            c->Imag() = 0;
+            c.Real() = double( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5415,10 +5490,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( m_data.ui32MatrixValue->Rows(), m_data.ui32MatrixValue->Cols() );
          const uint32* r = m_data.ui32MatrixValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = double( *r );
-            c->Imag() = 0;
+            c.Real() = double( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5426,10 +5501,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( m_data.i64MatrixValue->Rows(), m_data.i64MatrixValue->Cols() );
          const int64* r = m_data.i64MatrixValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = double( *r );
-            c->Imag() = 0;
+            c.Real() = double( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5437,10 +5512,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( m_data.ui64MatrixValue->Rows(), m_data.ui64MatrixValue->Cols() );
          const uint64* r = m_data.ui64MatrixValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = double( *r );
-            c->Imag() = 0;
+            c.Real() = double( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5448,10 +5523,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( m_data.f32MatrixValue->Rows(), m_data.f32MatrixValue->Cols() );
          const float* r = m_data.f32MatrixValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = double( *r );
-            c->Imag() = 0;
+            c.Real() = double( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5459,10 +5534,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( m_data.f64MatrixValue->Rows(), m_data.f64MatrixValue->Cols() );
          const double* r = m_data.f64MatrixValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = *r;
-            c->Imag() = 0;
+            c.Real() = *r++;
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5479,10 +5554,10 @@ C64Matrix Variant::ToC64Matrix() const
       {
          C64Matrix m( 1, int( m_data.byteArrayValue->Length() ) );
          const uint8* r = m_data.byteArrayValue->Begin();
-         for ( dcomplex* c = m.Begin(); c != m.End(); ++c, ++r )
+         for ( dcomplex& c : m )
          {
-            c->Real() = double( *r );
-            c->Imag() = 0;
+            c.Real() = double( *r++ );
+            c.Imag() = 0;
          }
          return m;
       }
@@ -5571,6 +5646,18 @@ ByteArray Variant::ToByteArray() const
          ByteArray a( 2*sizeof( double ) );
          ::memcpy( a.Begin(),                    v1, sizeof( double ) );
          ::memcpy( a.Begin() + sizeof( double ), v2, sizeof( double ) );
+         return a;
+      }
+
+   case VariantType::TimePoint:
+      {
+         int32 jdi = m_data.timePointValue->JDI();
+         double jdf = m_data.timePointValue->JDF();
+         const uint8* v1 = reinterpret_cast<const uint8*>( &jdi );
+         const uint8* v2 = reinterpret_cast<const uint8*>( &jdf );
+         ByteArray a( sizeof( jdi ) + sizeof( jdf ) );
+         ::memcpy( a.Begin(),                 v1, sizeof( jdi ) );
+         ::memcpy( a.Begin() + sizeof( jdi ), v2, sizeof( jdf ) );
          return a;
       }
 
@@ -5860,6 +5947,9 @@ String Variant::ToString() const
       return String().Format( "(%.7g,%.7g)", m_data.complex32Value->Real(), m_data.complex32Value->Imag() );
    case VariantType::Complex64:
       return String().Format( "(%.16g,%.16g)", m_data.complex64Value->Real(), m_data.complex64Value->Imag() );
+
+   case VariantType::TimePoint:
+      return m_data.timePointValue->ToString();
 
    case VariantType::I32Point:
       return String().Format( "(%d,%d)", m_data.i32PointValue->x, m_data.i32PointValue->y );
@@ -6422,6 +6512,9 @@ IsoString Variant::ToIsoString() const
       return IsoString().Format( "(%.7g,%.7g)", m_data.complex32Value->Real(), m_data.complex32Value->Imag() );
    case VariantType::Complex64:
       return IsoString().Format( "(%.16g,%.16g)", m_data.complex64Value->Real(), m_data.complex64Value->Imag() );
+
+   case VariantType::TimePoint:
+      return m_data.timePointValue->ToIsoString();
 
    case VariantType::I32Point:
       return IsoString().Format( "(%d,%d)", m_data.i32PointValue->x, m_data.i32PointValue->y );
@@ -6995,6 +7088,9 @@ StringList Variant::ToStringList() const
          return s;
       }
 
+   case VariantType::TimePoint:
+      return StringList( 1, m_data.timePointValue->ToString() );
+
    case VariantType::I32Point:
       {
          StringList s( 2 );
@@ -7353,6 +7449,9 @@ IsoStringList Variant::ToIsoStringList() const
          s[1] = IsoString( m_data.complex64Value->Imag() );
          return s;
       }
+
+   case VariantType::TimePoint:
+      return IsoStringList( 1, m_data.timePointValue->ToIsoString() );
 
    case VariantType::I32Point:
       {
@@ -7778,6 +7877,7 @@ const void* Variant::InternalBlockAddress() const
    case VariantType::Float64:    return &m_data.float64Value;
    case VariantType::Complex32:  return  m_data.complex32Value;
    case VariantType::Complex64:  return  m_data.complex64Value;
+   case VariantType::TimePoint:  return  m_data.timePointValue;
    case VariantType::I32Point:   return  m_data.i32PointValue;
    case VariantType::F32Point:   return  m_data.f32PointValue;
    case VariantType::F64Point:   return  m_data.f64PointValue;
@@ -7921,22 +8021,22 @@ size_type Variant::BlockSize() const
    }
 }
 
-int Variant::BytesPerBlockElement() const
+int Variant::BytesPerBlockElementForType( int type )
 {
-   switch ( m_type )
+   switch ( type )
    {
    // Scalars
-   case VariantType::Bool:       return sizeof( m_data.boolValue );
-   case VariantType::Int8:       return sizeof( m_data.int8Value );
-   case VariantType::Int16:      return sizeof( m_data.int16Value );
-   case VariantType::Int32:      return sizeof( m_data.int32Value );
-   case VariantType::Int64:      return sizeof( m_data.int64Value );
-   case VariantType::UInt8:      return sizeof( m_data.uint8Value );
-   case VariantType::UInt16:     return sizeof( m_data.uint16Value );
-   case VariantType::UInt32:     return sizeof( m_data.uint32Value );
-   case VariantType::UInt64:     return sizeof( m_data.uint64Value );
-   case VariantType::Float32:    return sizeof( m_data.float32Value );
-   case VariantType::Float64:    return sizeof( m_data.float64Value );
+   case VariantType::Bool:       return sizeof( bool );
+   case VariantType::Int8:       return sizeof( int8 );
+   case VariantType::Int16:      return sizeof( int16 );
+   case VariantType::Int32:      return sizeof( int32 );
+   case VariantType::Int64:      return sizeof( int64 );
+   case VariantType::UInt8:      return sizeof( uint8 );
+   case VariantType::UInt16:     return sizeof( uint16 );
+   case VariantType::UInt32:     return sizeof( uint32 );
+   case VariantType::UInt64:     return sizeof( uint64 );
+   case VariantType::Float32:    return sizeof( float );
+   case VariantType::Float64:    return sizeof( double );
 
    // Complex
    case VariantType::Complex32:  return sizeof( Complex32::component );
@@ -7975,7 +8075,7 @@ int Variant::BytesPerBlockElement() const
 
    // Structured or invalid
    default:
-      throw Error( String( "Variant::BytesPerBlockElement(): Invalid request for data type \'" ) + TypeAsString( m_type ) + '\'' );
+      throw Error( String( "Variant::BytesPerBlockElementForType(): Invalid request for data type \'" ) + TypeAsString( type ) + '\'' );
    }
 }
 
@@ -7996,19 +8096,6 @@ bool Variant::IsScalarType( int type )
    case VariantType::UInt64:
    case VariantType::Float32:
    case VariantType::Float64:
-      return true;
-
-   default:
-      return false;
-   }
-}
-
-bool Variant::IsComplexType( int type )
-{
-   switch ( type )
-   {
-   case VariantType::Complex32:
-   case VariantType::Complex64:
       return true;
 
    default:
@@ -8065,23 +8152,11 @@ bool Variant::IsMatrixType( int type )
    }
 }
 
-bool Variant::IsStringType( int type )
-{
-   switch ( type )
-   {
-   case VariantType::String:
-   case VariantType::IsoString:
-      return true;
-
-   default:
-      return false;
-   }
-}
-
 bool Variant::IsStructuredType( int type )
 {
    switch ( type )
    {
+   case VariantType::TimePoint:
    case VariantType::I32Point:
    case VariantType::F32Point:
    case VariantType::F64Point:
@@ -8120,6 +8195,7 @@ Variant Variant::ToType( data_type type ) const
    case VariantType::Float64:    return ToDouble();
    case VariantType::Complex32:  return ToFComplex();
    case VariantType::Complex64:  return ToDComplex();
+   case VariantType::TimePoint:  return ToTimePoint();
    case VariantType::I32Point:   return ToPoint();
    case VariantType::F32Point:   return ToFPoint();
    case VariantType::F64Point:   return ToDPoint();
@@ -8192,6 +8268,11 @@ void Variant::Clear()
    case VariantType::Complex64:
       if ( m_data.complex64Value != nullptr )
          delete m_data.complex64Value, m_data.complex64Value = nullptr;
+      break;
+
+   case VariantType::TimePoint:
+      if ( m_data.timePointValue != nullptr )
+         delete m_data.timePointValue, m_data.timePointValue = nullptr;
       break;
 
    case VariantType::I32Point:
@@ -8409,6 +8490,9 @@ int Variant::Compare( const Variant& x ) const
    case VariantType::Complex64:
       return PTR_COMPARE( complex64Value );
 
+   case VariantType::TimePoint:
+      return PTR_COMPARE( timePointValue );
+
    case VariantType::I32Point:
       return PTR_COMPARE( i32PointValue );
    case VariantType::F32Point:
@@ -8555,6 +8639,10 @@ void Variant::Copy( const Variant& x )
       break;
    case VariantType::Complex64:
       PTR_COPY( complex64Value, dcomplex );
+      break;
+
+   case VariantType::TimePoint:
+      PTR_COPY( timePointValue, TimePoint );
       break;
 
    case VariantType::I32Point:
@@ -8852,6 +8940,9 @@ Variant VariantFromAPIPropertyValue( const api_property_value& apiValue )
       return Variant( *reinterpret_cast<const fcomplex*>( apiValue.data.blockValue ) );
    case VTYPE_COMPLEX64:
       return Variant( *reinterpret_cast<const dcomplex*>( apiValue.data.blockValue ) );
+
+   case VTYPE_TIMEPOINT:
+      return Variant( *reinterpret_cast<const TimePoint*>( apiValue.data.blockValue ) );
    }
 }
 
@@ -9097,6 +9188,10 @@ void APIPropertyValueFromVariant( api_property_value& apiValue, const Variant& v
       apiValue.data.blockValue = value.InternalBlockAddress();
       apiValue.type = VTYPE_COMPLEX64;
       break;
+   case VariantType::TimePoint:
+      apiValue.data.blockValue = value.InternalBlockAddress();
+      apiValue.type = VTYPE_TIMEPOINT;
+      break;
    default: // !?
       throw APIError( String( "APIPropertyValueFromVariant(): Unsupported data type \'" ) + value.TypeAsString( value.Type() ) + "\'" );
    }
@@ -9150,6 +9245,57 @@ Variant::data_type VariantTypeFromAPIPropertyType( uint64 apiType )
    case VTYPE_STRING:        return VariantType::String;
    case VTYPE_COMPLEX32:     return VariantType::Complex32;
    case VTYPE_COMPLEX64:     return VariantType::Complex64;
+   case VTYPE_TIMEPOINT:     return VariantType::TimePoint;
+   }
+}
+
+// ### Internal
+uint64 APIPropertyTypeFromVariantType( Variant::data_type type )
+{
+   switch ( type )
+   {
+   default: // ?!
+   case VariantType::Invalid:    return VTYPE_INVALID;
+   case VariantType::Boolean:    return VTYPE_BOOLEAN;
+   case VariantType::Int8:       return VTYPE_INT8;
+   case VariantType::Int16:      return VTYPE_INT16;
+   case VariantType::Int32:      return VTYPE_INT32;
+   case VariantType::Int64:      return VTYPE_INT64;
+   case VariantType::UInt8:      return VTYPE_UINT8;
+   case VariantType::UInt16:     return VTYPE_UINT16;
+   case VariantType::UInt32:     return VTYPE_UINT32;
+   case VariantType::UInt64:     return VTYPE_UINT64;
+   case VariantType::Float32:    return VTYPE_FLOAT;
+   case VariantType::Float64:    return VTYPE_DOUBLE;
+   case VariantType::I8Vector:   return VTYPE_INT8_VECTOR;
+   case VariantType::UI8Vector:  return VTYPE_UINT8_VECTOR;
+   case VariantType::I16Vector:  return VTYPE_INT16_VECTOR;
+   case VariantType::UI16Vector: return VTYPE_UINT16_VECTOR;
+   case VariantType::I32Vector:  return VTYPE_IVECTOR;
+   case VariantType::UI32Vector: return VTYPE_UIVECTOR;
+   case VariantType::I64Vector:  return VTYPE_INT64_VECTOR;
+   case VariantType::UI64Vector: return VTYPE_UINT64_VECTOR;
+   case VariantType::F32Vector:  return VTYPE_FVECTOR;
+   case VariantType::F64Vector:  return VTYPE_DVECTOR;
+   case VariantType::C32Vector:  return VTYPE_C32_VECTOR;
+   case VariantType::C64Vector:  return VTYPE_C64_VECTOR;
+   case VariantType::I8Matrix:   return VTYPE_INT8_MATRIX;
+   case VariantType::UI8Matrix:  return VTYPE_UINT8_MATRIX;
+   case VariantType::I16Matrix:  return VTYPE_INT16_MATRIX;
+   case VariantType::UI16Matrix: return VTYPE_UINT16_MATRIX;
+   case VariantType::I32Matrix:  return VTYPE_IMATRIX;
+   case VariantType::UI32Matrix: return VTYPE_UIMATRIX;
+   case VariantType::I64Matrix:  return VTYPE_INT64_MATRIX;
+   case VariantType::UI64Matrix: return VTYPE_UINT64_MATRIX;
+   case VariantType::F32Matrix:  return VTYPE_FMATRIX;
+   case VariantType::F64Matrix:  return VTYPE_DMATRIX;
+   case VariantType::C32Matrix:  return VTYPE_C32_MATRIX;
+   case VariantType::C64Matrix:  return VTYPE_C64_MATRIX;
+   case VariantType::IsoString:  return VTYPE_ISOSTRING;
+   case VariantType::String:     return VTYPE_STRING;
+   case VariantType::Complex32:  return VTYPE_COMPLEX32;
+   case VariantType::Complex64:  return VTYPE_COMPLEX64;
+   case VariantType::TimePoint:  return VTYPE_TIMEPOINT;
    }
 }
 
@@ -9158,4 +9304,4 @@ Variant::data_type VariantTypeFromAPIPropertyType( uint64 apiType )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Variant.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/Variant.cpp - Released 2017-04-14T23:04:51Z

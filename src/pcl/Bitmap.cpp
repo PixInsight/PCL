@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/Bitmap.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/Bitmap.cpp - Released 2017-04-14T23:04:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -291,7 +291,7 @@ Bitmap Bitmap::MirroredVertically() const
 Bitmap Bitmap::Scaled( double sx, double sy, bool precise ) const
 {
    int w, h; GetDimensions( w, h );
-   w = pcl::RoundI( sx*w ); h = pcl::RoundI( sy*h );
+   w = pcl::RoundInt( sx*w ); h = pcl::RoundInt( sy*h );
    return Bitmap( (*API->Bitmap->ScaledBitmap)( handle, w, h, precise ) );
 }
 
@@ -300,7 +300,7 @@ Bitmap Bitmap::Scaled( double sx, double sy, bool precise ) const
 Bitmap Bitmap::Scaled( double sxy, bool precise ) const
 {
    int w, h; GetDimensions( w, h );
-   w = pcl::RoundI( sxy*w ); h = pcl::RoundI( sxy*h );
+   w = pcl::RoundInt( sxy*w ); h = pcl::RoundInt( sxy*h );
    return Bitmap( (*API->Bitmap->ScaledBitmap)( handle, w, h, precise ) );
 }
 
@@ -481,4 +481,4 @@ void Bitmap::SetPhysicalPixelRatio( double ratio )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Bitmap.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/Bitmap.cpp - Released 2017-04-14T23:04:51Z

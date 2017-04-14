@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/LinearFit.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/LinearFit.cpp - Released 2017-04-14T23:04:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -76,7 +76,7 @@ static api_bool LinearFitCallback( void* p )
 void LinearFit::Fit( double& a, double& b, double& adev,
                      const float* fx, const float* fy, size_type n, StatusMonitor* status )
 {
-   switch ( (*API->Numerical->LinearFitF)( &a, &b, &adev, fx, fy, n, status ? LinearFitCallback : 0, status ) )
+   switch ( (*API->Numerical->LinearFitF)( &a, &b, &adev, fx, fy, n, status ? LinearFitCallback : nullptr, status ) )
    {
    case api_ok:
       return;
@@ -91,7 +91,7 @@ void LinearFit::Fit( double& a, double& b, double& adev,
 void LinearFit::Fit( double& a, double& b, double& adev,
                      const double* fx, const double* fy, size_type n, StatusMonitor* status )
 {
-   switch ( (*API->Numerical->LinearFitD)( &a, &b, &adev, fx, fy, n, status ? LinearFitCallback : 0, status ) )
+   switch ( (*API->Numerical->LinearFitD)( &a, &b, &adev, fx, fy, n, status ? LinearFitCallback : nullptr, status ) )
    {
    case api_ok:
       return;
@@ -108,4 +108,4 @@ void LinearFit::Fit( double& a, double& b, double& adev,
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/LinearFit.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/LinearFit.cpp - Released 2017-04-14T23:04:51Z

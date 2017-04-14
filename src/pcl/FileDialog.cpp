@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/FileDialog.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/FileDialog.cpp - Released 2017-04-14T23:04:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -75,7 +75,6 @@ public:
             apiFilters += ";;";
          apiFilters += (*i).MakeAPIFilter();
       }
-
       return apiFilters;
    }
 
@@ -105,11 +104,11 @@ public:
                {
                   FileFilter filter;
 
-                  for ( StringList::const_iterator i = extLst.Begin(); i != extLst.End(); ++i )
+                  for ( const String& ext : extLst )
                   {
-                     size_type d = i->Find( '.' );
+                     size_type d = ext.Find( '.' );
                      if ( d != String::notFound )
-                        filter.AddExtension( i->Substring( d ) );
+                        filter.AddExtension( ext.Substring( d ) );
                   }
 
                   if ( !filter.Extensions().IsEmpty() )
@@ -117,7 +116,6 @@ public:
                      String desc = s.Substring( p, p1-p );
                      desc.Trim();
                      filter.SetDescription( desc );
-
                      filters.Add( filter );
                   }
                }
@@ -141,7 +139,7 @@ void FileFilter::AddExtension( const String& ext )
    String x = ext.Trimmed();
    if ( !x.StartsWith( '.' ) )
       if ( !x.StartsWith( '*' ) )
-         x = '*' + x;
+         x.Prepend( '*' );
    x.ToLowercase(); // case-insensitive file extensions
    if ( !extensions.Contains( x ) )
       extensions.Add( x );
@@ -165,9 +163,7 @@ String FileFilter::MakeAPIFilter() const
          filter += " (";
       }
 
-      for ( StringList::const_iterator i = extensions.Begin();
-            i != extensions.End();
-            ++i )
+      for ( StringList::const_iterator i = extensions.Begin(); i != extensions.End(); ++i )
       {
          if ( i != extensions.Begin() )
             filter += ' '; // also legal are ';' and ','
@@ -436,4 +432,4 @@ String GetDirectoryDialog::Directory() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileDialog.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/FileDialog.cpp - Released 2017-04-14T23:04:51Z

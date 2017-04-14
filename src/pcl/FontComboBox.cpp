@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/FontComboBox.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/FontComboBox.cpp - Released 2017-04-14T23:04:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -75,8 +75,8 @@ static void SetFaceList( FontComboBox* combo, const C& faces )
 {
    combo->DisableUpdates();
    combo->Clear();
-   for ( SortedStringList::const_iterator i = faces.Begin(); i != faces.End(); ++i )
-      combo->AddItem( ' ' + *i + ' ' );
+   for ( auto face : faces )
+      combo->AddItem( face );
    combo->EnableUpdates();
 }
 
@@ -101,7 +101,7 @@ void FontComboBox::SetCurrentFont( const String& face )
    String findFace = face.Trimmed();
    if ( findFace.IsEmpty() )
       findFace = "Default";
-   SetCurrentItem( FindItem( ' ' + findFace + ' ', 0, true ) ); // find exact match, case insensitive
+   SetCurrentItem( FindItem( findFace, 0/*fromIdx*/, true/*exactMatch*/ ) );
 }
 
 void FontComboBox::ResetFonts()
@@ -136,10 +136,10 @@ void FontComboBox::AddScalableFonts()
 {
    StringList installedFaces = Font::AvailableFonts();
    SortedStringList faces = GetFaceList( this );
-   for ( StringList::const_iterator i = installedFaces.Begin(); i != installedFaces.End(); ++i )
-      if ( !faces.Contains( *i ) )
-         if ( Font::IsScalableFont( *i ) )
-            faces.Add( *i );
+   for ( const String& face : installedFaces )
+      if ( !faces.Contains( face ) )
+         if ( Font::IsScalableFont( face ) )
+            faces.Add( face );
    SetFaceList( this, faces );
 }
 
@@ -147,9 +147,9 @@ void FontComboBox::RemoveScalableFonts()
 {
    StringList installedFaces = Font::AvailableFonts();
    SortedStringList faces = GetFaceList( this );
-   for ( StringList::const_iterator i = installedFaces.Begin(); i != installedFaces.End(); ++i )
-      if ( Font::IsScalableFont( *i ) )
-         faces.Remove( *i );
+   for ( const String& face : installedFaces )
+      if ( Font::IsScalableFont( face ) )
+         faces.Remove( face );
    SetFaceList( this, faces );
 }
 
@@ -157,10 +157,10 @@ void FontComboBox::AddFixedPitchFonts()
 {
    StringList installedFaces = Font::AvailableFonts();
    SortedStringList faces =  GetFaceList( this );
-   for ( StringList::const_iterator i = installedFaces.Begin(); i != installedFaces.End(); ++i )
-      if ( !faces.Contains( *i ) )
-         if ( Font::IsFixedPitchFont( *i ) )
-            faces.Add( *i );
+   for ( const String& face : installedFaces )
+      if ( !faces.Contains( face ) )
+         if ( Font::IsFixedPitchFont( face ) )
+            faces.Add( face );
    SetFaceList( this, faces );
 }
 
@@ -168,9 +168,9 @@ void FontComboBox::RemoveFixedPitchFonts()
 {
    StringList installedFaces = Font::AvailableFonts();
    SortedStringList faces = GetFaceList( this );
-   for ( StringList::const_iterator i = installedFaces.Begin(); i != installedFaces.End(); ++i )
-      if ( Font::IsFixedPitchFont( *i ) )
-         faces.Remove( *i );
+   for ( const String& face : installedFaces )
+      if ( Font::IsFixedPitchFont( face ) )
+         faces.Remove( face );
    SetFaceList( this, faces );
 }
 
@@ -178,10 +178,10 @@ void FontComboBox::AddItalicFonts()
 {
    StringList installedFaces = Font::AvailableFonts();
    SortedStringList faces = GetFaceList( this );
-   for ( StringList::const_iterator i = installedFaces.Begin(); i != installedFaces.End(); ++i )
-      if ( !faces.Contains( *i ) )
-         if ( Font::IsItalicFont( *i ) )
-            faces.Add( *i );
+   for ( const String& face : installedFaces )
+      if ( !faces.Contains( face ) )
+         if ( Font::IsItalicFont( face ) )
+            faces.Add( face );
    SetFaceList( this, faces );
 }
 
@@ -189,9 +189,9 @@ void FontComboBox::RemoveItalicFonts()
 {
    StringList installedFaces = Font::AvailableFonts();
    SortedStringList faces = GetFaceList( this );
-   for ( StringList::const_iterator i = installedFaces.Begin(); i != installedFaces.End(); ++i )
-      if ( Font::IsItalicFont( *i ) )
-         faces.Remove( *i );
+   for ( const String& face : installedFaces )
+      if ( Font::IsItalicFont( face ) )
+         faces.Remove( face );
    SetFaceList( this, faces );
 }
 
@@ -199,12 +199,12 @@ void FontComboBox::AddWritingSystem( const String& writingSystem )
 {
    StringList installedFaces = Font::AvailableFonts();
    SortedStringList faces = GetFaceList( this );
-   for ( StringList::const_iterator i = installedFaces.Begin(); i != installedFaces.End(); ++i )
-      if ( !faces.Contains( *i ) )
+   for ( const String& face : installedFaces )
+      if ( !faces.Contains( face ) )
       {
-         StringList supportedSystems = Font::AvailableFontWritingSystems( *i );
+         StringList supportedSystems = Font::AvailableFontWritingSystems( face );
          if ( supportedSystems.Contains( writingSystem ) )
-            faces.Add( *i );
+            faces.Add( face );
       }
    SetFaceList( this, faces );
 }
@@ -213,11 +213,11 @@ void FontComboBox::RemoveWritingSystem( const String& writingSystem )
 {
    StringList installedFaces = Font::AvailableFonts();
    SortedStringList faces = GetFaceList( this );
-   for ( StringList::const_iterator i = installedFaces.Begin(); i != installedFaces.End(); ++i )
+   for ( const String& face : installedFaces )
    {
-      StringList supportedSystems = Font::AvailableFontWritingSystems( *i );
+      StringList supportedSystems = Font::AvailableFontWritingSystems( face );
       if ( supportedSystems.Contains( writingSystem ) )
-         faces.Remove( *i );
+         faces.Remove( face );
    }
    SetFaceList( this, faces );
 }
@@ -290,4 +290,4 @@ void FontComboBox::ItemHighlighted( ComboBox& sender, int index )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FontComboBox.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/FontComboBox.cpp - Released 2017-04-14T23:04:51Z

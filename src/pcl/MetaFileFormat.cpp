@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/MetaFileFormat.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/MetaFileFormat.cpp - Released 2017-04-14T23:04:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -66,7 +66,7 @@ void APIImageInfoToPCL( ImageInfo& info, const api_image_info& i )
    info.width            = i.width;
    info.height           = i.height;
    info.numberOfChannels = i.numberOfChannels;
-   info.colorSpace       = i.colorSpace;
+   info.colorSpace       = ImageInfo::color_space( i.colorSpace );
    info.supported        = i.supported;
 }
 
@@ -425,11 +425,11 @@ public:
 
    // -------------------------------------------------------------------------
 
-   static const char16_type* api_func GetImageProperties( const_file_format_handle hf )
+   static const char16_type* api_func GetImageFormatInfo( const_file_format_handle hf )
    {
       try
       {
-         String s = constInstance->ImageProperties();
+         String s = constInstance->ImageFormatInfo();
          s.EnsureUnique();
          return s.Release(); // the core will invoke the module deallocation routine
       }
@@ -601,27 +601,27 @@ public:
 
    // -------------------------------------------------------------------------
 
-   static api_bool api_func EnumerateImageProperties( file_format_handle hf,
-                                                      property_enumeration_callback cb,
-                                                      char* id, size_type* len, void* data )
+   static api_bool api_func EnumerateProperties( file_format_handle hf,
+                                                 property_enumeration_callback cb,
+                                                 char* id, size_type* len, void* data )
    {
       try
       {
          if ( len == 0 )
             return api_false;
 
-         ImagePropertyDescriptionArray properties = instance->Properties();
+         PropertyDescriptionArray properties = instance->Properties();
          size_type n = 0;
-         for ( ImagePropertyDescriptionArray::const_iterator i = properties.Begin(); i != properties.End(); ++i )
-            if ( i->id.Length() > n )
-               n = i->id.Length();
+         for ( const PropertyDescription& d : properties )
+            if ( d.id.Length() > n )
+               n = d.id.Length();
          if ( id != 0 && *len >= n )
          {
             if ( cb != 0 )
-               for ( ImagePropertyDescriptionArray::const_iterator i = properties.Begin(); i != properties.End(); ++i )
+               for ( const PropertyDescription& d : properties )
                {
-                  i->id.c_copy( id, *len+1 );
-                  if ( !(*cb)( id, uint64( i->type ), data ) )
+                  d.id.c_copy( id, *len+1 );
+                  if ( !(*cb)( id, uint64( d.type ), data ) )
                      return api_false;
                }
             return api_true;
@@ -649,7 +649,7 @@ public:
 
    // -------------------------------------------------------------------------
 
-   static api_bool api_func GetImageProperty( file_format_handle hf, const char* id, api_property_value* apiValue )
+   static api_bool api_func GetProperty( file_format_handle hf, const char* id, api_property_value* apiValue )
    {
       try
       {
@@ -660,7 +660,7 @@ public:
             return api_false;
          }
 
-         const Variant& value = instance->GetImageProperty( id );
+         const Variant& value = instance->GetProperty( id );
          if ( !value.IsValid() )
          {
             if ( apiValue != 0 )
@@ -704,6 +704,135 @@ public:
 
    // -------------------------------------------------------------------------
 
+   static api_bool api_func SetProperty( file_format_handle hf, const char* id, const api_property_value* apiValue )
+   {
+      try
+      {
+         if ( apiValue == 0 )
+            return api_false;
+         instance->SetProperty( id, VariantFromAPIPropertyValue( *apiValue ) );
+         return api_true;
+      }
+      ERROR_HANDLER
+      return api_false;
+   }
+
+   // -------------------------------------------------------------------------
+
+   static void api_func EndPropertyEmbedding( file_format_handle hf )
+   {
+      try
+      {
+         instance->EndPropertyEmbedding();
+      }
+      ERROR_HANDLER
+   }
+
+   // -------------------------------------------------------------------------
+
+   static api_bool api_func EnumerateImageProperties( file_format_handle hf,
+                                                      property_enumeration_callback cb,
+                                                      char* id, size_type* len, void* data )
+   {
+      try
+      {
+         if ( len == 0 )
+            return api_false;
+
+         PropertyDescriptionArray properties = instance->ImageProperties();
+         size_type n = 0;
+         for ( const PropertyDescription& d : properties )
+            if ( d.id.Length() > n )
+               n = d.id.Length();
+         if ( id != 0 && *len >= n )
+         {
+            if ( cb != 0 )
+               for ( const PropertyDescription& d : properties )
+               {
+                  d.id.c_copy( id, *len+1 );
+                  if ( !(*cb)( id, uint64( d.type ), data ) )
+                     return api_false;
+               }
+            return api_true;
+         }
+
+         *len = n;
+         return api_false;
+      }
+      ERROR_HANDLER
+      return api_false;
+   }
+
+   // -------------------------------------------------------------------------
+
+   static api_bool api_func BeginImagePropertyExtraction( file_format_handle hf )
+   {
+      try
+      {
+         instance->BeginImagePropertyExtraction();
+         return api_true;
+      }
+      ERROR_HANDLER
+      return api_false;
+   }
+
+   // -------------------------------------------------------------------------
+
+   static api_bool api_func GetImageProperty( file_format_handle hf, const char* id, api_property_value* apiValue )
+   {
+      try
+      {
+         if ( id == 0 )
+         {
+            if ( apiValue != 0 )
+               apiValue->type = VTYPE_INVALID;
+            return api_false;
+         }
+
+         const Variant& value = instance->GetImageProperty( id );
+         if ( !value.IsValid() )
+         {
+            if ( apiValue != 0 )
+               apiValue->type = VTYPE_INVALID;
+            return api_false;
+         }
+
+         if ( apiValue == 0 ) // just verifying property existence?
+            return api_true;
+
+         APIPropertyValueFromVariant( *apiValue, value );
+         return api_true;
+      }
+      ERROR_HANDLER
+      return api_false;
+   }
+
+   // -------------------------------------------------------------------------
+
+   static void api_func EndImagePropertyExtraction( file_format_handle hf )
+   {
+      try
+      {
+         instance->EndImagePropertyExtraction();
+      }
+      ERROR_HANDLER
+   }
+
+   // -------------------------------------------------------------------------
+
+   static api_bool api_func BeginImagePropertyEmbedding( file_format_handle hf )
+   {
+      try
+      {
+         instance->BeginImagePropertyEmbedding();
+         return api_true;
+      }
+      ERROR_HANDLER
+      return api_false;
+   }
+
+   // -------------------------------------------------------------------------
+
    static api_bool api_func SetImageProperty( file_format_handle hf, const char* id, const api_property_value* apiValue )
    {
       try
@@ -719,11 +848,11 @@ public:
 
    // -------------------------------------------------------------------------
 
-   static void api_func EndPropertyEmbedding( file_format_handle hf )
+   static void api_func EndImagePropertyEmbedding( file_format_handle hf )
    {
       try
       {
-         instance->EndPropertyEmbedding();
+         instance->EndImagePropertyEmbedding();
       }
       ERROR_HANDLER
    }
@@ -1083,7 +1212,7 @@ public:
 
    // -------------------------------------------------------------------------
 
-   static api_bool api_func ReadPixels( file_format_handle hf, void* destination,
+   static api_bool api_func ReadSamples( file_format_handle hf, void* destination,
       uint32 startRow, uint32 numRows, uint32 channel, uint32 bitsPerSample, api_bool isFloat, api_bool isComplex )
    {
       try
@@ -1095,10 +1224,10 @@ public:
             switch ( bitsPerSample )
             {
             case 32 :
-               instance->Read( (float*)destination, startRow, numRows, channel );
+               instance->ReadSamples( (float*)destination, startRow, numRows, channel );
                break;
             case 64 :
-               instance->Read( (double*)destination, startRow, numRows, channel );
+               instance->ReadSamples( (double*)destination, startRow, numRows, channel );
                break;
             default :
                return api_false;
@@ -1107,13 +1236,13 @@ public:
             switch ( bitsPerSample )
             {
             case  8 :
-               instance->Read( (uint8*)destination, startRow, numRows, channel );
+               instance->ReadSamples( (uint8*)destination, startRow, numRows, channel );
                break;
             case 16 :
-               instance->Read( (uint16*)destination, startRow, numRows, channel );
+               instance->ReadSamples( (uint16*)destination, startRow, numRows, channel );
                break;
             case 32 :
-               instance->Read( (uint32*)destination, startRow, numRows, channel );
+               instance->ReadSamples( (uint32*)destination, startRow, numRows, channel );
                break;
             default :
                return api_false;
@@ -1213,6 +1342,19 @@ public:
          ImageInfo i;
          APIImageInfoToPCL( i, *info );
          instance->CreateImage( i );
+         return api_true;
+      }
+      ERROR_HANDLER
+      return api_false;
+   }
+
+   // -------------------------------------------------------------------------
+
+   static api_bool api_func CloseImage( file_format_handle hf )
+   {
+      try
+      {
+         instance->CloseImage();
          return api_true;
       }
       ERROR_HANDLER
@@ -1413,7 +1555,7 @@ public:
 
    // -------------------------------------------------------------------------
 
-   static api_bool api_func WritePixels( file_format_handle hf, const void* source,
+   static api_bool api_func WriteSamples( file_format_handle hf, const void* source,
       uint32 startRow, uint32 numRows, uint32 channel, uint32 bitsPerSample, api_bool isFloat, api_bool isComplex )
    {
       try
@@ -1425,10 +1567,10 @@ public:
             switch ( bitsPerSample )
             {
             case 32 :
-               instance->Write( (const float*)source, startRow, numRows, channel );
+               instance->WriteSamples( (const float*)source, startRow, numRows, channel );
                break;
             case 64 :
-               instance->Write( (const double*)source, startRow, numRows, channel );
+               instance->WriteSamples( (const double*)source, startRow, numRows, channel );
                break;
             default :
                return api_false;
@@ -1437,13 +1579,13 @@ public:
             switch ( bitsPerSample )
             {
             case  8 :
-               instance->Write( (const uint8*)source, startRow, numRows, channel );
+               instance->WriteSamples( (const uint8*)source, startRow, numRows, channel );
                break;
             case 16 :
-               instance->Write( (const uint16*)source, startRow, numRows, channel );
+               instance->WriteSamples( (const uint16*)source, startRow, numRows, channel );
                break;
             case 32 :
-               instance->Write( (const uint32*)source, startRow, numRows, channel );
+               instance->WriteSamples( (const uint32*)source, startRow, numRows, channel );
                break;
             default :
                return api_false;
@@ -1508,14 +1650,14 @@ void MetaFileFormat::PerformAPIDefinitions() const
    {
       Array<const char16_type*> cext;
       StringList extList = FileExtensions();
-      for ( StringList::const_iterator i = extList.Begin(); i != extList.End(); ++i )
-         cext << i->c_str();
+      for ( const String& ext : extList )
+         cext << ext.c_str();
       cext << nullptr;
 
       Array<const char*> cmime;
       IsoStringList mimeList = MimeTypes();
-      for ( IsoStringList::const_iterator i = mimeList.Begin(); i != mimeList.End(); ++i )
-         cmime << i->c_str();
+      for ( const IsoString& mimeType : mimeList )
+         cmime << mimeType.c_str();
       cmime << nullptr;
 
       IsoString name = Name();
@@ -1577,6 +1719,7 @@ void MetaFileFormat::PerformAPIDefinitions() const
    caps.canStoreICCProfiles = CanStoreICCProfiles();
    caps.canStoreThumbnails = CanStoreThumbnails();
    caps.canStoreProperties = CanStoreProperties();
+   caps.canStoreImageProperties = CanStoreImageProperties();
    caps.canStoreRGBWS = CanStoreRGBWS();
    caps.canStoreDisplayFunctions = CanStoreDisplayFunctions();
    caps.canStoreColorFilterArrays = CanStoreColorFilterArrays();
@@ -1606,7 +1749,7 @@ void MetaFileFormat::PerformAPIDefinitions() const
    (*API->FileFormatDefinition->SetFileFormatGetSelectedImageIndexRoutine)( FileFormatDispatcher::SelectedImageIndex );
    (*API->FileFormatDefinition->SetFileFormatSetFormatSpecificDataRoutine)( FileFormatDispatcher::SetFormatSpecificData );
    (*API->FileFormatDefinition->SetFileFormatGetFormatSpecificDataRoutine)( FileFormatDispatcher::GetFormatSpecificData );
-   (*API->FileFormatDefinition->SetFileFormatGetImagePropertiesRoutine)( FileFormatDispatcher::GetImageProperties );
+   (*API->FileFormatDefinition->SetFileFormatGetImageFormatInfoRoutine)( FileFormatDispatcher::GetImageFormatInfo );
    (*API->FileFormatDefinition->SetFileFormatBeginKeywordExtractionRoutine)( FileFormatDispatcher::BeginKeywordExtraction );
    (*API->FileFormatDefinition->SetFileFormatGetKeywordCountRoutine)( FileFormatDispatcher::GetKeywordCount );
    (*API->FileFormatDefinition->SetFileFormatGetNextKeywordRoutine)( FileFormatDispatcher::GetNextKeyword );
@@ -1617,13 +1760,20 @@ void MetaFileFormat::PerformAPIDefinitions() const
    (*API->FileFormatDefinition->SetFileFormatBeginThumbnailExtractionRoutine)( FileFormatDispatcher::BeginThumbnailExtraction );
    (*API->FileFormatDefinition->SetFileFormatGetThumbnailRoutine)( FileFormatDispatcher::GetThumbnail );
    (*API->FileFormatDefinition->SetFileFormatEndThumbnailExtractionRoutine)( FileFormatDispatcher::EndThumbnailExtraction );
-   (*API->FileFormatDefinition->SetFileFormatEnumerateImagePropertiesRoutine)( FileFormatDispatcher::EnumerateImageProperties );
+   (*API->FileFormatDefinition->SetFileFormatEnumeratePropertiesRoutine)( FileFormatDispatcher::EnumerateProperties );
    (*API->FileFormatDefinition->SetFileFormatBeginPropertyExtractionRoutine)( FileFormatDispatcher::BeginPropertyExtraction );
-   (*API->FileFormatDefinition->SetFileFormatGetImagePropertyRoutine)( FileFormatDispatcher::GetImageProperty );
+   (*API->FileFormatDefinition->SetFileFormatGetPropertyRoutine)( FileFormatDispatcher::GetProperty );
    (*API->FileFormatDefinition->SetFileFormatEndPropertyExtractionRoutine)( FileFormatDispatcher::EndPropertyExtraction );
    (*API->FileFormatDefinition->SetFileFormatBeginPropertyEmbeddingRoutine)( FileFormatDispatcher::BeginPropertyEmbedding );
-   (*API->FileFormatDefinition->SetFileFormatSetImagePropertyRoutine)( FileFormatDispatcher::SetImageProperty );
+   (*API->FileFormatDefinition->SetFileFormatSetPropertyRoutine)( FileFormatDispatcher::SetProperty );
    (*API->FileFormatDefinition->SetFileFormatEndPropertyEmbeddingRoutine)( FileFormatDispatcher::EndPropertyEmbedding );
+   (*API->FileFormatDefinition->SetFileFormatEnumerateImagePropertiesRoutine)( FileFormatDispatcher::EnumerateImageProperties );
+   (*API->FileFormatDefinition->SetFileFormatBeginImagePropertyExtractionRoutine)( FileFormatDispatcher::BeginImagePropertyExtraction );
+   (*API->FileFormatDefinition->SetFileFormatGetImagePropertyRoutine)( FileFormatDispatcher::GetImageProperty );
+   (*API->FileFormatDefinition->SetFileFormatEndImagePropertyExtractionRoutine)( FileFormatDispatcher::EndImagePropertyExtraction );
+   (*API->FileFormatDefinition->SetFileFormatBeginImagePropertyEmbeddingRoutine)( FileFormatDispatcher::BeginImagePropertyEmbedding );
+   (*API->FileFormatDefinition->SetFileFormatSetImagePropertyRoutine)( FileFormatDispatcher::SetImageProperty );
+   (*API->FileFormatDefinition->SetFileFormatEndImagePropertyEmbeddingRoutine)( FileFormatDispatcher::EndImagePropertyEmbedding );
    (*API->FileFormatDefinition->SetFileFormatBeginRGBWSExtractionRoutine)( FileFormatDispatcher::BeginRGBWSExtraction );
    (*API->FileFormatDefinition->SetFileFormatGetImageRGBWSRoutine)( FileFormatDispatcher::GetImageRGBWS );
    (*API->FileFormatDefinition->SetFileFormatEndRGBWSExtractionRoutine)( FileFormatDispatcher::EndRGBWSExtraction );
@@ -1643,12 +1793,13 @@ void MetaFileFormat::PerformAPIDefinitions() const
    (*API->FileFormatDefinition->SetFileFormatSetImageColorFilterArrayRoutine)( FileFormatDispatcher::SetImageColorFilterArray );
    (*API->FileFormatDefinition->SetFileFormatEndColorFilterArrayEmbeddingRoutine)( FileFormatDispatcher::EndColorFilterArrayEmbedding );
    (*API->FileFormatDefinition->SetFileFormatReadImageRoutine)( FileFormatDispatcher::ReadImage );
-   (*API->FileFormatDefinition->SetFileFormatReadPixelsRoutine)( FileFormatDispatcher::ReadPixels );
+   (*API->FileFormatDefinition->SetFileFormatReadSamplesRoutine)( FileFormatDispatcher::ReadSamples );
    (*API->FileFormatDefinition->SetFileFormatQueryOptionsRoutine)( FileFormatDispatcher::QueryImageFileOptions );
    (*API->FileFormatDefinition->SetFileFormatCreateRoutine)( FileFormatDispatcher::Create );
    (*API->FileFormatDefinition->SetFileFormatSetImageIdRoutine)( FileFormatDispatcher::SetImageId );
    (*API->FileFormatDefinition->SetFileFormatSetImageOptionsRoutine)( FileFormatDispatcher::SetImageOptions );
    (*API->FileFormatDefinition->SetFileFormatCreateImageRoutine)( FileFormatDispatcher::CreateImage );
+   (*API->FileFormatDefinition->SetFileFormatCloseImageRoutine)( FileFormatDispatcher::CloseImage );
    (*API->FileFormatDefinition->SetFileFormatBeginKeywordEmbeddingRoutine)( FileFormatDispatcher::BeginKeywordEmbedding );
    (*API->FileFormatDefinition->SetFileFormatAddKeywordRoutine)( FileFormatDispatcher::AddKeyword );
    (*API->FileFormatDefinition->SetFileFormatEndKeywordEmbeddingRoutine)( FileFormatDispatcher::EndKeywordEmbedding );
@@ -1659,7 +1810,7 @@ void MetaFileFormat::PerformAPIDefinitions() const
    (*API->FileFormatDefinition->SetFileFormatSetThumbnailRoutine)( FileFormatDispatcher::SetThumbnail );
    (*API->FileFormatDefinition->SetFileFormatEndThumbnailEmbeddingRoutine)( FileFormatDispatcher::EndThumbnailEmbedding );
    (*API->FileFormatDefinition->SetFileFormatWriteImageRoutine)( FileFormatDispatcher::WriteImage );
-   (*API->FileFormatDefinition->SetFileFormatWritePixelsRoutine)( FileFormatDispatcher::WritePixels );
+   (*API->FileFormatDefinition->SetFileFormatWriteSamplesRoutine)( FileFormatDispatcher::WriteSamples );
    (*API->FileFormatDefinition->SetFileFormatQueryInexactReadRoutine)( FileFormatDispatcher::QueryInexactRead );
    (*API->FileFormatDefinition->SetFileFormatQueryLossyWriteRoutine)( FileFormatDispatcher::QueryLossyWrite );
    (*API->FileFormatDefinition->SetFileFormatQueryFormatStatusRoutine)( FileFormatDispatcher::QueryFormatStatus );
@@ -1674,4 +1825,4 @@ void MetaFileFormat::PerformAPIDefinitions() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/MetaFileFormat.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/MetaFileFormat.cpp - Released 2017-04-14T23:04:51Z

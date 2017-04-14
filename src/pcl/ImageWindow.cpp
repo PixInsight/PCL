@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/ImageWindow.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/ImageWindow.cpp - Released 2017-04-14T23:04:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -100,10 +100,11 @@ ImageWindow& ImageWindow::Null()
 
 // ----------------------------------------------------------------------------
 
-Array<ImageWindow> ImageWindow::Open( const String& url, const IsoString& id, bool asACopy, bool allowMessages )
+Array<ImageWindow> ImageWindow::Open( const String& url,
+               const IsoString& id, const IsoString& formatHints, bool asACopy, bool allowMessages )
 {
    Array<ImageWindow> a;
-   if ( (*API->ImageWindow->LoadImageWindows)( url.c_str(), id.c_str(),
+   if ( (*API->ImageWindow->LoadImageWindows)( url.c_str(), id.c_str(), formatHints.c_str(),
                                  api_bool( asACopy ), api_bool( allowMessages ),
                                  InternalWindowEnumerator::Callback, &a ) == api_false )
       throw APIFunctionError( "LoadImageWindows" );
@@ -509,10 +510,8 @@ bool ImageWindow::GetKeywords( FITSKeywordArray& keywords ) const
 void ImageWindow::SetKeywords( const FITSKeywordArray& keywords )
 {
    (*API->ImageWindow->ResetImageWindowKeywords)( handle );
-
-   for ( FITSKeywordArray::const_iterator i = keywords.Begin(); i != keywords.End(); ++i )
-      (*API->ImageWindow->AddImageWindowKeyword)( handle,
-                     i->name.c_str(), i->value.c_str(), i->comment.c_str() );
+   for ( const FITSHeaderKeyword& k : keywords )
+      (*API->ImageWindow->AddImageWindowKeyword)( handle, k.name.c_str(), k.value.c_str(), k.comment.c_str() );
 }
 
 // ----------------------------------------------------------------------------
@@ -607,8 +606,8 @@ StringList ImageWindow::SwapDirectories()
 bool ImageWindow::SetSwapDirectories( const StringList& directories )
 {
    Array<const char16_type*> strings;
-   for ( StringList::const_iterator i = directories.Begin(); i != directories.End(); ++i )
-      strings.Add( i->c_str() );
+   for ( const String& dir : directories )
+      strings.Add( dir.c_str() );
    return (*API->ImageWindow->SetSwapDirectories)( strings.Begin(), int32( strings.Length() ) ) != api_false;
 }
 
@@ -1163,4 +1162,4 @@ Array<ImageWindow> ImageWindow::AllWindows( bool includeIconicWindows )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/ImageWindow.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/ImageWindow.cpp - Released 2017-04-14T23:04:51Z

@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/GroupBox.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/GroupBox.cpp - Released 2017-04-14T23:04:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -59,13 +59,8 @@ namespace pcl
 
 // ----------------------------------------------------------------------------
 
-#ifdef _MSC_VER
-#  pragma warning( disable: 4355 ) // 'this' : used in base member initializer list
-#endif
-
 GroupBox::GroupBox( const String& title, Control& parent ) :
-   Control( (*API->GroupBox->CreateGroupBox)(
-            ModuleHandle(), this, title.c_str(), parent.handle, 0/*flags*/ ) )
+   Control( (*API->GroupBox->CreateGroupBox)( ModuleHandle(), this, title.c_str(), parent.handle, 0/*flags*/ ) )
 {
    if ( IsNull() )
       throw APIFunctionError( "CreateGroupBox" );
@@ -156,7 +151,7 @@ void GroupBox::OnCheck( check_event_handler f, Control& receiver )
 {
    INIT_EVENT_HANDLERS();
    if ( (*API->GroupBox->SetGroupBoxCheckEventRoutine)( handle, &receiver,
-                  (f != nullptr) ? GroupBoxEventDispatcher::Check : 0 ) == api_false )
+                  (f != nullptr) ? GroupBoxEventDispatcher::Check : nullptr ) == api_false )
       throw APIFunctionError( "SetGroupBoxCheckEventRoutine" );
    m_handlers->onCheck = f;
 }
@@ -168,4 +163,4 @@ void GroupBox::OnCheck( check_event_handler f, Control& receiver )
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/GroupBox.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/GroupBox.cpp - Released 2017-04-14T23:04:51Z

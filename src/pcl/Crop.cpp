@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/Crop.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/Crop.cpp - Released 2017-04-14T23:04:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -64,8 +64,8 @@ void Crop::GetNewSizes( int& width, int& height ) const
    {
    default:
    case CropMode::RelativeMargins:
-      width = Max( 0, RoundI( width*(1 + m_margins.Left() + m_margins.Right()) ) );
-      height = Max( 0, RoundI( height*(1 + m_margins.Top() + m_margins.Bottom()) ) );
+      width = Max( 0, RoundInt( width*(1 + m_margins.Left() + m_margins.Right()) ) );
+      height = Max( 0, RoundInt( height*(1 + m_margins.Top() + m_margins.Bottom()) ) );
       break;
 
    case CropMode::AbsolutePixels:
@@ -98,8 +98,8 @@ void Crop::GetNewSizes( int& width, int& height ) const
             }
          }
 
-         width = Max( 0, RoundI( width + dx ) );
-         height = Max( 0, RoundI( height + dy ) );
+         width = Max( 0, RoundInt( width + dx ) );
+         height = Max( 0, RoundInt( height + dy ) );
       }
       break;
    }
@@ -124,10 +124,10 @@ public:
          {
          default:
          case CropMode::RelativeMargins:
-            left   = RoundI( margins.Left()   * w0 );
-            top    = RoundI( margins.Top()    * h0 );
-            right  = RoundI( margins.Right()  * w0 );
-            bottom = RoundI( margins.Bottom() * h0 );
+            left   = RoundInt( margins.Left()   * w0 );
+            top    = RoundInt( margins.Top()    * h0 );
+            right  = RoundInt( margins.Right()  * w0 );
+            bottom = RoundInt( margins.Bottom() * h0 );
             break;
 
          case CropMode::AbsolutePixels:
@@ -168,10 +168,10 @@ public:
                   }
                }
 
-               left   = RoundI( dl );
-               top    = RoundI( dt );
-               right  = RoundI( dr );
-               bottom = RoundI( db );
+               left   = RoundInt( dl );
+               top    = RoundInt( dt );
+               right  = RoundInt( dr );
+               bottom = RoundInt( db );
             }
             break;
          }
@@ -237,4 +237,4 @@ void Crop::Apply( pcl::UInt32Image& image ) const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/Crop.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/Crop.cpp - Released 2017-04-14T23:04:51Z

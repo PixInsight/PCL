@@ -2,14 +2,14 @@
 //    / __ \ / ____// /
 //   / /_/ // /    / /
 //  / ____// /___ / /___   PixInsight Class Library
-// /_/     \____//_____/   PCL 02.01.01.0784
+// /_/     \____//_____/   PCL 02.01.03.0819
 // ----------------------------------------------------------------------------
-// pcl/FileFormatInstance.cpp - Released 2016/02/21 20:22:19 UTC
+// pcl/FileFormatInstance.cpp - Released 2017-04-14T23:04:51Z
 // ----------------------------------------------------------------------------
 // This file is part of the PixInsight Class Library (PCL).
 // PCL is a multiplatform C++ framework for development of PixInsight modules.
 //
-// Copyright (c) 2003-2016 Pleiades Astrophoto S.L. All Rights Reserved.
+// Copyright (c) 2003-2017 Pleiades Astrophoto S.L. All Rights Reserved.
 //
 // Redistribution and use in both source and binary forms, with or without
 // modification, is permitted provided that the following conditions are met:
@@ -248,17 +248,17 @@ const void* FileFormatInstance::FormatSpecificData() const
 
 // ----------------------------------------------------------------------------
 
-String FileFormatInstance::ImageProperties() const
+String FileFormatInstance::ImageFormatInfo() const
 {
    size_type len = 0;
-   (*API->FileFormat->GetImageProperties)( handle, 0, &len );
+   (*API->FileFormat->GetImageFormatInfo)( handle, 0, &len );
 
    String properties;
    if ( len > 0 )
    {
       properties.SetLength( len );
-      if ( (*API->FileFormat->GetImageProperties)( handle, properties.Begin(), &len ) == api_false )
-         throw APIFunctionError( "GetImageProperties" );
+      if ( (*API->FileFormat->GetImageFormatInfo)( handle, properties.Begin(), &len ) == api_false )
+         throw APIFunctionError( "GetImageFormatInfo" );
       properties.ResizeToNullTerminated();
    }
    return properties;
@@ -266,46 +266,7 @@ String FileFormatInstance::ImageProperties() const
 
 // ----------------------------------------------------------------------------
 
-bool FileFormatInstance::Extract( FITSKeywordArray& keywords )
-{
-   try
-   {
-      keywords.Clear();
-
-      if ( (*API->FileFormat->BeginKeywordExtraction)( handle ) == api_false )
-         return false;
-
-      for ( size_type i = 0, count = (*API->FileFormat->GetKeywordCount)( handle ); i < count; ++i )
-      {
-         IsoString name, value, comment;
-         name.Reserve( 96 );
-         value.Reserve( 96 );
-         comment.Reserve( 96 );
-
-         if ( (*API->FileFormat->GetNextKeyword)( handle,
-                  name.Begin(), value.Begin(), comment.Begin(), 81 ) == api_false )
-            throw APIFunctionError( "GetNextKeyword" );
-
-         name.ResizeToNullTerminated();
-         value.ResizeToNullTerminated();
-         comment.ResizeToNullTerminated();
-
-         keywords.Add( FITSHeaderKeyword( name, value, comment ) );
-      }
-
-      (*API->FileFormat->EndKeywordExtraction)( handle );
-      return true;
-   }
-   catch ( ... )
-   {
-      (*API->FileFormat->EndKeywordExtraction)( handle );
-      throw;
-   }
-}
-
-// ----------------------------------------------------------------------------
-
-bool FileFormatInstance::Extract( ICCProfile& icc )
+bool FileFormatInstance::ReadICCProfile( ICCProfile& icc )
 {
    try
    {
@@ -330,130 +291,7 @@ bool FileFormatInstance::Extract( ICCProfile& icc )
 
 // ----------------------------------------------------------------------------
 
-bool FileFormatInstance::Extract( pcl::UInt8Image& thumbnail )
-{
-   try
-   {
-      thumbnail.FreeData();
-
-      if ( (*API->FileFormat->BeginThumbnailExtraction)( handle ) == api_false )
-         return false;
-
-      if ( thumbnail.IsShared() )
-      {
-         (*API->FileFormat->GetThumbnail)( handle, thumbnail.Allocator().Handle() );
-         thumbnail.Synchronize();
-      }
-      else
-      {
-         UInt8Image img( (void*)0, 0, 0 );
-         (*API->FileFormat->GetThumbnail)( handle, img.Allocator().Handle() );
-         img.Synchronize();
-         thumbnail.Assign( img );
-      }
-
-      (*API->FileFormat->EndThumbnailExtraction)( handle );
-      return true;
-   }
-   catch ( ... )
-   {
-      (*API->FileFormat->EndThumbnailExtraction)( handle );
-      throw;
-   }
-}
-
-// ----------------------------------------------------------------------------
-
-static api_bool APIPropertyEnumerationCallback( const char* id, uint64 type, void* data )
-{
-   reinterpret_cast<ImagePropertyDescriptionArray*>( data )->Append(
-         ImagePropertyDescription( id, VariantTypeFromAPIPropertyType( type ) ) );
-   return api_true;
-}
-
-ImagePropertyDescriptionArray FileFormatInstance::Properties()
-{
-   ImagePropertyDescriptionArray properties;
-   IsoString id;
-   size_type len = 0;
-   (*API->FileFormat->EnumerateImageProperties)( handle, 0, 0, &len, 0 ); // 1st call to get max identifier length
-   if ( len > 0 )
-   {
-      id.Reserve( len );
-      if ( (*API->FileFormat->EnumerateImageProperties)( handle, APIPropertyEnumerationCallback,
-                                                         id.Begin(), &len, &properties ) == api_false )
-         throw APIFunctionError( "EnumerateImageProperties" );
-   }
-   return properties;
-}
-
-// ----------------------------------------------------------------------------
-
-Variant FileFormatInstance::ReadProperty( const IsoString& property )
-{
-   try
-   {
-      if ( (*API->FileFormat->BeginPropertyExtraction)( handle ) == api_false )
-         return Variant();
-
-      api_property_value apiValue;
-      if ( (*API->FileFormat->GetImageProperty)( handle, property.c_str(), &apiValue ) == api_false )
-      {
-         apiValue.data.blockValue = nullptr;
-         apiValue.type = VTYPE_INVALID;
-      }
-
-      (*API->FileFormat->EndPropertyExtraction)( handle );
-
-      return VariantFromAPIPropertyValue( apiValue );
-   }
-   catch ( ... )
-   {
-      (*API->FileFormat->EndPropertyExtraction)( handle );
-      throw;
-   }
-}
-
-// ----------------------------------------------------------------------------
-
-bool FileFormatInstance::WriteProperty( const IsoString& property, const Variant& value )
-{
-   try
-   {
-      if ( (*API->FileFormat->BeginPropertyEmbedding)( handle ) == api_false )
-         return false;
-
-      bool ok = true;
-
-      if ( value.IsValid() )
-      {
-         api_property_value apiValue;
-         APIPropertyValueFromVariant( apiValue, value );
-         api_property_value safeCopy = apiValue;
-         ok = (*API->FileFormat->SetImageProperty)( handle, property.c_str(), &safeCopy ) != api_false;
-
-         if ( safeCopy.data.blockValue != apiValue.data.blockValue ||
-              safeCopy.dimX != apiValue.dimX || safeCopy.dimY != apiValue.dimY ||
-              safeCopy.dimZ != apiValue.dimZ || safeCopy.dimT != apiValue.dimT || safeCopy.type != apiValue.type )
-         {
-            APIHackingAttempt( "WriteProperty" );
-         }
-      }
-
-      (*API->FileFormat->EndPropertyEmbedding)( handle );
-
-      return ok;
-   }
-   catch ( ... )
-   {
-      (*API->FileFormat->EndPropertyEmbedding)( handle );
-      throw;
-   }
-}
-
-// ----------------------------------------------------------------------------
-
-bool FileFormatInstance::ReadRGBWS( RGBColorSystem& rgbws )
+bool FileFormatInstance::ReadRGBWorkingSpace( RGBColorSystem& rgbws )
 {
    try
    {
@@ -484,43 +322,6 @@ bool FileFormatInstance::ReadRGBWS( RGBColorSystem& rgbws )
 
 // ----------------------------------------------------------------------------
 
-bool FileFormatInstance::WriteRGBWS( const RGBColorSystem& rgbws )
-{
-   try
-   {
-      if ( (*API->FileFormat->BeginRGBWSEmbedding)( handle ) == api_false )
-         return false;
-
-      float gamma = rgbws.Gamma();
-      api_bool issRGB = rgbws.IsSRGB();
-      FVector x = rgbws.ChromaticityXCoordinates();
-      FVector y = rgbws.ChromaticityYCoordinates();
-      FVector Y = rgbws.LuminanceCoefficients();
-
-      bool ok = (*API->FileFormat->SetImageRGBWS)( handle, gamma, issRGB, x.Begin(), y.Begin(), Y.Begin() ) != api_false;
-
-      if ( rgbws.Gamma() != gamma ||
-           rgbws.IsSRGB() != (issRGB != api_false) ||
-           rgbws.ChromaticityXCoordinates() != x ||
-           rgbws.ChromaticityYCoordinates() != y ||
-           rgbws.LuminanceCoefficients() != Y )
-      {
-         APIHackingAttempt( "WriteRGBWS" );
-      }
-
-      (*API->FileFormat->EndRGBWSEmbedding)( handle );
-
-      return ok;
-   }
-   catch ( ... )
-   {
-      (*API->FileFormat->EndRGBWSEmbedding)( handle );
-      throw;
-   }
-}
-
-// ----------------------------------------------------------------------------
-
 bool  FileFormatInstance::ReadDisplayFunction( DisplayFunction& df )
 {
    try
@@ -543,35 +344,6 @@ bool  FileFormatInstance::ReadDisplayFunction( DisplayFunction& df )
    catch ( ... )
    {
       (*API->FileFormat->EndDisplayFunctionExtraction)( handle );
-      throw;
-   }
-}
-
-// ----------------------------------------------------------------------------
-
-bool FileFormatInstance::WriteDisplayFunction( const DisplayFunction& df )
-{
-   try
-   {
-      if ( (*API->FileFormat->BeginDisplayFunctionEmbedding)( handle ) == api_false )
-         return false;
-
-      DVector m, s, h, l, r;
-      df.GetDisplayFunctionParameters( m, s, h, l, r );
-
-      bool ok = (*API->FileFormat->SetImageDisplayFunction)( handle, m.Begin(), s.Begin(), h.Begin(), l.Begin(), r.Begin() ) != api_false;
-
-      DVector m1, s1, h1, l1, r1;
-      df.GetDisplayFunctionParameters( m1, s1, h1, l1, r1 );
-      if ( m1 != m || s1 != s || h1 != h || l1 != l || r1 != r )
-         APIHackingAttempt( "WriteDisplayFunction" );
-
-      (*API->FileFormat->EndDisplayFunctionEmbedding)( handle );
-      return ok;
-   }
-   catch ( ... )
-   {
-      (*API->FileFormat->EndDisplayFunctionEmbedding)( handle );
       throw;
    }
 }
@@ -621,30 +393,172 @@ bool FileFormatInstance::ReadColorFilterArray( ColorFilterArray& cfa )
 
 // ----------------------------------------------------------------------------
 
-bool FileFormatInstance::WriteColorFilterArray( const ColorFilterArray& cfa )
+bool FileFormatInstance::ReadThumbnail( pcl::UInt8Image& thumbnail )
 {
    try
    {
-      if ( (*API->FileFormat->BeginColorFilterArrayEmbedding)( handle ) == api_false )
+      thumbnail.FreeData();
+
+      if ( (*API->FileFormat->BeginThumbnailExtraction)( handle ) == api_false )
          return false;
 
-      IsoString pattern = cfa.Pattern();
-      pattern.EnsureUnique();
-      String name = cfa.Name();
-      name.EnsureUnique();
+      if ( thumbnail.IsShared() )
+      {
+         (*API->FileFormat->GetThumbnail)( handle, thumbnail.Allocator().Handle() );
+         thumbnail.Synchronize();
+      }
+      else
+      {
+         UInt8Image img( (void*)0, 0, 0 );
+         (*API->FileFormat->GetThumbnail)( handle, img.Allocator().Handle() );
+         img.Synchronize();
+         thumbnail.Assign( img );
+      }
 
-      bool ok = (*API->FileFormat->SetImageColorFilterArray)( handle,
-                           pattern.c_str(), cfa.Width(), cfa.Height(), name.c_str() ) != api_false;
-
-      if ( cfa.Pattern() != pattern || cfa.Name() != name )
-         APIHackingAttempt( "WriteColorFilterArray" );
-
-      (*API->FileFormat->EndColorFilterArrayEmbedding)( handle );
-      return ok;
+      (*API->FileFormat->EndThumbnailExtraction)( handle );
+      return true;
    }
    catch ( ... )
    {
-      (*API->FileFormat->EndColorFilterArrayEmbedding)( handle );
+      (*API->FileFormat->EndThumbnailExtraction)( handle );
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+bool FileFormatInstance::ReadFITSKeywords( FITSKeywordArray& keywords )
+{
+   try
+   {
+      keywords.Clear();
+
+      if ( (*API->FileFormat->BeginKeywordExtraction)( handle ) == api_false )
+         return false;
+
+      for ( size_type i = 0, count = (*API->FileFormat->GetKeywordCount)( handle ); i < count; ++i )
+      {
+         IsoString name, value, comment;
+         name.Reserve( 96 );
+         value.Reserve( 96 );
+         comment.Reserve( 96 );
+
+         if ( (*API->FileFormat->GetNextKeyword)( handle,
+                  name.Begin(), value.Begin(), comment.Begin(), 81 ) == api_false )
+            throw APIFunctionError( "GetNextKeyword" );
+
+         name.ResizeToNullTerminated();
+         value.ResizeToNullTerminated();
+         comment.ResizeToNullTerminated();
+
+         keywords.Add( FITSHeaderKeyword( name, value, comment ) );
+      }
+
+      (*API->FileFormat->EndKeywordExtraction)( handle );
+      return true;
+   }
+   catch ( ... )
+   {
+      (*API->FileFormat->EndKeywordExtraction)( handle );
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+static api_bool APIPropertyEnumerationCallback( const char* id, uint64 type, void* data )
+{
+   reinterpret_cast<PropertyDescriptionArray*>( data )->Append(
+         PropertyDescription( id, VariantTypeFromAPIPropertyType( type ) ) );
+   return api_true;
+}
+
+// ----------------------------------------------------------------------------
+
+PropertyDescriptionArray FileFormatInstance::Properties()
+{
+   PropertyDescriptionArray properties;
+   IsoString id;
+   size_type len = 0;
+   (*API->FileFormat->EnumerateProperties)( handle, 0, 0, &len, 0 ); // 1st call to get max identifier length
+   if ( len > 0 )
+   {
+      id.Reserve( len );
+      if ( (*API->FileFormat->EnumerateProperties)( handle, APIPropertyEnumerationCallback,
+                                                    id.Begin(), &len, &properties ) == api_false )
+         throw APIFunctionError( "EnumerateProperties" );
+   }
+   return properties;
+}
+
+// ----------------------------------------------------------------------------
+
+Variant FileFormatInstance::ReadProperty( const IsoString& property )
+{
+   try
+   {
+      if ( (*API->FileFormat->BeginPropertyExtraction)( handle ) == api_false )
+         return Variant();
+
+      api_property_value apiValue;
+      if ( (*API->FileFormat->GetProperty)( handle, property.c_str(), &apiValue ) == api_false )
+      {
+         apiValue.data.blockValue = nullptr;
+         apiValue.type = VTYPE_INVALID;
+      }
+
+      (*API->FileFormat->EndPropertyExtraction)( handle );
+
+      return VariantFromAPIPropertyValue( apiValue );
+   }
+   catch ( ... )
+   {
+      (*API->FileFormat->EndPropertyExtraction)( handle );
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+PropertyDescriptionArray FileFormatInstance::ImageProperties()
+{
+   PropertyDescriptionArray properties;
+   IsoString id;
+   size_type len = 0;
+   (*API->FileFormat->EnumerateProperties)( handle, 0, 0, &len, 0 ); // 1st call to get max identifier length
+   if ( len > 0 )
+   {
+      id.Reserve( len );
+      if ( (*API->FileFormat->EnumerateImageProperties)( handle, APIPropertyEnumerationCallback,
+                                                         id.Begin(), &len, &properties ) == api_false )
+         throw APIFunctionError( "EnumerateImageProperties" );
+   }
+   return properties;
+}
+
+// ----------------------------------------------------------------------------
+
+Variant FileFormatInstance::ReadImageProperty( const IsoString& property )
+{
+   try
+   {
+      if ( (*API->FileFormat->BeginImagePropertyExtraction)( handle ) == api_false )
+         return Variant();
+
+      api_property_value apiValue;
+      if ( (*API->FileFormat->GetImageProperty)( handle, property.c_str(), &apiValue ) == api_false )
+      {
+         apiValue.data.blockValue = nullptr;
+         apiValue.type = VTYPE_INVALID;
+      }
+
+      (*API->FileFormat->EndImagePropertyExtraction)( handle );
+
+      return VariantFromAPIPropertyValue( apiValue );
+   }
+   catch ( ... )
+   {
+      (*API->FileFormat->EndImagePropertyExtraction)( handle );
       throw;
    }
 }
@@ -678,36 +592,36 @@ bool FileFormatInstance::ReadImage( UInt32Image& image )
 
 // ----------------------------------------------------------------------------
 
-static bool ReadPixels( file_format_handle handle,
+static bool ReadSamples( file_format_handle handle,
       void* buffer, int startRow, int rowCount, int channel, int bitsPerSample, bool floatSample )
 {
-   return (*API->FileFormat->ReadPixels)( handle, buffer, startRow, rowCount, channel,
+   return (*API->FileFormat->ReadSamples)( handle, buffer, startRow, rowCount, channel,
                                           bitsPerSample, floatSample, false ) != api_false;
 }
 
-bool FileFormatInstance::Read( pcl::Image::sample* buffer, int startRow, int rowCount, int channel )
+bool FileFormatInstance::ReadSamples( pcl::Image::sample* buffer, int startRow, int rowCount, int channel )
 {
-   return ReadPixels( handle, buffer, startRow, rowCount, channel, 32, true );
+   return pcl::ReadSamples( handle, buffer, startRow, rowCount, channel, 32, true );
 }
 
-bool FileFormatInstance::Read( pcl::DImage::sample* buffer, int startRow, int rowCount, int channel )
+bool FileFormatInstance::ReadSamples( pcl::DImage::sample* buffer, int startRow, int rowCount, int channel )
 {
-   return ReadPixels( handle, buffer, startRow, rowCount, channel, 64, true );
+   return pcl::ReadSamples( handle, buffer, startRow, rowCount, channel, 64, true );
 }
 
-bool FileFormatInstance::Read( UInt8Image::sample* buffer, int startRow, int rowCount, int channel )
+bool FileFormatInstance::ReadSamples( UInt8Image::sample* buffer, int startRow, int rowCount, int channel )
 {
-   return ReadPixels( handle, buffer, startRow, rowCount, channel, 8, false );
+   return pcl::ReadSamples( handle, buffer, startRow, rowCount, channel, 8, false );
 }
 
-bool FileFormatInstance::Read( UInt16Image::sample* buffer, int startRow, int rowCount, int channel )
+bool FileFormatInstance::ReadSamples( UInt16Image::sample* buffer, int startRow, int rowCount, int channel )
 {
-   return ReadPixels( handle, buffer, startRow, rowCount, channel, 16, false );
+   return pcl::ReadSamples( handle, buffer, startRow, rowCount, channel, 16, false );
 }
 
-bool FileFormatInstance::Read( UInt32Image::sample* buffer, int startRow, int rowCount, int channel )
+bool FileFormatInstance::ReadSamples( UInt32Image::sample* buffer, int startRow, int rowCount, int channel )
 {
-   return ReadPixels( handle, buffer, startRow, rowCount, channel, 32, false );
+   return pcl::ReadSamples( handle, buffer, startRow, rowCount, channel, 32, false );
 }
 
 // ----------------------------------------------------------------------------
@@ -768,37 +682,7 @@ bool FileFormatInstance::SetFormatSpecificData( const void* data )
 
 // ----------------------------------------------------------------------------
 
-bool FileFormatInstance::Embed( const FITSKeywordArray& keywords )
-{
-   try
-   {
-      if ( (*API->FileFormat->BeginKeywordEmbedding)( handle ) == api_false )
-         return false;
-
-      bool ok = true;
-
-      for ( FITSKeywordArray::const_iterator i = keywords.Begin(); i != keywords.End(); ++i )
-         if ( (*API->FileFormat->AddKeyword)( handle,
-                  i->name.c_str(), i->value.c_str(), i->comment.c_str() ) == api_false )
-         {
-            ok = false;
-            break;
-         }
-
-      (*API->FileFormat->EndKeywordEmbedding)( handle );
-
-      return ok;
-   }
-   catch ( ... )
-   {
-      (*API->FileFormat->EndKeywordEmbedding)( handle );
-      throw;
-   }
-}
-
-// ----------------------------------------------------------------------------
-
-bool FileFormatInstance::Embed( const ICCProfile& icc )
+bool FileFormatInstance::WriteICCProfile( const ICCProfile& icc )
 {
    try
    {
@@ -829,7 +713,103 @@ bool FileFormatInstance::Embed( const ICCProfile& icc )
 
 // ----------------------------------------------------------------------------
 
-bool FileFormatInstance::Embed( const pcl::UInt8Image& thumbnail )
+bool FileFormatInstance::WriteRGBWorkingSpace( const RGBColorSystem& rgbws )
+{
+   try
+   {
+      if ( (*API->FileFormat->BeginRGBWSEmbedding)( handle ) == api_false )
+         return false;
+
+      float gamma = rgbws.Gamma();
+      api_bool issRGB = rgbws.IsSRGB();
+      FVector x = rgbws.ChromaticityXCoordinates();
+      FVector y = rgbws.ChromaticityYCoordinates();
+      FVector Y = rgbws.LuminanceCoefficients();
+
+      bool ok = (*API->FileFormat->SetImageRGBWS)( handle, gamma, issRGB, x.Begin(), y.Begin(), Y.Begin() ) != api_false;
+
+      if ( rgbws.Gamma() != gamma ||
+           rgbws.IsSRGB() != (issRGB != api_false) ||
+           rgbws.ChromaticityXCoordinates() != x ||
+           rgbws.ChromaticityYCoordinates() != y ||
+           rgbws.LuminanceCoefficients() != Y )
+      {
+         APIHackingAttempt( "WriteRGBWorkingSpace" );
+      }
+
+      (*API->FileFormat->EndRGBWSEmbedding)( handle );
+
+      return ok;
+   }
+   catch ( ... )
+   {
+      (*API->FileFormat->EndRGBWSEmbedding)( handle );
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+bool FileFormatInstance::WriteDisplayFunction( const DisplayFunction& df )
+{
+   try
+   {
+      if ( (*API->FileFormat->BeginDisplayFunctionEmbedding)( handle ) == api_false )
+         return false;
+
+      DVector m, s, h, l, r;
+      df.GetDisplayFunctionParameters( m, s, h, l, r );
+
+      bool ok = (*API->FileFormat->SetImageDisplayFunction)( handle, m.Begin(), s.Begin(), h.Begin(), l.Begin(), r.Begin() ) != api_false;
+
+      DVector m1, s1, h1, l1, r1;
+      df.GetDisplayFunctionParameters( m1, s1, h1, l1, r1 );
+      if ( m1 != m || s1 != s || h1 != h || l1 != l || r1 != r )
+         APIHackingAttempt( "WriteDisplayFunction" );
+
+      (*API->FileFormat->EndDisplayFunctionEmbedding)( handle );
+      return ok;
+   }
+   catch ( ... )
+   {
+      (*API->FileFormat->EndDisplayFunctionEmbedding)( handle );
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+bool FileFormatInstance::WriteColorFilterArray( const ColorFilterArray& cfa )
+{
+   try
+   {
+      if ( (*API->FileFormat->BeginColorFilterArrayEmbedding)( handle ) == api_false )
+         return false;
+
+      IsoString pattern = cfa.Pattern();
+      pattern.EnsureUnique();
+      String name = cfa.Name();
+      name.EnsureUnique();
+
+      bool ok = (*API->FileFormat->SetImageColorFilterArray)( handle,
+                           pattern.c_str(), cfa.Width(), cfa.Height(), name.c_str() ) != api_false;
+
+      if ( cfa.Pattern() != pattern || cfa.Name() != name )
+         APIHackingAttempt( "WriteColorFilterArray" );
+
+      (*API->FileFormat->EndColorFilterArrayEmbedding)( handle );
+      return ok;
+   }
+   catch ( ... )
+   {
+      (*API->FileFormat->EndColorFilterArrayEmbedding)( handle );
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+bool FileFormatInstance::WriteThumbnail( const pcl::UInt8Image& thumbnail )
 {
    try
    {
@@ -877,6 +857,109 @@ bool FileFormatInstance::Embed( const pcl::UInt8Image& thumbnail )
 
 // ----------------------------------------------------------------------------
 
+bool FileFormatInstance::WriteFITSKeywords( const FITSKeywordArray& keywords )
+{
+   try
+   {
+      if ( (*API->FileFormat->BeginKeywordEmbedding)( handle ) == api_false )
+         return false;
+
+      bool ok = true;
+
+      for ( const FITSHeaderKeyword& k : keywords )
+         if ( (*API->FileFormat->AddKeyword)( handle, k.name.c_str(), k.value.c_str(), k.comment.c_str() ) == api_false )
+         {
+            ok = false;
+            break;
+         }
+
+      (*API->FileFormat->EndKeywordEmbedding)( handle );
+
+      return ok;
+   }
+   catch ( ... )
+   {
+      (*API->FileFormat->EndKeywordEmbedding)( handle );
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+bool FileFormatInstance::WriteProperty( const IsoString& property, const Variant& value )
+{
+   try
+   {
+      if ( (*API->FileFormat->BeginPropertyEmbedding)( handle ) == api_false )
+         return false;
+
+      bool ok = true;
+
+      if ( value.IsValid() )
+      {
+         api_property_value apiValue;
+         APIPropertyValueFromVariant( apiValue, value );
+         api_property_value safeCopy = apiValue;
+         ok = (*API->FileFormat->SetProperty)( handle, property.c_str(), &safeCopy ) != api_false;
+
+         if ( safeCopy.data.blockValue != apiValue.data.blockValue ||
+              safeCopy.dimX != apiValue.dimX || safeCopy.dimY != apiValue.dimY ||
+              safeCopy.dimZ != apiValue.dimZ || safeCopy.dimT != apiValue.dimT || safeCopy.type != apiValue.type )
+         {
+            APIHackingAttempt( "SetProperty" );
+         }
+      }
+
+      (*API->FileFormat->EndPropertyEmbedding)( handle );
+
+      return ok;
+   }
+   catch ( ... )
+   {
+      (*API->FileFormat->EndPropertyEmbedding)( handle );
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
+bool FileFormatInstance::WriteImageProperty( const IsoString& property, const Variant& value )
+{
+   try
+   {
+      if ( (*API->FileFormat->BeginImagePropertyEmbedding)( handle ) == api_false )
+         return false;
+
+      bool ok = true;
+
+      if ( value.IsValid() )
+      {
+         api_property_value apiValue;
+         APIPropertyValueFromVariant( apiValue, value );
+         api_property_value safeCopy = apiValue;
+         ok = (*API->FileFormat->SetImageProperty)( handle, property.c_str(), &safeCopy ) != api_false;
+
+         if ( safeCopy.data.blockValue != apiValue.data.blockValue ||
+              safeCopy.dimX != apiValue.dimX || safeCopy.dimY != apiValue.dimY ||
+              safeCopy.dimZ != apiValue.dimZ || safeCopy.dimT != apiValue.dimT || safeCopy.type != apiValue.type )
+         {
+            APIHackingAttempt( "SetImageProperty" );
+         }
+      }
+
+      (*API->FileFormat->EndImagePropertyEmbedding)( handle );
+
+      return ok;
+   }
+   catch ( ... )
+   {
+      (*API->FileFormat->EndImagePropertyEmbedding)( handle );
+      throw;
+   }
+}
+
+// ----------------------------------------------------------------------------
+
 bool FileFormatInstance::WriteImage( const pcl::Image& image )
 {
    return FileFormatInstancePrivate::WriteImage( this, image );
@@ -913,36 +996,43 @@ bool FileFormatInstance::CreateImage( const ImageInfo& info )
 
 // ----------------------------------------------------------------------------
 
-static bool WritePixels( file_format_handle handle,
+bool FileFormatInstance::CloseImage()
+{
+   return (*API->FileFormat->CloseImage)( handle ) != api_false;
+}
+
+// ----------------------------------------------------------------------------
+
+static bool WriteSamples( file_format_handle handle,
    const void* buffer, int startRow, int rowCount, int channel, int bitsPerSample, bool floatSample )
 {
-   return (*API->FileFormat->WritePixels)( handle, buffer, startRow, rowCount, channel,
+   return (*API->FileFormat->WriteSamples)( handle, buffer, startRow, rowCount, channel,
                                              bitsPerSample, floatSample, false ) != api_false;
 }
 
-bool FileFormatInstance::Write( const pcl::Image::sample* buffer, int startRow, int rowCount, int channel )
+bool FileFormatInstance::WriteSamples( const pcl::Image::sample* buffer, int startRow, int rowCount, int channel )
 {
-   return WritePixels( handle, buffer, startRow, rowCount, channel, 32, true );
+   return pcl::WriteSamples( handle, buffer, startRow, rowCount, channel, 32, true );
 }
 
-bool FileFormatInstance::Write( const pcl::DImage::sample* buffer, int startRow, int rowCount, int channel )
+bool FileFormatInstance::WriteSamples( const pcl::DImage::sample* buffer, int startRow, int rowCount, int channel )
 {
-   return WritePixels( handle, buffer, startRow, rowCount, channel, 64, true );
+   return pcl::WriteSamples( handle, buffer, startRow, rowCount, channel, 64, true );
 }
 
-bool FileFormatInstance::Write( const UInt8Image::sample* buffer, int startRow, int rowCount, int channel )
+bool FileFormatInstance::WriteSamples( const UInt8Image::sample* buffer, int startRow, int rowCount, int channel )
 {
-   return WritePixels( handle, buffer, startRow, rowCount, channel, 8, false );
+   return pcl::WriteSamples( handle, buffer, startRow, rowCount, channel, 8, false );
 }
 
-bool FileFormatInstance::Write( const UInt16Image::sample* buffer, int startRow, int rowCount, int channel )
+bool FileFormatInstance::WriteSamples( const UInt16Image::sample* buffer, int startRow, int rowCount, int channel )
 {
-   return WritePixels( handle, buffer, startRow, rowCount, channel, 16, false );
+   return pcl::WriteSamples( handle, buffer, startRow, rowCount, channel, 16, false );
 }
 
-bool FileFormatInstance::Write( const UInt32Image::sample* buffer, int startRow, int rowCount, int channel )
+bool FileFormatInstance::WriteSamples( const UInt32Image::sample* buffer, int startRow, int rowCount, int channel )
 {
-   return WritePixels( handle, buffer, startRow, rowCount, channel, 32, false );
+   return pcl::WriteSamples( handle, buffer, startRow, rowCount, channel, 32, false );
 }
 
 // ----------------------------------------------------------------------------
@@ -964,4 +1054,4 @@ void* FileFormatInstance::CloneHandle() const
 } // pcl
 
 // ----------------------------------------------------------------------------
-// EOF pcl/FileFormatInstance.cpp - Released 2016/02/21 20:22:19 UTC
+// EOF pcl/FileFormatInstance.cpp - Released 2017-04-14T23:04:51Z

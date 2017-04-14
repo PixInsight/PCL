@@ -105,16 +105,16 @@ Here is a list of subdirectories, along with descriptions of the files therein. 
 
 ## Supported Compilers
 
-The current versions of PCL have been successfully compiled and tested with:
+The current version 2.1.3 of PCL has been built and tested with:
 
-   * FreeBSD 10.2: System clang compiler
-   * Red Hat Enterprise Linux 7.2: GCC C++ compiler 4.8.5
-   * Mac OS X 10.10: Clang C++ compiler with Xcode 6.5
-   * Windows 8.1: Microsoft Visual C++ 2013
+   * FreeBSD 10.3: System clang compiler
+   * Red Hat Enterprise Linux 7.2: GCC C++ compiler 4.9.1
+   * macOS 10.11: Clang C++ compiler with Xcode 8.2.1
+   * Windows 10: Microsoft Visual C++ 2015 Community Edition
 
 The GCC and clang C++ compilers provide higher conformance to ISO C++ standards and are high quality development tools. On FreeBSD and Mac OS X we rely on the Clang/LLVM compiler included with the latest versions of Xcode and FreeBSD.
 
-On Windows, we provide project files for the Microsoft Visual Studio integrated development environment (.vcproj and .vcxproj files). As of PCL version 2.1, we only support Visual C++ 2013. An excellent option on Windows is Visual C++ Express Edition, which is free and includes a full featured development environment with an optimizing compiler. As far as we know, Express editions of Visual C++ can be used to develop commercial products.
+On Windows, we provide project files for the Microsoft Visual Studio integrated development environment (.vcxproj files). As of PCL version 2.1.3, we support Visual C++ 2015 exclusively.
 
 
 ## Environment Variables

@@ -162,7 +162,7 @@ DEFINE_ENUM_PARAMETER_CLASS(IMCAlignmentMethod,"AlignmentMethod",ALIGNMENT_ENUM,
 DEFINE_STRING_PARAMETER_CLASS(IMCAlignmentFile,"alignmentModelFile");
 DEFINE_STRING_PARAMETER_CLASS(IMCSyncDataFile,"syncDataFile");
 
-DEFINE_INT32_PARAMETER_CLASS(IMCAlignmentConfig,"alignmentConfig",0,0,255);
+DEFINE_INT32_PARAMETER_CLASS(IMCAlignmentConfig,"alignmentConfig",0,0,2048);
 
 // ----------------------------------------------------------------------------
 

@@ -49,8 +49,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
+#include <pcl/Atomic.h>
+#include <pcl/AutoLock.h>
 #include <pcl/Compression.h>
 #include <pcl/Cryptography.h>
+#include <pcl/PixelTraits.h> // PTLUT
 #include <pcl/XISF.h>
 
 /*
@@ -597,6 +600,86 @@ String XISF::InternalPropertyId( const String& id )
    if ( !IsInternalPropertyId( id ) )
       return XISF_INTERNAL_PREFIX + id;
    return id;
+}
+
+// ----------------------------------------------------------------------------
+
+void XISF::EnsurePTLUTInitialized()
+{
+   static AtomicInt initialized;
+   if ( initialized.Load() == 0 )
+   {
+      static Mutex mutex;
+      volatile AutoLock lock( mutex );
+      if ( initialized.Load() == 0 )
+      {
+         if ( PTLUT == nullptr )
+         {
+            float*  pFLUT8   = new float [ uint8_max +1 ]; // uint8 -> float
+            float*  pFLUTA   = new float [ uint8_max +1 ]; // i/255^2 (direct 8-bit normalization)
+            float*  p1FLUT8  = new float [ uint8_max +1 ]; // 1 - pFLUT8
+            double* pDLUT8   = new double[ uint8_max +1 ]; // uint8 -> double
+            double* pDLUTA   = new double[ uint8_max +1 ]; // i/255^2 (direct 8-bit normalization)
+            double* p1DLUT8  = new double[ uint8_max +1 ]; // 1- pDLUT8
+            uint16* p16LUT8  = new uint16[ uint8_max +1 ]; // uint8 -> uint16
+            uint32* p20LUT8  = new uint32[ uint8_max +1 ]; // uint8 -> uint20
+            uint32* p24LUT8  = new uint32[ uint8_max +1 ]; // uint8 -> uint24
+            uint32* p32LUT8  = new uint32[ uint8_max +1 ]; // uint8 -> uint32
+            float*  pFLUT16  = new float [ uint16_max+1 ]; // uint16 -> float
+            double* pDLUT16  = new double[ uint16_max+1 ]; // uint16 -> double
+            uint8*  p8LUT16  = new uint8 [ uint16_max+1 ]; // uint16 -> uint8
+            uint32* p20LUT16 = new uint32[ uint16_max+1 ]; // uint16 -> uint20
+            uint32* p24LUT16 = new uint32[ uint16_max+1 ]; // uint16 -> uint24
+            uint32* p32LUT16 = new uint32[ uint16_max+1 ]; // uint16 -> uint32
+
+            for ( uint32 i = 0; i <= uint8_max; ++i )
+            {
+               pFLUT8[i]   = float( i )/float( uint8_max );
+               pFLUTA[i]   = float( i )/65025.0F;
+               p1FLUT8[i]  = 1.0F - float( i )/float( uint8_max );
+               pDLUT8[i]   = double( i )/double( uint8_max );
+               pDLUTA[i]   = double( i )/65025.0;
+               p1DLUT8[i]  = 1.0 - double( i )/double( uint8_max );
+               p16LUT8[i]  = uint16( uint32( i )*uint32( uint8_to_uint16 ) );
+               p20LUT8[i]  = uint32( RoundInt( double( i )*uint8_to_uint20 ) );
+               p24LUT8[i]  = uint32( i * uint8_to_uint24 );
+               p32LUT8[i]  = uint32( uint64( i )*uint64( uint8_to_uint32 ) );
+            }
+
+            for ( uint32 i = 0; i <= uint16_max; ++i )
+            {
+               pFLUT16[i]  = float( i )/float( uint16_max );
+               pDLUT16[i]  = double( i )/double( uint16_max );
+               p8LUT16[i]  = uint8( RoundInt( double( i )*uint16_to_uint8 ) );
+               p20LUT16[i] = uint32( RoundInt( double( i )*uint16_to_uint20 ) );
+               p24LUT16[i] = uint32( RoundInt( double( i )*uint16_to_uint24 ) );
+               p32LUT16[i] = uint32( uint64( i )*uint64( uint16_to_uint32 ) );
+            }
+
+            PixelTraitsLUT* lut = new PixelTraitsLUT;
+            lut->pFLUT8   = pFLUT8;
+            lut->pFLUTA   = pFLUTA;
+            lut->p1FLUT8  = p1FLUT8;
+            lut->pDLUT8   = pDLUT8;
+            lut->pDLUTA   = pDLUTA;
+            lut->p1DLUT8  = p1DLUT8;
+            lut->p16LUT8  = p16LUT8;
+            lut->p20LUT8  = p20LUT8;
+            lut->p24LUT8  = p24LUT8;
+            lut->p32LUT8  = p32LUT8;
+            lut->pFLUT16  = pFLUT16;
+            lut->pDLUT16  = pDLUT16;
+            lut->p8LUT16  = p8LUT16;
+            lut->p20LUT16 = p20LUT16;
+            lut->p24LUT16 = p24LUT16;
+            lut->p32LUT16 = p32LUT16;
+
+            PTLUT = lut;
+         }
+
+         initialized.Store( 1 );
+      }
+   }
 }
 
 // ----------------------------------------------------------------------------

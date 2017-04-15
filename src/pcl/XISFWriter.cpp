@@ -1280,6 +1280,7 @@ private:
    {
       typename P::sample* p = reinterpret_cast<typename P::sample*>( m_randomData.At( BlockSampleOffset( startRow, channel ) ) );
       size_type n = BlockSampleCount( rowCount );
+      XISF::EnsurePTLUTInitialized();
       for ( size_type i = 0; i < n; ++i, ++p, ++buffer )
          *p = P::ToSample( *buffer );
    }

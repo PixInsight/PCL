@@ -1109,7 +1109,7 @@ public:
          return ICCProfile();
 
       ByteArray data( block.DataSize() );
-      GetBlockData( block, data.Begin(), data.Length() );
+      GetBlockData( block, data.Begin(), data.Size() );
       block.UnloadData();
       ICCProfile icc( data );
       if ( m_xisfOptions.verbosity > 0 )
@@ -1264,9 +1264,6 @@ public:
       XISFInputImageBlock& block = m_images[m_currentImage].image;
       if ( !block.IsValid() )
          throw Error( String( "XISFReaderEngine::ReadSamples(): " ) + "Internal error: invalid image block." );
-
-      if ( block.IsCompressed() )
-         block.Uncompress( m_file );
 
       const pcl::ImageOptions& options = m_images[m_currentImage].options;
       if ( options.complexSample )
@@ -1591,7 +1588,7 @@ private:
       }
    }
 
-   void GetBlockData( XISFInputDataBlock& block, void* dst, size_type dstSize, int channel = 0 )
+   void GetBlockData( XISFInputDataBlock& block, void* dst, size_type dstSize, size_type offset = 0u )
    {
       bool verbose = m_xisfOptions.verbosity > 0 && block.IsCompressed() && !block.HasData();
       if ( verbose )
@@ -1599,18 +1596,18 @@ private:
                String( XISF::CompressionCodecId( block.compressionCodec ) ) + "): " +
                File::SizeAsString( block.size ) + " -> " );
 
-      block.GetData( m_file, dst, dstSize, channel*dstSize );
+      block.GetData( m_file, dst, dstSize, offset );
 
       if ( verbose )
-         LogLn( File::SizeAsString( block.data.Length() ) +
-               String().Format( " (%.2f%%)", 100*double( block.data.Length() - block.size )/block.data.Length() ) );
+         LogLn( File::SizeAsString( block.data.Size() ) +
+               String().Format( " (%.2f%%)", 100*double( block.data.Size() - block.size )/block.data.Size() ) );
    }
 
    template <class P>
    void GetBlockData( XISFInputDataBlock& block, GenericImage<P>& image )
    {
       for ( int i = 0; i < image.NumberOfChannels(); ++i )
-         GetBlockData( block, image[i], image.ChannelSize(), i );
+         GetBlockData( block, image[i], image.ChannelSize(), size_type( i )*image.ChannelSize() );
    }
 
    /*
@@ -2303,7 +2300,7 @@ private:
 
       size_type count = BlockSampleCount( rowCount );
 
-      block.GetData( m_file, buffer, count*sizeof( *buffer ), BlockSampleOffset( startRow, channel ) );
+      GetBlockData( block, buffer, count*sizeof( *buffer ), BlockSampleOffset( startRow, channel ) );
 
       if ( m_images[m_currentImage].options.readNormalized )
          NormalizeSamples( buffer, count, m_images[m_currentImage].options );
@@ -2319,11 +2316,13 @@ private:
       XISFInputImageBlock& block = m_images[m_currentImage].image;
 
       Array<typename P::sample> data( BlockSampleCount( rowCount ) );
-      block.GetData( m_file, data.Begin(), data.Length()*sizeof( *data ), BlockSampleOffset( startRow, channel ) );
+
+      GetBlockData( block, data.Begin(), data.Size(), BlockSampleOffset( startRow, channel ) );
 
       if ( m_images[m_currentImage].options.readNormalized )
          NormalizeSamples( data.Begin(), data.Length(), m_images[m_currentImage].options );
 
+      XISF::EnsurePTLUTInitialized();
       for ( const typename P::sample& sample : data )
          P::FromSample( *buffer++, sample );
    }

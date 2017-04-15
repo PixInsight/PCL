@@ -99,13 +99,14 @@ public:
       double dt = 0;
 
       ByteArray S;
-      if ( m_compression.ByteShufflingEnabled() && m_compression.ItemSize() > 1 )
-      {
-         T.Reset();
-         S = Compression::Shuffle( m_data, size, m_compression.ItemSize() );
-         dt += T();
-         m_data = S.Begin();
-      }
+      if ( m_compression.ByteShufflingEnabled() )
+         if ( m_compression.ItemSize() > 1 )
+         {
+            T.Reset();
+            S = Compression::Shuffle( m_data, size, m_compression.ItemSize() );
+            dt += T();
+            m_data = S.Begin();
+         }
 
       int numberOfThreads = m_compression.IsParallelProcessingEnabled() ?
                Min( m_compression.MaxProcessors(), pcl::Thread::NumberOfThreads( m_numberOfSubblocks + 1, 1 ) ) : 1;
@@ -299,7 +300,7 @@ public:
          Compression::subblock_list::const_iterator begin = subblocks.At( i*subblocksPerThread );
          Compression::subblock_list::const_iterator end = (j < numberOfThreads) ? subblocks.At( j*subblocksPerThread ) : subblocks.End();
 
-         threads.Add( new DecompressionThread( *this, offset, begin, end ) );
+         threads << new DecompressionThread( *this, offset, begin, end );
 
          if ( j < numberOfThreads )
             for ( Compression::subblock_list::const_iterator i = begin; i != end; ++i )
@@ -327,12 +328,13 @@ public:
       if ( !m_errors.IsEmpty() )
          m_compression.Throw( String().ToSeparated( m_errors, '\n' ) );
 
-      if ( m_compression.ByteShufflingEnabled() && m_compression.ItemSize() > 1 )
-      {
-         T.Reset();
-         Compression::InPlaceUnshuffle( m_uncompressedData, uncompressedSize, m_compression.ItemSize() );
-         dt += T();
-      }
+      if ( m_compression.ByteShufflingEnabled() )
+         if ( m_compression.ItemSize() > 1 )
+         {
+            T.Reset();
+            Compression::InPlaceUnshuffle( m_uncompressedData, uncompressedSize, m_compression.ItemSize() );
+            dt += T();
+         }
 
       if ( perf != nullptr )
       {

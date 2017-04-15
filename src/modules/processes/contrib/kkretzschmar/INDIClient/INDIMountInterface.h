@@ -73,6 +73,7 @@
 
 #include "INDIClient.h"
 #include "INDIMountInstance.h"
+#include "DeviceConfigBase.h"
 
 namespace pcl {
 	class INDIMountInterface;
@@ -255,47 +256,37 @@ private:
 };
 
 
-class MountConfigDialog : public Dialog {
+class MountConfigDialog : public ConfigDialogBase {
 public:
-	MountConfigDialog(INDIMountInterface& w);
+	MountConfigDialog(const String& deviceName, double geoLat, double geoLong, double telescopeAperture, double teslescopeFocalLenght );
 private:
 
-	bool m_firstTimeShown = true;
+	String m_device;
 
-	INDIMountInterface& m_interface;
+	HorizontalSizer   Latitude_Sizer;
+	   Label             Latitude_Label;
+	   SpinBox           Latitude_H_SpinBox;
+	   SpinBox           Latitude_M_SpinBox;
+	   NumericEdit       Latitude_S_NumericEdit;
+	   CheckBox          LatitudeIsSouth_CheckBox;
 
-	VerticalSizer     Global_Sizer;
-	  HorizontalSizer   Latitude_Sizer;
-	  	  Label             Latitude_Label;
-	  	  SpinBox           Latitude_H_SpinBox;
-	  	  SpinBox           Latitude_M_SpinBox;
-	  	  NumericEdit       Latitude_S_NumericEdit;
-	      CheckBox          LatitudeIsSouth_CheckBox;
+	HorizontalSizer   Longitude_Sizer;
+	   Label             Longitude_Label;
+	   SpinBox           Longitude_H_SpinBox;
+	   SpinBox           Longitude_M_SpinBox;
+	   NumericEdit       Longitude_S_NumericEdit;
+	   CheckBox          LongitudeIsWest_CheckBox;
 
-	  HorizontalSizer   Longitude_Sizer;
-	      Label             Longitude_Label;
-	      SpinBox           Longitude_H_SpinBox;
-	      SpinBox           Longitude_M_SpinBox;
-	      NumericEdit       Longitude_S_NumericEdit;
-	      CheckBox          LongitudeIsWest_CheckBox;
+	HorizontalSizer   TelescopeAperture_Sizer;
+	   NumericEdit		TelescopeAperture_NumericEdit;
 
-	  HorizontalSizer   TelescopeAperture_Sizer;
-	  	  NumericEdit		TelescopeAperture_NumericEdit;
+	HorizontalSizer   TelescopeFocalLength_Sizer;
+	  NumericEdit		TelescopeFocalLength_NumericEdit;
 
-	  HorizontalSizer   TelescopeFocalLength_Sizer;
-	  	  NumericEdit		TelescopeFocalLength_NumericEdit;
-
-	  HorizontalSizer   MountConfigButton_Sizer;
-	  	  PushButton        SaveConfig_Button;
-	      PushButton        Ok_Button;
-	      PushButton        Cancel_Button;
 
 	void sendUpdatedProperties();
 
-	void e_Show( Control& sender );
-	void e_Click( Button& sender, bool checked );
 
-	friend class INDIMountInterface;
 };
 
 // ----------------------------------------------------------------------------

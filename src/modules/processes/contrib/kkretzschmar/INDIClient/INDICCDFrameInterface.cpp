@@ -150,6 +150,71 @@ private:
    }
 };
 
+FilterConfigDialog::FilterConfigDialog(const String& deviceName):ConfigDialogBase(deviceName){
+
+	FilterNames_TreeBox.SetMinHeight( 8 * Font().Height());
+	FilterNames_TreeBox.SetScaledMinWidth( 100 );
+	FilterNames_TreeBox.SetNumberOfColumns( 2 );
+	FilterNames_TreeBox.SetHeaderText( 0,  "Filter Slot" );
+	FilterNames_TreeBox.SetHeaderText( 1,  "Filter Name" );
+	FilterNames_TreeBox.DisableMultipleSelections();
+	FilterNames_TreeBox.SetStyleSheet( ScaledStyleSheet(
+			"QTreeView {"
+			"font-family: DejaVu Sans Mono, Monospace;"
+			"font-size: 9pt;"
+			"}"
+	) );
+
+	FilterRename_ToolButton.SetIcon(ScaledResource(":/icons/write.png"));
+	FilterRename_ToolButton.SetScaledFixedSize(22, 22);
+	FilterRename_ToolButton.SetToolTip("<p>Configure INDI filter slot name</p>");
+	FilterRename_ToolButton.OnClick((Button::click_event_handler) &FilterConfigDialog::e_Click, *this);
+
+	FilterToolBox_Sizer.SetSpacing( 8 );
+	FilterToolBox_Sizer.SetMargin( 8 );
+	FilterToolBox_Sizer.Add(FilterRename_ToolButton);
+	FilterToolBox_Sizer.AddStretch();
+
+	FilterConfig_Sizer.Add(FilterNames_TreeBox);
+	FilterConfig_Sizer.Add(FilterToolBox_Sizer);
+	FilterConfig_Sizer.AddStretch();
+
+	Global_Sizer.Add(FilterConfig_Sizer);
+
+	addBaseControls();
+
+}
+
+void FilterConfigDialog::sendUpdatedProperties() {
+	for ( int i = 0, n = FilterNames_TreeBox.NumberOfColumns(); i < n; ++i ){
+		INDIClient::TheClient()->SendNewPropertyItem( m_device, "FILTER_NAME", "INDI_TEXT", "FILTER_SLOT_NAME_"+String(i+1),FilterNames_TreeBox.Child(i)->Text(1) );
+	}
+}
+
+void FilterConfigDialog::e_Click( Button& sender, bool checked ) {
+	if (sender == FilterRename_ToolButton) {
+		TreeBox::Node* node = FilterNames_TreeBox.CurrentNode();
+		SimpleGetStringDialog dialog( "New Filter Name:", node->Text(1) );
+		if (dialog.Execute()){
+			node->SetText(1,dialog.Text());
+		}
+
+	}
+}
+
+void FilterConfigDialog::addFilterName(size_t filterSlot, const String& filterName){
+	TreeBox::Node* node = new TreeBox::Node();
+	node->SetText(0,String(filterSlot));
+	node->SetText(1,filterName);
+	FilterNames_TreeBox.Add(node);
+}
+
+void FilterConfigDialog::adjustTreeColumns()
+{
+   for ( int i = 0, n = FilterNames_TreeBox.NumberOfColumns(); i < n; ++i )
+	   FilterNames_TreeBox.AdjustColumnWidthToContents( i );
+}
+
 // ----------------------------------------------------------------------------
 
 INDICCDFrameInterface::INDICCDFrameInterface() :
@@ -307,11 +372,18 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    CCDDevice_Label.SetMinWidth( labelWidth1 );
    CCDDevice_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 
+   FilterConfig_ToolButton.SetIcon(w.ScaledResource(":/icons/wrench.png"));
+   FilterConfig_ToolButton.SetScaledFixedSize(22, 22);
+   FilterConfig_ToolButton.SetToolTip("<p>Configure INDI filter wheel device</p>");
+   FilterConfig_ToolButton.OnClick((Button::click_event_handler) &INDICCDFrameInterface::e_Click, w);
+   FilterConfig_ToolButton.Disable();
+
    CCDDevice_Combo.OnItemSelected( (ComboBox::item_event_handler)&INDICCDFrameInterface::e_ItemSelected, w );
 
    CCDDevice_Sizer.SetSpacing( 4 );
    CCDDevice_Sizer.Add( CCDDevice_Label );
    CCDDevice_Sizer.Add( CCDDevice_Combo, 100 );
+
 
    CCDTemp_NumericEdit.SetReal();
    CCDTemp_NumericEdit.SetPrecision( 2 );
@@ -414,6 +486,8 @@ INDICCDFrameInterface::GUIData::GUIData( INDICCDFrameInterface& w )
    CCDFilter_HSizer.SetSpacing( 4 );
    CCDFilter_HSizer.Add( CCDFilter_Label );
    CCDFilter_HSizer.Add( CCDFilter_Combo, 100 );
+   CCDFilter_HSizer.Add( FilterConfig_ToolButton );
+
 
    const char* ccdFrameTypeToolTipText =
       "<p>The frame type will be stored as a standard property and FITS header keyword in each acquired frame.</p>";
@@ -1025,6 +1099,7 @@ __device_found:
 
          GUI->CCDFilter_Combo.Enable();
          GUI->CCDFilter_Label.Enable();
+         GUI->FilterConfig_ToolButton.Enable();
          GUI->CCDFilter_Combo.SetCurrentItem( currentFilterIndex );
       }
       else
@@ -1174,6 +1249,10 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
          if ( indi->GetPropertyItem( m_device, "COOLER_CONNECTION", "CONNECT_COOLER", item ) )
             if ( item.PropertyValue == "OFF" )
                indi->SendNewPropertyItem( m_device, "COOLER_CONNECTION", "INDI_SWITCH", "CONNECT_COOLER", "ON", true/*async*/ );
+
+         // load configuration on server
+         INDIClient::TheClient()->SendNewPropertyItem( m_device, "CONFIG_PROCESS", "INDI_SWITCH", "CONFIG_LOAD", "ON");
+
       }
    }
    else if ( sender == GUI->CCDBinX_Combo )
@@ -1203,6 +1282,10 @@ void INDICCDFrameInterface::e_ItemSelected( ComboBox& sender, int itemIndex )
                                       INDICCDFrameInstance::CCDFrameTypePropertyString( itemIndex ), "ON", true/*async*/ );
    } else if (sender == GUI->ExternalFilterDevice_Combo)
    {
+	   String externalFilterWheelDeviceName = GUI->ExternalFilterDevice_Combo.ItemText(GUI->ExternalFilterDevice_Combo.CurrentItem());
+
+	   // load configuration on server
+	   INDIClient::TheClient()->SendNewPropertyItem( externalFilterWheelDeviceName, "CONFIG_PROCESS", "INDI_SWITCH", "CONFIG_LOAD", "ON");
 
    }
 }
@@ -1395,6 +1478,16 @@ void INDICCDFrameInterface::e_Click( Button& sender, bool checked )
    {
       if ( m_execution != nullptr )
          m_execution->Abort();
+   } else if (sender == GUI->FilterConfig_ToolButton) {
+
+	   FilterConfigDialog ccdConfig(CurrentDeviceName());
+	   for (size_t index=0; index < (size_t) GUI->CCDFilter_Combo.NumberOfItems(); index++){
+		   ccdConfig.addFilterName(index+1,GUI->CCDFilter_Combo.ItemText(index));
+	   }
+	   ccdConfig.adjustTreeColumns();
+	   if (ccdConfig.Execute() && INDIClient::HasClient()) {
+
+	   }
    }
 }
 

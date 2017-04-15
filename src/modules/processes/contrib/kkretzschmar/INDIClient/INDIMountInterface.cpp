@@ -683,23 +683,23 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked ){
  }
 
 
- MountConfigDialog::MountConfigDialog(INDIMountInterface& w):Dialog(),m_interface(w){
+ MountConfigDialog::MountConfigDialog(const String& deviceName, double geoLat, double geoLong, double telescopeAperture, double telescopeFocalLength):ConfigDialogBase(deviceName),m_device(deviceName){
 
-	 int emWidth = w.Font().Width( 'm' );
+	 int emWidth = Font().Width( 'm' );
 	 int editWidth1 = RoundInt( 4.25*emWidth );
 	 int editWidth2 = RoundInt( 5.25*emWidth );
 
 	 int sign,s1,s2;
 	 double s3;
 
-	 int labelWidth1 = w.Font().Width("Geographic Longitude:");
+	 int labelWidth1 = Font().Width("Geographic Longitude:");
 
 	 Latitude_Label.SetText( "Geographic Latitude:" );
 	 Latitude_Label.SetToolTip( "<p>Position of observatory: Geographic latitude (g:m:s)</p>" );
 	 Latitude_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
 	 Latitude_Label.SetFixedWidth( labelWidth1 );
 
-	 DecimalToSexagesimal(sign,s1,s2,s3,w.getGeographicLatitude());
+	 DecimalToSexagesimal(sign,s1,s2,s3,geoLat);
 	 Latitude_H_SpinBox.SetRange( 0, 90 );
 	 Latitude_H_SpinBox.SetFixedWidth( editWidth1 );
 	 Latitude_H_SpinBox.SetValue(Abs(s1));
@@ -729,7 +729,7 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked ){
 	 Latitude_Sizer.Add( LatitudeIsSouth_CheckBox );
 	 Latitude_Sizer.AddStretch();
 
-	 DecimalToSexagesimal(sign,s1,s2,s3,w.getGeographicLongitude());
+	 DecimalToSexagesimal(sign,s1,s2,s3,geoLong);
 	 Longitude_Label.SetText( "Geographic Longitude:" );
 	 Longitude_Label.SetToolTip( "<p>Position of observatory: Geographic longitude (g:m:s)</p></p>" );
 	 Longitude_Label.SetTextAlignment( TextAlign::Right|TextAlign::VertCenter );
@@ -770,7 +770,7 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked ){
 	 TelescopeAperture_NumericEdit.SetInteger();
 	 TelescopeAperture_NumericEdit.SetRange(10,10000);
 	 TelescopeAperture_NumericEdit.edit.SetFixedWidth( editWidth2 );
-	 TelescopeAperture_NumericEdit.SetValue(m_interface.getTelescopeAperture());
+	 TelescopeAperture_NumericEdit.SetValue(telescopeAperture);
 
 	 TelescopeAperture_Sizer.SetSpacing( 8 );
 	 TelescopeAperture_Sizer.SetMargin( 8 );
@@ -784,32 +784,13 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked ){
 	 TelescopeFocalLength_NumericEdit.SetInteger();
 	 TelescopeFocalLength_NumericEdit.SetRange(100,10000);
 	 TelescopeFocalLength_NumericEdit.edit.SetFixedWidth( editWidth2 );
-	 TelescopeFocalLength_NumericEdit.SetValue(m_interface.getTelescopeFocalLength());
+	 TelescopeFocalLength_NumericEdit.SetValue(telescopeFocalLength);
 
 	 TelescopeFocalLength_Sizer.SetSpacing( 8 );
 	 TelescopeFocalLength_Sizer.SetMargin( 8 );
 	 TelescopeFocalLength_Sizer.Add(TelescopeFocalLength_NumericEdit);
 	 TelescopeFocalLength_Sizer.AddStretch();
 
-	 SaveConfig_Button.SetText( "Save" );
-	 SaveConfig_Button.SetToolTip("<p>Stores the current configuration on the INDI server. </p>");
-	 SaveConfig_Button.SetIcon( ScaledResource( ":/icons/save.png" ) );
-	 SaveConfig_Button.OnClick( (Button::click_event_handler)&MountConfigDialog::e_Click, *this );
-
-	 Ok_Button.SetText( "Ok" );
-	 Ok_Button.SetIcon( ScaledResource( ":/icons/ok.png" ) );
-	 Ok_Button.OnClick( (Button::click_event_handler)&MountConfigDialog::e_Click, *this );
-
-	 Cancel_Button.SetText( "Cancel" );
-	 Cancel_Button.SetIcon( ScaledResource( ":/icons/cancel.png" ) );
-	 Cancel_Button.OnClick( (Button::click_event_handler)&MountConfigDialog::e_Click, *this );
-
-	 MountConfigButton_Sizer.SetSpacing(8);
-	 MountConfigButton_Sizer.SetMargin( 8 );
-	 MountConfigButton_Sizer.Add(SaveConfig_Button);
-	 MountConfigButton_Sizer.AddStretch();
-	 MountConfigButton_Sizer.Add(Ok_Button);
-	 MountConfigButton_Sizer.Add(Cancel_Button);
 
 	 Global_Sizer.SetSpacing( 8 );
 	 Global_Sizer.SetMargin( 8 );
@@ -817,29 +798,23 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked ){
 	 Global_Sizer.Add(Longitude_Sizer);
 	 Global_Sizer.Add( TelescopeAperture_Sizer );
 	 Global_Sizer.Add( TelescopeFocalLength_Sizer );
-	 Global_Sizer.Add(MountConfigButton_Sizer);
 
-	 SetSizer( Global_Sizer );
-
-	 SetWindowTitle( "Configuration Dialog" );
-
-	 OnShow( (Control::event_handler)&MountConfigDialog::e_Show, *this );
-
+	 addBaseControls();
  }
 
  void MountConfigDialog::sendUpdatedProperties() {
 	 double lat = SexagesimalToDecimal( LatitudeIsSouth_CheckBox.IsChecked() ? -1 : +1,
 			 Latitude_H_SpinBox.Value(), Latitude_M_SpinBox.Value(), Latitude_S_NumericEdit.Value() );
 
-	 INDIClient::TheClient()->SendNewPropertyItem( m_interface.CurrentDeviceName(), "GEOGRAPHIC_COORD", "INDI_NUMBER", "LAT", lat);
+	 INDIClient::TheClient()->SendNewPropertyItem( m_device, "GEOGRAPHIC_COORD", "INDI_NUMBER", "LAT", lat);
 
 	 double longitude = SexagesimalToDecimal( LongitudeIsWest_CheckBox.IsChecked() ? -1 : +1,
 			 Longitude_H_SpinBox.Value(), Longitude_M_SpinBox.Value(), Longitude_S_NumericEdit.Value() );
 
-	 INDIClient::TheClient()->SendNewPropertyItem( m_interface.CurrentDeviceName(), "GEOGRAPHIC_COORD", "INDI_NUMBER", "LONG", longitude);
+	 INDIClient::TheClient()->SendNewPropertyItem( m_device, "GEOGRAPHIC_COORD", "INDI_NUMBER", "LONG", longitude);
 
 	 // sending telescope info in bulk request
-	 INDINewPropertyItem newPropertyItem(m_interface.CurrentDeviceName(), "TELESCOPE_INFO", "INDI_NUMBER");
+	 INDINewPropertyItem newPropertyItem(m_device, "TELESCOPE_INFO", "INDI_NUMBER");
 	 newPropertyItem.ElementValues << ElementValue("TELESCOPE_APERTURE",TelescopeAperture_NumericEdit.Value());
 	 newPropertyItem.ElementValues << ElementValue("TELESCOPE_FOCAL_LENGTH",TelescopeFocalLength_NumericEdit.Value());
 	 newPropertyItem.ElementValues << ElementValue("GUIDER_APERTURE",10);
@@ -849,31 +824,6 @@ void SyncDataListDialog::e_Click( Button& sender, bool checked ){
 
  }
 
- void MountConfigDialog::e_Show( Control& )
-  {
-     if ( m_firstTimeShown )
-     {
-        m_firstTimeShown = false;
-        AdjustToContents();
-        SetMinSize();
-     }
-  }
-
- void MountConfigDialog::e_Click( Button& sender, bool checked ){
-
-  	if (sender == Ok_Button){
-  		sendUpdatedProperties();
-  		Ok();
-  	}
-  	if (sender == Cancel_Button){
-  		Cancel();
-  	}
-  	if (sender == SaveConfig_Button){
-  		sendUpdatedProperties();
-  		INDIClient::TheClient()->SendNewPropertyItem( m_interface.CurrentDeviceName(), "CONFIG_PROCESS", "INDI_SWITCH", "CONFIG_SAVE", "ON");
-  		Ok();
-  	}
-  }
 
 
 
@@ -1918,7 +1868,7 @@ void INDIMountInterface::e_Click( Button& sender, bool checked )
    }
    else if (sender == GUI->MountDeviceConfig_ToolButton) {
 
-	   MountConfigDialog mountConfig(*this);
+	   MountConfigDialog mountConfig(m_device, getGeographicLatitude(), getGeographicLongitude(), getTelescopeAperture(), getTelescopeFocalLength());
 	   if (mountConfig.Execute() && INDIClient::HasClient()) {
 
 	   }

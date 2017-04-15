@@ -2983,7 +2983,7 @@ XMLDocument* XISFReader::ExtractHeader( const String& path, XMLParserOptions opt
    file.Read( reinterpret_cast<void*>( header.Begin() ), signature.headerLength );
    file.Close();
 
-   AutoPointer<XMLDocument> xml;
+   AutoPointer<XMLDocument> xml = new XMLDocument;
    xml->SetParserOptions( options );
    xml->Parse( header.UTF8ToUTF16() );
    return xml.Release();

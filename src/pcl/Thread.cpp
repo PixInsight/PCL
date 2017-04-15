@@ -95,7 +95,7 @@ namespace pcl
 // ----------------------------------------------------------------------------
 
 static bool      s_enableAffinity = false;
-static bool      s_featureDataInitialized = false;
+static AtomicInt s_featureDataInitialized;
 static AtomicInt s_numberOfRunningThreads;
 
 // ----------------------------------------------------------------------------
@@ -136,7 +136,7 @@ public:
       catch ( ... )
       {
          /*
-          * ### Do _not_ propagate exceptions from a running thread. _Never_.
+          * ### Do _not_ propagate exceptions from a running thread. Never.
           */
       }
    }
@@ -146,24 +146,40 @@ public:
 
 // ----------------------------------------------------------------------------
 
+/*
+ * ### TODO: Implement pcl::Thread without core application support, in case
+ * we are running as an independent application.
+ *
+ * For now, we simply construct a null object when API = nullptr. The
+ * reimplemented Thread::Run() can be invoked single-threaded.
+ */
+
 Thread::Thread() :
-   UIObject( (*API->Thread->CreateThread)( ModuleHandle(), this, 0/*flags*/ ) )
+   UIObject( (API != nullptr) ? (*API->Thread->CreateThread)( ModuleHandle(), this, 0/*flags*/ ) : nullptr )
 {
-   if ( IsNull() )
-      throw APIFunctionError( "CreateThread" );
-
-   (*API->Thread->SetThreadExecRoutine)( handle, ThreadDispatcher::RunThread );
-
-   if ( !s_featureDataInitialized )
+   if ( API != nullptr )
    {
-      /*
-       * ### TODO: Add a new StartThreadEx() API function to allow specifying a
-       * logical processor index and other flags. In this way this wouldn't be
-       * necessary and thread scheduling and affinity would be controlled by
-       * the core application.
-       */
-      s_enableAffinity = PixInsightSettings::GlobalFlag( "Process/EnableThreadCPUAffinity" );
-      s_featureDataInitialized = true;
+      if ( IsNull() )
+         throw APIFunctionError( "CreateThread" );
+
+      (*API->Thread->SetThreadExecRoutine)( handle, ThreadDispatcher::RunThread );
+
+      if ( s_featureDataInitialized.Load() == 0 )
+      {
+         /*
+          * ### TODO: Add a new StartThreadEx() API function to allow
+          * specifying a logical processor index and other flags. In this way
+          * this wouldn't be necessary and thread scheduling and affinity would
+          * be controlled completely by the core application.
+          */
+         static Mutex mutex;
+         volatile AutoLock lock( mutex );
+         if ( s_featureDataInitialized.Load() == 0 )
+         {
+            s_enableAffinity = PixInsightSettings::GlobalFlag( "Process/EnableThreadCPUAffinity" );
+            s_featureDataInitialized.Store( 1 );
+         }
+      }
    }
 }
 
@@ -430,26 +446,30 @@ void* Thread::CloneHandle() const
 
 int Thread::NumberOfThreads( size_type N, size_type overheadLimit )
 {
-   static int numberOfProcessors = 0;
-   if ( numberOfProcessors == 0 )
+   if ( API != nullptr )
    {
-      numberOfProcessors = PixInsightSettings::GlobalInteger( "System/NumberOfProcessors" );
-      if ( numberOfProcessors <= 0 )
-         return 1;
-   }
+      static AtomicInt numberOfProcessors;
+      int nf = numberOfProcessors.Load();
+      if ( nf == 0 )
+      {
+         static Mutex mutex;
+         volatile AutoLock lock( mutex );
+         if ( (nf = numberOfProcessors.Load()) == 0 )
+            numberOfProcessors.Store( nf = Max( 1, PixInsightSettings::GlobalInteger( "System/NumberOfProcessors" ) ) );
+      }
 
-   int nf = numberOfProcessors;
-   int nr = NumberOfRunningThreads();
-   if ( nr > 0 )
-      nf -= nr - 1;
+      int nr = NumberOfRunningThreads();
+      if ( nr > 0 )
+         nf -= nr - 1;
 
-   if ( nf > 1 &&
-        N > overheadLimit &&
-        PixInsightSettings::GlobalFlag( "Process/EnableParallelProcessing" ) &&
-        PixInsightSettings::GlobalFlag( "Process/EnableParallelModuleProcessing" ) )
-   {
-      size_type np = Min( nf, PixInsightSettings::GlobalInteger( "Process/MaxProcessors" ) );
-      return Max( 1, int( Min( np, N/Max( overheadLimit, N/np ) ) ) );
+      if ( nf > 1 &&
+         N > overheadLimit &&
+         PixInsightSettings::GlobalFlag( "Process/EnableParallelProcessing" ) &&
+         PixInsightSettings::GlobalFlag( "Process/EnableParallelModuleProcessing" ) )
+      {
+         size_type np = Min( nf, PixInsightSettings::GlobalInteger( "Process/MaxProcessors" ) );
+         return Max( 1, int( Min( np, N/Max( overheadLimit, N/np ) ) ) );
+      }
    }
 
    return 1;
